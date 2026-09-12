@@ -1,5 +1,22 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Recados e critérios de seção — 11/09/2026
+
+No Kids, `BroadcastPanel` oferece Novo recado para perfil, curso ou todos, prévia de destinatários
+resolvidos no servidor e Enviados com entregas/leitura/retry. A prévia fixa o público e só a confirmação
+inicia o processamento. BFF próprio `/api/members/teacher-broadcasts` usa o gateway. Cada destinatário
+tem conversa privada; respostas entram na caixa. `workflowStatus` é da equipe, separado da leitura
+pessoal. `read-all` deve receber o mesmo aluno/busca/contexto/curso/plataforma/status da listagem.
+O editor de seção usa critérios explícitos, catálogo visual e simulação do avaliador compartilhado.
+O acompanhamento consulta resumos de evidências e baixa o projeto completo apenas sob demanda.
+Detalhes e validação: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
+Correções da revisão (12/09): o editor valida objetivos contra capacidades, conexões e parâmetros
+do workspace pelo contrato server-safe do Studio; a simulação deriva do projeto carregado e dos
+critérios atuais, com proteção contra leituras fora de ordem. Enviados revalida todas as páginas
+de destinatários abertas, descartando respostas de detalhes fechados. `LessonEvidenceHistory`
+lista evidências independentemente das seções atuais e permite paginar e baixar versões antigas.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, Tailwind,
 > jose, Zod, etc.) — não confie só na memória; APIs mudam (ex.: `middleware`→`proxy` no Next 16). Para

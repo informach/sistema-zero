@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
+import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
 import { loadGatewayConfig } from '../../src/infrastructure/config/load-gateway-config'
+import { RouteRegistry } from '../../src/infrastructure/routing/route-registry'
 
 const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
@@ -354,6 +356,23 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
+  test('project checks reach members through the real route registry with a project-sized body', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    const matched = registry.resolve(
+      'POST',
+      '/members/lessons/lesson/sections/section/project-check',
+      'v1',
+    )
+    expect(matched?.route).toMatchObject({
+      service: 'members',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 2 * 1024 * 1024,
+      rateLimit: { by: 'principal' },
+    })
+  })
   test('seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas', () => {
     const routes = realConfig.routes.filter(
       (route) => route.id.startsWith('members-learning-') || route.id === 'members-section-help',

@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { EnsureBuyerService } from '../../../application/ensure-buyer/ensure-buyer.service'
 import type { WriteAuditLogService } from '../../../application/internal/write-audit-log/write-audit-log.service'
 import type { CreatePasswordTokenService } from '../../../application/password-reset/create-password-token.service'
@@ -38,6 +38,44 @@ export interface InternalRoutesDeps {
 export function internalRoutes(deps: InternalRoutesDeps) {
   return (
     new Elysia({ prefix: '/auth/internal' })
+      .get(
+        '/teacher-recipients',
+        async ({ headers, query }) => {
+          requireInternalToken(headers, deps.internalToken)
+          const page = await deps.profiles.searchWithAccount({
+            q: query.q,
+            offset: query.offset ?? 0,
+            limit: query.limit ?? 200,
+          })
+          const accounts = await deps.users.listByIds([
+            ...new Set(page.items.map((p) => p.accountUserId)),
+          ])
+          const active = new Set(accounts.filter((a) => a.status === 'active').map((a) => a.id))
+          return {
+            total: page.total,
+            items: page.items.flatMap((p) =>
+              p.account && active.has(p.accountUserId)
+                ? [
+                    {
+                      profileId: p.id,
+                      accountId: p.accountUserId,
+                      name: p.name,
+                      accountName: `${p.account.firstName} ${p.account.lastName}`.trim(),
+                      accountEmail: p.account.email,
+                    },
+                  ]
+                : [],
+            ),
+          }
+        },
+        {
+          query: t.Object({
+            q: t.Optional(t.String({ maxLength: 200 })),
+            offset: t.Optional(t.Numeric({ minimum: 0 })),
+            limit: t.Optional(t.Numeric({ minimum: 1, maximum: 200 })),
+          }),
+        },
+      )
       .post(
         '/password-tokens',
         async ({ body, headers, set }) => {

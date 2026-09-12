@@ -17,6 +17,20 @@ import type {
 
 const key = (owner: LearningOwner, id: string) => `${owner.accountId}:${owner.userId}:${id}`
 export class InMemoryLearningRepository implements LearningRepository {
+  readonly evidence = new Map<string, import('@sistemazero/core/learning').LessonEvidence[]>()
+  async listEvidence(owner: LearningOwner, lessonId: string, beforeId?: string) {
+    const rows = structuredClone(this.evidence.get(key(owner, lessonId)) ?? []).sort(
+      (a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id),
+    )
+    const start = beforeId ? rows.findIndex((row) => row.id === beforeId) + 1 : 0
+    if (beforeId && !start) return []
+    return rows.slice(start, start + 101)
+  }
+  async getEvidence(owner: LearningOwner, lessonId: string, id: string) {
+    return structuredClone(
+      this.evidence.get(key(owner, lessonId))?.find((e) => e.id === id) ?? null,
+    )
+  }
   readonly sectionProgress = new Map<string, SectionProgressRecord[]>()
   async getSectionProgress(owner: LearningOwner, lessonId: string) {
     return structuredClone(this.sectionProgress.get(key(owner, lessonId)) ?? [])
@@ -26,6 +40,8 @@ export class InMemoryLearningRepository implements LearningRepository {
     lessonId: string,
     revision: string,
     records: SectionProgressRecord[],
+    _blockRevisions?: { id: string; revision: string }[],
+    evidence?: import('@sistemazero/core/learning').LessonEvidence,
   ) {
     const structure = this.structures.get(lessonId)
     if (
@@ -34,6 +50,11 @@ export class InMemoryLearningRepository implements LearningRepository {
     )
       throw new LearningConflictError()
     const all = await this.getSectionProgress(owner, lessonId)
+    if (evidence)
+      this.evidence.set(key(owner, lessonId), [
+        ...(this.evidence.get(key(owner, lessonId)) ?? []),
+        structuredClone(evidence),
+      ])
     for (const r of records) {
       const old = all.find((p) => p.sectionId === r.sectionId)
       if (old?.completedAt) continue

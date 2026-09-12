@@ -46,7 +46,28 @@ export const InteractiveBlockSchema = t.Object({
 })
 const SectionRule = t.Union([
   t.Object({ type: t.Literal('usesLoop') }),
-  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ maxLength: 200 }) }),
+  t.Object({
+    type: t.Literal('usesBlock'),
+    blockType: t.String({ maxLength: 200 }),
+    area: t.Optional(
+      t.Union(
+        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
+          t.Literal(area),
+        ),
+      ),
+    ),
+    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    fields: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+    inputs: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+  }),
   ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
     t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
   ),
@@ -93,6 +114,7 @@ export const LearningLessonParams = t.Object({ lessonId: Id })
 export const LearningBlockParams = t.Object({ lessonId: Id, blockId: Id })
 export const LearningNavigationBody = t.Object({ sectionId: Id })
 export const LearningHelpBody = t.Object({
+  requestId: t.Optional(t.String({ format: 'uuid' })),
   sectionId: Id,
   body: t.String({ minLength: 1, maxLength: 8000 }),
 })

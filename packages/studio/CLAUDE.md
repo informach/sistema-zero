@@ -4,6 +4,13 @@
 > Este arquivo também contém um diário histórico; em caso de conflito, o mapa
 > canônico, o código e os testes atuais prevalecem.
 
+`server-project-checks` (12/09/2026) expõe validação de autoria e avaliação estrutural para
+Members/Admin. Importa apenas contratos puros do catálogo e Core; o teste de bundle rejeita
+Blockly, React e Monaco nessa fronteira. Cores de categorias, nomes de extensões de blocos,
+tipos de toolbox e vocabulário de campanha vivem em módulos puros, reexportados pelos módulos
+anteriores. O catálogo inclui conexões e parâmetros; sombras de valores são reconhecidas pelo
+contrato de saída do bloco e a simulação usa o mesmo avaliador do servidor.
+
 > Sempre consulte o Context7 (docs atualizadas) antes de mexer em qualquer lib/framework, e use Octocode para pesquisa/exploração de código no GitHub.
 
 IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do monorepo, consumida como TS source (modelo do `@sistemazero/ui`). Migrada do repo standalone `sistema-zero-studio` em 2026-06-10; os 11 sub-packages `@sz/*` viraram pastas de `src/` referenciadas por subpath imports `#core`, `#ir`, `#blockly`, `#monaco`, `#parsers`, `#generators`, `#preview`, `#extensions`, `#official-extensions`, `#ai`, `#ui` (ver `imports` no package.json).

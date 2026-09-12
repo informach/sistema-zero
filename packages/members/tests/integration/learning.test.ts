@@ -69,6 +69,39 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
+  test('repeating a help request keeps one message and preserves its lesson context', async () => {
+    const ctx = setup()
+    const section = defaultLessonSection(
+      randomUUID(),
+      'Minha dúvida',
+      ctx.courses.blocks.filter((b) => b.lessonId === ctx.lessonId).map((b) => b.id),
+    )
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      revision: randomUUID(),
+      sections: [section],
+    })
+    const body = { requestId: randomUUID(), sectionId: section.id, body: 'Não entendi.' }
+    const first = await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', body)
+    expect(first.status).toBe(200)
+    expect((await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', body)).status).toBe(
+      200,
+    )
+    expect(ctx.teacherThreadsRepo.messages).toHaveLength(1)
+    expect(ctx.teacherThreadsRepo.messages[0]?.helpContext).toMatchObject({
+      courseSlug: ctx.slug,
+      sectionId: section.id,
+      sectionTitle: section.title,
+    })
+    expect(
+      (
+        await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', {
+          ...body,
+          body: 'Outro texto',
+        })
+      ).status,
+    ).toBe(400)
+    expect(ctx.teacherThreadsRepo.messages).toHaveLength(1)
+  })
   for (const kind of ['studio', 'pinta'] as const) {
     test(`${kind} experiment authoring survives the HTTP schema and never requires submission`, async () => {
       const ctx = setup()

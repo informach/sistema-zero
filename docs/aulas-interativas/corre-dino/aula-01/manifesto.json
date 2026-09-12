@@ -198,7 +198,7 @@
         "title": "Confira: preparar a tela",
         "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
         "hints": ["480 por 270."],
-        "required": true,
+        "required": false,
         "activity": {
           "type": "checkpoint"
         },
@@ -262,7 +262,7 @@
         "title": "Confira: criar o dino",
         "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
         "hints": ["Mandar desenhar o dino."],
-        "required": true,
+        "required": false,
         "activity": {
           "type": "checkpoint"
         },
@@ -366,7 +366,34 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tela",
+            "label": "Preparar uma tela de 480 × 270 em Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 480,
+                "H": 270
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Encaixar a borda com espessura 4 em Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_stage_border",
+              "area": "start",
+              "inputs": {
+                "WIDTH": 4
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -394,7 +421,26 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-4"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "dino",
+            "label": "Criar dino em x 110, y 150 e tamanho 64, dentro de Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "fields": {
+                "NAME": "dino"
+              },
+              "inputs": {
+                "X": 110,
+                "Y": 150,
+                "SIZE": 64
+              }
+            }
+          }
+        ]
       }
     },
     {

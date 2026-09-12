@@ -9,9 +9,11 @@ import {
   publicInteractiveBlock,
   validateLessonSections,
 } from '@sistemazero/core/learning'
+import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import type { LessonWithContent } from '../../domain/course/course'
 import { LessonComingSoonError, LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import { deterministicSourceId } from '../../domain/gamification/source-id'
 import { LearningConflictError, LearningGateError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { LearningOwner, LearningRepository } from '../../domain/ports/learning-repository.port'
@@ -110,14 +112,35 @@ export class LearningService {
     await this.repository.saveNavigation(actor, lessonId, sectionId)
     return { ok: true }
   }
-  async help(actor: LearningActor, lessonId: string, sectionId: string, body: string) {
+  async help(
+    actor: LearningActor,
+    lessonId: string,
+    sectionId: string,
+    body: string,
+    requestId?: string,
+  ) {
     const lesson = await this.requireLesson(actor, lessonId)
     await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
     const section = (await this.structure(lesson)).sections.find((s) => s.id === sectionId)
     if (!section) throw new LessonNotFoundError('Seção não encontrada')
     const course = await this.courses.findCourseById(lesson.courseId)
     if (!course) throw new LessonNotFoundError()
+    const progress = await this.sections.read(actor, lesson)
     const threadId = await this.teacherThreads.studentPostByContext({
+      dedupeId: requestId
+        ? deterministicSourceId(
+            '899563d8-62ce-4e0c-8c59-40da6e90d047',
+            `${actor.userId}:${lessonId}:${sectionId}:${requestId}`,
+          )
+        : undefined,
+      helpContext: {
+        courseSlug: course.slug,
+        lessonId,
+        sectionId,
+        sectionTitle: section.title,
+        revision: progress?.revision ?? null,
+        pending: progress?.sections.find((s) => s.id === sectionId)?.pending ?? [],
+      },
       ...actor,
       audience: course.audience,
       contextType: 'lesson_section',
@@ -252,9 +275,12 @@ export class LearningService {
   async report(owner: LearningOwner, lessonId: string): Promise<LessonLearningReport> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     if (!lesson) throw new LessonNotFoundError()
-    const [current, attempts] = await Promise.all([
+    const [current, attempts, sectionProgress, milestones, evidence] = await Promise.all([
       this.read(owner, lesson),
       this.repository.listAttempts(owner, lessonId),
+      this.sections.read(owner, lesson),
+      this.repository.getSectionProgress(owner, lessonId),
+      this.evidencePage(owner, lessonId),
     ])
     return {
       ...current.progress,
@@ -262,6 +288,10 @@ export class LearningService {
       lessonTitle: lesson.title,
       userId: owner.userId,
       attempts,
+      sectionProgress,
+      milestones,
+      evidence: evidence.items,
+      evidenceNextCursor: evidence.nextCursor,
       sections: current.sections,
       activities: lesson.blocks.flatMap((block) =>
         block.content.kind === 'interactive' && block.contentRevision
@@ -276,9 +306,25 @@ export class LearningService {
       ),
     }
   }
+  async evidence(owner: LearningOwner, lessonId: string, id: string) {
+    const evidence = await this.repository.getEvidence(owner, lessonId, id)
+    if (!evidence) throw new LessonNotFoundError('Evidência não encontrada.')
+    return evidence
+  }
+  async evidencePage(owner: LearningOwner, lessonId: string, beforeId?: string) {
+    const rows = await this.repository.listEvidence(owner, lessonId, beforeId)
+    const items = rows.slice(0, 100)
+    return { items, nextCursor: rows.length > 100 ? (items.at(-1)?.id ?? null) : null }
+  }
   async assertPublishable(lessonId: string) {
     const structure = await this.repository.getStructure(lessonId)
     if (structure?.sections.some((s) => s.pendingMedia.length))
       throw new ValidationError('Produza e vincule as mídias pendentes antes de publicar a aula.')
+    if (structure) {
+      const lesson = await this.courses.findLessonWithContent(lessonId)
+      if (!lesson) throw new LessonNotFoundError()
+      const issues = studioSectionCompletionIssues(structure.sections, lesson.blocks)
+      if (issues.length) throw new ValidationError(issues.map((issue) => issue.message).join(' '))
+    }
   }
 }

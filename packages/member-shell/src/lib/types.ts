@@ -1589,6 +1589,14 @@ export type TeacherMessageRole = 'teacher' | 'student'
 
 /** Um turno da conversa (mirror do members). */
 export interface TeacherMessageView {
+  helpContext?: {
+    courseSlug: string
+    lessonId: string
+    sectionId: string
+    sectionTitle: string
+    revision: string | null
+    pending: string[]
+  } | null
   id: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -1600,6 +1608,7 @@ export interface TeacherMessageView {
 
 /** Uma conversa aberta (cabeçalho + turnos). */
 export interface TeacherThreadView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -1618,6 +1627,7 @@ export interface TeacherThreadView {
 
 /** Resumo p/ a caixa de entrada + badge (mirror do members). */
 export interface TeacherThreadSummaryView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null

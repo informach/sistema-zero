@@ -150,6 +150,7 @@ describe('GET /members/internal/children-stats', () => {
       await ctx.studioSubmissions.upsert({
         id: randomUUID(),
         userId: profileA,
+        accountId: account,
         blockId,
         lessonId: randomUUID(),
         courseId: kidsCourse.courseId,
@@ -279,6 +280,7 @@ describe('GET /members/internal/children-stats', () => {
     await ctx.studioSubmissions.upsert({
       id: randomUUID(),
       userId: profile,
+      accountId: account,
       blockId: randomUUID(),
       lessonId: randomUUID(),
       courseId: kids.courseId,
@@ -288,6 +290,7 @@ describe('GET /members/internal/children-stats', () => {
     await ctx.studioSubmissions.upsert({
       id: randomUUID(),
       userId: profile,
+      accountId: account,
       blockId: randomUUID(),
       lessonId: randomUUID(),
       courseId: adult.courseId,

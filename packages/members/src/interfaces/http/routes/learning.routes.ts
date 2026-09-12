@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { LearningService } from '../../../application/learning/learning.service'
 import type { LearningImportService } from '../../../application/learning/learning-import.service'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
@@ -52,7 +52,13 @@ export function learningRoutes(deps: LearningRoutesDeps) {
     .post(
       '/lessons/:lessonId/section-help',
       ({ headers, params, body }) =>
-        deps.learning.help(actor(headers), params.lessonId, body.sectionId, body.body),
+        deps.learning.help(
+          actor(headers),
+          params.lessonId,
+          body.sectionId,
+          body.body,
+          body.requestId,
+        ),
       { params: LearningLessonParams, body: LearningHelpBody },
     )
     .put(
@@ -151,6 +157,28 @@ export function learningRoutes(deps: LearningRoutesDeps) {
               body.operationId,
             ),
           { params: IdParams, body: LearningImportApplyBody },
+        )
+        .get(
+          '/lessons/:id/learning-evidence',
+          ({ params, query }) => deps.learning.evidencePage(query, params.id, query.beforeId),
+          {
+            params: IdParams,
+            query: t.Object({
+              ...LearningReportQuery.properties,
+              beforeId: t.Optional(t.String({ format: 'uuid' })),
+            }),
+          },
+        )
+        .get(
+          '/lessons/:id/learning-evidence/:evidenceId',
+          ({ params, query }) => deps.learning.evidence(query, params.id, params.evidenceId),
+          {
+            params: t.Object({
+              id: t.String({ format: 'uuid' }),
+              evidenceId: t.String({ format: 'uuid' }),
+            }),
+            query: LearningReportQuery,
+          },
         )
         .get(
           '/lessons/:id/learning-report',

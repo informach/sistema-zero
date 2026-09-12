@@ -7,7 +7,7 @@ export interface StudioSubmissionRecord {
   id: string
   /** Quem entregou (perfil da criança no kids; a conta no adulto). */
   userId: string
-  /** Conta responsável (kids: o pai; adulto: = userId). `null` = linha legada. */
+  /** Conta responsável; ausente em registros legados, obrigatória em novas gravações. */
   accountId?: string | null
   blockId: string
   lessonId: string
@@ -160,10 +160,11 @@ export interface RecentStudioSubmission {
 export interface StudioSubmissionRepository {
   /** Insere/atualiza a entrega do aluno no bloco (UNIQUE user+block). */
   upsert(
-    submission: StudioSubmissionRecord,
+    submission: StudioSubmissionRecord & { accountId: string },
     options?: {
       /** Mantém `passedAt` existente (STICKY) se já houver, sem sobrescrever por `null`. */
       preservePassedAt?: boolean
+      revision?: string
     },
   ): Promise<void>
   /**

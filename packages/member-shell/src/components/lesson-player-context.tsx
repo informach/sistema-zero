@@ -10,7 +10,12 @@ import { createContext, useContext } from 'react'
  */
 export interface LessonPlayerContextValue {
   refreshAfterLearning?: () => void
-  sectionProjectCheck?: { sectionId: string; revision: string; blockId: string }
+  sectionProjectCheck?: {
+    sectionId: string
+    revision: string
+    blockId: string
+    objectives?: { id: string; label: string }[]
+  }
   submissionAllowedBlockIds?: string[]
   learningProgress?: LessonLearningProgress
   onLearningProgress?: (progress: LearningBlockProgress) => void

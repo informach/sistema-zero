@@ -58,7 +58,12 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
     setThread(null)
     apiGet<TeacherThreadView>(`/api/members/teacher-threads/${threadId}`)
       .then((t) => {
-        if (active) setThread(t)
+        if (active) {
+          setThread(t)
+          void apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {})
+            .then(() => refreshProfessorCounts())
+            .catch(() => {})
+        }
       })
       .catch((err) => {
         if (active) setLoadError(err instanceof Error ? err.message : 'Falha ao abrir a conversa.')
@@ -68,9 +73,6 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
       })
     // Marca como lida ao abrir — best-effort (a lista recarrega ao fechar); o badge
     // da sidebar re-busca junto (senão fica 60s mentindo depois da leitura).
-    apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {})
-      .then(() => refreshProfessorCounts())
-      .catch(() => {})
   }, [threadId])
 
   useEffect(() => {
@@ -144,6 +146,39 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
         ) : (
           <div className="space-y-3">
             {thread.title ? <p className="text-xs text-muted-foreground">{thread.title}</p> : null}
+            <label className="block text-sm">
+              Atendimento da equipe
+              <select
+                className="ml-2 rounded border p-2"
+                value={thread.workflowStatus ?? 'waiting_student'}
+                onChange={(e) => {
+                  void apiSend<TeacherThreadView>(
+                    `/api/members/teacher-threads/${threadId}/status`,
+                    'POST',
+                    { status: e.target.value },
+                  )
+                    .then(setThread)
+                    .catch(() => toast.error('Não foi possível salvar o atendimento.'))
+                }}
+              >
+                <option value="waiting_teacher">Aguardando professor</option>
+                <option value="waiting_student">Aguardando aluno</option>
+                <option value="resolved">Resolvido</option>
+              </select>
+            </label>
+            {thread.messages
+              .filter((m) => m.helpContext)
+              .slice(-1)
+              .map((m) => (
+                <div key={m.id} className="rounded border p-3 text-sm">
+                  <strong>No momento da dúvida · {m.helpContext?.sectionTitle}</strong>
+                  <p>
+                    {m.helpContext?.pending.length
+                      ? m.helpContext.pending.join(' · ')
+                      : 'Nenhum critério pendente registrado.'}
+                  </p>
+                </div>
+              ))}
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-3">
               <p className="text-sm">
                 <strong>

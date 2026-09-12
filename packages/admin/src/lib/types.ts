@@ -749,6 +749,14 @@ export type TeacherThreadContext =
 export type TeacherMessageRole = 'teacher' | 'student'
 
 export interface TeacherMessageView {
+  helpContext?: {
+    courseSlug: string
+    lessonId: string
+    sectionId: string
+    sectionTitle: string
+    revision: string | null
+    pending: string[]
+  } | null
   id: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -758,6 +766,7 @@ export interface TeacherMessageView {
 }
 
 export interface TeacherThreadView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -775,6 +784,7 @@ export interface TeacherThreadView {
 
 /** Resumo de conversa na caixa de entrada do PROFESSOR (espelha o members). */
 export interface TeacherThreadSummaryView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null

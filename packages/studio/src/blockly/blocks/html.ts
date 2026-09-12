@@ -3,7 +3,7 @@ import {
   HTML_IMAGE_LOADING_OPTIONS,
   HTML_INPUT_TYPE_OPTIONS,
 } from '../../html/catalog'
-import { CATEGORY_COLORS, categoryShades } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../categoryColors'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.html

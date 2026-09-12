@@ -2055,6 +2055,17 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
     {
+      id: 'members-section-project-check',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/sections/:sectionId/project-check',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
       id: 'members-section-help',
       methods: ['POST'],
       pathPattern: '/members/lessons/:lessonId/section-help',

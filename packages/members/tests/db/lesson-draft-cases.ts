@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   defaultLessonSection,
@@ -10,7 +11,7 @@ import {
   type LessonDraftChange,
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
@@ -22,6 +23,7 @@ import {
   lessonAttachments,
   lessonBlocks,
   lessonCompletions,
+  lessonStructures,
   lessons,
   modules,
   studioSubmissions,
@@ -96,6 +98,121 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    test('publication refuses impossible Studio criteria and keeps the published snapshot unchanged', async () => {
+      const f = await fixture()
+      const workspace = await f.content.createBlock(f.lessonId, 'studio', {
+        kind: 'studio',
+        purpose: 'experiment',
+        initialProject: {
+          name: 'Jogo',
+          files: {},
+          installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
+        },
+        allowBlocks: ['sz_g2d_setup_stage'],
+      })
+      const section = {
+        ...defaultLessonSection(randomUUID(), 'Praticar', [workspace.id]),
+        workspaceBlockId: workspace.id,
+        completion: {
+          version: 1 as const,
+          blockIds: [],
+          projectChecks: [
+            {
+              id: 'stage',
+              label: 'Preparar tela',
+              rule: {
+                type: 'usesBlock' as const,
+                blockType: 'sz_g2d_setup_stage',
+                area: 'appearance' as const,
+              },
+            },
+          ],
+        },
+      }
+      let draft = await f.repo.read(f.lessonId)
+      draft = await f.change(draft, { type: 'structure', supportBlockIds: [], sections: [section] })
+      const before = await f.reader.findLessonWithContent(f.lessonId)
+      const failure = await f.publish(draft).then(
+        () => null,
+        (error: unknown) => error,
+      )
+      expect(failure).toBeInstanceOf(Error)
+      expect(String(failure)).toContain('encaixado')
+      expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
+      draft = await f.change(draft, {
+        type: 'structure',
+        supportBlockIds: [],
+        sections: [
+          {
+            ...section,
+            completion: {
+              ...section.completion,
+              projectChecks: [
+                {
+                  ...section.completion.projectChecks[0]!,
+                  rule: {
+                    type: 'usesBlock',
+                    blockType: 'sz_g2d_setup_stage',
+                    area: 'start',
+                    inputs: { W: 480 },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      })
+      await f.publish(draft)
+    })
+    test('criteria migration preserves draft edits, adds previous implicit gates and rebases only the matching published snapshot', async () => {
+      const f = await fixture()
+      const first = await f.content.createBlock(f.lessonId, 'interactive', interactive)
+      const second = await f.content.createBlock(f.lessonId, 'interactive', interactive)
+      const section = {
+        ...defaultLessonSection(randomUUID(), 'Etapa', [first.id, second.id]),
+        completion: { version: 1 as const, blockIds: [first.id] },
+      }
+      await f.db
+        .insert(lessonStructures)
+        .values({ lessonId: f.lessonId, revision: randomUUID(), sections: [section] })
+        .onConflictDoUpdate({ target: lessonStructures.lessonId, set: { sections: [section] } })
+      let draft = await f.repo.read(f.lessonId)
+      draft = await f.change(draft, {
+        type: 'metadata',
+        title: 'Minha edição pendente',
+        slug: 'aula',
+        estimatedMinutes: 3,
+      })
+      const statements = readFileSync(
+        resolve(
+          import.meta.dir,
+          '../../src/infrastructure/persistence/drizzle/migrations/0085_explicit_section_criteria.sql',
+        ),
+        'utf8',
+      ).split('--> statement-breakpoint')
+      await f.db.transaction(async (tx) => {
+        for (const statement of statements)
+          if (statement.trim()) await tx.execute(sql.raw(statement))
+      })
+      const migrated = await f.repo.read(f.lessonId)
+      expect(migrated.document.title).toBe('Minha edição pendente')
+      expect(migrated.document.sections[0]?.completion?.blockIds).toEqual([first.id, second.id])
+      expect(migrated.revision).not.toBe(draft.revision)
+      await f.db
+        .update(lessons)
+        .set({ title: 'Publicação concorrente' })
+        .where(eq(lessons.id, f.lessonId))
+      const rejection = await f.publish(migrated).then(
+        () => null,
+        (error: unknown) => error,
+      )
+      expect(rejection).toBeInstanceOf(Error)
+      await f.db.update(lessons).set({ title: 'Publicada' }).where(eq(lessons.id, f.lessonId))
+      await f.publish(migrated)
+      expect((await f.reader.findLessonWithContent(f.lessonId))?.title).toBe(
+        'Minha edição pendente',
+      )
+    })
     test('incomplete edits remain private; failed publication leaves the entire published snapshot intact', async () => {
       const f = await fixture()
       const before = await f.reader.findLessonWithContent(f.lessonId)

@@ -1,5 +1,5 @@
 import type { BlockCatalogArea } from '../core/behaviorAreas'
-import type { ExtensionToolboxCategory } from '../extensions/types'
+import type { ExtensionToolboxCategory } from '../extensions/toolboxTypes'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../official-extensions/game-2d/blocks'
 import {
   gameKitBlocks,
@@ -11,7 +11,7 @@ import {
   gameKit3DToolboxCategory,
 } from '../official-extensions/game-3d-advanced/blocks'
 import { world3DBlocks, world3DToolboxCategory } from '../official-extensions/world-3d/blocks'
-import { inferBlockContract } from './blockContracts'
+import { inferBlockContract, materializeBlockDefinition } from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
 import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
@@ -48,6 +48,23 @@ interface BlockLike {
 }
 
 export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
+  parameters: {
+    name: string
+    label: string
+    kind: 'fields' | 'inputs'
+    numeric: boolean
+    options?: [string, string][]
+    min?: number
+    max?: number
+    precision?: number
+    checks?: string[] | null
+  }[]
+  contract: ReturnType<typeof inferBlockContract>
+  connections: {
+    previous?: string[] | null
+    output?: string[] | null
+    children: { kind: 'statement' | 'value'; checks: string[] | null }[]
+  }
   /** Subcategoria real; famílias sem segundo nível repetem a categoria. */
   subcategory: string
   /**
@@ -61,7 +78,7 @@ export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
    */
   palettePath: readonly string[]
   extension: string | null
-  level: import('#core').BlockLevel
+  level: import('../core/levels').BlockLevel
   tooltip: string
   inputs: string[]
   placement: BlockPlacement | null
@@ -249,7 +266,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
     blocks
       .filter((block) => !block.hidden)
       .map((raw) => {
-        const block = raw as BlockDefinition
+        const block = materializeBlockDefinition(raw as BlockDefinition)
         const contract = inferBlockContract(block)
         const args = [
           ...(block.args0 ?? []),
@@ -260,6 +277,30 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
           ...(block.args5 ?? []),
         ]
         return {
+          contract,
+          connections: {
+            previous:
+              block.previousStatement === undefined
+                ? undefined
+                : connectionChecks(block.previousStatement),
+            output: block.output === undefined ? undefined : connectionChecks(block.output),
+            children: args.flatMap((arg) => {
+              if (
+                !arg ||
+                typeof arg !== 'object' ||
+                !('type' in arg) ||
+                (arg.type !== 'input_statement' && arg.type !== 'input_value')
+              )
+                return []
+              return [
+                {
+                  kind:
+                    arg.type === 'input_statement' ? ('statement' as const) : ('value' as const),
+                  checks: connectionChecks('check' in arg ? arg.check : null),
+                },
+              ]
+            }),
+          },
           type: block.type,
           label: labelOf(block),
           category,
@@ -272,8 +313,76 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
             if (!arg || typeof arg !== 'object' || !('name' in arg)) return []
             return typeof arg.name === 'string' ? [arg.name] : []
           }),
+          parameters: args.flatMap((arg, index) => {
+            if (!arg || typeof arg !== 'object' || !('name' in arg) || typeof arg.name !== 'string')
+              return []
+            const data = arg as Record<string, unknown>
+            const input = data.type === 'input_value'
+            if (
+              !input &&
+              ![
+                'field_input',
+                'field_number',
+                'field_dropdown',
+                'field_colour',
+                'field_colour_sz',
+                'field_name_picker',
+                'field_sprite_picker',
+              ].includes(String(data.type))
+            )
+              return []
+            const labels: Record<string, string> = {
+              ID: 'Nome',
+              NAME: 'Nome',
+              W: 'Largura',
+              H: 'Altura',
+              X: 'Posição horizontal',
+              Y: 'Posição vertical',
+              SIZE: 'Tamanho',
+              COLOR: 'Cor',
+              COLOUR: 'Cor',
+              TEXT: 'Texto',
+              SPEED: 'Velocidade',
+              NUM: 'Número',
+              VALUE: 'Valor',
+              INITIAL: 'Valor inicial',
+              AMOUNT: 'Quantidade',
+              VX: 'Velocidade horizontal',
+              VY: 'Velocidade vertical',
+            }
+            const options = Array.isArray(data.options)
+              ? data.options.filter(
+                  (item): item is [string, string] =>
+                    Array.isArray(item) &&
+                    item.length === 2 &&
+                    typeof item[0] === 'string' &&
+                    typeof item[1] === 'string',
+                )
+              : undefined
+            return [
+              {
+                name: arg.name,
+                label: labels[arg.name] ?? `Valor ${index + 1}`,
+                kind: input ? ('inputs' as const) : ('fields' as const),
+                numeric: data.type === 'field_number' || data.check === 'Number',
+                min: typeof data.min === 'number' ? data.min : undefined,
+                max: typeof data.max === 'number' ? data.max : undefined,
+                precision: typeof data.precision === 'number' ? data.precision : undefined,
+                checks: input ? connectionChecks(data.check) : undefined,
+                options,
+              },
+            ]
+          }),
           placement: contract.placement ?? null,
           area: areaFor(block),
         }
       }),
 )
+
+function connectionChecks(value: unknown): string[] | null {
+  return typeof value === 'string'
+    ? [value]
+    : Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === 'string')
+      : null
+}

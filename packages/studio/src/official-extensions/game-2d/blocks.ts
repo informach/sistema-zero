@@ -1,5 +1,5 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 import { gameTwoDBlocks as canonicalGameTwoDBlocks } from './blockCatalog'
 
 const C = '#ec4899'

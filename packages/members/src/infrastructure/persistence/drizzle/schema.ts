@@ -1150,6 +1150,67 @@ export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'lesson_section',
 ])
 export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
+export const lessonEvidence = members.table(
+  'lesson_evidence',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id'),
+    lessonId: uuid('lesson_id').notNull(),
+    blockId: uuid('block_id'),
+    sectionId: uuid('section_id'),
+    kind: text('kind').$type<'section_project' | 'quiz' | 'studio'>().notNull(),
+    revision: text('revision').notNull(),
+    payload: jsonb('payload').$type<unknown>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('lesson_evidence_owner_idx').on(t.userId, t.lessonId, t.createdAt)],
+)
+
+/** Base para rebase exato dos rascunhos existentes na migração dos critérios. */
+export const lessonCriteriaMigrationSnapshots = members.table(
+  'lesson_criteria_migration_snapshots',
+  {
+    lessonId: uuid('lesson_id').primaryKey(),
+    previousSections: jsonb('previous_sections').$type<LessonSection[]>().notNull(),
+    migratedSections: jsonb('migrated_sections').$type<LessonSection[]>().notNull(),
+  },
+)
+
+export const teacherBroadcasts = members.table('teacher_broadcasts', {
+  id: uuid('id').primaryKey(),
+  authorId: uuid('author_id').notNull(),
+  authorName: text('author_name').notNull(),
+  audience: jsonb('audience')
+    .$type<import('../../../domain/ports/teacher-broadcast-repository.port').TeacherAudience>()
+    .notNull(),
+  title: varchar('title', { length: 160 }).notNull(),
+  body: varchar('body', { length: 8000 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
+})
+
+export const teacherBroadcastRecipients = members.table(
+  'teacher_broadcast_recipients',
+  {
+    broadcastId: uuid('broadcast_id')
+      .notNull()
+      .references(() => teacherBroadcasts.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    name: text('name').notNull(),
+    accountName: text('account_name').notNull(),
+    accountEmail: text('account_email').notNull(),
+    threadId: uuid('thread_id').notNull(),
+    status: text('status').$type<'pending' | 'delivered' | 'failed'>().notNull().default('pending'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.broadcastId, t.profileId] }),
+    uniqueIndex('teacher_delivery_thread_uq').on(t.threadId),
+    index('teacher_delivery_pending_idx').on(t.status, t.broadcastId),
+  ],
+)
 
 export const teacherThreads = members.table(
   'teacher_threads',
@@ -1163,6 +1224,13 @@ export const teacherThreads = members.table(
     contextType: teacherThreadContextEnum('context_type').notNull(),
     /** Snapshot SEM FK: blockId (entrega) | threadId do hub (Mural) | null (geral). */
     contextRef: text('context_ref'),
+    broadcastId: uuid('broadcast_id').references(() => teacherBroadcasts.id, {
+      onDelete: 'set null',
+    }),
+    workflowStatus: text('workflow_status')
+      .$type<'waiting_teacher' | 'waiting_student' | 'resolved'>()
+      .notNull()
+      .default('waiting_student'),
     // Denormalizados p/ renderizar mesmo se a origem sumir (snapshot).
     courseId: uuid('course_id'),
     lessonId: uuid('lesson_id'),
@@ -1201,6 +1269,10 @@ export const teacherMessages = members.table(
     // 8000: o professor escreve markdown com print (URL) + trecho de código; o recado curto
     // do aluno cabe de sobra. Espelha os DTOs `TeacherThreadReplyBody`/`AdminTeacherThreadPostBody`.
     body: varchar('body', { length: 8000 }).notNull(),
+    helpContext:
+      jsonb('help_context').$type<
+        import('../../../domain/ports/teacher-thread-repository.port').TeacherHelpContext
+      >(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   // Cobre o EXISTS de não-lido (thread + papel + data), a paginação do histórico
@@ -1541,6 +1613,11 @@ export const processedWebhooks = members.table(
 )
 
 export const schema = {
+  teacherBroadcasts,
+  teacherBroadcastRecipients,
+  teacherThreadStaffReads,
+  lessonEvidence,
+  lessonCriteriaMigrationSnapshots,
   lessonDrafts,
   lessonDraftOperations,
   activeLessonBlocks,

@@ -8,10 +8,10 @@
  * do projeto submetido (anti-cola barato, sem executar). Para `behavior`/
  * `testcase`/`code` REGISTRA o resultado reportado pelo cliente (marcado
  * `verifiedBy:'client'`) — não há sandbox/DOM no servidor. A nota gravada/gate usa
- * o conjunto inteiro; só `structure` é à prova de fraude.
+ * o conjunto inteiro; `structure` é recalculada no servidor, sem comprovar execução.
  *
- * ⚠️ O `evaluateStructure*` aqui PRECISA espelhar o `structure.ts` do studio
- * (mesmas fixtures) — mudou um, mude o outro.
+ * As regras e o avaliador estrutural vêm de `@sistemazero/core/learning`,
+ * compartilhados com a simulação do professor e com o Estúdio.
  */
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue }
@@ -24,12 +24,7 @@ export interface ActivityCheckBase {
   weight?: number
 }
 
-export type StructureRule =
-  | { type: 'usesLoop' }
-  | { type: 'declaresVariable'; name: string }
-  | { type: 'definesFunction'; name: string }
-  | { type: 'callsFunction'; name: string }
-  | { type: 'usesBlock'; blockType: string }
+export type StructureRule = import('@sistemazero/core/learning').SectionStructureRule
 
 export interface StructureCheck extends ActivityCheckBase {
   kind: 'structure'
@@ -95,98 +90,9 @@ export interface StudioGrade {
 
 // ── Avaliação de ESTRUTURA (anda o IR do projeto submetido) ─────────────────
 
-const LOOP_TYPES: ReadonlySet<string> = new Set([
-  'repeat',
-  'while',
-  'doWhile',
-  'forOf',
-  'forRange',
-  'forEach',
-])
-const CALL_TYPES: ReadonlySet<string> = new Set(['callFunction', 'call'])
-const MAX_WALK_NODES = 200_000
+export { evaluateStudioProjectStructure as evaluateStructureRule } from '@sistemazero/studio/server-project-checks'
 
-function someJsNode(js: unknown, predicate: (node: Record<string, unknown>) => boolean): boolean {
-  const stack: unknown[] = [js]
-  let visited = 0
-  while (stack.length > 0) {
-    const current = stack.pop()
-    if (visited++ > MAX_WALK_NODES) return false
-    if (Array.isArray(current)) {
-      for (const item of current) stack.push(item)
-      continue
-    }
-    if (!current || typeof current !== 'object') continue
-    const node = current as Record<string, unknown>
-    if (typeof node.type === 'string' && predicate(node)) return true
-    for (const value of Object.values(node)) {
-      if (value && typeof value === 'object') stack.push(value)
-    }
-  }
-  return false
-}
-
-function someBlockType(blocksState: unknown, blockType: string): boolean {
-  const stack: unknown[] = [blocksState]
-  let visited = 0
-  while (stack.length > 0) {
-    const current = stack.pop()
-    if (visited++ > MAX_WALK_NODES) return false
-    if (Array.isArray(current)) {
-      for (const item of current) stack.push(item)
-      continue
-    }
-    if (!current || typeof current !== 'object') continue
-    const node = current as Record<string, unknown>
-    if (node.type === blockType) return true
-    for (const value of Object.values(node)) {
-      if (value && typeof value === 'object') stack.push(value)
-    }
-  }
-  return false
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/** Espelha behaviorStatements do Estúdio: IR legada plana e IR atual por áreas. */
-function extractIr(project: unknown): { js: unknown; blocksState: unknown } {
-  const p = isRecord(project) ? project : {}
-  const ir = isRecord(p.ir) ? p.ir : {}
-  if (ir.version === 2 || 'behavior' in ir) {
-    const behavior = isRecord(ir.behavior) ? ir.behavior : {}
-    return {
-      js: [behavior.molds, behavior.start, behavior.events, behavior.loops].filter(Array.isArray),
-      blocksState: p.blocksState ?? null,
-    }
-  }
-  return { js: ir.js ?? [], blocksState: p.blocksState ?? null }
-}
-
-export function evaluateStructureRule(rule: StructureRule, project: unknown): boolean {
-  const { js, blocksState } = extractIr(project)
-  switch (rule.type) {
-    case 'usesLoop':
-      return someJsNode(js, (n) => LOOP_TYPES.has(n.type as string))
-    case 'declaresVariable':
-      // SÓ DECLARAÇÃO, não referência (espelha studio/src/activity/structure.ts):
-      // no IR há `type:'var'` STATEMENT (tem `value`) e EXPRESSÃO de referência (sem
-      // `value`); `declareVar` é a declaração sem valor. Sem o `'value' in n`, usar a
-      // variável passava no check — e este é o ÚNICO check à prova de fraude.
-      return someJsNode(
-        js,
-        (n) =>
-          (n.type === 'declareVar' || (n.type === 'var' && 'value' in n)) && n.name === rule.name,
-      )
-    case 'definesFunction':
-      return someJsNode(js, (n) => n.type === 'funcDecl' && n.name === rule.name)
-    case 'callsFunction':
-      return someJsNode(js, (n) => CALL_TYPES.has(n.type as string) && n.name === rule.name)
-    case 'usesBlock':
-      return someBlockType(blocksState, rule.blockType)
-  }
-}
+import { evaluateStudioProjectStructure as evaluateStructureRule } from '@sistemazero/studio/server-project-checks'
 
 // ── Nota + autoria ───────────────────────────────────────────────────────────
 

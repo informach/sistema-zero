@@ -224,7 +224,7 @@ export class SubmitStudioProjectService {
         passedAt,
         message: note,
       },
-      { preservePassedAt: true },
+      { preservePassedAt: true, revision: block.contentRevision },
     )
 
     // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE

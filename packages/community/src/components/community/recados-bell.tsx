@@ -1,28 +1,16 @@
 'use client'
 
+import { useTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { Mail } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { apiGet } from '@/lib/api'
+import { usePathname } from 'next/navigation'
 
 /**
  * Atalho persistente para recados, com o total não-lido da vitrine adulta. Mora na barra do topo
  * escura: círculo em branco a 8% com o ícone claro, contador na cor de ação.
  */
 export function RecadosBell() {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    let active = true
-    apiGet<{ count: number }>('/api/members/teacher-threads/unread-count')
-      .then((result) => {
-        if (active) setCount(result.count ?? 0)
-      })
-      .catch(() => {})
-    return () => {
-      active = false
-    }
-  }, [])
+  const count = useTeacherUnread(usePathname())
 
   return (
     <Link

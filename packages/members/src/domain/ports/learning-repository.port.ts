@@ -22,6 +22,16 @@ export interface SaveLearningProgress extends LearningOwner {
   progress: LearningBlockProgress
 }
 export interface LearningRepository {
+  listEvidence(
+    owner: LearningOwner,
+    lessonId: string,
+    beforeId?: string,
+  ): Promise<import('@sistemazero/core/learning').LessonEvidence[]>
+  getEvidence(
+    owner: LearningOwner,
+    lessonId: string,
+    id: string,
+  ): Promise<import('@sistemazero/core/learning').LessonEvidence | null>
   getSectionProgress(owner: LearningOwner, lessonId: string): Promise<SectionProgressRecord[]>
   saveSectionProgress(
     owner: LearningOwner,
@@ -29,6 +39,7 @@ export interface LearningRepository {
     structureRevision: string,
     records: SectionProgressRecord[],
     blockRevisions: { id: string; revision: string }[],
+    evidence?: import('@sistemazero/core/learning').LessonEvidence,
   ): Promise<void>
   getStructure(lessonId: string): Promise<LessonStructure | null>
   saveStructure(

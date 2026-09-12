@@ -1,9 +1,15 @@
 'use client'
 
 import type { SectionCompletion, SectionStructureRule } from '@sistemazero/core/learning'
+import {
+  evaluateStudioSectionProject,
+  projectCheckAuthoring,
+} from '@sistemazero/studio/server-project-checks'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ProjectRuleEditor } from './project-rule-editor'
 
 function newRule(type: string): SectionStructureRule {
   switch (type) {
@@ -22,17 +28,42 @@ export function SectionCompletionEditor({
   value,
   candidates,
   hasStudio,
+  allowBlocks,
+  workspace,
   onChange,
 }: {
   value: SectionCompletion
-  candidates: { id: string; label: string }[]
+  candidates: { id: string; label: string; model?: string; issue?: string }[]
   hasStudio: boolean
+  allowBlocks?: string[]
+  workspace?: unknown
   onChange: (value: SectionCompletion) => void
 }) {
   const checks = value.projectChecks ?? []
+  const fallbackAllowBlocks = workspace === undefined ? allowBlocks : undefined
+  const authoring = useMemo(
+    () => projectCheckAuthoring(workspace ?? { allowBlocks: fallbackAllowBlocks }),
+    [workspace, fallbackAllowBlocks],
+  )
+  const [simulationProject, setSimulationProject] = useState<unknown>(null)
+  const [simulationMessage, setSimulationMessage] = useState('')
+  const simulationRequest = useRef(0)
+  useEffect(
+    () => () => {
+      simulationRequest.current++
+    },
+    [],
+  )
+  const simulation =
+    simulationProject === null
+      ? simulationMessage
+      : evaluateStudioSectionProject(checks, simulationProject)
+          .map((result) => `${result.passed ? 'Cumprido' : 'Falta'}: ${result.label}`)
+          .join('\n')
   return (
     <fieldset className="space-y-3 rounded-xl border border-border p-4">
       <legend className="px-2 font-medium">Para liberar a próxima seção</legend>
+      <p className="font-medium">O que o aluno precisa demonstrar para continuar?</p>
       <p className="text-sm text-muted-foreground">
         O aluno precisa cumprir todos os critérios selecionados. Vídeo assistido e confirmação de
         leitura não contam.
@@ -47,6 +78,7 @@ export function SectionCompletionEditor({
           <input
             type="checkbox"
             checked={value.blockIds.includes(c.id)}
+            disabled={Boolean(c.issue) && !value.blockIds.includes(c.id)}
             onChange={(e) =>
               onChange({
                 ...value,
@@ -56,7 +88,11 @@ export function SectionCompletionEditor({
               })
             }
           />
-          {c.label}
+          <span>
+            {c.model ? `${c.model}: ` : ''}
+            {c.label}
+            {c.issue && <span className="block text-xs text-destructive">{c.issue}</span>}
+          </span>
         </label>
       ))}
       {checks.map((check, index) => (
@@ -93,11 +129,24 @@ export function SectionCompletionEditor({
             <option value="definesFunction">Definir função</option>
             <option value="callsFunction">Chamar função</option>
           </Select>
-          {check.rule.type !== 'usesLoop' && (
+          {check.rule.type === 'usesBlock' && (
+            <ProjectRuleEditor
+              rule={check.rule}
+              allowBlocks={allowBlocks}
+              workspace={workspace}
+              onChange={(rule) =>
+                onChange({
+                  ...value,
+                  projectChecks: checks.map((c) => (c.id === check.id ? { ...c, rule } : c)),
+                })
+              }
+            />
+          )}
+          {check.rule.type !== 'usesLoop' && check.rule.type !== 'usesBlock' && (
             <Input
               aria-label={`Nome esperado no objetivo ${index + 1}`}
               maxLength={200}
-              value={check.rule.type === 'usesBlock' ? check.rule.blockType : check.rule.name}
+              value={check.rule.name}
               onChange={(e) =>
                 onChange({
                   ...value,
@@ -118,6 +167,12 @@ export function SectionCompletionEditor({
               }
             />
           )}
+          {check.rule.type !== 'usesBlock' &&
+            authoring.issues(check.rule).map((issue) => (
+              <p key={issue} role="alert" className="text-xs text-destructive">
+                {issue}
+              </p>
+            ))}
           <Button
             variant="ghost"
             size="sm"
@@ -146,6 +201,47 @@ export function SectionCompletionEditor({
         >
           Adicionar objetivo do Estúdio
         </Button>
+      )}
+      {checks.length > 0 && (
+        <details className="space-y-2">
+          <summary className="cursor-pointer text-sm">Simular com um projeto salvo</summary>
+          <p className="text-xs">
+            Usa o mesmo avaliador estrutural. Não registra progresso nem conclui a aula.
+          </p>
+          <input
+            type="file"
+            accept=".json,.sz"
+            aria-label="Projeto para simulação"
+            onChange={async (event) => {
+              const file = event.target.files?.[0]
+              const request = ++simulationRequest.current
+              setSimulationProject(null)
+              setSimulationMessage('')
+              if (!file) return
+              if (file.size > 2 * 1024 * 1024) {
+                setSimulationMessage('O projeto excede 2 MB.')
+                return
+              }
+              try {
+                setSimulationMessage('Lendo projeto…')
+                const project = JSON.parse(await file.text())
+                if (simulationRequest.current !== request) return
+                if (!project || typeof project !== 'object' || Array.isArray(project))
+                  throw new Error('Invalid project')
+                setSimulationProject(project.project ?? project)
+                setSimulationMessage('')
+              } catch {
+                if (simulationRequest.current === request)
+                  setSimulationMessage('Arquivo de projeto inválido.')
+              }
+            }}
+          />
+          {simulation && (
+            <p role="status" className="whitespace-pre-line text-sm">
+              {simulation}
+            </p>
+          )}
+        </details>
       )}
     </fieldset>
   )

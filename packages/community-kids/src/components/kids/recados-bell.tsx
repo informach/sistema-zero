@@ -1,10 +1,9 @@
 'use client'
 
+import { useTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { Mail } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { apiGet } from '@/lib/api'
 import { cn } from '@/lib/cn'
 
 /**
@@ -17,23 +16,9 @@ import { cn } from '@/lib/cn'
  *    não cabe mais um item.
  */
 export function RecadosBell({ variant = 'bell' }: { variant?: 'bell' | 'pill' }) {
-  const [count, setCount] = useState(0)
   const pathname = usePathname()
+  const count = useTeacherUnread(pathname)
   const active = pathname === '/recados' || pathname.startsWith('/recados/')
-
-  useEffect(() => {
-    let alive = true
-    apiGet<{ count: number }>('/api/members/teacher-threads/unread-count')
-      .then((r) => {
-        if (alive) setCount(r.count ?? 0)
-      })
-      .catch(() => {
-        // best-effort — sem contador se o members soluçar.
-      })
-    return () => {
-      alive = false
-    }
-  }, [])
 
   const countLabel = count > 9 ? '9+' : String(count)
   const label = count > 0 ? `${count} recados novos do professor` : 'Recados do professor'

@@ -38,12 +38,7 @@ export interface ActivityCheckBase {
 }
 
 /** Regra de uma checagem de ESTRUTURA (recalculável no servidor, anda o IR). */
-export type StructureRule =
-  | { type: 'usesLoop' }
-  | { type: 'declaresVariable'; name: string }
-  | { type: 'definesFunction'; name: string }
-  | { type: 'callsFunction'; name: string }
-  | { type: 'usesBlock'; blockType: string }
+export type StructureRule = import('@sistemazero/core/learning').SectionStructureRule
 
 /**
  * ESTRUTURA: inspeciona o projeto SEM rodar (IR dos blocos / código). É a única

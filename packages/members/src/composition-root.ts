@@ -98,6 +98,7 @@ import { StudioSubmissionsAdminService } from './application/studio-submissions-
 import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
+import { TeacherBroadcastsService } from './application/teacher-threads/teacher-broadcasts.service'
 import { TeacherThreadsService } from './application/teacher-threads/teacher-threads.service'
 import { GetMemberToolUsageService } from './application/tool-usage/get-member-tool-usage.service'
 import {
@@ -111,6 +112,7 @@ import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gatew
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
+import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
@@ -136,6 +138,7 @@ import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/d
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
+import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
 import { DrizzleToolUsageRepository } from './infrastructure/persistence/drizzle/tool-usage.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
@@ -350,6 +353,17 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
+  const teacherBroadcasts = new TeacherBroadcastsService(
+    new DrizzleTeacherBroadcastRepository(db),
+    teacherRecipientDirectory(
+      env.AUTH_BASE_URL ?? 'http://localhost:3002',
+      env.AUTH_INTERNAL_TOKEN,
+    ),
+    courses,
+    entitlements,
+    checkAccess,
+    clock,
+  )
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
@@ -724,6 +738,7 @@ export async function createApplication(env: Env): Promise<Application> {
       logger,
     },
     admin: {
+      teacherBroadcasts,
       requireAdminEnabled: env.REQUIRE_ADMIN,
       internalToken: env.INTERNAL_API_TOKEN,
       listMembers,
@@ -767,6 +782,8 @@ export async function createApplication(env: Env): Promise<Application> {
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
+  let broadcastTimer: ReturnType<typeof setInterval> | null = null
+  let broadcastCycle: Promise<unknown> | null = null
   let parentReportTimer: ReturnType<typeof setInterval> | null = null
   let renewalReminderTimer: ReturnType<typeof setInterval> | null = null
 
@@ -827,6 +844,19 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      const deliverRecados = () => {
+        if (broadcastCycle) return
+        broadcastCycle = teacherBroadcasts
+          .runCycle()
+          .catch((error) =>
+            logger.error('teacher_broadcast.cycle_failed', { error: String(error) }),
+          )
+          .finally(() => {
+            broadcastCycle = null
+          })
+      }
+      deliverRecados()
+      broadcastTimer = setInterval(deliverRecados, 5000)
       cleanupTimer = setInterval(() => {
         void runRetentionCycle().catch((error) =>
           logger.error('retention.cleanup.failed', {
@@ -858,6 +888,8 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      if (broadcastTimer) clearInterval(broadcastTimer)
+      if (broadcastCycle) await broadcastCycle
       if (cleanupTimer) clearInterval(cleanupTimer)
       if (parentReportTimer) clearInterval(parentReportTimer)
       if (renewalReminderTimer) clearInterval(renewalReminderTimer)

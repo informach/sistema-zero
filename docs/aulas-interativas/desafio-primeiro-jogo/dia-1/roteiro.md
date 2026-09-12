@@ -213,3 +213,11 @@ Objetivo conferido no projeto pelo servidor: Montar Ao iniciar, Montar Enquanto 
 ### Teste e guarde sua criação
 
 Entregar o projeto e atingir a nota mínima configurada, quando houver.
+
+## Verificações práticas por seção
+
+- **construir-2:** Preparar a tela de 800 × 480 em Ao iniciar.
+- **construir-3:** Criar nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
+- **construir-4:** Encaixar A cada quadro do jogo em Enquanto estiver rodando.
+
+Nestas etapas, as perguntas de revisão são opcionais. O avanço depende do projeto salvo na verificação. Cores livres não são avaliadas. Montar uma área confirma apenas a preparação; não comprova que o jogo executou.

@@ -7,9 +7,9 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
-  sectionCompletionIssues,
   validateLessonSections,
 } from '@sistemazero/core/learning'
+import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import {
   assertBlockCoherent,
   assertPintaChainTypeMatches,
@@ -123,7 +123,7 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     for (const video of draft.document.plannedVideos)
       if (!video.videoId || !readyVideoIds.includes(video.videoId))
         issues.push({ blockId: video.blockId, message: 'Vídeo pendente' })
-    issues.push(...sectionCompletionIssues(draft.document.sections, draft.document.blocks))
+    issues.push(...studioSectionCompletionIssues(draft.document.sections, draft.document.blocks))
     return issues
   }
   async publish(

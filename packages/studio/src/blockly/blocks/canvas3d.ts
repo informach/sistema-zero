@@ -4,8 +4,8 @@ import {
   CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES,
   CANVAS3D_START_ONLY_BLOCK_TYPES,
 } from '../../three/canvas3dContract'
+import { CATEGORY_COLORS } from '../categoryColors'
 import { categoryShades } from '../colorShades'
-import { CATEGORY_COLORS } from '../theme'
 import type { BlockDefinition } from './types'
 
 /**

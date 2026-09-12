@@ -1580,7 +1580,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(
-    submission: StudioSubmissionRecord,
+    submission: StudioSubmissionRecord & { accountId: string },
     options?: { preservePassedAt?: boolean },
   ): Promise<void> {
     const existing = this.submissions.find(
@@ -1894,6 +1894,13 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 
 /** Fake das conversas professor↔aluno (mirror do Drizzle: watermark de não-lido). */
 export class InMemoryTeacherThreadRepository implements TeacherThreadRepository {
+  async setWorkflowStatus(
+    id: string,
+    status: import('../../src/domain/ports/teacher-thread-repository.port').TeacherWorkflowStatus,
+  ) {
+    const thread = this.threads.find((t) => t.id === id)
+    if (thread) thread.workflowStatus = status
+  }
   readonly threads: TeacherThreadRecord[] = []
   readonly messages: TeacherMessageRecord[] = []
   readonly staffReads = new Map<string, Date>()
@@ -1931,9 +1938,20 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     // Id determinístico (webhook do Mural) já presente → idempotente (retry não duplica).
     if (input.messageId) {
       const dup = this.messages.find((m) => m.id === input.messageId)
-      if (dup) return dup
+      if (dup) {
+        if (
+          dup.threadId !== input.threadId ||
+          dup.body !== input.body ||
+          dup.authorId !== input.authorId
+        )
+          throw new (await import('../../src/domain/shared/errors')).ValidationError(
+            'Este pedido já foi enviado com outro conteúdo.',
+          )
+        return dup
+      }
     }
     const record: TeacherMessageRecord = {
+      helpContext: input.helpContext,
       id: input.messageId ?? randomUUID(),
       threadId: input.threadId,
       authorRole: input.authorRole,
@@ -1944,6 +1962,8 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     }
     this.messages.push(record)
     const thread = this.threads.find((t) => t.id === input.threadId)
+    if (thread)
+      thread.workflowStatus = input.authorRole === 'student' ? 'waiting_teacher' : 'waiting_student'
     if (thread) {
       if (input.now > thread.lastMessageAt) thread.lastMessageAt = input.now
       if (input.authorRole === 'teacher' && input.authorId) {
@@ -2017,6 +2037,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       .filter((t) => {
         if (filter.audience && t.audience !== filter.audience) return false
         if (filter.contextType && t.contextType !== filter.contextType) return false
+        if (filter.workflowStatus && t.workflowStatus !== filter.workflowStatus) return false
         if (filter.courseId && t.courseId !== filter.courseId) return false
         if (filter.unreadOnly && !this.unreadFor(t, 'teacher', filter.staffUserId)) return false
         // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
@@ -2070,7 +2091,14 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     const targets = this.threads.filter((t) => {
       if (filter?.audience && t.audience !== filter.audience) return false
       if (filter?.contextType && t.contextType !== filter.contextType) return false
+      if (filter?.workflowStatus && t.workflowStatus !== filter.workflowStatus) return false
       if (filter?.courseId && t.courseId !== filter.courseId) return false
+      if (
+        filter?.userIds &&
+        !filter.userIds.includes(t.userId) &&
+        (!t.accountId || !filter.userIds.includes(t.accountId))
+      )
+        return false
       return this.unreadFor(t, 'teacher', staffUserId)
     })
     for (const t of targets) {
@@ -2109,6 +2137,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     const last = msgs[msgs.length - 1]
     return {
+      workflowStatus: thread.workflowStatus,
       id: thread.id,
       userId: thread.userId,
       accountId: thread.accountId,

@@ -1,5 +1,6 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
+export * from './project-structure'
 export * from './requirements'
 export * from './section-progression'
 
@@ -179,6 +180,10 @@ export interface LearningAttemptView {
   createdAt: string
 }
 export interface LessonLearningReport {
+  sectionProgress?: import('./section-progression').SectionProgressView
+  milestones?: import('./section-progression').SectionProgressRecord[]
+  evidence?: LessonEvidence[]
+  evidenceNextCursor?: string | null
   lessonTitle: string
   sections: LessonSection[]
   activities: Array<{ id: string; revision: string; content: PublicInteractiveBlock }>
@@ -192,6 +197,21 @@ export interface LearningTopicSummary {
   lessonId: string
   lessonTitle: string
   topics: string[]
+}
+
+export interface LessonEvidence {
+  id: string
+  kind: 'section_project' | 'quiz' | 'studio'
+  blockId: string | null
+  sectionId: string | null
+  revision: string
+  createdAt: string
+  payload: unknown
+}
+
+export interface LessonEvidencePage {
+  items: LessonEvidence[]
+  nextCursor: string | null
 }
 
 export const MAX_LEARNING_STATE_BYTES = 32_000

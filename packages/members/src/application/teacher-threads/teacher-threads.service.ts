@@ -3,6 +3,7 @@ import { ContentNotFoundError } from '../../domain/course/course.errors'
 import type {
   AdminThreadsFilter,
   MarkAllReadFilter,
+  TeacherHelpContext,
   TeacherMessagePage,
   TeacherMessageRecord,
   TeacherMessageRole,
@@ -10,6 +11,7 @@ import type {
   TeacherThreadRecord,
   TeacherThreadRepository,
   TeacherThreadSummary,
+  TeacherWorkflowStatus,
 } from '../../domain/ports/teacher-thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 
@@ -20,6 +22,7 @@ const MAX_BODY = 8000
 
 // ── Views (Date→ISO; o front sanitiza o texto na renderização) ──────────────
 export interface TeacherMessageView {
+  helpContext?: TeacherHelpContext | null
   id: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -30,6 +33,7 @@ export interface TeacherMessageView {
 }
 
 export interface TeacherThreadView {
+  workflowStatus?: TeacherWorkflowStatus
   id: string
   userId: string
   accountId: string | null
@@ -47,6 +51,7 @@ export interface TeacherThreadView {
 }
 
 export interface TeacherThreadSummaryView {
+  workflowStatus?: TeacherWorkflowStatus
   id: string
   userId: string
   accountId: string | null
@@ -67,6 +72,7 @@ export interface TeacherThreadSummaryView {
 
 function toMessageView(m: TeacherMessageRecord): TeacherMessageView {
   return {
+    helpContext: m.helpContext,
     id: m.id,
     authorRole: m.authorRole,
     authorId: m.authorId,
@@ -78,6 +84,7 @@ function toMessageView(m: TeacherMessageRecord): TeacherMessageView {
 
 function toThreadView(thread: TeacherThreadRecord, page: TeacherMessagePage): TeacherThreadView {
   return {
+    workflowStatus: thread.workflowStatus,
     id: thread.id,
     userId: thread.userId,
     accountId: thread.accountId,
@@ -121,6 +128,7 @@ function decodeCursor(raw: string | undefined): { createdAt: Date; id: string } 
 
 function toSummaryView(s: TeacherThreadSummary): TeacherThreadSummaryView {
   return {
+    workflowStatus: s.workflowStatus,
     id: s.id,
     userId: s.userId,
     accountId: s.accountId,
@@ -149,6 +157,7 @@ function cleanBody(raw: string): string {
 
 /** Dados para o professor/sistema postar POR CONTEXTO (cria a conversa se preciso). */
 export interface TeacherPostByContextInput {
+  helpContext?: TeacherHelpContext
   userId: string
   accountId: string | null
   audience: CourseAudience
@@ -176,6 +185,12 @@ export class TeacherThreadsService {
     private readonly repo: TeacherThreadRepository,
     private readonly now: () => Date,
   ) {}
+
+  async setWorkflowStatus(id: string, status: TeacherWorkflowStatus) {
+    await this.getForAdmin(id)
+    await this.repo.setWorkflowStatus(id, status)
+    return this.getForAdmin(id)
+  }
 
   // ── Aluno ─────────────────────────────────────────────────────────────────
   async listForStudent(
@@ -361,6 +376,7 @@ export class TeacherThreadsService {
       body,
       now,
       messageId: input.dedupeId,
+      helpContext: input.helpContext,
     })
     return threadId
   }

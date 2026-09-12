@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 
 // Jogo 3D Avançado = UMA cor da categoria: ÍNDIGO. As sub-categorias são TONS
 // dela (derivados por categoryShades mais abaixo). Distinta do rosa (Jogo 2D),

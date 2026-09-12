@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   hasSectionProgression,
@@ -49,6 +49,12 @@ export class SectionProgressionService {
       return { id: block.id, revision: block.contentRevision }
     })
   }
+  async isCriterion(lessonId: string, blockId: string) {
+    const structure = await this.repository.getStructure(lessonId)
+    return (
+      structure?.sections.some((section) => section.completion?.blockIds.includes(blockId)) ?? false
+    )
+  }
 
   async read(
     owner: LearningOwner,
@@ -79,7 +85,11 @@ export class SectionProgressionService {
         new Map(),
       )
     }
-    const issues = sectionCompletionIssues(structure.sections, lesson.blocks)
+    // Publication enforces the new authoring policy; existing hybrid activities keep
+    // their published grading contract until the author publishes a compatible revision.
+    const issues = sectionCompletionIssues(structure.sections, lesson.blocks, {
+      purpose: 'playback',
+    })
     const pending = new Map<string, string[]>()
     const newlyComplete: SectionProgressRecord[] = []
     let reachable = true
@@ -88,7 +98,7 @@ export class SectionProgressionService {
       const revision = this.revision(section, lesson)
       const criteria = section.completion
       const blocks = lesson.blocks
-        .filter((b) => section.blockIds.includes(b.id))
+        .filter((b) => section.blockIds.includes(b.id) && criteria?.blockIds.includes(b.id))
         .map((b) => ({
           ...b,
           blockRevision: b.contentRevision,
@@ -232,6 +242,22 @@ export class SectionProgressionService {
         },
       ],
       this.blockRevisions(lesson),
+      {
+        id: randomUUID(),
+        kind: 'section_project',
+        blockId: section.workspaceBlockId ?? null,
+        sectionId,
+        revision: this.revision(section, lesson),
+        createdAt: this.clock().toISOString(),
+        payload: {
+          sectionTitle: section.title,
+          project,
+          checks,
+          results: result.results,
+          passed: result.passed,
+          structureRevision: revision,
+        },
+      },
     )
     return {
       results: result.results,

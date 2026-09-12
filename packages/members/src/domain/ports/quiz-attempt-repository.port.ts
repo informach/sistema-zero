@@ -3,6 +3,7 @@ import type { QuizAnswers, QuizAttemptSummary } from '../course/quiz'
 export interface QuizAttemptRecord {
   id: string
   userId: string
+  accountId: string
   lessonId: string
   blockId: string
   courseId: string
@@ -30,7 +31,10 @@ export interface QuizAttemptRepository {
    * (serializado por aluno+bloco) — fecha a corrida check-then-act de dois
    * submits simultâneos. `false` = bloqueado pelo cooldown (nada gravado).
    */
-  save(attempt: QuizAttemptRecord, guard?: { cooldownMs: number }): Promise<boolean>
+  save(
+    attempt: QuizAttemptRecord,
+    guard?: { cooldownMs: number; revision?: string },
+  ): Promise<boolean>
   /** Resumo por bloco (última tentativa + contagem + jáAprovou), em lote por aula. */
   summarizeByBlockIds(userId: string, blockIds: string[]): Promise<Map<string, QuizAttemptSummary>>
   /**

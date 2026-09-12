@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '../theme'
+import { CATEGORY_COLORS } from '../categoryColors'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.advanced

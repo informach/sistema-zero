@@ -17,6 +17,7 @@ import {
   learningAttempts,
   lessonBlockProgress,
   lessonCompletions,
+  lessonEvidence,
   lessonNavigation,
   lessonProgress,
   lessonSectionProgress,
@@ -29,6 +30,7 @@ import {
   roomInventory,
   roomState,
   studioSubmissions,
+  teacherBroadcastRecipients,
   teacherThreads,
   userBadges,
   xpEvents,
@@ -68,6 +70,17 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
   }): Promise<void> {
     if (userIds.length === 0) return
     await this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
+      )
+      await tx
+        .delete(teacherBroadcastRecipients)
+        .where(
+          or(
+            eq(teacherBroadcastRecipients.accountId, accountId),
+            inArray(teacherBroadcastRecipients.profileId, userIds),
+          ),
+        )
       // Usa o mesmo lock das reservas/commits, em ordem estável para evitar
       // deadlock entre duas purgas. Assim uma operação que já começou termina
       // antes do DELETE; as seguintes só prosseguem depois de enxergar a cerca.
@@ -76,6 +89,9 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${ownerId}`}, 0))`,
         )
       }
+      await tx
+        .delete(lessonEvidence)
+        .where(or(eq(lessonEvidence.accountId, accountId), inArray(lessonEvidence.userId, userIds)))
       // Cerca novas reservas e agenda a limpeza final antes de apagar o índice.
       // Tudo commita junto: nunca perdemos as chaves sem deixar um job durável.
       await tx

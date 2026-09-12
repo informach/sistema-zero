@@ -14,7 +14,9 @@ import type {
   TeacherThreadRecord,
   TeacherThreadRepository,
   TeacherThreadSummary,
+  TeacherWorkflowStatus,
 } from '../../../domain/ports/teacher-thread-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import type { Database } from './db'
 import { teacherMessages, teacherThreadStaffReads, teacherThreads } from './schema'
 
@@ -24,6 +26,13 @@ const MESSAGE_PAGE_SIZE = 50
 
 export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
   constructor(private readonly db: Database) {}
+
+  async setWorkflowStatus(id: string, status: TeacherWorkflowStatus) {
+    await this.db
+      .update(teacherThreads)
+      .set({ workflowStatus: status })
+      .where(eq(teacherThreads.id, id))
+  }
 
   async ensureThread(input: EnsureThreadInput): Promise<string> {
     const values = {
@@ -81,6 +90,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
         authorId: input.authorId ?? null,
         authorName: input.authorName ?? null,
         body: input.body,
+        helpContext: input.helpContext,
         createdAt: input.now,
       }
       // `onConflictDoNothing`: retry idempotente não pode tocar watermarks/ordem.
@@ -95,7 +105,14 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
           .from(teacherMessages)
           .where(eq(teacherMessages.id, record.id))
           .limit(1)
-        return existing ? this.toMessageRecord(existing) : record
+        if (
+          !existing ||
+          existing.threadId !== input.threadId ||
+          existing.body !== input.body ||
+          existing.authorId !== input.authorId
+        )
+          throw new ValidationError('Este pedido já foi enviado com outro conteúdo.')
+        return this.toMessageRecord(existing)
       }
       // Toca `last_message_at` + marca o lado do AUTOR como lido (não fica "não-lido"
       // p/ quem acabou de escrever) — na MESMA transação. `greatest` preserva a ordem
@@ -103,7 +120,9 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       const set: {
         lastMessageAt: SQL
         studentLastReadAt?: Date
+        workflowStatus: TeacherWorkflowStatus
       } = {
+        workflowStatus: input.authorRole === 'student' ? 'waiting_teacher' : 'waiting_student',
         lastMessageAt: sql`greatest(${teacherThreads.lastMessageAt}, ${input.now.toISOString()}::timestamptz)`,
       }
       if (input.authorRole === 'student') set.studentLastReadAt = input.now
@@ -194,6 +213,8 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     const unreadForStaff = this.unreadForStaffSql(filter.staffUserId)
     const where = and(
       filter.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
+      filter.workflowStatus ? eq(teacherThreads.workflowStatus, filter.workflowStatus) : undefined,
+      sql`(${teacherThreads.broadcastId} is null or exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = 'student'))`,
       filter.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
       filter.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
       // Não-lido do PROFESSOR = há mensagem do ALUNO depois do watermark do professor.
@@ -246,12 +267,12 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
 
   async markReadByTeacher(threadId: string, staffUserId: string): Promise<void> {
     await this.db.execute(sql`
-      insert into ${teacherThreadStaffReads} (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId}, ${teacherThreadStaffReads.readAt})
+      insert into ${teacherThreadStaffReads} (thread_id, staff_user_id, read_at)
       select ${teacherThreads.id}, ${staffUserId}::uuid, ${teacherThreads.lastMessageAt}
       from ${teacherThreads}
       where ${teacherThreads.id} = ${threadId}::uuid
-      on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
-      do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
+      on conflict (thread_id, staff_user_id)
+      do update set read_at = greatest(${teacherThreadStaffReads.readAt}, excluded.read_at)
     `)
   }
 
@@ -270,10 +291,17 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
 
   async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
     const where = and(
+      filter?.workflowStatus ? eq(teacherThreads.workflowStatus, filter.workflowStatus) : undefined,
       this.unreadForStaffSql(staffUserId),
       filter?.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
       filter?.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
       filter?.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
+      filter?.userIds
+        ? or(
+            inArray(teacherThreads.userId, filter.userIds),
+            inArray(teacherThreads.accountId, filter.userIds),
+          )
+        : undefined,
     )
     // Contagem antes do upsert (o resultado do INSERT…SELECT não separa insert de update).
     const [row] = await this.db
@@ -285,12 +313,12 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     // Watermark = last_message_at da PRÓPRIA thread (nunca o relógio da aplicação —
     // mensagens que entrarem depois seguem não-lidas; régua do markReadByTeacher).
     await this.db.execute(sql`
-      insert into ${teacherThreadStaffReads} (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId}, ${teacherThreadStaffReads.readAt})
+      insert into ${teacherThreadStaffReads} (thread_id, staff_user_id, read_at)
       select ${teacherThreads.id}, ${staffUserId}::uuid, ${teacherThreads.lastMessageAt}
       from ${teacherThreads}
       where ${where}
-      on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
-      do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
+      on conflict (thread_id, staff_user_id)
+      do update set read_at = greatest(${teacherThreadStaffReads.readAt}, excluded.read_at)
     `)
     return updated
   }
@@ -389,6 +417,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       const lastIncomingAt = incomingByThread.get(t.id)
       return {
         id: t.id,
+        workflowStatus: t.workflowStatus,
         userId: t.userId,
         accountId: t.accountId ?? null,
         audience: t.audience as CourseAudience,
@@ -415,6 +444,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       authorId: row.authorId ?? null,
       authorName: row.authorName ?? null,
       body: row.body,
+      helpContext: row.helpContext,
       createdAt: row.createdAt,
     }
   }
@@ -423,6 +453,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     return {
       id: row.id,
       userId: row.userId,
+      workflowStatus: row.workflowStatus,
       accountId: row.accountId ?? null,
       audience: row.audience as CourseAudience,
       contextType: row.contextType as TeacherThreadContext,

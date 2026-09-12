@@ -74,6 +74,16 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       `creations (id uuid primary key, user_id uuid not null, account_id uuid not null,
         tool text, item_id varchar(64), name varchar(120), kind varchar(40),
         item_updated_at timestamptz, created_at timestamptz, synced_at timestamptz)`,
+      // Recados e evidências (migration 0084). A mesma regra do comentário acima: a
+      // purga passou a alcançá-las, então sem o DDL aqui o teste cai com 42P01 num
+      // banco novo (o do CI), e só passa na máquina onde a migration já rodou.
+      `teacher_broadcast_recipients (broadcast_id uuid not null, profile_id uuid not null,
+        account_id uuid not null, name text, account_name text, account_email text,
+        thread_id uuid, status text default 'pending' not null, delivered_at timestamptz,
+        constraint teacher_broadcast_recipients_pk primary key (broadcast_id, profile_id))`,
+      `lesson_evidence (id uuid primary key, user_id uuid not null, account_id uuid,
+        lesson_id uuid not null, block_id uuid, section_id uuid, kind text,
+        revision text, payload jsonb, created_at timestamptz)`,
       'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
       `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
         user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,

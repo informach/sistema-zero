@@ -77,6 +77,90 @@ function setup() {
 }
 
 describe('section gates across HTTP and persistence', () => {
+  test('a selected formative quiz allows an immediate retry and reports the same state on reload', async () => {
+    const ctx = setup(),
+      quizId = randomUUID()
+    const section = ctx.sections[0]
+    if (!section) throw new Error('Missing section')
+    ctx.courses.blocks.push({
+      id: quizId,
+      lessonId: ctx.lessonId,
+      kind: 'quiz',
+      sortOrder: 4,
+      contentRevision: REVISION,
+      content: {
+        kind: 'quiz',
+        passingScore: 100,
+        questions: [
+          {
+            id: 'q',
+            prompt: 'Qual?',
+            choices: [
+              { id: 'yes', label: 'Sim' },
+              { id: 'no', label: 'Não' },
+            ],
+            correctChoiceIds: ['yes'],
+          },
+        ],
+      },
+    })
+    section.blockIds.push(quizId)
+    section.completion.blockIds = [quizId]
+    const attempt = (answer: string) =>
+      ctx.request(`/lessons/${ctx.lessonId}/blocks/${quizId}/quiz-attempts`, 'POST', {
+        answers: { q: [answer] },
+      })
+    const wrong = await attempt('no')
+    expect(wrong.status).toBe(200)
+    expect(await wrong.json()).toMatchObject({ passed: false, retryAvailableAt: null })
+    const state = (await (await ctx.read()).json()) as {
+      blocks: { id: string; quizState?: { retryAvailableAt: string | null } }[]
+    }
+    expect(state.blocks.find((b) => b.id === quizId)?.quizState?.retryAvailableAt).toBeNull()
+    expect((await attempt('yes')).status).toBe(200)
+    expect((await json(ctx.read())).sectionProgress.completed).toBe(1)
+  })
+  test.each([
+    'quiz',
+    'interactive',
+  ] as const)('unselected %s blocks do not add hidden section requirements', async (kind) => {
+    const ctx = setup()
+    const blockId = randomUUID()
+    const firstBlock = ctx.courses.blocks.find((b) => b.id === ctx.ids[0])
+    const firstSection = ctx.sections[0]
+    if (firstBlock?.content.kind !== 'interactive' || !firstSection)
+      throw new Error('Missing fixture')
+    const content =
+      kind === 'quiz'
+        ? {
+            kind: 'quiz' as const,
+            passingScore: 100,
+            questions: [
+              {
+                id: 'q',
+                prompt: 'Qual?',
+                choices: [
+                  { id: 'yes', label: 'Sim' },
+                  { id: 'no', label: 'Não' },
+                ],
+                correctChoiceIds: ['yes'],
+              },
+            ],
+          }
+        : { ...firstBlock.content, required: true }
+    ctx.courses.blocks.push({
+      id: blockId,
+      lessonId: ctx.lessonId,
+      kind,
+      sortOrder: 9,
+      contentRevision: REVISION,
+      content,
+    })
+    firstSection.blockIds.push(blockId)
+    const view = await json(ctx.attempt(0))
+    expect(view.sectionProgress.completed).toBe(1)
+    expect(view.sectionProgress.sections[1]?.status).toBe('available')
+  })
   test('hides future content and refuses navigation, draft saves and attempts there', async () => {
     const ctx = setup()
     const view = await json(ctx.read())

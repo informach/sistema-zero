@@ -5,7 +5,14 @@ export type SectionStructureRule =
   | { type: 'declaresVariable'; name: string }
   | { type: 'definesFunction'; name: string }
   | { type: 'callsFunction'; name: string }
-  | { type: 'usesBlock'; blockType: string }
+  | {
+      type: 'usesBlock'
+      blockType: string
+      area?: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops'
+      withinBlock?: string
+      fields?: Record<string, string | number | boolean>
+      inputs?: Record<string, string | number | boolean>
+    }
 
 export interface SectionProjectCheck {
   id: string
@@ -72,7 +79,28 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
         case 'usesLoop':
           return true
         case 'usesBlock':
-          return typeof c.rule.blockType === 'string' && c.rule.blockType.length <= 200
+          return (
+            typeof c.rule.blockType === 'string' &&
+            c.rule.blockType.length <= 200 &&
+            (c.rule.area === undefined ||
+              ['structure', 'appearance', 'molds', 'start', 'events', 'loops'].includes(
+                String(c.rule.area),
+              )) &&
+            (c.rule.withinBlock === undefined || label(c.rule.withinBlock)) &&
+            [c.rule.fields, c.rule.inputs].every(
+              (values) =>
+                values === undefined ||
+                (record(values) &&
+                  Object.keys(values).length <= 20 &&
+                  Object.entries(values).every(
+                    ([key, val]) =>
+                      label(key) &&
+                      (typeof val === 'boolean' ||
+                        (typeof val === 'number' && Number.isFinite(val)) ||
+                        (typeof val === 'string' && val.length <= 200)),
+                  )),
+            )
+          )
         case 'declaresVariable':
         case 'definesFunction':
         case 'callsFunction':
@@ -101,6 +129,7 @@ export function isFinalProjectSection(
 export function sectionCompletionIssues(
   sections: LessonSection[],
   blocks: { id: string; content: unknown }[],
+  options: { purpose?: 'publication' | 'playback' } = {},
 ): Array<{ sectionId: string; message: string }> {
   if (!hasSectionProgression(sections)) return []
   if (blocks.some((block) => record(block.content) && block.content.kind === 'certificate'))
@@ -142,6 +171,18 @@ export function sectionCompletionIssues(
       } else if (content.kind === 'studio' || content.kind === 'pinta') {
         if (content.purpose === 'experiment' || s.intent !== 'closing')
           add('A entrega obrigatória do projeto deve ficar no fechamento.')
+        if (
+          options.purpose !== 'playback' &&
+          content.kind === 'studio' &&
+          record(content.activity) &&
+          typeof content.activity.passingScore === 'number' &&
+          content.activity.passingScore > 0 &&
+          Array.isArray(content.activity.checks) &&
+          content.activity.checks.some((check) => !record(check) || check.kind !== 'structure')
+        )
+          add(
+            'Para exigir aprovação do projeto nesta seção, use apenas checagens estruturais. Deixe testes de execução como formativos ou acrescente uma pergunta corrigida pelo servidor.',
+          )
       } else add('Use uma pergunta, desafio ou entrega como critério de conclusão.')
     }
     if (

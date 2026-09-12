@@ -1,6 +1,7 @@
 'use client'
-
+import { TeacherLessonLink } from '@sistemazero/member-shell/components/teacher-lesson-link'
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import { refreshTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { Mail, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -41,7 +42,9 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         setThread(t)
         setState('ready')
         // Marca lida (zera o não-lido do aluno) — best-effort, não bloqueia a leitura.
-        apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST').catch(() => {})
+        apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST')
+          .then(refreshTeacherUnread)
+          .catch(() => {})
       })
       .catch((e: ApiError) => {
         if (!alive) return
@@ -74,6 +77,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         { body },
       )
       setThread(updated)
+      refreshTeacherUnread()
       setReply('')
     } catch {
       setError('Não consegui enviar agora. Seu texto ficou aqui para você tentar de novo.')
@@ -135,6 +139,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         />
       </KidsBand>
       <KidsBand tone="ceu">
+        <TeacherLessonLink thread={thread} />
         <div className="kids-carta rounded-[1.75rem] p-4 md:p-6">
           <div className="max-h-[60vh] overflow-y-auto pr-1">
             {error ? (

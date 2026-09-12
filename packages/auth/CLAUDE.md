@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Diretório interno para recados Kids — 11/09/2026
+
+`GET /auth/internal/teacher-recipients` exige o token interno e pagina perfis ativos com responsável
+ativo; omite órfãos e contas bloqueadas/suspensas. Retorna perfil, conta, nome da criança e nome/e-mail
+do responsável. O `total` é anterior ao filtro de status da conta: consumidores avançam pelo offset
+solicitado até atingir o total, mesmo quando uma página filtrada fica vazia. O Members determina
+acesso e fixa os destinatários; a lista de conversas não é um cadastro de alunos.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

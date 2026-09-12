@@ -1,4 +1,4 @@
-import type { LearningProfile } from '#core'
+import type { LearningProfile } from '../core/levels'
 import { FUNCTION_BLOCKS } from './blocks/functions'
 import { OOP_BLOCKS } from './blocks/oop'
 import type { BlockDefinition } from './blocks/types'

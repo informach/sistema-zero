@@ -21,6 +21,7 @@ import { formatDate } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
 import { platformTransition } from '@/lib/platform-transition'
 import type { CourseView, Paginated, TeacherThreadContext, TeacherThreadRow } from '@/lib/types'
+import { BroadcastPanel } from './broadcast-panel'
 import { ThreadDialog } from './thread-dialog'
 
 const PAGE = 30
@@ -50,6 +51,7 @@ export function RecadosClient() {
   const [hasMore, setHasMore] = useState(false)
   const [offset, setOffset] = useState(0)
   const [context, setContext] = useState('')
+  const [workflowStatus, setWorkflowStatus] = useState('')
   // Filtro "Plataforma" nasce na plataforma ATIVA do seletor global e re-sincroniza
   // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
   const platform = usePlatform()
@@ -90,6 +92,7 @@ export function RecadosClient() {
         () => {
           const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
           if (context) params.set('context', context)
+          if (workflowStatus) params.set('workflowStatus', workflowStatus)
           if (audience) params.set('audience', audience)
           if (courseId) params.set('courseId', courseId)
           if (unreadOnly) params.set('unread', 'true')
@@ -113,7 +116,16 @@ export function RecadosClient() {
         },
       )
     },
-    [context, audience, courseId, unreadOnly, studentFilter, qDebounced, loadAuthority],
+    [
+      context,
+      workflowStatus,
+      audience,
+      courseId,
+      unreadOnly,
+      studentFilter,
+      qDebounced,
+      loadAuthority,
+    ],
   )
 
   useEffect(() => {
@@ -130,7 +142,7 @@ export function RecadosClient() {
 
   /** "Marcar todas como lidas" respeitando os filtros ativos (contexto/plataforma/curso). */
   function markAllRead() {
-    const scoped = Boolean(context || audience || courseId)
+    const scoped = Boolean(context || audience || courseId || studentFilter || qDebounced)
     confirm({
       title: 'Marcar todas como lidas?',
       message: scoped
@@ -145,8 +157,11 @@ export function RecadosClient() {
             'POST',
             {
               context: context || undefined,
+              workflowStatus: workflowStatus || undefined,
               audience: audience || undefined,
               courseId: courseId || undefined,
+              userId: studentFilter || undefined,
+              q: studentFilter ? undefined : qDebounced || undefined,
             },
           )
           toast.success(
@@ -189,6 +204,18 @@ export function RecadosClient() {
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <Field label="Atendimento" htmlFor="rec-status">
+          <Select
+            id="rec-status"
+            value={workflowStatus}
+            onChange={(e) => setWorkflowStatus(e.target.value)}
+          >
+            <option value="">Todos</option>
+            <option value="waiting_teacher">Aguardando professor</option>
+            <option value="waiting_student">Aguardando aluno</option>
+            <option value="resolved">Resolvido</option>
+          </Select>
+        </Field>
         {!studentFilter ? (
           <Field label="Aluno" htmlFor="rec-q" hint="Busque pelo responsável (nome ou e-mail).">
             <Input
@@ -202,6 +229,7 @@ export function RecadosClient() {
         <Field label="Contexto" htmlFor="rec-context">
           <Select id="rec-context" value={context} onChange={(e) => setContext(e.target.value)}>
             <option value="">Todos</option>
+            <option value="lesson_section">Dúvida na aula</option>
             <option value="studio_submission">Entrega</option>
             <option value="mural_publication">Mural</option>
             <option value="general">Recado geral</option>
@@ -240,6 +268,16 @@ export function RecadosClient() {
       </div>
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       {confirmDialog}
+      {platform === 'kids' && (
+        <BroadcastPanel
+          courses={courses}
+          initialProfileId={
+            searchParams.get('compose') === '1'
+              ? (searchParams.get('userId') ?? undefined)
+              : undefined
+          }
+        />
+      )}
 
       {loading && threads.length === 0 ? (
         <div className="space-y-2">
@@ -279,6 +317,15 @@ export function RecadosClient() {
                     </span>
                   ) : null}
                   <Badge variant="outline">{CONTEXT_LABELS[t.contextType]}</Badge>
+                  {t.workflowStatus && (
+                    <Badge variant="outline">
+                      {t.workflowStatus === 'waiting_teacher'
+                        ? 'Aguardando professor'
+                        : t.workflowStatus === 'waiting_student'
+                          ? 'Aguardando aluno'
+                          : 'Resolvido'}
+                    </Badge>
+                  )}
                   <Badge variant="outline">{t.audience === 'kids' ? 'Kids' : 'Adulto'}</Badge>
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                     {formatDate(t.lastMessageAt)}

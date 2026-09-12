@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 
 // Mundo 3D = UMA cor da categoria: ESMERALDA (natureza/mundo). As sub-categorias
 // são TONS dela (derivados por categoryShades mais abaixo). Distinta do índigo

@@ -1159,7 +1159,28 @@ const StructureRuleSchema = t.Union([
   }),
   t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
   t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({
+    type: t.Literal('usesBlock'),
+    blockType: t.String({ minLength: 1, maxLength: 80 }),
+    area: t.Optional(
+      t.Union(
+        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
+          t.Literal(area),
+        ),
+      ),
+    ),
+    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    fields: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+    inputs: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+  }),
 ])
 const BehaviorRuleSchema = t.Union([
   t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
@@ -1393,6 +1414,9 @@ export const AdminTeacherThreadPageQuery = t.Object({
 })
 /** Query da caixa de entrada do PROFESSOR (`GET /members/admin/teacher-threads`). */
 export const AdminTeacherThreadsQuery = t.Object({
+  workflowStatus: t.Optional(
+    t.Union([t.Literal('waiting_teacher'), t.Literal('waiting_student'), t.Literal('resolved')]),
+  ),
   audience: t.Optional(AUDIENCE),
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
@@ -1404,9 +1428,13 @@ export const AdminTeacherThreadsQuery = t.Object({
 })
 /** Corpo de `POST /members/admin/teacher-threads/read-all` (escopo opcional da caixa). */
 export const AdminTeacherThreadsReadAllBody = t.Object({
+  workflowStatus: t.Optional(
+    t.Union([t.Literal('waiting_teacher'), t.Literal('waiting_student'), t.Literal('resolved')]),
+  ),
   audience: t.Optional(AUDIENCE),
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
+  userIds: t.Optional(t.Array(UUID, { minItems: 1, maxItems: 20 })),
 })
 /** CSV de userIds (filtro por aluno) → uuids válidos; descarta lixo, teto 20. */
 export function parseUserIds(csv: string | undefined): string[] | undefined {

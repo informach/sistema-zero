@@ -1,4 +1,4 @@
-import type { BlockLevel } from '#core'
+import type { BlockLevel } from '../core/levels'
 import { inferBlockContract } from './blockContracts'
 import { DOM_BLOCKS } from './blocks/dom'
 import { JS_BLOCKS } from './blocks/js'

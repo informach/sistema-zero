@@ -87,8 +87,9 @@ export class SubmitQuizAttemptService {
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()
 
     const now = this.clock()
+    const formative = await this.sections.isCriterion(lessonId, blockId)
     const summary = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)
-    const blockedUntil = computeRetryAvailableAt(summary ?? null, now)
+    const blockedUntil = formative ? null : computeRetryAvailableAt(summary ?? null, now)
     if (blockedUntil) throw new QuizCooldownError(blockedUntil)
 
     const grade = gradeQuizAttempt(block.content, answers)
@@ -99,6 +100,7 @@ export class SubmitQuizAttemptService {
       {
         id: this.newId(),
         userId,
+        accountId: accountId ?? userId,
         lessonId,
         blockId,
         courseId: lesson.courseId,
@@ -107,7 +109,7 @@ export class SubmitQuizAttemptService {
         answers,
         createdAt: now,
       },
-      { cooldownMs: QUIZ_RETRY_COOLDOWN_MS },
+      { cooldownMs: formative ? 0 : QUIZ_RETRY_COOLDOWN_MS, revision: block.contentRevision },
     )
     if (!saved) {
       const fresh = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)
@@ -141,7 +143,9 @@ export class SubmitQuizAttemptService {
       passed: grade.passed,
       passingScore: grade.passingScore,
       attemptsCount: after?.attemptsCount ?? 1,
-      retryAvailableAt: computeRetryAvailableAt(after, now)?.toISOString() ?? null,
+      retryAvailableAt: formative
+        ? null
+        : (computeRetryAvailableAt(after, now)?.toISOString() ?? null),
       questions: grade.questions,
       gamification,
     }

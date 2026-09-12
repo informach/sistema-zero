@@ -1,5 +1,27 @@
 # CLAUDE.md — @sistemazero/members
 
+## Recados e evidências Kids — 11/09/2026
+
+Migrações `0084_kids_recados_evidence` e `0085_explicit_section_criteria`: envios com destinatários
+persistidos, workflow de conversas, contexto de ajuda e evidências por revisão. O worker de recados
+retoma lotes confirmados a cada 5s, com entrega transacional/idempotente e conversa privada por perfil.
+Prévia expira em 30min; público vem do Auth + acesso efetivo no Members, nunca da lista de conversas.
+Exclusão de conta coordena as entregas e limpa snapshots/evidências usando o mesmo advisory lock.
+Critérios de seção são explícitos; a migração incorpora exigências anteriores e mantém rascunhos
+publicáveis por uma revisão alternativa válida somente para a transformação exata da migração.
+`lesson_evidence` preserva projetos/resultados de quiz, Estúdio e checkpoints através da publicação;
+relatório lista resumos e o endpoint admin de evidência individual recupera o snapshot completo.
+Verificador estrutural é compartilhado no Core. Quiz obrigatório da seção permite nova tentativa
+imediata; quiz avulso mantém cooldown. Detalhes: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
+Correções da revisão (12/09): checkpoint, quiz e entrega obtêm `lockLearningOwner` antes dos
+locks de bloco/aula. A purga obtém os locks dos perfis antes de apagar evidências; novas gravações
+exigem a conta responsável e verificam a cerca de exclusão. Restrições de autoria são aplicadas
+na publicação, preservando a correção híbrida das aulas existentes durante a leitura do aluno.
+O Members consome `@sistemazero/studio/server-project-checks`, composto somente por contratos
+JSON e pelo avaliador Core, sem Blockly/React/DOM. O histórico admin tem páginas de 100 registros,
+cursor por evidência (ordenação data + id) e snapshot completo sob demanda.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

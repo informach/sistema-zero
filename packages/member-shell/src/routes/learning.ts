@@ -27,7 +27,11 @@ export function createLearningRoutes({
     'project-check': z.object({ revision: z.uuid(), project: z.unknown() }).strict(),
     navigation: z.object({ sectionId: z.uuid() }).strict(),
     'section-help': z
-      .object({ sectionId: z.uuid(), body: z.string().trim().min(1).max(8000) })
+      .object({
+        sectionId: z.uuid(),
+        body: z.string().trim().min(1).max(8000),
+        requestId: z.uuid().optional(),
+      })
       .strict(),
     'learning-progress': z
       .object({ ...learningFields, positionSeconds: z.number().int().min(0).max(86400).nullable() })

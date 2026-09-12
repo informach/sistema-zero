@@ -41,8 +41,14 @@ describe('evaluateStructureRule (recálculo no servidor)', () => {
     expect(evaluateStructureRule({ type: 'declaresVariable', name: 'pontos' }, refOnly)).toBe(false)
   })
 
-  it('usesBlock anda o blocksState', () => {
-    const p = project([], { blocks: { blocks: [{ type: 'controls_repeat' }] } })
+  it('usesBlock verifica blocos conectados em uma área ativa', () => {
+    const p = project([], {
+      blocks: {
+        blocks: [
+          { type: 'sz_frame_start', inputs: { CHILDREN: { block: { type: 'controls_repeat' } } } },
+        ],
+      },
+    })
     expect(evaluateStructureRule({ type: 'usesBlock', blockType: 'controls_repeat' }, p)).toBe(true)
     expect(evaluateStructureRule({ type: 'usesBlock', blockType: 'math_number' }, p)).toBe(false)
   })

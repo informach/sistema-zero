@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS, categoryShades } from '../theme'
+import { CATEGORY_COLORS, categoryShades } from '../categoryColors'
 import type { BlockDefinition } from './types'
 
 /**

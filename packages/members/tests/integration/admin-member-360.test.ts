@@ -62,6 +62,7 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
     await quizAttempts.save({
       id: randomUUID(),
       userId: A,
+      accountId: A,
       lessonId: lesson,
       blockId: studioBlock,
       courseId: course,

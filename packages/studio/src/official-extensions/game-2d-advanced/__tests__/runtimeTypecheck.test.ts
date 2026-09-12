@@ -8,7 +8,13 @@ import { GAME_KIT_ENUMERABLE_API_KEYS } from '../runtimeContract'
 const RUNTIME_FILE = 'game-2d-advanced-runtime.generated.js'
 const RUNTIME_CONTRACT_FILE = 'runtimeContract.ts'
 const HOST_CONTRACT_FILE = 'game-2d-advanced-runtime-host.d.ts'
+// ⚠️ O contrato IMPORTA daqui, e o programa deste teste vive num sistema de arquivos
+// VIRTUAL: sem o vocabulário no mapa, a análise semântica cai em "Cannot find module"
+// e o teste reprova por falta de arquivo, não por defeito no runtime. Módulo novo
+// importado pelo contrato entra aqui também.
+const CAMPAIGN_VOCABULARY_FILE = 'campaignVocabulary.ts'
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
+const CAMPAIGN_VOCABULARY = readFileSync(join(import.meta.dir, '../campaignVocabulary.ts'), 'utf8')
 const HOST_CONTRACT = `
 type GameKitRuntimeApi = import('./runtimeContract').GameKitRuntimeApi
 
@@ -224,14 +230,27 @@ test('o runtime injetado passa pela análise semântica do TypeScript', () => {
   const virtualSources = new Map([
     [RUNTIME_FILE, { source: gameKitRuntime, kind: ts.ScriptKind.JS }],
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
+    [CAMPAIGN_VOCABULARY_FILE, { source: CAMPAIGN_VOCABULARY, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
+  // O contrato importa `./campaignVocabulary`, e o `./` faz o TypeScript pedir um
+  // caminho ABSOLUTO, que nunca bate com a chave curta do mapa. A queda para o nome do
+  // arquivo vale SÓ para esse módulo: alargá-la para todas as chaves passaria a
+  // resolver também o `import('./runtimeContract')` do contrato do host, que nunca
+  // resolveu — e aí este teste deixa de comparar `any` e começa a cobrar o contrato de
+  // verdade (ver o comentário do `runProject` no `runtimeContract.ts`). Isso é um
+  // aperto desejável, mas é lote próprio: feito aqui, reprovaria o runtime inteiro.
+  const virtualSource = (fileName: string) =>
+    virtualSources.get(fileName) ??
+    (fileName.endsWith(CAMPAIGN_VOCABULARY_FILE)
+      ? virtualSources.get(CAMPAIGN_VOCABULARY_FILE)
+      : undefined)
   const host: ts.CompilerHost = {
     ...defaultHost,
-    fileExists: (fileName) => virtualSources.has(fileName) || defaultHost.fileExists(fileName),
-    readFile: (fileName) => virtualSources.get(fileName)?.source ?? defaultHost.readFile(fileName),
+    fileExists: (fileName) => Boolean(virtualSource(fileName)) || defaultHost.fileExists(fileName),
+    readFile: (fileName) => virtualSource(fileName)?.source ?? defaultHost.readFile(fileName),
     getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
-      const virtual = virtualSources.get(fileName)
+      const virtual = virtualSource(fileName)
       return virtual
         ? ts.createSourceFile(fileName, virtual.source, languageVersion, true, virtual.kind)
         : defaultHost.getSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)

@@ -19,10 +19,11 @@ export async function GET(req: Request) {
   if (queried !== null && queried.length === 0 && !exactUserId) {
     return NextResponse.json({ threads: [], hint }, { status: 200 })
   }
-  const userIds = [...(exactUserId ? [exactUserId] : []), ...(queried ?? [])]
+  const userIds = exactUserId ? [exactUserId] : (queried ?? [])
   const { status, body } = await listTeacherThreads({
     audience: searchParams.get('audience') ?? undefined,
     context: searchParams.get('context') ?? undefined,
+    workflowStatus: searchParams.get('workflowStatus') ?? undefined,
     courseId: searchParams.get('courseId') ?? undefined,
     unread: searchParams.get('unread') === 'true',
     userIds: userIds.length > 0 ? userIds : undefined,

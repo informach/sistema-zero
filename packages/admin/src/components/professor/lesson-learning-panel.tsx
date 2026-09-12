@@ -8,6 +8,7 @@ import type {
 import { Button } from '@sistemazero/ui/button'
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
+import { LessonEvidenceHistory } from './lesson-evidence-history'
 
 function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   const activity = content?.activity
@@ -143,6 +144,34 @@ export function LessonLearningPanel({
                       {section.id === sectionId ? ' · Origem da dúvida' : ''}
                     </h4>
                     <p className="text-sm text-muted-foreground">{section.objective}</p>
+                    {report.sectionProgress?.sections
+                      .filter((s) => s.id === section.id)
+                      .map((s) => (
+                        <div key={s.id} className="text-sm">
+                          <strong>
+                            {s.status === 'completed'
+                              ? 'Concluída'
+                              : s.status === 'locked'
+                                ? 'Ainda bloqueada'
+                                : 'Em andamento'}
+                          </strong>
+                          {s.pending.length > 0 && (
+                            <ul>
+                              {s.pending.map((p) => (
+                                <li key={p}>{p}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    {report.milestones
+                      ?.filter((m) => m.sectionId === section.id && m.completedAt)
+                      .map((m) => (
+                        <p key={m.sectionId} className="text-xs">
+                          Conclusão registrada em{' '}
+                          {new Date(m.completedAt ?? '').toLocaleString('pt-BR')}
+                        </p>
+                      ))}
                     {report.sectionId === section.id ? (
                       <p className="text-xs">Última seção aberta</p>
                     ) : null}
@@ -213,6 +242,16 @@ export function LessonLearningPanel({
                   </div>
                 )
               })}
+              <LessonEvidenceHistory
+                key={`${lessonId}:${accountId}:${userId}`}
+                lessonId={lessonId}
+                userId={userId}
+                accountId={accountId}
+                initial={{
+                  items: report.evidence ?? [],
+                  nextCursor: report.evidenceNextCursor ?? null,
+                }}
+              />
               {report.attempts.some(
                 (attempt) =>
                   !report.activities.some(

@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import { ForbiddenError } from '@sistemazero/core/http'
 import type {
   LearningAttemptView,
   LearningBlockProgress,
@@ -8,7 +7,7 @@ import type {
   SectionProgressRecord,
 } from '@sistemazero/core/learning'
 import { validateLessonSections } from '@sistemazero/core/learning'
-import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, lt, lte, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import { LessonNotFoundError } from '../../../domain/course/course.errors'
 import { LearningConflictError } from '../../../domain/learning/learning.errors'
@@ -18,13 +17,14 @@ import type {
   SaveLearningProgress,
 } from '../../../domain/ports/learning-repository.port'
 import type { Database } from './db'
+import { lockLearningOwner } from './learning-owner-lock'
 import { lockLessonStructure } from './lesson-structure'
 import {
-  accountDeletionFences,
   courses,
   learningAttempts,
   lessonBlockProgress,
   activeLessonBlocks as lessonBlocks,
+  lessonEvidence,
   lessonNavigation,
   lessonSectionProgress,
   lessonStructures,
@@ -64,21 +64,72 @@ function attemptView(row: typeof learningAttempts.$inferSelect): LearningAttempt
 export class DrizzleLearningRepository implements LearningRepository {
   constructor(private readonly db: Database) {}
 
+  async listEvidence(owner: LearningOwner, lessonId: string, beforeId?: string) {
+    const scope = and(
+      eq(lessonEvidence.userId, owner.userId),
+      eq(lessonEvidence.lessonId, lessonId),
+    )
+    const [cursor] = beforeId
+      ? await this.db
+          // Preserve PostgreSQL microseconds when comparing the next page.
+          .select({
+            id: lessonEvidence.id,
+            createdAt: sql<string>`${lessonEvidence.createdAt}::text`,
+          })
+          .from(lessonEvidence)
+          .where(and(scope, eq(lessonEvidence.id, beforeId)))
+          .limit(1)
+      : []
+    if (beforeId && !cursor) return []
+    const rows = await this.db
+      .select({
+        id: lessonEvidence.id,
+        kind: lessonEvidence.kind,
+        blockId: lessonEvidence.blockId,
+        sectionId: lessonEvidence.sectionId,
+        revision: lessonEvidence.revision,
+        createdAt: lessonEvidence.createdAt,
+        payload: sql<unknown>`jsonb_build_object('sectionTitle', ${lessonEvidence.payload}->'sectionTitle', 'blockTitle', coalesce(${lessonEvidence.payload}->'definition'->'title', ${lessonEvidence.payload}->'definition'->'initialProject'->'name'), 'score', coalesce(${lessonEvidence.payload}->'score', ${lessonEvidence.payload}->'attempt'->'score'), 'passed', coalesce(${lessonEvidence.payload}->'passed', ${lessonEvidence.payload}->'attempt'->'passed'), 'results', ${lessonEvidence.payload}->'results', 'checks', ${lessonEvidence.payload}->'checks')`,
+      })
+      .from(lessonEvidence)
+      .where(
+        and(
+          scope,
+          cursor
+            ? or(
+                lt(lessonEvidence.createdAt, sql`${cursor.createdAt}::timestamptz`),
+                and(
+                  eq(lessonEvidence.createdAt, sql`${cursor.createdAt}::timestamptz`),
+                  lt(lessonEvidence.id, cursor.id),
+                ),
+              )
+            : undefined,
+        ),
+      )
+      .orderBy(desc(lessonEvidence.createdAt), desc(lessonEvidence.id))
+      .limit(101)
+    return rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() }))
+  }
+  async getEvidence(owner: LearningOwner, lessonId: string, id: string) {
+    const [row] = await this.db
+      .select()
+      .from(lessonEvidence)
+      .where(
+        and(
+          eq(lessonEvidence.userId, owner.userId),
+          eq(lessonEvidence.lessonId, lessonId),
+          eq(lessonEvidence.id, id),
+        ),
+      )
+    return row ? { ...row, createdAt: row.createdAt.toISOString() } : null
+  }
+
   private async withOwner<T>(
     owner: LearningOwner,
     work: (tx: Transaction) => Promise<T>,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
-      // Same lock as account deletion, so an in-flight save cannot recreate purged data.
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${owner.userId}`}, 0))`,
-      )
-      const [fence] = await tx
-        .select()
-        .from(accountDeletionFences)
-        .where(eq(accountDeletionFences.accountId, owner.accountId))
-        .limit(1)
-      if (fence) throw new ForbiddenError('Esta conta foi excluída.')
+      await lockLearningOwner(tx, owner)
       return work(tx)
     })
   }
@@ -123,6 +174,7 @@ export class DrizzleLearningRepository implements LearningRepository {
     structureRevision: string,
     records: SectionProgressRecord[],
     blockRevisions: { id: string; revision: string }[],
+    evidence?: import('@sistemazero/core/learning').LessonEvidence,
   ) {
     if (!records.length) return
     await this.withOwner(owner, async (tx) => {
@@ -138,6 +190,10 @@ export class DrizzleLearningRepository implements LearningRepository {
       )
         throw new LearningConflictError()
       for (const b of blockRevisions) await this.assertRevision(tx, lessonId, b.id, b.revision)
+      if (evidence)
+        await tx
+          .insert(lessonEvidence)
+          .values({ ...evidence, ...owner, lessonId, createdAt: new Date(evidence.createdAt) })
       for (const r of records) {
         await tx
           .insert(lessonSectionProgress)

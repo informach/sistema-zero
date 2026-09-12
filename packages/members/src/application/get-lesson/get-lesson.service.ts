@@ -127,6 +127,13 @@ export class GetLessonService {
     if (hasComingSoonBlock(lesson.blocks) && !privileged)
       return { ...view, requirements: lessonCompletionRequirements(view) }
     const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)
+    for (const block of view.blocks) {
+      if (
+        block.quizState &&
+        structure.sections.some((section) => section.completion?.blockIds.includes(block.id))
+      )
+        block.quizState.retryAvailableAt = null
+    }
     const owner = { userId, accountId: accountId ?? userId }
     const sectionProgress = privileged
       ? undefined

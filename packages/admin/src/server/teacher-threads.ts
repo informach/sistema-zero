@@ -10,6 +10,7 @@ const enc = encodeURIComponent
 // não misturar este lote com o WIP concorrente daquele arquivo.
 
 export interface ListTeacherThreadsParams {
+  workflowStatus?: string
   audience?: string
   context?: string
   courseId?: string
@@ -28,6 +29,7 @@ export function listTeacherThreads(
     query: {
       audience: p.audience,
       context: p.context,
+      workflowStatus: p.workflowStatus,
       courseId: p.courseId,
       unread: p.unread ? 'true' : undefined,
       userIds: p.userIds?.length ? p.userIds.join(',') : undefined,
@@ -49,9 +51,11 @@ export function getTeacherThreadsUnreadCount(
 
 /** "Marcar todas como lidas" (escopo opcional = filtros da caixa). */
 export function markAllTeacherThreadsRead(body: {
+  workflowStatus?: string
   audience?: string
   context?: string
   courseId?: string
+  userIds?: string[]
 }): Promise<GatewayResponse<{ updated: number }>> {
   return gatewayFetch('/members/admin/teacher-threads/read-all', { method: 'POST', body })
 }

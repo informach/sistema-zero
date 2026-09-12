@@ -7,9 +7,9 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
-  sectionCompletionIssues,
   validateLessonSections,
 } from '@sistemazero/core/learning'
+import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
 import {
   assertBlockCoherent,
@@ -41,6 +41,7 @@ import {
   courses,
   lessonAttachments,
   lessonBlocks,
+  lessonCriteriaMigrationSnapshots,
   lessonDraftOperations,
   lessonDrafts,
   lessonStructures,
@@ -60,9 +61,25 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
     .select()
     .from(lessonStructures)
     .where(eq(lessonStructures.lessonId, lessonId))
+  const [migration] = await tx
+    .select()
+    .from(lessonCriteriaMigrationSnapshots)
+    .where(eq(lessonCriteriaMigrationSnapshots.lessonId, lessonId))
   return {
     lesson,
     structure,
+    migrationRevision:
+      migration && stableJson(structure?.sections) === stableJson(migration.migratedSections)
+        ? fingerprint({
+            title: lesson.title,
+            slug: lesson.slug,
+            estimatedMinutes: lesson.estimatedMinutes,
+            blocks: lesson.blocks,
+            attachments: lesson.attachments,
+            sections: migration.previousSections,
+            supportBlockIds: structure?.supportBlockIds,
+          })
+        : null,
     revision: fingerprint({
       title: lesson.title,
       slug: lesson.slug,
@@ -286,7 +303,11 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       { unpublish: true },
       async (draft, tx) => {
         const snapshot = await publishedSnapshot(tx, lessonId)
-        if (snapshot.revision !== draft.publishedRevision) throw new LessonDraftConflictError()
+        if (
+          snapshot.revision !== draft.publishedRevision &&
+          snapshot.migrationRevision !== draft.publishedRevision
+        )
+          throw new LessonDraftConflictError()
         const content = new DrizzleContentAdminRepository(tx)
         const course = await new DrizzleCourseRepository(tx).findCourseById(
           snapshot.lesson.courseId,
@@ -392,7 +413,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           message: 'Envie o vídeo planejado e aguarde a confirmação do processamento no Vimeo.',
         })
     }
-    issues.push(...sectionCompletionIssues(document.sections, blocks))
+    issues.push(...studioSectionCompletionIssues(document.sections, blocks))
     return { issues, blocks }
   }
 
@@ -417,7 +438,11 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       { publish: true },
       async (draft, tx) => {
         const snapshot = await publishedSnapshot(tx, lessonId)
-        if (snapshot.revision !== draft.publishedRevision) throw new LessonDraftConflictError()
+        if (
+          snapshot.revision !== draft.publishedRevision &&
+          snapshot.migrationRevision !== draft.publishedRevision
+        )
+          throw new LessonDraftConflictError()
         const { issues, blocks } = this.inspect(draft.document, readyVideoIds)
         if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
         const content = new DrizzleContentAdminRepository(tx)

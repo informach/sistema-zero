@@ -1,5 +1,5 @@
-import { CATEGORY_COLORS } from '../theme'
-import { EVENT_TARGET_EXTENSION } from './eventTargetExtension'
+import { EVENT_TARGET_EXTENSION } from '../blockExtensionNames'
+import { CATEGORY_COLORS } from '../categoryColors'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.dom

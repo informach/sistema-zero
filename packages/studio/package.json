@@ -13,6 +13,7 @@
     "./project-list": "./src/projects/ProjectList.tsx",
     "./career": "./src/career/index.ts",
     "./controls": "./src/controls/projectControls.ts",
+    "./server-project-checks": "./src/blockly/projectCheckAuthoring.ts",
     "./server-catalog": "./src/blockly/blockCatalog.ts",
     "./server-knowledge": "./src/official-extensions/serverKnowledge.ts",
     "./server-examples": "./src/examples/serverExamples.ts",

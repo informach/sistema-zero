@@ -40,6 +40,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         audience text not null,
         context_type members.teacher_thread_context not null,
         context_ref text,
+        broadcast_id uuid,
+        workflow_status text not null default 'waiting_student',
         course_id uuid,
         lesson_id uuid,
         title text,
@@ -68,6 +70,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         add column if not exists audience text not null default 'kids',
         add column if not exists context_type members.teacher_thread_context not null default 'general',
         add column if not exists context_ref text,
+        add column if not exists broadcast_id uuid,
+        add column if not exists workflow_status text not null default 'waiting_student',
         add column if not exists course_id uuid,
         add column if not exists lesson_id uuid,
         add column if not exists title text,
@@ -76,6 +80,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         add column if not exists teacher_last_read_at timestamptz,
         add column if not exists created_at timestamptz not null default now();
       alter table members.teacher_messages
+        add column if not exists help_context jsonb,
         add column if not exists author_role members.teacher_message_role not null default 'teacher',
         add column if not exists author_id uuid,
         add column if not exists author_name text,
@@ -122,11 +127,16 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
 
       const beforeDuplicate = await repo.findById(threadId)
       const duplicateId = randomUUID()
+      // ⚠️ O MESMO autor nas duas chamadas: o que se repete num retry é o evento
+      // inteiro. Sorteando um `authorId` novo, a guarda de id reusado com conteúdo
+      // diferente reprova com `ValidationError` antes de chegar ao que este teste
+      // quer medir (que repetir não mexe no `last_message_at` nem na ordem).
+      const duplicateAuthorId = randomUUID()
       const duplicateAt = new Date(startedAt.getTime() + 60_000)
       await repo.appendMessage({
         threadId,
         authorRole: 'teacher',
-        authorId: randomUUID(),
+        authorId: duplicateAuthorId,
         authorName: 'Prof',
         body: 'Evento idempotente',
         now: duplicateAt,
@@ -136,7 +146,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
       await repo.appendMessage({
         threadId,
         authorRole: 'teacher',
-        authorId: randomUUID(),
+        authorId: duplicateAuthorId,
         authorName: 'Prof',
         body: 'Evento idempotente',
         now: new Date(duplicateAt.getTime() + 60_000),

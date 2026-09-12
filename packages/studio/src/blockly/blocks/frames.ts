@@ -8,8 +8,8 @@ import {
   FRAME_START,
   FRAME_STRUCTURE,
 } from '../blockContracts'
-import { PROJECT_AREA_SAFE_DELETE_EXTENSION } from '../projectAreaSafeDelete'
-import { CATEGORY_COLORS } from '../theme'
+import { PROJECT_AREA_SAFE_DELETE_EXTENSION } from '../blockExtensionNames'
+import { CATEGORY_COLORS } from '../categoryColors'
 import type { BlockDefinition } from './types'
 
 /**

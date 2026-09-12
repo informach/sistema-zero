@@ -202,7 +202,7 @@
         "title": "Confira: preparar a tela do jogo",
         "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
         "hints": ["800 por 480."],
-        "required": true,
+        "required": false,
         "activity": {
           "type": "checkpoint"
         },
@@ -234,7 +234,7 @@
         "title": "Confira: criar a sua nave",
         "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
         "hints": ["O personagem usado pelos controles e desenhos."],
-        "required": true,
+        "required": false,
         "activity": {
           "type": "checkpoint"
         },
@@ -266,7 +266,7 @@
         "title": "Confira: ligar o motor do jogo",
         "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
         "hints": ["Dentro de Enquanto estiver rodando."],
-        "required": true,
+        "required": false,
         "activity": {
           "type": "checkpoint"
         },
@@ -442,7 +442,22 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tela",
+            "label": "Preparar a tela de 800 × 480 em Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 800,
+                "H": 480
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -456,7 +471,27 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "nave",
+            "label": "Criar nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "area": "start",
+              "fields": {
+                "NAME": "nave"
+              },
+              "inputs": {
+                "X": 400,
+                "Y": 410,
+                "W": 54,
+                "H": 62
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -470,7 +505,18 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-4"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "motor",
+            "label": "Encaixar A cada quadro do jogo em Enquanto estiver rodando",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops"
+            }
+          }
+        ]
       }
     },
     {

@@ -2,12 +2,14 @@
 
 import {
   defaultLessonSection,
+  isFinalProjectSection,
   type LessonDraftChange,
   type LessonDraftDocument,
   type LessonDraftIssue,
   type LessonSection,
   SECTION_INTENT_LABELS,
   SECTION_INTENTS,
+  sectionCompletionIssues,
 } from '@sistemazero/core/learning'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
@@ -508,12 +510,41 @@ export function LessonStructureEditor({
                     value={section.completion}
                     candidates={section.blockIds.flatMap((id) => {
                       const b = blocks.get(id)
-                      return b && ['interactive', 'quiz', 'studio', 'pinta'].includes(b.kind)
-                        ? [{ id, label: blockLabel(b) }]
-                        : []
+                      if (!b || !['interactive', 'quiz', 'studio', 'pinta'].includes(b.kind))
+                        return []
+                      const issue = sectionCompletionIssues(
+                        [{ ...section, completion: { version: 1, blockIds: [id] } }],
+                        [b],
+                      ).find((i) => i.sectionId === section.id)?.message
+                      const delivery = b.kind === 'studio' || b.kind === 'pinta'
+                      return [
+                        {
+                          id,
+                          label: blockLabel(b),
+                          model: delivery
+                            ? 'Entregar a criação'
+                            : b.kind === 'quiz' ||
+                                (b.content.kind === 'interactive' &&
+                                  b.content.activity.type !== 'sequence')
+                              ? 'Responder uma pergunta'
+                              : 'Resolver uma atividade',
+                          issue:
+                            delivery && !isFinalProjectSection(document.sections, section.id)
+                              ? 'A entrega deve ficar na última seção de fechamento.'
+                              : issue,
+                        },
+                      ]
                     })}
                     hasStudio={tools.some(
                       (b) => b.id === section.workspaceBlockId && b.kind === 'studio',
+                    )}
+                    workspace={
+                      tools.find((block) => block.id === section.workspaceBlockId)?.content
+                    }
+                    allowBlocks={tools.flatMap((block) =>
+                      block.id === section.workspaceBlockId && block.content.kind === 'studio'
+                        ? (block.content.allowBlocks ?? [])
+                        : [],
                     )}
                     onChange={(completion) => patch(section.id, { completion })}
                   />
