@@ -371,8 +371,8 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         response.scope = 'quota'
         response.text =
           quota.scope === 'day'
-            ? 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖'
-            : 'A ajuda deste mês acabou. No mês que vem tem mais 🤖'
+            ? 'Por hoje a gente já estudou bastante! Amanhã tem mais ✨'
+            : 'A ajuda deste mês acabou. No mês que vem tem mais ✨'
         return complete(response, 'quota')
       }
 

@@ -1,6 +1,6 @@
 # Prepare o mundo do Dino
 
-Uma aula, organizada em 8 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-01-corre-dino.md`. SHA-256: `738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,170 +13,182 @@ Este projeto começa vazio. Você vai preparar uma tela para um dinossauro corre
 
 **Ambiente:** o mesmo Estúdio incorporado acompanha as seções. Preservar o projeto inicial, a continuidade e a entrega já configurados na aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Existe, mas ainda não aparece | Resolver a descoberta. |
+| Um lugar para o Dino | Verificar os objetivos do projeto. |
+| Seu Dino já existe | Enviar o projeto; atingir a nota automática se o Estúdio exigir. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Existe, mas ainda não aparece
+
+**Intenção e objetivo (professor):** Exploração · Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.
 
 **Texto para o aluno:**
 
-Oi! Este projeto começa vazio. Você vai preparar uma tela para um dinossauro correr.
+Oi! Vamos preparar o mundo do seu Dino. Hoje ele vai existir nos blocos; na próxima aula, você vai colocá-lo na tela.
 
-Hoje você vai preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Existe, mas ainda não aparece**
 
-## 2. Descoberta antes da explicação
+Modelo: `prediction`. Critério desta seção.
 
-**Modelo:** prediction. **Essencial:** não; a previsão é um convite, sem punição por hipótese inicial.
+Você preparou a tela e criou o dino. Ainda não mandou desenhar. O que espera ver? Sua primeira ideia pode mudar depois da observação.
 
-**Título:** Existe, mas ainda não aparece
+**Previsões (sem nota):** O dino já desenhado · Só a tela preparada · Uma tela de derrota
 
-Você preparou a tela e criou o dino. Ainda não mandou desenhar. O que espera ver?
+**Depois de observar:** Só a tela preparada. O bloco de criação guarda o personagem, mas ele ainda precisa ser desenhado. Você vai confirmar isso ao terminar a montagem desta aula.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Pergunta:** Você criou o Dino, mas ainda não mandou desenhar. O que precisa acontecer para vê-lo?
 
-**Pistas disponíveis:**
+- O jogo precisa criar outro Dino com o mesmo nome.
+- O jogo precisa de um placar primeiro.
+- O jogo precisa desenhar o personagem.
 
-- Pense na diferença entre preparar um personagem nos bastidores e colocá-lo diante da plateia.
+**Resposta esperada (professor):** O jogo precisa desenhar o personagem.
 
-## 3. Explicação após observar
+**Devolutiva:** Criar guarda as informações. Desenhar mostra o personagem. Nesta aula você prepara; na próxima, vai desenhar.
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+**Pistas:**
 
-Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela. Por isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo. O nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles.
+- Pense no personagem nos bastidores e no personagem aparecendo no palco.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+**Texto para o aluno:**
 
-## Demonstrações e aplicação
+Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+Por isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo.
 
-### 1. montar a área que prepara o jogo
+O nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles.
 
-**Narração revisada:**
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Oi! Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa.
+## 2. Um lugar para o Dino
 
-**Na tela (sequência técnica preservada do original):**
+**Intenção e objetivo (professor):** Aplicação · Preparar uma tela e descrever o objetivo e os controles sem depender da imagem.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Montar a área que prepara o jogo
+
+Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Áreas do projeto"; pegar o bloco "Ao iniciar", clicar, segurar, arrastar até a área grande do meio e soltar. Mostrar ele já no lugar, sozinho e vazio. Não falar das outras duas áreas, nem apontar pra elas na paleta.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-01: gravar a demonstração "montar a área que prepara o jogo" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. preparar a tela
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Preparar a tela
 
-Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu. Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4.
+Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.
 
-**Na tela (sequência técnica preservada do original):**
+Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 Jogo 2D › Aparência, arrastar "Preparar o jogo em tela cheia" para dentro do Ao iniciar; trocar 800 por 480 e 480 por 270; escolher um azul de céu no quadradinho de cor. Depois, do mesmo lugar, arrastar "Mostrar a borda da tela, cor __ espessura __" logo abaixo dele; deixar a cor branca e a espessura em 4. Mostrar o retângulo do palco aparecendo.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-02: gravar a demonstração "preparar a tela" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. contar o que é o seu jogo
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Contar o que é o seu jogo
 
-Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço. Essa frase explica o jogo sem depender da imagem.
+Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.
 
-**Na tela (sequência técnica preservada do original):**
+Essa frase explica o jogo sem depender da imagem.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 Jogo 2D › Telas e cenas, arrastar "Descrever o jogo para leitor de tela" para dentro do Ao iniciar, logo abaixo do "Mostrar a borda da tela"; trocar o texto de fábrica por "Corra com o dino e pule os cactos apertando espaço".
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-03: gravar a demonstração "contar o que é o seu jogo" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. criar o dino
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Escolha o céu e escreva a descrição do jogo. Leia a frase sem olhar a imagem: dá para entender o que fazer?
 
-Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64. A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar.
+Depois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado.
 
-**Na tela (sequência técnica preservada do original):**
+**Critérios configurados em Para liberar a próxima seção:** todos os objetivos abaixo precisam passar no mesmo projeto.
+
+- Prepare a tela de 480 × 270 em Ao iniciar. Regra de cadastro: `{"type":"usesBlock","blockType":"sz_g2d_setup_stage","area":"start","inputs":{"W":480,"H":270}}`.
+
+**Limite da conferência:** comprova a estrutura pedida, não executa a partida nem avalia sua qualidade. A observação sugerida na etapa continua necessária para aprender.
+
+## 3. Seu Dino já existe
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Criar o dino
+
+Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.
+
+A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 Jogo 2D › Kit dino, arrastar "Criar dinossauro" para dentro do Ao iniciar, abaixo dos outros; mostrar o nome já vindo "dino" e dizer que é escolha da criança (mostrar um nome trocado e voltar para "dino", pra ela ver que aceita); trocar o x de 120 para 110; deixar y 150 e tamanho 64; a cor já vem verde, e a criança pode trocar se quiser. No fim, a área do jogo sem nenhum dino à vista.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-04: gravar a demonstração "criar o dino" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Confira a tela, os nomes e a descrição. O dino ainda invisível é o resultado esperado desta aula, não um erro. Guarde e envie o projeto.
 
 Na Aula 2, você vai desenhar o dino e fazer o mundo se mover.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Se algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Estúdio compartilhado:** reutilizar o primeiro Estúdio da aula. A entrega acontece aqui, uma única vez.
 
-## Produção e importação
+**Critério configurado:** entrega do Estúdio. Se houver nota mínima, conferir a atividade vinculada: o manifesto preserva sua configuração. Para exigir aprovação automática na seção, ela precisa usar checagens estruturais compatíveis. O carimbo “já conferi” do professor não controla este avanço.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+## Cadastro e validação em staging
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-## Verificações para avançar nas seções
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### A criação de hoje
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.
+**Cartões antigos a retirar após reimportação:**
 
-### Existe, mas ainda não aparece
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-2`: Confira: preparar a tela
+- `checar-construir-3`: Confira: contar o que é o seu jogo
+- `checar-construir-4`: Confira: criar o dino
 
-**Checagem:** Um personagem foi criado, mas não desenhado. O que isso significa?
-
-**Resposta e explicação:** Ele existe na memória, mas ainda não aparece na tela.
-
-### O que aconteceu?
-
-**Checagem:** Um personagem foi criado, mas não desenhado. O que isso significa?
-
-**Resposta e explicação:** Ele existe na memória, mas ainda não aparece na tela.
-
-### montar a área que prepara o jogo
-
-Objetivo conferido no projeto pelo servidor: Montar Ao iniciar.
-
-### preparar a tela
-
-**Checagem:** Qual tamanho de tela estamos preparando?
-
-**Resposta e explicação:** 480 por 270.
-
-### contar o que é o seu jogo
-
-**Checagem:** Para que serve a descrição para leitor de tela?
-
-**Resposta e explicação:** Explicar objetivo e controles sem depender da imagem.
-
-### criar o dino
-
-**Checagem:** O dino foi criado, mas ainda não aparece. O que falta?
-
-**Resposta e explicação:** Mandar desenhar o dino.
-
-### Teste e guarde sua criação
-
-Entregar o projeto e atingir a nota mínima configurada, quando houver.
-
-## Verificações práticas por seção
-
-- **construir-2:** Preparar uma tela de 480 × 270 em Ao iniciar; Encaixar a borda com espessura 4 em Ao iniciar.
-- **construir-4:** Criar dino em x 110, y 150 e tamanho 64, dentro de Ao iniciar.
-
-Nestas etapas, as perguntas de revisão são opcionais. O avanço depende do projeto salvo na verificação. Cores livres não são avaliadas. Montar uma área confirma apenas a preparação; não comprova que o jogo executou.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

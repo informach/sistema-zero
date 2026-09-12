@@ -1,6 +1,6 @@
 # Seu jogo no Estúdio Completo
 
-Uma aula, organizada em 8 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-01-o-jogo-do-meu-jeito.md`. SHA-256: `aea9e2bb22e617e66266f6cd3c3f95d787269b30cb7f95bd6cfdcfbbf02e9c55`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,65 +13,95 @@ Você terminou o Desafio do Primeiro Jogo e publicou no Mural. O Pinta e o Estú
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Qual lugar guarda o quê? | Resolver a descoberta. |
+| Leve seu jogo para o Estúdio | Responder uma pergunta de decisão. |
+| Encontre seu jogo outra vez | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Qual lugar guarda o quê?
+
+**Intenção e objetivo (professor):** Exploração · Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.
 
 **Texto para o aluno:**
 
-Oi! Você terminou o Desafio do Primeiro Jogo e publicou no Mural. O Pinta e o Estúdio Completo estão disponíveis conforme sua Carreira e o acesso da conta.
+Oi! Vamos levar o jogo do Dia 5 para um espaço onde você pode continuar criando. Primeiro, descubra onde cada versão fica guardada.
 
-Hoje você vai levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Qual lugar guarda o quê?**
 
-## 2. Descoberta antes da explicação
-
-**Modelo:** sequence. **Essencial:** sim
-
-**Título:** Qual lugar guarda o quê?
+Modelo: `sequence`. Critério desta seção.
 
 Ligue cada lugar ao trabalho que você faz nele. A ideia é saber onde voltar sem criar cópias por engano.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Peças:** Mural · Projeto da aula · Meus Jogos no Estúdio
 
-**Pistas disponíveis:**
+**Gabarito para o professor:**
+
+- Atividade ligada ao curso: Projeto da aula
+- Projetos livres que você edita: Meus Jogos no Estúdio
+- Versão publicada para outras pessoas jogarem: Mural
+
+**Pistas:**
 
 - O lugar de editar um projeto e o lugar de jogar sua publicação têm funções diferentes.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+Um projeto guarda o jogo com seus blocos e recursos. A aula tem um projeto ligado à atividade; o Estúdio Completo tem uma lista de projetos livres.
 
-Um projeto guarda o jogo com seus blocos e recursos. A aula tem um projeto ligado à atividade; o Estúdio Completo tem uma lista de projetos livres. Exportar e importar faz a ponte entre esses lugares. Publicar no Mural cria uma versão para jogar, e editar o projeto depois não deve ser confundido com atualizar automaticamente tudo que já foi publicado. A Carreira libera ferramentas e conjuntos de blocos conforme os cursos e publicações. Uma extensão reúne recursos; um projeto novo pode começar sem ela instalada.
+Exportar e importar faz a ponte entre esses lugares. Publicar no Mural cria uma versão para jogar, e editar o projeto depois não deve ser confundido com atualizar automaticamente tudo que já foi publicado.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+A Carreira libera ferramentas e conjuntos de blocos conforme os cursos e publicações. Uma extensão reúne recursos; um projeto novo pode começar sem ela instalada.
 
-## Demonstrações e aplicação
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+## 2. Leve seu jogo para o Estúdio
 
-### 1. conhecer o Estúdio Completo
+**Intenção e objetivo (professor):** Aplicação · Exportar o projeto da aula e importá-lo como projeto livre.
 
-**Narração revisada:**
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
 
-Oi! Abra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres. Seu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto.
+**Narração revisada / instruções disponíveis em texto:**
 
-**Na tela (sequência técnica preservada do original):**
+### Conhecer o Estúdio Completo
+
+Abra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres.
+
+Seu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 na Comunidade, apontar o item **Estúdio** no menu da esquerda antes de clicar, e
 clicar. Mostrar a tela "Meus Jogos" vazia, com a frase do estado vazio à vista. Apontar, sem
 clicar, o **Importar** e o **Novo projeto** no cabeçalho.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-01: gravar a demonstração "conhecer o Estúdio Completo" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. começar um projeto do zero e instalar os bloquinhos
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Começar um projeto do zero e instalar os bloquinhos
 
-Crie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente. Feche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo.
+Crie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente.
 
-**Na tela (sequência técnica preservada do original):**
+Feche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 clicar em "+ Novo projeto", digitar "Meu jogo novo" no campo "Nome do projeto" e clicar
 em "Criar e abrir". Com o projeto aberto, mostrar a área de montar vazia. Na coluna da esquerda,
@@ -82,17 +112,19 @@ card "Jogo 2D": o nome à esquerda e a descrição embaixo dele. Clicar em "Inst
 selo "Instalada" que nasce ao lado do nome e no botão que virou "Remover"**, clicar no **"Fechar"**
 do rodapé da modal e mostrar a categoria Jogo 2D agora presente na coluna da esquerda.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-02: gravar a demonstração "começar um projeto do zero e instalar os bloquinhos" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. trazer o seu jogo da nave
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Trazer o seu jogo da nave
 
-Abra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista. Exporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir.
+Abra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista.
 
-**Na tela (sequência técnica preservada do original):**
+Exporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 o caminho inteiro, sem pular tela: clicar em **Cursos** no menu da esquerda, mostrar a
 tela **"Cursos da Carreira de Criador"** com os níveis, clicar no **Faísca**, mostrar o título
@@ -117,17 +149,51 @@ borda esquerda**, clicar, mostrar o menu da Comunidade sumindo e a área de trab
 clicar de novo para ele voltar. Quando a narração citar o Pinta, um corte de três segundos no Pinta
 aberto, com o **mesmo puxador no mesmo lugar**.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-03: gravar a demonstração "trazer o seu jogo da nave" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. onde os seus jogos ficam guardados
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Prepare o caminho e importe o jogo do Dia 5. O projeto de teste pode continuar separado.
 
-Volte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar. Na aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Você abriu Meus Jogos e não encontrou o jogo do Dia 5. Qual caminho procurar?
+
+- Procurar o jogo dentro do desenho da nave no Pinta.
+- Criar um projeto vazio com o mesmo nome e esperar os blocos aparecerem.
+- Exportar o projeto na aula do Dia 5 e importar no Estúdio.
+
+**Resposta esperada (professor):** Exportar o projeto na aula do Dia 5 e importar no Estúdio.
+
+**Devolutiva:** Exportar leva o arquivo para fora da aula. Importar abre esse trabalho no Estúdio livre, onde você continuará criando.
+
+**Pistas:**
+
+- O projeto da aula e a lista de projetos livres são lugares diferentes.
+
+**Critério configurado:** `checar-construir-3`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Encontre seu jogo outra vez
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.
+
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Onde os seus jogos ficam guardados
+
+Volte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar.
+
+Na aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 dentro do projeto, clicar na marca **"Sistema Zero Studio"**, no canto esquerdo da
 barra de cima, com zoom nela antes do clique. Mostrar o "Meus Jogos" com os dois projetos na lista,
@@ -138,77 +204,56 @@ Desafio, abrir o menu de três pontinhos e dar um close em **"Sincronizar com o 
 clicar. No Mural, dar um close no botão **"Fazer a minha versão"**, também sem clicar (clicar
 criaria um terceiro projeto na lista dela, e as Aulas 6 e 7 dependem de ela abrir o projeto certo).
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-01-passo-04: gravar a demonstração "onde os seus jogos ficam guardados" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Seu jogo do Dia 5 deve rodar no Estúdio Completo. Volte a Meus Jogos e abra o mesmo cartão. O projeto de teste pode ficar separado; nas próximas aulas use o importado.
 
 Na Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado no Estúdio, fora desta aula.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Depois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** Você quer continuar amanhã. Qual cartão deve abrir em Meus Jogos?
 
-## Verificações para avançar nas seções
+- O do jogo importado do Dia 5, conferindo nome e imagem.
+- Sempre um projeto vazio.
+- Qualquer cartão que tenha a mesma cor.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** O do jogo importado do Dia 5, conferindo nome e imagem.
 
-### A criação de hoje
+**Devolutiva:** Abrir o mesmo projeto preserva a continuidade. Essa resposta confere o caminho; também abra e teste o cartão no Estúdio.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.
+- Procure o trabalho que já contém a nave, os tiros e as telas.
 
-### Qual lugar guarda o quê?
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+## Cadastro e validação em staging
 
-### O que aconteceu?
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-**Checagem:** Publicar no Mural e editar um projeto são a mesma operação?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Resposta e explicação:** Não; a publicação é uma versão para jogar, enquanto o projeto continua editável.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### conhecer o Estúdio Completo
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** Onde ficam os projetos livres do Estúdio?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** Em Meus Jogos.
+**Cartões antigos a retirar após reimportação:**
 
-### começar um projeto do zero e instalar os bloquinhos
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: conhecer o Estúdio Completo
+- `checar-construir-2`: Confira: começar um projeto do zero e instalar os bloquinhos
+- `checar-construir-4`: Confira: onde os seus jogos ficam guardados
 
-**Checagem:** Se Jogo 2D não aparece no projeto novo, o que fazer?
-
-**Resposta e explicação:** Abrir as extensões e instalar a correspondente.
-
-### trazer o seu jogo da nave
-
-**Checagem:** Como trazer o jogo do Dia 5 para o Estúdio Completo?
-
-**Resposta e explicação:** Exportar da aula do Dia 5 e importar no Estúdio.
-
-### onde os seus jogos ficam guardados
-
-**Checagem:** Como retomar o projeto importado?
-
-**Resposta e explicação:** Abrir seu cartão em Meus Jogos, conferindo nome e imagem.
-
-### Teste e guarde sua criação
-
-**Checagem:** Qual projeto será usado nas próximas aulas?
-
-**Resposta e explicação:** O jogo importado do Dia 5.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

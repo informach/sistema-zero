@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Retome o projeto da Aula 1: tela preparada e dino criado, ainda sem aparecer.\n\nHoje você vai organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi de novo! Seu Dino já está guardado no projeto. Agora vamos fazê-lo aparecer e ver a floresta passar.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -47,35 +47,54 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Imagine desenhar um personagem num papel e depois cobri-lo com outro papel de floresta. Ele continua lá, mas fica escondido. No jogo, a ordem de desenho produz esse efeito: quem é desenhado por último aparece por cima. A cada quadro, limpamos e desenhamos de novo. O dino parece correr enquanto o fundo passa; o movimento percebido pode vir do cenário, mesmo quando a posição horizontal do personagem muda pouco."
+        "markdown": "Imagine desenhar um personagem num papel e depois cobri-lo com outro papel de floresta. Ele continua lá, mas fica escondido.\n\nNo jogo, a ordem de desenho produz esse efeito: quem é desenhado por último aparece por cima. A cada quadro, limpamos e desenhamos de novo.\n\nO dino parece correr enquanto o fundo passa; o movimento percebido pode vir do cenário, mesmo quando a posição horizontal do personagem muda pouco."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele. Esse será o motor do desenho.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Ligar o motor do jogo\n\nEm Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele.\n\nEsse será o motor do desenho."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-02-passo-01: gravar a demonstração \"ligar o motor do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo. Em Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele. Use velocidade 5 e remova só o bloco da borda, preservando os vizinhos.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Desenhar o mundo\n\nEm Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo.\n\nEm Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele.\n\nUse velocidade 5 e remova só o bloco da borda, preservando os vizinhos."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-02-passo-02: gravar a demonstração \"desenhar o mundo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Experimente a floresta depois do Dino e depois antes dele. Qual ordem deixa o personagem à vista?\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo. Compare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar e deixar do seu jeito\n\nClique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo.\n\nCompare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito."
       }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-02-passo-03: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Confirme a ordem limpar, floresta e dino. O personagem precisa aparecer por cima do cenário, sem rastros. Envie o projeto.\n\nNa Aula 3, o dino vai responder ao pulo e voltar ao chão."
+        "markdown": "Confirme a ordem limpar, floresta e dino. O personagem precisa aparecer por cima do cenário, sem rastros. Envie o projeto.\n\nNa Aula 3, o dino vai responder ao pulo e voltar ao chão.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -84,201 +103,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-02-passo-01: gravar a demonstração \"ligar o motor do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-02-passo-02: gravar a demonstração \"desenhar o mundo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-02-passo-03: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["O desenho posterior cobre o anterior."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que o dino some quando a floresta é desenhada depois dele?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O desenho posterior cobre o anterior."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Criar a floresta apaga o dino da memória."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A floresta desliga o teclado."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O desenho posterior cobre o anterior."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: ligar o motor do jogo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Repete as ações de desenho durante o jogo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que A cada quadro faz nesta etapa?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Desenha uma única vez ao abrir."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Espera o jogador apertar Enter."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Repete as ações de desenho durante o jogo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Repete as ações de desenho durante o jogo."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: desenhar o mundo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Limpar, desenhar a floresta e desenhar o dino."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual ordem mantém o dino visível e sem rastros?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Desenhar a floresta, desenhar o dino e limpar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Limpar, desenhar a floresta e desenhar o dino."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Desenhar o dino, limpar e desenhar a floresta."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Limpar, desenhar a floresta e desenhar o dino."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar e deixar do seu jeito",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A sensação de velocidade da corrida."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Ao comparar velocidades 2 e 9 do fundo, o que muda?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A sensação de velocidade da corrida."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O nome do dino nos blocos."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A quantidade de áreas do projeto."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A sensação de velocidade da corrida."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Quem fica na frente?",
       "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -288,67 +121,46 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "ligar o motor do jogo",
-      "objective": "Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele. Esse será o motor do desenho.",
+      "title": "Tire o Dino do esconderijo",
+      "objective": "Desenhar o personagem a cada quadro e observar a ordem das camadas.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "desenhar o mundo",
-      "objective": "Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo. Em Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele. Use velocidade 5 e remova só o bloco da borda, preservando os vizinhos.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "testar e deixar do seu jeito",
-      "objective": "Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo. Compare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-draw-sprite",
+            "label": "Desenhe o sprite dino dentro de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Confirme a ordem limpar, floresta e dino. O personagem precisa aparecer por cima do cenário, sem rastros. Envie o projeto.",
+      "title": "Uma corrida no seu ritmo",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

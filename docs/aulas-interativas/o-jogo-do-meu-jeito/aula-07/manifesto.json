@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu projeto livre usa a nave própria. O recurso asteroide já foi trazido do Pinta e ainda falta trocar a criação dos obstáculos.\n\nHoje você vai substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Sua nave já tem a sua arte. Agora os asteroides vão ganhar seus desenhos sem perder a chuva e as colisões.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -45,35 +45,14 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "O desenho e o comportamento são partes que se conectam. Um asteroide com sua arte pode continuar no mesmo grupo e receber a mesma posição e velocidade. Aqui, preparar o bloco novo antes de apagar o antigo permite reaproveitar o sorteio de x e conferir os campos. Não deixe as duas criações executando juntas ao finalizar, ou a chuva dobra. Cada novo asteroide precisa receber a animação quando nasce."
+        "markdown": "O desenho e o comportamento são partes que se conectam. Um asteroide com sua arte pode continuar no mesmo grupo e receber a mesma posição e velocidade.\n\nAqui, preparar o bloco novo antes de apagar o antigo permite reaproveitar o sorteio de x e conferir os campos. Não deixe as duas criações executando juntas ao finalizar, ou a chuva dobra.\n\nCada novo asteroide precisa receber a animação quando nasce."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Abra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64. A folha da nave continua como está.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-2",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "No relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3. Transfira o sorteio de x, confira os campos e só então remova a criação antiga.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Em Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos. Cada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "fechamento",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Confira um único nascimento por disparo do relógio, a queda, a animação, os acertos e as vidas. A nave e os asteroides agora têm sua arte, com as regras do jogo preservadas.\n\nNa Aula 8, você publica essa versão e aprende uma rotina para continuar criando fora dos cursos."
+        "markdown": "### Preparar a folha do asteroide\n\nAbra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64.\n\nA folha da nave continua como está."
       }
     },
     {
@@ -81,204 +60,102 @@
       "plannedVideo": "aula-07-passo-01: gravar a demonstração \"preparar a folha do asteroide\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Trocar o bloco que cria os asteroides\n\nNo relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3.\n\nTransfira o sorteio de x, confira os campos e só então remova a criação antiga."
+      }
+    },
+    {
       "key": "video-construir-2-1",
       "plannedVideo": "aula-07-passo-02: gravar a demonstração \"trocar o bloco que cria os asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"fazer os asteroides girarem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
+      "key": "convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Para não criar dois asteroides em cada disparo do relógio."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que retirar a criação antiga depois de conferir a nova?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para não criar dois asteroides em cada disparo do relógio."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para apagar o sorteio de posição."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Para remover todas as colisões."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Para não criar dois asteroides em cada disparo do relógio."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: preparar a folha do asteroide",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["64 por 64."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual tamanho de quadro usa folha-asteroide?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "32 por 32."
-            },
-            {
-              "id": "opcao-2",
-              "label": "800 por 480."
-            },
-            {
-              "id": "opcao-3",
-              "label": "64 por 64."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "64 por 64."
-        }
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Prepare a criação nova, confira os valores e remova a antiga. Rode só depois de conferir a troca."
       }
     },
     {
       "key": "checar-construir-2",
       "content": {
         "kind": "interactive",
-        "title": "Confira: trocar o bloco que cria os asteroides",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Grupo, sorteio de x e parâmetros do movimento."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Conte quantos blocos de criação ficaram dentro do relógio."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "O que preservar ao substituir o bloco do kit?",
+          "prompt": "Depois da troca, nasceram dois asteroides por vez. O que investigar?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "As duas criações executando juntas."
+              "label": "Se a folha da nave tem dois quadros."
             },
             {
               "id": "opcao-2",
-              "label": "Grupo, sorteio de x e parâmetros do movimento."
+              "label": "Se a capa do jogo foi alterada."
             },
             {
               "id": "opcao-3",
-              "label": "Somente a cor do editor."
+              "label": "Se as duas criações, antiga e nova, ficaram executando."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Grupo, sorteio de x e parâmetros do movimento."
+          "correctChoiceId": "opcao-3",
+          "explanation": "Duas criações no mesmo relógio podem dobrar a chuva. Preserve a nova e remova a antiga depois de conferir os dados."
         }
       }
     },
     {
-      "key": "checar-construir-3",
+      "key": "construir-3",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: fazer os asteroides girarem",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Quando ele nasce, usando folha-asteroide."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Quando cada novo asteroide deve receber girando?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Quando ele nasce, usando folha-asteroide."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Só no primeiro objeto de toda a partida."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Somente depois de perder."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Quando ele nasce, usando folha-asteroide."
-        }
+        "kind": "rich_text",
+        "markdown": "### Fazer os asteroides girarem\n\nEm Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos.\n\nCada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"fazer os asteroides girarem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Confira um único nascimento por disparo do relógio, a queda, a animação, os acertos e as vidas. A nave e os asteroides agora têm sua arte, com as regras do jogo preservadas.\n\nNa Aula 8, você publica essa versão e aprende uma rotina para continuar criando fora dos cursos.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
       }
     },
     {
       "key": "checar-fechamento",
       "content": {
         "kind": "interactive",
-        "title": "Confira: Teste e guarde sua criação",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Um nascimento por relógio, com queda, animação e colisões funcionando."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Cada nascimento cria outro objeto no grupo."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Qual resultado confirma a troca completa?",
+          "prompt": "Só o primeiro asteroide animou. Quando configurar a animação de cada um?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Duas criações por relógio."
+              "label": "Quando cada novo asteroide nasce."
             },
             {
               "id": "opcao-2",
-              "label": "Asteroides desenhados que não reagem a tiros."
+              "label": "Só uma vez antes de criar qualquer asteroide."
             },
             {
               "id": "opcao-3",
-              "label": "Um nascimento por relógio, com queda, animação e colisões funcionando."
+              "label": "Só depois que o asteroide sai da tela."
             }
           ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Um nascimento por relógio, com queda, animação e colisões funcionando."
+          "correctChoiceId": "opcao-1",
+          "explanation": "A configuração deve alcançar cada objeto novo. Confira folha-asteroide, girando, quadros 0 e 1, e teste vários nascimentos."
         }
       }
     }
@@ -286,24 +163,10 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Troque sem perder a configuração",
       "objective": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -313,39 +176,18 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "preparar a folha do asteroide",
-      "objective": "Abra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64. A folha da nave continua como está.",
+      "title": "Troque a pedra sem perder a chuva",
+      "objective": "Preservar grupo, sorteio e movimento na substituição do recurso.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": null,
-      "externalTool": "estudio",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "trocar o bloco que cria os asteroides",
-      "objective": "No relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3. Transfira o sorteio de x, confira os campos e só então remova a criação antiga.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-2"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
@@ -355,25 +197,11 @@
       }
     },
     {
-      "key": "construir-3",
-      "title": "fazer os asteroides girarem",
-      "objective": "Em Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos. Cada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": null,
-      "externalTool": "estudio",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Confira um único nascimento por disparo do relógio, a queda, a animação, os acertos e as vidas. A nave e os asteroides agora têm sua arte, com as regras do jogo preservadas.",
+      "title": "Cada pedra ganha movimento",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "checar-fechamento"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],

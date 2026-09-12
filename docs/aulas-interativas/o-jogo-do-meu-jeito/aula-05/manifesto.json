@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Abra o asteroide vetorial criado na Aula 4. A pedra ainda está parada e sem chamas.\n\nHoje você vai controlar a ordem visual das formas e criar uma animação com pedra e fogo.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Abra seu asteroide. Vamos colocar fogo atrás da pedra e transformar dois quadros em movimento.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -45,42 +45,14 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Formas que se sobrepõem funcionam como papéis colocados uns sobre os outros. Uma chama pode cobrir a pedra se estiver na frente; enviá-la para trás muda a leitura da imagem. Tons mais claros dentro de uma chama maior ajudam a criar um centro quente, mas a paleta é sua. Ao duplicar o quadro e mudar alguns detalhes, você cria movimento sem redesenhar tudo. O nome girando e os dois quadros ligam a arte ao programa depois."
+        "markdown": "Formas que se sobrepõem funcionam como papéis colocados uns sobre os outros. Uma chama pode cobrir a pedra se estiver na frente; enviá-la para trás muda a leitura da imagem.\n\nTons mais claros dentro de uma chama maior ajudam a criar um centro quente, mas a paleta é sua. Ao duplicar o quadro e mudar alguns detalhes, você cria movimento sem redesenhar tudo.\n\nO nome girando e os dois quadros ligam a arte ao programa depois."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Abra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos. Coloque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-2",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Copie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição. Você pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Duplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento. Rode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Renomeie a animação parado para girando. Confira dois quadros. Espere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "fechamento",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.\n\nNa Aula 6, seus desenhos vão entrar no projeto livre do Estúdio."
+        "markdown": "### A chama de fora\n\nAbra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos.\n\nColoque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo."
       }
     },
     {
@@ -88,238 +60,113 @@
       "plannedVideo": "aula-05-passo-01: gravar a demonstração \"a chama de fora\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### As chamas de dentro\n\nCopie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição.\n\nVocê pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu."
+      }
+    },
+    {
       "key": "video-construir-2-1",
       "plannedVideo": "aula-05-passo-02: gravar a demonstração \"as chamas de dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-05-passo-03: gravar a demonstração \"fazer a pedra rolar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-05-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
+      "key": "convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Controlar a ordem visual das formas e criar uma animação com pedra e fogo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Colocar as chamas atrás dela."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como deixar a pedra visível na frente do fogo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Colocar as chamas atrás dela."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Apagar a pedra."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Colocar todas as chamas na frente obrigatoriamente."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Colocar as chamas atrás dela."
-        }
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Escolha outras cores se quiser. O objetivo é deixar a pedra reconhecível na frente do fogo."
       }
     },
     {
       "key": "checar-construir-1",
       "content": {
         "kind": "interactive",
-        "title": "Confira: a chama de fora",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Atrás da pedra."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Pense em papéis colocados um sobre o outro."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Onde fica a chama externa em relação à pedra?",
+          "prompt": "Sua chama cobriu a pedra inteira. O que experimentar primeiro?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Sempre cobrindo toda a pedra."
+              "label": "Duplicar o quadro sem mudar a ordem das formas."
             },
             {
               "id": "opcao-2",
-              "label": "Em outro asset sem ligação."
+              "label": "Mandar a chama para trás da pedra."
             },
             {
               "id": "opcao-3",
-              "label": "Atrás da pedra."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Atrás da pedra."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: as chamas de dentro",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Copiar, colar e ajustar tamanho, cor e posição."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como criar uma chama interna a partir da externa?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Mudar o tamanho do jogo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Copiar, colar e ajustar tamanho, cor e posição."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Apagar a externa antes de copiar."
+              "label": "Apagar a pedra."
             }
           ],
           "correctChoiceId": "opcao-2",
-          "explanation": "Copiar, colar e ajustar tamanho, cor e posição."
+          "explanation": "A ordem das formas muda quem aparece na frente. Você pode manter a chama e recuperar o contorno da pedra."
         }
       }
     },
     {
-      "key": "checar-construir-3",
+      "key": "construir-3",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: fazer a pedra rolar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Alterar crateras e pontas do fogo e conferir a prévia."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como sugerir movimento no segundo quadro?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Alterar crateras e pontas do fogo e conferir a prévia."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Criar um novo asset a cada mudança."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Trocar só o nome, sem mudar a imagem."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Alterar crateras e pontas do fogo e conferir a prévia."
-        }
+        "kind": "rich_text",
+        "markdown": "### Fazer a pedra rolar\n\nDuplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento.\n\nRode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito."
       }
     },
     {
-      "key": "checar-construir-4",
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-05-passo-03: gravar a demonstração \"fazer a pedra rolar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-4",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: o nome da animação",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["girando, com dois quadros."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual animação deve ser salva no asteroide?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "voando, com nenhum quadro."
-            },
-            {
-              "id": "opcao-2",
-              "label": "parado, com um quadro vazio."
-            },
-            {
-              "id": "opcao-3",
-              "label": "girando, com dois quadros."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "girando, com dois quadros."
-        }
+        "kind": "rich_text",
+        "markdown": "### O nome da animação\n\nRenomeie a animação parado para girando. Confira dois quadros.\n\nEspere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-05-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.\n\nNa Aula 6, seus desenhos vão entrar no projeto livre do Estúdio.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
       }
     },
     {
       "key": "checar-fechamento",
       "content": {
         "kind": "interactive",
-        "title": "Confira: Teste e guarde sua criação",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Como dois assets separados."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O segundo quadro pode aproveitar o trabalho do primeiro."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Como nave e asteroide ficam na galeria?",
+          "prompt": "Você quer criar o segundo quadro sem refazer toda a pedra. Qual caminho ajuda?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Somente como uma publicação no Mural."
+              "label": "Criar outro asset separado para cada quadro."
             },
             {
               "id": "opcao-2",
-              "label": "Como dois assets separados."
+              "label": "Renomear para girando sem criar o segundo quadro."
             },
             {
               "id": "opcao-3",
-              "label": "Como um único asset sobrescrito."
+              "label": "Duplicar o quadro e mudar alguns detalhes antes de testar."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Como dois assets separados."
+          "correctChoiceId": "opcao-3",
+          "explanation": "Duplicar permite mudar fogo e crateras aos poucos. Confira dois quadros na animação girando e veja a prévia."
         }
       }
     }
@@ -327,24 +174,10 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "A pedra está escondida",
       "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -354,25 +187,18 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "a chama de fora",
-      "objective": "Abra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos. Coloque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo.",
+      "title": "Uma chama atrás da pedra",
+      "objective": "Controlar a sobreposição de formas sem impor um modelo visual.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-1"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -382,53 +208,18 @@
       }
     },
     {
-      "key": "construir-2",
-      "title": "as chamas de dentro",
-      "objective": "Copie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição. Você pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "fazer a pedra rolar",
-      "objective": "Duplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento. Rode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
-      }
-    },
-    {
-      "key": "construir-4",
-      "title": "o nome da animação",
-      "objective": "Renomeie a animação parado para girando. Confira dois quadros. Espere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.",
+      "title": "Dê movimento ao asteroide",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "checar-fechamento"],
+      "blockKeys": [
+        "construir-3",
+        "video-construir-3-1",
+        "construir-4",
+        "video-construir-4-1",
+        "fechamento",
+        "checar-fechamento"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],

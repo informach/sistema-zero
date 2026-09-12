@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Este projeto começa vazio. Você vai preparar uma tela para um dinossauro correr.\n\nHoje você vai preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Vamos preparar o mundo do seu Dino. Hoje ele vai existir nos blocos; na próxima aula, você vai colocá-lo na tela.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -16,10 +16,8 @@
       "content": {
         "kind": "interactive",
         "title": "Existe, mas ainda não aparece",
-        "instructions": "Você preparou a tela e criou o dino. Ainda não mandou desenhar. O que espera ver?",
-        "hints": [
-          "Pense na diferença entre preparar um personagem nos bastidores e colocá-lo diante da plateia."
-        ],
+        "instructions": "Você preparou a tela e criou o dino. Ainda não mandou desenhar. O que espera ver? Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["Pense no personagem nos bastidores e no personagem aparecendo no palco."],
         "required": true,
         "activity": {
           "type": "prediction",
@@ -40,23 +38,23 @@
           "outcome": "Só a tela preparada. O bloco de criação guarda o personagem, mas ele ainda precisa ser desenhado. Você vai confirmar isso ao terminar a montagem desta aula."
         },
         "checkpoint": {
-          "prompt": "Um personagem foi criado, mas não desenhado. O que isso significa?",
+          "prompt": "Você criou o Dino, mas ainda não mandou desenhar. O que precisa acontecer para vê-lo?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Ele já aparece por cima de tudo."
+              "label": "O jogo precisa criar outro Dino com o mesmo nome."
             },
             {
               "id": "opcao-2",
-              "label": "Ele existe na memória, mas ainda não aparece na tela."
+              "label": "O jogo precisa de um placar primeiro."
             },
             {
               "id": "opcao-3",
-              "label": "Ele não existe no jogo."
+              "label": "O jogo precisa desenhar o personagem."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Ele existe na memória, mas ainda não aparece na tela."
+          "correctChoiceId": "opcao-3",
+          "explanation": "Criar guarda as informações. Desenhar mostra o personagem. Nesta aula você prepara; na próxima, vai desenhar."
         }
       }
     },
@@ -64,42 +62,65 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela. Por isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo. O nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles."
+        "markdown": "Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela.\n\nPor isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo.\n\nO nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Montar a área que prepara o jogo\n\nEm Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-01-passo-01: gravar a demonstração \"montar a área que prepara o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu. Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Preparar a tela\n\nEm Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.\n\nLogo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4."
       }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-01-passo-02: gravar a demonstração \"preparar a tela\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço. Essa frase explica o jogo sem depender da imagem.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Contar o que é o seu jogo\n\nEm Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.\n\nEssa frase explica o jogo sem depender da imagem."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-01-passo-03: gravar a demonstração \"contar o que é o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Escolha o céu e escreva a descrição do jogo. Leia a frase sem olhar a imagem: dá para entender o que fazer?\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64. A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar o dino\n\nEm Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.\n\nA cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-01-passo-04: gravar a demonstração \"criar o dino\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Confira a tela, os nomes e a descrição. O dino ainda invisível é o resultado esperado desta aula, não um erro. Guarde e envie o projeto.\n\nNa Aula 2, você vai desenhar o dino e fazer o mundo se mover."
+        "markdown": "Confira a tela, os nomes e a descrição. O dino ainda invisível é o resultado esperado desta aula, não um erro. Guarde e envie o projeto.\n\nNa Aula 2, você vai desenhar o dino e fazer o mundo se mover.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -108,207 +129,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-01-passo-01: gravar a demonstração \"montar a área que prepara o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-01-passo-02: gravar a demonstração \"preparar a tela\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-01-passo-03: gravar a demonstração \"contar o que é o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-01-passo-04: gravar a demonstração \"criar o dino\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Ele existe na memória, mas ainda não aparece na tela."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Um personagem foi criado, mas não desenhado. O que isso significa?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Ele existe na memória, mas ainda não aparece na tela."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Ele não existe no jogo."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Ele já aparece por cima de tudo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Ele existe na memória, mas ainda não aparece na tela."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: preparar a tela",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["480 por 270."],
-        "required": false,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual tamanho de tela estamos preparando?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "800 por 800."
-            },
-            {
-              "id": "opcao-2",
-              "label": "480 por 270."
-            },
-            {
-              "id": "opcao-3",
-              "label": "270 por 480."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "480 por 270."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: contar o que é o seu jogo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Explicar objetivo e controles sem depender da imagem."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Para que serve a descrição para leitor de tela?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Explicar objetivo e controles sem depender da imagem."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Escolher a cor do céu."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Mudar a velocidade do dino."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Explicar objetivo e controles sem depender da imagem."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar o dino",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Mandar desenhar o dino."],
-        "required": false,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O dino foi criado, mas ainda não aparece. O que falta?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Criar vários dinos com o mesmo nome."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Aumentar a borda da tela."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Mandar desenhar o dino."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Mandar desenhar o dino."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Existe, mas ainda não aparece",
       "objective": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -318,25 +147,19 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "montar a área que prepara o jogo",
-      "objective": "Oi! Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa.",
+      "title": "Um lugar para o Dino",
+      "objective": "Preparar uma tela e descrever o objetivo e os controles sem depender da imagem.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -345,32 +168,8 @@
         "blockIds": [],
         "projectChecks": [
           {
-            "id": "area-sz_frame_start",
-            "label": "Montar Ao iniciar",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_frame_start"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "preparar a tela",
-      "objective": "Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu. Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "tela",
-            "label": "Preparar uma tela de 480 × 270 em Ao iniciar",
+            "id": "g2d-setup-stage",
+            "label": "Prepare a tela de 480 × 270 em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -380,75 +179,16 @@
                 "H": 270
               }
             }
-          },
-          {
-            "id": "borda",
-            "label": "Encaixar a borda com espessura 4 em Ao iniciar",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_stage_border",
-              "area": "start",
-              "inputs": {
-                "WIDTH": 4
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "contar o que é o seu jogo",
-      "objective": "Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço. Essa frase explica o jogo sem depender da imagem.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
-      }
-    },
-    {
-      "key": "construir-4",
-      "title": "criar o dino",
-      "objective": "Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64. A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "dino",
-            "label": "Criar dino em x 110, y 150 e tamanho 64, dentro de Ao iniciar",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_create_dino",
-              "area": "start",
-              "fields": {
-                "NAME": "dino"
-              },
-              "inputs": {
-                "X": 110,
-                "Y": 150,
-                "SIZE": 64
-              }
-            }
           }
         ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Confira a tela, os nomes e a descrição. O dino ainda invisível é o resultado esperado desta aula, não um erro. Guarde e envie o projeto.",
+      "title": "Seu Dino já existe",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

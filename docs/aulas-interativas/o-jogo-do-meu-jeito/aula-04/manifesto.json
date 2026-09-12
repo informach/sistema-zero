@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Sua nave já tem dois quadros de animação. Agora você vai criar o asset do asteroide no Pinta.\n\nHoje você vai comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Hoje vamos desenhar uma pedra espacial com pontos e curvas. Ela pode ser tortinha, redonda ou cheia de pontas. Você decide.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -48,42 +48,14 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Na pixel art, você decide quais quadradinhos da grade recebem cor. No vetor, descreve uma forma por pontos e curvas; o programa desenha a borda no tamanho escolhido. Ao ampliar, a grade e a curva se comportam de formas diferentes. Nenhuma técnica é melhor para toda imagem. Nesta aula, pontos e curvas ajudam a criar uma pedra irregular. O número de pontas, crateras e cores faz parte da sua autoria."
+        "markdown": "Na pixel art, você decide quais quadradinhos da grade recebem cor. No vetor, descreve uma forma por pontos e curvas; o programa desenha a borda no tamanho escolhido.\n\nAo ampliar, a grade e a curva se comportam de formas diferentes. Nenhuma técnica é melhor para toda imagem.\n\nNesta aula, pontos e curvas ajudam a criar uma pedra irregular. O número de pontas, crateras e cores faz parte da sua autoria."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Na galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64. Escreva asteroide. Esses dados precisam combinar com a importação da Aula 7.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-2",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Trace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos. O Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Use Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade. Quantas crateras usar e onde colocá-las é uma decisão sua.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Aproxime a borda do asteroide com o zoom. Compare com a nave em pixel art. O que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "fechamento",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Confira o asset asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.\n\nNa Aula 5, esse mesmo asteroide vai ganhar fogo e movimento."
+        "markdown": "### Começar o desenho novo\n\nNa galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64.\n\nEscreva asteroide. Esses dados precisam combinar com a importação da Aula 7."
       }
     },
     {
@@ -91,240 +63,113 @@
       "plannedVideo": "aula-04-passo-01: gravar a demonstração \"começar o desenho novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Traçar a pedra e arredondar\n\nTrace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos.\n\nO Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato."
+      }
+    },
+    {
       "key": "video-construir-2-1",
       "plannedVideo": "aula-04-passo-02: gravar a demonstração \"traçar a pedra e arredondar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### As crateras\n\nUse Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade.\n\nQuantas crateras usar e onde colocá-las é uma decisão sua."
+      }
     },
     {
       "key": "video-construir-3-1",
       "plannedVideo": "aula-04-passo-03: gravar a demonstração \"as crateras\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-04-passo-04: gravar a demonstração \"os dois jeitos de desenhar, lado a lado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
+      "key": "convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Com formas, pontos e curvas."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como o vetor descreve uma imagem?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Com formas, pontos e curvas."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Somente com quadradinhos fixos de pixel art."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Com o número de vidas do jogo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Com formas, pontos e curvas."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: começar o desenho novo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Vetor, Personagem, 64 por 64."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Quais dados deve ter o asset asteroide?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Pixel art, Personagem, 32 por 32."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Vetor, Cenário, 480 por 270."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Vetor, Personagem, 64 por 64."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Vetor, Personagem, 64 por 64."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: traçar a pedra e arredondar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Fechar a forma e ajustar seus pontos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que permite formar e arredondar a pedra?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Mudar os controles do jogo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Fechar a forma e ajustar seus pontos."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Criar outra nave."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Fechar a forma e ajustar seus pontos."
-        }
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Escolha o contorno e as crateras. Use Selecionar antes de criar uma forma nova para não alterar a pedra sem querer."
       }
     },
     {
       "key": "checar-construir-3",
       "content": {
         "kind": "interactive",
-        "title": "Confira: as crateras",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Usar Selecionar e criar formas menores por cima."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Confira qual ferramenta está ativa e o que está selecionado."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Antes de desenhar crateras, como sair da edição da pedra?",
+          "prompt": "Você quer uma cratera nova, mas ainda está editando os pontos da pedra. O que fazer primeiro?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Usar Selecionar e criar formas menores por cima."
+              "label": "Continuar puxando os pontos da pedra."
             },
             {
               "id": "opcao-2",
-              "label": "Apagar a pedra inteira."
+              "label": "Aumentar o zoom para criar outra forma automaticamente."
             },
             {
               "id": "opcao-3",
-              "label": "Renomear a animação."
+              "label": "Usar Selecionar e sair da edição da pedra."
             }
           ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Usar Selecionar e criar formas menores por cima."
+          "correctChoiceId": "opcao-3",
+          "explanation": "Sair da edição dos pontos permite construir as crateras como outras formas. Quantidade, cores e posições são suas escolhas."
         }
       }
     },
     {
-      "key": "checar-construir-4",
+      "key": "construir-4",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: os dois jeitos de desenhar, lado a lado",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A borda em curva do vetor e a grade da pixel art."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que comparar entre o asteroide e a nave ao ampliar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A quantidade de vidas no jogo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O tempo de publicação no Mural."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A borda em curva do vetor e a grade da pixel art."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "A borda em curva do vetor e a grade da pixel art."
-        }
+        "kind": "rich_text",
+        "markdown": "### Os dois jeitos de desenhar, lado a lado\n\nAproxime a borda do asteroide com o zoom. Compare com a nave em pixel art.\n\nO que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-04-passo-04: gravar a demonstração \"os dois jeitos de desenhar, lado a lado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Confira o desenho asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.\n\nNa Aula 5, esse mesmo asteroide vai ganhar fogo e movimento.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
       }
     },
     {
       "key": "checar-fechamento",
       "content": {
         "kind": "interactive",
-        "title": "Confira: Teste e guarde sua criação",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Não; forma, cores e crateras são escolhas suas, preservando os dados do asset."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O desenho também precisa funcionar no tamanho em que será visto no jogo."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "A pedra precisa ter exatamente as crateras do exemplo?",
+          "prompt": "A pedra fica bonita no zoom, mas as crateras somem quando ela está pequena. O que experimentar?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Sim; o desenho precisa ser copiado pixel por pixel."
+              "label": "Ajustar o contraste ou simplificar os detalhes e olhar de novo."
             },
             {
               "id": "opcao-2",
-              "label": "Não; forma, cores e crateras são escolhas suas, preservando os dados do asset."
+              "label": "Exigir que toda pedra tenha quatro crateras."
             },
             {
               "id": "opcao-3",
-              "label": "Sim; qualquer outra forma é inválida."
+              "label": "Mudar o tamanho do zoom e nunca olhar o tamanho normal."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Não; forma, cores e crateras são escolhas suas, preservando os dados do asset."
+          "correctChoiceId": "opcao-1",
+          "explanation": "Ver de perto e de longe ajuda a escolher detalhes legíveis. Não existe uma quantidade obrigatória de crateras."
         }
       }
     }
@@ -332,24 +177,10 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Como a borda muda no zoom?",
       "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -359,53 +190,20 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "começar o desenho novo",
-      "objective": "Na galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64. Escreva asteroide. Esses dados precisam combinar com a importação da Aula 7.",
+      "title": "Modele sua pedra espacial",
+      "objective": "Construir uma forma fechada e acrescentar detalhes com autonomia.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "traçar a pedra e arredondar",
-      "objective": "Trace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos. O Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "as crateras",
-      "objective": "Use Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade. Quantas crateras usar e onde colocá-las é uma decisão sua.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1",
+        "checar-construir-3"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -415,25 +213,11 @@
       }
     },
     {
-      "key": "construir-4",
-      "title": "os dois jeitos de desenhar, lado a lado",
-      "objective": "Aproxime a borda do asteroide com o zoom. Compare com a nave em pixel art. O que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": null,
-      "externalTool": "pinta",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Confira o asset asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.",
+      "title": "Veja sua pedra de perto e de longe",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "checar-fechamento"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],

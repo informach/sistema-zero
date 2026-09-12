@@ -1,6 +1,6 @@
 # Desenhe a sua nave no Pinta
 
-Uma aula, organizada em 9 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 4 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-02-o-jogo-do-meu-jeito.md`. SHA-256: `e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,49 +13,84 @@ Seu jogo está no Estúdio Completo. A nave ainda é a do Kit espaço, e você v
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Uma luz, dois lados | Resolver a descoberta. |
+| Desenhe a silhueta da sua nave | Responder uma pergunta de decisão. |
+| Escolha a luz e as cores | Responder uma pergunta de decisão. |
+| Guarde a nave para animar | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Uma luz, dois lados
+
+**Intenção e objetivo (professor):** Exploração · Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.
 
 **Texto para o aluno:**
 
-Oi! Seu jogo está no Estúdio Completo. A nave ainda é a do Kit espaço, e você vai criar a sua própria arte.
+Oi! Sua nave vai ganhar um desenho feito por você. Escolha o formato e as cores; vamos reservar um cantinho para o fogo da próxima aula.
 
-Hoje você vai criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Uma luz, dois lados**
 
-## 2. Descoberta antes da explicação
+Modelo: `prediction`. Critério desta seção.
 
-**Modelo:** prediction. **Essencial:** não; a previsão é um convite, sem punição por hipótese inicial.
+Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros? Sua primeira ideia pode mudar depois da observação.
 
-**Título:** Uma luz, dois lados
+**Previsões (sem nota):** No lado que recebe a luz · No lado oposto · Em todos os pixels com a mesma cor
 
-Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros?
+**Depois de observar:** Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Pergunta:** A luz vem da esquerda. Que teste ajuda a sugerir volume na nave?
 
-**Pistas disponíveis:**
+- Aumentar o zoom sem mudar nenhuma cor.
+- Clarear o lado iluminado e comparar com uma sombra no outro.
+- Pintar todos os pixels com o mesmo tom.
 
-- Observe um objeto perto de você e perceba qual lado está mais iluminado.
+**Resposta esperada (professor):** Clarear o lado iluminado e comparar com uma sombra no outro.
 
-## 3. Explicação após observar
+**Devolutiva:** Claro e sombra podem sugerir volume. Você escolhe as cores e, depois, pode escolher outra direção para a luz.
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+**Pistas:**
 
-Pixel art constrói a imagem sobre uma grade de pequenos quadrados. Ao ampliar, esses quadrados ficam evidentes; isso faz parte do estilo. O espelho ajuda a construir duas metades parecidas, mas você pode desligá-lo para detalhes diferentes. Luz e sombra ficam mais coerentes quando você escolhe de que lado vem a luz. A forma e as cores são suas. O tamanho, o tipo do asset e o nome precisam combinar com os blocos que vão usar a imagem depois.
+- Imagine uma lanterna iluminando um lado do desenho.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+**Texto para o aluno:**
 
-## Demonstrações e aplicação
+Pixel art constrói a imagem sobre uma grade de pequenos quadrados. Ao ampliar, esses quadrados ficam evidentes; isso faz parte do estilo.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+O espelho ajuda a construir duas metades parecidas, mas você pode desligá-lo para detalhes diferentes. Luz e sombra ficam mais coerentes quando você escolhe de que lado vem a luz.
 
-### 1. conhecer o Pinta e começar o desenho
+A forma e as cores são suas. O tamanho, o tipo do asset e o nome precisam combinar com os blocos que vão usar a imagem depois.
 
-**Narração revisada:**
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32. Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.
+## 2. Desenhe a silhueta da sua nave
 
-**Na tela (sequência técnica preservada do original):**
+**Intenção e objetivo (professor):** Aplicação · Preparar a arte integrada ao jogo e reservar espaço para animar.
+
+**Ferramenta externa:** Pinta. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Conhecer o Pinta e começar o desenho
+
+Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32.
+
+Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 no menu da esquerda, apontar o item **Pinta** antes de clicar, e clicar. Mostrar a
 galeria vazia e o cabeçalho com os botões **"Trazer de volta"**, **"Trazer uma foto"** e
@@ -67,17 +102,19 @@ passo 3, mostrar que o **Pequeno** vem marcado e clicar em **Médio**, com zoom 
 No passo 4, escrever `nave`, com zoom na frase de ajuda embaixo do campo. Confirmar em **"Começar a
 desenhar"** e mostrar a tela de desenho abrindo, com a grade ligada.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-02-passo-01: gravar a demonstração "conhecer o Pinta e começar o desenho" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. o contorno da nave
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### O contorno da nave
 
-Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica. Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.
+Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica.
 
-**Na tela (sequência técnica preservada do original):**
+Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 o Júlio desenha o contorno da nave dele devagar, no ritmo da narração. **Mostrar as duas
 naves de referência dele**, lado a lado, e apontar em cima delas o que ele vai aproveitar de cada
@@ -91,17 +128,51 @@ tempo. Desfazer com **Ctrl+Z** uma vez e refazer o traço num ângulo melhor, mo
 experimenta. Fazer a asa, a ponta, a traseira e a cabine. Terminar apontando o **espaço vazio**
 embaixo da nave, umas quatro fileiras de quadradinhos.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-02-passo-02: gravar a demonstração "o contorno da nave" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. pintar
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Faça uma nave que você reconheça mesmo pequena. Pode ser diferente da nave do Júlio.
 
-Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado. Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Sua nave ocupou toda a altura. Onde o fogo da próxima aula vai caber?
+
+- Vou mudar a cor do fundo; isso aumenta a folha.
+- Vou ajustar o corpo para deixar quatro linhas livres embaixo.
+- Vou aumentar só o zoom; isso cria linhas novas.
+
+**Resposta esperada (professor):** Vou ajustar o corpo para deixar quatro linhas livres embaixo.
+
+**Devolutiva:** Reservar quatro linhas na folha de 32 × 32 deixa espaço para o fogo. O formato do corpo continua sendo escolha sua.
+
+**Pistas:**
+
+- Zoom muda o que você vê, mas não muda a quantidade de pixels do desenho.
+
+**Critério configurado:** `checar-construir-2`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Escolha a luz e as cores
+
+**Intenção e objetivo (professor):** Aplicação · Experimentar contraste e direção da luz na própria arte.
+
+**Ferramenta externa:** Pinta. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Pintar
+
+Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado.
+
+Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 o Júlio pinta a nave dele. Desligar o espelho, com zoom no botão apagando e na linha
 tracejada sumindo da tela. Mostrar a paleta e a escolha do **lilás `#a4839f`** como cor base, com um
@@ -114,17 +185,19 @@ entram só em pedacinhos.
 Terminar com três naves bem diferentes lado a lado, com esquemas de cor bem distintos, pra deixar
 claro quanta variação cabe neste mesmo passo.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-02-passo-03: gravar a demonstração "pintar" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. luz e sombra
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Luz e sombra
 
-Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra. Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.
+Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra.
 
-**Na tela (sequência técnica preservada do original):**
+Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 o Júlio escolhe de que lado vem a luz na nave dele e desenha uma setinha fora do desenho
 pra marcar o lado. Pegar o **Lápis** na caixa de ferramentas, com zoom, e **não largar ele até o fim
@@ -140,17 +213,51 @@ Comparar, com um corte rápido, a nave dele de antes e a de agora. Terminar com 
 nave lado a lado, uma com a luz vindo da esquerda e outra da direita, pra deixar claro que as duas
 estão certas.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-02-passo-04: gravar a demonstração "luz e sombra" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 5. guardar o seu desenho
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Afaste o zoom. Se um detalhe desaparecer, experimente outra cor ou uma forma mais simples.
 
-Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave. O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o asset.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Você escolheu luz vindo da direita. Onde experimentaria os detalhes mais claros?
+
+- No lado direito, que recebe essa luz.
+- Sempre à esquerda, porque foi o lado do exemplo.
+- Em todos os pixels com a mesma cor.
+
+**Resposta esperada (professor):** No lado direito, que recebe essa luz.
+
+**Devolutiva:** A luz escolhida orienta o claro e a sombra. Você pode escolher outro lado; o que importa é observar o efeito no seu desenho.
+
+**Pistas:**
+
+- Imagine uma lanterna do lado que você escolheu.
+
+**Critério configurado:** `checar-construir-4`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 4. Guarde a nave para animar
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.
+
+**Ferramenta externa:** Pinta. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Guardar o seu desenho
+
+Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave.
+
+O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o desenho.
+
+**Vídeo planejado:** `video-construir-5-1`
+
+**Na tela (sequência técnica preservada):**
 
 dar zoom no selo **"Salvo"**, na barra de cima do editor, e logo depois no selo
 **"Guardado na sua conta"**, que fica **acima da barra do desenho, encostado na direita**, e é o
@@ -160,85 +267,56 @@ cena curta: a mesma galeria, com a `nave` lá, num computador diferente. No fim,
 setinha "Voltar"**, na ponta esquerda da barra, clicar, e mostrar a galeria com o cartão da `nave`.
 Terminar nela, com o cartão à vista e nenhuma janela aberta.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-02-passo-05: gravar a demonstração "guardar o seu desenho" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Confira nome nave, tipo Personagem, 32 × 32 e quatro linhas livres embaixo. Abra novamente pela galeria. Seu desenho pode ser muito diferente do exemplo.
 
-Na Aula 3, o mesmo asset nave vai ganhar fogo em dois quadros. Não crie outro desenho.
+Na Aula 3, o mesmo desenho nave vai ganhar fogo em dois quadros. Não crie outro desenho.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Depois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** Você fechou o Pinta e quer conferir sua nave. O que fazer?
 
-## Verificações para avançar nas seções
+- Criar outra nave antes de olhar a galeria.
+- Confiar só no nome do arquivo sem abrir o desenho.
+- Abrir o cartão nave na galeria e conferir o desenho.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** Abrir o cartão nave na galeria e conferir o desenho.
 
-### A criação de hoje
+**Devolutiva:** Reabrir ajuda a conferir o salvamento. Veja também Personagem, 32 × 32 e o espaço livre para o fogo.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.
+- Confira o trabalho no lugar em que ele fica guardado.
 
-### Uma luz, dois lados
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-**Checagem:** O que caracteriza pixel art ao ampliar a imagem?
+## Cadastro e validação em staging
 
-**Resposta e explicação:** Os quadradinhos da grade ficam evidentes.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-### O que aconteceu?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Checagem:** O que caracteriza pixel art ao ampliar a imagem?
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-**Resposta e explicação:** Os quadradinhos da grade ficam evidentes.
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-### conhecer o Pinta e começar o desenho
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Checagem:** Quais dados deve ter o novo asset nave?
+**Cartões antigos a retirar após reimportação:**
 
-**Resposta e explicação:** Pixel art, Personagem, 32 por 32.
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: conhecer o Pinta e começar o desenho
+- `checar-construir-3`: Confira: pintar
+- `checar-construir-5`: Confira: guardar o seu desenho
 
-### o contorno da nave
-
-**Checagem:** Por que deixar quatro linhas livres embaixo da nave?
-
-**Resposta e explicação:** Para desenhar o fogo na próxima aula.
-
-### pintar
-
-**Checagem:** Como fazer detalhes diferentes nos dois lados?
-
-**Resposta e explicação:** Desligar o espelho quando necessário.
-
-### luz e sombra
-
-**Checagem:** Como manter luz e sombra coerentes?
-
-**Resposta e explicação:** Escolher de onde vem a luz e respeitar esse lado.
-
-### guardar o seu desenho
-
-**Checagem:** Como conferir que o desenho ficou guardado?
-
-**Resposta e explicação:** Esperar salvar e abrir novamente o cartão nave na galeria.
-
-### Teste e guarde sua criação
-
-**Checagem:** O que deve continuar livre para a animação da próxima aula?
-
-**Resposta e explicação:** Quatro linhas embaixo da nave.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

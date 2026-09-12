@@ -9,9 +9,7 @@ export const ZAPPY_SRC: Record<MascotExpression, string> = {
   celebrating: '/zappy/celebrating.webp',
   thinking: '/zappy/thinking.webp',
   sleeping: '/zappy/sleeping.webp',
-  // Acenando, cara de quem está falando: a pose do balão de diálogo. Veio do
-  // funil (onde já existia) e foi encaixada no mesmo canvas 300x300 das outras,
-  // senão o `size-*` do call site renderiza esta menor que as demais.
+  // Acenando: pose do balão de diálogo, no mesmo canvas 300x300 das outras.
   speaking: '/zappy/speaking.webp',
 }
 
@@ -21,7 +19,7 @@ interface KidsMascotProps {
 }
 
 /**
- * Mascote oficial do Sistema Zero Kids: o robô **Zappy**. Um `<img>` por
+ * Mascote oficial do Sistema Zero Kids: o vagalume **Zappy**. Um `<img>` por
  * expressão (WebP transparente 1:1 em `public/zappy/`), server-safe — a
  * className controla o tamanho (`size-12` por padrão) e herda as animações
  * de movimento da marca (`kid-float`/`kid-wiggle`/`animate-pulse`). Drop-in da

@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! O projeto vem da Aula 6 com limpeza dos cactos e sem o contador de diagnóstico.\n\nHoje você vai usar uma condição para executar a partida somente na tela jogando.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Vamos ensinar o jogo a esperar pelo jogador. No fim de hoje, só a floresta deve aparecer. Esse é o plano!\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -44,35 +44,86 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos. Podemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção. Mover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar."
+        "markdown": "Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos.\n\nPodemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção.\n\nMover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio. Agora o jogo sabe em qual tela começa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Dizer em qual tela o jogo abre\n\nEm Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.\n\nAgora o jogo sabe em qual tela começa."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-07-passo-01: gravar a demonstração \"dizer em qual tela o jogo abre\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas. Escolha jogando.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### A pergunta da tela \"jogando\"\n\nEm Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.\n\nEscolha jogando."
       }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-07-passo-02: gravar a demonstração \"a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora. Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Mudar o jogo pra dentro\n\nArraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.\n\nEnvolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Confira os dois lugares protegidos pelo Se: as ações de cada quadro e o nascimento dos cactos."
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O relógio pode executar mesmo quando os objetos não são desenhados."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Você protegeu o desenho com Se jogando, mas o relógio ficou de fora. O que pode acontecer?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Ele vai esperar só porque o Dino não aparece."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Ele passa a funcionar apenas quando alguém pula."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Ele pode criar cactos enquanto a partida ainda espera."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "A condição precisa proteger também a criação. Nesta aula, ficar só com a floresta é o resultado esperado."
+        }
       }
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.\n\nNa Aula 8, a tela de início vai convidar o jogador e permitir que ele comece."
+        "markdown": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.\n\nNa Aula 8, a tela de início vai convidar o jogador e permitir que ele comece.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -81,201 +132,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-07-passo-01: gravar a demonstração \"dizer em qual tela o jogo abre\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-07-passo-02: gravar a demonstração \"a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Usar uma condição para executar a partida somente na tela jogando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Usar uma condição para executar a partida somente na tela jogando."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Usar uma condição para executar a partida somente na tela jogando."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Executar ações da partida apenas nesse momento."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Para que serve Se a tela é jogando?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Executar ações da partida apenas nesse momento."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Trocar o nome de todos os sprites."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Apagar a floresta em todas as telas."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Executar ações da partida apenas nesse momento."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: dizer em qual tela o jogo abre",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["inicio."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual tela deve ser definida ao iniciar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "fim."
-            },
-            {
-              "id": "opcao-2",
-              "label": "jogando automaticamente."
-            },
-            {
-              "id": "opcao-3",
-              "label": "inicio."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "inicio."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: a pergunta da tela \"jogando\"",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A tela atual é jogando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual condição deve proteger as ações da partida?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O dino já foi desenhado uma vez."
-            },
-            {
-              "id": "opcao-2",
-              "label": "A tela atual é jogando."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A cor da floresta é verde."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A tela atual é jogando."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: mudar o jogo pra dentro",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["O relógio que cria cactos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Além das ações de cada quadro, o que precisa da mesma condição?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O relógio que cria cactos."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Somente o título da aula."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A escolha da cor no editor."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O relógio que cria cactos."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "O relógio espera a partida?",
       "objective": "Usar uma condição para executar a partida somente na tela jogando.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -285,53 +150,20 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "dizer em qual tela o jogo abre",
-      "objective": "Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio. Agora o jogo sabe em qual tela começa.",
+      "title": "A floresta espera a partida",
+      "objective": "Condicionar tanto a atualização quanto o relógio de criação à tela jogando.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "a pergunta da tela \"jogando\"",
-      "objective": "Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas. Escolha jogando.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "mudar o jogo pra dentro",
-      "objective": "Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora. Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1",
+        "checar-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -342,8 +174,8 @@
     },
     {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.",
+      "title": "Confira a espera do jogo",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",

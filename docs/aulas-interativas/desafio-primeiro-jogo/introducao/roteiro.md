@@ -1,6 +1,6 @@
 # Seu lugar para criar
 
-Uma aula, organizada em 9 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-introdutoria-desafio-primeiro-jogo.md`. SHA-256: `d3cb9fa0eb04bef925ae16af822ecb9222d66b10a498fd87cfd081b869b4e9fe`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,187 +13,242 @@ Este é seu primeiro encontro com a comunidade. Você ainda não precisa saber p
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Seu espaço para criar | Responder uma pergunta de decisão. |
+| Encontre a aula e a ajuda | Responder uma pergunta de decisão. |
+| Seu primeiro jogo vem aí | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Seu espaço para criar
+
+**Intenção e objetivo (professor):** Exploração · Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.
 
 **Texto para o aluno:**
 
-Oi! Este é seu primeiro encontro com a comunidade. Você ainda não precisa saber programar.
+Oi! Aqui você vai criar jogos, experimentar ideias e encontrar ajuda. Hoje vamos conhecer os caminhos para começar. Seu avatar e seu quarto podem ganhar sua cara aos poucos.
 
-Hoje você vai encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Como você gostaria de começar?**
 
-## 2. Descoberta antes da explicação
+Modelo: `prediction`. Exploração opcional.
 
-**Modelo:** prediction. **Essencial:** não; a previsão é um convite, sem punição por hipótese inicial.
+Escolha o que mais dá vontade de fazer. Depois veja como essas partes se encontram. Sua primeira ideia pode mudar depois da observação.
 
-**Título:** Como você gostaria de começar?
+**Previsões (sem nota):** Montar meu jogo · Escolher meu avatar · Conhecer o meu quarto
 
-Escolha o que mais dá vontade de fazer. Depois veja como essas partes se encontram.
+**Depois de observar:** Esses caminhos fazem parte da comunidade. Hoje você conhece o espaço; no Dia 1 começa o jogo. Personalizar o perfil é uma escolha sua, e o curso continua disponível pelo menu Cursos.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
-
-**Pistas disponíveis:**
+**Pistas:**
 
 - Não existe uma preferência certa. Escolha o que desperta sua curiosidade.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+Seu perfil guarda sua jornada. O avatar e o quarto são formas de se expressar; os cursos ensinam a criar.
 
-Seu perfil guarda sua jornada. O avatar e o quarto são formas de se expressar; os cursos ensinam a criar. XP, moedas e missões registram atividades, mas não compram o acesso a todos os blocos. A Carreira segue os cursos, as publicações e as regras indicadas no seu perfil. Dentro de uma aula você pode explorar, ler, assistir a uma demonstração e construir. O índice deixa você voltar ao ponto de que precisa. O botão de ajuda leva sua dúvida e a seção ao professor. O responsável cuida das opções da conta na Área dos pais.
+XP, moedas e missões registram atividades, mas não compram o acesso a todos os blocos. A Carreira segue os cursos, as publicações e as regras indicadas no seu perfil.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+Dentro de uma aula você pode explorar, ler, assistir a uma demonstração e construir. O índice deixa você voltar ao ponto de que precisa.
 
-## Demonstrações e aplicação
+O botão de ajuda leva sua dúvida e a seção ao professor. O responsável cuida das opções da conta na Área dos pais.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+**Narração revisada / instruções disponíveis em texto:**
 
-### 1. Conhecer seu perfil
+### Conhecer seu perfil
 
-**Narração revisada:**
+Este espaço é seu. Abra o Perfil e veja o avatar.
 
-Oi! Este espaço é seu. Abra o Perfil e veja o avatar. Se quiser, escolha peças, entre na Cabine de fotos e tire a foto. Você pode voltar depois para mudar. Não precisa terminar toda a personalização para começar seu jogo.
+Se quiser, escolha peças, entre na Cabine de fotos e tire a foto. Você pode voltar depois para mudar.
 
-**Na tela (sequência técnica preservada do original):**
+Não precisa terminar toda a personalização para começar seu jogo.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 Gravar Perfil → avatar → Cabine de fotos → foto no perfil; não exigir personalização.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** introducao-passo-01: gravar a demonstração "Conhecer seu perfil" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. Conhecer o quarto
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Conhecer o quarto
 
-Abra o Quarto e experimente posicionar um item. As configurações que envolvem sua conta e a visibilidade do perfil ficam com seu responsável, na Área dos pais. Convide essa pessoa para conhecer o espaço com você.
+Abra o Quarto e experimente posicionar um item. As configurações que envolvem sua conta e a visibilidade do perfil ficam com seu responsável, na Área dos pais.
 
-**Na tela (sequência técnica preservada do original):**
+Convide essa pessoa para conhecer o espaço com você.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 Gravar o quarto e a entrada protegida da Área dos pais, com conta de demonstração; não expor configurações reais.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** introducao-passo-02: gravar a demonstração "Conhecer o quarto" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. Encontrar o curso e os materiais
+**Atividade: Uma decisão para continuar**
 
-**Narração revisada:**
+Modelo: `checkpoint`. Critério desta seção.
 
-No menu Cursos, abra o Desafio do Primeiro Jogo. Encontre o Caderno do Aluno e mostre o Mapa dos Pais ao seu responsável. Na lista de aulas, procure o Dia 1 pelo nome.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-**Na tela (sequência técnica preservada do original):**
+**Pergunta:** Seu avatar ainda não ficou como você imaginou. Pode começar o curso?
+
+- Pode começar e voltar ao avatar depois.
+- Precisa terminar toda a personalização primeiro.
+- Precisa comprar todas as peças do avatar.
+
+**Resposta esperada (professor):** Pode começar e voltar ao avatar depois.
+
+**Devolutiva:** O curso fica disponível pelo menu Cursos. Você pode cuidar do avatar em outro momento.
+
+**Pistas:**
+
+- Personalizar é uma escolha que pode continuar depois.
+
+**Critério configurado:** `checar-construir-1`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 2. Encontre a aula e a ajuda
+
+**Intenção e objetivo (professor):** Aplicação · Localizar a primeira aula e reconhecer como pedir ajuda com contexto.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Encontrar o curso e os materiais
+
+No menu Cursos, abra o Desafio do Primeiro Jogo. Encontre o Caderno do Aluno e mostre o Mapa dos Pais ao seu responsável.
+
+Na lista de aulas, procure o Dia 1 pelo nome.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 Gravar Cursos → trilha → Desafio → lista, indicando Caderno do Aluno e Mapa dos Pais disponíveis.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** introducao-passo-03: gravar a demonstração "Encontrar o curso e os materiais" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. Navegar pela aula
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Navegar pela aula
 
-Dentro da aula, veja o objetivo da seção e abra o índice. Você pode voltar a uma explicação, testar uma descoberta e continuar seu projeto. Para tirar uma dúvida, use Pedir ajuda nesta seção e conte o que tentou.
+Dentro da aula, leia a orientação da etapa e abra o índice. Você pode voltar a uma explicação, testar uma descoberta e continuar seu projeto.
 
-**Na tela (sequência técnica preservada do original):**
+Para tirar uma dúvida, use Preciso de ajuda e conte o que tentou.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 Gravar o novo índice de seções, uma exploração e a ajuda contextual. Substitui a explicação antiga de três modos e criação guiada.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** introducao-passo-04: gravar a demonstração "Navegar pela aula" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 5. Guardar e concluir
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Imagine que sua nave não aparece. Encontre o botão Preciso de ajuda. Você não precisa enviar uma mensagem de teste.
 
-Ao mudar seu projeto, espere o aviso de salvo antes de fechar. Quando a atividade pedir uma entrega, use Enviar para o professor. Para concluir a aula, confira as atividades essenciais e a entrega. Você não precisa deixar um vídeo rodando até o fim.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** A nave não apareceu. Qual recado dá uma pista melhor para o professor?
+
+- “Criei a nave, mas ela não apareceu quando rodei.”
+- “Não deu.”
+- “Veja meu jogo”, sem contar o que aconteceu.
+
+**Resposta esperada (professor):** “Criei a nave, mas ela não apareceu quando rodei.”
+
+**Devolutiva:** Contar o que você tentou ajuda o professor a entender a dúvida. O botão Preciso de ajuda já leva o nome da aula e da seção.
+
+**Pistas:**
+
+- Conte a ação que você fez e o resultado que apareceu.
+
+**Critério configurado:** `checar-construir-4`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Seu primeiro jogo vem aí
+
+**Intenção e objetivo (professor):** Fechamento · Distinguir guardar um projeto de entregar uma atividade e localizar o Dia 1. Esta introdução não exige uma criação.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Guardar e concluir
+
+Ao mudar seu projeto, espere o aviso de salvo antes de fechar. Quando a atividade pedir uma entrega, use Enviar para o professor.
+
+Para concluir a aula, confira as atividades essenciais e a entrega. Você não precisa deixar um vídeo rodando até o fim.
+
+**Vídeo planejado:** `video-construir-5-1`
+
+**Na tela (sequência técnica preservada):**
 
 Gravar o selo de salvamento, a entrega e a conclusão manual da aula. Separar salvamento do rascunho e envio para o professor.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** introducao-passo-05: gravar a demonstração "Guardar e concluir" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Encontre o Dia 1 pelo nome e mostre onde você pediria ajuda se o projeto não funcionasse. Se quiser, deixe seu avatar com sua cara.
 
 No Dia 1 você vai montar a tela e dar movimento à nave.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Responda à pergunta final e siga para o Dia 1. Você ainda não precisa ter um projeto pronto.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** Você quer continuar amanhã e ainda não terminou a criação. O que faz agora?
 
-## Verificações para avançar nas seções
+- Cria outro projeto para guardar cada mudança.
+- Espera o aviso de salvo e retoma o mesmo projeto depois.
+- Envia qualquer versão só para fechar a página.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** Espera o aviso de salvo e retoma o mesmo projeto depois.
 
-### A criação de hoje
+**Devolutiva:** Salvar permite continuar de onde parou. Enviar registra a entrega quando a atividade pedir. No Dia 1 você começa a construção.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.
+- Guardar para continuar e entregar ao professor são ações diferentes.
 
-### Como você gostaria de começar?
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-**Checagem:** O que determina o acesso às ferramentas da Carreira?
+## Cadastro e validação em staging
 
-**Resposta e explicação:** Os cursos, publicações e regras indicadas no perfil.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-### O que aconteceu?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Checagem:** O que determina o acesso às ferramentas da Carreira?
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-**Resposta e explicação:** Os cursos, publicações e regras indicadas no perfil.
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-### Conhecer seu perfil
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Checagem:** É preciso terminar toda a personalização do avatar para começar?
+**Cartões antigos a retirar após reimportação:**
 
-**Resposta e explicação:** Não; é possível voltar a personalizar depois.
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-2`: Confira: Conhecer o quarto
+- `checar-construir-3`: Confira: Encontrar o curso e os materiais
+- `checar-construir-5`: Confira: Guardar e concluir
 
-### Conhecer o quarto
-
-**Checagem:** Quem cuida das configurações da conta e da visibilidade do perfil?
-
-**Resposta e explicação:** O responsável, na Área dos pais.
-
-### Encontrar o curso e os materiais
-
-**Checagem:** Como encontrar o primeiro passo do projeto?
-
-**Resposta e explicação:** Abrir o curso e procurar o Dia 1 pelo nome.
-
-### Navegar pela aula
-
-**Checagem:** Onde enviar uma dúvida sobre a etapa atual?
-
-**Resposta e explicação:** No botão Preciso de ajuda da seção, contando o que tentou.
-
-### Guardar e concluir
-
-**Checagem:** Salvar e enviar ao professor são a mesma coisa?
-
-**Resposta e explicação:** Não; salvar guarda o trabalho e enviar registra a entrega pedida.
-
-### Teste e guarde sua criação
-
-**Checagem:** Qual é a próxima aula de construção que você deve procurar?
-
-**Resposta e explicação:** Dia 1 do Desafio do Primeiro Jogo.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Você terminou o Desafio do Primeiro Jogo e publicou no Mural. O Pinta e o Estúdio Completo estão disponíveis conforme sua Carreira e o acesso da conta.\n\nHoje você vai levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Vamos levar o jogo do Dia 5 para um espaço onde você pode continuar criando. Primeiro, descubra onde cada versão fica guardada.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -51,42 +51,14 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Um projeto guarda o jogo com seus blocos e recursos. A aula tem um projeto ligado à atividade; o Estúdio Completo tem uma lista de projetos livres. Exportar e importar faz a ponte entre esses lugares. Publicar no Mural cria uma versão para jogar, e editar o projeto depois não deve ser confundido com atualizar automaticamente tudo que já foi publicado. A Carreira libera ferramentas e conjuntos de blocos conforme os cursos e publicações. Uma extensão reúne recursos; um projeto novo pode começar sem ela instalada."
+        "markdown": "Um projeto guarda o jogo com seus blocos e recursos. A aula tem um projeto ligado à atividade; o Estúdio Completo tem uma lista de projetos livres.\n\nExportar e importar faz a ponte entre esses lugares. Publicar no Mural cria uma versão para jogar, e editar o projeto depois não deve ser confundido com atualizar automaticamente tudo que já foi publicado.\n\nA Carreira libera ferramentas e conjuntos de blocos conforme os cursos e publicações. Uma extensão reúne recursos; um projeto novo pode começar sem ela instalada."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Abra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres. Seu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-2",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Crie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente. Feche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Abra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista. Exporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Volte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar. Na aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
-      }
-    },
-    {
-      "key": "fechamento",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Seu jogo do Dia 5 deve rodar no Estúdio Completo. Volte a Meus Jogos e abra o mesmo cartão. O projeto de teste pode ficar separado; nas próximas aulas use o importado.\n\nNa Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado no Estúdio, fora desta aula."
+        "markdown": "### Conhecer o Estúdio Completo\n\nAbra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres.\n\nSeu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto."
       }
     },
     {
@@ -94,242 +66,113 @@
       "plannedVideo": "aula-01-passo-01: gravar a demonstração \"conhecer o Estúdio Completo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Começar um projeto do zero e instalar os bloquinhos\n\nCrie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente.\n\nFeche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo."
+      }
+    },
+    {
       "key": "video-construir-2-1",
       "plannedVideo": "aula-01-passo-02: gravar a demonstração \"começar um projeto do zero e instalar os bloquinhos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Trazer o seu jogo da nave\n\nAbra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista.\n\nExporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir."
+      }
     },
     {
       "key": "video-construir-3-1",
       "plannedVideo": "aula-01-passo-03: gravar a demonstração \"trazer o seu jogo da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-01-passo-04: gravar a demonstração \"onde os seus jogos ficam guardados\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
+      "key": "convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Não; a publicação é uma versão para jogar, enquanto o projeto continua editável."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Publicar no Mural e editar um projeto são a mesma operação?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Não; a publicação é uma versão para jogar, enquanto o projeto continua editável."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Sim; toda edição atualiza automaticamente toda publicação."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sim; publicar apaga o projeto editável."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Não; a publicação é uma versão para jogar, enquanto o projeto continua editável."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: conhecer o Estúdio Completo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Em Meus Jogos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Onde ficam os projetos livres do Estúdio?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Somente dentro da aula do Dia 5."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Na galeria de desenhos do Pinta."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Em Meus Jogos."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Em Meus Jogos."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: começar um projeto do zero e instalar os bloquinhos",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Abrir as extensões e instalar a correspondente."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Se Jogo 2D não aparece no projeto novo, o que fazer?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Criar várias cópias sem conferir as extensões."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Abrir as extensões e instalar a correspondente."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Apagar a conta."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Abrir as extensões e instalar a correspondente."
-        }
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Prepare o caminho e importe o jogo do Dia 5. O projeto de teste pode continuar separado."
       }
     },
     {
       "key": "checar-construir-3",
       "content": {
         "kind": "interactive",
-        "title": "Confira: trazer o seu jogo da nave",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Exportar da aula do Dia 5 e importar no Estúdio."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O projeto da aula e a lista de projetos livres são lugares diferentes."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Como trazer o jogo do Dia 5 para o Estúdio Completo?",
+          "prompt": "Você abriu Meus Jogos e não encontrou o jogo do Dia 5. Qual caminho procurar?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Exportar da aula do Dia 5 e importar no Estúdio."
+              "label": "Procurar o jogo dentro do desenho da nave no Pinta."
             },
             {
               "id": "opcao-2",
-              "label": "Criar um projeto vazio com o mesmo nome e esperar que vire o jogo."
+              "label": "Criar um projeto vazio com o mesmo nome e esperar os blocos aparecerem."
             },
             {
               "id": "opcao-3",
-              "label": "Copiar apenas a capa do Mural."
+              "label": "Exportar o projeto na aula do Dia 5 e importar no Estúdio."
             }
           ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Exportar da aula do Dia 5 e importar no Estúdio."
+          "correctChoiceId": "opcao-3",
+          "explanation": "Exportar leva o arquivo para fora da aula. Importar abre esse trabalho no Estúdio livre, onde você continuará criando."
         }
       }
     },
     {
-      "key": "checar-construir-4",
+      "key": "construir-4",
       "content": {
-        "kind": "interactive",
-        "title": "Confira: onde os seus jogos ficam guardados",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Abrir seu cartão em Meus Jogos, conferindo nome e imagem."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como retomar o projeto importado?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Criar outro projeto a cada visita."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Abrir sempre o cartão de teste."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Abrir seu cartão em Meus Jogos, conferindo nome e imagem."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Abrir seu cartão em Meus Jogos, conferindo nome e imagem."
-        }
+        "kind": "rich_text",
+        "markdown": "### Onde os seus jogos ficam guardados\n\nVolte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar.\n\nNa aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-01-passo-04: gravar a demonstração \"onde os seus jogos ficam guardados\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Seu jogo do Dia 5 deve rodar no Estúdio Completo. Volte a Meus Jogos e abra o mesmo cartão. O projeto de teste pode ficar separado; nas próximas aulas use o importado.\n\nNa Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado no Estúdio, fora desta aula.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
       }
     },
     {
       "key": "checar-fechamento",
       "content": {
         "kind": "interactive",
-        "title": "Confira: Teste e guarde sua criação",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["O jogo importado do Dia 5."],
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Procure o trabalho que já contém a nave, os tiros e as telas."],
         "required": true,
         "activity": {
           "type": "checkpoint"
         },
         "checkpoint": {
-          "prompt": "Qual projeto será usado nas próximas aulas?",
+          "prompt": "Você quer continuar amanhã. Qual cartão deve abrir em Meus Jogos?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Somente a imagem da capa."
+              "label": "O do jogo importado do Dia 5, conferindo nome e imagem."
             },
             {
               "id": "opcao-2",
-              "label": "O jogo importado do Dia 5."
+              "label": "Sempre um projeto vazio."
             },
             {
               "id": "opcao-3",
-              "label": "Um projeto vazio novo em toda aula."
+              "label": "Qualquer cartão que tenha a mesma cor."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "O jogo importado do Dia 5."
+          "correctChoiceId": "opcao-1",
+          "explanation": "Abrir o mesmo projeto preserva a continuidade. Essa resposta confere o caminho; também abra e teste o cartão no Estúdio."
         }
       }
     }
@@ -337,24 +180,10 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Qual lugar guarda o quê?",
       "objective": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -364,53 +193,20 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "conhecer o Estúdio Completo",
-      "objective": "Oi! Abra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres. Seu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto.",
+      "title": "Leve seu jogo para o Estúdio",
+      "objective": "Exportar o projeto da aula e importá-lo como projeto livre.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": null,
-      "externalTool": "estudio",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "começar um projeto do zero e instalar os bloquinhos",
-      "objective": "Crie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente. Feche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": null,
-      "externalTool": "estudio",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "trazer o seu jogo da nave",
-      "objective": "Abra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista. Exporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1",
+        "checar-construir-3"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
@@ -420,25 +216,11 @@
       }
     },
     {
-      "key": "construir-4",
-      "title": "onde os seus jogos ficam guardados",
-      "objective": "Volte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar. Na aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": null,
-      "externalTool": "estudio",
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Seu jogo do Dia 5 deve rodar no Estúdio Completo. Volte a Meus Jogos e abra o mesmo cartão. O projeto de teste pode ficar separado; nas próximas aulas use o importado.",
+      "title": "Encontre seu jogo outra vez",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "checar-fechamento"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],

@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Você está começando um projeto vazio. Ao fim desta aula, terá uma nave que responde às setas.\n\nHoje você vai distinguir preparar o jogo de repetir ações em cada quadro.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Hoje sua nave vai sair do papel e responder às setas. Primeiro, vamos descobrir por que um desenho pode deixar rastros no espaço.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -48,56 +48,94 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Pense em montar um palco e depois apresentar uma peça. Preparar a tela e criar a nave acontece no começo. Desenhar e mover acontece muitas vezes enquanto o jogo roda. Cada atualização é um quadro. Limpar antes de desenhar evita que o desenho anterior fique como um rastro. A nave pode existir na memória e ainda não aparecer: criar e desenhar são ações diferentes. No seu jogo, Ao iniciar prepara; Enquanto estiver rodando recebe a repetição."
+        "markdown": "Pense em montar um palco e depois apresentar uma peça. Preparar a tela e criar a nave acontece no começo.\n\nDesenhar e mover acontece muitas vezes enquanto o jogo roda. Cada atualização é um quadro.\n\nLimpar antes de desenhar evita que o desenho anterior fique como um rastro. A nave pode existir na memória e ainda não aparecer: criar e desenhar são ações diferentes.\n\nNo seu jogo, Ao iniciar prepara; Enquanto estiver rodando recebe a repetição."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Áreas do projeto, arraste Ao iniciar. Depois coloque Enquanto estiver rodando ao lado. São duas áreas separadas. A primeira prepara o jogo; a segunda vai receber o que acontece durante a partida.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Montar as áreas do projeto\n\nEm Áreas do projeto, arraste Ao iniciar. Depois coloque Enquanto estiver rodando ao lado.\n\nSão duas áreas separadas. A primeira prepara o jogo; a segunda vai receber o que acontece durante a partida."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "dia-1-passo-01: gravar a demonstração \"montar as áreas do projeto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Confira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Preparar a tela do jogo\n\nEm Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar.\n\nConfira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece."
       }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "dia-1-passo-02: gravar a demonstração \"preparar a tela do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62. As cores do corpo e das asas são suas escolhas.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar a sua nave\n\nEm Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62.\n\nAs cores do corpo e das asas são suas escolhas."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "dia-1-passo-03: gravar a demonstração \"criar a sua nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Escolha as cores da nave. Ela já foi criada, mas só vai aparecer quando você mandar desenhar na próxima etapa.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando. Ele ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Ligar o motor do jogo\n\nEm Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando.\n\nEle ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "dia-1-passo-04: gravar a demonstração \"ligar o motor do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-5",
       "content": {
         "kind": "rich_text",
-        "markdown": "Dentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7. Confira o nome nave em todos os blocos que apontam para ela.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Desenhar o mundo e dar vida à nave\n\nDentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7.\n\nConfira o nome nave em todos os blocos que apontam para ela."
+      }
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "dia-1-passo-05: gravar a demonstração \"desenhar o mundo e dar vida à nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Rode o jogo e use as setas. Se a nave não aparecer, procure o bloco Desenhar o sprite e confira o nome nave.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-6",
       "content": {
         "kind": "rich_text",
-        "markdown": "Clique na área do jogo e use as setas. Experimente velocidade 12. Depois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar e deixar do seu jeito\n\nClique na área do jogo e use as setas. Experimente velocidade 12.\n\nDepois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável."
       }
+    },
+    {
+      "key": "video-construir-6-1",
+      "plannedVideo": "dia-1-passo-06: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Teste as quatro setas e encoste nas bordas. A nave precisa aparecer, responder e permanecer na tela. Envie o projeto quando estiver pronto.\n\nNo Dia 2, o mesmo projeto vai ganhar tiros. Não comece um jogo novo."
+        "markdown": "Teste as quatro setas e encoste nas bordas. A nave precisa aparecer, responder e permanecer na tela. Envie o projeto quando estiver pronto.\n\nNo Dia 2, o mesmo projeto vai ganhar tiros. Não comece um jogo novo.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -106,277 +144,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "dia-1-passo-01: gravar a demonstração \"montar as áreas do projeto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "dia-1-passo-02: gravar a demonstração \"preparar a tela do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "dia-1-passo-03: gravar a demonstração \"criar a sua nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "dia-1-passo-04: gravar a demonstração \"ligar o motor do jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-5-1",
-      "plannedVideo": "dia-1-passo-05: gravar a demonstração \"desenhar o mundo e dar vida à nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-6-1",
-      "plannedVideo": "dia-1-passo-06: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Distinguir preparar o jogo de repetir ações em cada quadro."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Distinguir preparar o jogo de repetir ações em cada quadro."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Distinguir preparar o jogo de repetir ações em cada quadro."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Preparar ocorre no começo; desenhar se repete a cada quadro."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual diferença existe entre preparar e desenhar o jogo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Preparar e desenhar só acontecem após perder."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Criar a nave já garante seu desenho em todos os quadros."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Preparar ocorre no começo; desenhar se repete a cada quadro."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Preparar ocorre no começo; desenhar se repete a cada quadro."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: preparar a tela do jogo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["800 por 480."],
-        "required": false,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual tamanho de tela vamos usar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "800 por 480."
-            },
-            {
-              "id": "opcao-2",
-              "label": "480 por 800."
-            },
-            {
-              "id": "opcao-3",
-              "label": "54 por 62."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "800 por 480."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar a sua nave",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["O personagem usado pelos controles e desenhos."],
-        "required": false,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O nome nave deve identificar o quê?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Apenas a cor das asas."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O título do curso."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O personagem usado pelos controles e desenhos."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "O personagem usado pelos controles e desenhos."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: ligar o motor do jogo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Dentro de Enquanto estiver rodando."],
-        "required": false,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Onde entra A cada quadro do jogo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Fora de qualquer área, como uma cor."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Dentro de Enquanto estiver rodando."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Dentro da descrição da nave."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Dentro de Enquanto estiver rodando."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-5",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: desenhar o mundo e dar vida à nave",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Limpar a tela."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual ação evita rastros antes de desenhar novamente?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Limpar a tela."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Criar outra nave com o mesmo nome."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Apagar todos os controles."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Limpar a tela."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-6",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar e deixar do seu jeito",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Confirmar clicando fora do campo e voltar ao jogo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Depois de editar a velocidade, como testar o novo valor?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Fechar o navegador sem confirmar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Editar vários números sem observar o resultado."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Confirmar clicando fora do campo e voltar ao jogo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Confirmar clicando fora do campo e voltar ao jogo."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Distinguir preparar o jogo de repetir ações em cada quadro.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "O rastro da nave",
       "objective": "Distinguir preparar o jogo de repetir ações em cada quadro.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -386,25 +162,19 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Distinguir preparar o jogo de repetir ações em cada quadro.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "montar as áreas do projeto",
-      "objective": "Em Áreas do projeto, arraste Ao iniciar. Depois coloque Enquanto estiver rodando ao lado. São duas áreas separadas. A primeira prepara o jogo; a segunda vai receber o que acontece durante a partida.",
+      "title": "Prepare o espaço e sua nave",
+      "objective": "Criar a tela e identificar a nave que os controles vão usar.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -413,40 +183,8 @@
         "blockIds": [],
         "projectChecks": [
           {
-            "id": "area-sz_frame_start",
-            "label": "Montar Ao iniciar",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_frame_start"
-            }
-          },
-          {
-            "id": "area-sz_frame_loops",
-            "label": "Montar Enquanto estiver rodando",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_frame_loops"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "preparar a tela do jogo",
-      "objective": "Em Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Confira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "tela",
-            "label": "Preparar a tela de 800 × 480 em Ao iniciar",
+            "id": "g2d-setup-stage",
+            "label": "Prepare a tela de 800 × 480 em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -456,38 +194,16 @@
                 "H": 480
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "criar a sua nave",
-      "objective": "Em Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62. As cores do corpo e das asas são suas escolhas.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
+          },
           {
-            "id": "nave",
-            "label": "Criar nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar",
+            "id": "g2d-create-ship",
+            "label": "Crie o personagem com o nome nave em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_create_ship",
               "area": "start",
               "fields": {
                 "NAME": "nave"
-              },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
               }
             }
           }
@@ -496,10 +212,16 @@
     },
     {
       "key": "construir-4",
-      "title": "ligar o motor do jogo",
-      "objective": "Em Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando. Ele ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar.",
+      "title": "Ligue o motor da nave",
+      "objective": "Desenhar a nave dentro da repetição de cada quadro.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
+      "blockKeys": [
+        "construir-4",
+        "video-construir-4-1",
+        "construir-5",
+        "video-construir-5-1",
+        "convite-construir-4"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -508,51 +230,27 @@
         "blockIds": [],
         "projectChecks": [
           {
-            "id": "motor",
-            "label": "Encaixar A cada quadro do jogo em Enquanto estiver rodando",
+            "id": "g2d-draw-sprite",
+            "label": "Desenhe o sprite nave dentro de A cada quadro do jogo.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_update_each_frame",
-              "area": "loops"
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "withinBlock": "sz_g2d_update_each_frame"
             }
           }
         ]
       }
     },
     {
-      "key": "construir-5",
-      "title": "desenhar o mundo e dar vida à nave",
-      "objective": "Dentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7. Confira o nome nave em todos os blocos que apontam para ela.",
-      "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-5"]
-      }
-    },
-    {
-      "key": "construir-6",
-      "title": "testar e deixar do seu jeito",
-      "objective": "Clique na área do jogo e use as setas. Experimente velocidade 12. Depois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável.",
-      "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-6"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Teste as quatro setas e encoste nas bordas. A nave precisa aparecer, responder e permanecer na tela. Envie o projeto quando estiver pronto.",
+      "title": "Hora do seu voo",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

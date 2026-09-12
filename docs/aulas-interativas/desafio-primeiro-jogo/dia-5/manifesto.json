@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Continue o jogo do Dia 4, com pontos, três vidas e colisões funcionando.\n\nHoje você vai usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Seu jogo já tem tiros, pontos e vidas. Hoje você vai dar a ele uma entrada, um final e o convite para jogar de novo.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -48,63 +48,176 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "O mesmo comando pode fazer coisas diferentes dependendo do momento. Na tela de início, Enter começa a partida; depois de ganhar ou perder, reinicia. A condição Se pergunta em que tela estamos antes de agir. Os relógios de criar asteroides também precisam dessa pergunta, ou podem continuar trabalhando fora da partida. O alvo é uma constante: fica em 26 enquanto os pontos mudam. Chegar ao alvo abre vitória; ficar sem vidas abre fim."
+        "markdown": "O mesmo comando pode fazer coisas diferentes dependendo do momento. Na tela de início, Enter começa a partida; depois de ganhar ou perder, reinicia.\n\nA condição Se pergunta em que tela estamos antes de agir. Os relógios de criar asteroides também precisam dessa pergunta, ou podem continuar trabalhando fora da partida.\n\nO alvo é uma constante: fica em 26 enquanto os pontos mudam. Chegar ao alvo abre vitória; ficar sem vidas abre fim."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Programação, Variáveis, crie a constante alvo com 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela inicio como último bloco de Ao iniciar. Essa será a entrada da partida.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### O alvo e a primeira tela\n\nEm Programação, Variáveis, crie a constante alvo com 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela inicio como último bloco de Ao iniciar.\n\nEssa será a entrada da partida."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "dia-5-passo-01: gravar a demonstração \"o alvo e a primeira tela\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro. Retire a comparação que veio nele. No lugar, encaixe a tela atual é, de Telas e cenas, e escolha jogando.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Fazer a pergunta da tela \"jogando\"\n\nEm Programação, Lógica e Se, coloque Se no topo de A cada quadro. Retire a comparação que veio nele.\n\nNo lugar, encaixe a tela atual é, de Telas e cenas, e escolha jogando."
       }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "dia-5-passo-02: gravar a demonstração \"fazer a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Leve a sequência de Limpar a tela até Desenhar as vidas para dentro desse Se. No relógio de 40 quadros, envolva também a criação de asteroides com Se a tela atual é jogando. Confira os dois lugares.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Mudar o jogo pra dentro\n\nLeve a sequência de Limpar a tela até Desenhar as vidas para dentro desse Se. No relógio de 40 quadros, envolva também a criação de asteroides com Se a tela atual é jogando.\n\nConfira os dois lugares."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "dia-5-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Rode sem começar a partida. Ela pode parecer vazia por enquanto; as telas vêm nos próximos passos."
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O desenho e o relógio de criação trabalham em lugares diferentes."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Os asteroides já nascem antes de apertar Enter. Onde pode faltar Se a tela é jogando?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "No tamanho dos corações."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Dentro do relógio que cria asteroides."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Na escolha da cor do título."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Proteger só o desenho não impede o relógio de criar objetos. A criação também precisa verificar se a partida começou."
+        }
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "No fim do Se jogando, compare pontos maior ou igual a alvo e vá para vitoria. Abaixo, faça outra pergunta: as vidas da nave acabaram? Se sim, vá para fim. Confira os nomes de cada tela.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar a vitória e a derrota\n\nNo fim do Se jogando, compare pontos maior ou igual a alvo e vá para vitoria. Abaixo, faça outra pergunta: as vidas da nave acabaram?\n\nSe sim, vá para fim. Confira os nomes de cada tela."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "dia-5-passo-04: gravar a demonstração \"criar a vitória e a derrota\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-5",
       "content": {
         "kind": "rich_text",
-        "markdown": "No Se grande, adicione três senão se: inicio, vitoria e fim. Em cada um, use Mostrar tela, em Telas e cenas. Escolha seus textos e cores; a dica deve dizer que Enter começa ou reinicia, conforme a tela.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Montar as telas de início, de vitória e de derrota\n\nNo Se grande, adicione três senão se: inicio, vitoria e fim. Em cada um, use Mostrar tela, em Telas e cenas.\n\nEscolha seus textos e cores; a dica deve dizer que Enter começa ou reinicia, conforme a tela."
+      }
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "dia-5-passo-05: gravar a demonstração \"montar as telas de início, de vitória e de derrota\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Escolha seus títulos e cores. Deixe a dica de Enter legível em todas as telas."
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O alvo é a meta de pontos; as vidas indicam outra coisa."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Você quer abrir vitória quando chegar ao alvo. Que comparação usar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Pontos maior ou igual a alvo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Pontos igual a zero."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Vidas igual a zero."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Chegar ao alvo abre vitória. Ficar sem vidas abre fim. As duas perguntas cuidam de resultados diferentes."
+        }
       }
     },
     {
       "key": "construir-6",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Controles, adicione o evento da tecla Enter em Quando acontecer. Se estiver em inicio, vá para jogando. Se estiver em fim ou vitoria, use Reiniciar o jogo. Preserve o evento de tiro que já existe.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### O Enter comanda o jogo\n\nEm Controles, adicione o evento da tecla Enter em Quando acontecer. Se estiver em inicio, vá para jogando.\n\nSe estiver em fim ou vitoria, use Reiniciar o jogo. Preserve o evento de tiro que já existe."
+      }
+    },
+    {
+      "key": "video-construir-6-1",
+      "plannedVideo": "dia-5-passo-06: gravar a demonstração \"o Enter comanda o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Perca uma partida e use Enter. Confira se os pontos e as vidas voltam ao começo.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-7",
       "content": {
         "kind": "rich_text",
-        "markdown": "Teste o ciclo inteiro: comece com Enter, perca uma partida, reinicie e tente ganhar outra. Confira se uma partida nova volta a zero pontos e três vidas. Na seção de fechamento, envie ao professor e depois use Compartilhar para publicar no Mural."
+        "markdown": "### Testar do começo ao fim e publicar\n\nTeste o ciclo inteiro: comece com Enter, perca uma partida, reinicie e tente ganhar outra. Confira se uma partida nova volta a zero pontos e três vidas.\n\nNa seção de fechamento, envie ao professor e depois use Compartilhar para publicar no Mural."
       }
+    },
+    {
+      "key": "video-construir-7-1",
+      "plannedVideo": "dia-5-passo-07: gravar a demonstração \"testar do começo ao fim e publicar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Antes de publicar, teste início, derrota, vitória e reinício. Confira se uma partida nova começa com zero pontos e três vidas. Abra o link publicado e jogue.\n\nSeu primeiro jogo está pronto. Siga as próximas aulas do curso e confira na Carreira o que sua conclusão e publicação liberaram. O Jogo do Meu Jeito usará o projeto do Dia 5."
+        "markdown": "Antes de publicar, teste início, derrota, vitória e reinício. Confira se uma partida nova começa com zero pontos e três vidas. Abra o link publicado e jogue.\n\nSeu primeiro jogo está pronto. Siga as próximas aulas do curso e confira na Carreira o que sua conclusão e publicação liberaram. O Jogo do Meu Jeito usará o projeto do Dia 5.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -113,347 +226,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "dia-5-passo-01: gravar a demonstração \"o alvo e a primeira tela\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "dia-5-passo-02: gravar a demonstração \"fazer a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "dia-5-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "dia-5-passo-04: gravar a demonstração \"criar a vitória e a derrota\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-5-1",
-      "plannedVideo": "dia-5-passo-05: gravar a demonstração \"montar as telas de início, de vitória e de derrota\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-6-1",
-      "plannedVideo": "dia-5-passo-06: gravar a demonstração \"o Enter comanda o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-7-1",
-      "plannedVideo": "dia-5-passo-07: gravar a demonstração \"testar do começo ao fim e publicar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Na entrada ele começa; no fim ou vitória ele reinicia."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que o Enter precisa consultar a tela atual?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Ele sempre deve criar outro asteroide."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Ele só pode funcionar na tela de derrota."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Na entrada ele começa; no fim ou vitória ele reinicia."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Na entrada ele começa; no fim ou vitória ele reinicia."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: o alvo e a primeira tela",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["26."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual é o valor fixo da constante alvo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "0."
-            },
-            {
-              "id": "opcao-2",
-              "label": "26."
-            },
-            {
-              "id": "opcao-3",
-              "label": "3."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "26."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: fazer a pergunta da tela \"jogando\"",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A tela atual é jogando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual condição protege as ações da partida?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A tela atual é jogando."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Os pontos são sempre zero."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O nome da nave mudou."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A tela atual é jogando."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: mudar o jogo pra dentro",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Sim, para não criar asteroides fora da partida."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O relógio de asteroides também deve perguntar se estamos jogando?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Não, ele deve criar em todas as telas."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Não, relógios não aceitam condições."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sim, para não criar asteroides fora da partida."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Sim, para não criar asteroides fora da partida."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar a vitória e a derrota",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Pontos atingem o alvo: vitória; vidas acabam: fim."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Quais situações abrem vitória e fim?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A cor muda: vitória; o título aparece: fim."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Pontos atingem o alvo: vitória; vidas acabam: fim."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Qualquer tiro: vitória; qualquer movimento: fim."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Pontos atingem o alvo: vitória; vidas acabam: fim."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-5",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: montar as telas de início, de vitória e de derrota",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Que Enter começa ou reinicia, conforme o momento."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que a dica de cada tela deve explicar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Que Enter começa ou reinicia, conforme o momento."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Que qualquer comando já está implementado, sem testar."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Que o jogador deve editar os blocos para começar."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Que Enter começa ou reinicia, conforme o momento."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-6",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: o Enter comanda o jogo",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Reiniciar o jogo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual ação usar com Enter nas telas fim e vitoria?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Apenas mudar para jogando sem preparar o estado."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Apagar o evento de tiro."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Reiniciar o jogo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Reiniciar o jogo."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-7",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar do começo ao fim e publicar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Começar, perder, reiniciar e ganhar uma partida."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que precisa ser testado antes da entrega e publicação?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Somente o som de tiro."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Começar, perder, reiniciar e ganhar uma partida."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Apenas a capa."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Começar, perder, reiniciar e ganhar uma partida."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Pontos antes de começar?",
       "objective": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -463,53 +244,20 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "o alvo e a primeira tela",
-      "objective": "Em Programação, Variáveis, crie a constante alvo com 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela inicio como último bloco de Ao iniciar. Essa será a entrada da partida.",
+      "title": "A partida espera você",
+      "objective": "Proteger ações e criação de asteroides com a condição da tela jogando.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "fazer a pergunta da tela \"jogando\"",
-      "objective": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro. Retire a comparação que veio nele. No lugar, encaixe a tela atual é, de Telas e cenas, e escolha jogando.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "mudar o jogo pra dentro",
-      "objective": "Leve a sequência de Limpar a tela até Desenhar as vidas para dentro desse Se. No relógio de 40 quadros, envolva também a criação de asteroides com Se a tela atual é jogando. Confira os dois lugares.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1",
+        "checar-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -520,10 +268,17 @@
     },
     {
       "key": "construir-4",
-      "title": "criar a vitória e a derrota",
-      "objective": "No fim do Se jogando, compare pontos maior ou igual a alvo e vá para vitoria. Abaixo, faça outra pergunta: as vidas da nave acabaram? Se sim, vá para fim. Confira os nomes de cada tela.",
+      "title": "Dê um final para cada partida",
+      "objective": "Distinguir condições de vitória e derrota e comunicar o próximo comando.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
+      "blockKeys": [
+        "construir-4",
+        "video-construir-4-1",
+        "construir-5",
+        "video-construir-5-1",
+        "convite-construir-4",
+        "checar-construir-4"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -533,53 +288,37 @@
       }
     },
     {
-      "key": "construir-5",
-      "title": "montar as telas de início, de vitória e de derrota",
-      "objective": "No Se grande, adicione três senão se: inicio, vitoria e fim. Em cada um, use Mostrar tela, em Telas e cenas. Escolha seus textos e cores; a dica deve dizer que Enter começa ou reinicia, conforme a tela.",
-      "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-5"]
-      }
-    },
-    {
       "key": "construir-6",
-      "title": "o Enter comanda o jogo",
-      "objective": "Em Controles, adicione o evento da tecla Enter em Quando acontecer. Se estiver em inicio, vá para jogando. Se estiver em fim ou vitoria, use Reiniciar o jogo. Preserve o evento de tiro que já existe.",
+      "title": "O convite para jogar de novo",
+      "objective": "Reiniciar o estado da partida pelo evento de Enter.",
       "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "convite-construir-6"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-6"]
-      }
-    },
-    {
-      "key": "construir-7",
-      "title": "testar do começo ao fim e publicar",
-      "objective": "Teste o ciclo inteiro: comece com Enter, perca uma partida, reinicie e tente ganhar outra. Confira o jogo antes de Enviar para o professor. Depois use Compartilhar, escreva o resumo, confira a capa e publique no Mural.",
-      "intent": "application",
-      "blockKeys": ["construir-7", "video-construir-7-1", "checar-construir-7"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-7"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-restart",
+            "label": "Encaixe Reiniciar o jogo no evento de tecla, em Quando acontecer.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_restart",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_key"
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Antes de publicar, teste início, derrota, vitória e reinício. Confira se uma partida nova começa com zero pontos e três vidas. Abra o link publicado e jogue.",
+      "title": "Jogue e mostre sua criação",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-7", "video-construir-7-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

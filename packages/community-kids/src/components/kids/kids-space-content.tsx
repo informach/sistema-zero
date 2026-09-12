@@ -277,7 +277,7 @@ function LoadMore({ feed, label }: { feed: KidsSpaceFeed; label: string }) {
 
 /**
  * O canal aberto do Clube, num cartão branco: "#canal" em Baloo com a frase do canal,
- * "Começar conversa" à direita, as conversas (ou o vazio com o robô) e, no pé, a
+ * "Começar conversa" à direita, as conversas (ou o vazio com o Zappy) e, no pé, a
  * pílula creme de "Escreva uma mensagem", que abre o mesmo formulário.
  */
 function ForumChannel({

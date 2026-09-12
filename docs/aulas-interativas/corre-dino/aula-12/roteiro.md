@@ -1,6 +1,6 @@
 # Surpresas dentro de limites
 
-Uma aula, organizada em 8 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 4 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-12-corre-dino.md`. SHA-256: `159e3a4a3abd173079edeb63dca925f8f0d5de398b73da0f7c579e3d871a0c75`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,165 +13,230 @@ Seu placar funciona, mas os cactos chegam como um relógio muito previsível.
 
 **Ambiente:** o mesmo Estúdio incorporado acompanha as seções. Preservar o projeto inicial, a continuidade e a entrega já configurados na aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Menos cinco, menos um pouco | Resolver a descoberta. |
+| Surpresa dentro de uma faixa | Responder uma pergunta de decisão. |
+| Varie a velocidade com cuidado | Responder uma pergunta de decisão. |
+| Jogue mais de uma vez | Enviar o projeto; atingir a nota automática se o Estúdio exigir. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Menos cinco, menos um pouco
+
+**Intenção e objetivo (professor):** Exploração · Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.
 
 **Texto para o aluno:**
 
-Oi! Seu placar funciona, mas os cactos chegam como um relógio muito previsível.
+Oi! Os cactos chegam sempre iguais? Vamos variar um pouco essa pista sem deixar o desafio fora de controle.
 
-Hoje você vai usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Menos cinco, menos um pouco**
 
-## 2. Descoberta antes da explicação
+Modelo: `prediction`. Critério desta seção.
 
-**Modelo:** prediction. **Essencial:** não; a previsão é um convite, sem punição por hipótese inicial.
+O vx é −5 menos um número entre 0 e 1. Qual faixa de velocidades você espera? Sua primeira ideia pode mudar depois da observação.
 
-**Título:** Menos cinco, menos um pouco
+**Previsões (sem nota):** Entre −5 e −6, para a esquerda · Entre 0 e 1, para a direita · Sempre −5
 
-O vx é −5 menos um número entre 0 e 1. Qual faixa de velocidades você espera?
+**Depois de observar:** Subtrair de −5 um valor entre 0 e 1 produz valores entre −5 e −6. A direção continua para a esquerda; a intensidade varia dentro de uma faixa pequena.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Pergunta:** Você sorteia de 0 a 1. Qual valor pode entrar na conta da velocidade?
 
-**Pistas disponíveis:**
+- 0,5.
+- 3.
+- −2.
 
-- Teste os extremos da conta: −5 − 0 e −5 − 1.
+**Resposta esperada (professor):** 0,5.
 
-## 3. Explicação após observar
+**Devolutiva:** 0,5 está entre 0 e 1. Sortear permite variar sem abandonar os limites escolhidos.
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+**Pistas:**
 
-Aleatório não precisa significar qualquer valor. Você escolhe uma faixa e o programa sorteia dentro dela. Nascer em x 500 ou 560 muda a distância até o dino, mesmo com o relógio fixo em 1,4 segundo. Para variar a velocidade para a esquerda, usamos menos 5 menos um sorteio de 0 a 1: o resultado vai de menos 5 a menos 6. O número fica menor, mas a distância percorrida em cada quadro aumenta.
+- Os dois números escolhidos são os limites da faixa.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+**Texto para o aluno:**
 
-## Demonstrações e aplicação
+Aleatório não precisa significar qualquer valor. Você escolhe uma faixa e o programa sorteia dentro dela.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+Nascer em x 500 ou 560 muda a distância até o dino, mesmo com o relógio fixo em 1,4 segundo. Para variar a velocidade para a esquerda, usamos menos 5 menos um sorteio de 0 a 1: o resultado vai de menos 5 a menos 6.
 
-### 1. entender por que está sempre igual
+O número fica menor, mas a distância percorrida em cada quadro aumenta.
 
-**Narração revisada:**
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4. Quando tudo se repete igual, dá para decorar o ritmo.
+## 2. Surpresa dentro de uma faixa
 
-**Na tela (sequência técnica preservada do original):**
+**Intenção e objetivo (professor):** Aplicação · Escolher limites para variar o nascimento dos obstáculos.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Entender por que está sempre igual
+
+Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4.
+
+Quando tudo se repete igual, dá para decorar o ritmo.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 abrir o bloco de criar cacto e apontar cada número fixo: x 560, tamanho 44, vx -5; e o relógio em 1.4.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-12-passo-01: gravar a demonstração "entender por que está sempre igual" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. sortear o lugar do cacto
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Sortear o lugar do cacto
 
-Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560. Jogue algumas vezes: o lugar de nascimento muda dentro dessa faixa.
+Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560.
 
-**Na tela (sequência técnica preservada do original):**
+Jogue algumas vezes: o lugar de nascimento muda dentro dessa faixa.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 Jogo 2D › Mira e contas, arrastar "um número de a" por cima do x (560) do bloco de criar cacto; trocar os números para 500 e 560. Rodar e mostrar os intervalos variando.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-12-passo-02: gravar a demonstração "sortear o lugar do cacto" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. sortear a velocidade
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Observe vários cactos. Um só nascimento não mostra tudo o que o sorteio pode fazer.
 
-Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites. A direção deve continuar para a esquerda.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** O sorteio de x vai de 500 a 560. Qual nascimento está dentro dessa faixa?
+
+- x 530.
+- x 700.
+- x 450.
+
+**Resposta esperada (professor):** x 530.
+
+**Devolutiva:** 530 fica entre 500 e 560. O sorteio varia o lugar de nascimento, mas respeita a faixa que você escolheu.
+
+**Pistas:**
+
+- Procure um número entre os dois limites, incluindo as pontas.
+
+**Critério configurado:** `checar-construir-2`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Varie a velocidade com cuidado
+
+**Intenção e objetivo (professor):** Aplicação · Interpretar a direção e os extremos da velocidade negativa.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Sortear a velocidade
+
+Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites.
+
+A direção deve continuar para a esquerda.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 Programação › Matemática, arrastar o bloco de conta por cima do vx (-5); sinal −; esquerda -5; direita outro "um número de a" com 0 e 1. Rodar.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-12-passo-03: gravar a demonstração "sortear a velocidade" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. testar
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Confira o sinal de subtração. Os cactos precisam continuar vindo da direita para a esquerda.
 
-Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560. Volte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Na conta −5 menos um sorteio de 0 a 1, qual velocidade pode aparecer?
+
+- +5,5, para a direita.
+- 0, sempre parado.
+- −5,5, ainda para a esquerda.
+
+**Resposta esperada (professor):** −5,5, ainda para a esquerda.
+
+**Devolutiva:** Os extremos são −5 e −6. Valores entre eles, como −5,5, continuam apontando para a esquerda.
+
+**Pistas:**
+
+- Faça primeiro as contas com 0 e com 1. Depois pense no que cabe entre elas.
+
+**Critério configurado:** `checar-construir-3`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 4. Jogue mais de uma vez
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Testar
+
+Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560.
+
+Volte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 jogar várias partidas; depois a pausa, alargando a faixa do x para 500 a 700 e depois estreitando para 550 a 560.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-12-passo-04: gravar a demonstração "testar" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Os cactos devem continuar vindo da direita, com pequenas variações. Confira os extremos de x e vx e teste mais de uma partida. Envie.
 
 Na Aula 13, a dificuldade vai aumentar com o tempo, respeitando um limite.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Se algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Estúdio compartilhado:** reutilizar o primeiro Estúdio da aula. A entrega acontece aqui, uma única vez.
 
-## Produção e importação
+**Critério configurado:** entrega do Estúdio. Se houver nota mínima, conferir a atividade vinculada: o manifesto preserva sua configuração. Para exigir aprovação automática na seção, ela precisa usar checagens estruturais compatíveis. O carimbo “já conferi” do professor não controla este avanço.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+## Cadastro e validação em staging
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-## Verificações para avançar nas seções
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### A criação de hoje
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.
+**Cartões antigos a retirar após reimportação:**
 
-### Menos cinco, menos um pouco
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: entender por que está sempre igual
+- `checar-construir-4`: Confira: testar
 
-**Checagem:** Sortear um valor significa aceitar qualquer número?
-
-**Resposta e explicação:** Não; os limites escolhidos definem a faixa do sorteio.
-
-### O que aconteceu?
-
-**Checagem:** Sortear um valor significa aceitar qualquer número?
-
-**Resposta e explicação:** Não; os limites escolhidos definem a faixa do sorteio.
-
-### entender por que está sempre igual
-
-**Checagem:** Se posição, velocidade e intervalo se repetem iguais, o que o jogador pode perceber?
-
-**Resposta e explicação:** Um ritmo previsível.
-
-### sortear o lugar do cacto
-
-**Checagem:** O que varia ao sortear x entre 500 e 560?
-
-**Resposta e explicação:** O lugar em que cada cacto nasce.
-
-### sortear a velocidade
-
-**Checagem:** Qual faixa resulta de menos 5 menos um sorteio de 0 a 1?
-
-**Resposta e explicação:** De menos 5 a menos 6, ainda para a esquerda.
-
-### testar
-
-**Checagem:** Por que observar várias aparições antes de avaliar o sorteio?
-
-**Resposta e explicação:** Um único nascimento não mostra a variação da faixa.
-
-### Teste e guarde sua criação
-
-Entregar o projeto e atingir a nota mínima configurada, quando houver.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

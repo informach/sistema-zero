@@ -1,6 +1,6 @@
 # A nave ganha vida
 
-Uma aula, organizada em 10 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 4 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-dia1-desafio-primeiro-jogo.md`. SHA-256: `047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,211 +13,239 @@ Você está começando um projeto vazio. Ao fim desta aula, terá uma nave que r
 
 **Ambiente:** o mesmo Estúdio incorporado acompanha as seções. Preservar o projeto inicial, a continuidade e a entrega já configurados na aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| O rastro da nave | Resolver a descoberta. |
+| Prepare o espaço e sua nave | Verificar os objetivos do projeto. |
+| Ligue o motor da nave | Verificar os objetivos do projeto. |
+| Hora do seu voo | Enviar o projeto; atingir a nota automática se o Estúdio exigir. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. O rastro da nave
+
+**Intenção e objetivo (professor):** Exploração · Distinguir preparar o jogo de repetir ações em cada quadro.
 
 **Texto para o aluno:**
 
-Oi! Você está começando um projeto vazio. Ao fim desta aula, terá uma nave que responde às setas.
+Oi! Hoje sua nave vai sair do papel e responder às setas. Primeiro, vamos descobrir por que um desenho pode deixar rastros no espaço.
 
-Hoje você vai distinguir preparar o jogo de repetir ações em cada quadro.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: O rastro da nave**
 
-## 2. Descoberta antes da explicação
-
-**Modelo:** html. **Essencial:** sim
-
-**Título:** O rastro da nave
+Modelo: `html`. Critério desta seção.
 
 Passe alguns quadros com a limpeza ligada. Desligue e passe outros. O que fica na tela?
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Interação:** usar o bloco funcional incorporado ao manifesto. A observação prepara a pergunta; o experimento não avalia o projeto da criança.
 
-**Pistas disponíveis:**
+**Pergunta:** O que evita o rastro dos desenhos anteriores?
+
+- Limpar antes de desenhar a próxima imagem
+- Criar uma nave nova a cada quadro
+- Mudar só a cor da nave
+
+**Resposta esperada (professor):** Limpar antes de desenhar a próxima imagem
+
+**Devolutiva:** Cada quadro redesenha a cena após limpar o desenho anterior. A nave continua sendo a mesma.
+
+**Pistas:**
 
 - Compare quantos desenhos ficam na tela quando a limpeza está desligada.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+Pense em montar um palco e depois apresentar uma peça. Preparar a tela e criar a nave acontece no começo.
 
-Pense em montar um palco e depois apresentar uma peça. Preparar a tela e criar a nave acontece no começo. Desenhar e mover acontece muitas vezes enquanto o jogo roda. Cada atualização é um quadro. Limpar antes de desenhar evita que o desenho anterior fique como um rastro. A nave pode existir na memória e ainda não aparecer: criar e desenhar são ações diferentes. No seu jogo, Ao iniciar prepara; Enquanto estiver rodando recebe a repetição.
+Desenhar e mover acontece muitas vezes enquanto o jogo roda. Cada atualização é um quadro.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+Limpar antes de desenhar evita que o desenho anterior fique como um rastro. A nave pode existir na memória e ainda não aparecer: criar e desenhar são ações diferentes.
 
-## Demonstrações e aplicação
+No seu jogo, Ao iniciar prepara; Enquanto estiver rodando recebe a repetição.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-### 1. montar as áreas do projeto
+## 2. Prepare o espaço e sua nave
 
-**Narração revisada:**
+**Intenção e objetivo (professor):** Aplicação · Criar a tela e identificar a nave que os controles vão usar.
 
-Em Áreas do projeto, arraste Ao iniciar. Depois coloque Enquanto estiver rodando ao lado. São duas áreas separadas. A primeira prepara o jogo; a segunda vai receber o que acontece durante a partida.
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
 
-**Na tela (sequência técnica preservada do original):**
+**Narração revisada / instruções disponíveis em texto:**
+
+### Montar as áreas do projeto
+
+Em Áreas do projeto, arraste Ao iniciar. Depois coloque Enquanto estiver rodando ao lado.
+
+São duas áreas separadas. A primeira prepara o jogo; a segunda vai receber o que acontece durante a partida.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 abrir a categoria "Áreas do projeto", arrastar "Ao iniciar" para a área do meio; depois arrastar "Enquanto estiver rodando" e soltar ao lado, com um espacinho.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-01: gravar a demonstração "montar as áreas do projeto" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. preparar a tela do jogo
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Preparar a tela do jogo
 
-Em Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Confira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece.
+Em Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar.
 
-**Na tela (sequência técnica preservada do original):**
+Confira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Jogo 2D", subcategoria "Aparência", arrastar "Preparar o jogo em tela cheia" para dentro do Ao iniciar; conferir os números 800 × 480 e escolher a cor de fundo.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-02: gravar a demonstração "preparar a tela do jogo" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. criar a sua nave
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Criar a sua nave
 
-Em Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62. As cores do corpo e das asas são suas escolhas.
+Em Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62.
 
-**Na tela (sequência técnica preservada do original):**
+As cores do corpo e das asas são suas escolhas.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Jogo 2D", subcategoria "Kit espaço", arrastar "Criar nave" para dentro do Ao iniciar, abaixo do Preparar o jogo; ajustar x 400, y 410, largura 54, altura 62; escolher as cores do corpo e das asas.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-03: gravar a demonstração "criar a sua nave" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. ligar o motor do jogo
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Escolha as cores da nave. Ela já foi criada, mas só vai aparecer quando você mandar desenhar na próxima etapa.
 
-Em Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando. Ele ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar.
+Depois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado.
 
-**Na tela (sequência técnica preservada do original):**
+**Critérios configurados em Para liberar a próxima seção:** todos os objetivos abaixo precisam passar no mesmo projeto.
+
+- Prepare a tela de 800 × 480 em Ao iniciar. Regra de cadastro: `{"type":"usesBlock","blockType":"sz_g2d_setup_stage","area":"start","inputs":{"W":800,"H":480}}`.
+
+- Crie o personagem com o nome nave em Ao iniciar. Regra de cadastro: `{"type":"usesBlock","blockType":"sz_g2d_create_ship","area":"start","fields":{"NAME":"nave"}}`.
+
+**Limite da conferência:** comprova a estrutura pedida, não executa a partida nem avalia sua qualidade. A observação sugerida na etapa continua necessária para aprender.
+
+## 3. Ligue o motor da nave
+
+**Intenção e objetivo (professor):** Aplicação · Desenhar a nave dentro da repetição de cada quadro.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Ligar o motor do jogo
+
+Em Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando.
+
+Ele ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Jogo 2D", subcategoria "Tempo e repetição", arrastar "A cada quadro do jogo" para dentro do Enquanto estiver rodando, ainda vazio.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-04: gravar a demonstração "ligar o motor do jogo" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 5. desenhar o mundo e dar vida à nave
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Desenhar o mundo e dar vida à nave
 
-Dentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7. Confira o nome nave em todos os blocos que apontam para ela.
+Dentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7.
 
-**Na tela (sequência técnica preservada do original):**
+Confira o nome nave em todos os blocos que apontam para ela.
+
+**Vídeo planejado:** `video-construir-5-1`
+
+**Na tela (sequência técnica preservada):**
 
 dentro do "A cada quadro do jogo", na ordem: Limpar a tela (Aparência), Desenhar fundo de estrelas com velocidade 1 (Kit espaço), Mover o sprite nave com as setas com velocidade 7 (Movimento), Manter o sprite dentro da tela (Movimento, corrigindo "heroi" para "nave" pelo iconezinho de alerta do bloco), Desenhar o sprite (Sprites, trocando "jogador" para "nave").
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-05: gravar a demonstração "desenhar o mundo e dar vida à nave" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 6. testar e deixar do seu jeito
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Rode o jogo e use as setas. Se a nave não aparecer, procure o bloco Desenhar o sprite e confira o nome nave.
 
-Clique na área do jogo e use as setas. Experimente velocidade 12. Depois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável.
+Depois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado.
 
-**Na tela (sequência técnica preservada do original):**
+**Critérios configurados em Para liberar a próxima seção:** todos os objetivos abaixo precisam passar no mesmo projeto.
+
+- Desenhe o sprite nave dentro de A cada quadro do jogo. Regra de cadastro: `{"type":"usesBlock","blockType":"sz_g2d_draw_sprite","area":"loops","fields":{"SPRITE":"nave"},"withinBlock":"sz_g2d_update_each_frame"}`.
+
+**Limite da conferência:** comprova a estrutura pedida, não executa a partida nem avalia sua qualidade. A observação sugerida na etapa continua necessária para aprender.
+
+## 4. Hora do seu voo
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Testar e deixar do seu jeito
+
+Clique na área do jogo e use as setas. Experimente velocidade 12.
+
+Depois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável.
+
+**Vídeo planejado:** `video-construir-6-1`
+
+**Na tela (sequência técnica preservada):**
 
 o espaço estrelado com a nave; mover com as setas. Depois os três passinhos bem devagar, com a velocidade: trocar 7 por 12, **clicar num espaço vazio da área dos blocos** (mostrando que é esse clique que confirma), e só então clicar na área do jogo e testar. Vale mostrar de propósito o erro de ir direto pro jogo sem clicar fora, pra criança ver a nave continuar na velocidade antiga. Por último, as cores da nave.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** dia-1-passo-06: gravar a demonstração "testar e deixar do seu jeito" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Teste as quatro setas e encoste nas bordas. A nave precisa aparecer, responder e permanecer na tela. Envie o projeto quando estiver pronto.
 
 No Dia 2, o mesmo projeto vai ganhar tiros. Não comece um jogo novo.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Se algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Estúdio compartilhado:** reutilizar o primeiro Estúdio da aula. A entrega acontece aqui, uma única vez.
 
-## Produção e importação
+**Critério configurado:** entrega do Estúdio. Se houver nota mínima, conferir a atividade vinculada: o manifesto preserva sua configuração. Para exigir aprovação automática na seção, ela precisa usar checagens estruturais compatíveis. O carimbo “já conferi” do professor não controla este avanço.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+## Cadastro e validação em staging
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-## Verificações para avançar nas seções
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### A criação de hoje
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** Distinguir preparar o jogo de repetir ações em cada quadro.
+**Cartões antigos a retirar após reimportação:**
 
-### O rastro da nave
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-2`: Confira: preparar a tela do jogo
+- `checar-construir-3`: Confira: criar a sua nave
+- `checar-construir-4`: Confira: ligar o motor do jogo
+- `checar-construir-5`: Confira: desenhar o mundo e dar vida à nave
+- `checar-construir-6`: Confira: testar e deixar do seu jeito
 
-**Checagem:** O que evita o rastro dos desenhos anteriores?
-
-**Resposta e explicação:** Limpar antes de desenhar a próxima imagem
-
-### O que aconteceu?
-
-**Checagem:** Qual diferença existe entre preparar e desenhar o jogo?
-
-**Resposta e explicação:** Preparar ocorre no começo; desenhar se repete a cada quadro.
-
-### montar as áreas do projeto
-
-Objetivo conferido no projeto pelo servidor: Montar Ao iniciar, Montar Enquanto estiver rodando.
-
-### preparar a tela do jogo
-
-**Checagem:** Qual tamanho de tela vamos usar?
-
-**Resposta e explicação:** 800 por 480.
-
-### criar a sua nave
-
-**Checagem:** O nome nave deve identificar o quê?
-
-**Resposta e explicação:** O personagem usado pelos controles e desenhos.
-
-### ligar o motor do jogo
-
-**Checagem:** Onde entra A cada quadro do jogo?
-
-**Resposta e explicação:** Dentro de Enquanto estiver rodando.
-
-### desenhar o mundo e dar vida à nave
-
-**Checagem:** Qual ação evita rastros antes de desenhar novamente?
-
-**Resposta e explicação:** Limpar a tela.
-
-### testar e deixar do seu jeito
-
-**Checagem:** Depois de editar a velocidade, como testar o novo valor?
-
-**Resposta e explicação:** Confirmar clicando fora do campo e voltar ao jogo.
-
-### Teste e guarde sua criação
-
-Entregar o projeto e atingir a nota mínima configurada, quando houver.
-
-## Verificações práticas por seção
-
-- **construir-2:** Preparar a tela de 800 × 480 em Ao iniciar.
-- **construir-3:** Criar nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
-- **construir-4:** Encaixar A cada quadro do jogo em Enquanto estiver rodando.
-
-Nestas etapas, as perguntas de revisão são opcionais. O avanço depende do projeto salvo na verificação. Cores livres não são avaliadas. Montar uma área confirma apenas a preparação; não comprova que o jogo executou.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

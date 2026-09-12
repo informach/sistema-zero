@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu projeto já tem nave e tiros. Agora falta algo para desviar e acertar.\n\nHoje você vai controlar a frequência de criação e ligar a colisão à remoção dos objetos.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Sua nave já se move e atira. Agora vamos criar uma chuva de asteroides e escolher um ritmo que dê vontade de jogar outra vez.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -16,8 +16,8 @@
       "content": {
         "kind": "interactive",
         "title": "Qual chuva fica mais intensa?",
-        "instructions": "Dois jogos rodam no mesmo ritmo. Um cria um asteroide a cada 20 quadros, outro a cada 80. Faça sua previsão.",
-        "hints": ["Imagine marcar os quadros 20, 40, 60… e depois 80, 160…"],
+        "instructions": "Dois jogos rodam no mesmo ritmo. Um cria um asteroide a cada 20 quadros, outro a cada 80. Faça sua previsão. Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["Compare quanto o relógio espera antes de criar de novo."],
         "required": true,
         "activity": {
           "type": "prediction",
@@ -38,23 +38,23 @@
           "outcome": "Em 160 quadros, intervalos de 20 permitem 8 nascimentos; intervalos de 80, apenas 2. O intervalo menor deixa menos tempo entre os asteroides. Você vai conferir no seu jogo."
         },
         "checkpoint": {
-          "prompt": "Qual intervalo produz mais asteroides no mesmo tempo?",
+          "prompt": "A chuva ficou difícil demais. Qual mudança dá mais tempo entre os asteroides?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "20 quadros produz mais que 80."
+              "label": "Aumentar o intervalo de 20 para 80 quadros."
             },
             {
               "id": "opcao-2",
-              "label": "80 quadros produz mais que 20."
+              "label": "Diminuir o intervalo de 80 para 20 quadros."
             },
             {
               "id": "opcao-3",
-              "label": "Os dois sempre produzem a mesma quantidade."
+              "label": "Mudar só a cor dos asteroides."
             }
           ],
           "correctChoiceId": "opcao-1",
-          "explanation": "20 quadros produz mais que 80."
+          "explanation": "Esperar mais quadros deixa mais tempo entre os nascimentos. Depois você poderá experimentar os dois ritmos no jogo."
         }
       }
     },
@@ -62,56 +62,128 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Um relógio de quadros decide quando nasce outro asteroide. Esperar menos quadros produz mais objetos no mesmo período: 20 é uma chuva mais frequente que 80. O relógio que cria fica ao lado do que move e desenha, porque são tarefas com ritmos diferentes. A colisão liga duas coisas que se encontram. Ao tirar o tiro e o asteroide dos grupos, aquela mesma batida não continua valendo nos quadros seguintes."
+        "markdown": "Um relógio de quadros decide quando nasce outro asteroide. Esperar menos quadros produz mais objetos no mesmo período: 20 é uma chuva mais frequente que 80.\n\nO relógio que cria fica ao lado do que move e desenha, porque são tarefas com ritmos diferentes. A colisão liga duas coisas que se encontram.\n\nAo tirar o tiro e o asteroide dos grupos, aquela mesma batida não continua valendo nos quadros seguintes."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Muitos, crie o grupo asteroides em Ao iniciar, abaixo de tiros. Agora cada tipo tem seu próprio grupo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar o grupo dos asteroides\n\nEm Jogo 2D, Muitos, crie o grupo asteroides em Ao iniciar, abaixo de tiros. Agora cada tipo tem seu próprio grupo."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "dia-3-passo-01: gravar a demonstração \"criar o grupo dos asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Tempo e repetição, coloque A cada quadros dentro de Enquanto estiver rodando, ao lado de A cada quadro do jogo. Escreva 40. O relógio da criação fica separado do movimento.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Montar o relógio da chuva\n\nEm Tempo e repetição, coloque A cada quadros dentro de Enquanto estiver rodando, ao lado de A cada quadro do jogo. Escreva 40.\n\nO relógio da criação fica separado do movimento."
       }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "dia-3-passo-02: gravar a demonstração \"montar o relógio da chuva\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Kit espaço, coloque No grupo criar um asteroide dentro do relógio. Escolha asteroides. No x, use um x aleatório na tela, de Mira e contas. Confira y menos 30, tamanho 40, vx 0 e vy 3.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar o asteroide surpresa\n\nEm Kit espaço, coloque No grupo criar um asteroide dentro do relógio. Escolha asteroides.\n\nNo x, use um x aleatório na tela, de Mira e contas. Confira y menos 30, tamanho 40, vx 0 e vy 3."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "dia-3-passo-03: gravar a demonstração \"criar o asteroide surpresa\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Prepare o nascimento. Na etapa seguinte vamos mover e desenhar essa chuva.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em A cada quadro, abaixo dos tiros, encaixe Atualizar o grupo asteroides, Tirar do grupo quem sair da tela e Desenhar o grupo asteroides. Deixe vazio o fazer da limpeza. Rode e observe a chuva.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Fazer os asteroides caírem e sumirem\n\nEm A cada quadro, abaixo dos tiros, encaixe Atualizar o grupo asteroides, Tirar do grupo quem sair da tela e Desenhar o grupo asteroides. Deixe vazio o fazer da limpeza.\n\nRode e observe a chuva."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "dia-3-passo-04: gravar a demonstração \"fazer os asteroides caírem e sumirem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-5",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Colisões, encaixe Para cada colisão entre os grupos, usando tiros e asteroides. Dentro, tire tiro e asteroide de seus grupos, solte uma explosão no asteroide e toque o som de explosão. Confira os apelidos antes de testar.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Explodir asteroide com tiro\n\nEm Colisões, encaixe Para cada colisão entre os grupos, usando tiros e asteroides. Dentro, tire tiro e asteroide de seus grupos, solte uma explosão no asteroide e toque o som de explosão.\n\nConfira os apelidos antes de testar."
+      }
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "dia-3-passo-05: gravar a demonstração \"explodir asteroide com tiro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Tente acertar um asteroide. Observe o tiro e a pedra depois do encontro; o efeito também pode ser visto sem som."
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": [
+          "O que acontece se os dois objetos continuarem se encostando no quadro seguinte?"
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Um tiro acertou, mas a mesma explosão continua se repetindo. O que conferir?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Se o fundo tem estrelas suficientes."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Se o relógio cria ainda mais asteroides."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Se tiro e asteroide foram retirados de seus grupos."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Retirar os dois objetos encerra aquele encontro. Assim o mesmo acerto não dispara de novo a cada quadro."
+        }
       }
     },
     {
       "key": "construir-6",
       "content": {
         "kind": "rich_text",
-        "markdown": "Clique no jogo, desvie e atire. Compare o relógio em 20 e em 80. Sua previsão combinou com o resultado? Volte a 40 para seguir com o mesmo ponto de partida.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Hora de explodir\n\nClique no jogo, desvie e atire. Compare o relógio em 20 e em 80.\n\nSua previsão combinou com o resultado? Volte a 40 para seguir com o mesmo ponto de partida."
       }
+    },
+    {
+      "key": "video-construir-6-1",
+      "plannedVideo": "dia-3-passo-06: gravar a demonstração \"hora de explodir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Um tiro que acerta deve desaparecer junto com o asteroide, produzir explosão e som. Observe também os objetos saindo da tela. Envie o projeto.\n\nNo Dia 4, essas batidas vão mudar os pontos e as vidas."
+        "markdown": "Um tiro que acerta deve desaparecer junto com o asteroide, produzir explosão e som. Observe também os objetos saindo da tela. Envie o projeto.\n\nNo Dia 4, essas batidas vão mudar os pontos e as vidas.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -120,309 +192,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "dia-3-passo-01: gravar a demonstração \"criar o grupo dos asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "dia-3-passo-02: gravar a demonstração \"montar o relógio da chuva\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "dia-3-passo-03: gravar a demonstração \"criar o asteroide surpresa\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "dia-3-passo-04: gravar a demonstração \"fazer os asteroides caírem e sumirem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-5-1",
-      "plannedVideo": "dia-3-passo-05: gravar a demonstração \"explodir asteroide com tiro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-6-1",
-      "plannedVideo": "dia-3-passo-06: gravar a demonstração \"hora de explodir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Controlar a frequência de criação e ligar a colisão à remoção dos objetos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["20 quadros produz mais que 80."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual intervalo produz mais asteroides no mesmo tempo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "80 quadros produz mais que 20."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Os dois sempre produzem a mesma quantidade."
-            },
-            {
-              "id": "opcao-3",
-              "label": "20 quadros produz mais que 80."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "20 quadros produz mais que 80."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar o grupo dos asteroides",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Para cuidar de cada tipo e identificar os grupos nas colisões."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que criar um grupo asteroides separado de tiros?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para apagar o grupo tiros."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para cuidar de cada tipo e identificar os grupos nas colisões."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Para impedir que os tiros se movam."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Para cuidar de cada tipo e identificar os grupos nas colisões."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: montar o relógio da chuva",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Ao lado do relógio de cada quadro, em Enquanto estiver rodando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Onde fica o relógio que cria asteroides?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Ao lado do relógio de cada quadro, em Enquanto estiver rodando."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Dentro da cor da nave."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Dentro de Ao iniciar, para executar uma única vez."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Ao lado do relógio de cada quadro, em Enquanto estiver rodando."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar o asteroide surpresa",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Ele nasce acima da tela e cai."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que usar y menos 30 e vy 3 no asteroide?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Ele nasce embaixo e sobe."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Ele fica parado no centro."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Ele nasce acima da tela e cai."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Ele nasce acima da tela e cai."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: fazer os asteroides caírem e sumirem",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Atualizar, limpar quem saiu e desenhar asteroides."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Quais ações mantêm a chuva visível sem acumular objetos fora da tela?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Somente mudar a imagem do fundo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Atualizar, limpar quem saiu e desenhar asteroides."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Somente criar novos objetos."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Atualizar, limpar quem saiu e desenhar asteroides."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-5",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: explodir asteroide com tiro",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Para a mesma batida não continuar valendo nos quadros seguintes."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que remover tiro e asteroide depois do acerto?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para a mesma batida não continuar valendo nos quadros seguintes."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para apagar todos os projetos da galeria."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Para impedir o nascimento de qualquer outro asteroide."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Para a mesma batida não continuar valendo nos quadros seguintes."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-6",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: hora de explodir",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["40 quadros."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Depois de comparar 20 e 80, qual é o ponto de partida para seguir?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "1 quadro."
-            },
-            {
-              "id": "opcao-2",
-              "label": "800 quadros."
-            },
-            {
-              "id": "opcao-3",
-              "label": "40 quadros."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "40 quadros."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Qual chuva fica mais intensa?",
       "objective": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -432,81 +210,66 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "criar o grupo dos asteroides",
-      "objective": "Em Jogo 2D, Muitos, crie o grupo asteroides em Ao iniciar, abaixo de tiros. Agora cada tipo tem seu próprio grupo.",
+      "title": "Solte os asteroides",
+      "objective": "Separar o relógio de criação da atualização dos objetos.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "montar o relógio da chuva",
-      "objective": "Em Tempo e repetição, coloque A cada quadros dentro de Enquanto estiver rodando, ao lado de A cada quadro do jogo. Escreva 40. O relógio da criação fica separado do movimento.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
-      }
-    },
-    {
-      "key": "construir-3",
-      "title": "criar o asteroide surpresa",
-      "objective": "Em Kit espaço, coloque No grupo criar um asteroide dentro do relógio. Escolha asteroides. No x, use um x aleatório na tela, de Mira e contas. Confira y menos 30, tamanho 40, vx 0 e vy 3.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-create-group",
+            "label": "Crie o grupo asteroides em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "asteroides"
+              }
+            }
+          },
+          {
+            "id": "g2d-every-frames",
+            "label": "Prepare A cada 40 quadros em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "area": "loops",
+              "inputs": {
+                "N": 40
+              }
+            }
+          }
+        ]
       }
     },
     {
       "key": "construir-4",
-      "title": "fazer os asteroides caírem e sumirem",
-      "objective": "Em A cada quadro, abaixo dos tiros, encaixe Atualizar o grupo asteroides, Tirar do grupo quem sair da tela e Desenhar o grupo asteroides. Deixe vazio o fazer da limpeza. Rode e observe a chuva.",
+      "title": "Um encontro, uma explosão",
+      "objective": "Remover os objetos atingidos para que um encontro não se repita.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
-      "key": "construir-5",
-      "title": "explodir asteroide com tiro",
-      "objective": "Em Colisões, encaixe Para cada colisão entre os grupos, usando tiros e asteroides. Dentro, tire tiro e asteroide de seus grupos, solte uma explosão no asteroide e toque o som de explosão. Confira os apelidos antes de testar.",
-      "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
+      "blockKeys": [
+        "construir-4",
+        "video-construir-4-1",
+        "construir-5",
+        "video-construir-5-1",
+        "convite-construir-4",
+        "checar-construir-5"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -516,25 +279,11 @@
       }
     },
     {
-      "key": "construir-6",
-      "title": "hora de explodir",
-      "objective": "Clique no jogo, desvie e atire. Compare o relógio em 20 e em 80. Sua previsão combinou com o resultado? Volte a 40 para seguir com o mesmo ponto de partida.",
-      "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-6"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Um tiro que acerta deve desaparecer junto com o asteroide, produzir explosão e som. Observe também os objetos saindo da tela. Envie o projeto.",
+      "title": "Escolha o ritmo da chuva",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

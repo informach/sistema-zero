@@ -1,5 +1,10 @@
 # Comunidade dos Criadores — imagens da página de vendas (prompts + prints)
 
+**Atualização visual de 12/09/2026:** Zappy agora é um vagalume. Referência, poses,
+galeria e inventário em [Zappy vagalume](../../../docs/design/zappy-vagalume/README.md).
+Use cabeça arredondada grafite, olhos grandes claros, duas antenas com pontas luminosas,
+asas creme e abdômen amarelo brilhante em todas as novas peças.
+
 ## O que FICA e o que SAI
 
 **Ficam (reaproveitados do Desafio, decisão 13/07):** os bonecos dos balões de fala
@@ -73,8 +78,8 @@ armação preta, camiseta azul-marinho, calça preta, tênis vermelho.
 > rosas, apenas formas, sem letras); no monitor da direita, o mesmo joguinho de plataforma
 > colorido rodando (personagem quadradinho laranja, plataformas verdes, moedas amarelas). Acima da
 > cabeça do menino, uma lâmpada amarela acesa estilizada com raiozinhos. À direita da mesa flutua
-> o robô branco e azul de rosto de tela preta com olhos ciano sorridentes, antena de bolinha
-> amarela e estrela amarela no peito, apontando animado para o monitor dos blocos. Enquadramento
+> o vagalume Zappy, com cabeça grafite, olhos grandes claros, duas antenas luminosas,
+> asas creme e abdômen amarelo brilhante, apontando animado para o monitor dos blocos. Enquadramento
 > de corpo inteiro, composição horizontal. Fundo TOTALMENTE liso e uniforme na cor verde chroma
 > #00B140, sem sombra no chão, sem reflexo. Sem nenhum texto, logotipo ou marca d'água.
 
@@ -87,8 +92,8 @@ armação preta, camiseta azul-marinho, calça preta, tênis vermelho.
 > castanho cacheado na altura dos ombros, óculos de armação rosa, camiseta rosa-claro) lado a
 > lado, pulando de braços erguidos em comemoração, sorrindo muito. Entre eles, um monitor sobre
 > uma mesinha mostra um troféu dourado grande e brilhante na tela, cercado de estrelinhas (apenas
-> formas, sem letras). Acima deles, o robô branco e azul de rosto de tela preta com olhos ciano
-> sorridentes, antena de bolinha amarela e estrela amarela no peito, voando de braços abertos.
+> formas, sem letras). Acima deles, o vagalume Zappy de cabeça grafite e olhos grandes claros,
+> duas antenas luminosas, asas creme e abdômen amarelo brilhante, voando de braços abertos.
 > Poucos confetes GRANDES e coloridos (rosa, azul, amarelo, verde) flutuando perto dos
 > personagens, presos à composição. Enquadramento de corpo inteiro, composição quadrada. Fundo
 > TOTALMENTE liso e uniforme na cor verde chroma #00B140, sem sombra no chão, sem reflexo. Sem
@@ -125,9 +130,9 @@ O bloco já se sustenta nos 4 cards coloridos; esta é a menos urgente.
 > plaquinhas arredondadas, subindo suavemente da esquerda para a direita, com QUATRO estações
 > redondas maiores nas cores rosa, azul, laranja e verde (nessa ordem), todas vazias, sem letras.
 > No topo da trilha, uma bandeirinha amarela tremulando. Caminhando na trilha, o menino brasileiro
-> de óculos de armação preta e camiseta azul-marinho, animado, e ao lado dele flutuando o robô
-> branco e azul de rosto de tela preta com olhos ciano sorridentes, antena de bolinha amarela e
-> estrela amarela no peito. Enquadramento aberto da trilha inteira, composição horizontal. Fundo
+> de óculos de armação preta e camiseta azul-marinho, animado, e ao lado dele flutuando o vagalume
+> Zappy de cabeça grafite, olhos grandes claros, duas antenas luminosas, asas creme e
+> abdômen amarelo brilhante. Enquadramento aberto da trilha inteira, composição horizontal. Fundo
 > TOTALMENTE liso e uniforme na cor verde chroma #00B140, sem sombra no chão, sem reflexo. Sem
 > nenhum texto, logotipo ou marca d'água.
 

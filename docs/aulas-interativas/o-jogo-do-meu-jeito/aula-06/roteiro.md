@@ -1,6 +1,6 @@
 # A sua nave entra no jogo
 
-Uma aula, organizada em 7 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-06-o-jogo-do-meu-jeito.md`. SHA-256: `9ad05f5ccb2dab008f1b093e66a0b75b003a3f4d193754813bb5d2b8571114e8`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,49 +13,77 @@ Você tem nave/voando de 32 × 32 e asteroide/girando de 64 × 64 no Pinta. O pr
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Tamanho do desenho ou tamanho no jogo? | Resolver a descoberta. |
+| Sua nave entra no jogo | Responder uma pergunta de decisão. |
+| Veja seu fogo voando | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Tamanho do desenho ou tamanho no jogo?
+
+**Intenção e objetivo (professor):** Exploração · Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.
 
 **Texto para o aluno:**
 
-Oi! Você tem nave/voando de 32 × 32 e asteroide/girando de 64 × 64 no Pinta. O projeto livre ainda usa o Kit espaço.
+Oi! Chegou a hora de pilotar a nave que você desenhou. Vamos trocar a arte e manter os controles do seu jogo.
 
-Hoje você vai usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Tamanho do desenho ou tamanho no jogo?**
 
-## 2. Descoberta antes da explicação
-
-**Modelo:** sequence. **Essencial:** sim
-
-**Título:** Tamanho do desenho ou tamanho no jogo?
+Modelo: `sequence`. Critério desta seção.
 
 Relacione cada configuração com sua função antes de trocar os blocos.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Peças:** 54 × 54 · 32 × 32 · 0 até 1
 
-**Pistas disponíveis:**
+**Gabarito para o professor:**
+
+- Tamanho de cada quadro da folha da nave: 32 × 32
+- Tamanho da nave desenhada no jogo: 54 × 54
+- Intervalo dos dois quadros da animação: 0 até 1
+
+**Pistas:**
 
 - A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+Uma imagem importada fica disponível como recurso; um sprite usa esse recurso no jogo. O nome nave continua ligando os controles e os outros blocos ao personagem.
 
-Uma imagem importada fica disponível como recurso; um sprite usa esse recurso no jogo. O nome nave continua ligando os controles e os outros blocos ao personagem. A folha de animação precisa saber o tamanho de cada quadro da arte: 32 × 32. Isso é diferente do tamanho do sprite na tela, que será 54 × 54. Os quadros 0 e 1 são as duas imagens, porque a contagem da folha começa em zero.
+A folha de animação precisa saber o tamanho de cada quadro da arte: 32 × 32. Isso é diferente do tamanho do sprite na tela, que será 54 × 54.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+Os quadros 0 e 1 são as duas imagens, porque a contagem da folha começa em zero.
 
-## Demonstrações e aplicação
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+## 2. Sua nave entra no jogo
 
-### 1. trazer os seus desenhos para dentro do projeto
+**Intenção e objetivo (professor):** Aplicação · Substituir a arte preservando a identidade usada pelos controles.
 
-**Narração revisada:**
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
 
-Abra Estúdio pelo menu e entre no cartão do jogo importado, não no projeto de teste. Use a área de recursos para trazer nave e asteroide do Pinta. Confira os nomes antes de trocar os blocos.
+**Narração revisada / instruções disponíveis em texto:**
 
-**Na tela (sequência técnica preservada do original):**
+### Trazer os seus desenhos para dentro do projeto
+
+Abra Estúdio pelo menu e entre no cartão do jogo importado, não no projeto de teste. Use a área de recursos para trazer nave e asteroide do Pinta.
+
+Confira os nomes antes de trocar os blocos.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 no menu da esquerda, clicar em Estúdio. Na tela "Meus Jogos", **clicar no cartão** do
 projeto do jogo da nave. Na barra de cima, abrir o menu de três pontinhos, apontar o título Exibição
@@ -68,17 +96,19 @@ modal do Trazer do Pinta pelo "Fechar" do rodapé**, mostrar os dois desenhos de
 "No projeto" e **fechar também a modal "Imagens e sons" pelo "Fechar" do rodapé dela**. Só com as
 duas janelas fechadas, cortar para a área do jogo, ainda igual.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-06-passo-01: gravar a demonstração "trazer os seus desenhos para dentro do projeto" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. apagar a nave do kit e montar a sua
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Apagar a nave do kit e montar a sua
 
-Em Ao iniciar, remova somente Criar nave do kit, preservando a pilha. Em Jogo 2D, Sprites, crie o sprite nave com imagem nave: x 400, y 410, largura 54 e altura 54. O nome nave mantém a ligação com os controles.
+Em Ao iniciar, remova somente Criar nave do kit, preservando a pilha. Em Jogo 2D, Sprites, crie o sprite nave com imagem nave: x 400, y 410, largura 54 e altura 54.
 
-**Na tela (sequência técnica preservada do original):**
+O nome nave mantém a ligação com os controles.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 na área Ao iniciar, apontar o **segundo bloco da pilha**, o "Criar nave", logo abaixo
 do "Preparar o jogo em tela cheia". Dar zoom nos campos dele, mostrando que ali só tem cor do corpo
@@ -97,17 +127,51 @@ fim **clicar no campo da imagem e mostrar a gradezinha com os dois desenhos do p
 `nave`. Zoom na área do jogo: duas naves espremidas dentro do sprite. Em seguida, mostrar lado a
 lado o desenho no Pinta com os dois quadros dela, para a criança ver de onde vieram as duas.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-06-passo-02: gravar a demonstração "apagar a nave do kit e montar a sua" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. carregar a folha e animar a nave
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Abra o projeto importado. Depois da troca, teste as setas antes de mexer na animação.
 
-Em Jogo 2D, Animação, carregue folha-nave da imagem nave com quadros 32 por 32. Configure a animação voando do quadro 0 ao 1 a 8 fps. Teste o fogo, as setas, os tiros e as colisões no mesmo jogo.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** A nave nova apareceu, mas os controles procuram outro nome. O que conferir?
+
+- Se o sprite continua com o nome nave.
+- Se o título do jogo tem a palavra nave.
+- Se a folha tem uma cor diferente.
+
+**Resposta esperada (professor):** Se o sprite continua com o nome nave.
+
+**Devolutiva:** O nome nave liga o sprite aos controles e às outras regras. Trocar a imagem não exige mudar essa ligação.
+
+**Pistas:**
+
+- Os blocos de controle precisam encontrar o mesmo personagem.
+
+**Critério configurado:** `checar-construir-2`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Veja seu fogo voando
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.
+
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Carregar a folha e animar a nave
+
+Em Jogo 2D, Animação, carregue folha-nave da imagem nave com quadros 32 por 32. Configure a animação voando do quadro 0 ao 1 a 8 fps.
+
+Teste o fogo, as setas, os tiros e as colisões no mesmo jogo.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 na coluna da esquerda, **clicar em Jogo 2D e clicar na subcategoria Animação**. Arrastar
 "Carregar folha de quadros __ da imagem __ com quadros de __ x __ px" para a área Ao iniciar,
@@ -119,71 +183,55 @@ listinha do sprite e `folha-nave` na listinha da folha. Abrir a listinha da
 animação com zoom, escolher `voando`, e dar zoom nos três campos seguintes se preenchendo sozinhos.
 Terminar com zoom na área do jogo, com a nave dela e o motor acendendo.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-06-passo-03: gravar a demonstração "carregar a folha e animar a nave" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 A nave tem sua arte e o fogo animado; movimento, tiros, vidas e telas continuam funcionando. Confira o salvamento do mesmo projeto livre.
 
 Na Aula 7, você troca também os asteroides, preservando a chuva e as colisões.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Depois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** A animação ficou recortada. Qual tamanho conferir na folha da nave?
 
-## Verificações para avançar nas seções
+- 800 × 480, porque é o tamanho da tela.
+- 32 × 32 por quadro, o tamanho da arte.
+- 54 × 54, porque é o tamanho do sprite no jogo.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** 32 × 32 por quadro, o tamanho da arte.
 
-### A criação de hoje
+**Devolutiva:** Cada quadro da arte mede 32 × 32. O sprite pode aparecer com 54 × 54 sem mudar esse recorte. Teste também controles e tiros.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.
+- A folha recorta o desenho original; o sprite muda o tamanho em que ele aparece.
 
-### Tamanho do desenho ou tamanho no jogo?
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+## Cadastro e validação em staging
 
-### O que aconteceu?
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-**Checagem:** Qual diferença existe entre o quadro 32 por 32 e o sprite 54 por 54?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Resposta e explicação:** O quadro mede a arte na folha; o sprite mede sua exibição no jogo.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### trazer os seus desenhos para dentro do projeto
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** Em qual projeto importar os desenhos do Pinta?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** No jogo importado que já funciona.
+**Cartões antigos a retirar após reimportação:**
 
-### apagar a nave do kit e montar a sua
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: trazer os seus desenhos para dentro do projeto
+- `checar-construir-3`: Confira: carregar a folha e animar a nave
 
-**Checagem:** Por que manter o nome nave ao substituir a arte do kit?
-
-**Resposta e explicação:** Para preservar a ligação com controles e outros blocos.
-
-### carregar a folha e animar a nave
-
-**Checagem:** Quais quadros formam a animação voando?
-
-**Resposta e explicação:** 0 e 1, pois a contagem começa em zero.
-
-### Teste e guarde sua criação
-
-**Checagem:** O que testar depois de trocar a nave?
-
-**Resposta e explicação:** Animação, movimento, tiros, vidas e telas.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

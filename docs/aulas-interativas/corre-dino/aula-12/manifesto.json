@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu placar funciona, mas os cactos chegam como um relógio muito previsível.\n\nHoje você vai usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Os cactos chegam sempre iguais? Vamos variar um pouco essa pista sem deixar o desafio fora de controle.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -16,8 +16,8 @@
       "content": {
         "kind": "interactive",
         "title": "Menos cinco, menos um pouco",
-        "instructions": "O vx é −5 menos um número entre 0 e 1. Qual faixa de velocidades você espera?",
-        "hints": ["Teste os extremos da conta: −5 − 0 e −5 − 1."],
+        "instructions": "O vx é −5 menos um número entre 0 e 1. Qual faixa de velocidades você espera? Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["Os dois números escolhidos são os limites da faixa."],
         "required": true,
         "activity": {
           "type": "prediction",
@@ -38,23 +38,23 @@
           "outcome": "Subtrair de −5 um valor entre 0 e 1 produz valores entre −5 e −6. A direção continua para a esquerda; a intensidade varia dentro de uma faixa pequena."
         },
         "checkpoint": {
-          "prompt": "Sortear um valor significa aceitar qualquer número?",
+          "prompt": "Você sorteia de 0 a 1. Qual valor pode entrar na conta da velocidade?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Sim; números negativos não podem ter limite."
+              "label": "0,5."
             },
             {
               "id": "opcao-2",
-              "label": "Não; os limites escolhidos definem a faixa do sorteio."
+              "label": "3."
             },
             {
               "id": "opcao-3",
-              "label": "Sim; o sorteio ignora os limites."
+              "label": "−2."
             }
           ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Não; os limites escolhidos definem a faixa do sorteio."
+          "correctChoiceId": "opcao-1",
+          "explanation": "0,5 está entre 0 e 1. Sortear permite variar sem abandonar os limites escolhidos."
         }
       }
     },
@@ -62,42 +62,136 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Aleatório não precisa significar qualquer valor. Você escolhe uma faixa e o programa sorteia dentro dela. Nascer em x 500 ou 560 muda a distância até o dino, mesmo com o relógio fixo em 1,4 segundo. Para variar a velocidade para a esquerda, usamos menos 5 menos um sorteio de 0 a 1: o resultado vai de menos 5 a menos 6. O número fica menor, mas a distância percorrida em cada quadro aumenta."
+        "markdown": "Aleatório não precisa significar qualquer valor. Você escolhe uma faixa e o programa sorteia dentro dela.\n\nNascer em x 500 ou 560 muda a distância até o dino, mesmo com o relógio fixo em 1,4 segundo. Para variar a velocidade para a esquerda, usamos menos 5 menos um sorteio de 0 a 1: o resultado vai de menos 5 a menos 6.\n\nO número fica menor, mas a distância percorrida em cada quadro aumenta."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4. Quando tudo se repete igual, dá para decorar o ritmo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Entender por que está sempre igual\n\nObserve os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4.\n\nQuando tudo se repete igual, dá para decorar o ritmo."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-12-passo-01: gravar a demonstração \"entender por que está sempre igual\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560. Jogue algumas vezes: o lugar de nascimento muda dentro dessa faixa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Sortear o lugar do cacto\n\nEm Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560.\n\nJogue algumas vezes: o lugar de nascimento muda dentro dessa faixa."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-12-passo-02: gravar a demonstração \"sortear o lugar do cacto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Observe vários cactos. Um só nascimento não mostra tudo o que o sorteio pode fazer."
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Procure um número entre os dois limites, incluindo as pontas."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O sorteio de x vai de 500 a 560. Qual nascimento está dentro dessa faixa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "x 530."
+            },
+            {
+              "id": "opcao-2",
+              "label": "x 700."
+            },
+            {
+              "id": "opcao-3",
+              "label": "x 450."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "530 fica entre 500 e 560. O sorteio varia o lugar de nascimento, mas respeita a faixa que você escolheu."
+        }
       }
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites. A direção deve continuar para a esquerda.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Sortear a velocidade\n\nEm Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites.\n\nA direção deve continuar para a esquerda."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-12-passo-03: gravar a demonstração \"sortear a velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Confira o sinal de subtração. Os cactos precisam continuar vindo da direita para a esquerda."
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Faça primeiro as contas com 0 e com 1. Depois pense no que cabe entre elas."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Na conta −5 menos um sorteio de 0 a 1, qual velocidade pode aparecer?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "+5,5, para a direita."
+            },
+            {
+              "id": "opcao-2",
+              "label": "0, sempre parado."
+            },
+            {
+              "id": "opcao-3",
+              "label": "−5,5, ainda para a esquerda."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Os extremos são −5 e −6. Valores entre eles, como −5,5, continuam apontando para a esquerda."
+        }
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560. Volte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar\n\nJogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560.\n\nVolte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-12-passo-04: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Os cactos devem continuar vindo da direita, com pequenas variações. Confira os extremos de x e vx e teste mais de uma partida. Envie.\n\nNa Aula 13, a dificuldade vai aumentar com o tempo, respeitando um limite."
+        "markdown": "Os cactos devem continuar vindo da direita, com pequenas variações. Confira os extremos de x e vx e teste mais de uma partida. Envie.\n\nNa Aula 13, a dificuldade vai aumentar com o tempo, respeitando um limite.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -106,239 +200,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-12-passo-01: gravar a demonstração \"entender por que está sempre igual\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-12-passo-02: gravar a demonstração \"sortear o lugar do cacto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-12-passo-03: gravar a demonstração \"sortear a velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-12-passo-04: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Não; os limites escolhidos definem a faixa do sorteio."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Sortear um valor significa aceitar qualquer número?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Não; os limites escolhidos definem a faixa do sorteio."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Sim; o sorteio ignora os limites."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sim; números negativos não podem ter limite."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Não; os limites escolhidos definem a faixa do sorteio."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: entender por que está sempre igual",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Um ritmo previsível."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Se posição, velocidade e intervalo se repetem iguais, o que o jogador pode perceber?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Uma direção aleatória a cada cacto."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Uma nova tela a cada segundo."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Um ritmo previsível."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Um ritmo previsível."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: sortear o lugar do cacto",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["O lugar em que cada cacto nasce."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que varia ao sortear x entre 500 e 560?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O intervalo do relógio de criação."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O lugar em que cada cacto nasce."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O nome do grupo cactos."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "O lugar em que cada cacto nasce."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: sortear a velocidade",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["De menos 5 a menos 6, ainda para a esquerda."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual faixa resulta de menos 5 menos um sorteio de 0 a 1?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "De menos 5 a menos 6, ainda para a esquerda."
-            },
-            {
-              "id": "opcao-2",
-              "label": "De mais 5 a mais 6, para a direita."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sempre zero, sem movimento."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "De menos 5 a menos 6, ainda para a esquerda."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Um único nascimento não mostra a variação da faixa."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que observar várias aparições antes de avaliar o sorteio?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O primeiro resultado sempre mostra todos os limites."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O sorteio muda o código depois de cada partida."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Um único nascimento não mostra a variação da faixa."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Um único nascimento não mostra a variação da faixa."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Menos cinco, menos um pouco",
       "objective": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -348,39 +218,18 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "entender por que está sempre igual",
-      "objective": "Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4. Quando tudo se repete igual, dá para decorar o ritmo.",
+      "title": "Surpresa dentro de uma faixa",
+      "objective": "Escolher limites para variar o nascimento dos obstáculos.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "sortear o lugar do cacto",
-      "objective": "Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560. Jogue algumas vezes: o lugar de nascimento muda dentro dessa faixa.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-2"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -391,10 +240,15 @@
     },
     {
       "key": "construir-3",
-      "title": "sortear a velocidade",
-      "objective": "Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites. A direção deve continuar para a esquerda.",
+      "title": "Varie a velocidade com cuidado",
+      "objective": "Interpretar a direção e os extremos da velocidade negativa.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-3",
+        "checar-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -404,25 +258,11 @@
       }
     },
     {
-      "key": "construir-4",
-      "title": "testar",
-      "objective": "Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560. Volte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Os cactos devem continuar vindo da direita, com pequenas variações. Confira os extremos de x e vx e teste mais de uma partida. Envie.",
+      "title": "Jogue mais de uma vez",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

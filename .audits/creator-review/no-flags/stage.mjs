@@ -44,12 +44,12 @@ const git = (args, input) =>
 if (git(['diff', '--cached', '--name-only']).trim()) throw new Error('Index already has changes')
 const proof = []
 for (const [path, marker] of Object.entries(mixed)) {
-  const head = git(['show', 'HEAD:' + path]).replace(/\r\n/g, '\n')
-  const working = readFileSync(root + '/' + path, 'utf8').replace(/\r\n/g, '\n')
+  const head = git(['show', `HEAD:${path}`]).replace(/\r\n/g, '\n')
+  const working = readFileSync(`${root}/${path}`, 'utf8').replace(/\r\n/g, '\n')
   const hi = head.indexOf(marker),
     wi = working.indexOf(marker)
   if (hi < 0 || wi < 0 || head.lastIndexOf(marker) !== hi || working.lastIndexOf(marker) !== wi)
-    throw new Error('Ambiguous section: ' + path)
+    throw new Error(`Ambiguous section: ${path}`)
   const selected = head.slice(0, hi) + working.slice(wi)
   const oid = git(['hash-object', '-w', '--stdin'], selected).trim()
   git(['update-index', '--cacheinfo', '100644', oid, path])
@@ -65,7 +65,7 @@ if (JSON.stringify(selected) !== JSON.stringify([...files].sort()))
   throw new Error('Unexpected staged paths')
 git(['diff', '--cached', '--check'])
 writeFileSync(
-  root + '/.audits/creator-review/no-flags/selection.json',
+  `${root}/.audits/creator-review/no-flags/selection.json`,
   JSON.stringify({ files, proof }, null, 2),
 )
 console.log(

@@ -1,6 +1,6 @@
 # Os seus asteroides entram no jogo
 
-Uma aula, organizada em 7 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-07-o-jogo-do-meu-jeito.md`. SHA-256: `8c6a62c7bee3bb50f7fb44aa1422d8bf18ed5744b6962819d43009532f7cfaf6`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,49 +13,73 @@ Seu projeto livre usa a nave própria. O recurso asteroide já foi trazido do Pi
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Troque sem perder a configuração | Resolver a descoberta. |
+| Troque a pedra sem perder a chuva | Responder uma pergunta de decisão. |
+| Cada pedra ganha movimento | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Troque sem perder a configuração
+
+**Intenção e objetivo (professor):** Exploração · Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.
 
 **Texto para o aluno:**
 
-Oi! Seu projeto livre usa a nave própria. O recurso asteroide já foi trazido do Pinta e ainda falta trocar a criação dos obstáculos.
+Oi! Sua nave já tem a sua arte. Agora os asteroides vão ganhar seus desenhos sem perder a chuva e as colisões.
 
-Hoje você vai substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Troque sem perder a configuração**
 
-## 2. Descoberta antes da explicação
-
-**Modelo:** sequence. **Essencial:** sim
-
-**Título:** Troque sem perder a configuração
+Modelo: `sequence`. Critério desta seção.
 
 Organize a substituição do bloco que cria os asteroides, preservando o sorteio e os campos.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Peças:** Apagar o bloco antigo depois de conferir · Montar o novo bloco com os campos corretos · Transferir o sorteio de x e comparar as configurações
 
-**Pistas disponíveis:**
+**Ordem para o professor:** Montar o novo bloco com os campos corretos → Transferir o sorteio de x e comparar as configurações → Apagar o bloco antigo depois de conferir
+
+**Pistas:**
 
 - O bloco antigo ajuda a conferir o novo antes de ser removido.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+O desenho e o comportamento são partes que se conectam. Um asteroide com sua arte pode continuar no mesmo grupo e receber a mesma posição e velocidade.
 
-O desenho e o comportamento são partes que se conectam. Um asteroide com sua arte pode continuar no mesmo grupo e receber a mesma posição e velocidade. Aqui, preparar o bloco novo antes de apagar o antigo permite reaproveitar o sorteio de x e conferir os campos. Não deixe as duas criações executando juntas ao finalizar, ou a chuva dobra. Cada novo asteroide precisa receber a animação quando nasce.
+Aqui, preparar o bloco novo antes de apagar o antigo permite reaproveitar o sorteio de x e conferir os campos. Não deixe as duas criações executando juntas ao finalizar, ou a chuva dobra.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+Cada novo asteroide precisa receber a animação quando nasce.
 
-## Demonstrações e aplicação
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+## 2. Troque a pedra sem perder a chuva
 
-### 1. preparar a folha do asteroide
+**Intenção e objetivo (professor):** Aplicação · Preservar grupo, sorteio e movimento na substituição do recurso.
 
-**Narração revisada:**
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
 
-Abra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64. A folha da nave continua como está.
+**Narração revisada / instruções disponíveis em texto:**
 
-**Na tela (sequência técnica preservada do original):**
+### Preparar a folha do asteroide
+
+Abra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64.
+
+A folha da nave continua como está.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 abrir o Estúdio pelo menu da esquerda e **clicar no cartão do projeto do jogo da nave**.
 Na coluna da esquerda, **clicar em Jogo 2D e clicar na subcategoria Animação**. Arrastar mais um
@@ -65,17 +89,19 @@ no nome da folha, escolher `asteroide` na gradezinha da imagem e **trocar os doi
 para a área do jogo e mostrar, sem pressa, que nada
 mudou: os asteroides continuam cinzas.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-07-passo-01: gravar a demonstração "preparar a folha do asteroide" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. trocar o bloco que cria os asteroides
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### Trocar o bloco que cria os asteroides
 
-No relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3. Transfira o sorteio de x, confira os campos e só então remova a criação antiga.
+No relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3.
 
-**Na tela (sequência técnica preservada do original):**
+Transfira o sorteio de x, confira os campos e só então remova a criação antiga.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 rolar até a área Enquanto estiver rodando e achar o "A cada 40 quadros", ao lado do
 "A cada quadro do jogo". Dentro dele, o "Se a tela atual é jogando", e dentro dele o bloco velho do
@@ -88,17 +114,51 @@ novo, e **dar zoom no campo do bloco velho, que fica sem ela**. Preencher os out
 nascendo todos no mesmo ponto e asteroides dela caindo espalhados ao mesmo tempo. Só então clicar
 com o botão direito no bloco velho e apagar.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-07-passo-02: gravar a demonstração "trocar o bloco que cria os asteroides" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. fazer os asteroides girarem
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Prepare a criação nova, confira os valores e remova a antiga. Rode só depois de conferir a troca.
 
-Em Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos. Cada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Depois da troca, nasceram dois asteroides por vez. O que investigar?
+
+- Se a folha da nave tem dois quadros.
+- Se a capa do jogo foi alterada.
+- Se as duas criações, antiga e nova, ficaram executando.
+
+**Resposta esperada (professor):** Se as duas criações, antiga e nova, ficaram executando.
+
+**Devolutiva:** Duas criações no mesmo relógio podem dobrar a chuva. Preserve a nova e remova a antiga depois de conferir os dados.
+
+**Pistas:**
+
+- Conte quantos blocos de criação ficaram dentro do relógio.
+
+**Critério configurado:** `checar-construir-2`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Cada pedra ganha movimento
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.
+
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Fazer os asteroides girarem
+
+Em Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos.
+
+Cada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 na coluna da esquerda, **clicar em Jogo 2D e clicar na subcategoria Animação**, arrastar outro
 "Animar sprite __ com a folha __ na animação __, do quadro __ ao __ a __ fps" para dentro do
@@ -111,71 +171,55 @@ narração fala do editar desenho, abrir o
 menu de três pontinhos, o título Exibição, o item "Imagens", dar um close no "✏️ editar desenho" de
 um dos cards **sem clicar nele**, e **fechar a modal no "Fechar"** antes do Fecho.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-07-passo-03: gravar a demonstração "fazer os asteroides girarem" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Confira um único nascimento por disparo do relógio, a queda, a animação, os acertos e as vidas. A nave e os asteroides agora têm sua arte, com as regras do jogo preservadas.
 
 Na Aula 8, você publica essa versão e aprende uma rotina para continuar criando fora dos cursos.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Depois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** Só o primeiro asteroide animou. Quando configurar a animação de cada um?
 
-## Verificações para avançar nas seções
+- Quando cada novo asteroide nasce.
+- Só uma vez antes de criar qualquer asteroide.
+- Só depois que o asteroide sai da tela.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** Quando cada novo asteroide nasce.
 
-### A criação de hoje
+**Devolutiva:** A configuração deve alcançar cada objeto novo. Confira folha-asteroide, girando, quadros 0 e 1, e teste vários nascimentos.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.
+- Cada nascimento cria outro objeto no grupo.
 
-### Troque sem perder a configuração
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+## Cadastro e validação em staging
 
-### O que aconteceu?
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-**Checagem:** Por que retirar a criação antiga depois de conferir a nova?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Resposta e explicação:** Para não criar dois asteroides em cada disparo do relógio.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### preparar a folha do asteroide
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** Qual tamanho de quadro usa folha-asteroide?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** 64 por 64.
+**Cartões antigos a retirar após reimportação:**
 
-### trocar o bloco que cria os asteroides
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: preparar a folha do asteroide
+- `checar-construir-3`: Confira: fazer os asteroides girarem
 
-**Checagem:** O que preservar ao substituir o bloco do kit?
-
-**Resposta e explicação:** Grupo, sorteio de x e parâmetros do movimento.
-
-### fazer os asteroides girarem
-
-**Checagem:** Quando cada novo asteroide deve receber girando?
-
-**Resposta e explicação:** Quando ele nasce, usando folha-asteroide.
-
-### Teste e guarde sua criação
-
-**Checagem:** Qual resultado confirma a troca completa?
-
-**Resposta e explicação:** Um nascimento por relógio, com queda, animação e colisões funcionando.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

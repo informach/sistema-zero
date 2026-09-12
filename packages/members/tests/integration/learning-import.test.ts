@@ -72,7 +72,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toEqual([
       { id, content },
     ])
-    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(5)
+    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(2)
     expect(
       draft.document.sections
         .filter((s) => s.workspaceBlockId)
@@ -118,7 +118,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect((await f.apply(await revision(preview))).status).toBe(200)
     const draft = await readDraft(f.app, f.lessonId)
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toHaveLength(1)
-    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(4)
+    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(2)
     expect(
       draft.document.sections
         .filter((s) => s.workspaceBlockId)

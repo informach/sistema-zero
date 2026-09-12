@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! O projeto abre na tela inicio e mostra só a floresta. A partida está protegida pela condição.\n\nHoje você vai conectar a instrução mostrada ao jogador com controles que realmente funcionam.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Sua floresta está esperando. Vamos criar uma tela que convida a jogar e funciona com teclado e toque.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -16,8 +16,8 @@
       "content": {
         "kind": "interactive",
         "title": "A dica prometeu um toque",
-        "instructions": "A tela diz “Toque para jogar”, mas o evento escuta somente Enter. O que acontece se o jogador tocar?",
-        "hints": ["A frase orienta uma pessoa; o bloco de evento orienta o programa."],
+        "instructions": "A tela diz “Toque para jogar”, mas o evento escuta somente Enter. O que acontece se o jogador tocar? Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["A frase precisa descrever os comandos que o evento recebe."],
         "required": true,
         "activity": {
           "type": "prediction",
@@ -34,23 +34,23 @@
           "outcome": "O texto não executa o comando. A dica e o evento precisam combinar. Ao usar o evento de qualquer tecla ou toque, você pode anunciar os dois controles."
         },
         "checkpoint": {
-          "prompt": "Se a dica diz para tocar na tela, o que o jogo precisa oferecer?",
+          "prompt": "Você trocou o evento por qualquer tecla ou toque. Qual dica combina?",
           "choices": [
             {
               "id": "opcao-1",
-              "label": "Uma tela sem controles."
+              "label": "“Espere, o jogo sempre começa sozinho.”"
             },
             {
               "id": "opcao-2",
-              "label": "Um evento que também responda ao toque."
+              "label": "“Aperte uma tecla ou toque para começar.”"
             },
             {
               "id": "opcao-3",
-              "label": "Somente um evento da tecla Enter."
+              "label": "“Apenas Enter começa a partida.”"
             }
           ],
           "correctChoiceId": "opcao-2",
-          "explanation": "Um evento que também responda ao toque."
+          "explanation": "A dica orienta a pessoa usando os controles que o jogo realmente oferece."
         }
       }
     },
@@ -58,35 +58,86 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Uma dica é uma promessa: se a tela diz para tocar, o toque precisa começar a partida. Um evento exclusivo de Enter não atende a essa promessa no celular. A pergunta da tela impede que o mesmo comando comece algo no momento errado. Título, subtítulo e cores podem expressar seu estilo. A instrução dos controles precisa descrever o comportamento real do jogo."
+        "markdown": "Uma dica é uma promessa: se a tela diz para tocar, o toque precisa começar a partida. Um evento exclusivo de Enter não atende a essa promessa no celular.\n\nA pergunta da tela impede que o mesmo comando comece algo no momento errado. Título, subtítulo e cores podem expressar seu estilo.\n\nA instrução dos controles precisa descrever o comportamento real do jogo."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio. Em Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Desenhar a tela de início\n\nNo Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-08-passo-01: gravar a demonstração \"desenhar a tela de início\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique. Depois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### O jogo começa quando o jogador manda\n\nEm Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-08-passo-02: gravar a demonstração \"o jogo começa quando o jogador manda\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Personalize o título. Depois confira o evento para que a dica prometa somente os controles que funcionam."
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Texto orienta a pessoa; evento recebe o comando."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "A dica diz “toque para jogar”, mas só Enter funciona. O que precisa mudar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O jogador precisa adivinhar que deve usar Enter."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O evento precisa aceitar toque também."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Só a cor da dica precisa mudar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Dica e evento precisam combinar. O evento de qualquer tecla ou toque permite oferecer os dois caminhos."
+        }
       }
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Recarregue e comece clicando. Recarregue outra vez e comece com Enter. Os dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar e deixar com a sua cara\n\nRecarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles."
       }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-08-passo-03: gravar a demonstração \"testar e deixar com a sua cara\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie.\n\nNa Aula 9, uma batida terá consequência e você poderá jogar de novo."
+        "markdown": "Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie.\n\nNa Aula 9, uma batida terá consequência e você poderá jogar de novo.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -95,203 +146,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-08-passo-01: gravar a demonstração \"desenhar a tela de início\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-08-passo-02: gravar a demonstração \"o jogo começa quando o jogador manda\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-08-passo-03: gravar a demonstração \"testar e deixar com a sua cara\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Conectar a instrução mostrada ao jogador com controles que realmente funcionam."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Um evento que também responda ao toque."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Se a dica diz para tocar na tela, o que o jogo precisa oferecer?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Um evento que também responda ao toque."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Somente um evento da tecla Enter."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Uma tela sem controles."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Um evento que também responda ao toque."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: desenhar a tela de início",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Quando a tela atual é inicio."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Em qual condição desenhamos o convite para começar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Em qualquer tela por cima da partida."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Só depois de perder."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Quando a tela atual é inicio."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Quando a tela atual é inicio."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: o jogo começa quando o jogador manda",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Quando apertar qualquer tecla ou tocar na tela."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual evento atende teclado e toque para começar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Somente quando o dino pular."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Quando apertar qualquer tecla ou tocar na tela."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Somente quando apertar Enter."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Quando apertar qualquer tecla ou tocar na tela."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar e deixar com a sua cara",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Testar cada controle que a dica promete."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como conferir se a dica da tela está correta?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Testar cada controle que a dica promete."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Escolher uma frase bonita sem testar."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Testar apenas uma cor do título."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Testar cada controle que a dica promete."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "A dica prometeu um toque",
       "objective": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -301,39 +164,18 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "desenhar a tela de início",
-      "objective": "No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio. Em Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo.",
+      "title": "Um convite que funciona",
+      "objective": "Fazer a instrução da tela corresponder aos controles implementados.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "o jogo começa quando o jogador manda",
-      "objective": "Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique. Depois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-2"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -343,25 +185,11 @@
       }
     },
     {
-      "key": "construir-3",
-      "title": "testar e deixar com a sua cara",
-      "objective": "Recarregue e comece clicando. Recarregue outra vez e comece com Enter. Os dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles.",
-      "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-3"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie.",
+      "title": "Experimente duas entradas",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

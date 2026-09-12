@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Os cactos chegam em intervalos de 1,4 segundo e saem pela esquerda. O grupo ainda pode guardar os que você não vê.\n\nHoje você vai usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Um cacto saiu da tela. Será que ele saiu também do grupo? Hoje você vai ser detetive do que ficou escondido.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -49,42 +49,104 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "Sair da imagem não é o mesmo que deixar de existir no grupo. Sem remoção, o total criado cresce mesmo quando poucos cactos aparecem na tela. Um contador ajuda a observar esse estado invisível. No modelo, cada objeto leva três segundos para sair: o total criado em dez segundos pode ser bem maior que os objetos ainda visíveis. A limpeza remove os que saíram e permite estabilizar a quantidade guardada. Primeiro medimos, depois mudamos a regra e medimos novamente."
+        "markdown": "Sair da imagem não é o mesmo que deixar de existir no grupo. Sem remoção, o total criado cresce mesmo quando poucos cactos aparecem na tela.\n\nUm contador ajuda a observar esse estado invisível. No modelo, cada objeto leva três segundos para sair: o total criado em dez segundos pode ser bem maior que os objetos ainda visíveis.\n\nA limpeza remove os que saíram e permite estabilizar a quantidade guardada. Primeiro medimos, depois mudamos a regra e medimos novamente."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos. No valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Montar o medidor\n\nEm Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.\n\nNo valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-06-passo-01: gravar a demonstração \"montar o medidor\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela. Ele continua crescendo? Essa é a medida do problema que vamos corrigir.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Provocar o problema\n\nTroque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.\n\nEle continua crescendo? Essa é a medida do problema que vamos corrigir."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-06-passo-02: gravar a demonstração \"provocar o problema\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Deixe alguns cactos saírem. Compare a pista com o número do contador."
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O contador mostra o grupo inteiro, inclusive o que está fora da imagem."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Você vê poucos cactos, mas o contador continua crescendo. O que investigar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Se os cactos fora da tela continuam no grupo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Se a cor do Dino está clara demais."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Se o título da aula mudou."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Sair da tela só muda o que você vê. O grupo precisa de uma regra para remover os objetos que já passaram."
+        }
       }
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio. Compare o número com o teste anterior.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### A faxina\n\nEm Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.\n\nCompare o número com o teste anterior."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-06-passo-03: gravar a demonstração \"a faxina\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Compare o contador antes e depois da limpeza. A quantidade deve deixar de crescer sem parar.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo. Remova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar dois ritmos, devolver o relógio e aposentar o medidor\n\nCom o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.\n\nRemova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa."
       }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-06-passo-04: gravar a demonstração \"testar dois ritmos, devolver o relógio e aposentar o medidor\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "A limpeza deve permanecer e o relógio voltar a 1.4. O contador de diagnóstico deve sair ao final desta aula. Envie o projeto já sem o medidor.\n\nNa Aula 7, você vai separar o momento de jogar da tela de início."
+        "markdown": "A limpeza deve permanecer e o relógio voltar a 1.4. O contador de diagnóstico deve sair ao final desta aula. Envie o projeto já sem o medidor.\n\nNa Aula 7, você vai separar o momento de jogar da tela de início.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -93,239 +155,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-06-passo-01: gravar a demonstração \"montar o medidor\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-06-passo-02: gravar a demonstração \"provocar o problema\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-06-passo-03: gravar a demonstração \"a faxina\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-06-passo-04: gravar a demonstração \"testar dois ritmos, devolver o relógio e aposentar o medidor\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Não; é preciso uma regra que remova os que saíram."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Um cacto saiu da tela. Ele necessariamente saiu do grupo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Não; é preciso uma regra que remova os que saíram."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Sim; o desenho sempre apaga o objeto."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sim; a cor de fundo remove o grupo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Não; é preciso uma regra que remova os que saíram."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: montar o medidor",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Quantos sprites existem no grupo cactos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O contador deve mostrar qual informação?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A largura do céu."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Quantas vezes o título foi desenhado."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Quantos sprites existem no grupo cactos."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Quantos sprites existem no grupo cactos."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: provocar o problema",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Os objetos continuam guardados no grupo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O contador cresce mesmo com cactos fora da tela. O que isso indica?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A tela está ficando mais larga."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Os objetos continuam guardados no grupo."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O contador só conta os visíveis."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Os objetos continuam guardados no grupo."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: a faxina",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Tirar do grupo quem sair da tela."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual regra faz a faxina do grupo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Tirar do grupo quem sair da tela."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Desenhar os objetos com outra cor."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Criar mais objetos para substituir os antigos."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Tirar do grupo quem sair da tela."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar dois ritmos, devolver o relógio e aposentar o medidor",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A limpeza, com o relógio em 1,4; o medidor pode sair."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que deve permanecer ao finalizar o diagnóstico?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O relógio em 0,1 e nenhuma limpeza."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Só o medidor, sem a regra de limpeza."
-            },
-            {
-              "id": "opcao-3",
-              "label": "A limpeza, com o relógio em 1,4; o medidor pode sair."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "A limpeza, com o relógio em 1,4; o medidor pode sair."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "Quantos existem e quantos aparecem?",
       "objective": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -335,39 +173,18 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "montar o medidor",
-      "objective": "Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos. No valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número.",
+      "title": "Espie o que ficou guardado",
+      "objective": "Usar um contador para observar objetos fora da tela.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "provocar o problema",
-      "objective": "Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela. Ele continua crescendo? Essa é a medida do problema que vamos corrigir.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-2"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -378,38 +195,39 @@
     },
     {
       "key": "construir-3",
-      "title": "a faxina",
-      "objective": "Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio. Compare o número com o teste anterior.",
+      "title": "Faça a faxina do grupo",
+      "objective": "Adicionar a remoção de objetos que saíram da tela.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "convite-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-3"]
-      }
-    },
-    {
-      "key": "construir-4",
-      "title": "testar dois ritmos, devolver o relógio e aposentar o medidor",
-      "objective": "Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo. Remova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-prune-offscreen",
+            "label": "Tire do grupo cactos quem sair da tela, em A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "A limpeza deve permanecer e o relógio voltar a 1.4. O contador de diagnóstico deve sair ao final desta aula. Envie o projeto já sem o medidor.",
+      "title": "Guarde a solução, retire o medidor",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

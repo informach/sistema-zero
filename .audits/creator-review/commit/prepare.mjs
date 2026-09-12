@@ -17,7 +17,7 @@ if (git(['diff', '--cached', '--name-only']).trim())
 writeFileSync('.audits/creator-review/commit/base.txt', git(['rev-parse', 'HEAD']))
 git(
   ['--literal-pathspecs', 'add', '--pathspec-from-file=-', '--pathspec-file-nul'],
-  Buffer.from(selection.pure.join('\0') + '\0'),
+  Buffer.from(`${selection.pure.join('\0')}\0`),
 )
 const selectedHunks = []
 for (const [path, selectors] of Object.entries(selection.mixed)) {

@@ -8,6 +8,10 @@ No editor do curso, crie a aula com título e slug. Ela nasce sem publicação. 
 
 O título da seção aparece para a criança. Intenção didática e objetivo são orientações da autoria; não aparecem no percurso do aluno. Nos percursos com critérios, o aluno acessa a seção atual e revisa as concluídas. As próximas ficam bloqueadas, inclusive por acesso direto à API.
 
+Uma seção representa uma pequena conquista, e pode conter vários blocos e trechos de vídeo. Nos roteiros revisados, cada aula tem de três a cinco seções. A abertura apresenta a missão junto da descoberta; a construção reúne passos relacionados; o fechamento convida a testar, personalizar e guardar ou entregar. A criança pode pausar entre os passos sem precisar responder outra pergunta.
+
+Por exemplo, o Dia 1 agora tem **O rastro da nave → Prepare o espaço e sua nave → Ligue o motor da nave → Hora do seu voo**. A primeira etapa usa a descoberta; as duas do meio verificam a estrutura do projeto; a última pede a entrega. A explicação não ganhou uma prova própria e cada clique de montagem não ganhou uma trava.
+
 ## Conteúdo no lugar em que será usado
 
 Em Percurso da aula, use Adicionar seção. Em cada seção, Adicionar conteúdo aqui abre os formulários que já existem: vídeo, texto, descoberta interativa, Estúdio, Pinta, quiz, imagem, áudio, PDF, HTML, certificado e aviso de aula em breve.
@@ -38,17 +42,31 @@ As descobertas podem oferecer previsão, comparação, ordenação, associação
 
 Uma tentativa errada mantém a seção atual disponível, com pistas e novas tentativas sem punição. O servidor libera a próxima seção quando as verificações forem cumpridas. A hipótese inicial pode estar errada; a checagem final precisa ser acertada. A navegação só muda depois de o servidor confirmar o salvamento; uma falha preserva o rascunho e a seção atual.
 
-Durante o percurso, O que falta para concluir mostra os requisitos e permite abrir a seção e a atividade correspondente. Os mesmos critérios são usados ao clicar em Concluir aula: descobertas essenciais, quizzes avaliativos, entrega/correção de projetos e certificado, conforme os blocos cadastrados. Conteúdo opcional não gera uma exigência nova.
+Durante o percurso, O que falta para concluir mostra os requisitos e permite abrir a seção e a atividade correspondente. No avanço por seções, os critérios selecionados em **Para liberar a próxima seção** determinam as exigências, inclusive ao concluir a aula. Ter uma atividade no percurso não a torna automaticamente um critério. Aulas de certificado usam seu próprio fluxo, sem combinar critérios por seção.
 
 ## Configurar o avanço real
 
 Use **Preparar avanço por seções** no percurso. Em cada seção, selecione as atividades que comprovam seu objetivo. Uma pergunta curta é uma descoberta interativa do tipo **Pergunta curta**, com alternativas, resposta correta, explicação e pistas. Ler, assistir, percorrer a tela ou salvar uma resposta não comprova o objetivo.
 
-Sequências e associações precisam ser resolvidas. Experimentos, HTML e ferramentas externas exigem uma conferência nativa. No Estúdio, use uma verificação estrutural quando a presença de um bloco, repetição, variável ou função for suficiente; quando o objetivo envolver comportamento, use uma pergunta sobre o resultado. A verificação da etapa examina o projeto atual, sem fazer a entrega final. Pinta e ferramentas externas usam checagens pedagógicas.
+Sequências e associações selecionadas precisam ser resolvidas. Experimentos e HTML essenciais exigem uma conferência nativa. No Estúdio, use **Adicionar objetivo do Estúdio** quando a presença de um bloco, repetição, variável ou função for uma evidência adequada. Quando o objetivo envolver comportamento, uma pergunta sobre o resultado pode verificar a compreensão; ela não comprova que o jogo executou corretamente. A verificação da etapa examina o projeto atual, sem fazer a entrega final. Pinta e ferramentas externas usam checagens pedagógicas: a plataforma não inspeciona automaticamente essas criações.
 
-Todas as seções precisam de critérios, inclusive abertura e fechamento. O editor informa referências inválidas e critérios ausentes; o servidor impede a publicação. A entrega final do projeto deve pertencer à última seção do percurso, marcada como fechamento. Reordenar essa seção para antes das demais impede a publicação e o envio da entrega. Materiais de apoio não contam como seção; quizzes opcionais de apoio continuam disponíveis para responder.
+O texto de **Objetivo didático** orienta seu planejamento e não gera uma regra automática. O texto de cada objetivo do Estúdio orienta a criança; sua regra diz ao sistema o que conferir. Todos os critérios selecionados precisam passar. Use apenas os necessários para a conquista da etapa, sem cobrar uma segunda pergunta sobre o mesmo resultado.
+
+Use **Simular com um projeto salvo** para conferir objetivos estruturais antes de publicar. Experimente um projeto que atende ao objetivo e outro em que falta o bloco ou o encaixe pedido. A simulação não registra progresso. Confira também o Estúdio real vinculado: extensão Jogo 2D, blocos permitidos e modo devem oferecer o que foi pedido. Os manifestos reutilizam essa configuração, não a substituem.
+
+Para entregas com nota mínima, confira a atividade existente no Estúdio. Novas publicações só podem exigir aprovação de seção baseada em checagens estruturais compatíveis. Uma entrega sem avaliação automática comprova envio, não qualidade. O carimbo **já conferi** do professor registra leitura da entrega e não funciona como aprovação manual para liberar a seção.
+
+Todas as seções precisam de critérios. Por isso, reunir abertura, descoberta e explicação evita inventar uma pergunta só para liberar uma apresentação. O editor informa referências inválidas e critérios ausentes; o servidor impede a publicação. A entrega final do projeto deve pertencer à última seção do percurso, marcada como fechamento. Reordenar essa seção para antes das demais impede a publicação e o envio da entrega. Materiais de apoio não contam como seção; quizzes opcionais de apoio continuam disponíveis para responder.
 
 A publicação ativa as travas. Seções já concluídas não perdem seu marco com revisões; evidências ainda não confirmadas precisam corresponder ao conteúdo atual. A barra principal mostra seções concluídas / total de seções, com pesos iguais. Aulas legadas permanecem no fluxo anterior até a adaptação. A prévia do professor continua livre e não registra progresso.
+
+## Reimportar a revisão pedagógica
+
+As chaves dos vídeos e do projeto foram preservadas. As seções foram agrupadas e algumas perguntas deixaram de existir nos novos arquivos. O importador preserva conteúdo antigo omitido, inclusive levando atividades antes obrigatórias ao fechamento. Ele não faz a limpeza editorial por omissão.
+
+Depois de aplicar o manifesto ao rascunho, use a lista **Cartões antigos a retirar após reimportação** do roteiro daquela aula. Retire somente esses cartões da versão em edição. Confira as atividades da aula original separadamente e decida quais devem integrar os critérios. A retirada do rascunho não exige apagar respostas ou entregas do banco.
+
+As seções agrupadas mantêm algumas chaves anteriores e seus marcos já conquistados. Para validar todo o percurso novo, use um perfil de teste sem progresso anterior. Primeiro teste uma resposta incorreta ou um projeto incompleto; depois acerte ou complete e confira liberação, retorno e recarga. **Prévia do rascunho** confere apresentação; o teste de bloqueios precisa acontecer como aluno na versão publicada em staging.
 
 ## Vídeos do Vimeo
 

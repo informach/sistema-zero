@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu jogo completo ainda não tem um número para comparar duas partidas.\n\nHoje você vai guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
       }
     },
     {
@@ -44,49 +44,115 @@
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
-        "markdown": "A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha. Neste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder. Um número correto também precisa ser legível: a cor do texto deve contrastar com o fundo."
+        "markdown": "A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.\n\nNeste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder.\n\nUm número correto também precisa ser legível: a cor do texto deve contrastar com o fundo."
       }
     },
     {
       "key": "construir-1",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Criar a caixinha dos pontos\n\nEm Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-11-passo-01: gravar a demonstração \"criar a caixinha dos pontos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-2",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos. Confira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Mostrar o placar\n\nEm Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.\n\nConfira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-11-passo-02: gravar a demonstração \"mostrar o placar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Olhe o placar sobre o céu. Escolha uma cor que deixe o número fácil de enxergar.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
       }
     },
     {
       "key": "construir-3",
       "content": {
         "kind": "rich_text",
-        "markdown": "Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando. Só dentro desse Se encaixe Somar 1 em pontos, de Variáveis.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Fazer o número subir\n\nEm Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.\n\nSó dentro desse Se encaixe Somar 1 em pontos, de Variáveis."
       }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-11-passo-03: gravar a demonstração \"fazer o número subir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "construir-4",
       "content": {
         "kind": "rich_text",
-        "markdown": "Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos. Tente bater essa marca! Confira se aparece o número da sua partida.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Contar os pontos na tela de fim\n\nNa tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.\n\nTente bater essa marca! Confira se aparece o número da sua partida."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-11-passo-04: gravar a demonstração \"contar os pontos na tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Espere na tela inicial, jogue e depois perca. Observe quando o número muda."
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O relógio precisa saber em qual momento deve contar."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Os pontos crescem enquanto você espera na tela inicial. O que falta no relógio?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Verificar se a tela atual é jogando antes de somar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Uma cor mais escura para o placar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Um título maior na tela de início."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A condição protege a soma. O placar pode mostrar um número, mas o relógio só deve aumentá-lo durante a partida."
+        }
       }
     },
     {
       "key": "construir-5",
       "content": {
         "kind": "rich_text",
-        "markdown": "Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1. A regra do placar deve ficar clara para quem joga.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+        "markdown": "### Testar\n\nCompare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.\n\nA regra do placar deve ficar clara para quem joga."
       }
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "aula-11-passo-05: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     },
     {
       "key": "fechamento",
       "content": {
         "kind": "rich_text",
-        "markdown": "O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie.\n\nNa Aula 12, os cactos deixarão de chegar sempre do mesmo jeito."
+        "markdown": "O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie.\n\nNa Aula 12, os cactos deixarão de chegar sempre do mesmo jeito.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
       }
     },
     {
@@ -95,275 +161,15 @@
         "kind": "studio",
         "index": 0
       }
-    },
-    {
-      "key": "video-construir-1-1",
-      "plannedVideo": "aula-11-passo-01: gravar a demonstração \"criar a caixinha dos pontos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-2-1",
-      "plannedVideo": "aula-11-passo-02: gravar a demonstração \"mostrar o placar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-3-1",
-      "plannedVideo": "aula-11-passo-03: gravar a demonstração \"fazer o número subir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-4-1",
-      "plannedVideo": "aula-11-passo-04: gravar a demonstração \"contar os pontos na tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "video-construir-5-1",
-      "plannedVideo": "aula-11-passo-05: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-    },
-    {
-      "key": "checar-comeco",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: A criação de hoje",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": [
-          "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste."
-        ],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O que vamos aprender a fazer nesta aula?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Comprar todas as peças do avatar antes de criar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Passar pelas telas sem realizar as atividades."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste."
-        }
-      }
-    },
-    {
-      "key": "checar-entenda",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: O que aconteceu?",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Não; ele só mostra o valor guardado."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Mostrar placar deve somar pontos?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Não; ele só mostra o valor guardado."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Sim; desenhar o número sempre soma um ponto."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Sim; ele reinicia a variável em cada quadro."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Não; ele só mostra o valor guardado."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-1",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: criar a caixinha dos pontos",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["0."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Com qual valor pontos começa a partida?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "1."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O resultado de todas as partidas anteriores."
-            },
-            {
-              "id": "opcao-3",
-              "label": "0."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "0."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: mostrar o placar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Para escolher contraste que permita ler o número."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Por que comparar branco e azul escuro no placar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para mudar o número de cactos."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para escolher contraste que permita ler o número."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Para mudar a regra de pontuação."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Para escolher contraste que permita ler o número."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: fazer o número subir",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["A cada segundo, somente na tela jogando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Quando o relógio deve somar um ponto?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A cada segundo, somente na tela jogando."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Em todas as telas, inclusive depois da derrota."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Somente ao desenhar a floresta."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A cada segundo, somente na tela jogando."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: contar os pontos na tela de fim",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Juntar o texto com o valor da variável pontos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Como mostrar o resultado real na tela fim?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Digitar sempre um número fixo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Criar uma nova variável sem valor."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Juntar o texto com o valor da variável pontos."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Juntar o texto com o valor da variável pontos."
-        }
-      }
-    },
-    {
-      "key": "checar-construir-5",
-      "content": {
-        "kind": "interactive",
-        "title": "Confira: testar",
-        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
-        "hints": ["Observar o placar antes, durante e depois da partida."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Qual teste confirma a regra de pontuação?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Deixar somar pontos em todas as telas."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Observar o placar antes, durante e depois da partida."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Testar apenas a cor do céu."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Observar o placar antes, durante e depois da partida."
-        }
-      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A criação de hoje",
-      "objective": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.",
-      "intent": "presentation",
-      "blockKeys": ["abertura", "checar-comeco"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-comeco"]
-      }
-    },
-    {
-      "key": "descoberta",
       "title": "O placar conta na hora certa?",
       "objective": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.",
       "intent": "exploration",
-      "blockKeys": ["descoberta"],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -373,53 +179,48 @@
       }
     },
     {
-      "key": "entenda",
-      "title": "O que aconteceu?",
-      "objective": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.",
-      "intent": "explanation",
-      "blockKeys": ["explicacao", "checar-entenda"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-entenda"]
-      }
-    },
-    {
       "key": "construir-1",
-      "title": "criar a caixinha dos pontos",
-      "objective": "Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez.",
+      "title": "Dê um lugar aos pontos",
+      "objective": "Inicializar pontos e mostrar um placar legível.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-1"]
-      }
-    },
-    {
-      "key": "construir-2",
-      "title": "mostrar o placar",
-      "objective": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos. Confira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro.",
-      "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos.",
+            "rule": {
+              "type": "declaresVariable",
+              "name": "pontos"
+            }
+          }
+        ]
       }
     },
     {
       "key": "construir-3",
-      "title": "fazer o número subir",
-      "objective": "Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando. Só dentro desse Se encaixe Somar 1 em pontos, de Variáveis.",
+      "title": "Conte só durante a corrida",
+      "objective": "Restringir a contagem à partida e apresentar o resultado no fim.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
+      "blockKeys": [
+        "construir-3",
+        "video-construir-3-1",
+        "construir-4",
+        "video-construir-4-1",
+        "convite-construir-3",
+        "checar-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -429,39 +230,11 @@
       }
     },
     {
-      "key": "construir-4",
-      "title": "contar os pontos na tela de fim",
-      "objective": "Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos. Tente bater essa marca! Confira se aparece o número da sua partida.",
-      "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-4"]
-      }
-    },
-    {
-      "key": "construir-5",
-      "title": "testar",
-      "objective": "Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1. A regra do placar deve ficar clara para quem joga.",
-      "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["checar-construir-5"]
-      }
-    },
-    {
       "key": "fechamento",
-      "title": "Teste e guarde sua criação",
-      "objective": "O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie.",
+      "title": "Tente uma nova marca",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

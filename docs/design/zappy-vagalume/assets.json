@@ -1,0 +1,688 @@
+{
+  "version": 1,
+  "date": "2026-09-12",
+  "root": "repository",
+  "mode": "imagegen built-in",
+  "runtime": [
+    {
+      "id": "happy",
+      "label": "Zap feliz",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/happy.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 1009689,
+        "sha256": "28f6b6c13b43df5d0c5ef053d17884a9daee547a0e4c48a139cd439904f0eac1"
+      },
+      "files": [
+        {
+          "path": "packages/admin/public/zappy/happy.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 19238,
+          "sha256": "5ba6ce525370bba03baece2326ea136c96322e79e1199c6ced2741f95bde2379",
+          "previousSha256": "4c84052c72fb30b13ecb46315e35cf3ba4dd12d9c098c976f4c9452858863a6c"
+        },
+        {
+          "path": "packages/community-kids/public/zappy/happy.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 19238,
+          "sha256": "5ba6ce525370bba03baece2326ea136c96322e79e1199c6ced2741f95bde2379",
+          "previousSha256": "4c84052c72fb30b13ecb46315e35cf3ba4dd12d9c098c976f4c9452858863a6c"
+        }
+      ]
+    },
+    {
+      "id": "celebrating",
+      "label": "Zap comemorando",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/celebrating.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 986091,
+        "sha256": "d8369a48e2bd2046b7bc5858c4c4b0cc05a3bf0c7d565d44b46430e777aabff4"
+      },
+      "files": [
+        {
+          "path": "packages/admin/public/zappy/celebrating.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 17856,
+          "sha256": "be79116394280b2f4308bad2a3d51ca5c8dcca907e762a06d33c665ad7ca5004",
+          "previousSha256": "efd63372f9fda1a7f3c76f478c2cff53f91047e80deb66b59ba994854a1eb295"
+        },
+        {
+          "path": "packages/community-kids/public/zappy/celebrating.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 17856,
+          "sha256": "be79116394280b2f4308bad2a3d51ca5c8dcca907e762a06d33c665ad7ca5004",
+          "previousSha256": "efd63372f9fda1a7f3c76f478c2cff53f91047e80deb66b59ba994854a1eb295"
+        }
+      ]
+    },
+    {
+      "id": "thinking",
+      "label": "Zap pensando",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/thinking.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 801741,
+        "sha256": "782042720889e25c126d85cff4b4e86c44436f8ec3968a8f7e383b4bfde051ad"
+      },
+      "files": [
+        {
+          "path": "packages/admin/public/zappy/thinking.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 15686,
+          "sha256": "5bc8c280024257e37887472e54f2c1e43f69890cf834957f9fb2d1756a610e5c",
+          "previousSha256": "f1584c70b5ecedb43484fc585258b2c4a3f2743fdf92c39060609f0245c2be66"
+        },
+        {
+          "path": "packages/community-kids/public/zappy/thinking.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 15686,
+          "sha256": "5bc8c280024257e37887472e54f2c1e43f69890cf834957f9fb2d1756a610e5c",
+          "previousSha256": "f1584c70b5ecedb43484fc585258b2c4a3f2743fdf92c39060609f0245c2be66"
+        }
+      ]
+    },
+    {
+      "id": "sleeping",
+      "label": "Zap dormindo",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/sleeping.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 1008088,
+        "sha256": "c7a82e994068e43817ea513a73cc387c5386f4914699f41b2b901d25464719d9"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/zappy/sleeping.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 17922,
+          "sha256": "364cf18474e786d379ed0dc4fc61c6124b5517508078e455fe0b0fa7ebd4e7a0",
+          "previousSha256": "ed4742f917bbe35cd0e24747dd09abb7b8a403ecdc7f91d59d2314fc0bda7bce"
+        }
+      ]
+    },
+    {
+      "id": "speaking",
+      "label": "Zap falando",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/speaking.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 1037432,
+        "sha256": "506f70026f5726b3fbd871696a2ee97455cad9f7e781948cd8a8b3e088ff51e0"
+      },
+      "files": [
+        {
+          "path": "packages/admin/public/zappy/speaking.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 19042,
+          "sha256": "dd185c0eda0a9e72bd6f2850a48b327ab11b9c5e2045ece4fe3cd1e420ac4c4e",
+          "previousSha256": "499ce8f04bb269279b8da1aab2ff3ac3eefd0a6645286ab2bd797eee4fb4c0d9"
+        },
+        {
+          "path": "packages/community-kids/public/zappy/speaking.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 19042,
+          "sha256": "dd185c0eda0a9e72bd6f2850a48b327ab11b9c5e2045ece4fe3cd1e420ac4c4e",
+          "previousSha256": "499ce8f04bb269279b8da1aab2ff3ac3eefd0a6645286ab2bd797eee4fb4c0d9"
+        },
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/zappy-fala.webp",
+          "width": 360,
+          "height": 458,
+          "alpha": true,
+          "bytes": 24914,
+          "sha256": "10e89484a2f70fd1b163b352ddd65986f936d60e339d4acd235646ec23f386e7",
+          "previousSha256": "a80e3788f3d95dc5fa4a517d882df021171208156e16f0f490fe3da22278a48e"
+        },
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/zappy-fala.webp",
+          "width": 360,
+          "height": 458,
+          "alpha": true,
+          "bytes": 24914,
+          "sha256": "10e89484a2f70fd1b163b352ddd65986f936d60e339d4acd235646ec23f386e7",
+          "previousSha256": "a80e3788f3d95dc5fa4a517d882df021171208156e16f0f490fe3da22278a48e"
+        }
+      ]
+    },
+    {
+      "id": "alivio",
+      "label": "Zap incentivando",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/alivio.png",
+        "width": 1047,
+        "height": 1502,
+        "alpha": true,
+        "bytes": 1464418,
+        "sha256": "f7688523afbab649ba1b574ef83792ae3e73981699f0e0489832b6cc5dbeadc1"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/ilustra/alivio.webp",
+          "width": 520,
+          "height": 746,
+          "alpha": true,
+          "bytes": 52820,
+          "sha256": "1239a66196a18b01ad8ddfe58e4a8c5c7d3703c1f967cfa6879f8e161f0de77a",
+          "previousSha256": "d29df720635438109f9942a74a307ecc3d5311da0f8441a6ed6ae8aa054bb00e"
+        },
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/alivio.webp",
+          "width": 520,
+          "height": 746,
+          "alpha": true,
+          "bytes": 52820,
+          "sha256": "1239a66196a18b01ad8ddfe58e4a8c5c7d3703c1f967cfa6879f8e161f0de77a",
+          "previousSha256": "d29df720635438109f9942a74a307ecc3d5311da0f8441a6ed6ae8aa054bb00e"
+        }
+      ]
+    },
+    {
+      "id": "final",
+      "label": "Zap e as estrelas",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/final.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 1381879,
+        "sha256": "593c2e87df4b1b22ea2b565e28f9d0898d36da93ee651b0ec9f8922b5da360c0"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/ilustra/zappy-final.webp",
+          "width": 520,
+          "height": 530,
+          "alpha": true,
+          "bytes": 50478,
+          "sha256": "de096b9c4f62a453927778d8d1b47cec94bb9317fc6246e05e1ee28b2d92b01b",
+          "previousSha256": "7bd7f559232d5572ab5be4b063b0a9c59bcba1780609e09e1a156ea25b7ad0b1"
+        },
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/zappy-final.webp",
+          "width": 520,
+          "height": 530,
+          "alpha": true,
+          "bytes": 50478,
+          "sha256": "de096b9c4f62a453927778d8d1b47cec94bb9317fc6246e05e1ee28b2d92b01b",
+          "previousSha256": "7bd7f559232d5572ab5be4b063b0a9c59bcba1780609e09e1a156ea25b7ad0b1"
+        }
+      ]
+    },
+    {
+      "id": "coin",
+      "label": "Moeda Zap",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/coin.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": true,
+        "bytes": 2914119,
+        "sha256": "54bd0f6c97adf68c2cba23f17218746a5f83bb77b8ddbd651b081c5b76d500ab"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/zappy/coin.webp",
+          "width": 300,
+          "height": 300,
+          "alpha": true,
+          "bytes": 30810,
+          "sha256": "e7efbce0074a0fed5401c80e67c6cce932f0369cb1b38e6334af25475342fea1",
+          "previousSha256": "1e9e4b67cdc24cd998a45fe657e83b80aac32b0e900093fcd1028d1ed1300639"
+        }
+      ]
+    },
+    {
+      "id": "vitoria",
+      "label": "Vitória em equipe",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/vitoria.png",
+        "width": 1293,
+        "height": 1217,
+        "alpha": true,
+        "bytes": 1869050,
+        "sha256": "1fe46c32738fff640d69ff440f4a43a81ec9b1667229914096ef6cc7121d6d17"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/ilustra/vitoria.webp",
+          "width": 1000,
+          "height": 943,
+          "alpha": true,
+          "bytes": 174406,
+          "sha256": "d94947921502b3fb4abae443574964b78f76beb08f2d471980e7c47a2634207f",
+          "previousSha256": "52386295030281b32cab09f02c6c45364f5f1c8a62a29b6a4fa3253636e664d3"
+        },
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/ilustra-vitoria.webp",
+          "width": 1000,
+          "height": 943,
+          "alpha": true,
+          "bytes": 174406,
+          "sha256": "d94947921502b3fb4abae443574964b78f76beb08f2d471980e7c47a2634207f",
+          "previousSha256": "52386295030281b32cab09f02c6c45364f5f1c8a62a29b6a4fa3253636e664d3"
+        }
+      ]
+    },
+    {
+      "id": "criar",
+      "label": "Criador com o Zap",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/criar.png",
+        "width": 1040,
+        "height": 1513,
+        "alpha": true,
+        "bytes": 2009132,
+        "sha256": "4ef30fc62c4a0b46c3170ff565715fd0e93099c513b6866b7b4ca6fc31d176f8"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/ilustra/criar.webp",
+          "width": 940,
+          "height": 1366,
+          "alpha": true,
+          "bytes": 186236,
+          "sha256": "d2b4a965b6624440ce99791edbaa565758bcb533cdcc9939fcf547310a44c3f9",
+          "previousSha256": "d19ee3a9e027618423b50cbc011975b16e7673b0dd4d72a82bd81b8b90d8ed5d"
+        },
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/hero.webp",
+          "width": 940,
+          "height": 1366,
+          "alpha": true,
+          "bytes": 186236,
+          "sha256": "d2b4a965b6624440ce99791edbaa565758bcb533cdcc9939fcf547310a44c3f9",
+          "previousSha256": "d19ee3a9e027618423b50cbc011975b16e7673b0dd4d72a82bd81b8b90d8ed5d"
+        }
+      ]
+    },
+    {
+      "id": "criando",
+      "label": "Criando no computador",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/criando.png",
+        "width": 1543,
+        "height": 1019,
+        "alpha": true,
+        "bytes": 1552247,
+        "sha256": "983f3937e7d4c8f438e8601ccc12d81f26f1372ebb702c4b60222340e8a00d45"
+      },
+      "files": [
+        {
+          "path": "packages/community-kids/public/ilustra/criando.webp",
+          "width": 880,
+          "height": 581,
+          "alpha": true,
+          "bytes": 90732,
+          "sha256": "3bbe039f5fa0b4460fe43126ac853a82c19c1090ae93753e4d1abf2130d59d29",
+          "previousSha256": "845a9846c2f3518e177b71bbe8b2ec351f461bdb894f55f688b4e3013ca099f4"
+        },
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/crianca-criando.webp",
+          "width": 880,
+          "height": 581,
+          "alpha": true,
+          "bytes": 90732,
+          "sha256": "3bbe039f5fa0b4460fe43126ac853a82c19c1090ae93753e4d1abf2130d59d29",
+          "previousSha256": "845a9846c2f3518e177b71bbe8b2ec351f461bdb894f55f688b4e3013ca099f4"
+        }
+      ]
+    },
+    {
+      "id": "virada",
+      "label": "Do jogo à criação",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/virada.png",
+        "width": 1657,
+        "height": 949,
+        "alpha": true,
+        "bytes": 1767252,
+        "sha256": "7087a4a42d8cf164682b0ea6bd04fe5d20a60aa2660d704ec9c6a45fc2f40c69"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/ilustra-virada.webp",
+          "width": 1100,
+          "height": 630,
+          "alpha": true,
+          "bytes": 111542,
+          "sha256": "deb39adb62ba8e25db8e0e8b65a011cdfa4220755d5fad862eee45e613a9df9b",
+          "previousSha256": "33696dfbd31e3c863e4fe3b098b66aa6b58c26928ce9771563e57f2fdad9b7c3"
+        }
+      ]
+    },
+    {
+      "id": "family",
+      "label": "Família criando",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/family.png",
+        "width": 1117,
+        "height": 1409,
+        "alpha": true,
+        "bytes": 2059635,
+        "sha256": "d20c0796c559cbfa12d1c1441dd334752b4bc299eef97f7270d17c1dca869005"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/hero.webp",
+          "width": 1000,
+          "height": 1263,
+          "alpha": true,
+          "bytes": 223744,
+          "sha256": "1090251bcacd0556ac3506c6e1f91926bd7627ecd49271f2662fffe71f644acd",
+          "previousSha256": "679933a5cadc9395df72946878c54940226c542fa33054ad4896d2b6ae84827f"
+        }
+      ]
+    },
+    {
+      "id": "desafio",
+      "label": "Desafio — peça do funil",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/desafio.png",
+        "width": 1672,
+        "height": 941,
+        "alpha": false,
+        "bytes": 1215905,
+        "sha256": "3e20200c49a89071f436f1cea66c7ccbbb4f79db9e480f077d2416c22adce7d3"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/hero-desafio.webp",
+          "width": 1280,
+          "height": 720,
+          "alpha": false,
+          "bytes": 59018,
+          "sha256": "de2df7c324be979d94ac5d330fb37b789bf8b3c3084b496e2a39b20952b55ff4",
+          "previousSha256": "cd8b3ff312647befc170ace8ef7ccdb0e8401e0d3ba78a85d7155867d0468e03"
+        }
+      ]
+    },
+    {
+      "id": "mapa",
+      "label": "Mapa dos pais — prévia do funil",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/mapa.png",
+        "width": 1055,
+        "height": 1491,
+        "alpha": false,
+        "bytes": 1612150,
+        "sha256": "045abcd33958f68974d3380164b994c72fe004ae7593a0c59365eea98804d39f"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/entrega-mapa.webp",
+          "width": 760,
+          "height": 1075,
+          "alpha": false,
+          "bytes": 107388,
+          "sha256": "fa0f3ae0f5081cad27e7de49c045e8299f084a5f7c28861306b956c66b604fda",
+          "previousSha256": "c85a81a79acff701f1b6ef95c64295df2f493eab2860478b371546b8531fe241"
+        }
+      ]
+    },
+    {
+      "id": "checkout",
+      "label": "Comunidade dos Criadores — checkout",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/checkout.png",
+        "width": 1254,
+        "height": 1254,
+        "alpha": false,
+        "bytes": 1706763,
+        "sha256": "24dc187b938ed4b31fabdf7de40aca7189adfb0a61c61869da082bb19855e569"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/checkout-capa.webp",
+          "width": 1200,
+          "height": 1200,
+          "alpha": false,
+          "bytes": 140618,
+          "sha256": "d6caa2b30c2f7f744fd10ce8888b746152e0ab99facae7a9d598ee6ce84c358e",
+          "previousSha256": "cf9adccf5163bf37f70a95c3af1113a266e96d00f32a125c1e1e79b5a63826e8"
+        }
+      ]
+    },
+    {
+      "id": "certificado",
+      "label": "Certificado preenchido — prévia do funil",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/certificado.png",
+        "width": 1450,
+        "height": 1085,
+        "alpha": false,
+        "bytes": 1460126,
+        "sha256": "5ef22f4aa310d7be309ef21ba9b7403842b9d0c303d119bccadc8dadbcd4fc64"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/entrega-certificado.webp",
+          "width": 760,
+          "height": 569,
+          "alpha": false,
+          "bytes": 62086,
+          "sha256": "29dfd066ced17c362ce02bc87033d355516723e72a689ca28a74aa807529677b",
+          "previousSha256": "09171f9b4d317a6405698f1925511602e3b8390f8998f8425b06f88b46fa6ad9"
+        }
+      ]
+    },
+    {
+      "id": "clube",
+      "label": "Captura do Clube",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/clube.png",
+        "width": 1059,
+        "height": 583,
+        "alpha": false,
+        "bytes": 132773,
+        "sha256": "a702c1f951e76b71b8193ec74f1c1db4cd3e6a8015ec243414ed3711082d76c3"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/comunidade-dos-criadores/print-clube.webp",
+          "width": 1059,
+          "height": 583,
+          "alpha": false,
+          "bytes": 88506,
+          "sha256": "274578d717c6f016277a39ae1e8732d8066e51b7e38b224a4d386b2cbe7ebd2e",
+          "previousSha256": "f7b1977c3b88d7fdd0b334d74a9155a5020ed78387a134d252c286122db69fbc"
+        }
+      ],
+      "preservedScreenshotRegions": [
+        {
+          "left": 72,
+          "top": 32,
+          "width": 60,
+          "height": 75
+        }
+      ]
+    },
+    {
+      "id": "print-aula",
+      "label": "Captura da aula",
+      "master": {
+        "path": "docs/design/zappy-vagalume/mestres/print-aula.png",
+        "width": 1100,
+        "height": 1532,
+        "alpha": false,
+        "bytes": 864940,
+        "sha256": "8451893feabdcbbe34ea96b2420a4d7efe0cea20427d865b38d796a3710c226b"
+      },
+      "files": [
+        {
+          "path": "packages/funnel/public/img/desafio-primeiro-jogo/print-estudio.webp",
+          "width": 1100,
+          "height": 1532,
+          "alpha": false,
+          "bytes": 534610,
+          "sha256": "2d21989fc4fef56f13daee26c5195a9f28b40fdad6289254e4339cdcdff41326",
+          "previousSha256": "95f94e82d729be3b47a1e7a6b649100b443194f006a001296e4a58b5f42e9f07"
+        }
+      ],
+      "preservedScreenshotRegions": [
+        {
+          "left": 490,
+          "top": 1287,
+          "width": 72,
+          "height": 67
+        },
+        {
+          "left": 91,
+          "top": 475,
+          "width": 16,
+          "height": 16
+        }
+      ]
+    }
+  ],
+  "admin": [
+    {
+      "id": "capa-o-jogo-do-meu-jeito",
+      "label": "O Jogo do Meu Jeito",
+      "sourceFilename": "ChatGPT Image 17 de ago. de 2026, 15_31_03.png",
+      "original": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/originais/capa-o-jogo-do-meu-jeito.png",
+        "width": 1672,
+        "height": 941,
+        "alpha": false,
+        "bytes": 2227191,
+        "sha256": "59e71d113c30d7b858d540247e6af9806239d07ecb1f9375738837d3b6eb7c09"
+      },
+      "master": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/mestres/capa-o-jogo-do-meu-jeito.png",
+        "width": 1672,
+        "height": 941,
+        "alpha": false,
+        "bytes": 2071134,
+        "sha256": "7332b6a1da2a43f3de8af7df1f11b2f38f2d9719e42482458479c99d7b63b33d"
+      },
+      "upload": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/prontos/capa-o-jogo-do-meu-jeito.webp",
+        "width": 1600,
+        "height": 900,
+        "alpha": false,
+        "bytes": 274988,
+        "sha256": "d0c13ea3ce23d82e7a27eedd08b435fdea14f4ed7eda84d707a81fafa5bf49f9"
+      },
+      "field": "Curso > Imagem de capa (ou bloco Vídeo > Capa do vídeo, quando usada como thumbnail)"
+    },
+    {
+      "id": "capa-corre-dino",
+      "label": "Corre, Dino!",
+      "sourceFilename": "200ab06e-8bd4-4352-8eba-bd94636d80cf.webp",
+      "original": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/originais/capa-corre-dino.webp",
+        "width": 1280,
+        "height": 720,
+        "alpha": false,
+        "bytes": 99034,
+        "sha256": "a621d97063bae4f1aadf43fba276b6b5241e13f75c1a6c0a649dfa248c02672f"
+      },
+      "master": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/mestres/capa-corre-dino.png",
+        "width": 1672,
+        "height": 941,
+        "alpha": false,
+        "bytes": 1770758,
+        "sha256": "f9fc699b0ce40f735ffb98896591a2d6972482ef7771a51b7ac6e75864da35c9"
+      },
+      "upload": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/prontos/capa-corre-dino.webp",
+        "width": 1600,
+        "height": 900,
+        "alpha": false,
+        "bytes": 185154,
+        "sha256": "dcbae5733e79a519c17dc3ca52c70e7ba6a00cde9ae1a1e43e4c69386634b602"
+      },
+      "field": "Curso > Imagem de capa (ou bloco Vídeo > Capa do vídeo, quando usada como thumbnail)"
+    },
+    {
+      "id": "capa-desafio-primeiro-jogo",
+      "label": "Desafio do Primeiro Jogo",
+      "sourceFilename": "75e34ba4-4467-4c81-9cfb-f0b9f59b2c96.webp",
+      "original": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/originais/capa-desafio-primeiro-jogo.webp",
+        "width": 1280,
+        "height": 720,
+        "alpha": false,
+        "bytes": 44004,
+        "sha256": "9fed98d886ce2f157d00a00d9f2ec67f52085e308aaa2208849834ef3f950349"
+      },
+      "master": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/mestres/capa-desafio-primeiro-jogo.png",
+        "width": 1672,
+        "height": 941,
+        "alpha": false,
+        "bytes": 1212629,
+        "sha256": "d9de719c8385ce7971cfbb364aadc40bdef3b86703e304af655146375f85fa70"
+      },
+      "upload": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/prontos/capa-desafio-primeiro-jogo.webp",
+        "width": 1600,
+        "height": 900,
+        "alpha": false,
+        "bytes": 95902,
+        "sha256": "5d162a2e271a614bb2151ad8d6a98fdfea8537e483b524ce12a00605a04116fb"
+      },
+      "field": "Curso > Imagem de capa (ou bloco Vídeo > Capa do vídeo, quando usada como thumbnail)"
+    },
+    {
+      "id": "certificado-desafio-primeiro-jogo-base",
+      "label": "Certificado do desafio — base vazia",
+      "sourceFilename": "certificado-V2.png",
+      "original": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/originais/certificado-desafio-primeiro-jogo-base.png",
+        "width": 1448,
+        "height": 1086,
+        "alpha": true,
+        "bytes": 669193,
+        "sha256": "aebe1271ec5e9bcca4a6a2d994742446f416ad65e99ce1f3e5b140f06a43da45"
+      },
+      "master": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/mestres/certificado-desafio-primeiro-jogo-base.png",
+        "width": 1492,
+        "height": 1054,
+        "alpha": false,
+        "bytes": 1342814,
+        "sha256": "33db5775e02688c6283a788edaa4bb3be40df51b30a0ee2ed2dd9f43b70d0b4b"
+      },
+      "upload": {
+        "path": "docs/design/zappy-vagalume/para-upload-admin/prontos/certificado-desafio-primeiro-jogo-base.png",
+        "width": 1492,
+        "height": 1055,
+        "alpha": false,
+        "bytes": 1569215,
+        "sha256": "a4d5955c9fe7c7d9c944d5e4d14266dc3142a8409d2303476908053e58c70602"
+      },
+      "field": "Aula > bloco Certificado > Imagem base do certificado"
+    }
+  ]
+}

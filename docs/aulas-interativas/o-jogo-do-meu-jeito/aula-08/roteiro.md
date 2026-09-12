@@ -1,6 +1,6 @@
 # Crie as suas versões
 
-Uma aula, organizada em 8 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-08-o-jogo-do-meu-jeito.md`. SHA-256: `d7ef094360dfb4535e0a34b11c6c3a6252fee1ae7cc467bd89664ed7f3e8cde2`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,49 +13,83 @@ Seu jogo livre já tem nave e asteroides desenhados por você e foi testado do c
 
 **Ambiente:** ferramentas externas e galeria próprias; voltar a esta aba para continuar. Não incorporar um Estúdio ou Pinta completo nesta aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| Um carro no lugar da nave | Resolver a descoberta. |
+| Mostre o jogo e imagine outra versão | Responder uma pergunta de decisão. |
+| Uma ideia para continuar | Responder uma pergunta de decisão. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. Um carro no lugar da nave
+
+**Intenção e objetivo (professor):** Exploração · Publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.
 
 **Texto para o aluno:**
 
-Oi! Seu jogo livre já tem nave e asteroides desenhados por você e foi testado do começo ao fim.
+Oi! Seu jogo tem desenhos feitos por você. Hoje vamos mostrar essa versão e escolher uma ideia pequena para a próxima.
 
-Hoje você vai publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: Um carro no lugar da nave**
 
-## 2. Descoberta antes da explicação
+Modelo: `prediction`. Critério desta seção.
 
-**Modelo:** prediction. **Essencial:** não; a previsão é um convite, sem punição por hipótese inicial.
+Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação.
 
-**Título:** Um carro no lugar da nave
+**Previsões (sem nota):** Trocar um recurso e testar o efeito no tema · Mudar todos os blocos antes de jogar · Apagar o projeto original para começar uma cópia
 
-Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar?
+**Depois de observar:** Uma mudança com intenção clara permite comparar o resultado. Você pode começar por um recurso, preservar o original e testar se a nova versão comunica a ideia da estrada.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Pergunta:** Você mudou o controle e as imagens ao mesmo tempo e não gostou do resultado. Como investigar?
 
-**Pistas disponíveis:**
+- Apagar o projeto que funcionava.
+- Comparar uma mudança de cada vez.
+- Alterar ainda mais coisas antes de testar.
 
-- Pense numa mudança pequena que você conseguiria explicar a outra pessoa.
+**Resposta esperada (professor):** Comparar uma mudança de cada vez.
 
-## 3. Explicação após observar
+**Devolutiva:** Uma mudança por vez ajuda a descobrir seu efeito. Guarde a versão que funciona para poder comparar.
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+**Pistas:**
 
-Uma nova versão pode nascer de uma mudança pequena: tema, personagem, obstáculo ou regra. Mudar tudo de uma vez dificulta perceber o que funcionou. Escolha uma intenção, faça uma alteração, jogue e compare com ela. Publicar permite mostrar uma versão; continuar editando é parte do processo. Desafios e Clube oferecem ideias e conversa, mas seu projeto não precisa ficar igual ao exemplo ou ao dos colegas.
+- Que comparação deixaria mais fácil perceber a causa da diferença?
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+**Texto para o aluno:**
 
-## Demonstrações e aplicação
+Uma nova versão pode nascer de uma mudança pequena: tema, personagem, obstáculo ou regra. Mudar tudo de uma vez dificulta perceber o que funcionou.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+Escolha uma intenção, faça uma alteração, jogue e compare com ela. Publicar permite mostrar uma versão; continuar editando é parte do processo.
 
-### 1. publicar o seu jogo no Mural
+Desafios e Clube oferecem ideias e conversa, mas seu projeto não precisa ficar igual ao exemplo ou ao dos colegas.
 
-**Narração revisada:**
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Abra seu jogo pelo cartão de Meus Jogos. Confira a partida e use o caminho de compartilhar do Estúdio livre. Escolha título, resumo e capa que mostrem a sua criação. Depois abra o link no Mural para testar como outra pessoa vai jogar.
+## 2. Mostre o jogo e imagine outra versão
 
-**Na tela (sequência técnica preservada do original):**
+**Intenção e objetivo (professor):** Aplicação · Testar a publicação e planejar uma alteração de cada vez.
+
+**Ferramenta externa:** Estúdio livre. Orientar a alternância de abas e o retorno à aula. O sistema não verifica automaticamente essa criação externa.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Publicar o seu jogo no Mural
+
+Abra seu jogo pelo cartão de Meus Jogos. Confira a partida e use o caminho de compartilhar do Estúdio livre.
+
+Escolha título, resumo e capa que mostrem a sua criação. Depois abra o link no Mural para testar como outra pessoa vai jogar.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 voltar à lista pela marca **"Sistema Zero Studio"** e **clicar no cartão** do projeto
 do jogo da nave com a arte dela. Na barra de cima, apontar o botão **"Compartilhar"**, que fica
@@ -73,17 +107,19 @@ com "Ver no Mural", "Abrir o jogo" e "Copiar link". **Clicar no "Fechar" do roda
 Mural" abre outra aba do navegador e deixaria a janela aberta atrás), ir ao **Mural** pelo menu da
 esquerda e terminar no cartão do jogo dela dentro do Mural.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-08-passo-01: gravar a demonstração "publicar o seu jogo no Mural" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. a rotina depois de cada curso
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### A rotina depois de cada curso
 
-Para uma próxima versão, escolha uma ideia e preserve o projeto que já funciona. No Mural, veja o caminho Fazer a minha versão quando estiver disponível. Compare nave no espaço e carro na estrada: você pode começar mudando um recurso e testando.
+Para uma próxima versão, escolha uma ideia e preserve o projeto que já funciona. No Mural, veja o caminho Fazer a minha versão quando estiver disponível.
 
-**Na tela (sequência técnica preservada do original):**
+Compare nave no espaço e carro na estrada: você pode começar mudando um recurso e testando.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 o jogo da nave rodando. Ao lado, a versão do carrinho: um carro na estrada desviando de
 buracos, jogada de verdade por alguns segundos. Abrir o Estúdio dessa versão e mostrar, com zoom,
@@ -92,17 +128,49 @@ de um passarinho desviando de galhos. Em seguida, duas telas lado a lado com o m
 toda em pixel art e outra toda em vetor. Terminar na tela com as duas versões lado a lado, sem
 entrar em nenhum estúdio.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-08-passo-02: gravar a demonstração "a rotina depois de cada curso" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. onde buscar ideia quando não vier nenhuma
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Abra a versão publicada como alguém que nunca viu os blocos. Depois escolha uma única mudança para experimentar.
 
-Volte ao Início e veja o Desafio do mês. Leia a proposta e pense em uma mudança que combine com ela. Você não precisa começar um jogo enorme; uma ideia pequena já pode virar algo para mostrar.
+**Atividade: Uma decisão para continuar**
 
-**Na tela (sequência técnica preservada do original):**
+Modelo: `checkpoint`. Critério desta seção.
+
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
+
+**Pergunta:** Você editou o projeto depois de publicar. Como conferir o que outras pessoas estão jogando?
+
+- Mudar o nome do projeto e presumir que tudo foi atualizado.
+- Abrir o link publicado e testar essa versão.
+- Olhar só a prévia do editor.
+
+**Resposta esperada (professor):** Abrir o link publicado e testar essa versão.
+
+**Devolutiva:** Abrir o link mostra a experiência de quem joga sua publicação. Confira essa versão antes de compartilhar.
+
+**Pistas:**
+
+- Projeto em edição e versão publicada podem estar em momentos diferentes.
+
+**Critério configurado:** `checar-construir-1`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+
+## 3. Uma ideia para continuar
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Onde buscar ideia quando não vier nenhuma
+
+Volte ao Início e veja o Desafio do mês. Leia a proposta e pense em uma mudança que combine com ela.
+
+Você não precisa começar um jogo enorme; uma ideia pequena já pode virar algo para mostrar.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 a página inicial da Comunidade, com o cartão do Desafio do mês em destaque: o emoji, o
 título e a descrição do tema. Corte para a tela "Meus Jogos" e **clicar no cartão "Meu jogo novo"**,
@@ -113,95 +181,74 @@ Depois ir ao **Mural** pelo menu da esquerda, rolar pelos cartões de outras cri
 versão"** e clicar. Terminar na tela "Meus Jogos", com o projeto novo em primeiro na lista, com o
 nome começando em "Remix de".
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-08-passo-03: gravar a demonstração "onde buscar ideia quando não vier nenhuma" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 4. o Clube dos Criadores
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### O Clube dos Criadores
 
-Abra o Clube no menu. Veja as conversas, conte uma descoberta do seu projeto e peça uma opinião concreta, como sobre o controle ou a dificuldade. Ao ver outro jogo, descreva o que funcionou e faça uma pergunta respeitosa.
+Abra o Clube no menu. Veja as conversas, conte uma descoberta do seu projeto e peça uma opinião concreta, como sobre o controle ou a dificuldade.
 
-**Na tela (sequência técnica preservada do original):**
+Ao ver outro jogo, descreva o que funcionou e faça uma pergunta respeitosa.
+
+**Vídeo planejado:** `video-construir-4-1`
+
+**Na tela (sequência técnica preservada):**
 
 clicar no **Clube** no menu da esquerda e mostrar a tela dele, com conversas reais
 rolando. Parar num post de uma criança mostrando um jogo em andamento, com respostas de outras
 crianças embaixo. Mostrar também um post de pergunta, com gente respondendo.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-08-passo-04: gravar a demonstração "o Clube dos Criadores" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Abra sua publicação, jogue e confira título, resumo e capa. Depois escolha uma única mudança para uma próxima versão e diga o que pretende testar.
 
-Este curso termina, mas os seus projetos continuam no Estúdio e os assets no Pinta. Use essa rotina depois dos próximos cursos: escolher, criar, testar e compartilhar.
+Este curso termina, mas os seus projetos continuam no Estúdio e os desenhos no Pinta. Use essa rotina depois dos próximos cursos: escolher, criar, testar e compartilhar.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Depois de conferir o salvamento, volte a esta aba para a pergunta final. Seu projeto continua no Estúdio para quando você quiser criar outra versão.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Atividade: Uma decisão para continuar**
 
-## Produção e importação
+Modelo: `checkpoint`. Critério desta seção.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+**Pergunta:** Você quer uma opinião que ajude a melhorar o jogo. Qual pergunta pode fazer?
 
-## Verificações para avançar nas seções
+- “Meu jogo é melhor que o seu?”
+- “Você gostou?”, sem indicar o que quer investigar.
+- “O controle ficou confortável? Em qual parte foi difícil?”
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+**Resposta esperada (professor):** “O controle ficou confortável? Em qual parte foi difícil?”
 
-### A criação de hoje
+**Devolutiva:** Uma pergunta concreta ajuda a receber uma observação útil. Conversar no Clube é um convite; esta etapa não exige publicar um comentário.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+**Pistas:**
 
-**Resposta e explicação:** Publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.
+- Escolha uma parte do jogo sobre a qual você pode agir depois.
 
-### Um carro no lugar da nave
+**Critério configurado:** `checar-fechamento`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-**Checagem:** Por que mudar uma coisa de cada vez numa nova versão?
+## Cadastro e validação em staging
 
-**Resposta e explicação:** Para perceber o efeito da mudança ao testar.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-### O que aconteceu?
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-**Checagem:** Por que mudar uma coisa de cada vez numa nova versão?
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-**Resposta e explicação:** Para perceber o efeito da mudança ao testar.
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-### publicar o seu jogo no Mural
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Checagem:** Como conferir a experiência de quem recebe sua publicação?
+**Cartões antigos a retirar após reimportação:**
 
-**Resposta e explicação:** Abrir o link do Mural e jogar.
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-2`: Confira: a rotina depois de cada curso
+- `checar-construir-3`: Confira: onde buscar ideia quando não vier nenhuma
+- `checar-construir-4`: Confira: o Clube dos Criadores
 
-### a rotina depois de cada curso
-
-**Checagem:** Como começar uma próxima versão sem se perder?
-
-**Resposta e explicação:** Preservar o projeto que funciona e escolher uma mudança.
-
-### onde buscar ideia quando não vier nenhuma
-
-**Checagem:** Onde procurar uma proposta para criar algo novo?
-
-**Resposta e explicação:** No Desafio do mês, na página Início.
-
-### o Clube dos Criadores
-
-**Checagem:** Que pedido de opinião ajuda no Clube?
-
-**Resposta e explicação:** Uma pergunta concreta sobre controle ou dificuldade.
-
-### Teste e guarde sua criação
-
-**Checagem:** Qual rotina ajuda a continuar criando depois do curso?
-
-**Resposta e explicação:** Escolher uma ideia, criar, testar e compartilhar.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

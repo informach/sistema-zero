@@ -1,6 +1,6 @@
 # Um salto que volta ao chão
 
-Uma aula, organizada em 7 seções. Público: 9 a 16 anos.
+Uma aula, organizada em 3 seções. Público: 9 a 16 anos.
 
 Fonte: `roteiro-aula-03-corre-dino.md`. SHA-256: `98f59a849d4d2f0fb36aa23422de7cb453cb6bf39057665cdfc4fac573495b3b`.
 O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
@@ -13,145 +13,166 @@ Seu dino já aparece correndo na floresta, mas ainda não responde a você.
 
 **Ambiente:** o mesmo Estúdio incorporado acompanha as seções. Preservar o projeto inicial, a continuidade e a entrega já configurados na aula.
 
-## 1. A criação de hoje
+## Percurso e ritmo
+
+Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
+
+| Etapa | O que libera o avanço |
+| --- | --- |
+| O que traz o salto de volta? | Resolver a descoberta. |
+| Um salto e uma volta | Verificar os objetivos do projeto. |
+| Escolha seu salto | Enviar o projeto; atingir a nota automática se o Estúdio exigir. |
+
+## Orientações de produção e acessibilidade
+
+Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
+
+Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
+
+## 1. O que traz o salto de volta?
+
+**Intenção e objetivo (professor):** Exploração · Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.
 
 **Texto para o aluno:**
 
-Oi! Seu dino já aparece correndo na floresta, mas ainda não responde a você.
+Oi! Seu Dino já corre na floresta. Hoje ele vai saltar e voltar ao chão. Vamos experimentar alturas diferentes?
 
-Hoje você vai relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.
+Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
 
-Você pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida.
+**Atividade: O que traz o salto de volta?**
 
-## 2. Descoberta antes da explicação
-
-**Modelo:** experiment. **Essencial:** sim
-
-**Título:** O que traz o salto de volta?
+Modelo: `experiment`. Critério desta seção.
 
 Teste gravidade zero e depois um valor maior que zero. Compare a trajetória atual com a anterior.
 
-**Interação:** usar o bloco funcional do manifesto. Experimentação e HTML guardam estado; a conclusão essencial usa a conferência nativa no servidor. Não pontuar a velocidade nem descontar por pistas.
+**Interação:** usar o bloco funcional incorporado ao manifesto. A observação prepara a pergunta; o experimento não avalia o projeto da criança.
 
-**Pistas disponíveis:**
+**Pergunta:** O que muda quando há gravidade neste modelo?
+
+- O personagem ganha uma cor diferente
+- A velocidade vertical muda e ele pode voltar ao chão
+- Todos os personagens caem automaticamente
+
+**Resposta esperada (professor):** A velocidade vertical muda e ele pode voltar ao chão
+
+**Devolutiva:** A gravidade muda a velocidade vertical. No seu projeto, o sprite precisa receber o bloco que aplica a gravidade.
+
+**Pistas:**
 
 - Na linha sem gravidade, observe se a direção vertical chega a se inverter.
 
-## 3. Explicação após observar
+**Texto para o aluno:**
 
-**Texto didático (permanece na seção, sem exigir vídeo):**
+Quando você joga uma bola para cima, ela sobe, perde velocidade, para por um instante e volta. No modelo da descoberta, a gravidade muda a velocidade a cada passo.
 
-Quando você joga uma bola para cima, ela sobe, perde velocidade, para por um instante e volta. No modelo da descoberta, a gravidade muda a velocidade a cada passo. No Estúdio, a gravidade do mundo só age nos sprites que recebem o bloco que a aplica. A força do pulo e a gravidade têm papéis diferentes: uma inicia o salto; a outra muda seu movimento e o traz de volta. Alterar um valor por vez ajuda a enxergar o efeito de cada um.
+No Estúdio, a gravidade do mundo só age nos sprites que recebem o bloco que a aplica. A força do pulo e a gravidade têm papéis diferentes: uma inicia o salto; a outra muda seu movimento e o traz de volta.
 
-**Condução:** se a criança já percebeu a relação, segue para construir; se ainda não percebeu, pode ler, voltar à experiência ou pedir ajuda. Na gravação prática, retomar apenas a frase necessária para orientar o encaixe.
+Alterar um valor por vez ajuda a enxergar o efeito de cada um.
 
-## Demonstrações e aplicação
+**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
 
-Helena narra; a captura mostra uma ação de cada vez. Em arte, Júlio demonstra o desenho dele e as escolhas visuais continuam livres. Cada trecho termina devolvendo a ação ao aluno. A duração é determinada pela demonstração legível, sem acelerar o desenho para cumprir uma meta artificial.
+## 2. Um salto e uma volta
 
-### 1. dar o comando de pulo ao dino
+**Intenção e objetivo (professor):** Aplicação · Aplicar gravidade ao personagem controlado e observar a volta ao chão.
 
-**Narração revisada:**
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
 
-Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15. Teste espaço: ele ainda não está pronto para pular do chão.
+**Narração revisada / instruções disponíveis em texto:**
 
-**Na tela (sequência técnica preservada do original):**
+### Dar o comando de pulo ao dino
+
+Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15.
+
+Teste espaço: ele ainda não está pronto para pular do chão.
+
+**Vídeo planejado:** `video-construir-1-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Jogo 2D", subcategoria "Kit dino", arrastar "Controlar o dinossauro" pra dentro do "A cada quadro do jogo", logo abaixo de "Desenhar fundo de floresta" e logo acima de "Desenhar o sprite dino". Deixar a força do pulo em 15. Aproximar o zoom no dino pra mostrar a pose travada e os pés no ar. Apertar espaço e a seta pra cima várias vezes, mostrando que nada acontece.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-03-passo-01: gravar a demonstração "dar o comando de pulo ao dino" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 2. a gravidade traz o dino pro chão
+**Narração revisada / instruções disponíveis em texto:**
 
-**Narração revisada:**
+### A gravidade traz o dino pro chão
 
-Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino. Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão.
+Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.
 
-**Na tela (sequência técnica preservada do original):**
+Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão.
+
+**Vídeo planejado:** `video-construir-2-1`
+
+**Na tela (sequência técnica preservada):**
 
 categoria "Jogo 2D", subcategoria "Movimento", arrastar "Aplicar a gravidade do mundo ao sprite" e encaixar logo ACIMA do "Controlar o dinossauro". Mostrar o campo escrito "jogador", clicar e trocar pra "dino". Mostrar o dino descendo, pousando na grama e as perninhas voltando a correr. Depois pular com espaço, com a seta pra cima, com o clique na parte de cima da área do jogo, e abaixar com a seta pra baixo e com o clique segurado embaixo. Cartela ilustrando a bolinha subindo, perdendo força, parando no alto e voltando.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-03-passo-02: gravar a demonstração "a gravidade traz o dino pro chão" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-### 3. você escolhe a altura
+**Texto para o aluno:**
 
-**Narração revisada:**
+**Sua vez:** Use espaço, seta para cima ou clique na parte de cima do jogo. Escolha o controle mais confortável e observe a volta ao chão.
 
-Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais. Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto.
+Depois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado.
 
-**Na tela (sequência técnica preservada do original):**
+**Critérios configurados em Para liberar a próxima seção:** todos os objetivos abaixo precisam passar no mesmo projeto.
+
+- Aplique a gravidade ao sprite dino em A cada quadro do jogo. Regra de cadastro: `{"type":"usesBlock","blockType":"sz_g2d_apply_gravity","area":"loops","fields":{"SPRITE":"dino"},"withinBlock":"sz_g2d_update_each_frame"}`.
+
+**Limite da conferência:** comprova a estrutura pedida, não executa a partida nem avalia sua qualidade. A observação sugerida na etapa continua necessária para aprender.
+
+## 3. Escolha seu salto
+
+**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
+
+**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
+
+**Narração revisada / instruções disponíveis em texto:**
+
+### Você escolhe a altura
+
+Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais.
+
+Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto.
+
+**Vídeo planejado:** `video-construir-3-1`
+
+**Na tela (sequência técnica preservada):**
 
 trocar a força do pulo pra 2, clicar na área do jogo e pular; depois pra 30 e pular, mostrando o dino saindo da tela e o tempo que demora pra voltar. Por fim, deixar em 14 e testar pular por cima de um cacto imaginário.
 
-**Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
-
 **Produção:** aula-03-passo-03: gravar a demonstração "você escolhe a altura" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
 
-## Fechamento e evidência
-
-**Fala / texto de fechamento:**
+**Texto para o aluno:**
 
 Teste um salto curto e um alto; depois escolha sua força. Confira se o dino volta ao chão e pode pular novamente. Envie o projeto.
 
 Na Aula 4, você vai ligar o som ao acontecimento certo.
 
-**Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
+Se algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma.
 
-**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Estúdio compartilhado:** reutilizar o primeiro Estúdio da aula. A entrega acontece aqui, uma única vez.
 
-## Produção e importação
+**Critério configurado:** entrega do Estúdio. Se houver nota mínima, conferir a atividade vinculada: o manifesto preserva sua configuração. Para exigir aprovação automática na seção, ela precisa usar checagens estruturais compatíveis. O carimbo “já conferi” do professor não controla este avanço.
 
-1. Abrir a aula original em rascunho, carregar `manifesto.json`, vincular ao destino e conferir a prévia. Os slugs são rótulos de autoria; o vínculo explícito usa o curso e a aula reais.
-2. Preservar os blocos de projeto, os quizzes, anexos e seus IDs. O importador mantém os materiais não referenciados em uma seção final; reposicionar os quizzes e materiais apropriados antes de publicar.
-3. Gravar os trechos acima no estado correto do projeto, enviar no uploader Vimeo já existente no admin e posicionar cada novo bloco na seção indicada. Conferir legibilidade, áudio e legendas. Não há arquivo de vídeo novo neste pacote.
-4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
+## Cadastro e validação em staging
 
-Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
 
-## Verificações para avançar nas seções
+2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
 
-O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
 
-### A criação de hoje
+4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
 
-**Checagem:** O que vamos aprender a fazer nesta aula?
+5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
 
-**Resposta e explicação:** Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.
+**Cartões antigos a retirar após reimportação:**
 
-### O que traz o salto de volta?
+- `checar-comeco`: Confira: A criação de hoje
+- `checar-entenda`: Confira: O que aconteceu?
+- `checar-construir-1`: Confira: dar o comando de pulo ao dino
+- `checar-construir-2`: Confira: a gravidade traz o dino pro chão
+- `checar-construir-3`: Confira: você escolhe a altura
 
-**Checagem:** O que muda quando há gravidade neste modelo?
-
-**Resposta e explicação:** A velocidade vertical muda e ele pode voltar ao chão
-
-### O que aconteceu?
-
-**Checagem:** Como a força do pulo e a gravidade se relacionam?
-
-**Resposta e explicação:** A força inicia o salto e a gravidade muda o movimento, trazendo o dino de volta.
-
-### dar o comando de pulo ao dino
-
-**Checagem:** Onde entra Controlar o dinossauro?
-
-**Resposta e explicação:** Depois da floresta e antes de desenhar o dino.
-
-### a gravidade traz o dino pro chão
-
-**Checagem:** Qual sprite deve receber a gravidade nesta aula?
-
-**Resposta e explicação:** dino.
-
-### você escolhe a altura
-
-**Checagem:** Como comparar forças de pulo sem confundir os resultados?
-
-**Resposta e explicação:** Mudar a força e manter a gravidade durante a comparação.
-
-### Teste e guarde sua criação
-
-Entregar o projeto e atingir a nota mínima configurada, quando houver.
+A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.

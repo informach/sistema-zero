@@ -20,7 +20,7 @@ const CENAS: Record<SceneName, { src: string; w: number; h: number; alt: string 
     src: '/ilustra/criar.webp',
     w: 940,
     h: 1366,
-    alt: 'Duas crianças criando um jogo no computador com o Zappy',
+    alt: 'Criança mostrando seu jogo no computador com o vagalume Zappy',
   },
   vitoria: {
     src: '/ilustra/vitoria.webp',
@@ -38,7 +38,7 @@ const CENAS: Record<SceneName, { src: string; w: number; h: number; alt: string 
     src: '/ilustra/zappy-final.webp',
     w: 520,
     h: 530,
-    alt: 'Zappy acenando',
+    alt: 'Zappy apontando uma ideia entre estrelas',
   },
   alivio: {
     src: '/ilustra/alivio.webp',
