@@ -147,6 +147,9 @@ function BlockScope({
 /** Largura da JANELA a partir da qual o lado a lado existe (o `2xl` do Tailwind). */
 const SPLIT_MIN_WIDTH_PX = 1536
 
+/** Chave do layout guardado. Mudou o `defaultSize` dos painéis? SUBA a versão. */
+const SPLIT_LAYOUT_KEY = 'sz:lesson-split:v2'
+
 /**
  * Só para DESABILITAR a divisória onde ela está escondida — o layout continua
  * decidido pelo CSS, que não pisca. Começa em `false` e aplica o valor real num
@@ -169,6 +172,8 @@ export function LessonSections(props: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
+  /** Onde a criança está no percurso. Chamado na montagem e a cada troca de seção. */
+  onSectionChange?: (posicao: { index: number; total: number }) => void
 }) {
   const player = useLessonPlayer()
   return <LessonSectionsContent key={`${player?.viewerId}:${props.lesson.id}`} {...props} />
@@ -178,10 +183,12 @@ function LessonSectionsContent({
   lesson,
   renderBlocks,
   kids = false,
+  onSectionChange,
 }: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
+  onSectionChange?: (posicao: { index: number; total: number }) => void
 }) {
   const player = useLessonPlayer()
   const preview = player === null
@@ -202,6 +209,7 @@ function LessonSectionsContent({
   const locked = (id: string) =>
     !preview && state?.sections.some((s) => s.id === id && s.status === 'locked') === true
   const savedSection = lesson.learningProgress?.sectionId
+  const linkedSection = useRef('')
   const [selected, setSelected] = useState(
     () =>
       sections.find((s) => s.id === savedSection && !locked(s.id))?.id ??
@@ -219,6 +227,17 @@ function LessonSectionsContent({
     ),
   )
   const section = sections[index]
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.startsWith('#section=') || linkedSection.current === hash) return
+    linkedSection.current = hash
+    const target = hash.slice('#section='.length)
+    if (
+      sections.some((s) => s.id === target) &&
+      (preview || !state?.sections.some((s) => s.id === target && s.status === 'locked'))
+    )
+      setSelected(target)
+  }, [sections, state, preview])
   const [visited, setVisited] = useState<Set<string>>(
     () =>
       new Set(
@@ -233,6 +252,8 @@ function LessonSectionsContent({
   const [helpOpen, setHelpOpen] = useState(false)
   const [help, setHelp] = useState('')
   const [helpStatus, setHelpStatus] = useState('')
+  const [helpThreadId, setHelpThreadId] = useState<string | null>(null)
+  const helpRequest = useRef<{ body: string; sectionId: string; id: string } | null>(null)
   const [sending, setSending] = useState(false)
   const requirements = lessonCompletionRequirements({
     ...lesson,
@@ -280,6 +301,21 @@ function LessonSectionsContent({
       { keepalive: true },
     ).catch(() => {})
   }, [])
+  // A barra do topo mora FORA daqui (no player de cada app) e o índice é estado
+  // DAQUI, que muda no CLIENTE ao avançar de seção — o `learningProgress.sectionId`
+  // do servidor só se mexe num refresh, então a barra congelaria na seção de entrada.
+  // ⚠️ O índice é DERIVADO (ele muda também quando a seção escolhida vem `locked` e
+  // quando o servidor devolve um `sectionProgress` novo), por isso o aviso mora num
+  // efeito e não dentro do `navigate()`, que perderia esses dois caminhos.
+  // ⚠️ O callback vai num REF: quem passar uma função INLINE trocaria a identidade a
+  // cada render do pai e, com ela nas deps, o efeito reentraria em laço (pai
+  // setState → render → efeito → setState…). Nas deps ficam só os dois números.
+  const avisarSecao = useRef(onSectionChange)
+  avisarSecao.current = onSectionChange
+  const totalSecoes = sections.length
+  useEffect(() => {
+    if (totalSecoes > 0) avisarSecao.current?.({ index, total: totalSecoes })
+  }, [index, totalSecoes])
   if (!section) return null
   const activeIds = new Set([
     ...section.blockIds,
@@ -314,6 +350,7 @@ function LessonSectionsContent({
       setHelpOpen(false)
       setHelp('')
       setHelpStatus('')
+      setHelpThreadId(null)
       setVisited(
         (old) =>
           new Set([
@@ -345,16 +382,24 @@ function LessonSectionsContent({
   }
   async function sendHelp() {
     if (!section || !help.trim() || sending) return
+    if (
+      helpRequest.current?.body !== help.trim() ||
+      helpRequest.current?.sectionId !== section.id
+    ) {
+      helpRequest.current = { body: help.trim(), sectionId: section.id, id: crypto.randomUUID() }
+    }
     setSending(true)
     try {
-      await apiSend(
+      const result = await apiSend<{ threadId: string }>(
         `/api/members/lessons/${encodeURIComponent(lesson.id)}/section-help`,
         'POST',
-        { sectionId: section.id, body: help.trim() },
+        { sectionId: section.id, body: help.trim(), requestId: helpRequest.current.id },
         { 'x-sz-viewer': player?.viewerId ?? '' },
       )
       setHelp('')
       setHelpStatus('Pedido enviado. A resposta aparecerá nos seus recados.')
+      setHelpThreadId(result.threadId)
+      helpRequest.current = null
       setHelpOpen(false)
     } catch {
       setHelpStatus('Não foi possível enviar. Seu texto continua aqui para tentar novamente.')
@@ -414,6 +459,7 @@ function LessonSectionsContent({
                       sectionId: section.id,
                       revision: state.revision,
                       blockId: section.workspaceBlockId,
+                      objectives: section.completion.projectChecks,
                     }
                   : undefined,
               submissionAllowedBlockIds: state
@@ -518,7 +564,13 @@ function LessonSectionsContent({
           direction="horizontal"
           // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
           // para as próximas. Na prévia do admin (`preview`) não persiste nada.
-          autoSaveId={player?.viewerId ? `sz:lesson-split:${player.viewerId}` : null}
+          // ⚠️⚠️ A chave é VERSIONADA (`:v2`) porque a lib guarda o layout por
+          // (autoSaveId, ids dos Panel) e o que está guardado VENCE o `defaultSize` —
+          // e ele é gravado na MONTAGEM, sem ninguém arrastar (o estado nasce `[]`, o
+          // primeiro layout já difere e cai no autosave). Ou seja: o 55/45 antigo está
+          // no localStorage de todo mundo que abriu uma aula. Mudou o padrão? Suba a
+          // versão, senão o valor novo é letra morta.
+          autoSaveId={player?.viewerId ? `${SPLIT_LAYOUT_KEY}:${player.viewerId}` : null}
           className={cn(
             // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
             // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
@@ -530,7 +582,7 @@ function LessonSectionsContent({
           <Panel
             id="lesson-content"
             order={1}
-            defaultSize={55}
+            defaultSize={50}
             minSize={30}
             className="min-w-0 space-y-6 overflow-visible!"
           >
@@ -581,23 +633,47 @@ function LessonSectionsContent({
               isso `disabled`, que a lib respeita pulando o registro sem desmontar. */}
           <PanelResizeHandle
             disabled={!arrastavel}
+            // Parada de Tab só onde ela ARRASTA: a lib mantém `tabIndex` 0 mesmo
+            // desabilitada, mas o teclado dela é gateado por `disabled` — seria um
+            // foco que não faz nada.
+            tabIndex={arrastavel ? 0 : -1}
+            // `role="separator"` focável precisa de NOME: a lib põe `aria-controls` e
+            // `aria-valuemin/max/now` por JS, mas nenhum rótulo (o leitor dizia só
+            // "separador, 50"). A seção pode ter Estúdio OU Pinta, então o texto não
+            // nomeia a ferramenta.
+            aria-label={
+              kids
+                ? 'Mudar o tamanho dos dois lados'
+                : 'Ajustar a divisão entre o conteúdo e a ferramenta'
+            }
             // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
             hitAreaMargins={{ coarse: 20, fine: 6 }}
             className={cn(
-              'group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
+              // `sz-lesson-split-handle`/`-grip`: ganchos ESTÁVEIS do tema (invariante
+              // 8). Sem regra aqui — cada app veste no CSS dele.
+              'sz-lesson-split-handle group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
+              // ⚠️⚠️ `self-stretch`: o PanelGroup é `items-start`, então filho sem
+              // altura PRÓPRIA mede zero no eixo cruzado — e o traço daqui é
+              // `inset-y-0` DENTRO dele. A divisória tinha 24x0: invisível, e
+              // agarrável só numa tira no alto da coluna (a lib acha a zona de
+              // arrasto por `getBoundingClientRect()` + a folga). Era por isso que
+              // "não tinha resize".
+              'self-stretch',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-              hasWorkspace && '2xl:block',
+              // `flex` + centro: CENTRA a pega que o tema desenhar, sem o app ter de
+              // repetir o 1536 num `@media` próprio.
+              hasWorkspace && '2xl:flex 2xl:items-center 2xl:justify-center',
             )}
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
+              className="sz-lesson-split-grip pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
             />
           </PanelResizeHandle>
           <Panel
             id="lesson-tool"
             order={2}
-            defaultSize={45}
+            defaultSize={50}
             minSize={30}
             className={cn(
               // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
@@ -693,6 +769,11 @@ function LessonSectionsContent({
         {helpStatus && (
           <p role="status" className="text-sm">
             {helpStatus}
+            {helpThreadId && (
+              <a className="ml-2 underline" href={`/recados/${encodeURIComponent(helpThreadId)}`}>
+                Ver conversa
+              </a>
+            )}
           </p>
         )}
         {error && (

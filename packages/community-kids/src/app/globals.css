@@ -1651,6 +1651,64 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   font-weight: 700;
 }
 
+/* ── A DIVISÓRIA DO MEIO (a criança arrasta o espaço dos dois lados) ───────────
+   Ganchos `sz-lesson-split-handle`/`-grip` do member-shell (sem regra nenhuma lá).
+   ⚠️⚠️ NADA aqui pode criar contexto de contenção: `contain`, `container-type`,
+   `transform`, `filter`, `backdrop-filter`, `perspective`. Foi isso que prendeu o
+   `position: fixed` do "Expandir" do Estúdio e derrubou o `@container` em
+   `c21f576d`. As regras abaixo tocam só a PRÓPRIA divisória e o que está dentro
+   dela, que não é ancestral de nada. */
+
+/* 44px no ELEMENTO, não só na folga da lib: a `hitAreaMargins` cobre o ponteiro,
+   mas não o `:hover` do CSS nem o anel de foco. Custa 10px de cada painel. */
+.sz-lesson-sections .sz-lesson-split-handle {
+  width: 2.75rem;
+  border-radius: 1rem;
+}
+
+/* Em REPOUSO já se enxerga: o fio na cor de linha das cartas, de alto a baixo.
+   ⚠️ `--linha-carta`, NUNCA `--borda-carta`: esta é `transparent` no tema Padrão
+   (só existe no escuro) e o fio sumiria de novo. */
+.sz-lesson-sections .sz-lesson-split-grip {
+  width: 0.25rem;
+  background: var(--linha-carta);
+}
+
+/* A PEGA: pastilha branca com três pontinhos. `sticky` porque a coluna da aula é
+   alta, e uma pega centrada nela ficaria fora da tela. */
+.sz-lesson-sections .sz-lesson-split-handle::after {
+  content: "";
+  position: sticky;
+  top: calc(50vh - 1.75rem);
+  width: 1.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 50% calc(50% - 0.5rem), var(--pen-tinta-suave) 2px, transparent 2.5px),
+    radial-gradient(circle at 50% 50%, var(--pen-tinta-suave) 2px, transparent 2.5px),
+    radial-gradient(circle at 50% calc(50% + 0.5rem), var(--pen-tinta-suave) 2px, transparent 2.5px),
+    var(--pen-cartao);
+  box-shadow: inset 0 0 0 2px var(--linha-carta);
+}
+
+/* ⚠️ `[data-resize-handle-state]` e não `:hover`: a lib marca "hover" quando o
+   ponteiro entra na FOLGA (6px no mouse, 20px no toque), então a divisória acende
+   antes de o dedo encostar nela. O `:hover` do CSS só acenderia em cima dos 44px. */
+.sz-lesson-sections .sz-lesson-split-handle:is(
+    [data-resize-handle-state="hover"],
+    [data-resize-handle-state="drag"]
+  )
+  .sz-lesson-split-grip {
+  background: var(--sz-kids-acao);
+}
+.sz-lesson-sections
+  .sz-lesson-split-handle:is(
+    [data-resize-handle-state="hover"],
+    [data-resize-handle-state="drag"]
+  )::after {
+  box-shadow: inset 0 0 0 2px var(--sz-kids-acao);
+}
+
 /* Modal — backdrop + entrada */
 @keyframes sz-fade-in {
   from {

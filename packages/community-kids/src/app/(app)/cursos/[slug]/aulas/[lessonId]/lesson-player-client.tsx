@@ -1,6 +1,6 @@
 'use client'
 
-import { lessonCompletionRequirements, type SectionProgressView } from '@sistemazero/core/learning'
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 
 import {
   type LessonPlayerContextValue,
@@ -22,11 +22,13 @@ import { useFocusMode } from '@/components/kids/focus-mode'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
+import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import type { PosicaoNaAula } from '@/lib/lesson-progress'
 import type {
   CourseDetailView,
   CourseProgressView,
@@ -56,39 +58,6 @@ interface Props {
   shareUrl: string | null
 }
 
-/**
- * O progresso da AULA na barra de cima (telas-modelo de 11/09/2026): a barra verde e a
- * porcentagem em negrito. A contagem de seções continua para o leitor de tela (no
- * `aria-valuetext` e numa região viva, como no componente do member-shell, que segue
- * servindo o adulto).
- */
-function KidsLessonProgress({ progress }: { progress?: SectionProgressView }) {
-  if (!progress) return <div className="flex-1" />
-  const percent = Math.round(progress.percent)
-  const sections = `${progress.completed} de ${progress.total} seções concluídas`
-  return (
-    <div className="flex min-w-0 flex-1 items-center gap-3">
-      <div
-        className="sz-progress flex-1"
-        role="progressbar"
-        aria-label="Progresso da aula"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-        aria-valuetext={sections}
-      >
-        <span style={{ width: `${progress.percent}%` }} />
-      </div>
-      <span aria-hidden="true" className="shrink-0 font-extrabold text-[0.9375rem] tabular-nums">
-        {percent}%
-      </span>
-      <span className="sr-only" aria-live="polite">
-        {sections}
-      </span>
-    </div>
-  )
-}
-
 export function LessonPlayer({
   course,
   lesson,
@@ -112,6 +81,24 @@ export function LessonPlayer({
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
   const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
+  // Onde a criança está no percurso. Quem sabe é o `LessonSections` (o índice muda no
+  // CLIENTE ao avançar de seção); a barra do topo mora aqui, acima dele.
+  const [secao, setSecao] = useState<PosicaoNaAula | null>(null)
+  // Bail-out por VALOR: o player avisa com um objeto NOVO a cada vez, e devolver o
+  // anterior quando os números não mudaram faz o React abortar o re-render. É a 2ª
+  // rede contra o laço (a 1ª é o callback viver num ref lá dentro).
+  const aoTrocarSecao = useCallback((p: PosicaoNaAula) => {
+    setSecao((antes) => (antes && antes.index === p.index && antes.total === p.total ? antes : p))
+  }, [])
+  // Primeiro quadro: o servidor já resolveu em que seção a criança entra, então a
+  // barra nasce certa em vez de piscar em "Seção 1". O aviso do player chega no efeito
+  // seguinte e manda dali em diante.
+  const posicaoInicial = useMemo<PosicaoNaAula | null>(() => {
+    const lista = lesson.sections ?? []
+    if (lista.length === 0) return null
+    const i = lista.findIndex((s) => s.id === lesson.learningProgress?.sectionId)
+    return { index: i >= 0 ? i : 0, total: lista.length }
+  }, [lesson.sections, lesson.learningProgress?.sectionId])
   const [completing, setCompleting] = useState(false)
   // Snapshot do progresso ANTES do refresh (a celebração anima antes→depois)
   // + delta de gamificação vindo na RESPOSTA do complete; null = overlay fechado.
@@ -230,7 +217,14 @@ export function LessonPlayer({
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
             <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
-            <KidsLessonProgress progress={lesson.sectionProgress} />
+            <KidsLessonProgress
+              progress={lesson.sectionProgress}
+              posicao={secao ?? posicaoInicial}
+              // Aula "em breve" não tem atividade: o members serve SÓ o recado, e o
+              // único requisito pendente é o próprio bloco. Medi-lo faria a barra
+              // dizer "0 de 1 atividade" para algo que a criança não pode fazer.
+              atividades={blockedByComingSoon ? [] : requirements}
+            />
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
             {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">
@@ -252,6 +246,7 @@ export function LessonPlayer({
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
             kids
+            onSectionChange={aoTrocarSecao}
             renderBlocks={(blocks) => <KidsLessonBlocks blocks={blocks} />}
           />
 

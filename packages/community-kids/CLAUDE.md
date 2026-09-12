@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Recados iniciados pelo professor e ajuda — 11/09/2026
+
+Avisos individuais/coletivos chegam em conversas privadas no mesmo Recados. O sino usa
+`useTeacherUnread` compartilhado e atualiza após leitura/resposta, navegação e retorno à janela.
+Pedido de ajuda na aula oferece Ver conversa; a conversa usa `TeacherLessonLink` para voltar à seção
+acessível pelo hash. Objetivos práticos exibem resultados individuais vindos do servidor. Contratos
+e evidências de validação: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, Tailwind,
 > jose, Zod, etc.). Para **pesquisa/exploração**, use o **MCP do Octocode**.
@@ -87,8 +95,8 @@ blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certific
 no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
 `../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado
-(altura padrão GENEROSA: `lg:h-[82vh]`, piso 44rem — mais espaço pra programar; mudança no member-shell,
-vale tb no adulto),
+(altura `h-[36rem] lg:h-[40rem]` desde 09/2026, quando ele passou a dividir a tela com o conteúdo
+da seção; mudança no member-shell, vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
 distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
@@ -1067,11 +1075,38 @@ no `globals.css` (bloco "A AULA NO DESENHO DAS TELAS-MODELO"): o member-shell pi
 e dentro de `@layer components` elas perdiam (era por isso que o raio da barra do índice nunca
 mudava). Cada bloco vira cartão branco; o título da seção abre o primeiro (seletor de irmão
 `.sz-lesson-section-head + .sz-lesson-block`); a borda é a `--borda-carta` e NÃO sombra, porque o
-bloco usa o anel de foco em `box-shadow`. A barra de cima (`KidsLessonProgress`, com a contagem de
-seções no `aria-valuetext` e numa região viva), o chip "AULA N DE M", o índice da direita e o pé
+bloco usa o anel de foco em `box-shadow`. A barra de cima
+(`components/kids/kids-lesson-progress.tsx`), o chip "AULA N DE M", o índice da direita e o pé
 moram no `lesson-player-client.tsx`. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
+
+⭐⭐ **A barra do topo NUNCA some (09/2026), e a régua tem três degraus** — pura em
+`lib/lesson-progress.ts` (`vistaProgressoAula`), pintada pelo `KidsLessonProgress`:
+(1) com `lesson.sectionProgress` ela mede a CONCLUSÃO conferida no servidor ("67%"); (2) sem ele e
+com 2+ seções, a POSIÇÃO no percurso ("Seção 2 de 5"); (3) sem ele e com UMA seção, as atividades
+obrigatórias ("1 de 2 atividades"). Sem nada a medir, vira o espaçador — inventar número seria pior.
+⚠️ Os degraus 2 e 3 não são enfeite: o members devolve `sectionProgress` **undefined** para conta
+PRIVILEGIADA (`get-lesson.service.ts`, `privileged ? undefined : …`) e para aula em que nenhuma
+seção tem `completion` — e a migration `0080` agrupou TODA aula legada numa seção sem critérios.
+Ou seja, a dona (admin) nunca via a barra, e o `loading.tsx` reserva o espaço dela: sobrava um vão.
+⚠️ Aula "em breve" não mede atividade (o único requisito é o próprio bloco, que a criança não pode
+cumprir). A posição vem do `onSectionChange` do `LessonSections` (ver o CLAUDE.md do member-shell),
+porque o índice muda no CLIENTE e o `learningProgress.sectionId` só se mexe num refresh.
+
+⭐ **A divisória do lado a lado ficou visível** (`.sz-lesson-split-handle`/`-grip` no bloco da aula
+do `globals.css`, fora de camada): 44px de alvo, fio em `--linha-carta` (⚠️ NUNCA `--borda-carta`,
+que é `transparent` no tema Padrão) e uma pastilha `sticky` com três pontinhos no meio da tela.
+Acende na cor de ação por `[data-resize-handle-state="hover"|"drag"]` (a lib marca "hover" já na
+folga de 6/20px, antes de o dedo encostar). ⚠️ Nada aqui pode criar contexto de contenção
+(`contain`, `container-type`, `transform`, `filter`): foi o que prendeu o `position: fixed` do
+"Expandir" do Estúdio e derrubou o `@container` em `c21f576d`. O achado que consertou o arrasto
+(a divisória tinha ZERO de altura) está no CLAUDE.md do member-shell.
+
+⚠️ **O Estúdio e o Pinta da aula ENCOLHERAM** (`h-[36rem] lg:h-[40rem]` e `h-[34rem] lg:h-[36rem]`;
+eram 44/60rem e 40/52rem): 960px de altura numa coluna de metade da tela viravam um retângulo
+comprido. Quem quer mais espaço usa o "Expandir". A mudança é no member-shell, então **vale também
+no adulto** (como sempre valeu a altura de lá).
 
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 

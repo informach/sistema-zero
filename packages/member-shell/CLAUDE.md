@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Ajuda e objetivos de seção — 11/09/2026
+
+`section-help` aceita `requestId` UUID: o player mantém a chave ao repetir o mesmo pedido após falha
+de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permite retornar ao hash
+`#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
+`useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
+em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
+`SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
+Não confundir estrutura verificada no servidor com execução comprovada do jogo.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, jose, Zod,
 > sharp, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender
@@ -867,10 +877,32 @@ na hora, mas voltaria). O que mudou, e é contrato:
    `sz-lesson-sections` (raiz, só com a flag `kids`), `sz-lesson-toolbar`, `sz-lesson-section-head`
    (o `<header>` do título da seção), `sz-lesson-block` (cada bloco), `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
-   dele (`sz-lesson-nav-prev|help|next`). Renomear um deles quebra o desenho em silêncio
-   (nenhum teste de lá mira a classe); mudar a ESTRUTURA (ex.: o bloco deixar de ser irmão logo
-   depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num cartão só pelo
-   seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
+   dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
+   **`sz-lesson-split-handle`** (a área de arrasto) + **`sz-lesson-split-grip`** (o fio dentro
+   dela). Renomear um deles quebra o desenho em silêncio
+   (nenhum teste de lá mira a classe, salvo o do handle); mudar a ESTRUTURA (ex.: o bloco deixar
+   de ser irmão logo depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num
+   cartão só pelo seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
+
+## A divisória e a barra do topo da aula (09/2026)
+
+⚠️⚠️ **A divisória tinha 24 x ZERO pixels e ninguém via.** O `PanelGroup` é `items-start` e o
+handle não tinha altura PRÓPRIA (o traço dentro dele é `absolute inset-y-0`), então ele media o
+conteúdo no eixo cruzado e dava zero — medido no navegador: `24x0` antes, `24x900` com
+**`self-stretch`**. A lib acha a zona de arrasto por `getBoundingClientRect()` + `hitAreaMargins`,
+então o que sobrava era uma tira no ALTO da coluna, invisível. Era por isso que a dona dizia que
+"não tem mais o resize". Quem mexer nas classes do handle precisa preservar o `self-stretch`.
+- O handle leva `aria-label` (a lib põe `aria-controls`/`aria-valuenow`, mas nenhum NOME) e
+  `tabIndex={arrastavel ? 0 : -1}` (desabilitada, a lib mantém 0 e sobraria um foco morto).
+- ⚠️ **`autoSaveId` é VERSIONADO** (`sz:lesson-split:v2:<viewer>`): a lib guarda o layout por
+  (autoSaveId, ids dos Panel) e o guardado VENCE o `defaultSize` — e ele é gravado na MONTAGEM,
+  sem ninguém arrastar. Mudou o padrão dos painéis? SUBA a versão, senão o valor novo é letra
+  morta para quem já abriu uma aula. Os painéis nascem 50/50 desde 09/2026 (eram 55/45, e o lado
+  menor era justo o da ferramenta).
+- **`onSectionChange?: ({index, total}) => void`** (opcional) avisa a posição no percurso na
+  montagem e a cada troca de seção. É como o kids desenha a barra do topo, que mora FORA do
+  `LessonSections`. ⚠️ O callback vive num REF: com ele nas deps do efeito, uma função inline do
+  consumidor viraria laço de render. O adulto e a prévia do admin não passam a prop.
 
 **Ranking geral (full review 06/09/2026):** o BFF valida `limit`, encaminha `cursor` sem
 interpretá-lo e espelha `nextCursor` no contrato compartilhado. A primeira página server-side não

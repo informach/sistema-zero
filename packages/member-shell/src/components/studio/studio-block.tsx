@@ -473,11 +473,13 @@ export function StudioBlockView({
           // têm z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
           // professor?"); isolando o container, o overlay de modal (z-50) cobre tudo atrás.
           'isolate overflow-hidden rounded-lg border border-border bg-muted',
-          // Expandido/guiada: o editor cresce e ocupa todo o pai; normal: altura FIXA e
-          // GENEROSA (mobile 44rem; desktop 60rem = bem mais espaço pra programar). Fixo de
-          // propósito: `vh` dependia da altura da janela e em notebook ficava ≈ 44rem (sem
-          // mudança visível) — rem garante o aumento em qualquer tela.
-          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[44rem] lg:h-[60rem]',
+          // Expandido: o editor cresce e ocupa todo o pai; normal: altura FIXA. ⚠️ Ela
+          // era 44/60rem, de quando o editor pegava a LARGURA inteira da aula. Com as
+          // seções, ele mora numa coluna de metade da tela, e 960px de altura ali viram
+          // um retângulo estreito e comprido (relato da dona, 09/2026). Quem precisa de
+          // mais espaço usa o "Expandir", que é tela cheia. Fixo em `rem` de propósito:
+          // `vh` dependia da altura da janela e mudava de notebook para notebook.
+          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[36rem] lg:h-[40rem]',
         )}
       >
         {ready ? (

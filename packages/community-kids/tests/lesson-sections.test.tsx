@@ -79,10 +79,15 @@ const prediction: InteractiveBlock = {
   },
 }
 const originalFetch = globalThis.fetch
+// ⚠️ O caso da divisória larga TROCA o `window.matchMedia` do ambiente. Sem restaurar,
+// todo teste seguinte herdava uma janela "larga" — e um deles passaria a afirmar o
+// contrário do que checa.
+const originalMatchMedia = window.matchMedia
 beforeEach(() => localStorage.clear())
 afterEach(() => {
   cleanup()
   globalThis.fetch = originalFetch
+  window.matchMedia = originalMatchMedia
 })
 
 describe('aula por seções', () => {
@@ -332,6 +337,83 @@ describe('aula por seções', () => {
     const larga = screen.getByRole('separator')
     expect(larga.tabIndex).toBe(0)
     expect(larga.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
+    // O gancho do tema é CONTRATO: renomeá-lo apaga o desenho da divisória no kids
+    // em silêncio (o member-shell não tem regra nenhuma para ele).
+    expect(larga.classList.contains('sz-lesson-split-handle')).toBe(true)
+    // `role="separator"` focável precisa de NOME: a lib só põe aria-controls e
+    // aria-valuenow, e o leitor dizia "separador, 50".
+    expect(larga.getAttribute('aria-label')).toBeTruthy()
+  })
+
+  test('a divisória desabilitada não é parada de Tab', () => {
+    // A lib mantém `tabIndex` 0 mesmo desabilitada, mas o teclado dela é gateado
+    // por `disabled`: seria um foco que não faz nada. A janela do happy-dom é
+    // estreita, então aqui ela está empilhada.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByRole('separator').tabIndex).toBe(-1)
+  })
+
+  test('os dois lados nascem do mesmo tamanho', () => {
+    // "Tem menos espaço para o Estúdio" (relato da dona): o padrão era 55/45, e o
+    // lado menor era justo o da ferramenta.
+    // ⚠️ Este teste morde o `defaultSize`, NÃO a persistência: a lib não chega a
+    // tocar o `localStorage` no happy-dom (medido — nem lê a chave semeada nem
+    // grava o layout), então um caso sobre o ajuste guardado passaria aqui com ou
+    // sem o conserto, que é pior do que não existir. Quem guarda a regra da chave
+    // versionada é o comentário em `lesson-sections.tsx`, junto do `autoSaveId`.
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const tamanhos = [...container.querySelectorAll('[data-panel]')].map((p) =>
+      p.getAttribute('data-panel-size'),
+    )
+    expect(tamanhos).toEqual(['50.0', '50.0'])
+  })
+
+  test('avisa a posição no percurso ao montar e a cada troca de seção', async () => {
+    globalThis.fetch = (async () => Response.json({ ok: true })) as unknown as typeof fetch
+    const avisos: Array<{ index: number; total: number }> = []
+    function Host() {
+      const [, setPosicao] = useState<{ index: number; total: number } | null>(null)
+      return (
+        <LessonPlayerProvider value={player}>
+          <LessonSections
+            lesson={lesson}
+            renderBlocks={() => <input aria-label="Meu projeto" />}
+            // ⚠️ Função INLINE de propósito: identidade nova a cada render. Se o
+            // callback voltar para as deps do efeito lá dentro, isto vira laço
+            // (pai setState → render → efeito → setState) e o teste trava. É a
+            // razão de o member-shell guardá-lo num ref.
+            onSectionChange={(p) => {
+              avisos.push(p)
+              setPosicao(p)
+            }}
+          />
+        </LessonPlayerProvider>
+      )
+    }
+    const view = render(<Host />)
+    expect(avisos).toEqual([{ index: 0, total: 3 }])
+    const input = screen.getByRole('textbox', { name: 'Meu projeto' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await screen.findByRole('heading', { name: 'Observar' })
+    expect(avisos).toEqual([
+      { index: 0, total: 3 },
+      { index: 1, total: 3 },
+    ])
+
+    // Re-render do pai por motivo alheio não reavisa, e o editor da direita NÃO
+    // remonta (o rascunho do Estúdio morreria a cada troca de seção).
+    view.rerender(<Host />)
+    expect(avisos).toHaveLength(2)
+    expect(input.isConnected).toBe(true)
   })
 
   test('trocar de perfil no meio da aula não oferece "tentar novamente"', async () => {
@@ -407,7 +489,7 @@ describe('aula por seções', () => {
       },
       {
         url: '/api/members/lessons/lesson/section-help',
-        body: { sectionId: 'second', body: 'Por que ele cai?' },
+        body: { sectionId: 'second', body: 'Por que ele cai?', requestId: expect.any(String) },
         viewer: 'child-a',
       },
     ])
