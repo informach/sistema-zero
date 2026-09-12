@@ -1,0 +1,91 @@
+{
+  "sourceFile": "roteiro-aula-06-corre-dino.md",
+  "sourceHash": "3f35c3213866fcd7d6ca59e0e1c34407f370807a410233aeb5ff95b0cd831a5f",
+  "status": "Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.",
+  "clips": [
+    {
+      "key": "video-abertura-editorial",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Olha o seu jogo rodando ali do lado. Cacto vindo, dino pulando, tudo funcionando bonitinho. Só q",
+      "exit": "E no quarto, você testa dois ritmos e devolve o relógio pro lugar. Então bora começar pelo primeiro.",
+      "edit": "Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
+      "narration": "Oi! Olha o seu jogo rodando ali do lado. Cacto vindo, dino pulando, tudo funcionando bonitinho. Só que esse jogo, esse mesmo que está na sua tela agora, tem um problema de verdade acontecendo neste segundo em que a gente está conversando. E não adianta olhar pra tela pra tentar achar ele, porque ele é invisível. Então hoje a gente vai fazer o que criador de jogo faz quando desconfia de alguma coisa: em vez de sair mexendo no jogo, a gente mede primeiro. Guarda essa ideia, porque ela serve pra muita coisa fora do jogo também: primeiro medir, depois consertar. A aula de hoje é curtinha. E pra chegar lá, a gente vai passar por quatro passos. O primeiro é montar o medidor. No segundo, a gente provoca o problema, pra ele aparecer rápido. No terceiro vem a faxina, que é o conserto. E no quarto, você testa dois ritmos e devolve o relógio pro lugar. Então bora começar pelo primeiro.",
+      "visual": "**Na tela:** o jogo do fim da Aula 5 rodando bonito, os cactos entrando pela direita e o dino pulando.",
+      "newNarration": "Os cactos saem da tela, mas podem continuar guardados. Vamos medir antes de fazer a limpeza.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-medidor",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Parte 1. Passo 1: montar o medidor",
+      "entry": "Pra investigar, a gente vai construir um medidor. Ele não vai ficar no jogo pra sempre: é o nosso in",
+      "exit": "go: apareceu um número no cantinho. Passo 1 feito, o medidor está montado. Bora fazer ele trabalhar.",
+      "edit": "Preservar o encaixe do valor na tomada VALUE, a posição do medidor e a leitura inicial.",
+      "narration": "Pra investigar, a gente vai construir um medidor. Ele não vai ficar no jogo pra sempre: é o nosso instrumento, pra enxergar o invisível. Na categoria Jogo 2D, subcategoria Placar e HUD, pega o bloco Mostrar placar. Clica nele, segura, arrasta pra dentro do A cada quadro do jogo e encaixa logo abaixo do Desenhar o grupo, que hoje é o último bloco de lá, até dar o cliquinho. Ele tem seis campos, e a gente vai passar por todos. O primeiro é o texto. Apaga o que veio escrito e escreve Cactos. O segundo é o valor, e é onde entra a peça que conta. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco quantos sprites tem no grupo e arrasta ele por cima do que já está no campo do valor. No campinho de grupo dele, escolhe cactos. Esse bloquinho sabe quantos sprites estão dentro do grupo agora. Sozinho ele não mostra nada: ele só sabe o número e guarda pra ele. Por isso a gente emprestou o Mostrar placar, que é um bloco que sabe mostrar. Depois vêm o x e o y, que são o lugar do número na tela. Deixa os dois como vieram, que isso aqui é um medidor, não é o placar do jogo. O quinto é a cor. Escolhe um azul escuro, porque o céu do jogo é claro e o número precisa aparecer. E o sexto é o tamanho, que também fica como veio. Olha a área do jogo: apareceu um número no cantinho. Passo 1 feito, o medidor está montado. Bora fazer ele trabalhar.",
+      "visual": "**Na tela:** Jogo 2D › Placar e HUD, arrastar \"Mostrar placar __ valor __ em x __ y __ cor __ tamanho __\" para dentro do \"A cada quadro do jogo\", como último bloco, logo abaixo do \"Desenhar o grupo\". Percorrer os seis campos na ordem do bloco: no texto escrever \"Cactos\"; por cima do valor, arrastar \"quantos sprites tem no grupo __\" (Jogo 2D › Muitos) e escolher o grupo cactos; x e y como vieram; cor azul escuro; tamanho como veio.",
+      "newNarration": "No fim de A cada quadro, coloque o placar provisório. No valor dele, encaixe Quantidade de sprites no grupo cactos.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-provocar",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Parte 2. Passo 2: provocar o problema",
+      "entry": "No ritmo normal, com o relógio em 1.4, o problema até aparece, mas tão devagar que você ia ficar um ",
+      "exit": ", e não era falta de atenção sua. Foi o medidor que contou. Passo 2 feito, e agora a gente conserta.",
+      "edit": "Não pedir longas esperas nem criar travamento. Parar a execução ao observar crescimento.",
+      "narration": "No ritmo normal, com o relógio em 1.4, o problema até aparece, mas tão devagar que você ia ficar um tempão olhando pro número até desconfiar. Então a gente vai apressar ele de propósito. Vai no relógio, aquele A cada 1.4 segundos, e troca o 1.4 por 0.1. Isso faz nascer cacto quase sem parar. Agora fica olhando o número do medidor. Vinte... cinquenta... cento e vinte... duzentos... e ele nunca desce. Só sobe. O que está acontecendo é isso: cada cacto que sai pela esquerda da tela continua existindo. Ele some da sua vista, mas continua lá, e o jogo continua cuidando dele: movendo, desenhando, tomando conta de um monte de cacto que ninguém nunca mais vai ver. Se você deixar assim, vira um exército de fantasmas que só cresce, e o jogo vai ficando pesado. E isso já estava acontecendo desde a Aula 5, no seu jogo, o tempo todo. Você não fazia ideia, e não era falta de atenção sua. Foi o medidor que contou. Passo 2 feito, e agora a gente conserta.",
+      "visual": "**Na tela:** trocar o relógio de 1.4 para 0.1, com a câmera fixa no número do medidor subindo sem parar.",
+      "newNarration": "Troque temporariamente o relógio dos cactos para 0,1 segundo. Execute por alguns segundos e acompanhe o número, mesmo depois que cactos saem da tela.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-faxina",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Parte 3. Passo 3: a faxina",
+      "entry": "A solução é a faxina. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Tirar do grupo quem sa",
+      "exit": " já foi embora. Passo 3 feito, e o seu jogo já limpa sozinho quem foi embora. Vem o quarto e último.",
+      "edit": "Preservar a leitura do medidor antes e depois. Explicar que a quantidade oscila enquanto novos cactos chegam; não prometer zero.",
+      "narration": "A solução é a faxina. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Tirar do grupo quem sair da tela, aquele comprido que termina com 'para cada um, chamado'. Clica, segura, arrasta pra dentro do A cada quadro do jogo e encaixa entre o Desenhar o grupo e o Mostrar placar do medidor. Ele tem dois campos e um espaço de fazer. No campo do grupo, escolhe cactos. O apelido vem escrito sprite. Troca por cacto, pra ficar com a cara do nosso jogo. E o espaço de fazer, por dentro, deixa vazio, que a gente não precisa dele hoje. Olha o número agora, ainda com o relógio em 0.1. Ele sobe... e desce. Sobe e desce, e fica equilibrado, oscilando numa faixa em vez de crescer sem parar. Porque agora, quando o cacto sai da tela, ele é descartado de verdade. Esse número subindo e descendo é a vitória de hoje. Parece pouco, mas é o retrato de um jogo saudável: nasce, sai, é descartado, e o número fica no lugar. Isso tem nome de gente grande: chama faxina. E a regra vale sempre: todo jogo que faz coisas nascerem sem parar precisa de uma faxina pra limpar quem já foi embora. Passo 3 feito, e o seu jogo já limpa sozinho quem foi embora. Vem o quarto e último.",
+      "visual": "**Na tela:** Jogo 2D › Muitos, encaixar \"Tirar do grupo __ quem sair da tela, para cada um (chamado __ )\" dentro do \"A cada quadro do jogo\", ENTRE o \"Desenhar o grupo\" e o \"Mostrar placar\" do medidor. Grupo cactos, apelido sprite → cacto, corpo do fazer vazio. Com o relógio ainda em 0.1, mostrar o número subindo e descendo.",
+      "newNarration": "No quadro, depois de atualizar e desenhar os cactos e antes do medidor, coloque Remover do grupo cactos os sprites fora da tela.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-aposentar-medidor",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Parte 4. Passo 4: testar dois ritmos, devolver o relógio e aposentar o medidor",
+      "entry": "Agora, com o medidor aceso, a gente compara dois ritmos. Deixa o relógio em 0.1 e joga um pouco, olh",
+      "exit": "ra: ele ficou com oito blocos, do Limpar a tela até a faxina, e é assim que ele fica no fim de hoje.",
+      "edit": "Manter dois ritmos como comparação observada, sem uma nova atividade obrigatória. Reaproveitar Apagar este bloco; preservar a faxina.",
+      "narration": "Agora, com o medidor aceso, a gente compara dois ritmos. Deixa o relógio em 0.1 e joga um pouco, olhando o número. Ele sobe e desce lá em cima, num patamar alto, porque nasce cacto quase sem parar. Agora troca o relógio por 0.5 e joga de novo, olhando o número outra vez. Ele sobe e desce bem mais baixo, porque nasce muito menos. Mas repara no que é igual nos dois: em nenhum deles o número fica só subindo. Não importa o ritmo que você escolher, a faxina dá conta. É isso que faz dela uma peça boa de verdade. Agora devolve o relógio pro valor do nosso jogo: troca de volta pra 1.4. Esse é o ritmo que a gente vai usar daqui pra frente, então é importante ele voltar pro lugar. Olha o medidor com o relógio em 1.4: um número baixo, subindo e descendo devagar. Esse é o seu jogo em paz. E agora chegou a hora de aposentar o medidor. Ele é aquele Mostrar placar lá embaixo, com o bloco de contar encaixado dentro dele. Clica nele, segura e arrasta pra lixeira. O bloco de contar vai junto, porque está encaixado lá dentro. Ele fez o trabalho dele. Mostrou pra você um problema que era invisível, você consertou, e ele mostrou que o conserto funcionou. Agora ele sai, porque ele nunca foi parte do jogo: era instrumento, e instrumento a gente guarda quando termina de usar. Esse jeito de trabalhar volta no curso: lá na Aula 10 você vai montar outro instrumento, um raio-X, usar ele pra enxergar uma coisa escondida, e guardar ele também. E lembra do Mostrar placar, viu? Porque na Aula 11 ele volta, e dessa vez pra ficar de verdade, com o placar do seu jogo. Olha o seu A cada quadro do jogo agora: ele ficou com oito blocos, do Limpar a tela até a faxina, e é assim que ele fica no fim de hoje.",
+      "visual": "**Na tela:** com o medidor aceso, jogar com o relógio em 0.1 e depois em 0.5, comparando o patamar do número; devolver o relógio para 1.4 e mostrar o medidor num patamar baixo, subindo e descendo. Por fim, arrastar o \"Mostrar placar\" do medidor para a lixeira, com o \"quantos sprites tem no grupo\" indo junto por estar encaixado dentro dele, e mostrar o laço ficando com oito blocos.",
+      "newNarration": "Compare brevemente 0,1 e 0,5 segundo no vídeo. No seu jogo, volte o relógio para 1,4 e retire só o medidor.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-editorial",
+      "sourceFile": "roteiro-aula-06-corre-dino.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 6. Ela foi curta, mas o que você fez aqui é coisa grande. Olha os qua",
+      "exit": "ando, um de estar jogando e um de ter acabado, e vai aprender a estar num de cada vez. Te espero lá!",
+      "edit": "Manter a recapitulação. As Especificações antigas dizem que o medidor fica até a aula 7, mas Parte 4 e Fecho o retiram na aula 6. Seguir Parte 4/Fecho e a continuidade da aula 7. Retirar instrumento não é desligar a rotina de limpeza. Terminar indicando o quiz, sem abrir desafios extras.",
+      "narration": "Parabéns, você terminou a Aula 6. Ela foi curta, mas o que você fez aqui é coisa grande. Olha os quatro passos de hoje: você montou o medidor, provocou o problema pra ele aparecer rápido, fez a faxina e ainda comparou dois ritmos antes de devolver o relógio e aposentar o medidor. E olha as palavras de criador de hoje: o medidor, que é o instrumento que mostra o que a tela esconde, e a faxina, que é limpar quem já foi embora pro jogo não ficar pesado. Junta elas com as três da Aula 5, o grupo, o relógio e o nascer fora da tela, e são cinco peças que servem pra muito jogo que você vai fazer daqui pra frente. Mas tem uma coisa de hoje que eu quero que fique marcada em você ainda mais que a faxina. Você descobriu que existe problema que não aparece na tela. O seu jogo parecia perfeito, e não estava. Quem cria jogo aprende a desconfiar disso, e o jeito de resolver é sempre o mesmo: primeiro medir, depois consertar. Na próxima aula o seu jogo ganha uma coisa que todo jogo de verdade tem. Hoje ele só sabe jogar, do primeiro segundo até sempre. Na Aula 7 ele vai passar a saber que existe um momento de estar começando, um de estar jogando e um de ter acabado, e vai aprender a estar num de cada vez. Te espero lá!",
+      "visual": "**Na tela:** cartela \"Aula 6 concluída\", com o jogo rodando ao fundo, já sem o medidor.",
+      "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

@@ -1,12 +1,16 @@
-import type { SectionStructureRule } from './section-progression'
+import {
+  isProjectBlockPattern,
+  type ProjectBlockPattern,
+  type SectionStructureRule,
+} from './section-progression'
 
 export const PROJECT_CHECK_AREAS = {
   structure: 'Estrutura',
   appearance: 'Aparência',
-  molds: 'Moldes',
+  molds: 'Meus moldes',
   start: 'Ao iniciar',
-  events: 'Eventos',
-  loops: 'Repetições',
+  events: 'Quando acontecer',
+  loops: 'Enquanto estiver rodando',
 } as const
 const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -39,6 +43,55 @@ function matchesBlock(
   valueBlockTypes?: ReadonlySet<string>,
 ): boolean {
   if (!record(state) || !record(state.blocks) || !Array.isArray(state.blocks.blocks)) return false
+  if (!isProjectBlockPattern(rule)) return false
+  let budget = 200_000
+  let exhausted = false
+  const spend = () => {
+    if (--budget < 0) exhausted = true
+    return !exhausted
+  }
+  function child(input: unknown): unknown {
+    if (!record(input)) return undefined
+    const shadow = input.shadow
+    return (
+      input.block ??
+      (record(shadow) &&
+      (literal(shadow) !== undefined || valueBlockTypes?.has(String(shadow.type)))
+        ? shadow
+        : undefined)
+    )
+  }
+  function follows(node: Record<string, unknown>, type: string): boolean {
+    let next: unknown = record(node.next) ? node.next.block : undefined
+    while (record(next) && spend()) {
+      if (enabled(next) && next.type === type) return true
+      next = record(next.next) ? next.next.block : undefined
+    }
+    return false
+  }
+  function patternMatches(pattern: ProjectBlockPattern, node: unknown): boolean {
+    if (!spend() || !record(node) || !enabled(node) || node.type !== pattern.blockType) return false
+    const fields = record(node.fields) ? node.fields : {}
+    const inputs = record(node.inputs) ? node.inputs : {}
+    return (
+      Object.entries(pattern.fields ?? {}).every(
+        ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
+      ) &&
+      Object.entries(pattern.inputs ?? {}).every(([key, value]) => {
+        const actual = literal(child(inputs[key]))
+        return actual !== undefined && String(actual) === String(value)
+      }) &&
+      Object.entries(pattern.inputBlocks ?? {}).every(([key, expected]) => {
+        let current = child(inputs[key])
+        while (record(current) && spend()) {
+          if (patternMatches(expected, current)) return true
+          current = record(current.next) ? current.next.block : undefined
+        }
+        return false
+      })
+    )
+  }
+  let count = 0
   const stack: { node: unknown; area: string; ancestors: string[] }[] = []
   for (const root of state.blocks.blocks) {
     if (!record(root) || !enabled(root)) continue
@@ -46,7 +99,7 @@ function matchesBlock(
     if (!(area in PROJECT_CHECK_AREAS) && root.type !== 'sz_frame_behavior') continue
     stack.push({ node: root, area: area === 'behavior' ? 'start' : area, ancestors: [] })
   }
-  for (let visited = 0; stack.length && visited < 200_000; visited++) {
+  while (stack.length && spend()) {
     const current = stack.pop()
     if (!current || !record(current.node)) continue
     const { node, area, ancestors } = current
@@ -54,37 +107,26 @@ function matchesBlock(
     if (record(node.next)) stack.push({ node: node.next.block, area, ancestors })
     if (!enabled(node)) continue
     const inputs = record(node.inputs) ? node.inputs : {}
-    const fields = record(node.fields) ? node.fields : {}
     if (
-      node.type === rule.blockType &&
       (!rule.area || rule.area === area) &&
       (!rule.withinBlock || ancestors.includes(rule.withinBlock)) &&
-      Object.entries(rule.fields ?? {}).every(
-        ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
-      ) &&
-      Object.entries(rule.inputs ?? {}).every(([key, value]) => {
-        const input = inputs[key]
-        if (!record(input)) return false
-        const actual = literal(input.block ?? input.shadow)
-        return actual !== undefined && String(actual) === String(value)
-      })
-    )
-      return true
+      patternMatches(rule, node) &&
+      (!rule.beforeBlock || follows(node, rule.beforeBlock))
+    ) {
+      count++
+      if (rule.count === undefined) return !exhausted
+      if (count > rule.count) return false
+    }
     for (const input of Object.values(inputs)) {
       if (!record(input)) continue
       // The catalog identifies value blocks (including nonliteral shadows).
       // Statement shadows and replaced defaults never become active children.
-      const shadow = input.shadow
-      const child =
-        input.block ??
-        (record(shadow) &&
-        (literal(shadow) !== undefined || valueBlockTypes?.has(String(shadow.type)))
-          ? shadow
-          : undefined)
-      if (child) stack.push({ node: child, area, ancestors: [...ancestors, String(node.type)] })
+      const activeChild = child(input)
+      if (activeChild)
+        stack.push({ node: activeChild, area, ancestors: [...ancestors, String(node.type)] })
     }
   }
-  return false
+  return !exhausted && rule.count !== undefined && count === rule.count
 }
 
 export function evaluateProjectStructure(

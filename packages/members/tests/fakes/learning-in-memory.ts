@@ -106,6 +106,12 @@ export class InMemoryLearningRepository implements LearningRepository {
   async saveProgress(input: SaveLearningProgress) {
     const old = this.progresses.get(key(input, input.progress.blockId))
     const same = old?.revision === input.progress.revision
+    if (
+      input.expectedExperienceSequence !== undefined &&
+      (same && typeof old.answers.sequence === 'number' ? old.answers.sequence : null) !==
+        input.expectedExperienceSequence
+    )
+      throw new LearningConflictError()
     const value = {
       ...input.progress,
       answers: same
@@ -136,7 +142,7 @@ export class InMemoryLearningRepository implements LearningRepository {
       blockId: a.blockId,
       lessonId,
       revision: a.revision,
-      answers: a.answers,
+      answers: same && old.answers.experienceVersion === 3 ? old.answers : a.answers,
       hintsUsed: a.hintsUsed,
       positionSeconds: null,
       attemptsCount: (same ? old.attemptsCount : 0) + 1,

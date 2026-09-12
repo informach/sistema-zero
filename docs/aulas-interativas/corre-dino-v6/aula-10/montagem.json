@@ -1,0 +1,91 @@
+{
+  "sourceFile": "roteiro-aula-10-corre-dino.md",
+  "sourceHash": "bdc328d620c6cb758db35578544f6beb4f2916714bf30bf0e4e6a0aad7f6519c",
+  "status": "Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.",
+  "clips": [
+    {
+      "key": "video-abertura-editorial",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Enquanto você jogava, aconteceu de perder numa batida injusta? Daquelas de você falar 'ué, eu ne",
+      "exit": "gente conserta. E no quarto, você escolhe o quanto quer consertar. Então bora começar pelo primeiro.",
+      "edit": "Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
+      "narration": "Oi! Enquanto você jogava, aconteceu de perder numa batida injusta? Daquelas de você falar 'ué, eu nem encostei nele'. Olha essa jogada aqui comigo: o dino pulou, passou por cima do cacto, dava até pra ver um espacinho entre os dois, e mesmo assim acabou o jogo. Parece que o jogo roubou de você. E no nosso jogo isso dói o dobro, porque aqui você não perde uma vidinha: uma batida injusta e já era a partida inteira. Então hoje você descobre por que isso acontece, e melhor, descobre como consertar. A aula é curtinha, mas o que tem dentro dela é segredo de gente que faz jogo de verdade. E pra chegar lá, a gente vai passar por quatro passos. No primeiro, a gente liga um raio-X pra enxergar uma coisa que é invisível. No segundo, você entende por que a batida pareceu roubada. No terceiro, a gente conserta. E no quarto, você escolhe o quanto quer consertar. Então bora começar pelo primeiro.",
+      "visual": "**Na tela:** o jogo rodando; o dino passando raspando por cima de um cacto sem encostar visivelmente, e mesmo assim perdendo. Repetir a cena em câmera lenta se der.",
+      "newNarration": "A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-ligar-raio-x",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Parte 1. Passo 1: ligar o raio-X",
+      "entry": "Tem uma coisa acontecendo no seu jogo que você não consegue ver. Hoje a gente vai ver. Na categoria ",
+      "exit": "invisível ficou visível. O segundo passo é entender o que essa caixa tem a ver com a batida injusta.",
+      "edit": "Preservar o contorno. Não tratar o desenho da hitbox como a própria configuração da colisão.",
+      "narration": "Tem uma coisa acontecendo no seu jogo que você não consegue ver. Hoje a gente vai ver. Na categoria Jogo 2D, subcategoria Aparência, pega o bloco Mostrar a caixa de colisão do sprite. Clica nele, segura, arrasta pra dentro do Se a tela atual é jogando e solta lá no fim de tudo, embaixo do Tirar do grupo cactos quem sair da tela, que hoje é o último bloco de lá. Ele tem um campo só, que é o sprite. Abre a listinha e escolhe o dino. Clica na área do jogo, aperta Enter pra começar e olha em volta do seu dino: apareceu um contorno cor-de-rosa. Esse retângulo é a caixa de colisão. É a forma que o jogo usa de verdade pra saber se alguma coisa encostou no dino. E repara: o jogo não olha pro desenho do dinossauro. Ele olha pra esse retângulo. Pro computador, o seu dino é essa caixa. Passo 1 feito, o invisível ficou visível. O segundo passo é entender o que essa caixa tem a ver com a batida injusta.",
+      "visual": "**Na tela:** Jogo 2D › Aparência, arrastar \"Mostrar a caixa de colisão do sprite\" para dentro do \"Se a tela atual é jogando\", no fim, abaixo do \"Tirar do grupo cactos quem sair da tela\"; escolher o dino. Rodar e mostrar o contorno rosa em volta do dino.",
+      "newNarration": "No fim de A cada quadro, coloque Desenhar área de colisão do sprite dino. Veja o contorno ao redor dele.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-desenho-e-area",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Parte 2. Passo 2: por que a batida pareceu roubada",
+      "entry": "Olha com atenção o seu dino dentro da caixa. O dinossauro é um bichinho cheio de pontas e curvas, se",
+      "exit": "nho. Segundo passo entendido. E o conserto disso tudo é um bloco só, que é o que a gente pega agora.",
+      "edit": "Preservar a explicação dos espaços transparentes. Corrigir qualquer referência a ajustar o cacto: nesta aula o ajuste é do Dino.",
+      "narration": "Olha com atenção o seu dino dentro da caixa. O dinossauro é um bichinho cheio de pontas e curvas, sem nada de reto nele: tem o rabo pra trás, o focinho pra frente, as perninhas embaixo. Mas a caixa é um retângulo, certinho, quadradão. Então sobra espaço vazio. Aqui em cima da cabeça tem um pedaço de caixa sem dino nenhum. Aqui na frente também. Aqui embaixo, entre os pés, também. E é aí que mora a batida injusta: quando o cacto encosta num desses cantinhos vazios da caixa, o jogo entende que bateu, mesmo que na tela pareça que passou longe. Não foi o jogo que roubou de você. Foi a caixa que é maior que o bichinho. Segundo passo entendido. E o conserto disso tudo é um bloco só, que é o que a gente pega agora.",
+      "visual": "Congelar um contato com a área marcada. Alternar desenho e contorno na mesma posição. Não mover o obstáculo enquanto compara os contornos.",
+      "newNarration": "Olhe o espaço vazio junto do corpo. O desenho tem recortes, mas a área de colisão é mais simples.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-ajustar-area",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Parte 3. Passo 3: ajustar a área de colisão",
+      "entry": "Na categoria Jogo 2D, subcategoria Colisões, pega aquele bloco bem comprido, o Usar área de colisão ",
+      "exit": "da com você que escapou. Passo 3 feito. E agora o quarto passo, que é onde você vira o dono do jogo.",
+      "edit": "Reaproveitar a montagem e o teste com contorno; manter a cor e o desenho iguais.",
+      "narration": "Na categoria Jogo 2D, subcategoria Colisões, pega aquele bloco bem comprido, o Usar área de colisão de tanto por cento do tamanho para o sprite. Clica nele, segura e arrasta pra dentro do Ao iniciar. Encaixa ele no fim de tudo, embaixo do último bloco que está lá, o Ir para a tela inicio. Ele tem dois campos. O primeiro é a porcentagem, e já vem 80, que é justamente o que a gente quer, então deixa como veio. No segundo, que é o sprite, escolhe o dino. Esse bloco mora no Ao iniciar, e não no motor, porque é coisa de preparação: acontece uma vez só, quando o jogo liga. E aqui dentro a ordem não faz diferença, porque tudo isso acontece antes de o jogo começar a rodar. O que importa é que ele venha depois do Criar dinossauro, senão ele ajustaria um dino que ainda não existe. Olha o raio-X agora: a caixa encolheu. Ela virou oitenta por cento do tamanho do dino, bem mais grudadinha no bichinho, e aqueles cantos vazios diminuíram bastante. E repara que o desenho do dino não mudou nada. Ele continua do mesmo tamanho na tela. O que mudou foi só a caixa invisível que o jogo usa pra medir a batida. Agora clica na área do jogo e passa raspando num cacto de propósito. Aquelas perdas injustas sumiram: quando você passa perto e escapa, o jogo concorda com você que escapou. Passo 3 feito. E agora o quarto passo, que é onde você vira o dono do jogo.",
+      "visual": "**Na tela:** Jogo 2D › Colisões, arrastar \"Usar área de colisão de __ % do tamanho para o sprite __\" para o Ao iniciar, encaixando como **último bloco**, embaixo do \"Ir para a tela inicio\"; deixar 80 e escolher o dino. Com o raio-X ainda ligado, mostrar a caixa menor.",
+      "newNarration": "Em Ao iniciar, depois de criar o dino, ajuste a área de colisão dele para 80%. Mantenha o tamanho do Dino em 64.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-tirar-raio-x",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Parte 4. Passo 4: você escolhe o quanto perdoar",
+      "entry": "Esse número da porcentagem é muito mais poderoso do que parece. Os criadores de jogos chamam ele de ",
+      "exit": "empre que uma colisão do seu jogo estiver esquisita, liga o raio-X e olha. É assim que se investiga.",
+      "edit": "Pode aproveitar a comparação 40/100 como observação rápida, mas remover a tarefa de escolher livremente. Encerrar em 80 e retirar o contorno.",
+      "narration": "Esse número da porcentagem é muito mais poderoso do que parece. Os criadores de jogos chamam ele de dial de dificuldade, que é tipo um botão de ajuste. E vamos ver o que ele faz. Troca o 80 por 40 e joga um pouco. Com 40 a caixa fica minúscula, quase no meio do dino, e o jogo fica fácil demais, porque o cacto passa praticamente por dentro dele e não acontece nada. Chega a parecer que o jogo está com pena de você, e aí perde a graça também. Agora troca por 100 e joga de novo. A caixa voltou ao tamanho cheio, e voltaram aquelas batidas injustas do começo da aula. Então lembra desta regra, que vale na grande maioria dos jogos que você vai fazer: pra coisa que machuca o jogador, área menor que 100 deixa o jogo mais justo. É o cacto do seu jogo. O jogador sente que só perde quando merece. Agora põe um número entre 70 e 85, testa e escolhe o que deixou o seu jogo mais gostoso. O meu está em 80, e o seu pode ser outro. E pra fechar, apaga o bloco Mostrar a caixa de colisão, arrastando ele pra lixeira. Ele era o nosso raio-X e já cumpriu a missão. Mas lembra dele: sempre que uma colisão do seu jogo estiver esquisita, liga o raio-X e olha. É assim que se investiga.",
+      "visual": "**Na tela:** trocar o 80 por 40 (jogar e ver como fica fácil demais), depois por 100 (voltar a ser injusto), depois voltar pra um número entre 70 e 85; por fim, apagar o bloco do raio-X.",
+      "newNarration": "Depois de testar, apague apenas Desenhar área de colisão. O ajuste de 80% fica em Ao iniciar.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-editorial",
+      "sourceFile": "roteiro-aula-10-corre-dino.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 10! Foi curtinha, mas você aprendeu uma coisa que separa quem brinca ",
+      "exit": "Na próxima aula o seu jogo ganha placar: cada segundo que o dino sobrevive vira ponto. Te espero lá!",
+      "edit": "Manter a recapitulação. 80% é a escolha desta versão do Corre Dino; não ensinar que uma área sempre menor é universalmente mais justa. Evitar comparar tentativas com posições diferentes como prova do ajuste. A experiência nativa mantém o caso de comparação. Terminar indicando o quiz, sem abrir desafios extras.",
+      "narration": "Parabéns, você terminou a Aula 10! Foi curtinha, mas você aprendeu uma coisa que separa quem brinca de fazer jogo de quem faz jogo de verdade. Você descobriu que todo sprite tem uma caixa de colisão, que é a forma invisível que o jogo usa pra medir as batidas. Descobriu que ela é um retângulo, e que por isso sobra espaço vazio nos cantos. E aprendeu a mexer no dial, deixando o seu jogo mais justo. E repara: você não mudou o desenho, não mudou a velocidade, não mudou nada que dá pra ver. Você mudou um número invisível, e o seu jogo ficou melhor de jogar. Na próxima aula o seu jogo ganha placar: cada segundo que o dino sobrevive vira ponto. Te espero lá!",
+      "visual": "**Na tela:** cartela \"Aula 10 concluída\".",
+      "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

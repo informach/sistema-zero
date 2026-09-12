@@ -15,6 +15,50 @@ const workspace = {
 const stage = { type: 'usesBlock', blockType: 'sz_g2d_setup_stage' } as const
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('named connections validate sockets, placement and dynamic branches', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_spawn_obstacle',
+        inputBlocks: { VX: { blockType: 'sz_g2d_random_between', inputs: { MIN: 0, MAX: 1 } } },
+      }),
+    ).toEqual([])
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_spawn_obstacle',
+        inputBlocks: { WRONG: { blockType: 'sz_val_number' } },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_update_each_frame',
+        inputBlocks: { BODY: { blockType: 'sz_g2d_every_seconds' } },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_js_if_else',
+        inputBlocks: { ELSEIF_COND1: { blockType: 'sz_g2d_scene_is', fields: { SCENE: 'fim' } } },
+      }),
+    ).toEqual([])
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_val_join',
+        inputBlocks: { ITEM2: { blockType: 'sz_val_variable', fields: { NAME: 'pontos' } } },
+      }),
+    ).toEqual([])
+    expect(
+      model.issues({ type: 'usesBlock', blockType: 'sz_g2d_forest', beforeBlock: 'sz_val_number' })
+        .length,
+    ).toBeGreaterThan(0)
+  })
   test('offers only valid areas and containers for start-only setup', () => {
     const model = projectCheckAuthoring(workspace)
     expect(model.areas(stage)).toEqual(['start'])

@@ -19,6 +19,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useState } from 'react'
 import { ImageUploader } from '@/components/media/image-uploader'
+import { ExperienceAuthoring } from './experience-authoring'
 import { HtmlCodeEditor } from './html-code-editor'
 
 const initialChoices = (): LearningChoice[] => [
@@ -28,7 +29,7 @@ const initialChoices = (): LearningChoice[] => [
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
     case 'exploration':
-      return { type, version: 2, mission: 'world' }
+      return { type, version: 3, mission: 'world', mode: 'explore' }
     case 'simulation':
       return { type, version: 1, scene: 'world' }
     case 'checkpoint':
@@ -180,7 +181,7 @@ export function LearningBuilder({
               })
           }}
         >
-          <option value="exploration">Exploração: agir diretamente na cena</option>
+          <option value="exploration">Cena didática: demonstração ou experimentação</option>
           <option value="simulation">Exploração anterior (versão 1)</option>
           <option value="checkpoint">Pergunta curta</option>
           <option value="prediction">Prever e observar</option>
@@ -192,7 +193,11 @@ export function LearningBuilder({
       </Field>
       {a.type === 'exploration' && (
         <div className="space-y-4">
-          <Field label="Missão da descoberta" htmlFor={`${id}-mission`}>
+          <ExperienceAuthoring
+            activity={a}
+            onChange={(activity) => onChange({ ...value, activity })}
+          />
+          <Field label="Cena e conceito" htmlFor={`${id}-mission`}>
             <Select
               id={`${id}-mission`}
               value={a.mission}
@@ -206,7 +211,12 @@ export function LearningBuilder({
                   instructions: definition.instruction,
                   hints: [...definition.hints],
                   checkpoint: undefined,
-                  activity: { type: 'exploration', version: 2, mission },
+                  activity: {
+                    type: 'exploration',
+                    version: a.version,
+                    mission,
+                    ...(a.version === 3 ? { mode: a.mode ?? 'explore' } : {}),
+                  },
                 })
               }}
             >
@@ -243,15 +253,20 @@ export function LearningBuilder({
               {EXPLORATION_DEFINITIONS[a.mission].title.toLocaleLowerCase('pt-BR')}.
             </p>
             <p>
-              <strong>Poderá mexer em:</strong> {EXPLORATION_DEFINITIONS[a.mission].manipulates}.
+              <strong>{a.mode === 'demonstrate' ? 'Vai observar:' : 'Poderá mexer em:'}</strong>{' '}
+              {EXPLORATION_DEFINITIONS[a.mission].manipulates}.
             </p>
             <p>
               <strong>Avança quando:</strong>{' '}
-              {EXPLORATION_DEFINITIONS[a.mission].goals.map((g) => g.label).join('; ')}.
+              {a.mode === 'demonstrate'
+                ? 'Acompanhar todas as etapas do roteiro.'
+                : EXPLORATION_DEFINITIONS[a.mission].goals.map((g) => g.label).join('; ')}
+              .
             </p>
             <p>
-              Toque, arraste e teclado têm caminhos equivalentes. O critério registra a exploração
-              deste modelo.
+              {a.mode === 'demonstrate'
+                ? 'O aluno pode observar, pausar e rever o roteiro. A cena permanece sob controle da demonstração.'
+                : 'Toque, arraste e teclado oferecem caminhos equivalentes dentro desta missão. A experimentação termina no objetivo proposto.'}
             </p>
           </div>
           <details className="rounded-xl border border-border p-3">

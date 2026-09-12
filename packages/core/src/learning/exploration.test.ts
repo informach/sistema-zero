@@ -40,6 +40,26 @@ const connect = (
 ): ExplorationAction => ({ type: 'connect', port, enabled: true })
 
 describe('direct exploration contract', () => {
+  test('game state needs a new birth in that screen, not a cactus left over from another screen', () => {
+    const activity = { type: 'exploration', version: 2, mission: 'game-state' } as const
+    let state = transitionExploration(activity, initialExploration(activity), advance(0.6))
+    expect(state.discoveries).toContain('outside')
+    state = transitionExploration(activity, state, connect('condition'))
+    state = transitionExploration(activity, state, { type: 'start', input: 'tap' })
+    state = transitionExploration(activity, state, advance(0.001))
+    expect(state.discoveries).not.toContain('playing')
+    state = transitionExploration(activity, state, advance(0.6))
+    expect(state.discoveries).toContain('playing')
+
+    let other = transitionExploration(activity, initialExploration(activity), {
+      type: 'start',
+      input: 'tap',
+    })
+    other = transitionExploration(activity, other, advance(0.6))
+    other = transitionExploration(activity, other, { type: 'home' })
+    other = transitionExploration(activity, other, advance(0.001))
+    expect(other.discoveries).not.toContain('outside')
+  })
   test('new missions validate independently of legacy trials, with no checkpoint gate', () => {
     const activity: ExplorationActivity = { type: 'exploration', version: 2, mission: 'gravity' }
     expect(
@@ -139,6 +159,27 @@ describe('direct exploration contract', () => {
     expect(comparison.map((o) => o.distance)).toEqual([60, 60])
     expect(comparison.map((o) => o.collision)).toEqual([false, true])
     expect(run('hitbox', [{ type: 'resize', width: 100 }]).result.passed).toBe(false)
+  })
+  test('a new area comparison replaces both images and survives trace compaction', () => {
+    const actions: ExplorationAction[] = [
+      { type: 'move', distance: 60 },
+      { type: 'resize', width: 100 },
+      { type: 'move', distance: 40 },
+      { type: 'resize', width: 24 },
+    ]
+    const second = run('hitbox', actions).state
+    const pair = ['area-before', 'area-contrast'].map((id) =>
+      second.observations.find((o) => o.id === id),
+    )
+    expect(pair.map((o) => o?.distance)).toEqual([40, 40])
+    expect(pair.map((o) => o?.width)).toEqual([100, 24])
+    expect(pair.map((o) => o?.collision)).toEqual([true, false])
+    const third = run('hitbox', [...actions, { type: 'resize', width: 120 }]).state
+    const latest = ['area-before', 'area-contrast'].map((id) =>
+      third.observations.find((o) => o.id === id),
+    )
+    expect(latest.map((o) => o?.width)).toEqual([24, 120])
+    expect(latest.map((o) => o?.collision)).toEqual([false, true])
   })
   test('timer comparison and automatic cleanup keep causal population counts', () => {
     expect(run('spawn', [advance(2), connect('timer'), advance(2)]).result.passed).toBe(true)

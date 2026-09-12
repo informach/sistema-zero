@@ -489,6 +489,57 @@ describe.skipIf(!url)(
       await expect(repo.recordAttempt(owner, lessonId, attempt)).rejects.toThrow()
     })
 
+    test('experience checkpoints compare sequence under the owner lock and an older attempt preserves the current state', async () => {
+      const { db } = get()
+      const repo = new DrizzleLearningRepository(db)
+      const content = new DrizzleContentAdminRepository(db)
+      const block = await content.createBlock(lessonId, 'interactive', activity)
+      if (!block.contentRevision) throw new Error('Missing revision')
+      const progress = {
+        blockId: block.id,
+        revision: block.contentRevision,
+        answers: { experienceVersion: 3, sequence: 1 },
+        hintsUsed: 0,
+        positionSeconds: null,
+        attemptsCount: 0,
+        result: null,
+        updatedAt: now.toISOString(),
+      }
+      const races = await Promise.allSettled([
+        repo.saveProgress({ ...owner, lessonId, progress, expectedExperienceSequence: null }),
+        repo.saveProgress({
+          ...owner,
+          lessonId,
+          progress: { ...progress, answers: { experienceVersion: 3, sequence: 2 } },
+          expectedExperienceSequence: null,
+        }),
+      ])
+      expect(races.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+      expect(races.filter((r) => r.status === 'rejected')).toHaveLength(1)
+      const saved = (await repo.getProgress(owner, lessonId)).blocks.find(
+        (p) => p.blockId === block.id,
+      )
+      if (!saved) throw new Error('Missing saved checkpoint')
+      await repo.recordAttempt(owner, lessonId, {
+        id: randomUUID(),
+        blockId: block.id,
+        revision: block.contentRevision,
+        answers: { experienceVersion: 3, sequence: 0 },
+        hintsUsed: 0,
+        result: {
+          participated: true,
+          passed: false,
+          feedback: 'Earlier observation',
+          verifiedBy: 'client',
+        },
+        createdAt: now.toISOString(),
+      })
+      expect(
+        (await repo.getProgress(owner, lessonId)).blocks.find((p) => p.blockId === block.id)
+          ?.answers,
+      ).toEqual(saved.answers)
+    })
+
     test('import previews are read-only and reimport preserves IDs and original student work', async () => {
       const { db } = get()
       const reader = new DrizzleCourseRepository(db)

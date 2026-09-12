@@ -1,0 +1,600 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-11",
+  "title": "Pontos que contam a sua partida",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "construir-4",
+    "convite-construir-3",
+    "checar-construir-3",
+    "construir-5",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "video-construir-5-1",
+    "zappy-construir-5",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Qual peça faz o placar acompanhar a memória?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Valor da variável pontos."
+              },
+              {
+                "id": "b",
+                "label": "Um número zero digitado no placar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O valor conectado é lido novamente quando o jogo desenha."
+          },
+          {
+            "id": "q2",
+            "prompt": "Quando o relógio deve somar pontos?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Também no menu e no fim."
+              },
+              {
+                "id": "a",
+                "label": "Somente enquanto a tela é jogando."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A condição protege o incremento; o resultado fica guardado."
+          },
+          {
+            "id": "q3",
+            "prompt": "Para que serve juntar texto?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para formar uma mensagem com os pedaços em ordem."
+              },
+              {
+                "id": "b",
+                "label": "Para somar matematicamente todas as palavras."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A conta matemática e a composição de texto têm funções diferentes."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Abertura. Entrada: “Oi! O seu jogo está completo e já dá gosto de jogar. Mas tem uma coisinha faltando, e eu vou te most”. Saída: “o quarto, conta os pontos na tela de fim. E no quinto, você testa. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos guardar pontos, mostrar o placar e contar o resultado quando a partida termina.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-guardar-pontos",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 1. Passo 1: criar a caixinha dos pontos. Entrada: “Pra guardar os pontos, o jogo precisa de um lugar na memória. Na categoria Programação, a laranja, s”. Saída: “ito, a caixinha dos pontos já existe no seu jogo. Bora pro segundo, que é botar esse número na tela.”. Preservar a caixa e o valor inicial. Não acrescentar um laboratório que repita criar versus desenhar da aula 1. Ponte nova: “Em Ao iniciar, crie a variável pontos com valor zero. Ainda não aparece número na tela: guardar e mostrar são trabalhos diferentes.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-guardar-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Ao iniciar, crie a variável pontos com valor zero. Ainda não aparece número na tela: guardar e mostrar são trabalhos diferentes."
+      }
+    },
+    {
+      "key": "video-mostrar-pontos",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 2. Passo 2: mostrar o placar. Entrada: “E agora um reencontro: lembra daquele bloco que a gente pegou emprestado na Aula 6, pra ser o medido”. Saída: “acabou de montar o HUD do seu jogo. Passo 2 feito. Agora o terceiro, e nesse quem vai pensar é você.”. Reaproveitar o encaixe. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. Ponte nova: “No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-mostrar-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo."
+      }
+    },
+    {
+      "key": "video-contraste",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 2. Passo 2: mostrar o placar. Entrada: “E agora um reencontro: lembra daquele bloco que a gente pegou emprestado na Aula 6, pra ser o medido”. Saída: “acabou de montar o HUD do seu jogo. Passo 2 feito. Agora o terceiro, e nesse quem vai pensar é você.”. Separar a comparação de contraste da montagem. No trecho de construção, orientar a escolher o tom escuro demonstrado. Ponte nova: “No mesmo fundo claro, compare o número branco com um número escuro. O valor é igual; o que mudou foi a facilidade de ler.” Mostrar o mesmo placar sobre o mesmo céu, uma versão clara e outra escura. Incluir a palavra Pontos; não depender apenas de cor para identificar as versões. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-quando-contar",
+      "content": {
+        "kind": "interactive",
+        "title": "Em quais momentos os pontos crescem?",
+        "instructions": "Compare início, jogando e fim. Coloque Somar ponto dentro de Se jogando e confira os três momentos. O resultado precisa ficar guardado no fim.",
+        "hints": [
+          "O placar deve crescer antes de começar?",
+          "Compare o mesmo passo do relógio no início, jogando e no fim.",
+          "Leve Somar ponto para Se jogando. Teste os três momentos."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "score",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-relogio-pontos",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 3. Passo 3: fazer o número subir. Entrada: “Agora eu vou fazer diferente. Em vez de eu te mostrar, você vai me dizer. A gente quer que o jogador”. Saída: “ia jogo faz o dia inteiro. O número já sobe. Agora o quarto passo, que é um capricho na tela de fim.”. Preservar o relógio irmão, não aninhado. Corrigir referências históricas do Se para aula 7. Retirar testes livres com intervalos 0,5 e 3. Ponte nova: “Ao lado do relógio dos cactos, coloque A cada 1 segundo. Dentro, Se a tela é jogando; no então, Some 1 em pontos.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-relogio-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Ao lado do relógio dos cactos, coloque A cada 1 segundo. Dentro, Se a tela é jogando; no então, Some 1 em pontos."
+      }
+    },
+    {
+      "key": "video-frase-dinamica",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 4. Passo 4: contar os pontos na tela de fim. Entrada: “Agora um capricho que muda tudo. Hoje, quando você perde, a tela de fim fala sempre a mesma coisa. M”. Saída: “inho sem nada. Clica nele pra ele te dizer onde. Quarto passo no lugar. Agora é hora de testar tudo.”. Reaproveitar a explicação da peça de texto da aula 8; separar conceito e gesto de montagem. Ponte nova: “Veja três peças: Você fez, o valor de pontos e o restante da frase. Quando o número muda, a mensagem usa o valor novo.” Mostrar três cartões alinhados, depois o encaixe no subtítulo. Trocar apenas o número 3 por 7. Destacar espaços antes/depois do número e o botão + usado três vezes. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-montar-frase",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 4. Passo 4: contar os pontos na tela de fim. Entrada: “Agora um capricho que muda tudo. Hoje, quando você perde, a tela de fim fala sempre a mesma coisa. M”. Saída: “inho sem nada. Clica nele pra ele te dizer onde. Quarto passo no lugar. Agora é hora de testar tudo.”. Manter os três cliques em +, a substituição dos zeros, os espaços e o uso de − para retirar um encaixe extra. Não exigir um resultado de 12 pontos: esse é só o exemplo gravado. Ponte nova: “No subtítulo da tela fim, use juntar texto com três peças: “Você fez ”, valor de pontos e “ pontos. Tente bater essa marca!”. Repare nos espaços junto do número.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-montar-frase",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No subtítulo da tela fim, use juntar texto com três peças: “Você fez ”, valor de pontos e “ pontos. Tente bater essa marca!”. Repare nos espaços junto do número."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Espere no menu: pontos não crescem. Comece e acompanhe dois incrementos. Termine a partida: a frase deve mostrar o valor final parado. Reinicie e confira zero. Leia o placar no fundo real. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 11! Agora o seu jogo tem placar, e a tela de fim te conta quanto você”. Saída: “uma coisa que talvez você já tenha percebido jogando: o jogo é meio previsível demais. Te espero lá!”. Manter a recapitulação. Revisar referências antigas: medidor retirado na aula 6; Se ensinado na aula 7; dois grupos protegidos naquela aula. A checagem confere a conexão da variável e a frase; o professor também confere contraste e posicionamento no jogo. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Vamos guardar pontos, mostrar o placar e contar o resultado quando a partida termina.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "guardar-pontos",
+      "title": "Crie a memória dos pontos",
+      "intent": "application",
+      "objective": "Criar uma variável com valor inicial.",
+      "blockKeys": ["video-guardar-pontos", "fala-guardar-pontos"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "pontos-zero",
+            "label": "Crie pontos com valor inicial zero em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "mostrar-pontos",
+      "title": "Conecte o placar à memória",
+      "intent": "application",
+      "objective": "Usar o valor da variável no desenho do placar.",
+      "blockKeys": ["video-mostrar-pontos", "fala-mostrar-pontos"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "mostrar-pontos",
+            "label": "No placar, conecte o valor da variável pontos à entrada do valor.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "contraste",
+      "title": "Veja como deixar o número legível",
+      "intent": "demonstration",
+      "objective": "Reconhecer contraste suficiente para ler o placar.",
+      "blockKeys": ["video-contraste"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-contraste"]
+      }
+    },
+    {
+      "key": "quando-contar",
+      "title": "Em quais momentos os pontos crescem?",
+      "intent": "exploration",
+      "objective": "Fazer o relógio pontuar apenas durante a partida.",
+      "blockKeys": ["experiencia-quando-contar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-quando-contar"]
+      }
+    },
+    {
+      "key": "relogio-pontos",
+      "title": "Conte um ponto por segundo",
+      "intent": "application",
+      "objective": "Criar uma rotina periódica com condição de estado.",
+      "blockKeys": ["video-relogio-pontos", "fala-relogio-pontos"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio-pontos",
+            "label": "A cada 1 s, some 1 em pontos somente se estiver jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "frase-dinamica",
+      "title": "Veja o número entrar na frase",
+      "intent": "demonstration",
+      "objective": "Compor uma mensagem com texto, valor e texto.",
+      "blockKeys": ["video-frase-dinamica"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-frase-dinamica"]
+      }
+    },
+    {
+      "key": "montar-frase",
+      "title": "Conte o resultado na tela de fim",
+      "intent": "application",
+      "objective": "Conectar a composição ao subtítulo do ramo fim.",
+      "blockKeys": ["video-montar-frase", "fala-montar-frase"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "frase-pontos",
+            "label": "No subtítulo do fim, junte texto, valor de pontos e texto nessa ordem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputBlocks": {
+                    "SUBTITLE": {
+                      "blockType": "sz_val_join",
+                      "inputBlocks": {
+                        "ITEM0": {
+                          "blockType": "sz_val_text",
+                          "fields": {
+                            "TEXT": "Você fez "
+                          }
+                        },
+                        "ITEM1": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "ITEM2": {
+                          "blockType": "sz_val_text",
+                          "fields": {
+                            "TEXT": " pontos. Tente bater essa marca!"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Pontos começam em zero, aumentam uma vez por segundo somente jogando e aparecem na frase de fim.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "pontos-zero",
+            "label": "Crie pontos com valor inicial zero em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "mostrar-pontos",
+            "label": "No placar, conecte o valor da variável pontos à entrada do valor.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-pontos",
+            "label": "A cada 1 s, some 1 em pontos somente se estiver jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "frase-pontos",
+            "label": "No subtítulo do fim, junte texto, valor de pontos e texto nessa ordem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputBlocks": {
+                    "SUBTITLE": {
+                      "blockType": "sz_val_join",
+                      "inputBlocks": {
+                        "ITEM0": {
+                          "blockType": "sz_val_text",
+                          "fields": {
+                            "TEXT": "Você fez "
+                          }
+                        },
+                        "ITEM1": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "ITEM2": {
+                          "blockType": "sz_val_text",
+                          "fields": {
+                            "TEXT": " pontos. Tente bater essa marca!"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "um-incremento",
+            "label": "Use um único incremento da variável pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Pontos começam em zero, aumentam uma vez por segundo somente jogando e aparecem na frase de fim.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

@@ -4,11 +4,13 @@ import {
   EXPLORATION_DEFINITIONS,
   type ExplorationMission,
   type ExplorationState,
+  evaluateExperience,
   evaluateExploration,
   explorationGoals,
   type LearningAnswers,
   type LessonLearningReport,
   type PublicInteractiveBlock,
+  readExperienceCheckpoint,
   replayExploration,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
@@ -52,6 +54,29 @@ function mountingDescription(mission: ExplorationMission, state: ExplorationStat
 function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   const activity = content?.activity
   if (activity?.type === 'exploration') {
+    if (activity.version === 3) {
+      const checkpoint = readExperienceCheckpoint(activity, answers)
+      if (!checkpoint) return ['Registro v3 inválido ou de outra missão. Não foi reinterpretado.']
+      const { session } = checkpoint
+      if (activity.mode === 'demonstrate')
+        return [
+          `Demonstração: ${EXPLORATION_DEFINITIONS[activity.mission].title}`,
+          session.viewed ? 'Roteiro acompanhado até o fim.' : 'Roteiro ainda não concluído.',
+          'A evidência registra acompanhamento da demonstração. A experimentação, quando incluída, é avaliada em outro bloco.',
+        ]
+      const learner = session.demo?.learner ?? session.state
+      return [
+        `Missão: ${EXPLORATION_DEFINITIONS[activity.mission].title} · motor v3`,
+        ...explorationGoals(activity, learner).map(
+          (g) => `${g.complete ? 'Observado pela criança' : 'Pendente'}: ${g.label}`,
+        ),
+        `Montagem atual: ${mountingDescription(activity.mission, learner)}`,
+        `Pistas utilizadas: ${learner.hints}`,
+        `Comparações guardadas: ${session.trials.length}`,
+        evaluateExperience(activity, answers).feedback,
+        'A exploração registra ações no modelo. A transferência deve ser observada no projeto e nos critérios da seção.',
+      ]
+    }
     const { state, valid } = replayExploration(activity, answers)
     if (!valid)
       return ['Tentativa de outra revisão. Não foi reinterpretada como uma descoberta nova.']

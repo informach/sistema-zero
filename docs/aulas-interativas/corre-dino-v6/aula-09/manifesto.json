@@ -1,0 +1,617 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-09",
+  "title": "Colidir, terminar e jogar de novo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "convite-construir-4",
+    "checar-construir-4",
+    "construir-5",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "zappy-convite-construir-1",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "video-construir-5-1",
+    "zappy-construir-5",
+    "zappy-convite-construir-4",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O nome cacto dentro do evento indica o quê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O cacto que participou daquela colisão."
+              },
+              {
+                "id": "b",
+                "label": "O grupo inteiro de cactos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento fornece uma referência ao membro envolvido."
+          },
+          {
+            "id": "q2",
+            "prompt": "Onde colocar Reiniciar?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Solto dentro de A cada quadro."
+              },
+              {
+                "id": "a",
+                "label": "No ramo fim do evento de entrada."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Reiniciar precisa depender da intenção do jogador no estado correto."
+          },
+          {
+            "id": "q3",
+            "prompt": "Por que desenhar a tela de fim em outro ramo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Porque fim e jogando são estados diferentes."
+              },
+              {
+                "id": "b",
+                "label": "Para criar mais um Dino."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Uma cena por vez recebe seu desenho."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Abertura. Entrada: “Oi! O seu jogo já tem abertura, já começa quando você manda, e os cactos já vêm vindo. Mas deixa eu ”. Saída: “to, deixa a pessoa jogar de novo. E no quinto, a gente testa tudo. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Hoje a batida vai encerrar a partida, mostrar uma tela de fim e permitir recomeçar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-qual-cacto",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Reaproveitar a apresentação do evento. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11. Ponte nova: “Há vários cactos no grupo. O evento aponta só o que encostou no Dino; dentro dele, vamos chamar esse cacto de cacto.” Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no evento. Manter os outros sem destaque. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-colisao-fim",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Preservar a primeira colisão. Explicar que o fundo sem texto é esperado antes do próximo passo. Ponte nova: “Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-colisao-fim",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim."
+      }
+    },
+    {
+      "key": "video-desenhar-fim",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 2. Passo 2: a tela de fim. Entrada: “Agora a tela de fim, e essa parte você já sabe fazer, porque é igualzinha à tela de início que você ”. Saída: “da é meio sem graça, né? De repente o jogo só troca de tela, sem emoção nenhuma. Bora resolver isso.”. Preservar o segundo senão se e textos. O placar numérico só entra na aula 11. Ponte nova: “No Se do quadro, depois de inicio, acrescente senão se fim. Dentro, coloque Mostrar tela com uma mensagem de fim e uma dica para jogar novamente.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-desenhar-fim",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se do quadro, depois de inicio, acrescente senão se fim. Dentro, coloque Mostrar tela com uma mensagem de fim e uma dica para jogar novamente."
+      }
+    },
+    {
+      "key": "video-efeitos-batida",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 3. Passo 3: fazer você sentir a batida. Entrada: “São três blocos, todos dentro do espaço de fazer da colisão e antes do Ir para a tela fim. O primeir”. Saída: “é uma coisa só. Passo 3 feito. Agora falta uma coisa importante: dar chance da pessoa jogar de novo.”. Preservar o resultado visual e sonoro; manter texto de fim como alternativa perceptível ao áudio. Ponte nova: “No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-efeitos-batida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem."
+      }
+    },
+    {
+      "key": "experiencia-reset-modelo",
+      "content": {
+        "kind": "interactive",
+        "title": "Recomeçar é só trocar de tela?",
+        "instructions": "Neste exemplo, termine uma partida e ligue o reinício. Compare o estado de fim com a nova partida preparada.",
+        "hints": [
+          "A partida terminou. Como sair dessa tela?",
+          "A ligação de Jogar de novo precisa iniciar outra rodada.",
+          "Ligue Jogar de novo a Início e acione o botão no fim."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "restart",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-jogar-novamente",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 4. Passo 4: jogar de novo. Entrada: “Perder e não poder tentar de novo é a pior coisa que tem, né? Bora arrumar. Vai lá no Quando apertar”. Saída: “ do Se lá dentro decidem o que fazer. Passo 4 feito. E agora, o momento que você esperou nove aulas.”. Preservar o evento único. Conferir que reiniciar não ficou solto nem no ramo inicio. Ponte nova: “No Se do evento de qualquer tecla ou toque, acrescente senão se fim. Dentro, coloque Reiniciar o jogo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-jogar-novamente",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se do evento de qualquer tecla ou toque, acrescente senão se fim. Dentro, coloque Reiniciar o jogo."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Faça uma rodada completa: início → partida → colisão → fim → reinício. Confira efeitos e repita o reinício pelo toque. Na nova partida, nenhum cacto antigo deve permanecer. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Fecho. Entrada: “Parabéns! Você terminou a Aula 9, e ela é especial: o seu jogo está completo. Olha o que aprendeu ho”. Saída: “do nessa colisão que não é bem justa com você, e eu vou te mostrar como enxergar isso. Te espero lá!”. Manter a recapitulação. Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito. A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Hoje a batida vai encerrar a partida, mostrar uma tela de fim e permitir recomeçar.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "qual-cacto",
+      "title": "Qual cacto participou da batida?",
+      "intent": "demonstration",
+      "objective": "Distinguir o grupo inteiro do membro recebido pelo evento.",
+      "blockKeys": ["video-qual-cacto"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-qual-cacto"]
+      }
+    },
+    {
+      "key": "colisao-fim",
+      "title": "Faça a batida encerrar a partida",
+      "intent": "application",
+      "objective": "Usar a colisão como evento que muda o estado.",
+      "blockKeys": ["video-colisao-fim", "fala-colisao-fim"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "colisao",
+            "label": "Ao o dino tocar o grupo cactos, mude para a tela fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "area": "events",
+              "fields": {
+                "GROUP": "cactos",
+                "SPRITE": "dino",
+                "ANAME": "cacto"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_set_scene",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "desenhar-fim",
+      "title": "Mostre que a partida acabou",
+      "intent": "application",
+      "objective": "Acrescentar o terceiro ramo exclusivo de tela.",
+      "blockKeys": ["video-desenhar-fim", "fala-desenhar-fim"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tela-fim",
+            "label": "Desenhe a tela de fim no segundo senão se, quando a cena for fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "efeitos-batida",
+      "title": "Mostre e sinalize a batida",
+      "intent": "application",
+      "objective": "Encadear efeitos no evento antes da mudança de cena.",
+      "blockKeys": ["video-efeitos-batida", "fala-efeitos-batida"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "explodir",
+            "label": "Exploda o cacto que colidiu antes da tremida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_explode",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "SPRITE": "cacto"
+              },
+              "beforeBlock": "sz_g2d_shake"
+            }
+          },
+          {
+            "id": "tremida",
+            "label": "Use tremida 8 antes do som de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_shake",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "inputs": {
+                "INTENSITY": 8
+              },
+              "beforeBlock": "sz_g2d_play_fx"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Toque derrota antes de Ir para fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_fx",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "FX": "gameover"
+              },
+              "beforeBlock": "sz_g2d_set_scene"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "reset-modelo",
+      "title": "Recomeçar é só trocar de tela?",
+      "intent": "exploration",
+      "objective": "Distinguir a cena de fim de uma nova partida preparada.",
+      "blockKeys": ["experiencia-reset-modelo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-reset-modelo"]
+      }
+    },
+    {
+      "key": "jogar-novamente",
+      "title": "Monte o caminho de volta",
+      "intent": "application",
+      "objective": "Usar a mesma entrada com ação diferente conforme o estado.",
+      "blockKeys": ["video-jogar-novamente", "fala-jogar-novamente"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "reiniciar",
+            "label": "No mesmo evento de entrada, reinicie somente no senão se fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "evento-unico",
+            "label": "Mantenha um único evento de qualquer tecla ou toque.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Colisão com cactos dispara efeitos uma vez, muda para fim e permite reiniciar pelo mesmo evento de entrada.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "colisao",
+            "label": "Ao o dino tocar o grupo cactos, mude para a tela fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "area": "events",
+              "fields": {
+                "GROUP": "cactos",
+                "SPRITE": "dino",
+                "ANAME": "cacto"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_set_scene",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-fim",
+            "label": "Desenhe a tela de fim no segundo senão se, quando a cena for fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "reiniciar",
+            "label": "No mesmo evento de entrada, reinicie somente no senão se fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "cena-inicial",
+            "label": "Abra o jogo na tela inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "evento-unico",
+            "label": "Mantenha um único evento de entrada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "count": 1
+            }
+          },
+          {
+            "id": "explodir",
+            "label": "Exploda o cacto que colidiu antes da tremida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_explode",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "SPRITE": "cacto"
+              },
+              "beforeBlock": "sz_g2d_shake"
+            }
+          },
+          {
+            "id": "tremida",
+            "label": "Use tremida 8 antes do som de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_shake",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "inputs": {
+                "INTENSITY": 8
+              },
+              "beforeBlock": "sz_g2d_play_fx"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Toque derrota antes de Ir para fim.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_fx",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "FX": "gameover"
+              },
+              "beforeBlock": "sz_g2d_set_scene"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Colisão com cactos dispara efeitos uma vez, muda para fim e permite reiniciar pelo mesmo evento de entrada.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

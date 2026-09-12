@@ -1,0 +1,544 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-08",
+  "title": "Uma tela de início que responde ao jogador",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "zappy-convite-construir-1",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Quando o senão se é consultado?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Quando a condição anterior deu não."
+              },
+              {
+                "id": "b",
+                "label": "Mesmo depois de a condição anterior dar sim."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Os ramos escolhem um caminho por vez."
+          },
+          {
+            "id": "q2",
+            "prompt": "Trocar o controle exige revisar o quê na tela?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "O tamanho do Dino."
+              },
+              {
+                "id": "a",
+                "label": "A dica que ensina a começar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A instrução precisa corresponder ao comportamento."
+          },
+          {
+            "id": "q3",
+            "prompt": "Por que manter Se inicio dentro do evento?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para começar só quando estamos no menu."
+              },
+              {
+                "id": "b",
+                "label": "Para tocar o som a cada quadro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento pode ganhar outra função no fim da partida."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Abertura. Entrada: “Oi de novo. Vou recarregar a página aqui pra você ver como o seu jogo está agora: a floresta passand”. Saída: “r mandar. E no terceiro, você testa e deixa a tela com a sua cara. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “O jogo já espera. Vamos mostrar o menu e permitir começar pelo teclado ou pelo toque.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-senao-se",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Parte 1. Passo 1: desenhar a tela de início. Entrada: “Agora a gente desenha a telinha de abertura. Olha o Se que você montou ontem, aquele que pergunta se”. Saída: “próximo passo. Passo 1 feito, a sua tela de início já está lá com o nome do jogo. Vamos pro segundo.”. Usar a explicação do senão se e das peças de texto. Na construção seguinte, manter somente os gestos e a configuração. Ponte nova: “Quando não está jogando, o próximo ramo pergunta se está no início. Dentro dele, os textos são peças conectadas ao Mostrar tela.” Destacar um ramo por vez. Depois aproximar título/subtítulo/dica e suas bordas; comparar com o campo de cor. Não animar tudo junto. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-menu",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Parte 1. Passo 1: desenhar a tela de início. Entrada: “Agora a gente desenha a telinha de abertura. Olha o Se que você montou ontem, aquele que pergunta se”. Saída: “próximo passo. Passo 1 feito, a sua tela de início já está lá com o nome do jogo. Vamos pro segundo.”. Manter título como escolha visual breve. O identificador da cena continua inicio. A dica provisória é exata para o teste seguinte. Ponte nova: “No Se do quadro, acrescente senão se inicio. Dentro, coloque Mostrar tela. Escreva o título do jogo, uma frase sobre pular cactos e a dica Aperte Enter para começar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-menu",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se do quadro, acrescente senão se inicio. Dentro, coloque Mostrar tela. Escreva o título do jogo, uma frase sobre pular cactos e a dica Aperte Enter para começar."
+      }
+    },
+    {
+      "key": "video-enter",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Parte 2. Passo 2: o jogo começa quando o jogador manda. Entrada: “Falta fazer o jogo começar. Na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando aperta”. Saída: “essoa quiser: tecla, mouse ou dedo na tela. Vem o terceiro, que é testar e deixar tudo do seu jeito.”. Preservar o teste que funciona e o clique sem resposta. Retirar afirmações absolutas sobre inexistência de teclado em celulares; dizer que jogar por toque precisa funcionar. Ponte nova: “Dentro de Quando acontecer, coloque Quando apertar Enter. Dentro, Se a tela é inicio, então Ir para jogando. Teste e depois toque no menu: esse primeiro evento só escuta Enter.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-enter",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro de Quando acontecer, coloque Quando apertar Enter. Dentro, Se a tela é inicio, então Ir para jogando. Teste e depois toque no menu: esse primeiro evento só escuta Enter."
+      }
+    },
+    {
+      "key": "experiencia-toque-tecla",
+      "content": {
+        "kind": "interactive",
+        "title": "O menu funciona com toque?",
+        "instructions": "Neste exemplo, comece pelo teclado e depois pelo toque. Ligue o toque para que os dois caminhos funcionem.",
+        "hints": [
+          "O convite promete dois caminhos. Os dois funcionam?",
+          "Olhe qual entrada está ligada a Começar.",
+          "Ligue Toque a Começar. Teste os dois caminhos, voltando ao início."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "controls",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-entrada-completa",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Parte 2. Passo 2: o jogo começa quando o jogador manda. Entrada: “Falta fazer o jogo começar. Na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando aperta”. Saída: “essoa quiser: tecla, mouse ou dedo na tela. Vem o terceiro, que é testar e deixar tudo do seu jeito.”. Usar a transferência do Se e a revisão da dica. Não duplicar o evento nem acrescentar um segundo Se separado. Ponte nova: “Mova o mesmo Se para Quando apertar qualquer tecla ou tocar na tela. Apague o evento Enter. Na dica do menu, escreva: Aperte qualquer tecla ou toque na tela para começar”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-entrada-completa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mova o mesmo Se para Quando apertar qualquer tecla ou tocar na tela. Apague o evento Enter. Na dica do menu, escreva: Aperte qualquer tecla ou toque na tela para começar"
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Reinicie a prévia. Comece por toque; reinicie e comece pelo teclado. Antes de começar, não devem nascer cactos. A dica deve descrever os dois controles. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-08-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 8. O seu jogo agora tem uma abertura de verdade: ele te recebe, mostr”. Saída: “o, o jogo vai acabar na hora. E o seu jogo vai ficar completo, com começo, meio e fim. Te espero lá!”. Manter a recapitulação. Parte 3: aproveitar os testes; reduzir o passeio por cores e frases a uma escolha breve de título. Não confundir esta correção com a aula 4: aqui escutar a entrada é adequado, mas precisamos atender a mais de uma entrada. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "O jogo já espera. Vamos mostrar o menu e permitir começar pelo teclado ou pelo toque.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "senao-se",
+      "title": "Veja como escolher uma tela por vez",
+      "intent": "demonstration",
+      "objective": "Entender o ramo senão se e o texto como peça de valor.",
+      "blockKeys": ["video-senao-se"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-senao-se"]
+      }
+    },
+    {
+      "key": "menu",
+      "title": "Monte sua tela de início",
+      "intent": "application",
+      "objective": "Mostrar instrução de início no estado correto.",
+      "blockKeys": ["video-menu", "fala-menu"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "menu",
+            "label": "Mostre a tela de início no senão se inicio, com a dica combinada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para começar"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "enter",
+      "title": "Faça o Enter começar a partida",
+      "intent": "application",
+      "objective": "Responder à entrada somente na cena de início.",
+      "blockKeys": ["video-enter", "fala-enter"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "enter-inicia",
+            "label": "No evento Enter, vá para jogando somente se estiver em inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Enter"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "toque-tecla",
+      "title": "O menu funciona com toque?",
+      "intent": "exploration",
+      "objective": "Comparar acesso pelo teclado e pelo toque.",
+      "blockKeys": ["experiencia-toque-tecla"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-toque-tecla"]
+      }
+    },
+    {
+      "key": "entrada-completa",
+      "title": "Atenda aos dois jeitos de começar",
+      "intent": "application",
+      "objective": "Ampliar a entrada e atualizar a promessa escrita.",
+      "blockKeys": ["video-entrada-completa", "fala-entrada-completa"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "entrada-menu",
+            "label": "Qualquer tecla ou toque deve iniciar apenas quando a tela for inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-enter",
+            "label": "Retire o evento exclusivo de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "menu",
+            "label": "Mostre a tela de início no senão se inicio, com a dica combinada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Menu em inicio, início por qualquer tecla ou toque e dica que corresponde aos controles.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "Abra o jogo na tela inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "menu",
+            "label": "Mostre a tela de início no senão se inicio, com a dica combinada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "entrada-menu",
+            "label": "Qualquer tecla ou toque deve iniciar apenas quando a tela for inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-enter",
+            "label": "Retire o evento exclusivo de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "proteger-relogio",
+            "label": "No relógio de 1,4 s, crie cactos somente se a tela for jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Menu em inicio, início por qualquer tecla ou toque e dica que corresponde aos controles.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

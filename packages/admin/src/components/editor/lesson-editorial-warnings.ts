@@ -27,6 +27,22 @@ export function lessonEditorialWarnings(
     )
   for (const section of document.sections) {
     const blocks = document.blocks.filter((block) => section.blockIds.includes(block.id))
+    for (const block of blocks) {
+      if (
+        block.content.kind !== 'interactive' ||
+        block.content.activity.type !== 'exploration' ||
+        block.content.activity.version !== 3
+      )
+        continue
+      const demonstrates = block.content.activity.mode === 'demonstrate'
+      if (
+        (section.intent === 'demonstration' && !demonstrates) ||
+        (section.intent === 'exploration' && demonstrates)
+      )
+        warnings.push(
+          `${section.title}: confira a intenção da seção e o modo da cena. Demonstração permite observar; experimentação permite agir dentro da missão.`,
+        )
+    }
     if (
       section.intent === 'exploration' &&
       !blocks.some(

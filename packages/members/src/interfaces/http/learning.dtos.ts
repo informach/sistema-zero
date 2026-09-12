@@ -1,5 +1,6 @@
 import { EXPLORATION_MISSIONS, LEARNING_SCENES, PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import { t } from 'elysia'
+import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 const Id = t.String({ format: 'uuid' })
 const Label = t.String({ minLength: 1, maxLength: 2000 })
@@ -8,6 +9,53 @@ const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 })
   maxItems: 20,
 })
 const Media = t.Object({ label: Label, url: t.String({ maxLength: 4000 }), alt: Label })
+const ExplorationActionSchema = t.Union([
+  t.Object({ type: t.Literal('create') }),
+  t.Object({
+    type: t.Literal('connect'),
+    port: t.Union(
+      [
+        'draw',
+        'gravity',
+        'sound',
+        'timer',
+        'cleanup',
+        'condition',
+        'touch',
+        'restart',
+        'limit',
+      ].map((p) => t.Literal(p)),
+    ),
+    enabled: t.Boolean(),
+  }),
+  t.Object({ type: t.Literal('layer'), front: t.Boolean() }),
+  t.Object({
+    type: t.Union([t.Literal('jump'), t.Literal('start')]),
+    input: t.Union([t.Literal('key'), t.Literal('tap')]),
+  }),
+  t.Object({ type: t.Literal('impulse'), force: t.Number({ minimum: 5, maximum: 14 }) }),
+  t.Object({ type: t.Literal('advance'), seconds: t.Number({ minimum: 0.001, maximum: 10 }) }),
+  t.Object({ type: t.Literal('move'), distance: t.Number({ minimum: 20, maximum: 260 }) }),
+  t.Object({ type: t.Literal('resize'), width: t.Number({ minimum: 24, maximum: 120 }) }),
+  t.Object({
+    type: t.Union([
+      t.Literal('collide'),
+      t.Literal('home'),
+      t.Literal('restart'),
+      t.Literal('clock'),
+      t.Literal('reset'),
+      t.Literal('undo'),
+    ]),
+  }),
+  t.Object({ type: t.Literal('interval'), seconds: t.Number() }),
+  t.Object({
+    type: t.Literal('sample'),
+    kind: t.Union([t.Literal('position'), t.Literal('velocity')]),
+    unit: t.Number({ minimum: 0, maximum: 1 }),
+    guided: t.Boolean(),
+  }),
+  t.Object({ type: t.Literal('hint'), level: t.Number({ minimum: 1, maximum: 3 }) }),
+])
 export const InteractiveBlockSchema = t.Object({
   kind: t.Literal('interactive'),
   title: t.String({ minLength: 1, maxLength: 200 }),
@@ -17,10 +65,25 @@ export const InteractiveBlockSchema = t.Object({
   activity: t.Union([
     t.Object({
       type: t.Literal('exploration'),
-      version: t.Literal(2),
+      version: t.Union([t.Literal(2), t.Literal(3)]),
       mission: t.Union(EXPLORATION_MISSIONS.map((mission) => t.Literal(mission))),
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
       initialImpulse: t.Optional(t.Integer({ minimum: 5, maximum: 14 })),
+      mode: t.Optional(t.Union([t.Literal('explore'), t.Literal('demonstrate')])),
+      demonstration: t.Optional(
+        t.Array(
+          t.Object({
+            id: t.String({ minLength: 1, maxLength: 80 }),
+            waitFor: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+            caption: t.String({ minLength: 1, maxLength: 500 }),
+            highlight: t.Optional(
+              t.Union([t.Literal('scene'), t.Literal('tools'), t.Literal('compare')]),
+            ),
+            actions: t.Array(ExplorationActionSchema, { minItems: 1, maxItems: 16 }),
+          }),
+          { minItems: 1, maxItems: 12 },
+        ),
+      ),
     }),
     t.Object({
       type: t.Literal('simulation'),
@@ -71,6 +134,7 @@ const SectionRule = t.Union([
       ),
     ),
     withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    ...ProjectBlockRelationshipsSchema,
     fields: t.Optional(
       t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
         maxProperties: 20,

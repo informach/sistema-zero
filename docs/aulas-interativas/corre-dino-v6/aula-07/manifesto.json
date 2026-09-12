@@ -1,0 +1,763 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-07",
+  "title": "O jogo só corre quando está jogando",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "checar-construir-3",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "zappy-convite-construir-1",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Ir para a tela inicio já faz todas as ações pararem?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não, as ações precisam consultar o estado."
+              },
+              {
+                "id": "b",
+                "label": "Sim, o nome da tela apaga todos os blocos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O estado é informação usada pelas condições."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que o relógio precisa de outro Se?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Porque a floresta precisa nascer duas vezes."
+              },
+              {
+                "id": "a",
+                "label": "Porque roda em uma rotina separada do quadro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Uma condição só protege o que está dentro dela."
+          },
+          {
+            "id": "q3",
+            "prompt": "O que deve ficar fora do Se jogando?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Limpar a tela e desenhar a floresta."
+              },
+              {
+                "id": "b",
+                "label": "Criar cactos sem parar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O fundo continua aparecendo enquanto o jogo espera."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Abertura. Entrada: “Oi! Deixa eu te mostrar uma coisa esquisita no seu jogo. Vou recarregar a página aqui... e olha só: ”. Saída: “ue deu certo, e eu te explico direitinho quando a gente chegar lá. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos separar inicio, jogando e fim. Hoje o jogo aprenderá a esperar; a tela com título vem na próxima aula.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-estado-inicial",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Parte 1. Passo 1: dizer em qual tela o jogo abre. Entrada: “O conceito do dia é telas, que os criadores também chamam de cenas. Nos jogos que você joga tem o me”. Saída: “a gente vai fazer agora. Passo 1 pronto, o seu jogo já sabe em qual tela ele abre. Bora pro segundo.”. Preservar a execução ainda acontecendo depois da troca. Não antecipar a tela de menu da aula 8. Ponte nova: “Em Ao iniciar, coloque Ir para a tela inicio. Observe que só dar esse nome ainda não faz o jogo esperar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-estado-inicial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Ao iniciar, coloque Ir para a tela inicio. Observe que só dar esse nome ainda não faz o jogo esperar."
+      }
+    },
+    {
+      "key": "video-pergunta",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Parte 2. Passo 2: a pergunta da tela \"jogando\". Entrada: “Agora entra um bloco novo, e ele é um dos mais importantes que existem em programação: o bloco Se. O”. Saída: “ 2 pronto. O Se está lá, vazio por dentro. O terceiro passo é a quarta etapa da manobra: encher ele.”. Reaproveitar a pergunta da cena; mostrar a retirada da comparação de fábrica. Parar antes de embrulhar os seis comandos. Ponte nova: “A pergunta entra no encaixe de condição. Se a resposta for sim, o jogo faz o que está dentro do então.” Congelar o bloco Se. Destacar primeiro COND, depois THEN. Mostrar inicio dando não e jogando dando sim, sem mudar outras peças. Texto e ícone, além da cor. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-embrulhar",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora o trabalho do dia. E que bom que ele está vindo agora, porque o seu jogo ainda é pequeno. Se d”. Saída: “da. Confere se está escrito jogando nos dois. Passo 3 feito, e o mais trabalhoso do curso já passou.”. Manter os quatro gestos com pausas visuais: abrir espaço, pôr Se, conectar pergunta, mover a pilha. Terminar antes de proteger o relógio. A criança pausa e monta no mesmo Estúdio. Ponte nova: “Deixe Limpar a tela e Floresta fora do Se. Da gravidade até a faxina, mova os seis comandos para dentro de Se a tela atual é jogando. Não copie a pilha.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-embrulhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Deixe Limpar a tela e Floresta fora do Se. Da gravidade até a faxina, mova os seis comandos para dentro de Se a tela atual é jogando. Não copie a pilha."
+      }
+    },
+    {
+      "key": "experiencia-estado-modelo",
+      "content": {
+        "kind": "interactive",
+        "title": "Quem ainda está trabalhando no início?",
+        "instructions": "Compare o início com a partida. Ligue a condição e observe quando as ações do jogo podem acontecer. Volte ao início para conferir a espera.",
+        "hints": [
+          "Por que há cactos antes de você começar?",
+          "A região Se jogando só deixa agir durante a partida.",
+          "Leve Relógio para Se jogando. Compare o início e a partida."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "game-state",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-relogio-protegido",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora o trabalho do dia. E que bom que ele está vindo agora, porque o seu jogo ainda é pequeno. Se d”. Saída: “da. Confere se está escrito jogando nos dois. Passo 3 feito, e o mais trabalhoso do curso já passou.”. Selecionar apenas o trecho final da Parte 3 sobre o relógio. Não repetir o tutorial inteiro de embrulhar. Ponte nova: “No relógio de 1,4 segundo, coloque outro Se a tela atual é jogando e mova a criação do cacto para dentro dele.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-relogio-protegido",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No relógio de 1,4 segundo, coloque outro Se a tela atual é jogando e mova a criação do cacto para dentro dele."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Reinicie a prévia em inicio: a floresta aparece, mas o Dino e os cactos não correm. Nesta aula a tela sem título é esperada. Revise os dois Se antes de entregar. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-07-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 7. E essa foi a aula mais trabalhosa do curso inteiro, então esse par”. Saída: “grandão no meio dela, uma frase explicando o que fazer, e o Enter começando a partida. Te espero lá.”. Manter a recapitulação. Não inventar um botão de começar nesta aula; ele pertence à aula 8. São dois grupos protegidos nesta aula: quadro e relógio. Evitar referências futuras a três embrulhos. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Vamos separar inicio, jogando e fim. Hoje o jogo aprenderá a esperar; a tela com título vem na próxima aula.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "estado-inicial",
+      "title": "Diga em qual tela o jogo começa",
+      "intent": "application",
+      "objective": "Distinguir o nome do estado de seu desenho.",
+      "blockKeys": ["video-estado-inicial", "fala-estado-inicial"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "Abra o jogo na tela inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "pergunta",
+      "title": "Veja o Se e sua pergunta",
+      "intent": "demonstration",
+      "objective": "Separar condição, resposta sim/não e ações do então.",
+      "blockKeys": ["video-pergunta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-pergunta"]
+      }
+    },
+    {
+      "key": "embrulhar",
+      "title": "Coloque as ações dentro do Se",
+      "intent": "application",
+      "objective": "Mover a sequência de jogo para o ramo jogando.",
+      "blockKeys": ["video-embrulhar", "fala-embrulhar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "proteger-gravidade",
+            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_apply_gravity"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-controle",
+            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_control_dino"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenho",
+            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-mover",
+            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_update_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenhar",
+            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-limpeza",
+            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_prune_offscreen"
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-0",
+            "label": "Limpeza da tela deve continuar fora do Se, diretamente no quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clear"
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-1",
+            "label": "Floresta deve continuar fora do Se, diretamente no quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_forest"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "estado-modelo",
+      "title": "Quem ainda está trabalhando no início?",
+      "intent": "exploration",
+      "objective": "Observar e impedir atividade fora do estado jogando.",
+      "blockKeys": ["experiencia-estado-modelo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-estado-modelo"]
+      }
+    },
+    {
+      "key": "relogio-protegido",
+      "title": "Faça o relógio esperar também",
+      "intent": "application",
+      "objective": "Proteger a criação na rotina periódica separada.",
+      "blockKeys": ["video-relogio-protegido", "fala-relogio-protegido"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "proteger-relogio",
+            "label": "No relógio de 1,4 s, crie cactos somente se a tela for jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Preparação em inicio; movimento, desenho dos personagens e nascimento de cactos protegidos por jogando. A floresta continua visível.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "Abra o jogo na tela inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "proteger-gravidade",
+            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_apply_gravity"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-controle",
+            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_control_dino"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenho",
+            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-mover",
+            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_update_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenhar",
+            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-limpeza",
+            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_prune_offscreen"
+                }
+              }
+            }
+          },
+          {
+            "id": "unico-gravidade",
+            "label": "Mantenha uma única ação Aplicar gravidade.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_apply_gravity",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-controle",
+            "label": "Mantenha uma única ação Controlar o dinossauro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_control_dino",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-desenho",
+            "label": "Mantenha uma única ação Desenhar o Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-mover",
+            "label": "Mantenha uma única ação Atualizar cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-desenhar",
+            "label": "Mantenha uma única ação Desenhar cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-limpeza",
+            "label": "Mantenha uma única ação Remover cactos fora da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "count": 1
+            }
+          },
+          {
+            "id": "fundo-0",
+            "label": "Limpeza da tela deve continuar fora do Se, diretamente no quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clear"
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-1",
+            "label": "Floresta deve continuar fora do Se, diretamente no quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_forest"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-relogio",
+            "label": "No relógio de 1,4 s, crie cactos somente se a tela for jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "um-criador",
+            "label": "Mantenha um único criador de cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Preparação em inicio; movimento, desenho dos personagens e nascimento de cactos protegidos por jogando. A floresta continua visível.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

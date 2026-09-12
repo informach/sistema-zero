@@ -1,0 +1,425 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-10",
+  "title": "Uma colisão mais justa",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Ao ajustar a área para 80%, o desenho precisa encolher?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não, a área de colisão e o desenho são diferentes."
+              },
+              {
+                "id": "b",
+                "label": "Sim, são sempre a mesma coisa."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O ajuste atua na geometria da detecção."
+          },
+          {
+            "id": "q2",
+            "prompt": "O que manter igual ao comparar duas áreas?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Apenas a música."
+              },
+              {
+                "id": "a",
+                "label": "As posições do Dino e do cacto."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Mudar a posição junto impediria saber a causa do resultado."
+          },
+          {
+            "id": "q3",
+            "prompt": "Apagar o desenho da área apaga o ajuste?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não, o ajuste continua em Ao iniciar."
+              },
+              {
+                "id": "b",
+                "label": "Sim, o instrumento é a própria regra."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Um bloco mostra; outro configura."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Abertura. Entrada: “Oi! Enquanto você jogava, aconteceu de perder numa batida injusta? Daquelas de você falar 'ué, eu ne”. Saída: “gente conserta. E no quarto, você escolhe o quanto quer consertar. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-ligar-raio-x",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Parte 1. Passo 1: ligar o raio-X. Entrada: “Tem uma coisa acontecendo no seu jogo que você não consegue ver. Hoje a gente vai ver. Na categoria ”. Saída: “invisível ficou visível. O segundo passo é entender o que essa caixa tem a ver com a batida injusta.”. Preservar o contorno. Não tratar o desenho da hitbox como a própria configuração da colisão. Ponte nova: “No fim de A cada quadro, coloque Desenhar área de colisão do sprite dino. Veja o contorno ao redor dele.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-ligar-raio-x",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No fim de A cada quadro, coloque Desenhar área de colisão do sprite dino. Veja o contorno ao redor dele."
+      }
+    },
+    {
+      "key": "video-desenho-e-area",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Parte 2. Passo 2: por que a batida pareceu roubada. Entrada: “Olha com atenção o seu dino dentro da caixa. O dinossauro é um bichinho cheio de pontas e curvas, se”. Saída: “nho. Segundo passo entendido. E o conserto disso tudo é um bloco só, que é o que a gente pega agora.”. Preservar a explicação dos espaços transparentes. Corrigir qualquer referência a ajustar o cacto: nesta aula o ajuste é do Dino. Ponte nova: “Olhe o espaço vazio junto do corpo. O desenho tem recortes, mas a área de colisão é mais simples.” Congelar um contato com a área marcada. Alternar desenho e contorno na mesma posição. Não mover o obstáculo enquanto compara os contornos. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-comparar-area",
+      "content": {
+        "kind": "interactive",
+        "title": "Ajuste só a área de colisão",
+        "instructions": "Aproxime o cacto até o contato indicado. Depois ajuste apenas a área de colisão e compare. O desenho do Dino continua do mesmo tamanho.",
+        "hints": [
+          "Olhe as bordas das duas áreas.",
+          "Deixe o cacto no mesmo lugar e mude só a área do Dino.",
+          "Aproxime até a marca do meio. Compare as alças Menor e Maior."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "hitbox",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-ajustar-area",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Parte 3. Passo 3: ajustar a área de colisão. Entrada: “Na categoria Jogo 2D, subcategoria Colisões, pega aquele bloco bem comprido, o Usar área de colisão ”. Saída: “da com você que escapou. Passo 3 feito. E agora o quarto passo, que é onde você vira o dono do jogo.”. Reaproveitar a montagem e o teste com contorno; manter a cor e o desenho iguais. Ponte nova: “Em Ao iniciar, depois de criar o dino, ajuste a área de colisão dele para 80%. Mantenha o tamanho do Dino em 64.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-ajustar-area",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Ao iniciar, depois de criar o dino, ajuste a área de colisão dele para 80%. Mantenha o tamanho do Dino em 64."
+      }
+    },
+    {
+      "key": "video-tirar-raio-x",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Parte 4. Passo 4: você escolhe o quanto perdoar. Entrada: “Esse número da porcentagem é muito mais poderoso do que parece. Os criadores de jogos chamam ele de ”. Saída: “empre que uma colisão do seu jogo estiver esquisita, liga o raio-X e olha. É assim que se investiga.”. Pode aproveitar a comparação 40/100 como observação rápida, mas remover a tarefa de escolher livremente. Encerrar em 80 e retirar o contorno. Ponte nova: “Depois de testar, apague apenas Desenhar área de colisão. O ajuste de 80% fica em Ao iniciar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-tirar-raio-x",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Depois de testar, apague apenas Desenhar área de colisão. O ajuste de 80% fica em Ao iniciar."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Jogue uma rodada. A batida deve continuar funcionando com a margem escolhida; o Dino não encolheu e o contorno não aparece mais. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-10-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 10! Foi curtinha, mas você aprendeu uma coisa que separa quem brinca ”. Saída: “Na próxima aula o seu jogo ganha placar: cada segundo que o dino sobrevive vira ponto. Te espero lá!”. Manter a recapitulação. 80% é a escolha desta versão do Corre Dino; não ensinar que uma área sempre menor é universalmente mais justa. Evitar comparar tentativas com posições diferentes como prova do ajuste. A experiência nativa mantém o caso de comparação. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "ligar-raio-x",
+      "title": "Veja a área que o jogo usa",
+      "intent": "application",
+      "objective": "Adicionar um instrumento que revela a geometria de colisão.",
+      "blockKeys": ["video-ligar-raio-x", "fala-ligar-raio-x"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "raio-x",
+            "label": "Desenhe a área de colisão do dino a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "desenho-e-area",
+      "title": "O contorno e o desenho são iguais?",
+      "intent": "demonstration",
+      "objective": "Perceber espaços vazios do desenho dentro da área de colisão.",
+      "blockKeys": ["video-desenho-e-area"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-desenho-e-area"]
+      }
+    },
+    {
+      "key": "comparar-area",
+      "title": "Ajuste só a área de colisão",
+      "intent": "exploration",
+      "objective": "Comparar a detecção mantendo os desenhos na mesma posição.",
+      "blockKeys": ["experiencia-comparar-area"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-comparar-area"]
+      }
+    },
+    {
+      "key": "ajustar-area",
+      "title": "Leve o ajuste para o seu jogo",
+      "intent": "application",
+      "objective": "Configurar a área sem redimensionar o sprite.",
+      "blockKeys": ["video-ajustar-area", "fala-ajustar-area"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "colisao-80",
+            "label": "Em Ao iniciar, ajuste a área de colisão do dino para 80%.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_hitbox_scale",
+              "area": "start",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputs": {
+                "PERCENT": 80
+              }
+            }
+          },
+          {
+            "id": "raio-x",
+            "label": "Desenhe a área de colisão do dino a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
+            }
+          },
+          {
+            "id": "mesmo-desenho",
+            "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "beforeBlock": "sz_g2d_set_hitbox_scale",
+              "inputs": {
+                "SIZE": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "tirar-raio-x",
+      "title": "Retire o instrumento, mantenha o ajuste",
+      "intent": "application",
+      "objective": "Distinguir instrumento temporário de regra permanente.",
+      "blockKeys": ["video-tirar-raio-x", "fala-tirar-raio-x"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "colisao-80",
+            "label": "Em Ao iniciar, ajuste a área de colisão do dino para 80%.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_hitbox_scale",
+              "area": "start",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputs": {
+                "PERCENT": 80
+              }
+            }
+          },
+          {
+            "id": "sem-raio-x",
+            "label": "Retire o desenho provisório da área de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Área de colisão do Dino em 80%, desenho do personagem preservado e instrumento retirado.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "colisao-80",
+            "label": "Em Ao iniciar, ajuste a área de colisão do dino para 80%.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_hitbox_scale",
+              "area": "start",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputs": {
+                "PERCENT": 80
+              }
+            }
+          },
+          {
+            "id": "sem-raio-x",
+            "label": "Retire o desenho provisório da área de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "count": 0
+            }
+          },
+          {
+            "id": "mesmo-desenho",
+            "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "beforeBlock": "sz_g2d_set_hitbox_scale",
+              "inputs": {
+                "SIZE": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Área de colisão do Dino em 80%, desenho do personagem preservado e instrumento retirado.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

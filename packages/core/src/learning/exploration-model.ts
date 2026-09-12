@@ -287,6 +287,7 @@ function advanceFlight(state: ExplorationState, mission: ExplorationMission, sec
   }
 }
 function advancePopulation(state: ExplorationState, mission: ExplorationMission, seconds: number) {
+  const bornBefore = state.born
   const active = mission !== 'game-state' || !state.guarded || state.screen === 'playing'
   const interval = mission === 'spawn' ? (state.timer ? state.interval : 1 / 30) : 0.6
   // Birth offsets preserve the distance between objects even when stepping two seconds at once.
@@ -322,11 +323,11 @@ function advancePopulation(state: ExplorationState, mission: ExplorationMission,
         : 'Em cada quadro nasce outro cacto.',
     )
   if (mission === 'game-state') {
-    if (!state.guarded && state.screen === 'start' && state.born > 0)
+    if (!state.guarded && state.screen === 'start' && state.born > bornBefore)
       observe(state, 'outside', 'O relógio criou cactos antes da partida.')
     if (state.guarded && state.screen === 'start')
       observe(state, 'waiting', 'No início, o relógio espera.')
-    if (state.guarded && state.screen === 'playing' && state.born > 0)
+    if (state.guarded && state.screen === 'playing' && state.born > bornBefore)
       observe(state, 'playing', 'Jogando, o relógio cria cactos.')
   }
   // Positions outside the scene remain represented by the stored count, not thousands of SVGs.
@@ -520,7 +521,9 @@ export function transitionExploration(
         after ? 'A área nova encostou no cacto.' : 'A área nova não encosta no cacto.',
       )
       if (before !== after) {
-        s.observations = s.observations.filter((o) => o.id !== 'area-before')
+        s.observations = s.observations.filter(
+          (o) => o.id !== 'area-before' && o.id !== 'area-contrast',
+        )
         const old = { ...s, width: previous.width, observations: [...s.observations] }
         observe(old, 'area-before', 'Antes: mesma posição, outra área.', false)
         const beforeSnapshot = old.observations.find((o) => o.id === 'area-before')
@@ -718,7 +721,11 @@ export function appendExplorationAction(
     }
     const priorState = replayExploration(activity, before).state
     const lastState = transitionExploration(activity, priorState, last)
-    if (lastState.discoveries.length === priorState.discoveries.length)
+    if (
+      lastState.discoveries.length === priorState.discoveries.length &&
+      lastState.observations.length === priorState.observations.length &&
+      lastState.observations.every((observation, i) => observation === priorState.observations[i])
+    )
       trace[trace.length - 1] = action
     else trace.push(action)
   } else trace.push(action)

@@ -1,0 +1,490 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-12",
+  "title": "Sorteios dentro de limites",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "convite-construir-3",
+    "checar-construir-3",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Um sorteio pode produzir o mesmo resultado de novo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Sim, repetir é possível."
+              },
+              {
+                "id": "b",
+                "label": "Não, sorteio nunca repete."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A faixa limita resultados; ela não exige que sejam sempre diferentes."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que os limites de x ficam acima de 480?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para ele virar um ponto no placar."
+              },
+              {
+                "id": "a",
+                "label": "Para o cacto começar fora da tela."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A borda direita do palco está em x 480."
+          },
+          {
+            "id": "q3",
+            "prompt": "Quanto dá -5 menos 1?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "-6, que anda mais rápido para a esquerda que -5."
+              },
+              {
+                "id": "b",
+                "label": "-4, que anda mais rápido para a direita."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Subtrair 1 torna a velocidade mais negativa."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Abertura. Entrada: “Oi! Antes de começar, joga o seu jogo umas cinco ou seis vezes seguidas, prestando atenção numa cois”. Saída: “. No terceiro, sorteia a velocidade dele. E no quarto, você testa. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-padrao-fixo",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Parte 1. Passo 1: entender por que está sempre igual. Entrada: “Antes de consertar, bora entender. Abre aí o seu bloco de criar o cacto e olha os números dele. O x ”. Saída: “ue vem. Passo 1 feito, e agora você já sabe o que está deixando o seu jogo previsível. Bora sortear.”. Manter o padrão e os números destacados. Não prometer que sorteio garante uma partida sempre diferente de todas as anteriores. Ponte nova: “O relógio, o x e a velocidade continuam iguais. Observe dois trechos do mesmo padrão; vamos alterar uma propriedade por vez.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-sorteio-controlado",
+      "content": {
+        "kind": "interactive",
+        "title": "O que o sorteio pode mudar?",
+        "instructions": "Primeiro compare os dois exemplos de posição, com a mesma velocidade. Depois compare os dois de velocidade, com a mesma posição. São exemplos escolhidos para enxergar a diferença; um sorteio real também pode repetir.",
+        "hints": [
+          "A faixa mostra onde um cacto pode nascer.",
+          "Compare uma coisa por vez: posição ou velocidade.",
+          "Acione os dois exemplos de posição. Depois compare os dois de velocidade."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "random",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-sortear-posicao",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Parte 2. Passo 2: sortear o lugar do cacto. Entrada: “Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um número de tanto a tanto. Clica nel”. Saída: “ mudou. Passo 2 feito, com o primeiro sorteio no lugar. O terceiro é o outro sorteio, na velocidade.”. Preservar o encaixe em x e a faixa externa. Explicar que muda o tempo de chegada até o Dino, mesmo com o mesmo relógio de nascimento. Ponte nova: “No x do bloco que cria cacto, conecte Sorteio entre 500 e 560. Os dois limites ficam depois da borda 480. O relógio continua em 1,4.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-sortear-posicao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No x do bloco que cria cacto, conecte Sorteio entre 500 e 560. Os dois limites ficam depois da borda 480. O relógio continua em 1,4."
+      }
+    },
+    {
+      "key": "video-menos-corre-mais",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Parte 3. Passo 3: sortear a velocidade. Entrada: “Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno”. Saída: “r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.”. Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5. Ponte nova: “Se sair zero, -5 menos zero continua -5. Se sair um, fica -6. Em direção à esquerda, -6 percorre mais distância por quadro.” Duas contas alinhadas e duas setas à esquerda com origem igual. Não alterar o tamanho do cacto nem o intervalo. Distinguir valor numérico de rapidez. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-sortear-velocidade",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Parte 3. Passo 3: sortear a velocidade. Entrada: “Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno”. Saída: “r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.”. Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição. Ponte nova: “No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-sortear-velocidade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Observe alguns nascimentos. Todos começam fora da tela e andam à esquerda. Um resultado pode repetir. Confira os dois sorteios em tomadas diferentes, sem alterar o relógio. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-12-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 12! O seu jogo nunca mais vai ser igual duas vezes. Hoje você aprende”. Saída: “o jogo ficar mais difícil sozinho, quanto mais você sobrevive. Te espero lá pra terminar o seu jogo!”. Manter a recapitulação. Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1. As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "padrao-fixo",
+      "title": "Veja por que o percurso se repete",
+      "intent": "demonstration",
+      "objective": "Relacionar valores fixos a um padrão previsível.",
+      "blockKeys": ["video-padrao-fixo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-padrao-fixo"]
+      }
+    },
+    {
+      "key": "sorteio-controlado",
+      "title": "O que o sorteio pode mudar?",
+      "intent": "exploration",
+      "objective": "Comparar resultados de um sorteio dentro da faixa, mantendo a outra propriedade fixa.",
+      "blockKeys": ["experiencia-sorteio-controlado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-sorteio-controlado"]
+      }
+    },
+    {
+      "key": "sortear-posicao",
+      "title": "Sorteie o lugar de nascimento",
+      "intent": "application",
+      "objective": "Conectar o sorteio exclusivamente à entrada x.",
+      "blockKeys": ["video-sortear-posicao", "fala-sortear-posicao"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, conecte Sorteio entre 500 e 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s com criação protegida por jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "menos-corre-mais",
+      "title": "Veja a conta da velocidade",
+      "intent": "demonstration",
+      "objective": "Ler -5 menos 0 e -5 menos 1 como velocidades para a esquerda.",
+      "blockKeys": ["video-menos-corre-mais"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-menos-corre-mais"]
+      }
+    },
+    {
+      "key": "sortear-velocidade",
+      "title": "Conecte a conta ao cacto",
+      "intent": "application",
+      "objective": "Combinar uma base fixa com uma variação limitada.",
+      "blockKeys": ["video-sortear-velocidade", "fala-sortear-velocidade"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, conecte Sorteio entre 500 e 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-v",
+            "label": "Na velocidade do cacto, use -5 menos Sorteio entre 0 e 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputs": {
+                    "A": -5
+                  },
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Nascimento entre x 500 e 560 e velocidade -5 menos sorteio de 0 a 1; o relógio continua em 1,4 s.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, conecte Sorteio entre 500 e 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-v",
+            "label": "Na velocidade do cacto, use -5 menos Sorteio entre 0 e 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputs": {
+                    "A": -5
+                  },
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s com criação protegida por jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Nascimento entre x 500 e 560 e velocidade -5 menos sorteio de 0 a 1; o relógio continua em 1,4 s.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

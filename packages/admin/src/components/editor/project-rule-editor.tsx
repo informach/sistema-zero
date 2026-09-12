@@ -4,6 +4,7 @@ import type { ServerBlockCatalogEntry } from '@sistemazero/studio/server-catalog
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { useEffect, useMemo, useState } from 'react'
+import { ProjectPatternEditor } from './project-pattern-editor'
 
 type Rule = Extract<SectionStructureRule, { type: 'usesBlock' }>
 export function ProjectRuleEditor({
@@ -71,7 +72,7 @@ export function ProjectRuleEditor({
         />
       </label>
       <label className="block text-sm">
-        Bloco necessário
+        Bloco a conferir
         <Select
           value={rule.blockType}
           onChange={(e) => {
@@ -123,6 +124,42 @@ export function ProjectRuleEditor({
         Blocos soltos ou desativados não contam. Valores abaixo são opcionais e exigem uma
         configuração literal.
       </p>
+      <label className="block text-sm">
+        Quantidade exata (opcional; zero confere a retirada)
+        <Input
+          type="number"
+          min={0}
+          max={200000}
+          step={1}
+          value={rule.count ?? ''}
+          onChange={(event) =>
+            onChange({
+              ...rule,
+              count: event.target.value === '' ? undefined : Number(event.target.value),
+            })
+          }
+        />
+      </label>
+      {selected?.connections.previous !== undefined && (
+        <label className="block text-sm">
+          Deve vir antes de
+          <Select
+            value={rule.beforeBlock ?? ''}
+            onChange={(event) =>
+              onChange({ ...rule, beforeBlock: event.target.value || undefined })
+            }
+          >
+            <option value="">Sem exigência de ordem</option>
+            {catalog
+              .filter((block) => block.connections.previous !== undefined)
+              .map((block) => (
+                <option key={block.type} value={block.type}>
+                  {block.label}
+                </option>
+              ))}
+          </Select>
+        </label>
+      )}
       {selected?.parameters.map((param) => (
         <label className="block text-sm" key={`${param.kind}:${param.name}`}>
           {param.label}
@@ -140,6 +177,7 @@ export function ProjectRuleEditor({
             </Select>
           ) : (
             <Input
+              disabled={Boolean(param.kind === 'inputs' && rule.inputBlocks?.[param.name])}
               type={param.numeric ? 'number' : 'text'}
               placeholder="Qualquer valor"
               value={String(rule[param.kind]?.[param.name] ?? '')}
@@ -154,6 +192,13 @@ export function ProjectRuleEditor({
           )}
         </label>
       ))}
+      {model && (
+        <ProjectPatternEditor
+          pattern={rule}
+          model={model}
+          onChange={(pattern) => onChange({ ...rule, ...pattern })}
+        />
+      )}
       {issues.map((issue) => (
         <p key={issue} role="alert" className="text-xs text-destructive">
           {issue}

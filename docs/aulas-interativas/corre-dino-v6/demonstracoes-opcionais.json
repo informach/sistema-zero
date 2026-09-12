@@ -1,0 +1,705 @@
+[
+  {
+    "key": "demonstracao-world",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Faça o Dino aparecer",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "world",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "O Dino existe nos bastidores.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "create"
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Ligar o desenho faz o mesmo Dino aparecer.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "draw",
+                "enabled": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-layers",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Quem fica na frente?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "layers",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "A floresta cobre o Dino.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "layer",
+                "front": false
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Quem é desenhado depois fica na frente.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "layer",
+                "front": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-gravity",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Faça o Dino voltar ao chão",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "gravity",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Observe o salto sem gravidade.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "jump",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 0.6
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Agora a gravidade traz o mesmo Dino de volta.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "gravity",
+                "enabled": true
+              },
+              {
+                "type": "jump",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ],
+            "waitFor": "landed"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-impulse",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Escolha a altura do salto",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "impulse",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Guarde a altura deste salto.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "jump",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Só o impulso mudou. A gravidade continua igual.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "impulse",
+                "force": 14
+              },
+              {
+                "type": "jump",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-jump-sound",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: O som acompanha o salto",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "jump-sound",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "A tecla pode soar mesmo com o Dino no ar.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "jump",
+                "input": "key"
+              },
+              {
+                "type": "advance",
+                "seconds": 0.1
+              },
+              {
+                "type": "jump",
+                "input": "key"
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Ligado ao acontecimento Pulou, o som acompanha o salto.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "sound",
+                "enabled": true
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              },
+              {
+                "type": "jump",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-spawn",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Abra espaço entre os cactos",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "spawn",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Veja quantos cactos nascem sem intervalo.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "No mesmo tempo, o intervalo reduz os nascimentos.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "timer",
+                "enabled": true
+              },
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-cleanup",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Cuide dos cactos invisíveis",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "cleanup",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Sair da tela ainda deixa o cacto guardado.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "advance",
+                "seconds": 6
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "A regra remove quem saiu.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "cleanup",
+                "enabled": true
+              },
+              {
+                "type": "advance",
+                "seconds": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-game-state",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: O relógio espera você começar",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "game-state",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "O relógio está funcionando antes de jogar.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "advance",
+                "seconds": 1
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Dentro de Jogando, ele espera o início.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "condition",
+                "enabled": true
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              },
+              {
+                "type": "start",
+                "input": "tap"
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-controls",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Faça o convite funcionar",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "controls",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Tocar ainda não inicia a partida.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "start",
+                "input": "tap"
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "A ligação adiciona o toque ao mesmo início.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "touch",
+                "enabled": true
+              },
+              {
+                "type": "start",
+                "input": "tap"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-restart",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Jogue outra vez",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "restart",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "O contato encerra a partida.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "start",
+                "input": "tap"
+              },
+              {
+                "type": "move",
+                "distance": 25
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Jogar de novo prepara uma nova partida.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "restart",
+                "enabled": true
+              },
+              {
+                "type": "restart"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-hitbox",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Onde a batida acontece?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "hitbox",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "As áreas se tocam antes de os desenhos se misturarem.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "move",
+                "distance": 25
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Mesma posição, outra área. O resultado muda?",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "move",
+                "distance": 60
+              },
+              {
+                "type": "resize",
+                "width": 100
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-score",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Pontos só durante a partida",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "score",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "O placar espera enquanto não estamos jogando.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "condition",
+                "enabled": true
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Jogando, ele cresce. No fim, conserva o valor.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "start",
+                "input": "key"
+              },
+              {
+                "type": "advance",
+                "seconds": 3
+              },
+              {
+                "type": "collide"
+              },
+              {
+                "type": "advance",
+                "seconds": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-random",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Cada cacto pode nascer diferente",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "random",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Dois exemplos de lugar, com a mesma velocidade.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "sample",
+                "kind": "position",
+                "unit": 0,
+                "guided": true
+              },
+              {
+                "type": "sample",
+                "kind": "position",
+                "unit": 1,
+                "guided": true
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "Mesmo lugar, duas velocidades possíveis.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "sample",
+                "kind": "velocity",
+                "unit": 0,
+                "guided": true
+              },
+              {
+                "type": "sample",
+                "kind": "velocity",
+                "unit": 1,
+                "guided": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "demonstracao-acceleration",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Acelere com um limite",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "exploration",
+        "version": 3,
+        "mission": "acceleration",
+        "mode": "demonstrate",
+        "demonstration": [
+          {
+            "id": "step-1",
+            "caption": "Este cacto guarda a velocidade de nascimento.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "sample",
+                "kind": "velocity",
+                "unit": 0,
+                "guided": true
+              }
+            ]
+          },
+          {
+            "id": "step-2",
+            "caption": "O limite vale para a base dos próximos.",
+            "highlight": "scene",
+            "actions": [
+              {
+                "type": "connect",
+                "port": "limit",
+                "enabled": true
+              },
+              {
+                "type": "clock"
+              },
+              {
+                "type": "clock"
+              },
+              {
+                "type": "clock"
+              },
+              {
+                "type": "clock"
+              },
+              {
+                "type": "clock"
+              },
+              {
+                "type": "sample",
+                "kind": "velocity",
+                "unit": 1,
+                "guided": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+]

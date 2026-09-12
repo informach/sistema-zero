@@ -335,6 +335,13 @@ export class DrizzleLearningRepository implements LearningRepository {
         current?.revision === p.revision
           ? mergeVideoWatchAnswers(current.answers, p.answers)
           : p.answers
+      if (input.expectedExperienceSequence !== undefined) {
+        const sequence =
+          current?.revision === p.revision && typeof current.answers.sequence === 'number'
+            ? current.answers.sequence
+            : null
+        if (sequence !== input.expectedExperienceSequence) throw new LearningConflictError()
+      }
       const [row] = await tx
         .insert(lessonBlockProgress)
         .values({
@@ -423,7 +430,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           target: [lessonBlockProgress.userId, lessonBlockProgress.blockId],
           set: {
             revision: attempt.revision,
-            answers: attempt.answers,
+            answers: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} and ${lessonBlockProgress.answers}->>'experienceVersion' = '3' then ${lessonBlockProgress.answers} else ${JSON.stringify(attempt.answers)}::jsonb end`,
             hintsUsed: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} then greatest(${lessonBlockProgress.hintsUsed}, ${attempt.hintsUsed}) else ${attempt.hintsUsed} end`,
             attemptsCount: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} then ${lessonBlockProgress.attemptsCount} + 1 else 1 end`,
             result: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} and ${lessonBlockProgress.result}->>'passed' = 'true' then ${lessonBlockProgress.result} else ${JSON.stringify(attempt.result)}::jsonb end`,

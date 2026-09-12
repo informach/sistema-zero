@@ -14,6 +14,13 @@ export const LESSON_SECTION_TEMPLATES: ReadonlyArray<{
       'Vídeo curto, missão do Zappy e cena manipulável. Pode aparecer antes, depois ou entre trechos de criação. Critério: descobertas da missão.',
   },
   {
+    intent: 'demonstration',
+    label: 'Demonstrar uma ideia',
+    title: 'Observe o exemplo',
+    guidance:
+      'Roteiro com pausas e repetição, sem manipulação pela criança. O critério registra o exemplo acompanhado. Uma experimentação é outro bloco, incluído apenas quando fizer parte do objetivo da aula.',
+  },
+  {
     intent: 'application',
     label: 'Criar',
     title: 'Crie no seu projeto',

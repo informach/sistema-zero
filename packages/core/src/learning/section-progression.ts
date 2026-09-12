@@ -2,19 +2,28 @@ import { isInteractiveBlock, type LessonSection } from './index'
 import { isVideoOnlySection } from './legacy-layout'
 import { isPlatformAction, type PlatformAction } from './platform-action'
 
+export interface ProjectBlockPattern {
+  blockType: string
+  fields?: Record<string, string | number | boolean>
+  inputs?: Record<string, string | number | boolean>
+  /** Match an active child in this named input, keeping all conditions on that same child. */
+  inputBlocks?: Record<string, ProjectBlockPattern>
+}
+
 export type SectionStructureRule =
   | { type: 'usesLoop' }
   | { type: 'declaresVariable'; name: string }
   | { type: 'definesFunction'; name: string }
   | { type: 'callsFunction'; name: string }
-  | {
+  | (ProjectBlockPattern & {
       type: 'usesBlock'
-      blockType: string
       area?: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops'
       withinBlock?: string
-      fields?: Record<string, string | number | boolean>
-      inputs?: Record<string, string | number | boolean>
-    }
+      /** Exact number of matching active blocks; zero checks removal. */
+      count?: number
+      /** A later enabled sibling in the same statement chain, never another branch. */
+      beforeBlock?: string
+    })
 
 export interface SectionProjectCheck {
   id: string
@@ -55,6 +64,51 @@ const record = (v: unknown): v is Record<string, unknown> =>
 const label = (v: unknown): v is string =>
   typeof v === 'string' && v.trim().length > 0 && v.length <= 200
 
+/** Authors save half-filled objectives; an empty block type is the placeholder, not a broken draft. */
+const blockName = (v: unknown): v is string => typeof v === 'string' && v.length <= 200
+
+export function isProjectBlockPattern(value: unknown): value is ProjectBlockPattern {
+  let remaining = 64
+  function valid(v: unknown, depth: number): boolean {
+    if (!record(v) || !blockName(v.blockType) || depth > 4 || --remaining < 0) return false
+    if (
+      ![v.fields, v.inputs].every(
+        (values) =>
+          values === undefined ||
+          (record(values) &&
+            Object.keys(values).length <= 20 &&
+            Object.entries(values).every(
+              ([key, val]) =>
+                label(key) &&
+                (typeof val === 'boolean' ||
+                  (typeof val === 'number' && Number.isFinite(val)) ||
+                  (typeof val === 'string' && val.length <= 200)),
+            )),
+      )
+    )
+      return false
+    return (
+      v.inputBlocks === undefined ||
+      (record(v.inputBlocks) &&
+        Object.keys(v.inputBlocks).length <= 20 &&
+        Object.entries(v.inputBlocks).every(
+          ([key, child]) =>
+            label(key) &&
+            !(record(v.inputs) && Object.hasOwn(v.inputs, key)) &&
+            valid(child, depth + 1),
+        ))
+    )
+  }
+  return valid(value, 0)
+}
+
+/** A placeholder still without a block, at the top or in any connected socket, is an editorial warning. */
+function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
+  return (
+    !label(pattern.blockType) || Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType)
+  )
+}
+
 export function isSectionCompletion(v: unknown): v is SectionCompletion {
   if (
     !record(v) ||
@@ -84,26 +138,17 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
           return true
         case 'usesBlock':
           return (
-            typeof c.rule.blockType === 'string' &&
-            c.rule.blockType.length <= 200 &&
+            isProjectBlockPattern(c.rule) &&
+            (c.rule.count === undefined ||
+              (Number.isInteger(c.rule.count) &&
+                Number(c.rule.count) >= 0 &&
+                Number(c.rule.count) <= 200_000)) &&
+            (c.rule.beforeBlock === undefined || label(c.rule.beforeBlock)) &&
             (c.rule.area === undefined ||
               ['structure', 'appearance', 'molds', 'start', 'events', 'loops'].includes(
                 String(c.rule.area),
               )) &&
-            (c.rule.withinBlock === undefined || label(c.rule.withinBlock)) &&
-            [c.rule.fields, c.rule.inputs].every(
-              (values) =>
-                values === undefined ||
-                (record(values) &&
-                  Object.keys(values).length <= 20 &&
-                  Object.entries(values).every(
-                    ([key, val]) =>
-                      label(key) &&
-                      (typeof val === 'boolean' ||
-                        (typeof val === 'number' && Number.isFinite(val)) ||
-                        (typeof val === 'string' && val.length <= 200)),
-                  )),
-            )
+            (c.rule.withinBlock === undefined || label(c.rule.withinBlock))
           )
         case 'declaresVariable':
         case 'definesFunction':
@@ -233,7 +278,7 @@ export function sectionCompletionIssues(
         (check) =>
           !label(check.label) ||
           (check.rule.type === 'usesBlock'
-            ? !label(check.rule.blockType)
+            ? hasBlankBlockType(check.rule)
             : check.rule.type === 'usesLoop'
               ? false
               : !label(check.rule.name)),

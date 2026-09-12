@@ -63,7 +63,7 @@ export interface ServerBlockCatalogEntry extends BlockCatalogEntry {
   connections: {
     previous?: string[] | null
     output?: string[] | null
-    children: { kind: 'statement' | 'value'; checks: string[] | null }[]
+    children: { name: string; kind: 'statement' | 'value'; checks: string[] | null }[]
   }
   /** Subcategoria real; famílias sem segundo nível repetem a categoria. */
   subcategory: string
@@ -294,6 +294,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
                 return []
               return [
                 {
+                  name: 'name' in arg ? String(arg.name) : '',
                   kind:
                     arg.type === 'input_statement' ? ('statement' as const) : ('value' as const),
                   checks: connectionChecks('check' in arg ? arg.check : null),

@@ -1,6 +1,7 @@
 import {
   evaluateProjectStructure,
   evaluateSectionProject,
+  isProjectBlockPattern,
   isSectionCompletion,
   type LessonSection,
   PROJECT_CHECK_AREAS,
@@ -36,6 +37,31 @@ const strings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 const compatible = (a: string[] | null, b: string[] | null) =>
   a === null || b === null || a.some((check) => b.includes(check))
+
+const namedInputsCache = new WeakMap<
+  ServerBlockCatalogEntry,
+  ServerBlockCatalogEntry['connections']['children']
+>()
+/** Named sockets, including the bounded sockets created by Blockly's mutators. */
+export function projectCheckInputs(block: ServerBlockCatalogEntry) {
+  const cached = namedInputsCache.get(block)
+  if (cached) return cached
+  const inputs = [...block.connections.children]
+  if (block.type === 'sz_js_if_else') {
+    const condition = inputs.find((input) => input.name === 'COND')
+    const body = inputs.find((input) => input.name === 'THEN')
+    if (condition && body) {
+      inputs.push({ ...body, name: 'ELSE' })
+      for (let i = 0; i < 20; i++)
+        inputs.push({ ...condition, name: `ELSEIF_COND${i}` }, { ...body, name: `ELSEIF_THEN${i}` })
+    }
+  }
+  if (block.type === 'sz_val_join')
+    for (let i = 0; i < 32; i++)
+      inputs.push({ name: `ITEM${i}`, kind: 'value', checks: ['JSValue'] })
+  namedInputsCache.set(block, inputs)
+  return inputs
+}
 
 function bodyContexts(block: ServerBlockCatalogEntry): Set<StatementContext> {
   const contexts = new Set<StatementContext>(['statement'])
@@ -106,7 +132,7 @@ export function projectCheckAuthoring(workspace: unknown) {
     let found = childrenCache.get(parent.type)
     if (!found) {
       found = available.filter((child) =>
-        parent.connections.children.some((input) => {
+        projectCheckInputs(parent).some((input) => {
           const connector =
             input.kind === 'value' ? child.connections.output : child.connections.previous
           return (
@@ -155,7 +181,7 @@ export function projectCheckAuthoring(workspace: unknown) {
     if (!parents) {
       parents = new Map()
       for (const parent of available) {
-        if (!parent.connections.children.length) continue
+        if (!projectCheckInputs(parent).length) continue
         for (const child of children(parent)) {
           const owners = parents.get(child.type) ?? new Set<string>()
           owners.add(parent.type)
@@ -188,7 +214,7 @@ export function projectCheckAuthoring(workspace: unknown) {
         reachCache.set(key, true)
         return true
       }
-      if (!block.connections.children.length) continue
+      if (!projectCheckInputs(block).length) continue
       const { local, next } = nextContexts(block, contexts)
       const nextInside = inside || block.type === within
       for (const child of children(block)) {
@@ -233,7 +259,7 @@ export function projectCheckAuthoring(workspace: unknown) {
             if (!possible.has(child.type) || !fits(state.block, child, area, local, next)) continue
             if (child.type === rule.blockType && state.block.contract.domain !== 'frame')
               found.add(state.block.type)
-            if (visited.has(child.type) || !child.connections.children.length) continue
+            if (visited.has(child.type) || !projectCheckInputs(child).length) continue
             visited.add(child.type)
             queue.push({ block: child, contexts: next })
           }
@@ -273,6 +299,8 @@ export function projectCheckAuthoring(workspace: unknown) {
         ? []
         : ['Disponibilize um bloco que permita cumprir este objetivo no Estúdio da seção.']
     }
+    if (!isProjectBlockPattern(rule))
+      return ['O objetivo tem encaixes inválidos ou profundidade excessiva.']
     const block = byType.get(rule.blockType)
     if (!block)
       return [
@@ -280,6 +308,24 @@ export function projectCheckAuthoring(workspace: unknown) {
       ]
     const validAreas = areas(rule)
     const errors: string[] = []
+    if (
+      rule.count !== undefined &&
+      (!Number.isInteger(rule.count) || rule.count < 0 || rule.count > 200_000)
+    )
+      errors.push('A quantidade precisa ser um número inteiro entre zero e 200000.')
+    if (rule.beforeBlock) {
+      const following = byType.get(rule.beforeBlock)
+      if (
+        !following ||
+        block.connections.previous === undefined ||
+        following.connections.previous === undefined ||
+        !compatible(block.connections.previous, following.connections.previous) ||
+        !areas({ type: 'usesBlock', blockType: following.type }).some(
+          (area) => validAreas.includes(area) && (!rule.area || area === rule.area),
+        )
+      )
+        errors.push('A ordem precisa comparar dois comandos compatíveis na mesma sequência.')
+    }
     if (!validAreas.length || (rule.area && !validAreas.includes(rule.area)))
       errors.push(
         'O bloco não pode ser encaixado na área ou no contêiner escolhido com os blocos disponíveis nesta aula.',
@@ -321,9 +367,26 @@ export function projectCheckAuthoring(workspace: unknown) {
         }
         if (!valid) errors.push(`O parâmetro ${name} não existe ou não aceita o valor configurado.`)
       }
+    for (const [name, pattern] of Object.entries(rule.inputBlocks ?? {})) {
+      const socket = projectCheckInputs(block).find((input) => input.name === name)
+      const child = byType.get(pattern.blockType)
+      const connector =
+        socket?.kind === 'value' ? child?.connections.output : child?.connections.previous
+      if (!socket || !child || connector === undefined || !compatible(socket.checks, connector))
+        errors.push(`O encaixe ${name} não aceita o bloco escolhido neste Estúdio.`)
+      else
+        errors.push(
+          ...issues({
+            type: 'usesBlock',
+            ...pattern,
+            area: rule.area,
+            withinBlock: block.type,
+          }).map((error) => `${name}: ${error}`),
+        )
+    }
     return errors
   }
-  return { available, areas, issues, containers }
+  return { available, areas, issues, containers, inputs: projectCheckInputs }
 }
 
 export function studioSectionCompletionIssues(

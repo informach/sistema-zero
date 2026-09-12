@@ -1,0 +1,91 @@
+{
+  "sourceFile": "roteiro-aula-12-corre-dino.md",
+  "sourceHash": "159e3a4a3abd173079edeb63dca925f8f0d5de398b73da0f7c579e3d871a0c75",
+  "status": "Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.",
+  "clips": [
+    {
+      "key": "video-abertura-editorial",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Antes de começar, joga o seu jogo umas cinco ou seis vezes seguidas, prestando atenção numa cois",
+      "exit": ". No terceiro, sorteia a velocidade dele. E no quarto, você testa. Então bora começar pelo primeiro.",
+      "edit": "Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
+      "narration": "Oi! Antes de começar, joga o seu jogo umas cinco ou seis vezes seguidas, prestando atenção numa coisa só: o ritmo dos cactos. Pode ir, que eu jogo aqui junto com você. Percebeu? Os cactos vêm sempre no mesmo compasso. Tum... tum... tum... igual um relógio. E depois de umas partidas, você já sabe a hora exata de apertar o espaço. Nem precisa mais olhar direito, o seu dedo já decorou. E quando isso acontece, o jogo vira uma decoreba. Perde a graça, porque não sobrou surpresa nenhuma. Agora pensa nos jogos que você joga um tempão sem cansar: o segredo deles é esse, eles nunca são exatamente iguais. Sempre tem uma variaçãozinha que te obriga a prestar atenção. Então é isso que a gente põe no seu jogo hoje, e no fim da aula duas partidas suas nunca mais vão ser iguais. E pra chegar lá, a gente vai passar por quatro passos. No primeiro, você entende o problema direito. No segundo, a gente sorteia o lugar onde o cacto nasce. No terceiro, sorteia a velocidade dele. E no quarto, você testa. Então bora começar pelo primeiro.",
+      "visual": "**Na tela:** o jogo da Aula 11 rodando por um bom tempo, mostrando os cactos chegando em intervalos idênticos, como um metrônomo.",
+      "newNarration": "Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-padrao-fixo",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Parte 1. Passo 1: entender por que está sempre igual",
+      "entry": "Antes de consertar, bora entender. Abre aí o seu bloco de criar o cacto e olha os números dele. O x ",
+      "exit": "ue vem. Passo 1 feito, e agora você já sabe o que está deixando o seu jogo previsível. Bora sortear.",
+      "edit": "Manter o padrão e os números destacados. Não prometer que sorteio garante uma partida sempre diferente de todas as anteriores.",
+      "narration": "Antes de consertar, bora entender. Abre aí o seu bloco de criar o cacto e olha os números dele. O x está em 560. Sempre 560. Todo cacto nasce exatamente no mesmo lugar. O vx está em menos 5. Sempre menos 5. Todo cacto anda exatamente na mesma velocidade. E o relógio está em 1.4. Sempre 1.4. Todo cacto nasce exatamente no mesmo tempo depois do anterior. Aproveita e confere esses dois comigo, porque eles são os números do nosso jogo e a última aula parte deles: o vx em menos 5 e o relógio em 1.4. Se algum estiver diferente, ajusta agora, que é rapidinho. Junta as três coisas: mesmo lugar, mesma velocidade, mesmo tempo. É impossível não ficar igual. O jogo está fazendo certinho o que você mandou, e o que você mandou é sempre a mesma coisa. Agora, como é que a gente faz um computador fazer uma coisa diferente a cada vez? Ele é uma máquina, ele faz exatamente o que a gente manda... A gente manda ele sortear! É isso: em vez de dar um número pronto, a gente dá uma faixa e deixa ele tirar um número de dentro dela, na hora. Igual tirar papelzinho de um saquinho. E aí o jogo fica imprevisível, que é a palavra chique pra dizer que ninguém consegue adivinhar o que vem. Passo 1 feito, e agora você já sabe o que está deixando o seu jogo previsível. Bora sortear.",
+      "visual": "**Na tela:** abrir o bloco de criar cacto e apontar cada número fixo: x 560, tamanho 44, vx -5; e o relógio em 1.4.",
+      "newNarration": "O relógio, o x e a velocidade continuam iguais. Observe dois trechos do mesmo padrão; vamos alterar uma propriedade por vez.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-sortear-posicao",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Parte 2. Passo 2: sortear o lugar do cacto",
+      "entry": "Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um número de tanto a tanto. Clica nel",
+      "exit": " mudou. Passo 2 feito, com o primeiro sorteio no lugar. O terceiro é o outro sorteio, na velocidade.",
+      "edit": "Preservar o encaixe em x e a faixa externa. Explicar que muda o tempo de chegada até o Dino, mesmo com o mesmo relógio de nascimento.",
+      "narration": "Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um número de tanto a tanto. Clica nele, segura e arrasta por cima do x do bloco de criar cacto, aquele 560. Igualzinho você fez com o valor da variável na Aula 11: o bloco novo toma o lugar do número, não tem buraquinho vazio. Ele tem dois campos, e vêm com 1 e 6, que é a faixa de um dadinho. Troca por 500 e 560. Agora cada cacto vai nascer num lugar sorteado entre 500 e 560. Todos continuam nascendo fora da tela, que é a nossa regra de sempre, mas uns nascem mais pertinho da beirada e outros mais longe. Clica na área do jogo e joga um pouco. Repara: agora tem cacto que chega rapidinho depois do outro, e tem cacto que demora mais. O espaço entre eles mudou, e aí já não dá mais pra jogar no automático: você tem que olhar de verdade. E repara numa coisa esperta: a gente nem mexeu no relógio. Ele continua batendo no mesmo compasso de antes, certinho. Mas como o cacto nasce mais longe ou mais perto, ele demora mais ou menos pra chegar no dino. Um numerozinho sorteado, e o ritmo inteiro do jogo mudou. Passo 2 feito, com o primeiro sorteio no lugar. O terceiro é o outro sorteio, na velocidade.",
+      "visual": "**Na tela:** Jogo 2D › Mira e contas, arrastar \"um número de a\" por cima do x (560) do bloco de criar cacto; trocar os números para 500 e 560. Rodar e mostrar os intervalos variando.",
+      "newNarration": "No x do bloco que cria cacto, conecte Sorteio entre 500 e 560. Os dois limites ficam depois da borda 480. O relógio continua em 1,4.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-menos-corre-mais",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Parte 3. Passo 3: sortear a velocidade",
+      "entry": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno",
+      "exit": "r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
+      "edit": "Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5.",
+      "narration": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em menos 5. A gente quer que ele seja menos 5 ou um pouquinho mais rápido, sorteado. Na categoria Programação, subcategoria Matemática, pega o bloco de conta, aquele com dois espaços e o sinal no meio. Esse é novo, você nunca usou. O nome já entrega: ele serve pra fazer conta. Clica, segura e arrasta ele por cima do vx. Esse bloco de conta tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje a gente não quer o mais. Abre a listinha e escolhe o menos. No espaço da esquerda, que já vem com um número, escreve -5 por cima. E no espaço da direita, vai de novo em Jogo 2D, subcategoria Mira e contas, pega outro um número de tanto a tanto e arrasta por cima do que está lá. Nele, põe 0 e 1. Lê junto comigo: menos 5, menos um número sorteado entre 0 e 1. Se sortear 0, o cacto anda a menos 5. Se sortear 1, ele anda a menos 6, ou seja, um tiquinho mais rápido. Espera... menos um número deixa ele mais rápido? Parece esquisito, mas faz sentido: lembra da Aula 5, que velocidade negativa é pra esquerda, e quanto mais negativo, mais rápido? Então tirar 1 de menos 5 dá menos 6, que é mais rápido ainda. Isso engana a cabeça da gente, e por isso vale reparar. Clica na área do jogo e joga. Agora, além do espaço entre eles variar, uns cactos vêm um tiquinho mais rápidos que os outros. Você não consegue nem decorar o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
+      "visual": "Duas contas alinhadas e duas setas à esquerda com origem igual. Não alterar o tamanho do cacto nem o intervalo. Distinguir valor numérico de rapidez.",
+      "newNarration": "Se sair zero, -5 menos zero continua -5. Se sair um, fica -6. Em direção à esquerda, -6 percorre mais distância por quadro.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-sortear-velocidade",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Parte 3. Passo 3: sortear a velocidade",
+      "entry": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno",
+      "exit": "r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
+      "edit": "Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição.",
+      "narration": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em menos 5. A gente quer que ele seja menos 5 ou um pouquinho mais rápido, sorteado. Na categoria Programação, subcategoria Matemática, pega o bloco de conta, aquele com dois espaços e o sinal no meio. Esse é novo, você nunca usou. O nome já entrega: ele serve pra fazer conta. Clica, segura e arrasta ele por cima do vx. Esse bloco de conta tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje a gente não quer o mais. Abre a listinha e escolhe o menos. No espaço da esquerda, que já vem com um número, escreve -5 por cima. E no espaço da direita, vai de novo em Jogo 2D, subcategoria Mira e contas, pega outro um número de tanto a tanto e arrasta por cima do que está lá. Nele, põe 0 e 1. Lê junto comigo: menos 5, menos um número sorteado entre 0 e 1. Se sortear 0, o cacto anda a menos 5. Se sortear 1, ele anda a menos 6, ou seja, um tiquinho mais rápido. Espera... menos um número deixa ele mais rápido? Parece esquisito, mas faz sentido: lembra da Aula 5, que velocidade negativa é pra esquerda, e quanto mais negativo, mais rápido? Então tirar 1 de menos 5 dá menos 6, que é mais rápido ainda. Isso engana a cabeça da gente, e por isso vale reparar. Clica na área do jogo e joga. Agora, além do espaço entre eles variar, uns cactos vêm um tiquinho mais rápidos que os outros. Você não consegue nem decorar o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
+      "visual": "**Na tela:** Programação › Matemática, arrastar o bloco de conta por cima do vx (-5); sinal −; esquerda -5; direita outro \"um número de a\" com 0 e 1. Rodar.",
+      "newNarration": "No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-editorial",
+      "sourceFile": "roteiro-aula-12-corre-dino.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 12! O seu jogo nunca mais vai ser igual duas vezes. Hoje você aprende",
+      "exit": "o jogo ficar mais difícil sozinho, quanto mais você sobrevive. Te espero lá pra terminar o seu jogo!",
+      "edit": "Manter a recapitulação. Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1. As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade. Terminar indicando o quiz, sem abrir desafios extras.",
+      "narration": "Parabéns, você terminou a Aula 12! O seu jogo nunca mais vai ser igual duas vezes. Hoje você aprendeu o sorteio, que é dar uma faixa em vez de um número pronto, e deixar o computador tirar um número dali na hora. E descobriu que o tamanho da faixa muda o jogo. Faixa estreita demais e dá pra adivinhar tudo. Faixa larga demais e vira bagunça. E conheceu o bloco de conta, que monta um valor a partir de dois pedaços e um sinal. Na próxima aula, a última do curso, a gente resolve o último probleminha do seu jogo: ele começa gostoso, mas depois de um tempo cansa. Você vai fazer o jogo ficar mais difícil sozinho, quanto mais você sobrevive. Te espero lá pra terminar o seu jogo!",
+      "visual": "**Na tela:** cartela \"Aula 12 concluída\".",
+      "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

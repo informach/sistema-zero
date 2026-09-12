@@ -4,6 +4,9 @@ import {
   appendExplorationAction,
   defaultLessonSection,
   type InteractiveBlock,
+  isLearningAnswers,
+  readExperienceCheckpoint,
+  segmentAnswers,
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
@@ -73,6 +76,187 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
+  test('a demonstration rejects learner actions at the HTTP boundary and records only demonstration evidence', async () => {
+    const ctx = setup()
+    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+    if (!block) throw new Error('Missing fixture')
+    block.content = {
+      ...content,
+      activity: { type: 'exploration', version: 3, mission: 'world', mode: 'demonstrate' },
+    }
+    const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
+    const save = (commands: unknown[]) =>
+      ctx.request(`${path}/learning-progress`, 'PUT', {
+        revision: REVISION,
+        hintsUsed: 0,
+        positionSeconds: null,
+        answers: {
+          experienceVersion: 3,
+          sessionId: 'session-demo',
+          segmentId: 'segment-demo',
+          baseSequence: 0,
+          commands: commands.map((c) => JSON.stringify(c)),
+        },
+      })
+    expect((await save([{ type: 'create' }])).status).toBe(400)
+    expect((await save([{ type: 'take-control' }])).status).toBe(400)
+    const response = await save([
+      { type: 'demo-start' },
+      { type: 'demo-tick', seconds: 0.5 },
+      { type: 'demo-next' },
+      { type: 'demo-tick', seconds: 0.5 },
+    ])
+    expect(response.status).toBe(200)
+    const progress = await response.json()
+    if (!progress || typeof progress !== 'object' || !('answers' in progress))
+      throw new Error('Invalid progress response')
+    const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
+      id: randomUUID(),
+      revision: REVISION,
+      hintsUsed: 0,
+      answers: progress.answers,
+    })
+    expect(attempt.status).toBe(200)
+    expect(await attempt.json()).toMatchObject({
+      attempt: { result: { passed: true, evidence: 'demonstration' } },
+    })
+  })
+  test('v2 default hints are saved and reported with the same limits as displayed hints', async () => {
+    const ctx = setup()
+    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+    if (!block) throw new Error('Missing fixture')
+    const activity = { type: 'exploration', version: 2, mission: 'layers' } as const
+    block.content = { ...content, activity, hints: [] }
+    const answers = appendExplorationAction(activity, {}, { type: 'hint', level: 1 })
+    const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
+    const progress = { revision: REVISION, answers, hintsUsed: 1, positionSeconds: null }
+    const saved = await ctx.request(`${path}/learning-progress`, 'PUT', progress)
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({ hintsUsed: 1 })
+    const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
+      id: randomUUID(),
+      revision: REVISION,
+      answers,
+      hintsUsed: 1,
+    })
+    expect(attempt.status).toBe(200)
+    expect(await attempt.json()).toMatchObject({
+      attempt: { hintsUsed: 1 },
+      progress: { hintsUsed: 1 },
+    })
+    expect(
+      (
+        await ctx.request(`${path}/learning-progress`, 'PUT', {
+          ...progress,
+          hintsUsed: 4,
+        })
+      ).status,
+    ).toBe(400)
+    expect(
+      (
+        await ctx.request(`${path}/learning-attempts`, 'POST', {
+          id: randomUUID(),
+          revision: REVISION,
+          answers,
+          hintsUsed: 4,
+        })
+      ).status,
+    ).toBe(400)
+    block.content = { ...content, activity, hints: ['A pista escrita pelo professor.'] }
+    expect(
+      (
+        await ctx.request(`${path}/learning-progress`, 'PUT', {
+          ...progress,
+          hintsUsed: 2,
+        })
+      ).status,
+    ).toBe(400)
+  })
+  test('v3 saves server checkpoints, rejects forgery and stale tabs, and retries idempotently', async () => {
+    const ctx = setup()
+    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+    if (!block) throw new Error('Missing fixture')
+    const activity = { type: 'exploration', version: 3, mission: 'world' } as const
+    block.content = { ...content, activity, checkpoint: undefined }
+    const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
+    const save = (answers: unknown) =>
+      ctx.request(`${path}/learning-progress`, 'PUT', {
+        revision: REVISION,
+        answers,
+        hintsUsed: 0,
+        positionSeconds: null,
+      })
+    const first = segmentAnswers({
+      sessionId: 'session-123',
+      segmentId: 'segment-123',
+      baseSequence: 0,
+      commands: [{ type: 'create' }],
+    })
+    const response = await save(first)
+    expect(response.status).toBe(200)
+    const progress = await response.json()
+    if (
+      !progress ||
+      typeof progress !== 'object' ||
+      !('answers' in progress) ||
+      !isLearningAnswers(progress.answers)
+    )
+      throw new Error('Invalid progress response')
+    expect(readExperienceCheckpoint(activity, progress.answers)?.session.state.discoveries).toEqual(
+      ['hidden'],
+    )
+    expect((await save(first)).status).toBe(200)
+    expect(
+      (
+        await save({
+          ...first,
+          commands: [JSON.stringify({ type: 'connect', port: 'draw', enabled: true })],
+        })
+      ).status,
+    ).toBe(409)
+    expect((await save(progress.answers)).status).toBe(400)
+    const fabricated = await ctx.request(`${path}/learning-attempts`, 'POST', {
+      id: randomUUID(),
+      revision: REVISION,
+      hintsUsed: 0,
+      answers: {
+        ...progress.answers,
+        checkpoint: [JSON.stringify({ passed: true, discoveries: ['hidden', 'visible'] })],
+      },
+    })
+    expect(fabricated.status).toBe(200)
+    expect(await fabricated.json()).toMatchObject({ attempt: { result: { passed: false } } })
+    const next = (sessionId: string, segmentId: string) =>
+      segmentAnswers({
+        sessionId,
+        segmentId,
+        baseSequence: 1,
+        commands: [{ type: 'connect', port: 'draw', enabled: true }],
+      })
+    const races = await Promise.all([
+      save(next('session-123', 'segment-456')),
+      save(next('session-456', 'segment-789')),
+    ])
+    expect(races.map((r) => r.status).sort()).toEqual([200, 409])
+    const accepted = races.find((r) => r.status === 200)
+    if (!accepted) throw new Error('No accepted segment')
+    const confirmed = await accepted.json()
+    if (
+      !confirmed ||
+      typeof confirmed !== 'object' ||
+      !('answers' in confirmed) ||
+      !isLearningAnswers(confirmed.answers)
+    )
+      throw new Error('Invalid checkpoint response')
+    const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
+      id: randomUUID(),
+      revision: REVISION,
+      hintsUsed: 0,
+      answers: confirmed.answers,
+    })
+    expect(attempt.status).toBe(200)
+    expect(await attempt.json()).toMatchObject({ attempt: { result: { passed: true } } })
+  })
   test('v2 discovery requires replayable actions, survives reload and refuses another revision', async () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)

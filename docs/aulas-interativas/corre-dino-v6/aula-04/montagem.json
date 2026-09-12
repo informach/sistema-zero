@@ -1,0 +1,77 @@
+{
+  "sourceFile": "roteiro-aula-04-corre-dino.md",
+  "sourceHash": "7b0c677793fae8c30bcef617c4ecc50ed6173beba622d672907eab8b72b6ab4f",
+  "status": "Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.",
+  "clips": [
+    {
+      "key": "video-abertura-editorial",
+      "sourceFile": "roteiro-aula-04-corre-dino.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! O seu dino já corre e já pula. Mas repara numa coisa comigo: aperta o espaço aí e presta atenção",
+      "exit": "serta. E no quarto, escolhe o som que mais combina com o seu dino. Então bora começar pelo primeiro.",
+      "edit": "Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
+      "narration": "Oi! O seu dino já corre e já pula. Mas repara numa coisa comigo: aperta o espaço aí e presta atenção no que você ouve... ele pula caladinho. E é o som que faz você sentir o que aconteceu. Pensa nos jogos que você joga: quando o personagem pula, pega uma moeda ou toma um dano, sempre tem um somzinho junto. Sem isso, o jogo parece que está pela metade. Então hoje o seu pulo ganha som. Parece pouco, né? Mas no caminho pra lá você vai conhecer a terceira área do projeto, vai aprender o que é um evento, e vai descobrir uma coisa que separa quem está começando de quem já entendeu como jogo funciona por dentro. E pra chegar lá, a gente vai passar por quatro passos. O primeiro é montar a área que escuta o teclado. No segundo, a gente põe o som. No terceiro, você descobre que ele está no lugar errado e conserta. E no quarto, escolhe o som que mais combina com o seu dino. Então bora começar pelo primeiro.",
+      "visual": "**Na tela:** o jogo da Aula 3 rodando, o dino pulando em silêncio total.",
+      "newNarration": "Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-evento-espaco",
+      "sourceFile": "roteiro-aula-04-corre-dino.md",
+      "sourceSection": "Parte 1. Passo 1: a área que escuta o teclado",
+      "entry": "Até agora o seu jogo tem duas áreas: a Ao iniciar, que arruma tudo no comecinho, e o motor, que repe",
+      "exit": "o evento ainda está vazio: ele escuta a tecla, mas não faz nada. É isso que o segundo passo resolve.",
+      "edit": "Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar.",
+      "narration": "Até agora o seu jogo tem duas áreas: a Ao iniciar, que arruma tudo no comecinho, e o motor, que repete sem parar. Hoje entra a terceira, e ela é a última. Na categoria Áreas do projeto, pega o bloco Quando acontecer. Clica, segura, arrasta e solta ao lado das outras duas, com um espacinho. Ela fica ao lado, nunca dentro delas. Essa área serve pra quando alguma coisa acontece. As outras duas rodam sozinhas: a Ao iniciar roda uma vez, o motor roda sem parar. Essa aqui fica quietinha esperando, e só faz alguma coisa quando acontece alguma coisa. Agora, na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando apertar a tecla. Clica, segura, arrasta pra dentro do Quando acontecer, que está vazia, e encaixa. Ele vai ser o primeiro bloco lá dentro. Ele tem um campo só, que é uma listinha de teclas. Clica nela e escolhe a barra de espaço, que é a tecla que você usa pra pular. E isso que você acabou de montar tem um nome que os criadores de jogos usam o tempo todo: evento. Evento é isso: uma coisa acontece, e o jogo responde na hora. Todo jogo do mundo é cheio de eventos esperando a vez deles. Primeiro passo no lugar. Só que o evento ainda está vazio: ele escuta a tecla, mas não faz nada. É isso que o segundo passo resolve.",
+      "visual": "**Na tela:** categoria \"Áreas do projeto\", arrastar \"Quando acontecer\" e soltar ao lado das outras duas; depois Jogo 2D › Controles, arrastar \"Quando apertar a tecla\" para dentro dela e escolher \"barra de espaço\" no menu.",
+      "newNarration": "Coloque a área Quando acontecer ao lado das outras. Dentro dela, encaixe Quando apertar a tecla e escolha espaço.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-primeiro-som",
+      "sourceFile": "roteiro-aula-04-corre-dino.md",
+      "sourceSection": "Parte 2. Passo 2: o som do pulo",
+      "entry": "Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a",
+      "exit": "asso feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.",
+      "edit": "Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo.",
+      "narration": "Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a floresta. Lá embaixo tem o bloco Tocar som de pulo. Clica, segura, arrasta pra dentro do Quando apertar a tecla, que está vazio, e encaixa. Esse bloco não tem campo nenhum. Ele faz uma coisa só, e o nome dele já diz qual é. Clica na área do jogo e aperta o espaço. Ouviu? O seu dino pula fazendo o somzinho. Um bloquinho só, e o jogo já parece outro. Segundo passo feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.",
+      "visual": "**Na tela:** Jogo 2D › Kit dino, arrastar \"Tocar som de pulo\" para dentro do \"Quando apertar a tecla\". Rodar e pular com o espaço.",
+      "newNarration": "Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-escutar-dino",
+      "sourceFile": "roteiro-aula-04-corre-dino.md",
+      "sourceSection": "Parte 3. Passo 3: o som está escutando a coisa errada",
+      "entry": "Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e a",
+      "exit": "rque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.",
+      "edit": "Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar.",
+      "narration": "Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e aperta o espaço. Pulou e tocou o som. Esse funcionou. Segundo: agora pula com a seta pra cima. Pulou... e não teve som nenhum. Mudo. Terceiro: clica com o mouse na parte de cima da área do jogo. Pulou também... e mudo de novo. E olha que esse é o pior dos três, porque é o jeito de jogar no celular. Quem abrir o seu jogo no telefone nunca vai ouvir o som do pulo. E o quarto é o contrário de todos: pula com o espaço e, enquanto o dino está lá no alto, aperta o espaço mais umas cinco vezes. Ouviu? O som tocou todas as vezes, e o dino não pulou nenhuma delas, porque ele já estava no ar. Então olha o tamanho do estrago: em três jeitos de pular, o som só sai em um. E ainda por cima ele sai quando não teve pulo. Agora a pergunta boa: por que aconteceu isso? Porque o bloco que a gente montou não está escutando o dino. Ele está escutando o seu dedo na barra de espaço. São coisas diferentes, e a gente confundiu as duas. Pensa assim. O seu dedo é o pedido. O pulo é o que aconteceu de verdade. Nem todo pedido vira pulo, porque o dino não pula no ar. E nem todo pulo vem de um pedido na barra de espaço, porque tem a seta e tem o dedo na tela. E aí a frase do dia, que vale pro resto da sua vida de quem faz jogo: não pergunta qual tecla foi apertada, pergunta o que aconteceu no jogo. Bora consertar, e o conserto é um bloco só. Na categoria Jogo 2D, subcategoria Controles, do lado daquele Quando apertar a tecla, tem o bloco Quando o sprite pular. Clica, segura, arrasta pra dentro do Quando acontecer e solta logo abaixo do evento que já está lá. Ele tem um campo, o nome do sprite, e nasce escrito jogador. Você já conhece essa: clica e troca pra dino. Agora presta atenção neste gesto, porque é o coração da aula. Pega o Tocar som de pulo, que está lá dentro do evento de tecla, arrasta ele e solta dentro do Quando o sprite dino pular. O mesmo bloco de som, o mesmíssimo, só que agora ele obedece a outro chefe. E o evento de tecla ficou vazio, sem servir pra nada. Clica com o botão direito em cima dele e escolhe Apagar este bloco, igual você fez na Aula 2 com a borda da tela. Agora refaz os quatro testes comigo. Espaço: som. Seta pra cima: som. Clique na parte de cima da tela: som. E com o dino lá no alto, aperta o espaço cinco vezes: silêncio. Os quatro de uma vez, com um bloco só. Porque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.",
+      "visual": "**Na tela:** os quatro testes, um a um e sem pressa, com o áudio bem audível: espaço (tem som), seta pra cima (mudo), clique na parte de cima da área do jogo (mudo), e espaço com o dino no ar (som sem pulo). Depois: Jogo 2D › Controles, arrastar \"Quando o sprite pular\" para dentro do Quando acontecer, trocar \"jogador\" por \"dino\", arrastar o \"Tocar som de pulo\" de dentro do evento de tecla pra dentro do evento novo, e apagar o \"Quando apertar a tecla\" vazio com o botão direito. Refazer os quatro testes.",
+      "newNarration": "Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-editorial",
+      "sourceFile": "roteiro-aula-04-corre-dino.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 4! Foi uma aula pequena no resultado, o pulo ganhou som, mas grande n",
+      "exit": "s. Na próxima aula o desafio finalmente chega: os cactos começam a vir na sua direção. Te espero lá!",
+      "edit": "Manter a recapitulação. Parte 4: retirar o passeio pelos 27 sons do percurso obrigatório. Manter o som de pulo para conferir a relação evento → som. Não depender só da audição: a experiência nativa deve manter o contador/indicador visual de pulo e som. Terminar indicando o quiz, sem abrir desafios extras.",
+      "narration": "Parabéns, você terminou a Aula 4! Foi uma aula pequena no resultado, o pulo ganhou som, mas grande no que você aprendeu. Você montou a terceira área do projeto e agora conhece as três. Aprendeu o que é um evento, que é o jogo respondendo na hora quando acontece alguma coisa. E aprendeu a coisa mais importante do dia, que é a diferença entre duas perguntas parecidas. 'Qual tecla foi apertada?' é uma pergunta sobre você. 'O dino pulou?' é uma pergunta sobre o jogo. Elas parecem a mesma coisa, e não são. Quando você escuta o jogo em vez de escutar o dedo, o som acerta em qualquer teclado, em qualquer mouse e em qualquer celular, sem você ter que montar nada a mais. Na próxima aula o desafio finalmente chega: os cactos começam a vir na sua direção. Te espero lá!",
+      "visual": "**Na tela:** cartela \"Aula 4 concluída\".",
+      "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
+      "production": "recorte-e-complemento",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

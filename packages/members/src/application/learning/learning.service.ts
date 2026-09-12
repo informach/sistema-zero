@@ -1,14 +1,20 @@
+import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
+  applyExperienceSegment,
   defaultLessonSection,
   evaluateLearning,
+  experienceAnswers,
   isLearningAnswers,
   isLegacyMaterialLesson,
   type LearningAnswers,
   type LessonLearningReport,
   type LessonSection,
+  learningHints,
   playbackLessonStructure,
   publicInteractiveBlock,
+  readExperienceCheckpoint,
+  readExperienceSegment,
   readVideoCoverage,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -200,16 +206,44 @@ export class LearningService {
         input.positionSeconds > 86_400)
     )
       throw new ValidationError('Posição de vídeo inválida.')
-    const hintLimit = block.content.kind === 'interactive' ? block.content.hints.length : 0
+    const hintLimit = block.content.kind === 'interactive' ? learningHints(block.content).length : 0
     if (!Number.isInteger(input.hintsUsed) || input.hintsUsed < 0 || input.hintsUsed > hintLimit)
       throw new ValidationError('Quantidade de pistas inválida.')
+    let answers = input.answers
+    let expectedExperienceSequence: number | null | undefined
+    if (
+      block.content.kind === 'interactive' &&
+      block.content.activity.type === 'exploration' &&
+      block.content.activity.version === 3
+    ) {
+      const activity = block.content.activity
+      const segment = readExperienceSegment(activity, input.answers)
+      if (!segment) throw new ValidationError('Segmento de experiência inválido.')
+      const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
+        (p) => p.blockId === blockId && p.revision === input.revision,
+      )
+      const checkpoint = saved ? readExperienceCheckpoint(activity, saved.answers) : null
+      if (saved && !checkpoint) throw new LearningConflictError()
+      const hash = createHash('sha256').update(JSON.stringify(segment)).digest('hex')
+      if (saved && checkpoint?.segmentId === segment.segmentId) {
+        if (saved.answers.segmentHash !== hash) throw new LearningConflictError()
+        return saved
+      }
+      if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new LearningConflictError()
+      expectedExperienceSequence = checkpoint?.sequence ?? null
+      answers = {
+        ...experienceAnswers(activity, applyExperienceSegment(activity, checkpoint, segment)),
+        segmentHash: hash,
+      }
+    }
     return this.repository.saveProgress({
       ...actor,
       lessonId,
+      expectedExperienceSequence,
       progress: {
         blockId,
         revision: input.revision,
-        answers: input.answers,
+        answers,
         hintsUsed: input.hintsUsed,
         positionSeconds: input.positionSeconds,
         attemptsCount: 0,
@@ -233,19 +267,37 @@ export class LearningService {
       !isLearningAnswers(input.answers) ||
       !Number.isInteger(input.hintsUsed) ||
       input.hintsUsed < 0 ||
-      input.hintsUsed > block.content.hints.length
+      input.hintsUsed > learningHints(block.content).length
     )
       throw new ValidationError('Respostas inválidas.')
     const existing = await this.repository.findAttempt(actor, input.id)
     if (existing && (existing.blockId !== blockId || existing.revision !== input.revision))
       throw new LearningConflictError()
+    let answers = input.answers
+    if (
+      !existing &&
+      block.content.activity.type === 'exploration' &&
+      block.content.activity.version === 3
+    ) {
+      const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
+        (p) => p.blockId === blockId && p.revision === input.revision,
+      )
+      if (
+        !saved ||
+        saved.answers.sequence !== answers.sequence ||
+        saved.answers.sessionId !== answers.sessionId ||
+        saved.answers.segmentId !== answers.segmentId
+      )
+        throw new LearningConflictError()
+      answers = saved.answers
+    }
     const attempt = existing ?? {
       id: input.id,
       blockId,
       revision: input.revision,
-      answers: input.answers,
+      answers,
       hintsUsed: input.hintsUsed,
-      result: evaluateLearning(block.content, input.answers),
+      result: evaluateLearning(block.content, answers),
       createdAt: this.clock().toISOString(),
     }
     const progress = await this.repository.recordAttempt(actor, lessonId, attempt)

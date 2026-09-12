@@ -1,0 +1,80 @@
+[
+  {
+    "path": "aula-01",
+    "title": "Prepare o mundo do Dino",
+    "priority": "pilot",
+    "sections": 11
+  },
+  {
+    "path": "aula-02",
+    "title": "O Dino aparece: quadros, limpeza e camadas",
+    "priority": "expansion",
+    "sections": 12
+  },
+  {
+    "path": "aula-03",
+    "title": "Pular e voltar: gravidade e impulso",
+    "priority": "pilot",
+    "sections": 9
+  },
+  {
+    "path": "aula-04",
+    "title": "O som deve escutar o pulo",
+    "priority": "pilot",
+    "sections": 8
+  },
+  {
+    "path": "aula-05",
+    "title": "Cactos no ritmo certo",
+    "priority": "expansion",
+    "sections": 11
+  },
+  {
+    "path": "aula-06",
+    "title": "O que sai da tela ainda existe?",
+    "priority": "expansion",
+    "sections": 9
+  },
+  {
+    "path": "aula-07",
+    "title": "O jogo só corre quando está jogando",
+    "priority": "expansion",
+    "sections": 9
+  },
+  {
+    "path": "aula-08",
+    "title": "Uma tela de início que responde ao jogador",
+    "priority": "expansion",
+    "sections": 9
+  },
+  {
+    "path": "aula-09",
+    "title": "Colidir, terminar e jogar de novo",
+    "priority": "expansion",
+    "sections": 10
+  },
+  {
+    "path": "aula-10",
+    "title": "Uma colisão mais justa",
+    "priority": "pilot",
+    "sections": 9
+  },
+  {
+    "path": "aula-11",
+    "title": "Pontos que contam a sua partida",
+    "priority": "expansion",
+    "sections": 11
+  },
+  {
+    "path": "aula-12",
+    "title": "Sorteios dentro de limites",
+    "priority": "expansion",
+    "sections": 9
+  },
+  {
+    "path": "aula-13",
+    "title": "A dificuldade cresce e sabe parar",
+    "priority": "expansion",
+    "sections": 11
+  }
+]

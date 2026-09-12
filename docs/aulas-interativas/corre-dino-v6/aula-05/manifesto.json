@@ -1,0 +1,533 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-05",
+  "title": "Cactos no ritmo certo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "construir-4",
+    "convite-construir-3",
+    "construir-5",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "video-construir-5-1",
+    "zappy-construir-5",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O que deve acontecer a cada quadro?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Atualizar e desenhar os cactos."
+              },
+              {
+                "id": "b",
+                "label": "Criar um novo cacto sempre."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O relógio decide quando nasce; o quadro cuida dos que já existem."
+          },
+          {
+            "id": "q2",
+            "prompt": "Se a tela termina em x 480, onde começa um cacto em x 560?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "No meio da tela."
+              },
+              {
+                "id": "a",
+                "label": "Fora da tela, à direita."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "560 fica além da borda direita."
+          },
+          {
+            "id": "q3",
+            "prompt": "Por que usar velocidade -5?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para diminuir x e andar para a esquerda."
+              },
+              {
+                "id": "b",
+                "label": "Para fazer o cacto nascer a cada cinco segundos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Velocidade e intervalo são propriedades diferentes."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Abertura. Entrada: “Oi! O seu dino corre, pula e faz barulho. Mas repara nele pulando aí: ele está pulando à toa, porque”. Saída: “você faz ele nascer fora da tela. E no quinto, a gente testa tudo. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-grupo-cactos",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 1. Passo 1: criar o grupo dos cactos. Entrada: “Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro, sem parar. E c”. Saída: “sse foi rapidinho, e o passo 1 já está pronto. O segundo é onde a gente começa a errar de propósito.”. Preservar a analogia da caixa; não confundir grupo com cacto visível. Ponte nova: “Em Ao iniciar, crie o grupo cactos. Ele começa vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-grupo-cactos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Ao iniciar, crie o grupo cactos. Ele começa vazio."
+      }
+    },
+    {
+      "key": "video-avalanche",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 2. Passo 2: fazer o cacto nascer, andar e aparecer. Entrada: “Agora três blocos, e os três vão dentro do A cada quadro do jogo. O primeiro está na categoria Jogo ”. Saída: “. O terceiro passo é justamente consertar isso, e o conserto é uma das peças mais úteis que existem.”. Reutilizar a montagem e a avalanche como observação. A criança ainda não copia esta pilha; destacar só o comando Criar. Ponte nova: “Observe estes três comandos: criar, atualizar e desenhar. Se criar também fica a cada quadro, nasce cacto sem parar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-ritmo",
+      "content": {
+        "kind": "interactive",
+        "title": "Dê um intervalo aos nascimentos",
+        "instructions": "Compare os nascimentos a cada quadro. Depois ligue o relógio e observe o espaço entre os cactos.",
+        "hints": [
+          "Veja quantos cactos nascem enquanto o relógio anda.",
+          "Compare o mesmo tempo com e sem intervalo.",
+          "Ligue Relógio a Nascer e avance dois segundos."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "spawn",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-relogio-cacto",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 3. Passo 3: o relógio. Entrada: “O problema não é o bloco de criar o cacto, ele está certinho. O problema é onde ele está. A gente nã”. Saída: “nte. Passo 3 feito. Só que tem outra coisa esquisita acontecendo na sua tela. Bora pro quarto passo.”. Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro. Ponte nova: “Dentro de Enquanto estiver rodando, coloque A cada 1,4 segundos ao lado de A cada quadro. No relógio, crie o cacto em x 400, tamanho 44 e velocidade -5. No quadro, depois de desenhar o Dino, atualize e desenhe o grupo cactos.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-relogio-cacto",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro de Enquanto estiver rodando, coloque A cada 1,4 segundos ao lado de A cada quadro. No relógio, crie o cacto em x 400, tamanho 44 e velocidade -5. No quadro, depois de desenhar o Dino, atualize e desenhe o grupo cactos."
+      }
+    },
+    {
+      "key": "video-fora-da-tela",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Reaproveitar a explicação de x e o resultado antes/depois. Separar nascimento fora da tela da questão do sinal da velocidade. Ponte nova: “A tela acaba em x 480. Em x 400, o cacto nasce dentro dela; em x 560, começa do lado de fora e entra andando.” Mostrar o retângulo 480 × 270 e uma faixa externa à direita. Marcar 400, 480 e 560 na mesma escala. Um cacto por vez; deixar sua posição externa visível só na demonstração. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-entrada-suave",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Usar apenas o gesto e a entrada suave; cortar a explicação já vista na demonstração. Ponte nova: “No bloco de criar cacto, troque x 400 por 560. Mantenha tamanho 44, velocidade -5 e relógio 1,4.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-entrada-suave",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No bloco de criar cacto, troque x 400 por 560. Mantenha tamanho 44, velocidade -5 e relógio 1,4."
+      }
+    },
+    {
+      "key": "video-sentido-velocidade",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 5. Passo 5: testar. Entrada: “Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula p”. Saída: “to. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.”. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4. Ponte nova: “Veja o x diminuir: 560, 555, 550. O -5 manda andar para a esquerda. O relógio continua igual.” Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Observe dois cactos entrando pela direita. Eles andam para a esquerda, separados no tempo. A colisão ainda não termina a partida nesta aula. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 5. Olha o tanto de coisa que mudou na sua tela: tinha um dino pulando”. Saída: “e você vai descobrir uma coisa que quem cria jogo de verdade faz em todo jogo que faz. Te espero lá.”. Manter a recapitulação. Não obrigar a criança a montar a avalanche: observar e experimentar já mostram a causa. Conservar 1,4 segundo, x 560 e velocidade -5 como estado de saída para as próximas aulas. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "grupo-cactos",
+      "title": "Prepare o grupo dos cactos",
+      "intent": "application",
+      "objective": "Usar um grupo para reunir vários obstáculos.",
+      "blockKeys": ["video-grupo-cactos", "fala-grupo-cactos"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "grupo",
+            "label": "Crie o grupo cactos em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "cactos"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "avalanche",
+      "title": "Veja por que nascem tantos cactos",
+      "intent": "demonstration",
+      "objective": "Distinguir criar de atualizar e desenhar a cada quadro.",
+      "blockKeys": ["video-avalanche"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-avalanche"]
+      }
+    },
+    {
+      "key": "ritmo",
+      "title": "Dê um intervalo aos nascimentos",
+      "intent": "exploration",
+      "objective": "Comparar criação a cada quadro e criação com relógio.",
+      "blockKeys": ["experiencia-ritmo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-ritmo"]
+      }
+    },
+    {
+      "key": "relogio-cacto",
+      "title": "Monte os dois ritmos do jogo",
+      "intent": "application",
+      "objective": "Criar periodicamente, mover e desenhar continuamente.",
+      "blockKeys": ["video-relogio-cacto", "fala-relogio-cacto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio",
+            "label": "Crie um cacto em x 400, tamanho 44 e velocidade -5 a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 400,
+                    "VX": -5,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "mover-grupo",
+            "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-grupo",
+            "label": "Desenhe o grupo cactos a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          },
+          {
+            "id": "criar-uma-vez",
+            "label": "Mantenha apenas um bloco de criação de cacto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fora-da-tela",
+      "title": "Veja onde o cacto começa",
+      "intent": "demonstration",
+      "objective": "Relacionar x de nascimento à borda direita de 480.",
+      "blockKeys": ["video-fora-da-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fora-da-tela"]
+      }
+    },
+    {
+      "key": "entrada-suave",
+      "title": "Faça o cacto entrar pela direita",
+      "intent": "application",
+      "objective": "Alterar somente a posição de nascimento.",
+      "blockKeys": ["video-entrada-suave", "fala-entrada-suave"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio",
+            "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 560,
+                    "VX": -5,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "sentido-velocidade",
+      "title": "Por que a velocidade é negativa?",
+      "intent": "demonstration",
+      "objective": "Entender que diminuir x move para a esquerda.",
+      "blockKeys": ["video-sentido-velocidade"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-sentido-velocidade"]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "O grupo cactos é atualizado e desenhado a cada quadro; um cacto nasce fora da tela a cada 1,4 segundo.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "grupo",
+            "label": "Crie o grupo cactos em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "cactos"
+              }
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 560,
+                    "VX": -5,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "mover-grupo",
+            "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-grupo",
+            "label": "Desenhe o grupo cactos a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          },
+          {
+            "id": "criar-uma-vez",
+            "label": "Mantenha apenas um bloco de criação de cacto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          },
+          {
+            "id": "fora-do-quadro",
+            "label": "Deixe a criação fora de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "O grupo cactos é atualizado e desenhado a cada quadro; um cacto nasce fora da tela a cada 1,4 segundo.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

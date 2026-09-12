@@ -1,6 +1,8 @@
 # Proposta para experiências de experimentação e demonstração no Sistema Zero
 
-A recomendação é transformar as cenas atuais em **um ambiente interativo no qual demonstração, manipulação, comparação e orientação usam o mesmo modelo**. O professor mostra um acontecimento, a criança assume o controle da cena e o sistema responde ao que ela fez. A qualidade dessa experiência depende tanto da direção visual e dos gestos quanto da consistência do motor, da autoria e da evidência registrada.
+A direção atual é usar um motor compartilhado em **dois tipos de bloco independentes**. Na demonstração, a criança observa o roteiro preparado pelo professor. Na experimentação, investiga uma missão delimitada com os controles previstos para aquele objetivo. A qualidade visual, a precisão do movimento e a comparação servem a esse foco didático.
+
+**Revisão de escopo em 12/09/2026, durante a implementação:** o usuário orientou separar os dois usos e limitar a liberdade da criança. Foram retiradas a tomada de controle da demonstração, a abertura de exemplos dentro da experimentação e as sugestões automáticas de desafios extras. Os trechos abaixo que mencionam essas possibilidades registram a hipótese inicial, agora substituída pelo [guia de funcionamento vigente](../aulas-interativas/como-funciona-v6.md). Demonstrações também não são acrescentadas automaticamente antes de cada experimento.
 
 O primeiro investimento deve produzir três experiências de referência — salto, colisão e eventos de som — com acabamento suficiente para estabelecer o padrão das demais. Elas exercitam movimento contínuo, manipulação espacial e relações de causa e efeito. A partir delas, o restante do Corre Dino pode evoluir com componentes compartilhados e missões específicas.
 

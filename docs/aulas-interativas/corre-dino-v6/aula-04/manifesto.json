@@ -1,0 +1,423 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-04",
+  "title": "O som deve escutar o pulo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Qual evento deve tocar o som?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Quando o Dino realmente pula."
+              },
+              {
+                "id": "b",
+                "label": "Sempre que uma tecla qualquer é apertada."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O som descreve o acontecimento, não apenas o dedo."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que mover o bloco de som?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para mudar a altura do salto."
+              },
+              {
+                "id": "a",
+                "label": "Para não deixar dois sons ativos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Uma cópia no evento antigo manteria o defeito."
+          },
+          {
+            "id": "q3",
+            "prompt": "Tocar na tela também pode produzir som de pulo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Sim, quando o toque produz um pulo."
+              },
+              {
+                "id": "b",
+                "label": "Não, som de pulo só funciona com espaço."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento de pulo atende aos diferentes controles."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Abertura. Entrada: “Oi! O seu dino já corre e já pula. Mas repara numa coisa comigo: aperta o espaço aí e presta atenção”. Saída: “serta. E no quarto, escolhe o som que mais combina com o seu dino. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-evento-espaco",
+      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 1. Passo 1: a área que escuta o teclado. Entrada: “Até agora o seu jogo tem duas áreas: a Ao iniciar, que arruma tudo no comecinho, e o motor, que repe”. Saída: “o evento ainda está vazio: ele escuta a tecla, mas não faz nada. É isso que o segundo passo resolve.”. Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar. Ponte nova: “Coloque a área Quando acontecer ao lado das outras. Dentro dela, encaixe Quando apertar a tecla e escolha espaço.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-evento-espaco",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Coloque a área Quando acontecer ao lado das outras. Dentro dela, encaixe Quando apertar a tecla e escolha espaço."
+      }
+    },
+    {
+      "key": "video-primeiro-som",
+      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 2. Passo 2: o som do pulo. Entrada: “Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a”. Saída: “asso feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.”. Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo. Ponte nova: “Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-primeiro-som",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste."
+      }
+    },
+    {
+      "key": "experiencia-entrada-ou-pulo",
+      "content": {
+        "kind": "interactive",
+        "title": "O dedo e o Dino fazem a mesma coisa?",
+        "instructions": "Compare o som ligado à tecla com o som ligado ao pulo. Teste o toque e uma tentativa enquanto o Dino já está no ar.",
+        "hints": [
+          "Um comando no ar consegue fazer outro salto?",
+          "Compare ligar o som à tecla e ao acontecimento Pulou.",
+          "Ligue Som a Pulou. Experimente Espaço e tocar no Dino."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "jump-sound",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-escutar-dino",
+      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 3. Passo 3: o som está escutando a coisa errada. Entrada: “Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e a”. Saída: “rque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.”. Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar. Ponte nova: “Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-escutar-dino",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio."
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste espaço, seta para cima e toque. Deve haver som em cada pulo real, sem um novo som só por apertar espaço no ar. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 4! Foi uma aula pequena no resultado, o pulo ganhou som, mas grande n”. Saída: “s. Na próxima aula o desafio finalmente chega: os cactos começam a vir na sua direção. Te espero lá!”. Manter a recapitulação. Parte 4: retirar o passeio pelos 27 sons do percurso obrigatório. Manter o som de pulo para conferir a relação evento → som. Não depender só da audição: a experiência nativa deve manter o contador/indicador visual de pulo e som. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "evento-espaco",
+      "title": "Monte um primeiro evento",
+      "intent": "application",
+      "objective": "Entender a área que responde a acontecimentos.",
+      "blockKeys": ["video-evento-espaco", "fala-evento-espaco"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "evento-inicial",
+            "label": "Coloque o evento da tecla espaço dentro de Quando acontecer.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Space"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "primeiro-som",
+      "title": "Ligue um som e teste",
+      "intent": "application",
+      "objective": "Ouvir a resposta de um evento de entrada.",
+      "blockKeys": ["video-primeiro-som", "fala-primeiro-som"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "som-na-tecla",
+            "label": "Encaixe Som de pulo no evento de espaço.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_jump"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrada-ou-pulo",
+      "title": "O dedo e o Dino fazem a mesma coisa?",
+      "intent": "exploration",
+      "objective": "Separar comando de entrada e acontecimento real de pulo.",
+      "blockKeys": ["experiencia-entrada-ou-pulo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-entrada-ou-pulo"]
+      }
+    },
+    {
+      "key": "escutar-dino",
+      "title": "Faça o som acompanhar o pulo",
+      "intent": "application",
+      "objective": "Trocar o evento preservando um único bloco de som.",
+      "blockKeys": ["video-escutar-dino", "fala-escutar-dino"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "som-pulo",
+            "label": "Coloque Som de pulo dentro de Quando o dino pular.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_jump",
+              "area": "events",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_jump"
+                }
+              }
+            }
+          },
+          {
+            "id": "som-unico",
+            "label": "Mantenha apenas um bloco Som de pulo ativo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_jump",
+              "count": 1
+            }
+          },
+          {
+            "id": "sem-evento-tecla",
+            "label": "Retire o evento provisório de tecla.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Um único som responde ao evento de pulo; o evento provisório de espaço foi retirado.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "som-pulo",
+            "label": "Coloque Som de pulo dentro de Quando o dino pular.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_jump",
+              "area": "events",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_jump"
+                }
+              }
+            }
+          },
+          {
+            "id": "som-unico",
+            "label": "Mantenha apenas um bloco Som de pulo ativo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_play_jump",
+              "count": 1
+            }
+          },
+          {
+            "id": "sem-evento-tecla",
+            "label": "Retire o evento provisório de tecla.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "count": 0
+            }
+          },
+          {
+            "id": "gravidade",
+            "label": "Aplique gravidade ao dino antes do controle do pulo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_apply_gravity",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_control_dino"
+            }
+          },
+          {
+            "id": "controle",
+            "label": "Controle o dino com força 14, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_control_dino",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "inputs": {
+                "JUMP": 14
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Um único som responde ao evento de pulo; o evento provisório de espaço foi retirado.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

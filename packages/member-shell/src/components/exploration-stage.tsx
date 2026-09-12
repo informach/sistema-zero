@@ -157,6 +157,8 @@ export function ExplorationStage({
   const motion = ['gravity', 'impulse', 'jump-sound'].includes(m)
   const collision = m === 'hitbox' || m === 'restart'
   const speed = m === 'random' || m === 'acceleration'
+  const visibleSpeedCacti = state.cacti.filter((c) => c.x >= 0 && c.x * 0.9 <= 600)
+  const outsideSpeedCount = state.cacti.length - visibleSpeedCacti.length
   const population = ['spawn', 'cleanup', 'game-state'].includes(m)
   const screen = ['controls', 'restart', 'game-state', 'score'].includes(m)
   const dinoY = 238 - Math.min(160, state.y * 0.8)
@@ -185,7 +187,10 @@ export function ExplorationStage({
         >
           <title id={`${sceneId}-title`}>Cena da descoberta</title>
           <desc id={`${sceneId}-desc`}>
-            {state.caption || 'Use as peças e os controles da cena para começar.'}
+            {state.caption ||
+              (activity.mode === 'demonstrate'
+                ? 'Observe o que acontece na cena.'
+                : 'Use as peças e os controles da cena para começar.')}
           </desc>
           <defs>
             <pattern id={`${sceneId}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
@@ -349,12 +354,12 @@ export function ExplorationStage({
             <>
               <path d="M450 76H504" stroke="#c67431" strokeWidth="8" opacity="0.5" />
               <text x="477" y="60" textAnchor="middle" fill="#825730" fontSize="13">
-                nascer: 500–560
+                {m === 'random' ? 'nascer: 500–560' : 'nascer: 500'}
               </text>
-              {state.cacti.slice(-4).map((c, i) => {
-                const x = Math.max(30, Math.min(535, 0.9 * c.x))
+              {visibleSpeedCacti.slice(-4).map((c, i) => {
+                const x = 0.9 * c.x
                 return (
-                  <g key={c.id}>
+                  <g key={c.id} aria-label={`Cacto ${c.id}, velocidade ${c.velocity}`}>
                     <CactusFigure x={x} y={232 - i * 3} />
                     <path
                       d={`M${x} ${124 + i * 22}h${c.velocity * 9}l8 -5m-8 5l8 5`}
@@ -464,6 +469,11 @@ export function ExplorationStage({
             </span>
           )}
         </div>
+      )}
+      {speed && outsideSpeedCount > 0 && (
+        <p role="status" className="text-center text-sm text-muted-foreground">
+          {outsideSpeedCount} {outsideSpeedCount === 1 ? 'cacto fora' : 'cactos fora'} da pista
+        </p>
       )}
       {collision && (
         <div

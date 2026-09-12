@@ -1,0 +1,128 @@
+{
+  "status": "passed",
+  "scope": "Local: 13 fontes, roteiros, manifestos, contratos do catálogo Jogo 2D e programas finais independentes. Não inclui mídia, banco ou publicação.",
+  "totals": {
+    "lessons": 13,
+    "sections": 128,
+    "clips": 88
+  },
+  "results": [
+    {
+      "lesson": "aula-01",
+      "sourceHash": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
+      "sections": 11,
+      "demonstrations": 2,
+      "experiments": 1,
+      "clips": 8,
+      "finalChecks": 5
+    },
+    {
+      "lesson": "aula-02",
+      "sourceHash": "c93882dd5de5ee1c27966f6c98e86bf301e5066acc3d059cf1c07cf38a8bd2a1",
+      "sections": 12,
+      "demonstrations": 2,
+      "experiments": 1,
+      "clips": 9,
+      "finalChecks": 6
+    },
+    {
+      "lesson": "aula-03",
+      "sourceHash": "98f59a849d4d2f0fb36aa23422de7cb453cb6bf39057665cdfc4fac573495b3b",
+      "sections": 9,
+      "demonstrations": 0,
+      "experiments": 2,
+      "clips": 5,
+      "finalChecks": 4
+    },
+    {
+      "lesson": "aula-04",
+      "sourceHash": "7b0c677793fae8c30bcef617c4ecc50ed6173beba622d672907eab8b72b6ab4f",
+      "sections": 8,
+      "demonstrations": 0,
+      "experiments": 1,
+      "clips": 5,
+      "finalChecks": 5
+    },
+    {
+      "lesson": "aula-05",
+      "sourceHash": "7a103a2dd829c7795d691ef38ec384b3da742f02566db055e311358df080352d",
+      "sections": 11,
+      "demonstrations": 3,
+      "experiments": 1,
+      "clips": 8,
+      "finalChecks": 6
+    },
+    {
+      "lesson": "aula-06",
+      "sourceHash": "3f35c3213866fcd7d6ca59e0e1c34407f370807a410233aeb5ff95b0cd831a5f",
+      "sections": 9,
+      "demonstrations": 0,
+      "experiments": 1,
+      "clips": 6,
+      "finalChecks": 3
+    },
+    {
+      "lesson": "aula-07",
+      "sourceHash": "7f3962d0ac9c56eae11ecd55631ff082d2ff03e8de476014f204f07b47ba9db5",
+      "sections": 9,
+      "demonstrations": 1,
+      "experiments": 1,
+      "clips": 6,
+      "finalChecks": 17
+    },
+    {
+      "lesson": "aula-08",
+      "sourceHash": "61a9981e52b892274aeeddc4ae00798d7a534530d5835205722d502f0b901139",
+      "sections": 9,
+      "demonstrations": 1,
+      "experiments": 1,
+      "clips": 6,
+      "finalChecks": 5
+    },
+    {
+      "lesson": "aula-09",
+      "sourceHash": "905dc7206a7ca7fc6264dbd2dc14661ad73e462690ba23b6d9b794d566a3c13b",
+      "sections": 10,
+      "demonstrations": 1,
+      "experiments": 1,
+      "clips": 7,
+      "finalChecks": 8
+    },
+    {
+      "lesson": "aula-10",
+      "sourceHash": "bdc328d620c6cb758db35578544f6beb4f2916714bf30bf0e4e6a0aad7f6519c",
+      "sections": 9,
+      "demonstrations": 1,
+      "experiments": 1,
+      "clips": 6,
+      "finalChecks": 3
+    },
+    {
+      "lesson": "aula-11",
+      "sourceHash": "b30f94be234e9fb0da4db2fd54da6d3d070b01e51b7b5c0569f6db7568006c6e",
+      "sections": 11,
+      "demonstrations": 2,
+      "experiments": 1,
+      "clips": 8,
+      "finalChecks": 5
+    },
+    {
+      "lesson": "aula-12",
+      "sourceHash": "159e3a4a3abd173079edeb63dca925f8f0d5de398b73da0f7c579e3d871a0c75",
+      "sections": 9,
+      "demonstrations": 2,
+      "experiments": 1,
+      "clips": 6,
+      "finalChecks": 3
+    },
+    {
+      "lesson": "aula-13",
+      "sourceHash": "05eb185cda62071bb736bbdf7461cdfbc0e03e694f8dad6609cf73972550660e",
+      "sections": 11,
+      "demonstrations": 2,
+      "experiments": 1,
+      "clips": 8,
+      "finalChecks": 10
+    }
+  ]
+}

@@ -1,0 +1,741 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-13",
+  "title": "A dificuldade cresce e sabe parar",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "convite-construir-3",
+    "checar-construir-3",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Quando a base é -9 e o sorteio desconta 1, o novo cacto recebe quanto?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "-10."
+              },
+              {
+                "id": "b",
+                "label": "-9 obrigatoriamente."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O limite protege a base; a variação é aplicada depois."
+          },
+          {
+            "id": "q2",
+            "prompt": "Qual pergunta permite acelerar até a base -9?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Velocidade = -9."
+              },
+              {
+                "id": "a",
+                "label": "Velocidade > -9."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Começando em -5, a igualdade com -9 seria falsa e impediria a primeira mudança."
+          },
+          {
+            "id": "q3",
+            "prompt": "Mudar a base troca a velocidade dos cactos antigos?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não; os novos consultam a base ao nascer."
+              },
+              {
+                "id": "b",
+                "label": "Sim; todos passam a usar o valor novo imediatamente."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Cada cacto mantém a velocidade atribuída na criação."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-abertura-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Abertura. Entrada: “Oi! A gente chegou na última aula do curso, e o seu jogo está muito bom: tem abertura, cactos sortea”. Saída: “a acelerar sozinha. E no quarto, você testa e ajusta do seu jeito. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos guardar a velocidade base, aumentá-la aos poucos e colocar um limite. Depois conferiremos o jogo completo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-guardar-velocidade",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 1. Passo 1: criar a caixinha da velocidade. Entrada: “Primeiro a gente precisa de um lugar pra guardar a velocidade dos cactos. E o bloco que faz isso voc”. Saída: “ninguém está usando ela ainda. É o próximo passo. Primeiro passo feito, rapidinho. Bora pro segundo.”. Manter o valor negativo e o identificador velocidade. Não confundir a base com a velocidade já atribuída a cada cacto. Ponte nova: “Em Ao iniciar, crie velocidade com valor -5. Por enquanto, é o mesmo número que o cacto já usava.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-guardar-velocidade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Ao iniciar, crie velocidade com valor -5. Por enquanto, é o mesmo número que o cacto já usava."
+      }
+    },
+    {
+      "key": "video-base-e-nascimento",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 2. Passo 2: fazer o cacto obedecer a caixinha. Entrada: “Vai lá no bloco de criar o cacto e olha o vx. Lembra como ficou na Aula 12? É uma conta: menos 5, me”. Saída: “próximos cursos você vai ver ela crescer bastante. Passo 2 feito. Agora a mágica: mexer na caixinha.”. Complementar a gravação com placas base/antigo/novo. Primeiro demonstrar a troca -5 literal por variável -5 sem alteração de comportamento. Ponte nova: “A base é consultada quando um cacto nasce. Este cacto antigo guarda a velocidade que já recebeu; o próximo lê a base nova.” Congelar um cacto antigo com sua seta -5. Mudar a placa da base para -6 e criar outro com seta -6. Mesma posição inicial de comparação; não mudar o sorteio nesta explicação. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "video-usar-memoria",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 2. Passo 2: fazer o cacto obedecer a caixinha. Entrada: “Vai lá no bloco de criar o cacto e olha o vx. Lembra como ficou na Aula 12? É uma conta: menos 5, me”. Saída: “próximos cursos você vai ver ela crescer bastante. Passo 2 feito. Agora a mágica: mexer na caixinha.”. Preservar o sorteio e o operador. Destacar o lado A da conta para não trocar o limite do sorteio por engano. Ponte nova: “Na conta da velocidade do cacto, troque somente o -5 pelo valor da variável velocidade. Preserve menos Sorteio entre 0 e 1.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-usar-memoria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na conta da velocidade do cacto, troque somente o -5 pelo valor da variável velocidade. Preserve menos Sorteio entre 0 e 1."
+      }
+    },
+    {
+      "key": "video-comparar-negativos",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 3. Passo 3: fazer a velocidade acelerar sozinha. Entrada: “Agora a gente vai fazer a caixinha da velocidade mudar sozinha, de tempo em tempo, enquanto o jogado”. Saída: “am um tiquinho mais rápidos, até o limite. O jogo já acelera sozinho. Agora o último passo do curso.”. Reaproveitar a analogia de temperatura, encurtando para a régua. Substituir “quinto da lista” pelo símbolo > e nome maior que, pois a ordem da interface pode mudar. Ponte nova: “Na régua, -5 é maior que -9. Somar -1 leva para -6, depois -7. Em -9, a pergunta “é maior que -9?” dá não e a base para de mudar.” Régua com -9, -8, -7, -6, -5; percorrer uma marca por vez. Mostrar a comparação verdadeira/falsa por texto e ícone. Mostrar = riscado e > escolhido sem depender da posição na lista. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-aceleracao-modelo",
+      "content": {
+        "kind": "interactive",
+        "title": "Teste a base, o limite e os próximos cactos",
+        "instructions": "Crie um cacto, avance o relógio e acompanhe a base até -9. Compare com um cacto novo. No limite, descontar 1 ainda pode dar -10; o antigo conserva a velocidade que recebeu.",
+        "hints": [
+          "A seta de cada cacto mostra a velocidade que ele recebeu ao nascer.",
+          "Compare a base do próximo cacto com a seta de um antigo.",
+          "Encaixe o limite −9. Avance cinco passos e crie o exemplo com desconto 1."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 3,
+          "mission": "acceleration",
+          "mode": "explore"
+        }
+      }
+    },
+    {
+      "key": "video-relogio-aceleracao",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 3. Passo 3: fazer a velocidade acelerar sozinha. Entrada: “Agora a gente vai fazer a caixinha da velocidade mudar sozinha, de tempo em tempo, enquanto o jogado”. Saída: “am um tiquinho mais rápidos, até o limite. O jogo já acelera sozinho. Agora o último passo do curso.”. Preservar os três relógios irmãos e a troca de = por >. Encurtar a explicação de negativos já demonstrada. A configuração final é 5 s e base mínima -9. Ponte nova: “Crie um relógio de 5 segundos ao lado dos outros. Dentro: Se jogando. Dentro dele: Se valor de velocidade > -9. No então de dentro, some -1 em velocidade.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-relogio-aceleracao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Crie um relógio de 5 segundos ao lado dos outros. Dentro: Se jogando. Dentro dele: Se valor de velocidade > -9. No então de dentro, some -1 em velocidade."
+      }
+    },
+    {
+      "key": "video-descricao-final",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Parte 4. Passo 4: testar e ajustar o seu jogo. Entrada: “Agora vamos mexer nos dois números que mandam na aceleração, e esses dois são os últimos campos do c”. Saída: “tos com espaço, seta pra cima ou tocando na tela. Escreve a sua do jeito que fizer sentido pra você.”. Selecionar o trecho final sobre descrição. Tirar os testes livres -7/-14 e 2/10 da tarefa obrigatória. A revisão do jogo é a entrega seguinte. Ponte nova: “Na descrição, escreva: Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "fala-descricao-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na descrição, escreva: Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+      }
+    },
+    {
+      "key": "fala-entrega-editorial",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Confira início, salto, colisão, pontos e reinício por teclado e toque. Observe a aceleração; se terminar a partida cedo, use a revisão das peças e o exemplo do laboratório para conferir o limite. Não é preciso bater recorde para concluir. Confira os objetivos e envie o projeto ao professor."
+      }
+    },
+    {
+      "key": "video-fecho-editorial",
+      "plannedVideo": "Fonte: roteiro-aula-13-corre-dino.md, Fecho do curso. Entrada: “Parabéns! Você não terminou só uma aula. Você terminou o curso inteiro! E olha o que você tem nas mã”. Saída: “a vontade de criar o próximo, tem mais curso te esperando aqui na Comunidade. Bora pro próximo jogo?”. Manter a recapitulação. O limite -9 vale para a base; um novo cacto ainda pode receber -10 depois do sorteio. Os antigos mantêm a velocidade recebida. Não exigir três partidas nem prometer que uma comparação pequena mede cientificamente a diversão. Fecho: substituir a exigência de publicação e mural por entrega do projeto e quiz. Publicar/compartilhar é uma escolha posterior, sem bloquear conclusão. Não prometer números de XP não conferidos. O trecho de Ponte pode entrar como curiosidade breve do fechamento, sem exigir mudança de modo nem nova atividade. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-editorial",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Vamos guardar a velocidade base, aumentá-la aos poucos e colocar um limite. Depois conferiremos o jogo completo.",
+      "blockKeys": ["video-abertura-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-editorial"]
+      }
+    },
+    {
+      "key": "guardar-velocidade",
+      "title": "Crie a memória da velocidade",
+      "intent": "application",
+      "objective": "Preparar um valor que pode mudar durante a partida.",
+      "blockKeys": ["video-guardar-velocidade", "fala-guardar-velocidade"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "velocidade-inicial",
+            "label": "Crie velocidade com valor -5 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "inputs": {
+                "VALUE": -5
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "base-e-nascimento",
+      "title": "Quem lê a nova velocidade?",
+      "intent": "demonstration",
+      "objective": "Distinguir a base guardada e a velocidade recebida ao nascer.",
+      "blockKeys": ["video-base-e-nascimento"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-base-e-nascimento"]
+      }
+    },
+    {
+      "key": "usar-memoria",
+      "title": "Faça os novos cactos lerem a base",
+      "intent": "application",
+      "objective": "Trocar a fonte do valor na entrada correta da conta.",
+      "blockKeys": ["video-usar-memoria", "fala-usar-memoria"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "velocidade-inicial",
+            "label": "Crie velocidade com valor -5 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "inputs": {
+                "VALUE": -5
+              }
+            }
+          },
+          {
+            "id": "usar-base",
+            "label": "Use valor de velocidade menos sorteio de 0 a 1 no VX dos novos cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputBlocks": {
+                    "A": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "velocidade"
+                      }
+                    },
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, conecte Sorteio entre 500 e 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "comparar-negativos",
+      "title": "Veja quando a base chega ao limite",
+      "intent": "demonstration",
+      "objective": "Interpretar velocidade > -9 e incremento -1.",
+      "blockKeys": ["video-comparar-negativos"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-comparar-negativos"]
+      }
+    },
+    {
+      "key": "aceleracao-modelo",
+      "title": "Teste a base, o limite e os próximos cactos",
+      "intent": "exploration",
+      "objective": "Observar a regra de velocidade atribuída ao nascer sob uma base limitada.",
+      "blockKeys": ["experiencia-aceleracao-modelo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-aceleracao-modelo"]
+      }
+    },
+    {
+      "key": "relogio-aceleracao",
+      "title": "Monte o acelerador com limite",
+      "intent": "application",
+      "objective": "Combinar relógio, estado e comparação numérica.",
+      "blockKeys": ["video-relogio-aceleracao", "fala-relogio-aceleracao"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "acelerar-com-limite",
+            "label": "A cada 5 s, se jogando e velocidade > -9, some -1 em velocidade.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 5
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_if_else",
+                      "inputBlocks": {
+                        "COND": {
+                          "blockType": "sz_val_compare",
+                          "fields": {
+                            "OP": ">"
+                          },
+                          "inputs": {
+                            "RIGHT": -9
+                          },
+                          "inputBlocks": {
+                            "LEFT": {
+                              "blockType": "sz_val_variable",
+                              "fields": {
+                                "NAME": "velocidade"
+                              }
+                            }
+                          }
+                        },
+                        "THEN": {
+                          "blockType": "sz_js_var_increment",
+                          "fields": {
+                            "NAME": "velocidade",
+                            "DELTA": -1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "descricao-final",
+      "title": "Conte todos os controles ao jogador",
+      "intent": "application",
+      "objective": "Atualizar a descrição de acordo com o jogo final.",
+      "blockKeys": ["video-descricao-final", "fala-descricao-final"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "descricao-final",
+            "label": "Atualize a descrição com espaço, seta para cima e toque.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_stage_description",
+              "area": "start",
+              "fields": {
+                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega-editorial",
+      "title": "Teste e entregue sua construção",
+      "intent": "delivery",
+      "objective": "Base começa em -5, muda a cada 5 s jogando até -9; novos cactos recebem base menos sorteio. Descrição atualizada e projeto entregue.",
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "velocidade-inicial",
+            "label": "Crie velocidade com valor -5 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "inputs": {
+                "VALUE": -5
+              }
+            }
+          },
+          {
+            "id": "usar-base",
+            "label": "Use valor de velocidade menos sorteio de 0 a 1 no VX dos novos cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputBlocks": {
+                    "A": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "velocidade"
+                      }
+                    },
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "acelerar-com-limite",
+            "label": "A cada 5 s, se jogando e velocidade > -9, some -1 em velocidade.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 5
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_if_else",
+                      "inputBlocks": {
+                        "COND": {
+                          "blockType": "sz_val_compare",
+                          "fields": {
+                            "OP": ">"
+                          },
+                          "inputs": {
+                            "RIGHT": -9
+                          },
+                          "inputBlocks": {
+                            "LEFT": {
+                              "blockType": "sz_val_variable",
+                              "fields": {
+                                "NAME": "velocidade"
+                              }
+                            }
+                          }
+                        },
+                        "THEN": {
+                          "blockType": "sz_js_var_increment",
+                          "fields": {
+                            "NAME": "velocidade",
+                            "DELTA": -1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, conecte Sorteio entre 500 e 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s com criação protegida por jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "descricao-final",
+            "label": "Atualize a descrição com espaço, seta para cima e toque.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_stage_description",
+              "area": "start",
+              "fields": {
+                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              }
+            }
+          },
+          {
+            "id": "pontos-zero",
+            "label": "Crie pontos com valor inicial zero em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "relogio-pontos",
+            "label": "A cada 1 s, some 1 em pontos somente se estiver jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-raio-x",
+            "label": "Retire o desenho provisório da área de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "count": 0
+            }
+          },
+          {
+            "id": "um-acelerador",
+            "label": "Use um único incremento da variável velocidade.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-editorial",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Base começa em -5, muda a cada 5 s jogando até -9; novos cactos recebem base menos sorteio. Descrição atualizada e projeto entregue.",
+      "blockKeys": ["video-fecho-editorial"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-editorial"]
+      }
+    },
+    {
+      "key": "quiz-editorial",
+      "title": "Confira as ideias de hoje",
+      "intent": "closing",
+      "objective": "Explicar as relações que acabamos de construir.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

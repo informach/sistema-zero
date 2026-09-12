@@ -17,6 +17,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
 import { DialogueBlockView } from './dialogue-block'
+import { LearningExperience } from './learning-experience'
 import { LearningExperiment } from './learning-experiment'
 import { LearningExploration } from './learning-exploration'
 import { LearningHtml } from './learning-html'
@@ -42,6 +43,16 @@ export function InteractiveLessonBlock({
   const player = useLessonPlayer()
   if (!isPublicInteractiveBlock(block.content))
     return <p role="alert">Esta atividade precisa de uma configuração válida.</p>
+  if (block.content.activity.type === 'exploration' && block.content.activity.version === 3)
+    return (
+      <LearningExperience
+        key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(block.content.activity)}`}
+        block={block}
+        content={block.content}
+        activity={block.content.activity}
+        previewContent={previewContent}
+      />
+    )
   return (
     <Activity
       key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(block.content.activity)}`}

@@ -1,5 +1,6 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
+export * from './experience'
 export * from './exploration'
 export * from './exploration-model'
 export * from './gallery-delivery'
@@ -13,7 +14,13 @@ export * from './section-templates'
 export * from './simulation'
 export * from './video-watch'
 
-import { type ExplorationActivity, evaluateExploration, isExplorationActivity } from './exploration'
+import { evaluateExperience } from './experience'
+import {
+  EXPLORATION_DEFINITIONS,
+  type ExplorationActivity,
+  evaluateExploration,
+  isExplorationActivity,
+} from './exploration'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
 import { evaluateSimulation, isSimulationActivity, type SimulationActivity } from './simulation'
 export const SECTION_INTENTS = [
@@ -112,6 +119,14 @@ export interface InteractiveBlock {
   /** A checkpoint is graded on the server, independently of a custom iframe. */
   checkpoint?: LearningCheckpoint
 }
+/** Authoring, presentation and evidence use the same hints, including curated mission defaults. */
+export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'>): string[] {
+  if (block.activity.type === 'exploration' && block.activity.version === 2)
+    return block.hints.length > 0
+      ? block.hints.slice(0, 3)
+      : [...EXPLORATION_DEFINITIONS[block.activity.mission].hints]
+  return block.hints
+}
 export type PublicLearningActivity =
   | Exclude<LearningActivity, SequenceActivity>
   | Omit<SequenceActivity, 'solution'>
@@ -173,7 +188,7 @@ export interface LearningResult {
   feedback: string
   verifiedBy: 'server' | 'client'
   /** Exploration is evidence of manipulating a model, not a claim of conceptual mastery. */
-  evidence?: 'exploration' | 'understanding'
+  evidence?: 'exploration' | 'understanding' | 'demonstration'
 }
 export interface LearningBlockProgress {
   blockId: string
@@ -365,7 +380,8 @@ export function evaluateLearning(
   answers: LearningAnswers,
 ): LearningResult {
   const a = block.activity
-  if (a.type === 'exploration') return evaluateExploration(a, answers)
+  if (a.type === 'exploration')
+    return a.version === 3 ? evaluateExperience(a, answers) : evaluateExploration(a, answers)
   if (a.type === 'simulation' && !block.checkpoint) return evaluateSimulation(a, answers)
   let participated = false
   let passed = false

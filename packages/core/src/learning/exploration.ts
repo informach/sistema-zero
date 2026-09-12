@@ -1,3 +1,4 @@
+import { type ExperienceStep, isExperienceScript } from './experience'
 import { type ExplorationState, replayExploration } from './exploration-model'
 import type { LearningAnswers, LearningResult } from './index'
 import type { LearningScene, SimulationFamily } from './simulation'
@@ -21,12 +22,15 @@ export const EXPLORATION_MISSIONS = [
 export type ExplorationMission = (typeof EXPLORATION_MISSIONS)[number]
 export interface ExplorationActivity {
   type: 'exploration'
-  version: 2
+  version: 2 | 3
   mission: ExplorationMission
   /** Reviewed recording; optional until media production is complete. */
   instructionAudioUrl?: string
   /** Curated starting condition for the two motion missions; never changes gravity. */
   initialImpulse?: number
+  /** v3 only. Demonstrations record viewing separately from learner discoveries. */
+  mode?: 'explore' | 'demonstrate'
+  demonstration?: ExperienceStep[]
 }
 export interface ExplorationGoal {
   id: string
@@ -304,7 +308,7 @@ export function isExplorationActivity(value: unknown): value is ExplorationActiv
   return (
     record(value) &&
     value.type === 'exploration' &&
-    value.version === 2 &&
+    (value.version === 2 || value.version === 3) &&
     EXPLORATION_MISSIONS.some((mission) => mission === value.mission) &&
     (value.initialImpulse === undefined ||
       ((value.mission === 'gravity' || value.mission === 'impulse') &&
@@ -315,7 +319,12 @@ export function isExplorationActivity(value: unknown): value is ExplorationActiv
     (value.instructionAudioUrl === undefined ||
       (typeof value.instructionAudioUrl === 'string' &&
         value.instructionAudioUrl.length <= 4000 &&
-        /^(https:\/\/|\/[^/])/.test(value.instructionAudioUrl)))
+        /^(https:\/\/|\/[^/])/.test(value.instructionAudioUrl))) &&
+    (value.version === 2
+      ? value.mode === undefined && value.demonstration === undefined
+      : (value.mode === undefined || value.mode === 'explore' || value.mode === 'demonstrate') &&
+        (value.demonstration === undefined ||
+          isExperienceScript(value.demonstration, value.mission, value.initialImpulse)))
   )
 }
 export function explorationGoals(activity: ExplorationActivity, state: ExplorationState) {
@@ -329,6 +338,13 @@ export function evaluateExploration(
   answers: LearningAnswers,
 ): LearningResult {
   const { state, valid } = replayExploration(activity, answers)
+  return evaluateExplorationState(activity, state, valid)
+}
+export function evaluateExplorationState(
+  activity: ExplorationActivity,
+  state: ExplorationState,
+  valid = true,
+): LearningResult {
   const missing = explorationGoals(activity, state).find((g) => !g.complete)
   const finalReady =
     activity.mission === 'layers'

@@ -560,10 +560,16 @@ export function lessonDraftCases(getDb: () => Database) {
       ).rejects.toThrow()
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
-    test('all 27 sequential manifests import into drafts; retry and reimport retain linked videos and required work', async () => {
+    test('every sequential manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
       const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas')
       const paths = [...new Bun.Glob('**/manifesto.json').scanSync(root)]
-      expect(paths).toHaveLength(27)
+      // ⚠️ Piso, não número exato. O `27` cravado aqui quebrava o CI toda vez que uma
+      // aula NOVA entrava no catálogo (virou 40) — e o que este teste guarda é que TODO
+      // manifesto do repositório importa, não quantos existem hoje. O piso continua
+      // sendo o anti-vácuo: um glob que parasse de achar os arquivos reprovaria.
+      expect(paths.length).toBeGreaterThanOrEqual(27)
+      const VERSOES_SUPORTADAS = [3, 4]
+      const versoesVistas = new Set<number>()
       let plannedCount = 0
       // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
       // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e
@@ -577,7 +583,12 @@ export function lessonDraftCases(getDb: () => Database) {
         plannedEsperado += manifest.blocks.filter(
           (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
         ).length
-        expect(manifest.version).toBe(path.replaceAll('\\', '/').startsWith('corre-dino/') ? 4 : 3)
+        // ⚠️ A versão é CONFERIDA, não cravada por pasta. O mapa antigo ("corre-dino é 4,
+        // o resto é 3") reprovou assim que um curso novo (`corre-dino-v6`) nasceu em 4 e
+        // o prefixo não o alcançou. O que precisa valer é que todo manifesto declare uma
+        // versão que o importador conhece — e que as duas apareçam no conjunto (abaixo).
+        expect(VERSOES_SUPORTADAS).toContain(manifest.version)
+        versoesVistas.add(manifest.version)
         const f = await fixture()
         await f.db
           .update(courses)
@@ -649,6 +660,9 @@ export function lessonDraftCases(getDb: () => Database) {
         }
         expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
       }
+      // Sem isto o teste deixaria de cobrir uma das versões em silêncio, no dia em que o
+      // catálogo inteiro migrasse para a mais nova.
+      expect([...versoesVistas].sort()).toEqual(VERSOES_SUPORTADAS)
       expect(plannedCount).toBe(plannedEsperado)
       // Anti-vácuo: a régua acima compararia 0 com 0 se a leitura dos manifestos
       // parasse de enxergar os vídeos planejados.

@@ -26,6 +26,104 @@ const { useLessonPreview } = await import(
 )
 const { LessonRehearsal } = await import('../src/components/editor/lesson-rehearsal')
 
+test('external confirmations do not bypass discoveries or unfinished section criteria', async () => {
+  const content: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'Camadas',
+    instructions: 'Mude a ordem.',
+    hints: [],
+    required: false,
+    activity: { type: 'exploration', version: 2, mission: 'layers' },
+  }
+  const documentValue: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Ensaio',
+    slug: 'ensaio',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    supportBlockIds: [],
+    blocks: [
+      {
+        id: 'video',
+        content: { kind: 'video', provider: 'file', src: 'https://example.com/video.mp4' },
+      },
+      { id: 'discovery', content },
+    ],
+    sections: [
+      {
+        ...defaultLessonSection('a', 'Vídeo e descoberta', ['video', 'discovery']),
+        completion: { version: 1, blockIds: ['video', 'discovery'] },
+      },
+      {
+        ...defaultLessonSection('b', 'Avatar', []),
+        completion: { version: 1, blockIds: [], platformAction: 'customize-avatar' },
+      },
+      {
+        ...defaultLessonSection('unfinished', 'Seção ainda em edição', []),
+        completion: { version: 1, blockIds: [] },
+      },
+    ],
+  }
+  const lesson: LessonDetailView = {
+    id: 'lesson',
+    slug: 'ensaio',
+    title: 'Ensaio',
+    courseSlug: '',
+    moduleId: '',
+    completed: false,
+    estimatedMinutes: null,
+    positionSeconds: null,
+    sections: documentValue.sections,
+    attachments: [],
+    blocks: documentValue.blocks.map((b, i) => ({
+      id: b.id,
+      content: b.content,
+      kind: b.content.kind,
+      sortOrder: i,
+    })),
+  }
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const button = (name: string) => {
+    const result = [...container.querySelectorAll('button')].find(
+      (b) => b.textContent?.trim() === name,
+    )
+    if (!result) throw new Error(`Missing ${name}`)
+    return result
+  }
+  try {
+    await act(async () =>
+      root.render(
+        <LessonRehearsal
+          lesson={lesson}
+          document={documentValue}
+          renderBlocks={(blocks) =>
+            blocks
+              .filter((b) => b.kind === 'interactive')
+              .map((block) => (
+                <InteractiveLessonBlock key={block.id} block={block} previewContent={content} />
+              ))
+          }
+        />,
+      ),
+    )
+    expect(button('Próxima seção').disabled).toBe(true)
+    await act(async () => button('Simular confirmação da ação externa').click())
+    expect(button('Próxima seção').disabled).toBe(true)
+    await act(async () => button('Depois').click())
+    expect(button('Próxima seção').disabled).toBe(false)
+    await act(async () => button('Próxima seção').click())
+    expect(button('Próxima seção').disabled).toBe(true)
+    await act(async () => button('Simular confirmação da ação externa').click())
+    await act(async () => button('Próxima seção').click())
+    expect(container.textContent).toContain('Configure um critério de conclusão na autoria.')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
 test('rehearsal interleaves two discoveries and two independent goals in one project, with retry and recovery and no requests', async () => {
   const fetch = spyOn(globalThis, 'fetch').mockImplementation(
     Object.assign(

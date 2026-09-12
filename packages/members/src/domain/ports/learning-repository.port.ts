@@ -20,6 +20,8 @@ export interface LearningOwner {
 export interface SaveLearningProgress extends LearningOwner {
   lessonId: string
   progress: LearningBlockProgress
+  /** Compare under the owner transaction lock; null means no checkpoint for this revision. */
+  expectedExperienceSequence?: number | null
 }
 export interface LearningRepository {
   listEvidence(

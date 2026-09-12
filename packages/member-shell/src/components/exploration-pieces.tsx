@@ -6,92 +6,56 @@ import type {
   ExplorationPort,
   ExplorationState,
 } from '@sistemazero/core/learning'
-import { useId, useRef, useState } from 'react'
+import { type PointerEvent, type RefObject, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { ExperienceConnection as Connection } from './experience-connection'
 import { CactusFigure, DinoFigure, SceneButton, TreeFigure } from './exploration-stage'
 
-function Connection({
-  source,
-  target,
-  alternative,
-  enabled,
-  onConnect,
-}: {
-  source: string
-  target: string
-  alternative: string
-  enabled: boolean
-  onConnect: (enabled: boolean) => void
-}) {
-  const id = useId()
-  const [selected, setSelected] = useState(false)
-  const targetRef = useRef<HTMLButtonElement>(null)
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-3">
-      <SceneButton
-        aria-pressed={selected}
-        className="touch-none"
-        onClick={(event) => {
-          if (event.detail === 0) setSelected(true)
-        }}
-        onPointerDown={(event) => {
-          event.currentTarget.setPointerCapture(event.pointerId)
-          setSelected(true)
-        }}
-        onPointerUp={(event) => {
-          const bounds = targetRef.current?.getBoundingClientRect()
-          if (
-            bounds &&
-            event.clientX >= bounds.left &&
-            event.clientX <= bounds.right &&
-            event.clientY >= bounds.top &&
-            event.clientY <= bounds.bottom
-          ) {
-            onConnect(true)
-            setSelected(false)
-          }
-        }}
-      >
-        ◉ {source}
-      </SceneButton>
-      <svg
-        width="54"
-        height="24"
-        viewBox="0 0 54 24"
-        aria-hidden="true"
-        className={enabled ? 'text-primary' : 'text-muted-foreground/50'}
-      >
-        <path
-          d="M0 12H54"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeDasharray={enabled ? undefined : '4 5'}
-        />
-        <circle cx="48" cy="12" r="4" fill="currentColor" />
-      </svg>
-      <button
-        ref={targetRef}
-        type="button"
-        aria-describedby={`${id}-help`}
-        onClick={() => {
-          if (selected) {
-            onConnect(true)
-            setSelected(false)
-          }
-        }}
-        className={`min-h-14 rounded-xl border-2 border-dashed px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${selected ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
-      >
-        ◎ {target}
-      </button>
-      {enabled && <SceneButton onClick={() => onConnect(false)}>{alternative}</SceneButton>}
-      <p id={`${id}-help`} className="basis-full text-xs text-muted-foreground">
-        {selected
-          ? `Agora toque em ${target} para ligar.`
-          : enabled
-            ? `${source} está ligado a ${target}.`
-            : 'Pegue o fio e leve ao destino. Ou toque na origem e depois no destino.'}
-      </p>
-    </div>
-  )
+function usePieceDrag(zones: RefObject<HTMLDivElement | null>, label: string) {
+  const [drag, setDrag] = useState<{
+    id: number
+    x: number
+    y: number
+    slot: number | null
+  } | null>(null)
+  const locate = (event: PointerEvent<HTMLButtonElement>) => {
+    const b = zones.current?.getBoundingClientRect()
+    return b &&
+      event.clientX >= b.left &&
+      event.clientX <= b.right &&
+      event.clientY >= b.top &&
+      event.clientY <= b.bottom
+      ? event.clientX < b.left + b.width / 2
+        ? 0
+        : 1
+      : null
+  }
+  return {
+    slot: drag?.slot,
+    active: drag !== null,
+    start: (e: PointerEvent<HTMLButtonElement>) => {
+      if (e.button !== 0) return
+      e.currentTarget.setPointerCapture(e.pointerId)
+      setDrag({ id: e.pointerId, x: e.clientX, y: e.clientY, slot: locate(e) })
+    },
+    move: (e: PointerEvent<HTMLButtonElement>) => {
+      if (drag?.id === e.pointerId)
+        setDrag({ ...drag, x: e.clientX, y: e.clientY, slot: locate(e) })
+    },
+    cancel: () => setDrag(null),
+    ghost: drag
+      ? createPortal(
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 border-primary bg-background px-5 py-3 text-sm font-semibold text-primary shadow-lg"
+            style={{ left: drag.x, top: drag.y }}
+          >
+            {label}
+          </div>,
+          document.body,
+        )
+      : null,
+  }
 }
 
 function LayerPieces({
@@ -103,25 +67,33 @@ function LayerPieces({
 }) {
   const [selected, setSelected] = useState<'dino' | 'forest'>('dino')
   const tray = useRef<HTMLDivElement>(null)
+  const drag = usePieceDrag(tray, selected === 'dino' ? 'Dino' : 'Floresta')
   function place(last: boolean, piece = selected) {
     dispatch({ type: 'layer', front: piece === 'dino' ? last : !last })
   }
   return (
-    <div className="space-y-2 rounded-2xl border border-primary/20 bg-primary/5 p-3">
+    <div
+      className="space-y-2 rounded-2xl border border-primary/20 bg-primary/5 p-3"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') drag.cancel()
+      }}
+    >
+      {drag.ghost}
       <p className="text-sm font-semibold">A ordem de desenhar</p>
       <div ref={tray} className="grid grid-cols-2 gap-3">
         {(front ? ['forest', 'dino'] : ['dino', 'forest']).map((piece, index) => (
           <button
             type="button"
             key={piece}
-            className={`flex min-h-24 touch-none items-center justify-center gap-3 rounded-xl border-2 bg-background p-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${selected === piece ? 'border-primary' : 'border-border'}`}
+            className={`flex min-h-24 touch-none items-center justify-center gap-3 rounded-xl border-2 bg-background p-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${drag.slot === index ? 'border-dashed border-primary ring-4 ring-primary/15' : selected === piece ? 'border-primary' : 'border-border'}`}
             aria-pressed={selected === piece}
             onClick={() => setSelected(piece === 'dino' ? 'dino' : 'forest')}
             onPointerDown={(event) => {
-              event.currentTarget.setPointerCapture(event.pointerId)
+              drag.start(event)
               setSelected(piece === 'dino' ? 'dino' : 'forest')
             }}
             onPointerUp={(event) => {
+              if (!drag.active) return
               const bounds = tray.current?.getBoundingClientRect()
               if (
                 bounds &&
@@ -134,7 +106,11 @@ function LayerPieces({
                   event.clientX > bounds.left + bounds.width / 2,
                   piece === 'dino' ? 'dino' : 'forest',
                 )
+              drag.cancel()
             }}
+            onPointerMove={drag.move}
+            onPointerCancel={drag.cancel}
+            onLostPointerCapture={drag.cancel}
           >
             <svg viewBox="0 0 70 64" className="h-14 w-16 text-primary" aria-hidden="true">
               {piece === 'dino' ? (
@@ -176,6 +152,7 @@ function ConditionPiece({
   const [picked, setPicked] = useState(false)
   const zones = useRef<HTMLDivElement>(null)
   const label = score ? '＋ Somar ponto' : '◷ Relógio'
+  const drag = usePieceDrag(zones, label)
   const put = (enabled: boolean) => {
     dispatch({ type: 'connect', port: 'condition', enabled })
     setPicked(false)
@@ -188,10 +165,11 @@ function ConditionPiece({
         if (event.detail === 0) setPicked(true)
       }}
       onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId)
+        drag.start(event)
         setPicked(true)
       }}
       onPointerUp={(event) => {
+        if (!drag.active) return
         const bounds = zones.current?.getBoundingClientRect()
         if (
           bounds &&
@@ -201,18 +179,34 @@ function ConditionPiece({
           event.clientY <= bounds.bottom
         )
           put(event.clientX >= bounds.left + bounds.width / 2)
+        drag.cancel()
       }}
+      onPointerMove={drag.move}
+      onPointerCancel={() => {
+        drag.cancel()
+        setPicked(false)
+      }}
+      onLostPointerCapture={drag.cancel}
     >
       {label}
     </SceneButton>
   )
   return (
-    <div className="space-y-2">
+    <div
+      className="space-y-2"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          drag.cancel()
+          setPicked(false)
+        }
+      }}
+    >
+      {drag.ghost}
       <div ref={zones} className="grid grid-cols-2 gap-3">
         {[false, true].map((guarded) => (
           <div
             key={String(guarded)}
-            className={`min-h-28 space-y-3 rounded-2xl border-2 border-dashed p-3 ${guarded ? 'border-primary/50 bg-primary/5' : 'border-border bg-muted/30'}`}
+            className={`min-h-28 space-y-3 rounded-2xl border-2 border-dashed p-3 ${drag.slot === (guarded ? 1 : 0) ? 'border-primary bg-primary/10 ring-4 ring-primary/15' : guarded ? 'border-primary/50 bg-primary/5' : 'border-border bg-muted/30'}`}
           >
             <p className="text-sm font-semibold">{guarded ? 'Se jogando' : 'Em qualquer tela'}</p>
             {state.guarded === guarded ? (
