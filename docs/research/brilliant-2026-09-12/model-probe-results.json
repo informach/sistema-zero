@@ -1,0 +1,65 @@
+{
+  "note": "Local diagnostic, Bun; not browser or child-device performance. No product files changed.",
+  "chunking": [
+    {
+      "mission": "spawn",
+      "oneStep": {
+        "elapsed": 1,
+        "discoveries": ["every-frame"],
+        "born": 30,
+        "points": 0
+      },
+      "manySteps": {
+        "elapsed": 1.0000000000000002,
+        "discoveries": [],
+        "born": 30,
+        "points": 0
+      }
+    },
+    {
+      "mission": "score",
+      "oneStep": {
+        "elapsed": 1,
+        "discoveries": ["score-start"],
+        "born": 0,
+        "points": 0
+      },
+      "manySteps": {
+        "elapsed": 1.0000000000000002,
+        "discoveries": [],
+        "born": 0,
+        "points": 0
+      }
+    }
+  ],
+  "replayTimings": [
+    {
+      "requestedActions": 10,
+      "acceptedActions": 10,
+      "serializedBytes": 444,
+      "medianMs": 0.0465,
+      "p95Ms": 0.0846
+    },
+    {
+      "requestedActions": 100,
+      "acceptedActions": 100,
+      "serializedBytes": 3745,
+      "medianMs": 0.1436,
+      "p95Ms": 0.4129
+    },
+    {
+      "requestedActions": 500,
+      "acceptedActions": 500,
+      "serializedBytes": 18425,
+      "medianMs": 0.3685,
+      "p95Ms": 0.7176
+    },
+    {
+      "requestedActions": 900,
+      "acceptedActions": 869,
+      "serializedBytes": 31969,
+      "medianMs": 0.5934,
+      "p95Ms": 1.3532
+    }
+  ]
+}

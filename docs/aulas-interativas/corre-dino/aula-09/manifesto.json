@@ -20,28 +20,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Hoje uma batida vai encerrar a partida. E o jogador vai poder tentar outra vez, sem mexer nos blocos. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Provoque a batida. Conecte o reinício para jogar outra partida.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Detectar um encontro só faz diferença quando escolhemos sua consequência. A colisão pode produzir som, explosão, tremida e uma mudança de tela.\n\nAo ir para fim, as ações protegidas por Se jogando deixam de executar. Reiniciar prepara uma partida nova, passando novamente pelas ações iniciais.\n\nTestar só a batida não basta: início, fim e reinício precisam formar um ciclo que o jogador entende. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre os botões de início e o cacto que pode ser aproximado sem pressa. “Vamos jogar. E quando a partida termina, como jogar outra vez?” Convide a começar, aproximar até bater e investigar a ligação Jogar de novo. A nova rodada precisa mostrar o estado reiniciado, sem uma animação que finja o clique da criança."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Jogar e recomeçar",
-        "instructions": "Provoque a batida. Conecte o reinício para jogar outra partida.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Jogue outra vez",
+        "instructions": "Comece uma partida e aproxime o cacto para descobrir o que falta no fim.",
+        "hints": [
+          "A partida terminou. Como sair dessa tela?",
+          "A ligação de Jogar de novo precisa iniciar outra rodada.",
+          "Ligue Jogar de novo a Início e acione o botão no fim."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "restart"
+          "type": "exploration",
+          "version": 2,
+          "mission": "restart"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: A colisão que acaba o jogo. Narração revisada: “Agora é a sua vez. Vamos a colisão que acaba o jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto.\n\nDentro, coloque Ir para a tela fim. Rode e bata. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: A colisão que acaba o jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto.\n\nDentro, coloque Ir para a tela fim. Rode e bata. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -53,7 +55,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: A tela de fim. Narração revisada: “Agora é a sua vez. Vamos a tela de fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela.\n\nUse Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: A tela de fim. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela.\n\nUse Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -65,7 +67,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer você sentir a batida. Narração revisada: “Agora é a sua vez. Vamos fazer você sentir a batida.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer você sentir a batida. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -85,7 +87,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Jogar de novo. Narração revisada: “Agora é a sua vez. Vamos jogar de novo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas.\n\nPreserve o caminho de inicio para jogando que já existe. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Jogar de novo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas.\n\nPreserve o caminho de inicio para jogando que já existe. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -97,7 +99,7 @@
     },
     {
       "key": "video-construir-5-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar do começo ao fim. Narração revisada: “Agora é a sua vez. Vamos testar do começo ao fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter.\n\nConfira se o novo jogo volta ao estado inicial. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar do começo ao fim. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter.\n\nConfira se o novo jogo volta ao estado inicial. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-5",
@@ -187,8 +189,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Jogar e recomeçar",
-      "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
+      "title": "Jogue outra vez",
+      "objective": "Colisão encerrou a partida; Outra partida iniciada pela ação de reinício",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

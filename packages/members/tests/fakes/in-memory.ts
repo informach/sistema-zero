@@ -405,6 +405,18 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
 }
 
 export class InMemoryCourseRepository implements CourseRepository, ContentAdminRepository {
+  async listMaterialLessonIds(courseId: string): Promise<string[]> {
+    const outline = await this.findOutline(courseId, { publishedOnly: true })
+    return outline
+      .flatMap((module) => module.lessons)
+      .filter(
+        (lesson) =>
+          this.lessonContentAvailable(lesson.id) &&
+          this.blocks.some((block) => block.lessonId === lesson.id && block.kind === 'ebook'),
+      )
+      .map((lesson) => lesson.id)
+  }
+
   async listShowcaseLessonIds(courseId: string): Promise<string[]> {
     const outline = await this.findOutline(courseId, { publishedOnly: true })
     return outline

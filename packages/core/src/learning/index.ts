@@ -1,14 +1,19 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
+export * from './exploration'
+export * from './exploration-model'
 export * from './gallery-delivery'
 export * from './legacy-layout'
+export * from './manifest-quiz'
 export * from './project-structure'
+export * from './quiz'
 export * from './requirements'
 export * from './section-progression'
 export * from './section-templates'
 export * from './simulation'
 export * from './video-watch'
 
+import { type ExplorationActivity, evaluateExploration, isExplorationActivity } from './exploration'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
 import { evaluateSimulation, isSimulationActivity, type SimulationActivity } from './simulation'
 export const SECTION_INTENTS = [
@@ -96,6 +101,7 @@ export type LearningActivity =
   | ExperimentActivity
   | HtmlActivity
   | SimulationActivity
+  | ExplorationActivity
 export interface InteractiveBlock {
   kind: 'interactive'
   title: string
@@ -313,6 +319,8 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   }
   const a = value.activity
   switch (a.type) {
+    case 'exploration':
+      return isExplorationActivity(a) && value.checkpoint === undefined
     case 'simulation':
       return isSimulationActivity(a)
     case 'checkpoint':
@@ -357,6 +365,7 @@ export function evaluateLearning(
   answers: LearningAnswers,
 ): LearningResult {
   const a = block.activity
+  if (a.type === 'exploration') return evaluateExploration(a, answers)
   if (a.type === 'simulation' && !block.checkpoint) return evaluateSimulation(a, answers)
   let participated = false
   let passed = false

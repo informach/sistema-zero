@@ -640,6 +640,7 @@ export interface CourseDetailView {
   id: string
   milestones?: CourseMilestonesView
   showcaseLessonId?: string | null
+  materialLessonIds?: string[]
   slug: string
   title: string
   subtitle: string | null

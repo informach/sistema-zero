@@ -17,28 +17,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Às vezes parece que o Dino perde sem encostar no cacto. Vamos ligar um raio-X para investigar essa batida. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Mude a área do Dino e aproxime o cacto. Compare quando eles encostam.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: O computador pode usar uma forma simples para detectar contatos, sem seguir cada detalhe do desenho. Essa área inclui espaços transparentes e pode tocar o obstáculo antes da imagem parecer encostar.\n\nMostrar a caixa de colisão torna essa regra visível. Diminuir a área pode deixar o jogo mais justo, mas diminuir demais permite contatos que parecem impossíveis.\n\nO experimento usa círculos para comparar áreas; no seu jogo, confira os retângulos com o raio-X. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o desenho do Dino e o contorno de sua área. “Quando o jogo percebe uma batida? Aproxime o cacto até as áreas encostarem.” Depois deixe o cacto no meio e convide a mexer somente na alça da área. Mostre os botões equivalentes Menor/Maior. O desenho mantém seu tamanho e a comparação guarda a mesma posição."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "A área da batida",
-        "instructions": "Mude a área do Dino e aproxime o cacto. Compare quando eles encostam.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Onde a batida acontece?",
+        "instructions": "Aproxime o cacto. Depois mude a área do Dino, sem mudar seu desenho.",
+        "hints": [
+          "Olhe as bordas das duas áreas.",
+          "Deixe o cacto no mesmo lugar e mude só a área do Dino.",
+          "Aproxime até a marca do meio. Compare as alças Menor e Maior."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "hitbox"
+          "type": "exploration",
+          "version": 2,
+          "mission": "hitbox"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o raio-X. Narração revisada: “Agora é a sua vez. Vamos ligar o raio-x.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode.\n\nO contorno rosa vai mostrar a área que estava invisível. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o raio-X. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode.\n\nO contorno rosa vai mostrar a área que estava invisível. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -50,7 +52,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Por que a batida pareceu roubada. Narração revisada: “Agora é a sua vez. Vamos por que a batida pareceu roubada.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa.\n\nEssa diferença explica a sensação de perder cedo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Por que a batida pareceu roubada. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa.\n\nEssa diferença explica a sensação de perder cedo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -70,7 +72,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Ajustar a área de colisão. Narração revisada: “Agora é a sua vez. Vamos ajustar a área de colisão.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80.\n\nRecomece e confira a caixa menor com o raio-X ainda ligado. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ajustar a área de colisão. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80.\n\nRecomece e confira a caixa menor com o raio-X ainda ligado. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -82,7 +84,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Você escolhe o quanto perdoar. Narração revisada: “Agora é a sua vez. Vamos você escolhe o quanto perdoar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos.\n\nAo terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Você escolhe o quanto perdoar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos.\n\nAo terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -127,7 +129,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "O desenho não encostou, mas a caixa de colisão encostou. O jogo…",
+            "prompt": "![A: áreas separadas. B: a área maior do Dino toca a do cacto. Os desenhos e suas posições são iguais.](/api/lesson-visuals/dino-area-v1.svg)\n\nO desenho não encostou, mas a caixa de colisão encostou. O jogo…",
             "choices": [
               {
                 "id": "a",
@@ -172,8 +174,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A área da batida",
-      "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
+      "title": "Onde a batida acontece?",
+      "objective": "Áreas em contato; Áreas separadas; Mesma posição, áreas diferentes",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

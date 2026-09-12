@@ -96,6 +96,24 @@ export class DrizzleCourseRepository implements CourseRepository {
     private readonly db: Database | Parameters<Parameters<Database['transaction']>[0]>[0],
   ) {}
 
+  async listMaterialLessonIds(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ lessonId: lessons.id })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'ebook'),
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+    return [...new Set(rows.map((row) => row.lessonId))]
+  }
+
   async listShowcaseLessonIds(courseId: string): Promise<string[]> {
     const rows = await this.db
       .select({ lessonId: lessons.id })

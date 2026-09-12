@@ -1,30 +1,35 @@
 # Cada coisa na sua tela
 
-Piloto Corre Dino, organizada em 4 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
+Piloto Corre Dino v5, organizada em 4 seções. A sequência desta aula foi escolhida pelo conteúdo; não é um molde obrigatório para as demais.
 
-Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
+Os vídeos estão roteirizados e precisam ser gravados e vinculados. Preservar o bloco Estúdio existente, o projeto contínuo e os marcos concluídos. No notebook, usar a largura útil dos painéis; em telas estreitas, Ver exemplo / Criar conserva o mesmo editor.
 
-A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
+O modelo registra descobertas, sem afirmar domínio do conceito. Conferir estrutura no Estúdio não comprova a execução do jogo. A criança testa o comportamento e o professor revisa a entrega.
 
-## 1. O relógio espera a partida
+## 1. O relógio espera você começar
 
-**Objetivo do professor:** Usar uma condição para executar a partida somente na tela jogando.
+**Objetivo do professor:** Relógio funcionando no início; Relógio espera no início; Relógio funciona jogando
 
 **Vídeo planejado:** `video-missao`
 
-Clipe de 30 a 45 segundos. Oi! Oi! Vamos ensinar o jogo a esperar pelo jogador. No fim de hoje, só a floresta deve aparecer. Esse é o plano! Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Coloque o relógio dentro de “se jogando”. Teste no início e na partida.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos.
+Clipe de 20 a 45 segundos. Mostre a tela inicial com o relógio funcionando. “Os cactos estão chegando antes de começar! Onde podemos colocar o relógio para ele esperar?” Apresente as regiões Em qualquer tela e Se jogando, com arraste e toque. A criança compara o relógio no início e na partida depois de mover a peça.
 
-Podemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção.
+**Missão v2:** `game-state`. Avance o relógio no início. Depois leve-o para dentro de Se jogando.
 
-Mover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar. Termine apontando para a atividade abaixo.
+**A criança mexe em:** Peça do relógio, região Se jogando e início da partida.
 
-**Cena nativa:** `game-state`. Coloque o relógio dentro de “se jogando”. Teste no início e na partida.
+**Pista 1:** Por que há cactos antes de você começar?
 
-**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+**Pista 2:** A região Se jogando só deixa agir durante a partida.
 
-**O que observar:** O relógio espera no início e funciona durante a partida!
+**Pista 3:** Leve Relógio para Se jogando. Compare o início e a partida.
 
-**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
+**Para avançar:** Relógio funcionando no início; Relógio espera no início; Relógio funciona jogando.
+
+**Reconhecimento:** O relógio espera no início e funciona na partida!
+
+**Convite opcional:** E se você voltar ao início depois de jogar?
+
 
 ## 2. A floresta espera a partida
 
@@ -32,7 +37,7 @@ Mover uma sequência para dentro de uma condição muda quando ela funciona, sem
 
 **Vídeo planejado:** `video-construir-1-1`
 
-Clipe de 30 a 75 segundos: Dizer em qual tela o jogo abre. Narração revisada: “Agora é a sua vez. Vamos dizer em qual tela o jogo abre.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.
+Clipe de 30 a 75 segundos: Dizer em qual tela o jogo abre. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.
 
 Agora o jogo sabe em qual tela começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -40,7 +45,7 @@ Agora o jogo sabe em qual tela começa. Mostre o resultado esperado. Termine: �
 
 **Vídeo planejado:** `video-construir-2-1`
 
-Clipe de 30 a 75 segundos: A pergunta da tela "jogando". Narração revisada: “Agora é a sua vez. Vamos a pergunta da tela "jogando".” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.
+Clipe de 30 a 75 segundos: A pergunta da tela "jogando". Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.
 
 Escolha jogando. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -48,7 +53,7 @@ Escolha jogando. Mostre o resultado esperado. Termine: “Pause o vídeo e exper
 
 **Vídeo planejado:** `video-construir-3-1`
 
-Clipe de 30 a 75 segundos: Mudar o jogo pra dentro. Narração revisada: “Agora é a sua vez. Vamos mudar o jogo pra dentro.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.
+Clipe de 30 a 75 segundos: Mudar o jogo pra dentro. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.
 
 Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -56,12 +61,15 @@ Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserv
 
 **Zappy:** Confira os dois lugares protegidos pelo Se: as ações de cada quadro e o nascimento dos cactos.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Confira a tela jogando dentro da atualização de cada quadro.
 - Confira a tela jogando também dentro do relógio dos cactos.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 3. Mostre sua criação
 
@@ -73,9 +81,10 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
+**Entrega:** testar e confirmar o envio ao professor; a confirmação preserva a versão enviada e libera o quiz seguinte.
+
 
 ## 4. O que você descobriu?
 
@@ -83,24 +92,12 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-**Pergunta:** O desenho está protegido por “se jogando”, mas o relógio não. O que pode acontecer?
-
-- Cactos nascerem antes da partida. (correta)
+**Quiz:** O desenho está protegido por “se jogando”, mas o relógio não. O que pode acontecer?
+- Cactos nascerem antes da partida.
 - O relógio esperar automaticamente.
+**Explicação:** O relógio precisa da sua própria condição para esperar a partida.
 
-**Feedback:** O relógio precisa da sua própria condição para esperar a partida.
-
-**Pergunta:** Nesta aula ainda não fizemos o botão de começar. Ver só a floresta é…
-
+**Quiz:** Nesta aula ainda não fizemos o botão de começar. Ver só a floresta é…
 - Sinal de que o projeto foi perdido.
-- O resultado esperado enquanto a partida espera. (correta)
-
-**Feedback:** Os blocos da partida estão protegidos e o comando de início vem depois.
-
-**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
-
-## Produção e revisão
-
-Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
-
-Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.
+- O resultado esperado enquanto a partida espera.
+**Explicação:** Os blocos da partida estão protegidos e o comando de início vem depois.

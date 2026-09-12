@@ -11,6 +11,8 @@ import type {
 /** Leitura da árvore de conteúdo (Fatia 1 = só leitura; autoria é fatia seguinte). */
 export interface CourseRepository {
   /** Published lessons containing a showcase, in course order; never returns block payloads. */
+  /** Published material lessons; references only, never private PDF locations. */
+  listMaterialLessonIds(courseId: string): Promise<string[]>
   listShowcaseLessonIds(courseId: string): Promise<string[]>
   findCourseBySlug(slug: string): Promise<Course | null>
   findCourseById(id: string): Promise<Course | null>

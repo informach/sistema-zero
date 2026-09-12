@@ -15,28 +15,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi de novo! Seu Dino já está guardado no projeto. Agora vamos fazê-lo aparecer e ver a floresta passar. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Troque a ordem das figuras e veja onde o Dino aparece.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Imagine desenhar um personagem num papel e depois cobri-lo com outro papel de floresta. Ele continua lá, mas fica escondido.\n\nNo jogo, a ordem de desenho produz esse efeito: quem é desenhado por último aparece por cima. A cada quadro, limpamos e desenhamos de novo.\n\nO dino parece correr enquanto o fundo passa; o movimento percebido pode vir do cenário, mesmo quando a posição horizontal do personagem muda pouco. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a floresta cobrindo o Dino e as duas peças na faixa. “Tem um Dino escondido aqui. Troque o lugar das peças para encontrar nosso personagem!” Demonstre como pegar uma peça e a alternativa de escolher Antes/Depois, sem resolver a ordem. O efeito aparece imediatamente; não mande apertar Play."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Quem fica na frente?",
-        "instructions": "Troque a ordem das figuras e veja onde o Dino aparece.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Quem fica na frente?",
+        "instructions": "Troque as peças de lugar. A última desenhada fica na frente!",
+        "hints": [
+          "O Dino está escondido atrás de quê?",
+          "Olhe a última peça na faixa de desenho.",
+          "Escolha o Dino e toque no espaço Depois."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "layers"
+          "type": "exploration",
+          "version": 2,
+          "mission": "layers"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o motor do jogo. Narração revisada: “Agora é a sua vez. Vamos ligar o motor do jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele.\n\nEsse será o motor do desenho. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o motor do jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele.\n\nEsse será o motor do desenho. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -48,7 +50,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar o mundo. Narração revisada: “Agora é a sua vez. Vamos desenhar o mundo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo.\n\nEm Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele.\n\nUse velocidade 5 e remova só o bloco da borda, preservando os vizinhos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar o mundo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo.\n\nEm Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele.\n\nUse velocidade 5 e remova só o bloco da borda, preservando os vizinhos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -60,7 +62,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar do seu jeito. Narração revisada: “Agora é a sua vez. Vamos testar e deixar do seu jeito.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo.\n\nCompare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar do seu jeito. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo.\n\nCompare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -105,7 +107,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "Quem aparece por cima: o primeiro ou o último desenho?",
+            "prompt": "![A: Dino coberto pela floresta. B: Dino aparece na frente.](/api/lesson-visuals/dino-camadas-v1.svg)\n\nQuem aparece por cima: o primeiro ou o último desenho?",
             "choices": [
               {
                 "id": "a",
@@ -151,7 +153,7 @@
     {
       "key": "comeco",
       "title": "Quem fica na frente?",
-      "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
+      "objective": "Floresta na frente; Dino na frente",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

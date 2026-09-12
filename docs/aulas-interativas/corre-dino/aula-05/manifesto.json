@@ -18,28 +18,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Sua pista vai ganhar cactos. Primeiro vamos provocar uma pequena avalanche para descobrir como dar espaço entre eles. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Compare criar a cada quadro com esperar um intervalo entre os cactos.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Criar um cacto em cada quadro produz uma avalanche, porque o desenho atualiza muitas vezes por segundo. Um relógio separado deixa você escolher quanto esperar entre nascimentos.\n\nO grupo cactos reúne os obstáculos para mover e desenhar juntos. Um x além da borda direita faz o cacto entrar gradualmente; uma velocidade horizontal negativa o leva para a esquerda.\n\nIntervalo e velocidade influenciam a dificuldade de formas diferentes. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a pista vazia e o relógio. “Precisamos de espaço entre os cactos. Avance o relógio e veja como eles nascem.” Apresente a ligação entre relógio e nascimento quando a pista ficar cheia. Compare dois segundos em cada montagem, com a mesma velocidade. Não peça à criança que sobreviva aos obstáculos."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "O ritmo dos cactos",
-        "instructions": "Compare criar a cada quadro com esperar um intervalo entre os cactos.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Abra espaço entre os cactos",
+        "instructions": "Avance o relógio. Depois ligue um intervalo ao nascimento dos cactos.",
+        "hints": [
+          "Veja quantos cactos nascem enquanto o relógio anda.",
+          "Compare o mesmo tempo com e sem intervalo.",
+          "Ligue Relógio a Nascer e avance dois segundos."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "spawn"
+          "type": "exploration",
+          "version": 2,
+          "mission": "spawn"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Criar o grupo dos cactos. Narração revisada: “Agora é a sua vez. Vamos criar o grupo dos cactos.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos.\n\nUse esse mesmo nome nos próximos blocos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar o grupo dos cactos. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos.\n\nUse esse mesmo nome nos próximos blocos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -51,7 +53,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o cacto nascer, andar e aparecer. Narração revisada: “Agora é a sua vez. Vamos fazer o cacto nascer, andar e aparecer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três.\n\nRode por pouco tempo para observar a avalanche. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o cacto nascer, andar e aparecer. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três.\n\nRode por pouco tempo para observar a avalanche. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -71,7 +73,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: O relógio. Narração revisada: “Agora é a sua vez. Vamos o relógio.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4.\n\nLeve somente a criação do cacto para dentro desse relógio. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: O relógio. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4.\n\nLeve somente a criação do cacto para dentro desse relógio. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -83,7 +85,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Nascer fora da tela. Narração revisada: “Agora é a sua vez. Vamos nascer fora da tela.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44.\n\nObserve que agora ele nasce fora da tela e entra pela direita. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Nascer fora da tela. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44.\n\nObserve que agora ele nasce fora da tela e entra pela direita. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -95,7 +97,7 @@
     },
     {
       "key": "video-construir-5-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade.\n\nVolte ao ponto de partida de 1.4 e menos 5 antes de seguir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade.\n\nVolte ao ponto de partida de 1.4 e menos 5 antes de seguir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-5",
@@ -185,8 +187,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "O ritmo dos cactos",
-      "objective": "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.",
+      "title": "Abra espaço entre os cactos",
+      "objective": "Criação em cada quadro; Criação com intervalo",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

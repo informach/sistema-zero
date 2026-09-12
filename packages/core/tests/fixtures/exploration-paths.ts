@@ -1,0 +1,91 @@
+import type { ExplorationAction, ExplorationMission } from '../../src/learning'
+
+/** Authored success journeys, expressed as child actions rather than state/result flags. */
+export const explorationPaths: Record<ExplorationMission, ExplorationAction[]> = {
+  world: [{ type: 'create' }, { type: 'connect', port: 'draw', enabled: true }],
+  layers: [{ type: 'layer', front: true }],
+  gravity: [
+    { type: 'jump', input: 'tap' },
+    { type: 'advance', seconds: 0.5 },
+    { type: 'connect', port: 'gravity', enabled: true },
+    { type: 'jump', input: 'tap' },
+    { type: 'advance', seconds: 1 },
+  ],
+  impulse: [
+    { type: 'jump', input: 'tap' },
+    { type: 'advance', seconds: 1 },
+    { type: 'impulse', force: 14 },
+    { type: 'jump', input: 'tap' },
+    { type: 'advance', seconds: 2 },
+  ],
+  'jump-sound': [
+    { type: 'jump', input: 'key' },
+    { type: 'advance', seconds: 0.1 },
+    { type: 'jump', input: 'key' },
+    { type: 'connect', port: 'sound', enabled: true },
+    { type: 'jump', input: 'key' },
+    { type: 'advance', seconds: 1 },
+    { type: 'jump', input: 'tap' },
+    { type: 'advance', seconds: 1 },
+    { type: 'jump', input: 'key' },
+  ],
+  spawn: [
+    { type: 'advance', seconds: 2 },
+    { type: 'connect', port: 'timer', enabled: true },
+    { type: 'advance', seconds: 2 },
+  ],
+  cleanup: [
+    { type: 'advance', seconds: 6 },
+    { type: 'connect', port: 'cleanup', enabled: true },
+    { type: 'advance', seconds: 2 },
+  ],
+  'game-state': [
+    { type: 'advance', seconds: 1 },
+    { type: 'connect', port: 'condition', enabled: true },
+    { type: 'advance', seconds: 1 },
+    { type: 'start', input: 'tap' },
+    { type: 'advance', seconds: 1 },
+  ],
+  controls: [
+    { type: 'start', input: 'tap' },
+    { type: 'connect', port: 'touch', enabled: true },
+    { type: 'start', input: 'tap' },
+    { type: 'home' },
+    { type: 'start', input: 'key' },
+  ],
+  restart: [
+    { type: 'start', input: 'tap' },
+    { type: 'move', distance: 25 },
+    { type: 'connect', port: 'restart', enabled: true },
+    { type: 'restart' },
+  ],
+  hitbox: [
+    { type: 'move', distance: 25 },
+    { type: 'move', distance: 60 },
+    { type: 'resize', width: 100 },
+  ],
+  score: [
+    { type: 'connect', port: 'condition', enabled: true },
+    { type: 'advance', seconds: 1 },
+    { type: 'start', input: 'key' },
+    { type: 'advance', seconds: 3 },
+    { type: 'collide' },
+    { type: 'advance', seconds: 2 },
+  ],
+  random: [
+    { type: 'sample', kind: 'position', unit: 0, guided: true },
+    { type: 'sample', kind: 'position', unit: 1, guided: true },
+    { type: 'sample', kind: 'velocity', unit: 0, guided: true },
+    { type: 'sample', kind: 'velocity', unit: 1, guided: true },
+  ],
+  acceleration: [
+    { type: 'sample', kind: 'velocity', unit: 0, guided: true },
+    { type: 'connect', port: 'limit', enabled: true },
+    { type: 'clock' },
+    { type: 'clock' },
+    { type: 'clock' },
+    { type: 'clock' },
+    { type: 'clock' },
+    { type: 'sample', kind: 'velocity', unit: 1, guided: true },
+  ],
+}

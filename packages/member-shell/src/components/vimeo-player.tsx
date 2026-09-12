@@ -4,6 +4,7 @@ import type { VideoWatchCoverage } from '@sistemazero/core/learning'
 import Player from '@vimeo/player'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
@@ -94,6 +95,11 @@ export function VimeoPlayer({
       // (a divisória arrastável) mais o pedido de qualidade na tela cheia.
     })
     playerRef.current = player
+    const audioOwner = Symbol('vimeo')
+    const unregisterAudio = registerLessonMedia(audioOwner, () => player.pause())
+    player.on('play', () => {
+      void requestLessonMediaFocus(audioOwner)
+    })
     let disposed = false
     let sampledAt = 0
     let pendingSample = false
@@ -153,6 +159,7 @@ export function VimeoPlayer({
 
     return () => {
       disposed = true
+      unregisterAudio()
       // `destroy()` remove o iframe que o PRÓPRIO SDK criou dentro do host —
       // o React nunca soube dele, então o próximo run cria um novo limpo.
       if (playerRef.current === player) playerRef.current = null

@@ -1,5 +1,7 @@
 # Implementação do piloto Corre, Dino!
 
+Estado de revisão: o checklist abaixo registra a primeira rodada de implementação. Não significa conclusão integral da proposta original nem publicação do piloto. A [proposta v5, ainda para aprovação](2026-09-12-exploracao-direta-aulas-kids-proposta-v5.md), reavalia as pendências de critérios, prévia, notebook, relatório e verificação de comportamento, além de redesenhar as explorações. O [estudo associado](2026-09-12-brilliant-estudo-v5.md) distingue funcionalidades existentes de melhorias propostas.
+
 Proposta aprovada em 12/09/2026: [desenho](2026-09-12-evolucao-experiencia-aulas-kids-proposta.md).
 
 Requisitos adicionais aprovados e refinados durante a implementação: aulas legadas sem seções autoradas terão vídeo à esquerda e Estúdio à direita em uma seção, e quiz em outra. Sem Estúdio, a primeira seção contém apenas vídeo e exige 90% de trechos assistidos. Sem quiz, não inventar uma segunda seção. Aulas legadas de texto e caderno ficam em uma seção; abrir o livro ou acessar seu PDF conclui a etapa. A migração será gradual por aula. Não reiniciar progresso, duplicar projetos, publicar ou migrar conteúdo remotamente durante a implementação local.

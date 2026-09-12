@@ -2,6 +2,7 @@
 
 import { mergeVideoCoverage, type VideoWatchCoverage } from '@sistemazero/core/learning'
 import { useEffect, useRef, useState } from 'react'
+import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 import { useLessonPlayer } from './lesson-player-context'
 
 interface YouTubePlayer {
@@ -9,6 +10,7 @@ interface YouTubePlayer {
   getDuration(): number
   getPlaybackRate(): number
   seekTo(seconds: number, allowSeekAhead: boolean): void
+  pauseVideo(): void
   destroy(): void
 }
 interface YouTubeApi {
@@ -67,6 +69,8 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
     if (!container) return
     let disposed = false
     let player: YouTubePlayer | undefined
+    const audioOwner = Symbol('youtube')
+    const unregisterAudio = registerLessonMedia(audioOwner, () => player?.pauseVideo())
     let timer: ReturnType<typeof setInterval> | undefined
     let previous: { seconds: number; at: number } | undefined
     let coverage: VideoWatchCoverage = { duration: 0, ranges: [] }
@@ -112,6 +116,7 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
               if (timer) clearInterval(timer)
               timer = undefined
               if (data === 1) {
+                void requestLessonMediaFocus(audioOwner)
                 previous = { seconds: target.getCurrentTime(), at: performance.now() }
                 timer = setInterval(() => sample(target), 250)
               } else {
@@ -129,6 +134,7 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
       })
     return () => {
       disposed = true
+      unregisterAudio()
       if (timer) clearInterval(timer)
       player?.destroy()
       container.replaceChildren()

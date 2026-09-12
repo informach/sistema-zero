@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
+  appendExplorationAction,
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
@@ -15,6 +16,7 @@ import {
   sectionCompletionIssues,
   validateLessonSections,
 } from '../src/learning'
+import { explorationPaths } from './fixtures/exploration-paths'
 import { simulationCases } from './simulation-cases'
 
 const section = {
@@ -202,6 +204,9 @@ describe('the 27 adapted lessons', () => {
         expect(evaluateLearning(block, {}).passed).toBe(false)
         let answers: LearningAnswers = {}
         const activity = block.activity
+        if (activity.type === 'exploration')
+          for (const action of explorationPaths[activity.mission])
+            answers = appendExplorationAction(activity, answers, action)
         if (activity.type === 'simulation')
           for (const parameters of simulationCases[activity.scene])
             answers = recordSimulationTrial(activity, answers, parameters)

@@ -15,28 +15,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Seu Dino já corre na floresta. Hoje ele vai saltar e voltar ao chão. Vamos experimentar alturas diferentes? Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Faça um salto sem gravidade. Ligue a gravidade e tente de novo.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Quando você joga uma bola para cima, ela sobe, perde velocidade, para por um instante e volta. No modelo da descoberta, a gravidade muda a velocidade a cada passo.\n\nNo Estúdio, a gravidade do mundo só age nos sprites que recebem o bloco que a aplica. A força do pulo e a gravidade têm papéis diferentes: uma inicia o salto; a outra muda seu movimento e o traz de volta.\n\nAlterar um valor por vez ajuda a enxergar o efeito de cada um. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o Dino no chão e indique que é possível tocar nele. “Seu Dino consegue sair do chão. O que será que faz ele voltar? Toque nele e acompanhe o salto.” Depois da primeira tentativa, convide a ligar a gravidade e repetir. O impulso inicial fica igual; o mundo continua com gravidade 0,6. Se ele sair do enquadramento, mostre a seta que acompanha sua posição."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Um salto que volta",
-        "instructions": "Faça um salto sem gravidade. Ligue a gravidade e tente de novo.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Faça o Dino voltar ao chão",
+        "instructions": "Toque no Dino para pular. Observe o que acontece sem aplicar a gravidade.",
+        "hints": [
+          "O Dino está voltando ou continua subindo?",
+          "Repita o mesmo impulso com a gravidade aplicada.",
+          "Ligue Gravidade ao Dino. Depois toque nele para saltar."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "jump"
+          "type": "exploration",
+          "version": 2,
+          "mission": "gravity"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Dar o comando de pulo ao dino. Narração revisada: “Agora é a sua vez. Vamos dar o comando de pulo ao dino.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15.\n\nTeste espaço: ele ainda não está pronto para pular do chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Dar o comando de pulo ao dino. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15.\n\nTeste espaço: ele ainda não está pronto para pular do chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -48,7 +50,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: A gravidade traz o dino pro chão. Narração revisada: “Agora é a sua vez. Vamos a gravidade traz o dino pro chão.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.\n\nRode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: A gravidade traz o dino pro chão. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.\n\nRode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -60,7 +62,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Você escolhe a altura. Narração revisada: “Agora é a sua vez. Vamos você escolhe a altura.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais.\n\nExperimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Você escolhe a altura. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais.\n\nExperimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -105,7 +107,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "O que traz o Dino de volta depois do salto?",
+            "prompt": "O Dino recebeu o impulso e continua subindo. Qual mudança o faz voltar?",
             "choices": [
               {
                 "id": "a",
@@ -113,7 +115,7 @@
               },
               {
                 "id": "b",
-                "label": "Trocar a cor do céu."
+                "label": "Aumentar ainda mais a força inicial do pulo."
               }
             ],
             "correctChoiceIds": ["a"],
@@ -121,11 +123,11 @@
           },
           {
             "id": "q2",
-            "prompt": "Você quer descobrir o efeito da força do pulo. Como comparar?",
+            "prompt": "![A: salto baixo. B: salto alto. Os dois partiram do mesmo chão.](/api/lesson-visuals/dino-impulso-v1.svg)\n\nVocê quer descobrir o efeito da força do pulo. Como comparar?",
             "choices": [
               {
                 "id": "a",
-                "label": "Mudar força, gravidade e fundo juntos."
+                "label": "Mudar a força e a gravidade na mesma tentativa."
               },
               {
                 "id": "b",
@@ -145,13 +147,36 @@
         "pose": "speaking",
         "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
       }
+    },
+    {
+      "key": "video-missao-impulso",
+      "plannedVideo": "Clipe de 20 a 35 segundos. Retome o salto que voltou ao chão no projeto. “Agora que ele volta, vamos escolher a altura! Toque no Dino, mude a seta do impulso e compare outro salto.” Mostre as marcas Baixo/Médio/Alto e a alça. A seta representa apenas o impulso inicial, não uma força contínua nem um personagem pendurado. Compare na mesma escala e com a mesma gravidade."
+    },
+    {
+      "key": "descoberta-impulso",
+      "content": {
+        "kind": "interactive",
+        "title": "Escolha a altura do salto",
+        "instructions": "Toque no Dino. Depois mude a seta do impulso e compare outro salto.",
+        "hints": [
+          "A marca mostra a altura do salto anterior.",
+          "Mude só a seta. A gravidade continua igual.",
+          "Escolha Baixo ou Alto e toque no Dino para comparar."
+        ],
+        "required": false,
+        "activity": {
+          "type": "exploration",
+          "version": 2,
+          "mission": "impulse"
+        }
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "Um salto que volta",
-      "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
+      "title": "Faça o Dino voltar ao chão",
+      "objective": "Subida sem aplicar gravidade; Volta ao chão com gravidade",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
@@ -171,10 +196,7 @@
         "video-construir-1-1",
         "zappy-construir-1",
         "video-construir-2-1",
-        "zappy-construir-2",
-        "video-construir-3-1",
-        "zappy-construir-3",
-        "zappy-convite-construir-1"
+        "zappy-construir-2"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -194,6 +216,49 @@
                 "SPRITE": "dino"
               },
               "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "explorar-impulso",
+      "title": "Escolha a altura do salto",
+      "objective": "Comparar duas alturas mantendo a gravidade igual.",
+      "intent": "exploration",
+      "blockKeys": ["video-missao-impulso", "descoberta-impulso"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta-impulso"]
+      }
+    },
+    {
+      "key": "criar-altura",
+      "title": "Ajuste o salto do seu Dino",
+      "objective": "Escolher uma força de pulo e testar o resultado no mesmo projeto.",
+      "intent": "application",
+      "blockKeys": ["video-construir-3-1", "zappy-construir-3", "zappy-convite-construir-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "controlar-salto",
+            "label": "Configure o comando de pulo do Dino em A cada quadro. Teste a força escolhida com Play.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_control_dino",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
             }
           }
         ]

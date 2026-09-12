@@ -15,7 +15,9 @@ import {
   sectionCompletionIssues,
 } from '@sistemazero/core/learning'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
+import { useLessonPreview } from '@sistemazero/member-shell/components/lesson-preview-context'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
+import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { sanitizePintaAsset } from '@sistemazero/pinta/assets'
 import type { PintaHandle } from '@sistemazero/pinta/lesson'
 import type { StudioHandle } from '@sistemazero/studio'
@@ -30,6 +32,8 @@ import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
 import { LessonBlockKindBadge } from './lesson-block-kind'
+import { lessonEditorialWarnings } from './lesson-editorial-warnings'
+import { LessonRehearsal } from './lesson-rehearsal'
 import { SectionCompletionEditor } from './section-completion-editor'
 
 function blockLabel(block: BlockView) {
@@ -60,21 +64,56 @@ function blockLabel(block: BlockView) {
 function ToolPreview({ block }: { block: BlockView }) {
   const studio = useRef<StudioHandle | null>(null)
   const pinta = useRef<PintaHandle | null>(null)
+  const rehearsal = useLessonPreview()
+  const [checkResult, setCheckResult] = useState('')
+  const initialProject = useRef(
+    block.content.kind === 'studio'
+      ? (rehearsal?.workspaces[block.id] ?? block.content.initialProject)
+      : undefined,
+  )
   if (block.content.kind === 'studio')
     return (
-      <StudioEmbed
-        handleRef={studio}
-        initialProject={block.content.initialProject}
-        features={{ ai: false, export: false }}
-        lessonConfig={{
-          level: block.content.level,
-          allowedModes: block.content.allowedModes,
-          allowBlocks: block.content.allowBlocks,
-          allowCategories: block.content.allowCategories,
-          allowLevelReveal: block.content.allowLevelReveal,
-          activity: block.content.activity,
-        }}
-      />
+      <div className="space-y-3">
+        <StudioEmbed
+          handleRef={studio}
+          initialProject={initialProject.current}
+          onChange={
+            rehearsal ? (project) => rehearsal.onWorkspaceChange(block.id, project) : undefined
+          }
+          features={{ ai: false, export: false }}
+          lessonConfig={{
+            level: block.content.level,
+            allowedModes: block.content.allowedModes,
+            allowBlocks: block.content.allowBlocks,
+            allowCategories: block.content.allowCategories,
+            allowLevelReveal: block.content.allowLevelReveal,
+            activity: block.content.activity,
+          }}
+        />
+        {rehearsal && (
+          <>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  setCheckResult(
+                    await rehearsal.onProjectCheck(block.id, studio.current?.getProject()),
+                  )
+                } catch (error) {
+                  setCheckResult(
+                    error instanceof Error ? error.message : 'Não foi possível conferir o projeto.',
+                  )
+                }
+              }}
+            >
+              Conferir estrutura no ensaio
+            </Button>
+            <p role="status" className="whitespace-pre-line text-sm">
+              {checkResult}
+            </p>
+          </>
+        )}
+      </div>
     )
   if (block.content.kind === 'pinta') {
     const asset = sanitizePintaAsset(block.content.initialAsset)
@@ -117,6 +156,7 @@ export function LessonStructureEditor({
   onPreviewChange: (value: boolean) => void
 }) {
   const [settings, setSettings] = useState<string | null>(null)
+  const [rehearsalMode, setRehearsalMode] = useState(false)
   const [templateIndex, setTemplateIndex] = useState(0)
   const template = LESSON_SECTION_TEMPLATES[templateIndex] ?? LESSON_SECTION_TEMPLATES[0]
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
@@ -340,53 +380,90 @@ export function LessonStructureEditor({
       </div>
     )
   }
+  const previewLesson: LessonDetailView = {
+    id: lesson.id,
+    slug: document.slug,
+    title: document.title,
+    courseSlug: '',
+    moduleId: '',
+    completed: false,
+    estimatedMinutes: document.estimatedMinutes,
+    positionSeconds: null,
+    sections: document.sections,
+    legacyLayout: isLegacyLessonLayout(lesson.id, document.sections),
+    supportBlockIds: document.supportBlockIds,
+    blocks: lesson.blocks,
+    attachments: [],
+  }
+  const renderPreviewBlocks = (items: LessonBlockView[]) =>
+    items.map((item) => {
+      const block = blocks.get(item.id)
+      if (!block) return null
+      if (block.kind === 'studio' || block.kind === 'pinta')
+        return <ToolPreview key={block.id} block={block} />
+      if (block.content.kind === 'video' && !block.content.src)
+        return (
+          <p key={block.id} className="rounded-xl border border-dashed border-border p-5">
+            Vídeo planejado:{' '}
+            {document.plannedVideos.find((v) => v.blockId === block.id)?.instructions}
+          </p>
+        )
+      return <LessonBlocks key={item.id} blocks={[item]} />
+    })
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Percurso da aula</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Organize o conteúdo e escolha onde o mesmo projeto acompanha o aluno.
+            Escolha a ordem conforme o conteúdo. Você pode repetir explorações e trechos de criação
+            no mesmo projeto.
           </p>
         </div>
         <Button variant="outline" onClick={() => onPreviewChange(!preview)}>
           {preview ? 'Voltar à edição' : 'Prévia do rascunho'}
         </Button>
       </div>
+      {lessonEditorialWarnings(document).length > 0 && (
+        <details className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <summary className="cursor-pointer font-medium">
+            Revisão didática e mídias ({lessonEditorialWarnings(document).length})
+          </summary>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
+            {lessonEditorialWarnings(document).map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {preview && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Modo da prévia">
+          <Button
+            variant={!rehearsalMode ? 'default' : 'outline'}
+            aria-pressed={!rehearsalMode}
+            onClick={() => setRehearsalMode(false)}
+          >
+            Conferir livremente
+          </Button>
+          <Button
+            variant={rehearsalMode ? 'default' : 'outline'}
+            aria-pressed={rehearsalMode}
+            onClick={() => setRehearsalMode(true)}
+          >
+            Ensaiar como aluno
+          </Button>
+        </div>
+      )}
       {preview ? (
-        <LessonSections
-          lesson={{
-            id: lesson.id,
-            slug: document.slug,
-            title: document.title,
-            courseSlug: '',
-            moduleId: '',
-            completed: false,
-            estimatedMinutes: document.estimatedMinutes,
-            positionSeconds: null,
-            sections: document.sections,
-            legacyLayout: isLegacyLessonLayout(lesson.id, document.sections),
-            supportBlockIds: document.supportBlockIds,
-            blocks: lesson.blocks,
-            attachments: [],
-          }}
-          renderBlocks={(items) =>
-            items.map((item) => {
-              const block = blocks.get(item.id)
-              if (!block) return null
-              if (block.kind === 'studio' || block.kind === 'pinta')
-                return <ToolPreview key={block.id} block={block} />
-              if (block.content.kind === 'video' && !block.content.src)
-                return (
-                  <p key={block.id} className="rounded-xl border border-dashed border-border p-5">
-                    Vídeo planejado:{' '}
-                    {document.plannedVideos.find((v) => v.blockId === block.id)?.instructions}
-                  </p>
-                )
-              return <LessonBlocks key={item.id} blocks={[item]} />
-            })
-          }
-        />
+        rehearsalMode ? (
+          <LessonRehearsal
+            lesson={previewLesson}
+            document={document}
+            renderBlocks={renderPreviewBlocks}
+          />
+        ) : (
+          <LessonSections lesson={previewLesson} renderBlocks={renderPreviewBlocks} />
+        )
       ) : (
         <fieldset disabled={!canWrite} className="space-y-5">
           {!document.sections.some((s) => s.completion) && (
@@ -543,7 +620,8 @@ export function LessonStructureEditor({
                               : b.kind === 'video'
                                 ? 'Assistir a 90% dos trechos do vídeo'
                                 : b.content.kind === 'interactive' &&
-                                    b.content.activity.type === 'simulation'
+                                    (b.content.activity.type === 'simulation' ||
+                                      b.content.activity.type === 'exploration')
                                   ? 'Explorar e comparar o modelo'
                                   : b.kind === 'quiz' ||
                                       (b.content.kind === 'interactive' &&

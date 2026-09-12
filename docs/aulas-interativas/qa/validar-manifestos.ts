@@ -31,19 +31,38 @@ for (const entry of catalog) {
     const discoveries = manifest.blocks.filter(
       (b) => 'content' in b && b.content.kind === 'interactive',
     )
-    assert.equal(discoveries.length, 1, entry.path)
+    assert(discoveries.length > 0, entry.path)
     for (const block of discoveries)
       if ('content' in block && block.content.kind === 'interactive') {
-        assert.equal(block.content.activity.type, 'simulation', entry.path)
+        assert(['simulation', 'exploration'].includes(block.content.activity.type), entry.path)
         assert(!block.content.checkpoint, 'Não acrescentar pergunta obrigatória à exploração')
       }
-    for (const section of manifest.sections.slice(1, -2))
+    for (const section of manifest.sections.filter((s) => s.intent === 'application'))
       assert(section.workspaceKey && section.completion?.projectChecks?.length, entry.path)
+    for (const section of manifest.sections.filter((s) => s.intent === 'exploration'))
+      assert(
+        section.completion?.blockIds.some((id) => discoveries.some((b) => b.key === id)),
+        entry.path,
+      )
+    if (manifest.lessonSlug === 'aula-03') {
+      assert.deepEqual(
+        manifest.sections.map((s) => s.intent),
+        ['exploration', 'application', 'exploration', 'application', 'delivery', 'closing'],
+      )
+      assert.equal(manifest.sections[1]?.workspaceKey, manifest.sections[3]?.workspaceKey)
+      assert.equal(
+        manifest.blocks.filter((b) => 'existing' in b && b.existing.kind === 'studio').length,
+        1,
+      )
+    }
     const quizzes = manifest.blocks.filter((b) => 'content' in b && b.content.kind === 'quiz')
     assert.equal(quizzes.length, 1, entry.path)
     for (const block of quizzes)
       if ('content' in block && block.content.kind === 'quiz')
-        assert.equal(block.content.questions.length, 2, entry.path)
+        assert(
+          block.content.questions.length >= 2 && block.content.questions.length <= 3,
+          entry.path,
+        )
   }
   assert(roteiro.includes(`organizada em ${entry.sections} seções`), entry.path)
   const planned = manifest.blocks.filter((b) => 'plannedVideo' in b)

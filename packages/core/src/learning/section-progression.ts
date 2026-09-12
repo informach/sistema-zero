@@ -180,6 +180,7 @@ export function sectionCompletionIssues(
         if (
           !isInteractiveBlock(content) ||
           (content.activity.type !== 'simulation' &&
+            content.activity.type !== 'exploration' &&
             content.activity.type !== 'sequence' &&
             !content.checkpoint)
         )

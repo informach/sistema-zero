@@ -16,28 +16,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Sua floresta está esperando. Vamos criar uma tela que convida a jogar e funciona com teclado e toque. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “A tela promete um toque. Teste e ajuste o controle para cumprir essa promessa.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma dica é uma promessa: se a tela diz para tocar, o toque precisa começar a partida. Um evento exclusivo de Enter não atende a essa promessa no celular.\n\nA pergunta da tela impede que o mesmo comando comece algo no momento errado. Título, subtítulo e cores podem expressar seu estilo.\n\nA instrução dos controles precisa descrever o comportamento real do jogo. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o convite Toque ou Enter. “Este convite promete dois jeitos de começar. Será que os dois funcionam?” Convide primeiro ao toque real. Depois apresente os fios de controle. A criança conecta o caminho ausente, inicia, volta ao início e testa Enter. Não troque o controle num seletor para representar uma ação."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Uma dica que funciona",
-        "instructions": "A tela promete um toque. Teste e ajuste o controle para cumprir essa promessa.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Faça o convite funcionar",
+        "instructions": "A tela diz Toque ou Enter. Experimente tocar para começar.",
+        "hints": [
+          "O convite promete dois caminhos. Os dois funcionam?",
+          "Olhe qual entrada está ligada a Começar.",
+          "Ligue Toque a Começar. Teste os dois caminhos, voltando ao início."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "controls"
+          "type": "exploration",
+          "version": 2,
+          "mission": "controls"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar a tela de início. Narração revisada: “Agora é a sua vez. Vamos desenhar a tela de início.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar a tela de início. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -49,7 +51,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: O jogo começa quando o jogador manda. Narração revisada: “Agora é a sua vez. Vamos o jogo começa quando o jogador manda.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: O jogo começa quando o jogador manda. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -61,7 +63,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar com a sua cara. Narração revisada: “Agora é a sua vez. Vamos testar e deixar com a sua cara.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Recarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar com a sua cara. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Recarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -151,8 +153,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Uma dica que funciona",
-      "objective": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam.",
+      "title": "Faça o convite funcionar",
+      "objective": "Toque ainda não conectado; Partida iniciada por toque; Partida iniciada por Enter",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

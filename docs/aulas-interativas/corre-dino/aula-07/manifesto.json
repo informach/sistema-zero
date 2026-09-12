@@ -16,28 +16,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Vamos ensinar o jogo a esperar pelo jogador. No fim de hoje, só a floresta deve aparecer. Esse é o plano! Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Coloque o relógio dentro de “se jogando”. Teste no início e na partida.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos.\n\nPodemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção.\n\nMover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a tela inicial com o relógio funcionando. “Os cactos estão chegando antes de começar! Onde podemos colocar o relógio para ele esperar?” Apresente as regiões Em qualquer tela e Se jogando, com arraste e toque. A criança compara o relógio no início e na partida depois de mover a peça."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "O relógio espera a partida",
-        "instructions": "Coloque o relógio dentro de “se jogando”. Teste no início e na partida.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "O relógio espera você começar",
+        "instructions": "Avance o relógio no início. Depois leve-o para dentro de Se jogando.",
+        "hints": [
+          "Por que há cactos antes de você começar?",
+          "A região Se jogando só deixa agir durante a partida.",
+          "Leve Relógio para Se jogando. Compare o início e a partida."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "game-state"
+          "type": "exploration",
+          "version": 2,
+          "mission": "game-state"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Dizer em qual tela o jogo abre. Narração revisada: “Agora é a sua vez. Vamos dizer em qual tela o jogo abre.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.\n\nAgora o jogo sabe em qual tela começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Dizer em qual tela o jogo abre. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.\n\nAgora o jogo sabe em qual tela começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -49,7 +51,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: A pergunta da tela \"jogando\". Narração revisada: “Agora é a sua vez. Vamos a pergunta da tela \"jogando\".” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.\n\nEscolha jogando. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: A pergunta da tela \"jogando\". Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.\n\nEscolha jogando. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -61,7 +63,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Mudar o jogo pra dentro. Narração revisada: “Agora é a sua vez. Vamos mudar o jogo pra dentro.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.\n\nEnvolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Mudar o jogo pra dentro. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.\n\nEnvolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -151,8 +153,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "O relógio espera a partida",
-      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
+      "title": "O relógio espera você começar",
+      "objective": "Relógio funcionando no início; Relógio espera no início; Relógio funciona jogando",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

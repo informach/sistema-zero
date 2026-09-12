@@ -18,6 +18,17 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
     1,
   )
   const [lesson1, lesson2] = seeded.lessonIds
+  courses.blocks.push({
+    id: randomUUID(),
+    lessonId: lesson2,
+    kind: 'ebook',
+    sortOrder: 1,
+    content: {
+      kind: 'ebook',
+      title: 'Caderno do Dino',
+      url: 'https://private.example/caderno.pdf',
+    },
+  })
   grantAllKidsCourses(entitlements, { userId: account })
   courses.blocks.push({
     id: randomUUID(),
@@ -42,6 +53,7 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
   expect(await read(student)).toMatchObject({
     milestones: { completed: false, showcased: false },
     showcaseLessonId: null,
+    materialLessonIds: [lesson1],
   }) // Sequentially locked; first completion must still know publication is outstanding.
   await progress.markComplete(student, lesson1, seeded.courseId, new Date())
   await gamification.award({
@@ -56,8 +68,13 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
   expect(await read(student)).toMatchObject({
     milestones: { completed: true, showcased: false },
     showcaseLessonId: lesson2,
+    materialLessonIds: [lesson1, lesson2],
   })
-  expect(await read(sibling)).toMatchObject({ showcaseLessonId: null })
+  expect(await read(sibling)).toMatchObject({
+    showcaseLessonId: null,
+    materialLessonIds: [lesson1],
+  })
+  expect(JSON.stringify(await read(student))).not.toContain('private.example')
   expect(await read(sibling)).not.toHaveProperty('milestones.completed', true)
   const lesson = courses.lessons.find((item) => item.id === lesson2)
   if (!lesson) throw new Error('Missing fixture lesson')
@@ -65,5 +82,6 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
   expect(await read(student)).toMatchObject({
     milestones: { completed: true, showcased: false },
     showcaseLessonId: null,
+    materialLessonIds: [lesson1],
   })
 })

@@ -1,5 +1,7 @@
 # Proposta para a experiência das aulas Kids: piloto Corre, Dino!
 
+Revisão posterior para aprovação: [Proposta v5 — exploração direta e percurso das aulas](2026-09-12-exploracao-direta-aulas-kids-proposta-v5.md), acompanhada do [estudo do Brilliant](2026-09-12-brilliant-estudo-v5.md). Este documento preserva a análise inicial; a v5 consolida os ajustes aprovados durante a implementação e propõe a próxima evolução.
+
 Proposta para discussão, preparada em 12/09/2026. Base: código local no commit `54d4ad09`, inventário dos 27 manifestos em `docs/aulas-interativas`, roteiro de animação, amostras de construção e gravidade, componentes de autoria, player, progressão e referências externas. As regras atuais podem ser alteradas para atender à experiência pretendida.
 
 Direção definida pelo usuário durante a análise: **Corre, Dino! será o primeiro curso do piloto, abrangendo as 13 aulas e a evolução dos blocos, seções, admin, critérios e experiência do aluno.** Desafio e Meu Jeito entram depois. O aprofundamento incluiu as descobertas, explicações, objetivos e critérios dos 13 manifestos do Dino. Este documento apresenta o desenho proposto; não registra uma implementação já realizada.

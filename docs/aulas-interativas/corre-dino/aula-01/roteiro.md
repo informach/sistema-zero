@@ -1,30 +1,35 @@
 # Prepare o mundo do Dino
 
-Piloto Corre Dino, organizada em 4 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
+Piloto Corre Dino v5, organizada em 4 seções. A sequência desta aula foi escolhida pelo conteúdo; não é um molde obrigatório para as demais.
 
-Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
+Os vídeos estão roteirizados e precisam ser gravados e vinculados. Preservar o bloco Estúdio existente, o projeto contínuo e os marcos concluídos. No notebook, usar a largura útil dos painéis; em telas estreitas, Ver exemplo / Criar conserva o mesmo editor.
 
-A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
+O modelo registra descobertas, sem afirmar domínio do conceito. Conferir estrutura no Estúdio não comprova a execução do jogo. A criança testa o comportamento e o professor revisa a entrega.
 
-## 1. Existir e aparecer
+## 1. Faça o Dino aparecer
 
-**Objetivo do professor:** Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.
+**Objetivo do professor:** Dino existe sem aparecer; O mesmo Dino aparece
 
 **Vídeo planejado:** `video-missao`
 
-Clipe de 30 a 45 segundos. Oi! Oi! Vamos preparar o mundo do seu Dino. Hoje ele vai existir nos blocos; na próxima aula, você vai colocá-lo na tela. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Crie o Dino. Compare com o desenho desligado e ligado.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela.
+Clipe de 20 a 45 segundos. Mostre os bastidores vazios ao lado da tela. “Oi! Nosso jogo vai ter um Dino. Será que criar o personagem já faz ele aparecer? Crie um Dino aqui embaixo e descubra.” Aponte Criar Dino. Deixe a criança investigar a ligação de desenho; retome a diferença entre existir e desenhar ao voltar ao projeto. A aula real pode terminar com o Dino ainda invisível.
 
-Por isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo.
+**Missão v2:** `world`. Crie o Dino nos bastidores. Depois ligue seu desenho à tela.
 
-O nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles. Termine apontando para a atividade abaixo.
+**A criança mexe em:** Dino nos bastidores e ligação de desenho.
 
-**Cena nativa:** `world`. Crie o Dino. Compare com o desenho desligado e ligado.
+**Pista 1:** Olhe os bastidores: o Dino já existe?
 
-**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+**Pista 2:** Compare o Dino guardado com a tela do jogo.
 
-**O que observar:** O Dino pode existir nos bastidores antes de aparecer na tela!
+**Pista 3:** Toque em Desenhar e depois na Tela para ligar os dois.
 
-**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
+**Para avançar:** Dino existe sem aparecer; O mesmo Dino aparece.
+
+**Reconhecimento:** É o mesmo Dino: existir e aparecer são coisas diferentes!
+
+**Convite opcional:** E se você desligar o desenho? O Dino ainda existe?
+
 
 ## 2. Um lugar para o Dino
 
@@ -32,13 +37,13 @@ O nome identifica o personagem nos outros blocos. Uma descrição para leitor de
 
 **Vídeo planejado:** `video-construir-1-1`
 
-Clipe de 30 a 75 segundos: Montar a área que prepara o jogo. Narração revisada: “Agora é a sua vez. Vamos montar a área que prepara o jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
+Clipe de 30 a 75 segundos: Montar a área que prepara o jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
 **Zappy:** Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa.
 
 **Vídeo planejado:** `video-construir-2-1`
 
-Clipe de 30 a 75 segundos: Preparar a tela. Narração revisada: “Agora é a sua vez. Vamos preparar a tela.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.
+Clipe de 30 a 75 segundos: Preparar a tela. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.
 
 Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -46,7 +51,7 @@ Logo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4. Most
 
 **Vídeo planejado:** `video-construir-3-1`
 
-Clipe de 30 a 75 segundos: Contar o que é o seu jogo. Narração revisada: “Agora é a sua vez. Vamos contar o que é o seu jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.
+Clipe de 30 a 75 segundos: Contar o que é o seu jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.
 
 Essa frase explica o jogo sem depender da imagem. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -54,7 +59,7 @@ Essa frase explica o jogo sem depender da imagem. Mostre o resultado esperado. T
 
 **Vídeo planejado:** `video-construir-4-1`
 
-Clipe de 30 a 75 segundos: Criar o dino. Narração revisada: “Agora é a sua vez. Vamos criar o dino.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.
+Clipe de 30 a 75 segundos: Criar o dino. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.
 
 A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -62,11 +67,14 @@ A cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar. 
 
 **Zappy:** Escolha o céu e escreva a descrição do jogo. Leia a frase sem olhar a imagem: dá para entender o que fazer?
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Prepare a tela de 480 × 270 em Ao iniciar.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 3. Mostre sua criação
 
@@ -78,9 +86,10 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
+**Entrega:** testar e confirmar o envio ao professor; a confirmação preserva a versão enviada e libera o quiz seguinte.
+
 
 ## 4. O que você descobriu?
 
@@ -88,24 +97,12 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-**Pergunta:** O Dino foi criado, mas a tela está vazia. O que falta?
-
-- Mandar desenhar o Dino. (correta)
+**Quiz:** O Dino foi criado, mas a tela está vazia. O que falta?
+- Mandar desenhar o Dino.
 - Criar outro Dino igual.
+**Explicação:** Criar guarda o personagem; desenhar faz ele aparecer.
 
-**Feedback:** Criar guarda o personagem; desenhar faz ele aparecer.
-
-**Pergunta:** Onde ficam os blocos que preparam a partida?
-
+**Quiz:** Onde ficam os blocos que preparam a partida?
 - Só dentro do evento de pulo.
-- Em Ao iniciar. (correta)
-
-**Feedback:** Ao iniciar prepara a tela e os personagens para uma nova partida.
-
-**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
-
-## Produção e revisão
-
-Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
-
-Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.
+- Em Ao iniciar.
+**Explicação:** Ao iniciar prepara a tela e os personagens para uma nova partida.

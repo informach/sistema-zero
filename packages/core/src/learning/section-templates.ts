@@ -11,7 +11,7 @@ export const LESSON_SECTION_TEMPLATES: ReadonlyArray<{
     label: 'Explorar um conceito',
     title: 'Experimente esta ideia',
     guidance:
-      'Vídeo curto → instrução do Zappy → modelo que a criança altera. Critério: realizar as comparações propostas.',
+      'Vídeo curto, missão do Zappy e cena manipulável. Pode aparecer antes, depois ou entre trechos de criação. Critério: descobertas da missão.',
   },
   {
     intent: 'application',

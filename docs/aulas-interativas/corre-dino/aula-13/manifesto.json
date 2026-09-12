@@ -18,28 +18,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! A pista vai ficar mais rápida durante a partida. Você vai escolher até onde ela acelera e preparar seu Dino para outras pessoas jogarem. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Avance até a base chegar a −9. Avance mais uma vez e veja o sorteio separado.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma variável permite mudar a velocidade-base dos próximos cactos. Ela começa em −5.\n\nA cada cinco segundos de partida, subtrair 1 leva a −6, −7, −8 e −9. No limite −9, a pergunta velocidade > −9 fica falsa e a base para de diminuir.\n\nO sorteio de 0 a 1 continua sendo subtraído: −9 é limite da base, não de todo vx final. Os cactos que já nasceram mantêm a velocidade que receberam; os novos usam o valor atualizado. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre um cacto e sua seta de velocidade, o relógio e a placa −9. “Os próximos cactos podem ficar mais rápidos. E como colocar um limite?” A criança cria um cacto, avança o relógio e encaixa a placa. Compare o antigo com o novo. No limite da base, descontar 1 ainda produz −10; a base não é a velocidade de todo cacto que já nasceu."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Acelerar com um limite",
-        "instructions": "Avance até a base chegar a −9. Avance mais uma vez e veja o sorteio separado.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Acelere com um limite",
+        "instructions": "Crie um cacto. Avance o relógio e veja a velocidade dos próximos.",
+        "hints": [
+          "A seta de cada cacto mostra a velocidade que ele recebeu ao nascer.",
+          "Compare a base do próximo cacto com a seta de um antigo.",
+          "Encaixe o limite −9. Avance cinco passos e crie o exemplo com desconto 1."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "acceleration"
+          "type": "exploration",
+          "version": 2,
+          "mission": "acceleration"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Criar a caixinha da velocidade. Narração revisada: “Agora é a sua vez. Vamos criar a caixinha da velocidade.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar a caixinha da velocidade. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -51,7 +53,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o cacto obedecer a caixinha. Narração revisada: “Agora é a sua vez. Vamos fazer o cacto obedecer a caixinha.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio.\n\nRode: no começo deve parecer igual. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o cacto obedecer a caixinha. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio.\n\nRode: no começo deve parecer igual. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -71,7 +73,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer a velocidade acelerar sozinha. Narração revisada: “Agora é a sua vez. Vamos fazer a velocidade acelerar sozinha.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando.\n\nDentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior.\n\nSó dentro do segundo Se coloque Somar menos 1 em velocidade. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer a velocidade acelerar sozinha. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando.\n\nDentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior.\n\nSó dentro do segundo Se coloque Somar menos 1 em velocidade. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -83,7 +85,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e ajustar o seu jogo. Narração revisada: “Agora é a sua vez. Vamos testar e ajustar o seu jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos.\n\nEscolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e ajustar o seu jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos.\n\nEscolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -103,14 +105,14 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Teste a evolução, o limite e o reinício. Para publicar, envie ao professor, use Compartilhar, escreva o resumo e confira a capa. Abra o link publicado e jogue do começo ao fim. Mostre o botão Enviar ao professor e a confirmação do envio. Depois do envio, mostre Compartilhar no Mural, título, resumo e capa. Abra o link e teste a publicação. Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+      "plannedVideo": "Clipe de 30 a 50 segundos. Mostre o jogo da criança: confira a aceleração, o limite e o reinício. Demonstre Enviar ao professor e espere a confirmação. Diga: “Sua entrega chegou! Agora vamos fechar com um quiz curtinho.” Apresente separadamente o convite: “Quando quiser mostrar seu jogo no Mural, use Compartilhar.” Mostre a prévia da versão atual, título, resumo e capa e a confirmação de Publicar. Explique que a versão publicada pode ser diferente da enviada ao professor. Compartilhar não é necessário para liberar o quiz desta aula."
     },
     {
       "key": "zappy-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste sua corrida, envie ao professor e compartilhe no Mural. Depois vamos fechar com duas perguntas!"
+        "text": "Teste sua corrida e envie ao professor. Se quiser mostrar seu jogo no Mural, confira a capa e use Compartilhar. São duas confirmações diferentes!"
       }
     },
     {
@@ -173,8 +175,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Acelerar com um limite",
-      "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
+      "title": "Acelere com um limite",
+      "objective": "Base chega a −9 e permanece; No limite, sorteio produz −10; Cacto anterior conserva sua velocidade",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

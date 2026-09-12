@@ -1,30 +1,35 @@
 # Cactos no ritmo certo
 
-Piloto Corre Dino, organizada em 5 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
+Piloto Corre Dino v5, organizada em 5 seções. A sequência desta aula foi escolhida pelo conteúdo; não é um molde obrigatório para as demais.
 
-Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
+Os vídeos estão roteirizados e precisam ser gravados e vinculados. Preservar o bloco Estúdio existente, o projeto contínuo e os marcos concluídos. No notebook, usar a largura útil dos painéis; em telas estreitas, Ver exemplo / Criar conserva o mesmo editor.
 
-A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
+O modelo registra descobertas, sem afirmar domínio do conceito. Conferir estrutura no Estúdio não comprova a execução do jogo. A criança testa o comportamento e o professor revisa a entrega.
 
-## 1. O ritmo dos cactos
+## 1. Abra espaço entre os cactos
 
-**Objetivo do professor:** Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.
+**Objetivo do professor:** Criação em cada quadro; Criação com intervalo
 
 **Vídeo planejado:** `video-missao`
 
-Clipe de 30 a 45 segundos. Oi! Oi! Sua pista vai ganhar cactos. Primeiro vamos provocar uma pequena avalanche para descobrir como dar espaço entre eles. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Compare criar a cada quadro com esperar um intervalo entre os cactos.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Criar um cacto em cada quadro produz uma avalanche, porque o desenho atualiza muitas vezes por segundo. Um relógio separado deixa você escolher quanto esperar entre nascimentos.
+Clipe de 20 a 45 segundos. Mostre a pista vazia e o relógio. “Precisamos de espaço entre os cactos. Avance o relógio e veja como eles nascem.” Apresente a ligação entre relógio e nascimento quando a pista ficar cheia. Compare dois segundos em cada montagem, com a mesma velocidade. Não peça à criança que sobreviva aos obstáculos.
 
-O grupo cactos reúne os obstáculos para mover e desenhar juntos. Um x além da borda direita faz o cacto entrar gradualmente; uma velocidade horizontal negativa o leva para a esquerda.
+**Missão v2:** `spawn`. Avance o relógio. Depois ligue um intervalo ao nascimento dos cactos.
 
-Intervalo e velocidade influenciam a dificuldade de formas diferentes. Termine apontando para a atividade abaixo.
+**A criança mexe em:** Relógio, ligação de nascimento e marcas de intervalo.
 
-**Cena nativa:** `spawn`. Compare criar a cada quadro com esperar um intervalo entre os cactos.
+**Pista 1:** Veja quantos cactos nascem enquanto o relógio anda.
 
-**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+**Pista 2:** Compare o mesmo tempo com e sem intervalo.
 
-**O que observar:** O relógio abriu espaço entre os cactos!
+**Pista 3:** Ligue Relógio a Nascer e avance dois segundos.
 
-**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
+**Para avançar:** Criação em cada quadro; Criação com intervalo.
+
+**Reconhecimento:** O intervalo abriu espaço sem mudar a velocidade dos cactos!
+
+**Convite opcional:** E se o relógio esperar um pouco mais entre dois cactos?
+
 
 ## 2. Uma avalanche de cactos
 
@@ -32,7 +37,7 @@ Intervalo e velocidade influenciam a dificuldade de formas diferentes. Termine a
 
 **Vídeo planejado:** `video-construir-1-1`
 
-Clipe de 30 a 75 segundos: Criar o grupo dos cactos. Narração revisada: “Agora é a sua vez. Vamos criar o grupo dos cactos.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos.
+Clipe de 30 a 75 segundos: Criar o grupo dos cactos. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos.
 
 Use esse mesmo nome nos próximos blocos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -40,7 +45,7 @@ Use esse mesmo nome nos próximos blocos. Mostre o resultado esperado. Termine: 
 
 **Vídeo planejado:** `video-construir-2-1`
 
-Clipe de 30 a 75 segundos: Fazer o cacto nascer, andar e aparecer. Narração revisada: “Agora é a sua vez. Vamos fazer o cacto nascer, andar e aparecer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três.
+Clipe de 30 a 75 segundos: Fazer o cacto nascer, andar e aparecer. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três.
 
 Rode por pouco tempo para observar a avalanche. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -48,11 +53,14 @@ Rode por pouco tempo para observar a avalanche. Mostre o resultado esperado. Ter
 
 **Zappy:** Rode só um pouco e observe quantos nascem. Essa avalanche faz parte da experiência; você vai organizá-la a seguir.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Crie o grupo cactos em Ao iniciar.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 3. Dê espaço aos obstáculos
 
@@ -60,7 +68,7 @@ Teste também o funcionamento com Play.
 
 **Vídeo planejado:** `video-construir-3-1`
 
-Clipe de 30 a 75 segundos: O relógio. Narração revisada: “Agora é a sua vez. Vamos o relógio.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4.
+Clipe de 30 a 75 segundos: O relógio. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4.
 
 Leve somente a criação do cacto para dentro desse relógio. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -68,7 +76,7 @@ Leve somente a criação do cacto para dentro desse relógio. Mostre o resultado
 
 **Vídeo planejado:** `video-construir-4-1`
 
-Clipe de 30 a 75 segundos: Nascer fora da tela. Narração revisada: “Agora é a sua vez. Vamos nascer fora da tela.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44.
+Clipe de 30 a 75 segundos: Nascer fora da tela. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44.
 
 Observe que agora ele nasce fora da tela e entra pela direita. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -76,7 +84,7 @@ Observe que agora ele nasce fora da tela e entra pela direita. Mostre o resultad
 
 **Vídeo planejado:** `video-construir-5-1`
 
-Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade.
+Clipe de 30 a 75 segundos: Testar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade.
 
 Volte ao ponto de partida de 1.4 e menos 5 antes de seguir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -84,11 +92,14 @@ Volte ao ponto de partida de 1.4 e menos 5 antes de seguir. Mostre o resultado e
 
 **Zappy:** Rode outra vez e compare com a avalanche. Agora há uma pausa entre os nascimentos.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Encaixe o relógio de 1,4 segundo em Enquanto estiver rodando.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 4. Mostre sua criação
 
@@ -100,9 +111,10 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
+**Entrega:** testar e confirmar o envio ao professor; a confirmação preserva a versão enviada e libera o quiz seguinte.
+
 
 ## 5. O que você descobriu?
 
@@ -110,24 +122,12 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-**Pergunta:** Nasceu uma avalanche de cactos. Como dar espaço entre eles?
-
-- Criar usando um relógio com intervalo. (correta)
+**Quiz:** Nasceu uma avalanche de cactos. Como dar espaço entre eles?
+- Criar usando um relógio com intervalo.
 - Criar dois em cada quadro.
+**Explicação:** O relógio controla a espera entre nascimentos.
 
-**Feedback:** O relógio controla a espera entre nascimentos.
-
-**Pergunta:** Um cacto com vx −5 anda para qual lado?
-
+**Quiz:** Um cacto com vx −5 anda para qual lado?
 - Para a direita.
-- Para a esquerda. (correta)
-
-**Feedback:** Uma velocidade horizontal negativa diminui x, indo para a esquerda.
-
-**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
-
-## Produção e revisão
-
-Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
-
-Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.
+- Para a esquerda.
+**Explicação:** Uma velocidade horizontal negativa diminui x, indo para a esquerda.

@@ -1,30 +1,35 @@
 # Um salto que volta ao chão
 
-Piloto Corre Dino, organizada em 4 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
+Piloto Corre Dino v5, organizada em 6 seções. A sequência desta aula foi escolhida pelo conteúdo; não é um molde obrigatório para as demais.
 
-Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
+Os vídeos estão roteirizados e precisam ser gravados e vinculados. Preservar o bloco Estúdio existente, o projeto contínuo e os marcos concluídos. No notebook, usar a largura útil dos painéis; em telas estreitas, Ver exemplo / Criar conserva o mesmo editor.
 
-A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
+O modelo registra descobertas, sem afirmar domínio do conceito. Conferir estrutura no Estúdio não comprova a execução do jogo. A criança testa o comportamento e o professor revisa a entrega.
 
-## 1. Um salto que volta
+## 1. Faça o Dino voltar ao chão
 
-**Objetivo do professor:** Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.
+**Objetivo do professor:** Subida sem aplicar gravidade; Volta ao chão com gravidade
 
 **Vídeo planejado:** `video-missao`
 
-Clipe de 30 a 45 segundos. Oi! Oi! Seu Dino já corre na floresta. Hoje ele vai saltar e voltar ao chão. Vamos experimentar alturas diferentes? Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Faça um salto sem gravidade. Ligue a gravidade e tente de novo.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Quando você joga uma bola para cima, ela sobe, perde velocidade, para por um instante e volta. No modelo da descoberta, a gravidade muda a velocidade a cada passo.
+Clipe de 20 a 45 segundos. Mostre o Dino no chão e indique que é possível tocar nele. “Seu Dino consegue sair do chão. O que será que faz ele voltar? Toque nele e acompanhe o salto.” Depois da primeira tentativa, convide a ligar a gravidade e repetir. O impulso inicial fica igual; o mundo continua com gravidade 0,6. Se ele sair do enquadramento, mostre a seta que acompanha sua posição.
 
-No Estúdio, a gravidade do mundo só age nos sprites que recebem o bloco que a aplica. A força do pulo e a gravidade têm papéis diferentes: uma inicia o salto; a outra muda seu movimento e o traz de volta.
+**Missão v2:** `gravity`. Toque no Dino para pular. Observe o que acontece sem aplicar a gravidade.
 
-Alterar um valor por vez ajuda a enxergar o efeito de cada um. Termine apontando para a atividade abaixo.
+**A criança mexe em:** Dino e ligação da gravidade ao personagem.
 
-**Cena nativa:** `jump`. Faça um salto sem gravidade. Ligue a gravidade e tente de novo.
+**Pista 1:** O Dino está voltando ou continua subindo?
 
-**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+**Pista 2:** Repita o mesmo impulso com a gravidade aplicada.
 
-**O que observar:** Com gravidade, o Dino muda de direção e volta ao chão!
+**Pista 3:** Ligue Gravidade ao Dino. Depois toque nele para saltar.
 
-**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
+**Para avançar:** Subida sem aplicar gravidade; Volta ao chão com gravidade.
+
+**Reconhecimento:** A gravidade fez o Dino mudar de direção e voltar ao chão!
+
+**Convite opcional:** E se você desligar a aplicação e repetir o mesmo pulo?
+
 
 ## 2. Um salto e uma volta
 
@@ -32,7 +37,7 @@ Alterar um valor por vez ajuda a enxergar o efeito de cada um. Termine apontando
 
 **Vídeo planejado:** `video-construir-1-1`
 
-Clipe de 30 a 75 segundos: Dar o comando de pulo ao dino. Narração revisada: “Agora é a sua vez. Vamos dar o comando de pulo ao dino.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15.
+Clipe de 30 a 75 segundos: Dar o comando de pulo ao dino. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15.
 
 Teste espaço: ele ainda não está pronto para pular do chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -40,15 +45,53 @@ Teste espaço: ele ainda não está pronto para pular do chão. Mostre o resulta
 
 **Vídeo planejado:** `video-construir-2-1`
 
-Clipe de 30 a 75 segundos: A gravidade traz o dino pro chão. Narração revisada: “Agora é a sua vez. Vamos a gravidade traz o dino pro chão.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.
+Clipe de 30 a 75 segundos: A gravidade traz o dino pro chão. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.
 
 Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
 **Zappy:** Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino.
 
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
+
+- Aplique a gravidade ao sprite dino em A cada quadro do jogo.
+
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
+
+## 3. Escolha a altura do salto
+
+**Objetivo do professor:** Comparar duas alturas mantendo a gravidade igual.
+
+**Vídeo planejado:** `video-missao-impulso`
+
+Clipe de 20 a 35 segundos. Retome o salto que voltou ao chão no projeto. “Agora que ele volta, vamos escolher a altura! Toque no Dino, mude a seta do impulso e compare outro salto.” Mostre as marcas Baixo/Médio/Alto e a alça. A seta representa apenas o impulso inicial, não uma força contínua nem um personagem pendurado. Compare na mesma escala e com a mesma gravidade.
+
+**Missão v2:** `impulse`. Toque no Dino. Depois mude a seta do impulso e compare outro salto.
+
+**A criança mexe em:** Seta do impulso inicial e Dino.
+
+**Pista 1:** A marca mostra a altura do salto anterior.
+
+**Pista 2:** Mude só a seta. A gravidade continua igual.
+
+**Pista 3:** Escolha Baixo ou Alto e toque no Dino para comparar.
+
+**Para avançar:** Um salto completo; Outra altura com a mesma gravidade.
+
+**Reconhecimento:** Com a mesma gravidade, um impulso maior alcança outra altura!
+
+**Convite opcional:** E se você escolher uma altura entre as duas marcas?
+
+
+## 4. Ajuste o salto do seu Dino
+
+**Objetivo do professor:** Escolher uma força de pulo e testar o resultado no mesmo projeto.
+
 **Vídeo planejado:** `video-construir-3-1`
 
-Clipe de 30 a 75 segundos: Você escolhe a altura. Narração revisada: “Agora é a sua vez. Vamos você escolhe a altura.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais.
+Clipe de 30 a 75 segundos: Você escolhe a altura. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais.
 
 Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -56,13 +99,16 @@ Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você j
 
 **Zappy:** Use espaço, seta para cima ou clique na parte de cima do jogo. Escolha o controle mais confortável e observe a volta ao chão.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-- Aplique a gravidade ao sprite dino em A cada quadro do jogo.
+**Para avançar, conferir a estrutura:**
 
-Teste também o funcionamento com Play.
+- Configure o comando de pulo do Dino em A cada quadro. Teste a força escolhida com Play.
 
-## 3. Mostre sua criação
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
+
+## 5. Mostre sua criação
 
 **Objetivo do professor:** Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
 
@@ -72,34 +118,25 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
+**Entrega:** testar e confirmar o envio ao professor; a confirmação preserva a versão enviada e libera o quiz seguinte.
 
-## 4. O que você descobriu?
+
+## 6. O que você descobriu?
 
 **Objetivo do professor:** Retomar o conceito depois de explorar, criar e entregar.
 
 **Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-**Pergunta:** O que traz o Dino de volta depois do salto?
+**Quiz:** O Dino recebeu o impulso e continua subindo. Qual mudança o faz voltar?
+- Aplicar a gravidade ao Dino.
+- Aumentar ainda mais a força inicial do pulo.
+**Explicação:** A gravidade muda a velocidade vertical e traz o Dino de volta.
 
-- Aplicar a gravidade ao Dino. (correta)
-- Trocar a cor do céu.
+**Quiz:** Você quer descobrir o efeito da força do pulo. Como comparar?
+- Mudar a força e a gravidade na mesma tentativa.
+- Mudar só a força e testar de novo.
+**Explicação:** Mudar um valor de cada vez ajuda a perceber o efeito dele.
 
-**Feedback:** A gravidade muda a velocidade vertical e traz o Dino de volta.
-
-**Pergunta:** Você quer descobrir o efeito da força do pulo. Como comparar?
-
-- Mudar força, gravidade e fundo juntos.
-- Mudar só a força e testar de novo. (correta)
-
-**Feedback:** Mudar um valor de cada vez ajuda a perceber o efeito dele.
-
-**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
-
-## Produção e revisão
-
-Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
-
-Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.
+**Ilustração do quiz (v5):** Impulso: dois saltos com alturas diferentes, partindo do mesmo chão; acompanha a pergunta sobre mudar somente a força. Arte revisada incluída no manifesto e servida pela plataforma, com texto alternativo.

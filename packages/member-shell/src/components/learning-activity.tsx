@@ -18,9 +18,11 @@ import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
 import { DialogueBlockView } from './dialogue-block'
 import { LearningExperiment } from './learning-experiment'
+import { LearningExploration } from './learning-exploration'
 import { LearningHtml } from './learning-html'
 import { LearningSimulation } from './learning-simulation'
 import { useLessonPlayer } from './lesson-player-context'
+import { useLessonPreview } from './lesson-preview-context'
 
 function message(error: unknown) {
   return typeof error === 'object' &&
@@ -42,7 +44,7 @@ export function InteractiveLessonBlock({
     return <p role="alert">Esta atividade precisa de uma configuração válida.</p>
   return (
     <Activity
-      key={`${player?.viewerId}:${block.id}:${block.blockRevision}`}
+      key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(block.content.activity)}`}
       block={block}
       content={block.content}
       previewContent={previewContent}
@@ -60,14 +62,17 @@ function Activity({
   previewContent?: InteractiveBlock
 }) {
   const player = useLessonPlayer()
+  const rehearsal = useLessonPreview()
   const saved = player?.learningProgress?.blocks.find(
     (p) => p.blockId === block.id && p.revision === block.blockRevision,
   )
   const initialSaved = useRef(saved)
-  const initial = saved?.answers ?? {}
+  const initial = saved?.answers ?? rehearsal?.answers[block.id] ?? {}
   const [answers, setAnswers] = useState<LearningAnswers>(initial)
-  const [hintsUsed, setHintsUsed] = useState(saved?.hintsUsed ?? 0)
-  const [result, setResult] = useState(saved?.result ?? null)
+  const [hintsUsed, setHintsUsed] = useState(
+    saved?.hintsUsed ?? rehearsal?.hintsUsed[block.id] ?? 0,
+  )
+  const [result, setResult] = useState(saved?.result ?? rehearsal?.results[block.id] ?? null)
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
@@ -84,6 +89,8 @@ function Activity({
   const callback = useRef(player?.onLearningProgress)
   callback.current = player?.onLearningProgress
   const requestId = useRef<string | null>(null)
+  const checking = useRef(false)
+  const automaticAttemptStarted = useRef(false)
 
   useEffect(() => {
     if (!key) return
@@ -160,13 +167,14 @@ function Activity({
     }
   }, [])
   function change(next: LearningAnswers, nextHints = hintsUsed) {
-    if (busy || !isLearningAnswers(next)) return
+    if ((busy && content.activity.type !== 'exploration') || !isLearningAnswers(next)) return
     requestId.current = null
     setAnswers(next)
     setHintsUsed(nextHints)
     setError('')
     setStatus(base ? 'Salvando…' : 'Prévia de autoria. Nenhum progresso de aluno foi registrado.')
     current.current = { answers: next, hintsUsed: nextHints, dirty: true }
+    if (!player) rehearsal?.onChange(block.id, next, nextHints)
     if (key)
       try {
         localStorage.setItem(
@@ -185,17 +193,34 @@ function Activity({
   }
   async function check() {
     if (!player && previewContent) {
-      setResult(evaluateLearning(previewContent, current.current.answers))
-      setStatus('Prévia de autoria. Nenhum progresso de aluno foi registrado.')
+      if (checking.current) return
+      checking.current = true
+      setBusy(true)
+      setError('')
+      try {
+        setResult(
+          rehearsal
+            ? await rehearsal.onAttempt(block.id, previewContent, current.current.answers)
+            : evaluateLearning(previewContent, current.current.answers),
+        )
+        setStatus('Prévia de autoria. Nenhum progresso de aluno foi registrado.')
+      } catch (e) {
+        setError(message(e))
+      } finally {
+        checking.current = false
+        setBusy(false)
+      }
       return
     }
-    if (!base || !block.blockRevision || busy) return
+    if (!base || !block.blockRevision || checking.current) return
+    checking.current = true
     setBusy(true)
     setError('')
     if (timer.current) clearTimeout(timer.current)
     persistRef.current()
     await queue.current
     requestId.current ??= crypto.randomUUID()
+    const submitted = current.current
     try {
       const data = await apiSend<{ attempt: LearningAttemptView; progress: LearningBlockProgress }>(
         `${base}/learning-attempts`,
@@ -203,8 +228,8 @@ function Activity({
         {
           id: requestId.current,
           revision: block.blockRevision,
-          answers: current.current.answers,
-          hintsUsed: current.current.hintsUsed,
+          answers: submitted.answers,
+          hintsUsed: submitted.hintsUsed,
         },
         { 'x-sz-viewer': player?.viewerId ?? '' },
       )
@@ -212,7 +237,7 @@ function Activity({
       callback.current?.(data.progress)
       setStatus('Atividade salva.')
       player?.refreshAfterLearning?.()
-      if (key)
+      if (key && current.current.answers === submitted.answers)
         try {
           localStorage.removeItem(key)
         } catch {
@@ -221,6 +246,7 @@ function Activity({
     } catch (e) {
       setError(message(e))
     } finally {
+      checking.current = false
       setBusy(false)
     }
   }
@@ -245,7 +271,7 @@ function Activity({
         </h3>
         {player?.renderInstruction ? (
           player.renderInstruction(content.instructions)
-        ) : a.type === 'simulation' ? (
+        ) : a.type === 'simulation' || a.type === 'exploration' ? (
           <DialogueBlockView content={{ kind: 'dialogue', text: content.instructions }} />
         ) : (
           <p className="max-w-prose leading-relaxed text-muted-foreground">
@@ -253,7 +279,21 @@ function Activity({
           </p>
         )}
       </div>
-      <fieldset disabled={busy} className="space-y-5">
+      <fieldset disabled={busy && a.type !== 'exploration'} className="space-y-5">
+        {a.type === 'exploration' && (
+          <LearningExploration
+            activity={a}
+            answers={answers}
+            hints={content.hints}
+            onChange={(next, hints) => change(next, hints)}
+            onEvidence={() => {
+              if (!result?.passed && !checking.current && !automaticAttemptStarted.current) {
+                automaticAttemptStarted.current = true
+                void check()
+              }
+            }}
+          />
+        )}
         {a.type === 'simulation' && (
           <LearningSimulation
             activity={a}
@@ -418,27 +458,30 @@ function Activity({
             ))}
           </fieldset>
         )}
-        {content.hints.slice(0, hintsUsed).map((hint) => (
-          <div key={hint}>
-            {player?.renderInstruction ? (
-              player.renderInstruction(hint, 'thinking')
-            ) : (
-              <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
-                <Lightbulb className="mr-2 inline size-4 text-primary" />
-                {hint}
-              </p>
-            )}
-          </div>
-        ))}
+        {a.type !== 'exploration' &&
+          content.hints.slice(0, hintsUsed).map((hint) => (
+            <div key={hint}>
+              {player?.renderInstruction ? (
+                player.renderInstruction(hint, 'thinking')
+              ) : (
+                <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
+                  <Lightbulb className="mr-2 inline size-4 text-primary" />
+                  {hint}
+                </p>
+              )}
+            </div>
+          ))}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            variant="ghost"
-            disabled={busy || hintsUsed >= content.hints.length}
-            onClick={() => change(answers, hintsUsed + 1)}
-          >
-            <Lightbulb className="size-4" />
-            {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
-          </Button>
+          {a.type !== 'exploration' && (
+            <Button
+              variant="ghost"
+              disabled={busy || hintsUsed >= content.hints.length}
+              onClick={() => change(answers, hintsUsed + 1)}
+            >
+              <Lightbulb className="size-4" />
+              {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
+            </Button>
+          )}
           <Button
             disabled={busy || (!base && !previewContent)}
             onClick={() => {
@@ -449,12 +492,12 @@ function Activity({
           >
             {busy
               ? 'Salvando…'
-              : a.type === 'simulation'
+              : a.type === 'simulation' || a.type === 'exploration'
                 ? 'Salvar minha exploração'
                 : 'Conferir minha descoberta'}
           </Button>
         </div>
-        {result && (
+        {result && (a.type !== 'exploration' || !result.passed) && (
           <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
             {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
             {player?.renderInstruction
@@ -468,7 +511,11 @@ function Activity({
         {error ? (
           <p role="alert" className="text-sm text-destructive">
             {error}{' '}
-            <button type="button" className="underline" onClick={() => persistRef.current()}>
+            <button
+              type="button"
+              className="underline"
+              onClick={() => (a.type === 'exploration' ? void check() : persistRef.current())}
+            >
               Tentar salvar novamente
             </button>
           </p>

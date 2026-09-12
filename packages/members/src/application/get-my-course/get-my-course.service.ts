@@ -33,16 +33,25 @@ export class GetMyCourseService {
       userId,
     )
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
-    const [outline, completedIds, last, lastAccessed, myRating, careerState, showcaseLessonIds] =
-      await Promise.all([
-        this.courses.findOutline(course.id, { publishedOnly: true }),
-        this.progress.listCompletedLessonIds(userId, course.id),
-        this.progress.lastCompletedAt(userId, course.id),
-        this.positions.lastAccessedLessonId(userId, course.id),
-        this.ratings.find(userId, course.id),
-        course.audience === 'kids' ? this.gamification.listCareerCourseState(userId, 'kids') : null,
-        course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
-      ])
+    const [
+      outline,
+      completedIds,
+      last,
+      lastAccessed,
+      myRating,
+      careerState,
+      showcaseLessonIds,
+      materialLessonIds,
+    ] = await Promise.all([
+      this.courses.findOutline(course.id, { publishedOnly: true }),
+      this.progress.listCompletedLessonIds(userId, course.id),
+      this.progress.lastCompletedAt(userId, course.id),
+      this.positions.lastAccessedLessonId(userId, course.id),
+      this.ratings.find(userId, course.id),
+      course.audience === 'kids' ? this.gamification.listCareerCourseState(userId, 'kids') : null,
+      course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
+      this.courses.listMaterialLessonIds(course.id),
+    ])
     // Baú de fim de unidade: só a vitrine kids tem trilha. Depende dos ids do
     // outline, então vem depois dele. A linha `unit_complete` do ledger É o carimbo
     // de "já aberto" — inclusive para quem ganhou o XP no modelo antigo, em que ele
@@ -84,6 +93,7 @@ export class GetMyCourseService {
       milestones: careerState
         ? (careerState.milestones.get(course.id) ?? { completed: false, showcased: false })
         : undefined,
+      materialLessonIds: materialLessonIds.filter((id) => !lockedSet.has(id)),
       showcaseLessonId: showcaseLessonIds.find((id) => !lockedSet.has(id)) ?? null,
     }
   }

@@ -3,7 +3,7 @@
 import { Button } from '@sistemazero/ui/button'
 import { BookOpen, Download } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useEffect, useRef, useState } from 'react'
+import { Component, type ReactNode, useEffect, useRef, useState } from 'react'
 import type { EbookBlock } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -20,6 +20,20 @@ const EbookBook = dynamic(() => import('./ebook-book.impl'), {
   ),
 })
 
+const EbookReader = dynamic(() => import('./ebook-reader'), { ssr: false })
+class BookBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
+
 /**
  * Bloco e-book: monta a URL autenticada do PDF (o BFF resolve a localização real
  * no members e aplica a marca d'água do aluno) e renderiza o livro 3D interativo.
@@ -29,6 +43,7 @@ export function EbookBlockView({ blockId, content }: { blockId: string; content:
   const player = useLessonPlayer()
   const [error, setError] = useState('')
   const [downloading, setDownloading] = useState(false)
+  const [reader, setReader] = useState(false)
   const [accessed, setAccessed] = useState(player?.materialAccessed ?? false)
   const [accessSaveFailed, setAccessSaveFailed] = useState(false)
   const recording = useRef(false)
@@ -101,13 +116,49 @@ export function EbookBlockView({ blockId, content }: { blockId: string; content:
   }
   return (
     <div className="space-y-3">
-      <EbookBook
-        pdfUrl={pdfUrl}
-        title={content.title ?? null}
-        onOpened={() => {
-          void recordAccess('opened')
-        }}
-      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={reader ? 'outline' : 'default'}
+          aria-pressed={!reader}
+          onClick={() => setReader(false)}
+        >
+          Livro 3D
+        </Button>
+        <Button
+          variant={reader ? 'default' : 'outline'}
+          aria-pressed={reader}
+          onClick={() => setReader(true)}
+        >
+          Ler por páginas
+        </Button>
+      </div>
+      {reader ? (
+        <EbookReader
+          pdfUrl={pdfUrl}
+          onOpened={() => {
+            void recordAccess('opened')
+          }}
+        />
+      ) : (
+        <BookBoundary
+          fallback={
+            <div className="rounded-xl border p-4">
+              <p>O livro 3D não abriu neste dispositivo.</p>
+              <Button variant="outline" onClick={() => setReader(true)}>
+                Ler por páginas
+              </Button>
+            </div>
+          }
+        >
+          <EbookBook
+            pdfUrl={pdfUrl}
+            title={content.title ?? null}
+            onOpened={() => {
+              void recordAccess('opened')
+            }}
+          />
+        </BookBoundary>
+      )}
       <Button
         type="button"
         variant="outline"

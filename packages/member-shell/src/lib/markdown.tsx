@@ -207,7 +207,10 @@ export function renderUgcMarkdown(md: string): ReactNode[] {
 export function stripImageMarkdown(md: string): string {
   // Também consome o sufixo opcional `{width=… align=…}` — senão sobraria como
   // texto literal no corpo do UGC.
-  return md.replace(/!\[([^\]]*)\]\(https?:\/\/[^\s)]+\)(?:\{[^}]*\})?/g, '$1')
+  return md.replace(
+    /!\[([^\]]*)\]\((?:https?:\/\/[^\s)]+|\/api\/lesson-visuals\/[a-z0-9-]+\.svg)\)(?:\{[^}]*\})?/g,
+    '$1',
+  )
 }
 
 /**
@@ -222,7 +225,7 @@ export function stripImageMarkdown(md: string): string {
 export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNode[] {
   const parts: ReactNode[] = []
   const pattern =
-    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\(https?:\/\/[^\s)]+\)(?:\{[^}]*\})?|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
+    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\((?:https?:\/\/[^\s)]+|\/api\/lesson-visuals\/[a-z0-9-]+\.svg)\)(?:\{[^}]*\})?|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
   let last = 0
   let key = 0
   for (const match of text.matchAll(pattern)) {
@@ -237,7 +240,9 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
       parts.push(<code key={`i-${key++}`}>{token.slice(1, -1)}</code>)
     } else if (token.startsWith('![')) {
       // Grupo 3 = sufixo opcional `{width=NN align=xx}` (autoria do admin — tamanho/alinhamento).
-      const img = token.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)(?:\{([^}]*)\})?$/)
+      const img = token.match(
+        /^!\[([^\]]*)\]\(((?:https?:\/\/[^\s)]+|\/api\/lesson-visuals\/[a-z0-9-]+\.svg))\)(?:\{([^}]*)\})?$/,
+      )
       if (img?.[2]) {
         if (opts.dropImages) {
           // UGC: não embute `<img>` externo (pixel-rastreador). Só o texto alternativo.

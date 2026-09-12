@@ -120,7 +120,7 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
     }
   })
 
-  it('aparece na página de aula, na roupa de cabeçalho (sem regressão)', () => {
+  it('recolhe as duas barras por padrão na aula de notebook e permite reabrir', () => {
     pathname = '/cursos/meu-curso/aulas/abc123'
     const { container } = render(
       <FocusModeProvider viewerId="perfil-1">
@@ -128,9 +128,12 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
         <FocusModeToggle target="outline" />
       </FocusModeProvider>,
     )
-    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
     // A lista de aulas segue EXCLUSIVA da aula.
-    expect(screen.getByRole('button', { name: 'Esconder lista de aulas' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBe('0')
     expect(container.querySelector('button.size-11')).not.toBeNull()
   })
 

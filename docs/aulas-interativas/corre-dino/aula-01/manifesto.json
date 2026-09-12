@@ -16,28 +16,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Vamos preparar o mundo do seu Dino. Hoje ele vai existir nos blocos; na próxima aula, você vai colocá-lo na tela. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Crie o Dino. Compare com o desenho desligado e ligado.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Criar um personagem é guardar suas informações: nome, posição, tamanho e aparência. Desenhar é mostrar essas informações na tela.\n\nPor isso um personagem pode existir e ainda não estar visível. As coordenadas indicam o lugar: x cresce para a direita, y cresce para baixo.\n\nO nome identifica o personagem nos outros blocos. Uma descrição para leitor de tela ajuda quem não vê a imagem a entender o objetivo e os controles. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre os bastidores vazios ao lado da tela. “Oi! Nosso jogo vai ter um Dino. Será que criar o personagem já faz ele aparecer? Crie um Dino aqui embaixo e descubra.” Aponte Criar Dino. Deixe a criança investigar a ligação de desenho; retome a diferença entre existir e desenhar ao voltar ao projeto. A aula real pode terminar com o Dino ainda invisível."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Existir e aparecer",
-        "instructions": "Crie o Dino. Compare com o desenho desligado e ligado.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Faça o Dino aparecer",
+        "instructions": "Crie o Dino nos bastidores. Depois ligue seu desenho à tela.",
+        "hints": [
+          "Olhe os bastidores: o Dino já existe?",
+          "Compare o Dino guardado com a tela do jogo.",
+          "Toque em Desenhar e depois na Tela para ligar os dois."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "world"
+          "type": "exploration",
+          "version": 2,
+          "mission": "world"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Montar a área que prepara o jogo. Narração revisada: “Agora é a sua vez. Vamos montar a área que prepara o jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Montar a área que prepara o jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, pegue Ao iniciar e solte no espaço de montar. Tudo que vamos encaixar aqui prepara o jogo quando ele começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -49,7 +51,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Preparar a tela. Narração revisada: “Agora é a sua vez. Vamos preparar a tela.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.\n\nLogo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Preparar a tela. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia. Use 480 por 270 e escolha o céu.\n\nLogo abaixo, coloque Mostrar a borda da tela, com cor branca e espessura 4. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -61,7 +63,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Contar o que é o seu jogo. Narração revisada: “Agora é a sua vez. Vamos contar o que é o seu jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.\n\nEssa frase explica o jogo sem depender da imagem. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Contar o que é o seu jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço.\n\nEssa frase explica o jogo sem depender da imagem. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -73,7 +75,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Criar o dino. Narração revisada: “Agora é a sua vez. Vamos criar o dino.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.\n\nA cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar o dino. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Kit dino, encaixe Criar dinossauro. Vamos usar o nome dino, x 110, y 150 e tamanho 64.\n\nA cor pode ser sua. Rode: ele ainda não aparece, porque falta mandar desenhar. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -163,8 +165,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Existir e aparecer",
-      "objective": "Preparar o cenário, descrever o jogo e criar um personagem sem confundir criação com desenho.",
+      "title": "Faça o Dino aparecer",
+      "objective": "Dino existe sem aparecer; O mesmo Dino aparece",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

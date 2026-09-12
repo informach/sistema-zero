@@ -1,4 +1,4 @@
-import { LEARNING_SCENES, PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import { EXPLORATION_MISSIONS, LEARNING_SCENES, PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import { t } from 'elysia'
 
 const Id = t.String({ format: 'uuid' })
@@ -15,6 +15,13 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   activity: t.Union([
+    t.Object({
+      type: t.Literal('exploration'),
+      version: t.Literal(2),
+      mission: t.Union(EXPLORATION_MISSIONS.map((mission) => t.Literal(mission))),
+      instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
+      initialImpulse: t.Optional(t.Integer({ minimum: 5, maximum: 14 })),
+    }),
     t.Object({
       type: t.Literal('simulation'),
       version: t.Literal(1),

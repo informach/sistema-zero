@@ -565,9 +565,18 @@ export function lessonDraftCases(getDb: () => Database) {
       const paths = [...new Bun.Glob('**/manifesto.json').scanSync(root)]
       expect(paths).toHaveLength(27)
       let plannedCount = 0
+      // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
+      // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e
+      // foi o que aconteceu (virou 145). Derivar não enfraquece o teste: o que ele
+      // guarda é que TODO vídeo planejado atravessa a importação e chega ao rascunho, e
+      // isso continua sendo uma comparação entre dois lados independentes.
+      let plannedEsperado = 0
       for (const path of paths) {
         const manifest: unknown = await Bun.file(resolve(root, path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
+        plannedEsperado += manifest.blocks.filter(
+          (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
+        ).length
         expect(manifest.version).toBe(path.replaceAll('\\', '/').startsWith('corre-dino/') ? 4 : 3)
         const f = await fixture()
         await f.db
@@ -640,7 +649,10 @@ export function lessonDraftCases(getDb: () => Database) {
         }
         expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
       }
-      expect(plannedCount).toBe(144)
+      expect(plannedCount).toBe(plannedEsperado)
+      // Anti-vácuo: a régua acima compararia 0 com 0 se a leitura dos manifestos
+      // parasse de enxergar os vídeos planejados.
+      expect(plannedEsperado).toBeGreaterThan(100)
     }, 30000)
   })
 }

@@ -379,7 +379,7 @@ describe('aula por seções', () => {
     expect(input.value).toBe('Meu dinossauro')
   })
 
-  test('a divisória entre a aula e a ferramenta é arrastável e alcançável pelo teclado', () => {
+  test('a divisória sem largura útil medida permanece desativada, com nome e gancho do tema', () => {
     // A criança que está ASSISTINDO quer o vídeo maior; a que está CRIANDO quer o
     // editor maior. Antes do lote o split era um grid fixo em 0.8fr/1.2fr, sem
     // arrasto, e só existia acima de 1536px de VIEWPORT.
@@ -397,28 +397,12 @@ describe('aula por seções', () => {
     // Aqui a janela do happy-dom é estreita, então tem que estar DESABILITADA.
     expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('false')
 
-    // Larga o bastante: a divisória acorda.
-    window.matchMedia = ((q: string) => ({
-      matches: true,
-      media: q,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    })) as unknown as typeof window.matchMedia
-    cleanup()
-    render(
-      <LessonPlayerProvider value={player}>
-        <LessonSections lesson={lesson} renderBlocks={() => null} />
-      </LessonPlayerProvider>,
-    )
-    const larga = screen.getByRole('separator')
-    expect(larga.tabIndex).toBe(0)
-    expect(larga.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
     // O gancho do tema é CONTRATO: renomeá-lo apaga o desenho da divisória no kids
     // em silêncio (o member-shell não tem regra nenhuma para ele).
-    expect(larga.classList.contains('sz-lesson-split-handle')).toBe(true)
+    expect(divisoria.classList.contains('sz-lesson-split-handle')).toBe(true)
     // `role="separator"` focável precisa de NOME: a lib só põe aria-controls e
     // aria-valuenow, e o leitor dizia "separador, 50".
-    expect(larga.getAttribute('aria-label')).toBeTruthy()
+    expect(divisoria.getAttribute('aria-label')).toBeTruthy()
   })
 
   test('a divisória desabilitada não é parada de Tab', () => {
@@ -433,23 +417,22 @@ describe('aula por seções', () => {
     expect(screen.getByRole('separator').tabIndex).toBe(-1)
   })
 
-  test('os dois lados nascem do mesmo tamanho', () => {
-    // "Tem menos espaço para o Estúdio" (relato da dona): o padrão era 55/45, e o
-    // lado menor era justo o da ferramenta.
-    // ⚠️ Este teste morde o `defaultSize`, NÃO a persistência: a lib não chega a
-    // tocar o `localStorage` no happy-dom (medido — nem lê a chave semeada nem
-    // grava o layout), então um caso sobre o ajuste guardado passaria aqui com ou
-    // sem o conserto, que é pior do que não existir. Quem guarda a regra da chave
-    // versionada é o comentário em `lesson-sections.tsx`, junto do `autoSaveId`.
-    const { container } = render(
+  test('Ver exemplo e Criar preservam a mesma instância e o trabalho em tela estreita', () => {
+    render(
       <LessonPlayerProvider value={player}>
-        <LessonSections lesson={lesson} renderBlocks={() => null} />
+        <LessonSections
+          lesson={lesson}
+          renderBlocks={() => <input aria-label="Trabalho no projeto" defaultValue="" />}
+        />
       </LessonPlayerProvider>,
     )
-    const tamanhos = [...container.querySelectorAll('[data-panel]')].map((p) =>
-      p.getAttribute('data-panel-size'),
-    )
-    expect(tamanhos).toEqual(['50.0', '50.0'])
+    fireEvent.click(screen.getByRole('button', { name: 'Criar' }))
+    const project = screen.getByRole('textbox', { name: 'Trabalho no projeto' })
+    fireEvent.change(project, { target: { value: 'Meu Dino salta' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Ver exemplo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar' }))
+    expect(screen.getByRole('textbox', { name: 'Trabalho no projeto' })).toBe(project)
+    expect(project).toHaveProperty('value', 'Meu Dino salta')
   })
 
   test('avisa a posição no percurso ao montar e a cada troca de seção', async () => {

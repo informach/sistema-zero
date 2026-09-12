@@ -19,28 +19,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Proteja o placar com “se jogando”. Teste as três telas.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.\n\nNeste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder.\n\nUm número correto também precisa ser legível: a cor do texto deve contrastar com o fundo. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o placar e a peça Somar ponto. “Os pontos devem crescer antes de jogar? E depois de terminar?” Convide a testar o relógio e levar a peça para Se jogando. Compare início, partida e fim. Mostre que voltar ao início preserva o valor para verificar se ele está parado; não zere escondido."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Pontos na hora certa",
-        "instructions": "Proteja o placar com “se jogando”. Teste as três telas.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Pontos só durante a partida",
+        "instructions": "Veja quando o placar cresce. Leve Somar ponto para dentro de Se jogando.",
+        "hints": [
+          "O placar deve crescer antes de começar?",
+          "Compare o mesmo passo do relógio no início, jogando e no fim.",
+          "Leve Somar ponto para Se jogando. Teste os três momentos."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "score"
+          "type": "exploration",
+          "version": 2,
+          "mission": "score"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Criar a caixinha dos pontos. Narração revisada: “Agora é a sua vez. Vamos criar a caixinha dos pontos.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar a caixinha dos pontos. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -52,7 +54,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Mostrar o placar. Narração revisada: “Agora é a sua vez. Vamos mostrar o placar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.\n\nConfira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Mostrar o placar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.\n\nConfira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -72,7 +74,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o número subir. Narração revisada: “Agora é a sua vez. Vamos fazer o número subir.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.\n\nSó dentro desse Se encaixe Somar 1 em pontos, de Variáveis. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o número subir. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.\n\nSó dentro desse Se encaixe Somar 1 em pontos, de Variáveis. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -84,7 +86,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Contar os pontos na tela de fim. Narração revisada: “Agora é a sua vez. Vamos contar os pontos na tela de fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.\n\nTente bater essa marca! Confira se aparece o número da sua partida. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Contar os pontos na tela de fim. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.\n\nTente bater essa marca! Confira se aparece o número da sua partida. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -96,7 +98,7 @@
     },
     {
       "key": "video-construir-5-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.\n\nA regra do placar deve ficar clara para quem joga. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.\n\nA regra do placar deve ficar clara para quem joga. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-5",
@@ -186,8 +188,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Pontos na hora certa",
-      "objective": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.",
+      "title": "Pontos só durante a partida",
+      "objective": "Pontos aumentam jogando; Pontos esperam no início; Valor fica parado no fim",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

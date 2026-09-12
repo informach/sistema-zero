@@ -19,28 +19,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Os cactos chegam sempre iguais? Vamos variar um pouco essa pista sem deixar o desafio fora de controle. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Experimente os resultados dos sorteios. Mude primeiro o nascimento, depois a velocidade.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: O bloco sorteia INTEIROS. De 0 a 1, pode sair 0 ou 1. O nascimento e a velocidade são sorteios separados. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o sorteador e a faixa de nascimento. “Um cacto pode nascer em lugares diferentes, dentro desta faixa.” Apresente os dois exemplos guiados de posição, com velocidade igual. Depois compare velocidade na mesma posição: base −5, descontar 0 ou 1. Convide ao sorteio livre após os contrastes e explique que repetir um resultado é possível."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Surpresas dentro da faixa",
-        "instructions": "Experimente os resultados dos sorteios. Mude primeiro o nascimento, depois a velocidade.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Cada cacto pode nascer diferente",
+        "instructions": "Acione os exemplos do sorteador. Compare primeiro onde os cactos nascem.",
+        "hints": [
+          "A faixa mostra onde um cacto pode nascer.",
+          "Compare uma coisa por vez: posição ou velocidade.",
+          "Acione os dois exemplos de posição. Depois compare os dois de velocidade."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "random"
+          "type": "exploration",
+          "version": 2,
+          "mission": "random"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Entender por que está sempre igual. Narração revisada: “Agora é a sua vez. Vamos entender por que está sempre igual.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4.\n\nQuando tudo se repete igual, dá para decorar o ritmo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Entender por que está sempre igual. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4.\n\nQuando tudo se repete igual, dá para decorar o ritmo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -52,7 +54,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Sortear o lugar do cacto. Narração revisada: “Agora é a sua vez. Vamos sortear o lugar do cacto.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560.\n\nJogue algumas vezes: o lugar de nascimento muda dentro dessa faixa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Sortear o lugar do cacto. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560.\n\nJogue algumas vezes: o lugar de nascimento muda dentro dessa faixa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -72,7 +74,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Sortear a velocidade. Narração revisada: “Agora é a sua vez. Vamos sortear a velocidade.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites.\n\nA direção deve continuar para a esquerda. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Sortear a velocidade. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites.\n\nA direção deve continuar para a esquerda. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -84,7 +86,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560.\n\nVolte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560.\n\nVolte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -174,8 +176,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "Surpresas dentro da faixa",
-      "objective": "Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.",
+      "title": "Cada cacto pode nascer diferente",
+      "objective": "Posições diferentes, mesma velocidade; Velocidades −5 e −6, mesma posição",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

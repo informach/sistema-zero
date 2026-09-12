@@ -25,6 +25,18 @@ import type { LessonBlockView, LessonDetailView } from '../lib/types'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
+import { useLessonPreview } from './lesson-preview-context'
+
+function dialogueText(content: unknown): string | null {
+  return content !== null &&
+    typeof content === 'object' &&
+    'kind' in content &&
+    content.kind === 'dialogue' &&
+    'text' in content &&
+    typeof content.text === 'string'
+    ? content.text
+    : null
+}
 
 export function useLessonLearning(lesson: LessonDetailView, viewerId: string | null) {
   const scope = `${viewerId}:${lesson.id}`
@@ -238,28 +250,33 @@ function BlockScope({
   )
 }
 
-/** Largura da JANELA a partir da qual o lado a lado existe (o `2xl` do Tailwind). */
-const SPLIT_MIN_WIDTH_PX = 1536
+/** Useful panel widths, independent of the viewport or the app's open sidebars. */
+const CONTENT_MIN_WIDTH_PX = 320
+const TOOL_MIN_WIDTH_PX = 640
+const SPLIT_HANDLE_WIDTH_PX = 24
 
 /** Chave do layout guardado. Mudou o `defaultSize` dos painéis? SUBA a versão. */
-const SPLIT_LAYOUT_KEY = 'sz:lesson-split:v2'
+const SPLIT_LAYOUT_KEY = 'sz:lesson-split:v3'
 
-/**
- * Só para DESABILITAR a divisória onde ela está escondida — o layout continua
- * decidido pelo CSS, que não pisca. Começa em `false` e aplica o valor real num
- * efeito: ler `matchMedia` no inicializador do estado quebra a hidratação
- * (React #418), pisão já documentado no modo foco do kids.
- */
-function useWideEnoughForSplit(): boolean {
-  const [wide, setWide] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH_PX}px)`)
-    const sync = () => setWide(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
+/** Measure on attachment, including content mounted after a deferred child. The
+ * observer follows sidebar and viewport changes; SSR starts in the compact mode. */
+function useLessonContentWidth() {
+  const [width, setWidth] = useState(0)
+  const [handleWidth, setHandleWidth] = useState(SPLIT_HANDLE_WIDTH_PX)
+  const container = useCallback((element: HTMLDivElement | null) => {
+    if (!element) return
+    const measure = () => {
+      setWidth(element.getBoundingClientRect().width)
+      const handle = element.querySelector<HTMLElement>('[data-panel-resize-handle-id]')
+      if (handle)
+        setHandleWidth(Number.parseFloat(getComputedStyle(handle).width) || SPLIT_HANDLE_WIDTH_PX)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [])
-  return wide
+  return { container, width, handleWidth }
 }
 
 export function LessonSections(props: {
@@ -285,6 +302,7 @@ function LessonSectionsContent({
   onSectionChange?: (posicao: { index: number; total: number }) => void
 }) {
   const player = useLessonPlayer()
+  const rehearsal = useLessonPreview()
   const preview = player === null
   const sections = useMemo(
     () =>
@@ -296,7 +314,8 @@ function LessonSectionsContent({
   )
   const state = lesson.sectionProgress
   const locked = (id: string) =>
-    !preview && state?.sections.some((s) => s.id === id && s.status === 'locked') === true
+    (!preview || rehearsal !== null) &&
+    state?.sections.some((s) => s.id === id && s.status === 'locked') === true
   const savedSection = lesson.learningProgress?.sectionId
   const linkedSection = useRef('')
   const [selected, setSelected] = useState(
@@ -323,10 +342,11 @@ function LessonSectionsContent({
     const target = hash.slice('#section='.length)
     if (
       sections.some((s) => s.id === target) &&
-      (preview || !state?.sections.some((s) => s.id === target && s.status === 'locked'))
+      ((preview && !rehearsal) ||
+        !state?.sections.some((s) => s.id === target && s.status === 'locked'))
     )
       setSelected(target)
-  }, [sections, state, preview])
+  }, [sections, state, preview, rehearsal])
   const [visited, setVisited] = useState<Set<string>>(
     () =>
       new Set(
@@ -371,7 +391,8 @@ function LessonSectionsContent({
   const [navigating, setNavigating] = useState(false)
   // ⚠️ ANTES do return antecipado abaixo: hook chamado depois de um `return` roda
   // condicionalmente e desalinha a ordem dos hooks entre renders.
-  const wideEnough = useWideEnoughForSplit()
+  const { container, width: contentWidth, handleWidth } = useLessonContentWidth()
+  const [toolMode, setToolMode] = useState<'example' | 'create'>('example')
   const registrouAbertura = useRef(false)
   // Abrir a aula REGISTRA a seção em que a criança entrou. A navegação só grava em
   // TRANSIÇÃO, então quem abre e fica na primeira seção nunca criava linha — e é o
@@ -419,7 +440,11 @@ function LessonSectionsContent({
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
   // A divisória só é interativa onde ela APARECE. Ver o comentário no handle.
-  const arrastavel = hasWorkspace && wideEnough
+  const arrastavel =
+    hasWorkspace && contentWidth >= CONTENT_MIN_WIDTH_PX + TOOL_MIN_WIDTH_PX + handleWidth
+  const panelWidth = Math.max(1, contentWidth - handleWidth)
+  const contentMinimum = arrastavel ? (CONTENT_MIN_WIDTH_PX / panelWidth) * 100 : 0
+  const toolMinimum = arrastavel ? (TOOL_MIN_WIDTH_PX / panelWidth) * 100 : 0
   async function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next || locked(next.id) || navigationBusy.current) return
@@ -439,6 +464,7 @@ function LessonSectionsContent({
           { keepalive: true },
         )
       setSelected(next.id)
+      setToolMode('example')
       setHelpOpen(false)
       setHelp('')
       setHelpStatus('')
@@ -590,7 +616,7 @@ function LessonSectionsContent({
           : null
       }
     >
-      <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
+      <div ref={container} className={cn('space-y-5', kids && 'sz-lesson-sections')}>
         {/* `sz-lesson-toolbar`: gancho ESTÁVEL para o tema do kids. Por posição não
             funciona — a barra já perdeu um `:first-of-type` quando outro elemento
             entrou na frente dela. */}
@@ -681,11 +707,55 @@ function LessonSectionsContent({
             ~900-1290px para ~350-505px, e o Vimeo escolhe a rendition pelo tamanho
             renderizado do iframe — daí o "vídeo ruim em tela cheia" que a dona
             reportou. Agora a criança decide onde fica a divisória. */}
+        <header className="sz-lesson-section-head space-y-2 px-1">
+          <h2
+            ref={heading}
+            tabIndex={-1}
+            className={cn(
+              'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
+              kids && 'sz-display',
+            )}
+          >
+            {section.title}
+          </h2>
+        </header>
+        {hasWorkspace && !arrastavel && (
+          <div className="flex gap-2" role="group" aria-label="Orientação e criação">
+            <Button
+              variant={toolMode === 'example' ? 'default' : 'outline'}
+              aria-pressed={toolMode === 'example'}
+              onClick={() => setToolMode('example')}
+            >
+              Ver exemplo
+            </Button>
+            <Button
+              variant={toolMode === 'create' ? 'default' : 'outline'}
+              aria-pressed={toolMode === 'create'}
+              onClick={() => setToolMode('create')}
+            >
+              Criar
+            </Button>
+          </div>
+        )}
+        {hasWorkspace &&
+          !arrastavel &&
+          toolMode === 'create' &&
+          section.blockIds
+            .map((id) => dialogueText(blockById.get(id)?.content))
+            .filter(Boolean)
+            .slice(0, 1)
+            .map((text) =>
+              text ? (
+                <div key={text} className="text-sm">
+                  {player?.renderInstruction?.(text) ?? text}
+                </div>
+              ) : null,
+            )}
         <PanelGroup
           direction="horizontal"
           // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
           // para as próximas. Na prévia do admin (`preview`) não persiste nada.
-          // ⚠️⚠️ A chave é VERSIONADA (`:v2`) porque a lib guarda o layout por
+          // A chave é versionada porque a lib guarda o layout por
           // (autoSaveId, ids dos Panel) e o que está guardado VENCE o `defaultSize` —
           // e ele é gravado na MONTAGEM, sem ninguém arrastar (o estado nasce `[]`, o
           // primeiro layout já difere e cai no autosave). Ou seja: o 55/45 antigo está
@@ -696,31 +766,23 @@ function LessonSectionsContent({
             // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
             // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
             // e `sticky` dentro, então os três precisam ser desfeitos.
-            'block! h-auto! items-start overflow-visible!',
-            hasWorkspace && '2xl:flex!',
+            'h-auto! items-start overflow-visible!',
+            arrastavel ? 'flex!' : 'block!',
           )}
         >
           <Panel
             id="lesson-content"
             order={1}
-            defaultSize={50}
-            minSize={30}
-            className="min-w-0 space-y-6 overflow-visible!"
+            defaultSize={30}
+            minSize={contentMinimum}
+            maxSize={100 - toolMinimum}
+            className={cn(
+              'min-w-0 space-y-6 overflow-visible!',
+              hasWorkspace && !arrastavel && toolMode === 'create' && 'hidden!',
+            )}
           >
             {/* `sz-lesson-section-head`: gancho ESTÁVEL do tema do kids, onde o título
                 abre o primeiro cartão da seção. */}
-            <header className="sz-lesson-section-head space-y-2 px-1">
-              <h2
-                ref={heading}
-                tabIndex={-1}
-                className={cn(
-                  'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
-                  kids && 'sz-display',
-                )}
-              >
-                {section.title}
-              </h2>
-            </header>
             {section.blockIds
               .map((id) => blockById.get(id))
               .filter(
@@ -792,8 +854,8 @@ function LessonSectionsContent({
               'self-stretch',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
               // `flex` + centro: CENTRA a pega que o tema desenhar, sem o app ter de
-              // repetir o 1536 num `@media` próprio.
-              hasWorkspace && '2xl:flex 2xl:items-center 2xl:justify-center',
+              // repetir o limiar de largura num `@media` próprio.
+              arrastavel && 'flex! items-center justify-center',
             )}
           >
             <span
@@ -804,12 +866,15 @@ function LessonSectionsContent({
           <Panel
             id="lesson-tool"
             order={2}
-            defaultSize={50}
-            minSize={30}
+            defaultSize={70}
+            minSize={toolMinimum}
+            maxSize={100 - contentMinimum}
             className={cn(
               // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
-              'mt-6 overflow-visible! 2xl:mt-0',
-              hasWorkspace ? 'min-w-0 space-y-6' : 'hidden',
+              'overflow-visible!',
+              hasWorkspace && (arrastavel || toolMode === 'create')
+                ? 'min-w-0 space-y-6'
+                : 'hidden!',
             )}
           >
             {tools.map((block) => (

@@ -1,30 +1,35 @@
 # A faxina dos cactos invisíveis
 
-Piloto Corre Dino, organizada em 5 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
+Piloto Corre Dino v5, organizada em 5 seções. A sequência desta aula foi escolhida pelo conteúdo; não é um molde obrigatório para as demais.
 
-Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
+Os vídeos estão roteirizados e precisam ser gravados e vinculados. Preservar o bloco Estúdio existente, o projeto contínuo e os marcos concluídos. No notebook, usar a largura útil dos painéis; em telas estreitas, Ver exemplo / Criar conserva o mesmo editor.
 
-A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
+O modelo registra descobertas, sem afirmar domínio do conceito. Conferir estrutura no Estúdio não comprova a execução do jogo. A criança testa o comportamento e o professor revisa a entrega.
 
-## 1. A faxina dos invisíveis
+## 1. Cuide dos cactos invisíveis
 
-**Objetivo do professor:** Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.
+**Objetivo do professor:** Fora da tela, ainda no grupo; Regra retira automaticamente
 
 **Vídeo planejado:** `video-missao`
 
-Clipe de 30 a 45 segundos. Oi! Oi! Um cacto saiu da tela. Será que ele saiu também do grupo? Hoje você vai ser detetive do que ficou escondido. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Veja os cactos saírem da tela. Ligue a limpeza e compare o grupo guardado.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Sair da imagem não é o mesmo que deixar de existir no grupo. Sem remoção, o total criado cresce mesmo quando poucos cactos aparecem na tela.
+Clipe de 20 a 45 segundos. Mostre a borda de saída e o contador dos bastidores. “O cacto saiu da tela. Será que saiu também do grupo que o jogo guarda?” Convide a avançar o relógio e olhar os dois lugares. A criança instala a regra na saída; os próximos cactos são removidos automaticamente. Não demonstre uma faxina manual de cada objeto.
 
-Um contador ajuda a observar esse estado invisível. No modelo, cada objeto leva três segundos para sair: o total criado em dez segundos pode ser bem maior que os objetos ainda visíveis.
+**Missão v2:** `cleanup`. Avance o relógio até um cacto sair. Ele também saiu dos bastidores?
 
-A limpeza remove os que saíram e permite estabilizar a quantidade guardada. Primeiro medimos, depois mudamos a regra e medimos novamente. Termine apontando para a atividade abaixo.
+**A criança mexe em:** Regra de remoção na saída e relógio.
 
-**Cena nativa:** `cleanup`. Veja os cactos saírem da tela. Ligue a limpeza e compare o grupo guardado.
+**Pista 1:** Compare a pista com os cactos guardados nos bastidores.
 
-**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+**Pista 2:** Sair da tela e sair do grupo são coisas diferentes.
 
-**O que observar:** Agora os cactos que saem da tela também saem do grupo!
+**Pista 3:** Encaixe Remover na borda de saída. Avance o relógio novamente.
 
-**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
+**Para avançar:** Fora da tela, ainda no grupo; Regra retira automaticamente.
+
+**Reconhecimento:** A regra retira do grupo cada cacto que sai da tela!
+
+**Convite opcional:** E se você desligar a regra e deixar outros cactos saírem?
+
 
 ## 2. Espie o que ficou guardado
 
@@ -32,7 +37,7 @@ A limpeza remove os que saíram e permite estabilizar a quantidade guardada. Pri
 
 **Vídeo planejado:** `video-construir-1-1`
 
-Clipe de 30 a 75 segundos: Montar o medidor. Narração revisada: “Agora é a sua vez. Vamos montar o medidor.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.
+Clipe de 30 a 75 segundos: Montar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.
 
 No valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -40,7 +45,7 @@ No valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use
 
 **Vídeo planejado:** `video-construir-2-1`
 
-Clipe de 30 a 75 segundos: Provocar o problema. Narração revisada: “Agora é a sua vez. Vamos provocar o problema.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.
+Clipe de 30 a 75 segundos: Provocar o problema. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.
 
 Ele continua crescendo? Essa é a medida do problema que vamos corrigir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -48,11 +53,14 @@ Ele continua crescendo? Essa é a medida do problema que vamos corrigir. Mostre 
 
 **Zappy:** Deixe alguns cactos saírem. Compare a pista com o número do contador.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Mostre a contagem do grupo cactos para investigar.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 3. Faça a faxina do grupo
 
@@ -60,7 +68,7 @@ Teste também o funcionamento com Play.
 
 **Vídeo planejado:** `video-construir-3-1`
 
-Clipe de 30 a 75 segundos: A faxina. Narração revisada: “Agora é a sua vez. Vamos a faxina.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.
+Clipe de 30 a 75 segundos: A faxina. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.
 
 Compare o número com o teste anterior. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -68,7 +76,7 @@ Compare o número com o teste anterior. Mostre o resultado esperado. Termine: �
 
 **Vídeo planejado:** `video-construir-4-1`
 
-Clipe de 30 a 75 segundos: Testar dois ritmos, devolver o relógio e aposentar o medidor. Narração revisada: “Agora é a sua vez. Vamos testar dois ritmos, devolver o relógio e aposentar o medidor.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.
+Clipe de 30 a 75 segundos: Testar dois ritmos, devolver o relógio e aposentar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.
 
 Remova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
@@ -76,11 +84,14 @@ Remova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza conti
 
 **Zappy:** Compare o contador antes e depois da limpeza. A quantidade deve deixar de crescer sem parar.
 
-**Para avançar:** verificar no projeto:
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
+
+**Para avançar, conferir a estrutura:**
 
 - Tire do grupo cactos quem sair da tela, em A cada quadro do jogo.
 
-Teste também o funcionamento com Play.
+Depois, usar Play para observar o comportamento. A checagem estrutural não será apresentada como execução verificada.
+
 
 ## 4. Mostre sua criação
 
@@ -92,9 +103,10 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
+**Mesmo espaço de trabalho:** `projeto`. A referência reutiliza o projeto; não cria outro arquivo por seção.
 
-**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
+**Entrega:** testar e confirmar o envio ao professor; a confirmação preserva a versão enviada e libera o quiz seguinte.
+
 
 ## 5. O que você descobriu?
 
@@ -102,24 +114,12 @@ Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! V
 
 **Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-**Pergunta:** Um cacto saiu da tela. Ele saiu do grupo também?
-
-- Só se o programa o remover. (correta)
+**Quiz:** Um cacto saiu da tela. Ele saiu do grupo também?
+- Só se o programa o remover.
 - Sempre, sem precisar de uma regra.
+**Explicação:** Um objeto pode continuar guardado mesmo fora da imagem.
 
-**Feedback:** Um objeto pode continuar guardado mesmo fora da imagem.
-
-**Pergunta:** Depois da faxina, qual bloco precisa continuar no projeto?
-
+**Quiz:** Depois da faxina, qual bloco precisa continuar no projeto?
 - Só o contador de diagnóstico.
-- O que remove os cactos que saíram. (correta)
-
-**Feedback:** O contador ajudou a investigar. A regra de limpeza mantém o grupo organizado.
-
-**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
-
-## Produção e revisão
-
-Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
-
-Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.
+- O que remove os cactos que saíram.
+**Explicação:** O contador ajudou a investigar. A regra de limpeza mantém o grupo organizado.

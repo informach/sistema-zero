@@ -343,6 +343,7 @@ export interface CourseDetailView {
   milestones?: CourseMilestonesView
   /** Published, unlocked lesson containing the course publication action. */
   showcaseLessonId?: string | null
+  materialLessonIds?: string[]
   slug: string
   title: string
   subtitle: string | null

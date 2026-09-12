@@ -84,12 +84,13 @@ const LessonChromeContext = createContext<LessonChromeContextValue>(INERT)
 const navKey = (viewerId: string) => `sz:kids:hide-nav:${viewerId}`
 const outlineKey = (viewerId: string) => `sz:kids:hide-outline:${viewerId}`
 
-function readPref(key: string): boolean {
+function readPref(key: string): boolean | null {
   try {
-    return localStorage.getItem(key) === '1'
+    const value = localStorage.getItem(key)
+    return value === null ? null : value === '1'
   } catch {
     // localStorage indisponível (modo privado/quota) → sem preferência, sem crash.
-    return false
+    return null
   }
 }
 
@@ -119,32 +120,35 @@ export function FocusModeProvider({
   const pathname = usePathname()
   const isTablet = useMinWidth(768) // md — barra esquerda (menu)
   const isDesktop = useMinWidth(1024) // lg — coluna direita (lista de aulas)
+  const isLargeDesktop = useMinWidth(1600)
+  const notebookLesson = isLessonPath(pathname) && isDesktop && !isLargeDesktop
   // Inicia FALSE nos dois lados (SSR + 1º render cliente) p/ não dar mismatch de
   // hidratação; a preferência salva é aplicada num efeito pós-mount.
-  const [navHidden, setNavHidden] = useState(false)
-  const [outlineHidden, setOutlineHidden] = useState(false)
+  const [navPreference, setNavHidden] = useState<boolean | null>(null)
+  const [outlinePreference, setOutlineHidden] = useState<boolean | null>(null)
+  const navHidden = navPreference ?? notebookLesson
+  const outlineHidden = outlinePreference ?? notebookLesson
 
   useEffect(() => {
-    if (!viewerId) return
-    setNavHidden(readPref(navKey(viewerId)))
-    setOutlineHidden(readPref(outlineKey(viewerId)))
+    setNavHidden(viewerId ? readPref(navKey(viewerId)) : null)
+    setOutlineHidden(viewerId ? readPref(outlineKey(viewerId)) : null)
   }, [viewerId])
 
   const toggleNav = useCallback(() => {
     setNavHidden((prev) => {
-      const next = !prev
+      const next = !(prev ?? notebookLesson)
       if (viewerId) writePref(navKey(viewerId), next)
       return next
     })
-  }, [viewerId])
+  }, [viewerId, notebookLesson])
 
   const toggleOutline = useCallback(() => {
     setOutlineHidden((prev) => {
-      const next = !prev
+      const next = !(prev ?? notebookLesson)
       if (viewerId) writePref(outlineKey(viewerId), next)
       return next
     })
-  }, [viewerId])
+  }, [viewerId, notebookLesson])
 
   const value = useMemo<LessonChromeContextValue>(() => {
     const onLesson = isLessonPath(pathname)

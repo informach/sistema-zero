@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { defaultLessonSection, type InteractiveBlock } from '@sistemazero/core/learning'
+import {
+  appendExplorationAction,
+  defaultLessonSection,
+  type InteractiveBlock,
+} from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
   changeDraft,
@@ -69,6 +73,60 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
+  test('v2 discovery requires replayable actions, survives reload and refuses another revision', async () => {
+    const ctx = setup()
+    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+    if (!block) throw new Error('Missing fixture')
+    ctx.courses.blocks = ctx.courses.blocks.filter(
+      (b) => b.lessonId !== ctx.lessonId || b.id === block.id,
+    )
+    const activity = { type: 'exploration', version: 2, mission: 'world' } as const
+    block.content = { ...content, activity, checkpoint: undefined }
+    const section = {
+      ...defaultLessonSection(randomUUID(), 'Faça aparecer', [block.id]),
+      completion: { version: 1 as const, blockIds: [block.id] },
+    }
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      revision: randomUUID(),
+      sections: [section],
+    })
+    const attempt = (answers: unknown, revision = REVISION) =>
+      ctx.request(`/lessons/${ctx.lessonId}/blocks/${block.id}/learning-attempts`, 'POST', {
+        id: randomUUID(),
+        revision,
+        answers,
+        hintsUsed: 0,
+      })
+    const fabricated = await attempt({ completed: true, discoveries: ['hidden', 'visible'] })
+    expect(fabricated.status).toBe(200)
+    expect(await fabricated.json()).toMatchObject({ attempt: { result: { passed: false } } })
+    const first = appendExplorationAction(activity, {}, { type: 'create' })
+    expect(await (await attempt(first)).json()).toMatchObject({
+      attempt: { result: { passed: false } },
+    })
+    const finished = appendExplorationAction(activity, first, {
+      type: 'connect',
+      port: 'draw',
+      enabled: true,
+    })
+    expect(await (await attempt(finished)).json()).toMatchObject({
+      attempt: { result: { passed: true, verifiedBy: 'client' } },
+    })
+    expect(await (await ctx.read()).json()).toMatchObject({
+      sectionProgress: { sections: [{ id: section.id, status: 'completed' }] },
+    })
+    expect((await attempt(finished, 'another-revision')).status).toBe(409)
+    expect(
+      (
+        await ctx.request(
+          `/lessons/${ctx.lessonId}/blocks/${block.id}/learning-attempts`,
+          'POST',
+          { id: randomUUID(), revision: REVISION, answers: finished, hintsUsed: 0 },
+          OTHER,
+        )
+      ).status,
+    ).not.toBe(200)
+  })
   test('repeating a help request keeps one message and preserves its lesson context', async () => {
     const ctx = setup()
     const section = defaultLessonSection(

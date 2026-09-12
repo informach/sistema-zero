@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
+  appendExplorationAction,
   defaultLessonSection,
   type InteractiveBlock,
+  type LessonSection,
   type SectionProgressView,
 } from '@sistemazero/core/learning'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -77,6 +79,131 @@ function setup() {
 }
 
 describe('section gates across HTTP and persistence', () => {
+  test('two explorations interleave independent goals in the same Studio before delivery', async () => {
+    const ctx = setup()
+    const projectId = randomUUID()
+    const activity = { type: 'exploration', version: 2, mission: 'layers' } as const
+    for (const id of ctx.ids.slice(0, 2)) {
+      const block = ctx.courses.blocks.find((b) => b.id === id)
+      if (!block) throw new Error('Missing exploration fixture')
+      block.content = {
+        kind: 'interactive',
+        title: 'Camadas',
+        instructions: 'Mude a ordem.',
+        required: false,
+        hints: [],
+        activity,
+      }
+    }
+    ctx.courses.blocks.push({
+      id: projectId,
+      lessonId: ctx.lessonId,
+      kind: 'studio',
+      sortOrder: 4,
+      contentRevision: REVISION,
+      content: { kind: 'studio', initialProject: {} },
+    })
+    const firstGoal: LessonSection = {
+      ...defaultLessonSection(randomUUID(), 'Criar repetição', []),
+      intent: 'application',
+      workspaceBlockId: projectId,
+      completion: {
+        version: 1,
+        blockIds: [],
+        projectChecks: [{ id: 'loop', label: 'Repetição', rule: { type: 'usesLoop' } }],
+      },
+    }
+    const secondGoal: LessonSection = {
+      ...defaultLessonSection(randomUUID(), 'Acrescentar pontos', []),
+      intent: 'application',
+      workspaceBlockId: projectId,
+      completion: {
+        version: 1,
+        blockIds: [],
+        projectChecks: [
+          { id: 'variable', label: 'Pontos', rule: { type: 'declaresVariable', name: 'pontos' } },
+        ],
+      },
+    }
+    const closing = ctx.sections[2]
+    if (!closing || !ctx.sections[0] || !ctx.sections[1]) throw new Error('Missing sections')
+    const sections: LessonSection[] = [
+      ctx.sections[0],
+      firstGoal,
+      ctx.sections[1],
+      secondGoal,
+      {
+        ...closing,
+        intent: 'closing',
+        blockIds: [...closing.blockIds, projectId],
+        completion: { version: 1, blockIds: [...closing.blockIds, projectId] },
+      },
+    ]
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      revision: ctx.structureRevision,
+      sections,
+    })
+    const answers = appendExplorationAction(activity, {}, { type: 'layer', front: true })
+    const discover = (index: number) =>
+      ctx.request(`/lessons/${ctx.lessonId}/blocks/${ctx.ids[index]}/learning-attempts`, 'POST', {
+        id: randomUUID(),
+        revision: REVISION,
+        answers,
+        hintsUsed: 0,
+      })
+    const project = {
+      name: 'Mesmo Dino',
+      files: {},
+      ir: {
+        version: 2,
+        html: [],
+        css: [],
+        extensions: [],
+        behavior: {
+          start: [],
+          molds: [],
+          events: [],
+          loops: [{ type: 'repeat', times: { type: 'num', value: 3 }, body: [] }],
+        },
+      },
+    }
+    const check = (section: LessonSection, snapshot: unknown = project) =>
+      ctx.request(`/lessons/${ctx.lessonId}/sections/${section.id}/project-check`, 'POST', {
+        revision: ctx.structureRevision,
+        project: snapshot,
+      })
+    const submit = (snapshot: unknown = project) =>
+      ctx.request(`/lessons/${ctx.lessonId}/blocks/${projectId}/studio-submission`, 'POST', {
+        project: snapshot,
+      })
+    expect((await discover(1)).status).toBe(423)
+    expect((await discover(0)).status).toBe(200)
+    expect((await json(ctx.read())).sectionProgress.completed).toBe(1)
+    expect((await json(ctx.read())).blocks.filter((b) => b.id === projectId)).toHaveLength(1)
+    expect((await json(check(firstGoal))).passed).toBe(true)
+    expect((await submit()).status).toBe(423)
+    expect((await discover(1)).status).toBe(200)
+    expect((await json(ctx.read())).sectionProgress.completed).toBe(3)
+    expect((await json(check(secondGoal))).passed).toBe(false)
+    expect((await json(ctx.read())).sectionProgress.completed).toBe(3)
+    expect((await json(ctx.read())).blocks.filter((b) => b.id === projectId)).toHaveLength(1)
+    const extended = {
+      ...project,
+      ir: {
+        ...project.ir,
+        behavior: {
+          ...project.ir.behavior,
+          start: [{ type: 'var', name: 'pontos', value: { type: 'num', value: 0 } }],
+        },
+      },
+    }
+    expect((await json(check(secondGoal, extended))).passed).toBe(true)
+    expect((await json(ctx.read())).sectionProgress.completed).toBe(4)
+    expect(await ctx.studioSubmissions.getOne(USER, projectId)).toBeNull()
+    expect((await ctx.attempt(2)).status).toBe(200)
+    expect((await submit(extended)).status).toBe(200)
+    expect((await json(ctx.read())).sectionProgress.percent).toBe(100)
+  })
   test('a selected formative quiz allows an immediate retry and reports the same state on reload', async () => {
     const ctx = setup(),
       quizId = randomUUID()

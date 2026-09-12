@@ -18,28 +18,30 @@
   "blocks": [
     {
       "key": "video-missao",
-      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Um cacto saiu da tela. Será que ele saiu também do grupo? Hoje você vai ser detetive do que ficou escondido. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Veja os cactos saírem da tela. Ligue a limpeza e compare o grupo guardado.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Sair da imagem não é o mesmo que deixar de existir no grupo. Sem remoção, o total criado cresce mesmo quando poucos cactos aparecem na tela.\n\nUm contador ajuda a observar esse estado invisível. No modelo, cada objeto leva três segundos para sair: o total criado em dez segundos pode ser bem maior que os objetos ainda visíveis.\n\nA limpeza remove os que saíram e permite estabilizar a quantidade guardada. Primeiro medimos, depois mudamos a regra e medimos novamente. Termine apontando para a atividade abaixo."
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a borda de saída e o contador dos bastidores. “O cacto saiu da tela. Será que saiu também do grupo que o jogo guarda?” Convide a avançar o relógio e olhar os dois lugares. A criança instala a regra na saída; os próximos cactos são removidos automaticamente. Não demonstre uma faxina manual de cada objeto."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "A faxina dos invisíveis",
-        "instructions": "Veja os cactos saírem da tela. Ligue a limpeza e compare o grupo guardado.",
-        "hints": [
-          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
-        ],
         "required": false,
+        "title": "Cuide dos cactos invisíveis",
+        "instructions": "Avance o relógio até um cacto sair. Ele também saiu dos bastidores?",
+        "hints": [
+          "Compare a pista com os cactos guardados nos bastidores.",
+          "Sair da tela e sair do grupo são coisas diferentes.",
+          "Encaixe Remover na borda de saída. Avance o relógio novamente."
+        ],
         "activity": {
-          "type": "simulation",
-          "version": 1,
-          "scene": "cleanup"
+          "type": "exploration",
+          "version": 2,
+          "mission": "cleanup"
         }
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Montar o medidor. Narração revisada: “Agora é a sua vez. Vamos montar o medidor.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.\n\nNo valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Montar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.\n\nNo valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-1",
@@ -51,7 +53,7 @@
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Provocar o problema. Narração revisada: “Agora é a sua vez. Vamos provocar o problema.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.\n\nEle continua crescendo? Essa é a medida do problema que vamos corrigir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Provocar o problema. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.\n\nEle continua crescendo? Essa é a medida do problema que vamos corrigir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-2",
@@ -71,7 +73,7 @@
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: A faxina. Narração revisada: “Agora é a sua vez. Vamos a faxina.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.\n\nCompare o número com o teste anterior. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: A faxina. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.\n\nCompare o número com o teste anterior. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-3",
@@ -83,7 +85,7 @@
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "Clipe de 30 a 75 segundos: Testar dois ritmos, devolver o relógio e aposentar o medidor. Narração revisada: “Agora é a sua vez. Vamos testar dois ritmos, devolver o relógio e aposentar o medidor.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.\n\nRemova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar dois ritmos, devolver o relógio e aposentar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.\n\nRemova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
       "key": "zappy-construir-4",
@@ -173,8 +175,8 @@
   "sections": [
     {
       "key": "comeco",
-      "title": "A faxina dos invisíveis",
-      "objective": "Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.",
+      "title": "Cuide dos cactos invisíveis",
+      "objective": "Fora da tela, ainda no grupo; Regra retira automaticamente",
       "intent": "exploration",
       "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,

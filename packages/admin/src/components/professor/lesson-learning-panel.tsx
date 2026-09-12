@@ -1,17 +1,74 @@
 'use client'
 
-import type {
-  LearningAnswers,
-  LessonLearningReport,
-  PublicInteractiveBlock,
+import {
+  EXPLORATION_DEFINITIONS,
+  type ExplorationMission,
+  type ExplorationState,
+  evaluateExploration,
+  explorationGoals,
+  type LearningAnswers,
+  type LessonLearningReport,
+  type PublicInteractiveBlock,
+  replayExploration,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { LessonEvidenceHistory } from './lesson-evidence-history'
 
+function mountingDescription(mission: ExplorationMission, state: ExplorationState): string {
+  const screen = { start: 'início', playing: 'partida', end: 'fim' }[state.screen]
+  switch (mission) {
+    case 'world':
+      return `Dino ${state.created ? 'criado' : 'ausente'}; desenho ${state.drawn ? 'ligado' : 'desligado'}`
+    case 'layers':
+      return `Dino ${state.front ? 'depois' : 'antes'} da floresta`
+    case 'gravity':
+    case 'impulse':
+      return `gravidade ${state.gravity ? 'aplicada' : 'desligada'}; impulso ${state.force}`
+    case 'jump-sound':
+      return `som ligado ${state.soundOnJump ? 'ao salto' : 'ao comando'}; ${state.jumpCount} saltos e ${state.soundCount} sons`
+    case 'spawn':
+      return state.timer ? `nascimento a cada ${state.interval} s` : 'nascimento a cada quadro'
+    case 'cleanup':
+      return `limpeza ${state.cleanup ? 'ligada' : 'desligada'}; ${state.removed} removidos; ${state.born - state.removed} no grupo`
+    case 'game-state':
+      return `tela de ${screen}; relógio ${state.guarded ? 'dentro de Se jogando' : 'em qualquer tela'}`
+    case 'controls':
+      return `tela de ${screen}; início por Enter e ${state.touch ? 'toque conectado' : 'toque desconectado'}`
+    case 'restart':
+      return `tela de ${screen}; reinício ${state.restartConnected ? 'conectado' : 'desconectado'}`
+    case 'hitbox':
+      return `distância ${state.distance}; área do Dino ${state.width}`
+    case 'score':
+      return `tela de ${screen}; ${state.points} pontos; soma ${state.guarded ? 'dentro de Se jogando' : 'em qualquer tela'}`
+    case 'random':
+      return `posições testadas: ${state.positionSamples.join(', ') || 'nenhuma'}; velocidades: ${state.velocitySamples.join(', ') || 'nenhuma'}`
+    case 'acceleration':
+      return `base ${state.base}; limite ${state.limited ? 'ligado' : 'desligado'}; última velocidade ${state.sampleVelocity}`
+  }
+}
+
 function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   const activity = content?.activity
+  if (activity?.type === 'exploration') {
+    const { state, valid } = replayExploration(activity, answers)
+    if (!valid)
+      return ['Tentativa de outra revisão. Não foi reinterpretada como uma descoberta nova.']
+    const result = evaluateExploration(activity, answers)
+    return [
+      `Missão: ${EXPLORATION_DEFINITIONS[activity.mission].title} · modelo e evidência v2`,
+      ...explorationGoals(activity, state).map(
+        (goal) => `${goal.complete ? 'Realizado' : 'Pendente'}: ${goal.label}`,
+      ),
+      ...state.observations
+        .filter((o) => state.discoveries.includes(o.id))
+        .map((o) => `Observou: ${o.label}`),
+      `Montagem atual: ${mountingDescription(activity.mission, state)}`,
+      `Pistas utilizadas: ${state.hints}`,
+      result.passed ? 'Missão realizada no modelo da exploração.' : 'Missão ainda incompleta.',
+    ]
+  }
   const choices =
     activity?.type === 'prediction'
       ? activity.choices

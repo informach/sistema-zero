@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  EXPLORATION_DEFINITIONS,
+  EXPLORATION_MISSIONS,
   type InteractiveBlock,
   isLearningScene,
   LEARNING_SCENE_DEFINITIONS,
@@ -25,6 +27,8 @@ const initialChoices = (): LearningChoice[] => [
 ]
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
+    case 'exploration':
+      return { type, version: 2, mission: 'world' }
     case 'simulation':
       return { type, version: 1, scene: 'world' }
     case 'checkpoint':
@@ -60,7 +64,7 @@ export const EMPTY_LEARNING: InteractiveBlock = {
   instructions: '',
   hints: [],
   required: false,
-  activity: newLearningActivity('simulation'),
+  activity: newLearningActivity('exploration'),
 }
 function ChoiceFields({
   choices,
@@ -145,6 +149,7 @@ export function LearningBuilder({
             if (
               type === 'checkpoint' ||
               type === 'simulation' ||
+              type === 'exploration' ||
               type === 'prediction' ||
               type === 'comparison' ||
               type === 'sequence' ||
@@ -154,6 +159,14 @@ export function LearningBuilder({
               onChange({
                 ...value,
                 activity: newLearningActivity(type),
+                ...(type === 'exploration'
+                  ? {
+                      checkpoint: undefined,
+                      title: EXPLORATION_DEFINITIONS.world.title,
+                      instructions: EXPLORATION_DEFINITIONS.world.instruction,
+                      hints: [...EXPLORATION_DEFINITIONS.world.hints],
+                    }
+                  : {}),
                 ...(type === 'checkpoint' && !value.checkpoint
                   ? {
                       checkpoint: {
@@ -167,7 +180,8 @@ export function LearningBuilder({
               })
           }}
         >
-          <option value="simulation">Exploração interativa: manipular e comparar</option>
+          <option value="exploration">Exploração: agir diretamente na cena</option>
+          <option value="simulation">Exploração anterior (versão 1)</option>
           <option value="checkpoint">Pergunta curta</option>
           <option value="prediction">Prever e observar</option>
           <option value="comparison">Comparar duas possibilidades</option>
@@ -176,6 +190,119 @@ export function LearningBuilder({
           <option value="html">Experiência especial em HTML</option>
         </Select>
       </Field>
+      {a.type === 'exploration' && (
+        <div className="space-y-4">
+          <Field label="Missão da descoberta" htmlFor={`${id}-mission`}>
+            <Select
+              id={`${id}-mission`}
+              value={a.mission}
+              onChange={(event) => {
+                const mission = EXPLORATION_MISSIONS.find((m) => m === event.target.value)
+                if (!mission) return
+                const definition = EXPLORATION_DEFINITIONS[mission]
+                onChange({
+                  ...value,
+                  title: definition.title,
+                  instructions: definition.instruction,
+                  hints: [...definition.hints],
+                  checkpoint: undefined,
+                  activity: { type: 'exploration', version: 2, mission },
+                })
+              }}
+            >
+              {(['world', 'motion', 'events', 'population', 'collision', 'speed'] as const).map(
+                (family) => (
+                  <optgroup
+                    key={family}
+                    label={
+                      {
+                        world: 'Mundo e desenho',
+                        motion: 'Movimento',
+                        events: 'Eventos e estados',
+                        population: 'Objetos no grupo',
+                        collision: 'Áreas e contato',
+                        speed: 'Sorteio e velocidade',
+                      }[family]
+                    }
+                  >
+                    {EXPLORATION_MISSIONS.filter(
+                      (mission) => EXPLORATION_DEFINITIONS[mission].family === family,
+                    ).map((mission) => (
+                      <option key={mission} value={mission}>
+                        {EXPLORATION_DEFINITIONS[mission].title}
+                      </option>
+                    ))}
+                  </optgroup>
+                ),
+              )}
+            </Select>
+          </Field>
+          <div className="space-y-2 rounded-xl bg-muted/40 p-4 text-sm">
+            <p>
+              <strong>A criança vai:</strong>{' '}
+              {EXPLORATION_DEFINITIONS[a.mission].title.toLocaleLowerCase('pt-BR')}.
+            </p>
+            <p>
+              <strong>Poderá mexer em:</strong> {EXPLORATION_DEFINITIONS[a.mission].manipulates}.
+            </p>
+            <p>
+              <strong>Avança quando:</strong>{' '}
+              {EXPLORATION_DEFINITIONS[a.mission].goals.map((g) => g.label).join('; ')}.
+            </p>
+            <p>
+              Toque, arraste e teclado têm caminhos equivalentes. O critério registra a exploração
+              deste modelo.
+            </p>
+          </div>
+          <details className="rounded-xl border border-border p-3">
+            <summary className="cursor-pointer text-sm font-medium">
+              Áudio e detalhes da missão
+            </summary>
+            <div className="mt-3 space-y-3">
+              {(a.mission === 'gravity' || a.mission === 'impulse') && (
+                <Field
+                  label="Impulso inicial do modelo"
+                  htmlFor={`${id}-initial-impulse`}
+                  hint="Entre 5 e 14. A gravidade permanece igual para comparar os saltos."
+                >
+                  <Input
+                    id={`${id}-initial-impulse`}
+                    type="number"
+                    min={5}
+                    max={14}
+                    step={1}
+                    value={a.initialImpulse ?? 9}
+                    onChange={(event) => {
+                      const value = Number(event.target.value)
+                      if (Number.isInteger(value) && value >= 5 && value <= 14)
+                        activity({ ...a, initialImpulse: value })
+                    }}
+                  />
+                </Field>
+              )}
+              <Field
+                label="Áudio revisado da instrução (opcional)"
+                htmlFor={`${id}-audio`}
+                hint="A criança poderá escolher Ouvir. A instrução escrita permanece disponível."
+              >
+                <Input
+                  id={`${id}-audio`}
+                  type="url"
+                  placeholder="https://…"
+                  value={a.instructionAudioUrl ?? ''}
+                  onChange={(event) =>
+                    activity({ ...a, instructionAudioUrl: event.target.value || undefined })
+                  }
+                />
+              </Field>
+              <p className="text-xs text-muted-foreground">
+                Modelo e evidência v2. As condições e os limites desta missão foram revisados em
+                conjunto; mudar seu significado exige uma nova revisão.
+              </p>
+            </div>
+          </details>
+        </div>
+      )}
       {a.type === 'simulation' && (
         <>
           <Field label="O que a criança vai descobrir" htmlFor={`${id}-scene`}>
@@ -379,27 +506,29 @@ export function LearningBuilder({
           A obrigatoriedade é escolhida nos critérios da seção, no percurso da aula.
         </p>
       )}
-      <label className="flex min-h-11 items-center gap-3">
-        <input
-          type="checkbox"
-          checked={Boolean(checkpoint)}
-          disabled={a.type === 'checkpoint'}
-          onChange={(e) =>
-            onChange({
-              ...value,
-              checkpoint: e.target.checked
-                ? {
-                    prompt: '',
-                    choices: initialChoices(),
-                    correctChoiceId: 'first',
-                    explanation: '',
-                  }
-                : undefined,
-            })
-          }
-        />
-        Incluir pergunta de verificação
-      </label>
+      {a.type !== 'exploration' && (
+        <label className="flex min-h-11 items-center gap-3">
+          <input
+            type="checkbox"
+            checked={Boolean(checkpoint)}
+            disabled={a.type === 'checkpoint'}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                checkpoint: e.target.checked
+                  ? {
+                      prompt: '',
+                      choices: initialChoices(),
+                      correctChoiceId: 'first',
+                      explanation: '',
+                    }
+                  : undefined,
+              })
+            }
+          />
+          Incluir pergunta de verificação
+        </label>
+      )}
       {value.required && (a.type === 'html' || a.type === 'experiment') && !checkpoint && (
         <p role="status" className="text-sm text-destructive">
           Adicione uma pergunta de verificação para tornar este experimento essencial.

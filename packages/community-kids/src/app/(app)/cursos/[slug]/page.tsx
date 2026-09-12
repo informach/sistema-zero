@@ -177,6 +177,30 @@ export default async function CoursePage({
         </KidsBand>
       ) : null}
 
+      {course.materialLessonIds?.length ? (
+        <KidsBand tone="amarelo">
+          <section className="kids-carta p-6 md:p-7" aria-label="Caderno do curso">
+            <h2 className="sz-display text-xl">Seu caderno está aqui</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Volte quando quiser ler ou baixar o material.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {course.materialLessonIds.map((id) => (
+                <Link
+                  key={id}
+                  className="sz-btn-gradient px-5"
+                  href={`/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(id)}`}
+                >
+                  {course.modules
+                    .flatMap((module) => module.lessons)
+                    .find((lesson) => lesson.id === id)?.title ?? 'Abrir caderno'}
+                </Link>
+              ))}
+            </div>
+          </section>
+        </KidsBand>
+      ) : null}
+
       {/* Trilha de aulas (estilo Duolingo) — substitui a lista de módulos. A faixa
           azul-céu vai do começo ao fim da trilha, como no mapa da carreira. */}
       <KidsBand tone="ceu">
