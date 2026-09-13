@@ -16,7 +16,7 @@
       "content": {
         "kind": "interactive",
         "title": "Uma luz, dois lados",
-        "instructions": "Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros? Sua primeira ideia pode mudar depois da observação. Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais.",
+        "instructions": "Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros? Sua primeira ideia pode mudar depois da observação.",
         "hints": [
           "Imagine uma lanterna iluminando um lado do desenho."
         ],

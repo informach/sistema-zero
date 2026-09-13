@@ -16,7 +16,7 @@
       "content": {
         "kind": "interactive",
         "title": "O que deve mudar entre os quadros?",
-        "instructions": "Você quer fogo pulsando, sem a nave tremer. Qual mudança tentaria primeiro? Sua primeira ideia pode mudar depois da observação. Mudar só o fogo produz uma pulsação com o corpo estável. Mover a nave inteira pode ser um efeito intencional, mas cria outra sensação. A prévia é o lugar de comparar.",
+        "instructions": "Você quer fogo pulsando, sem a nave tremer. Qual mudança tentaria primeiro? Sua primeira ideia pode mudar depois da observação.",
         "hints": [
           "Compare as duas imagens: o que seus olhos conseguem perceber que mudou?"
         ],

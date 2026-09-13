@@ -34,8 +34,13 @@ for (const entry of catalog) {
     assert(discoveries.length > 0, entry.path)
     for (const block of discoveries)
       if ('content' in block && block.content.kind === 'interactive') {
-        assert(['simulation', 'exploration'].includes(block.content.activity.type), entry.path)
-        assert(!block.content.checkpoint, 'Não acrescentar pergunta obrigatória à exploração')
+        // ⚠️ Descoberta é CENA, e cena não carrega pergunta anexa: `answers.checkpoint` seria a
+        // alternativa escolhida E os pedaços da sessão na mesma chave.
+        assert(
+          ['demonstration', 'experimentation'].includes(block.content.activity.type),
+          entry.path,
+        )
+        assert(!block.content.checkpoint, 'Não acrescentar pergunta obrigatória à cena')
       }
     for (const section of manifest.sections.filter((s) => s.intent === 'application'))
       assert(section.workspaceKey && section.completion?.projectChecks?.length, entry.path)

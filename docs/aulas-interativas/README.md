@@ -4,6 +4,10 @@ As revisões atuais baseadas nos roteiros gravados estão em [Desafio do Primeir
 
 O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas contagens e decisões anteriores não substituem as revisões acima. As pastas históricas foram preservadas para referência e migração.
 
+⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
+
+⭐ **Os 54 manifestos — históricos e atuais — passam por teste** (`packages/core/tests/learning.test.ts`): formato, critérios de seção sem pendência, cada trecho a gravar numa seção só, e cada atividade interativa com um caminho de passar que é EXPRESSO COMO AÇÕES da criança, nunca como um "passou" pronto. Antes só o pacote histórico tinha rede: as 28 cenas das revisões atuais podiam quebrar num contrato novo e só aparecer na hora de importar.
+
 ## Histórico do pacote inicial
 
 Este pacote adapta os 27 roteiros fornecidos: introdução e cinco dias do Desafio do Primeiro Jogo, 13 aulas de Corre, Dino! e oito de O Jogo do Meu Jeito. Cada roteiro original continua sendo uma aula. O [catálogo](catalogo.json) registra o arquivo de origem, sua assinatura SHA-256, o destino e a quantidade de seções.

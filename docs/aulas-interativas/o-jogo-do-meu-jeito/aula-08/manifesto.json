@@ -16,7 +16,7 @@
       "content": {
         "kind": "interactive",
         "title": "Um carro no lugar da nave",
-        "instructions": "Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação. Uma mudança com intenção clara permite comparar o resultado. Você pode começar por um recurso, preservar o original e testar se a nova versão comunica a ideia da estrada.",
+        "instructions": "Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação.",
         "hints": [
           "Que comparação deixaria mais fácil perceber a causa da diferença?"
         ],

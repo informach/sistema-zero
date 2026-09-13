@@ -267,3 +267,94 @@ describe('the 27 adapted lessons', () => {
       }
     })
 })
+
+/**
+ * Os pacotes ATUAIS — os que a professora importa hoje.
+ *
+ * ⚠️ Só o pacote histórico tinha rede. Os 27 manifestos das revisões atuais, que são os que
+ * carregam as 28 cenas, não passavam por teste nenhum: uma mudança de contrato os quebraria em
+ * silêncio e só apareceria na hora de importar uma aula. Cada pacote tem catálogo próprio.
+ */
+const PACOTES_ATUAIS = ['corre-dino-v6', 'desafio-primeiro-jogo-v6', 'o-jogo-do-meu-jeito-v6']
+describe('os pacotes atuais das aulas', () => {
+  for (const pacote of PACOTES_ATUAIS) {
+    const entradas: Array<{ path: string; sections: number }> = JSON.parse(
+      readFileSync(resolve(directory, pacote, 'catalogo.json'), 'utf8'),
+    )
+    test(`${pacote}: o catálogo e as pastas contam a mesma coisa`, () => {
+      expect(entradas.length).toBeGreaterThan(0)
+      expect(new Set(entradas.map((e) => e.path)).size).toBe(entradas.length)
+    })
+    for (const entrada of entradas)
+      test(`${pacote}/${entrada.path}`, () => {
+        const manifest: unknown = JSON.parse(
+          readFileSync(resolve(directory, pacote, entrada.path, 'manifesto.json'), 'utf8'),
+        )
+        expect(isLearningManifest(manifest)).toBe(true)
+        if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
+        expect(manifest.sections).toHaveLength(entrada.sections)
+        expect(
+          sectionCompletionIssues(
+            manifest.sections.map((s) => ({
+              ...s,
+              id: s.key,
+              blockIds: s.blockKeys,
+              workspaceBlockId: s.workspaceKey,
+            })),
+            manifest.blocks.map((b) => ({
+              id: b.key,
+              content:
+                'content' in b
+                  ? b.content
+                  : 'existing' in b
+                    ? { kind: b.existing.kind }
+                    : { kind: 'video' },
+            })),
+          ),
+        ).toEqual([])
+        // Nenhuma pendência de mídia em texto: cada trecho a gravar é um cartão, numa seção só.
+        expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
+        for (const video of manifest.blocks.filter((block) => 'plannedVideo' in block))
+          expect(
+            manifest.sections.filter((section) => section.blockKeys.includes(video.key)),
+          ).toHaveLength(1)
+        for (const entryBlock of manifest.blocks) {
+          if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
+          const block = entryBlock.content
+          // ⚠️ Nada passa de graça, e tudo TEM caminho de passar. As duas metades importam: um
+          // bloco que nunca fecha trava a seção; um que já nasce fechado não pede nada da criança.
+          expect(evaluateLearning(block, {}).passed).toBe(false)
+          expect(evaluateLearning(block, caminhoDeSucesso(block)).passed).toBe(true)
+        }
+      })
+  }
+})
+
+/** As respostas que a criança teria depois de cumprir o bloco, cada tipo do seu jeito. */
+function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
+  const answers: LearningAnswers = {}
+  const activity = block.activity
+  if (activity.type === 'experimentation') {
+    const start = { scene: activity.scene, initialImpulse: activity.initialImpulse }
+    let sessao = initialExperiment(start)
+    for (const action of scenePaths[activity.scene])
+      sessao = stepExperiment(start, sessao, action).session
+    answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
+  }
+  if (activity.type === 'demonstration') {
+    const start = { scene: activity.scene }
+    const script = activity.script ?? sceneModel(activity.scene).script
+    let sessao = stepDemonstration(start, script, initialDemonstration(start), {
+      type: 'start',
+    }).session
+    for (let i = 0; i < 600 && !sessao.viewed; i++) {
+      sessao = stepDemonstration(start, script, sessao, { type: 'tick', seconds: 0.1 }).session
+      if (sessao.ready && sessao.step < script.length - 1)
+        sessao = stepDemonstration(start, script, sessao, { type: 'next' }).session
+    }
+    answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
+  }
+  if (activity.type === 'html') answers.participated = true
+  if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId
+  return answers
+}
