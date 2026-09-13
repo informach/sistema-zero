@@ -232,12 +232,14 @@
   display: none;
 }
 
-/* Cards da galeria: o navegador só mede/pinta os cards perto da janela. O tamanho reservado é
-   o do cartão das telas-modelo (~246 × 272 px a 1440 com o menu aberto). */
-[data-molda-theme] .mld-gallery-card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 246px 272px;
-}
+/* ⚠️⚠️ O cartão da galeria NÃO usa `content-visibility: auto` (13/09/2026), pelo mesmo motivo
+   do Pinta — lá o sintoma foi visto: o cursor pisca ao passar por cima do cartão. Passar o
+   ponteiro torna o elemento relevante, o conteúdo renderiza, a altura real substitui a
+   reservada, a linha reflui, o ponteiro sai de cima e tudo encolhe de novo, em laço.
+   A miniatura é `aspect-[4/3] w-full`: a altura do cartão vem da LARGURA dele, que vem do
+   número de colunas, então ela não tem como casar com um número fixo em toda janela. (No
+   Estúdio a técnica é segura porque o cartão de lá tem altura fixa.) O comentário longo, com a
+   mecânica inteira, está no `pinta.css`. */
 
 /* A viewport 3D ocupa a caixa inteira e não deixa o navegador rolar/zoomar por
    baixo do gesto de orbitar (um dedo orbita, dois fazem pan/zoom). */

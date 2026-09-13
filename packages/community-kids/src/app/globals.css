@@ -1729,24 +1729,71 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   animation: sz-zoom-in 0.15s ease;
 }
 
-/* Scrollbar discreta */
-.scrollbar-subtle {
+/* ============================================================================
+   AS BARRAS DE ROLAGEM
+
+   A rolagem padrão do navegador — a cinza grossa e escura do Windows — aparecia em qualquer
+   área que rolasse e não tinha relação nenhuma com o tema. O caso que se via primeiro era o
+   MENU da esquerda numa tela baixa, onde a barra cinza cortava o navy.
+
+   ⚠️ A regra é GLOBAL, não uma classe a pedido. A `.scrollbar-subtle` existia desde sempre e
+   estava em SEIS lugares do app inteiro: opt-in não veste uma plataforma. Isto alcança também
+   as ferramentas embarcadas (Estúdio, Pinta, Pensa, Molda), que vivem no MESMO documento.
+
+   ⚠️ `color-mix` em `oklab`, nunca em `oklch`: no espaço cilíndrico a interpolação passeia pelo
+   matiz e um cinza vira ROSA. Foi assim que os embarcados já quebraram uma vez.
+   ============================================================================ */
+
+:root {
+  /* O polegar em repouso e sob o ponteiro, sobre o chão claro das páginas. */
+  --rolagem: color-mix(in oklab, var(--foreground) 22%, transparent);
+  --rolagem-hover: color-mix(in oklab, var(--foreground) 42%, transparent);
+}
+
+* {
   scrollbar-width: thin;
+  scrollbar-color: var(--rolagem) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: var(--rolagem);
+  /* A borda transparente afina o polegar sem estreitar a ÁREA de arrasto: o alvo continua com
+     os 10px, que é o que a mão pequena pega. */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--rolagem-hover);
+}
+
+/* O menu é a âncora ESCURA da plataforma: a barra do chão claro sumiria dentro dele. */
+.kids-menu {
+  --rolagem: color-mix(in oklab, var(--menu-texto) 28%, transparent);
+  --rolagem-hover: color-mix(in oklab, var(--menu-texto) 55%, transparent);
+}
+
+/* A variante discreta some em repouso e aparece ao passar o ponteiro. Fica para as áreas
+   densas que já a pediam (a mini-trilha da aula, as fileiras do configurador de avatar, as
+   tabelas do ui) — mesma paleta, só mais quieta. */
+.scrollbar-subtle {
   scrollbar-color: transparent transparent;
 }
 .scrollbar-subtle:hover {
-  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
-}
-.scrollbar-subtle::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  scrollbar-color: var(--rolagem) transparent;
 }
 .scrollbar-subtle::-webkit-scrollbar-thumb {
   background-color: transparent;
-  border-radius: 9999px;
 }
 .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  background-color: var(--rolagem);
 }
 
 /* Toast — contraste garantido em ambos os modos */

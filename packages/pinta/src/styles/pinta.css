@@ -786,13 +786,21 @@
 }
 
 /*
- * Cards da galeria (19/08/2026): com centenas de desenhos, o navegador só mede/pinta os
- * cards perto da janela; a altura intrínseca aproxima o card real (a 1ª rolagem acerta
- * o resto). Só o CARD (não as seções, cuja altura varia); os diálogos são irmãos da grade.
- * 11/09/2026: o cartão das telas-modelo mede ~246x326 a 1440px com o menu aberto (a grade
- * `.sz-tool-grid` compartilhada, 4 colunas).
+ * ⚠️⚠️ O cartão da galeria NÃO usa `content-visibility: auto` (13/09/2026). Ele usou entre
+ * 19/08 e 13/09, e o sintoma era o cursor "piscando" ao passar por cima de um desenho.
+ *
+ * A mecânica: passar o ponteiro torna o elemento RELEVANTE, o navegador renderiza o conteúdo,
+ * a altura real substitui a reservada, a linha da grade reflui, o ponteiro deixa de estar em
+ * cima, o cartão volta a ser irrelevante e encolhe — e recomeça. O cursor alterna entre mão e
+ * seta várias vezes por segundo.
+ *
+ * A altura reservada era `326px`, medida a 1440px com o menu aberto (quatro colunas). Mas a
+ * miniatura é `aspect-square w-full`: a altura do cartão DEPENDE da largura dele, que depende
+ * do número de colunas. Em qualquer outra largura os dois números discordam por construção.
+ * (No Estúdio a mesma técnica é segura porque lá o cartão tem altura FIXA, `h-72` = 288px, e
+ * o tamanho reservado casa com ela.)
+ *
+ * Não se perdeu otimização: o custo real é pintar o canvas da miniatura, e isso já é preguiçoso
+ * por `IntersectionObserver` desde sempre (`useNearViewport` no `AssetCard`, `paint={near}`).
+ * O que o `content-visibility` poupava a mais era o layout de meia dúzia de nós.
  */
-[data-pinta-theme] .pin-gallery-card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 246px 326px;
-}

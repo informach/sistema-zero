@@ -37,7 +37,7 @@ export function MobileTopbar({
   avatarPhotoUrl?: string | null
 }) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-(--menu-2) border-b bg-(--menu) px-3 text-(--menu-texto) md:hidden">
+    <header className="kids-menu sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-(--menu-2) border-b bg-(--menu) px-3 text-(--menu-texto) md:hidden">
       {/* `shrink-0`: sem ele o bloco da direita espremia o logo e o selo "kids" escapava
           por baixo dos números (medido a 375px: logo em 104px para um conteúdo de 150). */}
       <Link href="/" aria-label="Início" className="flex shrink-0 items-center" prefetch={false}>
@@ -85,7 +85,7 @@ function NavDrawer({
         aria-label={item.label}
         tabIndex={-1}
         // Acima da barra de abas (que é `fixed` e tem a área segura do aparelho).
-        className="absolute inset-x-0 bottom-0 mb-[calc(3.5rem+env(safe-area-inset-bottom))] rounded-t-[1.25rem] bg-(--menu) px-3 pt-3 pb-4 outline-none"
+        className="kids-menu absolute inset-x-0 bottom-0 mb-[calc(3.5rem+env(safe-area-inset-bottom))] rounded-t-[1.25rem] bg-(--menu) px-3 pt-3 pb-4 outline-none"
       >
         <p className="px-3 pb-2 font-extrabold text-(--menu-texto) text-xs uppercase tracking-[0.12em]">
           {item.label}

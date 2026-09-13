@@ -303,10 +303,7 @@ export const AssetCard = memo(function AssetCard({
     'flex min-h-11 min-w-11 items-center justify-center rounded-xl transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent'
 
   return (
-    <div
-      ref={rootRef}
-      className={`sz-tool-card pin-gallery-card gap-2.5 p-3 ${justCreated ? 'pin-card-pop' : ''}`}
-    >
+    <div ref={rootRef} className={`sz-tool-card gap-2.5 p-3 ${justCreated ? 'pin-card-pop' : ''}`}>
       {/* O nome em cima, como nos cartões do Estúdio: o chip do PAPEL (a cor que era a borda do
           cartão), o nome no Baloo e o selinho do ESTILO. */}
       <div className="flex min-w-0 items-center gap-1.5">

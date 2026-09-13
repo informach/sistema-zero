@@ -141,6 +141,28 @@ recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_
 **Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
 
+## As barras de rolagem vestem o tema (13/09/2026)
+
+A rolagem padrão do navegador — a cinza grossa e escura — aparecia em qualquer área que
+rolasse, sem relação nenhuma com o tema. O caso que se via primeiro era o **menu da esquerda
+numa tela baixa**, com a barra cinza cortando o navy.
+
+⚠️ **A regra é GLOBAL (`*`), não uma classe a pedido.** A `.scrollbar-subtle` existia desde
+sempre e estava em SEIS lugares do app inteiro: opt-in não veste uma plataforma. A regra nova
+alcança também as **ferramentas embarcadas** (Estúdio, Pinta, Pensa, Molda), que vivem no MESMO
+documento e não em iframe.
+- Tokens `--rolagem` e `--rolagem-hover` no `:root`, derivados do `--foreground`; polegar com
+  borda transparente e `background-clip: padding-box` (afina o traço sem estreitar a ÁREA de
+  arrasto, que continua com os 10px que a mão pequena pega).
+- **`.kids-menu`** redeclara os dois tokens a partir do `--menu-texto`: o menu é a âncora
+  ESCURA e a barra do chão claro sumiria dentro dele. A classe está na raiz do `app-sidebar`,
+  na top bar e na gaveta do `mobile-nav`.
+- ⚠️ `color-mix` em **`oklab`**, nunca `oklch`: no espaço cilíndrico a interpolação passeia pelo
+  matiz e um cinza vira ROSA (foi assim que os embarcados já quebraram uma vez).
+- A `.scrollbar-subtle` continua existindo com a MESMA paleta, só mais quieta (some em repouso):
+  fica para as áreas densas que já a pediam — a mini-trilha da aula, as fileiras do configurador
+  de avatar e as tabelas do `@sistemazero/ui`.
+
 ## ⚠️ Classe de componente no `globals.css` vai em `@layer components`
 
 CSS **sem camada vence QUALQUER camada** — inclusive `@layer utilities`, onde moram as

@@ -186,7 +186,7 @@ export function AppSidebar({
       inert={navCollapsed}
       aria-hidden={navCollapsed}
       className={cn(
-        'sticky top-0 hidden h-screen min-h-0 shrink-0 flex-col border-(--menu-2) bg-(--menu) text-(--menu-texto) md:flex',
+        'kids-menu sticky top-0 hidden h-screen min-h-0 shrink-0 flex-col border-(--menu-2) bg-(--menu) text-(--menu-texto) md:flex',
         'overflow-hidden transition-[width,padding,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
         navCollapsed
           ? 'w-0 border-r-0 px-0 opacity-0 pointer-events-none'

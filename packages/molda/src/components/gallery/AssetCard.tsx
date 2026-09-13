@@ -37,7 +37,7 @@ export const AssetCard = memo(function AssetCard({
 }: AssetCardProps): JSX.Element {
   const kindTitle = COPY.kinds[asset.kind].title
   return (
-    <li className="mld-gallery-card sz-tool-card gap-2.5 p-3">
+    <li className="sz-tool-card gap-2.5 p-3">
       <div className="flex min-w-0 items-center gap-2">
         <span className="sz-tool-card-title min-w-0 flex-1 truncate" title={asset.name}>
           {asset.name}

@@ -1,5 +1,26 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
+
+Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica
+todo locão piscando". A causa é o `content-visibility: auto` que o cartão da galeria tinha desde
+19/08.
+
+A mecânica é um laço: passar o ponteiro torna o elemento **relevante**, o navegador renderiza o
+conteúdo, a altura REAL substitui a reservada por `contain-intrinsic-size`, a linha da grade
+reflui, o ponteiro deixa de estar em cima, o cartão volta a ser irrelevante e encolhe — e
+recomeça. O cursor alterna entre mão e seta várias vezes por segundo.
+
+⚠️ **A altura reservada não tinha como casar.** A miniatura é `aspect-square w-full` (no Molda,
+`aspect-[4/3]`), então a altura do cartão vem da LARGURA dele, que vem do número de colunas. O
+número reservado foi medido a 1440px com o menu aberto; em qualquer outra janela os dois
+discordam por construção. **No Estúdio a mesma técnica é segura** porque lá o cartão tem altura
+FIXA (`h-72` = 288px) e o reservado casa com ela — por isso a regra do `studio.css` FICA.
+
+⭐ **Não se perdeu otimização:** o custo real é pintar o canvas da miniatura, e isso já é
+preguiçoso por `IntersectionObserver` (`useNearViewport` no `AssetCard`, `paint={near}`). O que o
+`content-visibility` poupava a mais era o layout de meia dúzia de nós.
+
 > Sempre consulte o Context7 (docs atualizadas) antes de mexer em lib/framework, e use
 > Octocode para pesquisa/exploração de código no GitHub.
 
