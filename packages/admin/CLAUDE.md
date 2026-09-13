@@ -15,7 +15,45 @@ operação salva, inclusive ao mover um projeto para a seção de entrega. Não 
 critérios silenciosamente para passar pela publicação; incompatibilidades aparecem na revisão.
 
 Avanços usam os validadores compartilhados. Objetivos estruturais mantêm todos os detalhes e
-a simulação. Demonstrações oferecem ações e ordem visuais; JSON/importação continuam disponíveis.
+a simulação.
+
+⭐⭐ **A atividade interativa tem QUATRO tipos, e a caixa de JSON do roteiro morreu (13/09/2026).**
+O `<select>` de oito opções — três delas nomeando VERSÕES do mesmo motor ("Exploração anterior
+(versão 1)") — virou uma escolha entre quatro cartões: **Experimentação**, **Demonstração**,
+**Pergunta curta** e **Experiência em HTML**. Demonstração e experimentação eram o MESMO tipo com
+um interruptor de modo escondido dentro dele; agora são irmãs, e trocar entre elas PRESERVA a cena
+escolhida. Saíram `simulation`, `prediction`, `comparison`, `sequence` e `experiment` (nenhum
+tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
+
+- **A cena sai de uma grade de cartões** (`editor/scene-picker.tsx`), agrupada pelas seis famílias,
+  com o que a criança **pode mexer** e o que **fecha** a cena à vista. Esses dados já existiam e só
+  apareciam DEPOIS da escolha, num resumo embaixo.
+- **O roteiro da demonstração** (`editor/scene-authoring.tsx`) é lista de etapas com fala, destaque
+  e ações escolhidas de lista (`editor/scene-action-editor.tsx`). ⚠️ A caixa "Importar ou editar
+  roteiro em JSON" **não volta**: era o único caminho para algumas edições e devolvia "JSON
+  inválido", que não diz o que consertar. Editar o roteiro que vem com a cena cria o roteiro
+  AUTORAL (`activity.script`); "Voltar ao roteiro da cena" desfaz.
+- ⚠️ **Os limites dos números das ações vêm de `SCENE_LIMITS`**, nunca reescritos aqui: já houve
+  três cópias dessa regra (motor, editor e DTO) e elas divergiram — o `interval` do servidor não
+  tinha teto e o do editor ia de 0,5 a 2. Campo que aceita o que o servidor recusa é aula que não
+  salva, sem dizer por quê.
+- ⭐ **Dois defeitos de perda de trabalho, corrigidos com régua PURA** em
+  `lib/scene-authoring-rules.ts` (`textoAoTrocarCena`/`roteiroAoTrocarCena`, testadas): trocar a
+  cena reconstruía a atividade do zero e o roteiro escrito à mão **sumia sem uma palavra** (agora
+  ele sobrevive quando ainda vale na cena nova, e quando não vale o professor é AVISADO); e trocar
+  o tipo ou a cena **sobrescrevia o título, a instrução e as pistas** com os do modelo (agora o
+  texto do modelo só entra onde o professor não escreveu nada, ou onde o que está escrito é,
+  palavra por palavra, o do modelo anterior).
+- ⚠️ `intent` da SEÇÃO e `type` da ATIVIDADE são eixos diferentes com nomes parecidos
+  (`demonstration`/`exploration` × `demonstration`/`experimentation`).
+  `lesson-editorial-warnings.ts` cruza os dois, e o cruzamento ficou uma comparação direta.
+- ⚠️ `learning-builder.tsx` importa `lib/scene-authoring-rules` por CAMINHO RELATIVO, não pelo
+  alias `@/`: o ensaio visual do kids (`community-kids/tests/visual/experience-preview.tsx`)
+  compila este arquivo pelo caminho, e lá o alias do admin não existe.
+- **O painel de evidências do professor** (`components/professor/lesson-learning-panel.tsx`) fala
+  a língua nova: metas descobertas e pendentes pelo nome, a montagem que ela deixou, e a distinção
+  entre "ainda não abriu" e "registro não confere com esta cena" — que são coisas diferentes
+  (uma é informação sobre a criança, a outra é alarme sobre o sistema).
 `Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
 
 Vídeo tem um único editor com capa. `LessonVideoUploads` mantém os workers acima dos campos:

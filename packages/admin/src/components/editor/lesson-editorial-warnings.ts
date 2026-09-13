@@ -28,26 +28,26 @@ export function lessonEditorialWarnings(
   for (const section of document.sections) {
     const blocks = document.blocks.filter((block) => section.blockIds.includes(block.id))
     for (const block of blocks) {
+      // ⚠️ `intent` é da SEÇÃO e `type` é da ATIVIDADE: dois eixos com dois nomes parecidos.
+      // A seção diz o que ela quer daquele trecho da aula; a atividade diz o que o bloco é.
+      // Enquanto "demonstração" era um MODO dentro de `exploration`, cruzar os dois pedia três
+      // condições aninhadas; agora é a comparação direta que ela sempre quis ser.
+      if (block.content.kind !== 'interactive') continue
+      const type = block.content.activity.type
+      if (type !== 'demonstration' && type !== 'experimentation') continue
       if (
-        block.content.kind !== 'interactive' ||
-        block.content.activity.type !== 'exploration' ||
-        block.content.activity.version !== 3
-      )
-        continue
-      const demonstrates = block.content.activity.mode === 'demonstrate'
-      if (
-        (section.intent === 'demonstration' && !demonstrates) ||
-        (section.intent === 'exploration' && demonstrates)
+        (section.intent === 'demonstration' && type !== 'demonstration') ||
+        (section.intent === 'exploration' && type !== 'experimentation')
       )
         warnings.push(
-          `${section.title}: confira a intenção da seção e o modo da cena. Demonstração permite observar; experimentação permite agir dentro da missão.`,
+          `${section.title}: confira a intenção da seção e o tipo da cena. Demonstração é para observar; experimentação é para agir sobre a cena.`,
         )
     }
     if (
       section.intent === 'exploration' &&
       !blocks.some(
         (block) =>
-          block.content.kind === 'interactive' && block.content.activity.type !== 'checkpoint',
+          block.content.kind === 'interactive' && block.content.activity.type !== 'question',
       )
     )
       warnings.push(`${section.title}: inclua uma experiência que permita agir sobre o conceito.`)

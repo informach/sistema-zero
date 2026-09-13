@@ -1,102 +1,70 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_IDS, SCENE_MODELS, type SceneActivity } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ExperienceAuthoring } from '../../../admin/src/components/editor/experience-authoring'
+import {
+  EMPTY_LEARNING,
+  LearningBuilder,
+} from '../../../admin/src/components/editor/learning-builder'
 
+/**
+ * O ensaio das cenas, sem subir o app.
+ *
+ * ⚠️ Ele monta o editor REAL do admin e o bloco REAL da aula, um em cima do outro: é a única
+ * forma de conferir que o que o professor configura é o que a criança recebe. Um ensaio com
+ * seletores próprios conferiria a cópia, não o produto.
+ */
 function Preview() {
-  const [activity, setActivity] = useState<SceneActivity>({
-    type: 'experimentation',
-    scene: 'hitbox',
+  const [content, setContent] = useState<InteractiveBlock>({
+    ...EMPTY_LEARNING,
+    activity: { type: 'experimentation', scene: 'hitbox' },
   })
-  const [teacher, setTeacher] = useState(false)
-  const d = SCENE_MODELS[activity.scene]
-  const content: InteractiveBlock = {
-    kind: 'interactive',
-    title: d.title,
-    instructions: d.instruction,
-    hints: [...d.hints],
-    required: false,
-    activity,
-  }
+  const [teacher, setTeacher] = useState(true)
   return (
     <main className="mx-auto max-w-4xl space-y-5 p-4 sm:p-8">
       <nav className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm font-bold tracking-wider">SISTEMA ZERO · ENSAIO DAS CENAS</span>
-        <div className="flex flex-wrap gap-3">
-          <select
-            aria-label="Tipo"
-            value={activity.type}
-            onChange={(e) =>
-              setActivity(
-                e.target.value === 'demonstration'
-                  ? { type: 'demonstration', scene: activity.scene }
-                  : { type: 'experimentation', scene: activity.scene },
-              )
-            }
-            className="min-h-11 rounded-xl border border-border bg-card px-3"
+        <div className="flex gap-3">
+          <button
+            type="button"
+            aria-pressed={teacher}
+            onClick={() => setTeacher(true)}
+            className="min-h-11 rounded-xl border border-primary bg-card px-4 text-sm font-semibold"
           >
-            <option value="experimentation">Experimentação</option>
-            <option value="demonstration">Demonstração</option>
-          </select>
-          <select
-            aria-label="Cena"
-            value={activity.scene}
-            onChange={(e) => {
-              const scene = SCENE_IDS.find((s) => s === e.target.value)
-              if (scene) setActivity({ ...activity, scene })
-            }}
-            className="min-h-11 rounded-xl border border-border bg-card px-3"
+            Visão do professor
+          </button>
+          <button
+            type="button"
+            aria-pressed={!teacher}
+            onClick={() => setTeacher(false)}
+            className="min-h-11 rounded-xl border border-primary bg-card px-4 text-sm font-semibold"
           >
-            {SCENE_IDS.map((id) => (
-              <option key={id} value={id}>
-                {SCENE_MODELS[id].title}
-              </option>
-            ))}
-          </select>
+            Visão do aluno
+          </button>
         </div>
       </nav>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          aria-pressed={!teacher}
-          onClick={() => setTeacher(false)}
-          className="min-h-11 rounded-xl border border-primary bg-card px-4 text-sm font-semibold"
-        >
-          Visão do aluno
-        </button>
-        <button
-          type="button"
-          aria-pressed={teacher}
-          onClick={() => setTeacher(true)}
-          className="min-h-11 rounded-xl border border-primary bg-card px-4 text-sm font-semibold"
-        >
-          Visão do professor
-        </button>
-      </div>
-      {teacher && (
+      {teacher ? (
         <section className="space-y-4 rounded-2xl bg-card p-5">
-          <h1 className="text-xl font-bold">Prepare a experiência</h1>
+          <h1 className="text-xl font-bold">Prepare a atividade</h1>
           <p className="text-sm text-muted-foreground">
-            Escolha o tipo e a cena acima. Configure a experiência aqui e confira abaixo o que o
-            aluno vai encontrar. Este ensaio usa os componentes reais do editor e da aula, sem
-            salvar ou publicar.
+            Este é o editor do admin, inteiro. Troque para a visão do aluno para ver o que a criança
+            recebe. Nada é salvo nem publicado.
           </p>
-          <ExperienceAuthoring key={activity.scene} activity={activity} onChange={setActivity} />
+          <LearningBuilder value={content} onChange={setContent} />
         </section>
+      ) : (
+        <InteractiveLessonBlock
+          key={JSON.stringify(content.activity)}
+          previewContent={content}
+          block={{
+            id: 'preview',
+            kind: 'interactive',
+            sortOrder: 0,
+            blockRevision: 'preview',
+            content,
+          }}
+        />
       )}
-      <InteractiveLessonBlock
-        key={JSON.stringify(activity)}
-        previewContent={content}
-        block={{
-          id: `preview-${activity.type}-${activity.scene}`,
-          kind: 'interactive',
-          sortOrder: 0,
-          blockRevision: 'preview',
-          content,
-        }}
-      />
     </main>
   )
 }

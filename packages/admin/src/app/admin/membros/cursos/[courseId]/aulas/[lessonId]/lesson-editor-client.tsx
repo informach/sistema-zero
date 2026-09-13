@@ -1122,13 +1122,12 @@ function LessonEditorSession({
         }))
       } else add(seed(options.tool, true))
     } else if (intent === 'exploration' || intent === 'demonstration') {
+      // A intenção da seção escolhe o TIPO do bloco semeado: são tipos irmãos, não modos.
       add({
         ...EMPTY_LEARNING,
         activity: {
-          type: 'exploration',
-          version: 3,
-          mission: 'world',
-          mode: intent === 'demonstration' ? 'demonstrate' : 'explore',
+          type: intent === 'demonstration' ? 'demonstration' : 'experimentation',
+          scene: 'world',
         },
       })
     } else

@@ -1,15 +1,19 @@
 'use client'
 
 import {
-  type ExplorationAction,
-  type ExplorationMission,
-  isExplorationAction,
-} from '@sistemazero/core/learning'
+  isSceneAction,
+  SCENE_LIMITS,
+  SCENE_PORTS,
+  type SceneAction,
+  type SceneId,
+  type ScenePort,
+} from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 
-const ports = {
+/** O nome de cada fio da bancada, na língua do professor. */
+const PORTAS: Record<ScenePort, string> = {
   draw: 'Desenho',
   gravity: 'Gravidade',
   sound: 'Som do salto',
@@ -19,13 +23,14 @@ const ports = {
   touch: 'Controle por toque',
   restart: 'Recomeço',
   limit: 'Limite de velocidade',
-} as const
-const actions: { label: string; value: ExplorationAction }[] = [
+}
+
+const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Criar o Dino', value: { type: 'create' } },
-  ...Object.entries(ports).flatMap(([port, label]) =>
+  ...SCENE_PORTS.flatMap((port) =>
     [true, false].map((enabled) => ({
-      label: `${enabled ? 'Ligar' : 'Desligar'} ${label}`,
-      value: { type: 'connect' as const, port: port as keyof typeof ports, enabled },
+      label: `${enabled ? 'Ligar' : 'Desligar'} ${PORTAS[port]}`,
+      value: { type: 'connect' as const, port, enabled },
     })),
   ),
   { label: 'Dino na frente', value: { type: 'layer', front: true } },
@@ -53,7 +58,9 @@ const actions: { label: string; value: ExplorationAction }[] = [
     value: { type: 'sample', kind: 'velocity', unit: 0.5, guided: false },
   },
 ]
-const identity = (a: ExplorationAction) =>
+
+/** A identidade da ação no `<select>`: o tipo mais o que o distingue dos irmãos. */
+const identidade = (a: SceneAction) =>
   a.type === 'connect'
     ? `${a.type}:${a.port}:${a.enabled}`
     : a.type === 'layer'
@@ -63,98 +70,104 @@ const identity = (a: ExplorationAction) =>
         : a.type === 'sample'
           ? `${a.type}:${a.kind}`
           : a.type
-export function demonstrationActionChoices(mission: ExplorationMission) {
-  return actions.filter((a) => isExplorationAction(a.value, mission))
+
+/** As ações que ESTA cena aceita. A legalidade é do domínio, não de uma lista daqui. */
+export function sceneActionChoices(scene: SceneId) {
+  return TODAS.filter((a) => isSceneAction(a.value, scene))
 }
 
-export function ExperienceActionEditor({
-  mission,
+/**
+ * O número que acompanha algumas ações, com a faixa vinda do domínio.
+ *
+ * ⚠️ Os limites NÃO são reescritos aqui. Já houve três cópias desta regra (motor, editor e
+ * DTO) e elas divergiram: o `interval` do servidor não tinha teto e o do editor ia de 0,5 a 2.
+ * Um campo que aceita o que o servidor recusa é uma aula que não salva, sem dizer por quê.
+ */
+function campoNumerico(action: SceneAction) {
+  const L = SCENE_LIMITS
+  if (action.type === 'advance')
+    return {
+      label: 'Tempo em segundos',
+      field: 'seconds' as const,
+      ...L.scriptAdvance,
+      value: action.seconds,
+    }
+  if (action.type === 'interval')
+    return {
+      label: 'Tempo em segundos',
+      field: 'seconds' as const,
+      ...L.interval,
+      value: action.seconds,
+    }
+  if (action.type === 'impulse')
+    return { label: 'Força do impulso', field: 'force' as const, ...L.impulse, value: action.force }
+  if (action.type === 'move')
+    return { label: 'Distância', field: 'distance' as const, ...L.move, value: action.distance }
+  if (action.type === 'resize')
+    return { label: 'Largura da área', field: 'width' as const, ...L.resize, value: action.width }
+  if (action.type === 'sample')
+    return {
+      label: 'Posição no sorteio (0 a 1)',
+      field: 'unit' as const,
+      ...L.sample,
+      value: action.unit,
+    }
+  return null
+}
+
+export function SceneActionEditor({
+  scene,
   value,
   onChange,
   stepNumber,
 }: {
-  mission: ExplorationMission
-  value: ExplorationAction[]
-  onChange: (actions: ExplorationAction[]) => void
+  scene: SceneId
+  value: readonly SceneAction[]
+  onChange: (actions: SceneAction[]) => void
   stepNumber: number
 }) {
-  const choices = demonstrationActionChoices(mission)
-  const replace = (index: number, action: ExplorationAction) =>
+  const choices = sceneActionChoices(scene)
+  const replace = (index: number, action: SceneAction) =>
     onChange(value.map((a, i) => (i === index ? action : a)))
   return (
     <div className="space-y-3">
       {value.map((action, index) => {
-        const number =
-          action.type === 'advance' || action.type === 'interval'
-            ? {
-                label: 'Tempo em segundos',
-                field: 'seconds',
-                min: action.type === 'advance' ? 0.001 : 0.5,
-                max: action.type === 'advance' ? 10 : 2,
-                value: action.seconds,
-              }
-            : action.type === 'impulse'
-              ? { label: 'Força do impulso', field: 'force', min: 5, max: 14, value: action.force }
-              : action.type === 'move'
-                ? {
-                    label: 'Distância',
-                    field: 'distance',
-                    min: 20,
-                    max: 260,
-                    value: action.distance,
-                  }
-                : action.type === 'resize'
-                  ? {
-                      label: 'Largura da área',
-                      field: 'width',
-                      min: 24,
-                      max: 120,
-                      value: action.width,
-                    }
-                  : action.type === 'sample'
-                    ? {
-                        label: 'Posição no sorteio (0 a 1)',
-                        field: 'unit',
-                        min: 0,
-                        max: 1,
-                        value: action.unit,
-                      }
-                    : null
+        const numero = campoNumerico(action)
         return (
-          // Actions have positional identity in the wire contract; every input is controlled.
-          // biome-ignore lint/suspicious/noArrayIndexKey: No action IDs exist in the shared script contract.
+          // As ações têm identidade POSICIONAL no contrato do roteiro; todo campo é controlado.
+          // biome-ignore lint/suspicious/noArrayIndexKey: o roteiro compartilhado não tem id de ação.
           <div key={index} className="space-y-2 rounded-lg bg-muted/40 p-3">
             <Select
               aria-label={`Ação ${index + 1} da etapa ${stepNumber}`}
-              value={identity(action)}
+              value={identidade(action)}
               onChange={(e) => {
-                const next = choices.find((c) => identity(c.value) === e.target.value)
+                const next = choices.find((c) => identidade(c.value) === e.target.value)
                 if (next) replace(index, { ...next.value })
               }}
             >
               {choices.map((choice) => (
-                <option key={identity(choice.value)} value={identity(choice.value)}>
+                <option key={identidade(choice.value)} value={identidade(choice.value)}>
                   {choice.label}
                 </option>
               ))}
-              {!choices.some((c) => identity(c.value) === identity(action)) && (
-                <option value={identity(action)}>Ação incompatível · revisar</option>
+              {!choices.some((c) => identidade(c.value) === identidade(action)) && (
+                <option value={identidade(action)}>Ação incompatível · revisar</option>
               )}
             </Select>
-            {number && (
+            {numero && (
               <label className="block space-y-1 text-xs">
-                {number.label}
+                {numero.label}
                 <Input
                   type="number"
-                  min={number.min}
-                  max={number.max}
+                  min={numero.min}
+                  max={numero.max}
                   step="any"
-                  value={number.value}
+                  value={numero.value}
                   onChange={(e) =>
                     replace(index, {
                       ...action,
-                      [number.field]: Number(e.target.value),
-                    } as ExplorationAction)
+                      [numero.field]: Number(e.target.value),
+                    } as SceneAction)
                   }
                 />
               </label>

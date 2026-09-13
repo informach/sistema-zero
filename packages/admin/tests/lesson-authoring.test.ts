@@ -216,28 +216,29 @@ describe('lesson authoring integrity', () => {
       captions: undefined,
     })
   })
-  test('interactive copies remap answer references along with choice identities', () => {
+  test('a cópia troca as identidades E as referências a elas', () => {
+    // ⚠️ Remapear só as opções deixaria o gabarito apontando para a opção da aula ORIGINAL:
+    // a cópia nasceria com a resposta certa errada, e ninguém veria até uma criança responder.
     const content: LessonBlockContent = {
       kind: 'interactive',
-      title: 'Ordem',
-      instructions: 'Organize',
+      title: 'Antes de testar',
+      instructions: 'Escolha',
       hints: [],
       required: false,
-      activity: {
-        type: 'sequence',
-        mode: 'order',
-        items: [
+      activity: { type: 'question' },
+      checkpoint: {
+        prompt: 'O que acontece?',
+        choices: [
           { id: 'a', label: 'A' },
           { id: 'b', label: 'B' },
         ],
-        solution: ['a', 'b'],
-        targets: [],
+        correctChoiceId: 'b',
+        explanation: 'Porque sim.',
       },
     }
     const copied = copyLessonContent(content)
-    if (copied.kind !== 'interactive' || copied.activity.type !== 'sequence')
-      throw new Error('Wrong kind')
-    expect(copied.activity.items[0]!.id).not.toBe('a')
-    expect(copied.activity.solution).toEqual(copied.activity.items.map((item) => item.id))
+    if (copied.kind !== 'interactive' || !copied.checkpoint) throw new Error('Wrong kind')
+    expect(copied.checkpoint.choices[0]!.id).not.toBe('a')
+    expect(copied.checkpoint.correctChoiceId).toBe(copied.checkpoint.choices[1]!.id)
   })
 })

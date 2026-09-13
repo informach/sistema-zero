@@ -1,16 +1,12 @@
 'use client'
 
 import {
-  EXPLORATION_DEFINITIONS,
-  EXPLORATION_MISSIONS,
   type InteractiveBlock,
-  isLearningScene,
-  LEARNING_SCENE_DEFINITIONS,
-  LEARNING_SCENES,
   type LearningActivity,
   type LearningChoice,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
+import { SCENE_LIMITS, SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -18,40 +14,57 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useState } from 'react'
-import { ImageUploader } from '@/components/media/image-uploader'
-import { ExperienceAuthoring } from './experience-authoring'
+// ⚠️ Caminho relativo, e não o alias `@/`: o ensaio visual do kids compila este arquivo pelo
+// CAMINHO, e lá o alias do admin não existe.
+import { roteiroAoTrocarCena, textoAoTrocarCena } from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
+import { SceneAuthoring } from './scene-authoring'
+import { ScenePicker } from './scene-picker'
 
 const initialChoices = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
   { id: 'second', label: 'Segunda possibilidade' },
 ]
+
+/**
+ * As quatro formas de atividade, na língua do professor.
+ *
+ * ⚠️ Eram OITO opções num `<select>`, e três delas nomeavam versões do mesmo motor ("Exploração
+ * anterior (versão 1)"). Pior: a cena tinha um segundo seletor de MODO dentro dela, então
+ * "demonstração" e "experimentação" eram o mesmo tipo com um interruptor — duas coisas
+ * diferentes escondidas atrás de uma. Agora são quatro tipos irmãos, e cada um diz o que é.
+ */
+export const ACTIVITY_KINDS = [
+  {
+    type: 'experimentation',
+    label: 'Experimentação',
+    hint: 'A criança mexe na cena e descobre sozinha. Fecha quando ela alcança as descobertas.',
+  },
+  {
+    type: 'demonstration',
+    label: 'Demonstração',
+    hint: 'A cena se move sozinha, passo a passo, e a criança assiste. Fecha quando ela vê até o fim.',
+  },
+  {
+    type: 'question',
+    label: 'Pergunta curta',
+    hint: 'Uma pergunta de múltipla escolha, conferida no servidor.',
+  },
+  {
+    type: 'html',
+    label: 'Experiência em HTML',
+    hint: 'Uma página sua, isolada num quadro. Para o que as cenas não cobrem.',
+  },
+] as const satisfies readonly { type: LearningActivity['type']; label: string; hint: string }[]
+
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
-    case 'exploration':
-      return { type, version: 3, mission: 'world', mode: 'explore' }
-    case 'simulation':
-      return { type, version: 1, scene: 'world' }
-    case 'checkpoint':
+    case 'demonstration':
+      return { type, scene: 'world' }
+    case 'experimentation':
+      return { type, scene: 'world' }
+    case 'question':
       return { type }
-    case 'prediction':
-      return { type, choices: initialChoices(), outcome: '' }
-    case 'comparison':
-      return {
-        type,
-        left: { label: 'Antes', url: '', alt: '' },
-        right: { label: 'Depois', url: '', alt: '' },
-      }
-    case 'sequence':
-      return {
-        type,
-        mode: 'order',
-        items: initialChoices(),
-        solution: ['first', 'second'],
-        targets: ['Primeira relação', 'Segunda relação'],
-      }
-    case 'experiment':
-      return { type, preset: 'motion', parameters: { gravity: 0.6 } }
     case 'html':
       return {
         type,
@@ -59,14 +72,16 @@ export function newLearningActivity(type: LearningActivity['type']): LearningAct
       }
   }
 }
+
 export const EMPTY_LEARNING: InteractiveBlock = {
   kind: 'interactive',
   title: '',
   instructions: '',
   hints: [],
   required: false,
-  activity: newLearningActivity('exploration'),
+  activity: newLearningActivity('experimentation'),
 }
+
 function ChoiceFields({
   choices,
   onChange,
@@ -120,9 +135,34 @@ export function LearningBuilder({
 }) {
   const id = useId()
   const [preview, setPreview] = useState(false)
+  const [aviso, setAviso] = useState('')
   const a = value.activity
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
+  const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
+
+  /**
+   * Trocar a cena. ⚠️ Aqui moravam dois defeitos: o editor reconstruía a atividade do zero
+   * (então um roteiro escrito à mão sumia calado) e sobrescrevia o texto do professor com o
+   * do modelo novo. As duas regras agora são puras e testadas, em `lib/scene-authoring-rules`.
+   */
+  const trocarCena = (scene: SceneId) => {
+    if (!cena) return
+    const texto = textoAoTrocarCena(value, cena.scene, scene)
+    if (cena.type === 'demonstration') {
+      const { script, descartado } = roteiroAoTrocarCena(cena.script, scene)
+      setAviso(
+        descartado
+          ? 'O roteiro que você tinha escrito era desta cena e não vale na nova. A demonstração voltou ao roteiro que vem com a cena escolhida.'
+          : '',
+      )
+      onChange({ ...value, ...texto, activity: { ...cena, scene, script } })
+      return
+    }
+    setAviso('')
+    onChange({ ...value, ...texto, activity: { ...cena, scene } })
+  }
+
   return (
     <div className="space-y-5">
       <Field label="Título da atividade" htmlFor={`${id}-title`}>
@@ -141,160 +181,113 @@ export function LearningBuilder({
           onChange={(e) => onChange({ ...value, instructions: e.target.value })}
         />
       </Field>
-      <Field label="Tipo de atividade" htmlFor={`${id}-model`}>
-        <Select
-          id={`${id}-model`}
-          value={a.type}
-          onChange={(e) => {
-            const type = e.target.value
-            if (
-              type === 'checkpoint' ||
-              type === 'simulation' ||
-              type === 'exploration' ||
-              type === 'prediction' ||
-              type === 'comparison' ||
-              type === 'sequence' ||
-              type === 'experiment' ||
-              type === 'html'
-            )
-              onChange({
-                ...value,
-                activity: newLearningActivity(type),
-                ...(type === 'exploration'
-                  ? {
-                      checkpoint: undefined,
-                      title: EXPLORATION_DEFINITIONS.world.title,
-                      instructions: EXPLORATION_DEFINITIONS.world.instruction,
-                      hints: [...EXPLORATION_DEFINITIONS.world.hints],
-                    }
-                  : {}),
-                ...(type === 'checkpoint' && !value.checkpoint
-                  ? {
-                      checkpoint: {
-                        prompt: '',
-                        choices: initialChoices(),
-                        correctChoiceId: 'first',
-                        explanation: '',
-                      },
-                    }
-                  : {}),
-              })
-          }}
-        >
-          <option value="exploration">Cena didática: demonstração ou experimentação</option>
-          <option value="simulation">Exploração anterior (versão 1)</option>
-          <option value="checkpoint">Pergunta curta</option>
-          <option value="prediction">Prever e observar</option>
-          <option value="comparison">Comparar duas possibilidades</option>
-          <option value="sequence">Ordenar ou associar</option>
-          <option value="experiment">Experimentar um modelo 2D</option>
-          <option value="html">Experiência especial em HTML</option>
-        </Select>
-      </Field>
-      {a.type === 'exploration' && (
-        <div className="space-y-4">
-          <Field label="Cena e conceito" htmlFor={`${id}-mission`}>
-            <Select
-              id={`${id}-mission`}
-              value={a.mission}
-              onChange={(event) => {
-                const mission = EXPLORATION_MISSIONS.find((m) => m === event.target.value)
-                if (!mission) return
-                const definition = EXPLORATION_DEFINITIONS[mission]
-                onChange({
-                  ...value,
-                  title: definition.title,
-                  instructions: definition.instruction,
-                  hints: [...definition.hints],
-                  checkpoint: undefined,
-                  activity: {
-                    type: 'exploration',
-                    version: a.version,
-                    mission,
-                    ...(a.version === 3 ? { mode: a.mode ?? 'explore' } : {}),
-                  },
-                })
-              }}
+
+      <fieldset className="space-y-2">
+        <legend className="mb-2 text-sm font-medium">Tipo de atividade</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {ACTIVITY_KINDS.map((kind) => (
+            <label
+              key={kind.type}
+              className={`flex cursor-pointer flex-col gap-1 rounded-xl border-2 p-4 ${
+                a.type === kind.type
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/40'
+              }`}
             >
-              {(['world', 'motion', 'events', 'population', 'collision', 'speed'] as const).map(
-                (family) => (
-                  <optgroup
-                    key={family}
-                    label={
-                      {
-                        world: 'Mundo e desenho',
-                        motion: 'Movimento',
-                        events: 'Eventos e estados',
-                        population: 'Objetos no grupo',
-                        collision: 'Áreas e contato',
-                        speed: 'Sorteio e velocidade',
-                      }[family]
-                    }
-                  >
-                    {EXPLORATION_MISSIONS.filter(
-                      (mission) => EXPLORATION_DEFINITIONS[mission].family === family,
-                    ).map((mission) => (
-                      <option key={mission} value={mission}>
-                        {EXPLORATION_DEFINITIONS[mission].title}
-                      </option>
-                    ))}
-                  </optgroup>
-                ),
-              )}
-            </Select>
+              <span className="flex items-center gap-3 font-semibold">
+                <input
+                  type="radio"
+                  name={`${id}-kind`}
+                  value={kind.type}
+                  checked={a.type === kind.type}
+                  onChange={() => {
+                    setAviso('')
+                    const proxima = newLearningActivity(kind.type)
+                    // ⚠️ Entre demonstração e experimentação a CENA acompanha: são irmãs sobre o
+                    // mesmo assunto, e voltar para `world` obrigaria a reescolher toda vez.
+                    const herdada =
+                      cena && (kind.type === 'demonstration' || kind.type === 'experimentation')
+                        ? { ...proxima, scene: cena.scene }
+                        : proxima
+                    onChange({
+                      ...value,
+                      activity: herdada as LearningActivity,
+                      // ⚠️ O texto do professor NÃO é sobrescrito: só entra o do modelo onde ele
+                      // não escreveu nada. Antes, escolher "cena" jogava fora a instrução dele.
+                      ...(herdada.type === 'demonstration' || herdada.type === 'experimentation'
+                        ? textoAoTrocarCena(value, cena?.scene ?? null, herdada.scene)
+                        : {}),
+                      ...(kind.type === 'question' && !value.checkpoint
+                        ? {
+                            checkpoint: {
+                              prompt: '',
+                              choices: initialChoices(),
+                              correctChoiceId: 'first',
+                              explanation: '',
+                            },
+                          }
+                        : {}),
+                    })
+                  }}
+                  className="accent-primary"
+                />
+                {kind.label}
+              </span>
+              <span className="pl-7 text-sm text-muted-foreground">{kind.hint}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {cena && (
+        <div className="space-y-4">
+          <Field label="Cena">
+            <ScenePicker value={cena.scene} onChange={trocarCena} />
           </Field>
-          <ExperienceAuthoring
-            activity={a}
-            onChange={(activity) => onChange({ ...value, activity })}
-          />
-          <div className="space-y-2 rounded-xl bg-muted/40 p-4 text-sm">
-            <p>
-              <strong>A criança vai:</strong>{' '}
-              {EXPLORATION_DEFINITIONS[a.mission].title.toLocaleLowerCase('pt-BR')}.
+          {aviso && (
+            <p role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+              {aviso}
             </p>
-            <p>
-              <strong>{a.mode === 'demonstrate' ? 'Vai observar:' : 'Poderá mexer em:'}</strong>{' '}
-              {EXPLORATION_DEFINITIONS[a.mission].manipulates}.
+          )}
+          {cena.type === 'demonstration' ? (
+            <SceneAuthoring activity={cena} onChange={activity} />
+          ) : (
+            <p className="rounded-xl bg-muted/40 p-4 text-sm">
+              A criança usa os controles da cena. Toque, arraste e teclado levam ao mesmo lugar, e a
+              atividade fecha em: {SCENE_MODELS[cena.scene].goals.map((g) => g.label).join('; ')}.
             </p>
-            <p>
-              <strong>Avança quando:</strong>{' '}
-              {a.mode === 'demonstrate'
-                ? 'Acompanhar todas as etapas do roteiro.'
-                : EXPLORATION_DEFINITIONS[a.mission].goals.map((g) => g.label).join('; ')}
-              .
-            </p>
-            <p>
-              {a.mode === 'demonstrate'
-                ? 'O aluno pode observar, pausar e rever o roteiro. A cena permanece sob controle da demonstração.'
-                : 'Toque, arraste e teclado oferecem caminhos equivalentes dentro desta missão. A experimentação termina no objetivo proposto.'}
-            </p>
-          </div>
+          )}
           <details className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
-              Áudio e detalhes da missão
+              Áudio e ajustes da cena
             </summary>
             <div className="mt-3 space-y-3">
-              {(a.mission === 'gravity' || a.mission === 'impulse') && (
-                <Field
-                  label="Impulso inicial do modelo"
-                  htmlFor={`${id}-initial-impulse`}
-                  hint="Entre 5 e 14. A gravidade permanece igual para comparar os saltos."
-                >
-                  <Input
-                    id={`${id}-initial-impulse`}
-                    type="number"
-                    min={5}
-                    max={14}
-                    step={1}
-                    value={a.initialImpulse ?? 9}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (Number.isInteger(value) && value >= 5 && value <= 14)
-                        activity({ ...a, initialImpulse: value })
-                    }}
-                  />
-                </Field>
-              )}
+              {cena.type === 'experimentation' &&
+                (cena.scene === 'gravity' || cena.scene === 'impulse') && (
+                  <Field
+                    label="Impulso inicial do modelo"
+                    htmlFor={`${id}-initial-impulse`}
+                    hint={`Entre ${SCENE_LIMITS.impulse.min} e ${SCENE_LIMITS.impulse.max}. A gravidade permanece igual para comparar os saltos.`}
+                  >
+                    <Input
+                      id={`${id}-initial-impulse`}
+                      type="number"
+                      min={SCENE_LIMITS.impulse.min}
+                      max={SCENE_LIMITS.impulse.max}
+                      step={1}
+                      value={cena.initialImpulse ?? 9}
+                      onChange={(event) => {
+                        const força = Number(event.target.value)
+                        if (
+                          Number.isInteger(força) &&
+                          força >= SCENE_LIMITS.impulse.min &&
+                          força <= SCENE_LIMITS.impulse.max
+                        )
+                          activity({ ...cena, initialImpulse: força })
+                      }}
+                    />
+                  </Field>
+                )}
               <Field
                 label="Áudio revisado da instrução (opcional)"
                 htmlFor={`${id}-audio`}
@@ -304,192 +297,17 @@ export function LearningBuilder({
                   id={`${id}-audio`}
                   type="url"
                   placeholder="https://…"
-                  value={a.instructionAudioUrl ?? ''}
+                  value={cena.instructionAudioUrl ?? ''}
                   onChange={(event) =>
-                    activity({ ...a, instructionAudioUrl: event.target.value || undefined })
+                    activity({ ...cena, instructionAudioUrl: event.target.value || undefined })
                   }
                 />
               </Field>
-              <p className="text-xs text-muted-foreground">
-                Modelo e evidência v2. As condições e os limites desta missão foram revisados em
-                conjunto; mudar seu significado exige uma nova revisão.
-              </p>
             </div>
           </details>
         </div>
       )}
-      {a.type === 'simulation' && (
-        <>
-          <Field label="O que a criança vai descobrir" htmlFor={`${id}-scene`}>
-            <Select
-              id={`${id}-scene`}
-              value={a.scene}
-              onChange={(event) => {
-                if (!isLearningScene(event.target.value)) return
-                const scene = event.target.value,
-                  definition = LEARNING_SCENE_DEFINITIONS[scene]
-                onChange({
-                  ...value,
-                  title: definition.title,
-                  instructions: definition.instruction,
-                  activity: { type: 'simulation', version: 1, scene },
-                })
-              }}
-            >
-              {LEARNING_SCENES.map((scene) => (
-                <option key={scene} value={scene}>
-                  {LEARNING_SCENE_DEFINITIONS[scene].title}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <p className="text-sm text-muted-foreground">
-            A criança altera o modelo e observa resultados diferentes. A conclusão registra a
-            exploração prevista para esta cena; não exige uma pergunta nem representa aprovação do
-            projeto.
-          </p>
-        </>
-      )}
-      {a.type === 'prediction' && (
-        <>
-          <Field label="Previsões possíveis">
-            <ChoiceFields choices={a.choices} onChange={(choices) => activity({ ...a, choices })} />
-          </Field>
-          <Field
-            label="Resultado observado"
-            htmlFor={`${id}-outcome`}
-            hint="A previsão não recebe nota. Explique o que aconteceu e convide a comparar com a hipótese."
-          >
-            <Textarea
-              id={`${id}-outcome`}
-              value={a.outcome}
-              onChange={(e) => activity({ ...a, outcome: e.target.value })}
-            />
-          </Field>
-        </>
-      )}
-      {a.type === 'comparison' && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          {(['left', 'right'] as const).map((side) => (
-            <div key={side} className="space-y-3 rounded-xl border border-border p-4">
-              <Field label={side === 'left' ? 'Primeira possibilidade' : 'Segunda possibilidade'}>
-                <Input
-                  aria-label={`Título ${side === 'left' ? 'da primeira' : 'da segunda'} possibilidade`}
-                  value={a[side].label}
-                  onChange={(e) =>
-                    activity({ ...a, [side]: { ...a[side], label: e.target.value } })
-                  }
-                />
-              </Field>
-              <ImageUploader
-                scope="block"
-                allowManualUrl={false}
-                value={a[side].url}
-                onChange={(url) => activity({ ...a, [side]: { ...a[side], url } })}
-              />
-              <Field label="Descrição acessível">
-                <Textarea
-                  aria-label={`Descrição ${side === 'left' ? 'da primeira' : 'da segunda'} imagem`}
-                  value={a[side].alt}
-                  onChange={(e) => activity({ ...a, [side]: { ...a[side], alt: e.target.value } })}
-                />
-              </Field>
-            </div>
-          ))}
-        </div>
-      )}
-      {a.type === 'sequence' && (
-        <div className="space-y-4">
-          <Field label="Tipo de relação">
-            <Select
-              aria-label="Tipo de relação"
-              value={a.mode}
-              onChange={(e) =>
-                activity({ ...a, mode: e.target.value === 'match' ? 'match' : 'order' })
-              }
-            >
-              <option value="order">Colocar em ordem</option>
-              <option value="match">Associar pares</option>
-            </Select>
-          </Field>
-          <ChoiceFields
-            choices={a.items}
-            onChange={(items) => {
-              const ids = new Set(items.map((item) => item.id))
-              const remaining = a.solution.filter((item) => ids.has(item))
-              activity({
-                ...a,
-                items,
-                solution: [
-                  ...remaining,
-                  ...items.filter((item) => !remaining.includes(item.id)).map((item) => item.id),
-                ],
-                targets: items.map((_, i) => a.targets[i] ?? `Relação ${i + 1}`),
-              })
-            }}
-          />
-          <fieldset className="space-y-2 rounded-xl bg-muted/30 p-4">
-            <legend className="font-medium">Resposta esperada (somente professor)</legend>
-            {a.solution.map((choice, index) => (
-              <div key={a.items[index]?.id} className="flex items-center gap-3">
-                {a.mode === 'match' ? (
-                  <Input
-                    aria-label={`Relação ${index + 1}`}
-                    value={a.targets[index] ?? ''}
-                    onChange={(e) =>
-                      activity({
-                        ...a,
-                        targets: a.targets.map((label, i) =>
-                          i === index ? e.target.value : label,
-                        ),
-                      })
-                    }
-                  />
-                ) : (
-                  <span>{index + 1}.</span>
-                )}
-                <Select
-                  aria-label={`Resposta da posição ${index + 1}`}
-                  value={choice}
-                  onChange={(e) => {
-                    const solution = [...a.solution]
-                    const previous = solution.indexOf(e.target.value)
-                    solution[index] = e.target.value
-                    if (previous >= 0) solution[previous] = choice
-                    activity({ ...a, solution })
-                  }}
-                >
-                  {a.items.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            ))}
-          </fieldset>
-        </div>
-      )}
-      {a.type === 'experiment' && (
-        <Field
-          label="Modelo de experimento"
-          hint="O aluno controla uma variável e compara os testes, sem alterar seu jogo."
-        >
-          <Select
-            aria-label="Modelo de experimento"
-            value={a.preset}
-            onChange={(e) => {
-              const preset = e.target.value
-              if (preset === 'motion' || preset === 'population' || preset === 'collision')
-                activity({ ...a, preset, parameters: {} })
-            }}
-          >
-            <option value="motion">Movimento e gravidade</option>
-            <option value="population">Nascimento e saída de objetos</option>
-            <option value="collision">Áreas de colisão</option>
-          </Select>
-        </Field>
-      )}
+
       {a.type === 'html' && (
         <Field
           label="HTML da experiência"
@@ -498,6 +316,7 @@ export function LearningBuilder({
           <HtmlCodeEditor value={a.html} onChange={(html) => activity({ ...a, html })} />
         </Field>
       )}
+
       <Field label="Pistas (uma por linha)" htmlFor={`${id}-hints`}>
         <Textarea
           id={`${id}-hints`}
@@ -521,12 +340,12 @@ export function LearningBuilder({
           A obrigatoriedade é escolhida nos critérios da seção, no percurso da aula.
         </p>
       )}
-      {a.type !== 'exploration' && (
+      {!cena && (
         <label className="flex min-h-11 items-center gap-3">
           <input
             type="checkbox"
             checked={Boolean(checkpoint)}
-            disabled={a.type === 'checkpoint'}
+            disabled={a.type === 'question'}
             onChange={(e) =>
               onChange({
                 ...value,
@@ -544,9 +363,9 @@ export function LearningBuilder({
           Incluir pergunta de verificação
         </label>
       )}
-      {value.required && (a.type === 'html' || a.type === 'experiment') && !checkpoint && (
+      {value.required && a.type === 'html' && !checkpoint && (
         <p role="status" className="text-sm text-destructive">
-          Adicione uma pergunta de verificação para tornar este experimento essencial.
+          Adicione uma pergunta de verificação para tornar esta experiência essencial.
         </p>
       )}
       {checkpoint && (
@@ -610,15 +429,19 @@ export function LearningBuilder({
         {preview ? 'Fechar prévia' : 'Experimentar a prévia'}
       </Button>
       {preview && (
-        <InteractiveLessonBlock
-          previewContent={value}
-          block={{
-            id: 'author-preview',
-            kind: 'interactive',
-            sortOrder: 0,
-            content: publicInteractiveBlock(value),
-          }}
-        />
+        // ⚠️ O `sz-lesson-block` é o que dá o cartão à cena: ela não desenha o dela, e sem este
+        // embrulho a prévia sai solta na página — diferente do que o ensaio e a aula mostram.
+        <div className="sz-lesson-block">
+          <InteractiveLessonBlock
+            previewContent={value}
+            block={{
+              id: 'author-preview',
+              kind: 'interactive',
+              sortOrder: 0,
+              content: publicInteractiveBlock(value),
+            }}
+          />
+        </div>
       )}
     </div>
   )

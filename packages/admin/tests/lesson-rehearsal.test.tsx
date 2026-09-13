@@ -2,10 +2,10 @@ import { expect, spyOn, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
   defaultLessonSection,
-  EXPLORATION_DEFINITIONS,
   type InteractiveBlock,
   type LessonDraftDocument,
 } from '@sistemazero/core/learning'
+import { SCENE_MODELS } from '@sistemazero/core/learning/scene'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import type { LessonBlockContent } from '../src/lib/types'
@@ -33,7 +33,7 @@ test('external confirmations do not bypass discoveries or unfinished section cri
     instructions: 'Mude a ordem.',
     hints: [],
     required: false,
-    activity: { type: 'exploration', version: 2, mission: 'layers' },
+    activity: { type: 'experimentation', scene: 'layers' },
   }
   const documentValue: LessonDraftDocument<LessonBlockContent> = {
     title: 'Ensaio',
@@ -136,14 +136,14 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
-  const d = EXPLORATION_DEFINITIONS.layers
+  const d = SCENE_MODELS.layers
   const content: InteractiveBlock = {
     kind: 'interactive',
     title: d.title,
     instructions: d.instruction,
     hints: [...d.hints],
     required: false,
-    activity: { type: 'exploration', version: 2, mission: 'layers' },
+    activity: { type: 'experimentation', scene: 'layers' },
   }
   const seed = createEmptyProject('same-dino', 'Meu Dino')
   const documentValue: LessonDraftDocument<LessonBlockContent> = {
@@ -287,7 +287,7 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     await click('Depois')
     expect(container.textContent).toContain('Falha de salvamento simulada')
     expect(button('Próxima seção').disabled).toBe(true)
-    await click('Tentar salvar novamente')
+    await click('Tentar salvar')
     expect(button('Próxima seção').disabled).toBe(false)
     await click('Próxima seção')
     await click('Criar')
