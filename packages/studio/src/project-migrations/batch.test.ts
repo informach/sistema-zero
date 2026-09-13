@@ -3,9 +3,11 @@ import { canonical, convertCourseContent, encode } from '../../scripts/project-m
 import { publishedRevisions } from '../../scripts/project-migrations/drafts'
 import { applyPlan, type BatchAdapter, rollbackPlan } from '../../scripts/project-migrations/engine'
 import { type Corpus, makePlan } from '../../scripts/project-migrations/plan'
+import { sectionRevision } from '../../scripts/project-migrations/progress'
 import {
   hash,
   type Row,
+  rowIdentity,
   STAGING_PROJECT,
   type StoredObject,
   TABLES,
@@ -123,8 +125,9 @@ function memory(corpus: Corpus) {
       if (interrupt) throw new Error('Conexão interrompida antes da promoção')
       const copy = structuredClone(rows)
       for (const change of changes) {
-        const key = TABLES[change.table].key
-        const index = copy[change.table].findIndex((r) => r[key] === change.before[key])
+        const index = copy[change.table].findIndex(
+          (r) => rowIdentity(change.table, r) === rowIdentity(change.table, change.before),
+        )
         if (canonical(copy[change.table][index]) === canonical(change.after)) continue
         if (canonical(copy[change.table][index]) !== canonical(change.before))
           throw new Error('CAS')
@@ -149,6 +152,68 @@ function memory(corpus: Corpus) {
 }
 
 describe('lote isolado de documentos Studio', () => {
+  test('critério equivalente conserva aprovações parciais de cada perfil e a revisão pedagógica', async () => {
+    const corpus = fixture()
+    corpus.rows['members.lessons'].push({
+      id: 'lesson-a',
+      title: 'Pulo',
+      slug: 'pulo',
+      estimated_minutes: 10,
+    })
+    corpus.rows['members.lesson_blocks'].push({
+      id: 'block-a',
+      lesson_id: 'lesson-a',
+      kind: 'studio',
+      archived_at: null,
+      sort_order: 0,
+      content_revision: 'pedagogica',
+      content: { kind: 'studio', allowBlocks: ['sz_g2d_play_jump'] },
+    })
+    corpus.rows['members.lesson_structures'].push({
+      lesson_id: 'lesson-a',
+      revision: 'estrutura-original',
+      sections: [
+        {
+          id: 'section-a',
+          blockIds: ['block-a'],
+          workspaceBlockId: 'block-a',
+          completion: {
+            version: 1,
+            blockIds: ['block-a'],
+            projectChecks: [
+              { id: 'pulo', rule: { type: 'usesBlock', blockType: 'sz_g2d_play_jump' } },
+            ],
+          },
+        },
+      ],
+    })
+    const revision = sectionRevision(corpus.rows, 'lesson-a', 'section-a')
+    for (const user of ['perfil-a', 'perfil-b'])
+      corpus.rows['members.lesson_section_progress'].push({
+        user_id: user,
+        account_id: 'conta',
+        lesson_id: 'lesson-a',
+        section_id: 'section-a',
+        revision,
+        project_passed: true,
+        completed_at: user === 'perfil-a' ? null : '2026-09-01T00:00:00+00:00',
+      })
+    const original = structuredClone(corpus.rows['members.lesson_section_progress'])
+    const plan = await makePlan(corpus)
+    expect(plan.failures).toEqual([])
+    const state = memory(corpus)
+    await applyPlan(plan, state.adapter)
+    const rows = await state.adapter.rows()
+    const expected = sectionRevision(rows, 'lesson-a', 'section-a')
+    expect(expected).not.toBe(revision)
+    expect(rows['members.lesson_blocks'][0]!.content_revision).toBe('pedagogica')
+    expect(rows['members.lesson_section_progress']).toEqual(
+      original.map((row) => ({ ...row, revision: expected })),
+    )
+    await rollbackPlan(plan, state.adapter)
+    expect((await state.adapter.rows())['members.lesson_section_progress']).toEqual(original)
+  })
+
   test('entrega da galeria conserva a referência e converte também o snapshot separado', async () => {
     const corpus = fixture()
     const key = 'creations/user-a/lesson-submissions/block-a/request-a/game-a-1/project.gz'

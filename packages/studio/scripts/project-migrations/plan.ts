@@ -13,6 +13,7 @@ import {
   sqlTimestamp,
 } from './content'
 import { migrateDraftBases } from './drafts'
+import { migrateSectionProgress } from './progress'
 import {
   hash,
   type Row,
@@ -185,7 +186,8 @@ export async function makePlan(corpus: Corpus): Promise<BatchPlan> {
             )
               after[key] = await convertCourseContent(before[key])
           if (canonical(after) !== canonical(before)) {
-            if ('content_revision' in before) after.content_revision = token(after.content)
+            // Formato/curadoria equivalentes não criam uma atividade pedagógica nova.
+            // A revisão de autoria do rascunho e o hash publicado cercam escritores antigos.
             if ('revision' in before) after.revision = uuid(after)
             if (table === 'members.courses') {
               if (!Number.isSafeInteger(before.version)) throw new Error('Versão do curso inválida')
@@ -205,6 +207,7 @@ export async function makePlan(corpus: Corpus): Promise<BatchPlan> {
     }
   }
   try {
+    migrateSectionProgress(corpus.rows, plan.rows)
     migrateDraftBases(corpus.rows, plan.rows)
   } catch (error) {
     plan.failures.push({

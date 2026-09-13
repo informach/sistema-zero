@@ -37,7 +37,7 @@ rpgSetStartMap(nome) escolhe o início. Sem ele, o primeiro mapa criado é o fal
 Referência inexistente produz diagnóstico e cai no primeiro mapa válido. O herói
 entra dentro dos limites, na célula livre mais próxima. Mapa-cenário e mapa de
 peças devem ter as mesmas dimensões. Nunca invente mapa ou decoração automática.
-Mapas abertos usam rpgCreateMap(nome, 0, 0, desenho, fundo, "unbounded");
+Mapas abertos com desenho usam rpgCreateMap(nome, 0, 0, desenho, true, "unbounded");
 nesse caso não há bordas nem ajuste do herói aos limites. O padrão é "bounded".
 
 IMAGENS: seletores de imagem carregam o asset escolhido automaticamente. loadImage
