@@ -1,13 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
-  appendExplorationAction,
   defaultLessonSection,
   type InteractiveBlock,
   isLearningAnswers,
-  readExperienceCheckpoint,
-  segmentAnswers,
 } from '@sistemazero/core/learning'
+import { readExperimentSession, sceneSegmentAnswers } from '@sistemazero/core/learning/scene'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
   changeDraft,
@@ -21,21 +19,22 @@ import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 const USER = '11111111-1111-1111-1111-111111111111'
 const OTHER = '22222222-2222-2222-2222-222222222222'
 const REVISION = '12345678901234567890123456789012'
+
 const content: InteractiveBlock = {
   kind: 'interactive',
   title: 'O que vem primeiro?',
   instructions: 'Ordene a preparação e o desenho.',
   hints: ['Prepare antes de desenhar.'],
   required: true,
-  activity: {
-    type: 'sequence',
-    mode: 'order',
-    items: [
-      { id: 'draw', label: 'Desenhar' },
+  activity: { type: 'question' },
+  checkpoint: {
+    prompt: 'O que vem primeiro?',
+    choices: [
       { id: 'prepare', label: 'Preparar' },
+      { id: 'draw', label: 'Desenhar' },
     ],
-    solution: ['prepare', 'draw'],
-    targets: [],
+    correctChoiceId: 'prepare',
+    explanation: 'A preparação cria o que será desenhado.',
   },
 }
 function setup() {
@@ -64,11 +63,11 @@ function setup() {
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
     )
-  const attempt = (order: string[], id = randomUUID(), revision = REVISION) =>
+  const attempt = (escolha: string, id = randomUUID(), revision = REVISION) =>
     request(`/lessons/${lessonId}/blocks/${blockId}/learning-attempts`, 'POST', {
       id,
       revision,
-      answers: { order },
+      answers: { checkpoint: escolha },
       hintsUsed: 0,
     })
   const read = () => request(`/courses/${course.slug}/lessons/${lessonId}`)
@@ -82,7 +81,7 @@ describe('learning activities and sections', () => {
     if (!block) throw new Error('Missing fixture')
     block.content = {
       ...content,
-      activity: { type: 'exploration', version: 3, mission: 'world', mode: 'demonstrate' },
+      activity: { type: 'demonstration', scene: 'world' },
     }
     const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
     const save = (commands: unknown[]) =>
@@ -90,21 +89,20 @@ describe('learning activities and sections', () => {
         revision: REVISION,
         hintsUsed: 0,
         positionSeconds: null,
-        answers: {
-          experienceVersion: 3,
+        answers: sceneSegmentAnswers({
           sessionId: 'session-demo',
           segmentId: 'segment-demo',
           baseSequence: 0,
-          commands: commands.map((c) => JSON.stringify(c)),
-        },
+          commands,
+        }),
       })
     expect((await save([{ type: 'create' }])).status).toBe(400)
     expect((await save([{ type: 'take-control' }])).status).toBe(400)
     const response = await save([
-      { type: 'demo-start' },
-      { type: 'demo-tick', seconds: 0.5 },
-      { type: 'demo-next' },
-      { type: 'demo-tick', seconds: 0.5 },
+      { type: 'start' },
+      { type: 'tick', seconds: 0.5 },
+      { type: 'next' },
+      { type: 'tick', seconds: 0.5 },
     ])
     expect(response.status).toBe(200)
     const progress = await response.json()
@@ -125,18 +123,26 @@ describe('learning activities and sections', () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
     if (!block) throw new Error('Missing fixture')
-    const activity = { type: 'exploration', version: 2, mission: 'layers' } as const
+    const activity = { type: 'experimentation', scene: 'layers' } as const
     block.content = { ...content, activity, hints: [] }
-    const answers = appendExplorationAction(activity, {}, { type: 'hint', level: 1 })
+    const answers = sceneSegmentAnswers({
+      sessionId: 'sessao-dica',
+      segmentId: 'segmento-dica',
+      baseSequence: 0,
+      commands: [{ type: 'hint', level: 1 }],
+    })
     const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
     const progress = { revision: REVISION, answers, hintsUsed: 1, positionSeconds: null }
     const saved = await ctx.request(`${path}/learning-progress`, 'PUT', progress)
     expect(saved.status).toBe(200)
-    expect(await saved.json()).toMatchObject({ hintsUsed: 1 })
+    const gravado = await saved.json()
+    expect(gravado).toMatchObject({ hintsUsed: 1 })
+    // ⚠️ A tentativa confere a versão GUARDADA, não repete o segmento: quem aprova é a
+    // evidência que o servidor montou.
     const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
       id: randomUUID(),
       revision: REVISION,
-      answers,
+      answers: (gravado as { answers: Record<string, unknown> }).answers,
       hintsUsed: 1,
     })
     expect(attempt.status).toBe(200)
@@ -176,7 +182,7 @@ describe('learning activities and sections', () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
     if (!block) throw new Error('Missing fixture')
-    const activity = { type: 'exploration', version: 3, mission: 'world' } as const
+    const activity = { type: 'experimentation', scene: 'world' } as const
     block.content = { ...content, activity, checkpoint: undefined }
     const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
     const save = (answers: unknown) =>
@@ -186,7 +192,7 @@ describe('learning activities and sections', () => {
         hintsUsed: 0,
         positionSeconds: null,
       })
-    const first = segmentAnswers({
+    const first = sceneSegmentAnswers({
       sessionId: 'session-123',
       segmentId: 'segment-123',
       baseSequence: 0,
@@ -202,15 +208,17 @@ describe('learning activities and sections', () => {
       !isLearningAnswers(progress.answers)
     )
       throw new Error('Invalid progress response')
-    expect(readExperienceCheckpoint(activity, progress.answers)?.session.state.discoveries).toEqual(
-      ['hidden'],
-    )
+    // O servidor guarda a sessão inteira; o que a criança descobriu vem de lá.
+    expect(
+      readExperimentSession(progress.answers.sceneCheckpoint)?.state.evidence.discoveries,
+    ).toEqual(['hidden'])
     expect((await save(first)).status).toBe(200)
     expect(
       (
         await save({
           ...first,
-          commands: [JSON.stringify({ type: 'connect', port: 'draw', enabled: true })],
+          // Mesmo id de segmento, conteúdo diferente: é conflito de verdade, não reenvio.
+          sceneCommands: [JSON.stringify({ type: 'connect', port: 'draw', enabled: true })],
         })
       ).status,
     ).toBe(409)
@@ -227,7 +235,7 @@ describe('learning activities and sections', () => {
     expect(fabricated.status).toBe(200)
     expect(await fabricated.json()).toMatchObject({ attempt: { result: { passed: false } } })
     const next = (sessionId: string, segmentId: string) =>
-      segmentAnswers({
+      sceneSegmentAnswers({
         sessionId,
         segmentId,
         baseSequence: 1,
@@ -264,7 +272,7 @@ describe('learning activities and sections', () => {
     ctx.courses.blocks = ctx.courses.blocks.filter(
       (b) => b.lessonId !== ctx.lessonId || b.id === block.id,
     )
-    const activity = { type: 'exploration', version: 2, mission: 'world' } as const
+    const activity = { type: 'experimentation', scene: 'world' } as const
     block.content = { ...content, activity, checkpoint: undefined }
     const section = {
       ...defaultLessonSection(randomUUID(), 'Faça aparecer', [block.id]),
@@ -281,31 +289,58 @@ describe('learning activities and sections', () => {
         answers,
         hintsUsed: 0,
       })
+    const caminho = `/lessons/${ctx.lessonId}/blocks/${block.id}`
+    const gravar = (answers: unknown) =>
+      ctx.request(`${caminho}/learning-progress`, 'PUT', {
+        revision: REVISION,
+        answers,
+        hintsUsed: 0,
+        positionSeconds: null,
+      })
+
+    // ⚠️ Uma tentativa de cena NÃO é avaliada pelo que o cliente manda: ela confere a
+    // versão que o SERVIDOR guardou. Uma forja sem progresso gravado não tem o que conferir.
     const fabricated = await attempt({ completed: true, discoveries: ['hidden', 'visible'] })
-    expect(fabricated.status).toBe(200)
-    expect(await fabricated.json()).toMatchObject({ attempt: { result: { passed: false } } })
-    const first = appendExplorationAction(activity, {}, { type: 'create' })
-    expect(await (await attempt(first)).json()).toMatchObject({
+    expect(fabricated.status).toBe(409)
+
+    const primeiro = await gravar(
+      sceneSegmentAnswers({
+        sessionId: 'sessao-a',
+        segmentId: 'segmento-1',
+        baseSequence: 0,
+        commands: [{ type: 'create' }],
+      }),
+    )
+    expect(primeiro.status).toBe(200)
+    const parcial = (await primeiro.json()) as { answers: Record<string, unknown> }
+    expect(await (await attempt(parcial.answers)).json()).toMatchObject({
       attempt: { result: { passed: false } },
     })
-    const finished = appendExplorationAction(activity, first, {
-      type: 'connect',
-      port: 'draw',
-      enabled: true,
-    })
-    expect(await (await attempt(finished)).json()).toMatchObject({
+
+    const segundo = await gravar(
+      sceneSegmentAnswers({
+        sessionId: 'sessao-a',
+        segmentId: 'segmento-2',
+        baseSequence: 1,
+        commands: [{ type: 'connect', port: 'draw', enabled: true }],
+      }),
+    )
+    expect(segundo.status).toBe(200)
+    const completo = (await segundo.json()) as { answers: Record<string, unknown> }
+    expect(await (await attempt(completo.answers)).json()).toMatchObject({
       attempt: { result: { passed: true, verifiedBy: 'client' } },
     })
     expect(await (await ctx.read()).json()).toMatchObject({
       sectionProgress: { sections: [{ id: section.id, status: 'completed' }] },
     })
-    expect((await attempt(finished, 'another-revision')).status).toBe(409)
+    expect((await attempt(completo.answers, 'another-revision')).status).toBe(409)
+    // A evidência é de QUEM a produziu: outra conta não herda a aprovação.
     expect(
       (
         await ctx.request(
-          `/lessons/${ctx.lessonId}/blocks/${block.id}/learning-attempts`,
+          `${caminho}/learning-attempts`,
           'POST',
-          { id: randomUUID(), revision: REVISION, answers: finished, hintsUsed: 0 },
+          { id: randomUUID(), revision: REVISION, answers: completo.answers, hintsUsed: 0 },
           OTHER,
         )
       ).status,
@@ -384,7 +419,7 @@ describe('learning activities and sections', () => {
       const learningBlock = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
       if (!learningBlock) throw new Error('Missing activity')
       expect(learningBlock.contentRevision).toBe(REVISION)
-      await ctx.attempt(['prepare', 'draw'])
+      await ctx.attempt('prepare')
       expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(200)
     })
   }
@@ -415,16 +450,16 @@ describe('learning activities and sections', () => {
     expect(raw).not.toContain('solution')
     expect(raw).toContain('sections')
     expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(409)
-    const wrong = await ctx.attempt(['draw', 'prepare'])
+    const wrong = await ctx.attempt('draw')
     expect(wrong.status).toBe(200)
     expect(await wrong.json()).toMatchObject({
       progress: { result: { passed: false }, attemptsCount: 1 },
     })
     const id = randomUUID()
-    expect(await (await ctx.attempt(['prepare', 'draw'], id)).json()).toMatchObject({
+    expect(await (await ctx.attempt('prepare', id)).json()).toMatchObject({
       progress: { result: { passed: true }, attemptsCount: 2 },
     })
-    expect(await (await ctx.attempt(['draw', 'prepare'], id)).json()).toMatchObject({
+    expect(await (await ctx.attempt('draw', id)).json()).toMatchObject({
       progress: { result: { passed: true }, attemptsCount: 2 },
     })
     expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(200)
@@ -446,7 +481,7 @@ describe('learning activities and sections', () => {
     }
     expect((await ctx.request(path, 'PUT', body)).status).toBe(200)
     expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(409)
-    expect((await ctx.attempt(['prepare', 'draw'], randomUUID(), 'obsolete')).status).toBe(409)
+    expect((await ctx.attempt('prepare', randomUUID(), 'obsolete')).status).toBe(409)
     expect((await ctx.request(path, 'PUT', body, OTHER)).status).toBe(403)
     expect((await ctx.request(path, 'PUT', { ...body, hintsUsed: 2 })).status).toBe(400)
     expect(

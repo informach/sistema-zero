@@ -47,7 +47,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Você mudou o projeto depois de publicar. O jogo daquela publicação mudou sozinho?",
@@ -115,7 +115,9 @@
                 "label": "Obrigatoriamente todas as regras do jogo."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O tema pode mudar mantendo a mecânica. Se você também mudar controles ou objetivos, a mecânica pode mudar junto."
           },
           {
@@ -131,7 +133,9 @@
                 "label": "Dupliquei o quadro, mas os dois desenhos ficaram iguais e o fogo não pulsa."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Contar o que tentou e o resultado facilita localizar a próxima ação."
           }
         ]
@@ -144,13 +148,17 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "Jogo com as duas artes próprias pronto e testado na aula 7.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -158,13 +166,19 @@
       "title": "Publique e abra o jogo no Mural",
       "intent": "application",
       "objective": "Publicar a versão pronta e verificar o cartão e o jogo abertos pela publicação.",
-      "blockKeys": ["video-publicar", "orientacao-publicar", "conferir-publicar"],
+      "blockKeys": [
+        "video-publicar",
+        "orientacao-publicar",
+        "conferir-publicar"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-publicar"]
+        "blockIds": [
+          "conferir-publicar"
+        ]
       }
     },
     {
@@ -172,13 +186,17 @@
       "title": "Observe: a mesma regra com outra aparência",
       "intent": "demonstration",
       "objective": "Distinguir mecânica, tema e estilo visual, sem abrir uma nova construção.",
-      "blockKeys": ["video-versoes"],
+      "blockKeys": [
+        "video-versoes"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-versoes"]
+        "blockIds": [
+          "video-versoes"
+        ]
       }
     },
     {
@@ -186,13 +204,17 @@
       "title": "Observe: onde procurar uma próxima ideia",
       "intent": "demonstration",
       "objective": "Conhecer as opções de tema do mês e remix, sem sair para uma atividade extra.",
-      "blockKeys": ["video-ideias"],
+      "blockKeys": [
+        "video-ideias"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-ideias"]
+        "blockIds": [
+          "video-ideias"
+        ]
       }
     },
     {
@@ -200,13 +222,17 @@
       "title": "Observe: como pedir uma ajuda que funciona",
       "intent": "demonstration",
       "objective": "Saber descrever uma dúvida concreta no Clube.",
-      "blockKeys": ["video-clube"],
+      "blockKeys": [
+        "video-clube"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-clube"]
+        "blockIds": [
+          "video-clube"
+        ]
       }
     },
     {
@@ -214,13 +240,18 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Projeto enviado ao professor, publicação conferida no Mural e compreensão de tema, mecânica e caminhos para continuar após o curso.",
-      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "blockKeys": [
+        "orientacao-entrega-v6",
+        "entrega-galeria-v6"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["entrega-galeria-v6"]
+        "blockIds": [
+          "entrega-galeria-v6"
+        ]
       }
     },
     {
@@ -228,13 +259,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Projeto enviado ao professor, publicação conferida no Mural e compreensão de tema, mecânica e caminhos para continuar após o curso.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -242,13 +277,17 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ]

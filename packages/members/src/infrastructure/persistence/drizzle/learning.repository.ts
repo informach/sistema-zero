@@ -335,10 +335,12 @@ export class DrizzleLearningRepository implements LearningRepository {
         current?.revision === p.revision
           ? mergeVideoWatchAnswers(current.answers, p.answers)
           : p.answers
+      // ⚠️ A versão da cena mora em `sceneCheckpoint`/`sceneSequence`. A chave se chamava só
+      // `sequence` e colidia com outras respostas no mesmo namespace raso.
       if (input.expectedExperienceSequence !== undefined) {
         const sequence =
-          current?.revision === p.revision && typeof current.answers.sequence === 'number'
-            ? current.answers.sequence
+          current?.revision === p.revision && typeof current.answers.sceneSequence === 'number'
+            ? current.answers.sceneSequence
             : null
         if (sequence !== input.expectedExperienceSequence) throw new LearningConflictError()
       }

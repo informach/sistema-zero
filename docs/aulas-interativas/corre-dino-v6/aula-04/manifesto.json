@@ -57,7 +57,9 @@
                 "label": "Sempre que uma tecla qualquer é apertada."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O som descreve o acontecimento, não apenas o dedo."
           },
           {
@@ -73,7 +75,9 @@
                 "label": "Para não deixar dois sons ativos."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Uma cópia no evento antigo manteria o defeito."
           },
           {
@@ -89,7 +93,9 @@
                 "label": "Não, som de pulo só funciona com espaço."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O evento de pulo atende aos diferentes controles."
           }
         ]
@@ -136,10 +142,8 @@
         ],
         "required": false,
         "activity": {
-          "type": "exploration",
-          "version": 3,
-          "mission": "jump-sound",
-          "mode": "explore"
+          "type": "experimentation",
+          "scene": "jump-sound"
         }
       }
     },
@@ -174,13 +178,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.",
-      "blockKeys": ["video-abertura-editorial"],
+      "blockKeys": [
+        "video-abertura-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-editorial"]
+        "blockIds": [
+          "video-abertura-editorial"
+        ]
       }
     },
     {
@@ -188,7 +196,10 @@
       "title": "Monte um primeiro evento",
       "intent": "application",
       "objective": "Entender a área que responde a acontecimentos.",
-      "blockKeys": ["video-evento-espaco", "fala-evento-espaco"],
+      "blockKeys": [
+        "video-evento-espaco",
+        "fala-evento-espaco"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -216,7 +227,10 @@
       "title": "Ligue um som e teste",
       "intent": "application",
       "objective": "Ouvir a resposta de um evento de entrada.",
-      "blockKeys": ["video-primeiro-som", "fala-primeiro-som"],
+      "blockKeys": [
+        "video-primeiro-som",
+        "fala-primeiro-som"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -249,13 +263,17 @@
       "title": "O dedo e o Dino fazem a mesma coisa?",
       "intent": "exploration",
       "objective": "Separar comando de entrada e acontecimento real de pulo.",
-      "blockKeys": ["experiencia-entrada-ou-pulo"],
+      "blockKeys": [
+        "experiencia-entrada-ou-pulo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-entrada-ou-pulo"]
+        "blockIds": [
+          "experiencia-entrada-ou-pulo"
+        ]
       }
     },
     {
@@ -263,7 +281,10 @@
       "title": "Faça o som acompanhar o pulo",
       "intent": "application",
       "objective": "Trocar o evento preservando um único bloco de som.",
-      "blockKeys": ["video-escutar-dino", "fala-escutar-dino"],
+      "blockKeys": [
+        "video-escutar-dino",
+        "fala-escutar-dino"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -314,13 +335,18 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Um único som responde ao evento de pulo; o evento provisório de espaço foi retirado.",
-      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "blockKeys": [
+        "fala-entrega-editorial",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "som-pulo",
@@ -396,13 +422,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Um único som responde ao evento de pulo; o evento provisório de espaço foi retirado.",
-      "blockKeys": ["video-fecho-editorial"],
+      "blockKeys": [
+        "video-fecho-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-editorial"]
+        "blockIds": [
+          "video-fecho-editorial"
+        ]
       }
     },
     {
@@ -410,13 +440,17 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

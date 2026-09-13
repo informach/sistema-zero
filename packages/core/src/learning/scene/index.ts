@@ -7,6 +7,7 @@ export * from './actions'
 export * from './catalog'
 export * from './engine'
 export * from './evaluate'
+export * from './session'
 export * from './state'
 
 /**

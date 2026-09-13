@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
-  appendExplorationAction,
   defaultLessonSection,
   type InteractiveBlock,
   type LessonSection,
   type SectionProgressView,
 } from '@sistemazero/core/learning'
+import { sceneSegmentAnswers } from '@sistemazero/core/learning/scene'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 type Payload = {
@@ -37,7 +37,7 @@ function setup() {
     instructions: 'Prepare antes de desenhar.',
     required: false,
     hints: ['Leia a explicação.'],
-    activity: { type: 'checkpoint' },
+    activity: { type: 'question' },
     checkpoint: {
       prompt: 'O que vem antes?',
       choices: [
@@ -82,7 +82,7 @@ describe('section gates across HTTP and persistence', () => {
   test('two explorations interleave independent goals in the same Studio before delivery', async () => {
     const ctx = setup()
     const projectId = randomUUID()
-    const activity = { type: 'exploration', version: 2, mission: 'layers' } as const
+    const activity = { type: 'experimentation', scene: 'layers' } as const
     for (const id of ctx.ids.slice(0, 2)) {
       const block = ctx.courses.blocks.find((b) => b.id === id)
       if (!block) throw new Error('Missing exploration fixture')
@@ -143,14 +143,36 @@ describe('section gates across HTTP and persistence', () => {
       revision: ctx.structureRevision,
       sections,
     })
-    const answers = appendExplorationAction(activity, {}, { type: 'layer', front: true })
-    const discover = (index: number) =>
-      ctx.request(`/lessons/${ctx.lessonId}/blocks/${ctx.ids[index]}/learning-attempts`, 'POST', {
-        id: randomUUID(),
+    const answers = {
+      ...sceneSegmentAnswers({
+        sessionId: 'sessao-camadas',
+        segmentId: 'segmento-1',
+        baseSequence: 0,
+        commands: [{ type: 'layer', front: true }],
+      }),
+    }
+    /**
+     * Descobrir é um fluxo de dois passos: o progresso vai primeiro (é ele que carrega a
+     * evidência) e a tentativa depois confere o que o servidor guardou. Um bloco ainda
+     * trancado recusa já no primeiro passo.
+     */
+    const discover = async (index: number) => {
+      const caminho = `/lessons/${ctx.lessonId}/blocks/${ctx.ids[index]}`
+      const gravado = await ctx.request(`${caminho}/learning-progress`, 'PUT', {
         revision: REVISION,
         answers,
         hintsUsed: 0,
+        positionSeconds: null,
       })
+      if (gravado.status !== 200) return gravado
+      const salvo = (await gravado.json()) as { answers: Record<string, unknown> }
+      return ctx.request(`${caminho}/learning-attempts`, 'POST', {
+        id: randomUUID(),
+        revision: REVISION,
+        answers: salvo.answers,
+        hintsUsed: 0,
+      })
+    }
     const project = {
       name: 'Mesmo Dino',
       files: {},

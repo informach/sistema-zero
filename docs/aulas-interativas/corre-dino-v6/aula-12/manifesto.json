@@ -58,7 +58,9 @@
                 "label": "Não, sorteio nunca repete."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A faixa limita resultados; ela não exige que sejam sempre diferentes."
           },
           {
@@ -74,7 +76,9 @@
                 "label": "Para o cacto começar fora da tela."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A borda direita do palco está em x 480."
           },
           {
@@ -90,7 +94,9 @@
                 "label": "-4, que anda mais rápido para a direita."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Subtrair 1 torna a velocidade mais negativa."
           }
         ]
@@ -117,10 +123,8 @@
         ],
         "required": false,
         "activity": {
-          "type": "exploration",
-          "version": 3,
-          "mission": "random",
-          "mode": "explore"
+          "type": "experimentation",
+          "scene": "random"
         }
       }
     },
@@ -171,13 +175,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.",
-      "blockKeys": ["video-abertura-editorial"],
+      "blockKeys": [
+        "video-abertura-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-editorial"]
+        "blockIds": [
+          "video-abertura-editorial"
+        ]
       }
     },
     {
@@ -185,13 +193,17 @@
       "title": "Veja por que o percurso se repete",
       "intent": "demonstration",
       "objective": "Relacionar valores fixos a um padrão previsível.",
-      "blockKeys": ["video-padrao-fixo"],
+      "blockKeys": [
+        "video-padrao-fixo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-padrao-fixo"]
+        "blockIds": [
+          "video-padrao-fixo"
+        ]
       }
     },
     {
@@ -199,13 +211,17 @@
       "title": "O que o sorteio pode mudar?",
       "intent": "exploration",
       "objective": "Comparar resultados de um sorteio dentro da faixa, mantendo a outra propriedade fixa.",
-      "blockKeys": ["experiencia-sorteio-controlado"],
+      "blockKeys": [
+        "experiencia-sorteio-controlado"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-sorteio-controlado"]
+        "blockIds": [
+          "experiencia-sorteio-controlado"
+        ]
       }
     },
     {
@@ -213,7 +229,10 @@
       "title": "Sorteie o lugar de nascimento",
       "intent": "application",
       "objective": "Conectar o sorteio exclusivamente à entrada x.",
-      "blockKeys": ["video-sortear-posicao", "fala-sortear-posicao"],
+      "blockKeys": [
+        "video-sortear-posicao",
+        "fala-sortear-posicao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -291,13 +310,17 @@
       "title": "Veja a conta da velocidade",
       "intent": "demonstration",
       "objective": "Ler -5 menos 0 e -5 menos 1 como velocidades para a esquerda.",
-      "blockKeys": ["video-menos-corre-mais"],
+      "blockKeys": [
+        "video-menos-corre-mais"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-menos-corre-mais"]
+        "blockIds": [
+          "video-menos-corre-mais"
+        ]
       }
     },
     {
@@ -305,7 +328,10 @@
       "title": "Conecte a conta ao cacto",
       "intent": "application",
       "objective": "Combinar uma base fixa com uma variação limitada.",
-      "blockKeys": ["video-sortear-velocidade", "fala-sortear-velocidade"],
+      "blockKeys": [
+        "video-sortear-velocidade",
+        "fala-sortear-velocidade"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -382,13 +408,18 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Nascimento entre x 500 e 560 e velocidade -5 menos sorteio de 0 a 1; o relógio continua em 1,4 s.",
-      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "blockKeys": [
+        "fala-entrega-editorial",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "sortear-x",
@@ -490,13 +521,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Nascimento entre x 500 e 560 e velocidade -5 menos sorteio de 0 a 1; o relógio continua em 1,4 s.",
-      "blockKeys": ["video-fecho-editorial"],
+      "blockKeys": [
+        "video-fecho-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-editorial"]
+        "blockIds": [
+          "video-fecho-editorial"
+        ]
       }
     },
     {
@@ -504,13 +539,17 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

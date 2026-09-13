@@ -148,7 +148,9 @@
                 "label": "Cada asteroide passa a cair duas vezes mais rápido."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Intervalo controla nascimento; vy controla a queda."
           },
           {
@@ -164,7 +166,9 @@
                 "label": "A pedra que participou daquele encontro."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O apelido permite agir sobre o participante, preservando os outros."
           }
         ]
@@ -177,13 +181,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Retomar o Dia 2: nave controlada e tiros que sobem.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -191,7 +199,10 @@
       "title": "Prepare o grupo das pedras",
       "intent": "application",
       "objective": "Separar tiros e asteroides em grupos diferentes.",
-      "blockKeys": ["video-grupo-asteroides", "fala-grupo-asteroides"],
+      "blockKeys": [
+        "video-grupo-asteroides",
+        "fala-grupo-asteroides"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -220,13 +231,17 @@
       "title": "Um relógio mais rápido cria mais?",
       "intent": "exploration",
       "objective": "Relacionar intervalo de nascimento com quantidade no mesmo período.",
-      "blockKeys": ["experiencia-intervalo"],
+      "blockKeys": [
+        "experiencia-intervalo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-intervalo"]
+        "blockIds": [
+          "experiencia-intervalo"
+        ]
       }
     },
     {
@@ -234,7 +249,10 @@
       "title": "Monte o relógio dos asteroides",
       "intent": "application",
       "objective": "Criar uma repetição periódica separada do motor principal.",
-      "blockKeys": ["video-relogio", "fala-relogio"],
+      "blockKeys": [
+        "video-relogio",
+        "fala-relogio"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -273,13 +291,17 @@
       "title": "Observe posição e velocidade",
       "intent": "demonstration",
       "objective": "Distinguir y negativo de vy positivo e reconhecer o sorteio de x.",
-      "blockKeys": ["video-nascer-fora"],
+      "blockKeys": [
+        "video-nascer-fora"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-nascer-fora"]
+        "blockIds": [
+          "video-nascer-fora"
+        ]
       }
     },
     {
@@ -287,7 +309,10 @@
       "title": "Crie a pedra no relógio",
       "intent": "application",
       "objective": "Configurar nascimento e movimento vertical do asteroide.",
-      "blockKeys": ["video-asteroide", "fala-asteroide"],
+      "blockKeys": [
+        "video-asteroide",
+        "fala-asteroide"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -337,7 +362,10 @@
       "title": "Use o padrão que você já conhece",
       "intent": "application",
       "objective": "Transferir o ciclo mover, retirar, desenhar para outro grupo.",
-      "blockKeys": ["video-ciclo-asteroides", "fala-ciclo-asteroides"],
+      "blockKeys": [
+        "video-ciclo-asteroides",
+        "fala-ciclo-asteroides"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -394,13 +422,17 @@
       "title": "Observe quais dois objetos se encontraram",
       "intent": "demonstration",
       "objective": "Distinguir o grupo inteiro dos dois objetos de uma colisão.",
-      "blockKeys": ["video-encontro"],
+      "blockKeys": [
+        "video-encontro"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-encontro"]
+        "blockIds": [
+          "video-encontro"
+        ]
       }
     },
     {
@@ -408,7 +440,10 @@
       "title": "Faça a colisão destruir os dois",
       "intent": "application",
       "objective": "Responder à colisão entre os grupos a cada quadro.",
-      "blockKeys": ["video-colisao", "fala-colisao"],
+      "blockKeys": [
+        "video-colisao",
+        "fala-colisao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -500,13 +535,17 @@
       "title": "Observe um acerto e uma tentativa",
       "intent": "demonstration",
       "objective": "Conferir que a colisão remove somente objetos que se encontram.",
-      "blockKeys": ["video-teste-colisao"],
+      "blockKeys": [
+        "video-teste-colisao"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-colisao"]
+        "blockIds": [
+          "video-teste-colisao"
+        ]
       }
     },
     {
@@ -514,13 +553,18 @@
       "title": "Teste e envie sua construção",
       "intent": "delivery",
       "objective": "Asteroides nascem em posições sorteadas, caem e podem ser destruídos pelos tiros.",
-      "blockKeys": ["entrega-fala-v6", "projeto"],
+      "blockKeys": [
+        "entrega-fala-v6",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "disparo",
@@ -766,13 +810,17 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Asteroides nascem em posições sorteadas, caem e podem ser destruídos pelos tiros.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -780,13 +828,17 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ],

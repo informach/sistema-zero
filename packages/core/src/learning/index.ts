@@ -14,15 +14,17 @@ export * from './section-templates'
 export * from './simulation'
 export * from './video-watch'
 
-import { evaluateExperience } from './experience'
 import {
-  EXPLORATION_DEFINITIONS,
-  type ExplorationActivity,
-  evaluateExploration,
-  isExplorationActivity,
-} from './exploration'
+  evaluateDemonstration,
+  evaluateExperimentation,
+  initialScene,
+  isSceneActivity,
+  readDemonstrationSession,
+  readExperimentSession,
+  type SceneActivity,
+  sceneModel,
+} from './scene'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
-import { evaluateSimulation, isSimulationActivity, type SimulationActivity } from './simulation'
 export const SECTION_INTENTS = [
   'presentation',
   'demonstration',
@@ -68,47 +70,31 @@ export interface LearningCheckpoint {
   correctChoiceId: string
   explanation: string
 }
-export interface PredictionActivity {
-  type: 'prediction'
-  choices: LearningChoice[]
-  outcome: string
-}
-export interface ComparisonActivity {
-  type: 'comparison'
-  left: { label: string; url: string; alt: string }
-  right: { label: string; url: string; alt: string }
-}
-export interface SequenceActivity {
-  type: 'sequence'
-  items: LearningChoice[]
-  /** Ordering uses all items; matching pairs item ids with distinct labels. */
-  mode: 'order' | 'match'
-  solution: string[]
-  targets: string[]
-}
-export const EXPERIMENT_PRESETS = ['motion', 'population', 'collision'] as const
-export type ExperimentPreset = (typeof EXPERIMENT_PRESETS)[number]
-export interface ExperimentActivity {
-  type: 'experiment'
-  preset: ExperimentPreset
-  parameters: Record<string, number>
-}
+/** Uma experiência autoral em HTML, isolada num iframe. */
 export interface HtmlActivity {
   type: 'html'
   html: string
 }
-export interface CheckpointActivity {
-  type: 'checkpoint'
+
+/**
+ * Uma pergunta sozinha, como atividade do bloco.
+ *
+ * ⚠️ Chamava-se `checkpoint` e colidia com `block.checkpoint` — a pergunta que se ANEXA a
+ * qualquer atividade — e, pior, com `answers.checkpoint`, que numa era a alternativa
+ * escolhida (uma string) e noutra os pedaços da sessão serializada (um array). As duas só
+ * não se atropelavam por uma invariante implícita, não documentada, em outro arquivo.
+ */
+export interface QuestionActivity {
+  type: 'question'
 }
-export type LearningActivity =
-  | CheckpointActivity
-  | PredictionActivity
-  | ComparisonActivity
-  | SequenceActivity
-  | ExperimentActivity
-  | HtmlActivity
-  | SimulationActivity
-  | ExplorationActivity
+/**
+ * O que uma atividade interativa pode ser. Quatro formas, nenhuma sobreposta.
+ *
+ * Saíram: `simulation` (a geração 1), `experiment` (modelos 2D) e `comparison`, que não
+ * tinham um único uso em curso nenhum; e `prediction` e `sequence`, reescritos no conteúdo.
+ * As cenas, que eram um tipo com um campo `mode`, viraram dois tipos irmãos.
+ */
+export type LearningActivity = QuestionActivity | HtmlActivity | SceneActivity
 export interface InteractiveBlock {
   kind: 'interactive'
   title: string
@@ -121,30 +107,21 @@ export interface InteractiveBlock {
 }
 /** Authoring, presentation and evidence use the same hints, including curated mission defaults. */
 export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'>): string[] {
-  if (block.activity.type === 'exploration' && block.activity.version === 2)
-    return block.hints.length > 0
-      ? block.hints.slice(0, 3)
-      : [...EXPLORATION_DEFINITIONS[block.activity.mission].hints]
+  // A escada de três degraus do modelo só entra quando o professor não escreveu a dele.
+  if (block.activity.type === 'experimentation' && block.hints.length === 0)
+    return [...sceneModel(block.activity.scene).hints]
   return block.hints
 }
-export type PublicLearningActivity =
-  | Exclude<LearningActivity, SequenceActivity>
-  | Omit<SequenceActivity, 'solution'>
+/** Nenhuma das quatro atividades carrega gabarito: o que precisa ficar no servidor é o
+ *  `correctChoiceId` da pergunta anexa, tratado abaixo. */
+export type PublicLearningActivity = LearningActivity
 export interface PublicInteractiveBlock extends Omit<InteractiveBlock, 'activity' | 'checkpoint'> {
   activity: PublicLearningActivity
   checkpoint?: Omit<LearningCheckpoint, 'correctChoiceId' | 'explanation'>
 }
 /** Answer keys stay on the server, including for custom HTML activities. */
 export function publicInteractiveBlock(block: InteractiveBlock): PublicInteractiveBlock {
-  const activity =
-    block.activity.type === 'sequence'
-      ? {
-          type: block.activity.type,
-          items: block.activity.items,
-          mode: block.activity.mode,
-          targets: block.activity.targets,
-        }
-      : block.activity
+  const activity = block.activity
   return {
     kind: 'interactive',
     title: block.title,
@@ -280,15 +257,6 @@ function choices(value: unknown): value is LearningChoice[] {
     new Set(value.map((v: LearningChoice) => v.id)).size === value.length
   )
 }
-function media(value: unknown): value is ComparisonActivity['left'] {
-  return (
-    record(value) &&
-    text(value.label, 200) &&
-    text(value.alt, 1000) &&
-    text(value.url, 4000) &&
-    (/^https?:\/\//.test(value.url) || /^\/[^/]/.test(value.url))
-  )
-}
 export function isLearningAnswers(value: unknown): value is LearningAnswers {
   if (!record(value) || Object.keys(value).length > 40) return false
   return (
@@ -334,119 +302,51 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   }
   const a = value.activity
   switch (a.type) {
-    case 'exploration':
-      return isExplorationActivity(a) && value.checkpoint === undefined
-    case 'simulation':
-      return isSimulationActivity(a)
-    case 'checkpoint':
+    case 'demonstration':
+    case 'experimentation':
+      // ⚠️ Cena não aceita pergunta anexa: `answers.checkpoint` seria a alternativa
+      // escolhida E os pedaços da sessão ao mesmo tempo, na mesma chave.
+      return isSceneActivity(a) && value.checkpoint === undefined
+    case 'question':
       return value.checkpoint !== undefined
-    case 'prediction':
-      return choices(a.choices) && text(a.outcome)
-    case 'comparison':
-      return media(a.left) && media(a.right)
-    case 'sequence': {
-      const solution = a.solution
-      return (
-        choices(a.items) &&
-        strings(solution, 20) &&
-        strings(a.targets, 20) &&
-        solution.length === a.items.length &&
-        new Set(solution).size === a.items.length &&
-        a.items.every((item) => solution.includes(item.id)) &&
-        (a.mode === 'order' ||
-          (a.mode === 'match' &&
-            a.targets.length === a.items.length &&
-            new Set(a.targets).size === a.targets.length))
-      )
-    }
-    case 'experiment':
-      return (
-        EXPERIMENT_PRESETS.some((p) => p === a.preset) &&
-        record(a.parameters) &&
-        (!value.required || value.checkpoint !== undefined) &&
-        Object.keys(a.parameters).length <= 10 &&
-        Object.values(a.parameters).every((n) => typeof n === 'number' && Number.isFinite(n))
-      )
     case 'html':
+      // ⚠️ HTML é código de terceiro num iframe: ele pode dizer "participei" sozinho. Se o
+      // bloco é ESSENCIAL para concluir a seção, a prova tem de vir de uma pergunta que o
+      // servidor corrige — senão a criança avança sem que ninguém tenha conferido nada.
       return text(a.html, 500_000) && (!value.required || value.checkpoint !== undefined)
     default:
       return false
   }
 }
 
-/** Prediction errors are observations, never a grade. Only a checkpoint/sequence verifies mastery. */
+/**
+ * O resultado de uma atividade.
+ *
+ * As cenas saem antes do resto: elas guardam a própria sessão e são avaliadas pelo módulo
+ * delas. Para as outras duas, a pergunta anexa (quando existe) é quem dá a palavra final.
+ */
 export function evaluateLearning(
   block: InteractiveBlock,
   answers: LearningAnswers,
 ): LearningResult {
   const a = block.activity
-  if (a.type === 'exploration')
-    return a.version === 3 ? evaluateExperience(a, answers) : evaluateExploration(a, answers)
-  if (a.type === 'simulation' && !block.checkpoint) return evaluateSimulation(a, answers)
+  if (a.type === 'demonstration' || a.type === 'experimentation')
+    return evaluateSceneBlock(a, answers)
+
   let participated = false
-  let passed = false
   let feedback = 'Experimente a atividade antes de conferir.'
   let verifiedBy: LearningResult['verifiedBy'] = 'server'
-  switch (a.type) {
-    case 'simulation': {
-      const result = evaluateSimulation(a, answers)
-      participated = result.participated
-      passed = result.passed
-      feedback = result.feedback
-      verifiedBy = result.verifiedBy
-      break
-    }
-    case 'checkpoint':
-      participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
-      passed = participated
-      feedback = 'Escolha uma resposta antes de conferir.'
-      break
-    case 'prediction':
-      participated =
-        a.choices.some((choice) => choice.id === answers.prediction) && answers.observed === true
-      passed = participated
-      feedback = participated ? a.outcome : 'Escolha sua previsão e observe o resultado.'
-      break
-    case 'comparison':
-      participated = answers.leftObserved === true && answers.rightObserved === true
-      passed = participated
-      feedback = participated
-        ? 'Você comparou as duas possibilidades. Use o que observou na sua criação.'
-        : 'Observe os dois lados antes de continuar.'
-      break
-    case 'sequence': {
-      const order = answers.order
-      participated =
-        Array.isArray(order) &&
-        order.length === a.items.length &&
-        new Set(order).size === a.items.length &&
-        a.items.every((item) => order.includes(item.id))
-      passed = participated && Array.isArray(order) && order.every((id, i) => id === a.solution[i])
-      feedback = passed
-        ? 'As relações estão corretas. Agora aplique essa ideia no seu projeto.'
-        : 'Confira as relações entre as peças. Você pode consultar uma pista e tentar novamente.'
-      break
-    }
-    case 'experiment':
-      participated =
-        typeof answers.experiments === 'number' &&
-        answers.experiments >= 2 &&
-        answers.observed === true
-      passed = participated
-      verifiedBy = 'client'
-      feedback = participated
-        ? 'Você observou dois resultados. Compare o que mudou ao ajustar os valores.'
-        : 'Execute e observe pelo menos duas configurações.'
-      break
-    case 'html':
-      participated = answers.participated === true
-      passed = participated
-      verifiedBy = 'client'
-      feedback = participated
-        ? 'Exploração registrada.'
-        : 'Conclua a exploração para registrar sua participação.'
-      break
+  if (a.type === 'question') {
+    participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
+    feedback = 'Escolha uma resposta antes de conferir.'
+  } else {
+    participated = answers.participated === true
+    verifiedBy = 'client'
+    feedback = participated
+      ? 'Exploração registrada.'
+      : 'Conclua a exploração para registrar sua participação.'
   }
+  let passed = participated
   if (passed && block.checkpoint) {
     passed = answers.checkpoint === block.checkpoint.correctChoiceId
     verifiedBy = 'server'
@@ -455,6 +355,18 @@ export function evaluateLearning(
       : 'Vamos pensar mais um pouco. Consulte a explicação ou uma pista e tente novamente.'
   }
   return { participated, passed, feedback, verifiedBy }
+}
+
+/** A cena reconstrói a sessão do checkpoint guardado e pergunta ao módulo dela. */
+function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): LearningResult {
+  const parts = answers.sceneCheckpoint
+  if (a.type === 'demonstration') {
+    const session = readDemonstrationSession(parts)
+    return evaluateDemonstration(session?.viewed ?? false, session !== null || parts === undefined)
+  }
+  const session = readExperimentSession(parts)
+  if (!session) return evaluateExperimentation(a.scene, initialScene(a), parts === undefined)
+  return evaluateExperimentation(a.scene, session.state)
 }
 
 export function isLearningFrameMessage(

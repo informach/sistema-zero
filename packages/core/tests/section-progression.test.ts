@@ -15,7 +15,7 @@ const question: InteractiveBlock = {
   instructions: 'Confira a ideia.',
   hints: ['Primeiro prepare.'],
   required: true,
-  activity: { type: 'checkpoint' },
+  activity: { type: 'question' },
   checkpoint: {
     prompt: 'O que vem antes do desenho?',
     choices: [

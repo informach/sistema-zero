@@ -8,11 +8,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "world",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "world",
+        "script": [
           {
             "id": "step-1",
             "caption": "O Dino existe nos bastidores.",
@@ -48,11 +46,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "layers",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "layers",
+        "script": [
           {
             "id": "step-1",
             "caption": "A floresta cobre o Dino.",
@@ -88,11 +84,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "gravity",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "gravity",
+        "script": [
           {
             "id": "step-1",
             "caption": "Observe o salto sem gravidade.",
@@ -142,11 +136,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "impulse",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "impulse",
+        "script": [
           {
             "id": "step-1",
             "caption": "Guarde a altura deste salto.",
@@ -194,11 +186,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "jump-sound",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "jump-sound",
+        "script": [
           {
             "id": "step-1",
             "caption": "A tecla pode soar mesmo com o Dino no ar.",
@@ -255,11 +245,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "spawn",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "spawn",
+        "script": [
           {
             "id": "step-1",
             "caption": "Veja quantos cactos nascem sem intervalo.",
@@ -300,11 +288,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "cleanup",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "cleanup",
+        "script": [
           {
             "id": "step-1",
             "caption": "Sair da tela ainda deixa o cacto guardado.",
@@ -345,11 +331,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "game-state",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "game-state",
+        "script": [
           {
             "id": "step-1",
             "caption": "O relógio está funcionando antes de jogar.",
@@ -398,11 +382,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "controls",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "controls",
+        "script": [
           {
             "id": "step-1",
             "caption": "Tocar ainda não inicia a partida.",
@@ -443,11 +425,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "restart",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "restart",
+        "script": [
           {
             "id": "step-1",
             "caption": "O contato encerra a partida.",
@@ -491,11 +471,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "hitbox",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "hitbox",
+        "script": [
           {
             "id": "step-1",
             "caption": "As áreas se tocam antes de os desenhos se misturarem.",
@@ -535,11 +513,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "score",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "score",
+        "script": [
           {
             "id": "step-1",
             "caption": "O placar espera enquanto não estamos jogando.",
@@ -591,11 +567,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "random",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "random",
+        "script": [
           {
             "id": "step-1",
             "caption": "Dois exemplos de lugar, com a mesma velocidade.",
@@ -647,11 +621,9 @@
       "hints": [],
       "required": false,
       "activity": {
-        "type": "exploration",
-        "version": 3,
-        "mission": "acceleration",
-        "mode": "demonstrate",
-        "demonstration": [
+        "type": "demonstration",
+        "scene": "acceleration",
+        "script": [
           {
             "id": "step-1",
             "caption": "Este cacto guarda a velocidade de nascimento.",

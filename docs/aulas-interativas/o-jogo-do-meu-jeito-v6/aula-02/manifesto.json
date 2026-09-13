@@ -51,7 +51,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Para escolher o tamanho certo, o que você deve olhar?",
@@ -123,7 +123,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Por que deixamos uma faixa vazia embaixo da nave?",
@@ -164,7 +164,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "O Balde pintou só uma das asas. O que isso indica?",
@@ -209,7 +209,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A cabine já está azul-escura. Como realçar o lado iluminado?",
@@ -269,7 +269,9 @@
                 "label": "Balde em todo o fundo."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O Lápis atua pixel a pixel e permite uma alteração pequena."
           },
           {
@@ -285,7 +287,9 @@
                 "label": "Do lado esquerdo, oposto à luz."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Uma direção consistente ajuda a perceber volume. O lado escolhido pode ser seu."
           }
         ]
@@ -298,13 +302,17 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "O jogo ficou no Estúdio. Hoje a criança abre o Pinta pela primeira vez e desenha a nave.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -312,13 +320,19 @@
       "title": "Prepare a tela da sua nave",
       "intent": "application",
       "objective": "Criar nave como personagem em pixel art de 32 × 32.",
-      "blockKeys": ["video-novo-desenho", "orientacao-novo-desenho", "conferir-novo-desenho"],
+      "blockKeys": [
+        "video-novo-desenho",
+        "orientacao-novo-desenho",
+        "conferir-novo-desenho"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-novo-desenho"]
+        "blockIds": [
+          "conferir-novo-desenho"
+        ]
       }
     },
     {
@@ -326,13 +340,17 @@
       "title": "Experimente: um traço, dois lados",
       "intent": "exploration",
       "objective": "Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado.",
-      "blockKeys": ["experimento-espelho"],
+      "blockKeys": [
+        "experimento-espelho"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experimento-espelho"]
+        "blockIds": [
+          "experimento-espelho"
+        ]
       }
     },
     {
@@ -340,13 +358,19 @@
       "title": "Desenhe o contorno e reserve o motor",
       "intent": "application",
       "objective": "Fazer a silhueta com espaço inferior reservado.",
-      "blockKeys": ["video-contorno", "orientacao-contorno", "conferir-contorno"],
+      "blockKeys": [
+        "video-contorno",
+        "orientacao-contorno",
+        "conferir-contorno"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-contorno"]
+        "blockIds": [
+          "conferir-contorno"
+        ]
       }
     },
     {
@@ -354,13 +378,19 @@
       "title": "Pinte o corpo, a cabine e os detalhes",
       "intent": "application",
       "objective": "Escolher uma base média e distinguir balde de lápis.",
-      "blockKeys": ["video-cor-base", "orientacao-cor-base", "conferir-cor-base"],
+      "blockKeys": [
+        "video-cor-base",
+        "orientacao-cor-base",
+        "conferir-cor-base"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-cor-base"]
+        "blockIds": [
+          "conferir-cor-base"
+        ]
       }
     },
     {
@@ -368,13 +398,17 @@
       "title": "Observe: a luz dá volume",
       "intent": "demonstration",
       "objective": "Visualizar direção da luz e sombra antes de pintar.",
-      "blockKeys": ["video-luz-demo"],
+      "blockKeys": [
+        "video-luz-demo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-luz-demo"]
+        "blockIds": [
+          "video-luz-demo"
+        ]
       }
     },
     {
@@ -382,13 +416,19 @@
       "title": "Dê luz e sombra à sua nave",
       "intent": "application",
       "objective": "Aplicar poucos traços de luz e sombra com uma direção consistente.",
-      "blockKeys": ["video-volume", "orientacao-volume", "conferir-volume"],
+      "blockKeys": [
+        "video-volume",
+        "orientacao-volume",
+        "conferir-volume"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-volume"]
+        "blockIds": [
+          "conferir-volume"
+        ]
       }
     },
     {
@@ -396,13 +436,17 @@
       "title": "Observe: salvo e guardado na conta",
       "intent": "demonstration",
       "objective": "Distinguir o salvamento do editor e a confirmação na conta.",
-      "blockKeys": ["video-salvamento"],
+      "blockKeys": [
+        "video-salvamento"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-salvamento"]
+        "blockIds": [
+          "video-salvamento"
+        ]
       }
     },
     {
@@ -410,13 +454,18 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Nave em pixel art, Personagem 32 × 32, com silhueta, cor, luz/sombra e espaço inferior para o motor; salva na galeria.",
-      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "blockKeys": [
+        "orientacao-entrega-v6",
+        "entrega-galeria-v6"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["entrega-galeria-v6"]
+        "blockIds": [
+          "entrega-galeria-v6"
+        ]
       }
     },
     {
@@ -424,13 +473,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Nave em pixel art, Personagem 32 × 32, com silhueta, cor, luz/sombra e espaço inferior para o motor; salva na galeria.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -438,13 +491,17 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ]

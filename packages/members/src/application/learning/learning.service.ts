@@ -1,10 +1,9 @@
 import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
-  applyExperienceSegment,
   defaultLessonSection,
   evaluateLearning,
-  experienceAnswers,
+  type InteractiveBlock,
   isLearningAnswers,
   isLegacyMaterialLesson,
   type LearningAnswers,
@@ -13,11 +12,26 @@ import {
   learningHints,
   playbackLessonStructure,
   publicInteractiveBlock,
-  readExperienceCheckpoint,
-  readExperienceSegment,
   readVideoCoverage,
   validateLessonSections,
 } from '@sistemazero/core/learning'
+import {
+  applyDemonstrationSegment,
+  applyExperimentSegment,
+  type DemonstrationSession,
+  type ExperimentSession,
+  isDemonstrationCommand,
+  isExperimentCommand,
+  packDemonstration,
+  packExperiment,
+  readDemonstrationSession,
+  readExperimentSession,
+  readSceneSegment,
+  type SceneCheckpoint,
+  SceneConflictError,
+  type SceneSegment,
+  type SceneStart,
+} from '@sistemazero/core/learning/scene'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import type { LessonWithContent } from '../../domain/course/course'
 import { LessonComingSoonError, LessonNotFoundError } from '../../domain/course/course.errors'
@@ -40,6 +54,85 @@ export interface LearningProgressInput {
   answers: LearningAnswers
   hintsUsed: number
   positionSeconds: number | null
+}
+
+/**
+ * Este bloco é o único lugar do servidor que sabe da diferença entre uma demonstração e uma
+ * experimentação. O resto do pipeline — conflito, hash do segmento, versão esperada — é
+ * idêntico para as duas, e é por isso que o roteamento por TIPO precisa cobrir as duas: por
+ * `version === 3` elas vinham juntas de graça, e cobrir só uma agora pararia de gravar a
+ * progressão da outra sem erro nenhum aparecer.
+ */
+interface Cena {
+  start: SceneStart
+  kind: 'demonstration' | 'experimentation'
+}
+type CenaGuardada =
+  | { kind: 'demonstration'; checkpoint: SceneCheckpoint<DemonstrationSession> }
+  | { kind: 'experimentation'; checkpoint: SceneCheckpoint<ExperimentSession> }
+
+/** O bloco é uma cena? Devolve por onde ela começa e de que tipo é, ou `null`. */
+function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): Cena | null {
+  if (content.kind !== 'interactive') return null
+  const a = content.activity
+  if (a?.type === 'demonstration') return { start: { scene: a.scene }, kind: 'demonstration' }
+  if (a?.type === 'experimentation')
+    return {
+      start: {
+        scene: a.scene,
+        ...(a.initialImpulse === undefined ? {} : { initialImpulse: a.initialImpulse }),
+      },
+      kind: 'experimentation',
+    }
+  return null
+}
+
+/** Lê o que está guardado na forma da cena certa. Formato errado devolve `null`, e quem
+ *  chama trata isso como conflito em vez de recomeçar por cima do trabalho da criança. */
+function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuardada | null {
+  const { sceneSequence, sceneSessionId, sceneSegmentId, sceneCheckpoint } = answers
+  if (!Number.isSafeInteger(sceneSequence) || Number(sceneSequence) < 0) return null
+  if (typeof sceneSessionId !== 'string' || typeof sceneSegmentId !== 'string') return null
+  const comum = {
+    sequence: Number(sceneSequence),
+    sessionId: sceneSessionId,
+    segmentId: sceneSegmentId,
+  }
+  if (cena.kind === 'demonstration') {
+    const session = readDemonstrationSession(sceneCheckpoint)
+    return session ? { kind: 'demonstration', checkpoint: { ...comum, session } } : null
+  }
+  const session = readExperimentSession(sceneCheckpoint)
+  return session ? { kind: 'experimentation', checkpoint: { ...comum, session } } : null
+}
+
+/** Aplica o segmento sobre o que estava guardado e devolve as respostas prontas para gravar. */
+function applySceneSegment(
+  cena: Cena,
+  guardado: CenaGuardada | null,
+  segment: SceneSegment,
+): LearningAnswers {
+  const c =
+    cena.kind === 'demonstration'
+      ? applyDemonstrationSegment(
+          cena.start,
+          guardado?.kind === 'demonstration' ? guardado.checkpoint : null,
+          segment,
+        )
+      : applyExperimentSegment(
+          cena.start,
+          guardado?.kind === 'experimentation' ? guardado.checkpoint : null,
+          segment,
+        )
+  return {
+    sceneSequence: c.sequence,
+    sceneSessionId: c.sessionId,
+    sceneSegmentId: c.segmentId,
+    sceneCheckpoint:
+      cena.kind === 'demonstration'
+        ? packDemonstration(c.session as DemonstrationSession)
+        : packExperiment(c.session as ExperimentSession),
+  }
 }
 
 export class LearningService {
@@ -211,29 +304,43 @@ export class LearningService {
       throw new ValidationError('Quantidade de pistas inválida.')
     let answers = input.answers
     let expectedExperienceSequence: number | null | undefined
-    if (
-      block.content.kind === 'interactive' &&
-      block.content.activity.type === 'exploration' &&
-      block.content.activity.version === 3
-    ) {
-      const activity = block.content.activity
-      const segment = readExperienceSegment(activity, input.answers)
+    // ⚠️ Vale para os DOIS tipos de cena. Antes a condição era `version === 3`, que cobria
+    // demonstração e experimentação de uma vez; roteando só por um dos tipos irmãos, a
+    // progressão do outro deixaria de ser gravada em silêncio.
+    const cena = block.content.kind === 'interactive' ? sceneStartOf(block.content) : null
+    if (cena) {
+      const segment = readSceneSegment(input.answers)
       if (!segment) throw new ValidationError('Segmento de experiência inválido.')
+      // ⚠️ Validar ANTES de aplicar. Uma demonstração não aceita gesto de criança e uma
+      // experimentação não aceita comando de roteiro: mandar o comando errado é pedido mal
+      // formado (400), não falha do servidor.
+      const aceita = cena.kind === 'demonstration' ? isDemonstrationCommand : undefined
+      for (const comando of segment.commands)
+        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start))
+          throw new ValidationError('Comando de experiência inválido para esta atividade.')
       const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
         (p) => p.blockId === blockId && p.revision === input.revision,
       )
-      const checkpoint = saved ? readExperienceCheckpoint(activity, saved.answers) : null
-      if (saved && !checkpoint) throw new LearningConflictError()
       const hash = createHash('sha256').update(JSON.stringify(segment)).digest('hex')
-      if (saved && checkpoint?.segmentId === segment.segmentId) {
+      const guardado = saved ? readSceneCheckpointOf(cena, saved.answers) : null
+      if (saved && !guardado) throw new LearningConflictError()
+      // O mesmo segmento reenviado (a rede piscou) devolve o que já foi gravado, em vez de
+      // aplicar duas vezes; um segmento DIFERENTE com o mesmo id é conflito de verdade.
+      if (saved && guardado?.checkpoint.segmentId === segment.segmentId) {
         if (saved.answers.segmentHash !== hash) throw new LearningConflictError()
         return saved
       }
-      if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new LearningConflictError()
-      expectedExperienceSequence = checkpoint?.sequence ?? null
-      answers = {
-        ...experienceAnswers(activity, applyExperienceSegment(activity, checkpoint, segment)),
-        segmentHash: hash,
+      // A base que o cliente diz conhecer tem de ser a versão atual. Duas abas abertas, ou
+      // um pedido fora de ordem, caem aqui — e perder o trabalho da outra ponta seria pior
+      // que recusar este.
+      if (segment.baseSequence !== (guardado?.checkpoint.sequence ?? 0))
+        throw new LearningConflictError()
+      expectedExperienceSequence = guardado?.checkpoint.sequence ?? null
+      try {
+        answers = { ...applySceneSegment(cena, guardado, segment), segmentHash: hash }
+      } catch (error) {
+        if (error instanceof SceneConflictError) throw new LearningConflictError()
+        throw error
       }
     }
     return this.repository.saveProgress({
@@ -274,19 +381,18 @@ export class LearningService {
     if (existing && (existing.blockId !== blockId || existing.revision !== input.revision))
       throw new LearningConflictError()
     let answers = input.answers
-    if (
-      !existing &&
-      block.content.activity.type === 'exploration' &&
-      block.content.activity.version === 3
-    ) {
+    if (!existing && sceneStartOf(block.content)) {
       const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
         (p) => p.blockId === blockId && p.revision === input.revision,
       )
+      // ⚠️ A tentativa de uma cena NÃO usa as respostas que o cliente mandou: ela usa o que
+      // o servidor guardou. O cliente só diz QUAL versão está conferindo; se ele mandar
+      // outra, é porque está atrás (ou forjando), e o certo é recusar em vez de avaliar.
       if (
         !saved ||
-        saved.answers.sequence !== answers.sequence ||
-        saved.answers.sessionId !== answers.sessionId ||
-        saved.answers.segmentId !== answers.segmentId
+        saved.answers.sceneSequence !== answers.sceneSequence ||
+        saved.answers.sceneSessionId !== answers.sceneSessionId ||
+        saved.answers.sceneSegmentId !== answers.sceneSegmentId
       )
         throw new LearningConflictError()
       answers = saved.answers

@@ -108,7 +108,7 @@ export class InMemoryLearningRepository implements LearningRepository {
     const same = old?.revision === input.progress.revision
     if (
       input.expectedExperienceSequence !== undefined &&
-      (same && typeof old.answers.sequence === 'number' ? old.answers.sequence : null) !==
+      (same && typeof old.answers.sceneSequence === 'number' ? old.answers.sceneSequence : null) !==
         input.expectedExperienceSequence
     )
       throw new LearningConflictError()

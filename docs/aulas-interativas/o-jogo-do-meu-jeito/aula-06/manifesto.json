@@ -22,9 +22,11 @@
         ],
         "required": true,
         "activity": {
-          "type": "sequence",
-          "mode": "match",
-          "items": [
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Relacione cada configuração com sua função antes de trocar os blocos.",
+          "choices": [
             {
               "id": "peca-1",
               "label": "54 × 54"
@@ -38,12 +40,8 @@
               "label": "0 até 1"
             }
           ],
-          "solution": ["peca-2", "peca-1", "peca-3"],
-          "targets": [
-            "Tamanho de cada quadro da folha da nave",
-            "Tamanho da nave desenhada no jogo",
-            "Intervalo dos dois quadros da animação"
-          ]
+          "correctChoiceId": "peca-2",
+          "explanation": "A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo."
         }
       }
     },
@@ -89,10 +87,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Os blocos de controle precisam encontrar o mesmo personagem."],
+        "hints": [
+          "Os blocos de controle precisam encontrar o mesmo personagem."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A nave nova apareceu, mas os controles procuram outro nome. O que conferir?",
@@ -144,7 +144,7 @@
         ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A animação ficou recortada. Qual tamanho conferir na folha da nave?",
@@ -174,13 +174,19 @@
       "title": "Tamanho do desenho ou tamanho no jogo?",
       "objective": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": [
+        "abertura",
+        "descoberta",
+        "explicacao"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -201,7 +207,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [
+          "checar-construir-2"
+        ]
       }
     },
     {
@@ -209,13 +217,20 @@
       "title": "Veja seu fogo voando",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "checar-fechamento"],
+      "blockKeys": [
+        "construir-3",
+        "video-construir-3-1",
+        "fechamento",
+        "checar-fechamento"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-fechamento"]
+        "blockIds": [
+          "checar-fechamento"
+        ]
       }
     }
   ]

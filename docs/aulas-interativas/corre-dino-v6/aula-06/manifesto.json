@@ -57,7 +57,9 @@
                 "label": "Sim, tudo fora da tela deixa de existir."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Visibilidade e existência são coisas diferentes."
           },
           {
@@ -73,7 +75,9 @@
                 "label": "Para comparar o efeito da limpeza."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Manter o ritmo controla uma das variáveis da comparação."
           },
           {
@@ -89,7 +93,9 @@
                 "label": "Não, o medidor é que apaga os cactos."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O medidor informa; a rotina de limpeza remove."
           }
         ]
@@ -136,10 +142,8 @@
         ],
         "required": false,
         "activity": {
-          "type": "exploration",
-          "version": 3,
-          "mission": "cleanup",
-          "mode": "explore"
+          "type": "experimentation",
+          "scene": "cleanup"
         }
       }
     },
@@ -186,13 +190,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Os cactos saem da tela, mas podem continuar guardados. Vamos medir antes de fazer a limpeza.",
-      "blockKeys": ["video-abertura-editorial"],
+      "blockKeys": [
+        "video-abertura-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-editorial"]
+        "blockIds": [
+          "video-abertura-editorial"
+        ]
       }
     },
     {
@@ -200,7 +208,10 @@
       "title": "Monte um medidor do que está guardado",
       "intent": "application",
       "objective": "Ler a quantidade real do grupo, não só contar o que aparece.",
-      "blockKeys": ["video-medidor", "fala-medidor"],
+      "blockKeys": [
+        "video-medidor",
+        "fala-medidor"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -234,7 +245,10 @@
       "title": "Veja o número crescer",
       "intent": "application",
       "objective": "Criar um teste curto que torna o acúmulo perceptível.",
-      "blockKeys": ["video-provocar", "fala-provocar"],
+      "blockKeys": [
+        "video-provocar",
+        "fala-provocar"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -288,13 +302,17 @@
       "title": "Sair da tela é ser apagado?",
       "intent": "exploration",
       "objective": "Comparar objetos visíveis, guardados e removidos.",
-      "blockKeys": ["experiencia-visivel-guardado"],
+      "blockKeys": [
+        "experiencia-visivel-guardado"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-visivel-guardado"]
+        "blockIds": [
+          "experiencia-visivel-guardado"
+        ]
       }
     },
     {
@@ -302,7 +320,10 @@
       "title": "Limpe os cactos que saíram",
       "intent": "application",
       "objective": "Remover objetos depois de atualizar suas posições.",
-      "blockKeys": ["video-faxina", "fala-faxina"],
+      "blockKeys": [
+        "video-faxina",
+        "fala-faxina"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -360,7 +381,10 @@
       "title": "Volte ao ritmo da partida",
       "intent": "application",
       "objective": "Restaurar a configuração de jogo e remover a instrumentação.",
-      "blockKeys": ["video-aposentar-medidor", "fala-aposentar-medidor"],
+      "blockKeys": [
+        "video-aposentar-medidor",
+        "fala-aposentar-medidor"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -418,13 +442,18 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Cactos fora da tela são removidos; o relógio voltou a 1,4 s e o medidor provisório saiu.",
-      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "blockKeys": [
+        "fala-entrega-editorial",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "faxina",
@@ -476,13 +505,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Cactos fora da tela são removidos; o relógio voltou a 1,4 s e o medidor provisório saiu.",
-      "blockKeys": ["video-fecho-editorial"],
+      "blockKeys": [
+        "video-fecho-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-editorial"]
+        "blockIds": [
+          "video-fecho-editorial"
+        ]
       }
     },
     {
@@ -490,13 +523,17 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

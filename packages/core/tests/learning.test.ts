@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import type { LearningAnswers } from '../src/learning'
 import {
-  appendExplorationAction,
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
@@ -10,14 +10,20 @@ import {
   isLearningFrameMessage,
   isLearningManifest,
   LEARNING_PROTOCOL,
-  type LearningAnswers,
   publicInteractiveBlock,
-  recordSimulationTrial,
   sectionCompletionIssues,
   validateLessonSections,
 } from '../src/learning'
-import { explorationPaths } from './fixtures/exploration-paths'
-import { simulationCases } from './simulation-cases'
+import {
+  initialDemonstration,
+  initialExperiment,
+  packDemonstration,
+  packExperiment,
+  sceneModel,
+  stepDemonstration,
+  stepExperiment,
+} from '../src/learning/scene'
+import { scenePaths } from './fixtures/exploration-paths'
 
 const section = {
   id: 'section',
@@ -29,56 +35,51 @@ const section = {
   externalTool: null,
   pendingMedia: [],
 }
-const sequence: InteractiveBlock = {
+const experimento: InteractiveBlock = {
   kind: 'interactive',
-  title: 'Ordem',
-  instructions: 'Organize a preparação.',
+  title: 'Faça o Dino aparecer',
+  instructions: 'Crie o Dino e ligue o desenho.',
   required: true,
   hints: [],
-  activity: {
-    type: 'sequence',
-    mode: 'order',
-    items: [
-      { id: 'draw', label: 'Desenhar' },
-      { id: 'create', label: 'Criar' },
-    ],
-    solution: ['create', 'draw'],
-    targets: [],
-  },
+  activity: { type: 'experimentation', scene: 'world' },
+}
+/** O que o servidor guardaria depois de a criança cumprir as duas metas de `world`. */
+function sessaoCompleta() {
+  const start = { scene: 'world' } as const
+  let s = initialExperiment(start)
+  s = stepExperiment(start, s, { type: 'create' }).session
+  s = stepExperiment(start, s, { type: 'connect', port: 'draw', enabled: true }).session
+  return packExperiment(s)
 }
 describe('learning contracts', () => {
-  test('a checkpoint cannot approve an incorrectly ordered sequence', () => {
-    const block: InteractiveBlock = {
-      ...sequence,
-      checkpoint: {
-        prompt: 'Por que preparar primeiro?',
-        choices: [
-          { id: 'right', label: 'O desenho depende da preparação.' },
-          { id: 'wrong', label: 'Não importa.' },
-        ],
-        correctChoiceId: 'right',
-        explanation: 'A preparação cria o que será desenhado.',
-      },
-    }
-    expect(evaluateLearning(block, { order: ['draw', 'create'], checkpoint: 'right' }).passed).toBe(
-      false,
-    )
-    expect(evaluateLearning(block, { order: ['create', 'draw'], checkpoint: 'wrong' }).passed).toBe(
-      false,
-    )
-    expect(evaluateLearning(block, { order: ['create', 'draw'], checkpoint: 'right' }).passed).toBe(
-      true,
-    )
+  test('⚠️ uma cena não aceita pergunta anexa', () => {
+    // `answers.checkpoint` seria a alternativa escolhida E os pedaços da sessão ao mesmo
+    // tempo, na mesma chave. Antes isso só era impedido por uma invariante implícita.
+    expect(isInteractiveBlock(experimento)).toBe(true)
+    expect(
+      isInteractiveBlock({
+        ...experimento,
+        checkpoint: {
+          prompt: 'Por quê?',
+          choices: [
+            { id: 'a', label: 'Uma' },
+            { id: 'b', label: 'Outra' },
+          ],
+          correctChoiceId: 'a',
+          explanation: 'Porque sim.',
+        },
+      }),
+    ).toBe(false)
   })
-  test('keeps answer keys private and checks exact sequence without accepting duplicate pieces', () => {
-    expect(publicInteractiveBlock(sequence).activity).not.toHaveProperty('solution')
-    expect(evaluateLearning(sequence, { order: ['create', 'create'] }).passed).toBe(false)
-    expect(evaluateLearning(sequence, { order: ['draw', 'create'] }).passed).toBe(false)
-    expect(evaluateLearning(sequence, { order: ['create', 'draw'] }).passed).toBe(true)
+  test('a cena é aprovada pela evidência que ela mesma guarda', () => {
+    expect(evaluateLearning(experimento, {}).passed).toBe(false)
+    expect(evaluateLearning(experimento, { sceneCheckpoint: sessaoCompleta() }).passed).toBe(true)
+    // Pacote corrompido não aprova nem finge que está tudo bem.
+    expect(evaluateLearning(experimento, { sceneCheckpoint: ['{lixo'] }).passed).toBe(false)
   })
   test('an essential HTML claim requires its independent native checkpoint', () => {
     const block: InteractiveBlock = {
-      ...sequence,
+      ...experimento,
       activity: { type: 'html', html: '<button>Explorar</button>' },
       checkpoint: {
         prompt: 'Conclusão?',
@@ -202,28 +203,34 @@ describe('the 27 adapted lessons', () => {
         if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
         const block = entryBlock.content
         expect(evaluateLearning(block, {}).passed).toBe(false)
-        let answers: LearningAnswers = {}
+        const answers: LearningAnswers = {}
         const activity = block.activity
-        if (activity.type === 'exploration')
-          for (const action of explorationPaths[activity.mission])
-            answers = appendExplorationAction(activity, answers, action)
-        if (activity.type === 'simulation')
-          for (const parameters of simulationCases[activity.scene])
-            answers = recordSimulationTrial(activity, answers, parameters)
-        if (activity.type === 'sequence') answers.order = activity.solution
-        if (activity.type === 'prediction') {
-          answers.prediction = activity.choices[0]?.id ?? ''
-          answers.observed = true
+        // ⚠️ O caminho de sucesso é expresso como AÇÕES da criança, nunca como um "passou"
+        // que o cliente manda pronto. É o que separa evidência de autodeclaração.
+        if (activity.type === 'experimentation') {
+          const start = { scene: activity.scene, initialImpulse: activity.initialImpulse }
+          let sessao = initialExperiment(start)
+          for (const action of scenePaths[activity.scene])
+            sessao = stepExperiment(start, sessao, action).session
+          answers.sceneCheckpoint = packExperiment(sessao)
         }
-        if (activity.type === 'experiment') {
-          answers.experiments = 2
-          answers.observed = true
+        if (activity.type === 'demonstration') {
+          const start = { scene: activity.scene }
+          const script = activity.script ?? sceneModel(activity.scene).script
+          let sessao = stepDemonstration(start, script, initialDemonstration(start), {
+            type: 'start',
+          }).session
+          for (let i = 0; i < 600 && !sessao.viewed; i++) {
+            sessao = stepDemonstration(start, script, sessao, {
+              type: 'tick',
+              seconds: 0.1,
+            }).session
+            if (sessao.ready && sessao.step < script.length - 1)
+              sessao = stepDemonstration(start, script, sessao, { type: 'next' }).session
+          }
+          answers.sceneCheckpoint = packDemonstration(sessao)
         }
         if (activity.type === 'html') answers.participated = true
-        if (activity.type === 'comparison') {
-          answers.leftObserved = true
-          answers.rightObserved = true
-        }
         if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId
         expect(evaluateLearning(block, answers).passed).toBe(true)
       }

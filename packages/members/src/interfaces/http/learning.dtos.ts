@@ -1,4 +1,5 @@
-import { EXPLORATION_MISSIONS, LEARNING_SCENES, PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import { SCENE_IDS, SCENE_LIMITS, SCENE_PORTS } from '@sistemazero/core/learning/scene'
 import { t } from 'elysia'
 import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
@@ -9,23 +10,19 @@ const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 })
   maxItems: 20,
 })
 const Media = t.Object({ label: Label, url: t.String({ maxLength: 4000 }), alt: Label })
-const ExplorationActionSchema = t.Union([
+/**
+ * As ações de cena, em TypeBox.
+ *
+ * ⚠️ Os limites vêm de `SCENE_LIMITS` e as portas de `SCENE_PORTS`, em vez de repetidos aqui.
+ * Quando eram duas listas, elas divergiram: o `interval` daqui não tinha teto nenhum enquanto
+ * o editor do admin oferecia de 0,5 a 2.
+ */
+const L = SCENE_LIMITS
+const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('create') }),
   t.Object({
     type: t.Literal('connect'),
-    port: t.Union(
-      [
-        'draw',
-        'gravity',
-        'sound',
-        'timer',
-        'cleanup',
-        'condition',
-        'touch',
-        'restart',
-        'limit',
-      ].map((p) => t.Literal(p)),
-    ),
+    port: t.Union(SCENE_PORTS.map((p) => t.Literal(p))),
     enabled: t.Boolean(),
   }),
   t.Object({ type: t.Literal('layer'), front: t.Boolean() }),
@@ -33,10 +30,22 @@ const ExplorationActionSchema = t.Union([
     type: t.Union([t.Literal('jump'), t.Literal('start')]),
     input: t.Union([t.Literal('key'), t.Literal('tap')]),
   }),
-  t.Object({ type: t.Literal('impulse'), force: t.Number({ minimum: 5, maximum: 14 }) }),
-  t.Object({ type: t.Literal('advance'), seconds: t.Number({ minimum: 0.001, maximum: 10 }) }),
-  t.Object({ type: t.Literal('move'), distance: t.Number({ minimum: 20, maximum: 260 }) }),
-  t.Object({ type: t.Literal('resize'), width: t.Number({ minimum: 24, maximum: 120 }) }),
+  t.Object({
+    type: t.Literal('impulse'),
+    force: t.Number({ minimum: L.impulse.min, maximum: L.impulse.max }),
+  }),
+  t.Object({
+    type: t.Literal('advance'),
+    seconds: t.Number({ minimum: L.scriptAdvance.min, maximum: L.scriptAdvance.max }),
+  }),
+  t.Object({
+    type: t.Literal('move'),
+    distance: t.Number({ minimum: L.move.min, maximum: L.move.max }),
+  }),
+  t.Object({
+    type: t.Literal('resize'),
+    width: t.Number({ minimum: L.resize.min, maximum: L.resize.max }),
+  }),
   t.Object({
     type: t.Union([
       t.Literal('collide'),
@@ -44,72 +53,64 @@ const ExplorationActionSchema = t.Union([
       t.Literal('restart'),
       t.Literal('clock'),
       t.Literal('reset'),
-      t.Literal('undo'),
     ]),
   }),
-  t.Object({ type: t.Literal('interval'), seconds: t.Number() }),
+  t.Object({
+    type: t.Literal('interval'),
+    seconds: t.Number({ minimum: L.interval.min, maximum: L.interval.max }),
+  }),
   t.Object({
     type: t.Literal('sample'),
     kind: t.Union([t.Literal('position'), t.Literal('velocity')]),
-    unit: t.Number({ minimum: 0, maximum: 1 }),
+    unit: t.Number({ minimum: L.sample.min, maximum: L.sample.max }),
     guided: t.Boolean(),
   }),
-  t.Object({ type: t.Literal('hint'), level: t.Number({ minimum: 1, maximum: 3 }) }),
+  t.Object({
+    type: t.Literal('hint'),
+    level: t.Number({ minimum: L.hint.min, maximum: L.hint.max }),
+  }),
 ])
+const SceneId = t.Union(SCENE_IDS.map((id) => t.Literal(id)))
+const SceneScriptSchema = t.Array(
+  t.Object({
+    id: t.String({ minLength: 1, maxLength: 80 }),
+    caption: t.String({ minLength: 1, maxLength: 500 }),
+    highlight: t.Optional(t.Union([t.Literal('scene'), t.Literal('tools'), t.Literal('compare')])),
+    actions: t.Array(SceneActionSchema, { minItems: 1, maxItems: 16 }),
+    waitFor: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+  }),
+  { minItems: 1, maxItems: 12 },
+)
 export const InteractiveBlockSchema = t.Object({
   kind: t.Literal('interactive'),
   title: t.String({ minLength: 1, maxLength: 200 }),
   instructions: t.String({ minLength: 1, maxLength: 10000 }),
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
+  /**
+   * As quatro atividades. ⚠️ Esta união é FECHADA e o Elysia roda `normalize`: campo que o
+   * admin mande sem estar declarado aqui é apagado em silêncio no POST, o bloco salva sem
+   * ele, e só se descobre quando o professor reabre o editor. Mexer aqui vem ANTES de mexer
+   * no admin, nunca depois.
+   *
+   * Saíram `simulation` (a geração 1), `experiment`, `comparison`, `prediction` e `sequence`:
+   * nenhum curso usava os três primeiros, e os dois últimos foram reescritos no conteúdo.
+   */
   activity: t.Union([
     t.Object({
-      type: t.Literal('exploration'),
-      version: t.Union([t.Literal(2), t.Literal(3)]),
-      mission: t.Union(EXPLORATION_MISSIONS.map((mission) => t.Literal(mission))),
+      type: t.Literal('demonstration'),
+      scene: SceneId,
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
-      initialImpulse: t.Optional(t.Integer({ minimum: 5, maximum: 14 })),
-      mode: t.Optional(t.Union([t.Literal('explore'), t.Literal('demonstrate')])),
-      demonstration: t.Optional(
-        t.Array(
-          t.Object({
-            id: t.String({ minLength: 1, maxLength: 80 }),
-            waitFor: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
-            caption: t.String({ minLength: 1, maxLength: 500 }),
-            highlight: t.Optional(
-              t.Union([t.Literal('scene'), t.Literal('tools'), t.Literal('compare')]),
-            ),
-            actions: t.Array(ExplorationActionSchema, { minItems: 1, maxItems: 16 }),
-          }),
-          { minItems: 1, maxItems: 12 },
-        ),
-      ),
+      /** Sem roteiro próprio, vale o do modelo da cena. */
+      script: t.Optional(SceneScriptSchema),
     }),
     t.Object({
-      type: t.Literal('simulation'),
-      version: t.Literal(1),
-      scene: t.Union(LEARNING_SCENES.map((scene) => t.Literal(scene))),
-      parameters: t.Optional(t.Record(t.String(), t.Number(), { maxProperties: 10 })),
+      type: t.Literal('experimentation'),
+      scene: SceneId,
+      instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
+      initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
     }),
-    t.Object({ type: t.Literal('checkpoint') }),
-    t.Object({
-      type: t.Literal('prediction'),
-      choices: Choices,
-      outcome: t.String({ minLength: 1, maxLength: 10000 }),
-    }),
-    t.Object({ type: t.Literal('comparison'), left: Media, right: Media }),
-    t.Object({
-      type: t.Literal('sequence'),
-      items: Choices,
-      mode: t.Union([t.Literal('order'), t.Literal('match')]),
-      solution: t.Array(t.String({ maxLength: 80 }), { maxItems: 20 }),
-      targets: t.Array(Label, { maxItems: 20 }),
-    }),
-    t.Object({
-      type: t.Literal('experiment'),
-      preset: t.Union([t.Literal('motion'), t.Literal('population'), t.Literal('collision')]),
-      parameters: t.Record(t.String(), t.Number(), { maxProperties: 10 }),
-    }),
+    t.Object({ type: t.Literal('question') }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
   ]),
   checkpoint: t.Optional(

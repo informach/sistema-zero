@@ -1,7 +1,7 @@
-import type { ExplorationAction, ExplorationMission } from '../../src/learning'
+import type { SceneAction, SceneId } from '../../src/learning/scene'
 
 /** Authored success journeys, expressed as child actions rather than state/result flags. */
-export const explorationPaths: Record<ExplorationMission, ExplorationAction[]> = {
+export const scenePaths: Record<SceneId, SceneAction[]> = {
   world: [{ type: 'create' }, { type: 'connect', port: 'draw', enabled: true }],
   layers: [{ type: 'layer', front: true }],
   gravity: [

@@ -104,10 +104,8 @@
           "Toque em Desenhar e depois na Tela para ligar os dois."
         ],
         "activity": {
-          "type": "exploration",
-          "version": 3,
-          "mission": "world",
-          "mode": "explore"
+          "type": "experimentation",
+          "scene": "world"
         }
       }
     },
@@ -153,7 +151,9 @@
                 "label": "Criar outro Dino igual."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Criar guarda o personagem; desenhar faz ele aparecer."
           },
           {
@@ -169,7 +169,9 @@
                 "label": "Em Ao iniciar."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "Ao iniciar prepara a tela e os personagens para uma nova partida."
           },
           {
@@ -185,7 +187,9 @@
                 "label": "Mais para a direita."
               }
             ],
-            "correctChoiceIds": ["baixo"],
+            "correctChoiceIds": [
+              "baixo"
+            ],
             "explanation": "Na tela do jogo, o y aumenta de cima para baixo. O x indica a posição na horizontal."
           }
         ]
@@ -198,13 +202,17 @@
       "title": "Conheça o jogo que vamos criar",
       "intent": "presentation",
       "objective": "Reconhecer o jogo final e os quatro passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.",
-      "blockKeys": ["video-abertura-v7"],
+      "blockKeys": [
+        "video-abertura-v7"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v7"]
+        "blockIds": [
+          "video-abertura-v7"
+        ]
       }
     },
     {
@@ -212,7 +220,10 @@
       "title": "Um lugar para começar",
       "intent": "application",
       "objective": "Colocar Ao iniciar no projeto e entender que esta área prepara a partida.",
-      "blockKeys": ["video-iniciar-v7", "orientacao-iniciar-v7"],
+      "blockKeys": [
+        "video-iniciar-v7",
+        "orientacao-iniciar-v7"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -237,7 +248,10 @@
       "title": "Prepare a tela e veja seus limites",
       "intent": "application",
       "objective": "Preparar o palco de 480 × 270 e tornar sua borda visível.",
-      "blockKeys": ["video-tela-v7", "orientacao-tela-v7"],
+      "blockKeys": [
+        "video-tela-v7",
+        "orientacao-tela-v7"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -278,13 +292,17 @@
       "title": "Ouça o que a descrição informa",
       "intent": "demonstration",
       "objective": "Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.",
-      "blockKeys": ["video-descricao-demo-v7"],
+      "blockKeys": [
+        "video-descricao-demo-v7"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-descricao-demo-v7"]
+        "blockIds": [
+          "video-descricao-demo-v7"
+        ]
       }
     },
     {
@@ -292,7 +310,10 @@
       "title": "Conte o que é o seu jogo",
       "intent": "application",
       "objective": "Configurar a descrição do Corre Dino no projeto.",
-      "blockKeys": ["video-descricao-criar-v7", "orientacao-descricao-v7"],
+      "blockKeys": [
+        "video-descricao-criar-v7",
+        "orientacao-descricao-v7"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -320,13 +341,17 @@
       "title": "Veja como funciona o endereço na tela",
       "intent": "demonstration",
       "objective": "Observar x crescendo para a direita e y crescendo para baixo, uma direção por vez.",
-      "blockKeys": ["video-coordenadas-demo-v7"],
+      "blockKeys": [
+        "video-coordenadas-demo-v7"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-coordenadas-demo-v7"]
+        "blockIds": [
+          "video-coordenadas-demo-v7"
+        ]
       }
     },
     {
@@ -334,7 +359,10 @@
       "title": "Crie o seu dinossauro",
       "intent": "application",
       "objective": "Criar e posicionar um sprite, reconhecendo que ele pode existir sem estar desenhado.",
-      "blockKeys": ["video-dino-v7", "orientacao-dino-v7"],
+      "blockKeys": [
+        "video-dino-v7",
+        "orientacao-dino-v7"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -367,13 +395,18 @@
       "title": "Criar e mostrar são a mesma coisa?",
       "intent": "exploration",
       "objective": "No exemplo, observar o mesmo Dino criado sem aparecer e depois desenhado na tela.",
-      "blockKeys": ["orientacao-descoberta-v7", "descoberta"],
+      "blockKeys": [
+        "orientacao-descoberta-v7",
+        "descoberta"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -381,13 +414,18 @@
       "title": "Confira e guarde sua construção",
       "intent": "delivery",
       "objective": "Conferir o projeto, testá-lo e enviar ao professor com o Dino ainda invisível.",
-      "blockKeys": ["orientacao-entrega-v7", "projeto"],
+      "blockKeys": [
+        "orientacao-entrega-v7",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "area-iniciar-v7",
@@ -460,13 +498,17 @@
       "title": "Relembre o que você construiu",
       "intent": "closing",
       "objective": "Retomar os quatro passos e preparar a continuidade na aula 2.",
-      "blockKeys": ["video-fecho-v7"],
+      "blockKeys": [
+        "video-fecho-v7"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v7"]
+        "blockIds": [
+          "video-fecho-v7"
+        ]
       }
     },
     {
@@ -474,13 +516,17 @@
       "title": "O que você entendeu?",
       "intent": "closing",
       "objective": "Retomar Ao iniciar, criação e desenho, e direção das coordenadas.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

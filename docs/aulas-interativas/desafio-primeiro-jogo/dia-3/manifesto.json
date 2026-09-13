@@ -16,26 +16,13 @@
       "content": {
         "kind": "interactive",
         "title": "Qual chuva fica mais intensa?",
-        "instructions": "Dois jogos rodam no mesmo ritmo. Um cria um asteroide a cada 20 quadros, outro a cada 80. Faça sua previsão. Sua primeira ideia pode mudar depois da observação.",
-        "hints": ["Compare quanto o relógio espera antes de criar de novo."],
+        "instructions": "Dois jogos rodam no mesmo ritmo. Um cria um asteroide a cada 20 quadros, outro a cada 80. Faça sua previsão. Sua primeira ideia pode mudar depois da observação. Em 160 quadros, intervalos de 20 permitem 8 nascimentos; intervalos de 80, apenas 2. O intervalo menor deixa menos tempo entre os asteroides. Você vai conferir no seu jogo.",
+        "hints": [
+          "Compare quanto o relógio espera antes de criar de novo."
+        ],
         "required": true,
         "activity": {
-          "type": "prediction",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A cada 20 quadros"
-            },
-            {
-              "id": "opcao-2",
-              "label": "A cada 80 quadros"
-            },
-            {
-              "id": "opcao-3",
-              "label": "A frequência é igual"
-            }
-          ],
-          "outcome": "Em 160 quadros, intervalos de 20 permitem 8 nascimentos; intervalos de 80, apenas 2. O intervalo menor deixa menos tempo entre os asteroides. Você vai conferir no seu jogo."
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A chuva ficou difícil demais. Qual mudança dá mais tempo entre os asteroides?",
@@ -145,7 +132,7 @@
         ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Um tiro acertou, mas a mesma explosão continua se repetindo. O que conferir?",
@@ -200,13 +187,19 @@
       "title": "Qual chuva fica mais intensa?",
       "objective": "Controlar a frequência de criação e ligar a colisão à remoção dos objetos.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": [
+        "abertura",
+        "descoberta",
+        "explicacao"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -275,7 +268,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-5"]
+        "blockIds": [
+          "checar-construir-5"
+        ]
       }
     },
     {
@@ -283,13 +278,20 @@
       "title": "Escolha o ritmo da chuva",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": ["construir-6", "video-construir-6-1", "fechamento", "projeto"],
+      "blockKeys": [
+        "construir-6",
+        "video-construir-6-1",
+        "fechamento",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"]
+        "blockIds": [
+          "projeto"
+        ]
       }
     }
   ]

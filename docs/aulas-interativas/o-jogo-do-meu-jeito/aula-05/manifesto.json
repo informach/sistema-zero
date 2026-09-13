@@ -17,12 +17,16 @@
         "kind": "interactive",
         "title": "A pedra está escondida",
         "instructions": "Ordene as formas de trás para frente para deixar a pedra na frente do fogo, com um centro claro dentro da chama maior.",
-        "hints": ["A forma mais à frente pode cobrir as que estão atrás."],
+        "hints": [
+          "A forma mais à frente pode cobrir as que estão atrás."
+        ],
         "required": true,
         "activity": {
-          "type": "sequence",
-          "mode": "order",
-          "items": [
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Ordene as formas de trás para frente para deixar a pedra na frente do fogo, com um centro claro dentro da chama maior.",
+          "choices": [
             {
               "id": "peca-1",
               "label": "Pedra"
@@ -36,8 +40,8 @@
               "label": "Chama interna menor"
             }
           ],
-          "solution": ["peca-2", "peca-3", "peca-1"],
-          "targets": []
+          "correctChoiceId": "peca-2",
+          "explanation": "A forma mais à frente pode cobrir as que estão atrás."
         }
       }
     },
@@ -83,10 +87,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Pense em papéis colocados um sobre o outro."],
+        "hints": [
+          "Pense em papéis colocados um sobre o outro."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Sua chama cobriu a pedra inteira. O que experimentar primeiro?",
@@ -144,10 +150,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["O segundo quadro pode aproveitar o trabalho do primeiro."],
+        "hints": [
+          "O segundo quadro pode aproveitar o trabalho do primeiro."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Você quer criar o segundo quadro sem refazer toda a pedra. Qual caminho ajuda?",
@@ -177,13 +185,19 @@
       "title": "A pedra está escondida",
       "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": [
+        "abertura",
+        "descoberta",
+        "explicacao"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -204,7 +218,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-1"]
+        "blockIds": [
+          "checar-construir-1"
+        ]
       }
     },
     {
@@ -225,7 +241,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-fechamento"]
+        "blockIds": [
+          "checar-fechamento"
+        ]
       }
     }
   ]

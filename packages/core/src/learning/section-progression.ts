@@ -223,13 +223,12 @@ export function sectionCompletionIssues(
       }
       const content = block.content
       if (content.kind === 'interactive') {
-        if (
-          !isInteractiveBlock(content) ||
-          (content.activity.type !== 'simulation' &&
-            content.activity.type !== 'exploration' &&
-            content.activity.type !== 'sequence' &&
-            !content.checkpoint)
-        )
+        // Só serve de critério o que o servidor consegue conferir: uma cena, que traz a
+        // própria evidência, ou uma atividade com pergunta anexa corrigida aqui.
+        const cena =
+          isInteractiveBlock(content) &&
+          (content.activity.type === 'demonstration' || content.activity.type === 'experimentation')
+        if (!isInteractiveBlock(content) || (!cena && !content.checkpoint))
           add(
             'Use uma exploração nativa com objetivo observável ou uma resposta corrigida no servidor.',
           )

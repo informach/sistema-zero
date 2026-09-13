@@ -64,15 +64,15 @@ const activity: InteractiveBlock = {
   instructions: 'Prepare a cena antes de desenhar.',
   hints: ['O desenho usa a preparação.'],
   required: true,
-  activity: {
-    type: 'sequence',
-    mode: 'order',
-    items: [
-      { id: 'draw', label: 'Desenhar' },
+  activity: { type: 'question' },
+  checkpoint: {
+    prompt: 'O que vem primeiro?',
+    choices: [
       { id: 'prepare', label: 'Preparar' },
+      { id: 'draw', label: 'Desenhar' },
     ],
-    solution: ['prepare', 'draw'],
-    targets: [],
+    correctChoiceId: 'prepare',
+    explanation: 'A preparação cria o que será desenhado.',
   },
 }
 

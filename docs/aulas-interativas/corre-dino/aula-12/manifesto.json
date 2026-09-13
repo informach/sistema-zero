@@ -34,9 +34,8 @@
           "Acione os dois exemplos de posição. Depois compare os dois de velocidade."
         ],
         "activity": {
-          "type": "exploration",
-          "version": 2,
-          "mission": "random"
+          "type": "experimentation",
+          "scene": "random"
         }
       }
     },
@@ -142,7 +141,9 @@
                 "label": "700."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "530 está dentro dos limites escolhidos."
           },
           {
@@ -158,7 +159,9 @@
                 "label": "−5 ou −6."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "Esse bloco sorteia inteiros: 0 ou 1. A conta dá −5 ou −6, sempre para a esquerda."
           }
         ]
@@ -179,13 +182,18 @@
       "title": "Cada cacto pode nascer diferente",
       "objective": "Posições diferentes, mesma velocidade; Velocidades −5 e −6, mesma posição",
       "intent": "exploration",
-      "blockKeys": ["video-missao", "descoberta"],
+      "blockKeys": [
+        "video-missao",
+        "descoberta"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -278,13 +286,19 @@
       "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "delivery",
-      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "blockKeys": [
+        "video-entrega",
+        "zappy-entrega",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"]
+        "blockIds": [
+          "projeto"
+        ]
       }
     },
     {
@@ -292,13 +306,18 @@
       "title": "O que você descobriu?",
       "objective": "Retomar o conceito depois de explorar, criar e entregar.",
       "intent": "closing",
-      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "blockKeys": [
+        "zappy-revisao",
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

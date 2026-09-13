@@ -45,7 +45,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Os desenhos estão No projeto, mas a nave continua cinza. O que falta?",
@@ -86,7 +86,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Por que apagamos o Criar nave do kit antes de montar o novo?",
@@ -162,7 +162,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Carregar a folha já faz o motor pulsar?",
@@ -203,7 +203,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "O Estúdio mostra quadros 0 e 1. Quantos desenhos isso representa?",
@@ -259,7 +259,9 @@
                 "label": "Primeiro e último quadro da animação."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Largura e altura definem a caixa visível; o intervalo escolhe os desenhos."
           },
           {
@@ -275,7 +277,9 @@
                 "label": "Carregar a folha antes de mandar animar com ela."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O bloco de animação precisa da folha já preparada."
           }
         ]
@@ -288,13 +292,17 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "Abrir o jogo importado na aula 1; nave e asteroide já estão animados na galeria do Pinta.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -302,13 +310,19 @@
       "title": "Traga nave e asteroide para o projeto",
       "intent": "application",
       "objective": "Importar as artes do Pinta no projeto certo, sem esperar troca visual automática.",
-      "blockKeys": ["video-trazer-artes", "orientacao-trazer-artes", "conferir-trazer-artes"],
+      "blockKeys": [
+        "video-trazer-artes",
+        "orientacao-trazer-artes",
+        "conferir-trazer-artes"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-trazer-artes"]
+        "blockIds": [
+          "conferir-trazer-artes"
+        ]
       }
     },
     {
@@ -316,13 +330,19 @@
       "title": "Troque o criador da nave",
       "intent": "application",
       "objective": "Retirar o criador do kit e criar o sprite com imagem sem duplicar o nome.",
-      "blockKeys": ["video-trocar-nave", "orientacao-trocar-nave", "conferir-trocar-nave"],
+      "blockKeys": [
+        "video-trocar-nave",
+        "orientacao-trocar-nave",
+        "conferir-trocar-nave"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-trocar-nave"]
+        "blockIds": [
+          "conferir-trocar-nave"
+        ]
       }
     },
     {
@@ -330,13 +350,17 @@
       "title": "Observe: duas imagens dentro de uma só",
       "intent": "demonstration",
       "objective": "Distinguir a folha inteira e um quadro que ocupa o sprite.",
-      "blockKeys": ["video-folha-demo"],
+      "blockKeys": [
+        "video-folha-demo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-folha-demo"]
+        "blockIds": [
+          "video-folha-demo"
+        ]
       }
     },
     {
@@ -344,13 +368,17 @@
       "title": "Experimente: onde cortar a folha?",
       "intent": "exploration",
       "objective": "Comparar largura de recorte 16 e 32 na mesma folha, mantendo o sprite do jogo em 54 × 54.",
-      "blockKeys": ["experimento-recorte"],
+      "blockKeys": [
+        "experimento-recorte"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experimento-recorte"]
+        "blockIds": [
+          "experimento-recorte"
+        ]
       }
     },
     {
@@ -358,13 +386,19 @@
       "title": "Prepare a folha da nave",
       "intent": "application",
       "objective": "Carregar folha-nave da imagem nave com quadros 32 × 32 no Ao iniciar.",
-      "blockKeys": ["video-carregar-folha", "orientacao-carregar-folha", "conferir-carregar-folha"],
+      "blockKeys": [
+        "video-carregar-folha",
+        "orientacao-carregar-folha",
+        "conferir-carregar-folha"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-carregar-folha"]
+        "blockIds": [
+          "conferir-carregar-folha"
+        ]
       }
     },
     {
@@ -372,13 +406,19 @@
       "title": "Anime e teste a sua nave",
       "intent": "application",
       "objective": "Animar nave com folha-nave/voando e preservar controles.",
-      "blockKeys": ["video-animacao-nave", "orientacao-animacao-nave", "conferir-animacao-nave"],
+      "blockKeys": [
+        "video-animacao-nave",
+        "orientacao-animacao-nave",
+        "conferir-animacao-nave"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-animacao-nave"]
+        "blockIds": [
+          "conferir-animacao-nave"
+        ]
       }
     },
     {
@@ -386,13 +426,18 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Nave com arte própria no mesmo jogo, em 400/410, 54 × 54, folha 32 × 32, voando do 0 ao 1 a 8 fps; controles preservados.",
-      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "blockKeys": [
+        "orientacao-entrega-v6",
+        "entrega-galeria-v6"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["entrega-galeria-v6"]
+        "blockIds": [
+          "entrega-galeria-v6"
+        ]
       }
     },
     {
@@ -400,13 +445,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Nave com arte própria no mesmo jogo, em 400/410, 54 × 54, folha 32 × 32, voando do 0 ao 1 a 8 fps; controles preservados.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -414,13 +463,17 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ]

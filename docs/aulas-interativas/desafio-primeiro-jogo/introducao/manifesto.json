@@ -12,34 +12,6 @@
       }
     },
     {
-      "key": "descoberta",
-      "content": {
-        "kind": "interactive",
-        "title": "Como você gostaria de começar?",
-        "instructions": "Escolha o que mais dá vontade de fazer. Depois veja como essas partes se encontram. Sua primeira ideia pode mudar depois da observação.",
-        "hints": ["Não existe uma preferência certa. Escolha o que desperta sua curiosidade."],
-        "required": false,
-        "activity": {
-          "type": "prediction",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Montar meu jogo"
-            },
-            {
-              "id": "opcao-2",
-              "label": "Escolher meu avatar"
-            },
-            {
-              "id": "opcao-3",
-              "label": "Conhecer o meu quarto"
-            }
-          ],
-          "outcome": "Esses caminhos fazem parte da comunidade. Hoje você conhece o espaço; no Dia 1 começa o jogo. Personalizar o perfil é uma escolha sua, e o curso continua disponível pelo menu Cursos."
-        }
-      }
-    },
-    {
       "key": "explicacao",
       "content": {
         "kind": "rich_text",
@@ -74,10 +46,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Personalizar é uma escolha que pode continuar depois."],
+        "hints": [
+          "Personalizar é uma escolha que pode continuar depois."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Seu avatar ainda não ficou como você imaginou. Pode começar o curso?",
@@ -135,10 +109,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Conte a ação que você fez e o resultado que apareceu."],
+        "hints": [
+          "Conte a ação que você fez e o resultado que apareceu."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A nave não apareceu. Qual recado dá uma pista melhor para o professor?",
@@ -185,10 +161,12 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Guardar para continuar e entregar ao professor são ações diferentes."],
+        "hints": [
+          "Guardar para continuar e entregar ao professor são ações diferentes."
+        ],
         "required": true,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Você quer continuar amanhã e ainda não terminou a criação. O que faz agora?",
@@ -220,7 +198,6 @@
       "intent": "exploration",
       "blockKeys": [
         "abertura",
-        "descoberta",
         "explicacao",
         "construir-1",
         "video-construir-1-1",
@@ -233,7 +210,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-1"]
+        "blockIds": [
+          "checar-construir-1"
+        ]
       }
     },
     {
@@ -254,7 +233,9 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-4"]
+        "blockIds": [
+          "checar-construir-4"
+        ]
       }
     },
     {
@@ -262,13 +243,20 @@
       "title": "Seu primeiro jogo vem aí",
       "objective": "Distinguir guardar um projeto de entregar uma atividade e localizar o Dia 1. Esta introdução não exige uma criação.",
       "intent": "closing",
-      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "checar-fechamento"],
+      "blockKeys": [
+        "construir-5",
+        "video-construir-5-1",
+        "fechamento",
+        "checar-fechamento"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-fechamento"]
+        "blockIds": [
+          "checar-fechamento"
+        ]
       }
     }
   ]

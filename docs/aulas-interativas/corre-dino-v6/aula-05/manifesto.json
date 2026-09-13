@@ -59,7 +59,9 @@
                 "label": "Criar um novo cacto sempre."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O relógio decide quando nasce; o quadro cuida dos que já existem."
           },
           {
@@ -75,7 +77,9 @@
                 "label": "Fora da tela, à direita."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "560 fica além da borda direita."
           },
           {
@@ -91,7 +95,9 @@
                 "label": "Para fazer o cacto nascer a cada cinco segundos."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Velocidade e intervalo são propriedades diferentes."
           }
         ]
@@ -130,10 +136,8 @@
         ],
         "required": false,
         "activity": {
-          "type": "exploration",
-          "version": 3,
-          "mission": "spawn",
-          "mode": "explore"
+          "type": "experimentation",
+          "scene": "spawn"
         }
       }
     },
@@ -188,13 +192,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.",
-      "blockKeys": ["video-abertura-editorial"],
+      "blockKeys": [
+        "video-abertura-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-editorial"]
+        "blockIds": [
+          "video-abertura-editorial"
+        ]
       }
     },
     {
@@ -202,7 +210,10 @@
       "title": "Prepare o grupo dos cactos",
       "intent": "application",
       "objective": "Usar um grupo para reunir vários obstáculos.",
-      "blockKeys": ["video-grupo-cactos", "fala-grupo-cactos"],
+      "blockKeys": [
+        "video-grupo-cactos",
+        "fala-grupo-cactos"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -230,13 +241,17 @@
       "title": "Veja por que nascem tantos cactos",
       "intent": "demonstration",
       "objective": "Distinguir criar de atualizar e desenhar a cada quadro.",
-      "blockKeys": ["video-avalanche"],
+      "blockKeys": [
+        "video-avalanche"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-avalanche"]
+        "blockIds": [
+          "video-avalanche"
+        ]
       }
     },
     {
@@ -244,13 +259,17 @@
       "title": "Dê um intervalo aos nascimentos",
       "intent": "exploration",
       "objective": "Comparar criação a cada quadro e criação com relógio.",
-      "blockKeys": ["experiencia-ritmo"],
+      "blockKeys": [
+        "experiencia-ritmo"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-ritmo"]
+        "blockIds": [
+          "experiencia-ritmo"
+        ]
       }
     },
     {
@@ -258,7 +277,10 @@
       "title": "Monte os dois ritmos do jogo",
       "intent": "application",
       "objective": "Criar periodicamente, mover e desenhar continuamente.",
-      "blockKeys": ["video-relogio-cacto", "fala-relogio-cacto"],
+      "blockKeys": [
+        "video-relogio-cacto",
+        "fala-relogio-cacto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -364,13 +386,17 @@
       "title": "Veja onde o cacto começa",
       "intent": "demonstration",
       "objective": "Relacionar x de nascimento à borda direita de 480.",
-      "blockKeys": ["video-fora-da-tela"],
+      "blockKeys": [
+        "video-fora-da-tela"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fora-da-tela"]
+        "blockIds": [
+          "video-fora-da-tela"
+        ]
       }
     },
     {
@@ -378,7 +404,10 @@
       "title": "Faça o cacto entrar pela direita",
       "intent": "application",
       "objective": "Alterar somente a posição de nascimento.",
-      "blockKeys": ["video-entrada-suave", "fala-entrada-suave"],
+      "blockKeys": [
+        "video-entrada-suave",
+        "fala-entrada-suave"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -420,13 +449,17 @@
       "title": "Por que a velocidade é negativa?",
       "intent": "demonstration",
       "objective": "Entender que diminuir x move para a esquerda.",
-      "blockKeys": ["video-sentido-velocidade"],
+      "blockKeys": [
+        "video-sentido-velocidade"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-sentido-velocidade"]
+        "blockIds": [
+          "video-sentido-velocidade"
+        ]
       }
     },
     {
@@ -434,13 +467,18 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "O grupo cactos é atualizado e desenhado a cada quadro; um cacto nasce fora da tela a cada 1,4 segundo.",
-      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "blockKeys": [
+        "fala-entrega-editorial",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "grupo",
@@ -562,13 +600,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "O grupo cactos é atualizado e desenhado a cada quadro; um cacto nasce fora da tela a cada 1,4 segundo.",
-      "blockKeys": ["video-fecho-editorial"],
+      "blockKeys": [
+        "video-fecho-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-editorial"]
+        "blockIds": [
+          "video-fecho-editorial"
+        ]
       }
     },
     {
@@ -576,13 +618,17 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

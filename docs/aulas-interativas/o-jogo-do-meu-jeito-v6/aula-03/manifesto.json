@@ -46,10 +46,12 @@
         "kind": "interactive",
         "title": "Confira esta ideia",
         "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": ["Se a ponta já encostou na borda inferior, encurte um pouco antes de duplicar."],
+        "hints": [
+          "Se a ponta já encostou na borda inferior, encurte um pouco antes de duplicar."
+        ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "O primeiro fogo já ocupa até a última linha. O que preparar antes da cópia?",
@@ -121,7 +123,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Mover a ponta deixou um buraco no meio do fogo. Como completar?",
@@ -166,7 +168,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Qual nome vai aparecer para escolher esta animação no Estúdio?",
@@ -222,7 +224,9 @@
                 "label": "Sim: é preciso duplicar até aparecer no primeiro."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O fantasma consulta o quadro de índice anterior."
           },
           {
@@ -238,7 +242,9 @@
                 "label": "O corpo e o ponto de saída do fogo."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A diferença fica no fogo; a base comum mantém o corpo estável."
           }
         ]
@@ -251,13 +257,17 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "Abrir a mesma nave 32 × 32 da aula 2, ainda com um quadro e espaço para o motor.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -265,13 +275,17 @@
       "title": "Observe: cada quadro é um desenho",
       "intent": "demonstration",
       "objective": "Entender quadro de animação como um desenho da sequência.",
-      "blockKeys": ["video-livrinho"],
+      "blockKeys": [
+        "video-livrinho"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-livrinho"]
+        "blockIds": [
+          "video-livrinho"
+        ]
       }
     },
     {
@@ -279,13 +293,19 @@
       "title": "Desenhe o fogo no primeiro quadro",
       "intent": "application",
       "objective": "Preparar a base da animação sem ocupar todo o espaço de crescimento.",
-      "blockKeys": ["video-fogo-base", "orientacao-fogo-base", "conferir-fogo-base"],
+      "blockKeys": [
+        "video-fogo-base",
+        "orientacao-fogo-base",
+        "conferir-fogo-base"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-fogo-base"]
+        "blockIds": [
+          "conferir-fogo-base"
+        ]
       }
     },
     {
@@ -293,13 +313,17 @@
       "title": "Experimente: o que faz o fogo pulsar?",
       "intent": "exploration",
       "objective": "Comparar quadros iguais e quadros com diferença só no fogo.",
-      "blockKeys": ["experimento-diferenca"],
+      "blockKeys": [
+        "experimento-diferenca"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experimento-diferenca"]
+        "blockIds": [
+          "experimento-diferenca"
+        ]
       }
     },
     {
@@ -307,13 +331,19 @@
       "title": "Duplique e alongue só a ponta",
       "intent": "application",
       "objective": "Duplicar o quadro e mudar somente o fogo na cópia.",
-      "blockKeys": ["video-segundo-quadro", "orientacao-segundo-quadro", "conferir-segundo-quadro"],
+      "blockKeys": [
+        "video-segundo-quadro",
+        "orientacao-segundo-quadro",
+        "conferir-segundo-quadro"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-segundo-quadro"]
+        "blockIds": [
+          "conferir-segundo-quadro"
+        ]
       }
     },
     {
@@ -321,13 +351,17 @@
       "title": "Observe: comparar sem guardar de memória",
       "intent": "demonstration",
       "objective": "Usar o fantasma para comparar tamanho e ponto de saída dos fogos.",
-      "blockKeys": ["video-fantasma"],
+      "blockKeys": [
+        "video-fantasma"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fantasma"]
+        "blockIds": [
+          "video-fantasma"
+        ]
       }
     },
     {
@@ -335,13 +369,19 @@
       "title": "Confira a animação e dê um nome",
       "intent": "application",
       "objective": "Conferir os dois desenhos e renomear para voando.",
-      "blockKeys": ["video-nome-voando", "orientacao-nome-voando", "conferir-nome-voando"],
+      "blockKeys": [
+        "video-nome-voando",
+        "orientacao-nome-voando",
+        "conferir-nome-voando"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-nome-voando"]
+        "blockIds": [
+          "conferir-nome-voando"
+        ]
       }
     },
     {
@@ -349,13 +389,18 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Animação voando com dois quadros, fogo pequeno/grande saindo do mesmo ponto, corpo estável e 8 fps.",
-      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "blockKeys": [
+        "orientacao-entrega-v6",
+        "entrega-galeria-v6"
+      ],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["entrega-galeria-v6"]
+        "blockIds": [
+          "entrega-galeria-v6"
+        ]
       }
     },
     {
@@ -363,13 +408,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Animação voando com dois quadros, fogo pequeno/grande saindo do mesmo ponto, corpo estável e 8 fps.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -377,13 +426,17 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ]

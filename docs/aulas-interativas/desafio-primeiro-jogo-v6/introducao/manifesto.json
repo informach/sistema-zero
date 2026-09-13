@@ -47,7 +47,9 @@
                 "label": "Envia uma construção incompleta toda vez que encaixa um bloco."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Salvar conserva o rascunho; a entrega envia o trabalho solicitado ao professor."
           },
           {
@@ -63,7 +65,9 @@
                 "label": "“Criei a nave em Ao iniciar, mas ela não aparece na tela.”"
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Descrever a ação e o resultado ajuda o professor a localizar a dificuldade."
           }
         ]
@@ -76,13 +80,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Conhecer o caminho até o primeiro jogo e aprender a usar as seções, o salvamento e a ajuda.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -90,13 +98,17 @@
       "title": "Uma seção de cada vez",
       "intent": "demonstration",
       "objective": "Distinguir assistir, observar, experimentar e fazer no Estúdio.",
-      "blockKeys": ["video-percurso"],
+      "blockKeys": [
+        "video-percurso"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-percurso"]
+        "blockIds": [
+          "video-percurso"
+        ]
       }
     },
     {
@@ -104,13 +116,17 @@
       "title": "Veja o exemplo e monte com conforto",
       "intent": "demonstration",
       "objective": "Usar a disposição atual da aula no tamanho de tela disponível.",
-      "blockKeys": ["video-tela"],
+      "blockKeys": [
+        "video-tela"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-tela"]
+        "blockIds": [
+          "video-tela"
+        ]
       }
     },
     {
@@ -118,13 +134,17 @@
       "title": "Seu caderno e o caminho da ajuda",
       "intent": "demonstration",
       "objective": "Localizar os materiais e reconhecer como pedir ajuda sem sair do foco.",
-      "blockKeys": ["video-materiais"],
+      "blockKeys": [
+        "video-materiais"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-materiais"]
+        "blockIds": [
+          "video-materiais"
+        ]
       }
     },
     {
@@ -132,13 +152,17 @@
       "title": "Salvar e enviar são coisas diferentes",
       "intent": "demonstration",
       "objective": "Esperar o salvamento antes de sair e distinguir rascunho de entrega.",
-      "blockKeys": ["video-salvar"],
+      "blockKeys": [
+        "video-salvar"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-salvar"]
+        "blockIds": [
+          "video-salvar"
+        ]
       }
     },
     {
@@ -146,13 +170,17 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Saber encontrar o Dia 1, acompanhar uma seção e pedir ajuda com uma descrição útil.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -160,13 +188,17 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ],

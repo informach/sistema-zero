@@ -46,10 +46,12 @@
         "kind": "interactive",
         "title": "Confira esta ideia",
         "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": ["Se a categoria não apareceu, confira Instalada e feche a janela de extensões."],
+        "hints": [
+          "Se a categoria não apareceu, confira Instalada e feche a janela de extensões."
+        ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Num projeto novo, os blocos de Jogo 2D não apareceram. O que conferir?",
@@ -94,7 +96,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "Há um cartão vazio e outro com o jogo completo. Qual usaremos nas aulas 6 e 7?",
@@ -135,7 +137,7 @@
         ],
         "required": false,
         "activity": {
-          "type": "checkpoint"
+          "type": "question"
         },
         "checkpoint": {
           "prompt": "A ferramenta ainda está guardando seu jogo. O que fazer antes de fechar?",
@@ -191,7 +193,9 @@
                 "label": "Foi removido da aula e virou o arquivo."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Exportar preserva a origem."
           },
           {
@@ -207,7 +211,9 @@
                 "label": "Importar."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Importar traz o projeto. Instalar extensão disponibiliza os blocos usados para construí-lo."
           }
         ]
@@ -220,13 +226,17 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "O jogo do Dia 5 está pronto na aula do Desafio. Vamos levá-lo ao Estúdio Completo e aprender a reencontrá-lo.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -234,13 +244,17 @@
       "title": "Observe: onde os projetos ficam",
       "intent": "demonstration",
       "objective": "Distinguir projeto da aula e projeto livre antes de procurar o jogo no lugar errado.",
-      "blockKeys": ["video-lista"],
+      "blockKeys": [
+        "video-lista"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-lista"]
+        "blockIds": [
+          "video-lista"
+        ]
       }
     },
     {
@@ -248,13 +262,19 @@
       "title": "Crie um projeto e encontre os blocos",
       "intent": "application",
       "objective": "Criar o projeto de teste, instalar Jogo 2D e voltar à lista.",
-      "blockKeys": ["video-projeto-teste", "orientacao-projeto-teste", "conferir-projeto-teste"],
+      "blockKeys": [
+        "video-projeto-teste",
+        "orientacao-projeto-teste",
+        "conferir-projeto-teste"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-projeto-teste"]
+        "blockIds": [
+          "conferir-projeto-teste"
+        ]
       }
     },
     {
@@ -262,13 +282,17 @@
       "title": "Observe: uma cópia faz a ponte",
       "intent": "demonstration",
       "objective": "Entender exportar e importar como cópia, antes de navegar até o Desafio.",
-      "blockKeys": ["video-ponte"],
+      "blockKeys": [
+        "video-ponte"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-ponte"]
+        "blockIds": [
+          "video-ponte"
+        ]
       }
     },
     {
@@ -276,13 +300,19 @@
       "title": "Traga o jogo do Dia 5",
       "intent": "application",
       "objective": "Encontrar o Dia 5 pelo nome, exportar, importar, testar e nomear o projeto.",
-      "blockKeys": ["video-importar", "orientacao-importar", "conferir-importar"],
+      "blockKeys": [
+        "video-importar",
+        "orientacao-importar",
+        "conferir-importar"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-importar"]
+        "blockIds": [
+          "conferir-importar"
+        ]
       }
     },
     {
@@ -290,13 +320,19 @@
       "title": "Reencontre o mesmo jogo",
       "intent": "application",
       "objective": "Conferir salvamento na conta e reabrir o projeto certo.",
-      "blockKeys": ["video-guardar", "orientacao-guardar", "conferir-guardar"],
+      "blockKeys": [
+        "video-guardar",
+        "orientacao-guardar",
+        "conferir-guardar"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["conferir-guardar"]
+        "blockIds": [
+          "conferir-guardar"
+        ]
       }
     },
     {
@@ -304,13 +340,18 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Projeto do Dia 5 importado, reconhecível pelo nome, jogável e guardado na conta; projeto de teste separado.",
-      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "blockKeys": [
+        "orientacao-entrega-v6",
+        "entrega-galeria-v6"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["entrega-galeria-v6"]
+        "blockIds": [
+          "entrega-galeria-v6"
+        ]
       }
     },
     {
@@ -318,13 +359,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Projeto do Dia 5 importado, reconhecível pelo nome, jogável e guardado na conta; projeto de teste separado.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -332,13 +377,17 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ]

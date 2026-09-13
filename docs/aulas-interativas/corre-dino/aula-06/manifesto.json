@@ -33,9 +33,8 @@
           "Encaixe Remover na borda de saída. Avance o relógio novamente."
         ],
         "activity": {
-          "type": "exploration",
-          "version": 2,
-          "mission": "cleanup"
+          "type": "experimentation",
+          "scene": "cleanup"
         }
       }
     },
@@ -141,7 +140,9 @@
                 "label": "Sempre, sem precisar de uma regra."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Um objeto pode continuar guardado mesmo fora da imagem."
           },
           {
@@ -157,7 +158,9 @@
                 "label": "O que remove os cactos que saíram."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "O contador ajudou a investigar. A regra de limpeza mantém o grupo organizado."
           }
         ]
@@ -178,13 +181,18 @@
       "title": "Cuide dos cactos invisíveis",
       "objective": "Fora da tela, ainda no grupo; Regra retira automaticamente",
       "intent": "exploration",
-      "blockKeys": ["video-missao", "descoberta"],
+      "blockKeys": [
+        "video-missao",
+        "descoberta"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["descoberta"]
+        "blockIds": [
+          "descoberta"
+        ]
       }
     },
     {
@@ -261,13 +269,19 @@
       "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "delivery",
-      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "blockKeys": [
+        "video-entrega",
+        "zappy-entrega",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"]
+        "blockIds": [
+          "projeto"
+        ]
       }
     },
     {
@@ -275,13 +289,18 @@
       "title": "O que você descobriu?",
       "objective": "Retomar o conceito depois de explorar, criar e entregar.",
       "intent": "closing",
-      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "blockKeys": [
+        "zappy-revisao",
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

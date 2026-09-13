@@ -37,15 +37,15 @@ const interactive: InteractiveBlock = {
   instructions: 'Prepare e desenhe.',
   hints: [],
   required: true,
-  activity: {
-    type: 'sequence',
-    mode: 'order',
-    items: [
+  activity: { type: 'question' },
+  checkpoint: {
+    prompt: 'O que vem primeiro?',
+    choices: [
       { id: 'a', label: 'Preparar' },
       { id: 'b', label: 'Desenhar' },
     ],
-    solution: ['a', 'b'],
-    targets: [],
+    correctChoiceId: 'a',
+    explanation: 'Preparar vem antes de desenhar.',
   },
 }
 
