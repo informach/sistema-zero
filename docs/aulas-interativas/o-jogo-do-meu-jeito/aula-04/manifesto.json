@@ -17,9 +17,7 @@
         "kind": "interactive",
         "title": "Como a borda muda no zoom?",
         "instructions": "Amplie e reduza as duas imagens. Compare pelo menos dois tamanhos e registre o que observou.",
-        "hints": [
-          "Olhe a borda, não apenas a cor ou o tamanho da pedra."
-        ],
+        "hints": ["Olhe a borda, não apenas a cor ou o tamanho da pedra."],
         "required": true,
         "activity": {
           "type": "html",
@@ -99,9 +97,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Confira qual ferramenta está ativa e o que está selecionado."
-        ],
+        "hints": ["Confira qual ferramenta está ativa e o que está selecionado."],
         "required": true,
         "activity": {
           "type": "question"
@@ -151,9 +147,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "O desenho também precisa funcionar no tamanho em que será visto no jogo."
-        ],
+        "hints": ["O desenho também precisa funcionar no tamanho em que será visto no jogo."],
         "required": true,
         "activity": {
           "type": "question"
@@ -186,19 +180,13 @@
       "title": "Como a borda muda no zoom?",
       "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -221,9 +209,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-3"
-        ]
+        "blockIds": ["checar-construir-3"]
       }
     },
     {
@@ -231,20 +217,13 @@
       "title": "Veja sua pedra de perto e de longe",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-4",
-        "video-construir-4-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

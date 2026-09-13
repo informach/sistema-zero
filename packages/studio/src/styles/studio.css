@@ -182,12 +182,17 @@
   background: rgb(192 38 211 / 14%);
 }
 
-/* A galeria pode passar de cem cards; grupos fora da viewport não participam
- * de layout/pintura até se aproximarem da área visível. */
-[data-sz-theme] .sz-kit-content-group {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
-}
+/*
+ * ⚠️⚠️ O grupo da galeria de kits NÃO usa `content-visibility: auto` (13/09/2026). Usava, com
+ * `contain-intrinsic-size: auto 420px`, e caía na MESMA armadilha que fez o cursor piscar na
+ * galeria do Pinta (a mecânica inteira está no `pinta.css`): o grupo embrulha uma GRADE de
+ * cartões de 2 a 4 colunas, então a altura dele vai de uma linha a muitas conforme a janela e
+ * o filtro — 420px é um chute que só casa por acaso. Os cartões de dentro são clicáveis, que é
+ * exatamente onde o laço aparece.
+ *
+ * A régua: só onde a altura é FIXA e o reservado casa com ela. É o caso do `.sz-project-card`
+ * logo abaixo (`h-72` = 288px), que FICA.
+ */
 
 /*
  * Cards da lista "Meus Jogos" (19/08/2026): com centenas de projetos, o navegador só

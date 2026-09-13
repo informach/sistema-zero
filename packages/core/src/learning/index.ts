@@ -156,10 +156,7 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
     return false
   return isInteractiveBlock({
     ...value,
-    activity:
-      a.type === 'sequence' && choices(a.items)
-        ? { ...a, solution: a.items.map((item) => item.id) }
-        : a,
+    activity: a,
     ...(record(checkpoint) && choices(checkpoint.choices)
       ? {
           checkpoint: {

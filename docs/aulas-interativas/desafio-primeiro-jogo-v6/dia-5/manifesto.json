@@ -37,9 +37,7 @@
         "kind": "interactive",
         "title": "O relógio pode agir agora?",
         "instructions": "O relógio vai tocar três vezes. Compare a tela inicio com jogando. Ele só cria uma pedra se a pergunta a tela atual é jogando tiver resposta sim. Veja a diferença antes de fazer isso no seu projeto.",
-        "hints": [
-          "Veja se a pergunta da condição é verdadeira no estado escolhido."
-        ],
+        "hints": ["Veja se a pergunta da condição é verdadeira no estado escolhido."],
         "required": false,
         "activity": {
           "type": "html",
@@ -196,9 +194,7 @@
                 "label": "Na cor do título da tela de início."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O evento é independente do motor; sua ação também precisa da condição."
           },
           {
@@ -214,9 +210,7 @@
                 "label": "Para a abertura; Enter começa uma nova partida."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e tela inicio."
           }
         ]
@@ -229,17 +223,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Retomar o Dia 4, com pontuação, três vidas e as duas colisões funcionando.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -247,17 +237,13 @@
       "title": "Observe os quatro momentos do jogo",
       "intent": "demonstration",
       "objective": "Distinguir tela atual de desenho da tela e reconhecer a meta fixa.",
-      "blockKeys": [
-        "video-telas-observar"
-      ],
+      "blockKeys": ["video-telas-observar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-telas-observar"
-        ]
+        "blockIds": ["video-telas-observar"]
       }
     },
     {
@@ -265,10 +251,7 @@
       "title": "Prepare a meta e a tela inicial",
       "intent": "application",
       "objective": "Inicializar a constante alvo e escolher inicio.",
-      "blockKeys": [
-        "video-alvo",
-        "fala-alvo"
-      ],
+      "blockKeys": ["video-alvo", "fala-alvo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -311,17 +294,13 @@
       "title": "O relógio pode agir agora?",
       "intent": "exploration",
       "objective": "Entender que uma condição controla a ação sem desligar o relógio.",
-      "blockKeys": [
-        "experiencia-telas"
-      ],
+      "blockKeys": ["experiencia-telas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-telas"
-        ]
+        "blockIds": ["experiencia-telas"]
       }
     },
     {
@@ -329,10 +308,7 @@
       "title": "Faça a pergunta da partida",
       "intent": "application",
       "objective": "Encaixar a comparação de tela no Se.",
-      "blockKeys": [
-        "video-pergunta",
-        "fala-pergunta"
-      ],
+      "blockKeys": ["video-pergunta", "fala-pergunta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -366,17 +342,13 @@
       "title": "Observe a mudança de todos os blocos",
       "intent": "demonstration",
       "objective": "Ver como mover a sequência preservando sua ordem.",
-      "blockKeys": [
-        "video-mover-cadeia"
-      ],
+      "blockKeys": ["video-mover-cadeia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-mover-cadeia"
-        ]
+        "blockIds": ["video-mover-cadeia"]
       }
     },
     {
@@ -384,10 +356,7 @@
       "title": "Leve a partida para dentro da pergunta",
       "intent": "application",
       "objective": "Limitar o motor da partida à tela jogando.",
-      "blockKeys": [
-        "video-guardar-jogo",
-        "fala-guardar-jogo"
-      ],
+      "blockKeys": ["video-guardar-jogo", "fala-guardar-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -479,10 +448,7 @@
       "title": "Proteja também o nascimento das pedras",
       "intent": "application",
       "objective": "Colocar a condição dentro do relógio independente.",
-      "blockKeys": [
-        "video-guardar-relogio",
-        "fala-guardar-relogio"
-      ],
+      "blockKeys": ["video-guardar-relogio", "fala-guardar-relogio"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -549,10 +515,7 @@
       "title": "Deixe o disparo só para a partida",
       "intent": "application",
       "objective": "Evitar tiros e sons acumulados no menu e depois do fim.",
-      "blockKeys": [
-        "video-guardar-tiro",
-        "fala-guardar-tiro"
-      ],
+      "blockKeys": ["video-guardar-tiro", "fala-guardar-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -628,10 +591,7 @@
       "title": "Decida quando vencer",
       "intent": "application",
       "objective": "Comparar pontos e alvo para mudar de tela.",
-      "blockKeys": [
-        "video-vitoria",
-        "fala-vitoria"
-      ],
+      "blockKeys": ["video-vitoria", "fala-vitoria"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -696,10 +656,7 @@
       "title": "Decida quando a partida termina sem vidas",
       "intent": "application",
       "objective": "Separar a condição de derrota da condição de vitória.",
-      "blockKeys": [
-        "video-derrota",
-        "fala-derrota"
-      ],
+      "blockKeys": ["video-derrota", "fala-derrota"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -800,10 +757,7 @@
       "title": "Desenhe a abertura e os dois finais",
       "intent": "application",
       "objective": "Associar um ramo e uma imagem a cada estado.",
-      "blockKeys": [
-        "video-mostrar-telas",
-        "fala-mostrar-telas"
-      ],
+      "blockKeys": ["video-mostrar-telas", "fala-mostrar-telas"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -909,10 +863,7 @@
       "title": "Faça Enter começar e recomeçar",
       "intent": "application",
       "objective": "Usar a mesma tecla de acordo com o estado atual.",
-      "blockKeys": [
-        "video-enter",
-        "fala-enter"
-      ],
+      "blockKeys": ["video-enter", "fala-enter"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -977,17 +928,13 @@
       "title": "Observe como testar o jogo completo",
       "intent": "demonstration",
       "objective": "Conferir início, derrota, reinício e vitória sem alterar a meta.",
-      "blockKeys": [
-        "video-ciclo-completo"
-      ],
+      "blockKeys": ["video-ciclo-completo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-ciclo-completo"
-        ]
+        "blockIds": ["video-ciclo-completo"]
       }
     },
     {
@@ -995,18 +942,13 @@
       "title": "Teste, entregue e compartilhe",
       "intent": "delivery",
       "objective": "Jogo completo com quatro telas, ações limitadas à partida, reinício e entrega pronta para compartilhar.",
-      "blockKeys": [
-        "entrega-fala-v6",
-        "projeto"
-      ],
+      "blockKeys": ["entrega-fala-v6", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "alvo",
@@ -1630,17 +1572,13 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Jogo completo com quatro telas, ações limitadas à partida, reinício e entrega pronta para compartilhar.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -1648,17 +1586,13 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ],

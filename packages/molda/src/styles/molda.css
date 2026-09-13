@@ -233,13 +233,14 @@
 }
 
 /* ⚠️⚠️ O cartão da galeria NÃO usa `content-visibility: auto` (13/09/2026), pelo mesmo motivo
-   do Pinta — lá o sintoma foi visto: o cursor pisca ao passar por cima do cartão. Passar o
-   ponteiro torna o elemento relevante, o conteúdo renderiza, a altura real substitui a
-   reservada, a linha reflui, o ponteiro sai de cima e tudo encolhe de novo, em laço.
-   A miniatura é `aspect-[4/3] w-full`: a altura do cartão vem da LARGURA dele, que vem do
-   número de colunas, então ela não tem como casar com um número fixo em toda janela. (No
-   Estúdio a técnica é segura porque o cartão de lá tem altura fixa.) O comentário longo, com a
-   mecânica inteira, está no `pinta.css`. */
+   do Pinta — lá o sintoma foi visto: o cursor pisca ao passar por cima do cartão. A altura
+   reservada e a real discordam, o elemento entra e sai da relevância em laço, e o ponteiro
+   alterna entre a caixa do cartão (seta) e o botão de dentro (mão), porque conteúdo pulado
+   não participa do teste de acerto. A miniatura é `aspect-[4/3] w-full`: a altura do cartão
+   vem da LARGURA dele, que vem do número de colunas, então ela não tem como casar com um
+   número fixo em toda janela — e o `auto` do `contain-intrinsic-size` não resolve, no Pinta
+   ele estava lá. A técnica só fica de pé com altura FIXA (no Estúdio, `.sz-project-card` tem
+   `h-72` e reserva 288px). O comentário longo, com a mecânica inteira, está no `pinta.css`. */
 
 /* A viewport 3D ocupa a caixa inteira e não deixa o navegador rolar/zoomar por
    baixo do gesto de orbitar (um dedo orbita, dois fazem pan/zoom). */

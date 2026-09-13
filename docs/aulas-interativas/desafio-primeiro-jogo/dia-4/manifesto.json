@@ -16,16 +16,14 @@
       "content": {
         "kind": "interactive",
         "title": "Quem faz o quê no placar?",
-        "instructions": "Associe cada tarefa ao momento correto. Pense no que muda o número e no que apenas o mostra.",
-        "hints": [
-          "Se desenhar somasse pontos, eles aumentariam mesmo sem acertar nada."
-        ],
+        "instructions": "Pense no que muda o número do placar e no que apenas o mostra.",
+        "hints": ["Se desenhar somasse pontos, eles aumentariam mesmo sem acertar nada."],
         "required": true,
         "activity": {
           "type": "question"
         },
         "checkpoint": {
-          "prompt": "Associe cada tarefa ao momento correto. Pense no que muda o número e no que apenas o mostra.",
+          "prompt": "O que acontece ao preparar uma partida?",
           "choices": [
             {
               "id": "peca-1",
@@ -87,9 +85,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Qual acontecimento você decidiu premiar?"
-        ],
+        "hints": ["Qual acontecimento você decidiu premiar?"],
         "required": true,
         "activity": {
           "type": "question"
@@ -161,9 +157,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Um contato pode durar mais de um quadro do jogo."
-        ],
+        "hints": ["Um contato pode durar mais de um quadro do jogo."],
         "required": true,
         "activity": {
           "type": "question"
@@ -221,19 +215,13 @@
       "title": "Quem faz o quê no placar?",
       "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -254,9 +242,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-1"
-        ]
+        "blockIds": ["checar-construir-1"]
       }
     },
     {
@@ -279,9 +265,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-4"
-        ]
+        "blockIds": ["checar-construir-4"]
       }
     },
     {
@@ -289,20 +273,13 @@
       "title": "Teste três acontecimentos",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-6",
-        "video-construir-6-1",
-        "fechamento",
-        "projeto"
-      ],
+      "blockKeys": ["construir-6", "video-construir-6-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ]
+        "blockIds": ["projeto"]
       }
     }
   ]

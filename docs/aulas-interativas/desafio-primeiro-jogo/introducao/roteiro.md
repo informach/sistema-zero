@@ -41,13 +41,13 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Como você gostaria de começar?**
 
-Modelo: `prediction`. Exploração opcional.
+Modelo: `checkpoint`. Exploração opcional.
 
 Escolha o que mais dá vontade de fazer. Depois veja como essas partes se encontram. Sua primeira ideia pode mudar depois da observação.
 
-**Previsões (sem nota):** Montar meu jogo · Escolher meu avatar · Conhecer o meu quarto
+**Previsões (etapa aposentada com o modelo `prediction` — ver o guia de autoria):** Montar meu jogo · Escolher meu avatar · Conhecer o meu quarto
 
-**Depois de observar:** Esses caminhos fazem parte da comunidade. Hoje você conhece o espaço; no Dia 1 começa o jogo. Personalizar o perfil é uma escolha sua, e o curso continua disponível pelo menu Cursos.
+**Depois de observar (sem lugar na pergunta — ver o guia de autoria):** Esses caminhos fazem parte da comunidade. Hoje você conhece o espaço; no Dia 1 começa o jogo. Personalizar o perfil é uma escolha sua, e o curso continua disponível pelo menu Cursos.
 
 **Pistas:**
 

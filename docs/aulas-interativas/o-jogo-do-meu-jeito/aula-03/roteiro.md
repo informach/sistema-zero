@@ -41,13 +41,13 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: O que deve mudar entre os quadros?**
 
-Modelo: `prediction`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
 Você quer fogo pulsando, sem a nave tremer. Qual mudança tentaria primeiro? Sua primeira ideia pode mudar depois da observação.
 
-**Previsões (sem nota):** Mover a nave inteira · Mudar o fogo e manter o corpo alinhado · Trocar o tamanho do asset
+**Previsões (etapa aposentada com o modelo `prediction` — ver o guia de autoria):** Mover a nave inteira · Mudar o fogo e manter o corpo alinhado · Trocar o tamanho do asset
 
-**Depois de observar:** Mudar só o fogo produz uma pulsação com o corpo estável. Mover a nave inteira pode ser um efeito intencional, mas cria outra sensação. A prévia é o lugar de comparar.
+**Depois de observar (sem lugar na pergunta — ver o guia de autoria):** Mudar só o fogo produz uma pulsação com o corpo estável. Mover a nave inteira pode ser um efeito intencional, mas cria outra sensação. A prévia é o lugar de comparar.
 
 **Pergunta:** Você mudou só o fogo, mas quase não vê movimento. O que pode experimentar?
 

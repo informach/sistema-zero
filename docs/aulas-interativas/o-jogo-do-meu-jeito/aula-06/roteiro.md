@@ -41,17 +41,22 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Tamanho do desenho ou tamanho no jogo?**
 
-Modelo: `sequence`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
-Relacione cada configuração com sua função antes de trocar os blocos.
+Uma configuração recorta a imagem original; a outra decide quanto espaço ela ocupa no jogo.
 
-**Peças:** 54 × 54 · 32 × 32 · 0 até 1
+**Pergunta:** Qual configuração é o tamanho de cada quadro da folha da nave?
 
-**Gabarito para o professor:**
+- 54 × 54
+- 32 × 32
+- 0 até 1
 
-- Tamanho de cada quadro da folha da nave: 32 × 32
-- Tamanho da nave desenhada no jogo: 54 × 54
-- Intervalo dos dois quadros da animação: 0 até 1
+**Resposta esperada (professor):** 32 × 32
+
+**Devolutiva:** A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo.
+
+**As outras duas configurações, para conversar em aula:** 54 × 54 é o tamanho da nave desenhada no
+jogo; 0 até 1 é o intervalo dos dois quadros da animação.
 
 **Pistas:**
 

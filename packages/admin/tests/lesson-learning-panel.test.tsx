@@ -127,3 +127,25 @@ test('⚠️ registro de outra cena não é reinterpretado como descoberta desta
     await fechar()
   }
 })
+
+test('⚠️ registro de outra REVISÃO do bloco não some como "sem registro"', async () => {
+  // O pareamento por revisão existe para o professor não ler uma resposta velha com o
+  // conteúdo novo. Mas descartar em silêncio faz a tela dizer que a criança não fez nada —
+  // e quem editou o bloco foi o professor. A tela precisa dizer o que aconteceu.
+  const start = sceneStart(atividade)
+  let s = initialExperiment(start)
+  s = stepExperiment(start, s, { type: 'create' }).session
+  const report = relatorio(packExperiment('world', s))
+  const bloco = (report.blocks as Array<{ revision: string }>)[0]
+  if (!bloco) throw new Error('sem bloco')
+  bloco.revision = 'revisao-anterior'
+  const { texto, fechar } = await abrir(report)
+  try {
+    expect(texto).toContain('outra versão')
+    expect(texto).not.toContain('Sem registro')
+    // E o registro velho continua NÃO sendo lido com o conteúdo de agora.
+    expect(texto).not.toContain('Descobriu:')
+  } finally {
+    await fechar()
+  }
+})

@@ -1,14 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import {
-  EXPLORATION_DEFINITIONS,
-  type ExplorationMission,
-  type LearningManifest,
-  type ProjectBlockPattern,
-  type SectionProjectCheck,
-  type SectionStructureRule,
+import type {
+  LearningManifest,
+  ProjectBlockPattern,
+  SectionProjectCheck,
+  SectionStructureRule,
 } from '../../../packages/core/src/learning'
+import { SCENE_MODELS, type SceneId } from '../../../packages/core/src/learning/scene'
 
 export type Check = SectionProjectCheck
 type Rule = Extract<SectionStructureRule, { type: 'usesBlock' }>
@@ -44,7 +43,7 @@ export interface Step {
   to?: string
   edit?: string
   visual?: string
-  mission?: ExplorationMission
+  mission?: SceneId
   checks?: Check[]
 }
 export interface Recipe {
@@ -195,7 +194,7 @@ export function buildEditorial(
   for (const step of recipe.steps) {
     if (step.kind === 'experiment') {
       if (!step.mission) throw new Error(`Missão ausente: ${step.key}`)
-      const definition = EXPLORATION_DEFINITIONS[step.mission]
+      const definition = SCENE_MODELS[step.mission]
       const key = `experiencia-${step.key}`
       blocks.push({
         key,
@@ -205,7 +204,7 @@ export function buildEditorial(
           instructions: step.say,
           hints: [...definition.hints],
           required: false,
-          activity: { type: 'exploration', version: 3, mission: step.mission, mode: 'explore' },
+          activity: { type: 'experimentation', scene: step.mission },
         },
       })
       section(step.key, step.title, 'exploration', step.focus, [key])
@@ -324,7 +323,7 @@ export function editorialMarkdown(result: ReturnType<typeof buildEditorial>) {
       '',
     )
     if (step.kind === 'experiment') {
-      const definition = EXPLORATION_DEFINITIONS[step.mission!]
+      const definition = SCENE_MODELS[step.mission!]
       text.push(
         `**Experiência nativa:** ${step.mission}. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.`,
         '',

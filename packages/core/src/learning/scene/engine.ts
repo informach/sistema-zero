@@ -322,8 +322,13 @@ function advanceCrowd(s: SceneState, scene: SceneId, seconds: number): void {
   for (const c of s.crowd.cacti) c.x -= seconds * 100
   if (active) {
     const before = s.crowd.remainder
+    // ⚠️ O `1e-9` existe para que 0,1 s dez vezes conte o cacto que a soma binária deixaria
+    // faltando por um fio. Mas ele empurra o `count` para cima SEM ser descontado do resto, e
+    // aí o resto sai negativo por um fio (−2,22e−16) — um estado que o próprio validador
+    // recusa (`isSceneState` exige resto ≥ 0). A criança assistia a demonstração inteira e
+    // ouvia que ela "mudou, abra de novo"; e recomeçar reproduzia o mesmo estado.
     const count = Math.floor((before + seconds + 1e-9) / interval)
-    s.crowd.remainder = before + seconds - count * interval
+    s.crowd.remainder = Math.max(0, before + seconds - count * interval)
     for (let i = 1; i <= count; i++) {
       s.crowd.born++
       s.crowd.cacti.push({

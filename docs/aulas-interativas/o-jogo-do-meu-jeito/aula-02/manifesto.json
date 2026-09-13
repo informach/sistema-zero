@@ -17,9 +17,7 @@
         "kind": "interactive",
         "title": "Uma luz, dois lados",
         "instructions": "Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros? Sua primeira ideia pode mudar depois da observação.",
-        "hints": [
-          "Imagine uma lanterna iluminando um lado do desenho."
-        ],
+        "hints": ["Imagine uma lanterna iluminando um lado do desenho."],
         "required": true,
         "activity": {
           "type": "question"
@@ -87,9 +85,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Zoom muda o que você vê, mas não muda a quantidade de pixels do desenho."
-        ],
+        "hints": ["Zoom muda o que você vê, mas não muda a quantidade de pixels do desenho."],
         "required": true,
         "activity": {
           "type": "question"
@@ -150,9 +146,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Imagine uma lanterna do lado que você escolheu."
-        ],
+        "hints": ["Imagine uma lanterna do lado que você escolheu."],
         "required": true,
         "activity": {
           "type": "question"
@@ -202,9 +196,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Confira o trabalho no lugar em que ele fica guardado."
-        ],
+        "hints": ["Confira o trabalho no lugar em que ele fica guardado."],
         "required": true,
         "activity": {
           "type": "question"
@@ -237,19 +229,13 @@
       "title": "Uma luz, dois lados",
       "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -270,9 +256,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-2"
-        ]
+        "blockIds": ["checar-construir-2"]
       }
     },
     {
@@ -293,9 +277,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-4"
-        ]
+        "blockIds": ["checar-construir-4"]
       }
     },
     {
@@ -303,20 +285,13 @@
       "title": "Guarde a nave para animar",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-5",
-        "video-construir-5-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

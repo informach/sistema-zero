@@ -117,9 +117,7 @@
                 "label": "O primeiro desenho."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Como folhas empilhadas, o último desenho cobre os anteriores."
           },
           {
@@ -135,9 +133,7 @@
                 "label": "Limpar antes de desenhar cada quadro."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A limpeza tira o quadro anterior antes do novo desenho."
           }
         ]
@@ -158,18 +154,13 @@
       "title": "Quem fica na frente?",
       "objective": "Floresta na frente; Dino na frente",
       "intent": "exploration",
-      "blockKeys": [
-        "video-missao",
-        "descoberta"
-      ],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -214,19 +205,13 @@
       "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-entrega",
-        "zappy-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ]
+        "blockIds": ["projeto"]
       }
     },
     {
@@ -234,18 +219,13 @@
       "title": "O que você descobriu?",
       "objective": "Retomar o conceito depois de explorar, criar e entregar.",
       "intent": "closing",
-      "blockKeys": [
-        "zappy-revisao",
-        "quiz-final"
-      ],
+      "blockKeys": ["zappy-revisao", "quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

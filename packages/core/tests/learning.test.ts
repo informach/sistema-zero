@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { LearningAnswers } from '../src/learning'
 import {
@@ -284,6 +284,16 @@ describe('os pacotes atuais das aulas', () => {
     test(`${pacote}: o catálogo e as pastas contam a mesma coisa`, () => {
       expect(entradas.length).toBeGreaterThan(0)
       expect(new Set(entradas.map((e) => e.path)).size).toBe(entradas.length)
+      // ⚠️ O nome deste teste prometia isto e não fazia: ele lia o catálogo e conferia o
+      // catálogo. Uma aula no disco fora do `catalogo.json` simplesmente não era testada, e o
+      // laço abaixo continuava verde cobrindo menos — o silêncio mais caro que existe aqui.
+      const noDisco = readdirSync(resolve(directory, pacote), { withFileTypes: true })
+        .filter(
+          (e) => e.isDirectory() && existsSync(resolve(e.parentPath, e.name, 'manifesto.json')),
+        )
+        .map((e) => e.name)
+        .sort()
+      expect(entradas.map((e) => e.path).sort()).toEqual(noDisco)
     })
     for (const entrada of entradas)
       test(`${pacote}/${entrada.path}`, () => {
@@ -325,8 +335,59 @@ describe('os pacotes atuais das aulas', () => {
           // bloco que nunca fecha trava a seção; um que já nasce fechado não pede nada da criança.
           expect(evaluateLearning(block, {}).passed).toBe(false)
           expect(evaluateLearning(block, caminhoDeSucesso(block)).passed).toBe(true)
+          // ⚠️ Sem esta metade, a pergunta passava de graça no teste: o caminho de sucesso
+          // devolve o próprio `correctChoiceId` e o avaliador o compara consigo mesmo. Aqui as
+          // OUTRAS alternativas precisam reprovar — é o que pega um gabarito apontando para um
+          // id que não está na lista (nada fecha) ou para mais de uma alternativa.
+          if (block.checkpoint)
+            for (const escolha of block.checkpoint.choices)
+              if (escolha.id !== block.checkpoint.correctChoiceId)
+                expect(
+                  evaluateLearning(block, { checkpoint: escolha.id }).passed,
+                  `${entrada.path}: ${escolha.id}`,
+                ).toBe(false)
         }
       })
+  }
+})
+
+/**
+ * As 14 demonstrações.
+ *
+ * ⚠️ Elas não moram em manifesto nem em catálogo — vivem soltas num arquivo à parte, para a
+ * professora escolher quais quer na aula. O resultado é que eram os únicos blocos do
+ * repositório sem teste algum, e o ramo de demonstração do caminho de sucesso era código morto.
+ * Foi ali que se escondeu um estado que o próprio motor produzia e o próprio validador recusava.
+ */
+describe('as demonstrações da cena', () => {
+  const arquivo: unknown = JSON.parse(
+    readFileSync(resolve(directory, 'corre-dino-v6/demonstracoes-opcionais.json'), 'utf8'),
+  )
+  const blocos: InteractiveBlock[] = []
+  const varrer = (v: unknown) => {
+    if (!v || typeof v !== 'object') return
+    if (isInteractiveBlock(v) && v.activity.type === 'demonstration') blocos.push(v)
+    for (const filho of Object.values(v)) varrer(filho)
+  }
+  varrer(arquivo)
+
+  test('são catorze, e todas são blocos válidos', () => {
+    expect(blocos).toHaveLength(14)
+    expect(
+      new Set(blocos.map((b) => b.activity.type === 'demonstration' && b.activity.scene)).size,
+    ).toBe(14)
+  })
+
+  for (const bloco of blocos) {
+    const cena = bloco.activity.type === 'demonstration' ? bloco.activity.scene : 'world'
+    test(`${cena}: quem assiste até o fim CONCLUI`, () => {
+      expect(evaluateLearning(bloco, {}).passed).toBe(false)
+      const resultado = evaluateLearning(bloco, caminhoDeSucesso(bloco))
+      // ⚠️ A mensagem importa tanto quanto o booleano: "esta demonstração mudou, abra de novo"
+      // é o que a criança lia depois de assistir tudo, e recomeçar reproduzia o mesmo estado.
+      expect(resultado.feedback, cena).not.toContain('mudou')
+      expect(resultado.passed, cena).toBe(true)
+    })
   }
 })
 

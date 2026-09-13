@@ -42,13 +42,13 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Qual chuva fica mais intensa?**
 
-Modelo: `prediction`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
 Dois jogos rodam no mesmo ritmo. Um cria um asteroide a cada 20 quadros, outro a cada 80. Faça sua previsão. Sua primeira ideia pode mudar depois da observação.
 
-**Previsões (sem nota):** A cada 20 quadros · A cada 80 quadros · A frequência é igual
+**Previsões (etapa aposentada com o modelo `prediction` — ver o guia de autoria):** A cada 20 quadros · A cada 80 quadros · A frequência é igual
 
-**Depois de observar:** Em 160 quadros, intervalos de 20 permitem 8 nascimentos; intervalos de 80, apenas 2. O intervalo menor deixa menos tempo entre os asteroides. Você vai conferir no seu jogo.
+**Depois de observar (sem lugar na pergunta — ver o guia de autoria):** Em 160 quadros, intervalos de 20 permitem 8 nascimentos; intervalos de 80, apenas 2. O intervalo menor deixa menos tempo entre os asteroides. Você vai conferir no seu jogo.
 
 **Pergunta:** A chuva ficou difícil demais. Qual mudança dá mais tempo entre os asteroides?
 

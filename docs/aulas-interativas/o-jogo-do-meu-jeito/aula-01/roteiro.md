@@ -41,17 +41,22 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Qual lugar guarda o quê?**
 
-Modelo: `sequence`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
-Ligue cada lugar ao trabalho que você faz nele. A ideia é saber onde voltar sem criar cópias por engano.
+A ideia é saber onde voltar sem criar cópias por engano.
 
-**Peças:** Mural · Projeto da aula · Meus Jogos no Estúdio
+**Pergunta:** Qual lugar guarda a atividade ligada ao curso?
 
-**Gabarito para o professor:**
+- Mural
+- Projeto da aula
+- Meus Jogos no Estúdio
 
-- Atividade ligada ao curso: Projeto da aula
-- Projetos livres que você edita: Meus Jogos no Estúdio
-- Versão publicada para outras pessoas jogarem: Mural
+**Resposta esperada (professor):** Projeto da aula
+
+**Devolutiva:** O lugar de editar um projeto e o lugar de jogar sua publicação têm funções diferentes.
+
+**Os outros dois lugares, para conversar em aula:** Meus Jogos no Estúdio guarda os projetos livres
+que você edita; o Mural guarda a versão publicada para outras pessoas jogarem.
 
 **Pistas:**
 

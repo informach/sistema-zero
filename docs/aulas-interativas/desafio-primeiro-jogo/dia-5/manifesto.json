@@ -17,9 +17,7 @@
         "kind": "interactive",
         "title": "Pontos antes de começar?",
         "instructions": "Passe um segundo na tela de início, outro jogando e outro no fim. Compare os dois contadores.",
-        "hints": [
-          "Observe qual contador aumenta mesmo quando ninguém começou a jogar."
-        ],
+        "hints": ["Observe qual contador aumenta mesmo quando ninguém começou a jogar."],
         "required": true,
         "activity": {
           "type": "html",
@@ -99,9 +97,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "O desenho e o relógio de criação trabalham em lugares diferentes."
-        ],
+        "hints": ["O desenho e o relógio de criação trabalham em lugares diferentes."],
         "required": true,
         "activity": {
           "type": "question"
@@ -162,9 +158,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "O alvo é a meta de pontos; as vidas indicam outra coisa."
-        ],
+        "hints": ["O alvo é a meta de pontos; as vidas indicam outra coisa."],
         "required": true,
         "activity": {
           "type": "question"
@@ -240,19 +234,13 @@
       "title": "Pontos antes de começar?",
       "objective": "Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -275,9 +263,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-3"
-        ]
+        "blockIds": ["checar-construir-3"]
       }
     },
     {
@@ -298,9 +284,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-4"
-        ]
+        "blockIds": ["checar-construir-4"]
       }
     },
     {
@@ -308,11 +292,7 @@
       "title": "O convite para jogar de novo",
       "objective": "Reiniciar o estado da partida pelo evento de Enter.",
       "intent": "application",
-      "blockKeys": [
-        "construir-6",
-        "video-construir-6-1",
-        "convite-construir-6"
-      ],
+      "blockKeys": ["construir-6", "video-construir-6-1", "convite-construir-6"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -338,20 +318,13 @@
       "title": "Jogue e mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-7",
-        "video-construir-7-1",
-        "fechamento",
-        "projeto"
-      ],
+      "blockKeys": ["construir-7", "video-construir-7-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ]
+        "blockIds": ["projeto"]
       }
     }
   ]

@@ -17,9 +17,7 @@
         "kind": "interactive",
         "title": "Um carro no lugar da nave",
         "instructions": "Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação.",
-        "hints": [
-          "Que comparação deixaria mais fácil perceber a causa da diferença?"
-        ],
+        "hints": ["Que comparação deixaria mais fácil perceber a causa da diferença?"],
         "required": true,
         "activity": {
           "type": "question"
@@ -87,9 +85,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Projeto em edição e versão publicada podem estar em momentos diferentes."
-        ],
+        "hints": ["Projeto em edição e versão publicada podem estar em momentos diferentes."],
         "required": true,
         "activity": {
           "type": "question"
@@ -150,9 +146,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Escolha uma parte do jogo sobre a qual você pode agir depois."
-        ],
+        "hints": ["Escolha uma parte do jogo sobre a qual você pode agir depois."],
         "required": true,
         "activity": {
           "type": "question"
@@ -185,19 +179,13 @@
       "title": "Um carro no lugar da nave",
       "objective": "Publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -218,9 +206,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-1"
-        ]
+        "blockIds": ["checar-construir-1"]
       }
     },
     {
@@ -241,9 +227,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

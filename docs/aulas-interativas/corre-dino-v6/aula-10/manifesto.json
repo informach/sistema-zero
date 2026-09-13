@@ -56,9 +56,7 @@
                 "label": "Sim, são sempre a mesma coisa."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O ajuste atua na geometria da detecção."
           },
           {
@@ -74,9 +72,7 @@
                 "label": "As posições do Dino e do cacto."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Mudar a posição junto impediria saber a causa do resultado."
           },
           {
@@ -92,9 +88,7 @@
                 "label": "Sim, o instrumento é a própria regra."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Um bloco mostra; outro configura."
           }
         ]
@@ -181,17 +175,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -199,10 +189,7 @@
       "title": "Veja a área que o jogo usa",
       "intent": "application",
       "objective": "Adicionar um instrumento que revela a geometria de colisão.",
-      "blockKeys": [
-        "video-ligar-raio-x",
-        "fala-ligar-raio-x"
-      ],
+      "blockKeys": ["video-ligar-raio-x", "fala-ligar-raio-x"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -231,17 +218,13 @@
       "title": "O contorno e o desenho são iguais?",
       "intent": "demonstration",
       "objective": "Perceber espaços vazios do desenho dentro da área de colisão.",
-      "blockKeys": [
-        "video-desenho-e-area"
-      ],
+      "blockKeys": ["video-desenho-e-area"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-desenho-e-area"
-        ]
+        "blockIds": ["video-desenho-e-area"]
       }
     },
     {
@@ -249,17 +232,13 @@
       "title": "Ajuste só a área de colisão",
       "intent": "exploration",
       "objective": "Comparar a detecção mantendo os desenhos na mesma posição.",
-      "blockKeys": [
-        "experiencia-comparar-area"
-      ],
+      "blockKeys": ["experiencia-comparar-area"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-comparar-area"
-        ]
+        "blockIds": ["experiencia-comparar-area"]
       }
     },
     {
@@ -267,10 +246,7 @@
       "title": "Leve o ajuste para o seu jogo",
       "intent": "application",
       "objective": "Configurar a área sem redimensionar o sprite.",
-      "blockKeys": [
-        "video-ajustar-area",
-        "fala-ajustar-area"
-      ],
+      "blockKeys": ["video-ajustar-area", "fala-ajustar-area"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -327,10 +303,7 @@
       "title": "Retire o instrumento, mantenha o ajuste",
       "intent": "application",
       "objective": "Distinguir instrumento temporário de regra permanente.",
-      "blockKeys": [
-        "video-tirar-raio-x",
-        "fala-tirar-raio-x"
-      ],
+      "blockKeys": ["video-tirar-raio-x", "fala-tirar-raio-x"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -370,18 +343,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Área de colisão do Dino em 80%, desenho do personagem preservado e instrumento retirado.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "colisao-80",
@@ -428,17 +396,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Área de colisão do Dino em 80%, desenho do personagem preservado e instrumento retirado.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -446,17 +410,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

@@ -129,6 +129,27 @@ describe('cena: o estado que volta do servidor', () => {
     expect(isSceneState(cheio)).toBe(true)
   })
 
+  test('⚠️ o motor nunca produz um resto NEGATIVO, em nenhuma cena nem fatia de tempo', () => {
+    // O `1e-9` que faz 0,1 s dez vezes contar o cacto certo empurrava o contador para cima sem
+    // ser descontado do resto: ele saía em −2,22e−16 e o próprio validador recusava o estado.
+    // A criança assistia a demonstração inteira e ouvia que ela "mudou, abra de novo".
+    // ⚠️ Com o relógio LIGADO, que é onde ele morde: em `spawn` o intervalo passa a ser o que a
+    // criança escolheu, e fatias que somam exatamente um múltiplo dele caem no fio.
+    for (const scene of SCENE_IDS)
+      for (const relogio of [false, true])
+        for (const fatia of [0.1, 0.2, 0.3, 0.6, 1 / 30, 0.05, 1]) {
+          let s = initialScene({ scene })
+          if (relogio)
+            s = stepScene({ scene }, s, { type: 'connect', port: 'timer', enabled: true })
+          const onde = `${scene}, relógio ${relogio}, fatias de ${fatia}`
+          for (let i = 0; i < 40; i++) {
+            s = stepScene({ scene }, s, { type: 'advance', seconds: fatia })
+            expect(s.crowd.remainder, onde).toBeGreaterThanOrEqual(0)
+          }
+          expect(isSceneState(s), onde).toBe(true)
+        }
+  })
+
   test('recusa um intervalo que travaria o motor em laço infinito', () => {
     // ⚠️ `interval: 0` faz `Math.floor(x / 0) = Infinity` no laço de nascimento: a aba
     // congela até estourar a memória. Só a ação `interval` alimenta esse campo no jogo

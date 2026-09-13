@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_MODELS } from '@sistemazero/core/learning/scene'
+import { SCENE_MODELS, type SceneStep } from '@sistemazero/core/learning/scene'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -139,4 +139,93 @@ test('⚠️ o bloco NOVO já nasce com o texto do modelo', () => {
   expect(EMPTY_LEARNING.instructions).toBe(SCENE_MODELS.world.instruction)
   expect(EMPTY_LEARNING.hints).toEqual([...SCENE_MODELS.world.hints])
   expect(isInteractiveBlock(EMPTY_LEARNING)).toBe(true)
+})
+
+test('⚠️ passar por outro tipo e voltar devolve o roteiro escrito à mão', async () => {
+  // Os quatro cartões são UM grupo de rádio, e a seta do teclado já seleciona ao passar: ir de
+  // Demonstração até HTML atravessa os outros dois. Cada passagem apagava o roteiro autoral.
+  const roteiro: SceneStep[] = [
+    { id: 'unico', caption: 'Veja o Dino nascer.', actions: [{ type: 'create' }] },
+  ]
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'demonstration', scene: 'world', script: roteiro },
+  })
+  try {
+    await b.clicar('Pergunta curta')
+    expect(b.alerta).toContain('roteiro')
+    await b.clicar('Demonstração')
+    if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
+    expect(b.value.activity.script).toEqual(roteiro)
+    expect(isInteractiveBlock(b.value)).toBe(true)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ a cena escolhida sobrevive a uma passagem por Pergunta curta', async () => {
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    await b.clicar('Cuide dos cactos invisíveis')
+    await b.clicar('Pergunta curta')
+    await b.clicar('Experimentação')
+    if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
+    expect(b.value.activity.scene).toBe('cleanup')
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ sair da experimentação avisa que o impulso ajustado não vai junto', async () => {
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'experimentation', scene: 'impulse', initialImpulse: 14 },
+  })
+  try {
+    await b.clicar('Pergunta curta')
+    expect(b.alerta).toContain('impulso inicial')
+    await b.clicar('Experimentação')
+    if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
+    expect(b.value.activity.initialImpulse).toBe(14)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ o roteiro de salto atravessa as cenas do meio e chega inteiro na cena irmã', async () => {
+  // As catorze cenas são UM grupo de rádio: ir de `gravity` a `impulse` pela seta passa por
+  // doze cenas em que o roteiro de salto não vale. A primeira delas o descartava para sempre.
+  const roteiro: SceneStep[] = [
+    { id: 'pulo', caption: 'Veja o salto.', actions: [{ type: 'impulse', force: 12 }] },
+  ]
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'demonstration', scene: 'gravity', script: roteiro },
+  })
+  try {
+    await b.clicar('Quem fica na frente?')
+    expect(b.alerta).toContain('guardado')
+    await b.clicar('Escolha a altura do salto')
+    if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
+    expect(b.value.activity.script).toEqual(roteiro)
+    expect(b.alerta).toBe('')
+    expect(isInteractiveBlock(b.value)).toBe(true)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ o impulso ajustado atravessa uma cena sem salto e volta na cena irmã', async () => {
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'experimentation', scene: 'gravity', initialImpulse: 15 },
+  })
+  try {
+    await b.clicar('Quem fica na frente?')
+    await b.clicar('Escolha a altura do salto')
+    if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
+    expect(b.value.activity.initialImpulse).toBe(15)
+  } finally {
+    await b.fechar()
+  }
 })

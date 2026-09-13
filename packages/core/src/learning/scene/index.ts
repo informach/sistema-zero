@@ -43,10 +43,18 @@ const isScene = (v: unknown): v is SceneId => SCENE_IDS.some((s) => s === v)
 // caminho local e o player carrega áudio de terceiro, pelo protocolo da página.
 const AUDIO = /^(https:\/\/|\/[^/])/
 
-function validAudio(value: unknown): boolean {
+/**
+ * O endereço do áudio da instrução: `https://` ou um caminho do próprio site.
+ *
+ * ⚠️ EXPORTADA para o editor do admin fazer a mesma pergunta em vez de copiar o regex. O editor
+ * antes derivava "áudio inválido" de `!isSceneActivity(...)`, que também é falso por roteiro
+ * inválido e por impulso fora de faixa — e a tela acusava um `https://` perfeito.
+ */
+export function isSceneAudioUrl(value: unknown): boolean {
   if (value === undefined) return true
   return typeof value === 'string' && value.length <= 4000 && AUDIO.test(value)
 }
+const validAudio = isSceneAudioUrl
 
 export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false

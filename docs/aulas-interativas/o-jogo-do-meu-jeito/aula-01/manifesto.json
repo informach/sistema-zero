@@ -16,7 +16,7 @@
       "content": {
         "kind": "interactive",
         "title": "Qual lugar guarda o quê?",
-        "instructions": "Ligue cada lugar ao trabalho que você faz nele. A ideia é saber onde voltar sem criar cópias por engano.",
+        "instructions": "A ideia é saber onde voltar sem criar cópias por engano.",
         "hints": [
           "O lugar de editar um projeto e o lugar de jogar sua publicação têm funções diferentes."
         ],
@@ -25,7 +25,7 @@
           "type": "question"
         },
         "checkpoint": {
-          "prompt": "Ligue cada lugar ao trabalho que você faz nele. A ideia é saber onde voltar sem criar cópias por engano.",
+          "prompt": "Qual lugar guarda a atividade ligada ao curso?",
           "choices": [
             {
               "id": "peca-1",
@@ -98,9 +98,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "O projeto da aula e a lista de projetos livres são lugares diferentes."
-        ],
+        "hints": ["O projeto da aula e a lista de projetos livres são lugares diferentes."],
         "required": true,
         "activity": {
           "type": "question"
@@ -150,9 +148,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Procure o trabalho que já contém a nave, os tiros e as telas."
-        ],
+        "hints": ["Procure o trabalho que já contém a nave, os tiros e as telas."],
         "required": true,
         "activity": {
           "type": "question"
@@ -185,19 +181,13 @@
       "title": "Qual lugar guarda o quê?",
       "objective": "Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -220,9 +210,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-3"
-        ]
+        "blockIds": ["checar-construir-3"]
       }
     },
     {
@@ -230,20 +218,13 @@
       "title": "Encontre seu jogo outra vez",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-4",
-        "video-construir-4-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

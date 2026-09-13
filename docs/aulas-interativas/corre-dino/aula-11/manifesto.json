@@ -153,9 +153,7 @@
                 "label": "Nas telas de início, jogo e fim."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Os pontos medem o tempo sobrevivido durante a partida."
           },
           {
@@ -171,9 +169,7 @@
                 "label": "Zero."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Ao iniciar prepara a variável pontos novamente com zero."
           }
         ]
@@ -194,18 +190,13 @@
       "title": "Pontos só durante a partida",
       "objective": "Pontos aumentam jogando; Pontos esperam no início; Valor fica parado no fim",
       "intent": "exploration",
-      "blockKeys": [
-        "video-missao",
-        "descoberta"
-      ],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -293,19 +284,13 @@
       "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-entrega",
-        "zappy-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ]
+        "blockIds": ["projeto"]
       }
     },
     {
@@ -313,18 +298,13 @@
       "title": "O que você descobriu?",
       "objective": "Retomar o conceito depois de explorar, criar e entregar.",
       "intent": "closing",
-      "blockKeys": [
-        "zappy-revisao",
-        "quiz-final"
-      ],
+      "blockKeys": ["zappy-revisao", "quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

@@ -61,13 +61,21 @@ export function textoAoTrocarCena(
  * sumia sem uma palavra. Às vezes ele PODE sobreviver: um roteiro só de salto vale nas duas
  * cenas de salto. Quando não vale — e é o caso comum, porque as ações são da cena —, ele é
  * descartado, mas quem descarta AVISA: é isso que `descartado` existe para dizer.
+ *
+ * ⚠️ O `lembrado` é o roteiro que o EDITOR guardou (ver `MemoriaDaAutoria`): as catorze cenas
+ * também são um grupo de rádio, e ir de `gravity` a `impulse` pela seta atravessa as doze do
+ * meio. Sem isto, a primeira cena do caminho descartava o roteiro de salto e chegar na irmã —
+ * onde ele VALE — devolvia a demonstração vazia, sem volta.
  */
 export function roteiroAoTrocarCena(
   script: readonly SceneStep[] | undefined,
   nova: SceneId,
+  lembrado?: readonly SceneStep[],
 ): { script: SceneStep[] | undefined; descartado: boolean } {
-  if (!script) return { script: undefined, descartado: false }
-  if (isSceneScript(script, nova)) return { script: [...script], descartado: false }
+  const candidato = script ?? lembrado
+  if (!candidato) return { script: undefined, descartado: false }
+  if (isSceneScript(candidato, nova))
+    return { script: candidato.map((p) => ({ ...p })), descartado: false }
   return { script: undefined, descartado: true }
 }
 
@@ -77,10 +85,54 @@ export interface Troca {
   aviso: string
 }
 
+/**
+ * O que o EDITOR lembra enquanto está aberto, para devolver quando o professor volta.
+ *
+ * ⚠️ Os quatro cartões de tipo são um grupo de rádio, e num grupo de rádio a SETA já seleciona
+ * ao passar. Ir de Experimentação até HTML pelo teclado atravessa os outros dois — e cada
+ * passagem destruía o roteiro, o HTML, o áudio, o impulso e a cena escolhida. Com esta memória
+ * o passeio deixa de ser destrutivo: voltar ao cartão de onde saiu devolve tudo.
+ *
+ * ⚠️ É memória do EDITOR, não do bloco: some ao fechar, e o aviso continua verdadeiro sobre o
+ * que será GRAVADO se ele publicar de outro tipo.
+ */
+export interface MemoriaDaAutoria {
+  scene?: SceneId
+  script?: readonly SceneStep[]
+  initialImpulse?: number
+  instructionAudioUrl?: string
+  html?: string
+}
+
+/** Guarda o que o bloco atual tem de próprio, sem apagar o que já estava lembrado. */
+export function lembrar(anterior: MemoriaDaAutoria, value: InteractiveBlock): MemoriaDaAutoria {
+  const a = value.activity
+  const nova = { ...anterior }
+  if (a.type === 'demonstration' || a.type === 'experimentation') {
+    nova.scene = a.scene
+    if (a.instructionAudioUrl) nova.instructionAudioUrl = a.instructionAudioUrl
+  }
+  if (a.type === 'demonstration' && a.script) nova.script = a.script
+  if (a.type === 'experimentation' && a.initialImpulse !== undefined)
+    nova.initialImpulse = a.initialImpulse
+  if (a.type === 'html' && a.html) nova.html = a.html
+  return nova
+}
+
 const escolhasNovas = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
   { id: 'second', label: 'Segunda possibilidade' },
 ]
+
+/** Pergunta que ninguém chegou a escrever: prompt, explicação e rótulos todos vazios. */
+const perguntaEmBranco = (c: InteractiveBlock['checkpoint']) =>
+  c !== undefined &&
+  c.prompt.trim() === '' &&
+  c.explanation.trim() === '' &&
+  c.choices.every(
+    (o) =>
+      o.label === '' || o.label === 'Primeira possibilidade' || o.label === 'Segunda possibilidade',
+  )
 
 /** A cena deste bloco, quando ele é de cena. */
 const cenaDe = (a: LearningActivity): SceneId | null =>
@@ -93,16 +145,20 @@ const cenaDe = (a: LearningActivity): SceneId | null =>
  * a cena — então, carregado para uma terceira cena, ele fica lá dentro sem forma de tirar e o
  * bloco passa a ser recusado na publicação, com uma mensagem que fala de verificação.
  */
-export function trocarCena(value: InteractiveBlock, scene: SceneId): Troca {
+export function trocarCena(
+  value: InteractiveBlock,
+  scene: SceneId,
+  memoria: MemoriaDaAutoria = {},
+): Troca {
   const a = value.activity
   if (a.type !== 'demonstration' && a.type !== 'experimentation') return { bloco: value, aviso: '' }
   const texto = textoAoTrocarCena(value, a.scene, scene)
   if (a.type === 'demonstration') {
-    const { script, descartado } = roteiroAoTrocarCena(a.script, scene)
+    const { script, descartado } = roteiroAoTrocarCena(a.script, scene, memoria.script)
     return {
       bloco: { ...value, ...texto, activity: { ...a, scene, script } },
       aviso: descartado
-        ? 'O roteiro que você tinha escrito era desta cena e não vale na nova. A demonstração voltou ao roteiro que vem com a cena escolhida.'
+        ? 'O roteiro que você escreveu é de outra cena e não vale nesta. A demonstração está com o roteiro que vem com a cena escolhida — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher uma cena em que ele valha.'
         : '',
     }
   }
@@ -114,7 +170,9 @@ export function trocarCena(value: InteractiveBlock, scene: SceneId): Troca {
       activity: {
         ...a,
         scene,
-        initialImpulse: mantemImpulso ? a.initialImpulse : undefined,
+        // ⚠️ Mesma história do roteiro: atravessar uma cena sem salto zerava o impulso, e
+        // chegar na outra cena de salto dava 9 em vez do que a professora tinha ajustado.
+        initialImpulse: mantemImpulso ? (a.initialImpulse ?? memoria.initialImpulse) : undefined,
       },
     },
     aviso:
@@ -137,31 +195,48 @@ export function trocarCena(value: InteractiveBlock, scene: SceneId): Troca {
  * inteiro (os dois tipos de cena o têm); o roteiro só existe na demonstração, então sair dela
  * com um roteiro seu agora AVISA, em vez de sumir.
  */
-export function trocarTipo(value: InteractiveBlock, tipo: LearningActivity['type']): Troca {
+export function trocarTipo(
+  value: InteractiveBlock,
+  tipo: LearningActivity['type'],
+  memoria: MemoriaDaAutoria = {},
+): Troca {
   const a = value.activity
-  const cena = cenaDe(a)
+  const cena = cenaDe(a) ?? memoria.scene ?? null
   const avisos: string[] = []
 
-  if ((tipo === 'demonstration' || tipo === 'experimentation') && cena === null && value.checkpoint)
+  // ⚠️ A condição NÃO pode ser `cena === null`: desde que a memória devolve a cena escolhida
+  // antes, `cena` quase nunca é nula, e o aviso morria calado justamente no caminho comum
+  // (Pergunta curta → Experimentação). Quem decide é o DESTINO: toda cena descarta a pergunta.
+  if ((tipo === 'demonstration' || tipo === 'experimentation') && value.checkpoint)
     avisos.push(
       'A pergunta de verificação saiu: uma cena não carrega pergunta anexa, porque as duas guardariam a resposta no mesmo lugar.',
     )
   if (a.type === 'demonstration' && a.script && tipo !== 'demonstration')
     avisos.push(
-      'O roteiro que você escreveu vive na demonstração, então saiu com a troca de tipo. Desfazer a troca não o traz de volta.',
+      'O roteiro que você escreveu vive na demonstração. Ele está guardado enquanto este editor estiver aberto — voltar para Demonstração o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
+    )
+  if (a.type === 'experimentation' && a.initialImpulse !== undefined && tipo !== 'experimentation')
+    avisos.push(
+      'O impulso inicial que você ajustou só existe na experimentação. Ele está guardado enquanto este editor estiver aberto — voltar para Experimentação o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
+    )
+  if (a.type === 'html' && a.html && tipo !== 'html')
+    avisos.push(
+      'O HTML que você escreveu está guardado enquanto este editor estiver aberto — voltar para Experiência em HTML o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
     )
 
   // ⚠️ A cena ACOMPANHA entre as duas irmãs: são o mesmo assunto, e voltar para `world`
   // obrigaria a reescolher toda vez.
   const audio =
-    a.type === 'demonstration' || a.type === 'experimentation' ? a.instructionAudioUrl : undefined
+    a.type === 'demonstration' || a.type === 'experimentation'
+      ? a.instructionAudioUrl
+      : memoria.instructionAudioUrl
   let activity: LearningActivity
   if (tipo === 'demonstration')
     activity = {
       type: tipo,
       scene: cena ?? 'world',
       instructionAudioUrl: audio,
-      script: a.type === 'demonstration' ? a.script : undefined,
+      script: a.type === 'demonstration' ? a.script : memoria.script?.map((p) => ({ ...p })),
     }
   else if (tipo === 'experimentation') {
     const destino = cena ?? 'world'
@@ -169,16 +244,17 @@ export function trocarTipo(value: InteractiveBlock, tipo: LearningActivity['type
       type: tipo,
       scene: destino,
       instructionAudioUrl: audio,
-      initialImpulse:
-        a.type === 'experimentation' && CENAS_COM_IMPULSO.includes(destino)
+      initialImpulse: CENAS_COM_IMPULSO.includes(destino)
+        ? a.type === 'experimentation'
           ? a.initialImpulse
-          : undefined,
+          : memoria.initialImpulse
+        : undefined,
     }
   } else if (tipo === 'question') activity = { type: tipo }
   else
     activity = {
       type: 'html',
-      html: a.type === 'html' ? a.html : HTML_INICIAL,
+      html: a.type === 'html' ? a.html : (memoria.html ?? HTML_INICIAL),
     }
 
   const viraCena = activity.type === 'demonstration' || activity.type === 'experimentation'
@@ -195,9 +271,14 @@ export function trocarTipo(value: InteractiveBlock, tipo: LearningActivity['type
         : {}),
       checkpoint: viraCena
         ? undefined
-        : tipo === 'question' && !value.checkpoint
-          ? { prompt: '', choices: escolhasNovas(), correctChoiceId: 'first', explanation: '' }
-          : value.checkpoint,
+        : // ⚠️ A pergunta EM BRANCO criada ao passar por "Pergunta curta" não fica presa: ela
+          // invalida o bloco (o prompt vazio é recusado) e a parede de publicação fala de
+          // "complete os campos", sem dizer qual. Quem escreveu alguma coisa, fica.
+          tipo !== 'question' && perguntaEmBranco(value.checkpoint)
+          ? undefined
+          : tipo === 'question' && !value.checkpoint
+            ? { prompt: '', choices: escolhasNovas(), correctChoiceId: 'first', explanation: '' }
+            : value.checkpoint,
     },
     aviso: avisos.join(' '),
   }

@@ -16,16 +16,14 @@
       "content": {
         "kind": "interactive",
         "title": "Troque sem perder a configuração",
-        "instructions": "Organize a substituição do bloco que cria os asteroides, preservando o sorteio e os campos.",
-        "hints": [
-          "O bloco antigo ajuda a conferir o novo antes de ser removido."
-        ],
+        "instructions": "A troca preserva o sorteio e os campos do bloco antigo.",
+        "hints": ["O bloco antigo ajuda a conferir o novo antes de ser removido."],
         "required": true,
         "activity": {
           "type": "question"
         },
         "checkpoint": {
-          "prompt": "Organize a substituição do bloco que cria os asteroides, preservando o sorteio e os campos.",
+          "prompt": "Qual é o primeiro passo para trocar o bloco que cria os asteroides?",
           "choices": [
             {
               "id": "peca-1",
@@ -87,9 +85,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Conte quantos blocos de criação ficaram dentro do relógio."
-        ],
+        "hints": ["Conte quantos blocos de criação ficaram dentro do relógio."],
         "required": true,
         "activity": {
           "type": "question"
@@ -139,9 +135,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Cada nascimento cria outro objeto no grupo."
-        ],
+        "hints": ["Cada nascimento cria outro objeto no grupo."],
         "required": true,
         "activity": {
           "type": "question"
@@ -174,19 +168,13 @@
       "title": "Troque sem perder a configuração",
       "objective": "Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -207,9 +195,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-2"
-        ]
+        "blockIds": ["checar-construir-2"]
       }
     },
     {
@@ -217,20 +203,13 @@
       "title": "Cada pedra ganha movimento",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-3",
-        "video-construir-3-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

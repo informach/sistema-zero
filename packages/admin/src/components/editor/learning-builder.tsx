@@ -6,17 +6,23 @@ import {
   type LearningChoice,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import { isSceneActivity, SCENE_LIMITS, SCENE_MODELS } from '@sistemazero/core/learning/scene'
+import { isSceneAudioUrl, SCENE_LIMITS, SCENE_MODELS } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 // ⚠️ Caminho relativo, e não o alias `@/`: o ensaio visual do kids compila este arquivo pelo
 // CAMINHO, e lá o alias do admin não existe.
-import { textoAoTrocarCena, trocarCena, trocarTipo } from '../../lib/scene-authoring-rules'
+import {
+  lembrar,
+  type MemoriaDaAutoria,
+  textoAoTrocarCena,
+  trocarCena,
+  trocarTipo,
+} from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
 import { SceneAuthoring } from './scene-authoring'
 import { ScenePicker } from './scene-picker'
@@ -140,11 +146,20 @@ export function LearningBuilder({
   const id = useId()
   const [preview, setPreview] = useState(false)
   const [aviso, setAviso] = useState('')
+  // ⚠️ A memória do que o professor escreveu, viva enquanto este editor estiver aberto. Num
+  // grupo de rádio a SETA já seleciona ao passar, então ir de um cartão ao outro pelo teclado
+  // atravessava os do meio destruindo roteiro, HTML, áudio, impulso e a cena escolhida.
+  const memoria = useRef<MemoriaDaAutoria>({})
+  memoria.current = lembrar(memoria.current, value)
   const a = value.activity
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
   const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
-  const audioInvalido = Boolean(cena?.instructionAudioUrl) && !isSceneActivity(cena)
+  // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por roteiro inválido
+  // e por impulso fora de faixa — então a tela acusava o endereço (um `https://` perfeito)
+  // quando o defeito era outro. Apontar o culpado errado com precisão é pior que a parede.
+  const audioInvalido =
+    Boolean(cena?.instructionAudioUrl) && !isSceneAudioUrl(cena?.instructionAudioUrl)
 
   /**
    * ⚠️ O editor NÃO decide mais o que sobrevive a uma troca: quem decide são as regras puras de
@@ -155,6 +170,14 @@ export function LearningBuilder({
     setAviso(recado)
     onChange(bloco)
   }
+
+  /** O recado da última troca. ⚠️ FORA do `{cena && …}`: o aviso mais importante é justamente o
+   *  de SAIR de uma cena, e ali ele desmontava junto com o bloco que o mostrava. */
+  const avisoDaTroca = aviso ? (
+    <p role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+      {aviso}
+    </p>
+  ) : null
 
   return (
     <div className="space-y-5">
@@ -193,7 +216,7 @@ export function LearningBuilder({
                   name={`${id}-kind`}
                   value={kind.type}
                   checked={a.type === kind.type}
-                  onChange={() => aplicar(trocarTipo(value, kind.type))}
+                  onChange={() => aplicar(trocarTipo(value, kind.type, memoria.current))}
                   className="accent-primary"
                 />
                 {kind.label}
@@ -204,17 +227,17 @@ export function LearningBuilder({
         </div>
       </fieldset>
 
+      {avisoDaTroca}
+
       {cena && (
         <div className="space-y-4">
           {/* ⚠️ Sem `<Field>`: ele desenha um `<label>` sem `for` e sem controle dentro, então a
               palavra "Cena" não nomeia nada para o leitor de tela. O `ScenePicker` já traz os
               próprios `<fieldset>`/`<legend>`, um por família. */}
-          <ScenePicker value={cena.scene} onChange={(scene) => aplicar(trocarCena(value, scene))} />
-          {aviso && (
-            <p role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-              {aviso}
-            </p>
-          )}
+          <ScenePicker
+            value={cena.scene}
+            onChange={(scene) => aplicar(trocarCena(value, scene, memoria.current))}
+          />
           {cena.type === 'demonstration' ? (
             <SceneAuthoring activity={cena} onChange={activity} />
           ) : (
@@ -294,7 +317,20 @@ export function LearningBuilder({
           id={`${id}-hints`}
           rows={3}
           value={value.hints.join('\n')}
-          onChange={(e) => onChange({ ...value, hints: e.target.value.split('\n').slice(0, 10) })}
+          // ⚠️ Linha em branco NÃO vira pista. `isInteractiveBlock` recusa pistas repetidas, e
+          // duas linhas vazias são repetidas — separar as pistas com uma linha em branco, que é
+          // o gesto mais natural desta caixa, derrubava a publicação com o recado genérico de
+          // "complete os campos da descoberta", sem nada apontar para aqui.
+          onChange={(e) =>
+            onChange({
+              ...value,
+              hints: e.target.value
+                .split('\n')
+                .map((linha) => linha.trim())
+                .filter(Boolean)
+                .slice(0, 10),
+            })
+          }
         />
       </Field>
       {!sectionCriteria && (

@@ -61,9 +61,7 @@
         "kind": "interactive",
         "title": "Compare o sinal da velocidade",
         "instructions": "Os dois tiros começam no mesmo lugar. Compare vy menos 9 e vy mais 9. Avance os passos e observe o número y e a direção. Só o sinal mudou; o vx continua zero.",
-        "hints": [
-          "O topo da tela tem valores menores de y. Veja em qual teste o y diminui."
-        ],
+        "hints": ["O topo da tela tem valores menores de y. Veja em qual teste o y diminui."],
         "required": false,
         "activity": {
           "type": "html",
@@ -144,9 +142,7 @@
                 "label": "Usar sempre o número 400 no x do tiro."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Ler o sprite acompanha sua posição atual; um número fixo continua igual."
           },
           {
@@ -162,9 +158,7 @@
                 "label": "Para não continuar atualizando um objeto que já foi embora."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A limpeza cuida dos tiros que saíram, sem apagar a nave nem os tiros que ainda estão visíveis."
           }
         ]
@@ -177,17 +171,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Retomar a entrega do Dia 1, com nave, estrelas e setas funcionando.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -195,10 +185,7 @@
       "title": "Prepare o grupo dos tiros",
       "intent": "application",
       "objective": "Usar um grupo para cuidar de vários tiros.",
-      "blockKeys": [
-        "video-grupo-tiros",
-        "fala-grupo-tiros"
-      ],
+      "blockKeys": ["video-grupo-tiros", "fala-grupo-tiros"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -227,10 +214,7 @@
       "title": "Escute a barra de espaço",
       "intent": "application",
       "objective": "Criar uma resposta a uma tecla específica.",
-      "blockKeys": [
-        "video-espaco",
-        "fala-espaco"
-      ],
+      "blockKeys": ["video-espaco", "fala-espaco"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -259,17 +243,13 @@
       "title": "Observe de onde o tiro sai",
       "intent": "demonstration",
       "objective": "Distinguir número fixo de leitura da posição atual.",
-      "blockKeys": [
-        "video-origem"
-      ],
+      "blockKeys": ["video-origem"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-origem"
-        ]
+        "blockIds": ["video-origem"]
       }
     },
     {
@@ -277,10 +257,7 @@
       "title": "Encaixe o endereço da nave no tiro",
       "intent": "application",
       "objective": "Ler centro x e posição y ao criar o tiro.",
-      "blockKeys": [
-        "video-criar-tiro",
-        "fala-criar-tiro"
-      ],
+      "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -333,17 +310,13 @@
       "title": "Compare o sinal da velocidade",
       "intent": "exploration",
       "objective": "Descobrir o que o sinal de vy muda.",
-      "blockKeys": [
-        "experiencia-direcao"
-      ],
+      "blockKeys": ["experiencia-direcao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-direcao"
-        ]
+        "blockIds": ["experiencia-direcao"]
       }
     },
     {
@@ -351,10 +324,7 @@
       "title": "Configure o disparo e seu som",
       "intent": "application",
       "objective": "Criar velocidade vertical e som no evento.",
-      "blockKeys": [
-        "video-velocidade-som",
-        "fala-velocidade-som"
-      ],
+      "blockKeys": ["video-velocidade-som", "fala-velocidade-som"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -419,10 +389,7 @@
       "title": "Mova, retire e desenhe os tiros",
       "intent": "application",
       "objective": "Aplicar um mesmo ciclo ao grupo inteiro.",
-      "blockKeys": [
-        "video-ciclo-tiros",
-        "fala-ciclo-tiros"
-      ],
+      "blockKeys": ["video-ciclo-tiros", "fala-ciclo-tiros"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -479,17 +446,13 @@
       "title": "Observe o teste de dois disparos",
       "intent": "demonstration",
       "objective": "Conferir a origem do tiro em duas posições.",
-      "blockKeys": [
-        "video-testar"
-      ],
+      "blockKeys": ["video-testar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-testar"
-        ]
+        "blockIds": ["video-testar"]
       }
     },
     {
@@ -497,18 +460,13 @@
       "title": "Teste e envie sua construção",
       "intent": "delivery",
       "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados ao sair da tela.",
-      "blockKeys": [
-        "entrega-fala-v6",
-        "projeto"
-      ],
+      "blockKeys": ["entrega-fala-v6", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "nave",
@@ -640,17 +598,13 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados ao sair da tela.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -658,17 +612,13 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ],

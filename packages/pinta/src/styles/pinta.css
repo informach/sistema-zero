@@ -789,16 +789,23 @@
  * ⚠️⚠️ O cartão da galeria NÃO usa `content-visibility: auto` (13/09/2026). Ele usou entre
  * 19/08 e 13/09, e o sintoma era o cursor "piscando" ao passar por cima de um desenho.
  *
- * A mecânica: passar o ponteiro torna o elemento RELEVANTE, o navegador renderiza o conteúdo,
- * a altura real substitui a reservada, a linha da grade reflui, o ponteiro deixa de estar em
- * cima, o cartão volta a ser irrelevante e encolhe — e recomeça. O cursor alterna entre mão e
- * seta várias vezes por segundo.
+ * A mecânica: a altura RESERVADA e a altura REAL discordam, então tornar o elemento relevante
+ * (basta ele se aproximar da janela) muda a altura da página, o que o empurra para fora da
+ * margem de relevância, o que o faz voltar à altura reservada — e recomeça, em laço. O que se
+ * VÊ é o cursor, porque o conteúdo pulado não participa do teste de acerto do ponteiro: com o
+ * conteúdo pulado o ponteiro acerta a caixa do cartão (seta), com o conteúdo renderizado
+ * acerta o botão de dentro (mão). Ele alterna várias vezes por segundo.
  *
- * A altura reservada era `326px`, medida a 1440px com o menu aberto (quatro colunas). Mas a
- * miniatura é `aspect-square w-full`: a altura do cartão DEPENDE da largura dele, que depende
- * do número de colunas. Em qualquer outra largura os dois números discordam por construção.
- * (No Estúdio a mesma técnica é segura porque lá o cartão tem altura FIXA, `h-72` = 288px, e
- * o tamanho reservado casa com ela.)
+ * A altura reservada era `auto 246px 326px`, medida a 1440px com o menu aberto (quatro
+ * colunas). Mas a miniatura é `aspect-square w-full`: a altura do cartão DEPENDE da largura
+ * dele, que depende do número de colunas. Em qualquer outra largura os dois números discordam
+ * por construção — e a palavra `auto` do `contain-intrinsic-size`, que manda o navegador
+ * LEMBRAR o último tamanho renderizado, não salvou: ela estava lá o tempo todo.
+ *
+ * ⚠️ A régua que sobra: `content-visibility: auto` só é seguro onde a altura do elemento é
+ * FIXA e o tamanho reservado casa com ela. No Estúdio, `.sz-project-card` tem `h-72` = 288px e
+ * reserva 288px — fica. `.sz-kit-content-group`, que embrulhava uma GRADE de cartões e
+ * reservava 420px chutados, saiu junto (13/09/2026).
  *
  * Não se perdeu otimização: o custo real é pintar o canvas da miniatura, e isso já é preguiçoso
  * por `IntersectionObserver` desde sempre (`useNearViewport` no `AssetCard`, `paint={near}`).

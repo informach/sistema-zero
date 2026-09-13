@@ -53,9 +53,7 @@
                 "label": "Mudar a cor do Dino."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A comparação isolou o impulso inicial."
           },
           {
@@ -71,9 +69,7 @@
                 "label": "Aplicar gravidade ao personagem."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Gravidade muda o movimento; desenho muda a imagem."
           },
           {
@@ -89,9 +85,7 @@
                 "label": "Desenho, controle, gravidade."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Calculamos o movimento antes de mostrar o personagem."
           }
         ]
@@ -192,17 +186,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Hoje o Dino vai saltar e voltar ao chão. Primeiro vamos descobrir por que ele ainda não consegue pular.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -210,10 +200,7 @@
       "title": "Dê o comando de pulo",
       "intent": "application",
       "objective": "Adicionar controle e reconhecer o estado inicial suspenso.",
-      "blockKeys": [
-        "video-controle-provisorio",
-        "fala-controle-provisorio"
-      ],
+      "blockKeys": ["video-controle-provisorio", "fala-controle-provisorio"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -246,17 +233,13 @@
       "title": "O que faz o Dino voltar?",
       "intent": "exploration",
       "objective": "Comparar a trajetória com e sem aplicar gravidade.",
-      "blockKeys": [
-        "experiencia-gravidade-modelo"
-      ],
+      "blockKeys": ["experiencia-gravidade-modelo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-gravidade-modelo"
-        ]
+        "blockIds": ["experiencia-gravidade-modelo"]
       }
     },
     {
@@ -264,10 +247,7 @@
       "title": "Traga o Dino para o chão",
       "intent": "application",
       "objective": "Aplicar gravidade antes do controle a cada quadro.",
-      "blockKeys": [
-        "video-aplicar-gravidade",
-        "fala-aplicar-gravidade"
-      ],
+      "blockKeys": ["video-aplicar-gravidade", "fala-aplicar-gravidade"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -314,17 +294,13 @@
       "title": "O que muda a altura?",
       "intent": "exploration",
       "objective": "Comparar dois impulsos mantendo a mesma gravidade.",
-      "blockKeys": [
-        "experiencia-impulso-modelo"
-      ],
+      "blockKeys": ["experiencia-impulso-modelo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-impulso-modelo"
-        ]
+        "blockIds": ["experiencia-impulso-modelo"]
       }
     },
     {
@@ -332,10 +308,7 @@
       "title": "Prepare o salto do seu jogo",
       "intent": "application",
       "objective": "Fixar uma força adequada ao percurso que será construído.",
-      "blockKeys": [
-        "video-regular-pulo",
-        "fala-regular-pulo"
-      ],
+      "blockKeys": ["video-regular-pulo", "fala-regular-pulo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -382,18 +355,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "O Dino recebe gravidade antes do controle e pula com força 14.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "gravidade",
@@ -461,17 +429,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "O Dino recebe gravidade antes do controle e pula com força 14.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -479,17 +443,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

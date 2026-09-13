@@ -41,13 +41,13 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Um carro no lugar da nave**
 
-Modelo: `prediction`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
 Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação.
 
-**Previsões (sem nota):** Trocar um recurso e testar o efeito no tema · Mudar todos os blocos antes de jogar · Apagar o projeto original para começar uma cópia
+**Previsões (etapa aposentada com o modelo `prediction` — ver o guia de autoria):** Trocar um recurso e testar o efeito no tema · Mudar todos os blocos antes de jogar · Apagar o projeto original para começar uma cópia
 
-**Depois de observar:** Uma mudança com intenção clara permite comparar o resultado. Você pode começar por um recurso, preservar o original e testar se a nova versão comunica a ideia da estrada.
+**Depois de observar (sem lugar na pergunta — ver o guia de autoria):** Uma mudança com intenção clara permite comparar o resultado. Você pode começar por um recurso, preservar o original e testar se a nova versão comunica a ideia da estrada.
 
 **Pergunta:** Você mudou o controle e as imagens ao mesmo tempo e não gostou do resultado. Como investigar?
 

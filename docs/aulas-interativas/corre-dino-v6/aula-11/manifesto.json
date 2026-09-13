@@ -60,9 +60,7 @@
                 "label": "Um número zero digitado no placar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O valor conectado é lido novamente quando o jogo desenha."
           },
           {
@@ -78,9 +76,7 @@
                 "label": "Somente enquanto a tela é jogando."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A condição protege o incremento; o resultado fica guardado."
           },
           {
@@ -96,9 +92,7 @@
                 "label": "Para somar matematicamente todas as palavras."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A conta matemática e a composição de texto têm funções diferentes."
           }
         ]
@@ -201,17 +195,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Vamos guardar pontos, mostrar o placar e contar o resultado quando a partida termina.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -219,10 +209,7 @@
       "title": "Crie a memória dos pontos",
       "intent": "application",
       "objective": "Criar uma variável com valor inicial.",
-      "blockKeys": [
-        "video-guardar-pontos",
-        "fala-guardar-pontos"
-      ],
+      "blockKeys": ["video-guardar-pontos", "fala-guardar-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -253,10 +240,7 @@
       "title": "Conecte o placar à memória",
       "intent": "application",
       "objective": "Usar o valor da variável no desenho do placar.",
-      "blockKeys": [
-        "video-mostrar-pontos",
-        "fala-mostrar-pontos"
-      ],
+      "blockKeys": ["video-mostrar-pontos", "fala-mostrar-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -304,17 +288,13 @@
       "title": "Veja como deixar o número legível",
       "intent": "demonstration",
       "objective": "Reconhecer contraste suficiente para ler o placar.",
-      "blockKeys": [
-        "video-contraste"
-      ],
+      "blockKeys": ["video-contraste"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-contraste"
-        ]
+        "blockIds": ["video-contraste"]
       }
     },
     {
@@ -322,17 +302,13 @@
       "title": "Em quais momentos os pontos crescem?",
       "intent": "exploration",
       "objective": "Fazer o relógio pontuar apenas durante a partida.",
-      "blockKeys": [
-        "experiencia-quando-contar"
-      ],
+      "blockKeys": ["experiencia-quando-contar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-quando-contar"
-        ]
+        "blockIds": ["experiencia-quando-contar"]
       }
     },
     {
@@ -340,10 +316,7 @@
       "title": "Conte um ponto por segundo",
       "intent": "application",
       "objective": "Criar uma rotina periódica com condição de estado.",
-      "blockKeys": [
-        "video-relogio-pontos",
-        "fala-relogio-pontos"
-      ],
+      "blockKeys": ["video-relogio-pontos", "fala-relogio-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -391,17 +364,13 @@
       "title": "Veja o número entrar na frase",
       "intent": "demonstration",
       "objective": "Compor uma mensagem com texto, valor e texto.",
-      "blockKeys": [
-        "video-frase-dinamica"
-      ],
+      "blockKeys": ["video-frase-dinamica"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-frase-dinamica"
-        ]
+        "blockIds": ["video-frase-dinamica"]
       }
     },
     {
@@ -409,10 +378,7 @@
       "title": "Conte o resultado na tela de fim",
       "intent": "application",
       "objective": "Conectar a composição ao subtítulo do ramo fim.",
-      "blockKeys": [
-        "video-montar-frase",
-        "fala-montar-frase"
-      ],
+      "blockKeys": ["video-montar-frase", "fala-montar-frase"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -474,18 +440,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Pontos começam em zero, aumentam uma vez por segundo somente jogando e aparecem na frase de fim.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "pontos-zero",
@@ -632,17 +593,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Pontos começam em zero, aumentam uma vez por segundo somente jogando e aparecem na frase de fim.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -650,17 +607,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

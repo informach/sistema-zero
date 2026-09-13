@@ -49,7 +49,7 @@ export function LevelUpCelebration({
       /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da tela. O
          ganho de ferramenta entra aqui como UMA linha curta (`toolsGainInline`), então a altura
          é estável; a rede de segurança fica para fonte grande do sistema ou janela muito baixa. */
-      className="sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
+      className="kids-sobre-escuro sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
       onClick={onClose}
       role="presentation"
     >

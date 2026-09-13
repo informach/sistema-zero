@@ -31,9 +31,7 @@
         "kind": "interactive",
         "title": "Compare e explique",
         "instructions": "Compare a chama na frente e atrás da pedra. As duas formas continuam presentes. Mude só a ordem, registre os dois resultados e descubra quando conseguimos ver a pedra inteira.",
-        "hints": [
-          "A lista continua com duas formas. Compare quem cobre quem."
-        ],
+        "hints": ["A lista continua com duas formas. Compare quem cobre quem."],
         "required": false,
         "activity": {
           "type": "html",
@@ -261,9 +259,7 @@
                 "label": "No tamanho da nave em outro desenho."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A ordem pode ser revisada no quadro em que a composição ficou diferente."
           },
           {
@@ -279,9 +275,7 @@
                 "label": "A forma é refeita a partir da nova posição do ponto."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O Pinta redesenha a forma vetorial. É diferente de mover um recorte de pixels."
           }
         ]
@@ -294,17 +288,13 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "Reabrir o asteroide vetorial 64 × 64 da aula 4, com espaço superior para a chama.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -312,17 +302,13 @@
       "title": "Experimente: a pedra sumiu ou foi coberta?",
       "intent": "exploration",
       "objective": "Comparar as mesmas formas com a chama na frente e atrás.",
-      "blockKeys": [
-        "experimento-ordem"
-      ],
+      "blockKeys": ["experimento-ordem"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experimento-ordem"
-        ]
+        "blockIds": ["experimento-ordem"]
       }
     },
     {
@@ -330,19 +316,13 @@
       "title": "Desenhe a chama atrás da pedra",
       "intent": "application",
       "objective": "Traçar chama dentro do quadro e ajustar a ordem pela aparência.",
-      "blockKeys": [
-        "video-chama-externa",
-        "orientacao-chama-externa",
-        "conferir-chama-externa"
-      ],
+      "blockKeys": ["video-chama-externa", "orientacao-chama-externa", "conferir-chama-externa"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-chama-externa"
-        ]
+        "blockIds": ["conferir-chama-externa"]
       }
     },
     {
@@ -350,19 +330,13 @@
       "title": "Faça uma chama menor por dentro",
       "intent": "application",
       "objective": "Duplicar, reduzir e ordenar uma forma para compor o fogo.",
-      "blockKeys": [
-        "video-chama-interna",
-        "orientacao-chama-interna",
-        "conferir-chama-interna"
-      ],
+      "blockKeys": ["video-chama-interna", "orientacao-chama-interna", "conferir-chama-interna"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-chama-interna"
-        ]
+        "blockIds": ["conferir-chama-interna"]
       }
     },
     {
@@ -370,17 +344,13 @@
       "title": "Observe: uma mudança pequena já anima",
       "intent": "demonstration",
       "objective": "Separar mudança dos detalhes e deslocamento do desenho inteiro.",
-      "blockKeys": [
-        "video-mudanca-demo"
-      ],
+      "blockKeys": ["video-mudanca-demo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-mudanca-demo"
-        ]
+        "blockIds": ["video-mudanca-demo"]
       }
     },
     {
@@ -388,19 +358,13 @@
       "title": "Duplique e mude alguns detalhes",
       "intent": "application",
       "objective": "Criar dois quadros com mudanças locais no vetor.",
-      "blockKeys": [
-        "video-animar-pedra",
-        "orientacao-animar-pedra",
-        "conferir-animar-pedra"
-      ],
+      "blockKeys": ["video-animar-pedra", "orientacao-animar-pedra", "conferir-animar-pedra"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-animar-pedra"
-        ]
+        "blockIds": ["conferir-animar-pedra"]
       }
     },
     {
@@ -408,19 +372,13 @@
       "title": "Dê o nome e confira as duas artes",
       "intent": "application",
       "objective": "Renomear para girando e confirmar as artes que serão usadas no Estúdio.",
-      "blockKeys": [
-        "video-nome-girando",
-        "orientacao-nome-girando",
-        "conferir-nome-girando"
-      ],
+      "blockKeys": ["video-nome-girando", "orientacao-nome-girando", "conferir-nome-girando"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-nome-girando"
-        ]
+        "blockIds": ["conferir-nome-girando"]
       }
     },
     {
@@ -428,18 +386,13 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Asteroide com chamas atrás da pedra e animação girando de dois quadros a 8 fps; nave voando preservada.",
-      "blockKeys": [
-        "orientacao-entrega-v6",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["entrega-galeria-v6"]
       }
     },
     {
@@ -447,17 +400,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Asteroide com chamas atrás da pedra e animação girando de dois quadros a 8 fps; nave voando preservada.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -465,17 +414,13 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ]

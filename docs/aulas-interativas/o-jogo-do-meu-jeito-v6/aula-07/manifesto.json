@@ -187,9 +187,7 @@
                 "label": "Escolher o quadro −30 da animação."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "y indica posição; neste jogo o sentido positivo para baixo permite a pedra entrar com vy 3."
           },
           {
@@ -205,9 +203,7 @@
                 "label": "Não, se mantivermos os grupos, nomes e conexões que a lógica usa."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A aparência pode mudar conservando o comportamento. Ainda assim, testar confirma que a troca preservou as referências."
           }
         ]
@@ -220,17 +216,13 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "Mesmo projeto da aula 6, nave animada e arte asteroide já em No projeto.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -248,9 +240,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-folha-asteroide"
-        ]
+        "blockIds": ["conferir-folha-asteroide"]
       }
     },
     {
@@ -258,17 +248,13 @@
       "title": "Observe: uma nave, muitos nascimentos",
       "intent": "demonstration",
       "objective": "Distinguir relógio do jogo e quadros de animação; situar nascimento e animação de cada asteroide.",
-      "blockKeys": [
-        "video-tempo-demo"
-      ],
+      "blockKeys": ["video-tempo-demo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-tempo-demo"
-        ]
+        "blockIds": ["video-tempo-demo"]
       }
     },
     {
@@ -276,19 +262,13 @@
       "title": "Troque a peça e aproveite o sorteio",
       "intent": "application",
       "objective": "Substituir o criador do kit preservando o x aleatório e eliminando a duplicação.",
-      "blockKeys": [
-        "video-novo-criador",
-        "orientacao-novo-criador",
-        "conferir-novo-criador"
-      ],
+      "blockKeys": ["video-novo-criador", "orientacao-novo-criador", "conferir-novo-criador"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-novo-criador"
-        ]
+        "blockIds": ["conferir-novo-criador"]
       }
     },
     {
@@ -296,19 +276,13 @@
       "title": "Anime cada asteroide que nascer",
       "intent": "application",
       "objective": "Animar o sprite recém-criado no mesmo ramo e testar a mecânica.",
-      "blockKeys": [
-        "video-animar-cada",
-        "orientacao-animar-cada",
-        "conferir-animar-cada"
-      ],
+      "blockKeys": ["video-animar-cada", "orientacao-animar-cada", "conferir-animar-cada"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-animar-cada"
-        ]
+        "blockIds": ["conferir-animar-cada"]
       }
     },
     {
@@ -316,18 +290,13 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Um único criador de asteroides com imagem, dentro do relógio e da condição jogando; cada novo sprite animado, mecânica preservada.",
-      "blockKeys": [
-        "orientacao-entrega-v6",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["entrega-galeria-v6"]
       }
     },
     {
@@ -335,17 +304,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Um único criador de asteroides com imagem, dentro do relógio e da condição jogando; cada novo sprite animado, mecânica preservada.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -353,17 +318,13 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ]

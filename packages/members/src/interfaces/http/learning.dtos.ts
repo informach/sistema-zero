@@ -87,10 +87,15 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   /**
-   * As quatro atividades. ⚠️ Esta união é FECHADA e o Elysia roda `normalize`: campo que o
-   * admin mande sem estar declarado aqui é apagado em silêncio no POST, o bloco salva sem
-   * ele, e só se descobre quando o professor reabre o editor. Mexer aqui vem ANTES de mexer
-   * no admin, nunca depois.
+   * As quatro atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
+   * que o editor mande sem estar declarado só é aceito por acidente.
+   *
+   * ⚠️ E o comportamento é diferente em cada nível, MEDIDO no fluxo real de rascunho →
+   * publicação: campo não declarado no nível do BLOCO é RECUSADO alto (400 `VALIDATION_ERROR`);
+   * campo não declarado DENTRO de `activity` não é recusado nem apagado — é gravado tal e
+   * qual, porque o rascunho usa `additionalProperties: true` e o `t.Object` aninhado do
+   * TypeBox não fecha as extras. Quem protege a criança disso é o `publicInteractiveBlock`,
+   * que poda por ALLOWLIST (`PUBLIC_ACTIVITY_FIELDS`) antes de o bloco chegar nela.
    *
    * Saíram `simulation` (a geração 1), `experiment`, `comparison`, `prediction` e `sequence`:
    * nenhum curso usava os três primeiros, e os dois últimos foram reescritos no conteúdo.

@@ -46,9 +46,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Personalizar é uma escolha que pode continuar depois."
-        ],
+        "hints": ["Personalizar é uma escolha que pode continuar depois."],
         "required": true,
         "activity": {
           "type": "question"
@@ -109,9 +107,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Conte a ação que você fez e o resultado que apareceu."
-        ],
+        "hints": ["Conte a ação que você fez e o resultado que apareceu."],
         "required": true,
         "activity": {
           "type": "question"
@@ -161,9 +157,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Guardar para continuar e entregar ao professor são ações diferentes."
-        ],
+        "hints": ["Guardar para continuar e entregar ao professor são ações diferentes."],
         "required": true,
         "activity": {
           "type": "question"
@@ -210,9 +204,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-1"
-        ]
+        "blockIds": ["checar-construir-1"]
       }
     },
     {
@@ -233,9 +225,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-4"
-        ]
+        "blockIds": ["checar-construir-4"]
       }
     },
     {
@@ -243,20 +233,13 @@
       "title": "Seu primeiro jogo vem aí",
       "objective": "Distinguir guardar um projeto de entregar uma atividade e localizar o Dia 1. Esta introdução não exige uma criação.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-5",
-        "video-construir-5-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

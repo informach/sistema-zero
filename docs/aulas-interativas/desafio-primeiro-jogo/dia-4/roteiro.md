@@ -42,17 +42,22 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Quem faz o quê no placar?**
 
-Modelo: `sequence`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
-Associe cada tarefa ao momento correto. Pense no que muda o número e no que apenas o mostra.
+Pense no que muda o número do placar e no que apenas o mostra.
 
-**Peças:** Desenhar o placar · Começar pontos em zero · Somar um ponto
+**Pergunta:** O que acontece ao preparar uma partida?
 
-**Gabarito para o professor:**
+- Desenhar o placar
+- Começar pontos em zero
+- Somar um ponto
 
-- Ao preparar uma partida: Começar pontos em zero
-- Quando o tiro acerta: Somar um ponto
-- Em cada quadro para mostrar o valor: Desenhar o placar
+**Resposta esperada (professor):** Começar pontos em zero
+
+**Devolutiva:** Se desenhar somasse pontos, eles aumentariam mesmo sem acertar nada.
+
+**As outras duas tarefas, para conversar em aula:** quando o tiro acerta, Somar um ponto; em cada
+quadro, Desenhar o placar apenas mostra o valor guardado.
 
 **Pistas:**
 

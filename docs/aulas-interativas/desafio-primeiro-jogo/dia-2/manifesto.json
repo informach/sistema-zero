@@ -17,9 +17,7 @@
         "kind": "interactive",
         "title": "Para onde o tiro vai?",
         "instructions": "Teste uma velocidade positiva e outra negativa, mantendo o ponto de partida. Depois explique o que mudou.",
-        "hints": [
-          "Olhe a seta do eixo y. Ela indica em que direção os valores aumentam."
-        ],
+        "hints": ["Olhe a seta do eixo y. Ela indica em que direção os valores aumentam."],
         "required": true,
         "activity": {
           "type": "html",
@@ -128,9 +126,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Compare os encaixes de x e y do tiro com os da demonstração."
-        ],
+        "hints": ["Compare os encaixes de x e y do tiro com os da demonstração."],
         "required": true,
         "activity": {
           "type": "question"
@@ -188,19 +184,13 @@
       "title": "Para onde o tiro vai?",
       "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -269,9 +259,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-3"
-        ]
+        "blockIds": ["checar-construir-3"]
       }
     },
     {
@@ -279,20 +267,13 @@
       "title": "Acerte o rumo dos tiros",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-6",
-        "video-construir-6-1",
-        "fechamento",
-        "projeto"
-      ],
+      "blockKeys": ["construir-6", "video-construir-6-1", "fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ]
+        "blockIds": ["projeto"]
       }
     }
   ]

@@ -41,13 +41,21 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: A pedra está escondida**
 
-Modelo: `sequence`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
-Ordene as formas de trás para frente para deixar a pedra na frente do fogo, com um centro claro dentro da chama maior.
+A pedra precisa ficar na frente do fogo, com um centro claro dentro da chama maior.
 
-**Peças:** Pedra · Chama externa maior · Chama interna menor
+**Pergunta:** Desenhando de trás para frente, qual forma vem primeiro?
 
-**Ordem para o professor:** Chama externa maior → Chama interna menor → Pedra
+- Pedra
+- Chama externa maior
+- Chama interna menor
+
+**Resposta esperada (professor):** Chama externa maior
+
+**Devolutiva:** A forma mais à frente pode cobrir as que estão atrás.
+
+**A ordem inteira, para conversar em aula:** Chama externa maior → Chama interna menor → Pedra.
 
 **Pistas:**
 

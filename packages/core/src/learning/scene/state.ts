@@ -118,6 +118,7 @@ export interface SceneStart {
 }
 
 export function initialScene({ scene, initialImpulse }: SceneStart): SceneState {
+  const impulso = initialImpulse ?? 9
   return {
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
@@ -125,13 +126,15 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
     flight: {
       gravity: scene !== 'gravity',
-      force: initialImpulse ?? 9,
+      force: impulso,
       y: 0,
       time: null,
-      // ⚠️ Acompanha o `force`, e não um 9 cravado: antes do PRIMEIRO salto, é o `atForce` que
-      // o retrato guarda e o relatório do professor lê. Com o impulso inicial em 14, a cena
-      // nascia dizendo que o salto tinha sido de 9.
-      atForce: initialImpulse ?? 9,
+      // ⚠️ O MESMO valor do `force`, e não um 9 cravado: antes do primeiro salto é o `atForce`
+      // que o retrato de `observe` guarda, e com o impulso inicial em 14 a cena nascia dizendo
+      // que o salto tinha sido de 9. Hoje nenhum teste morde esta linha — nas duas cenas de
+      // salto toda observação acontece DEPOIS do salto, que carimba o `atForce` —, então é o
+      // `impulso` compartilhado que impede os dois campos de divergirem de novo.
+      atForce: impulso,
       atGravity: true,
       peak: 0,
     },

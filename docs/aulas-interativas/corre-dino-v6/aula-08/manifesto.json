@@ -52,9 +52,7 @@
                 "label": "Mesmo depois de a condição anterior dar sim."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Os ramos escolhem um caminho por vez."
           },
           {
@@ -70,9 +68,7 @@
                 "label": "A dica que ensina a começar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A instrução precisa corresponder ao comportamento."
           },
           {
@@ -88,9 +84,7 @@
                 "label": "Para tocar o som a cada quadro."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O evento pode ganhar outra função no fim da partida."
           }
         ]
@@ -177,17 +171,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "O jogo já espera. Vamos mostrar o menu e permitir começar pelo teclado ou pelo toque.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -195,17 +185,13 @@
       "title": "Veja como escolher uma tela por vez",
       "intent": "demonstration",
       "objective": "Entender o ramo senão se e o texto como peça de valor.",
-      "blockKeys": [
-        "video-senao-se"
-      ],
+      "blockKeys": ["video-senao-se"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-senao-se"
-        ]
+        "blockIds": ["video-senao-se"]
       }
     },
     {
@@ -213,10 +199,7 @@
       "title": "Monte sua tela de início",
       "intent": "application",
       "objective": "Mostrar instrução de início no estado correto.",
-      "blockKeys": [
-        "video-menu",
-        "fala-menu"
-      ],
+      "blockKeys": ["video-menu", "fala-menu"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -262,10 +245,7 @@
       "title": "Faça o Enter começar a partida",
       "intent": "application",
       "objective": "Responder à entrada somente na cena de início.",
-      "blockKeys": [
-        "video-enter",
-        "fala-enter"
-      ],
+      "blockKeys": ["video-enter", "fala-enter"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -312,17 +292,13 @@
       "title": "O menu funciona com toque?",
       "intent": "exploration",
       "objective": "Comparar acesso pelo teclado e pelo toque.",
-      "blockKeys": [
-        "experiencia-toque-tecla"
-      ],
+      "blockKeys": ["experiencia-toque-tecla"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-toque-tecla"
-        ]
+        "blockIds": ["experiencia-toque-tecla"]
       }
     },
     {
@@ -330,10 +306,7 @@
       "title": "Atenda aos dois jeitos de começar",
       "intent": "application",
       "objective": "Ampliar a entrada e atualizar a promessa escrita.",
-      "blockKeys": [
-        "video-entrada-completa",
-        "fala-entrada-completa"
-      ],
+      "blockKeys": ["video-entrada-completa", "fala-entrada-completa"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -416,18 +389,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Menu em inicio, início por qualquer tecla ou toque e dica que corresponde aos controles.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "cena-inicial",
@@ -547,17 +515,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Menu em inicio, início por qualquer tecla ou toque e dica que corresponde aos controles.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -565,17 +529,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

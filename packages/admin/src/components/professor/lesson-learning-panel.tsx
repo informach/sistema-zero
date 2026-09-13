@@ -257,6 +257,13 @@ export function LessonLearningPanel({
                         (attempt) =>
                           attempt.blockId === activity.id && attempt.revision === activity.revision,
                       )
+                      // ⚠️ "Sem registro" e "registro de outra revisão" são coisas DIFERENTES: a
+                      // primeira é informação sobre a criança (não abriu ainda), a segunda é um
+                      // aviso sobre o BLOCO (você editou a atividade depois que ela respondeu, e o
+                      // que ela deixou não pode ser lido com o conteúdo de agora). Contadas como a
+                      // mesma coisa, a professora conclui que a turma não fez nada.
+                      const deOutraRevisao =
+                        saved === undefined && blocks.some((block) => block.blockId === activity.id)
                       return (
                         <div key={activity.id} className="space-y-1 text-sm">
                           <p className="font-medium">
@@ -265,8 +272,17 @@ export function LessonLearningPanel({
                               ? 'Concluída'
                               : saved
                                 ? 'Em andamento'
-                                : 'Sem registro'}
+                                : deOutraRevisao
+                                  ? 'Registro de outra versão'
+                                  : 'Sem registro'}
                           </p>
+                          {deOutraRevisao ? (
+                            <p>
+                              A criança respondeu antes da última edição deste bloco. O que ela
+                              deixou é de outra versão da atividade e não é reinterpretado com o
+                              conteúdo atual.
+                            </p>
+                          ) : null}
                           {saved ? (
                             <>
                               <p>

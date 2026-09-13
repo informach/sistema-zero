@@ -12,6 +12,7 @@ import {
   type ExperimentSession,
   evaluateDemonstration,
   evaluateExperimentation,
+  SCENE_LIMITS,
   type SceneActivity,
   type SceneCommand,
   sceneGoals,
@@ -753,7 +754,12 @@ export function SceneActivityView({
                   onClick={() => {
                     const level = Math.min(hints.length, hint + 1)
                     setHint(level)
-                    dispatch({ type: 'hint', level })
+                    // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas a caixa de pistas do
+                    // editor aceita dez. Com quatro pistas escritas, o quarto clique mandava
+                    // `level: 4`, o motor recusava e o `dispatch` estourava DENTRO do onClick da
+                    // criança — e o degrau nunca era contado, então o relatório dizia "3 pistas"
+                    // para quem consultou cinco. A tela mostra todas; a evidência satura em três.
+                    dispatch({ type: 'hint', level: Math.min(level, SCENE_LIMITS.hint.max) })
                   }}
                 >
                   <Lightbulb size={16} />

@@ -42,9 +42,7 @@
         "kind": "interactive",
         "title": "Confira esta ideia",
         "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Não reutilize o tamanho Médio do pixel por memória: leia os números do cartão."
-        ],
+        "hints": ["Não reutilize o tamanho Médio do pixel por memória: leia os números do cartão."],
         "required": false,
         "activity": {
           "type": "question"
@@ -261,9 +259,7 @@
                 "label": "Apaga todas as formas do desenho."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Preenchimento e contorno são propriedades separadas."
           },
           {
@@ -279,9 +275,7 @@
                 "label": "Não; pode variar tamanho e posição para compor a pedra."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A cópia é outra forma selecionável e editável."
           }
         ]
@@ -294,17 +288,13 @@
       "title": "O que vamos criar hoje",
       "intent": "presentation",
       "objective": "A nave está animada na galeria. Vamos criar outro desenho, usando formas e pontos.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -312,19 +302,13 @@
       "title": "Prepare o quadro do asteroide",
       "intent": "application",
       "objective": "Criar personagem vetorial de 64 × 64 com o nome asteroide.",
-      "blockKeys": [
-        "video-novo-vetor",
-        "orientacao-novo-vetor",
-        "conferir-novo-vetor"
-      ],
+      "blockKeys": ["video-novo-vetor", "orientacao-novo-vetor", "conferir-novo-vetor"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-novo-vetor"
-        ]
+        "blockIds": ["conferir-novo-vetor"]
       }
     },
     {
@@ -332,17 +316,13 @@
       "title": "Observe: a cor de dentro e a linha de fora",
       "intent": "demonstration",
       "objective": "Distinguir preenchimento, contorno e Sem cor.",
-      "blockKeys": [
-        "video-cores-vetor"
-      ],
+      "blockKeys": ["video-cores-vetor"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-cores-vetor"
-        ]
+        "blockIds": ["video-cores-vetor"]
       }
     },
     {
@@ -350,19 +330,13 @@
       "title": "Marque os pontos e feche a pedra",
       "intent": "application",
       "objective": "Criar forma fechada com Caneta e reservar espaço superior.",
-      "blockKeys": [
-        "video-traco",
-        "orientacao-traco",
-        "conferir-traco"
-      ],
+      "blockKeys": ["video-traco", "orientacao-traco", "conferir-traco"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-traco"
-        ]
+        "blockIds": ["conferir-traco"]
       }
     },
     {
@@ -370,19 +344,13 @@
       "title": "Transforme alguns cantos em curvas",
       "intent": "application",
       "objective": "Editar os pontos e aplicar Ponto suave na seleção desejada.",
-      "blockKeys": [
-        "video-curvas",
-        "orientacao-curvas",
-        "conferir-curvas"
-      ],
+      "blockKeys": ["video-curvas", "orientacao-curvas", "conferir-curvas"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-curvas"
-        ]
+        "blockIds": ["conferir-curvas"]
       }
     },
     {
@@ -390,19 +358,13 @@
       "title": "Crie uma cratera e aproveite a cópia",
       "intent": "application",
       "objective": "Desselecionar a pedra, criar uma elipse e duplicar variando tamanho e posição.",
-      "blockKeys": [
-        "video-crateras",
-        "orientacao-crateras",
-        "conferir-crateras"
-      ],
+      "blockKeys": ["video-crateras", "orientacao-crateras", "conferir-crateras"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "conferir-crateras"
-        ]
+        "blockIds": ["conferir-crateras"]
       }
     },
     {
@@ -410,17 +372,13 @@
       "title": "Experimente: aproxime as duas bordas",
       "intent": "exploration",
       "objective": "Comparar a mesma silhueta em pixels e em vetor em duas ampliações.",
-      "blockKeys": [
-        "experimento-bordas"
-      ],
+      "blockKeys": ["experimento-bordas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experimento-bordas"
-        ]
+        "blockIds": ["experimento-bordas"]
       }
     },
     {
@@ -428,18 +386,13 @@
       "title": "Confira e envie sua criação",
       "intent": "delivery",
       "objective": "Asteroide vetorial 64 × 64, nome asteroide, com forma fechada, curvas intencionais, crateras e espaço superior para a chama.",
-      "blockKeys": [
-        "orientacao-entrega-v6",
-        "entrega-galeria-v6"
-      ],
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "entrega-galeria-v6"
-        ]
+        "blockIds": ["entrega-galeria-v6"]
       }
     },
     {
@@ -447,17 +400,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Asteroide vetorial 64 × 64, nome asteroide, com forma fechada, curvas intencionais, crateras e espaço superior para a chama.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -465,17 +414,13 @@
       "title": "Duas ideias para guardar",
       "intent": "closing",
       "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ]

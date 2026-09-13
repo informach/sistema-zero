@@ -52,9 +52,7 @@
                 "label": "Sim, o nome da tela apaga todos os blocos."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O estado é informação usada pelas condições."
           },
           {
@@ -70,9 +68,7 @@
                 "label": "Porque roda em uma rotina separada do quadro."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Uma condição só protege o que está dentro dela."
           },
           {
@@ -88,9 +84,7 @@
                 "label": "Criar cactos sem parar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O fundo continua aparecendo enquanto o jogo espera."
           }
         ]
@@ -177,17 +171,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Vamos separar inicio, jogando e fim. Hoje o jogo aprenderá a esperar; a tela com título vem na próxima aula.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -195,10 +185,7 @@
       "title": "Diga em qual tela o jogo começa",
       "intent": "application",
       "objective": "Distinguir o nome do estado de seu desenho.",
-      "blockKeys": [
-        "video-estado-inicial",
-        "fala-estado-inicial"
-      ],
+      "blockKeys": ["video-estado-inicial", "fala-estado-inicial"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -226,17 +213,13 @@
       "title": "Veja o Se e sua pergunta",
       "intent": "demonstration",
       "objective": "Separar condição, resposta sim/não e ações do então.",
-      "blockKeys": [
-        "video-pergunta"
-      ],
+      "blockKeys": ["video-pergunta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-pergunta"
-        ]
+        "blockIds": ["video-pergunta"]
       }
     },
     {
@@ -244,10 +227,7 @@
       "title": "Coloque as ações dentro do Se",
       "intent": "application",
       "objective": "Mover a sequência de jogo para o ramo jogando.",
-      "blockKeys": [
-        "video-embrulhar",
-        "fala-embrulhar"
-      ],
+      "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -445,17 +425,13 @@
       "title": "Quem ainda está trabalhando no início?",
       "intent": "exploration",
       "objective": "Observar e impedir atividade fora do estado jogando.",
-      "blockKeys": [
-        "experiencia-estado-modelo"
-      ],
+      "blockKeys": ["experiencia-estado-modelo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-estado-modelo"
-        ]
+        "blockIds": ["experiencia-estado-modelo"]
       }
     },
     {
@@ -463,10 +439,7 @@
       "title": "Faça o relógio esperar também",
       "intent": "application",
       "objective": "Proteger a criação na rotina periódica separada.",
-      "blockKeys": [
-        "video-relogio-protegido",
-        "fala-relogio-protegido"
-      ],
+      "blockKeys": ["video-relogio-protegido", "fala-relogio-protegido"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -513,18 +486,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Preparação em inicio; movimento, desenho dos personagens e nascimento de cactos protegidos por jogando. A floresta continua visível.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "cena-inicial",
@@ -822,17 +790,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Preparação em inicio; movimento, desenho dos personagens e nascimento de cactos protegidos por jogando. A floresta continua visível.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -840,17 +804,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

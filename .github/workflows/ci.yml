@@ -92,6 +92,13 @@ jobs:
         working-directory: packages/community-kids
         run: bun run test:reachability
 
+      # ⚠️ Os 27 manifestos das aulas interativas conferidos contra os roteiros: cada
+      # instrução, pergunta e explicação do JSON precisa existir, palavra por palavra, no
+      # `roteiro.md` da aula. Nunca rodou no CI — e foi assim que cinco blocos convertidos
+      # ficaram dizendo uma coisa à criança e outra ao professor, sem ninguém notar.
+      - name: Manifestos das aulas interativas x roteiros
+        run: bun docs/aulas-interativas/qa/validar-manifestos.ts
+
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db
         env:

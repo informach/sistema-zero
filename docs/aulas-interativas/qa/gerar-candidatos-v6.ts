@@ -1,13 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
-  EXPLORATION_DEFINITIONS,
-  EXPLORATION_MISSIONS,
-  experienceScript,
   isInteractiveBlock,
   isLearningManifest,
   type LearningManifest,
 } from '../../../packages/core/src/learning'
+import { SCENE_IDS, SCENE_MODELS } from '../../../packages/core/src/learning/scene'
 import { earlyRecipes } from './corre-dino-aulas-02-05'
 import { middleRecipes } from './corre-dino-aulas-06-09'
 import { lateRecipes } from './corre-dino-aulas-10-13'
@@ -78,19 +76,21 @@ for (let lesson = 1; lesson <= 13; lesson++) {
     sections: manifest.sections.length,
   })
 }
-const demonstrations = EXPLORATION_MISSIONS.map((mission) => {
-  const definition = EXPLORATION_DEFINITIONS[mission]
-  const activity = { type: 'exploration', version: 3, mission, mode: 'demonstrate' } as const
+// ⚠️ A demonstração NÃO carrega mais o roteiro embutido: sem `script`, o player e o servidor
+// usam o roteiro que vem com a CENA (`sceneModel(scene).script`). Gravar uma cópia aqui
+// congelaria o roteiro no arquivo e ele pararia de acompanhar as correções do catálogo.
+const demonstrations = SCENE_IDS.map((scene) => {
+  const modelo = SCENE_MODELS[scene]
   const content = {
     kind: 'interactive',
-    title: `Observe: ${definition.title}`,
+    title: `Observe: ${modelo.title}`,
     instructions: 'Observe cada etapa. Você pode pausar e rever o exemplo.',
     hints: [],
     required: false,
-    activity: { ...activity, demonstration: experienceScript(activity) },
+    activity: { type: 'demonstration', scene },
   }
-  if (!isInteractiveBlock(content)) throw new Error(`Invalid demonstration ${mission}`)
-  return { key: `demonstracao-${mission}`, content }
+  if (!isInteractiveBlock(content)) throw new Error(`Invalid demonstration ${scene}`)
+  return { key: `demonstracao-${scene}`, content }
 })
 writeFileSync(
   resolve(destination, 'demonstracoes-opcionais.json'),

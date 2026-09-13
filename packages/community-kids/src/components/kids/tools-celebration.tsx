@@ -53,7 +53,7 @@ export function ToolsCelebration({ gain, onClose }: { gain: ToolsGain; onClose: 
       /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da tela.
          Com o título e os chips limitados a altura já cabe, mas a rede de segurança fica —
          fonte grande do sistema ou janela muito baixa ainda podem apertar. */
-      className="sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
+      className="kids-sobre-escuro sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
       onClick={onClose}
       role="presentation"
     >

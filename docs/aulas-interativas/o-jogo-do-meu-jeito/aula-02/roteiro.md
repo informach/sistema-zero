@@ -42,13 +42,13 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Uma luz, dois lados**
 
-Modelo: `prediction`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
 Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros? Sua primeira ideia pode mudar depois da observação.
 
-**Previsões (sem nota):** No lado que recebe a luz · No lado oposto · Em todos os pixels com a mesma cor
+**Previsões (etapa aposentada com o modelo `prediction` — ver o guia de autoria):** No lado que recebe a luz · No lado oposto · Em todos os pixels com a mesma cor
 
-**Depois de observar:** Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais.
+**Depois de observar (sem lugar na pergunta — ver o guia de autoria):** Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais.
 
 **Pergunta:** A luz vem da esquerda. Que teste ajuda a sugerir volume na nave?
 

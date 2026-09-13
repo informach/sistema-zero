@@ -16,7 +16,7 @@
       "content": {
         "kind": "interactive",
         "title": "Tamanho do desenho ou tamanho no jogo?",
-        "instructions": "Relacione cada configuração com sua função antes de trocar os blocos.",
+        "instructions": "Uma configuração recorta a imagem original; a outra decide quanto espaço ela ocupa no jogo.",
         "hints": [
           "A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo."
         ],
@@ -25,7 +25,7 @@
           "type": "question"
         },
         "checkpoint": {
-          "prompt": "Relacione cada configuração com sua função antes de trocar os blocos.",
+          "prompt": "Qual configuração é o tamanho de cada quadro da folha da nave?",
           "choices": [
             {
               "id": "peca-1",
@@ -87,9 +87,7 @@
         "kind": "interactive",
         "title": "Uma decisão para continuar",
         "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": [
-          "Os blocos de controle precisam encontrar o mesmo personagem."
-        ],
+        "hints": ["Os blocos de controle precisam encontrar o mesmo personagem."],
         "required": true,
         "activity": {
           "type": "question"
@@ -174,19 +172,13 @@
       "title": "Tamanho do desenho ou tamanho no jogo?",
       "objective": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.",
       "intent": "exploration",
-      "blockKeys": [
-        "abertura",
-        "descoberta",
-        "explicacao"
-      ],
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "descoberta"
-        ]
+        "blockIds": ["descoberta"]
       }
     },
     {
@@ -207,9 +199,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-construir-2"
-        ]
+        "blockIds": ["checar-construir-2"]
       }
     },
     {
@@ -217,20 +207,13 @@
       "title": "Veja seu fogo voando",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
       "intent": "closing",
-      "blockKeys": [
-        "construir-3",
-        "video-construir-3-1",
-        "fechamento",
-        "checar-fechamento"
-      ],
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "checar-fechamento"
-        ]
+        "blockIds": ["checar-fechamento"]
       }
     }
   ]

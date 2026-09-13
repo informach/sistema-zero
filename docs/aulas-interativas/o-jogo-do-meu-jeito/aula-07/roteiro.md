@@ -41,13 +41,22 @@ Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajud
 
 **Atividade: Troque sem perder a configuração**
 
-Modelo: `sequence`. Critério desta seção.
+Modelo: `checkpoint`. Critério desta seção.
 
-Organize a substituição do bloco que cria os asteroides, preservando o sorteio e os campos.
+A troca preserva o sorteio e os campos do bloco antigo.
 
-**Peças:** Apagar o bloco antigo depois de conferir · Montar o novo bloco com os campos corretos · Transferir o sorteio de x e comparar as configurações
+**Pergunta:** Qual é o primeiro passo para trocar o bloco que cria os asteroides?
 
-**Ordem para o professor:** Montar o novo bloco com os campos corretos → Transferir o sorteio de x e comparar as configurações → Apagar o bloco antigo depois de conferir
+- Apagar o bloco antigo depois de conferir
+- Montar o novo bloco com os campos corretos
+- Transferir o sorteio de x e comparar as configurações
+
+**Resposta esperada (professor):** Montar o novo bloco com os campos corretos
+
+**Devolutiva:** O bloco antigo ajuda a conferir o novo antes de ser removido.
+
+**A ordem inteira, para conversar em aula:** montar o novo bloco com os campos corretos →
+transferir o sorteio de x e comparar as configurações → apagar o bloco antigo depois de conferir.
 
 **Pistas:**
 

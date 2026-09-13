@@ -86,7 +86,15 @@ Abra a aula original e trabalhe no **rascunho compartilhado**. Em aula vazia, co
 
 Os manifestos v4 do Dino aposentam explicitamente cartões importados da versão anterior. Confira a lista antes de aplicar. Projetos, mídias originais, quizzes originais e histórico não são apagados; conteúdo antigo mantido fica no apoio, fora dos novos critérios. Outros cursos continuam em v3, cuja limpeza editorial permanece manual.
 
-O Dino prevê **78 clipes em 62 seções** após separar gravidade e impulso. São orientações de produção, não vídeos gravados. As 27 aulas somam 145 clipes planejados em 111 seções. Vincule cada gravação pelo uploader Vimeo do cartão. O servidor confirma o processamento antes de publicar. O formato de importação continua v4; as atividades novas usam `exploration` v2, preservando o avaliador de simulações anteriores.
+O Dino prevê **78 clipes em 62 seções** após separar gravidade e impulso. São orientações de produção, não vídeos gravados. As 27 aulas somam 145 clipes planejados em 111 seções. Vincule cada gravação pelo uploader Vimeo do cartão. O servidor confirma o processamento antes de publicar. O formato de importação continua v4. As atividades interativas têm **quatro tipos** — `demonstration`, `experimentation`, `question` e `html` —, cada um com o avaliador dele no domínio de cenas. Os tipos anteriores (`exploration`, `simulation`, `prediction`, `sequence`, `comparison`, `experiment`) foram REMOVIDOS em 13/09/2026 e um manifesto que os use é recusado na importação.
+
+⚠️ **A previsão que ficou sem casa.** O modelo `prediction` tinha DOIS momentos: o palpite sem
+nota ("Previsões") e o desfecho lido depois ("Depois de observar"). A pergunta curta que ficou no
+lugar dele tem UM espaço depois da resposta, e ele já é a explicação do gabarito. Cinco roteiros
+(`desafio-primeiro-jogo/{introducao,dia-3}` e `o-jogo-do-meu-jeito/aula-0{2,3,8}`) ainda trazem os
+dois trechos, marcados, porque o texto é bom e a decisão é editorial: cada desfecho pode virar
+parágrafo da explicação do gabarito, bloco de texto próprio antes da pergunta, ou sair. Enquanto
+não for decidido, o que está no manifesto é só a pergunta — o desfecho NÃO chega à criança.
 
 Salvar e importar alteram apenas o rascunho. A publicação captura editores, espera a fila, valida a revisão e aplica tudo em transação; falha mantém a publicação anterior. Alterações simultâneas não sobrescrevem outra autoria silenciosamente. O indicador e a recuperação local preservam mudanças após falha de rede. O autor pode comparar/baixar alterações locais antes de carregar uma revisão conflitante.
 

@@ -73,9 +73,7 @@
         "kind": "interactive",
         "title": "Compare três batidas bem próximas",
         "instructions": "Três pedras diferentes vão bater uma depois da outra. Compare a nave sem proteção e com 45 quadros de proteção. Cada pedra é retirada ao bater. Observe quantas vidas sobraram em cada teste.",
-        "hints": [
-          "As três pedras desaparecem nos dois testes. Compare somente a perda de vidas."
-        ],
+        "hints": ["As três pedras desaparecem nos dois testes. Compare somente a perda de vidas."],
         "required": false,
         "activity": {
           "type": "html",
@@ -156,9 +154,7 @@
                 "label": "Somar três pontos por ter sido desenhado três vezes."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Desenhar lê a variável; a colisão é que soma."
           },
           {
@@ -174,9 +170,7 @@
                 "label": "Em Ao iniciar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Preparar uma vez permite que as vidas diminuam durante a partida."
           }
         ]
@@ -189,17 +183,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Retomar a chuva de asteroides e a colisão com os tiros do Dia 3.",
-      "blockKeys": [
-        "video-abertura-v6"
-      ],
+      "blockKeys": ["video-abertura-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-v6"
-        ]
+        "blockIds": ["video-abertura-v6"]
       }
     },
     {
@@ -207,17 +197,13 @@
       "title": "Observe o número e o placar",
       "intent": "demonstration",
       "objective": "Separar guardar, alterar e mostrar um valor.",
-      "blockKeys": [
-        "video-memoria"
-      ],
+      "blockKeys": ["video-memoria"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-memoria"
-        ]
+        "blockIds": ["video-memoria"]
       }
     },
     {
@@ -225,10 +211,7 @@
       "title": "Crie a memória dos pontos",
       "intent": "application",
       "objective": "Preparar uma variável uma vez.",
-      "blockKeys": [
-        "video-pontos",
-        "fala-pontos"
-      ],
+      "blockKeys": ["video-pontos", "fala-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -259,10 +242,7 @@
       "title": "Faça o acerto valer um ponto",
       "intent": "application",
       "objective": "Somar por acerto dentro da colisão certa.",
-      "blockKeys": [
-        "video-somar",
-        "fala-somar"
-      ],
+      "blockKeys": ["video-somar", "fala-somar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -315,10 +295,7 @@
       "title": "Mostre o que está guardado",
       "intent": "application",
       "objective": "Ler a variável no HUD a cada quadro.",
-      "blockKeys": [
-        "video-placar",
-        "fala-placar"
-      ],
+      "blockKeys": ["video-placar", "fala-placar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -360,10 +337,7 @@
       "title": "Dê três vidas à nave",
       "intent": "application",
       "objective": "Preparar vida atual e máxima na inicialização.",
-      "blockKeys": [
-        "video-vida",
-        "fala-vida"
-      ],
+      "blockKeys": ["video-vida", "fala-vida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -394,17 +368,13 @@
       "title": "Compare três batidas bem próximas",
       "intent": "exploration",
       "objective": "Compreender a proteção temporária contra novos danos.",
-      "blockKeys": [
-        "experiencia-protecao"
-      ],
+      "blockKeys": ["experiencia-protecao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-protecao"
-        ]
+        "blockIds": ["experiencia-protecao"]
       }
     },
     {
@@ -412,10 +382,7 @@
       "title": "Faça a nave sentir a batida",
       "intent": "application",
       "objective": "Responder à colisão nave × asteroides com remoção e dano protegido.",
-      "blockKeys": [
-        "video-batida",
-        "fala-batida"
-      ],
+      "blockKeys": ["video-batida", "fala-batida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -508,10 +475,7 @@
       "title": "Mostre as vidas que restam",
       "intent": "application",
       "objective": "Ler a vida da nave no desenho dos corações.",
-      "blockKeys": [
-        "video-coracoes",
-        "fala-coracoes"
-      ],
+      "blockKeys": ["video-coracoes", "fala-coracoes"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -546,17 +510,13 @@
       "title": "Observe ponto e vida mudarem",
       "intent": "demonstration",
       "objective": "Associar cada mudança à sua causa.",
-      "blockKeys": [
-        "video-teste-vidas"
-      ],
+      "blockKeys": ["video-teste-vidas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-teste-vidas"
-        ]
+        "blockIds": ["video-teste-vidas"]
       }
     },
     {
@@ -564,18 +524,13 @@
       "title": "Teste e envie sua construção",
       "intent": "delivery",
       "objective": "Cada acerto soma um ponto; a nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
-      "blockKeys": [
-        "entrega-fala-v6",
-        "projeto"
-      ],
+      "blockKeys": ["entrega-fala-v6", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "pontos",
@@ -850,17 +805,13 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Cada acerto soma um ponto; a nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
-      "blockKeys": [
-        "video-fecho-v6"
-      ],
+      "blockKeys": ["video-fecho-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-v6"
-        ]
+        "blockIds": ["video-fecho-v6"]
       }
     },
     {
@@ -868,17 +819,13 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": [
-        "quiz-v6"
-      ],
+      "blockKeys": ["quiz-v6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-v6"
-        ]
+        "blockIds": ["quiz-v6"]
       }
     }
   ],

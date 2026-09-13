@@ -57,9 +57,7 @@
                 "label": "-9 obrigatoriamente."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O limite protege a base; a variação é aplicada depois."
           },
           {
@@ -75,9 +73,7 @@
                 "label": "Velocidade > -9."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Começando em -5, a igualdade com -9 seria falsa e impediria a primeira mudança."
           },
           {
@@ -93,9 +89,7 @@
                 "label": "Sim; todos passam a usar o valor novo imediatamente."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Cada cacto mantém a velocidade atribuída na criação."
           }
         ]
@@ -198,17 +192,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Vamos guardar a velocidade base, aumentá-la aos poucos e colocar um limite. Depois conferiremos o jogo completo.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -216,10 +206,7 @@
       "title": "Crie a memória da velocidade",
       "intent": "application",
       "objective": "Preparar um valor que pode mudar durante a partida.",
-      "blockKeys": [
-        "video-guardar-velocidade",
-        "fala-guardar-velocidade"
-      ],
+      "blockKeys": ["video-guardar-velocidade", "fala-guardar-velocidade"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -250,17 +237,13 @@
       "title": "Quem lê a nova velocidade?",
       "intent": "demonstration",
       "objective": "Distinguir a base guardada e a velocidade recebida ao nascer.",
-      "blockKeys": [
-        "video-base-e-nascimento"
-      ],
+      "blockKeys": ["video-base-e-nascimento"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-base-e-nascimento"
-        ]
+        "blockIds": ["video-base-e-nascimento"]
       }
     },
     {
@@ -268,10 +251,7 @@
       "title": "Faça os novos cactos lerem a base",
       "intent": "application",
       "objective": "Trocar a fonte do valor na entrada correta da conta.",
-      "blockKeys": [
-        "video-usar-memoria",
-        "fala-usar-memoria"
-      ],
+      "blockKeys": ["video-usar-memoria", "fala-usar-memoria"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -356,17 +336,13 @@
       "title": "Veja quando a base chega ao limite",
       "intent": "demonstration",
       "objective": "Interpretar velocidade > -9 e incremento -1.",
-      "blockKeys": [
-        "video-comparar-negativos"
-      ],
+      "blockKeys": ["video-comparar-negativos"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-comparar-negativos"
-        ]
+        "blockIds": ["video-comparar-negativos"]
       }
     },
     {
@@ -374,17 +350,13 @@
       "title": "Teste a base, o limite e os próximos cactos",
       "intent": "exploration",
       "objective": "Observar a regra de velocidade atribuída ao nascer sob uma base limitada.",
-      "blockKeys": [
-        "experiencia-aceleracao-modelo"
-      ],
+      "blockKeys": ["experiencia-aceleracao-modelo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-aceleracao-modelo"
-        ]
+        "blockIds": ["experiencia-aceleracao-modelo"]
       }
     },
     {
@@ -392,10 +364,7 @@
       "title": "Monte o acelerador com limite",
       "intent": "application",
       "objective": "Combinar relógio, estado e comparação numérica.",
-      "blockKeys": [
-        "video-relogio-aceleracao",
-        "fala-relogio-aceleracao"
-      ],
+      "blockKeys": ["video-relogio-aceleracao", "fala-relogio-aceleracao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -465,10 +434,7 @@
       "title": "Conte todos os controles ao jogador",
       "intent": "application",
       "objective": "Atualizar a descrição de acordo com o jogo final.",
-      "blockKeys": [
-        "video-descricao-final",
-        "fala-descricao-final"
-      ],
+      "blockKeys": ["video-descricao-final", "fala-descricao-final"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -496,18 +462,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "Base começa em -5, muda a cada 5 s jogando até -9; novos cactos recebem base menos sorteio. Descrição atualizada e projeto entregue.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "velocidade-inicial",
@@ -760,17 +721,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "Base começa em -5, muda a cada 5 s jogando até -9; novos cactos recebem base menos sorteio. Descrição atualizada e projeto entregue.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -778,17 +735,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]
