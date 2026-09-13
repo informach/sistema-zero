@@ -187,6 +187,7 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
    * mira e marca "soltou" por um quadro. Use a cada quadro no gorila da vez.
    */
   function aimDrag(ctx, thrower) {
+    if (_isDestroyedSprite(thrower)) return;
     if (!ctx || !thrower) return;
     // Enquanto uma banana está voando, não dá pra mirar de novo (um tiro por vez).
     if (_banana) { _aim.dragging = false; return; }
@@ -222,12 +223,14 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
 
   /** Verdadeiro no quadro em que a criança SOLTA a mira (consome o evento). */
   function aimReleased(thrower) {
+    if (_isDestroyedSprite(thrower)) return false;
     if (_aim.released) { _aim.released = false; return true; }
     return false;
   }
 
   /** Lança a banana do gorila com a mira atual (vento e gravidade agem depois). */
   function throwBanana(thrower, city) {
+    if (_isDestroyedSprite(thrower)) return;
     if (!thrower) return;
     _ai = null; // qualquer arremesso (humano ou robô) encerra o plano do robô.
     var hand = _throwerHand(thrower);
@@ -291,6 +294,7 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
    * banana sozinho. Espera a banana atual terminar (um tiro por vez).
    */
   function computerTurn(thrower, city, enemy) {
+    if (_isDestroyedSprite(thrower) || _isDestroyedSprite(enemy)) return;
     if (!thrower || !city || !enemy) return;
     if (_banana) return;
     if (!_ai) {
@@ -365,6 +369,7 @@ export const gameTwoDArcadeGorillasRuntime = `  // ---- Kit gorilas: batalha de 
 
   /** A banana acertou o gorila? (zera a banana no acerto). */
   function bananaHitThrower(city, thrower) {
+    if (_isDestroyedSprite(thrower)) return false;
     if (!_banana || !thrower) return false;
     var cx = thrower.x + thrower.w / 2, cy = thrower.y + thrower.h / 2;
     var dx = _banana.x - cx, dy = _banana.y - cy;

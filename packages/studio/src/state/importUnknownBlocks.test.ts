@@ -26,7 +26,7 @@ describe('collectUnknownBlockTypes', () => {
   it('coleta tipos fora da allowlist, inclusive aninhados/na cadeia next, ordenados e sem repetição', () => {
     const raw = state([
       {
-        type: 'sz_frame_behavior',
+        type: 'sz_frame_start',
         inputs: {
           CHILDREN: {
             block: {
@@ -62,13 +62,17 @@ describe('import: aviso nomeia os blocos desconhecidos', () => {
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  it('blocksState com tipo desconhecido cai (all-or-nothing) mas o aviso DIZ o tipo', async () => {
-    const { project, warnings } = await useProjectStore.getState().importProjectFromJSON({
+  it('recusa o projeto inteiro e informa o tipo desconhecido', async () => {
+    const before = useProjectStore.getState().project
+    const source = {
       name: 'Do futuro',
       files: baseFiles,
       blocksState: state([{ type: 'sz_bloco_inexistente' }]),
-    })
-    expect(project.blocksState).toBeNull()
-    expect(warnings.some((w) => w.includes('sz_bloco_inexistente'))).toBe(true)
+    }
+    await expect(useProjectStore.getState().importProjectFromJSON(source)).rejects.toThrow(
+      'sz_bloco_inexistente',
+    )
+    expect(source.blocksState.blocks.blocks).toHaveLength(1)
+    expect(useProjectStore.getState().project).toBe(before)
   })
 })

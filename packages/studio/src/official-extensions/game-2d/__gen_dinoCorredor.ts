@@ -66,16 +66,21 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Bateu no cacto!", "Você fez " + pontos + " pontos. Tente bater essa marca!", "Aperte Enter para reiniciar", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("nasce-cacto", 1.4)) {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.spawnObstacle(cactos, ctx, { type: "cactus", x: SZGame2D.randomBetween(500, 560), size: 44, vx: velocidade - SZGame2D.randomBetween(0, 1) });
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("ponto-por-segundo", 1)) {
   if (SZGame2D.sceneIs("jogando")) {
     pontos = pontos + 1;
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("acelera", 5)) {
   if (SZGame2D.sceneIs("jogando")) {
     if (velocidade > -9) {
@@ -83,6 +88,7 @@ if (SZGame2D.everySeconds("acelera", 5)) {
     }
   }
 }
+});
 `.trim()
 
 /** Remove apenas os ids efêmeros da IR para comparar fontes de exemplo. */

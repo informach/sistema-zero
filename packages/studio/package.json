@@ -9,6 +9,8 @@
     ".": "./src/index.ts",
     "./editor": "./src/studio/StudioEditor.tsx",
     "./project": "./src/core/project.ts",
+    "./project-document": "./src/core/projectDocument.ts",
+    "./project-migrations": "./src/project-migrations/index.ts",
     "./local-persistence": "./src/persistence/local.ts",
     "./project-list": "./src/projects/ProjectList.tsx",
     "./career": "./src/career/index.ts",
@@ -20,7 +22,8 @@
     "./tutor-safety": "./src/studio/tutorSafety.ts",
     "./player": "./src/components/preview/StudioProjectPlayer.tsx",
     "./personal-assets": "./src/asset-library/personal.ts",
-    "./styles.css": "./src/styles/studio.css"
+    "./styles.css": "./src/styles/studio.css",
+    "./project-validation": "./src/state/projectValidation.ts"
   },
   "imports": {
     "#core": "./src/core/index.ts",
@@ -71,6 +74,7 @@
     "fflate": "^0.8.2",
     "idb-keyval": "^6.2.1",
     "monaco-editor": "^0.52.2",
+    "parse5": "8.0.0",
     "react-resizable-panels": "^2.1.9",
     "sucrase": "^3.35.1",
     "terser": "^5.37.0",
@@ -97,6 +101,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "0.180.0",
     "@vitejs/plugin-react": "^6.0.2",
+    "fake-indexeddb": "6.2.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "tailwindcss": "^4.3.0",

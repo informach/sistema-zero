@@ -49,7 +49,7 @@ describe('Exemplo Muralha do Reino — drift contra o parser real', () => {
       'g2d:forEachInGroup', // cada torre atira
       'g2d:everySeconds', // nasce invasor + torres atiram + próxima onda
       'g2d:centerX', // o tiro sai do centro da torre
-      'g2d:playExplosion',
+      'g2d:playFx',
       'g2d:playMusic',
       'g2d:playFx',
       'g2d:setScene',

@@ -423,7 +423,7 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
           color: '#4ade80',
         },
         { type: 'g2d:setHealth', spriteVar: 'heroi', amount: 3 },
-        { type: 'g2d:score', varName: 'pontos', initial: 0 },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
         { type: 'g2d:createGroup', varName: 'tiros' },
         { type: 'g2d:setScene', name: 'inicio' },
         { type: 'g2d:spawnEnemy', typeVar: 'goomba', x: 220, y: 280 },
@@ -819,7 +819,7 @@ export const codeDrawnExample: ExtensionExample = beginnerGameExample({
           w: 16,
           h: 16,
         },
-        { type: 'g2d:score', varName: 'pontos', initial: 0 },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
       ],
       events: [],
       loops: [

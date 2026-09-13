@@ -97,11 +97,11 @@
     },
     {
       "key": "video-abertura-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Abertura. Entrada: “Oi! O seu dino já corre e já pula. Mas repara numa coisa comigo: aperta o espaço aí e presta atenção”. Saída: “serta. E no quarto, escolhe o som que mais combina com o seu dino. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-04-corre-dino.md, Abertura. Entrada: “Oi! O seu dino já corre e já pula. Mas repara numa coisa comigo: aperta o espaço aí e presta atenção”. Saída: “serta. E no quarto, escolhe o som que mais combina com o seu dino. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-evento-espaco",
-      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 1. Passo 1: a área que escuta o teclado. Entrada: “Até agora o seu jogo tem duas áreas: a Ao iniciar, que arruma tudo no comecinho, e o motor, que repe”. Saída: “o evento ainda está vazio: ele escuta a tecla, mas não faz nada. É isso que o segundo passo resolve.”. Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar. Ponte nova: “Coloque a área Quando acontecer ao lado das outras. Dentro dela, encaixe Quando apertar a tecla e escolha espaço.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-04-corre-dino.md, Parte 1. Passo 1: a área que escuta o teclado. Entrada: “Até agora o seu jogo tem duas áreas: a Ao iniciar, que arruma tudo no comecinho, e o motor, que repe”. Saída: “o evento ainda está vazio: ele escuta a tecla, mas não faz nada. É isso que o segundo passo resolve.”. Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar. Ponte nova: “Coloque a área Quando acontecer ao lado das outras. Dentro dela, encaixe Quando apertar a tecla e escolha espaço.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-evento-espaco",
@@ -113,14 +113,14 @@
     },
     {
       "key": "video-primeiro-som",
-      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 2. Passo 2: o som do pulo. Entrada: “Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a”. Saída: “asso feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.”. Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo. Ponte nova: “Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-04-corre-dino.md, Parte 2. Passo 2: o som do pulo. Entrada: “Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a”. Saída: “asso feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.”. Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo. Ponte nova: “Dentro do evento de espaço, encaixe Tocar efeito com pulo selecionado. Ative o áudio pelo controle da página e teste.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-primeiro-som",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste."
+        "text": "Dentro do evento de espaço, encaixe Tocar efeito com pulo selecionado. Ative o áudio pelo controle da página e teste."
       }
     },
     {
@@ -143,14 +143,14 @@
     },
     {
       "key": "video-escutar-dino",
-      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Parte 3. Passo 3: o som está escutando a coisa errada. Entrada: “Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e a”. Saída: “rque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.”. Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar. Ponte nova: “Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-04-corre-dino.md, Parte 3. Passo 3: o som está escutando a coisa errada. Entrada: “Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e a”. Saída: “rque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.”. Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar. Ponte nova: “Coloque Quando o dino pular. Mova o mesmo Tocar efeito com pulo selecionado para dentro dele e apague o evento de espaço que ficou vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-escutar-dino",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio."
+        "text": "Coloque Quando o dino pular. Mova o mesmo Tocar efeito com pulo selecionado para dentro dele e apague o evento de espaço que ficou vazio."
       }
     },
     {
@@ -163,7 +163,7 @@
     },
     {
       "key": "video-fecho-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-04-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 4! Foi uma aula pequena no resultado, o pulo ganhou som, mas grande n”. Saída: “s. Na próxima aula o desafio finalmente chega: os cactos começam a vir na sua direção. Te espero lá!”. Manter a recapitulação. Parte 4: retirar o passeio pelos 27 sons do percurso obrigatório. Manter o som de pulo para conferir a relação evento → som. Não depender só da audição: a experiência nativa deve manter o contador/indicador visual de pulo e som. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-04-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 4! Foi uma aula pequena no resultado, o pulo ganhou som, mas grande n”. Saída: “s. Na próxima aula o desafio finalmente chega: os cactos começam a vir na sua direção. Te espero lá!”. Manter a recapitulação. Parte 4: retirar o passeio pelos 27 sons do percurso obrigatório. Manter o som de pulo para conferir a relação evento → som. Não depender só da audição: a experiência nativa deve manter o contador/indicador visual de pulo e som. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     }
   ],
   "sections": [
@@ -224,7 +224,7 @@
         "projectChecks": [
           {
             "id": "som-na-tecla",
-            "label": "Encaixe Som de pulo no evento de espaço.",
+            "label": "Encaixe Tocar efeito com pulo selecionado no evento de espaço.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -234,7 +234,10 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_jump"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "jump"
+                  }
                 }
               }
             }
@@ -271,7 +274,7 @@
         "projectChecks": [
           {
             "id": "som-pulo",
-            "label": "Coloque Som de pulo dentro de Quando o dino pular.",
+            "label": "Coloque Tocar efeito com pulo selecionado dentro de Quando o dino pular.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_jump",
@@ -281,17 +284,23 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_jump"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "jump"
+                  }
                 }
               }
             }
           },
           {
             "id": "som-unico",
-            "label": "Mantenha apenas um bloco Som de pulo ativo.",
+            "label": "Mantenha apenas um Tocar efeito com pulo selecionado.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_play_jump",
+              "blockType": "sz_g2d_play_fx",
+              "fields": {
+                "FX": "jump"
+              },
               "count": 1
             }
           },
@@ -322,7 +331,7 @@
         "projectChecks": [
           {
             "id": "som-pulo",
-            "label": "Coloque Som de pulo dentro de Quando o dino pular.",
+            "label": "Coloque Tocar efeito com pulo selecionado dentro de Quando o dino pular.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_jump",
@@ -332,17 +341,23 @@
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_jump"
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "jump"
+                  }
                 }
               }
             }
           },
           {
             "id": "som-unico",
-            "label": "Mantenha apenas um bloco Som de pulo ativo.",
+            "label": "Mantenha apenas um Tocar efeito com pulo selecionado.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_play_jump",
+              "blockType": "sz_g2d_play_fx",
+              "fields": {
+                "FX": "jump"
+              },
               "count": 1
             }
           },

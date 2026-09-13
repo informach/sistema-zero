@@ -1586,6 +1586,7 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1,
           },
+          key: 'relogio',
           body: [
             {
               type: 'if',

@@ -1,4 +1,5 @@
 import type { Project } from './project'
+import { CURRENT_PROJECT_FORMAT_VERSION } from './projectDocument'
 
 /**
  * Modelo do MODO PROFISSIONAL: árvore de arquivos real (pastas, .ts/.tsx,
@@ -136,6 +137,8 @@ export function buildProProject(
   const now = nowSafe()
   return {
     id,
+    formatVersion: CURRENT_PROJECT_FORMAT_VERSION,
+    projectTools: [],
     name,
     createdAt: now,
     updatedAt: now,

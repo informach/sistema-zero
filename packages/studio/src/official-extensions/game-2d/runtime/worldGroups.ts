@@ -19,26 +19,30 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     }
     return unique;
   }
-  function _syncGroupOwnership(previousItems, nextItems) {
+  function _syncGroupOwnership(group, previousItems, nextItems) {
+    for (var i = nextItems.length - 1; i >= 0; i--) {
+      if (_isDestroyedSprite(nextItems[i])) nextItems.splice(i, 1);
+    }
     var previous = _uniqueTrackableItems(previousItems);
     var next = _uniqueTrackableItems(nextItems);
     next.forEach(function (sprite) {
       if (previous.has(sprite)) return;
-      _spriteGroupOwners.set(sprite, (_spriteGroupOwners.get(sprite) || 0) + 1);
+      var owners = _spriteGroupOwners.get(sprite);
+      if (!owners) { owners = new Set(); _spriteGroupOwners.set(sprite, owners); }
+      owners.add(group);
     });
     previous.forEach(function (sprite) {
       if (next.has(sprite)) return;
-      var owners = _spriteGroupOwners.get(sprite) || 0;
-      if (owners <= 1) {
+      var owners = _spriteGroupOwners.get(sprite);
+      if (owners) owners.delete(group);
+      if (!owners || !owners.size) {
         _spriteGroupOwners.delete(sprite);
         _disposeSprite(sprite);
-      } else {
-        _spriteGroupOwners.set(sprite, owners - 1);
       }
     });
   }
   function _disposeUnmanagedGroupItem(sprite) {
-    if (!_trackableGroupItem(sprite) || (_spriteGroupOwners.get(sprite) || 0) > 0) return;
+    if (!_trackableGroupItem(sprite) || (_spriteGroupOwners.get(sprite) || { size: 0 }).size > 0) return;
     _disposeSprite(sprite);
   }
   /** Marca uma mudança de pertencimento/ordem para varreduras com snapshot. */
@@ -51,8 +55,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (!_managedGroups.has(group)) _touchGroup(group);
   }
   /** Atualiza ownership e libera somente sprites que ficaram sem nenhum grupo dono. */
-  function _disposeRemovedGroupItems(previousItems, nextItems) {
-    _syncGroupOwnership(previousItems, nextItems);
+  function _disposeRemovedGroupItems(group, previousItems, nextItems) {
+    _syncGroupOwnership(group, previousItems, nextItems);
   }
   // Fonte única dos métodos que realmente mudam um array de grupo. O espelho
   // de todos os inimigos usa a mesma guarda para recusar essas operações.
@@ -87,7 +91,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
             var previousItems = target.slice();
             var result = arrayMethod.apply(target, arguments);
             if (target.length > MAX_GROUP) target.length = MAX_GROUP;
-            _disposeRemovedGroupItems(previousItems, target);
+            _disposeRemovedGroupItems(group, previousItems, target);
             _touchGroup(group);
             if (property === 'push' || property === 'unshift') return target.length;
             return result === target ? proxy : result;
@@ -106,7 +110,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var previous = target[property];
         target[property] = value;
         if (!hadProperty || previous !== value) {
-          _disposeRemovedGroupItems(previousItems, target);
+          _disposeRemovedGroupItems(group, previousItems, target);
           _touchGroup(group);
         }
         return true;
@@ -115,7 +119,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         if (!Object.prototype.hasOwnProperty.call(target, property)) return true;
         var previousItems = target.slice();
         delete target[property];
-        _disposeRemovedGroupItems(previousItems, target);
+        _disposeRemovedGroupItems(group, previousItems, target);
         _touchGroup(group);
         return true;
       },
@@ -132,7 +136,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var previous = target[property];
         Object.defineProperty(target, property, descriptor);
         if (!hadProperty || previous !== target[property]) {
-          _disposeRemovedGroupItems(previousItems, target);
+          _disposeRemovedGroupItems(group, previousItems, target);
           _touchGroup(group);
         }
         return true;
@@ -154,7 +158,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var previousItems = items.slice();
         var replacement = Array.isArray(nextItems) ? nextItems.slice(0, MAX_GROUP) : [];
         items = _trackGroupItems(group, replacement);
-        _disposeRemovedGroupItems(previousItems, replacement);
+        _disposeRemovedGroupItems(group, previousItems, replacement);
         _touchGroup(group);
       }
     });
@@ -246,7 +250,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // Move o sprite SÓ na horizontal com as setas ← → (não sai sozinho da tela:
   // combine com "prender o sprite na tela").
   function arrowsX(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var sp = _finiteNumber(speed, 5);
     // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
@@ -262,7 +266,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // ⭐ Lê a camada SEMÂNTICA (_dirHeld), então funciona com W/S e com o pad de
   // toque; ler a tecla crua, como o exemplo fazia, deixava o celular de fora.
   function arrowsY(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var sp = _finiteNumber(speed, 5);
     var paraBaixo = _dirHeld('down');
@@ -274,7 +278,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   }
   // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).
   function blink(sprite, frames) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.blinkFrames = Math.floor(_positiveFiniteNumber(frames, 60));
   }
   /** Move cada sprite do grupo somente pela velocidade atual. */
@@ -361,7 +365,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     for (var i = traversal.items.length - 1; i >= 0; i--) {
       _refreshGroupTraversal(group, traversal);
       var sprite = traversal.items[i];
-      if (!sprite || !traversal.members.has(sprite)) continue;
+      if (!sprite || _isDestroyedSprite(sprite) || !traversal.members.has(sprite)) continue;
       _invokeProjectCallback(fn, undefined, [sprite, i]);
       if (_runGenerationChanged(generation)) return;
     }
@@ -389,7 +393,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
    * régua do spawn — nunca lança no meio do jogo da criança).
    */
   function addToGroup(group, sprite) {
-    if (!group || !group.items || !sprite || typeof sprite !== 'object') return;
+    if (!group || !group.items || !sprite || _isDestroyedSprite(sprite) || typeof sprite !== 'object') return;
     if (_isEnemyMirror(group)) {
       _warnEnemyMirror(
         'por um sprite no grupo',

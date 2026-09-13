@@ -13,23 +13,23 @@
     },
     {
       "key": "video-abertura-v6",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom te ver de novo. Ontem você deixou a sua nave voando num espaço cheio de estrelas. Hoje o”. Saída: “ o motor faz os tiros voarem pela tela. E no sexto, a gente testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Sua nave já voa. Hoje você vai apertar espaço e ver um tiro sair dela, mesmo quando estiver em outro lugar da tela. Vamos ensinar o jogo a criar, mover e mostrar esses tiros.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom te ver de novo. Ontem você deixou a sua nave voando num espaço cheio de estrelas. Hoje o”. Saída: “ o motor faz os tiros voarem pela tela. E no sexto, a gente testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Sua nave já voa. Hoje você vai apertar espaço e ver um tiro sair dela, mesmo quando estiver em outro lugar da tela. Vamos ensinar o jogo a criar, mover e mostrar esses tiros.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-grupo-tiros",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar o grupo dos tiros. Entrada: “Ontem a gente criou a nave, que é uma só. Mas tiro é diferente: você vai disparar um monte deles, um”. Saída: “ocê vai disparar. Passo 1 pronto. Agora vamos pro segundo, que é montar a área que escuta o teclado.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Muitos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar o grupo dos tiros. Entrada: “Ontem a gente criou a nave, que é uma só. Mas tiro é diferente: você vai disparar um monte deles, um”. Saída: “ocê vai disparar. Passo 1 pronto. Agora vamos pro segundo, que é montar a área que escuta o teclado.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Grupos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-grupo-tiros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Muitos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele."
+        "text": "Em Jogo 2D, Grupos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele."
       }
     },
     {
       "key": "video-espaco",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 2. Passo 2: a área que escuta o teclado. Entrada: “Lembra que no primeiro dia a gente montou duas áreas, a Ao iniciar e a Enquanto estiver rodando? Hoj”. Saída: “. Passo 2 pronto. Agora vem o terceiro, o mais esperado de todos, que é fazer o tiro nascer na nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Quando acontecer. Dentro, encaixe Quando apertar a tecla, de Jogo 2D, Controles, e escolha barra de espaço. Esse é o evento que vai responder ao disparo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 2. Passo 2: a área que escuta o teclado. Entrada: “Lembra que no primeiro dia a gente montou duas áreas, a Ao iniciar e a Enquanto estiver rodando? Hoj”. Saída: “. Passo 2 pronto. Agora vem o terceiro, o mais esperado de todos, que é fazer o tiro nascer na nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Quando acontecer. Dentro, encaixe Quando apertar a tecla, de Jogo 2D, Controles, e escolha barra de espaço. Esse é o evento que vai responder ao disparo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-espaco",
@@ -41,18 +41,18 @@
     },
     {
       "key": "video-origem",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem co”. Saída: “cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela.”. Reaproveitar a explicação de ler a nave e acrescentar duas posições. Trocar a promessa de sair exatamente da pontinha visual por “alinhado com o centro e na altura de cima da caixa”. Fala complementar: “Veja a nave primeiro à esquerda e depois à direita. Se eu guardar um x fixo para o tiro, ele nasce no mesmo lugar. Se eu ler o centro x da nave na hora do disparo, ele acompanha a nave. A posição y diz a altura de onde ele sai.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem co”. Saída: “cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela.”. Reaproveitar a explicação de ler a nave e acrescentar duas posições. Trocar a promessa de sair exatamente da pontinha visual por “alinhado com o centro e na altura de cima da caixa”. Fala complementar: “Veja a nave primeiro à esquerda e depois à direita. Se eu guardar um x fixo para o tiro, ele nasce no mesmo lugar. Se eu ler o centro x da nave na hora do disparo, ele acompanha a nave. A posição y diz a altura de onde ele sai.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-criar-tiro",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar tiro no grupo e encaixa dentro do Quan”. Saída: “asso 3 pronto, o tiro já sabe onde nascer. Agora o quarto passo, que é dar velocidade e som pra ele.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar tiro no grupo e encaixa dentro do Quan”. Saída: “asso 3 pronto, o tiro já sabe onde nascer. Agora o quarto passo, que é dar velocidade e som pra ele.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Grupos, e escolha tiros. Em Movimento › Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-criar-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível."
+        "text": "Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Grupos, e escolha tiros. Em Movimento › Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível."
       }
     },
     {
@@ -86,31 +86,31 @@
     },
     {
       "key": "video-velocidade-som",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 4. Passo 4: a velocidade e o som do tiro. Entrada: “Faltam dois números no Criar tiro, e eles são novidade: o vx e o vy. Eles são a velocidade do tiro. ”. Saída: “senha os tiros. Bora resolver isso no quinto passo, que é colocar o motor pra fazer os tiros voarem.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 4. Passo 4: a velocidade e o som do tiro. Entrada: “Faltam dois números no Criar tiro, e eles são novidade: o vx e o vy. Eles são a velocidade do tiro. ”. Saída: “senha os tiros. Bora resolver isso no quinto passo, que é colocar o motor pra fazer os tiros voarem.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Som, pegue Tocar efeito, escolha tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-velocidade-som",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro."
+        "text": "No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Som, pegue Tocar efeito, escolha tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro."
       }
     },
     {
       "key": "video-ciclo-tiros",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 5. Passo 5: fazer os tiros voarem pela tela. Entrada: “Lembra do nosso motor, o A cada quadro do jogo? É ele que dá vida pra tudo. Agora a gente ensina ele”. Saída: “so 5 pronto, o motor agora cuida dos tiros. E chegou a hora da verdade, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Muitos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 5. Passo 5: fazer os tiros voarem pela tela. Entrada: “Lembra do nosso motor, o A cada quadro do jogo? É ele que dá vida pra tudo. Agora a gente ensina ele”. Saída: “so 5 pronto, o motor agora cuida dos tiros. E chegou a hora da verdade, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Grupos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-ciclo-tiros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Muitos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje."
+        "text": "No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Grupos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje."
       }
     },
     {
       "key": "video-testar",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de atirar. Entrada: “Clica na área do jogo e aperta a barra de espaço. Olha isso! O tiro saiu da nave, subiu e ainda fez ”. Saída: “nho no bico da nave? É o bloco do centro x trabalhando: onde a nave estiver, é de lá que o tiro sai.”. Usar o primeiro teste de posições. Retirar alterações para −15 e convites de brincar com valores. Fala complementar: “Clique no jogo. Vá para a esquerda e atire. Depois vá para a direita e atire de novo. Os dois tiros nascem na nave e sobem. Deixe vy menos 9 para a próxima aula.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de atirar. Entrada: “Clica na área do jogo e aperta a barra de espaço. Olha isso! O tiro saiu da nave, subiu e ainda fez ”. Saída: “nho no bico da nave? É o bloco do centro x trabalhando: onde a nave estiver, é de lá que o tiro sai.”. Usar o primeiro teste de posições. Retirar alterações para −15 e convites de brincar com valores. Fala complementar: “Clique no jogo. Vá para a esquerda e atire. Depois vá para a direita e atire de novo. Os dois tiros nascem na nave e sobem. Deixe vy menos 9 para a próxima aula.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "entrega-fala-v6",
@@ -121,7 +121,7 @@
     },
     {
       "key": "video-fecho-v6",
-      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 2! Olha os seis passos de hoje: você criou o grupo dos tiros, montou a”. Saída: “çar a cair do céu, e você vai explodir eles com os seus tiros. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora cada disparo nasce na sua nave. O evento cria; o motor move, faz a limpeza e desenha o grupo. No Dia 3, chegam os asteroides para você acertar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia2-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 2! Olha os seis passos de hoje: você criou o grupo dos tiros, montou a”. Saída: “çar a cair do céu, e você vai explodir eles com os seus tiros. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora cada disparo nasce na sua nave. O evento cria; o motor move, faz a limpeza e desenha o grupo. No Dia 3, chegam os asteroides para você acertar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "quiz-v6",
@@ -333,6 +333,26 @@
         "blockIds": [],
         "projectChecks": [
           {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
             "id": "disparo",
             "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
             "rule": {
@@ -366,7 +386,7 @@
                       }
                     }
                   },
-                  "beforeBlock": "sz_g2d_play_shoot"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -501,6 +521,26 @@
             }
           },
           {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
             "id": "disparo",
             "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
             "rule": {
@@ -534,7 +574,7 @@
                       }
                     }
                   },
-                  "beforeBlock": "sz_g2d_play_shoot"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "events"

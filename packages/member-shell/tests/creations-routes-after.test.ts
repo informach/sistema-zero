@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { createEmptyProject } from '@sistemazero/studio/project'
 
 mock.module('server-only', () => ({}))
 
@@ -13,6 +14,7 @@ const { createCreationsRoutes } = await import('../src/routes/creations')
 const afterQueue: Array<() => Promise<void>> = []
 const deleted: string[] = []
 const storage = {
+  readJson: async (key: string) => createEmptyProject(key.split('/')[3] ?? '', 'Nave'),
   presignPut: async (input: { key: string }) => `https://r2.test/put/${input.key}`,
   presignGet: async (key: string) => `https://r2.test/get/${key}`,
   deleteObject: async (key: string) => {

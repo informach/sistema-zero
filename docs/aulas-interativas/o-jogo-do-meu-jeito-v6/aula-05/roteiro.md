@@ -277,3 +277,9 @@ O Pinta redesenha a forma vetorial. É diferente de mover um recorte de pixels.
 As falas originais selecionadas são matéria-prima: aplicar cortes e substituições antes de exportar. Não somar a narração antiga inteira à ponte nova. Nenhum timecode foi inventado; marcar entrada e saída assistindo ao arquivo gravado. Textos e títulos devem ter legenda, foco visual único e tamanho legível.
 
 Fonte: roteiro-aula-05-o-jogo-do-meu-jeito.md. SHA-256: 6c91114eeff90e43403960ab3b5976383576c498699ee9a98b7bcedca0c9b99f. Mapa completo: [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Esta aula não monta blocos no Estúdio. Preserve o percurso e a entrega previstos; os blocos do jogo entram nas aulas de integração.

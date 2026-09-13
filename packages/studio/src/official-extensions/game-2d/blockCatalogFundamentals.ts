@@ -52,7 +52,7 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_set_velocity',
     placement: 'command',
-    message0: 'Mudar a velocidade do sprite %1 para vx %2 vy %3',
+    message0: 'Definir a velocidade do sprite %1 em x %2 y %3 pixels por quadro',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
@@ -64,59 +64,20 @@ export const gameTwoDFundamentalBlocks = [
     colour: C,
     tooltip: 'Define quanto o sprite anda na horizontal (vx) e na vertical (vy) a cada quadro.',
   },
-  {
-    type: 'sz_g2d_collides',
-    placement: 'command',
-    message0: 'Guardar em %1 se sprite %2 colide com sprite %3',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'bateu' },
-      { type: 'field_sprite_picker', name: 'A', text: 'jogador' },
-      { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Compara dois sprites e guarda sim ou não na variável escolhida.',
-  },
-  {
-    type: 'sz_g2d_score',
-    placement: 'start-only-command',
-    message0: 'Criar pontuação %1 começando em %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'pontos' },
-      { type: 'input_value', name: 'INITIAL', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Cria uma variável de pontuação com o valor inicial escolhido.',
-  },
+
   {
     type: 'sz_g2d_game_over',
     placement: 'command',
-    message0: 'Mostrar fim de jogo com o texto %1',
+    message0: 'Escrever mensagem de fim de jogo %1',
     args0: [{ type: 'input_value', name: 'TEXT', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escreve um texto grande na tela (ex.: ao perder ou vencer).',
-  },
-  {
-    type: 'sz_g2d_on_start',
-    placement: 'legacy-start',
-    migration: 'unwrap-start',
-    message0: 'Quando o jogo começar',
-    message1: 'preparar %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: EVENT_C,
-    hidden: true,
     tooltip:
-      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, use “⚙️ Ao iniciar”, “⚡ Quando acontecer” e “🔁 Enquanto estiver rodando”.',
+      'Desenha um texto grande. Para encerrar a partida, mude o estado do jogo e use esse estado para decidir quais ações continuam rodando.',
   },
+
   {
     type: 'sz_g2d_update_each_frame',
     placement: 'loop-update',
@@ -145,7 +106,7 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_set_gravity',
     placement: 'command',
-    message0: 'Botar a gravidade do mundo em %1',
+    message0: 'Definir a gravidade em %1 pixels por quadro²',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -188,20 +149,7 @@ export const gameTwoDFundamentalBlocks = [
     colour: C,
     tooltip: 'Faz o sprite quicar nas bordas da tela, invertendo a velocidade.',
   },
-  {
-    type: 'sz_g2d_circle_collides',
-    placement: 'command',
-    message0: 'Guardar em %1 se sprite %2 encosta no sprite %3 (em círculo)',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'bateu' },
-      { type: 'field_sprite_picker', name: 'A', text: 'jogador' },
-      { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
-    ],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Colisão por círculo (mais justa para objetos redondos que a caixa retangular).',
-  },
+
   {
     type: 'sz_g2d_set_hitbox_scale',
     placement: 'command',
@@ -328,15 +276,6 @@ export const gameTwoDFundamentalBlocks = [
     tooltip:
       'Toca uma musiquinha de fundo em loop. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma música não recomeça a faixa.',
   },
-  {
-    type: 'sz_g2d_stop_music',
-    placement: 'command',
-    message0: 'Parar a música de fundo',
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Para a música de fundo que estiver tocando.',
-  },
 
   // ---- Áudio de ARQUIVO (o som que a criança enviou) ----
   // Tudo acima é inventado pelo computador na hora. Estes tocam o mp3/wav que
@@ -393,17 +332,28 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_stop_track',
     placement: 'command',
-    message0: 'Parar a música',
+    message0: 'Parar %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SCOPE',
+        options: [
+          ['todas as músicas', 'all'],
+          ['a melodia pronta', 'synth'],
+          ['a música de arquivo', 'file'],
+        ],
+      },
+    ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desliga QUALQUER música que estiver tocando: a sua (de arquivo) e também a música de fundo pronta. Na dúvida, use este.',
+      'Escolha quais músicas parar: todas, só a melodia pronta ou só a música de arquivo. Efeitos e sons tocados uma vez continuam.',
   },
   {
     type: 'sz_g2d_set_volume',
     placement: 'command',
-    message0: 'Pôr o volume em %1',
+    message0: 'Definir o volume dos sons de arquivo em %1 de 10',
     args0: [{ type: 'input_value', name: 'LEVEL', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -633,7 +583,7 @@ export const gameTwoDFundamentalBlocks = [
   },
   {
     type: 'sz_g2d_cooldown_ready',
-    message0: 'o sprite %1 pode agir? (recarga de %2 quadros)',
+    message0: 'tentar usar a recarga do sprite %1 por %2 quadros: conseguiu?',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'input_value', name: 'FRAMES', check: 'JSValue' },
@@ -641,7 +591,8 @@ export const gameTwoDFundamentalBlocks = [
     inputsInline: true,
     output: 'JSValue',
     colour: EVENT_C,
-    tooltip: 'Verdadeiro no máximo a cada N quadros (ótimo para a cadência de tiro). Use num "se".',
+    tooltip:
+      'A tentativa que devolve verdadeiro já inicia a recarga. Uma nova tentativa durante o intervalo devolve falso. Para uma ação com corpo, use “fazer no máximo uma vez a cada … quadros”.',
   },
   {
     type: 'sz_g2d_prune_old',
@@ -790,7 +741,7 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_set_opacity',
     placement: 'command',
-    message0: 'Mudar a transparência do sprite %1 para %2 %',
+    message0: 'Deixar o sprite %1 com %2 % de visibilidade',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
       { type: 'input_value', name: 'PERCENT', check: 'JSValue' },
@@ -804,7 +755,7 @@ export const gameTwoDFundamentalBlocks = [
   {
     type: 'sz_g2d_set_size',
     placement: 'command',
-    message0: 'Mudar o tamanho do sprite %1 para largura %2 altura %3',
+    message0: 'Definir o tamanho do sprite %1: largura %2 altura %3 pixels',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -828,7 +779,8 @@ export const gameTwoDFundamentalBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Cresce (maior que 1) ou encolhe (menor que 1) o sprite a partir do centro.',
+    tooltip:
+      'Multiplica o tamanho atual a partir do centro: 2 dobra, 0,5 reduz à metade. Repetir a cada quadro multiplica de novo a cada quadro.',
   },
 
   // ---- Tier 1: Mundo ----
@@ -872,39 +824,7 @@ export const gameTwoDFundamentalBlocks = [
   },
 
   // ---- Tier 2: Câmera (rola o mundo; o HUD fica fixo) ----
-  {
-    type: 'sz_g2d_camera_follow',
-    hidden: true,
-    placement: 'command',
-    message0: 'Bloco antigo: câmera seguir o sprite %1 (limites %2 x %3)',
-    args0: [
-      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'input_value', name: 'WORLDW', check: 'JSValue' },
-      { type: 'input_value', name: 'WORLDH', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Compatibilidade com projetos antigos. Os números podem divergir do tamanho real do mapa. Substitua por “Configurar câmera” e “Fazer a câmera do Mundo seguir o sprite”.',
-  },
-  {
-    type: 'sz_g2d_set_camera',
-    hidden: true,
-    placement: 'command',
-    message0: 'Bloco antigo: mover a câmera para x %1 y %2',
-    args0: [
-      { type: 'input_value', name: 'X', check: 'JSValue' },
-      { type: 'input_value', name: 'Y', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Compatibilidade com projetos antigos. Em jogos novos, configure a câmera do Mundo e faça ela seguir um sprite.',
-  },
+
   {
     type: 'sz_g2d_camera_x',
     message0: 'a posição x da câmera',

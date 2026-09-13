@@ -1,5 +1,6 @@
 import type { SZIRInput } from '#ir'
 import type { IDEMode } from './modes'
+import { CURRENT_PROJECT_FORMAT_VERSION } from './projectDocument'
 import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
 export interface ProjectFiles {
@@ -662,6 +663,10 @@ export const PROJECT_ASSET_LIMITS = {
 } as const
 
 export interface Project {
+  /** Ausente somente em documentos anteriores à conversão. */
+  formatVersion?: number
+  /** Ferramentas validadas para editar este projeto; não concede modos ou extensões. */
+  projectTools?: string[]
   id: string
   name: string
   createdAt: number
@@ -724,6 +729,8 @@ export function isReservedProjectFileName(fileName: string): boolean {
 export function createEmptyProject(id: string, name: string): Project {
   const now = Date.now()
   return {
+    formatVersion: CURRENT_PROJECT_FORMAT_VERSION,
+    projectTools: [],
     id,
     name,
     createdAt: now,

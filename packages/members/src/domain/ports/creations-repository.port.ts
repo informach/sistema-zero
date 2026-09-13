@@ -93,7 +93,7 @@ export type CreationCommitResult =
   /** Não é a revisão reservada (upload velho, outro navegador reservou depois, nada reservado). */
   | {
       ok: false
-      reason?: 'total-bytes' | 'items-per-tool' | 'palette-library-identity'
+      reason?: 'total-bytes' | 'items-per-tool' | 'palette-library-identity' | 'manifest-mismatch'
     }
   /** A reserva exigia partes que o cliente não confirmou ter enviado (a reserva fica viva). */
   | { ok: false; reason: 'parts-missing'; hashes: string[] }
@@ -146,6 +146,7 @@ export interface CreationsRepository {
     storageRef: string
     /** Hashes das partes que o cliente diz ter PUTado nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
+    verifiedPartHashes?: readonly string[]
     now: Date
     /** Revalidados no commit, depois do PUT, sob lock por perfil. */
     limits: CreationUploadInput['limits']

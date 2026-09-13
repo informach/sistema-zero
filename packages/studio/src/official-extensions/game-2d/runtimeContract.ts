@@ -146,7 +146,7 @@ export interface GameTwoDTileLayout {
   tileSize: number
   width: number
   height: number
-  mode: 'placed' | 'fitted' | 'legacy'
+  mode: 'placed' | 'fitted'
 }
 
 export interface GameTwoDTileMap {
@@ -232,7 +232,6 @@ export interface GameTwoDEnemyType extends GameTwoDGroup {
     w: number
     h: number
   }
-  onDefeat: ((sprite: GameTwoDSprite) => void) | null
 }
 
 export interface GameTwoDCity {
@@ -438,7 +437,7 @@ export interface GameTwoDAudioApi {
   playSound(frequency: number, milliseconds: number): void
   playFx(name: string): void
   playMusic(name: string): void
-  stopMusic(): void
+
   playNote(note: string, milliseconds: number): void
   /**
    * Áudio de ARQUIVO (o que a criança enviou), em oposição a tudo acima, que é
@@ -450,14 +449,8 @@ export interface GameTwoDAudioApi {
   playClip(name: string): void
   stopClip(name: string): void
   playTrack(name: string): void
-  stopTrack(): void
+  stopTrack(scope?: 'all' | 'synth' | 'file'): void
   setSoundVolume(level: number): void
-  playShoot(): void
-  playExplosion(): void
-  playJump(): void
-  playDinoHurt(): void
-  playCollect(): void
-  playWhistle(): void
 }
 
 export interface GameTwoDMathAndStateApi {
@@ -490,6 +483,8 @@ export interface GameTwoDMathAndStateApi {
   randomX(): number
   randomY(): number
   cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
+  withCooldown(sprite: GameTwoDSprite, frames: number, fn: () => void, key: string): void
+  destroySprite(sprite: GameTwoDSprite): void
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: GameTwoDSpriteDirection): void
   setOpacity(sprite: GameTwoDSprite, percent: number): void
@@ -597,17 +592,14 @@ export interface GameTwoDWorldApi {
   campaignValue(key: string, fallback: number): number
   fitTileMapToStage(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   placeTileMap(map: GameTwoDTileMap, x: number, y: number, tileSize: number): void
-  /**
-   * Desenha o layout preparado. Os argumentos x/y/size são aceitos somente por
-   * compatibilidade; código novo deve preparar o mapa antes e passar dois argumentos.
-   */
-  drawTileMap(
+  centerTileMap(
     ctx: GameTwoDContext,
     map: GameTwoDTileMap,
-    x?: number,
-    y?: number,
-    size?: number,
+    x: number,
+    y: number,
+    size: number,
   ): void
+  drawTileMap(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   collideTileMap(sprite: GameTwoDSprite, map: GameTwoDTileMap): void
   forEachTileContact(
     sprite: GameTwoDSprite,
@@ -926,7 +918,7 @@ export const GAME_TWO_D_API_KEYS = [
   'playSound',
   'playFx',
   'playMusic',
-  'stopMusic',
+
   'playNote',
   'loadSound',
   'playClip',
@@ -965,6 +957,8 @@ export const GAME_TWO_D_API_KEYS = [
   'stageHeight',
   'hasHealth',
   'cooldownReady',
+  'withCooldown',
+  'destroySprite',
   'pruneOld',
   'flipSprite',
   'setOpacity',
@@ -1051,6 +1045,7 @@ export const GAME_TWO_D_API_KEYS = [
   'loadVectorCampaignLevel',
   'campaignValue',
   'fitTileMapToStage',
+  'centerTileMap',
   'placeTileMap',
   'drawTileMap',
   'collideTileMap',
@@ -1119,8 +1114,7 @@ export const GAME_TWO_D_API_KEYS = [
   'createShip',
   'spawnAsteroid',
   'explodeSprite',
-  'playShoot',
-  'playExplosion',
+
   'overlapSpriteGroup',
   'createEnemyType',
   'createAllEnemiesGroup',
@@ -1154,9 +1148,7 @@ export const GAME_TWO_D_API_KEYS = [
   'spawnObstacle',
   'spawnEgg',
   'drawForest',
-  'playJump',
-  'playDinoHurt',
-  'playCollect',
+
   'createCity',
   'drawCity',
   'placeThrower',
@@ -1169,7 +1161,7 @@ export const GAME_TWO_D_API_KEYS = [
   'drawBanana',
   'bananaHitThrower',
   'bananaHitCity',
-  'playWhistle',
+
   'computerTurn',
   'drawAimReadout',
   'createStickHero',

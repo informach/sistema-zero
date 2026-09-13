@@ -38,7 +38,15 @@ const req = (
     new Request(`http://localhost${path}`, {
       method,
       headers: customHeaders,
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      ...(body === undefined
+        ? {}
+        : {
+            body: JSON.stringify(
+              method === 'DELETE' && path.includes('/studio/') && body && typeof body === 'object'
+                ? { maxFormatVersion: 2, ...body }
+                : body,
+            ),
+          }),
     }),
   )
 
@@ -53,6 +61,7 @@ function buildWithTools(opts: Parameters<typeof buildApp>[0] = {}) {
 }
 
 const uploadBody = (over: Partial<Record<string, unknown>> = {}) => ({
+  formatVersion: 2,
   name: 'Nave Zero',
   kind: 'classic',
   itemUpdatedAt: '2026-08-18T12:00:00.000Z',
@@ -61,10 +70,22 @@ const uploadBody = (over: Partial<Record<string, unknown>> = {}) => ({
 })
 
 const reserve = (ctx: Ctx, tool: string, itemId: string, over = {}) =>
-  req(ctx.app, 'POST', `/members/creations/${tool}/${itemId}/upload`, uploadBody(over))
+  req(
+    ctx.app,
+    'POST',
+    `/members/creations/${tool}/${itemId}/upload`,
+    uploadBody({ formatVersion: tool === 'studio' ? 2 : 1, ...over }),
+  )
 
-const commit = (ctx: Ctx, tool: string, itemId: string, revision: number, extra = {}) =>
-  req(ctx.app, 'POST', `/members/creations/${tool}/${itemId}/commit`, { revision, ...extra })
+const commit = async (ctx: Ctx, tool: string, itemId: string, revision: number, extra = {}) => {
+  const row = await ctx.creations.get(USER, tool as 'studio' | 'pinta' | 'molda', itemId)
+  const parts = row?.pending?.revision === revision ? row.pending.parts : row?.parts
+  return req(ctx.app, 'POST', `/members/creations/${tool}/${itemId}/commit`, {
+    revision,
+    ...(tool === 'studio' ? { verifiedPartHashes: (parts ?? []).map((part) => part.hash) } : {}),
+    ...extra,
+  })
+}
 
 /** Hash de conteúdo fictício (64 hex), estável e ÚNICO por rótulo (sem colisão `p1`/`p10`). */
 const hashOf = (label: string) => {
@@ -103,20 +124,56 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('o manifesto deve listar exatamente as partes reservadas; uma recusa conserva a revisão e a reserva', async () => {
+    const ctx = buildWithTools()
+    await saveItem(ctx, 'studio', 'manifesto')
+    const A = hashOf('asset-a')
+    const B = hashOf('asset-b')
+    await reserve(ctx, 'studio', 'manifesto', { parts: [{ hash: A, bytes: 50 }] })
+    const wrong = await commit(ctx, 'studio', 'manifesto', 2, {
+      uploadedParts: [A],
+      verifiedPartHashes: [B],
+    })
+    expect(wrong.status).toBe(400)
+    expect((await listOf(ctx, 'studio'))[0].revision).toBe(1)
+    const missingVerification = await commit(ctx, 'studio', 'manifesto', 2, {
+      uploadedParts: [A],
+      verifiedPartHashes: undefined,
+    })
+    expect(missingVerification.status).toBe(400)
+    expect(
+      (await commit(ctx, 'studio', 'manifesto', 2, { uploadedParts: [A], verifiedPartHashes: [A] }))
+        .status,
+    ).toBe(200)
+  })
+  test.each([
+    undefined,
+    1,
+  ])('Studio recusa cliente histórico antes de criar uma reserva: %s', async (formatVersion) => {
+    const ctx = buildWithTools()
+    const result = await reserve(ctx, 'studio', 'historico', { formatVersion })
+    expect(result.status).toBe(409)
+    expect(await json(result)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 2 },
+    })
+    expect(await listOf(ctx, 'studio')).toEqual([])
+  })
+
   test('apagar de novo durante restauro cancela a reserva compatível, sem deixar o item voltar', async () => {
     const ctx = buildWithTools()
-    const saved = await saveItem(ctx, 'studio', 'restauro')
+    const saved = await saveItem(ctx, 'pinta', 'restauro')
     const remove = (maxFormatVersion = 1) =>
-      req(ctx.app, 'DELETE', '/members/creations/studio/restauro', {
+      req(ctx.app, 'DELETE', '/members/creations/pinta/restauro', {
         baseRevision: saved.item.revision,
         maxFormatVersion,
       })
     expect((await remove()).status).toBe(200)
-    const pending = await json(await reserve(ctx, 'studio', 'restauro', { formatVersion: 2 }))
+    const pending = await json(await reserve(ctx, 'pinta', 'restauro', { formatVersion: 2 }))
     expect((await remove()).status).toBe(409)
     expect((await remove(2)).status).toBe(200)
-    expect((await commit(ctx, 'studio', 'restauro', pending.revision)).status).toBe(409)
-    expect((await listOf(ctx, 'studio'))[0].deletedAt).toBeDefined()
+    expect((await commit(ctx, 'pinta', 'restauro', pending.revision)).status).toBe(409)
+    expect((await listOf(ctx, 'pinta'))[0].deletedAt).toBeDefined()
   })
 
   test('exclusão antiga não apaga formato futuro confirmado nem sua reserva pendente', async () => {
@@ -127,7 +184,7 @@ describe('criações guardadas na conta — HTTP', () => {
       if (committed)
         expect((await commit(ctx, 'studio', 'futuro', ticket.revision)).status).toBe(200)
       const baseRevision = committed ? ticket.revision : saved.item.revision
-      for (const cap of [{}, { maxFormatVersion: 1 }]) {
+      for (const cap of [{ maxFormatVersion: undefined }, { maxFormatVersion: 1 }]) {
         const response = await req(ctx.app, 'DELETE', '/members/creations/studio/futuro', {
           baseRevision,
           ...cap,
@@ -180,10 +237,10 @@ describe('criações guardadas na conta — HTTP', () => {
     65_535,
   ])('reserva confirma o formato aceito: %s', async (formatVersion) => {
     const ctx = buildWithTools()
-    const result = await reserve(ctx, 'studio', 'formato', { formatVersion })
+    const result = await reserve(ctx, 'pinta', 'formato', { formatVersion })
     expect(result.status).toBe(200)
     expect(await json(result)).toMatchObject({ formatVersion: formatVersion ?? 1, revision: 1 })
-    expect(await listOf(ctx, 'studio')).toEqual([])
+    expect(await listOf(ctx, 'pinta')).toEqual([])
   })
 
   test('formato legado é 1; promoção só no commit e editor antigo recebe erro recuperável', async () => {
@@ -672,6 +729,7 @@ describe('criações guardadas na conta — HTTP', () => {
     const committed = await req(ctx.app, 'POST', '/members/creations/studio/proj-1/commit', {
       revision: reserved.revision,
       bytes: 1,
+      verifiedPartHashes: [],
     })
     expect(committed.status).toBe(200)
     const [item] = await listOf(ctx, 'studio')

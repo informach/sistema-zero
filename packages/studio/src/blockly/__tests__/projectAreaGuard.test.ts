@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { normalizeLegacyBlocksStateToFrames } from '../../project-migrations/legacyFrames'
 import { attachProjectAreaGuard, enforceUniqueProjectAreas } from '../projectAreaGuard'
 import { ensureBlocklyInitialized } from '../setup'
 
@@ -27,9 +28,23 @@ describe('unicidade das Áreas do projeto', () => {
 
   it('considera a área antiga e Ao iniciar como a mesma área semântica', () => {
     const workspace = new Blockly.Workspace()
-    workspace.newBlock('sz_frame_behavior')
+    const state = normalizeLegacyBlocksStateToFrames({
+      blocks: {
+        blocks: [
+          {
+            type: 'sz_frame_behavior',
+            inputs: {
+              CHILDREN: { block: { type: 'sz_js_console_log_text', fields: { TEXT: 'Olá' } } },
+            },
+          },
+        ],
+      },
+    })
+    if (!state || typeof state !== 'object') throw new Error('Conversão sem áreas')
+    Blockly.serialization.workspaces.load(state, workspace)
     workspace.newBlock('sz_frame_start')
     expect(enforceUniqueProjectAreas(workspace).removed).toBe(1)
+    workspace.dispose()
   })
 
   it('remove também uma segunda área Meus moldes e preserva seu conteúdo', () => {

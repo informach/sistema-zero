@@ -315,29 +315,27 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (!r || col < 0 || col >= r.length) return -1;
     return r[col];
   }
-  /**
-   * Desenha usando o layout já preparado. A aridade antiga (ctx,map,x,y,size)
-   * continua funcionando por compatibilidade, mas só ela recalcula o layout.
-   */
-  function drawTileMap(ctx, map, x, y, size) {
+  /** Centraliza a geometria agora; tamanho zero calcula o encaixe na tela. */
+  function centerTileMap(ctx, map, x, y, size) {
     if (!ctx || !map || !map.rows) return;
-    var rowsN = map.rows.length;
-    var cols = tileMapCols(map);
+    var rowsN = map.rows.length, cols = tileMapCols(map);
     if (cols === 0 || rowsN === 0) return;
-    var cw = stageW(ctx), ch = stageH(ctx);
-    var hasCanvas = cw > 0 && ch > 0;
-    if (arguments.length > 2) {
-      var manual = (_isFiniteNumber(size) && size > 0) ? Math.max(1, Math.floor(size)) : 0;
-      var legacyCell = manual || (hasCanvas
-        ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN)))
-        : map.tile);
-      var legacyX = _finiteNumber(x, 0) +
-        (hasCanvas ? Math.floor((cw - cols * legacyCell) / 2) : 0);
-      var legacyY = _finiteNumber(y, 0) +
-        (hasCanvas ? Math.floor((ch - rowsN * legacyCell) / 2) : 0);
-      _setTileMapLayout(map, legacyX, legacyY, legacyCell, 'legacy');
-      map._fitStageRevision = -1;
-    }
+    var cw = stageW(ctx), ch = stageH(ctx), hasCanvas = cw > 0 && ch > 0;
+    var manual = (_isFiniteNumber(size) && size > 0) ? Math.max(1, Math.floor(size)) : 0;
+    var cell = manual || (hasCanvas
+      ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN)))
+      : map.tile);
+    var ox = _finiteNumber(x, 0) + (hasCanvas ? Math.floor((cw - cols * cell) / 2) : 0);
+    var oy = _finiteNumber(y, 0) + (hasCanvas ? Math.floor((ch - rowsN * cell) / 2) : 0);
+    _setTileMapLayout(map, ox, oy, cell, 'placed');
+    map._fitStageRevision = -1;
+  }
+  /** Desenha exclusivamente a geometria preparada. */
+  function drawTileMap(ctx, map) {
+    if (!ctx || !map || !map.rows) return;
+    var rowsN = map.rows.length, cols = tileMapCols(map);
+    if (cols === 0 || rowsN === 0) return;
+    var cw = stageW(ctx), ch = stageH(ctx), hasCanvas = cw > 0 && ch > 0;
     _refreshFittedTileMapLayout(ctx, map);
     if (!map.layout) {
       warnOnce(
@@ -400,7 +398,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // horizontal coincide, o sprite continua caindo nessa direção (ou já estava
   // apoiado no quadro anterior) e há sobreposição REAL no eixo X.
   function _touchesGravitySupport(sprite, x, y, w, h, gravity) {
-    if (!sprite) return false;
+    if (!sprite || _isDestroyedSprite(sprite)) return false;
     var overlapX = Math.min(sprite.x + sprite.w, x + w) - Math.max(sprite.x, x);
     if (overlapX <= 0) return false;
     var pullsUp = _gravityPullsUp(gravity);
@@ -412,7 +410,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     return touchingFace && (movesTowardFace || sprite._groundedLastFrame === true);
   }
   function _restOnGravitySupport(sprite, y, h, gravity, support) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.y = _gravityPullsUp(gravity) ? y + h : y - sprite.h;
     sprite.vy = 0;
     _confirmGroundSupport(sprite, support);
@@ -456,7 +454,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   }
 
   function collideTileMap(sprite, map) {
-    if (!sprite || !map || !map.rows || !map.tile) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !map || !map.rows || !map.tile) return;
     _beginTileContacts(sprite);
     // Projetos antigos podem colidir antes do primeiro desenho; preservamos a
     // origem (0,0) e o tamanho da arte, mas ensinamos o preparo explícito novo.
@@ -654,7 +652,8 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // Empurra o sprite para FORA de UM outro sprite (o núcleo do collideGroup, por
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
   function collideSprite(sprite, obstacle) {
-    if (!sprite || !obstacle || obstacle === sprite) return;
+    if (_isDestroyedSprite(obstacle)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !obstacle || obstacle === sprite) return;
     var spritePrevious = _motionPreviousPosition(sprite);
     var obstaclePrevious = _motionPreviousPosition(obstacle);
     try {
@@ -748,7 +747,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     }
   }
   function collideGroup(sprite, group) {
-    if (!sprite || !group || !group.items) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !group || !group.items) return;
     var previousResolutionGroup = sprite._supportResolutionGroup;
     sprite._supportResolutionGroup = group;
     _beginSupportResolution(sprite);
@@ -765,7 +764,8 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
    * face atraída pela gravidade e nunca bloqueia pelas laterais ou pela face oposta.
    */
   function collidePlatform(sprite, platform) {
-    if (!sprite || !platform || platform === sprite) return;
+    if (_isDestroyedSprite(platform)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !platform || platform === sprite) return;
     var spritePrevious = _motionPreviousPosition(sprite);
     var platformPrevious = _motionPreviousPosition(platform);
     try {
@@ -814,7 +814,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     }
   }
   function collidePlatformGroup(sprite, group) {
-    if (!sprite || !group || !group.items) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !group || !group.items) return;
     var previousResolutionGroup = sprite._supportResolutionGroup;
     sprite._supportResolutionGroup = group;
     _beginSupportResolution(sprite);

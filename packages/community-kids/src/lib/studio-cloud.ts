@@ -38,6 +38,10 @@
  * O módulo do Estúdio é carregado dinamicamente pelo host (Monaco/Blockly não
  * rodam no SSR): as funções chegam por parâmetro, nunca por import estático.
  */
+import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+
+export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+
 import {
   type CloudCreationSummary,
   type CloudDownload,
@@ -67,7 +71,7 @@ export interface StudioCloudModule {
   validateCloudProjectSnapshot(
     raw: unknown,
     opts?: { expectedId?: string },
-  ): { project: StudioProjectLike; warnings: string[] }
+  ): Promise<{ project: StudioProjectLike; warnings: string[] }>
   importProjectSnapshot(
     raw: unknown,
     opts?: { name?: string; namespace?: string; silent?: boolean },
@@ -103,14 +107,13 @@ export interface StudioProjectLike {
   id: string
   name: string
   kind?: string
+  formatVersion?: number
   updatedAt: number
   /** Os assets embutidos (desenhos/sons): viram PARTES na subida. */
   assets?: unknown[]
 }
 
 /** O blob principal de um projeto guardado em partes. */
-export const STUDIO_PARTS_FORMAT = 'sz-studio-parts'
-export const STUDIO_PARTS_VERSION = 1
 
 export interface StudioPartsManifest {
   format: typeof STUDIO_PARTS_FORMAT
@@ -323,6 +326,7 @@ export function createStudioCloudSync(options: {
             updatedAt: project.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
             baseRevision: marks.revision(id) ?? 0,
+            formatVersion: project.formatVersion,
           },
         }
       },
@@ -572,7 +576,7 @@ export function createStudioCloudSync(options: {
             const raw = await resolveCloudProject(downloaded, summary.itemId)
             // TODA a validação aqui, sem gravar (id, tetos, saneamento estrito): uma descida
             // recusada não pode deixar uma cópia "(deste computador)" órfã a cada carga.
-            const { project, warnings } = studio.validateCloudProjectSnapshot(raw, {
+            const { project, warnings } = await studio.validateCloudProjectSnapshot(raw, {
               expectedId: summary.itemId,
             })
             if (warnings.length > 0) onWarnings(summary.itemId, warnings)

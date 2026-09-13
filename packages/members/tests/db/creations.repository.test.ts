@@ -100,6 +100,7 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     userId: perfil,
     accountId: conta,
     tool: 'studio' as const,
+    formatVersion: 2,
     itemId: 'proj-1',
     name: 'Nave',
     kind: 'classic',
@@ -127,9 +128,55 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     ).toEqual({ ok: false, reason: 'account-deleting' })
   })
   const key = (rev: number) => `creations/${perfil}/studio/proj-1/${rev}.json.gz`
+  test('manifesto verificado precisa corresponder às partes reservadas dentro da transação', async () => {
+    const input = {
+      ...base,
+      userId: randomUUID(),
+      itemId: 'manifesto',
+      bytes: 100,
+      parts: [{ hash: 'a'.repeat(64), bytes: 30 }],
+    }
+    const reserved = await repo.reserveUpload(input)
+    if (!reserved.ok) throw new Error('Reserva ausente')
+    const before = await repo.get(input.userId, input.tool, input.itemId)
+    const commit = {
+      userId: input.userId,
+      tool: input.tool,
+      itemId: input.itemId,
+      revision: reserved.revision,
+      storageRef: 'manifesto',
+      now,
+      limits: LIMITS,
+    }
+    expect(await repo.commit({ ...commit, verifiedPartHashes: [] })).toEqual({
+      ok: false,
+      reason: 'manifest-mismatch',
+    })
+    expect(await repo.get(input.userId, input.tool, input.itemId)).toEqual(before)
+    expect(
+      await repo.commit({
+        ...commit,
+        verifiedPartHashes: ['a'.repeat(64)],
+        uploadedParts: ['a'.repeat(64)],
+      }),
+    ).toMatchObject({ ok: true })
+  })
+  test('o corte do Studio recusa formato antigo também dentro da transação', async () => {
+    expect(await repo.reserveUpload({ ...base, userId: randomUUID(), formatVersion: 1 })).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: 2,
+    })
+  })
 
   test('delete confere capacidade contra formato confirmado e pendente sob lock', async () => {
-    const input = { ...base, userId: randomUUID(), itemId: 'delete-formato' }
+    const input = {
+      ...base,
+      tool: 'pinta' as const,
+      formatVersion: 1,
+      userId: randomUUID(),
+      itemId: 'delete-formato',
+    }
     const first = await repo.reserveUpload(input)
     if (!first.ok) throw new Error('Expected initial reservation')
     await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
@@ -155,7 +202,13 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
   })
 
   test('delete espera uma atualização concorrente e reavalia a versão, sem preflight externo', async () => {
-    const input = { ...base, userId: randomUUID(), itemId: 'delete-lock' }
+    const input = {
+      ...base,
+      tool: 'pinta' as const,
+      formatVersion: 1,
+      userId: randomUUID(),
+      itemId: 'delete-lock',
+    }
     const first = await repo.reserveUpload(input)
     if (!first.ok) throw new Error('Expected reservation')
     await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
@@ -185,7 +238,13 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
   })
 
   test('delete repetido cancela uma reserva compatível de restauro sem renovar a lápide', async () => {
-    const input = { ...base, userId: randomUUID(), itemId: 'delete-restauro' }
+    const input = {
+      ...base,
+      tool: 'pinta' as const,
+      formatVersion: 1,
+      userId: randomUUID(),
+      itemId: 'delete-restauro',
+    }
     const first = await repo.reserveUpload(input)
     if (!first.ok) throw new Error('Expected reservation')
     await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
@@ -211,7 +270,13 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
   })
 
   test('formatos são monotônicos em reservas concorrentes e commits, inclusive reserva legada', async () => {
-    const input = { ...base, userId: randomUUID(), itemId: 'formatos' }
+    const input = {
+      ...base,
+      tool: 'pinta' as const,
+      formatVersion: 1,
+      userId: randomUUID(),
+      itemId: 'formatos',
+    }
     const old = await repo.reserveUpload(input)
     expect(old.ok).toBe(true)
     const next = await repo.reserveUpload({ ...input, formatVersion: 2 })
@@ -337,14 +402,14 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
 
     // Lixeira lógica + idempotência; a reserva NÃO ressuscita, o commit sim; o contador segue.
     // A lixeira SOLTA o blob (devolve a chave para o BFF apagar) e zera `storage_ref`.
-    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now)).toEqual({
+    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now, 2)).toEqual({
       ok: true,
       deleted: true,
       storageRef: key(4),
       partRefs: [],
       revision: 4,
     })
-    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now)).toEqual({
+    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now, 2)).toEqual({
       ok: true,
       deleted: false,
       storageRef: null,
@@ -621,7 +686,7 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     })
     await repo.commit({ ...item, revision: 3, storageRef: key(3), uploadedParts: [H('b')] })
     // 7) lixeira devolve as partes correntes e zera; ressurreição trata tudo como faltante.
-    const del = await repo.softDelete(dono, 'studio', 'jogo', 3, now)
+    const del = await repo.softDelete(dono, 'studio', 'jogo', 3, now, 2)
     expect(del).toEqual({
       ok: true,
       deleted: true,
@@ -659,8 +724,8 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(second.items.map((item) => item.itemId)).toEqual(['mais-antigo'])
     expect(second.nextCursor).toBeNull()
 
-    await repo.softDelete(owner, 'studio', 'mais-novo', 1, new Date('2025-01-01'))
-    await repo.softDelete(owner, 'studio', 'mais-antigo', 1, new Date('2025-01-02'))
+    await repo.softDelete(owner, 'studio', 'mais-novo', 1, new Date('2025-01-01'), 2)
+    await repo.softDelete(owner, 'studio', 'mais-antigo', 1, new Date('2025-01-02'), 2)
     expect(await repo.compactTombstones(new Date('2025-02-01'), 1)).toBe(1)
     expect(await repo.get(owner, 'studio', 'mais-novo')).toBeNull()
     expect(await repo.get(owner, 'studio', 'mais-antigo')).not.toBeNull()

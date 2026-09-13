@@ -54,7 +54,7 @@ function setup(studio = false, backfill = true) {
       kind: 'studio',
       contentRevision: revision,
       sortOrder: 1,
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     })
   if (backfill)
     env.learningRepository.structures.set(lessonId, {

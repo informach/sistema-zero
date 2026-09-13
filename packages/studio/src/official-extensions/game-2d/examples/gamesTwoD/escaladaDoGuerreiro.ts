@@ -182,16 +182,28 @@ export const escaladaDoGuerreiroExample: ExtensionExample = beginnerGameExample(
         {
           type: 'g2d:createWorld',
           varName: 'areaJogo',
-          width: { type: 'num', value: 320 },
-          height: { type: 'num', value: 960 },
+          width: {
+            type: 'num',
+            value: 320,
+          },
+          height: {
+            type: 'num',
+            value: 960,
+          },
         },
         {
           type: 'g2d:configureWorldCamera',
           worldVar: 'areaJogo',
           horizontal: 'off',
           vertical: 'free',
-          deadZoneX: { type: 'num', value: 0 },
-          deadZoneY: { type: 'num', value: 0 },
+          deadZoneX: {
+            type: 'num',
+            value: 0,
+          },
+          deadZoneY: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'g2d:setGravity',

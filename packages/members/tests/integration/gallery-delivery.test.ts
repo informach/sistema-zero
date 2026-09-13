@@ -31,7 +31,11 @@ function setup(tool: 'studio' | 'pinta' = 'pinta') {
       content:
         tool === 'pinta'
           ? { kind: 'pinta', initialAsset: null, gallery: { minItems: 2, maxItems: 3 } }
-          : { kind: 'studio', initialProject: {}, gallery: { minItems: 1, maxItems: 1 } },
+          : {
+              kind: 'studio',
+              initialProject: { formatVersion: 2 },
+              gallery: { minItems: 1, maxItems: 1 },
+            },
     },
     {
       id: quizId,

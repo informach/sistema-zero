@@ -190,6 +190,22 @@ function all(value: unknown): Block[] {
 }
 const mistakes = [
   {
+    day: 2,
+    name: 'shot event plays jump instead of shoot',
+    edit: (nodes: Block[]) => {
+      nodes.find((b) => b.type === 'sz_g2d_play_fx' && b.fields?.FX === 'shoot')!.fields!.FX =
+        'jump'
+    },
+  },
+  {
+    day: 3,
+    name: 'collision plays shoot instead of explosion',
+    edit: (nodes: Block[]) => {
+      nodes.find((b) => b.type === 'sz_g2d_play_fx' && b.fields?.FX === 'explosion')!.fields!.FX =
+        'shoot'
+    },
+  },
+  {
     day: 5,
     name: 'victory checked after defeat reverses the simultaneous outcome',
     edit: (nodes: Block[]) => {

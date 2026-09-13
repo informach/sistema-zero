@@ -31,7 +31,7 @@ mock.module('idb-keyval', () => ({
     getManyCalls.push([...keys])
     const allMeta =
       keys.length > 1 &&
-      keys.every((k) => typeof k === 'string' && k.startsWith('sz:project-meta:'))
+      keys.every((k) => typeof k === 'string' && k.startsWith('sz:v2:project-meta:'))
     if (allMeta && slowMetaBatchMs > 0) await new Promise((r) => setTimeout(r, slowMetaBatchMs))
     return keys.map((key) => kvOf(store).get(key))
   },
@@ -175,9 +175,9 @@ describe('ProjectList — atualização incremental', () => {
       expect(img).toBeTruthy()
     })
     const asked = getManyCalls.flat()
-    expect(asked).toContain('sz:project-meta:01J00000000000000000000NAV')
-    expect(asked).toContain('sz:project-thumb:01J00000000000000000000NAV')
-    expect(asked).not.toContain('sz:project-meta:01J00000000000000000000ACA')
+    expect(asked).toContain('sz:v2:project-meta:01J00000000000000000000NAV')
+    expect(asked).toContain('sz:v2:project-thumb:01J00000000000000000000NAV')
+    expect(asked).not.toContain('sz:v2:project-meta:01J00000000000000000000ACA')
     // Apagar (o card/restauro/nuvem avisa `PROJECT_CHANGED_EVENT` com deleted): some da lista.
     await deleteProject('01J00000000000000000000ACA')
     await waitFor(() => {

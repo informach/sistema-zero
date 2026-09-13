@@ -1,5 +1,7 @@
 'use client'
 
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+
 // O CSS do Estúdio é gerado pelo `@import` no globals.css (pipeline Tailwind) — ver
 // o comentário no `studio-full-client.tsx`. Aqui só orquestramos o editor PRO.
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
@@ -85,7 +87,12 @@ export function StudioProClient({
   // namespace por viewer é definido pelo próprio editor antes de gravar.
   useEffect(() => {
     if (!viewerId || !mod) return
-    const created = createCreationsCloud({ tool: 'studio', viewerId, idleMs: 10_000 })
+    const created = createCreationsCloud({
+      tool: 'studio',
+      viewerId,
+      idleMs: 10_000,
+      maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
+    })
     const detach = createStudioCloudSync({ studio: mod, cloud: created, viewerId }).attach()
     setCloud(created)
     return () => {

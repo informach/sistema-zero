@@ -181,6 +181,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'w3d:onUpdate',
   ]),
   ...callbackEntries('sync-callback', [
+    'g2d:withCooldown',
     'forEach',
     'traverseEach',
     'g2d:forEachInGroup',

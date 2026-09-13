@@ -18,7 +18,7 @@
     "sz_g2d_draw_group",
     "sz_g2d_draw_sprite",
     "sz_g2d_on_key",
-    "sz_g2d_play_shoot",
+    "sz_g2d_play_fx",
     "sz_g2d_prune_offscreen",
     "sz_g2d_setup_stage",
     "sz_g2d_spawn_bullet",

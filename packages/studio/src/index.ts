@@ -71,7 +71,6 @@ export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
-export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
 export {
@@ -108,7 +107,11 @@ export {
   setStudioCloudMirror,
 } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
-export { sanitizeProjectForHost } from './state/projectStore'
+export {
+  createLocalPersistenceAdapter,
+  prepareProjectForHost,
+  sanitizeProjectForHost,
+} from './state/projectStore'
 export type {
   ActivityCheck,
   ActivityCheckBase,

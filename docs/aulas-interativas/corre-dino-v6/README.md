@@ -84,3 +84,7 @@ bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
 O [relatório de verificação](../qa/revisao-13-aulas-verificacao.json) confere os 13 hashes de fonte, as âncoras dos 88 clipes, todas as seções e os programas finais de referência. Há também teste de carregar/salvar os 13 programas no Blockly real e gerar JavaScript com sintaxe válida. Isso não substitui revisar os vídeos produzidos nem percorrer as aulas publicadas com uma criança.
 
 O [full review](../qa/full-review-2026-09-12.md) acrescenta execução dos 13 projetos no motor real, casos de montagem incorreta, retomada das experiências e verificações da API. A ordem também pode ser conferida dentro de um encaixe, como gravidade antes do controle no então de Se jogando.
+
+## Edição atual do Jogo 2D
+
+Os roteiros e os mapas de montagem desta pasta foram atualizados para a paleta 1.0 e documentos de projeto no formato 2. Consulte [a atualização dos três cursos](../ATUALIZACAO-JOGO-2D.md), [a lista completa de blocos](blocos-corre-dino.json) e [a matriz por aula](blocos-por-aula.json). As gravações indicadas nos mapas ainda precisam ser feitas e validadas em staging.

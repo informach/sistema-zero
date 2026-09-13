@@ -42,7 +42,7 @@ test('uma seção legada com correção híbrida conclui após aprovação sem l
     kind: 'studio',
     sortOrder: 0,
     contentRevision: 'a'.repeat(32),
-    content: { kind: 'studio', initialProject: {}, activity },
+    content: { kind: 'studio', initialProject: { formatVersion: 2 }, activity },
   })
   const section = {
     ...defaultLessonSection(randomUUID(), 'Entrega', [blockId]),

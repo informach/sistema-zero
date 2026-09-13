@@ -61,7 +61,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Inicializar a constante alvo e escolher inicio.
 
-**Fala revisada / orientação:** “Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.”
+**Fala revisada / orientação:** “Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -104,7 +104,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Encaixar a comparação de tela no Se.
 
-**Fala revisada / orientação:** “Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Telas e cenas, e escolha jogando. Ainda vamos levar os blocos para dentro.”
+**Fala revisada / orientação:** “Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Jogo e telas › Telas e partida, e escolha jogando. Ainda vamos levar os blocos para dentro.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -194,7 +194,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Evitar tiros e sons acumulados no menu e depois do fim.
 
-**Fala revisada / orientação:** “Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar som de tiro para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.”
+**Fala revisada / orientação:** “Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.”
 
 **Imagem:** Evento Espaço já existente, pergunta jogando e os dois comandos transferidos para dentro; teste curto no menu sem tiro e sem som.
 
@@ -239,7 +239,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Separar a condição de derrota da condição de vitória.
 
-**Fala revisada / orientação:** “Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida, escolhendo nave. Dentro, coloque Ir para a tela fim.”
+**Fala revisada / orientação:** “Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida e placar, escolhendo nave. Dentro, coloque Ir para a tela fim.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -394,3 +394,63 @@ Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e tela ini
 - **Fecho:** Recortar com as substituições e imagens indicadas. Clipes: video-fecho-v6.
 
 Fonte preservada, SHA-256: 4752ff35745d17cd7df1473ed1da40f115a8437a87f3d1b455ecd2c27a1ceb7c. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D › Movimento › Movimentos prontos | Move o sprite só na horizontal com as setas esquerda/direita. Combine com "prender o sprite na tela". |
+| o centro x do sprite | Jogo 2D › Movimento › Posição e tamanho | O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave. |
+| Manter o sprite dentro da tela | Jogo 2D › Movimento › Bordas e rebatidas | Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir). |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Criar grupo de sprites | Jogo 2D › Grupos › Criar e percorrer | Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas). |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D › Kits prontos › Espaço | Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado. |
+| Machucar o sprite em e deixá-lo invencível por quadros | Jogo 2D › Vida e placar › Vida | Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo. |
+| Desenhar o grupo | Jogo 2D › Grupos › Desenho e ordem | Desenha todos os sprites do grupo. Use a cada quadro, depois de mover. |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D › Vida e placar › Indicadores e texto na tela | Escreve "rótulo valor" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| Desenhar as vidas do sprite como em x y tamanho cor | Jogo 2D › Vida e placar › Vida | Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura. |
+| A cada quadros | Jogo 2D › Tempo › Quadros e intervalos | Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”. |
+| Soltar explosão no sprite cor | Jogo 2D › Desenho e efeitos › Partículas | Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite. |
+| as vidas do sprite acabaram? | Jogo 2D › Vida e placar › Vida | Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”. |
+| Para cada colisão entre os grupos e | Jogo 2D › Colisões › Encostar e bloquear | Para cada par de sprites (um de cada grupo) que se encostam, roda o "fazer" com os dois sprites. Use dentro do "a cada quadro". |
+| Quando apertar a tecla | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar). |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D › Colisões › Encostar e bloquear | Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o "fazer" com aquele sprite. Use dentro do "a cada quadro". |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D › Grupos › Participação e limpeza | Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo. |
+| um x aleatório na tela | Jogo 2D › Sorteios › Números e posições | Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…). |
+| Tirar o sprite do grupo | Jogo 2D › Grupos › Participação e limpeza | Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez. |
+| Reiniciar o jogo | Jogo 2D › Jogo e telas › Telas e partida | Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto. |
+| o estado do jogo é ? | Jogo 2D › Jogo e telas › Telas e partida | Verdadeiro se o jogo está naquela tela. Use dentro de um "se". |
+| Dar ao sprite de vida | Jogo 2D › Vida e placar › Vida | Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro. |
+| Mudar o estado do jogo para | Jogo 2D › Jogo e telas › Telas e partida | Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| Tremer a tela com intensidade | Jogo 2D › Desenho e efeitos › Efeitos | Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão. |
+| Mostrar tela com título subtítulo dica fundo | Jogo 2D › Jogo e telas › Telas e partida | Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota. |
+| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D › Kits prontos › Espaço | Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único. |
+| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D › Grupos › Criar e percorrer | Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe). |
+| a posição y do sprite | Jogo 2D › Movimento › Posição e tamanho | A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa. |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do "a cada quadro", depois de limpar a tela. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D › Grupos › Movimento | Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro. |
+| Criar constante com valor | Programação › 🏷️ Variáveis | Cria uma constante: um valor que não muda depois de criado. |
+| Condição se, senão se e senão | Programação › ❓ Lógica & Se | Executa o "então" quando a condição for verdadeira. Use + para juntar "senão se" e "senão". |
+| Criar variável com valor | Programação › 🏷️ Variáveis | Cria uma variável e guarda nela um valor: número, conta, aleatório, etc. |
+| Somar em variável | Programação › 🏷️ Variáveis | Soma ou tira uma quantidade do valor atual de uma variável. |
+| Comparar dois valores | Programação › ❓ Lógica & Se | Compara dois valores e devolve verdadeiro ou falso. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+| texto | Programação › 🔣 Valores | Um valor de texto. |
+| valor da variável | Programação › 🔣 Valores | Usa o conteúdo de uma variável já criada como valor. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

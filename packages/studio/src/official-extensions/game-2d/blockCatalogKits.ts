@@ -112,36 +112,6 @@ export const gameTwoDKitBlocks = [
     tooltip:
       'Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama.',
   },
-  {
-    type: 'sz_g2d_play_jump',
-    placement: 'command',
-    message0: 'Tocar som de pulo',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um "biip" curto subindo de tom (som sintetizado, sem precisar de arquivo).',
-  },
-  {
-    type: 'sz_g2d_play_dino_hurt',
-    placement: 'command',
-    message0: 'Tocar som de dano',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um rosnado grave que decai (som sintetizado, sem precisar de arquivo).',
-  },
-  {
-    type: 'sz_g2d_play_collect',
-    placement: 'command',
-    message0: 'Tocar som de coletar',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Duas notinhas alegres (som sintetizado), ótimo ao pegar o ovo bônus.',
-  },
 
   // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
   {
@@ -387,7 +357,7 @@ export const gameTwoDKitBlocks = [
   },
   {
     type: 'sz_g2d_banana_hit_thrower',
-    message0: 'a banana da cidade %1 acertou o gorila %2 ?',
+    message0: 'resolver banana da cidade %1 contra o gorila %2: acertou?',
     args0: [
       { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
@@ -395,37 +365,18 @@ export const gameTwoDKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro se a banana encostou no gorila (acerto = vitória). Passe o gorila INIMIGO. Use num "se".',
+      'Testa o contato e remove a banana quando acerta. Devolve verdadeiro nesse acerto. Passe o gorila adversário e use em um “se” para decidir o resultado da rodada.',
   },
   {
     type: 'sz_g2d_banana_hit_city',
-    message0: 'a banana da cidade %1 bateu num prédio ?',
+    message0: 'resolver banana da cidade %1 contra prédios e bordas: terminou?',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip:
       'Verdadeiro quando a banana bate num prédio (abre uma cratera) ou sai da tela. É a hora de TROCAR de turno. Atenção: já abre o buraco e some com a banana.',
   },
-  {
-    type: 'sz_g2d_play_whistle',
-    placement: 'command',
-    message0: 'Tocar som de banana caindo',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um assobio que desce de tom (som sintetizado, sem precisar de arquivo).',
-  },
-  {
-    type: 'sz_g2d_play_boom',
-    placement: 'command',
-    message0: 'Tocar som de explosão',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um "bum" curto de explosão (som sintetizado), ótimo quando a banana acerta.',
-  },
+
   {
     type: 'sz_g2d_computer_turn',
     placement: 'command',

@@ -104,7 +104,7 @@ describe.skipIf(!url)('Evidências e exclusão da conta — PostgreSQL', () => {
       id: blockId,
       lessonId,
       kind: 'studio',
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
       sortOrder: 0,
       contentRevision: 'a'.repeat(32),
     })

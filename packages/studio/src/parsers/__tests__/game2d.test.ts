@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { compileStatements } from '#generators'
+import { compileStatements, generateProjectFiles } from '#generators'
 import { behaviorStatements } from '#ir'
 import {
   animatedHeroExample,
@@ -13,6 +13,7 @@ import {
   tilemapExample,
 } from '../../official-extensions/game-2d/examples'
 import { parseJS } from '../js'
+import { parseProjectFiles } from '../project'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
@@ -120,7 +121,9 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
     expect(parseJS('SZGame2D.playMusic("adventure");')).toEqual([
       { type: 'g2d:playMusic', tune: 'adventure' },
     ])
-    expect(parseJS('SZGame2D.stopMusic();')).toEqual([{ type: 'g2d:stopMusic' }])
+    expect(parseJS('SZGame2D.stopTrack("synth");')).toEqual([
+      { type: 'g2d:stopTrack', scope: 'synth' },
+    ])
     expect(parseJS('SZGame2D.playNote("C", 300);')).toEqual([
       { type: 'g2d:playNote', note: 'C', ms: { type: 'num', value: 300 } },
     ])
@@ -169,10 +172,20 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
       },
     ])
     expect(parseJS('const bateu = SZGame2D.isColliding(jogador, bola);')).toEqual([
-      { type: 'g2d:collides', aVar: 'jogador', bVar: 'bola', varName: 'bateu' },
+      {
+        type: 'var',
+        kind: 'const',
+        name: 'bateu',
+        value: { type: 'g2d:touches', aVar: 'jogador', bVar: 'bola' },
+      },
     ])
     expect(parseJS('const perto = SZGame2D.circleCollides(a, b);')).toEqual([
-      { type: 'g2d:circleCollides', aVar: 'a', bVar: 'b', varName: 'perto' },
+      {
+        type: 'var',
+        kind: 'const',
+        name: 'perto',
+        value: { type: 'g2d:circleTouches', aVar: 'a', bVar: 'b' },
+      },
     ])
   })
 
@@ -305,26 +318,8 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         grid: '1 0;0 1',
       },
     ])
-    // Forma antiga (4 args): IR SEM "size" — projetos salvos antes do campo existir.
-    expect(parseJS('SZGame2D.drawTileMap(ctx, mapa, 0, 0);')).toEqual([
-      {
-        type: 'g2d:drawTileMap',
-        ctxVar: 'ctx',
-        mapVar: 'mapa',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 0 },
-      },
-    ])
-    // Forma nova (5 args): o tamanho do tile na tela entra como "size".
-    expect(parseJS('SZGame2D.drawTileMap(ctx, mapa, 0, 0, 32);')).toEqual([
-      {
-        type: 'g2d:drawTileMap',
-        ctxVar: 'ctx',
-        mapVar: 'mapa',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 0 },
-        size: { type: 'num', value: 32 },
-      },
+    expect(parseJS('SZGame2D.drawTileMap(ctx, mapa);')).toEqual([
+      { type: 'g2d:drawPreparedTileMap', ctxVar: 'ctx', mapVar: 'mapa' },
     ])
     expect(parseJS('SZGame2D.collideTileMap(heroi, mapa);')).toEqual([
       { type: 'g2d:tileMapCollide', spriteVar: 'heroi', mapVar: 'mapa' },
@@ -441,9 +436,14 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
   })
 
   it('reconhece "a cada N quadros/segundos" (if SZGame2D.everyX) e quantidade do grupo', () => {
-    expect(parseJS('if (SZGame2D.everyFrames("k", 30)) { SZGame2D.playSound(440, 50); }')).toEqual([
+    expect(
+      parseJS(
+        'SZGame2D.gameLoop(function () { if (SZGame2D.everyFrames("k", 30)) { SZGame2D.playSound(440, 50); } });',
+      ),
+    ).toEqual([
       {
         type: 'g2d:everyFrames',
+        key: 'k',
         n: { type: 'num', value: 30 },
         body: [
           {
@@ -454,9 +454,14 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         ],
       },
     ])
-    expect(parseJS('if (SZGame2D.everySeconds("k", 2)) { SZGame2D.playSound(440, 50); }')).toEqual([
+    expect(
+      parseJS(
+        'SZGame2D.gameLoop(function () { if (SZGame2D.everySeconds("k", 2)) { SZGame2D.playSound(440, 50); } });',
+      ),
+    ).toEqual([
       {
         type: 'g2d:everySeconds',
+        key: 'k',
         seconds: { type: 'num', value: 2 },
         body: [
           {
@@ -497,6 +502,7 @@ describe('roundtrip de um mini-shooter (grupos + spawner + colisão de grupo)', 
           { type: 'g2d:clear' },
           {
             type: 'g2d:everyFrames',
+            key: 'k',
             n: { type: 'num', value: 30 },
             body: [
               {
@@ -546,7 +552,7 @@ describe('roundtrip de um mini-shooter (grupos + spawner + colisão de grupo)', 
     for (const expected of [
       'g2d:createGroup',
       'g2d:updateEachFrame',
-      'g2d:everyFrames',
+      'memberCallExpr',
       'g2d:spawnInGroup',
       'g2d:updateGroup',
       'g2d:drawGroup',
@@ -561,8 +567,11 @@ describe('roundtrip de um mini-shooter (grupos + spawner + colisão de grupo)', 
 
 describe('roundtrip do pongExample (gerar → parsear)', () => {
   it('o código gerado volta a virar blocos (sem rawJS)', () => {
-    const code = compileStatements(behaviorStatements(pongExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({ ir: pongExample.ir, projectName: pongExample.name }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -583,8 +592,14 @@ describe('roundtrip do pongExample (gerar → parsear)', () => {
 
 describe('roundtrip do animatedHeroExample (imagem + animação)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), preservando os blocos de imagem', () => {
-    const code = compileStatements(behaviorStatements(animatedHeroExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({
+          ir: animatedHeroExample.ir,
+          projectName: animatedHeroExample.name,
+        }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -602,8 +617,14 @@ describe('roundtrip do animatedHeroExample (imagem + animação)', () => {
 
 describe('roundtrip do platformerExample (movimento)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com platformer + clamp', () => {
-    const code = compileStatements(behaviorStatements(platformerExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({
+          ir: platformerExample.ir,
+          projectName: platformerExample.name,
+        }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -620,8 +641,11 @@ describe('roundtrip do platformerExample (movimento)', () => {
 
 describe('roundtrip do tilemapExample (tiles)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com tilemap + colisão', () => {
-    const code = compileStatements(behaviorStatements(tilemapExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({ ir: tilemapExample.ir, projectName: tilemapExample.name }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -665,13 +689,38 @@ describe('parseJS — HUD no canvas + estado/telas (v0.6.0)', () => {
     ])
     expect(parseJS('SZGame2D.drawHearts(ctx, vidas, 12, 48, 22, "#ff5d5d");')).toEqual([
       {
-        type: 'g2d:drawHearts',
-        ctxVar: 'ctx',
-        count: { type: 'var', name: 'vidas' },
-        x: { type: 'num', value: 12 },
-        y: { type: 'num', value: 48 },
-        size: { type: 'num', value: 22 },
-        color: '#ff5d5d',
+        type: 'memberCall',
+        object: {
+          type: 'var',
+          name: 'SZGame2D',
+        },
+        method: 'drawHearts',
+        args: [
+          {
+            type: 'var',
+            name: 'ctx',
+          },
+          {
+            type: 'var',
+            name: 'vidas',
+          },
+          {
+            type: 'num',
+            value: 12,
+          },
+          {
+            type: 'num',
+            value: 48,
+          },
+          {
+            type: 'num',
+            value: 22,
+          },
+          {
+            type: 'color',
+            value: '#ff5d5d',
+          },
+        ],
       },
     ])
     expect(parseJS('SZGame2D.drawBar(ctx, vida, 100, 12, 48, 160, 14, "#35e8ff");')).toEqual([
@@ -760,13 +809,38 @@ describe('roundtrip de HUD + cenas (gerar → parsear)', () => {
                 size: { type: 'num', value: 24 },
               },
               {
-                type: 'g2d:drawHearts',
-                ctxVar: 'ctx',
-                count: { type: 'var', name: 'vidas' },
-                x: { type: 'num', value: 12 },
-                y: { type: 'num', value: 48 },
-                size: { type: 'num', value: 22 },
-                color: '#ff5d5d',
+                type: 'memberCall',
+                object: {
+                  type: 'var',
+                  name: 'SZGame2D',
+                },
+                method: 'drawHearts',
+                args: [
+                  {
+                    type: 'var',
+                    name: 'ctx',
+                  },
+                  {
+                    type: 'var',
+                    name: 'vidas',
+                  },
+                  {
+                    type: 'num',
+                    value: 12,
+                  },
+                  {
+                    type: 'num',
+                    value: 48,
+                  },
+                  {
+                    type: 'num',
+                    value: 22,
+                  },
+                  {
+                    type: 'str',
+                    value: '#ff5d5d',
+                  },
+                ],
               },
               {
                 type: 'g2d:drawBar',
@@ -792,7 +866,7 @@ describe('roundtrip de HUD + cenas (gerar → parsear)', () => {
       'g2d:sceneIs',
       'g2d:showScreen',
       'g2d:drawScore',
-      'g2d:drawHearts',
+      'memberCall',
       'g2d:drawBar',
     ]) {
       expect(types.has(expected)).toBe(true)
@@ -802,8 +876,14 @@ describe('roundtrip de HUD + cenas (gerar → parsear)', () => {
 
 describe('roundtrip do asteroidsExample (jogo de tiro completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com grupos + colisão + HUD + cenas', () => {
-    const code = compileStatements(behaviorStatements(asteroidsExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({
+          ir: asteroidsExample.ir,
+          projectName: asteroidsExample.name,
+        }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -817,8 +897,8 @@ describe('roundtrip do asteroidsExample (jogo de tiro completo)', () => {
       'g2d:onGroupOverlap',
       'g2d:onSpriteGroupOverlap',
       'g2d:explode',
-      'g2d:playShoot',
-      'g2d:playExplosion',
+      'g2d:playFx',
+      'g2d:playFx',
       'g2d:pruneOffscreen',
       'g2d:drawScore',
       'g2d:damageSprite',
@@ -876,8 +956,10 @@ describe('parseJS — Kit espaço (v0.7.0): nave, asteroide, explosão, sons, co
     expect(parseJS('SZGame2D.explodeSprite(asteroide, "#ffb13b");')).toEqual([
       { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ffb13b' },
     ])
-    expect(parseJS('SZGame2D.playShoot();')).toEqual([{ type: 'g2d:playShoot' }])
-    expect(parseJS('SZGame2D.playExplosion();')).toEqual([{ type: 'g2d:playExplosion' }])
+    expect(parseJS('SZGame2D.playFx("shoot");')).toEqual([{ type: 'g2d:playFx', fx: 'shoot' }])
+    expect(parseJS('SZGame2D.playFx("explosion");')).toEqual([
+      { type: 'g2d:playFx', fx: 'explosion' },
+    ])
     expect(
       parseJS(
         'SZGame2D.overlapSpriteGroup(() => nave, asteroides, function (asteroide) { SZGame2D.removeFromGroup(asteroides, asteroide); });',
@@ -1003,9 +1085,9 @@ describe('parseJS — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(parseJS('SZGame2D.drawForest(ctx, 5);')).toEqual([
       { type: 'g2d:forest', ctxVar: 'ctx', speed: { type: 'num', value: 5 } },
     ])
-    expect(parseJS('SZGame2D.playJump();')).toEqual([{ type: 'g2d:playJump' }])
-    expect(parseJS('SZGame2D.playDinoHurt();')).toEqual([{ type: 'g2d:playDinoHurt' }])
-    expect(parseJS('SZGame2D.playCollect();')).toEqual([{ type: 'g2d:playCollect' }])
+    expect(parseJS('SZGame2D.playFx("jump");')).toEqual([{ type: 'g2d:playFx', fx: 'jump' }])
+    expect(parseJS('SZGame2D.playFx("hurt");')).toEqual([{ type: 'g2d:playFx', fx: 'hurt' }])
+    expect(parseJS('SZGame2D.playFx("collect");')).toEqual([{ type: 'g2d:playFx', fx: 'collect' }])
   })
 })
 
@@ -1049,16 +1131,20 @@ describe('parseJS — Kit gorilas (v0.11.0)', () => {
     expect(parseJS('SZGame2D.drawBanana(ctx, cidade);')).toEqual([
       { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
     ])
-    expect(parseJS('SZGame2D.playWhistle();')).toEqual([{ type: 'g2d:playWhistle' }])
-    expect(parseJS('SZGame2D.playBoom();')).toEqual([{ type: 'g2d:playBoom' }])
+    expect(parseJS('SZGame2D.playFx("whistle");')).toEqual([{ type: 'g2d:playFx', fx: 'whistle' }])
+    expect(parseJS('SZGame2D.playFx("explosion");')).toEqual([
+      { type: 'g2d:playFx', fx: 'explosion' },
+    ])
   })
 
   it('reconhece as perguntas (booleanos) do kit dentro de um se', () => {
     expect(
-      parseJS('if (SZGame2D.aimReleased(gorila1)) { SZGame2D.playWhistle(); }')[0],
+      parseJS('if (SZGame2D.aimReleased(gorila1)) { SZGame2D.playFx("whistle"); }')[0],
     ).toMatchObject({ type: 'if', cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' } })
     expect(
-      parseJS('if (SZGame2D.bananaHitThrower(cidade, gorila2)) { SZGame2D.playBoom(); }')[0],
+      parseJS(
+        'if (SZGame2D.bananaHitThrower(cidade, gorila2)) { SZGame2D.playFx("explosion"); }',
+      )[0],
     ).toMatchObject({
       type: 'if',
       cond: { type: 'g2d:bananaHitThrower', cityVar: 'cidade', throwerVar: 'gorila2' },
@@ -1071,8 +1157,11 @@ describe('parseJS — Kit gorilas (v0.11.0)', () => {
 
 describe('roundtrip do gorilasExample (batalha de bananas completa)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com o Kit gorilas', () => {
-    const code = compileStatements(behaviorStatements(gorilasExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({ ir: gorilasExample.ir, projectName: gorilasExample.name }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -1088,8 +1177,8 @@ describe('roundtrip do gorilasExample (batalha de bananas completa)', () => {
       'g2d:drawBanana',
       'g2d:bananaHitThrower',
       'g2d:bananaHitCity',
-      'g2d:playWhistle',
-      'g2d:playExplosion',
+      'g2d:playFx',
+      'g2d:playFx',
       'g2d:updateEachFrame',
       'g2d:onKey',
       'g2d:setScene',
@@ -1113,8 +1202,15 @@ describe('parseJS — Kit gorilas robô (v0.12.0)', () => {
   })
 
   it('roundtrip do gorilasVsRobotExample sem rawJS, com o robô', () => {
-    const code = compileStatements(behaviorStatements(gorilasVsRobotExample.ir), 0)
-    const types = collectTypes(parseJS(code))
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({
+          ir: gorilasVsRobotExample.ir,
+          projectName: gorilasVsRobotExample.name,
+        }),
+      ),
+    )
+    const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('g2d:computerTurn')).toBe(true)
     expect(types.has('g2d:drawAimReadout')).toBe(true)
@@ -1123,8 +1219,11 @@ describe('parseJS — Kit gorilas robô (v0.12.0)', () => {
 
 describe('roundtrip do dinoRunExample (jogo de corrida completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com Kit dino + grupos + HUD + cenas + recorde', () => {
-    const code = compileStatements(behaviorStatements(dinoRunExample.ir), 0)
-    const ir = parseJS(code)
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({ ir: dinoRunExample.ir, projectName: dinoRunExample.name }),
+      ),
+    )
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
@@ -1137,8 +1236,8 @@ describe('roundtrip do dinoRunExample (jogo de corrida completo)', () => {
       'g2d:spawnObstacle',
       'g2d:spawnEgg',
       'g2d:onSpriteGroupOverlap',
-      'g2d:playDinoHurt',
-      'g2d:playCollect',
+      'g2d:playFx',
+      'g2d:playFx',
       'g2d:pruneOffscreen',
       'g2d:drawScore',
       'g2d:damageSprite',
@@ -1183,11 +1282,16 @@ describe('parseJS — lacunas fechadas (tiro redondo, setas, piscar, intervalo v
     ])
   })
   it('everyFrames aceita variável no intervalo', () => {
-    expect(parseJS('if (SZGame2D.everyFrames("k", intervalo)) { SZGame2D.playShoot(); }')).toEqual([
+    expect(
+      parseJS(
+        'SZGame2D.gameLoop(function () { if (SZGame2D.everyFrames("k", intervalo)) { SZGame2D.playFx("shoot"); } });',
+      ),
+    ).toEqual([
       {
         type: 'g2d:everyFrames',
+        key: 'k',
         n: { type: 'var', name: 'intervalo' },
-        body: [{ type: 'g2d:playShoot' }],
+        body: [{ type: 'g2d:playFx', fx: 'shoot' }],
       },
     ])
   })
@@ -1334,8 +1438,15 @@ describe('roundtrip da nave clássica (gerar → parsear, sem rawJS)', () => {
 
 describe('roundtrip do asteroidsClassicExample (girar + impulsionar completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com a nave clássica', () => {
-    const code = compileStatements(behaviorStatements(asteroidsClassicExample.ir), 0)
-    const types = collectTypes(parseJS(code))
+    const ir = behaviorStatements(
+      parseProjectFiles(
+        generateProjectFiles({
+          ir: asteroidsClassicExample.ir,
+          projectName: asteroidsClassicExample.name,
+        }),
+      ),
+    )
+    const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [
       'g2d:createShip',

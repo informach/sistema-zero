@@ -7,7 +7,7 @@ import { Shell } from '../components/layout/Shell'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { useChecksStoreApi } from '../state/checksStore'
-import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
+import { prepareProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import {
@@ -189,6 +189,46 @@ function StudioCoreBody({
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
+  const [preparationLimits] = useState(() => proRuntime?.limits)
+  const preparationErrorHandler = useRef(onError)
+  useEffect(() => {
+    preparationErrorHandler.current = onError
+  }, [onError])
+  const [prepared, setPrepared] = useState<{
+    source: Project
+    project: Project | null
+    error: string | null
+  } | null>(null)
+  useEffect(() => {
+    let active = true
+    void prepareProjectForHost(sourceProject, { proBuildLimits: preparationLimits }).then(
+      (project) => {
+        if (active)
+          setPrepared({
+            source: sourceProject,
+            project,
+            error: project ? null : 'Este projeto não pôde ser aberto.',
+          })
+      },
+      (cause: unknown) => {
+        if (active)
+          setPrepared({
+            source: sourceProject,
+            project: null,
+            error: cause instanceof Error ? cause.message : 'Não foi possível abrir este projeto.',
+          })
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [sourceProject, preparationLimits])
+  const preparedProject = prepared?.source === sourceProject ? prepared.project : null
+  const preparationError = prepared?.source === sourceProject ? prepared.error : null
+  useEffect(() => {
+    if (preparationError)
+      preparationErrorHandler.current?.({ kind: 'persistence', message: preparationError })
+  }, [preparationError])
   // Chave primitiva estável dos modos RESOLVIDOS (não da prop): flipa exatamente
   // quando `config.allowedModes` muda — inclusive ao ligar `professional` numa
   // instância montada (que força ['code']). Keyar pela prop `allowedModesKey`
@@ -199,9 +239,7 @@ function StudioCoreBody({
   // (array que muda de referência a cada render do host com allowedModes inline).
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
-    const project = sanitizeProjectForHost(sourceProject, {
-      proBuildLimits: proRuntime?.limits,
-    })
+    const project = preparedProject
     if (!project) return null
     // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
     // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
@@ -213,7 +251,7 @@ function StudioCoreBody({
     let mode = initialMode ?? project.mode
     if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
-  }, [sourceProject, initialMode, resolvedModesKey])
+  }, [preparedProject, initialMode, resolvedModesKey])
   const disallowedExtensions = useMemo(
     () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
     [sanitized, learning.allowExtensions],
@@ -300,10 +338,16 @@ function StudioCoreBody({
       readyFiredForIdRef.current = sanitizedId
       readyFiredRef.current = false
     }
-    if (!hasProject || readyFiredRef.current) return
+    if (
+      !hasProject ||
+      !sanitizedId ||
+      projectStoreApi.getState().project?.id !== sanitizedId ||
+      readyFiredRef.current
+    )
+      return
     readyFiredRef.current = true
     onReady?.()
-  }, [hasProject, onReady, sanitizedId])
+  }, [hasProject, onReady, sanitizedId, projectStoreApi])
 
   // onModeChange: observa o modo do projeto na store da instância.
   const onModeChangeRef = useRef(onModeChange)
@@ -398,8 +442,17 @@ function StudioCoreBody({
                                 {sanitized === null ? (
                                   <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
                                     <p className="text-sm">
-                                      Projeto inválido — confira o initialProject passado ao Studio.
+                                      {preparationError ?? 'Preparando seu projeto…'}
                                     </p>
+                                    {preparationError && onExit ? (
+                                      <button
+                                        type="button"
+                                        className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                        onClick={onExit}
+                                      >
+                                        Voltar
+                                      </button>
+                                    ) : null}
                                   </div>
                                 ) : projectAccessBlocked ? (
                                   <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">

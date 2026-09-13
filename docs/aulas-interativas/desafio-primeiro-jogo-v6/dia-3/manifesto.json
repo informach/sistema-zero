@@ -13,18 +13,18 @@
     },
     {
       "key": "video-abertura-v6",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Bem-vindo ao Dia 3. Ontem a sua nave aprendeu a atirar. Mas atirar no nada não tem graça, né? Ho”. Saída: “mais legal, a gente explode asteroide com tiro. E no sexto, testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Hoje seus tiros vão ter o que acertar. Vamos fazer os asteroides chegarem aos poucos e ensinar o jogo a perceber quando um tiro encontra uma pedra.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Bem-vindo ao Dia 3. Ontem a sua nave aprendeu a atirar. Mas atirar no nada não tem graça, né? Ho”. Saída: “mais legal, a gente explode asteroide com tiro. E no sexto, testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Hoje seus tiros vão ter o que acertar. Vamos fazer os asteroides chegarem aos poucos e ensinar o jogo a perceber quando um tiro encontra uma pedra.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-grupo-asteroides",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar o grupo dos asteroides. Entrada: “Lembra do grupo, o saquinho que guarda muitos sprites do mesmo tipo? Ontem a gente criou o dos tiros”. Saída: “que a gente quer. Passo 1 pronto, esse foi rápido. Agora o segundo, que é montar o relógio da chuva.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar o grupo dos asteroides. Entrada: “Lembra do grupo, o saquinho que guarda muitos sprites do mesmo tipo? Ontem a gente criou o dos tiros”. Saída: “que a gente quer. Passo 1 pronto, esse foi rápido. Agora o segundo, que é montar o relógio da chuva.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Grupos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-grupo-asteroides",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto."
+        "text": "Em Jogo 2D, Grupos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto."
       }
     },
     {
@@ -60,35 +60,35 @@
     },
     {
       "key": "video-relogio",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 2. Passo 2: montar o relógio da chuva. Entrada: “Agora pensa comigo: se nascesse um asteroide a cada quadro, ia ser uma avalanche, o céu ia entupir d”. Saída: “s. Passo 2 pronto, o relógio está batendo. Agora o terceiro passo, que é criar o asteroide surpresa.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo e repetição, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 2. Passo 2: montar o relógio da chuva. Entrada: “Agora pensa comigo: se nascesse um asteroide a cada quadro, ia ser uma avalanche, o céu ia entupir d”. Saída: “s. Passo 2 pronto, o relógio está batendo. Agora o terceiro passo, que é criar o asteroide surpresa.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-relogio",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Tempo e repetição, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro."
+        "text": "Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro."
       }
     },
     {
       "key": "video-nascer-fora",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar. Fala complementar: “Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar. Fala complementar: “Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-asteroide",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Aproveitar a montagem dos campos; encurtar a explicação já demonstrada. O tamanho 40 é a base do kit: não prometer que toda pedra tem exatamente a mesma largura. Fala complementar: “Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kit espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Mira e contas. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Aproveitar a montagem dos campos; encurtar a explicação já demonstrada. O tamanho 40 é a base do kit: não prometer que toda pedra tem exatamente a mesma largura. Fala complementar: “Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kits prontos › Espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Sorteios. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-asteroide",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kit espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Mira e contas. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível."
+        "text": "Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kits prontos › Espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Sorteios. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível."
       }
     },
     {
       "key": "video-ciclo-asteroides",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 4. Passo 4: fazer os asteroides caírem e sumirem. Entrada: “Essa parte você já conhece, porque é igualzinha à dos tiros. O motor precisa cuidar dos asteroides t”. Saída: “ dois podem se bater. É isso que a gente resolve no quinto passo, que é explodir asteroide com tiro.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No A cada quadro do jogo, abaixo do Desenhar grupo tiros, coloque Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Agora escolha asteroides nos três. Deixe o fazer da limpeza vazio. O padrão é o mesmo dos tiros.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 4. Passo 4: fazer os asteroides caírem e sumirem. Entrada: “Essa parte você já conhece, porque é igualzinha à dos tiros. O motor precisa cuidar dos asteroides t”. Saída: “ dois podem se bater. É isso que a gente resolve no quinto passo, que é explodir asteroide com tiro.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No A cada quadro do jogo, abaixo do Desenhar grupo tiros, coloque Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Agora escolha asteroides nos três. Deixe o fazer da limpeza vazio. O padrão é o mesmo dos tiros.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-ciclo-asteroides",
@@ -100,23 +100,23 @@
     },
     {
       "key": "video-encontro",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 5. Passo 5: explodir asteroide com tiro. Entrada: “Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas”. Saída: “i aquele ali. Assim, aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram.”. Aproveitar a explicação dos apelidos. Acrescentar congelamento de uma colisão com outros objetos ao redor. Não mover a colisão para Quando acontecer: este bloco verifica encontros em cada quadro. Fala complementar: “Há vários tiros e várias pedras, mas esta colisão tem dois participantes. Aqui dentro, tiro é o tiro que acertou, e asteroide é a pedra atingida. São esses dois que vamos retirar. Os outros continuam no jogo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 5. Passo 5: explodir asteroide com tiro. Entrada: “Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas”. Saída: “i aquele ali. Assim, aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram.”. Aproveitar a explicação dos apelidos. Acrescentar congelamento de uma colisão com outros objetos ao redor. Não mover a colisão para Quando acontecer: este bloco verifica encontros em cada quadro. Fala complementar: “Há vários tiros e várias pedras, mas esta colisão tem dois participantes. Aqui dentro, tiro é o tiro que acertou, e asteroide é a pedra atingida. São esses dois que vamos retirar. Os outros continuam no jogo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-colisao",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 5. Passo 5: explodir asteroide com tiro. Entrada: “Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas”. Saída: “bloco Tocar som de explosão e encaixa por último. Passo 5 pronto. Agora o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; toque som de explosão.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 5. Passo 5: explodir asteroide com tiro. Entrada: “Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas”. Saída: “bloco Tocar som de explosão e encaixa por último. Passo 5 pronto. Agora o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; use Tocar efeito, na família Som, e escolha explosão.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-colisao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; toque som de explosão."
+        "text": "Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; use Tocar efeito, na família Som, e escolha explosão."
       }
     },
     {
       "key": "video-teste-colisao",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de explodir. Entrada: “Clica na área do jogo. Olha essa chuva de pedras! Agora mira num asteroide e aperta a barra de espaç”. Saída: “e vêm na sua direção, acerta os que estão longe. Sente como o seu jogo já parece um jogo de verdade.”. Usar os acertos do início; acrescentar um tiro que erra. Retirar novos testes com 20 e 80, já substituídos pela comparação isolada. Fala complementar: “Um tiro que passa longe continua subindo. Um tiro que encontra um asteroide tira os dois e solta a explosão. Nesta aula, a nave ainda não perde vida quando uma pedra encosta nela. Isso vem no Dia 4.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de explodir. Entrada: “Clica na área do jogo. Olha essa chuva de pedras! Agora mira num asteroide e aperta a barra de espaç”. Saída: “e vêm na sua direção, acerta os que estão longe. Sente como o seu jogo já parece um jogo de verdade.”. Usar os acertos do início; acrescentar um tiro que erra. Retirar novos testes com 20 e 80, já substituídos pela comparação isolada. Fala complementar: “Um tiro que passa longe continua subindo. Um tiro que encontra um asteroide tira os dois e solta a explosão. Nesta aula, a nave ainda não perde vida quando uma pedra encosta nela. Isso vem no Dia 4.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "entrega-fala-v6",
@@ -127,7 +127,7 @@
     },
     {
       "key": "video-fecho-v6",
-      "plannedVideo": "roteiro-aula-dia3-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 3! Olha os seis passos de hoje: você criou o grupo dos asteroides, mon”. Saída: “car, e a sua nave vai ganhar vidas, com coraçõezinhos na tela. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “A chuva de asteroides já funciona, e os tiros conseguem destruí-los. Você usou um relógio para criar e uma colisão para responder ao encontro de dois objetos. Amanhã, cada acerto vai valer ponto.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 3! Olha os seis passos de hoje: você criou o grupo dos asteroides, mon”. Saída: “car, e a sua nave vai ganhar vidas, com coraçõezinhos na tela. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “A chuva de asteroides já funciona, e os tiros conseguem destruí-los. Você usou um relógio para criar e uma colisão para responder ao encontro de dois objetos. Amanhã, cada acerto vai valer ponto.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "quiz-v6",
@@ -417,6 +417,30 @@
         "blockIds": [],
         "projectChecks": [
           {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
             "id": "remover-tiro",
             "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
             "rule": {
@@ -485,7 +509,7 @@
                   "fields": {
                     "SPRITE": "asteroide"
                   },
-                  "beforeBlock": "sz_g2d_play_explosion"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",
@@ -523,6 +547,26 @@
         "blockIds": ["projeto"],
         "projectChecks": [
           {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
             "id": "disparo",
             "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
             "rule": {
@@ -556,7 +600,7 @@
                       }
                     }
                   },
-                  "beforeBlock": "sz_g2d_play_shoot"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "events"
@@ -683,6 +727,30 @@
             }
           },
           {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
             "id": "remover-tiro",
             "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
             "rule": {
@@ -751,7 +819,7 @@
                   "fields": {
                     "SPRITE": "asteroide"
                   },
-                  "beforeBlock": "sz_g2d_play_explosion"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",

@@ -198,7 +198,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // inicial de B. `_overlapBounds(e)` 1, `_snapshotOverlapBounds(lista)` 1 e
   // `_overlapBoundsTouch(a, b)` 2; sem eles, 39×40 e 40×40 dão resultados
   // diferentes quando o callback move B.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1149)
+  // 1149 → 1150: rpgCreateMap recebe o alcance explícito (com limites ou livre).
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1150)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {

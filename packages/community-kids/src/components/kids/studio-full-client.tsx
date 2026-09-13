@@ -1,6 +1,7 @@
 'use client'
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -193,7 +194,12 @@ export function StudioFullClient({
           // que a do Pinta. `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se
           // a sessão já trocou de perfil. A fila anterior é desligada pelo cleanup do
           // efeito `[cloudSync]` (nunca aqui dentro nem num updater).
-          const nextCloud = createCreationsCloud({ tool: 'studio', viewerId, idleMs: 10_000 })
+          const nextCloud = createCreationsCloud({
+            tool: 'studio',
+            viewerId,
+            idleMs: 10_000,
+            maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
+          })
           const sync = createStudioCloudSync({ studio: m, cloud: nextCloud, viewerId })
           const detach = sync.attach()
           pullCancellationRef.current = { viewerId, cancelPull: sync.cancelPull }

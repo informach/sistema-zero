@@ -62,7 +62,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Preparar largura e altura do jogo uma vez.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.”
+**Fala revisada / orientação:** “Em Jogo 2D, Jogo e telas, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -125,7 +125,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Criar o sprite uma vez com posição e tamanho definidos.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.”
+**Fala revisada / orientação:** “Em Jogo 2D, Kits prontos › Espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -168,7 +168,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Encaixar o motor na área de repetição.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.”
+**Fala revisada / orientação:** “Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -210,7 +210,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Limpar antes de pintar o fundo em cada quadro.
 
-**Fala revisada / orientação:** “Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho.”
+**Fala revisada / orientação:** “Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Desenho e efeitos. Abaixo, encaixe Desenhar fundo de estrelas, em Cenários › Fundos, com velocidade 1. A borracha vem antes do novo desenho.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -349,3 +349,29 @@ A preparação ocorre uma vez; o motor atualiza e desenha depois.
 - **Fecho:** Recortar com as substituições e imagens indicadas. Clipes: video-fecho-v6.
 
 Fonte preservada, SHA-256: 047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D › Movimento › Movimentos prontos | Move o sprite só na horizontal com as setas esquerda/direita. Combine com "prender o sprite na tela". |
+| Manter o sprite dentro da tela | Jogo 2D › Movimento › Bordas e rebatidas | Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir). |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D › Kits prontos › Espaço | Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do "a cada quadro", depois de limpar a tela. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

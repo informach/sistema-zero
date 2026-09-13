@@ -99,11 +99,11 @@
     },
     {
       "key": "video-abertura-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Abertura. Entrada: “Oi! O seu dino corre, pula e faz barulho. Mas repara nele pulando aí: ele está pulando à toa, porque”. Saída: “você faz ele nascer fora da tela. E no quinto, a gente testa tudo. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Abertura. Entrada: “Oi! O seu dino corre, pula e faz barulho. Mas repara nele pulando aí: ele está pulando à toa, porque”. Saída: “você faz ele nascer fora da tela. E no quinto, a gente testa tudo. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-grupo-cactos",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 1. Passo 1: criar o grupo dos cactos. Entrada: “Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro, sem parar. E c”. Saída: “sse foi rapidinho, e o passo 1 já está pronto. O segundo é onde a gente começa a errar de propósito.”. Preservar a analogia da caixa; não confundir grupo com cacto visível. Ponte nova: “Em Ao iniciar, crie o grupo cactos. Ele começa vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 1. Passo 1: criar o grupo dos cactos. Entrada: “Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro, sem parar. E c”. Saída: “sse foi rapidinho, e o passo 1 já está pronto. O segundo é onde a gente começa a errar de propósito.”. Preservar a analogia da caixa; não confundir grupo com cacto visível. Ponte nova: “Em Ao iniciar, crie o grupo cactos. Ele começa vazio.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-grupo-cactos",
@@ -115,7 +115,7 @@
     },
     {
       "key": "video-avalanche",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 2. Passo 2: fazer o cacto nascer, andar e aparecer. Entrada: “Agora três blocos, e os três vão dentro do A cada quadro do jogo. O primeiro está na categoria Jogo ”. Saída: “. O terceiro passo é justamente consertar isso, e o conserto é uma das peças mais úteis que existem.”. Reutilizar a montagem e a avalanche como observação. A criança ainda não copia esta pilha; destacar só o comando Criar. Ponte nova: “Observe estes três comandos: criar, atualizar e desenhar. Se criar também fica a cada quadro, nasce cacto sem parar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 2. Passo 2: fazer o cacto nascer, andar e aparecer. Entrada: “Agora três blocos, e os três vão dentro do A cada quadro do jogo. O primeiro está na categoria Jogo ”. Saída: “. O terceiro passo é justamente consertar isso, e o conserto é uma das peças mais úteis que existem.”. Reutilizar a montagem e a avalanche como observação. A criança ainda não copia esta pilha; destacar só o comando Criar. Ponte nova: “Observe estes três comandos: criar, atualizar e desenhar. Se criar também fica a cada quadro, nasce cacto sem parar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "experiencia-ritmo",
@@ -137,7 +137,7 @@
     },
     {
       "key": "video-relogio-cacto",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 3. Passo 3: o relógio. Entrada: “O problema não é o bloco de criar o cacto, ele está certinho. O problema é onde ele está. A gente nã”. Saída: “nte. Passo 3 feito. Só que tem outra coisa esquisita acontecendo na sua tela. Bora pro quarto passo.”. Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro. Ponte nova: “Dentro de Enquanto estiver rodando, coloque A cada 1,4 segundos ao lado de A cada quadro. No relógio, crie o cacto em x 400, tamanho 44 e velocidade -5. No quadro, depois de desenhar o Dino, atualize e desenhe o grupo cactos.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 3. Passo 3: o relógio. Entrada: “O problema não é o bloco de criar o cacto, ele está certinho. O problema é onde ele está. A gente nã”. Saída: “nte. Passo 3 feito. Só que tem outra coisa esquisita acontecendo na sua tela. Bora pro quarto passo.”. Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro. Ponte nova: “Dentro de Enquanto estiver rodando, coloque A cada 1,4 segundos ao lado de A cada quadro. No relógio, crie o cacto em x 400, tamanho 44 e velocidade -5. No quadro, depois de desenhar o Dino, atualize e desenhe o grupo cactos.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-relogio-cacto",
@@ -149,11 +149,11 @@
     },
     {
       "key": "video-fora-da-tela",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Reaproveitar a explicação de x e o resultado antes/depois. Separar nascimento fora da tela da questão do sinal da velocidade. Ponte nova: “A tela acaba em x 480. Em x 400, o cacto nasce dentro dela; em x 560, começa do lado de fora e entra andando.” Mostrar o retângulo 480 × 270 e uma faixa externa à direita. Marcar 400, 480 e 560 na mesma escala. Um cacto por vez; deixar sua posição externa visível só na demonstração. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Reaproveitar a explicação de x e o resultado antes/depois. Separar nascimento fora da tela da questão do sinal da velocidade. Ponte nova: “A tela acaba em x 480. Em x 400, o cacto nasce dentro dela; em x 560, começa do lado de fora e entra andando.” Mostrar o retângulo 480 × 270 e uma faixa externa à direita. Marcar 400, 480 e 560 na mesma escala. Um cacto por vez; deixar sua posição externa visível só na demonstração. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-entrada-suave",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Usar apenas o gesto e a entrada suave; cortar a explicação já vista na demonstração. Ponte nova: “No bloco de criar cacto, troque x 400 por 560. Mantenha tamanho 44, velocidade -5 e relógio 1,4.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 4. Passo 4: nascer fora da tela. Entrada: “Olha bem pra tela e presta atenção em onde os cactos estão aparecendo. Eles estão brotando do nada, ”. Saída: “to. Deixa assim. Passo 4 feito. Agora sim parece jogo. E o quinto passo é o melhor de todos: testar.”. Usar apenas o gesto e a entrada suave; cortar a explicação já vista na demonstração. Ponte nova: “No bloco de criar cacto, troque x 400 por 560. Mantenha tamanho 44, velocidade -5 e relógio 1,4.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-entrada-suave",
@@ -165,7 +165,7 @@
     },
     {
       "key": "video-sentido-velocidade",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Parte 5. Passo 5: testar. Entrada: “Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula p”. Saída: “to. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.”. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4. Ponte nova: “Veja o x diminuir: 560, 555, 550. O -5 manda andar para a esquerda. O relógio continua igual.” Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 5. Passo 5: testar. Entrada: “Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula p”. Saída: “to. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.”. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4. Ponte nova: “Veja o x diminuir: 560, 555, 550. O -5 manda andar para a esquerda. O relógio continua igual.” Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-entrega-editorial",
@@ -177,7 +177,7 @@
     },
     {
       "key": "video-fecho-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-05-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 5. Olha o tanto de coisa que mudou na sua tela: tinha um dino pulando”. Saída: “e você vai descobrir uma coisa que quem cria jogo de verdade faz em todo jogo que faz. Te espero lá.”. Manter a recapitulação. Não obrigar a criança a montar a avalanche: observar e experimentar já mostram a causa. Conservar 1,4 segundo, x 560 e velocidade -5 como estado de saída para as próximas aulas. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 5. Olha o tanto de coisa que mudou na sua tela: tinha um dino pulando”. Saída: “e você vai descobrir uma coisa que quem cria jogo de verdade faz em todo jogo que faz. Te espero lá.”. Manter a recapitulação. Não obrigar a criança a montar a avalanche: observar e experimentar já mostram a causa. Conservar 1,4 segundo, x 560 e velocidade -5 como estado de saída para as próximas aulas. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     }
   ],
   "sections": [

@@ -101,22 +101,30 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   vx: { type: 'num', value: 0 },
                   vy: { type: 'num', value: -7 },
                 },
-                { type: 'g2d:playShoot' },
+                { type: 'g2d:playFx', fx: 'shoot' },
               ],
             },
           ],
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: limpa, desenha o fundo e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:starfield', ctxVar: 'ctx', speed: 1 },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:starfield',
+              ctxVar: 'ctx',
+              speed: 1,
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -130,31 +138,43 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                { type: 'g2d:dragX', spriteVar: 'nave' },
-                { type: 'g2d:clampToScreen', spriteVar: 'nave', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'nave', ctxVar: 'ctx' },
                 {
-                  type: 'g2d:everyFrames',
-                  n: { type: 'num', value: 40 },
-                  body: [
-                    {
-                      type: 'g2d:spawnAsteroid',
-                      groupVar: 'asteroides',
-                      x: { type: 'g2d:randomX' },
-                      y: { type: 'num', value: -30 },
-                      size: 40,
-                      color: '#8d8f9b',
-                      vx: { type: 'num', value: 0 },
-                      vy: { type: 'num', value: 3 },
-                    },
-                  ],
+                  type: 'g2d:dragX',
+                  spriteVar: 'nave',
                 },
-                { type: 'g2d:updateGroup', groupVar: 'tiros' },
-                { type: 'g2d:updateGroup', groupVar: 'asteroides' },
-                { type: 'g2d:drawGroup', groupVar: 'tiros', ctxVar: 'ctx' },
-                { type: 'g2d:drawGroup', groupVar: 'asteroides', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:clampToScreen',
+                  spriteVar: 'nave',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'nave',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'tiros',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'asteroides',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'tiros',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'asteroides',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:onGroupOverlap',
                   aGroup: 'tiros',
@@ -162,21 +182,46 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   bGroup: 'asteroides',
                   bName: 'asteroide',
                   body: [
-                    { type: 'g2d:removeFromGroup', spriteVar: 'tiro', groupVar: 'tiros' },
-                    { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'tiro',
+                      groupVar: 'tiros',
+                    },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'asteroide',
+                      groupVar: 'asteroides',
+                    },
                     {
                       type: 'assign',
                       name: 'pontos',
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: { type: 'var', name: 'pontos' },
-                        right: { type: 'num', value: 1 },
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
                       },
                     },
-                    { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ffb13b' },
-                    { type: 'g2d:playExplosion' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'asteroide',
+                      color: '#ffb13b',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 5,
+                    },
                   ],
                 },
                 {
@@ -185,10 +230,25 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   groupVar: 'asteroides',
                   itemName: 'asteroide',
                   body: [
-                    { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
-                    { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ff5d3d' },
-                    { type: 'g2d:playExplosion' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'asteroide',
+                      groupVar: 'asteroides',
+                    },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'asteroide',
+                      color: '#ff5d3d',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 8,
+                    },
                     {
                       type: 'g2d:damageSprite',
                       spriteVar: 'nave',
@@ -202,13 +262,22 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   groupVar: 'asteroides',
                   ctxVar: 'ctx',
                   itemName: 'a',
-                  body: [{ type: 'g2d:changeHealth', spriteVar: 'nave', delta: -1 }],
+                  body: [
+                    {
+                      type: 'g2d:changeHealth',
+                      spriteVar: 'nave',
+                      delta: -1,
+                    },
+                  ],
                 },
                 {
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Pontos:',
-                  value: { type: 'var', name: 'pontos' },
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
                   x: 12,
                   y: 26,
                   color: '#ffffff',
@@ -229,21 +298,43 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   cond: {
                     type: 'binop',
                     op: '>=',
-                    left: { type: 'var', name: 'pontos' },
-                    right: { type: 'num', value: 25 },
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 25,
+                    },
                   },
-                  then: [{ type: 'g2d:setScene', name: 'ganhou' }],
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'ganhou',
+                    },
+                  ],
                 },
                 {
                   type: 'if',
-                  cond: { type: 'g2d:healthDepleted', spriteVar: 'nave' },
-                  then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+                  cond: {
+                    type: 'g2d:healthDepleted',
+                    spriteVar: 'nave',
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
+                  ],
                 },
               ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'ganhou' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'ganhou',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -257,7 +348,10 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -266,6 +360,45 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   subtitle: 'Os asteroides passaram pela defesa!',
                   hint: 'Aperte Enter para tentar de novo',
                   bg: '#300a0a',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:everyFrames',
+          n: {
+            type: 'num',
+            value: 40,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'g2d:spawnAsteroid',
+                  groupVar: 'asteroides',
+                  x: {
+                    type: 'g2d:randomX',
+                  },
+                  y: {
+                    type: 'num',
+                    value: -30,
+                  },
+                  size: 40,
+                  color: '#8d8f9b',
+                  vx: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  vy: {
+                    type: 'num',
+                    value: 3,
+                  },
                 },
               ],
             },
@@ -353,15 +486,23 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: limpa, desenha a floresta e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:forest', ctxVar: 'ctx', speed: 5 },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:forest',
+              ctxVar: 'ctx',
+              speed: 5,
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -375,56 +516,69 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                { type: 'g2d:applyGravity', spriteVar: 'dino' },
-                { type: 'g2d:controlDino', spriteVar: 'dino', ctxVar: 'ctx', jump: 15 },
-                { type: 'g2d:drawSprite', spriteVar: 'dino', ctxVar: 'ctx' },
-                // a cada 1,3s nasce um obstáculo aleatório na borda direita
                 {
-                  type: 'g2d:everySeconds',
-                  seconds: 1.3,
-                  body: [
-                    {
-                      type: 'g2d:spawnObstacle',
-                      groupVar: 'obstaculos',
-                      ctxVar: 'ctx',
-                      shape: 'random',
-                      x: { type: 'num', value: 500 },
-                      size: 44,
-                      vx: { type: 'num', value: -6 },
-                    },
-                  ],
+                  type: 'g2d:applyGravity',
+                  spriteVar: 'dino',
                 },
-                // a cada 4s nasce um ovo de bônus (no alto: precisa pular)
                 {
-                  type: 'g2d:everySeconds',
-                  seconds: 4,
-                  body: [
-                    {
-                      type: 'g2d:spawnEgg',
-                      groupVar: 'ovos',
-                      x: { type: 'num', value: 500 },
-                      y: { type: 'num', value: 115 },
-                      vx: { type: 'num', value: -6 },
-                    },
-                  ],
+                  type: 'g2d:controlDino',
+                  spriteVar: 'dino',
+                  ctxVar: 'ctx',
+                  jump: 15,
                 },
-                { type: 'g2d:updateGroup', groupVar: 'obstaculos' },
-                { type: 'g2d:updateGroup', groupVar: 'ovos' },
-                { type: 'g2d:drawGroup', groupVar: 'obstaculos', ctxVar: 'ctx' },
-                { type: 'g2d:drawGroup', groupVar: 'ovos', ctxVar: 'ctx' },
-                // bateu num obstáculo: perde vida + pisca + tremor
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'dino',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'obstaculos',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'ovos',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'obstaculos',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'ovos',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:onSpriteGroupOverlap',
                   spriteVar: 'dino',
                   groupVar: 'obstaculos',
                   itemName: 'obs',
                   body: [
-                    { type: 'g2d:removeFromGroup', spriteVar: 'obs', groupVar: 'obstaculos' },
-                    { type: 'g2d:explode', spriteVar: 'obs', color: '#ff5d3d' },
-                    { type: 'g2d:playDinoHurt' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'obs',
+                      groupVar: 'obstaculos',
+                    },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'obs',
+                      color: '#ff5d3d',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'hurt',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 8,
+                    },
                     {
                       type: 'g2d:damageSprite',
                       spriteVar: 'dino',
@@ -433,29 +587,44 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                     },
                   ],
                 },
-                // pegou um ovo: ganha pontos de bônus
                 {
                   type: 'g2d:onSpriteGroupOverlap',
                   spriteVar: 'dino',
                   groupVar: 'ovos',
                   itemName: 'ovo',
                   body: [
-                    { type: 'g2d:removeFromGroup', spriteVar: 'ovo', groupVar: 'ovos' },
-                    { type: 'g2d:explode', spriteVar: 'ovo', color: '#ffd54a' },
-                    { type: 'g2d:playCollect' },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'ovo',
+                      groupVar: 'ovos',
+                    },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'ovo',
+                      color: '#ffd54a',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'collect',
+                    },
                     {
                       type: 'assign',
                       name: 'pontos',
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: { type: 'var', name: 'pontos' },
-                        right: { type: 'num', value: 10 },
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 10,
+                        },
                       },
                     },
                   ],
                 },
-                // tira da tela quem já passou (o dino escapou: sem punição)
                 {
                   type: 'g2d:pruneOffscreen',
                   groupVar: 'obstaculos',
@@ -470,29 +639,14 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                   itemName: 'b',
                   body: [],
                 },
-                // pontos sobem com o tempo (a cada 6 quadros, +1)
-                {
-                  type: 'g2d:everyFrames',
-                  n: { type: 'num', value: 6 },
-                  body: [
-                    {
-                      type: 'assign',
-                      name: 'pontos',
-                      value: {
-                        type: 'binop',
-                        op: '+',
-                        left: { type: 'var', name: 'pontos' },
-                        right: { type: 'num', value: 1 },
-                      },
-                    },
-                  ],
-                },
-                // HUD: pontos, recorde e vidas
                 {
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Pontos:',
-                  value: { type: 'var', name: 'pontos' },
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
                   x: 12,
                   y: 28,
                   color: '#20415c',
@@ -502,7 +656,10 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Recorde:',
-                  value: { type: 'var', name: 'recorde' },
+                  value: {
+                    type: 'var',
+                    name: 'recorde',
+                  },
                   x: 12,
                   y: 52,
                   color: '#20415c',
@@ -518,37 +675,64 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                   size: 16,
                   color: '#ff4f7a',
                 },
-                // acabaram as vidas: salva o recorde e vai pra tela de fim
                 {
                   type: 'if',
-                  cond: { type: 'g2d:healthDepleted', spriteVar: 'dino' },
+                  cond: {
+                    type: 'g2d:healthDepleted',
+                    spriteVar: 'dino',
+                  },
                   then: [
                     {
                       type: 'if',
                       cond: {
                         type: 'binop',
                         op: '>',
-                        left: { type: 'var', name: 'pontos' },
-                        right: { type: 'var', name: 'recorde' },
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'recorde',
+                        },
                       },
                       then: [
-                        { type: 'assign', name: 'recorde', value: { type: 'var', name: 'pontos' } },
+                        {
+                          type: 'assign',
+                          name: 'recorde',
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
+                        },
                         {
                           type: 'storageSet',
                           store: 'local',
-                          key: { type: 'str', value: 'dinoRecorde' },
-                          value: { type: 'var', name: 'pontos' },
+                          key: {
+                            type: 'str',
+                            value: 'dinoRecorde',
+                          },
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
                         },
                       ],
                     },
-                    { type: 'g2d:setScene', name: 'perdeu' },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
                   ],
                 },
               ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -557,6 +741,101 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                   subtitle: 'Você tropeçou! Tente bater o seu recorde.',
                   hint: 'Aperte Enter para jogar de novo',
                   bg: '#5a2a2a',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:everySeconds',
+          seconds: 1.3,
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'g2d:spawnObstacle',
+                  groupVar: 'obstaculos',
+                  ctxVar: 'ctx',
+                  shape: 'random',
+                  x: {
+                    type: 'num',
+                    value: 500,
+                  },
+                  size: 44,
+                  vx: {
+                    type: 'num',
+                    value: -6,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:everySeconds',
+          seconds: 4,
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'g2d:spawnEgg',
+                  groupVar: 'ovos',
+                  x: {
+                    type: 'num',
+                    value: 500,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 115,
+                  },
+                  vx: {
+                    type: 'num',
+                    value: -6,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:everyFrames',
+          n: {
+            type: 'num',
+            value: 6,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
                 },
               ],
             },
@@ -653,16 +932,23 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: limpa, desenha a cidade e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:drawCity', cityVar: 'cidade', ctxVar: 'ctx' },
-            // tela de início
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:drawCity',
+              cityVar: 'cidade',
+              ctxVar: 'ctx',
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -675,67 +961,130 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                 },
               ],
             },
-            // jogando
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                { type: 'g2d:drawWind', cityVar: 'cidade', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'gorila1', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'gorila2', ctxVar: 'ctx' },
-                // vez do jogador 1 (esquerda): mira e lança
+                {
+                  type: 'g2d:drawWind',
+                  cityVar: 'cidade',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'gorila1',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'gorila2',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 0 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
                   then: [
-                    { type: 'g2d:aimDrag', throwerVar: 'gorila1', ctxVar: 'ctx' },
+                    {
+                      type: 'g2d:aimDrag',
+                      throwerVar: 'gorila1',
+                      ctxVar: 'ctx',
+                    },
                     {
                       type: 'if',
-                      cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' },
+                      cond: {
+                        type: 'g2d:aimReleased',
+                        throwerVar: 'gorila1',
+                      },
                       then: [
-                        { type: 'g2d:throwBanana', throwerVar: 'gorila1', cityVar: 'cidade' },
-                        { type: 'g2d:playWhistle' },
+                        {
+                          type: 'g2d:throwBanana',
+                          throwerVar: 'gorila1',
+                          cityVar: 'cidade',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'whistle',
+                        },
                       ],
                     },
                   ],
                 },
-                // vez do jogador 2 (direita): mira e lança
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   then: [
-                    { type: 'g2d:aimDrag', throwerVar: 'gorila2', ctxVar: 'ctx' },
+                    {
+                      type: 'g2d:aimDrag',
+                      throwerVar: 'gorila2',
+                      ctxVar: 'ctx',
+                    },
                     {
                       type: 'if',
-                      cond: { type: 'g2d:aimReleased', throwerVar: 'gorila2' },
+                      cond: {
+                        type: 'g2d:aimReleased',
+                        throwerVar: 'gorila2',
+                      },
                       then: [
-                        { type: 'g2d:throwBanana', throwerVar: 'gorila2', cityVar: 'cidade' },
-                        { type: 'g2d:playWhistle' },
+                        {
+                          type: 'g2d:throwBanana',
+                          throwerVar: 'gorila2',
+                          cityVar: 'cidade',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'whistle',
+                        },
                       ],
                     },
                   ],
                 },
-                // a banana voa (gravidade + vento) e aparece
-                { type: 'g2d:updateBanana', cityVar: 'cidade' },
-                { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
-                // a banana do jogador 1 acertou o gorila 2? (vitória)
+                {
+                  type: 'g2d:updateBanana',
+                  cityVar: 'cidade',
+                },
+                {
+                  type: 'g2d:drawBanana',
+                  cityVar: 'cidade',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 0 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
                   then: [
                     {
@@ -746,22 +1095,41 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                         throwerVar: 'gorila2',
                       },
                       then: [
-                        { type: 'g2d:explode', spriteVar: 'gorila2', color: '#ffd23f' },
-                        { type: 'g2d:playBoom' },
-                        { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
-                        { type: 'g2d:setScene', name: 'ganhou1' },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'gorila2',
+                          color: '#ffd23f',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'explosion',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: 10,
+                        },
+                        {
+                          type: 'g2d:setScene',
+                          name: 'ganhou1',
+                        },
                       ],
                     },
                   ],
                 },
-                // a banana do jogador 2 acertou o gorila 1? (vitória)
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   then: [
                     {
@@ -772,35 +1140,66 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                         throwerVar: 'gorila1',
                       },
                       then: [
-                        { type: 'g2d:explode', spriteVar: 'gorila1', color: '#ffd23f' },
-                        { type: 'g2d:playBoom' },
-                        { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
-                        { type: 'g2d:setScene', name: 'ganhou2' },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'gorila1',
+                          color: '#ffd23f',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'explosion',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: 10,
+                        },
+                        {
+                          type: 'g2d:setScene',
+                          name: 'ganhou2',
+                        },
                       ],
                     },
                   ],
                 },
-                // errou (bateu num prédio ou saiu da tela): troca de turno + novo vento
                 {
                   type: 'if',
-                  cond: { type: 'g2d:bananaHitCity', cityVar: 'cidade' },
+                  cond: {
+                    type: 'g2d:bananaHitCity',
+                    cityVar: 'cidade',
+                  },
                   then: [
-                    { type: 'g2d:playBoom' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 5,
+                    },
                     {
                       type: 'assign',
                       name: 'vez',
                       value: {
                         type: 'binop',
                         op: '-',
-                        left: { type: 'num', value: 1 },
-                        right: { type: 'var', name: 'vez' },
+                        left: {
+                          type: 'num',
+                          value: 1,
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'vez',
+                        },
                       },
                     },
-                    { type: 'g2d:newWind', cityVar: 'cidade' },
+                    {
+                      type: 'g2d:newWind',
+                      cityVar: 'cidade',
+                    },
                   ],
                 },
-                // HUD: de quem é a vez (vez + 1)
                 {
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
@@ -808,8 +1207,14 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                   value: {
                     type: 'binop',
                     op: '+',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   x: 12,
                   y: 26,
@@ -818,10 +1223,12 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                 },
               ],
             },
-            // vitória do jogador 1
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'ganhou1',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -833,10 +1240,12 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
                 },
               ],
             },
-            // vitória do jogador 2
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'ganhou2',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -942,11 +1351,20 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:drawCity', cityVar: 'cidade', ctxVar: 'ctx' },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:drawCity',
+              cityVar: 'cidade',
+              ctxVar: 'ctx',
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -960,40 +1378,79 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                { type: 'g2d:drawWind', cityVar: 'cidade', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'gorila1', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'gorila2', ctxVar: 'ctx' },
-                // vez do jogador 1 (você): mira arrastando e lança
+                {
+                  type: 'g2d:drawWind',
+                  cityVar: 'cidade',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'gorila1',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'gorila2',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 0 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
                   then: [
-                    { type: 'g2d:aimDrag', throwerVar: 'gorila1', ctxVar: 'ctx' },
+                    {
+                      type: 'g2d:aimDrag',
+                      throwerVar: 'gorila1',
+                      ctxVar: 'ctx',
+                    },
                     {
                       type: 'if',
-                      cond: { type: 'g2d:aimReleased', throwerVar: 'gorila1' },
+                      cond: {
+                        type: 'g2d:aimReleased',
+                        throwerVar: 'gorila1',
+                      },
                       then: [
-                        { type: 'g2d:throwBanana', throwerVar: 'gorila1', cityVar: 'cidade' },
-                        { type: 'g2d:playWhistle' },
+                        {
+                          type: 'g2d:throwBanana',
+                          throwerVar: 'gorila1',
+                          cityVar: 'cidade',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'whistle',
+                        },
                       ],
                     },
                   ],
                 },
-                // vez do jogador 2: o ROBÔ joga sozinho mirando no gorila 1
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   then: [
                     {
@@ -1004,16 +1461,32 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
                     },
                   ],
                 },
-                { type: 'g2d:updateBanana', cityVar: 'cidade' },
-                { type: 'g2d:drawBanana', cityVar: 'cidade', ctxVar: 'ctx' },
-                { type: 'g2d:drawAimReadout', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:updateBanana',
+                  cityVar: 'cidade',
+                },
+                {
+                  type: 'g2d:drawBanana',
+                  cityVar: 'cidade',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawAimReadout',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'if',
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 0 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
                   then: [
                     {
@@ -1024,10 +1497,24 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
                         throwerVar: 'gorila2',
                       },
                       then: [
-                        { type: 'g2d:explode', spriteVar: 'gorila2', color: '#ffd23f' },
-                        { type: 'g2d:playBoom' },
-                        { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
-                        { type: 'g2d:setScene', name: 'ganhou1' },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'gorila2',
+                          color: '#ffd23f',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'explosion',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: 10,
+                        },
+                        {
+                          type: 'g2d:setScene',
+                          name: 'ganhou1',
+                        },
                       ],
                     },
                   ],
@@ -1037,8 +1524,14 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
                   cond: {
                     type: 'binop',
                     op: '==',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   then: [
                     {
@@ -1049,31 +1542,64 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
                         throwerVar: 'gorila1',
                       },
                       then: [
-                        { type: 'g2d:explode', spriteVar: 'gorila1', color: '#ffd23f' },
-                        { type: 'g2d:playBoom' },
-                        { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
-                        { type: 'g2d:setScene', name: 'ganhou2' },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'gorila1',
+                          color: '#ffd23f',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'explosion',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: 10,
+                        },
+                        {
+                          type: 'g2d:setScene',
+                          name: 'ganhou2',
+                        },
                       ],
                     },
                   ],
                 },
                 {
                   type: 'if',
-                  cond: { type: 'g2d:bananaHitCity', cityVar: 'cidade' },
+                  cond: {
+                    type: 'g2d:bananaHitCity',
+                    cityVar: 'cidade',
+                  },
                   then: [
-                    { type: 'g2d:playBoom' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 5,
+                    },
                     {
                       type: 'assign',
                       name: 'vez',
                       value: {
                         type: 'binop',
                         op: '-',
-                        left: { type: 'num', value: 1 },
-                        right: { type: 'var', name: 'vez' },
+                        left: {
+                          type: 'num',
+                          value: 1,
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'vez',
+                        },
                       },
                     },
-                    { type: 'g2d:newWind', cityVar: 'cidade' },
+                    {
+                      type: 'g2d:newWind',
+                      cityVar: 'cidade',
+                    },
                   ],
                 },
                 {
@@ -1083,8 +1609,14 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
                   value: {
                     type: 'binop',
                     op: '+',
-                    left: { type: 'var', name: 'vez' },
-                    right: { type: 'num', value: 1 },
+                    left: {
+                      type: 'var',
+                      name: 'vez',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
                   },
                   x: 12,
                   y: 26,
@@ -1095,7 +1627,10 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'ganhou1' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'ganhou1',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1109,7 +1644,10 @@ export const gorilasVsRobotExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'ganhou2' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'ganhou2',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1214,22 +1752,30 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
                   speed: 6,
                   color: '#9cff57',
                 },
-                { type: 'g2d:playShoot' },
+                { type: 'g2d:playFx', fx: 'shoot' },
               ],
             },
           ],
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: limpa, desenha o fundo e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:starfield', ctxVar: 'ctx', speed: 1 },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:starfield',
+              ctxVar: 'ctx',
+              speed: 1,
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1243,28 +1789,45 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                { type: 'g2d:steerThrust', spriteVar: 'nave', speed: 3, turn: 4 },
-                { type: 'g2d:clampToScreen', spriteVar: 'nave', ctxVar: 'ctx' },
-                { type: 'g2d:drawSprite', spriteVar: 'nave', ctxVar: 'ctx' },
                 {
-                  type: 'g2d:everySeconds',
-                  seconds: 3,
-                  body: [
-                    {
-                      type: 'g2d:spawnAsteroidEdge',
-                      groupVar: 'asteroides',
-                      size: 40,
-                      color: '#8d8f9b',
-                      speed: 1.5,
-                    },
-                  ],
+                  type: 'g2d:steerThrust',
+                  spriteVar: 'nave',
+                  speed: 3,
+                  turn: 4,
                 },
-                { type: 'g2d:updateGroup', groupVar: 'tiros' },
-                { type: 'g2d:updateGroup', groupVar: 'asteroides' },
-                { type: 'g2d:drawGroup', groupVar: 'tiros', ctxVar: 'ctx' },
-                { type: 'g2d:drawGroup', groupVar: 'asteroides', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:clampToScreen',
+                  spriteVar: 'nave',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'nave',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'tiros',
+                },
+                {
+                  type: 'g2d:updateGroup',
+                  groupVar: 'asteroides',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'tiros',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'asteroides',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:onGroupOverlap',
                   aGroup: 'tiros',
@@ -1272,21 +1835,46 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
                   bGroup: 'asteroides',
                   bName: 'asteroide',
                   body: [
-                    { type: 'g2d:removeFromGroup', spriteVar: 'tiro', groupVar: 'tiros' },
-                    { type: 'g2d:removeFromGroup', spriteVar: 'asteroide', groupVar: 'asteroides' },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'tiro',
+                      groupVar: 'tiros',
+                    },
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'asteroide',
+                      groupVar: 'asteroides',
+                    },
                     {
                       type: 'assign',
                       name: 'pontos',
                       value: {
                         type: 'binop',
                         op: '+',
-                        left: { type: 'var', name: 'pontos' },
-                        right: { type: 'num', value: 1 },
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
                       },
                     },
-                    { type: 'g2d:explode', spriteVar: 'asteroide', color: '#ffb13b' },
-                    { type: 'g2d:playExplosion' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 5 },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'asteroide',
+                      color: '#ffb13b',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 5,
+                    },
                   ],
                 },
                 {
@@ -1295,10 +1883,24 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
                   groupVar: 'asteroides',
                   itemName: 'asteroide',
                   body: [
-                    { type: 'g2d:explode', spriteVar: 'nave', color: '#ff5d3d' },
-                    { type: 'g2d:playExplosion' },
-                    { type: 'g2d:shake', ctxVar: 'ctx', intensity: 10 },
-                    { type: 'g2d:setScene', name: 'perdeu' },
+                    {
+                      type: 'g2d:explode',
+                      spriteVar: 'nave',
+                      color: '#ff5d3d',
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
+                    },
+                    {
+                      type: 'g2d:shake',
+                      ctxVar: 'ctx',
+                      intensity: 10,
+                    },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
                   ],
                 },
                 {
@@ -1319,7 +1921,10 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Pontos:',
-                  value: { type: 'var', name: 'pontos' },
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
                   x: 12,
                   y: 26,
                   color: '#ffffff',
@@ -1329,7 +1934,10 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1338,6 +1946,28 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
                   subtitle: 'A nave foi atingida por um asteroide!',
                   hint: 'Aperte Enter para tentar de novo',
                   bg: '#300a0a',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:everySeconds',
+          seconds: 3,
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'g2d:spawnAsteroidEdge',
+                  groupVar: 'asteroides',
+                  size: 40,
+                  color: '#8d8f9b',
+                  speed: 1.5,
                 },
               ],
             },
@@ -1419,7 +2049,7 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:onStickPathCross',
           pathVar: 'caminho',
           body: [
-            { type: 'g2d:playJump' },
+            { type: 'g2d:playFx', fx: 'jump' },
             {
               type: 'assign',
               name: 'pontos',
@@ -1437,7 +2067,7 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:onStickPathPerfect',
           pathVar: 'caminho',
           body: [
-            { type: 'g2d:playCollect' },
+            { type: 'g2d:playFx', fx: 'collect' },
             { type: 'g2d:flash', ctxVar: 'ctx', color: '#ffe066' },
             {
               type: 'assign',
@@ -1453,15 +2083,22 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: cenário e despacho por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:stickPathScenery', pathVar: 'caminho' },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:stickPathScenery',
+              pathVar: 'caminho',
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1475,14 +2112,29 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                // A regra do mouse, VISÍVEL: segurado cresce; solto derruba.
                 {
                   type: 'if',
-                  cond: { type: 'g2d:pointerDown' },
-                  then: [{ type: 'g2d:stickPathGrow', pathVar: 'caminho', speed: 1 }],
-                  else: [{ type: 'g2d:stickPathDrop', pathVar: 'caminho' }],
+                  cond: {
+                    type: 'g2d:pointerDown',
+                  },
+                  then: [
+                    {
+                      type: 'g2d:stickPathGrow',
+                      pathVar: 'caminho',
+                      speed: 1,
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g2d:stickPathDrop',
+                      pathVar: 'caminho',
+                    },
+                  ],
                 },
                 {
                   type: 'g2d:stickPathWalk',
@@ -1490,13 +2142,23 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
                   pathVar: 'caminho',
                   speed: 1,
                 },
-                { type: 'g2d:stickPathDraw', pathVar: 'caminho' },
-                { type: 'g2d:drawSprite', spriteVar: 'equilibrista', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:stickPathDraw',
+                  pathVar: 'caminho',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'equilibrista',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Pontos:',
-                  value: { type: 'var', name: 'pontos' },
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
                   x: 12,
                   y: 26,
                   color: '#1b2330',
@@ -1504,14 +2166,25 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
                 },
                 {
                   type: 'if',
-                  cond: { type: 'g2d:stickPathFell', pathVar: 'caminho' },
-                  then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+                  cond: {
+                    type: 'g2d:stickPathFell',
+                    pathVar: 'caminho',
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
+                  ],
                 },
               ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1605,21 +2278,28 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
           body: [
             { type: 'g2d:explode', spriteVar: 'balao', color: '#ff8c42' },
             { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
-            { type: 'g2d:playBoom' },
+            { type: 'g2d:playFx', fx: 'explosion' },
             { type: 'g2d:setScene', name: 'perdeu' },
           ],
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando: cenário e despacho por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
-            { type: 'g2d:clear' },
-            { type: 'g2d:balloonPathScenery', pathVar: 'caminho' },
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'g2d:balloonPathScenery',
+              pathVar: 'caminho',
+            },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1633,27 +2313,47 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
               then: [
-                // A regra do mouse, VISÍVEL: segurado acende o fogo.
                 {
                   type: 'if',
-                  cond: { type: 'g2d:pointerDown' },
-                  then: [{ type: 'g2d:balloonFire', spriteVar: 'balao', force: 1 }],
+                  cond: {
+                    type: 'g2d:pointerDown',
+                  },
+                  then: [
+                    {
+                      type: 'g2d:balloonFire',
+                      spriteVar: 'balao',
+                      force: 1,
+                    },
+                  ],
                 },
-                { type: 'g2d:balloonFly', spriteVar: 'balao' },
+                {
+                  type: 'g2d:balloonFly',
+                  spriteVar: 'balao',
+                },
                 {
                   type: 'g2d:balloonPathScroll',
                   pathVar: 'caminho',
                   spriteVar: 'balao',
                   speed: 1,
                 },
-                { type: 'g2d:drawSprite', spriteVar: 'balao', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'balao',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:drawScore',
                   ctxVar: 'ctx',
                   label: 'Metros:',
-                  value: { type: 'g2d:balloonPathMeters', pathVar: 'caminho' },
+                  value: {
+                    type: 'g2d:balloonPathMeters',
+                    pathVar: 'caminho',
+                  },
                   x: 12,
                   y: 26,
                   color: '#1b2330',
@@ -1672,8 +2372,14 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'g2d:drawBar',
                   ctxVar: 'ctx',
-                  value: { type: 'g2d:balloonFuel', spriteVar: 'balao' },
-                  max: { type: 'num', value: 100 },
+                  value: {
+                    type: 'g2d:balloonFuel',
+                    spriteVar: 'balao',
+                  },
+                  max: {
+                    type: 'num',
+                    value: 100,
+                  },
                   x: 12,
                   y: 52,
                   w: 160,
@@ -1682,14 +2388,25 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
                 },
                 {
                   type: 'if',
-                  cond: { type: 'g2d:balloonLandedOut', spriteVar: 'balao' },
-                  then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+                  cond: {
+                    type: 'g2d:balloonLandedOut',
+                    spriteVar: 'balao',
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
+                  ],
                 },
               ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
               then: [
                 {
                   type: 'g2d:showScreen',

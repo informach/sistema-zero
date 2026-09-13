@@ -20,13 +20,13 @@ mock.module('idb-keyval', () => ({
   getMany: mock(async (ks: string[]) => ks.map((k) => db.get(k))),
   keys: mock(async () => [...db.keys()]),
   set: mock(async (k: string, v: unknown) => {
-    if (failThumbWrite && k.startsWith('sz:project-thumb:')) throw new Error('quota cheia')
+    if (failThumbWrite && k.startsWith('sz:v2:project-thumb:')) throw new Error('quota cheia')
     db.set(k, v)
   }),
   // A capa é gravada por uma transação do próprio store, que aplica pelo `setMany` (ver
   // `testing/fakeIdbStore.ts`): é aqui que o "disco cheio" recusa a capa.
   setMany: mock(async (pairs: Array<[string, unknown]>) => {
-    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:project-thumb:'))) {
+    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:v2:project-thumb:'))) {
       throw new Error('quota cheia')
     }
     for (const [k, v] of pairs) db.set(k, v)
@@ -61,14 +61,14 @@ const meta = (id: string, name: string) => ({
   mode: 'blocks',
 })
 
-describe('miniaturas de projeto (partição sz:project-thumb:)', () => {
+describe('miniaturas de projeto (partição sz:v2:project-thumb:)', () => {
   it('só grava com o meta existente (delete concorrente não ressuscita órfão) e a lista anexa', async () => {
     db.clear()
     failThumbWrite = false
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:project-thumb:p1')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p1')).toBe(false)
 
-    db.set('sz:project-meta:p1', meta('p1', 'Jogo'))
+    db.set('sz:v2:project-meta:p1', meta('p1', 'Jogo'))
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(true)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBe('data:image/jpeg;base64,AAA')
@@ -77,23 +77,23 @@ describe('miniaturas de projeto (partição sz:project-thumb:)', () => {
   it('recusa data URL que não é imagem ou acima do teto', async () => {
     db.clear()
     failThumbWrite = false
-    db.set('sz:project-meta:p2', meta('p2', 'Jogo 2'))
+    db.set('sz:v2:project-meta:p2', meta('p2', 'Jogo 2'))
     expect(await writeProjectThumb('p2', 'data:text/html;base64,AAA')).toBe(false)
     expect(
       await writeProjectThumb('p2', `data:image/png;base64,${'A'.repeat(MAX_PROJECT_THUMB_CHARS)}`),
     ).toBe(false)
-    expect(db.has('sz:project-thumb:p2')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p2')).toBe(false)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBeUndefined()
   })
 
   it('informa falha de persistência sem lançar nem criar uma miniatura fantasma', async () => {
     db.clear()
-    db.set('sz:project-meta:p3', meta('p3', 'Jogo 3'))
+    db.set('sz:v2:project-meta:p3', meta('p3', 'Jogo 3'))
     failThumbWrite = true
 
     expect(await writeProjectThumb('p3', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:project-thumb:p3')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p3')).toBe(false)
 
     failThumbWrite = false
   })

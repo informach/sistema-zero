@@ -59,7 +59,11 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const content = {
       kind: 'studio' as const,
       chain: 'corre-dino',
-      initialProject: { name: 'Projeto original', files: { 'index.html': '<p>Dino</p>' } },
+      initialProject: {
+        formatVersion: 2,
+        name: 'Projeto original',
+        files: { 'index.html': '<p>Dino</p>' },
+      },
     }
     f.courses.blocks.push({ id, lessonId: f.lessonId, kind: 'studio', content, sortOrder: 20 })
     const published = await f.courses.findLessonWithContent(f.lessonId)
@@ -107,7 +111,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
             content: {
               kind: 'studio',
               chain: 'corre-dino',
-              initialProject: { name: 'Dino', files: {} },
+              initialProject: { formatVersion: 2, name: 'Dino', files: {} },
             },
           },
         })

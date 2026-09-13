@@ -36,7 +36,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Separar tiros e asteroides em grupos diferentes.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.”
+**Fala revisada / orientação:** “Em Jogo 2D, Grupos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -78,7 +78,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Criar uma repetição periódica separada do motor principal.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Tempo e repetição, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.”
+**Fala revisada / orientação:** “Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.”
 
 **Imagem:** Área Enquanto estiver rodando com dois contornos destacados: o motor principal e o relógio de 40 quadros. Mostrar a conexão de vizinhos e o espaço BODY do novo relógio.
 
@@ -122,7 +122,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Configurar nascimento e movimento vertical do asteroide.
 
-**Fala revisada / orientação:** “Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kit espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Mira e contas. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.”
+**Fala revisada / orientação:** “Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kits prontos › Espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Sorteios. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.”
 
 **Imagem:** Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.
 
@@ -190,7 +190,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Responder à colisão entre os grupos a cada quadro.
 
-**Fala revisada / orientação:** “Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; toque som de explosão.”
+**Fala revisada / orientação:** “Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; use Tocar efeito, na família Som, e escolha explosão.”
 
 **Imagem:** Mostrar primeiro grupos e apelidos, depois os quatro encaixes no mesmo BODY. Destacar que a explosão usa a referência do asteroide atingido, mesmo depois de removido do grupo.
 
@@ -202,6 +202,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Conclusão:** construir e usar a conferência da etapa. O vídeo orienta; os encaixes ativos do projeto são verificados.
 
+- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
 - Na mesma colisão, remova o asteroide e então solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
@@ -233,6 +234,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 Teste um tiro que erra e outro que acerta. No acerto, confira se só o tiro e a pedra envolvidos saem. Observe outras pedras chegando e saindo por baixo. Mantenha intervalo 40 e vy 3. Envie o projeto; ainda não é necessário desviar para preservar vidas.
 
+- No evento Espaço, use Tocar efeito e escolha tiro.
 - No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
 - Mantenha apenas um comando de criar tiro.
 - Crie o grupo asteroides em Ao iniciar.
@@ -243,6 +245,7 @@ Teste um tiro que erra e outro que acerta. No acerto, confira se só o tiro e a 
 - Mova asteroides antes de limpar o grupo.
 - Retire os asteroides que saem e depois desenhe esse grupo.
 - Desenhe o grupo asteroides a cada quadro.
+- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
 - Na mesma colisão, remova o asteroide e então solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
@@ -288,3 +291,45 @@ O apelido permite agir sobre o participante, preservando os outros.
 - **Fecho:** Recortar com as substituições e imagens indicadas. Clipes: video-fecho-v6.
 
 Fonte preservada, SHA-256: 42f032a7ead97c237bcb82ed1b6a97405484801d4de4dc6e9d6598bc41446b55. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D › Movimento › Movimentos prontos | Move o sprite só na horizontal com as setas esquerda/direita. Combine com "prender o sprite na tela". |
+| o centro x do sprite | Jogo 2D › Movimento › Posição e tamanho | O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave. |
+| Manter o sprite dentro da tela | Jogo 2D › Movimento › Bordas e rebatidas | Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir). |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Criar grupo de sprites | Jogo 2D › Grupos › Criar e percorrer | Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas). |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D › Kits prontos › Espaço | Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado. |
+| Desenhar o grupo | Jogo 2D › Grupos › Desenho e ordem | Desenha todos os sprites do grupo. Use a cada quadro, depois de mover. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| A cada quadros | Jogo 2D › Tempo › Quadros e intervalos | Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”. |
+| Soltar explosão no sprite cor | Jogo 2D › Desenho e efeitos › Partículas | Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite. |
+| Para cada colisão entre os grupos e | Jogo 2D › Colisões › Encostar e bloquear | Para cada par de sprites (um de cada grupo) que se encostam, roda o "fazer" com os dois sprites. Use dentro do "a cada quadro". |
+| Quando apertar a tecla | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar). |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D › Grupos › Participação e limpeza | Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo. |
+| um x aleatório na tela | Jogo 2D › Sorteios › Números e posições | Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…). |
+| Tirar o sprite do grupo | Jogo 2D › Grupos › Participação e limpeza | Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D › Kits prontos › Espaço | Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único. |
+| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D › Grupos › Criar e percorrer | Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe). |
+| a posição y do sprite | Jogo 2D › Movimento › Posição e tamanho | A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa. |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do "a cada quadro", depois de limpar a tela. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D › Grupos › Movimento | Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

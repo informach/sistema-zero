@@ -18,11 +18,14 @@ import {
   storageRemoveCallToIR,
 } from '../codecs/web/nativeRuntimeParserCodec'
 import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
+import { gameTwoDActionCallToIR } from '../official-extensions/game-2d/actionCodec'
+import { gameTwoDAudioCallToIR } from '../official-extensions/game-2d/audioCodec'
 import {
   classicGameTwoDCallExpressionToIR,
   classicGameTwoDCallToIR,
   classicGameTwoDDeclarationToIR,
 } from '../official-extensions/game-2d/classicCodec'
+import { gameTwoDPeriodicLoopToIR } from '../official-extensions/game-2d/periodicCodec'
 import {
   textSpriteCallExpressionToIR,
   textSpriteCallToIR,
@@ -2483,6 +2486,11 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGame2DCall(node)
   if (!call) return null
   const { method, args } = call
+  if (method === 'circleCollides' && args.length === 2) {
+    const aVar = identifierName(args[0]),
+      bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g2d:circleTouches', aVar, bVar }
+  }
   const textExpression = textSpriteCallExpressionToIR(method, args, {
     identifier: identifierName,
     expression: (node) => toExpr(node, ctx),
@@ -2498,7 +2506,7 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:keyDown', key: args[0].value as string }
   }
-  if (method === 'touches') {
+  if ((method === 'touches' || method === 'isColliding') && args.length === 2) {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g2d:touches', aVar, bVar }
@@ -3292,6 +3300,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   if (!call) return null
   const { method, args } = call
   const isFn = isInlineFunction
+  const audio = gameTwoDAudioCallToIR(method, args, (node) => toExpr(node, ctx), isSimpleValue)
+  if (audio) return audio
+  const action = gameTwoDActionCallToIR(method, args, {
+    identifier: identifierName,
+    expression: (node) => toExpr(node, ctx),
+    simple: isSimpleValue,
+    inlineFunction: isInlineFunction,
+    functionBody: (node) => bodyOfFn(node, source, ctx),
+  })
+  if (action) return action
   const textStatement = textSpriteCallToIR(method, args, {
     identifier: identifierName,
     expression: (node) => toExpr(node, ctx),
@@ -3320,6 +3338,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     }
     case 'gameLoop': {
       if (!isFn(args[0])) return null
+      const periodic = gameTwoDPeriodicLoopToIR(
+        args[0],
+        (node) => toExpr(node, ctx),
+        (node) => bodyOfBlock(node, source, ctx),
+      )
+      if (periodic && args.length === 1) return periodic
       return { type: 'g2d:updateEachFrame', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'onPointer': {
@@ -3390,54 +3414,6 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'setGravity': {
       const value = toExpr(args[0], ctx)
       return isSimpleValue(value) ? { type: 'g2d:setGravity', value } : null
-    }
-    case 'playSound': {
-      const freq = toExpr(args[0], ctx)
-      const durationMs = toExpr(args[1], ctx)
-      return isSimpleValue(freq) && isSimpleValue(durationMs)
-        ? { type: 'g2d:playSound', freq, durationMs }
-        : null
-    }
-    case 'playFx': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:playFx', fx: args[0].value as string }
-    }
-    case 'playMusic': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:playMusic', tune: args[0].value as string }
-    }
-    case 'stopMusic':
-      return { type: 'g2d:stopMusic' }
-    case 'loadSound': {
-      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
-      return {
-        type: 'g2d:loadSound',
-        name: args[0].value as string,
-        asset: args[1].value as string,
-      }
-    }
-    case 'playClip': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:playClip', name: args[0].value as string }
-    }
-    case 'stopClip': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:stopClip', name: args[0].value as string }
-    }
-    case 'playTrack': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:playTrack', name: args[0].value as string }
-    }
-    case 'stopTrack':
-      return args.length === 0 ? { type: 'g2d:stopTrack' } : null
-    case 'setSoundVolume': {
-      const level = toExpr(args[0], ctx)
-      return isSimpleValue(level) ? { type: 'g2d:setVolume', level } : null
-    }
-    case 'playNote': {
-      if (args[0]?.type !== 'StringLiteral') return null
-      const ms = toExpr(args[1], ctx)
-      return isSimpleValue(ms) ? { type: 'g2d:playNote', note: args[0].value as string, ms } : null
     }
     case 'aimAt': {
       const spriteVar = identifierName(args[0])
@@ -3528,19 +3504,7 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g2d:pauseGame' }
     case 'resumeGame':
       return { type: 'g2d:resumeGame' }
-    case 'cameraFollow': {
-      const spriteVar = identifierName(args[0])
-      const worldW = toExpr(args[1], ctx)
-      const worldH = toExpr(args[2], ctx)
-      return spriteVar && isSimpleValue(worldW) && isSimpleValue(worldH)
-        ? { type: 'g2d:cameraFollow', spriteVar, worldW, worldH }
-        : null
-    }
-    case 'setCamera': {
-      const x = toExpr(args[0], ctx)
-      const y = toExpr(args[1], ctx)
-      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'g2d:setCamera', x, y } : null
-    }
+
     case 'breakTileAtSprite': {
       const mapVar = identifierName(args[0])
       const spriteVar = identifierName(args[1])
@@ -4026,19 +3990,13 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       return ctxVar ? { type: 'g2d:drawParticles', ctxVar } : null
     }
+
     case 'drawTileMap': {
-      // Novo contrato: com 2 argumentos, apenas desenha a geometria preparada.
-      // Com 4/5, preserva o bloco legado que preparava durante o desenho.
       const ctxVar = identifierName(args[0])
       const mapVar = identifierName(args[1])
-      if (!ctxVar || !mapVar) return null
-      if (args.length === 2) return { type: 'g2d:drawPreparedTileMap', ctxVar, mapVar }
-      const x = toExpr(args[2], ctx)
-      const y = toExpr(args[3], ctx)
-      if (!isSimpleValue(x) || !isSimpleValue(y)) return null
-      if (args.length < 5) return { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
-      const size = toExpr(args[4], ctx)
-      return isSimpleValue(size) ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y, size } : null
+      return args.length === 2 && ctxVar && mapVar
+        ? { type: 'g2d:drawPreparedTileMap', ctxVar, mapVar }
+        : null
     }
     case 'fitTileMapToStage': {
       const ctxVar = identifierName(args[0])
@@ -4282,25 +4240,7 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[1])
       return groupVar && spriteVar ? { type: 'g2d:removeFromGroup', spriteVar, groupVar } : null
     }
-    case 'drawHearts': {
-      // generator: SZGame2D.drawHearts(ctx, count, x, y, size, "color")
-      const ctxVar = identifierName(args[0])
-      const count = toExpr(args[1], ctx)
-      const x = toExpr(args[2], ctx)
-      const y = toExpr(args[3], ctx)
-      const size = toExpr(args[4], ctx)
-      if (
-        !ctxVar ||
-        !isSimpleValue(count) ||
-        !isSimpleValue(x) ||
-        !isSimpleValue(y) ||
-        !isSimpleValue(size) ||
-        args[5]?.type !== 'StringLiteral'
-      ) {
-        return null
-      }
-      return { type: 'g2d:drawHearts', ctxVar, count, x, y, size, color: args[5].value as string }
-    }
+
     case 'drawSpriteHealth': {
       const ctxVar = identifierName(args[0])
       const spriteVar = identifierName(args[1])
@@ -4491,10 +4431,7 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
       return { type: 'g2d:explode', spriteVar, color: args[1].value as string }
     }
-    case 'playShoot':
-      return { type: 'g2d:playShoot' }
-    case 'playExplosion':
-      return { type: 'g2d:playExplosion' }
+
     case 'jumpOnGround': {
       // generator: SZGame2D.jumpOnGround(sprite, ctx, jump)
       const spriteVar = identifierName(args[0])
@@ -4544,12 +4481,7 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const speed = toExpr(args[1], ctx)
       return ctxVar && isSimpleValue(speed) ? { type: 'g2d:forest', ctxVar, speed } : null
     }
-    case 'playJump':
-      return { type: 'g2d:playJump' }
-    case 'playDinoHurt':
-      return { type: 'g2d:playDinoHurt' }
-    case 'playCollect':
-      return { type: 'g2d:playCollect' }
+
     case 'drawCity': {
       // generator: SZGame2D.drawCity(ctx, city)
       const ctxVar = identifierName(args[0])
@@ -4588,10 +4520,7 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const cityVar = identifierName(args[1])
       return ctxVar && cityVar ? { type: 'g2d:drawBanana', cityVar, ctxVar } : null
     }
-    case 'playWhistle':
-      return { type: 'g2d:playWhistle' }
-    case 'playBoom':
-      return { type: 'g2d:playBoom' }
+
     case 'computerTurn': {
       // generator: SZGame2D.computerTurn(thrower, city, enemy)
       const throwerVar = identifierName(args[0])
@@ -4728,13 +4657,6 @@ function tryMatchGame2DVarInit(
     simple: isSimpleValue,
   })
   if (classicDeclaration) return classicDeclaration
-  if (method === 'isColliding' || method === 'circleCollides') {
-    const aVar = identifierName(args[0])
-    const bVar = identifierName(args[1])
-    if (!aVar || !bVar) return null
-    const type = method === 'circleCollides' ? 'g2d:circleCollides' : 'g2d:collides'
-    return { type, aVar, bVar, varName: name }
-  }
   if (method === 'createSprite') {
     if (args[0]?.type !== 'ObjectExpression') return null
     const sprite = readSpriteOptions(args[0], ctx)
@@ -6104,6 +6026,12 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgCreateMap': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[3])) return null
+      if (
+        args.length > 6 ||
+        (args[5] &&
+          (args[5].type !== 'StringLiteral' || !['bounded', 'unbounded'].includes(args[5].value)))
+      )
+        return null
       const cols = toExpr(args[1], ctx)
       const rows = toExpr(args[2], ctx)
       if (!isSimpleValue(cols) || !isSimpleValue(rows)) return null
@@ -6111,6 +6039,9 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (ctxParam) ctx.ctxVars.add(ctxParam)
       return {
         type: 'gk:rpgCreateMap',
+        ...(args[5]?.type === 'StringLiteral' && args[5].value === 'unbounded'
+          ? { bounds: 'unbounded' as const }
+          : {}),
         map: args[0].value as string,
         cols,
         rows,
@@ -11957,23 +11888,6 @@ function tryMatchEvery(node: Babel.IfStatement, source: string, ctx: ParseCtx): 
     if (!isSimpleValue(seconds)) return null
     return { type: 'gk:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
   }
-  const call = asSZGame2DCall(node.test)
-  if (!call) return null
-  if (call.method === 'everyFrames') {
-    const n = toExpr(call.args[1], ctx)
-    if (!isSimpleValue(n)) return null
-    return { type: 'g2d:everyFrames', n, body: bodyOfBlock(node.consequent, source, ctx) }
-  }
-  if (call.method === 'everySeconds') {
-    const seconds = toExpr(call.args[1], ctx)
-    if (!isSimpleValue(seconds)) return null
-    return { type: 'g2d:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
-  }
-  if (call.method === 'afterSeconds') {
-    const seconds = toExpr(call.args[1], ctx)
-    if (!isSimpleValue(seconds)) return null
-    return { type: 'g2d:afterSeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
-  }
   return null
 }
 
@@ -13076,6 +12990,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:actionDown':
     case 'g2d:actionPressed':
     case 'g2d:touches':
+    case 'g2d:circleTouches':
     case 'g2d:countGroup':
     case 'g2d:spriteAngle':
     case 'g2d:distance':

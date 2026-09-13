@@ -6,8 +6,31 @@ import {
   sanitizeProjectAssets,
 } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import {
+  CURRENT_PROJECT_FORMAT_VERSION,
+  ProjectDocumentError,
+  projectFormatVersion,
+} from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 import { readAllKeys, readValue, readValues, writeInOneTransaction } from './idbTransaction'
+import {
+  PROJECT_META_KEY_PREFIX,
+  projectAssetsKey,
+  projectBlocksKey,
+  projectFilesKey,
+  projectMetaKey,
+  projectMigrationKey,
+  projectStateKey,
+  projectThumbKey,
+} from './projectStorageKeys'
+import {
+  assembleProjectRecord,
+  projectToAssetsRecord,
+  projectToBlocksRecord,
+  projectToFilesRecord,
+  projectToMetaRecord,
+  projectToStateRecord,
+} from './projectStorageRecords'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
@@ -19,20 +42,6 @@ import {
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
 
-const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
-const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
-const PROJECT_FILES_KEY_PREFIX = 'sz:project-files:'
-const PROJECT_STATE_KEY_PREFIX = 'sz:project-state:'
-const PROJECT_BLOCKS_KEY_PREFIX = 'sz:project-blocks:'
-// 4ª partição: assets embutidos (imagens/sprites como data: URL). São GRANDES e
-// mudam POUCO — partição própria para não inchar o autosave debounced de `files`,
-// que reescreve a cada tecla. Ausente em projetos legados (load é tolerante).
-const PROJECT_ASSETS_KEY_PREFIX = 'sz:project-assets:'
-// 5ª partição: MINIATURA do card (capturada ao sair do editor). Partição própria
-// de propósito: o persistProject reescreve o meta a partir do Project em memória
-// (que não conhece a thumb) — no meta, o próximo autosave a apagaria.
-const PROJECT_THUMB_KEY_PREFIX = 'sz:project-thumb:'
-const PROJECT_STORAGE_VERSION = 2
 const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
 export const MAX_PROJECT_THUMB_CHARS = 300_000
@@ -60,14 +69,6 @@ function notifyProjectChanged(id: string, deleted = false): void {
     // Ambiente sem CustomEvent: a lista recarrega no próximo gesto, como antes.
   }
 }
-const legacyProjectKey = (id: string) => `${LEGACY_PROJECT_KEY_PREFIX}${id}`
-const projectMetaKey = (id: string) => `${PROJECT_META_KEY_PREFIX}${id}`
-const projectFilesKey = (id: string) => `${PROJECT_FILES_KEY_PREFIX}${id}`
-const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
-const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
-const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
-const projectThumbKey = (id: string) => `${PROJECT_THUMB_KEY_PREFIX}${id}`
-
 /**
  * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
  * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
@@ -202,6 +203,12 @@ export async function persistProject(
   options: PersistProjectOptions = {},
   storageScope?: ProjectStorageScope,
 ): Promise<void> {
+  if (projectFormatVersion(project) !== CURRENT_PROJECT_FORMAT_VERSION)
+    throw new ProjectDocumentError(
+      'migration-required',
+      'Converta o projeto antes de guardar nesta versão.',
+    )
+  const captured = storageScope ?? captureProjectStorageScope()
   await runSerializedWrite(
     project.id,
     async (scope) => {
@@ -263,8 +270,9 @@ export async function persistProject(
       })
       return { done }
     },
-    storageScope,
+    captured,
   )
+  if (captured.identity !== captureProjectStorageScope().identity) return
   if (!options.silent) notifyMirrorChanged(project.id)
   notifyProjectChanged(project.id)
 }
@@ -286,7 +294,7 @@ export async function loadProjectById(
     return assembleProjectRecord(id, meta, files, state, assets, blocks)
   }
 
-  return ((await readValue(kvStore, legacyProjectKey(id))) ?? null) as Project | null
+  return loadHistoricalProject(id, storageScope)
 }
 
 /**
@@ -311,7 +319,7 @@ export async function loadProjectShellById(
     return assembleProjectRecord(id, meta, files, { id, ir: null, blocksState: null }, assets)
   }
 
-  return ((await readValue(kvStore, legacyProjectKey(id))) ?? null) as Project | null
+  return loadHistoricalProject(id, storageScope)
 }
 
 /**
@@ -328,9 +336,8 @@ export async function loadProjectMetaById(
   const kvStore = getStore(storageScope)
   const meta = await readValue(kvStore, projectMetaKey(id))
   if (isRecord(meta)) return meta
-  const legacy = await readValue(kvStore, legacyProjectKey(id))
-  if (isRecord(legacy)) return legacy
-  return null
+  const historical = await loadHistoricalProject(id, storageScope)
+  return historical ? projectToMetaRecord(historical) : null
 }
 
 export async function loadProjectBlocksById(
@@ -340,16 +347,8 @@ export async function loadProjectBlocksById(
   const kvStore = getStore(storageScope)
   const fromPartition = await readValue(kvStore, projectBlocksKey(id))
   if (fromPartition != null) return fromPartition
-  // Fallback p/ projetos LEGADOS (salvos ANTES do split de partições): o
-  // `blocksState` ficava DENTRO de `sz:project-state` (junto do IR) ou no doc único
-  // `sz:project`. Sem este fallback, o restore em segundo plano devolveria null e o
-  // 1º autosave gravaria vazio por cima — perdendo os blocos de projetos antigos.
-  // Devolve o registro INTEIRO; o chamador lê `record.blocksState` e valida `id`.
-  const state = await readValue(kvStore, projectStateKey(id))
-  if (isRecord(state) && state.blocksState != null) return state
-  const legacy = await readValue(kvStore, legacyProjectKey(id))
-  if (isRecord(legacy) && legacy.blocksState != null) return legacy
-  return null
+  const historical = await loadHistoricalProject(id, storageScope)
+  return historical?.blocksState ? projectToBlocksRecord(historical) : null
 }
 
 /**
@@ -441,7 +440,11 @@ export async function deleteProject(
   // persist/rename do mesmo projeto. Uma transação com commit explícito, como
   // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
   await runSerializedProjectWrite(scope, id, async () => {
+    const meta = await readValue(scope.store, projectMetaKey(id))
+    if (!meta) await loadHistoricalProject(id, scope)
+    const source = await readValue(scope.store, projectMigrationKey(id))
     const done = writeInOneTransaction(scope.store, {
+      puts: [[projectMigrationKey(id), { ...(isRecord(source) ? source : {}), deleted: true }]],
       deletes: [
         projectMetaKey(id),
         projectFilesKey(id),
@@ -449,7 +452,6 @@ export async function deleteProject(
         projectBlocksKey(id),
         projectAssetsKey(id),
         projectThumbKey(id),
-        legacyProjectKey(id),
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
       ],
@@ -463,6 +465,7 @@ export async function deleteProject(
     })
     return { done }
   })
+  if (scope.identity !== captureProjectStorageScope().identity) return
   if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
   notifyProjectChanged(id, true)
 }
@@ -476,38 +479,39 @@ export async function deleteProject(
  * meta (projeto inexistente ou só no formato legado).
  */
 export async function renameProjectMeta(id: string, name: string): Promise<void> {
+  const scope = captureProjectStorageScope()
   // Ler e gravar o meta SERIALIZADO contra persistProject/deleteProject do mesmo id: até
   // a gravação do rename ser pedida, nenhuma outra escrita do projeto passa na fila, então
   // um autosave do editor aberto não é desfeito pelo meta que o rename leu antes dele.
-  await runSerializedWrite(id, async (scope) => {
-    const kvStore = scope.store
-    const meta = await readValue(kvStore, projectMetaKey(id))
-    if (isRecord(meta)) {
-      return {
-        done: writeInOneTransaction(kvStore, {
-          puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
-        }),
+  await runSerializedWrite(
+    id,
+    async (scope) => {
+      const kvStore = scope.store
+      let meta = await readValue(kvStore, projectMetaKey(id))
+      if (!meta) {
+        const historical = await loadHistoricalProject(id, scope)
+        if (historical) meta = projectToMetaRecord(historical)
       }
-    }
-    // Sem partição de meta: projeto no formato LEGADO (`sz:project:<id>`, doc único
-    // anterior à migração 3-partições) que nunca foi aberto/editado — só ganha
-    // partições no 1º persistProject. O legado é suportado p/ leitura/listagem
-    // (loadProjectById/listAllProjects), então o rename PRECISA persistir; senão a
-    // ProjectList reverte o nome ao reler o disco. Regrava o nome no PRÓPRIO doc
-    // legado (mesma chave), dentro do mesmo runSerializedWrite.
-    const legacy = await readValue(kvStore, legacyProjectKey(id))
-    if (!isRecord(legacy)) return undefined
-    return {
-      done: writeInOneTransaction(kvStore, {
-        puts: [[legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }]],
-      }),
-    }
-  })
+      if (isRecord(meta)) {
+        return {
+          done: writeInOneTransaction(kvStore, {
+            puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
+          }),
+        }
+      }
+      return undefined
+    },
+    scope,
+  )
+  if (scope.identity !== captureProjectStorageScope().identity) return
   notifyMirrorChanged(id)
   notifyProjectChanged(id)
 }
 
 export interface ProjectSummary {
+  /** Original preservado; abrir apresenta o diagnóstico sem bloquear os outros projetos. */
+  migrationPending?: boolean
+  hasPreservedEdit?: boolean
   id: string
   name: string
   createdAt: number
@@ -604,7 +608,7 @@ export async function loadProjectSummaryById(
   const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
   let summary = toProjectSummary(id, meta)
   if (!summary) {
-    const legacy = await readValue(kvStore, legacyProjectKey(id))
+    const legacy = await loadHistoricalProject(id, storageScope)
     summary = toProjectSummary(id, legacy)
   }
   if (!summary) return null
@@ -633,7 +637,7 @@ export async function loadProjectSummariesByIds(
     const id = ids[index] as string
     let summary = toProjectSummary(id, values[index * 2])
     if (!summary) {
-      const legacy = await readValue(kvStore, legacyProjectKey(id))
+      const legacy = await loadHistoricalProject(id, storageScope)
       summary = toProjectSummary(id, legacy)
     }
     if (summary) {
@@ -649,8 +653,26 @@ async function listAllProjectsInternal(
   storageScope: ProjectStorageScope | undefined,
   options: { withThumbs: boolean },
 ): Promise<ProjectSummary[]> {
-  const kvStore = getStore(storageScope)
-  const allKeys = await readAllKeys(kvStore)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const kvStore = scope.store
+  let allKeys = await readAllKeys(kvStore)
+  let pending: ProjectSummary[] = []
+  if (
+    allKeys.some(
+      (key) =>
+        typeof key === 'string' && /^sz:project(?:-(?:meta|files|state|blocks|assets))?:/.test(key),
+    )
+  ) {
+    const { migrateLocalProjects } = await import('../project-migrations/localProjects')
+    const migrated = await migrateLocalProjects(scope, allKeys)
+    if (scope.identity === captureProjectStorageScope().identity)
+      for (const id of migrated.changed) {
+        notifyMirrorChanged(id)
+        notifyProjectChanged(id)
+      }
+    allKeys = await readAllKeys(kvStore)
+    pending = migrated.pending
+  }
   const metaKeys = allKeys.filter(
     (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
   )
@@ -660,6 +682,12 @@ async function listAllProjectsInternal(
       toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
     )
     .filter((summary): summary is ProjectSummary => Boolean(summary))
+  if (options.withThumbs) {
+    const currentIds = new Set(summaries.map((summary) => summary.id))
+    const pendingIds = new Set(pending.map((summary) => summary.id))
+    for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
+    summaries.push(...pending.filter((summary) => !currentIds.has(summary.id)))
+  }
 
   // Anexa as miniaturas (partição própria) aos summaries que têm uma.
   if (options.withThumbs && summaries.length > 0) {
@@ -674,118 +702,32 @@ async function listAllProjectsInternal(
     }
   }
 
-  const indexedIds = new Set(summaries.map((summary) => summary.id))
-  const legacyKeys = allKeys.filter(
-    (key): key is string =>
-      typeof key === 'string' &&
-      key.startsWith(LEGACY_PROJECT_KEY_PREFIX) &&
-      !indexedIds.has(key.slice(LEGACY_PROJECT_KEY_PREFIX.length)),
-  )
-  if (legacyKeys.length > 0) {
-    const legacyValues = await readValues(kvStore, legacyKeys)
-    for (let index = 0; index < legacyKeys.length; index += 1) {
-      const key = legacyKeys[index]
-      if (!key) continue
-      const summary = toProjectSummary(
-        key.slice(LEGACY_PROJECT_KEY_PREFIX.length),
-        legacyValues[index],
-      )
-      if (summary) summaries.push(summary)
-    }
-  }
-
   summaries.sort((a, b) => b.updatedAt - a.updatedAt)
   return summaries
 }
 
-function projectToMetaRecord(
-  project: Project,
-): Pick<
-  Project,
-  | 'id'
-  | 'name'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'mode'
-  | 'installedExtensions'
-  | 'kind'
-  | 'proMeta'
-  | 'bridgeCodeAhead'
-> & { storageVersion: number } {
-  return {
-    id: project.id,
-    name: project.name,
-    createdAt: project.createdAt,
-    updatedAt: project.updatedAt,
-    mode: project.mode,
-    installedExtensions: project.installedExtensions,
-    storageVersion: PROJECT_STORAGE_VERSION,
-    // Modo profissional: discriminante + metadados do dev-server. Ausentes em
-    // projetos classic (undefined é preservado pelo structured clone do IDB).
-    kind: project.kind,
-    proMeta: project.proMeta,
-    bridgeCodeAhead: project.bridgeCodeAhead,
-  }
-}
-
-function projectToFilesRecord(
-  project: Project,
-): Pick<Project, 'id' | 'files' | 'extraFiles' | 'tree'> {
-  return {
-    id: project.id,
-    files: project.files,
-    extraFiles: project.extraFiles,
-    // Árvore real do modo profissional (path-keyed); ausente em classic.
-    tree: project.tree,
-  }
-}
-
-function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir'> {
-  return {
-    id: project.id,
-    ir: project.bridgeCodeAhead === true ? null : project.ir,
-  }
-}
-
-function projectToBlocksRecord(project: Project): Pick<Project, 'id' | 'blocksState'> {
-  return {
-    id: project.id,
-    blocksState: project.blocksState,
-  }
-}
-
-function projectToAssetsRecord(project: Project): Pick<Project, 'id' | 'assets'> {
-  return {
-    id: project.id,
-    // Assets embutidos (imagens). Ausente/undefined em projetos sem assets — o
-    // structured clone do IDB preserva undefined, e o load é tolerante.
-    assets: project.assets,
-  }
-}
-
-function assembleProjectRecord(
+/** Primeira abertura histórica: o módulo só entra quando não há registro atual. */
+async function loadHistoricalProject(
   id: string,
-  meta: unknown,
-  files: unknown,
-  state: unknown,
-  assets?: unknown,
-  blocks?: unknown,
-): Project | null {
-  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null
-  if (!files || typeof files !== 'object' || Array.isArray(files)) return null
-  if (!state || typeof state !== 'object' || Array.isArray(state)) return null
-  return {
-    ...(meta as Record<string, unknown>),
-    ...(files as Record<string, unknown>),
-    ...(state as Record<string, unknown>),
-    ...(blocks && typeof blocks === 'object' && !Array.isArray(blocks)
-      ? (blocks as Record<string, unknown>)
-      : {}),
-    // Partição de assets (opcional): mescla só se for um registro válido. O
-    // sanitizer do projectStore valida o conteúdo de `assets` depois.
-    ...(assets && typeof assets === 'object' && !Array.isArray(assets)
-      ? (assets as Record<string, unknown>)
-      : {}),
-    id,
-  } as Project
+  storageScope?: ProjectStorageScope,
+): Promise<Project | null> {
+  const scope = storageScope ?? captureProjectStorageScope()
+  const old = await readValues(scope.store, [`sz:project:${id}`, `sz:project-meta:${id}`])
+  if (!old.some(Boolean)) return null
+  const { migrateLocalProject } = await import('../project-migrations/localProjects')
+  const migrated = await migrateLocalProject(id, scope)
+  if (migrated && scope.identity === captureProjectStorageScope().identity) {
+    notifyMirrorChanged(migrated)
+    notifyProjectChanged(migrated)
+  }
+  const [meta, files, state, blocks, assets] = await readValues(scope.store, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectStateKey(id),
+    projectBlocksKey(id),
+    projectAssetsKey(id),
+  ])
+  return meta && files && state
+    ? assembleProjectRecord(id, meta, files, state, assets, blocks)
+    : null
 }

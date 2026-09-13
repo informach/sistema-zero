@@ -72,7 +72,7 @@ export const gameTwoDGroupAndHudBlocks = [
   {
     type: 'sz_g2d_update_group',
     placement: 'command',
-    message0: 'Atualizar (mover) o grupo %1',
+    message0: 'Mover os sprites do grupo %1 usando suas velocidades',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -307,24 +307,7 @@ export const gameTwoDGroupAndHudBlocks = [
     tooltip:
       'Escreve texto ou um valor na tela: título, pergunta, variável ou item de lista. Escolha o alinhamento.',
   },
-  {
-    type: 'sz_g2d_draw_hearts',
-    hidden: true,
-    placement: 'command',
-    message0: 'Desenhar %1 vidas (corações) em x %2 y %3 tamanho %4 cor %5',
-    args0: [
-      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
-      { type: 'input_value', name: 'X', check: 'JSValue' },
-      { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
-      { type: 'field_colour_sz', name: 'COLOR', colour: '#ff5d5d' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Desenha uma fileira de corações (ligue a "quantidade" à variável de vidas).',
-  },
+
   {
     type: 'sz_g2d_draw_bar',
     placement: 'command',
@@ -366,16 +349,17 @@ export const gameTwoDGroupAndHudBlocks = [
   {
     type: 'sz_g2d_set_scene',
     placement: 'command',
-    message0: 'Ir para a tela %1',
+    message0: 'Mudar o estado do jogo para %1',
     args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'inicio', kind: 'gamestate' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Muda a tela atual do jogo. Escolha uma existente ou invente um nome (ex.: ganhou1).',
+    tooltip:
+      'Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela.',
   },
   {
     type: 'sz_g2d_scene_is',
-    message0: 'a tela atual é %1 ?',
+    message0: 'o estado do jogo é %1 ?',
     args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'inicio', kind: 'gamestate' }],
     output: 'JSValue',
     colour: C,
@@ -757,26 +741,7 @@ export const gameTwoDGroupAndHudBlocks = [
     tooltip:
       'Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite.',
   },
-  {
-    type: 'sz_g2d_play_shoot',
-    placement: 'command',
-    message0: 'Tocar som de tiro',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um "pew" curto (som sintetizado, sem precisar de arquivo).',
-  },
-  {
-    type: 'sz_g2d_play_explosion',
-    placement: 'command',
-    message0: 'Tocar som de explosão',
-    args0: [],
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip: 'Um "bum" de ruído que decai (som sintetizado, sem precisar de arquivo).',
-  },
+
   {
     type: 'sz_g2d_on_sprite_group_overlap',
     placement: 'loop-command',

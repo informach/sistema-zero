@@ -195,7 +195,7 @@ describe('Members HTTP — autoria: cursos', () => {
     const block = await publishBlock(app, lesson.id, {
       content: {
         kind: 'studio',
-        initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+        initialProject: { formatVersion: 2, name: 'Jogo', files: { 'index.html': '' } },
         showcase: { enabled: true, title: 'Meu jogo' },
       },
     })
@@ -339,7 +339,7 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
         await publishBlock(app, lesson.id, {
           content: {
             kind: 'studio',
-            initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+            initialProject: { formatVersion: 2, name: 'Jogo', files: { 'index.html': '' } },
             showcase: { enabled: true, title: 'Meu jogo' },
           },
         }),
@@ -566,6 +566,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)
     const project = {
+      formatVersion: 2,
       name: 'Projeto Pro',
       files: { 'index.html': '', 'style.css': '', 'script.js': '' },
       kind: 'pro',
@@ -582,10 +583,26 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const valid = await publishBlock(app, lesson.id, {
       content: {
         kind: 'studio',
-        initialProject: { ...project, proMeta: { templateId: 'react-ts', devScript: 'dev' } },
+        initialProject: {
+          ...project,
+          proMeta: { templateId: 'react-ts', devScript: 'dev' },
+        },
       },
     })
     expect(valid.status).toBe(200)
+  })
+
+  test('autoria recusa projeto inicial de aba antiga sem publicar conteúdo', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedTree(app)
+    const result = await publishBlock(app, lesson.id, {
+      content: {
+        kind: 'studio',
+        initialProject: { formatVersion: 1, name: 'Original', files: { 'index.html': '' } },
+      },
+    })
+    expect(result.status).toBe(400)
+    expect((await readJson(result)).error.message).toContain('Studio atualizado')
   })
 
   test('bloco embed v3 (só html) e bloco ebook → 201; embed sem html → 400', async () => {

@@ -5,13 +5,13 @@ import {
   BEHAVIOR_AREAS_STATE_KEY,
   BEHAVIOR_AREAS_STATE_VERSION,
 } from '../blockly/blocksStateVersion'
-import { normalizeBlocksStateToFrames } from '../blockly/normalizeFrames'
 import { invadersNaMaoExample } from '../examples/core'
 import {
   MAX_BLOCKSTATE_BLOCKS,
   sanitizeImportedBlocksState,
   sanitizeProjectForHost,
 } from './projectStore'
+import { prepareProjectForHost } from './projectValidation'
 
 /**
  * Regressão do bug "código no Monaco mas nenhum bloco": o sanitizador do projeto
@@ -37,11 +37,11 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     }
 
     expect(sanitizeImportedBlocksState(current, [])).toEqual(current)
-    expect(sanitizeImportedBlocksState(previous, [])).toEqual(previous)
+    expect(sanitizeImportedBlocksState(previous, [])).toBeNull()
     expect(sanitizeImportedBlocksState(future, [])).toBeNull()
   })
 
-  it('mantém a versão 2 no host até a migração preservar layout e IDs na versão 3', () => {
+  it('converte a versão antiga antes do host, preservando layout e IDs', async () => {
     const previous = {
       [BEHAVIOR_AREAS_STATE_KEY]: 2,
       blocks: {
@@ -61,7 +61,7 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
         ],
       },
     }
-    const project = sanitizeProjectForHost({
+    const project = await prepareProjectForHost({
       id: 'projeto-v2',
       name: 'Projeto versão 2',
       files: { 'index.html': '', 'style.css': '', 'script.js': '' },
@@ -70,8 +70,8 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
       installedExtensions: [],
     })
 
-    expect(project?.blocksState).toEqual(previous)
-    const migrated = normalizeBlocksStateToFrames(project?.blocksState) as {
+    expect(project?.blocksState).not.toEqual(previous)
+    const migrated = project?.blocksState as {
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ id?: string; x?: number; y?: number }> }
     }
@@ -250,7 +250,7 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     expect(sanitizeImportedBlocksState(state, [])).toBeNull()
   })
 
-  it('descarta blocksState grande ao rehidratar projeto salvo, mantendo import externo rígido', () => {
+  it('recusa o documento quando a partição de blocos excede o limite', () => {
     const blocks = Array.from({ length: MAX_BLOCKSTATE_BLOCKS + 1 }, (_, index) => ({
       type: 'sz_js_console_log_text',
       id: `log_${index}`,
@@ -262,20 +262,27 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
       'blocksState excede o tamanho ou a complexidade máxima',
     )
 
-    const project = sanitizeProjectForHost({
-      id: 'local-big-blocks',
-      name: 'Projeto grande',
-      files: {
-        'index.html': '<h1>ok</h1>',
-        'style.css': '',
-        'script.js': '',
-      },
-      ir: { html: [], css: [], js: [], extensions: [] },
-      blocksState,
-      installedExtensions: [],
-    })
-
-    expect(project?.blocksState).toBeNull()
+    expect(() =>
+      sanitizeProjectForHost({
+        formatVersion: 2,
+        id: 'local-big-blocks',
+        name: 'Projeto grande',
+        files: {
+          'index.html': '<h1>ok</h1>',
+          'style.css': '',
+          'script.js': '',
+        },
+        ir: {
+          version: 2,
+          html: [],
+          css: [],
+          behavior: { start: [], events: [], loops: [] },
+          extensions: [],
+        },
+        blocksState,
+        installedExtensions: [],
+      }),
+    ).toThrow('blocksState excede')
   })
 })
 
@@ -288,61 +295,40 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
  * mas o aviso existe para dizer QUAL checagem da allowlist tropeçou, e aqui nenhuma
  * tropeçou. Ele disparava ao abrir todo projeto salvo com o canvas limpo.
  */
-describe('canvas vazio não é estado rejeitado', () => {
-  const projetoCom = (blocksState: unknown) => ({
-    id: 'projeto-canvas-vazio',
+describe('canvas vazio e recusa de corrupção', () => {
+  const projectWith = (blocksState: unknown) => ({
+    formatVersion: 2,
+    id: 'canvas-vazio',
     name: 'Projeto',
     files: { 'index.html': '', 'style.css': '', 'script.js': '' },
-    ir: { html: [], css: [], js: [], extensions: [] },
-    blocksState,
+    ir: {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [] },
+      extensions: [],
+    },
     installedExtensions: [],
+    blocksState,
   })
-
-  function avisosAoSanear(blocksState: unknown): string[] {
-    const avisos: string[] = []
-    const original = console.warn
-    console.warn = (...args: unknown[]) => {
-      avisos.push(String(args[0] ?? ''))
-    }
-    try {
-      sanitizeProjectForHost(projetoCom(blocksState))
-    } finally {
-      console.warn = original
-    }
-    return avisos.filter((linha) => linha.includes('blocksState rejeitado'))
-  }
-
-  it('o estado de um workspace vazio não gera aviso (mas segue virando null)', () => {
-    const salvoVazio = { [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION }
-
-    expect(avisosAoSanear(salvoVazio)).toEqual([])
-    expect(avisosAoSanear({})).toEqual([])
-    // O `null` é o comportamento de sempre: sem layout salvo, o modo reconstrói do IR.
-    expect(sanitizeProjectForHost(projetoCom(salvoVazio))?.blocksState).toBeNull()
+  it('aceita o workspace vazio sem fabricar blocos', () => {
+    expect(sanitizeProjectForHost(projectWith({}))?.blocksState).toBeNull()
+    expect(
+      sanitizeProjectForHost(
+        projectWith({ [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION }),
+      )?.blocksState,
+    ).toBeNull()
   })
-
-  it('🚨 estado REALMENTE quebrado continua avisando (o anti-vácuo do teste acima)', () => {
-    // Sem esta metade, remover o aviso por inteiro passaria no teste de cima.
-    const chaveEstranha = { blocks: { languageVersion: 0, blocks: [] }, lixo: 1 }
-    // A seção EXISTE e está podre: é o caso que o aviso foi escrito para revelar, e
-    // sai com a MESMA frase que assustou no Console ("ausente ou não-objeto").
-    const secaoPodre = { blocks: 'nao sou objeto' }
-
-    expect(avisosAoSanear(chaveEstranha)).toHaveLength(1)
-    expect(avisosAoSanear(chaveEstranha)[0]).toContain('lixo')
-    expect(avisosAoSanear(secaoPodre)).toHaveLength(1)
-    expect(avisosAoSanear(secaoPodre)[0]).toContain('ausente ou não-objeto')
-  })
-
-  it('não confunde variables inválidas ou não-vazias com um canvas vazio', () => {
-    const variaveisCorrompidas = { variables: 'corrompido' }
-    const variaveisPresentes = {
-      variables: [{ id: 'score-id', name: 'pontuação', type: '' }],
-    }
-    const versaoDesconhecida = { [BEHAVIOR_AREAS_STATE_KEY]: 999 }
-
-    expect(avisosAoSanear(variaveisCorrompidas)).toHaveLength(1)
-    expect(avisosAoSanear(variaveisPresentes)).toHaveLength(1)
-    expect(avisosAoSanear(versaoDesconhecida)).toHaveLength(1)
+  it('recusa estrutura corrompida sem substituir o layout', () => {
+    for (const blocksState of [
+      { blocks: { languageVersion: 0, blocks: [] }, lixo: 1 },
+      { blocks: 'inválido' },
+      { variables: 'corrompido' },
+      { variables: [{ id: 'score-id', name: 'pontuação', type: '' }] },
+      { [BEHAVIOR_AREAS_STATE_KEY]: 999 },
+    ])
+      expect(() => sanitizeProjectForHost(projectWith(blocksState))).toThrow(
+        'Nenhuma cópia foi gravada',
+      )
   })
 })

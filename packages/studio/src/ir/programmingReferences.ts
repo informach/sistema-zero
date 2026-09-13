@@ -71,9 +71,7 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:createSprite': 'varName',
   'g2d:createImageSprite': 'varName',
   'g2d:createShapeSprite': 'varName',
-  'g2d:score': 'varName',
-  'g2d:collides': 'varName',
-  'g2d:circleCollides': 'varName',
+
   'g2d:createGroup': 'varName',
   'g2d:allEnemiesGroup': 'varName',
   'g2d:loadSpritesheet': 'varName',
@@ -1291,9 +1289,10 @@ export interface ProgrammingReferenceOptions {
 function createInitialProgrammingSymbols(
   options: ProgrammingReferenceOptions = {},
 ): ProgrammingSymbols {
+  const canvasContexts = new Set(options.providedCanvasContexts ?? [])
   return {
-    variables: new Set(IMPLICIT_VARIABLES),
-    canvasContexts: new Set(options.providedCanvasContexts ?? []),
+    variables: new Set([...IMPLICIT_VARIABLES, ...canvasContexts]),
+    canvasContexts,
     canvasIds: new Set(options.canvasIds ?? []),
     canvas3d: emptyCanvas3DSymbols(),
     canvas3dPhysicsBodies: new Map(),

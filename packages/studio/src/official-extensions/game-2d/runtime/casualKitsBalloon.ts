@@ -63,6 +63,7 @@ export const gameTwoDCasualKitsBalloonRuntime = `  // ==========================
   // gasto). Chame enquanto a criança quiser subir (ex.: se o mouse estiver
   // segurado). Sem combustível, o fogo não acende.
   function balloonFire(balloon, force) {
+    if (_isDestroyedSprite(balloon)) return;
     if (!balloon) return;
     if (balloon._fuel == null) { balloon._fuel = 100; balloon._fire = 0; }
     var h = _kitStageH();
@@ -81,6 +82,7 @@ export const gameTwoDCasualKitsBalloonRuntime = `  // ==========================
   // VOAR: a gravidade suave puxa o balão para baixo quando o fogo não está
   // aceso, e ele pousa no chão (nunca afunda).
   function balloonFly(balloon) {
+    if (_isDestroyedSprite(balloon)) return;
     if (!balloon) return;
     var h = _kitStageH();
     var dt = _kitDt(balloon, '_lastFly');
@@ -188,6 +190,7 @@ export const gameTwoDCasualKitsBalloonRuntime = `  // ==========================
   // contam, as árvores reciclam e a batida é conferida com o RETÂNGULO do
   // sprite (dispara o evento a cada novo toque; a criança decide o que fazer).
   function balloonPathScroll(path, balloon, speed) {
+    if (_isDestroyedSprite(balloon)) return;
     if (!path) return;
     _balloonPathSync(path);
     var w = path.w, h = path.h;
@@ -240,6 +243,7 @@ export const gameTwoDCasualKitsBalloonRuntime = `  // ==========================
     return Math.round(balloon._fuel == null ? 100 : balloon._fuel);
   }
   function balloonLandedOut(balloon) {
+    if (_isDestroyedSprite(balloon)) return false;
     if (!balloon) return false;
     var groundY = _kitGroundY(_kitStageH());
     return (balloon._fuel != null && balloon._fuel <= 0) && (balloon.y + balloon.h) >= groundY - 1;

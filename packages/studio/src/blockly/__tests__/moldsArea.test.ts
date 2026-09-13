@@ -15,13 +15,13 @@ import {
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { ESSENTIAL_2D_ALLOW_BLOCKS } from '../../career'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
+import { migrateBlocksState as normalizeBlocksStateToFrames } from '../../testing/migrateBlocksState'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from '../blockCatalog'
 import { getBlockContract } from '../blockContracts'
 import { registerExtensionBlocks } from '../blocks'
 import { FRAME_BLOCKS } from '../blocks/frames'
 import { BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
 import { buildIRFromWorkspace } from '../buildIR'
-import { normalizeBlocksStateToFrames } from '../normalizeFrames'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildCoreToolbox } from '../toolbox'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
@@ -473,20 +473,20 @@ describe('🧩 Meus moldes — a área de definições', () => {
     })
 
     it('⭐ NÃO sobe um declarador que não cabe em Meus moldes', () => {
-      // "Criar pontuação" também declara um nome, mas é criador de recurso
+      // "Carregar folha de sprites" também declara um nome, mas é criador de recurso
       // concreto e só existe em Ao iniciar. Subi-lo geraria um estado que o
       // Blockly recusa — o projeto deixaria de abrir.
       const resultado = loadMigrated(
         savedState({
           block: {
-            type: 'sz_g2d_score',
-            fields: { NAME: 'pontos' },
+            type: 'sz_g2d_load_spritesheet',
+            fields: { NAME: 'andar', IMAGE: 'andar.png' },
             next: { block: { type: 'sz_g2d_define_shape', fields: { NAME: 'heroi' } } },
           },
         }),
       )
       expect(resultado.molds).toEqual(['g2d:defineShape'])
-      expect(resultado.start).toEqual(['g2d:score'])
+      expect(resultado.start).toEqual(['g2d:loadSpritesheet'])
       expect(resultado.soltos).toEqual([])
     })
 

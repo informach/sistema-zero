@@ -1,0 +1,542 @@
+/** Ordem editorial da paleta. Compartilhada pelo Estúdio, busca, tutor e catálogo do professor. */
+export const GAME_TWO_D_PALETTE = [
+  {
+    name: 'Jogo e telas',
+    sections: [
+      {
+        name: 'Preparar a área do jogo',
+        types: [
+          'sz_g2d_setup_stage',
+          'sz_g2d_setup_full',
+          'sz_g2d_fit_screen',
+          'sz_g2d_stage_border',
+          'sz_g2d_stage_width',
+          'sz_g2d_stage_height',
+        ],
+      },
+      {
+        name: 'Fonte do jogo',
+        types: ['sz_g2d_use_font'],
+      },
+      {
+        name: 'Telas e partida',
+        types: [
+          'sz_g2d_set_stage_description',
+          'sz_g2d_set_scene',
+          'sz_g2d_scene_is',
+          'sz_g2d_show_screen',
+          'sz_g2d_show_image_screen',
+          'sz_g2d_game_over',
+          'sz_g2d_pause',
+          'sz_g2d_resume',
+          'sz_g2d_is_paused',
+          'sz_g2d_restart',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Sprites',
+    sections: [
+      {
+        name: 'Criar e trocar aparência',
+        types: [
+          'sz_g2d_create_sprite',
+          'sz_g2d_create_image_sprite',
+          'sz_g2d_draw_sprite',
+          'sz_g2d_set_image',
+          'sz_g2d_create_shape_sprite',
+          'sz_g2d_set_shape',
+          'sz_g2d_destroy_sprite',
+        ],
+      },
+      {
+        name: 'Texto e números',
+        types: [
+          'sz_g2d_create_text_sprite',
+          'sz_g2d_set_sprite_text',
+          'sz_g2d_sprite_text',
+          'sz_g2d_set_text_style',
+          'sz_g2d_set_text_box',
+        ],
+      },
+      {
+        name: 'Dados',
+        types: ['sz_g2d_set_sprite_data', 'sz_g2d_sprite_data'],
+      },
+      {
+        name: 'Aparência',
+        types: ['sz_g2d_flip_sprite', 'sz_g2d_set_opacity'],
+      },
+      {
+        name: 'Animação',
+        types: [
+          'sz_g2d_load_spritesheet',
+          'sz_g2d_animate_sprite',
+          'sz_g2d_animate_once',
+          'sz_g2d_anim_ended',
+          'sz_g2d_set_state_anim',
+          'sz_g2d_auto_animate',
+          'sz_g2d_draw_frame',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Movimento',
+    sections: [
+      {
+        name: 'Posição e tamanho',
+        types: [
+          'sz_g2d_set_position',
+          'sz_g2d_sprite_x',
+          'sz_g2d_sprite_y',
+          'sz_g2d_sprite_w',
+          'sz_g2d_sprite_h',
+          'sz_g2d_center_x',
+          'sz_g2d_center_y',
+          'sz_g2d_set_size',
+          'sz_g2d_scale_sprite',
+        ],
+      },
+      {
+        name: 'Plataforma',
+        types: [
+          'sz_g2d_platformer',
+          'sz_g2d_platformer_terrain',
+          'sz_g2d_classic_platformer',
+          'sz_g2d_jump_on_ground',
+          'sz_g2d_jump_terrain',
+        ],
+      },
+      {
+        name: 'Movimentos prontos',
+        types: [
+          'sz_g2d_top_down',
+          'sz_g2d_fly_free',
+          'sz_g2d_flap',
+          'sz_g2d_swim',
+          'sz_g2d_arrows_x',
+          'sz_g2d_arrows_y',
+          'sz_g2d_follow_pointer',
+          'sz_g2d_drag_x',
+          'sz_g2d_steer_thrust',
+        ],
+      },
+      {
+        name: 'Bordas e rebatidas',
+        types: [
+          'sz_g2d_clamp_to_screen',
+          'sz_g2d_bounce_edges',
+          'sz_g2d_bounce_edge_pair',
+          'sz_g2d_paddle_bounce',
+          'sz_g2d_wrap_edges',
+        ],
+      },
+      {
+        name: 'Velocidade e gravidade',
+        types: [
+          'sz_g2d_set_velocity',
+          'sz_g2d_set_gravity',
+          'sz_g2d_apply_gravity',
+          'sz_g2d_apply_velocity',
+          'sz_g2d_sprite_vx',
+          'sz_g2d_sprite_vy',
+          'sz_g2d_sprite_speed',
+          'sz_g2d_is_moving',
+          'sz_g2d_is_moving_h',
+          'sz_g2d_is_moving_v',
+        ],
+      },
+      {
+        name: 'Direção e distância',
+        types: [
+          'sz_g2d_rotate_sprite',
+          'sz_g2d_point_sprite',
+          'sz_g2d_thrust',
+          'sz_g2d_apply_friction',
+          'sz_g2d_sprite_angle',
+          'sz_g2d_aim_at',
+          'sz_g2d_move_toward',
+          'sz_g2d_angle_to',
+          'sz_g2d_distance',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Controles',
+    sections: [
+      {
+        name: 'Teclado, ações e toque',
+        types: [
+          'sz_g2d_on_key',
+          'sz_g2d_on_any_input',
+          'sz_g2d_on_pointer',
+          'sz_g2d_on_sprite_click',
+          'sz_g2d_on_group_click',
+          'sz_g2d_on_jump',
+          'sz_g2d_key_down',
+          'sz_g2d_pointer_down',
+          'sz_g2d_enable_classic_controls',
+          'sz_g2d_action_down',
+          'sz_g2d_action_pressed',
+          'sz_g2d_on_action_pressed',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Colisões',
+    sections: [
+      {
+        name: 'Encostar e bloquear',
+        types: [
+          'sz_g2d_touches',
+          'sz_g2d_circle_touches',
+          'sz_g2d_on_overlap',
+          'sz_g2d_collide_group',
+          'sz_g2d_collide_sprite',
+          'sz_g2d_collide_platform',
+          'sz_g2d_collide_platform_group',
+          'sz_g2d_on_group_overlap',
+          'sz_g2d_on_sprite_group_overlap',
+          'sz_g2d_for_each_tile_contact',
+          'sz_g2d_tile_contact_is',
+          'sz_g2d_set_tile_at_contact',
+        ],
+      },
+      {
+        name: 'Área de contato',
+        types: ['sz_g2d_set_hitbox_scale', 'sz_g2d_draw_hitbox'],
+      },
+    ],
+  },
+  {
+    name: 'Grupos',
+    sections: [
+      {
+        name: 'Criar e percorrer',
+        types: [
+          'sz_g2d_create_group',
+          'sz_g2d_spawn_in_group',
+          'sz_g2d_spawn_text_in_group',
+          'sz_g2d_spawn_image_in_group',
+          'sz_g2d_spawn_bullet',
+          'sz_g2d_for_each_in_group',
+          'sz_g2d_count_group',
+        ],
+      },
+      {
+        name: 'Movimento',
+        types: ['sz_g2d_update_group', 'sz_g2d_apply_gravity_group'],
+      },
+      {
+        name: 'Desenho e ordem',
+        types: [
+          'sz_g2d_draw_group',
+          'sz_g2d_draw_group_by_y',
+          'sz_g2d_bring_to_front',
+          'sz_g2d_send_to_back',
+        ],
+      },
+      {
+        name: 'Participação e limpeza',
+        types: [
+          'sz_g2d_clear_group',
+          'sz_g2d_prune_offscreen',
+          'sz_g2d_add_to_group',
+          'sz_g2d_remove_from_group',
+          'sz_g2d_prune_old',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Vida e placar',
+    sections: [
+      {
+        name: 'Vida',
+        types: [
+          'sz_g2d_set_health',
+          'sz_g2d_change_health',
+          'sz_g2d_damage_sprite',
+          'sz_g2d_get_health',
+          'sz_g2d_get_max_health',
+          'sz_g2d_has_health',
+          'sz_g2d_health_depleted',
+          'sz_g2d_is_invincible',
+          'sz_g2d_draw_sprite_health',
+        ],
+      },
+      {
+        name: 'Indicadores e texto na tela',
+        types: [
+          'sz_g2d_draw_score',
+          'sz_g2d_draw_label',
+          'sz_g2d_draw_pixel_text',
+          'sz_g2d_draw_pixel_score',
+          'sz_g2d_draw_bar',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Som',
+    sections: [
+      {
+        name: 'Efeitos prontos',
+        types: ['sz_g2d_play_fx'],
+      },
+      {
+        name: 'Músicas',
+        types: ['sz_g2d_play_music', 'sz_g2d_stop_track'],
+      },
+      {
+        name: 'Sons de arquivo',
+        types: [
+          'sz_g2d_load_sound',
+          'sz_g2d_play_clip',
+          'sz_g2d_stop_clip',
+          'sz_g2d_play_track',
+          'sz_g2d_set_volume',
+        ],
+      },
+      {
+        name: 'Notas e tons',
+        types: ['sz_g2d_play_note', 'sz_g2d_play_sound'],
+      },
+    ],
+  },
+  {
+    name: 'Desenho e efeitos',
+    sections: [
+      {
+        name: 'Efeitos',
+        types: [
+          'sz_g2d_clear',
+          'sz_g2d_blink',
+          'sz_g2d_flash',
+          'sz_g2d_shake',
+          'sz_g2d_emit_particles',
+          'sz_g2d_draw_particles',
+          'sz_g2d_draw_fade',
+        ],
+      },
+      {
+        name: 'Inspecionar',
+        types: ['sz_g2d_show_fps'],
+      },
+      {
+        name: 'Figuras',
+        types: [
+          'sz_g2d_define_shape',
+          'sz_g2d_paint_rect',
+          'sz_g2d_paint_circle',
+          'sz_g2d_paint_ellipse',
+          'sz_g2d_paint_triangle',
+          'sz_g2d_paint_line',
+          'sz_g2d_paint_shape_recipe',
+          'sz_g2d_shape_w',
+          'sz_g2d_shape_h',
+        ],
+      },
+      {
+        name: 'Partículas',
+        types: ['sz_g2d_explode'],
+      },
+    ],
+  },
+  {
+    name: 'Tempo',
+    sections: [
+      {
+        name: 'Quadros e intervalos',
+        types: [
+          'sz_g2d_update_each_frame',
+          'sz_g2d_every_frames',
+          'sz_g2d_every_seconds',
+          'sz_g2d_after_seconds',
+        ],
+      },
+      {
+        name: 'Recarga de ações',
+        types: ['sz_g2d_with_cooldown', 'sz_g2d_cooldown_ready'],
+      },
+    ],
+  },
+  {
+    name: 'Sorteios',
+    sections: [
+      {
+        name: 'Números e posições',
+        types: [
+          'sz_g2d_random_between',
+          'sz_g2d_random_chance',
+          'sz_g2d_random_x',
+          'sz_g2d_random_y',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Cenários',
+    sections: [
+      {
+        name: 'Fundos',
+        types: ['sz_g2d_set_backdrop', 'sz_g2d_draw_backdrop', 'sz_g2d_starfield', 'sz_g2d_forest'],
+      },
+      {
+        name: 'Mapas',
+        types: [
+          'sz_g2d_create_tilemap_from_asset',
+          'sz_g2d_create_tilemap',
+          'sz_g2d_create_vector_tileset',
+          'sz_g2d_define_vector_tile',
+          'sz_g2d_create_vector_tilemap',
+          'sz_g2d_fit_tilemap_to_stage',
+          'sz_g2d_place_tilemap',
+          'sz_g2d_draw_prepared_tilemap',
+          'sz_g2d_tilemap_collide',
+          'sz_g2d_break_tile_at',
+          'sz_g2d_set_tile',
+          'sz_g2d_tile_at',
+        ],
+      },
+      {
+        name: 'Mundos e câmera',
+        types: [
+          'sz_g2d_create_world',
+          'sz_g2d_create_world_from_tilemap',
+          'sz_g2d_world_add_tilemap',
+          'sz_g2d_world_add_solid_group',
+          'sz_g2d_world_add_platform_group',
+          'sz_g2d_world_add_enemy_type',
+          'sz_g2d_world_set_edges',
+          'sz_g2d_world_camera',
+          'sz_g2d_world_collide',
+          'sz_g2d_world_follow_camera',
+          'sz_g2d_world_draw',
+          'sz_g2d_camera_x',
+          'sz_g2d_camera_y',
+        ],
+      },
+      {
+        name: 'Fases e campanha',
+        types: [
+          'sz_g2d_create_level',
+          'sz_g2d_load_vector_campaign_level',
+          'sz_g2d_campaign_value',
+          'sz_g2d_enter_level',
+          'sz_g2d_level_reset_group',
+          'sz_g2d_restart_level',
+          'sz_g2d_on_level_enter',
+          'sz_g2d_level_is_active',
+          'sz_g2d_current_level_collide',
+          'sz_g2d_current_level_follow_camera',
+          'sz_g2d_current_level_draw',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Inimigos',
+    sections: [
+      {
+        name: 'Tipos e comportamentos',
+        types: [
+          'sz_g2d_define_enemy_type',
+          'sz_g2d_define_enemy_smart',
+          'sz_g2d_spawn_enemy',
+          'sz_g2d_update_enemy_type',
+          'sz_g2d_draw_enemy_type',
+          'sz_g2d_enemy_add_behavior',
+          'sz_g2d_enemy_type_param',
+          'sz_g2d_enemy_state_anim',
+          'sz_g2d_on_enemy_defeated',
+          'sz_g2d_on_enemy_hurt',
+          'sz_g2d_on_enemy_shot_hit',
+          'sz_g2d_on_enemy_beam_hit',
+          'sz_g2d_hurt_by_enemy',
+          'sz_g2d_stomp_enemy',
+          'sz_g2d_set_enemy_stomp_mode',
+          'sz_g2d_update_enemy_shells',
+          'sz_g2d_enemy_damage',
+          'sz_g2d_all_enemies_group',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Kits prontos',
+    sections: [
+      {
+        name: 'Espaço',
+        types: [
+          'sz_g2d_create_ship',
+          'sz_g2d_spawn_asteroid',
+          'sz_g2d_spawn_asteroid_edge',
+          'sz_g2d_shoot_from',
+        ],
+      },
+      {
+        name: 'Dino',
+        types: [
+          'sz_g2d_create_dino',
+          'sz_g2d_control_dino',
+          'sz_g2d_spawn_obstacle',
+          'sz_g2d_spawn_egg',
+        ],
+      },
+      {
+        name: 'Gorilas',
+        types: [
+          'sz_g2d_create_city',
+          'sz_g2d_draw_city',
+          'sz_g2d_place_thrower',
+          'sz_g2d_new_wind',
+          'sz_g2d_draw_wind',
+          'sz_g2d_aim_drag',
+          'sz_g2d_aim_released',
+          'sz_g2d_throw_banana',
+          'sz_g2d_update_banana',
+          'sz_g2d_draw_banana',
+          'sz_g2d_banana_hit_thrower',
+          'sz_g2d_banana_hit_city',
+          'sz_g2d_computer_turn',
+          'sz_g2d_draw_aim_readout',
+        ],
+      },
+      {
+        name: 'Equilibrista',
+        types: [
+          'sz_g2d_stickhero_sprite',
+          'sz_g2d_stickpath_create',
+          'sz_g2d_stickpath_scenery',
+          'sz_g2d_stickpath_grow',
+          'sz_g2d_stickpath_drop',
+          'sz_g2d_stickpath_walk',
+          'sz_g2d_stickpath_draw',
+          'sz_g2d_stickpath_on_cross',
+          'sz_g2d_stickpath_on_perfect',
+          'sz_g2d_stickpath_fell',
+        ],
+      },
+      {
+        name: 'Balão',
+        types: [
+          'sz_g2d_balloon_sprite',
+          'sz_g2d_balloonpath_create',
+          'sz_g2d_balloonpath_scenery',
+          'sz_g2d_balloon_fire',
+          'sz_g2d_balloon_fly',
+          'sz_g2d_balloonpath_scroll',
+          'sz_g2d_balloonpath_on_tree',
+          'sz_g2d_balloonpath_meters',
+          'sz_g2d_balloon_fuel_left',
+          'sz_g2d_balloon_landed_out',
+        ],
+      },
+    ],
+  },
+] as const

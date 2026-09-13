@@ -10,11 +10,12 @@
       "entry": "A sua nave está no jogo, com o motor aceso. Agora olha em volta dela: essas pedras cinzas continuam ",
       "exit": "cria os asteroides por um que aceita imagem. E o terceiro é fazer eles girarem. Vamos pro primeiro.\"",
       "narration": "A sua nave está no jogo, com o motor aceso. Agora olha em volta dela: essas pedras cinzas continuam sendo as do kit, as mesmas de todo mundo. E o seu asteroide está aqui, na sua galeria, girando, esperando pra entrar. Hoje ele entra. E o caminho dele é diferente do caminho da nave, por um motivo simples: a nave é uma só, e ela fica no jogo do começo ao fim. Os asteroides não. Eles vão nascendo enquanto você joga, um atrás do outro, sem parar. Por causa disso, o trabalho de hoje tem três passos. Começa preparando a folha do seu asteroide. Depois vem a parte principal, que é trocar o bloco que cria os asteroides por um que aceita imagem. E o terceiro é fazer eles girarem. Vamos pro primeiro.\"",
-      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
       "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
       "newNarration": "A nave já usa a sua arte. Hoje vamos trocar os asteroides. A nave foi criada uma vez; as pedras nascem ao longo da partida. Por isso vamos preparar a folha no início e animar cada pedra logo depois que ela nascer.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-folha-asteroide",
@@ -23,11 +24,12 @@
       "entry": "Pra começar, abre o seu jogo: menu da esquerda, Estúdio, e clica no cartão do projeto do jogo da nav",
       "exit": " do próximo passo. Os asteroides que estão caindo aí ainda são os cinzas. Primeiro passo concluído.\"",
       "narration": "Pra começar, abre o seu jogo: menu da esquerda, Estúdio, e clica no cartão do projeto do jogo da nave. O primeiro passo de hoje é curtinho, e ele é só uma preparação. Vai na coluna da esquerda, clica no Jogo 2D, clica na Animação e pega de novo o Carregar folha de quadros, o mesmo bloco que você usou na aula passada. A gente usa ele uma vez pra cada folha, uma pra nave e uma pro asteroide. Arrasta e encaixa entre o Animar sprite e o Criar grupo de sprites tiros. São quatro campos de novo, e você já sabe como cada um funciona. No nome da folha, clica e escreve folha traço asteroide, pela regra da aula passada: o nome asteroide vai ser de outra coisa daqui a pouco. No campo da imagem, clica e pega o asteroide na gradezinha, que é o seu outro desenho. E agora os dois campos do tamanho do quadro, que dessa vez você mexe: eles vêm com 32, e você clica em cada um e escreve 64. Repara que aqui o número é outro. Na nave era 32, e aqui é 64, porque no Pinta você desenhou o asteroide num quadro maior, no Médio do vetor. Cada folha tem o tamanho que ela tem, e o bloco precisa saber o tamanho certo de cada uma. Agora olha a área do jogo: não mudou nada, e é isso mesmo que era pra acontecer. Esse bloco só deixou a folha do asteroide pronta pra ser usada, e quem vai usar ela é um bloco do próximo passo. Os asteroides que estão caindo aí ainda são os cinzas. Primeiro passo concluído.\"",
-      "edit": "Manter todos os campos, destacando a troca de ambos os 32 por 64. Não usar tamanho visível 40 como tamanho do quadro.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter todos os campos, destacando a troca de ambos os 32 por 64. Não usar tamanho visível 40 como tamanho do quadro.",
       "visual": "Duas folhas nomeadas, tamanhos 32 e 64. Mostrar a área do jogo sem troca automática.",
       "newNarration": "Abra o mesmo jogo. No Ao iniciar, coloque Carregar folha de quadros depois da animação da nave e antes do grupo tiros. Nome folha-asteroide, imagem asteroide, quadros 64 × 64. As pedras do kit ainda não mudam.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-tempo-demo",
@@ -36,11 +38,12 @@
       "entry": "Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A c",
       "exit": "o asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.",
       "narration": "Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A cada quadro do jogo. O quadro desse nome conta o tempo do jogo, ele não é o desenho da sua animação: são duas coisas diferentes com o mesmo nome. Dentro dele tem o Se a tela atual é jogando, e dentro desse tem um bloco só, o que começa com No grupo asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.",
-      "edit": "Complementar o recorte com uma linha do tempo; não converter 40 quadros em duração exata em segundos.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Complementar o recorte com uma linha do tempo; não converter 40 quadros em duração exata em segundos.",
       "visual": "Três trilhas: Ao iniciar prepara folha; relógio cria pedra A, depois B; cada pedra alterna quadros 0/1. Mesmas cores/rótulos para cada objeto, sem controle do aluno.",
       "newNarration": "Este relógio conta atualizações do jogo. Os quadros do Pinta são desenhos da animação. Veja a ordem: quando o relógio dispara durante a partida, nasce uma pedra e logo ela recebe a animação. A folha já foi preparada no início.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-novo-criador",
@@ -49,11 +52,12 @@
       "entry": "Olha os campos dele: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. E isso não",
       "exit": "ito que você fez na aula passada. Olha a área do jogo de novo: só os seus! Segundo passo concluído.\"",
       "narration": "Olha os campos dele: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. E isso não é erro seu. Esse bloco veio do Kit espaço, o mesmo kit de onde veio aquela nave que você apagou, e ele desenha a pedra cinza dele sozinho. Ele nunca teve onde pôr um desenho. Então a gente troca ele por outro, igual você fez com a nave. Só que aqui a ordem é ao contrário: primeiro monta o novo, depois apaga o velho. É que dentro deste bloco velho tem uma peça que você vai aproveitar, e daqui a pouco você vê qual. Vai na coluna da esquerda, clica no Jogo 2D e clica na subcategoria Muitos. Desce a lista até um bloco comprido que começa com No grupo criar um sprite chamado. O que você quer é o mais comprido de todos: ele começa com No grupo, depois vem criar um sprite chamado, e no fim tem com imagem, vx e vy. É por esse com imagem que você reconhece ele. Arrasta ele pra dentro do Se a tela atual é jogando, logo embaixo do bloco velho. Os dois ficam juntos ali por um tempinho, e é de propósito. Esse bloco tem nove campos, e a gente passa por todos, um de cada vez. Começa pelo grupo, que vem escrito inimigos. Esse é de escolher: clica nele e, na listinha dos grupos do seu jogo, clica no asteroides. Logo em seguida vem o nome do sprite, e esse nasce vazio. Clica nele e escreve asteroide. Ele pode até ficar vazio, mas a gente vai precisar dele no último passo pra mandar nesse asteroide que acabou de nascer. Aí vem o x, e ele é o único que você não digita nem escolhe. Olha o bloco velho: tem uma pecinha encaixada no x dele, escrita um x aleatório na tela, e é ela que faz cada pedra nascer num lugar diferente da tela. Então pega essa pecinha com o mouse, arrasta ela pra fora do bloco velho e solta por cima do campo x do bloco novo. Arrasta, não copia. Se você copiar, fica uma em cada bloco, e a gente quer ela só no novo. Repara que o x do bloco velho ficou sem a pecinha. Ele vai continuar criando pedras, só que todas no mesmo lugar agora. Fica assim mesmo, que ele já vai embora. No campo do y, que vem depois, clica e escreve menos 30, com o sinal de menos na frente. Esse número negativo faz a pedra nascer um pouco acima da tela, pra ela entrar caindo. Os dois seguintes são o tamanho: clica na largura e escreve 40, clica na altura e escreve 40 também. Depois deles vem a imagem, que está escrita inimigo. Esse é de escolher também: clica nele e pega o asteroide na gradezinha. E os dois últimos são o vx e o vy, que são a velocidade. O vx já está em 0, e deixa assim, porque a pedra não anda pros lados. Já no vy você clica e escreve 3, que é a velocidade com que ela desce. Preenchidos os nove, olha a área do jogo. Estão caindo asteroides seus, espalhados. E estão caindo pedras cinzas junto, todas no mesmo ponto, porque os dois blocos estão montados ao mesmo tempo, cada um criando o dele. A gente resolve isso já. E se você reparou que os seus ainda não giram, é isso mesmo: girar é o último passo. Agora sim, apaga o bloco velho. Clica nele com o botão direito e escolhe Apagar este bloco, lendo o texto antes de clicar, do mesmo jeito que você fez na aula passada. Olha a área do jogo de novo: só os seus! Segundo passo concluído.\"",
-      "edit": "Preservar o gesto de mover, não copiar, a peça x. Identificar pelo rótulo com imagem, sem posição de gaveta. Mostrar coexistência como etapa temporária, nunca resultado a entregar.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o gesto de mover, não copiar, a peça x. Identificar pelo rótulo com imagem, sem posição de gaveta. Mostrar coexistência como etapa temporária, nunca resultado a entregar.",
       "visual": "Novo criador no mesmo Se/relógio. Mover a peça x, preencher os nove campos, comparar e usar Apagar este bloco no antigo. O x vazio antigo pode gerar pedras no canto até a retirada.",
       "newNarration": "No A cada 40 quadros, dentro de Se a tela atual é jogando, monte No grupo … criar um sprite chamado … com imagem. Escolha asteroides; nome asteroide; mova o x aleatório do velho; y −30; tamanho 40 × 40; imagem asteroide; vx 0; vy 3. Confira e apague só o criador velho.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-animar-cada",
@@ -62,11 +66,12 @@
       "entry": "Último passo, e ele é rápido, porque esse bloco você já montou uma vez, na aula passada, pra sua nav",
       "exit": "as pedras, girando. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade.",
       "narration": "Último passo, e ele é rápido, porque esse bloco você já montou uma vez, na aula passada, pra sua nave. Na coluna da esquerda, clica no Jogo 2D, clica na Animação e pega de novo o bloco comprido que começa com Animar sprite com a folha na animação. Arrasta ele pra dentro do Se a tela atual é jogando, logo embaixo do bloco que você acabou de montar, o que cria o asteroide. Ele fica bem embaixo desse por um motivo: cada vez que um asteroide novo nasce, esse bloco manda ele girar. É pra isso que serve aquele nome que você escreveu no segundo campo do bloco de cima, porque o bloco de animar precisa de um nome pra saber em quem mandar. Agora os campos, e os três são de escolher, igual na aula passada. Clica no primeiro, que é o sprite, e pega o asteroide na listinha. Clica no segundo, que é a folha: hoje tem duas aí dentro, e você pega a folha traço asteroide. E no terceiro clica no Escolher e pega a girando. Os outros três se preencheram sozinhos outra vez, do quadro zero ao quadro um, a oito fps, que são os dois desenhos que você fez da sua pedra rolando e pegando fogo. Agora clica na área do jogo, aperta o Enter e joga um pouco. Essa é a sua nave, com o seu motor! Essas são as suas pedras, girando. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade.",
-      "edit": "Preservar seletores e teste. Não incluir aqui uma tarefa nova de melhorar as artes. Atualizar “caixa pelos pixels” para explicar caixa delimitadora do conteúdo opaco apenas na revisão do professor.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar seletores e teste. Não incluir aqui uma tarefa nova de melhorar as artes. Atualizar “caixa pelos pixels” para explicar caixa delimitadora do conteúdo opaco apenas na revisão do professor.",
       "visual": "Destaque no encaixe imediatamente depois do criador, antes de fechar o Se. Teste com pelo menos três nascimentos; nova partida também funciona.",
       "newNarration": "Logo abaixo do novo criador, dentro do mesmo Se jogando e do mesmo relógio, coloque Animar sprite. Escolha asteroide, folha-asteroide e girando. Confira 0 a 1, 8 fps. Inicie e teste: cada pedra nova deve animar, e tiros, pontos e vidas precisam continuar funcionando.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-fecho-v6",
@@ -75,11 +80,356 @@
       "entry": "Parabéns, você terminou a Aula 7, e essa foi a mais importante do curso! Olha o que está na sua tela",
       "exit": "ses mesmos blocos e outras histórias por cima, e no fim a gente publica o seu jogo no Mural. Até já.",
       "narration": "Parabéns, você terminou a Aula 7, e essa foi a mais importante do curso! Olha o que está na sua tela: o seu jogo inteiro, com a sua arte. A sua nave e os seus asteroides. E hoje você fez uma coisa que os criadores fazem o tempo todo: trocou uma peça do jogo por outra que faz quase a mesma coisa, com a diferença que você precisava. O jogo inteiro continuou funcionando em volta dela, com as colisões, a explosão e o placar, e você não precisou remontar nada disso. Na próxima aula a gente não monta nada. Eu vou te mostrar quanta coisa dá pra fazer com esses mesmos blocos e outras histórias por cima, e no fim a gente publica o seu jogo no Mural. Até já.",
-      "edit": "Reaproveitar a recapitulação, ajustando: Nesta aula montar antes de apagar preserva a peça x; o criador antigo não declara um nome próprio como o Criar nave da aula 6. A caixa automática é baseada nos limites do conteúdo opaco; não prometer precisão pixel a pixel em todos os vazios. Editar desenho atualiza os projetos vinculados após salvar/sincronizar; não promete atualizar a publicação já feita. Manter o caminho editar desenho como orientação de ajuda: Imagens → editar desenho → salvar no Pinta → voltar e conferir atualização. Não iniciar outra tarefa. No fecho gravado, atualizar a ordem da aula 8: publicar vem antes de apresentar outras versões. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a recapitulação, ajustando: Nesta aula montar antes de apagar preserva a peça x; o criador antigo não declara um nome próprio como o Criar nave da aula 6. A caixa automática é baseada nos limites do conteúdo opaco; não prometer precisão pixel a pixel em todos os vazios. Editar desenho atualiza os projetos vinculados após salvar/sincronizar; não promete atualizar a publicação já feita. Manter o caminho editar desenho como orientação de ajuda: Imagens → editar desenho → salvar no Pinta → voltar e conferir atualização. Não iniciar outra tarefa. No fecho gravado, atualizar a ordem da aula 8: publicar vem antes de apresentar outras versões. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
       "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
       "newNarration": "Agora a sua nave e os seus asteroides estão no jogo. Você trocou a peça que precisava de imagem e conservou as outras regras. Cada asteroide novo nasce e já começa a animação. Na próxima aula vamos publicar esta versão. Antes, duas perguntas rápidas.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_events",
+        "label": "⚡ Quando acontecer",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "events",
+        "tooltip": "Roda quando alguma coisa acontece."
+      },
+      {
+        "type": "sz_frame_loops",
+        "label": "🔁 Enquanto estiver rodando",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "loops",
+        "tooltip": "Repete enquanto o projeto estiver rodando."
+      },
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_animate_sprite",
+        "label": "Animar sprite com a folha na animação , do quadro ao a fps",
+        "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+        "area": "start",
+        "tooltip": "Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último)."
+      },
+      {
+        "type": "sz_g2d_arrows_x",
+        "label": "Mover o sprite com as setas <- -> (velocidade )",
+        "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+        "area": "start",
+        "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+      },
+      {
+        "type": "sz_g2d_center_x",
+        "label": "o centro x do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+      },
+      {
+        "type": "sz_g2d_clamp_to_screen",
+        "label": "Manter o sprite dentro da tela",
+        "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+        "area": "start",
+        "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+      },
+      {
+        "type": "sz_g2d_clear",
+        "label": "Limpar a tela",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+      },
+      {
+        "type": "sz_g2d_create_group",
+        "label": "Criar grupo de sprites",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+      },
+      {
+        "type": "sz_g2d_create_image_sprite",
+        "label": "Criar sprite em x y largura altura com imagem",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar."
+      },
+      {
+        "type": "sz_g2d_damage_sprite",
+        "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+      },
+      {
+        "type": "sz_g2d_draw_group",
+        "label": "Desenhar o grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+        "area": "start",
+        "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+      },
+      {
+        "type": "sz_g2d_draw_score",
+        "label": "Mostrar placar valor em x y cor tamanho",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+        "area": "start",
+        "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+      },
+      {
+        "type": "sz_g2d_draw_sprite",
+        "label": "Desenhar o sprite",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+      },
+      {
+        "type": "sz_g2d_draw_sprite_health",
+        "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+      },
+      {
+        "type": "sz_g2d_every_frames",
+        "label": "A cada quadros",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+      },
+      {
+        "type": "sz_g2d_explode",
+        "label": "Soltar explosão no sprite cor",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+        "area": "start",
+        "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+      },
+      {
+        "type": "sz_g2d_health_depleted",
+        "label": "as vidas do sprite acabaram?",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "value",
+        "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+      },
+      {
+        "type": "sz_g2d_load_spritesheet",
+        "label": "Carregar folha de quadros da imagem com quadros de x px",
+        "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+        "area": "start",
+        "tooltip": "Prepara uma folha de sprites (vários quadros numa única imagem) para animar. Informe o tamanho de CADA quadro em pixels."
+      },
+      {
+        "type": "sz_g2d_on_group_overlap",
+        "label": "Para cada colisão entre os grupos e",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_on_key",
+        "label": "Quando apertar a tecla",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+      },
+      {
+        "type": "sz_g2d_on_sprite_group_overlap",
+        "label": "Para cada sprite do grupo que colidir com o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_play_fx",
+        "label": "Tocar efeito",
+        "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+        "area": "start",
+        "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+      },
+      {
+        "type": "sz_g2d_prune_offscreen",
+        "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+      },
+      {
+        "type": "sz_g2d_random_x",
+        "label": "um x aleatório na tela",
+        "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+        "area": "value",
+        "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+      },
+      {
+        "type": "sz_g2d_remove_from_group",
+        "label": "Tirar o sprite do grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+      },
+      {
+        "type": "sz_g2d_restart",
+        "label": "Reiniciar o jogo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+      },
+      {
+        "type": "sz_g2d_scene_is",
+        "label": "o estado do jogo é ?",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "value",
+        "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+      },
+      {
+        "type": "sz_g2d_set_health",
+        "label": "Dar ao sprite de vida",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+      },
+      {
+        "type": "sz_g2d_set_scene",
+        "label": "Mudar o estado do jogo para",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_shake",
+        "label": "Tremer a tela com intensidade",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+      },
+      {
+        "type": "sz_g2d_show_screen",
+        "label": "Mostrar tela com título subtítulo dica fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+      },
+      {
+        "type": "sz_g2d_spawn_asteroid",
+        "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+      },
+      {
+        "type": "sz_g2d_spawn_bullet",
+        "label": "Criar tiro no grupo em x y raio cor vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+      },
+      {
+        "type": "sz_g2d_spawn_image_in_group",
+        "label": "No grupo criar um sprite chamado em x y largura altura com imagem vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Como \"criar no grupo\", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset). O nome é opcional: preencha quando quiser animar ou mexer nesse sprite logo depois."
+      },
+      {
+        "type": "sz_g2d_sprite_y",
+        "label": "a posição y do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+      },
+      {
+        "type": "sz_g2d_starfield",
+        "label": "Desenhar fundo de estrelas (velocidade )",
+        "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+        "area": "start",
+        "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+      },
+      {
+        "type": "sz_g2d_update_each_frame",
+        "label": "A cada quadro do jogo",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+      },
+      {
+        "type": "sz_g2d_update_group",
+        "label": "Mover os sprites do grupo usando suas velocidades",
+        "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+        "area": "start",
+        "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+      },
+      {
+        "type": "sz_js_const_create",
+        "label": "Criar constante com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+      },
+      {
+        "type": "sz_js_if_else",
+        "label": "Condição se, senão se e senão",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "start",
+        "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+      },
+      {
+        "type": "sz_js_var_create",
+        "label": "Criar variável com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+      },
+      {
+        "type": "sz_js_var_increment",
+        "label": "Somar em variável",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+      },
+      {
+        "type": "sz_val_compare",
+        "label": "Comparar dois valores",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "value",
+        "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      },
+      {
+        "type": "sz_val_text",
+        "label": "texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor de texto."
+      },
+      {
+        "type": "sz_val_variable",
+        "label": "valor da variável",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+      }
+    ]
+  }
 }

@@ -1584,5 +1584,9 @@ export const CreationListQuery = t.Object({
  */
 export const CreationCommitBody = t.Object({
   revision: t.Integer({ minimum: 1 }),
+  /** Lista lida pelo BFF no manifesto validado; o endpoint público não aceita esse campo. */
+  verifiedPartHashes: t.Optional(
+    t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 }),
+  ),
   uploadedParts: t.Optional(t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 })),
 })

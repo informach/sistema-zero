@@ -101,7 +101,7 @@ describe('section gates across HTTP and persistence', () => {
       kind: 'studio',
       sortOrder: 4,
       contentRevision: REVISION,
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     })
     const firstGoal: LessonSection = {
       ...defaultLessonSection(randomUUID(), 'Criar repetição', []),
@@ -174,6 +174,7 @@ describe('section gates across HTTP and persistence', () => {
       })
     }
     const project = {
+      formatVersion: 2,
       name: 'Mesmo Dino',
       files: {},
       ir: {
@@ -520,7 +521,7 @@ describe('section gates across HTTP and persistence', () => {
       kind: 'studio',
       sortOrder: 4,
       contentRevision: REVISION,
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     })
     const first = ctx.sections[0]
     if (!first) throw new Error('Missing fixture')
@@ -537,7 +538,7 @@ describe('section gates across HTTP and persistence', () => {
     })
     const submit = () =>
       ctx.request(`/lessons/${ctx.lessonId}/blocks/${projectId}/studio-submission`, 'POST', {
-        project: { name: 'Meu projeto', files: {} },
+        project: { formatVersion: 2, name: 'Meu projeto', files: {} },
       })
     expect((await submit()).status).toBe(423)
     expect(await ctx.studioSubmissions.getOne(USER, projectId)).toBeNull()
@@ -561,7 +562,7 @@ describe('section gates across HTTP and persistence', () => {
       kind: 'studio',
       sortOrder: 4,
       contentRevision: REVISION,
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     })
     const first = ctx.sections[0],
       last = ctx.sections[2]

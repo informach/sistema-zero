@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { LearningProfile } from '#core'
+import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import { buildCoreToolbox, type ToolboxCategory } from '../toolbox'
@@ -45,6 +48,42 @@ function fakeJogo2D(): ToolboxCategory {
 }
 
 describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)', () => {
+  it.each([
+    'corre-dino',
+    'desafio-primeiro-jogo',
+    'o-jogo-do-meu-jeito',
+  ])('a lista atual de %s é acessível no perfil iniciante', (course) => {
+    const { blocks }: { blocks: string[] } = JSON.parse(
+      readFileSync(
+        resolve(
+          import.meta.dir,
+          `../../../../../docs/aulas-interativas/${course}-v6/blocos-${course}.json`,
+        ),
+        'utf8',
+      ),
+    )
+    const offered = allBlockTypes(
+      buildCoreToolbox([gameTwoDToolboxCategory], { level: 'iniciante-2d', allowBlocks: blocks })
+        .contents,
+    )
+    expect(blocks.filter((type) => !offered.includes(type))).toEqual([])
+    expect(offered.some((type) => type.startsWith('sz_gk_'))).toBe(false)
+  })
+  it('mantém os blocos deste jogo editáveis sem oferecer extensões ausentes', () => {
+    const profile: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_val_number'],
+      projectTools: ['sz_g2d_set_position', 'sz_js_const_create', 'sz_gk_setup'],
+    }
+    const toolbox = buildCoreToolbox([gameTwoDToolboxCategory], profile)
+    const category = toolbox.contents.find((entry) => entry.name === '🧰 Blocos deste jogo')
+    expect(category && 'contents' in category ? allBlockTypes(category.contents) : []).toEqual(
+      expect.arrayContaining(['sz_js_const_create', 'sz_g2d_set_position']),
+    )
+    const types = allBlockTypes(toolbox.contents)
+    expect(types).not.toContain('sz_gk_setup')
+    expect(types).not.toContain('sz_g2d_create_sprite')
+  })
   it('mostra SÓ os blocos CORE listados (+ frames sempre)', () => {
     const profile: LearningProfile = {
       level: 'avancado-3d',

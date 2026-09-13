@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 import type { SZIR } from '#ir'
-import { markLifecycleBlocksState, normalizeBlocksStateToFrames } from '../normalizeFrames'
+import {
+  markLifecycleBlocksState,
+  normalizeLegacyBlocksStateToFrames as normalizeBlocksStateToFrames,
+} from '../../project-migrations/legacyFrames'
 import { buildWorkspaceStateFromIR, type SerializedBlocklyBlock } from '../workspaceState'
 
 function countBlocks(node: unknown): number {

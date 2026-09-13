@@ -175,7 +175,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   /** Liga (ou desliga) a caixa do desenho no sprite. */
   function _applyArtHitbox(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite._hitboxArt = _artHitboxOf(name);
   }
   /**
@@ -227,9 +227,38 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
   }
 
+  var _destroyedSprites = new WeakSet();
+  /** @param {import('./runtimeContract').GameTwoDSprite} sprite */
+  function _isDestroyedSprite(sprite) { return _destroyedSprites.has(sprite); }
+  /** Destruição explícita é permanente; sair de um grupo apenas remove um vínculo.
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite */
+  function destroySprite(sprite) {
+    if (!sprite || typeof sprite !== 'object' || _isDestroyedSprite(sprite)) return;
+    _destroyedSprites.add(sprite);
+    var owners = _spriteGroupOwners.get(sprite);
+    if (owners) Array.from(owners).forEach(function (group) {
+      for (var i = group.items.length - 1; i >= 0; i--) {
+        if (group.items[i] === sprite) _removeGroupItemAt(group, i);
+      }
+    });
+    _spriteGroupOwners.delete(sprite);
+    _removeSpriteClickHandlers(sprite);
+    _disposeSprite(sprite);
+    delete sprite._cooldowns;
+    sprite._paintEpoch = -1;
+    sprite._paintOrder = 0;
+    sprite.anim = null;
+    sprite._animState = null;
+    sprite.image = null;
+    delete sprite.skin;
+    delete sprite.textAppearance;
+    sprite.vx = 0;
+    sprite.vy = 0;
+  }
+
   /** Troca a imagem fixa do sprite (e cancela a animação atual). */
   function setImage(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = name ? loadImage(name) : null;
@@ -254,7 +283,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
 
   /** Faz o sprite usar uma figura (cancela imagem/animacao — uma coisa por vez). */
   function setShape(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = { kind: 'custom', shape: name };
     sprite.image = null;
@@ -391,7 +420,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _startAnimation(sprite, sheet, from, to, fps, true);
   }
   function _startAnimation(sprite, sheet, from, to, fps, once) {
-    if (!sprite || !sheet) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sheet) return;
     _applyArtHitbox(sprite, sheet.assetName);
     var f = Math.max(0, Math.floor(_finiteNumber(from, 0)));
     var t = Math.max(0, Math.floor(_finiteNumber(to, f)));
@@ -477,7 +506,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * caindo/dano). Quem troca sozinho é o autoAnimate, no "a cada quadro".
    */
   function setStateAnimation(sprite, state, sheet, from, to, fps) {
-    if (!sprite || !sheet || !state) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sheet || !state) return;
     if (!sprite.animStates) sprite.animStates = {};
     var f = _finiteNumber(from, 0);
     var t = _finiteNumber(to, f);
@@ -510,7 +539,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * setAnimation todo quadro reiniciaria o tempo e congelaria no 1º quadro.
    */
   function autoAnimate(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if ((sprite.hurtFrames || 0) > 0 && (_loopOrder.length === 0 || sprite._hurtStamp !== _frameStamp)) {
       sprite.hurtFrames--;
       sprite._hurtStamp = _frameStamp;
@@ -584,7 +613,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    */
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     _layoutSpriteText(sprite);
     sprite._paintEpoch = _spritePaintEpoch;
     sprite._paintOrder = ++_spritePaintOrder;
@@ -606,7 +635,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     finally { ctx.globalAlpha = pa; }
   }
   function _drawSpriteRaw(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     var direction = sprite.direction;
     var directionAngle = direction === 'up' ? -Math.PI / 2 : direction === 'down' ? Math.PI / 2 : 0;
     var ang = _finiteNumber(sprite.angle, 0) + directionAngle;
@@ -624,7 +653,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     finally { ctx.restore(); }
   }
   function _drawSpriteBody(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     if (sprite.skin && sprite.skin.kind === 'text') { _drawTextSprite(ctx, sprite); return; }
     // Desenhos prontos (skins): nave, asteroide e tiro têm forma própria.
     if (sprite.skin) {
@@ -713,7 +742,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * fator de propósito — hitbox menor afundaria o sprite em chão e paredes.
    */
   function setHitboxScale(sprite, percent) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var p = _finiteNumber(percent, 100);
     sprite._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
     // ⚠️ A MARCA, e nao o numero, e o que diz "a crianca escolheu". Com 100% o
@@ -770,7 +799,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * de "usar área de colisão de N%").
    */
   function isColliding(a, b) {
-    if (!a || !b) return false;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return false;
     var ea = _hitboxOf(a);
     var eb = _hitboxOf(b);
     return ea.x < eb.x + eb.w && ea.x + ea.w > eb.x && ea.y < eb.y + eb.h && ea.y + ea.h > eb.y;

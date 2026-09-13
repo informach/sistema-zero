@@ -22,7 +22,7 @@ export const bullet = p('sz_g2d_spawn_bullet', {
     X: p('sz_g2d_center_x', { fields: { SPRITE: 'nave' } }),
     Y: p('sz_g2d_sprite_y', { fields: { SPRITE: 'nave' } }),
   },
-  beforeBlock: 'sz_g2d_play_shoot',
+  beforeBlock: 'sz_g2d_play_fx',
 })
 export const asteroid = p('sz_g2d_spawn_asteroid', {
   fields: { GROUP: 'asteroides' },
@@ -171,6 +171,12 @@ export const checks = {
   ],
   disparo: [
     rule(
+      'efeito-tiro',
+      'No evento Espaço, use Tocar efeito e escolha tiro.',
+      event('Space', p('sz_g2d_play_fx', { fields: { FX: 'shoot' } })),
+      { area: 'events' },
+    ),
+    rule(
       'disparo',
       'No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.',
       event('Space', bullet),
@@ -214,6 +220,12 @@ export const checks = {
   cicloAsteroides: groupCycle('asteroides'),
   colisaoTiros: [
     rule(
+      'efeito-explosao',
+      'Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.',
+      shotCollision(p('sz_g2d_play_fx', { fields: { FX: 'explosion' } })),
+      loop,
+    ),
+    rule(
       'remover-tiro',
       'Na colisão tiros × asteroides, remova o tiro do grupo tiros.',
       shotCollision(p('sz_g2d_remove_from_group', { fields: { SPRITE: 'tiro', GROUP: 'tiros' } })),
@@ -236,7 +248,7 @@ export const checks = {
       shotCollision(
         p('sz_g2d_explode', {
           fields: { SPRITE: 'asteroide' },
-          beforeBlock: 'sz_g2d_play_explosion',
+          beforeBlock: 'sz_g2d_play_fx',
         }),
       ),
       loop,

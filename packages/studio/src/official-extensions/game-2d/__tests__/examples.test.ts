@@ -361,8 +361,8 @@ describe('dinoRunExample (game-2d) — Kit dino', () => {
     expect(code).toContain('SZGame2D.spawnObstacle(obstaculos, ctx,')
     expect(code).toContain('SZGame2D.spawnEgg(ovos,')
     expect(code).toContain('SZGame2D.drawForest(ctx, 5)')
-    expect(code).toContain('SZGame2D.playDinoHurt()')
-    expect(code).toContain('SZGame2D.playCollect()')
+    expect(code).toContain('SZGame2D.playFx("hurt")')
+    expect(code).toContain('SZGame2D.playFx("collect")')
     // recorde persiste com os blocos genéricos de armazenamento (sem bloco novo).
     expect(code).toContain('localStorage.getItem("dinoRecorde")')
     expect(code).toContain('localStorage.setItem("dinoRecorde"')
@@ -393,8 +393,8 @@ describe('gorilasExample (game-2d) — Kit gorilas', () => {
     expect(code).toContain('SZGame2D.drawBanana(ctx, cidade)')
     expect(code).toContain('SZGame2D.bananaHitThrower(cidade, gorila2)')
     expect(code).toContain('SZGame2D.bananaHitCity(cidade)')
-    expect(code).toContain('SZGame2D.playWhistle()')
-    expect(code).toContain('SZGame2D.playExplosion()')
+    expect(code).toContain('SZGame2D.playFx("whistle")')
+    expect(code).toContain('SZGame2D.playFx("explosion")')
   })
 })
 

@@ -215,6 +215,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Empate!", "A luta terminou sem vencedor. Os dois heróis deram tudo de si!", "Aperte Enter para o desempate", "#3a3352");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("relogio", 1)) {
   if (SZGame2D.sceneIs("jogando")) {
     if (tempo > 0) {
@@ -222,6 +223,7 @@ if (SZGame2D.everySeconds("relogio", 1)) {
     }
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

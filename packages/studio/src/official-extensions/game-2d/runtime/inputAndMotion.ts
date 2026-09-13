@@ -77,6 +77,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       catch (error) {
         _reportHandlerError('“Quando clicar/tocar”', id, error);
         _removeOrderedIfCurrent(pointerHandlers, pointerHandlerOrder, id, handler);
+        if (!pointerHandlers[id]) _spriteClickTargets.delete(id);
       }
       if (_runGenerationChanged(generation)) return;
     }
@@ -99,6 +100,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     // associa um canvas já existente ao palco antes do primeiro toque.
     ensureStage();
     var handlerId = _stableHandlerId('clique', id, fn);
+    _spriteClickTargets.delete(handlerId);
     if (!pointerHandlers[handlerId]) pointerHandlerOrder.push(handlerId);
     pointerHandlers[handlerId] = fn;
   }
@@ -133,7 +135,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     );
   }
   function _platformerMove(sprite, speed, jump, ctx) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 4);
     var j = _positiveFiniteNumber(jump, 11);
@@ -179,7 +181,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   /** Só pula e integra no eixo vertical; o terreno confirma o pouso depois. */
   function jumpWithTerrain(sprite, jump) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var g = world.gravity;
     var wasGrounded = _beginGroundFrame(sprite);
@@ -194,7 +196,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
 
   /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */
   function topDown(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 3);
     var dx = (_dirHeld('right') ? 1 : 0) - (_dirHeld('left') ? 1 : 0);
@@ -245,7 +247,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * no ar" quer dizer.
    */
   function flyFree(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 3);
     var dx = (_dirHeld('right') ? 1 : 0) - (_dirHeld('left') ? 1 : 0);
@@ -276,7 +278,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * tela precisam bater as asas cada um no seu.
    */
   function flap(sprite, ctx, force) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     _recordPreviousPosition(sprite);
     var f = _positiveFiniteNumber(force, 8);
     var g = world.gravity;
@@ -301,7 +303,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * água amortece a velocidade vertical.
    */
   function swim(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var s = _positiveFiniteNumber(speed, 2);
     // ⚠️ Le o TOQUE junto do teclado. Lendo so as teclas, uma fase de natacao ficava
@@ -326,7 +328,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
 
   /** Faz o sprite andar em direção ao ponteiro (mouse/toque). */
   function followPointer(sprite, speed) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var s = _finiteNumber(speed, 3);
     var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
@@ -344,7 +346,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
 
   /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
   function clampToScreen(sprite, ctx) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     var visible = _visibleWorldRect(ctx);
     if (sprite.x < visible.left) sprite.x = visible.left;
     if (sprite.y < visible.top) sprite.y = visible.top;
@@ -363,18 +365,18 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   /** Gira o sprite em N GRAUS (positivo = horário; negativo = anti-horário). */
   function rotateSprite(sprite, degrees) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _ensureAngle(sprite);
     sprite.angle += _finiteNumber(degrees, 0) * DEG;
   }
   /** Aponta o sprite para um ângulo em GRAUS (0 = pra cima, horário). */
   function pointSprite(sprite, degrees) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.angle = _finiteNumber(degrees, 0) * DEG;
   }
   /** Soma força à velocidade na direção apontada (impulso pra frente). */
   function thrust(sprite, force) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var f = _finiteNumber(force, 0.1);
     var d = _forward(sprite);
     sprite.vx = _finiteNumber(sprite.vx, 0) + d.x * f;
@@ -382,7 +384,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   /** Freia o sprite aos poucos: multiplica a velocidade pelo fator (0..1). */
   function applyFriction(sprite, factor) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var k = Math.max(0, Math.min(1, _finiteNumber(factor, 0.97)));
     if (k === 0) { sprite.vx = 0; sprite.vy = 0; return; }
     sprite.vx = _finiteNumber(sprite.vx, 0) * k;
@@ -394,7 +396,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * posição (move o sprite pela velocidade). Use a cada quadro.
    */
   function steerThrust(sprite, speed, turnDegrees) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     _ensureAngle(sprite);
     var sp = _finiteNumber(speed, 3);
@@ -410,7 +412,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   /** Devolve a direção (em GRAUS) que o sprite está apontando. */
   function spriteAngleDeg(sprite) {
-    if (!sprite || !_isFiniteNumber(sprite.angle)) return 0;
+    if (!sprite || _isDestroyedSprite(sprite) || !_isFiniteNumber(sprite.angle)) return 0;
     return sprite.angle / DEG;
   }
   /**
@@ -418,7 +420,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    * velocidade na direção apontada. Reusa o tiro brilhante (spawnBullet).
    */
   function shootFrom(sprite, group, options) {
-    if (!sprite || !group) return null;
+    if (!sprite || _isDestroyedSprite(sprite) || !group) return null;
     options = options || {};
     var speed = _finiteNumber(options.speed, 6);
     var d = _forward(sprite);

@@ -1195,6 +1195,7 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 2,
           },
+          key: 'abertura-da-batalha',
           body: [
             {
               type: 'assign',
@@ -1212,6 +1213,7 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 0.5,
           },
+          key: 'liberar-comandos',
           body: [
             {
               type: 'if',
@@ -1280,6 +1282,7 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1.5,
           },
+          key: 'vez-do-folhito',
           body: [
             {
               type: 'if',

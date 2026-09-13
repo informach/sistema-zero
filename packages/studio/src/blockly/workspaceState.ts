@@ -19,9 +19,14 @@ import {
   createCanvas3DStatementContextIndex,
 } from '../ir/programmingReferences'
 import {
+  gameTwoDActionExpressionToBlock,
+  gameTwoDActionToBlock,
+} from '../official-extensions/game-2d/actionCodec'
+import {
   classicGameTwoDExpressionToBlock,
   classicGameTwoDStatementToBlock,
 } from '../official-extensions/game-2d/classicCodec'
+import { withPeriodicKey } from '../official-extensions/game-2d/periodicCodec'
 import {
   textSpriteExpressionToBlock,
   textSpriteStatementToBlock,
@@ -37,7 +42,7 @@ import {
   getBlockContract,
 } from './blockContracts'
 import { isGuidedDomAttributeName, isGuidedDomProperty } from './domSafety'
-import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
+import { paletteShadowType } from './paletteEntries'
 
 const ELEMENT_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
   click: 'sz_js_on_click',
@@ -277,24 +282,17 @@ function statementsToBlocks(
   statements: JSStatement[],
   lifecycleRootsAllowed = false,
 ): SerializedBlocklyBlock[] {
-  return statements
-    .map(statementToBlock)
-    .filter(isBlock)
-    .map((serialized) => {
-      if (lifecycleRootsAllowed) return serialized
-      const placement = getBlockContract(serialized.type)?.placement
-      if (!placement || placement.root.length === 0 || placement.nested.length > 0) {
-        return serialized
-      }
-      const area = placement.root[0]
-      const wrapperType =
-        area === 'events'
-          ? 'sz_legacy_nested_event'
-          : area === 'loops'
-            ? 'sz_legacy_nested_loop'
-            : 'sz_legacy_nested_start'
-      return block(wrapperType, {}, { CHILD: [serialized] })
-    })
+  return statements.flatMap((statement) => {
+    const serialized = statementToBlock(statement)
+    if (!isBlock(serialized)) return []
+    if (lifecycleRootsAllowed) return [serialized]
+    const placement = getBlockContract(serialized.type)?.placement
+    if (!placement || placement.root.length === 0 || placement.nested.length > 0)
+      return [serialized]
+    // Código fora dos encaixes visuais continua como código editável. O editor
+    // atual não cria invólucros de compatibilidade para encaixes inexistentes.
+    return [rawJSBlock(statement)]
+  })
 }
 
 // Propriedades de estilo com opção no dropdown do bloco `sz_js_set_style`; uma
@@ -1283,6 +1281,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function gameTwoDStatementToBlock(): SerializedBlocklyBlock {
+    const action = gameTwoDActionToBlock(stmt, {
+      block,
+      expression: exprToValueBlock,
+      statements: statementsToBlocks,
+      raw: rawJSBlock,
+    })
+    if (action) return action
     const textBlock = textSpriteStatementToBlock(stmt, {
       block,
       expression: exprToValueBlock,
@@ -1337,19 +1342,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               VY: vy,
             })
       }
-      case 'g2d:collides':
-        return block(
-          'sz_g2d_collides',
-          { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
-          {},
-          stmt.__id,
-        )
-      case 'g2d:score': {
-        const initial = exprToValueBlock(valueToExpr(stmt.initial))
-        return initial === null
-          ? rawJSBlock(stmt)
-          : block('sz_g2d_score', { NAME: stmt.varName }, {}, stmt.__id, { INITIAL: initial })
-      }
+
       case 'g2d:gameOver': {
         const text = exprToValueBlock(valueToExpr(stmt.text))
         return text === null
@@ -1359,7 +1352,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       case 'g2d:clear':
         return block('sz_g2d_clear', {}, {}, stmt.__id)
       case 'g2d:onStart':
-        return block('sz_g2d_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+        return rawJSBlock(stmt)
       case 'g2d:updateEachFrame':
         return block(
           'sz_g2d_update_each_frame',
@@ -1379,13 +1372,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_g2d_apply_gravity', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
       case 'g2d:bounceOnEdges':
         return block('sz_g2d_bounce_edges', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
-      case 'g2d:circleCollides':
-        return block(
-          'sz_g2d_circle_collides',
-          { NAME: stmt.varName, A: stmt.aVar, B: stmt.bVar },
-          {},
-          stmt.__id,
-        )
+
       case 'g2d:playSound': {
         const freq = exprToValueBlock(valueToExpr(stmt.freq))
         const ms = exprToValueBlock(valueToExpr(stmt.durationMs))
@@ -1397,8 +1384,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_g2d_play_fx', { FX: stmt.fx }, {}, stmt.__id)
       case 'g2d:playMusic':
         return block('sz_g2d_play_music', { MUSIC: stmt.tune }, {}, stmt.__id)
-      case 'g2d:stopMusic':
-        return block('sz_g2d_stop_music', {}, {}, stmt.__id)
+
       case 'g2d:loadSound':
         return block('sz_g2d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
       case 'g2d:playClip':
@@ -1408,7 +1394,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       case 'g2d:playTrack':
         return block('sz_g2d_play_track', { NAME: stmt.name }, {}, stmt.__id)
       case 'g2d:stopTrack':
-        return block('sz_g2d_stop_track', {}, {}, stmt.__id)
+        return block('sz_g2d_stop_track', { SCOPE: stmt.scope ?? 'all' }, {}, stmt.__id)
       case 'g2d:setVolume': {
         const level = exprToValueBlock(valueToExpr(stmt.level))
         return level === null
@@ -1503,23 +1489,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_g2d_pause', {}, {}, stmt.__id)
       case 'g2d:resumeGame':
         return block('sz_g2d_resume', {}, {}, stmt.__id)
-      case 'g2d:cameraFollow': {
-        const worldW = exprToValueBlock(valueToExpr(stmt.worldW))
-        const worldH = exprToValueBlock(valueToExpr(stmt.worldH))
-        return worldW === null || worldH === null
-          ? rawJSBlock(stmt)
-          : block('sz_g2d_camera_follow', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
-              WORLDW: worldW,
-              WORLDH: worldH,
-            })
-      }
-      case 'g2d:setCamera': {
-        const x = exprToValueBlock(valueToExpr(stmt.x))
-        const y = exprToValueBlock(valueToExpr(stmt.y))
-        return x === null || y === null
-          ? rawJSBlock(stmt)
-          : block('sz_g2d_set_camera', {}, {}, stmt.__id, { X: x, Y: y })
-      }
+
       case 'g2d:breakTile':
         return block(
           'sz_g2d_break_tile_at',
@@ -1836,15 +1806,12 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               { FROM: from, TO: to, FPS: fps },
             )
       }
-      case 'g2d:setEnemyTypeParam':
-      case 'g2d:setEnemyTypeParamLegacyStart': {
+      case 'g2d:setEnemyTypeParam': {
         const value = exprToValueBlock(valueToExpr(stmt.value))
         return value === null
           ? rawJSBlock(stmt)
           : block(
-              stmt.type === 'g2d:setEnemyTypeParamLegacyStart'
-                ? 'sz_g2d_enemy_type_param_legacy_start'
-                : 'sz_g2d_enemy_type_param',
+              'sz_g2d_enemy_type_param',
               { TYPE: stmt.typeVar, PARAM: stmt.param },
               {},
               stmt.__id,
@@ -1852,11 +1819,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
             )
       }
       case 'g2d:enemyAddBehavior':
-      case 'g2d:enemyAddBehaviorLegacyStart':
         return block(
-          stmt.type === 'g2d:enemyAddBehaviorLegacyStart'
-            ? 'sz_g2d_enemy_add_behavior_legacy_start'
-            : 'sz_g2d_enemy_add_behavior',
+          'sz_g2d_enemy_add_behavior',
           { TYPE: stmt.typeVar, BEHAVIOR: stmt.behavior },
           {},
           stmt.__id,
@@ -2071,19 +2035,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g2d:drawPreparedTileMap':
         return block('sz_g2d_draw_prepared_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id)
-      case 'g2d:drawTileMap': {
-        const x = exprToValueBlock(valueToExpr(stmt.x))
-        const y = exprToValueBlock(valueToExpr(stmt.y))
-        // IR antigo não tem "size": vira 0 = encaixar sozinho (comportamento de sempre).
-        const size = exprToValueBlock(valueToExpr(stmt.size ?? 0))
-        return x === null || y === null || size === null
-          ? rawJSBlock(stmt)
-          : block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
-              X: x,
-              Y: y,
-              SIZE: size,
-            })
-      }
+
       case 'g2d:tileMapCollide':
         return block(
           'sz_g2d_tilemap_collide',
@@ -2338,31 +2290,46 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       case 'g2d:everyFrames': {
         const n = exprToValueBlock(stmt.n)
         if (!n) return rawJSBlock(stmt)
-        return block(
-          'sz_g2d_every_frames',
-          {},
-          { BODY: statementsToBlocks(stmt.body) },
-          stmt.__id,
-          {
+        return withPeriodicKey(
+          block('sz_g2d_every_frames', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
             N: n,
-          },
+          }),
+          stmt.key,
         )
       }
       case 'g2d:everySeconds': {
         const secs = exprToValueBlock(valueToExpr(stmt.seconds))
         return secs === null
           ? rawJSBlock(stmt)
-          : block('sz_g2d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-              SECS: secs,
-            })
+          : withPeriodicKey(
+              block(
+                'sz_g2d_every_seconds',
+                {},
+                { BODY: statementsToBlocks(stmt.body) },
+                stmt.__id,
+                {
+                  SECS: secs,
+                },
+              ),
+              stmt.key,
+            )
       }
       case 'g2d:afterSeconds': {
         const secs = exprToValueBlock(valueToExpr(stmt.seconds))
         return secs === null
           ? rawJSBlock(stmt)
-          : block('sz_g2d_after_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
-              SECS: secs,
-            })
+          : withPeriodicKey(
+              block(
+                'sz_g2d_after_seconds',
+                {},
+                { BODY: statementsToBlocks(stmt.body) },
+                stmt.__id,
+                {
+                  SECS: secs,
+                },
+              ),
+              stmt.key,
+            )
       }
       case 'g2d:setHitboxScale': {
         const percent = exprToValueBlock(valueToExpr(stmt.percent))
@@ -2398,19 +2365,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           SIZE: size,
         })
       }
-      case 'g2d:drawHearts': {
-        const count = exprToValueBlock(stmt.count)
-        const x = exprToValueBlock(valueToExpr(stmt.x))
-        const y = exprToValueBlock(valueToExpr(stmt.y))
-        const size = exprToValueBlock(valueToExpr(stmt.size))
-        if (!count || !x || !y || !size) return rawJSBlock(stmt)
-        return block('sz_g2d_draw_hearts', { COLOR: stmt.color }, {}, stmt.__id, {
-          COUNT: count,
-          X: x,
-          Y: y,
-          SIZE: size,
-        })
-      }
+
       case 'g2d:drawSpriteHealth': {
         const x = exprToValueBlock(valueToExpr(stmt.x))
         const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -2555,10 +2510,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g2d:explode':
         return block('sz_g2d_explode', { SPRITE: stmt.spriteVar, COLOR: stmt.color }, {}, stmt.__id)
-      case 'g2d:playShoot':
-        return block('sz_g2d_play_shoot', {}, {}, stmt.__id)
-      case 'g2d:playExplosion':
-        return block('sz_g2d_play_explosion', {}, {}, stmt.__id)
+
       case 'g2d:onSpriteGroupOverlap':
         return block(
           'sz_g2d_on_sprite_group_overlap',
@@ -2796,12 +2748,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block('sz_g2d_forest', {}, {}, stmt.__id, { SPEED: speed })
       }
-      case 'g2d:playJump':
-        return block('sz_g2d_play_jump', {}, {}, stmt.__id)
-      case 'g2d:playDinoHurt':
-        return block('sz_g2d_play_dino_hurt', {}, {}, stmt.__id)
-      case 'g2d:playCollect':
-        return block('sz_g2d_play_collect', {}, {}, stmt.__id)
+
       case 'g2d:createCity':
         return block('sz_g2d_create_city', { NAME: stmt.varName }, {}, stmt.__id)
       case 'g2d:drawCity':
@@ -2830,10 +2777,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         return block('sz_g2d_update_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
       case 'g2d:drawBanana':
         return block('sz_g2d_draw_banana', { CITY: stmt.cityVar }, {}, stmt.__id)
-      case 'g2d:playWhistle':
-        return block('sz_g2d_play_whistle', {}, {}, stmt.__id)
-      case 'g2d:playBoom':
-        return block('sz_g2d_play_boom', {}, {}, stmt.__id)
+
       case 'g2d:computerTurn':
         return block(
           'sz_g2d_computer_turn',
@@ -4016,7 +3960,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           ? rawJSBlock(stmt)
           : block(
               'sz_gk_rpg_create_map',
-              { MAP: stmt.map, PARAM: stmt.ctxName },
+              { MAP: stmt.map, PARAM: stmt.ctxName, BOUNDS: stmt.bounds ?? 'bounded' },
               { BODY: statementsToBlocks(stmt.body) },
               stmt.__id,
               { COLS: cols, ROWS: rows },
@@ -7072,25 +7016,18 @@ function callWithArgs(
   return b
 }
 
-/** Tipo do bloco literal por kind de sombra (espelha `shadowFor` da migração). */
-const SHADOW_LITERAL_BLOCK: Record<'number' | 'text' | 'color', string> = {
-  number: 'sz_val_number',
-  text: 'sz_val_text',
-  color: 'sz_val_color',
-}
-
 /**
  * O valor deste soquete deve ser emitido como SOMBRA? Verdadeiro quando o bloco
- * tem preset de sombra para o slot (fonte: `LEGACY_VALUE_FIELDS`) e o filho é o
+ * tem preset de sombra para o slot (fonte: a própria paleta) e o filho é o
  * literal PURO do kind casado. Sem isso, a reconstrução IR→blocos devolvia
  * FROM/TO/FPS (etc.) como blocos REAIS e os preenchimentos automáticos
  * (`fillFrames`/`applySuggestedSize`, que só escrevem em `isShadow()`) morriam
  * em silêncio após uma passada pela Ponte. Getter/expressão nunca vira sombra.
  */
 function shouldEmitAsShadow(blockType: string, slot: string, child: SerializedBlocklyBlock) {
-  const kind = LEGACY_VALUE_FIELDS[blockType]?.[slot]
-  if (!kind) return false
-  if (child.type !== SHADOW_LITERAL_BLOCK[kind]) return false
+  const type = paletteShadowType(blockType, slot)
+  if (!type || !['sz_val_number', 'sz_val_text', 'sz_val_color'].includes(type)) return false
+  if (child.type !== type) return false
   if (child.inputs && Object.keys(child.inputs).length > 0) return false
   return !child.next
 }
@@ -7174,6 +7111,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     varExpr,
   })
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
+  const action = gameTwoDActionExpressionToBlock(expr, block)
+  if (action) return action
   const textBlock = textSpriteExpressionToBlock(expr, block, exprToValueBlock)
   if (textBlock) return textBlock
   const classicBlock = classicGameTwoDExpressionToBlock(expr, block, exprToValueBlock)

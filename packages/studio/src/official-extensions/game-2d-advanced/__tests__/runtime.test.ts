@@ -1169,6 +1169,33 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(removed.rpgMapSize).toBeUndefined()
   })
 
+  it('mapa sem limites conserva coordenadas negativas, movimento livre e desenho externo', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    const hero = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    const warnings: string[] = []
+    const oldWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.join(' '))
+    try {
+      h.api.rpgCreateMap('aberto', 0, 0, () => {}, false, 'unbounded')
+      h.api.onDraw(() => h.api.drawBackground('#123456', false))
+      h.api.rpgOnEnterMap('aberto', () => h.api.placeCharacter(hero, -640, 1280))
+      h.api.restartGame()
+      h.api.setState('jogando')
+      h.api.rpgMoveGrid(hero, 64, 0)
+      expect([hero.x, hero.y]).toEqual([-640, 1280])
+      h.fire('keydown', { key: 'a' })
+      h.api.rpgMoveGrid(hero, 64, 0.05)
+      h.fire('keyup', { key: 'a' })
+      expect(hero.x).toBe(-704)
+      h.nextFrame(16)
+      expect(warnings.some((warning) => warning.includes('sem desenho'))).toBe(false)
+    } finally {
+      console.warn = oldWarn
+    }
+  })
+
   it('mapa sem desenho e evento para mapa não criado produzem diagnóstico', async () => {
     const h = loadRuntime()
     await startGame(h)

@@ -4,12 +4,15 @@ import {
   deleteProject,
   listProjectSummariesLight,
   loadProjectAssetsById,
-  loadProjectById,
   loadProjectSummaryById,
   type ProjectSummary,
 } from '../state/persistence'
 import { getProjectStorageScope } from '../state/projectStorageRuntime'
-import { sanitizeCloudProjectSnapshot, useProjectStore } from '../state/projectStore'
+import {
+  loadSanitizedProjectById,
+  sanitizeCloudProjectSnapshot,
+  useProjectStore,
+} from '../state/projectStore'
 
 /**
  * Importa um SNAPSHOT de projeto (o JSON jogável do Mural / `.szproject.json`)
@@ -88,7 +91,7 @@ export async function loadProjectSnapshotForCloud(
 ): Promise<Project | null> {
   const storageScope =
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
-  const project = await loadProjectById(id, storageScope)
+  const project = await loadSanitizedProjectById(id, storageScope)
   if (!project) return null
   return snapshotProjectWithCurrentAuthority({
     ...project,
@@ -143,9 +146,9 @@ export function loadProjectAssetsSnapshotForCloud(
  * não pode deixar uma cópia órfã a cada carga. O `Project` devolvido pode ir direto
  * ao `restoreProjectFromCloud` (o saneamento é idempotente).
  */
-export function validateCloudProjectSnapshot(
+export async function validateCloudProjectSnapshot(
   raw: unknown,
   opts?: { expectedId?: string },
-): { project: Project; warnings: string[] } {
+): Promise<{ project: Project; warnings: string[] }> {
   return sanitizeCloudProjectSnapshot(raw, opts)
 }

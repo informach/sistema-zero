@@ -1,9 +1,9 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { migrateHTMLStructure } from '../../project-migrations/migrateHTMLStructure'
 import { buildIRFromWorkspace } from '../buildIR'
 import { HTMLConnectionChecker } from '../htmlConnectionChecker'
-import { migrateHTMLStructure } from '../migrateHTMLStructure'
 import { ensureBlocklyInitialized } from '../setup'
 
 function workspace(): Blockly.Workspace {

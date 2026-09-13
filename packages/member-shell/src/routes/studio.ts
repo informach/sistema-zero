@@ -1,5 +1,10 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
+import { ProjectDocumentError } from '@sistemazero/studio/project-document'
+import {
+  prepareProjectForHost,
+  sanitizeProjectForHost,
+} from '@sistemazero/studio/project-validation'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
@@ -11,6 +16,7 @@ import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
 import { generateProjectDescription } from '../server/openrouter'
 import {
+  bufferFromStream,
   r2DeleteObjectPrivate,
   r2DeleteObjects,
   r2GetObjectPrivate,
@@ -29,12 +35,6 @@ const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0
 const COVER_MAX_BYTES = 4 * 1024 * 1024 // print do jogo (WebP/PNG)
 const PROJECT_MAX_BYTES = 6 * 1024 * 1024 // projeto auto-suficiente (assets data URLs)
 const PUBLISH_MAX_BYTES = 8 * 1024 * 1024 // teto do multipart inteiro (cover + projeto + campos)
-const PROJECT_FILE_MAX_CHARS = 2_000_000
-const PROJECT_TOTAL_FILE_MAX_CHARS = 5_000_000
-const PROJECT_EXTRA_FILE_MAX_CHARS = 1_000_000
-const PROJECT_MAX_EXTRA_FILES = 100
-const PROJECT_MAX_ASSETS = 128
-const PROJECT_MAX_INSTALLED_EXTENSIONS = 100
 /** Prefixo do artefato jogável no bucket PRIVADO (servido só via /api/studio/play/:id). */
 const PLAY_KEY = (id: string) => `studio/play/${id}.json`
 
@@ -98,152 +98,6 @@ function commitCountPlay(ip: string, playId: string): void {
   // A janela pode ter enchido durante o await do resolve — respeita o teto anti-OOM.
   if (playsSeen.size >= PLAYS_MAX_ENTRIES) return
   playsSeen.set(`${ip}:${playId}`, Date.now())
-}
-
-function sanitizeProjectString(raw: unknown, maxChars: number): string {
-  return typeof raw === 'string' ? raw.slice(0, maxChars) : ''
-}
-
-function sanitizeProjectFiles(raw: unknown): {
-  'index.html': string
-  'style.css': string
-  'script.js': string
-} | null {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
-  const files = raw as Record<string, unknown>
-  const out = {
-    'index.html': sanitizeProjectString(files['index.html'], PROJECT_FILE_MAX_CHARS),
-    'style.css': sanitizeProjectString(files['style.css'], PROJECT_FILE_MAX_CHARS),
-    'script.js': sanitizeProjectString(files['script.js'], PROJECT_FILE_MAX_CHARS),
-  }
-  const total = out['index.html'].length + out['style.css'].length + out['script.js'].length
-  return total <= PROJECT_TOTAL_FILE_MAX_CHARS ? out : null
-}
-
-function sanitizeProjectExtraFiles(raw: unknown) {
-  if (!Array.isArray(raw)) return []
-  const out: Array<{
-    name: string
-    language: 'html' | 'css' | 'javascript' | 'typescript'
-    content: string
-  }> = []
-  for (const item of raw) {
-    if (out.length >= PROJECT_MAX_EXTRA_FILES) break
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-    const f = item as Record<string, unknown>
-    const language =
-      f.language === 'html' ||
-      f.language === 'css' ||
-      f.language === 'javascript' ||
-      f.language === 'typescript'
-        ? f.language
-        : null
-    if (typeof f.name !== 'string' || !language || typeof f.content !== 'string') continue
-    out.push({
-      name: f.name.slice(0, 160),
-      language,
-      content: f.content.slice(0, PROJECT_EXTRA_FILE_MAX_CHARS),
-    })
-  }
-  return out
-}
-
-function sanitizeProjectAssets(raw: unknown) {
-  if (!Array.isArray(raw)) return []
-  const out: Array<{
-    id: string
-    name: string
-    kind: 'image'
-    dataUrl: string
-    source: 'upload' | 'library'
-    width?: number
-    height?: number
-    libId?: string
-  }> = []
-  for (const item of raw) {
-    if (out.length >= PROJECT_MAX_ASSETS) break
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-    const a = item as Record<string, unknown>
-    if (a.kind !== 'image') continue
-    if (typeof a.name !== 'string' || typeof a.dataUrl !== 'string') continue
-    if (!a.dataUrl.startsWith('data:image/')) continue
-    const asset: (typeof out)[number] = {
-      id: typeof a.id === 'string' && a.id.trim() ? a.id.slice(0, 128) : a.name.slice(0, 128),
-      name: a.name.slice(0, 128),
-      kind: 'image',
-      dataUrl: a.dataUrl,
-      source: a.source === 'library' ? 'library' : 'upload',
-    }
-    if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {
-      asset.width = Math.floor(a.width)
-    }
-    if (typeof a.height === 'number' && Number.isFinite(a.height) && a.height > 0) {
-      asset.height = Math.floor(a.height)
-    }
-    if (asset.source === 'library' && typeof a.libId === 'string')
-      asset.libId = a.libId.slice(0, 128)
-    out.push(asset)
-  }
-  return out
-}
-
-function sanitizeProjectExtensions(raw: unknown) {
-  if (!Array.isArray(raw)) return []
-  const out: Array<{ id: string; version: string; installedAt: number }> = []
-  for (const item of raw) {
-    if (out.length >= PROJECT_MAX_INSTALLED_EXTENSIONS) break
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-    const ext = item as Record<string, unknown>
-    if (typeof ext.id !== 'string' || !ext.id.trim()) continue
-    out.push({
-      id: ext.id.slice(0, 128),
-      version: typeof ext.version === 'string' ? ext.version.slice(0, 64) : '0.0.0',
-      installedAt:
-        typeof ext.installedAt === 'number' && Number.isFinite(ext.installedAt)
-          ? ext.installedAt
-          : 0,
-    })
-  }
-  return out
-}
-
-function sanitizePlayableProject(raw: unknown) {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
-  const project = raw as Record<string, unknown>
-  const files = sanitizeProjectFiles(project.files)
-  if (!files) return null
-  const now = Date.now()
-  return {
-    id:
-      typeof project.id === 'string' && project.id.trim() ? project.id.slice(0, 128) : randomUUID(),
-    name:
-      typeof project.name === 'string' && project.name.trim()
-        ? project.name.trim().slice(0, 200)
-        : 'Projeto',
-    createdAt:
-      typeof project.createdAt === 'number' && Number.isFinite(project.createdAt)
-        ? project.createdAt
-        : now,
-    updatedAt:
-      typeof project.updatedAt === 'number' && Number.isFinite(project.updatedAt)
-        ? project.updatedAt
-        : now,
-    mode:
-      project.mode === 'code' || project.mode === 'bridge' || project.mode === 'blocks'
-        ? project.mode
-        : 'blocks',
-    files,
-    extraFiles: sanitizeProjectExtraFiles(project.extraFiles),
-    assets: sanitizeProjectAssets(project.assets),
-    ir:
-      project.ir && typeof project.ir === 'object' && !Array.isArray(project.ir)
-        ? project.ir
-        : null,
-    blocksState:
-      project.blocksState && typeof project.blocksState === 'object' ? project.blocksState : null,
-    installedExtensions: sanitizeProjectExtensions(project.installedExtensions),
-    ...(project.kind === 'pro' ? { kind: 'pro' as const } : {}),
-  }
 }
 
 /**
@@ -340,7 +194,7 @@ export function createStudioRoutes(deps: {
         const rawProject = JSON.parse(
           Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
         )
-        const project = sanitizePlayableProject(rawProject)
+        const project = sanitizeProjectForHost(rawProject)
         if (!project) return invalid()
         studioMeta = {
           pro: project.kind === 'pro',
@@ -484,7 +338,7 @@ export function createStudioRoutes(deps: {
         const rawProject = JSON.parse(
           Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
         )
-        const project = sanitizePlayableProject(rawProject)
+        const project = sanitizeProjectForHost(rawProject)
         if (!project) return invalid()
         studioMeta = {
           pro: project.kind === 'pro',
@@ -584,6 +438,9 @@ export function createStudioRoutes(deps: {
       if (wouldCount) commitCountPlay(ip, id)
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
+        const bytes = await bufferFromStream(obj.body, PROJECT_MAX_BYTES)
+        const project = await prepareProjectForHost(JSON.parse(bytes.toString('utf-8')))
+        if (!project) throw new ProjectDocumentError('invalid-document', 'Projeto inválido.')
         const headers: Record<string, string> = {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'private, no-store',
@@ -596,8 +453,18 @@ export function createStudioRoutes(deps: {
         if (typeof author === 'string' && author.trim()) {
           headers['X-Author-Name'] = encodeURIComponent(author.trim())
         }
-        return new NextResponse(obj.body, { status: 200, headers })
-      } catch {
+        return new NextResponse(JSON.stringify(project), { status: 200, headers })
+      } catch (error) {
+        if (error instanceof ProjectDocumentError)
+          return NextResponse.json(
+            {
+              error: {
+                code: 'PROJECT_CONVERSION_PENDING',
+                message: 'Este jogo está aguardando atualização. Tente novamente mais tarde.',
+              },
+            },
+            { status: 409 },
+          )
         // Erro = inexistente/inacessível (404), não vaza detalhe.
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       }

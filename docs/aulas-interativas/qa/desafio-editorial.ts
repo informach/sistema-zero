@@ -7,6 +7,12 @@ import {
   type SectionProjectCheck,
 } from '../../../packages/core/src/learning'
 import { experimentHtml, experiments } from './desafio-interacoes'
+import {
+  annotateStudioRecording,
+  currentStudioRecipe,
+  lessonStudioEdition,
+  studioGuideMarkdown,
+} from './jogo-2d-edicao-atual'
 
 export type Question = [string, string, string, string]
 export interface Step {
@@ -65,6 +71,7 @@ export function originalOf(directory: string, day: number) {
   return { file, hash: createHash('sha256').update(raw).digest('hex'), parts }
 }
 export function buildLesson(day: number, recipe: Recipe, original: ReturnType<typeof originalOf>) {
+  recipe = currentStudioRecipe(recipe)
   const slug = day ? `dia-${day}` : 'introducao'
   const previous: LearningManifest = JSON.parse(
     readFileSync(
@@ -274,6 +281,7 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
             ? 'Conceito transposto para a experiência separada; não repetir a explicação inteira.'
             : 'Consultar as decisões editoriais desta aula antes de reaproveitar; não inserir automaticamente.'),
   }))
+  annotateStudioRecording(manifest, clips)
   return {
     manifest,
     recipe,
@@ -283,6 +291,7 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
       status: 'Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.',
       clips,
       sourceReview,
+      studio: lessonStudioEdition(manifest),
     },
   }
 }
@@ -298,104 +307,107 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
     explanation: 'Entender',
     material: 'Consultar',
   }
-  return [
-    `# ${m.lessonSlug} — ${r.title}`,
-    '',
-    `**Entrada:** ${r.entry}`,
-    '',
-    `**Resultado:** ${r.exit}`,
-    '',
-    `**Tempo de percurso estimado:** ${r.minutes}. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.`,
-    '',
-    'A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.',
-    '',
-    '## Percurso',
-    '',
-    '| Seção | O que aparece | Objetivo |',
-    '| --- | --- | --- |',
-    ...m.sections.map(
-      (s, i) => `| ${i + 1}. ${s.title} | ${labels[s.intent ?? 'explanation']} | ${s.objective} |`,
-    ),
-    '',
-    '## Abertura',
-    '',
-    `“${r.opening}”`,
-    '',
-    ...r.steps.flatMap((s) => {
-      const clip = montage.clips.find((c) => c.key === `video-${s.key}`)
-      return [
-        `## ${s.title}`,
-        '',
-        `**Por que aqui:** ${s.reason}`,
-        '',
-        `**Foco:** ${s.focus}`,
-        '',
-        `**Fala revisada / orientação:** “${s.say}”`,
-        '',
-        `**Imagem:** ${s.visual}`,
-        '',
-        ...(s.kind === 'experiment'
-          ? [
-              `**Controles:** ${experiments[s.experiment!].options.join(' ou ')}; ${experiments[s.experiment!].steps === 1 ? 'mostrar cada posição uma vez' : 'avançar os três passos de cada comparação'}. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.`,
-              '',
-              '**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.',
-              '',
-              `**Pergunta:** ${s.question![0]}`,
-              '',
-              `**Resposta:** ${s.question![1]}. ${s.question![3]}`,
-              '',
-            ]
-          : [
-              `**Fonte:** ${clip!.sourceFile} → ${clip!.sourceSection}.`,
-              '',
-              `**Montagem:** ${s.edit}`,
-              '',
-              `**Trecho original antes da edição:** ${clip!.narration}`,
-              '',
-              s.kind === 'observe'
-                ? '**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.'
-                : '**Conclusão:** construir e usar a conferência da etapa. O vídeo orienta; os encaixes ativos do projeto são verificados.',
-              '',
-              ...(s.checks ?? []).map((c) => `- ${c.label}`),
-              '',
-            ]),
-        `**Ajuda no mesmo objetivo:** ${s.help}`,
-        '',
-      ]
-    }),
-    '## Teste final e acompanhamento',
-    '',
-    r.test,
-    '',
-    ...r.finalChecks.map((c) => `- ${c.label}`),
-    '',
-    'Os critérios verificam estrutura, valores e relações indicados; o professor confere o jogo rodando, legibilidade, som e resultado. Não prometer avaliação automática de toda a jogabilidade.',
-    '',
-    '## Fecho e quiz',
-    '',
-    `“${r.closing}”`,
-    '',
-    ...r.quiz.flatMap(([q, a, b, why]) => [
-      `**${q}**`,
+  return (
+    [
+      `# ${m.lessonSlug} — ${r.title}`,
       '',
-      `- ${a} (correta)`,
-      `- ${b}`,
+      `**Entrada:** ${r.entry}`,
       '',
-      why,
+      `**Resultado:** ${r.exit}`,
       '',
-    ]),
-    '## Decisões para edição e professor',
-    '',
-    ...r.corrections.map((c) => `- ${c}`),
-    '',
-    '## Destino de todo o roteiro original',
-    '',
-    ...montage.sourceReview.map(
-      (s) =>
-        `- **${s.heading}:** ${s.decision} ${s.clips.length ? `Clipes: ${s.clips.join(', ')}.` : ''}`,
-    ),
-    '',
-    `Fonte preservada, SHA-256: ${montage.sourceHash}. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.`,
-    '',
-  ].join('\n')
+      `**Tempo de percurso estimado:** ${r.minutes}. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.`,
+      '',
+      'A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.',
+      '',
+      '## Percurso',
+      '',
+      '| Seção | O que aparece | Objetivo |',
+      '| --- | --- | --- |',
+      ...m.sections.map(
+        (s, i) =>
+          `| ${i + 1}. ${s.title} | ${labels[s.intent ?? 'explanation']} | ${s.objective} |`,
+      ),
+      '',
+      '## Abertura',
+      '',
+      `“${r.opening}”`,
+      '',
+      ...r.steps.flatMap((s) => {
+        const clip = montage.clips.find((c) => c.key === `video-${s.key}`)
+        return [
+          `## ${s.title}`,
+          '',
+          `**Por que aqui:** ${s.reason}`,
+          '',
+          `**Foco:** ${s.focus}`,
+          '',
+          `**Fala revisada / orientação:** “${s.say}”`,
+          '',
+          `**Imagem:** ${s.visual}`,
+          '',
+          ...(s.kind === 'experiment'
+            ? [
+                `**Controles:** ${experiments[s.experiment!].options.join(' ou ')}; ${experiments[s.experiment!].steps === 1 ? 'mostrar cada posição uma vez' : 'avançar os três passos de cada comparação'}. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.`,
+                '',
+                '**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.',
+                '',
+                `**Pergunta:** ${s.question![0]}`,
+                '',
+                `**Resposta:** ${s.question![1]}. ${s.question![3]}`,
+                '',
+              ]
+            : [
+                `**Fonte:** ${clip!.sourceFile} → ${clip!.sourceSection}.`,
+                '',
+                `**Montagem:** ${s.edit}`,
+                '',
+                `**Trecho original antes da edição:** ${clip!.narration}`,
+                '',
+                s.kind === 'observe'
+                  ? '**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.'
+                  : '**Conclusão:** construir e usar a conferência da etapa. O vídeo orienta; os encaixes ativos do projeto são verificados.',
+                '',
+                ...(s.checks ?? []).map((c) => `- ${c.label}`),
+                '',
+              ]),
+          `**Ajuda no mesmo objetivo:** ${s.help}`,
+          '',
+        ]
+      }),
+      '## Teste final e acompanhamento',
+      '',
+      r.test,
+      '',
+      ...r.finalChecks.map((c) => `- ${c.label}`),
+      '',
+      'Os critérios verificam estrutura, valores e relações indicados; o professor confere o jogo rodando, legibilidade, som e resultado. Não prometer avaliação automática de toda a jogabilidade.',
+      '',
+      '## Fecho e quiz',
+      '',
+      `“${r.closing}”`,
+      '',
+      ...r.quiz.flatMap(([q, a, b, why]) => [
+        `**${q}**`,
+        '',
+        `- ${a} (correta)`,
+        `- ${b}`,
+        '',
+        why,
+        '',
+      ]),
+      '## Decisões para edição e professor',
+      '',
+      ...r.corrections.map((c) => `- ${c}`),
+      '',
+      '## Destino de todo o roteiro original',
+      '',
+      ...montage.sourceReview.map(
+        (s) =>
+          `- **${s.heading}:** ${s.decision} ${s.clips.length ? `Clipes: ${s.clips.join(', ')}.` : ''}`,
+      ),
+      '',
+      `Fonte preservada, SHA-256: ${montage.sourceHash}. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.`,
+      '',
+    ].join('\n') + studioGuideMarkdown(m)
+  )
 }

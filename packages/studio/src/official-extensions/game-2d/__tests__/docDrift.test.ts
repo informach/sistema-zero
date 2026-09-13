@@ -46,9 +46,15 @@ import { GAME_TWO_D_API_KEYS } from '../runtimeContract'
  */
 
 /** Todo nome de sub-categoria da toolbox, em qualquer nível. */
-function nomesDeCategoria(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
+function nomesDeCategoria(
+  cat: ExtensionToolboxCategory,
+  acc: string[] = [],
+  parents: string[] = [],
+): string[] {
   acc.push(cat.name)
-  for (const c of cat.contents) if (c.kind === 'category') nomesDeCategoria(c, acc)
+  const path = cat.name === 'Jogo 2D' ? [] : [...parents, cat.name]
+  if (path.length > 1) acc.push(path.join(' > '))
+  for (const c of cat.contents) if (c.kind === 'category') nomesDeCategoria(c, acc, path)
   return acc
 }
 
@@ -62,23 +68,30 @@ function tiposNaToolbox(cat: ExtensionToolboxCategory, acc: string[] = []): stri
 }
 
 function tiposDaCategoria(name: string): string[] {
-  const category = gameTwoDToolboxCategory.contents.find(
-    (content): content is ExtensionToolboxCategory =>
-      content.kind === 'category' && content.name === name,
-  )
+  const find = (parent: ExtensionToolboxCategory): ExtensionToolboxCategory | undefined => {
+    for (const content of parent.contents) {
+      if (content.kind !== 'category') continue
+      if (content.name === name) return content
+      const nested = find(content)
+      if (nested) return nested
+    }
+  }
+  const category = find(gameTwoDToolboxCategory)
   if (!category) throw new Error(`Categoria ausente: ${name}`)
   return tiposNaToolbox(category)
 }
 
 function blocoNaToolbox(type: string): Record<string, unknown> | undefined {
-  for (const category of gameTwoDToolboxCategory.contents) {
-    if (category.kind !== 'category') continue
-    const block = category.contents.find(
-      (content) => content.kind === 'block' && content.type === type,
-    )
-    if (block?.kind === 'block') return block as unknown as Record<string, unknown>
+  const find = (parent: ExtensionToolboxCategory): Record<string, unknown> | undefined => {
+    for (const content of parent.contents) {
+      if (content.kind === 'block' && content.type === type) return content
+      if (content.kind === 'category') {
+        const nested = find(content)
+        if (nested) return nested
+      }
+    }
   }
-  return undefined
+  return find(gameTwoDToolboxCategory)
 }
 
 function contarArquivos(directory: string): number {
@@ -222,7 +235,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(298)
+    expect(gameTwoDBlocks.length).toBe(283)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {
@@ -557,13 +570,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * nada cobrava.
    */
   it('a subcategoria de Inimigos abre pela receita mínima, nessa ordem', () => {
-    const sub = (
-      gameTwoDToolboxCategory.contents as Array<{
-        name?: string
-        contents?: Array<{ type?: string }>
-      }>
-    ).find((c) => String(c.name ?? '').includes('Inimigos'))
-    const tipos = (sub?.contents ?? []).map((b) => b.type)
+    const tipos = tiposDaCategoria('Inimigos')
     expect(tipos.slice(0, 5)).toEqual([
       'sz_g2d_define_enemy_type', // criar (o caminho)
       'sz_g2d_define_enemy_smart', // criar (o atalho, logo ao lado)
@@ -719,7 +726,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     const hiddenBlocks = gameTwoDBlocks.length - visibleBlocks
 
     expect(audit).toContain(`${gameTwoDBlocks.length} definições de bloco`)
-    expect(audit).toContain(`${visibleBlocks} visíveis e ${hiddenBlocks} legadas ocultas`)
+    expect(audit).toContain(`${visibleBlocks} visíveis e ${hiddenBlocks} ocultas`)
     expect(audit).toContain(`${GAME_TWO_D_API_KEYS.length} métodos e valores públicos`)
     expect(audit).toContain(`${contarArquivos(join(import.meta.dir, '..'))} arquivos próprios`)
   })
@@ -742,12 +749,30 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('organiza controles, colisões e tempo por assunto, não pela Área do projeto', () => {
+    expect(
+      gameTwoDToolboxCategory.contents.filter((c) => c.kind === 'category').map((c) => c.name),
+    ).toEqual([
+      'Jogo e telas',
+      'Sprites',
+      'Movimento',
+      'Controles',
+      'Colisões',
+      'Grupos',
+      'Vida e placar',
+      'Som',
+      'Desenho e efeitos',
+      'Tempo',
+      'Sorteios',
+      'Cenários',
+      'Inimigos',
+      'Kits prontos',
+    ])
     const categories = nomesDeCategoria(gameTwoDToolboxCategory)
     expect(categories).not.toContain(GAME_TWO_D_AREAS.events)
     expect(categories).not.toContain(GAME_TWO_D_AREAS.loop)
     expect(categories).not.toContain('❓ Perguntas')
 
-    expect(tiposDaCategoria('🎛️ Controles')).toEqual([
+    expect(tiposDaCategoria('Controles')).toEqual([
       'sz_g2d_on_key',
       'sz_g2d_on_any_input',
       'sz_g2d_on_pointer',
@@ -761,12 +786,10 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_action_pressed',
       'sz_g2d_on_action_pressed',
     ])
-    expect(tiposDaCategoria('💥 Colisões')).toEqual([
-      'sz_g2d_on_overlap',
+    expect(tiposDaCategoria('Colisões')).toEqual([
       'sz_g2d_touches',
-      'sz_g2d_collides',
-      'sz_g2d_circle_collides',
-      'sz_g2d_set_hitbox_scale',
+      'sz_g2d_circle_touches',
+      'sz_g2d_on_overlap',
       'sz_g2d_collide_group',
       'sz_g2d_collide_sprite',
       'sz_g2d_collide_platform',
@@ -776,20 +799,22 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_for_each_tile_contact',
       'sz_g2d_tile_contact_is',
       'sz_g2d_set_tile_at_contact',
+      'sz_g2d_set_hitbox_scale',
+      'sz_g2d_draw_hitbox',
     ])
-    expect(tiposDaCategoria('⏱️ Tempo e repetição')).toEqual([
+    expect(tiposDaCategoria('Tempo')).toEqual([
       'sz_g2d_update_each_frame',
       'sz_g2d_every_frames',
       'sz_g2d_every_seconds',
       'sz_g2d_after_seconds',
+      'sz_g2d_with_cooldown',
       'sz_g2d_cooldown_ready',
-      'sz_g2d_prune_old',
     ])
-    expect(tiposDaCategoria('🚀 Kit espaço')).not.toContain('sz_g2d_on_sprite_group_overlap')
+    expect(tiposDaCategoria('Espaço')).not.toContain('sz_g2d_on_sprite_group_overlap')
   })
 
   it('Vida oferece o fluxo automático por sprite sem apagar projetos antigos', () => {
-    expect(tiposDaCategoria('❤️ Vida')).toEqual([
+    expect(tiposDaCategoria('Vida')).toEqual([
       'sz_g2d_set_health',
       'sz_g2d_change_health',
       'sz_g2d_damage_sprite',
@@ -801,7 +826,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_draw_sprite_health',
     ])
     const legacyHearts = gameTwoDBlocks.find((block) => block.type === 'sz_g2d_draw_hearts')
-    expect(legacyHearts?.hidden).toBe(true)
+    expect(legacyHearts).toBeUndefined()
     expect(blocoNaToolbox('sz_g2d_draw_hearts')).toBeUndefined()
     expect(blocoNaToolbox('sz_g2d_draw_sprite_health')).toBeDefined()
     expect(gameTwoDBlocks.find((block) => block.type === 'sz_g2d_set_health')?.placement).toBe(
@@ -810,11 +835,11 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('Telas e cenas contém a descrição acessível do jogo', () => {
-    expect(tiposDaCategoria('📺 Telas e cenas')).toContain('sz_g2d_set_stage_description')
+    expect(tiposDaCategoria('Jogo e telas')).toContain('sz_g2d_set_stage_description')
   })
 
   it('preenche todos os soquetes de valor visíveis de Placar e HUD com sombras', () => {
-    const missing = tiposDaCategoria('🏆 Placar e HUD').flatMap((type) => {
+    const missing = tiposDaCategoria('Indicadores e texto na tela').flatMap((type) => {
       const definition = gameTwoDBlocks.find((block) => block.type === type)
       const valueInputs = (definition?.args0 ?? [])
         .filter(
@@ -933,12 +958,13 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(docs).not.toContain('"tiles de 0 px"')
     expect(docs).not.toContain('A borda atraída sempre é chão')
 
-    for (const type of ['sz_g2d_draw_tilemap', 'sz_g2d_camera_follow', 'sz_g2d_set_camera']) {
-      const block = gameTwoDBlocks.find((candidate) => candidate.type === type)
-      expect(block?.hidden, type).toBe(true)
-      expect(block?.message0, type).toContain('Bloco antigo')
-      expect(block?.tooltip, type).toContain('Compatibilidade com projetos antigos')
-    }
+    for (const type of [
+      'sz_g2d_camera_follow',
+      'sz_g2d_set_camera',
+      'sz_g2d_draw_tilemap',
+      'sz_g2d_on_start',
+    ])
+      expect(gameTwoDBlocks.find((block) => block.type === type)).toBeUndefined()
   })
 
   it('todo bloco visível explica sua finalidade em um tooltip', () => {

@@ -27,7 +27,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * depois do movimento precisa confirmar novamente o apoio do quadro atual.
    */
   function _beginGroundFrame(sprite) {
-    if (!sprite) return false;
+    if (!sprite || _isDestroyedSprite(sprite)) return false;
     var wasGrounded = sprite.onGround === true;
     sprite._groundedLastFrame = wasGrounded;
     sprite.onGround = false;
@@ -36,7 +36,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
   /** Confirma o chão atual e, quando é uma figura, guarda sua posição para transporte. */
   function _confirmGroundSupport(sprite, support) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.onGround = true;
     var candidateOwner = support && support !== sprite ? support : null;
     if (sprite._supportResolutionDepth > 0) {
@@ -65,7 +65,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
   /** Solta imediatamente o apoio (pulo, troca para movimento livre etc.). */
   function _detachGroundSupport(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.onGround = false;
     sprite._groundedLastFrame = false;
     sprite._groundSupport = null;
@@ -75,7 +75,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * quadro. O deslocamento próprio do passageiro é preservado e somado ao da base.
    */
   function _carryByGroundSupport(sprite, support) {
-    if (!sprite || !support ||
+    if (!sprite || _isDestroyedSprite(sprite) || !support ||
         (sprite._groundedLastFrame !== true && sprite.onGround !== true)) return;
     var previous = sprite._groundSupport;
     if (!previous || previous.owner !== support) return;
@@ -87,7 +87,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     previous.y = supportY;
   }
   function _beginSupportResolution(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var depth = _finiteNumber(sprite._supportResolutionDepth, 0);
     if (depth === 0) {
       var previous = sprite._groundSupport;
@@ -107,7 +107,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     sprite._supportResolutionDepth = depth + 1;
   }
   function _endSupportResolution(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var depth = Math.max(0, _finiteNumber(sprite._supportResolutionDepth, 1) - 1);
     sprite._supportResolutionDepth = depth;
     if (depth === 0) {
@@ -116,7 +116,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     }
   }
   function _recordPreviousPosition(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite._previousX = _finiteNumber(sprite.x, 0);
     sprite._previousY = _finiteNumber(sprite.y, 0);
     sprite._previousFrameStamp = _frameStamp;
@@ -128,7 +128,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * usa o deslocamento REAL, não a velocidade que outro bloco pode mudar depois.
    */
   function _commitRecordedMotion(sprite) {
-    if (!sprite || sprite._previousFrameStamp !== _frameStamp) return;
+    if (!sprite || _isDestroyedSprite(sprite) || sprite._previousFrameStamp !== _frameStamp) return;
     sprite._recordedMotionDX = _finiteNumber(sprite.x, 0) - sprite._previousX;
     sprite._recordedMotionDY = _finiteNumber(sprite.y, 0) - sprite._previousY;
   }
@@ -165,7 +165,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     if (previous && previous.recorded === true) _commitRecordedMotion(sprite);
   }
   function _jumpFromGround(sprite, gravity, strength) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.vy = _jumpVelocityForGravity(gravity, strength);
     _detachGroundSupport(sprite);
     _emitJump(sprite);
@@ -175,7 +175,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * positiva pousa em bottom; gravidade negativa pousa em top.
    */
   function _resolveGravityGround(sprite, top, bottom, gravity) {
-    if (!sprite) return false;
+    if (!sprite || _isDestroyedSprite(sprite)) return false;
     var ceiling = _finiteNumber(top, 0);
     var floor = _finiteNumber(bottom, ceiling) -
       ((_isFiniteNumber(sprite.h) && sprite.h > 0) ? sprite.h : 0);
@@ -207,7 +207,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * bloco. Separar deixou os dois honestos.
    */
   function applyVelocity(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     // A colisão do quadro anterior pode ter marcado o chão. A integração abre
     // um novo quadro: se ainda houver apoio, a colisão o confirma depois de mover.
@@ -234,13 +234,13 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * com o chão é mais estável.
    */
   function applyGravity(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.vy = _finiteNumber(sprite.vy, 0) + world.gravity;
   }
 
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
   function bounceOnEdges(sprite, ctx) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     var visible = _visibleWorldRect(ctx);
     if (sprite.x < visible.left) { sprite.x = visible.left; sprite.vx = Math.abs(sprite.vx || 0); }
     else if (sprite.x + sprite.w > visible.right) { sprite.x = visible.right - sprite.w; sprite.vx = -Math.abs(sprite.vx || 0); }
@@ -257,7 +257,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * bola de aparecer meio quadro fora do palco.
    */
   function bounceOnEdgePair(sprite, ctx, edges) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     var visible = _visibleWorldRect(ctx);
     if (String(edges) === 'left-right') {
       if (sprite.x < visible.left) { sprite.x = visible.left; sprite.vx = Math.abs(sprite.vx || 0); }
@@ -352,7 +352,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
 
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */
   function circleCollides(a, b) {
-    if (!a || !b) return false;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return false;
     // ⭐ Le a caixa EFETIVA (_hitboxOf), a mesma do retangulo: assim o dial "usar
     // area de colisao de N%" E a caixa medida no desenho valem aqui tambem. Antes
     // isto lia o fator na mao e teria ficado cego para a medicao do Pinta.

@@ -9,6 +9,7 @@ import {
   SZIRV2Schema,
   splitLegacyBehavior,
 } from '#ir'
+import { requiredRuntimeExtensions } from '../ir/runtimeDependencies'
 import { routeBehaviorSections } from './behaviorSections'
 import { parseCSS } from './css'
 import { extractInlineAssets } from './html'
@@ -90,7 +91,9 @@ function buildParseResult(
     html,
     css,
     behavior: jsResult.behavior,
-    extensions: [],
+    extensions: requiredRuntimeExtensions(jsResult.behavior).map((extensionId) => ({
+      extensionId,
+    })),
     ...(htmlShell ? { htmlShell } : {}),
   }
   const diagnostics: ParseProjectDiagnostic[] = []

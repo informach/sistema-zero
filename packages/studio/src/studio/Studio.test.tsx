@@ -147,11 +147,11 @@ describe('Studio', () => {
     })
   })
 
-  it('renderiza aviso quando o initialProject é inválido', () => {
+  it('renderiza aviso quando o initialProject é inválido', async () => {
     const { getByText } = render(
       <Studio initialProject={{ id: 'x' } as Parameters<typeof Studio>[0]['initialProject']} />,
     )
-    expect(getByText(/Projeto inválido/)).toBeTruthy()
+    await waitFor(() => expect(getByText(/nome e arquivos válidos/)).toBeTruthy())
   })
 
   it('preserva, mas não abre projeto com extensão ainda não liberada pelo host', async () => {
@@ -162,7 +162,9 @@ describe('Studio', () => {
       <Studio initialProject={project} allowExtensions={['game-2d']} />,
     )
 
-    expect(getByText(/Este projeto usa ferramentas que você ainda vai conquistar/)).toBeTruthy()
+    await waitFor(() =>
+      expect(getByText(/Este projeto usa ferramentas que você ainda vai conquistar/)).toBeTruthy(),
+    )
     await waitFor(() => expect(queryByTestId('editor-shell')).toBeNull())
     expect(project.installedExtensions).toEqual([
       { id: 'game-3d', version: '1.0.0', installedAt: 1 },
@@ -327,31 +329,17 @@ describe('Studio', () => {
 })
 
 describe('sanitizeProjectForHost — teto combinado de arquivos', () => {
-  it('derruba extras quando canônicos + extras excedem o limite total', () => {
-    // Canônicos e extras são limitados INDEPENDENTE (cada grupo ≤ maxTotalChars),
-    // então a soma podia chegar a ~2x o limite. Cada arquivo aqui passa nos
-    // limites individuais, mas a SOMA estoura — os extras devem ser podados.
-    const fileChars = PROJECT_FILE_LIMITS.maxFileChars
-    const big = 'a'.repeat(fileChars)
-    const project = sanitizeProjectForHost({
-      id: 'oversized',
-      name: 'Grande',
-      files: { 'index.html': big, 'style.css': big, 'script.js': big }, // 3x = total canônico
+  it('recusa o projeto inteiro se a soma exigir apagar arquivos', () => {
+    const big = 'a'.repeat(PROJECT_FILE_LIMITS.maxFileChars)
+    const source = {
+      ...createEmptyProject('oversized', 'Grande'),
+      files: { 'index.html': big, 'style.css': big, 'script.js': big },
       extraFiles: [
-        { name: 'extra-a.js', content: big }, // estouraria o combinado
+        { name: 'extra-a.js', content: big },
         { name: 'extra-b.js', content: big },
       ],
-    })
-
-    expect(project).not.toBeNull()
-    const extras = project?.extraFiles ?? []
-    // Pelo menos um extra foi podado para caber no limite combinado.
-    expect(extras.length).toBeLessThan(2)
-    const total =
-      (project?.files['index.html'].length ?? 0) +
-      (project?.files['style.css'].length ?? 0) +
-      (project?.files['script.js'].length ?? 0) +
-      extras.reduce((sum, f) => sum + f.content.length, 0)
-    expect(total).toBeLessThanOrEqual(PROJECT_FILE_LIMITS.maxTotalChars)
+    }
+    expect(() => sanitizeProjectForHost(source)).toThrow('Nenhuma cópia foi gravada')
+    expect(source.extraFiles).toHaveLength(2)
   })
 })

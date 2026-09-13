@@ -136,7 +136,7 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
 
   /** Explosão temática no centro do sprite (jato da cor + estilhaços cinza). */
   function explodeSprite(sprite, color) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
     emitParticles(cx, cy, 18, color || '#ffb13b');
     emitParticles(cx, cy, 10, '#d6d7df');
@@ -194,7 +194,7 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
     var generation = _driverGeneration;
     var sprite = _invokeProjectCallback(getSprite, undefined, []);
     if (_runGenerationChanged(generation)) return;
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var traversal = _beginGroupTraversal(group);
     for (var i = traversal.items.length - 1; i >= 0; i--) {
       _refreshGroupTraversal(group, traversal);

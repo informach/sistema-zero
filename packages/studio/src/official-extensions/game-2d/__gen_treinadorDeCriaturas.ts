@@ -162,6 +162,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Você perdeu!", "Sua vida acabou nesta batalha. Escolha melhor os golpes e tente de novo!", "Aperte Enter para tentar de novo", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("vez-da-criatura", 1.2)) {
   if (SZGame2D.sceneIs("batalha")) {
     if (turno == "criatura") {
@@ -180,6 +181,7 @@ if (SZGame2D.everySeconds("vez-da-criatura", 1.2)) {
     }
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

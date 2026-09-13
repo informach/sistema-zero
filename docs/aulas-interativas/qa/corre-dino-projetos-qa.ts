@@ -70,7 +70,9 @@ export function courseProjects() {
   )
   body(loop, 'BODY', [...background, ...actions])
   save(3)
-  events.push(body(b('sz_g2d_on_jump', { SPRITE: 'dino' }), 'BODY', [b('sz_g2d_play_jump')]))
+  events.push(
+    body(b('sz_g2d_on_jump', { SPRITE: 'dino' }), 'BODY', [b('sz_g2d_play_fx', { FX: 'jump' })]),
+  )
   save(4)
   start.push(b('sz_g2d_create_group', { NAME: 'cactos' }))
   const spawn = b(

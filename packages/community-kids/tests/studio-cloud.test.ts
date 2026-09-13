@@ -62,7 +62,7 @@ function fakeStudio(initial: StudioProjectLike[] = []) {
       return p ? { id: p.id, name: p.name, updatedAt: p.updatedAt } : null
     },
     isProjectOpenAnywhere: (id) => openIds.has(id),
-    validateCloudProjectSnapshot: (raw, opts) => {
+    validateCloudProjectSnapshot: async (raw, opts) => {
       const project = raw as StudioProjectLike & { rejectMe?: boolean }
       if (!project || typeof project !== 'object') throw new Error('Snapshot inválido')
       if (opts?.expectedId && project.id !== opts.expectedId) {

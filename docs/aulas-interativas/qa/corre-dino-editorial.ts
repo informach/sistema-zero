@@ -8,6 +8,12 @@ import type {
   SectionStructureRule,
 } from '../../../packages/core/src/learning'
 import { SCENE_MODELS, type SceneId } from '../../../packages/core/src/learning/scene'
+import {
+  annotateStudioRecording,
+  currentStudioRecipe,
+  lessonStudioEdition,
+  studioGuideMarkdown,
+} from './jogo-2d-edicao-atual'
 
 export type Check = SectionProjectCheck
 type Rule = Extract<SectionStructureRule, { type: 'usesBlock' }>
@@ -82,6 +88,7 @@ export function buildEditorial(
   recipe: Recipe,
   original: ReturnType<typeof readOriginal>,
 ) {
+  recipe = currentStudioRecipe(recipe)
   const manifest = structuredClone(source)
   const workspace = manifest.blocks.find((block) => block.key === 'projeto')
   const oldQuiz = manifest.blocks.find((block) => block.key === 'quiz-final')
@@ -275,6 +282,7 @@ export function buildEditorial(
   manifest.retireBlockKeys = [
     ...new Set([...(source.retireBlockKeys ?? []), ...source.blocks.map((b) => b.key)]),
   ].filter((key) => !blocks.some((b) => b.key === key))
+  annotateStudioRecording(manifest, clips)
   return {
     manifest,
     montage: {
@@ -282,6 +290,7 @@ export function buildEditorial(
       sourceHash: original.hash,
       status: 'Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.',
       clips,
+      studio: lessonStudioEdition(manifest),
     },
     recipe,
   }
@@ -389,5 +398,5 @@ export function editorialMarkdown(result: ReturnType<typeof buildEditorial>) {
     `Fonte íntegra conferida por SHA-256: ${montage.sourceHash}. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).`,
     '',
   )
-  return text.join('\n')
+  return text.join('\n') + studioGuideMarkdown(manifest)
 }

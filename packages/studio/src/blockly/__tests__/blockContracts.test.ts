@@ -1140,7 +1140,11 @@ describe('contrato central de posicionamento', () => {
   })
 
   it('marca wrappers e boots antigos para migração, não para projetos novos', () => {
-    expect(inferBlockContract(definition('sz_g2d_on_start')).migration).toBe('unwrap-start')
+    expect(
+      OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks).some(
+        (block) => block.type === 'sz_g2d_on_start',
+      ),
+    ).toBe(false)
     expect(inferBlockContract(definition('sz_js_on_load')).migration).toBe('unwrap-load')
     expect(inferBlockContract(definition('sz_gk_start')).migration).toBe('remove-engine-boot')
   })

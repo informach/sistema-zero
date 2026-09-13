@@ -1,505 +1,32 @@
 import { categoryShades } from '../../blockly/colorShades'
 import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 import { gameTwoDBlocks as canonicalGameTwoDBlocks } from './blockCatalog'
+import { GAME_TWO_D_PALETTE } from './palette'
 
 const C = '#ec4899'
 
-/**
- * Sub-categorias do Jogo 2D (à la Scratch/MakeCode), na ordem do fluxo mental: o
- * que aparece → como mexe → quando algo acontece → perguntas → enfeites → cenário.
- * ⚠️ A `colour` de cada entrada abaixo é só um PLACEHOLDER: logo após o array,
- * `SUBCAT_SHADES` reescreve TODAS para tons do rosa da categoria (o Jogo 2D é uma
- * cor só no arco-íris da paleta; a distinção entre grupos é pelo NOME/emoji, não
- * pela cor). Mudar o literal aqui não muda nada — ajuste `categoryShades(C, …)`.
- */
-const SUBCATS: { name: string; colour: string; types: string[] }[] = [
-  {
-    name: '🎮 Sprites',
-    colour: '#4c97ff',
-    types: [
-      'sz_g2d_create_sprite',
-      'sz_g2d_create_text_sprite',
-      'sz_g2d_set_sprite_text',
-      'sz_g2d_sprite_text',
-      'sz_g2d_set_text_style',
-      'sz_g2d_set_text_box',
-      'sz_g2d_set_sprite_data',
-      'sz_g2d_sprite_data',
-      'sz_g2d_create_image_sprite',
-      'sz_g2d_draw_sprite',
-      'sz_g2d_set_image',
-      'sz_g2d_set_position',
-    ],
-  },
-  {
-    name: '📐 Posição & tamanho',
-    colour: '#4c97ff',
-    types: [
-      'sz_g2d_sprite_x',
-      'sz_g2d_sprite_y',
-      'sz_g2d_sprite_w',
-      'sz_g2d_sprite_h',
-      'sz_g2d_center_x',
-      'sz_g2d_center_y',
-    ],
-  },
-  {
-    name: '💨 Velocidade',
-    colour: '#4c97ff',
-    types: [
-      'sz_g2d_sprite_vx',
-      'sz_g2d_sprite_vy',
-      'sz_g2d_sprite_speed',
-      'sz_g2d_is_moving',
-      'sz_g2d_is_moving_h',
-      'sz_g2d_is_moving_v',
-    ],
-  },
-  {
-    name: '📦 Muitos',
-    colour: '#3373cc',
-    types: [
-      'sz_g2d_create_group',
-      'sz_g2d_spawn_in_group',
-      'sz_g2d_spawn_text_in_group',
-      'sz_g2d_spawn_image_in_group',
-      'sz_g2d_spawn_bullet',
-      'sz_g2d_update_group',
-      'sz_g2d_apply_gravity_group',
-      'sz_g2d_draw_group',
-      'sz_g2d_draw_group_by_y',
-      'sz_g2d_for_each_in_group',
-      'sz_g2d_count_group',
-      'sz_g2d_clear_group',
-      'sz_g2d_prune_offscreen',
-      'sz_g2d_add_to_group',
-      'sz_g2d_remove_from_group',
-      'sz_g2d_bring_to_front',
-      'sz_g2d_send_to_back',
-    ],
-  },
-  {
-    name: '😈 Inimigos',
-    colour: '#8a55d7',
-    // A ORDEM ensina a receita mínima: criar, soltar, atualizar, desenhar. Quem
-    // arrasta os CINCO primeiros (escolhendo UM dos dois criadores) já vê
-    // inimigo na tela; sem o desenhar, a tela fica vazia em silêncio.
-    // ⚠️ O criador clássico vem primeiro de propósito: a gaveta inteira fala a
-    // língua dele ("também é ⟨comportamento⟩", "Ajustar", os avisos do Console).
-    // O "com inteligência" é o ATALHO, e atalho vem depois do caminho.
-    types: [
-      'sz_g2d_define_enemy_type',
-      'sz_g2d_define_enemy_smart',
-      'sz_g2d_spawn_enemy',
-      'sz_g2d_update_enemy_type',
-      'sz_g2d_draw_enemy_type',
-      'sz_g2d_enemy_add_behavior',
-      'sz_g2d_enemy_type_param',
-      'sz_g2d_enemy_state_anim',
-      'sz_g2d_on_enemy_defeated',
-      'sz_g2d_on_enemy_hurt',
-      'sz_g2d_on_enemy_shot_hit',
-      'sz_g2d_on_enemy_beam_hit',
-      'sz_g2d_hurt_by_enemy',
-      'sz_g2d_stomp_enemy',
-      'sz_g2d_set_enemy_stomp_mode',
-      'sz_g2d_update_enemy_shells',
-      'sz_g2d_enemy_damage',
-      // A VISTA fecha a gaveta: é o atalho de quem já tem VÁRIOS tipos.
-      'sz_g2d_all_enemies_group',
-    ],
-  },
-  {
-    name: '🕹️ Movimento',
-    colour: '#4cbfe6',
-    types: [
-      'sz_g2d_platformer',
-      'sz_g2d_platformer_terrain',
-      'sz_g2d_classic_platformer',
-      'sz_g2d_top_down',
-      'sz_g2d_fly_free',
-      'sz_g2d_flap',
-      'sz_g2d_swim',
-      'sz_g2d_arrows_x',
-      'sz_g2d_arrows_y',
-      'sz_g2d_follow_pointer',
-      'sz_g2d_clamp_to_screen',
-      'sz_g2d_set_velocity',
-      'sz_g2d_set_gravity',
-      'sz_g2d_apply_gravity',
-      'sz_g2d_apply_velocity',
-      'sz_g2d_bounce_edges',
-      'sz_g2d_bounce_edge_pair',
-      'sz_g2d_paddle_bounce',
-      'sz_g2d_drag_x',
-      'sz_g2d_jump_on_ground',
-      'sz_g2d_jump_terrain',
-      'sz_g2d_steer_thrust',
-      'sz_g2d_rotate_sprite',
-      'sz_g2d_point_sprite',
-      'sz_g2d_thrust',
-      'sz_g2d_apply_friction',
-      'sz_g2d_sprite_angle',
-      'sz_g2d_wrap_edges',
-    ],
-  },
-  {
-    name: '🎛️ Controles',
-    colour: '#ffbf00',
-    types: [
-      'sz_g2d_on_key',
-      'sz_g2d_on_any_input',
-      'sz_g2d_on_pointer',
-      'sz_g2d_on_sprite_click',
-      'sz_g2d_on_group_click',
-      'sz_g2d_on_jump',
-      'sz_g2d_key_down',
-      'sz_g2d_pointer_down',
-      'sz_g2d_enable_classic_controls',
-      'sz_g2d_action_down',
-      'sz_g2d_action_pressed',
-      'sz_g2d_on_action_pressed',
-    ],
-  },
-  {
-    name: '💥 Colisões',
-    colour: '#ff8c1a',
-    types: [
-      'sz_g2d_on_overlap',
-      'sz_g2d_touches',
-      'sz_g2d_collides',
-      'sz_g2d_circle_collides',
-      'sz_g2d_set_hitbox_scale',
-      'sz_g2d_collide_group',
-      'sz_g2d_collide_sprite',
-      'sz_g2d_collide_platform',
-      'sz_g2d_collide_platform_group',
-      'sz_g2d_on_group_overlap',
-      'sz_g2d_on_sprite_group_overlap',
-      'sz_g2d_for_each_tile_contact',
-      'sz_g2d_tile_contact_is',
-      'sz_g2d_set_tile_at_contact',
-    ],
-  },
-  {
-    name: '⏱️ Tempo e repetição',
-    colour: '#ffbf00',
-    types: [
-      'sz_g2d_update_each_frame',
-      'sz_g2d_every_frames',
-      'sz_g2d_every_seconds',
-      'sz_g2d_after_seconds',
-      'sz_g2d_cooldown_ready',
-      'sz_g2d_prune_old',
-    ],
-  },
-  {
-    name: '🎯 Mira e contas',
-    colour: '#48b8d0',
-    types: [
-      'sz_g2d_aim_at',
-      'sz_g2d_move_toward',
-      'sz_g2d_angle_to',
-      'sz_g2d_distance',
-      'sz_g2d_random_between',
-      'sz_g2d_random_chance',
-      'sz_g2d_random_x',
-      'sz_g2d_random_y',
-      'sz_g2d_stage_width',
-      'sz_g2d_stage_height',
-    ],
-  },
-  {
-    name: '❤️ Vida',
-    colour: '#ff5c8d',
-    types: [
-      'sz_g2d_set_health',
-      'sz_g2d_change_health',
-      'sz_g2d_damage_sprite',
-      'sz_g2d_get_health',
-      'sz_g2d_get_max_health',
-      'sz_g2d_has_health',
-      'sz_g2d_health_depleted',
-      'sz_g2d_is_invincible',
-      'sz_g2d_draw_sprite_health',
-    ],
-  },
-  {
-    name: '✨ Aparência',
-    colour: '#9966ff',
-    types: [
-      'sz_g2d_clear',
-      'sz_g2d_setup_stage',
-      'sz_g2d_setup_full',
-      'sz_g2d_fit_screen',
-      'sz_g2d_blink',
-      'sz_g2d_flash',
-      'sz_g2d_shake',
-      'sz_g2d_emit_particles',
-      'sz_g2d_draw_particles',
-      'sz_g2d_flip_sprite',
-      'sz_g2d_set_opacity',
-      'sz_g2d_set_size',
-      'sz_g2d_scale_sprite',
-      'sz_g2d_draw_hitbox',
-      'sz_g2d_show_fps',
-      'sz_g2d_stage_border',
-      'sz_g2d_use_font',
-      'sz_g2d_set_backdrop',
-      'sz_g2d_draw_fade',
-    ],
-  },
-  {
-    name: '🎬 Animação',
-    colour: '#cf63cf',
-    types: [
-      'sz_g2d_load_spritesheet',
-      'sz_g2d_animate_sprite',
-      'sz_g2d_animate_once',
-      'sz_g2d_anim_ended',
-      'sz_g2d_set_state_anim',
-      'sz_g2d_auto_animate',
-      'sz_g2d_draw_frame',
-    ],
-  },
-  {
-    name: '🎨 Desenho',
-    colour: '#d15fa8',
-    types: [
-      'sz_g2d_define_shape',
-      'sz_g2d_create_shape_sprite',
-      'sz_g2d_set_shape',
-      'sz_g2d_paint_rect',
-      'sz_g2d_paint_circle',
-      'sz_g2d_paint_ellipse',
-      'sz_g2d_paint_triangle',
-      'sz_g2d_paint_line',
-      'sz_g2d_paint_shape_recipe',
-      'sz_g2d_shape_w',
-      'sz_g2d_shape_h',
-    ],
-  },
-  {
-    name: '🔊 Som',
-    colour: '#d65cd6',
-    types: [
-      // Os sons que a criança ENVIA vêm primeiro: é o que ela procura depois de
-      // subir um arquivo, e era exatamente o que não existia aqui até 08/2026.
-      'sz_g2d_load_sound',
-      'sz_g2d_play_clip',
-      'sz_g2d_stop_clip',
-      'sz_g2d_play_track',
-      'sz_g2d_stop_track',
-      'sz_g2d_set_volume',
-      // Sintetizados na hora, sem arquivo nenhum.
-      'sz_g2d_play_fx',
-      'sz_g2d_play_sound',
-      'sz_g2d_play_note',
-      'sz_g2d_play_music',
-      'sz_g2d_stop_music',
-    ],
-  },
-  {
-    name: '🏆 Placar e HUD',
-    colour: '#ff6680',
-    types: [
-      'sz_g2d_score',
-      'sz_g2d_draw_score',
-      'sz_g2d_draw_label',
-      'sz_g2d_draw_pixel_text',
-      'sz_g2d_draw_pixel_score',
-      'sz_g2d_draw_hearts',
-      'sz_g2d_draw_bar',
-    ],
-  },
-  {
-    name: '📺 Telas e cenas',
-    colour: '#1098ad',
-    types: [
-      'sz_g2d_set_stage_description',
-      'sz_g2d_set_scene',
-      'sz_g2d_scene_is',
-      'sz_g2d_show_screen',
-      'sz_g2d_show_image_screen',
-      'sz_g2d_game_over',
-      'sz_g2d_pause',
-      'sz_g2d_resume',
-      'sz_g2d_is_paused',
-      'sz_g2d_restart',
-    ],
-  },
-  {
-    name: '🗺️ Mapas',
-    colour: '#59c059',
-    types: [
-      'sz_g2d_create_tilemap_from_asset',
-      'sz_g2d_create_tilemap',
-      'sz_g2d_create_vector_tileset',
-      'sz_g2d_define_vector_tile',
-      'sz_g2d_create_vector_tilemap',
-      'sz_g2d_fit_tilemap_to_stage',
-      'sz_g2d_place_tilemap',
-      'sz_g2d_draw_prepared_tilemap',
-      'sz_g2d_draw_tilemap',
-      'sz_g2d_draw_backdrop',
-      'sz_g2d_tilemap_collide',
-      'sz_g2d_break_tile_at',
-      'sz_g2d_set_tile',
-      'sz_g2d_tile_at',
-    ],
-  },
-  {
-    name: '🌍 Mundos',
-    colour: '#0ea5b7',
-    types: [
-      'sz_g2d_create_world',
-      'sz_g2d_create_world_from_tilemap',
-      'sz_g2d_world_add_tilemap',
-      'sz_g2d_world_add_solid_group',
-      'sz_g2d_world_add_platform_group',
-      'sz_g2d_world_add_enemy_type',
-      'sz_g2d_world_set_edges',
-      'sz_g2d_world_camera',
-      'sz_g2d_world_collide',
-      'sz_g2d_world_follow_camera',
-      'sz_g2d_world_draw',
-      'sz_g2d_camera_follow',
-      'sz_g2d_set_camera',
-      'sz_g2d_camera_x',
-      'sz_g2d_camera_y',
-    ],
-  },
-  {
-    name: '🚩 Fases',
-    colour: '#0f9f82',
-    types: [
-      'sz_g2d_create_level',
-      'sz_g2d_load_vector_campaign_level',
-      'sz_g2d_campaign_value',
-      'sz_g2d_enter_level',
-      'sz_g2d_level_reset_group',
-      'sz_g2d_restart_level',
-      'sz_g2d_on_level_enter',
-      'sz_g2d_level_is_active',
-      'sz_g2d_current_level_collide',
-      'sz_g2d_current_level_follow_camera',
-      'sz_g2d_current_level_draw',
-    ],
-  },
-  // KITS POR TEMA: blocos prontos e NÃO genéricos, feitos para um tipo de jogo
-  // específico (desenhos/efeitos/sons daquele tema). Os blocos genéricos seguem
-  // nas categorias acima; aqui ficam só os "atalhos temáticos". O 1º kit é o de
-  // jogo de nave espacial — dá para ir somando outros kits (corrida, fazenda…).
-  {
-    name: '🚀 Kit espaço',
-    colour: '#7950f2',
-    types: [
-      'sz_g2d_create_ship',
-      'sz_g2d_spawn_asteroid',
-      'sz_g2d_spawn_asteroid_edge',
-      'sz_g2d_shoot_from',
-      'sz_g2d_starfield',
-      'sz_g2d_explode',
-      'sz_g2d_play_shoot',
-      'sz_g2d_play_explosion',
-    ],
-  },
-  {
-    name: '🦕 Kit dino',
-    colour: '#5fa844',
-    types: [
-      'sz_g2d_create_dino',
-      'sz_g2d_control_dino',
-      'sz_g2d_spawn_obstacle',
-      'sz_g2d_spawn_egg',
-      'sz_g2d_forest',
-      'sz_g2d_play_jump',
-      'sz_g2d_play_dino_hurt',
-      'sz_g2d_play_collect',
-    ],
-  },
-  {
-    name: '🦍 Kit gorilas',
-    colour: '#a8632e',
-    types: [
-      'sz_g2d_create_city',
-      'sz_g2d_draw_city',
-      'sz_g2d_place_thrower',
-      'sz_g2d_new_wind',
-      'sz_g2d_draw_wind',
-      'sz_g2d_aim_drag',
-      'sz_g2d_aim_released',
-      'sz_g2d_throw_banana',
-      'sz_g2d_update_banana',
-      'sz_g2d_draw_banana',
-      'sz_g2d_banana_hit_thrower',
-      'sz_g2d_banana_hit_city',
-      'sz_g2d_play_whistle',
-      'sz_g2d_play_boom',
-      'sz_g2d_computer_turn',
-      'sz_g2d_draw_aim_readout',
-    ],
-  },
-  {
-    name: '🤸 Kit equilibrista',
-    colour: '#0ea5a0',
-    types: [
-      'sz_g2d_stickhero_sprite',
-      'sz_g2d_stickpath_create',
-      'sz_g2d_stickpath_scenery',
-      'sz_g2d_stickpath_grow',
-      'sz_g2d_stickpath_drop',
-      'sz_g2d_stickpath_walk',
-      'sz_g2d_stickpath_draw',
-      'sz_g2d_stickpath_on_cross',
-      'sz_g2d_stickpath_on_perfect',
-      'sz_g2d_stickpath_fell',
-    ],
-  },
-  {
-    name: '🎈 Kit balão',
-    colour: '#d6455d',
-    types: [
-      'sz_g2d_balloon_sprite',
-      'sz_g2d_balloonpath_create',
-      'sz_g2d_balloonpath_scenery',
-      'sz_g2d_balloon_fire',
-      'sz_g2d_balloon_fly',
-      'sz_g2d_balloonpath_scroll',
-      'sz_g2d_balloonpath_on_tree',
-      'sz_g2d_balloonpath_meters',
-      'sz_g2d_balloon_fuel_left',
-      'sz_g2d_balloon_landed_out',
-    ],
-  },
-]
-
-// Cada sub-categoria recebe um TOM do rosa da categoria (claro→escuro),
-// derivado da cor base por categoryShades — sobrepõe os literais de SUBCATS.
-const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
-SUBCATS.forEach((sc, i) => {
-  sc.colour = SUBCAT_SHADES[i] ?? C
-})
-// Cor = navegação: pinta cada bloco com a cor do seu grupo (sobrepõe o C/EVENT_C
-// usado na definição). Mantém os dois em sincronia automaticamente.
+const FAMILY_SHADES = categoryShades(C, GAME_TWO_D_PALETTE.length)
 const COLOUR_BY_TYPE = new Map<string, string>(
-  SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
+  GAME_TWO_D_PALETTE.flatMap((family, index) =>
+    family.sections.flatMap((section) =>
+      section.types.map((type) => [type, FAMILY_SHADES[index] ?? C] as const),
+    ),
+  ),
 )
-export const gameTwoDBlocks = canonicalGameTwoDBlocks.map((block) => {
-  const colour = COLOUR_BY_TYPE.get(block.type)
-  return { ...block, colour: colour ?? block.colour }
-})
-
-// Rede de segurança: qualquer bloco que não esteja em nenhuma sub-categoria entra
-// num grupo "Mais" — nada some da paleta se um bloco novo esquecer de ser mapeado.
-const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
+const ORDER_BY_TYPE = new Map([...COLOUR_BY_TYPE.keys()].map((type, index) => [type, index]))
+export const gameTwoDBlocks = canonicalGameTwoDBlocks
+  .map((block) => ({
+    ...block,
+    colour: COLOUR_BY_TYPE.get(block.type) ?? block.colour,
+  }))
+  .sort(
+    (a, b) =>
+      (ORDER_BY_TYPE.get(a.type) ?? Number.MAX_SAFE_INTEGER) -
+      (ORDER_BY_TYPE.get(b.type) ?? Number.MAX_SAFE_INTEGER),
+  )
 const VISIBLE_BLOCK_TYPES = new Set(
-  gameTwoDBlocks.filter((block) => !block.hidden).map((b) => b.type),
+  gameTwoDBlocks.filter((block) => !block.hidden).map((block) => block.type),
 )
-const leftover = gameTwoDBlocks
-  .filter((block) => !block.hidden)
-  .map((block) => block.type)
-  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos slots de VALOR que aparecem na paleta: o aluno pode
 // digitar o texto direto (UX igual à de antes) E ainda trocar por uma variável,
@@ -507,6 +34,7 @@ const leftover = gameTwoDBlocks
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g2d_with_cooldown: { FRAMES: numShadow(30) },
   sz_g2d_create_text_sprite: { TEXT: txtShadow('Olá!'), X: numShadow(100), Y: numShadow(100) },
   sz_g2d_spawn_text_in_group: { TEXT: numShadow(1), X: numShadow(100), Y: numShadow(100) },
   sz_g2d_set_sprite_text: { TEXT: txtShadow('Olá!') },
@@ -541,7 +69,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_velocity: { VX: numShadow(0), VY: numShadow(0) },
   sz_g2d_set_size: { W: numShadow(40), H: numShadow(40) },
   sz_g2d_scale_sprite: { FACTOR: numShadow(1.5) },
-  sz_g2d_score: { INITIAL: numShadow(0) },
+
   sz_g2d_game_over: { TEXT: txtShadow('Fim de jogo') },
   sz_g2d_set_health: { AMOUNT: numShadow(3) },
   sz_g2d_change_health: { DELTA: numShadow(-1) },
@@ -572,8 +100,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_starfield: { SPEED: numShadow(1) },
   sz_g2d_blink: { FRAMES: numShadow(60) },
   sz_g2d_forest: { SPEED: numShadow(4) },
-  sz_g2d_camera_follow: { WORLDW: numShadow(800), WORLDH: numShadow(600) },
-  sz_g2d_set_camera: { X: numShadow(0), Y: numShadow(0) },
+
   sz_g2d_show_fps: { X: numShadow(8), Y: numShadow(20) },
   sz_g2d_stage_border: { WIDTH: numShadow(4) },
   sz_g2d_shake: { INTENSITY: numShadow(8) },
@@ -598,12 +125,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     SIZE: numShadow(2),
   },
   sz_g2d_draw_fade: { PERCENT: numShadow(0) },
-  sz_g2d_draw_hearts: {
-    COUNT: numShadow(3),
-    X: numShadow(12),
-    Y: numShadow(48),
-    SIZE: numShadow(22),
-  },
+
   sz_g2d_draw_sprite_health: { X: numShadow(12), Y: numShadow(48), SIZE: numShadow(22) },
   sz_g2d_draw_bar: {
     VALUE: numShadow(0),
@@ -695,7 +217,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_g2d_set_tile: { INDEX: numShadow(1) },
   sz_g2d_create_tilemap: { TILE: numShadow(32) },
-  sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(0) },
+
   sz_g2d_place_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(32) },
   sz_g2d_create_world: { W: numShadow(800), H: numShadow(512) },
   sz_g2d_create_world_from_tilemap: { SIZE: numShadow(32) },
@@ -746,13 +268,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_cooldown_ready: { FRAMES: numShadow(20) },
 }
 
-/**
- * (só p/ teste de drift) Tipo do literal de SOMBRA por soquete da paleta.
- * Todo soquete daqui precisa constar em `LEGACY_VALUE_FIELDS` com o kind
- * casado — é o mapa que restaura a shadow-ness na reconstrução IR→blocos
- * (`shouldEmitAsShadow`/`restoreShadowLiterals`); faltar = os preenchimentos
- * automáticos morrem em silêncio depois de uma passada pela Ponte.
- */
+/** Tipos das sombras atuais para verificar preenchimentos na passagem pela Ponte. */
 export const G2D_SOCKET_SHADOW_TYPES: Record<string, Record<string, string>> = Object.fromEntries(
   Object.entries(G2D_SOCKET_SHADOWS).map(([type, slots]) => [
     type,
@@ -774,22 +290,15 @@ export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
   kind: 'category',
   name: 'Jogo 2D',
   colour: C,
-  contents: [
-    ...SUBCATS.map((sc) => ({
-      kind: 'category' as const,
-      name: sc.name,
-      colour: sc.colour,
-      contents: sc.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
+  contents: GAME_TWO_D_PALETTE.map((family, index) => ({
+    kind: 'category',
+    name: family.name,
+    colour: FAMILY_SHADES[index] ?? C,
+    contents: family.sections.map((section) => ({
+      kind: 'category',
+      name: section.name,
+      colour: FAMILY_SHADES[index] ?? C,
+      contents: section.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
     })),
-    ...(leftover.length > 0
-      ? [
-          {
-            kind: 'category' as const,
-            name: 'Mais',
-            colour: C,
-            contents: leftover.map(toolboxBlock),
-          },
-        ]
-      : []),
-  ],
+  })),
 }

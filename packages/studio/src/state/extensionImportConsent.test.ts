@@ -44,65 +44,58 @@ describe('import: consentimento de permissões de extensão', () => {
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  it('mantém extensão oficial que declara só permissões da baseline (game-2d)', async () => {
-    // game-2d declara canvas/keyboard/mouse/audio — tudo baseline → preservada.
-    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
+  it('mantém uma extensão oficial com permissões da baseline', async () => {
+    const { project } = await useProjectStore.getState().importProjectFromJSON({
       name: 'Com jogo 2D',
       files: baseFiles,
       installedExtensions: [{ id: 'game-2d', version: '1.0.0' }],
     })
-
-    expect(imported.installedExtensions.map((e) => e.id)).toContain('game-2d')
+    expect(project.installedExtensions.map((extension) => extension.id)).toEqual(['game-2d'])
   })
 
-  it('descarta id desconhecido em vez de poluir a seleção oficial', async () => {
-    const { project: imported, warnings } = await useProjectStore.getState().importProjectFromJSON({
+  it('recusa extensão desconhecida sem apagar sua declaração', async () => {
+    const source = {
       name: 'Com id solto',
       files: baseFiles,
       installedExtensions: [{ id: 'extensao-inexistente', version: '9.9.9' }],
-    })
-
-    expect(imported.installedExtensions).toEqual([])
-    expect(warnings.length).toBeGreaterThan(0)
+    }
+    await expect(useProjectStore.getState().importProjectFromJSON(source)).rejects.toThrow(
+      'Nenhuma cópia foi gravada',
+    )
+    expect(source.installedExtensions).toHaveLength(1)
+    expect(useProjectStore.getState().project).toBeNull()
   })
 
-  it('DESCARTA extensão cujo manifesto declara permissão fora da baseline (network)', async () => {
-    // Fail-closed do consentimento: simula uma FUTURA extensão que declara
-    // `network`. Abrir o .json de um estranho não pode habilitá-la em silêncio.
-    spyOn(officialExtensions, 'findExtension').mockImplementation((id: string) =>
+  it('recusa extensão que exige rede sem a habilitar silenciosamente', async () => {
+    spyOn(officialExtensions, 'findExtension').mockImplementation((id) =>
       id === 'rede-futura' ? fakeExtension('rede-futura', ['canvas', 'network']) : undefined,
     )
-
-    const { project: imported } = await useProjectStore.getState().importProjectFromJSON({
-      name: 'Com extensão de rede',
-      files: baseFiles,
-      installedExtensions: [
-        { id: 'rede-futura', version: '1.0.0' },
-        { id: 'extensao-inexistente', version: '1.0.0' },
-      ],
-    })
-
-    const ids = imported.installedExtensions.map((e) => e.id)
-    expect(ids).not.toContain('rede-futura')
-    expect(ids).not.toContain('extensao-inexistente')
+    await expect(
+      useProjectStore.getState().importProjectFromJSON({
+        name: 'Rede',
+        files: baseFiles,
+        installedExtensions: [{ id: 'rede-futura', version: '1.0.0' }],
+      }),
+    ).rejects.toThrow('Nenhuma cópia foi gravada')
+    expect(useProjectStore.getState().project).toBeNull()
   })
 
-  it('deduplica e elimina runtimes de palco conflitantes mantendo o primeiro válido', async () => {
-    const { project: imported, warnings } = await useProjectStore.getState().importProjectFromJSON({
-      name: 'Extensões conflitantes sem blocos',
+  it('recusa motores de palco conflitantes sem escolher um e descartar outro', async () => {
+    const source = {
+      name: 'Conflito',
       files: baseFiles,
       installedExtensions: [
-        { id: 'game-2d', version: '1.0.0' },
         { id: 'game-2d', version: '1.0.0' },
         { id: 'world-3d', version: '1.0.0' },
       ],
-    })
-
-    expect(imported.installedExtensions.map((extension) => extension.id)).toEqual(['game-2d'])
-    expect(warnings.length).toBeGreaterThan(0)
+    }
+    await expect(useProjectStore.getState().importProjectFromJSON(source)).rejects.toThrow(
+      'Nenhuma cópia foi gravada',
+    )
+    expect(source.installedExtensions).toHaveLength(2)
   })
 
-  it('rejeita IR que tente usar uma extensão descartada por conflito', async () => {
+  it('recusa IR que usa extensões incompatíveis', async () => {
     await expect(
       useProjectStore.getState().importProjectFromJSON({
         name: 'IR conflitante',
@@ -119,6 +112,6 @@ describe('import: consentimento de permissões de extensão', () => {
           extensions: [{ extensionId: 'world-3d' }, { extensionId: 'game-3d-advanced' }],
         },
       }),
-    ).rejects.toThrow('IR usa extensões ausentes, duplicadas ou incompatíveis')
+    ).rejects.toThrow('Nenhuma cópia foi gravada')
   })
 })

@@ -33,6 +33,7 @@ interface Api {
   createGroup: Fn
   createDino: Fn
   createTileMap: Fn
+  centerTileMap: Fn
   drawTileMap: Fn
   setGravity: Fn
   applyVelocity: Fn
@@ -191,7 +192,8 @@ describe('pulo conserva o apoio confirmado pela colisão do quadro anterior', ()
     const { api } = load()
     const mapCtx = { canvas: { width: 64, height: 64 }, fillRect() {} }
     const mapa = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
-    api.drawTileMap(mapCtx, mapa, 0, 0, 32)
+    api.centerTileMap(mapCtx, mapa, 0, 0, 32)
+    api.drawTileMap(mapCtx, mapa)
     const heroi = sprite(api, 4, 10)
     heroi.w = 16
     heroi.h = 16
@@ -220,7 +222,8 @@ describe('pulo conserva o apoio confirmado pela colisão do quadro anterior', ()
       platform: '2',
       grid: '. .;2 2',
     })
-    api.drawTileMap(mapCtx, mapa, 0, 0, 32)
+    api.centerTileMap(mapCtx, mapa, 0, 0, 32)
+    api.drawTileMap(mapCtx, mapa)
     const heroi = sprite(api, 4, 10)
     heroi.w = 16
     heroi.h = 16

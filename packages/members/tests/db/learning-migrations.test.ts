@@ -174,7 +174,11 @@ describe.skipIf(!url)(
           lessonId,
           kind: 'studio',
           sortOrder: 2,
-          content: { kind: 'studio', initialProject: {}, chain: 'projeto-continuo' },
+          content: {
+            kind: 'studio',
+            initialProject: { formatVersion: 2 },
+            chain: 'projeto-continuo',
+          },
         },
       ]
       for (const block of legacyBlocks)

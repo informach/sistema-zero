@@ -128,7 +128,11 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
   const blocoEstudio = (activity?: unknown) => ({
     kind: 'studio',
     level: 'iniciante',
-    initialProject: { name: 'x', files: { 'index.html': '', 'style.css': '', 'script.js': '' } },
+    initialProject: {
+      formatVersion: 2,
+      name: 'x',
+      files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+    },
     ...(activity ? { activity } : {}),
   })
 
@@ -176,7 +180,11 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
     // vitrine, muda a lista de blocos — nada disso é a atividade.
     const updated = await repo.updateBlock(blockId, 'studio', {
       ...blocoEstudio(atividadeLaco),
-      initialProject: { name: 'retocado', files: { 'index.html': '<h1>novo</h1>' } },
+      initialProject: {
+        formatVersion: 2,
+        name: 'retocado',
+        files: { 'index.html': '<h1>novo</h1>' },
+      },
       allowBlocks: ['sz_js_var_create'],
       showcase: { enabled: true, title: 'Meu jogo' },
     } as never)
