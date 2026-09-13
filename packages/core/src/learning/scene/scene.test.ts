@@ -1,11 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { experienceScript } from '../experience'
-import { EXPLORATION_DEFINITIONS, EXPLORATION_MISSIONS } from '../exploration'
-import {
-  type ExplorationAction,
-  initialExploration,
-  transitionExploration,
-} from '../exploration-model'
 import { SCENE_IDS, type SceneAction } from './actions'
 import { SCENE_MODELS } from './catalog'
 import { stepScene } from './engine'
@@ -13,94 +6,13 @@ import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './ev
 import { isSceneActivity, isSceneScript } from './index'
 import { initialScene, isSceneState } from './state'
 
-describe('cena: o motor novo faz o mesmo que o antigo', () => {
-  // ⚠️ Este é o teste que sustenta a reescrita. O estado deixou de ser uma struct plana de 44
-  // campos e virou grupos; a física e a pedagogia NÃO podiam mudar junto. Para cada cena,
-  // tocamos o roteiro do catálogo nos dois motores e comparamos o que a criança descobre.
-  test.each([...SCENE_IDS])('%s: as mesmas descobertas, na mesma ordem', (scene) => {
-    const activity = {
-      type: 'exploration',
-      version: 3,
-      mission: scene,
-      mode: 'demonstrate',
-    } as const
-    const steps = experienceScript(activity)
-    const acoes = steps.flatMap((s) => s.actions)
-
-    let velho = initialExploration(activity)
-    for (const a of acoes) velho = transitionExploration(activity, velho, a as ExplorationAction)
-
-    let novo = initialScene({ scene })
-    for (const a of acoes) novo = stepScene({ scene }, novo, a as SceneAction)
-
-    expect(novo.evidence.discoveries).toEqual(velho.discoveries)
-    expect(novo.evidence.observations.map((o) => o.id)).toEqual(velho.observations.map((o) => o.id))
-    expect(novo.caption).toBe(velho.caption)
-    expect(novo.evidence.actions).toBe(velho.actions)
-  })
-
-  test.each([...SCENE_IDS])('%s: o mundo termina no mesmo lugar', (scene) => {
-    const activity = {
-      type: 'exploration',
-      version: 3,
-      mission: scene,
-      mode: 'demonstrate',
-    } as const
-    const acoes = experienceScript(activity).flatMap((s) => s.actions)
-    let velho = initialExploration(activity)
-    for (const a of acoes) velho = transitionExploration(activity, velho, a as ExplorationAction)
-    let novo = initialScene({ scene })
-    for (const a of acoes) novo = stepScene({ scene }, novo, a as SceneAction)
-
-    // Os 44 campos planos, conferidos um a um contra o seu novo endereço.
-    expect(novo.world).toEqual({ created: velho.created, drawn: velho.drawn, front: velho.front })
-    expect(novo.flight).toEqual({
-      gravity: velho.gravity,
-      force: velho.force,
-      y: velho.y,
-      time: velho.flightTime,
-      atForce: velho.flightForce,
-      atGravity: velho.flightGravity,
-      peak: velho.peak,
-    })
-    expect(novo.sound).toEqual({
-      onJump: velho.soundOnJump,
-      count: velho.soundCount,
-      jumps: velho.jumpCount,
-    })
-    expect(novo.crowd).toEqual({
-      timer: velho.timer,
-      interval: velho.interval,
-      cleanup: velho.cleanup,
-      remainder: velho.spawnRemainder,
-      born: velho.born,
-      removed: velho.removed,
-      cacti: velho.cacti,
-      elapsed: velho.elapsed,
-    })
-    expect(novo.match).toEqual({
-      guarded: velho.guarded,
-      touch: velho.touch,
-      restartConnected: velho.restartConnected,
-      screen: velho.screen,
-      points: velho.points,
-      clockRemainder: velho.clockRemainder,
-      scoreIdle: velho.scoreIdleSeconds,
-    })
-    expect(novo.contact).toEqual({ distance: velho.distance, width: velho.width })
-    expect(novo.speed).toEqual({
-      limited: velho.limited,
-      base: velho.base,
-      ticks: velho.ticks,
-      samples: {
-        x: velho.sampleX,
-        velocity: velho.sampleVelocity,
-        positions: velho.positionSamples,
-        velocities: velho.velocitySamples,
-      },
-    })
-  })
-})
+/**
+ * ⚠️ A equivalência com o motor anterior foi PROVADA no commit que criou este módulo
+ * (`820b9a0a`): as 14 cenas rodaram o mesmo roteiro nos dois motores e as descobertas, as
+ * observações, a legenda e os 44 campos do estado bateram. Os testes que faziam essa
+ * comparação morreram junto com o motor antigo — mantê-lo vivo só para eles seria exatamente
+ * o puxadinho que a reescrita existe para tirar. O que ficou testa a cena por si.
+ */
 
 describe('cena: o catálogo', () => {
   test('tem os 14 modelos, e cada um traz metas, três dicas e um roteiro', () => {
@@ -113,19 +25,6 @@ describe('cena: o catálogo', () => {
       expect(m.script.length).toBeGreaterThan(0)
       expect(m.title.length).toBeGreaterThan(0)
       expect(m.manipulates.length).toBeGreaterThan(0)
-    }
-  })
-
-  test('o texto pedagógico é o mesmo que estava nas definições antigas', () => {
-    for (const mission of EXPLORATION_MISSIONS) {
-      const velho = EXPLORATION_DEFINITIONS[mission]
-      const novo = SCENE_MODELS[mission]
-      expect(novo.title).toBe(velho.title)
-      expect(novo.instruction).toBe(velho.instruction)
-      expect(novo.manipulates).toBe(velho.manipulates)
-      expect(novo.success).toBe(velho.success)
-      expect(novo.goals).toEqual(velho.goals)
-      expect(novo.hints).toEqual(velho.hints)
     }
   })
 
