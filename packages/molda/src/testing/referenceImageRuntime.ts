@@ -1,4 +1,4 @@
-import { spyOn } from 'bun:test'
+import { mock, spyOn } from 'bun:test'
 
 /** Decoder/URL browser boundary only. Tests still execute file inspection and resource ownership. */
 export function installReferenceImageRuntime() {
@@ -9,10 +9,20 @@ export function installReferenceImageRuntime() {
     finish(width?: number, height?: number): void
     fail(): void
   }> = []
-  const create = spyOn(URL, 'createObjectURL').mockImplementation(
-    () => `blob:reference-${images.length}`,
-  )
-  const revoke = spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+  const ownedUrls = new Set<string>()
+  const create = spyOn(URL, 'createObjectURL').mockImplementation(() => {
+    const url = `blob:reference-${images.length}`
+    ownedUrls.add(url)
+    return url
+  })
+  const revoke = mock((_url: string) => {})
+  const originalRevoke = URL.revokeObjectURL.bind(URL)
+  // Downloads from earlier tests release their real URLs on a delayed timer.
+  // Count every release of our decoder URLs, including erroneous duplicates.
+  const revokeUrl = spyOn(URL, 'revokeObjectURL').mockImplementation((url) => {
+    if (ownedUrls.has(url)) revoke(url)
+    else originalRevoke(url)
+  })
   globalThis.Image = class {
     src = ''
     removed = false
@@ -50,7 +60,7 @@ export function installReferenceImageRuntime() {
     restore() {
       globalThis.Image = original
       create.mockRestore()
-      revoke.mockRestore()
+      revokeUrl.mockRestore()
     },
   }
 }
