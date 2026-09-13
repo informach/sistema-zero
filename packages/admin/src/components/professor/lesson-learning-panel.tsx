@@ -244,7 +244,15 @@ export function LessonLearningPanel({
                         </p>
                       ))}
                     {activities.map((activity) => {
-                      const saved = blocks.find((block) => block.blockId === activity.id)
+                      // ⚠️ Também pela REVISÃO, como as tentativas logo abaixo. Hoje o members
+                      // já filtra e a chave do progresso é (aluno, bloco), então no máximo uma
+                      // linha chega — mas isso é defesa que mora em outro pacote. Sem a
+                      // conferência aqui, um registro de outra revisão seria lido com o conteúdo
+                      // atual, e o professor veria a criança numa cena que ela nunca abriu.
+                      const saved = blocks.find(
+                        (block) =>
+                          block.blockId === activity.id && block.revision === activity.revision,
+                      )
                       const attempts = report.attempts.filter(
                         (attempt) =>
                           attempt.blockId === activity.id && attempt.revision === activity.revision,

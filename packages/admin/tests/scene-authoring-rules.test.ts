@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
+import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { SCENE_MODELS, type SceneStep } from '@sistemazero/core/learning/scene'
-import { roteiroAoTrocarCena, textoAoTrocarCena } from '../src/lib/scene-authoring-rules'
+import {
+  roteiroAoTrocarCena,
+  textoAoTrocarCena,
+  trocarCena,
+  trocarTipo,
+} from '../src/lib/scene-authoring-rules'
 
 const doModelo = (cena: 'world' | 'layers') => ({
   title: SCENE_MODELS[cena].title,
@@ -93,5 +99,97 @@ describe('o roteiro ao trocar de cena', () => {
     const r = roteiroAoTrocarCena(saltoSimples, 'impulse')
     r.script?.push({ id: 'outro', caption: 'x', actions: [{ type: 'advance', seconds: 1 }] })
     expect(saltoSimples).toHaveLength(1)
+  })
+})
+
+describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
+  const pergunta: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'Antes de testar',
+    instructions: 'Escolha',
+    hints: [],
+    required: false,
+    activity: { type: 'question' },
+    checkpoint: {
+      prompt: 'O que acontece?',
+      choices: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      correctChoiceId: 'a',
+      explanation: 'Porque sim.',
+    },
+  }
+
+  test('a pergunta de verificação sai ao virar cena, e o professor é avisado', () => {
+    // Ela travava o bloco PARA SEMPRE: `isInteractiveBlock` recusa cena com pergunta anexa, e a
+    // caixa de desmarcar só aparece nos tipos que não são cena — sumia junto com a saída.
+    const { bloco, aviso } = trocarTipo(pergunta, 'experimentation')
+    expect(bloco.checkpoint).toBeUndefined()
+    expect(isInteractiveBlock(bloco)).toBe(true)
+    expect(aviso).toContain('pergunta de verificação')
+  })
+
+  test('o impulso inicial não vai parar numa cena que não o tem', () => {
+    const salto: InteractiveBlock = {
+      ...pergunta,
+      activity: { type: 'experimentation', scene: 'impulse', initialImpulse: 14 },
+      checkpoint: undefined,
+    }
+    expect(isInteractiveBlock(salto)).toBe(true)
+    const { bloco, aviso } = trocarCena(salto, 'world')
+    expect(isInteractiveBlock(bloco)).toBe(true)
+    expect(aviso).toContain('impulso inicial')
+    const { bloco: viaTipo } = trocarTipo(
+      { ...salto, activity: { type: 'experimentation', scene: 'world', initialImpulse: 14 } },
+      'experimentation',
+    )
+    expect(isInteractiveBlock(viaTipo)).toBe(true)
+  })
+
+  test('⚠️ sair da demonstração com roteiro seu AVISA, em vez de sumir', () => {
+    const comRoteiro: InteractiveBlock = {
+      ...pergunta,
+      checkpoint: undefined,
+      activity: {
+        type: 'demonstration',
+        scene: 'world',
+        script: [{ id: 'x', caption: 'Veja.', actions: [{ type: 'create' }] }],
+      },
+    }
+    const { aviso } = trocarTipo(comRoteiro, 'experimentation')
+    expect(aviso).toContain('roteiro')
+  })
+
+  test('o áudio da instrução acompanha entre as duas irmãs', () => {
+    // Ele existe nos dois tipos e sumia calado na ida e volta — perda pura, sem motivo.
+    const comAudio: InteractiveBlock = {
+      ...pergunta,
+      checkpoint: undefined,
+      activity: {
+        type: 'demonstration',
+        scene: 'layers',
+        instructionAudioUrl: 'https://exemplo.test/a.mp3',
+      },
+    }
+    const { bloco } = trocarTipo(comAudio, 'experimentation')
+    if (bloco.activity.type !== 'experimentation') throw new Error('tipo errado')
+    expect(bloco.activity.instructionAudioUrl).toBe('https://exemplo.test/a.mp3')
+    expect(bloco.activity.scene).toBe('layers')
+  })
+
+  test('as pistas DA CENA não seguem para uma múltipla escolha', () => {
+    // "Olhe os bastidores: o Dino já existe?" oferecida numa pergunta é ajuda para outra coisa.
+    const cena: InteractiveBlock = {
+      ...pergunta,
+      checkpoint: undefined,
+      activity: { type: 'experimentation', scene: 'world' },
+      hints: [...SCENE_MODELS.world.hints],
+    }
+    expect(trocarTipo(cena, 'question').bloco.hints).toEqual([])
+    // Mas a pista que o PROFESSOR escreveu fica.
+    expect(trocarTipo({ ...cena, hints: ['minha pista'] }, 'question').bloco.hints).toEqual([
+      'minha pista',
+    ])
   })
 })

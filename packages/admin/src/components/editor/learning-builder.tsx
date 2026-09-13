@@ -6,7 +6,7 @@ import {
   type LearningChoice,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import { SCENE_LIMITS, SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
+import { isSceneActivity, SCENE_LIMITS, SCENE_MODELS } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -16,7 +16,7 @@ import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useState } from 'react'
 // ⚠️ Caminho relativo, e não o alias `@/`: o ensaio visual do kids compila este arquivo pelo
 // CAMINHO, e lá o alias do admin não existe.
-import { roteiroAoTrocarCena, textoAoTrocarCena } from '../../lib/scene-authoring-rules'
+import { textoAoTrocarCena, trocarCena, trocarTipo } from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
 import { SceneAuthoring } from './scene-authoring'
 import { ScenePicker } from './scene-picker'
@@ -73,13 +73,17 @@ export function newLearningActivity(type: LearningActivity['type']): LearningAct
   }
 }
 
+/**
+ * ⚠️ O bloco novo já nasce com o texto do modelo da cena padrão. Nascia em branco, e as regras
+ * de troca só disparam numa TROCA — clicar no cartão já marcado não emite evento. Quem aceitava
+ * o padrão escrevia tudo à mão e ainda levava o erro de campo obrigatório; quem clicava em
+ * qualquer outra cena ganhava o texto de graça. O mesmo botão, dois comportamentos.
+ */
 export const EMPTY_LEARNING: InteractiveBlock = {
   kind: 'interactive',
-  title: '',
-  instructions: '',
-  hints: [],
   required: false,
   activity: newLearningActivity('experimentation'),
+  ...textoAoTrocarCena({ title: '', instructions: '', hints: [] }, null, 'world'),
 }
 
 function ChoiceFields({
@@ -140,27 +144,16 @@ export function LearningBuilder({
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
   const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
+  const audioInvalido = Boolean(cena?.instructionAudioUrl) && !isSceneActivity(cena)
 
   /**
-   * Trocar a cena. ⚠️ Aqui moravam dois defeitos: o editor reconstruía a atividade do zero
-   * (então um roteiro escrito à mão sumia calado) e sobrescrevia o texto do professor com o
-   * do modelo novo. As duas regras agora são puras e testadas, em `lib/scene-authoring-rules`.
+   * ⚠️ O editor NÃO decide mais o que sobrevive a uma troca: quem decide são as regras puras de
+   * `lib/scene-authoring-rules`, e aqui só se aplica o resultado e se mostra o recado. Cada
+   * uma delas já esteve errada, e o erro só aparecia quando o trabalho já tinha sumido.
    */
-  const trocarCena = (scene: SceneId) => {
-    if (!cena) return
-    const texto = textoAoTrocarCena(value, cena.scene, scene)
-    if (cena.type === 'demonstration') {
-      const { script, descartado } = roteiroAoTrocarCena(cena.script, scene)
-      setAviso(
-        descartado
-          ? 'O roteiro que você tinha escrito era desta cena e não vale na nova. A demonstração voltou ao roteiro que vem com a cena escolhida.'
-          : '',
-      )
-      onChange({ ...value, ...texto, activity: { ...cena, scene, script } })
-      return
-    }
-    setAviso('')
-    onChange({ ...value, ...texto, activity: { ...cena, scene } })
+  const aplicar = ({ bloco, aviso: recado }: { bloco: InteractiveBlock; aviso: string }) => {
+    setAviso(recado)
+    onChange(bloco)
   }
 
   return (
@@ -200,35 +193,7 @@ export function LearningBuilder({
                   name={`${id}-kind`}
                   value={kind.type}
                   checked={a.type === kind.type}
-                  onChange={() => {
-                    setAviso('')
-                    const proxima = newLearningActivity(kind.type)
-                    // ⚠️ Entre demonstração e experimentação a CENA acompanha: são irmãs sobre o
-                    // mesmo assunto, e voltar para `world` obrigaria a reescolher toda vez.
-                    const herdada =
-                      cena && (kind.type === 'demonstration' || kind.type === 'experimentation')
-                        ? { ...proxima, scene: cena.scene }
-                        : proxima
-                    onChange({
-                      ...value,
-                      activity: herdada as LearningActivity,
-                      // ⚠️ O texto do professor NÃO é sobrescrito: só entra o do modelo onde ele
-                      // não escreveu nada. Antes, escolher "cena" jogava fora a instrução dele.
-                      ...(herdada.type === 'demonstration' || herdada.type === 'experimentation'
-                        ? textoAoTrocarCena(value, cena?.scene ?? null, herdada.scene)
-                        : {}),
-                      ...(kind.type === 'question' && !value.checkpoint
-                        ? {
-                            checkpoint: {
-                              prompt: '',
-                              choices: initialChoices(),
-                              correctChoiceId: 'first',
-                              explanation: '',
-                            },
-                          }
-                        : {}),
-                    })
-                  }}
+                  onChange={() => aplicar(trocarTipo(value, kind.type))}
                   className="accent-primary"
                 />
                 {kind.label}
@@ -241,9 +206,10 @@ export function LearningBuilder({
 
       {cena && (
         <div className="space-y-4">
-          <Field label="Cena">
-            <ScenePicker value={cena.scene} onChange={trocarCena} />
-          </Field>
+          {/* ⚠️ Sem `<Field>`: ele desenha um `<label>` sem `for` e sem controle dentro, então a
+              palavra "Cena" não nomeia nada para o leitor de tela. O `ScenePicker` já traz os
+              próprios `<fieldset>`/`<legend>`, um por família. */}
+          <ScenePicker value={cena.scene} onChange={(scene) => aplicar(trocarCena(value, scene))} />
           {aviso && (
             <p role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
               {aviso}
@@ -288,10 +254,16 @@ export function LearningBuilder({
                     />
                   </Field>
                 )}
+              {/* ⚠️ A mensagem é explícita: `http://` INVALIDA a atividade, e sem ela o
+                  professor levava a parede genérica de "complete os campos" na publicação, que
+                  fala de outra coisa. O `type="url"` do navegador aceita http. */}
               <Field
                 label="Áudio revisado da instrução (opcional)"
                 htmlFor={`${id}-audio`}
-                hint="A criança poderá escolher Ouvir. A instrução escrita permanece disponível."
+                hint="A criança poderá escolher Ouvir. A instrução escrita permanece disponível. Precisa ser https:// ou um caminho do próprio site."
+                error={
+                  audioInvalido ? 'O endereço precisa começar com https:// ou com /.' : undefined
+                }
               >
                 <Input
                   id={`${id}-audio`}

@@ -13,10 +13,13 @@ import {
   readExperimentSession,
   readSceneSegment,
   SceneConflictError,
+  sceneFromTrial,
   sceneSegmentAnswers,
+  sceneTrial,
   stepDemonstration,
   stepExperiment,
 } from './session'
+import { initialScene, isSceneState } from './state'
 
 const world = { scene: 'world' } as const
 const layers = { scene: 'layers' } as const
@@ -125,6 +128,68 @@ describe('sessão de demonstração', () => {
     expect(isDemonstrationCommand({ type: 'tick', seconds: 5 })).toBe(false)
     // Ação de cena não entra numa demonstração: quem assiste não mexe.
     expect(isDemonstrationCommand({ type: 'create' })).toBe(false)
+  })
+})
+
+describe('o retrato guardado', () => {
+  test('⚠️ o caminho de VOLTA devolve o que a criança guardou, não a cena inicial', () => {
+    // O retrato é achatado (ele viaja) e o estado é agrupado. Espalhar um por cima do outro só
+    // empilha chaves órfãs no topo, e o `tsc` não pega — foi assim que a comparação lado a lado
+    // passou a mostrar a cena inicial: a criança guardava um salto de impulso 14 e via o de 9.
+    const start = { scene: 'hitbox' } as const
+    let s = initialExperiment(start)
+    s = stepExperiment(start, s, { type: 'move', distance: 25 }).session
+    s = stepExperiment(start, s, { type: 'resize', width: 100 }).session
+    const retrato = sceneTrial(s.state, 'Guardado')
+    // Agora a criança mexe de novo: o retrato NÃO pode acompanhar.
+    const depois = stepExperiment(start, s, { type: 'move', distance: 200 }).session
+    expect(depois.state.contact.distance).toBe(200)
+
+    const volta = sceneFromTrial(start, retrato)
+    expect(volta.contact).toEqual({ distance: 25, width: 100 })
+    expect(volta.contact).not.toEqual(initialScene(start).contact)
+  })
+
+  test('o salto guardado volta com as condições DAQUELE voo', () => {
+    const start = { scene: 'impulse', initialImpulse: 14 } as const
+    let s = initialExperiment(start)
+    s = stepExperiment(start, s, { type: 'jump', input: 'tap' }).session
+    s = stepExperiment(start, s, { type: 'advance', seconds: 0.4 }).session
+    const retrato = sceneTrial(s.state, 'Com 14')
+    // A criança baixa o impulso DEPOIS de saltar: o retrato continua sendo o do salto de 14.
+    const menor = stepExperiment(start, s, { type: 'impulse', force: 5 }).session
+    expect(menor.state.flight.force).toBe(5)
+
+    const volta = sceneFromTrial(start, retrato)
+    expect(volta.flight.force).toBe(14)
+    expect(volta.flight.atForce).toBe(14)
+    expect(volta.flight.peak).toBeGreaterThan(0)
+  })
+
+  test('os 13 campos do retrato chegam TODOS ao grupo certo', () => {
+    // Um campo no grupo errado desenha a cena de outra criança, e o tipo não acusa.
+    const start = { scene: 'jump-sound' } as const
+    let s = initialExperiment(start)
+    s = stepExperiment(start, s, { type: 'connect', port: 'sound', enabled: true }).session
+    s = stepExperiment(start, s, { type: 'jump', input: 'key' }).session
+    const retrato = sceneTrial(s.state, 'x')
+    const t = retrato.state
+    const volta = sceneFromTrial(start, retrato)
+    expect(volta.flight.force).toBe(t.force)
+    expect(volta.flight.gravity).toBe(t.gravity)
+    expect(volta.flight.peak).toBe(t.peak)
+    expect(volta.flight.y).toBe(t.y)
+    expect(volta.contact.distance).toBe(t.distance)
+    expect(volta.contact.width).toBe(t.width)
+    expect(volta.sound.count).toBe(t.soundCount)
+    expect(volta.sound.jumps).toBe(t.jumpCount)
+    expect(volta.sound.onJump).toBe(t.soundOnJump)
+    expect(volta.match.screen).toBe(t.screen)
+    expect(volta.match.points).toBe(t.points)
+    expect(volta.crowd.born).toBe(t.born)
+    expect(volta.crowd.removed).toBe(t.removed)
+    // E o que volta continua sendo um estado que o validador aceita.
+    expect(isSceneState(volta)).toBe(true)
   })
 })
 

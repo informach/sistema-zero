@@ -128,7 +128,10 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
       force: initialImpulse ?? 9,
       y: 0,
       time: null,
-      atForce: 9,
+      // ⚠️ Acompanha o `force`, e não um 9 cravado: antes do PRIMEIRO salto, é o `atForce` que
+      // o retrato guarda e o relatório do professor lê. Com o impulso inicial em 14, a cena
+      // nascia dizendo que o salto tinha sido de 9.
+      atForce: initialImpulse ?? 9,
       atGravity: true,
       peak: 0,
     },

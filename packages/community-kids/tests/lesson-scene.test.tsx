@@ -1,9 +1,20 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
+import {
+  applyDemonstrationSegment,
+  type DemonstrationSession,
+  packDemonstration,
+  readSceneSegment,
+  SCENE_MODELS,
+  type SceneCheckpoint,
+  type SceneId,
+  sceneScript,
+  sceneStart,
+} from '@sistemazero/core/learning/scene'
 import { ExperienceConnection } from '@sistemazero/member-shell/components/experience-connection'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 afterEach(cleanup)
 function renderMission(
@@ -100,4 +111,88 @@ describe('o laboratório da cena', () => {
     fireEvent.click(screen.getByRole('button', { name: '◎ Pulou' }))
     expect(connected).toBe(true)
   })
+})
+
+test('⚠️ a demonstração assistida até o fim REGISTRA a tentativa no servidor', async () => {
+  // O portão do registro perguntava ao avaliador da EXPERIMENTAÇÃO, que cobra as metas da cena.
+  // Em `jump-sound` o roteiro do modelo termina SEM fechar as metas: a criança via "Demonstração
+  // concluída", nenhuma tentativa subia, e o bloco ficava para sempre em "Guardando…".
+  const activity = { type: 'demonstration', scene: 'jump-sound' } as const
+  const start = sceneStart(activity)
+  const script = sceneScript(activity)
+  let checkpoint: SceneCheckpoint<DemonstrationSession> | null = null
+  const rotas: string[] = []
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    rotas.push(url.split('/').at(-1) ?? '')
+    const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
+    const segment = readSceneSegment(body.answers)
+    if (segment) checkpoint = applyDemonstrationSegment(start, script, checkpoint, segment)
+    const answers = {
+      sceneSequence: checkpoint?.sequence ?? 0,
+      sceneSessionId: checkpoint?.sessionId ?? '',
+      sceneSegmentId: checkpoint?.segmentId ?? '',
+      sceneCheckpoint: checkpoint ? packDemonstration('jump-sound', checkpoint.session) : [],
+    }
+    const progress = {
+      blockId: 'scene',
+      revision: 'revision',
+      answers,
+      hintsUsed: 0,
+      positionSeconds: null,
+      attemptsCount: 0,
+      result: null,
+      updatedAt: new Date().toISOString(),
+    }
+    if (url.endsWith('/learning-attempts'))
+      return Response.json({
+        attempt: { result: { participated: true, passed: true, feedback: 'ok' } },
+        progress,
+      })
+    return Response.json(progress)
+  }) as unknown as typeof fetch
+  try {
+    render(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: 'child',
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+        }}
+      >
+        <InteractiveLessonBlock
+          block={{
+            id: 'scene',
+            blockRevision: 'revision',
+            kind: 'interactive',
+            sortOrder: 0,
+            content: {
+              kind: 'interactive',
+              title: SCENE_MODELS['jump-sound'].title,
+              instructions: SCENE_MODELS['jump-sound'].instruction,
+              hints: [],
+              required: false,
+              activity,
+            },
+          }}
+        />
+      </LessonPlayerProvider>,
+    )
+    const passo = await screen.findByRole('button', { name: 'Um passo' })
+    for (let i = 0; i < 200 && !rotas.some((r) => r === 'learning-attempts'); i++) {
+      const proxima = screen.queryByRole('button', { name: 'Próxima etapa' }) as
+        | HTMLButtonElement
+        | undefined
+      await act(async () => {
+        fireEvent.click(proxima && !proxima.disabled ? proxima : passo)
+      })
+    }
+    expect(rotas).toContain('learning-attempts')
+  } finally {
+    globalThis.fetch = originalFetch
+    localStorage.clear()
+  }
 })

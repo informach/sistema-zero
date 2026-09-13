@@ -51,24 +51,21 @@ const experimentacao: InteractiveBlock = {
   activity: { type: 'experimentation', scene: 'layers' },
 }
 
-/** Uma demonstração de UM passo: o menor roteiro que chega ao fim dentro de um teste. */
+/**
+ * ⚠️ A cena é `jump-sound` DE PROPÓSITO, com o roteiro DO MODELO.
+ *
+ * O defeito que este teste guarda é o registro perguntar ao avaliador da experimentação, que
+ * cobra as metas da cena. Medido: em DOZE das catorze cenas o roteiro do modelo fecha as metas
+ * por coincidência do último passo, e só `jump-sound` e `controls` não fecham. Um teste numa
+ * das doze passa com o código defeituoso — é o que ele fazia com `layers`.
+ */
 const demonstracao: InteractiveBlock = {
   kind: 'interactive',
-  title: 'Veja as camadas',
+  title: 'O som acompanha o salto',
   instructions: 'Observe.',
   hints: [],
   required: false,
-  activity: {
-    type: 'demonstration',
-    scene: 'layers',
-    script: [
-      {
-        id: 'unico',
-        caption: 'O Dino vai para a frente.',
-        actions: [{ type: 'layer', front: true }],
-      },
-    ],
-  },
+  activity: { type: 'demonstration', scene: 'jump-sound' },
 }
 
 describe('a prévia de autoria', () => {
@@ -82,11 +79,15 @@ describe('a prévia de autoria', () => {
       return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
     })
     const passo = await screen.findByRole('button', { name: 'Um passo' })
-    // "Um passo" avança o relógio da demonstração; o roteiro de uma etapa termina em poucos.
-    for (let i = 0; i < 60 && tentativas.length === 0; i++)
+    // "Um passo" avança o relógio; entre as etapas é preciso pedir a próxima, como a criança faz.
+    for (let i = 0; i < 200 && tentativas.length === 0; i++) {
+      const proxima = screen.queryByRole('button', { name: 'Próxima etapa' }) as
+        | HTMLButtonElement
+        | undefined
       await act(async () => {
-        fireEvent.click(passo)
+        fireEvent.click(proxima && !proxima.disabled ? proxima : passo)
       })
+    }
     expect(tentativas).toEqual(['preview'])
   })
 

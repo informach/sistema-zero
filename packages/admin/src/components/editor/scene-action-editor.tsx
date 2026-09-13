@@ -4,6 +4,7 @@ import {
   isSceneAction,
   SCENE_LIMITS,
   SCENE_PORTS,
+  SCRIPT_LIMITS,
   type SceneAction,
   type SceneId,
   type ScenePort,
@@ -222,7 +223,7 @@ export function SceneActionEditor({
       <Button
         variant="outline"
         size="sm"
-        disabled={value.length >= 16}
+        disabled={value.length >= SCRIPT_LIMITS.actions}
         onClick={() => {
           if (choices[0]) onChange([...value, { ...choices[0].value }])
         }}

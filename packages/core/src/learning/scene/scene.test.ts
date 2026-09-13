@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { SCENE_IDS, type SceneAction } from './actions'
+import { SCENE_IDS } from './actions'
 import { SCENE_MODELS } from './catalog'
 import { stepScene } from './engine'
 import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './evaluate'
