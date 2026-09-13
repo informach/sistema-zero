@@ -22,6 +22,10 @@ import {
   classicGameTwoDExpressionToBlock,
   classicGameTwoDStatementToBlock,
 } from '../official-extensions/game-2d/classicCodec'
+import {
+  textSpriteExpressionToBlock,
+  textSpriteStatementToBlock,
+} from '../official-extensions/game-2d/textCodec'
 import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
@@ -1279,6 +1283,13 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
   }
 
   function gameTwoDStatementToBlock(): SerializedBlocklyBlock {
+    const textBlock = textSpriteStatementToBlock(stmt, {
+      block,
+      expression: exprToValueBlock,
+      statements: statementsToBlocks,
+      raw: rawJSBlock,
+    })
+    if (textBlock) return textBlock
     const classicBlock = classicGameTwoDStatementToBlock(stmt, {
       block,
       expression: exprToValueBlock,
@@ -2378,14 +2389,14 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         const x = exprToValueBlock(valueToExpr(stmt.x))
         const y = exprToValueBlock(valueToExpr(stmt.y))
         const size = exprToValueBlock(valueToExpr(stmt.size))
-        if (!x || !y || !size) return rawJSBlock(stmt)
-        return block(
-          'sz_g2d_draw_label',
-          { TEXT: stmt.text, COLOR: stmt.color, ALIGN: stmt.align },
-          {},
-          stmt.__id,
-          { X: x, Y: y, SIZE: size },
-        )
+        const text = exprToValueBlock(valueToExpr(stmt.text))
+        if (!text || !x || !y || !size) return rawJSBlock(stmt)
+        return block('sz_g2d_draw_label', { COLOR: stmt.color, ALIGN: stmt.align }, {}, stmt.__id, {
+          TEXT: text,
+          X: x,
+          Y: y,
+          SIZE: size,
+        })
       }
       case 'g2d:drawHearts': {
         const count = exprToValueBlock(stmt.count)
@@ -7163,6 +7174,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     varExpr,
   })
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
+  const textBlock = textSpriteExpressionToBlock(expr, block, exprToValueBlock)
+  if (textBlock) return textBlock
   const classicBlock = classicGameTwoDExpressionToBlock(expr, block, exprToValueBlock)
   if (classicBlock) return classicBlock
   switch (expr.type) {

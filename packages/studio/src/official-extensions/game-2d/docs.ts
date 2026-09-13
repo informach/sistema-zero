@@ -11,6 +11,16 @@ Os HUDs, placares e telas dos kits usam a letra que você escolher no bloco
 junto com o jogo, então funciona offline. Fontes escolhidas por você nos
 blocos de Canvas continuam sendo respeitadas.
 
+### Sprites de texto e números
+
+Em **Sprites** e **Muitos**, crie texto ou números a partir de variáveis, contas e
+listas. Use movimento, desenho e colisão normalmente. Ajuste letra, cor, largura,
+alinhamento, margem e fundo; largura 0 ajusta ao conteúdo. Guarde dados por sprite.
+**Controles** oferece clique/toque individual ou em grupo. Textos visíveis entram
+no HUD acessível; **Escrever** também aceita variáveis. Veja **Chuva de números**
+e **Quiz de números**: no quiz, responda com 1, 2 ou 3 e use Enter para avançar ou
+reiniciar.
+
 ### Comece um projeto
 
 - [[G2D_LIFECYCLE_MOLDS]]
@@ -26,8 +36,8 @@ contato entre sprites e grupos; **⏱️ Tempo e repetição** reúne os três �
 e tempo de vida; **🏆 Placar e HUD** reúne pontos, textos e barras na tela. Assim você
 procura pelo assunto e usa as aulas para aprender em qual área colocar cada bloco.
 
-- **Preparar o jogo em tela cheia**. Atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
-- **Preparar o jogo para ocupar a tela toda**. Como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela. A resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
+- **Preparar o jogo em tela cheia**. Escolha largura, altura e fundo. O jogo fica centralizado e se ajusta à janela mantendo a proporção. O canvas é criado automaticamente.
+- **Preparar o jogo para ocupar a tela toda**. Preenche a janela sem barras; largura e altura acompanham a tela. Use esses valores para centralizar objetos. Combine com “entrar em tela cheia” para ocupar o monitor. Use um dos dois blocos de preparação no começo.
 - **Pôr o cenário atrás de tudo**. Escolhe um desenho seu (do Pinta ou das Imagens) como fundo do jogo. Ele **cobre** a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora, em cima e embaixo ou nas laterais. Um desenho de 960 por 540 cabe exatinho numa tela larga. Ponha UMA vez em **⚙️ Ao iniciar** e o jogo repinta sozinho a cada quadro, antes de tudo o mais.
 - **Desenhar o cenário**. O irmão do de cima, para quem quer mandar na ordem das camadas: desenha o cenário AGORA, neste quadro. Vai dentro do **🔁 Enquanto estiver rodando**, logo depois de limpar a tela. Use um OU o outro.
 - **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar**; pode vir antes ou depois do bloco de preparação.

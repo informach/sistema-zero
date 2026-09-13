@@ -72,6 +72,7 @@ export const gameTwoDCasualKitsStickRuntime = `  // ============================
     opts = opts || {};
     var w = stageW(ctx), h = stageH(ctx);
     var path = {
+      phase: 'waiting', sceneOffset: 0, platforms: [], sticks: [],
       ctx: ctx,
       w: w,
       h: h,

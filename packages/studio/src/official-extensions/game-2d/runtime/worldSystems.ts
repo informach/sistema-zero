@@ -22,6 +22,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     return !!value && value._kind === 'g2d-level' && _isGameWorld(value.world);
   }
   function createWorld(width, height) {
+    /** @satisfies {import('./runtimeContract').GameTwoDWorld & { _viewportWidth: number, _viewportHeight: number }} */
     var worldValue = {
       _kind: 'g2d-world',
       // Os fallbacks são os MESMOS números das sombras do bloco (800x512): dois
@@ -512,6 +513,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       warnOnce('fase-sem-mundo', 'crie um Mundo antes de criar a Fase.');
       worldValue = createWorld(1, 1);
     }
+    /** @satisfies {import('./runtimeContract').GameTwoDLevel & { _entryGeneration: number, _mapSnapshots: null }} */
     var level = {
       _kind: 'g2d-level',
       world: worldValue,

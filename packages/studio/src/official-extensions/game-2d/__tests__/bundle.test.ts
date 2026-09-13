@@ -91,8 +91,10 @@ describe('bundle inicial do Jogo 2D', () => {
 // ele troca bytes (uma vez, no download) por trabalho por quadro (60× por
 // segundo, para sempre). O ajuste de nitidez de um mapa de 375 células saiu de
 // 1.125 travessias de contexto para 2, e as 400 partículas de 800 para 2.
-const RUNTIME_TETO_CRU = 473_000
-const RUNTIME_TETO_GZIP = 140_000
+// Sprites de texto (13/09): 476.776 B crus / 141.033 B gzip.
+// Novo layout, dados e seleção adicionam ~12 KB; preservamos a margem de 2%.
+const RUNTIME_TETO_CRU = 486_000
+const RUNTIME_TETO_GZIP = 143_800
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do

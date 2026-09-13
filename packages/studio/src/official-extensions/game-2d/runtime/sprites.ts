@@ -585,6 +585,9 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
     if (!ctx || !sprite) return;
+    _layoutSpriteText(sprite);
+    sprite._paintEpoch = _spritePaintEpoch;
+    sprite._paintOrder = ++_spritePaintOrder;
     var op = _finiteNumber(sprite.opacity, 1);
     if (sprite.blinkFrames > 0) {
       // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
@@ -622,6 +625,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   function _drawSpriteBody(ctx, sprite) {
     if (!ctx || !sprite) return;
+    if (sprite.skin && sprite.skin.kind === 'text') { _drawTextSprite(ctx, sprite); return; }
     // Desenhos prontos (skins): nave, asteroide e tiro têm forma própria.
     if (sprite.skin) {
       if (sprite.skin.kind === 'ship') { drawShip(ctx, sprite); return; }
@@ -748,6 +752,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * crianca sem jeito de voltar ao quadro inteiro).
    */
   function _hitboxOf(s) {
+    _layoutSpriteText(s);
     var scale = _positiveFiniteNumber(s._hitboxScale, 1);
     if (!s._hitboxManual && s._hitboxArt) return _artBoxOf(s, s._hitboxArt);
     if (scale === 1) return s;
@@ -779,6 +784,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       _shapes = Object.create(null);
       _shapeW = 0;
       _shapeH = 0;
+      _spritePaintEpoch++;
+      _spritePaintOrder = 0;
     }
   });
 

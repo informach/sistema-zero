@@ -22,6 +22,10 @@ import {
   classicGameTwoDBlockToIR,
 } from '../official-extensions/game-2d/classicCodec'
 import {
+  textSpriteBlockExpression,
+  textSpriteBlockToIR,
+} from '../official-extensions/game-2d/textCodec'
+import {
   CAMPAIGN_BLOCK_UNHANDLED,
   campaignExpressionBlockToIR,
   campaignStatementBlockToIR,
@@ -436,6 +440,8 @@ function blockToExpr(block: Blockly.Block | null): JSExpr | null {
 }
 
 function blockToExprInner(block: Blockly.Block): JSExpr | null {
+  const textExpression = textSpriteBlockExpression(block, f, exprInput)
+  if (textExpression) return textExpression
   const classicExpression = classicGameTwoDBlockExpression(block, f, exprInput)
   if (classicExpression) return classicExpression
   const platformExpression = platformGameThreeDBlockExpression(block, f)
@@ -2144,6 +2150,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   }
 
   function gameTwoDBlockToIR(): RoutedNode | null {
+    const textStatement = textSpriteBlockToIR(block, seen, {
+      field: f,
+      expression: exprInput,
+      statements: getStatementChildren,
+    })
+    if (textStatement) return { kind: 'js', value: textStatement }
     const classicStatement = classicGameTwoDBlockToIR(block, seen, {
       field: f,
       expression: exprInput,
@@ -3561,21 +3573,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             y: exprInput(block, 'Y', { type: 'num', value: 30 }),
             color: f(block, 'COLOR'),
             size: exprInput(block, 'SIZE', { type: 'num', value: 24 }),
-          },
-        }
-      case 'sz_g2d_draw_label':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:drawLabel',
-            ctxVar: 'ctx',
-            text: f(block, 'TEXT'),
-            x: exprInput(block, 'X', { type: 'num', value: 10 }),
-            y: exprInput(block, 'Y', { type: 'num', value: 30 }),
-            color: f(block, 'COLOR'),
-            size: exprInput(block, 'SIZE', { type: 'num', value: 20 }),
-            align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
           },
         }
       case 'sz_g2d_draw_hearts':

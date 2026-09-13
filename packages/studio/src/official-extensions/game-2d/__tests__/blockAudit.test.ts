@@ -281,6 +281,12 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
         // Degrada para blocos genéricos: exige só que nada vire rawJS.
         expect(reparsed.length).toBeGreaterThan(0)
         expect(collectTypes(reparsed).has('rawJS')).toBe(false)
+      } else if (type === 'sz_g2d_on_sprite_click' || type === 'sz_g2d_on_group_click') {
+        // O gerador dá um ID ao evento novo. Ao voltar do Código, ele é um dado
+        // semântico explícito: deve sobreviver também à próxima passagem por blocos.
+        expect(reparsed).toEqual(ir.map((statement) => ({ ...statement, eventId: 'cliqueSprite' })))
+        expect(irThroughBlocks(reparsed)).toEqual(reparsed)
+        expect(compileStatements(reparsed, 0)).toBe(code)
       } else {
         expect(reparsed).toEqual(ir)
       }

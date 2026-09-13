@@ -22,6 +22,7 @@ import {
   heroiQueEvoluiExample,
   mundoPirataExample,
   muralhaDoReinoExample,
+  numberRainExample,
   platformerExample,
   pongExample,
   portasDoCasteloExample,
@@ -29,6 +30,7 @@ import {
   safariDeMonstrosExample,
   sobreviventeExample,
   stickHeroExample,
+  textQuizExample,
   tilemapExample,
   treinadorDeCriaturasExample,
   valeEnsolaradoExample,
@@ -54,6 +56,16 @@ function withMetadata(
 }
 
 export const gameTwoDExamples = [
+  withMetadata(numberRainExample, {
+    difficulty: 'intermediate',
+    concepts: ['sprites de texto', 'números', 'laços', 'grupos', 'par e ímpar'],
+    genre: 'educativo',
+  }),
+  withMetadata(textQuizExample, {
+    difficulty: 'intermediate',
+    concepts: ['sprites de texto', 'listas', 'dados', 'clique', 'perguntas e respostas'],
+    genre: 'quiz',
+  }),
   withMetadata(catchCoinExample, {
     difficulty: 'beginner',
     concepts: ['sprites', 'colisão', 'pontuação'],

@@ -19,6 +19,16 @@ import {
   classicGameTwoDStatementSchemas,
 } from '../official-extensions/game-2d/classicIR'
 import {
+  TEXT_SPRITE_DECLARATION_FIELDS,
+  TEXT_SPRITE_EVENT_TYPES,
+  TEXT_SPRITE_STATEMENT_TYPES,
+  type TextLabelStatement,
+  type TextSpriteExpression,
+  type TextSpriteStatement,
+  textSpriteExpressionSchemas,
+  textSpriteStatementSchemas,
+} from '../official-extensions/game-2d/textIR'
+import {
   GAME_KIT_CAMPAIGN_STATEMENT_TYPES,
   type GameKitCampaignExpression,
   type GameKitCampaignStatement,
@@ -58,6 +68,7 @@ import {
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
+import { functionScopedVariableNames } from './programmingExecution'
 import {
   type Canvas3DStatementContextIndex,
   validateProgrammingReferences as collectProgrammingReferenceIssues,
@@ -217,6 +228,7 @@ export type JSExpr =
     })
   | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
   // A largura e a altura LÓGICAS da tela; os tipos moram na extensão.
+  | TextSpriteExpression
   | ClassicGameTwoDStageValue
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
@@ -708,6 +720,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
+    ...textSpriteExpressionSchemas(JSExprSchema, irText, idField),
     ...classicGameTwoDExpressionSchemas(JSExprSchema, irText, idField),
     z.object({
       type: z.literal('g2d:touches'),
@@ -2828,17 +2841,9 @@ export type JSStatement =
       color: string
       size: number | JSExpr
     })
-  | (JSStatementCommon & {
-      type: 'g2d:drawLabel'
-      ctxVar: string
-      text: string
-      x: number | JSExpr
-      y: number | JSExpr
-      color: string
-      size: number | JSExpr
-      align: 'left' | 'center' | 'right'
-    })
+  | TextLabelStatement
   // Desenho de texto/placar em pixel e o esmaecer: os tipos moram na extensão.
+  | TextSpriteStatement
   | ClassicGameTwoDStatement
   | (JSStatementCommon & {
       type: 'g2d:drawHearts'
@@ -6239,6 +6244,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    ...textSpriteStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...classicGameTwoDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g2d:onOverlap'),
@@ -7074,17 +7080,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       y: z.union([JSExprSchema, z.number()]),
       color: irText(),
       size: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:drawLabel'),
-      ctxVar: irText(),
-      text: irText(),
-      x: z.union([JSExprSchema, z.number()]),
-      y: z.union([JSExprSchema, z.number()]),
-      color: irText(),
-      size: z.union([JSExprSchema, z.number()]),
-      align: z.enum(['left', 'center', 'right']),
       ...idField,
     }),
     z.object({
@@ -11250,6 +11245,7 @@ export type SZIRInput = SZIR | SZIRV2
 const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
 
 const G2D_REGISTERED_EVENT_TYPES = new Set([
+  ...TEXT_SPRITE_EVENT_TYPES,
   'g2d:onPointer',
   'g2d:onKey',
   'g2d:onActionPressed',
@@ -11260,6 +11256,7 @@ const G2D_REGISTERED_EVENT_TYPES = new Set([
 ])
 
 const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
+  ...TEXT_SPRITE_DECLARATION_FIELDS,
   var: 'name',
   'g2d:createSprite': 'varName',
   'g2d:createImageSprite': 'varName',
@@ -11567,6 +11564,7 @@ function g2dLocalNames(statement: JSStatement): string[] {
       return [record.xName, record.yName].filter((name): name is string => typeof name === 'string')
     case 'g2d:onGroupOverlap':
       return [record.aName, record.bName].filter((name): name is string => typeof name === 'string')
+    case 'g2d:onGroupClick':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':
@@ -11621,7 +11619,7 @@ function validateG2DReferences(
   path: (string | number)[],
   inherited: ReadonlySet<string> = G2D_IMPLICIT_NAMES,
 ): void {
-  const symbols = new Set(inherited)
+  const symbols = new Set([...inherited, ...functionScopedVariableNames(statements)])
   for (const statement of statements) {
     const field = G2D_DECLARATION_FIELDS[statement.type]
     const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
@@ -11648,7 +11646,7 @@ function validateG2DReferences(
 
 /** Os nomes que estes statements CRIAM, no nível de topo da área. */
 function declaredNamesInArea(statements: readonly JSStatement[]): Set<string> {
-  const names = new Set<string>()
+  const names = functionScopedVariableNames(statements)
   for (const statement of statements) {
     const field = G2D_DECLARATION_FIELDS[statement.type]
     const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
@@ -11930,6 +11928,7 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 }
 
 export const G2D_STATEMENT_TYPES = new Set([
+  ...TEXT_SPRITE_STATEMENT_TYPES,
   'g2d:onStart',
   'g2d:onActionPressed',
   'g2d:createSprite',

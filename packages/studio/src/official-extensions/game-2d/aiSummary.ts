@@ -25,6 +25,13 @@ registrar Enter para começar/reiniciar; atualizar e desenhar somente na tela
 “jogando”; mostrar instruções, vitória e derrota nas telas correspondentes.
 Jogos precisam de controles, objetivo alcançável, feedback e novo jogo.
 
+TEXTO E NÚMEROS: criar sprite com texto aceita variáveis, contas e itens de listas.
+Criar no grupo gera instâncias independentes em laços. Mudar texto e configurar
+tamanho/cor/caixa preserva a física. Guardar/ler dados do sprite separa número ou
+resposta correta da aparência. Eventos de clique/toque no sprite ou grupo
+identificam a alternativa escolhida, inclusive sprites criados depois. O Escrever
+do HUD também aceita expressões. Receitas: Chuva de números e Quiz de números.
+
 IMAGENS E MAPAS: use assets do projeto; nomes precisam coincidir. Tilemaps vêm do
 Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventado
 automaticamente. Sprites sem imagem continuam visíveis por cor. Mapa guarda tiles:

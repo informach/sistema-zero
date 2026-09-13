@@ -24,6 +24,11 @@ import {
   classicGameTwoDDeclarationToIR,
 } from '../official-extensions/game-2d/classicCodec'
 import {
+  textSpriteCallExpressionToIR,
+  textSpriteCallToIR,
+  textSpriteDeclarationToIR,
+} from '../official-extensions/game-2d/textCodec'
+import {
   CAMPAIGN_CALL_UNHANDLED,
   CAMPAIGN_EXPRESSION_CALL_UNHANDLED,
   gameKitCampaignCallToIR,
@@ -1139,7 +1144,7 @@ function mapDeclarator(
   }
   // game-2d: const s = SZGame2D.createSprite({...}) / const b = SZGame2D.isColliding(a, b)
   // / SZGame2D.circleCollides(a, b). Antes do cascade de literais.
-  const g2dVar = tryMatchGame2DVarInit(name, init, ctx)
+  const g2dVar = tryMatchGame2DVarInit(name, init, ctx, node.kind)
   if (g2dVar) return [g2dVar]
   // game-3d: const cena = SZGame3D.createScene("id") / const caixa = SZGame3D.createBox(cena, {...})
   // / const bola = SZGame3D.createSphere(cena, {...}). Também antes do cascade de literais.
@@ -2478,6 +2483,12 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGame2DCall(node)
   if (!call) return null
   const { method, args } = call
+  const textExpression = textSpriteCallExpressionToIR(method, args, {
+    identifier: identifierName,
+    expression: (node) => toExpr(node, ctx),
+    simple: isSimpleValue,
+  })
+  if (textExpression) return textExpression
   const classicExpression = classicGameTwoDCallExpressionToIR(method, args, {
     identifier: identifierName,
     expression: (value) => toExpr(value, ctx),
@@ -3281,6 +3292,18 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   if (!call) return null
   const { method, args } = call
   const isFn = isInlineFunction
+  const textStatement = textSpriteCallToIR(method, args, {
+    identifier: identifierName,
+    expression: (node) => toExpr(node, ctx),
+    simple: isSimpleValue,
+    inlineFunction: isInlineFunction,
+    functionBody: (node) => {
+      const name = identifierName(node.params[0])
+      if (name) ctx.spriteVars.add(name)
+      return bodyOfFn(node, source, ctx)
+    },
+  })
+  if (textStatement) return textStatement
   const classicStatement = classicGameTwoDCallToIR(method, args, {
     identifier: identifierName,
     expression: (node) => toExpr(node, ctx),
@@ -4259,64 +4282,6 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[1])
       return groupVar && spriteVar ? { type: 'g2d:removeFromGroup', spriteVar, groupVar } : null
     }
-    case 'drawScore': {
-      // generator: SZGame2D.drawScore(ctx, "label", value, x, y, "color", size)
-      const ctxVar = identifierName(args[0])
-      const value = toExpr(args[2], ctx)
-      const x = toExpr(args[3], ctx)
-      const y = toExpr(args[4], ctx)
-      const size = toExpr(args[6], ctx)
-      if (
-        !ctxVar ||
-        args[1]?.type !== 'StringLiteral' ||
-        !isSimpleValue(value) ||
-        !isSimpleValue(x) ||
-        !isSimpleValue(y) ||
-        args[5]?.type !== 'StringLiteral' ||
-        !isSimpleValue(size)
-      ) {
-        return null
-      }
-      return {
-        type: 'g2d:drawScore',
-        ctxVar,
-        label: args[1].value as string,
-        value,
-        x,
-        y,
-        color: args[5].value as string,
-        size,
-      }
-    }
-    case 'drawLabel': {
-      // generator: SZGame2D.drawLabel(ctx, "text", x, y, "color", size, "align")
-      const ctxVar = identifierName(args[0])
-      const x = toExpr(args[2], ctx)
-      const y = toExpr(args[3], ctx)
-      const size = toExpr(args[5], ctx)
-      if (
-        !ctxVar ||
-        args[1]?.type !== 'StringLiteral' ||
-        !isSimpleValue(x) ||
-        !isSimpleValue(y) ||
-        args[4]?.type !== 'StringLiteral' ||
-        !isSimpleValue(size) ||
-        args[6]?.type !== 'StringLiteral'
-      ) {
-        return null
-      }
-      const align = args[6].value as string
-      return {
-        type: 'g2d:drawLabel',
-        ctxVar,
-        text: args[1].value as string,
-        x,
-        y,
-        color: args[4].value as string,
-        size,
-        align: align === 'center' || align === 'right' ? align : 'left',
-      }
-    }
     case 'drawHearts': {
       // generator: SZGame2D.drawHearts(ctx, count, x, y, size, "color")
       const ctxVar = identifierName(args[0])
@@ -4733,10 +4698,30 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
 }
 
 /** `const x = SZGame2D.createSprite({...}) | isColliding(a,b) | circleCollides(a,b)`. */
-function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSStatement | null {
+function tryMatchGame2DVarInit(
+  name: string,
+  init: Node,
+  ctx: ParseCtx,
+  kind: Babel.VariableDeclaration['kind'],
+): JSStatement | null {
   const call = asSZGame2DCall(init)
   if (!call) return null
   const { method, args } = call
+  const textDeclaration = textSpriteDeclarationToIR(
+    name,
+    method,
+    args,
+    {
+      identifier: identifierName,
+      expression: (node) => toExpr(node, ctx),
+      simple: isSimpleValue,
+    },
+    kind,
+  )
+  if (textDeclaration) {
+    ctx.spriteVars.add(name)
+    return textDeclaration
+  }
   const classicDeclaration = classicGameTwoDDeclarationToIR(name, method, args, {
     identifier: identifierName,
     expression: (node) => toExpr(node, ctx),
@@ -13305,10 +13290,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'dateGet':
     case 'g2d:stageWidth':
     case 'g2d:stageHeight':
+    case 'g2d:spriteText':
       return true
     case 'g2d:tileContactIs':
       return isSimpleValue(expr.index)
     case 'g2d:campaignValue':
+    case 'g2d:spriteData':
       return isSimpleValue(expr.fallback)
     case 'datasetGet':
     case 'classContains':

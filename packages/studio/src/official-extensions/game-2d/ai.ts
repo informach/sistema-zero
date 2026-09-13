@@ -14,6 +14,11 @@ getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'c
 fica escondido; no código gerado ele aparece como argumento (válido e reversível).
 
 API global injetada como window.SZGame2D:
+- createTextSprite(textoOuNumero, x, y): sprite comum cuja aparência é texto. Aceita expressões; cada chamada cria outra instância. spawnTextInGroup(grupo, textoOuNumero, x, y) também guarda no grupo. Nome opcional no bloco de grupo identifica o recém-criado.
+- setSpriteText(sprite, textoOuNumero), spriteText(sprite): mudar/ler apresentação; a troca conserva identidade, posição, velocidade, dados e grupos. setTextStyle(sprite, tamanho, cor) usa a fonte do jogo. setTextBox(sprite, largura, alinhamento, margem, fundo): largura 0 automática, outra largura quebra linhas; alinhamento left/center/right; fundo "transparent" ou cor CSS. Texto até 4096 caracteres, fonte até 512px.
+- setSpriteData(sprite, chave, valor), spriteData(sprite, chave, reserva): dados próprios de QUALQUER sprite. Número continua número; zero/falso não acionam reserva. Guarde valor para par/ímpar e correta para quiz. Nunca use o texto formatado como identidade da resposta.
+- onSpriteClick(sprite, () => {...}, id?), onGroupClick(grupo, (escolhida) => {...}, id?): eventos da área Quando acontecer. Use o evento de GRUPO para objetos gerados por laço. Só a caixa desenhada responde, câmera/giro/escala respeitados; no grupo sobreposto vence o desenhado por cima. Mover/desenhar/colidir continuam usando as APIs existentes.
+- drawLabel(ctx, textoOuExpressao, x, y, cor, tamanho, alinhamento) aceita variáveis e itens de listas para atualizar o enunciado. Exemplos disponíveis: Chuva de números e Quiz de números.
 - setupStage(largura, altura, fundo): prepara o canvas responsivo com proporção fixa.
 - createSprite({ x, y, w, h, color }) -> { x, y, w, h, color, vx, vy }
 - drawSprite(ctx, sprite): desenha como fillRect.

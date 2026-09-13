@@ -18,6 +18,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: '#4c97ff',
     types: [
       'sz_g2d_create_sprite',
+      'sz_g2d_create_text_sprite',
+      'sz_g2d_set_sprite_text',
+      'sz_g2d_sprite_text',
+      'sz_g2d_set_text_style',
+      'sz_g2d_set_text_box',
+      'sz_g2d_set_sprite_data',
+      'sz_g2d_sprite_data',
       'sz_g2d_create_image_sprite',
       'sz_g2d_draw_sprite',
       'sz_g2d_set_image',
@@ -54,6 +61,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_create_group',
       'sz_g2d_spawn_in_group',
+      'sz_g2d_spawn_text_in_group',
       'sz_g2d_spawn_image_in_group',
       'sz_g2d_spawn_bullet',
       'sz_g2d_update_group',
@@ -142,6 +150,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_on_key',
       'sz_g2d_on_any_input',
       'sz_g2d_on_pointer',
+      'sz_g2d_on_sprite_click',
+      'sz_g2d_on_group_click',
       'sz_g2d_on_jump',
       'sz_g2d_key_down',
       'sz_g2d_pointer_down',
@@ -497,6 +507,17 @@ const leftover = gameTwoDBlocks
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g2d_create_text_sprite: { TEXT: txtShadow('Olá!'), X: numShadow(100), Y: numShadow(100) },
+  sz_g2d_spawn_text_in_group: { TEXT: numShadow(1), X: numShadow(100), Y: numShadow(100) },
+  sz_g2d_set_sprite_text: { TEXT: txtShadow('Olá!') },
+  sz_g2d_set_text_style: { SIZE: numShadow(32) },
+  sz_g2d_set_text_box: {
+    WIDTH: numShadow(240),
+    PADDING: numShadow(12),
+    BACKGROUND: txtShadow('transparent'),
+  },
+  sz_g2d_set_sprite_data: { VALUE: numShadow(0) },
+  sz_g2d_sprite_data: { FALLBACK: numShadow(0) },
   sz_g2d_show_screen: {
     TITLE: txtShadow('Nave contra Asteroides'),
     SUBTITLE: txtShadow('Destrua os asteroides!'),
@@ -563,7 +584,12 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Y: numShadow(30),
     SIZE: numShadow(24),
   },
-  sz_g2d_draw_label: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(20) },
+  sz_g2d_draw_label: {
+    TEXT: txtShadow('Nave contra Asteroides'),
+    X: numShadow(12),
+    Y: numShadow(30),
+    SIZE: numShadow(20),
+  },
   sz_g2d_draw_pixel_text: { X: numShadow(8), Y: numShadow(8), SIZE: numShadow(2) },
   sz_g2d_draw_pixel_score: {
     VALUE: numShadow(0),

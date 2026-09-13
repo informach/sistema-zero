@@ -100,6 +100,25 @@ export function exampleQaTestTimeoutMs(contract: ExampleQAContract): number {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'game-2d:Chuva de números',
+    name: 'Chuva de números',
+    experience: 'game',
+    promise: 'Gerar números de 1 a 100 como sprites, coletar dez pares e desviar dos ímpares.',
+    scenario:
+      'Começar com Enter ou toque, mover a cesta, coletar pares, perder vida com ímpares, vencer ou perder e reiniciar.',
+    interactions: ['start', 'arrows', 'drag'],
+  },
+  {
+    key: 'game-2d:Quiz de números',
+    name: 'Quiz de números',
+    experience: 'game',
+    promise:
+      'Escolher alternativas geradas de uma lista, receber feedback e avançar entre perguntas.',
+    scenario:
+      'Responder por toque ou teclas 1, 2 e 3, conferir o feedback, avançar com Enter, terminar e jogar de novo.',
+    interactions: ['click', 'digit-1', 'choice-2', 'start'],
+  },
+  {
     key: 'core:Reino Zero Ultra (na mão)',
     name: 'Reino Zero Ultra (na mão)',
     experience: 'game',

@@ -20,6 +20,20 @@ const topBlocks = (s: unknown): AnyBlock[] =>
 const firstBlock = (s: unknown): AnyBlock => topBlocks(s)[0] as AnyBlock
 
 describe('migrateLegacyValueFields — campos legados viram soquetes preservando o valor', () => {
+  it.each(['Pergunta 12: quanto é 3 + 5?', '', '0'])('preserva texto antigo do HUD: %s', (text) => {
+    const saved = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_g2d_draw_label', fields: { TEXT: text, X: 30, Y: 50 } }],
+      },
+    }
+    const migrated = migrateLegacyValueFields(saved)
+    const block = firstBlock(migrated)
+    expect(block.inputs?.TEXT).toEqual({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
+    expect(block.fields).not.toHaveProperty('TEXT')
+    expect(migrateLegacyValueFields(migrated)).toBe(migrated)
+  })
+
   it('sz_g2d_set_position com fields.X/Y antigos → inputs com sombra e valor preservado', () => {
     const legacy = {
       blocks: {

@@ -175,6 +175,8 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
     },
     resolveModuleNames: (moduleNames, containingFile) =>
       moduleNames.map((moduleName) => {
+        if (moduleName === './runtimeContract')
+          return { resolvedFileName: RUNTIME_CONTRACT_FILE, extension: ts.Extension.Ts }
         if (moduleName === './classicContracts') {
           return { resolvedFileName: CLASSIC_CONTRACTS_FILE, extension: ts.Extension.Ts }
         }
@@ -316,7 +318,10 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // leitura e duas escritas de contexto POR CÉLULA de mapa para um par por mapa.
   // 1157 → 1158: `_readSmoothing(ctx)` preserva a escolha real do Canvas livre;
   // a leitura continua uma vez por MAPA dentro do lote, não uma vez por célula.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1158)
+  // +42 parâmetros de texto, layout, dados e seleção por clique; APIs tipadas
+  // em JSDoc e verificadas contra o contrato público pelo arquivo composto.
+  // +6 parâmetros com JSDoc: identidade de clique por alvo e publicação no HUD acessível.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1206)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

@@ -6,6 +6,11 @@ import {
   GAME_TWO_D_ENEMY_SMART_OPTIONS,
 } from './blockCatalogShared'
 
+const numberKeyOptions: Array<[string, string]> = Array.from({ length: 10 }, (_, digit) => [
+  `tecla ${digit}`,
+  String(digit),
+])
+
 const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   // ---- Mouse / toque ----
   {
@@ -49,6 +54,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
           ['tecla W', 'w'],
           ['tecla S', 's'],
           ['tecla F', 'f'],
+          ...numberKeyOptions,
         ],
       },
     ],
@@ -131,6 +137,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
           ['tecla W', 'w'],
           ['tecla S', 's'],
           ['tecla F', 'f'],
+          ...numberKeyOptions,
         ],
       },
     ],

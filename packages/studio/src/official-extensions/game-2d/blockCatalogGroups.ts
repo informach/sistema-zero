@@ -285,7 +285,7 @@ export const gameTwoDGroupAndHudBlocks = [
     placement: 'command',
     message0: 'Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6',
     args0: [
-      { type: 'field_input', name: 'TEXT', text: 'Nave contra Asteroides' },
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
@@ -304,7 +304,8 @@ export const gameTwoDGroupAndHudBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Escreve um texto fixo na tela (ex.: um título). Escolha o alinhamento.',
+    tooltip:
+      'Escreve texto ou um valor na tela: título, pergunta, variável ou item de lista. Escolha o alinhamento.',
   },
   {
     type: 'sz_g2d_draw_hearts',

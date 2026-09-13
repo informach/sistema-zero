@@ -29,6 +29,8 @@ interface AssetAccessor {
  */
 const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameField?: string }> = {
   sz_g2d_create_sprite: { color: 'COLOR' },
+  sz_g2d_create_text_sprite: {},
+  sz_g2d_spawn_text_in_group: {},
   sz_g2d_create_image_sprite: { image: 'IMAGE' },
   sz_g2d_create_shape_sprite: { nameField: 'SPRITE' }, // criar sprite com figura (v0.23) — nome no campo SPRITE
   // Criar NO GRUPO com nome (opcional): o sprite nasce durante o jogo e o nome
@@ -80,6 +82,7 @@ export function collectSprites(workspace: Blockly.Workspace | null | undefined):
  */
 const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
   sz_g2d_for_each_in_group: ['ITEM'],
+  sz_g2d_on_group_click: ['ITEM'],
   sz_g2d_prune_offscreen: ['ITEM'],
   sz_g2d_on_group_overlap: ['ANAME', 'BNAME'],
   sz_g2d_on_sprite_group_overlap: ['ANAME'],

@@ -81,6 +81,21 @@ export interface GameTwoDSpriteOptions {
   image?: string | null
 }
 
+export interface GameTwoDTextAppearance {
+  text: string
+  size: number
+  color: string
+  width: number
+  align: 'left' | 'center' | 'right'
+  padding: number
+  background: string
+  font: string
+  lines: string[]
+  measuredW: number
+  measuredH: number
+  layoutKey: string
+}
+
 export interface GameTwoDSprite {
   x: number
   y: number
@@ -91,7 +106,12 @@ export interface GameTwoDSprite {
   vy: number
   image: GameTwoDImageHandle | null
   anim: GameTwoDAnimation | null
+  _animState?: string | null
   skin?: GameTwoDSpriteSkin
+  textAppearance?: GameTwoDTextAppearance
+  data?: Record<string, unknown>
+  _paintEpoch?: number
+  _paintOrder?: number
   angle?: number
   facing?: number
   direction?: GameTwoDSpriteDirection
@@ -253,6 +273,8 @@ export interface GameTwoDLifecycleApi {
   gameLoop(fn: () => void, id?: string): () => void
   onStart(fn: () => void, id?: string): void
   onPointer(fn: (x: number, y: number) => void, id?: string): void
+  onSpriteClick(sprite: GameTwoDSprite, fn: () => void, id?: string): void
+  onGroupClick(group: GameTwoDGroup, fn: (sprite: GameTwoDSprite) => void, id?: string): void
   onKey(key: string, fn: () => void, id?: string): void
   /** Uma ação clássica apertada por teclado, toque ou tecnologia assistiva. */
   onActionPressed(action: GameTwoDAction, fn: () => void, id?: string): void
@@ -293,6 +315,20 @@ export interface GameTwoDStageApi {
 }
 
 export interface GameTwoDSpriteApi {
+  createTextSprite(text: unknown, x: number, y: number): GameTwoDSprite
+  spawnTextInGroup(group: GameTwoDGroup, text: unknown, x: number, y: number): GameTwoDSprite
+  setSpriteText(sprite: GameTwoDSprite, text: unknown): void
+  spriteText(sprite: GameTwoDSprite): string
+  setTextStyle(sprite: GameTwoDSprite, size: number, color: string): void
+  setTextBox(
+    sprite: GameTwoDSprite,
+    width: number,
+    align: 'left' | 'center' | 'right',
+    padding: number,
+    background: string,
+  ): void
+  setSpriteData(sprite: GameTwoDSprite, key: string, value: unknown): void
+  spriteData(sprite: GameTwoDSprite, key: string, fallback: unknown): unknown
   createSprite(options?: GameTwoDSpriteOptions): GameTwoDSprite
   drawSprite(ctx: GameTwoDContext, sprite: GameTwoDSprite): void
   isColliding(a: GameTwoDSprite, b: GameTwoDSprite): boolean
@@ -951,6 +987,16 @@ export const GAME_TWO_D_API_KEYS = [
   'drawHitbox',
   'showFps',
   'onPointer',
+  'onSpriteClick',
+  'onGroupClick',
+  'createTextSprite',
+  'spawnTextInGroup',
+  'setSpriteText',
+  'spriteText',
+  'setTextStyle',
+  'setTextBox',
+  'setSpriteData',
+  'spriteData',
   'onKey',
   'onActionPressed',
   'onAnyInput',

@@ -637,7 +637,13 @@ function providesUserGesture(statement: JSStatement): boolean {
   // libera som e tela cheia lá dentro). ⚠️ O `userGesture` do bloco não chega
   // aqui sozinho: esta lista é o espelho no IR, para o estado importado e a Ponte.
   if (statement.type === 'g2d:onAnyInput') return true
-  if (statement.type === 'g2d:onPointer' || statement.type === 'gk:onGameClick') return true
+  if (
+    statement.type === 'g2d:onSpriteClick' ||
+    statement.type === 'g2d:onGroupClick' ||
+    statement.type === 'g2d:onPointer' ||
+    statement.type === 'gk:onGameClick'
+  )
+    return true
   if (
     statement.type === 'gk:addButton' ||
     statement.type === 'g3k:addButton' ||

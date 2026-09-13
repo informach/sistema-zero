@@ -142,11 +142,12 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   }
   /** Cria um grupo vazio com pertencimento observável inclusive no modo Código. */
   function createGroup() {
-    var group = { _revision: 0 };
+    var group = { _revision: 0, items: [] };
     _managedGroups.add(group);
     var items = _trackGroupItems(group, []);
     Object.defineProperty(group, 'items', {
       enumerable: true,
+      configurable: false,
       get: function () { return items; },
       set: function (nextItems) {
         if (nextItems === items) return;

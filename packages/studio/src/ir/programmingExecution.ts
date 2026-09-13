@@ -1,3 +1,4 @@
+import { TEXT_SPRITE_EVENT_TYPES } from '../official-extensions/game-2d/textIR'
 import type { JSStatement } from './schema'
 
 export type ProgrammingBodyTiming = 'immediate' | 'deferred' | 'invocable'
@@ -22,6 +23,25 @@ export interface ProgrammingEmbeddedBodyEntry {
   path: (string | number)[]
   body: JSStatement[]
   execution: 'sync-callback'
+}
+
+/** `var` pertence à função; laços e condicionais não criam um escopo para ela. */
+export function functionScopedVariableNames(statements: readonly JSStatement[]): Set<string> {
+  const names = new Set<string>()
+  for (const statement of statements) {
+    if (
+      'declarationKind' in statement &&
+      statement.declarationKind === 'var' &&
+      statement.varName
+    ) {
+      names.add(statement.varName)
+    }
+    for (const child of programmingChildBodyEntries(statement)) {
+      if (child.execution !== 'structural') continue
+      for (const name of functionScopedVariableNames(child.body)) names.add(name)
+    }
+  }
+  return names
 }
 
 const STATEMENT_BODY_KEYS: ReadonlySet<string> = new Set([
@@ -80,6 +100,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     // Jogo 2D: eventos e raízes contínuas registram; varreduras chamam agora.
     'g2d:onStart',
     'g2d:updateEachFrame',
+    ...TEXT_SPRITE_EVENT_TYPES,
     'g2d:onPointer',
     'g2d:onKey',
     'g2d:onActionPressed',
@@ -304,6 +325,7 @@ function localVariablesForChild(
       return first === 'body' ? [statement.aName, statement.bName] : []
     case 'g2d:forEachTileContact':
       return first === 'body' ? [statement.contactName] : []
+    case 'g2d:onGroupClick':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':

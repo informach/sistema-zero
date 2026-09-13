@@ -1,3 +1,4 @@
+import { TEXT_SPRITE_DECLARATION_FIELDS } from '../official-extensions/game-2d/textIR'
 import {
   CANVAS3D_SEMANTIC_DECLARATION_FIELDS,
   CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS,
@@ -13,6 +14,7 @@ import {
   type Game3DSymbolKind,
 } from '../three/game3dContract'
 import {
+  functionScopedVariableNames,
   isProgrammingStatementBodyKey,
   programmingChildBodyEntries,
   programmingEmbeddedBodyEntries,
@@ -31,6 +33,7 @@ export interface ProgrammingReferenceIssue {
 }
 
 const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
+  ...TEXT_SPRITE_DECLARATION_FIELDS,
   var: 'name',
   declareVar: 'name',
   getProperty: 'varName',
@@ -840,6 +843,7 @@ function validateCalledMethod(
 }
 
 function hoistFunctions(statements: readonly JSStatement[], symbols: ProgrammingSymbols): void {
+  for (const name of functionScopedVariableNames(statements)) addName(symbols.variables, name)
   for (const statement of statements) {
     if (statement.type === 'funcDecl') {
       addName(symbols.functions, statement.name)

@@ -117,10 +117,11 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var cache = [];
     var protegida = _protegerListaDaVista(cache);
     var seloDoCache = -1;
-    var group = { _revision: 0, _enemyMirror: true };
+    var group = { _revision: 0, _enemyMirror: true, items: [] };
     _managedGroups.add(group);
     Object.defineProperty(group, 'items', {
       enumerable: true,
+      configurable: false,
       get: function () {
         var selo = _enemySelo();
         if (seloDoCache !== selo) {
@@ -208,9 +209,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         'SZGame2D: "Criar tipo de inimigo" (o normal ou o "com inteligência") está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte esse bloco FORA do laço (ele roda uma vez só); dentro do laço a lista é recriada a cada quadro e os inimigos soltos somem da tela.'
       );
     }
-    var type = createGroup();
-    type.bullets = createGroup();
-    type.config = {
+    var config = {
         behavior: options.behavior || 'patrulha',
         // Lista de comportamentos JUNTADOS (bloco "O tipo de inimigo ... também e ...").
         // O campo 'behavior' acima guarda o de NASCENÇA e nunca muda; esta lista
@@ -235,7 +234,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         beamFrames: 180,
         animStates: null
     };
-    type.onDefeat = null;
+    var type = Object.assign(createGroup(), { bullets: createGroup(), config: config, onDefeat: null });
     type._defeatHandlers = Object.create(null);
     type._defeatOrder = [];
     type._hurtHandlers = Object.create(null);

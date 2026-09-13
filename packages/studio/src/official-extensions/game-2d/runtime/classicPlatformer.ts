@@ -355,6 +355,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     _commitRecordedMotion(sprite);
   }
 
+  /** @returns {import('./runtimeContract').GameTwoDVectorTileset} */
   function createVectorTileset(tileSize) {
     return {
       _kind: 'g2d-vector-tileset',

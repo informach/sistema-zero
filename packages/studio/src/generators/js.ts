@@ -13,6 +13,10 @@ import {
 import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
 import { classicGameTwoDStatementToCode } from '../official-extensions/game-2d/classicCodec'
+import {
+  collectTextSpriteIdentifiers,
+  textSpriteStatementToCode,
+} from '../official-extensions/game-2d/textCodec'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -1669,6 +1673,20 @@ function compileStatementCode(
   }
 
   function gameTwoDStatementToCode(): string {
+    const textCode = textSpriteStatementToCode(stmt, {
+      pad,
+      id: (name) => identifiers.get(name),
+      expression: (value) => compileExpr(value, 0, identifiers, recAt(base)),
+      body: (values) =>
+        compileStatements(
+          values,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        ),
+      eventId: () => identifiers.reserveInternal('cliqueSprite'),
+    })
+    if (textCode !== undefined) return textCode
     const classicCode = classicGameTwoDStatementToCode(stmt, {
       pad,
       id: (name) => identifiers.get(name),
@@ -2181,7 +2199,7 @@ function compileStatementCode(
       case 'g2d:drawScore':
         return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
       case 'g2d:drawLabel':
-        return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.align)});`
+        return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.align)});`
       case 'g2d:drawHearts':
         return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
       case 'g2d:drawSpriteHealth':
@@ -4273,6 +4291,8 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'physicsLiteTriggerEvent':
       case 'g2d:onStart':
       case 'g2d:updateEachFrame':
+      case 'g2d:onSpriteClick':
+      case 'g2d:onGroupClick':
       case 'g2d:onPointer':
       case 'g2d:onKey':
       case 'g2d:onActionPressed':
@@ -4341,6 +4361,8 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'physicsLiteTriggerEvent':
       case 'g2d:onStart':
       case 'g2d:updateEachFrame':
+      case 'g2d:onSpriteClick':
+      case 'g2d:onGroupClick':
       case 'g2d:onPointer':
       case 'g2d:onKey':
       case 'g2d:onActionPressed':
@@ -5112,6 +5134,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
   }
 
   function gameTwoDStatementIdentifiers(): void {
+    if (
+      collectTextSpriteIdentifiers(stmt, names, collectExprIdentifiers, collectStatementIdentifiers)
+    )
+      return
     switch (stmt.type) {
       case 'g2d:createSprite':
         names.add(stmt.varName)
@@ -5387,6 +5413,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.size), names)
         return
       case 'g2d:drawLabel':
+        collectExprIdentifiers(valueToExpr(stmt.text), names)
         names.add(stmt.ctxVar)
         collectExprIdentifiers(valueToExpr(stmt.x), names)
         collectExprIdentifiers(valueToExpr(stmt.y), names)
@@ -8025,6 +8052,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 }
 
 function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
+  if (expr.type === 'g2d:spriteText' || expr.type === 'g2d:spriteData') {
+    names.add(expr.spriteVar)
+    if (expr.type === 'g2d:spriteData') collectExprIdentifiers(expr.fallback, names)
+    return
+  }
   switch (expr.type) {
     case 'var':
       names.add(expr.name)
