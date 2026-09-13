@@ -215,6 +215,43 @@ describe('cena: a avaliação', () => {
 })
 
 describe('cena: o estado que volta do servidor', () => {
+  test('aceita o que o MOTOR produz, inclusive uma pista cheia de cactos', () => {
+    // ⚠️ O review pegou um teto meu de 40 cactos. Na cena `spawn` sem o relógio ligado nasce
+    // um cacto por quadro (1/30 s), então dois segundos de brincadeira já dão 60 — e o
+    // estado voltava do servidor recusado, mandando a criança recomeçar do zero.
+    let s = initialScene({ scene: 'spawn' })
+    s = stepScene({ scene: 'spawn' }, s, { type: 'advance', seconds: 2 })
+    expect(s.crowd.cacti.length).toBeGreaterThan(40)
+    expect(isSceneState(s)).toBe(true)
+
+    // O pior caso do motor: o filtro de limpeza segura o vivo em 288.
+    let cheio = initialScene({ scene: 'spawn' })
+    cheio = stepScene({ scene: 'spawn' }, cheio, { type: 'advance', seconds: 30 })
+    expect(isSceneState(cheio)).toBe(true)
+  })
+
+  test('recusa um intervalo que travaria o motor em laço infinito', () => {
+    // ⚠️ `interval: 0` faz `Math.floor(x / 0) = Infinity` no laço de nascimento: a aba
+    // congela até estourar a memória. Só a ação `interval` alimenta esse campo no jogo
+    // (0,5 a 2), então este validador é a única barreira para um checkpoint adulterado.
+    const bom = initialScene({ scene: 'spawn' })
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, interval: 0 } })).toBe(false)
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, interval: 9 } })).toBe(false)
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, remainder: 1e9 } })).toBe(false)
+  })
+
+  test('o áudio da instrução não aceita URL sem protocolo', () => {
+    // ⚠️ `//host/audio.mp3` parece caminho local e não é: carrega de terceiro, pelo
+    // protocolo da página. Era o que a regex original barrava com `[^/]`.
+    const com = (instructionAudioUrl: string) =>
+      isSceneActivity({ type: 'experimentation', scene: 'world', instructionAudioUrl })
+    expect(com('https://cdn.sistemazero.com.br/a.mp3')).toBe(true)
+    expect(com('/audio/a.mp3')).toBe(true)
+    expect(com('//host-qualquer/a.mp3')).toBe(false)
+    expect(com('/')).toBe(false)
+    expect(com('http://inseguro/a.mp3')).toBe(false)
+  })
+
   test('aceita o estado inicial de todas as cenas', () => {
     for (const scene of SCENE_IDS) expect(isSceneState(initialScene({ scene }))).toBe(true)
   })

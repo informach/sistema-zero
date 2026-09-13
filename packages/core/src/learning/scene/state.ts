@@ -1,4 +1,4 @@
-import { isRecord, type SceneId } from './actions'
+import { isRecord, SCENE_LIMITS, type SceneId } from './actions'
 
 /**
  * O estado de uma cena, agrupado por assunto.
@@ -222,6 +222,8 @@ export function observe(state: SceneState, id: string, label: string, discovered
 }
 
 const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+const between = (v: unknown, min: number, max: number): v is number =>
+  num(v) && v >= min && v <= max
 const bool = (v: unknown): v is boolean => typeof v === 'boolean'
 const strings = (v: unknown, max: number): v is string[] =>
   Array.isArray(v) && v.length <= max && v.every((s) => typeof s === 'string' && s.length <= 80)
@@ -251,10 +253,19 @@ export function isSceneState(value: unknown): value is SceneState {
     return false
   if (flight.time !== null && !num(flight.time)) return false
   if (!bool(sound.onJump) || !num(sound.count) || !num(sound.jumps)) return false
-  if (!bool(crowd.timer) || !bool(crowd.cleanup) || !num(crowd.interval)) return false
-  if (!num(crowd.remainder) || !num(crowd.born) || !num(crowd.removed) || !num(crowd.elapsed))
-    return false
-  if (!Array.isArray(crowd.cacti) || crowd.cacti.length > 40) return false
+  if (!bool(crowd.timer) || !bool(crowd.cleanup)) return false
+  // ⚠️ `interval` PRECISA de faixa, não só de ser finito: com 0 o motor faz
+  // `Math.floor(x / 0) = Infinity` e o laço de nascimento trava a aba da criança até
+  // estourar a memória. Pelo jogo o campo só chega pela ação `interval` (0,5 a 2), então
+  // este validador é a única barreira para um checkpoint corrompido.
+  if (!between(crowd.interval, SCENE_LIMITS.interval.min, SCENE_LIMITS.interval.max)) return false
+  if (!between(crowd.remainder, 0, SCENE_LIMITS.interval.max)) return false
+  if (!num(crowd.born) || !num(crowd.removed) || !num(crowd.elapsed)) return false
+  // ⚠️ O teto precisa caber no que o motor PRODUZ. Na cena `spawn` sem o relógio ligado —
+  // que é o estado inicial dela, e a lição "em cada quadro nasce outro cacto" — nasce um
+  // cacto a cada 1/30 s: dois segundos de brincadeira já dão 60. O motor limpa em
+  // `x >= -480`, o que limita o vivo a 288.
+  if (!Array.isArray(crowd.cacti) || crowd.cacti.length > 320) return false
   if (!crowd.cacti.every((c) => isRecord(c) && num(c.id) && num(c.x) && num(c.velocity)))
     return false
   if (!bool(match.guarded) || !bool(match.touch) || !bool(match.restartConnected)) return false

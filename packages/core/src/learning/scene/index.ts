@@ -38,7 +38,9 @@ export interface ExperimentationActivity {
 export type SceneActivity = DemonstrationActivity | ExperimentationActivity
 
 const isScene = (v: unknown): v is SceneId => SCENE_IDS.some((s) => s === v)
-const AUDIO = /^(https:\/\/|\/)/
+// ⚠️ O `[^/]` não é enfeite: sem ele, `//host-qualquer/audio.mp3` passa como se fosse
+// caminho local e o player carrega áudio de terceiro, pelo protocolo da página.
+const AUDIO = /^(https:\/\/|\/[^/])/
 
 function validAudio(value: unknown): boolean {
   if (value === undefined) return true
