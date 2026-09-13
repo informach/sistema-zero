@@ -14,6 +14,7 @@ import {
   isInteractiveBlock,
   LESSON_SECTION_TEMPLATES,
   type LessonDraftIssue,
+  migrateLegacyInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
   createLessonAsset,
@@ -766,7 +767,10 @@ function LessonEditorSession({
       galleryEnabled: (c.kind === 'studio' || c.kind === 'pinta') && !!c.gallery,
       galleryMin: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.minItems ?? 1) : 1,
       galleryMax: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.maxItems ?? 6) : 6,
-      interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
+      // ⚠️ Bloco do modelo ANTERIOR abre já migrado: sem isto ele entra inválido, o botão de
+      // salvar nasce desabilitado e não há caminho pela tela para consertar nem para apagar.
+      interactive:
+        c.kind === 'interactive' ? (migrateLegacyInteractiveBlock(c) ?? c) : EMPTY_LEARNING,
       toolPurpose:
         c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
       dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',

@@ -17,7 +17,9 @@ import {
   isSceneActivity,
   readDemonstrationSession,
   readExperimentSession,
+  SCENE_IDS,
   type SceneActivity,
+  type SceneId,
   sceneModel,
 } from './scene'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
@@ -288,6 +290,57 @@ export function isLearningAnswers(value: unknown): value is LearningAnswers {
     }) && new TextEncoder().encode(JSON.stringify(value)).byteLength <= MAX_LEARNING_STATE_BYTES
   )
 }
+/**
+ * A atividade do modelo ANTERIOR, trazida para o de agora.
+ *
+ * ⚠️⚠️ Isto existe porque o plano da reescrita partiu de uma premissa que era falsa no ambiente
+ * dela: "nada foi usado por ninguém". Havia aulas com blocos interativos já gravados, e ao tirar
+ * os seis tipos antigos do contrato esses blocos pararam de poder ser SALVOS — o que trava a aula
+ * inteira, porque o editor desabilita o botão quando o bloco é inválido e a importação de roteiro
+ * tenta salvar o bloco aberto antes de começar. A professora ficava sem saída: não conseguia nem
+ * consertar, nem importar por cima.
+ *
+ * O que dá para converter com fidelidade, converte:
+ * - `exploration` (v2 e v3) era o MESMO motor de cena com outro nome. A missão vira a cena, e o
+ *   modo escolhe entre as duas irmãs: `demo` vira demonstração, o resto vira experimentação.
+ *
+ * O que NÃO dá, vira **pergunta curta**, preservando o enunciado e o gabarito que o bloco já
+ * tivesse: `prediction`, `sequence`, `simulation`, `comparison` e `experiment` não têm equivalente
+ * automático (a conversão do conteúdo do repositório foi escrita à mão, texto por texto). Virar
+ * pergunta é o destino que mantém o bloco ABERTO para ela decidir, em vez de prendê-lo.
+ *
+ * Devolve `null` quando não há o que migrar — a atividade já é atual, ou não é reconhecível.
+ */
+export function migrateLegacyActivity(value: unknown): LearningActivity | null {
+  if (!record(value) || typeof value.type !== 'string') return null
+  if (isSceneActivity(value) || value.type === 'question' || value.type === 'html') return null
+  if (value.type === 'exploration') {
+    const cena = SCENE_IDS.find((id) => id === value.mission)
+    if (!cena) return { type: 'question' }
+    return value.mode === 'demo'
+      ? { type: 'demonstration', scene: cena as SceneId }
+      : { type: 'experimentation', scene: cena as SceneId }
+  }
+  if (['prediction', 'sequence', 'simulation', 'comparison', 'experiment'].includes(value.type))
+    return { type: 'question' }
+  return null
+}
+
+/**
+ * O BLOCO inteiro trazido para o modelo de agora; `null` quando não havia o que migrar.
+ *
+ * ⚠️ NÃO garante bloco publicável, e isso é deliberado: um `prediction` sem gabarito vira uma
+ * pergunta SEM pergunta, que o `isInteractiveBlock` recusa — e deve recusar mesmo, porque ele é
+ * o guarda da PUBLICAÇÃO. O rascunho aceita campo vazio de propósito; o que a migração precisa
+ * garantir é que o bloco volte a ser EDITÁVEL e SALVÁVEL, para a professora completar ou apagar.
+ * Filtrar por validade aqui só trocaria uma parede por outra, que foi o defeito original.
+ */
+export function migrateLegacyInteractiveBlock(value: unknown): InteractiveBlock | null {
+  if (!record(value) || value.kind !== 'interactive') return null
+  const activity = migrateLegacyActivity(value.activity)
+  return activity ? ({ ...value, activity } as InteractiveBlock) : null
+}
+
 export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   if (
     !record(value) ||

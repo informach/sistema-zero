@@ -10,6 +10,8 @@ import {
   isLearningFrameMessage,
   isLearningManifest,
   LEARNING_PROTOCOL,
+  migrateLegacyActivity,
+  migrateLegacyInteractiveBlock,
   publicInteractiveBlock,
   sectionCompletionIssues,
   validateLessonSections,
@@ -419,3 +421,118 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
   if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId
   return answers
 }
+
+/**
+ * ⚠️⚠️ Os blocos que JÁ ESTAVAM gravados quando a reescrita tirou os seis tipos antigos.
+ *
+ * O plano dizia "nada foi usado por ninguém" e isso não valia para o ambiente dela: a aula 1 do
+ * Corre Dino tinha blocos do modelo anterior. Sem migração eles param de poder ser SALVOS, e aí
+ * a aula trava inteira — o editor desabilita o botão com o bloco inválido, e importar um roteiro
+ * novo por cima também não funciona, porque a importação salva o bloco aberto antes de começar.
+ */
+describe('os blocos do modelo anterior', () => {
+  const base = {
+    kind: 'interactive' as const,
+    title: 'Faça o Dino aparecer',
+    instructions: 'Crie o Dino e ligue o desenho.',
+    hints: ['Olhe os bastidores.'],
+    required: true,
+  }
+
+  test('⚠️ o contrato de HOJE recusa todos eles — é por isso que a migração existe', () => {
+    for (const activity of [
+      { type: 'exploration', version: 3, mission: 'world', mode: 'explore' },
+      { type: 'exploration', version: 2, mission: 'layers' },
+      { type: 'prediction', options: ['a'] },
+      { type: 'sequence', steps: ['a', 'b'] },
+      { type: 'simulation', scenario: 'x' },
+      { type: 'comparison', left: 'a', right: 'b' },
+      { type: 'experiment', variable: 'x' },
+    ])
+      expect(isInteractiveBlock({ ...base, activity }), activity.type).toBe(false)
+  })
+
+  test('exploração vira a cena de mesmo nome, e o modo escolhe entre as duas irmãs', () => {
+    expect(migrateLegacyActivity({ type: 'exploration', version: 3, mission: 'spawn' })).toEqual({
+      type: 'experimentation',
+      scene: 'spawn',
+    })
+    expect(
+      migrateLegacyActivity({ type: 'exploration', version: 3, mission: 'spawn', mode: 'demo' }),
+    ).toEqual({ type: 'demonstration', scene: 'spawn' })
+  })
+
+  test('⚠️ missão que não é cena não inventa uma: vira pergunta, que a professora resolve', () => {
+    expect(migrateLegacyActivity({ type: 'exploration', mission: 'inexistente' })).toEqual({
+      type: 'question',
+    })
+  })
+
+  test('os cinco sem equivalente viram pergunta, preservando enunciado e gabarito', () => {
+    const checkpoint = {
+      prompt: 'O que vem primeiro?',
+      choices: [
+        { id: 'a', label: 'Preparar' },
+        { id: 'b', label: 'Desenhar' },
+      ],
+      correctChoiceId: 'a',
+      explanation: 'Preparar vem antes.',
+    }
+    const migrado = migrateLegacyInteractiveBlock({
+      ...base,
+      activity: { type: 'sequence', steps: ['a', 'b'] },
+      checkpoint,
+    })
+    expect(migrado?.activity).toEqual({ type: 'question' })
+    expect(migrado?.checkpoint).toEqual(checkpoint)
+    expect(migrado?.title).toBe(base.title)
+  })
+
+  test('⚠️ todo bloco migrado sai no modelo de AGORA — nenhum fica no antigo', () => {
+    const atuais = ['demonstration', 'experimentation', 'question', 'html']
+    for (const activity of [
+      { type: 'exploration', version: 3, mission: 'world', mode: 'explore' },
+      { type: 'exploration', version: 3, mission: 'gravity', mode: 'demo' },
+      { type: 'prediction', options: ['a'] },
+      { type: 'sequence', steps: ['a', 'b'] },
+      { type: 'simulation', scenario: 'x' },
+      { type: 'comparison', left: 'a', right: 'b' },
+      { type: 'experiment', variable: 'x' },
+    ]) {
+      const migrado = migrateLegacyInteractiveBlock({ ...base, activity })
+      expect(migrado, activity.type).not.toBeNull()
+      expect(atuais.includes(migrado?.activity.type ?? ''), activity.type).toBe(true)
+    }
+  })
+
+  test('a exploração migrada já é PUBLICÁVEL — é a conversão fiel, não sobra nada a preencher', () => {
+    for (const mission of ['world', 'gravity', 'spawn']) {
+      const migrado = migrateLegacyInteractiveBlock({
+        ...base,
+        activity: { type: 'exploration', version: 3, mission },
+      })
+      expect(isInteractiveBlock(migrado), mission).toBe(true)
+    }
+  })
+
+  test('⚠️ os cinco sem gabarito saem INCOMPLETOS de propósito: rascunho aceita, publicar não', () => {
+    // O guarda estrito é da publicação. Migrar para "válido" exigiria INVENTAR a pergunta que a
+    // professora não escreveu — e é ela quem decide se completa ou apaga o bloco.
+    const migrado = migrateLegacyInteractiveBlock({
+      ...base,
+      activity: { type: 'prediction', options: ['a'] },
+    })
+    expect(migrado?.activity).toEqual({ type: 'question' })
+    expect(isInteractiveBlock(migrado)).toBe(false)
+  })
+
+  test('bloco que já é do modelo de agora não é tocado', () => {
+    for (const activity of [
+      { type: 'experimentation', scene: 'world' },
+      { type: 'demonstration', scene: 'layers' },
+      { type: 'question' },
+      { type: 'html', html: '<p>oi</p>' },
+    ])
+      expect(migrateLegacyActivity(activity), activity.type).toBeNull()
+  })
+})

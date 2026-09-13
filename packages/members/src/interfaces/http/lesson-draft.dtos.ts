@@ -1,5 +1,5 @@
 import { ValidationError } from '@sistemazero/core/errors'
-import type { LessonDraftCommand } from '@sistemazero/core/learning'
+import { type LessonDraftCommand, migrateLegacyInteractiveBlock } from '@sistemazero/core/learning'
 import { getSchemaValidator, type TSchema, t } from 'elysia'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
 import { LESSON_BLOCK_KINDS } from '../../domain/course/lesson-block'
@@ -107,11 +107,49 @@ export function parsePublishedLessonBlock(value: unknown): LessonBlockContent {
     throw new ValidationError('Preencha os campos obrigatórios deste bloco antes de publicar.')
   return result.data
 }
+/**
+ * Diz QUAL bloco e QUAL campo reprovaram.
+ *
+ * ⚠️ Validar contra a UNIÃO não serve para falar: o TypeBox devolve um único "Expected union
+ * value" na RAIZ, sem caminho. Então a mensagem valida de novo contra o RAMO do `kind` que o
+ * bloco diz ter — aí o erro vem com o caminho de verdade (`/activity/scene`, por exemplo).
+ *
+ * ⚠️⚠️ Isto não é cosmético. O editor desabilita o botão de salvar do bloco inválido, então a
+ * professora não tem como consertar pela tela; sem saber QUAL bloco a frase acusa, ela também não
+ * tem como apagá-lo. Uma mensagem muda trava a aula inteira.
+ */
+const branchValidators = new Map<string, ReturnType<typeof getSchemaValidator>>()
+function blockRejection(content: { kind: string }): string {
+  if (branchValidators.size === 0)
+    for (const branch of (authoringSchema(LessonBlockContentSchema).anyOf ?? []) as TSchema[]) {
+      const kind = branch.properties?.kind?.const
+      if (typeof kind === 'string') branchValidators.set(kind, getSchemaValidator(branch))
+    }
+  const [first] = [...(branchValidators.get(content.kind)?.Errors(content) ?? [])]
+  const onde = first?.path ? ` O campo \`${first.path}\` não confere: ${first.message}.` : ''
+  return `O bloco "${content.kind}" precisa manter os campos do seu tipo. Textos e respostas podem ficar vazios no rascunho.${onde}`
+}
+
 // The JSON object remains open while authoring, but its discriminant is always retained.
 export function draftCommand(value: typeof DraftCommandSchema.static): LessonDraftCommand {
-  if (value.change.type === 'block' && !draftBlockValidator.Check(value.change.block.content))
-    throw new ValidationError(
-      'O bloco precisa manter os campos do seu tipo. Textos e respostas podem ficar vazios no rascunho.',
-    )
+  if (value.change.type === 'block') {
+    const { content } = value.change.block
+    if (!draftBlockValidator.Check(content)) {
+      // ⚠️⚠️ Bloco gravado no modelo ANTERIOR das experiências: sem esta migração ele não pode
+      // mais ser salvo, e como o editor desabilita o botão do bloco inválido — e a importação de
+      // roteiro salva o bloco aberto ANTES de começar — a aula inteira trava, sem saída pela
+      // tela. Migrar aqui, na borda, devolve o bloco ao modelo de agora e a aula volta a andar.
+      const migrado = migrateLegacyInteractiveBlock(content)
+      if (migrado && draftBlockValidator.Check(migrado))
+        return {
+          ...value,
+          change: {
+            ...value.change,
+            block: { ...value.change.block, content: migrado as typeof content },
+          },
+        }
+      throw new ValidationError(blockRejection(content))
+    }
+  }
   return value
 }
