@@ -1,6 +1,6 @@
 import { stableJson } from '../../../members/src/domain/shared/stable-json'
 import { canonical } from './content'
-import { hash, type Row, type RowChange, TABLES, type Table } from './railway'
+import { hash, type Row, type RowChange, rowIdentity, type Table } from './railway'
 
 export function promotedRows(
   sources: Record<Table, Row[]>,
@@ -8,8 +8,9 @@ export function promotedRows(
 ): Record<Table, Row[]> {
   const rows = structuredClone(sources)
   for (const change of changes) {
-    const key = TABLES[change.table].key
-    const index = rows[change.table].findIndex((row) => row[key] === change.before[key])
+    const index = rows[change.table].findIndex(
+      (row) => rowIdentity(change.table, row) === rowIdentity(change.table, change.before),
+    )
     if (index < 0) throw new Error('Linha ausente do inventário')
     rows[change.table][index] = structuredClone(change.after)
   }

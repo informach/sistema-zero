@@ -1,7 +1,7 @@
 import { canonical, objectId } from './content'
 import { applyPlan, type BatchAdapter, rollbackPlan } from './engine'
 import { type Corpus, makePlan } from './plan'
-import { hash, type StoredObject, TABLES } from './railway'
+import { hash, rowIdentity, type StoredObject } from './railway'
 
 /** Ensaio offline com os bytes reais: interromper, retomar, repetir e recuperar. */
 export async function simulate(corpus: Corpus): Promise<Record<string, unknown>> {
@@ -30,8 +30,9 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
       if (interrupt) throw new Error('interrupção-simulada')
       const next = structuredClone(rows)
       for (const change of changes) {
-        const key = TABLES[change.table].key
-        const index = next[change.table].findIndex((row) => row[key] === change.before[key])
+        const index = next[change.table].findIndex(
+          (row) => rowIdentity(change.table, row) === rowIdentity(change.table, change.before),
+        )
         const actual = next[change.table][index]
         if (canonical(actual) === canonical(change.after)) continue
         if (canonical(actual) !== canonical(change.before))
@@ -62,8 +63,9 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
   await rollbackPlan(plan, adapter)
   await rollbackPlan(plan, adapter)
   for (const change of plan.rows) {
-    const key = TABLES[change.table].key
-    const restored = rows[change.table].find((row) => row[key] === change.before[key])!
+    const restored = rows[change.table].find(
+      (row) => rowIdentity(change.table, row) === rowIdentity(change.table, change.before),
+    )!
     const normalized = { ...restored }
     if (change.table === 'members.creations') {
       const beforeObject = corpus.objects.find(
@@ -77,7 +79,11 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
         throw new Error('A recuperação da criação divergiu')
       for (const column of ['revision', 'last_reserved_revision', 'storage_ref', 'synced_at'])
         normalized[column] = change.before[column]
-    } else if (typeof normalized.revision === 'string') normalized.revision = change.before.revision
+    } else if (
+      change.table === 'members.lesson_drafts' ||
+      change.table === 'members.lesson_structures'
+    )
+      normalized.revision = change.before.revision
     if (change.table === 'members.courses') normalized.version = change.before.version
     if (canonical(normalized) !== canonical(change.before))
       throw new Error('A recuperação alterou dados do aluno')

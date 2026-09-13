@@ -10,6 +10,7 @@ Ferramenta operacional separada do editor, do player e do motor. O motor executa
 - Backups privados imutáveis em `studio-migration-backups/<sourceHash>/`, fora da coleta de lixo e da quota do aluno. O plano contém os registros anteriores e posteriores. Trate os arquivos do corpus e os backups como dados privados.
 - Novas revisões de criação, comparação integral de registros e ETags para snapshots. A transação de promoção bloqueia brevemente escritas nas tabelas inventariadas e recusa diferenças, inclusive novas linhas. Não substitui trabalho concorrente.
 - Cursos ganham versão nova. Rascunhos conservam edições e recebem a referência publicada convertida quando estavam alinhados; conflitos anteriores permanecem conflitos. Não há limpeza automática de progresso ou respostas.
+- A revisão pedagógica dos blocos é conservada numa conversão equivalente. Quando um critério muda de representação, somente a referência correspondente nas verificações existentes é convertida; aprovações, datas e identidade de cada perfil permanecem. Jogadas e curtidas do mural não são revertidas nem bloqueiam o lote; o snapshot é protegido por ETag.
 - Recuperação cria revisões novas, conserva backups e recusa edições posteriores. Seu diário é persistido antes da primeira escrita para permitir retomada após queda de conexão.
 
 ## Execução

@@ -5,6 +5,7 @@ import {
   hash,
   type Row,
   type RowChange,
+  rowIdentity,
   STAGING_PROJECT,
   type StoredObject,
   TABLES,
@@ -34,11 +35,11 @@ function assertPlan(plan: BatchPlan): void {
 function rowMap(rows: Record<Table, Row[]>): Map<string, Row> {
   return new Map(
     (Object.keys(TABLES) as Table[]).flatMap((table) =>
-      rows[table].map((row) => [`${table}:${row[TABLES[table].key]}`, row] as const),
+      rows[table].map((row) => [`${table}:${rowIdentity(table, row)}`, row] as const),
     ),
   )
 }
-const rowId = ({ table, before }: RowChange): string => `${table}:${before[TABLES[table].key]}`
+const rowId = ({ table, before }: RowChange): string => `${table}:${rowIdentity(table, before)}`
 
 export async function applyPlan(plan: BatchPlan, adapter: BatchAdapter): Promise<void> {
   assertPlan(plan)
@@ -143,7 +144,10 @@ export async function rollbackPlan(plan: BatchPlan, adapter: BatchAdapter): Prom
           storage_ref: key,
           synced_at: sqlTimestamp(new Date().toISOString()),
         })
-      } else if (typeof restored.revision === 'string') {
+      } else if (
+        change.table === 'members.lesson_drafts' ||
+        change.table === 'members.lesson_structures'
+      ) {
         restored.revision = crypto.randomUUID()
       }
       if (change.table === 'members.courses') restored.version = Number(change.after.version) + 1

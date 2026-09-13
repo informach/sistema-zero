@@ -47,10 +47,21 @@ export const TABLES = {
     where: 'true',
     columns: ['previous_sections', 'migrated_sections'],
   },
+  'members.lesson_section_progress': {
+    key: 'lesson_id',
+    identity: ['user_id', 'lesson_id', 'section_id'],
+    where: 'true',
+    columns: ['revision'],
+  },
   'hub.threads': { key: 'id', where: 'play_id is not null', columns: ['studio_meta'] },
 } as const
 export type Table = keyof typeof TABLES
 export type Row = Record<string, unknown>
+export function rowIdentity(table: Table, row: Row): string {
+  const info = TABLES[table]
+  const keys = 'identity' in info ? info.identity : [info.key]
+  return JSON.stringify(keys.map((key) => row[key]))
+}
 export type Bucket = 'ugc' | 'private'
 export interface StoredObject {
   bucket: Bucket
@@ -174,7 +185,10 @@ export async function compareAndSwapRows(
 ): Promise<void> {
   for (const change of changes) {
     const info = TABLES[change.table]
-    if (!info || change.before[info.key] !== change.after[info.key])
+    if (
+      !info ||
+      rowIdentity(change.table, change.before) !== rowIdentity(change.table, change.after)
+    )
       throw new Error('Identidade de linha inválida')
     for (const key of Object.keys(change.after))
       if (
@@ -200,7 +214,10 @@ export async function compareAndSwapRows(
     .join('')
   // O hash publicado depende também das linhas que não mudaram e da ausência de novas linhas.
   // Bloqueio breve de escrita durante a comparação/promoção; uploads e backups já terminaram.
-  const snapshotChecks = Object.entries(TABLES)
+  // Jogadas/curtidas do mural não mudam o documento: sua proteção é o ETag do snapshot.
+  // Não cercar esses contadores impede que a própria homologação bloqueie a recuperação.
+  const guardedTables = Object.entries(TABLES).filter(([table]) => table !== 'hub.threads')
+  const snapshotChecks = guardedTables
     .map(([table, info]) => {
       const alternatives = changes.filter((c) => c.table === table).map((c) => c.after)
       return `{
@@ -212,7 +229,12 @@ export async function compareAndSwapRows(
     }`
     })
     .join('')
-  const tableLocks = `await tx.unsafe(${JSON.stringify(`lock table ${Object.keys(TABLES).sort().join(',')} in share row exclusive mode`)});`
+  const tableLocks = `await tx.unsafe(${JSON.stringify(
+    `lock table ${guardedTables
+      .map(([table]) => table)
+      .sort()
+      .join(',')} in share row exclusive mode`,
+  )});`
   const owners = [
     ...new Set(
       changes.filter((c) => c.table === 'members.creations').map((c) => String(c.before.user_id)),
