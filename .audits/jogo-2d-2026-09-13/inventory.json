@@ -167,10 +167,7 @@
       "rationale": "Manter: criação dinâmica, aparência, dados e clique são capacidades distintas já disponíveis. Não acrescentar um bloco separado para números.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:9",
@@ -187,10 +184,7 @@
       "rationale": "Manter: criação dinâmica, aparência, dados e clique são capacidades distintas já disponíveis. Não acrescentar um bloco separado para números.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:26",
@@ -207,9 +201,7 @@
       "rationale": "Texto exibido separado dos dados; caixa controla quebra de linha, fundo e área de clique.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Quiz de números"
-      ],
+      "local_examples": ["Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:44",
@@ -243,10 +235,7 @@
       "rationale": "Texto exibido separado dos dados; caixa controla quebra de linha, fundo e área de clique.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:68",
@@ -263,10 +252,7 @@
       "rationale": "Texto exibido separado dos dados; caixa controla quebra de linha, fundo e área de clique.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:84",
@@ -283,10 +269,7 @@
       "rationale": "Manter dados tipados separados do texto; as operações servem a qualquer sprite.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:110",
@@ -303,10 +286,7 @@
       "rationale": "Manter dados tipados separados do texto; as operações servem a qualquer sprite.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:126",
@@ -323,10 +303,7 @@
       "rationale": "Manter: criação dinâmica, aparência, dados e clique são capacidades distintas já disponíveis. Não acrescentar um bloco separado para números.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Quiz de números"
-      ],
+      "local_examples": ["Chuva de números", "Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:140",
@@ -343,9 +320,7 @@
       "rationale": "Manter: criação dinâmica, aparência, dados e clique são capacidades distintas já disponíveis. Não acrescentar um bloco separado para números.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Quiz de números"
-      ],
+      "local_examples": ["Quiz de números"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogText.ts:154",
@@ -362,9 +337,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:21",
@@ -381,9 +354,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:42",
@@ -400,9 +371,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:50",
@@ -419,9 +388,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:58",
@@ -438,9 +405,7 @@
       "rationale": "Manter chão na borda, terreno confirmado e controlador clássico com gravidade própria separados; oferecer receitas de combinações válidas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:73",
@@ -457,9 +422,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:89",
@@ -476,9 +439,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:102",
@@ -512,9 +473,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "resource-creator",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:142",
@@ -531,9 +490,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:174",
@@ -550,9 +507,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:187",
@@ -569,9 +524,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:217",
@@ -588,9 +541,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:229",
@@ -607,9 +558,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:242",
@@ -626,9 +575,7 @@
       "rationale": "Explicar quais comportamentos cada passo avança; casco tem atualização própria e não pode ser fundido sem prova de equivalência.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:266",
@@ -645,9 +592,7 @@
       "rationale": "Estilo pixel não justifica automaticamente duplicação: texto pixel atualmente literal e placar computado têm contratos diferentes. Consolidar somente após expressão e layout equivalentes.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:280",
@@ -664,9 +609,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:306",
@@ -683,9 +626,7 @@
       "rationale": "Estilo pixel não justifica automaticamente duplicação: texto pixel atualmente literal e placar computado têm contratos diferentes. Consolidar somente após expressão e layout equivalentes.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:317",
@@ -702,9 +643,7 @@
       "rationale": "Explicitar geração, avanço e desenho de efeitos. draw_particles também avança partículas; fade desenha cobertura, não troca tela.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:336",
@@ -721,9 +660,7 @@
       "rationale": "Manter variantes: quatro bordas, par de bordas e raquete têm física e objetivos diferentes.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Pong"
-      ],
+      "local_examples": ["Pong"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:352",
@@ -740,9 +677,7 @@
       "rationale": "Manter variantes: quatro bordas, par de bordas e raquete têm física e objetivos diferentes.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Pong"
-      ],
+      "local_examples": ["Pong"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:368",
@@ -759,9 +694,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Pong"
-      ],
+      "local_examples": ["Pong"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:390",
@@ -778,9 +711,7 @@
       "rationale": "Separar resolução lógica e ocupação da janela; preservar coordenadas e padrões. Preparação não pertence à aparência de um sprite.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Pong"
-      ],
+      "local_examples": ["Pong"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:405",
@@ -797,9 +728,7 @@
       "rationale": "Separar resolução lógica e ocupação da janela; preservar coordenadas e padrões. Preparação não pertence à aparência de um sprite.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Pong"
-      ],
+      "local_examples": ["Pong"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogClassic.ts:414",
@@ -845,10 +774,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -948,9 +874,7 @@
       "rationale": "Redundância pedagógica: atribuição de variável mais pergunta touches; manter declaração, escopo e avaliação única nos projetos antigos.",
       "replacement": "sz_g2d_touches + variável",
       "courses": [],
-      "local_examples": [
-        "Pegue a moeda"
-      ],
+      "local_examples": ["Pegue a moeda"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:68",
@@ -967,10 +891,7 @@
       "rationale": "Cria variável; a linguagem já oferece variáveis e incremento. Preservar IR e API anteriores.",
       "replacement": "sz_js_var_create + sz_js_var_increment",
       "courses": [],
-      "local_examples": [
-        "Plataforma com inimigos",
-        "Jogo desenhado por código"
-      ],
+      "local_examples": ["Plataforma com inimigos", "Jogo desenhado por código"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:82",
@@ -1020,10 +941,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -1076,10 +994,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -1181,9 +1096,7 @@
       "priority": "P0",
       "rationale": "Definir valor, alterar velocidade e mover posição são efeitos distintos. Expor unidades, ordem e frequência sem inserir gravidade implícita.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Mini plataforma",
         "Plataforma com inimigos",
@@ -1245,9 +1158,7 @@
       "priority": "P1",
       "rationale": "Mostrar visualização junto da configuração; escala afeta detecção, não toda resolução física.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Dino Corredor",
         "Aventura do Herói",
@@ -1295,9 +1206,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Pegue a moeda",
         "Pong",
@@ -1501,9 +1410,7 @@
       "rationale": "Agrupar o alvo e as medidas do movimento; manter operações distintas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sobrevivente"
-      ],
+      "local_examples": ["Sobrevivente"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:417",
@@ -1537,9 +1444,7 @@
       "rationale": "Agrupar o alvo e as medidas do movimento; manter operações distintas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sobrevivente"
-      ],
+      "local_examples": ["Sobrevivente"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:445",
@@ -1572,9 +1477,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Chuva de números",
         "Pegue a moeda",
@@ -1623,9 +1526,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Jogo desenhado por código",
         "Nave contra Asteroides",
@@ -1647,9 +1548,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Jogo desenhado por código"
-      ],
+      "local_examples": ["Jogo desenhado por código"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:511",
@@ -1665,9 +1564,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Nave contra Asteroides",
@@ -1726,14 +1623,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
-      "local_examples": [
-        "Nave contra Asteroides",
-        "Dino Run",
-        "Reino Zero"
-      ],
+      "courses": ["Desafio primeiro jogo"],
+      "local_examples": ["Nave contra Asteroides", "Dino Run", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:551",
@@ -1772,10 +1663,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Batalha de Monstrinhos",
-        "Treinador de Criaturas"
-      ],
+      "local_examples": ["Batalha de Monstrinhos", "Treinador de Criaturas"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:575",
@@ -1808,9 +1696,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Nave contra Asteroides",
@@ -1862,9 +1748,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Nave contra Asteroides",
@@ -1891,10 +1775,7 @@
       "rationale": "A consulta já consome a recarga; não é pergunta pura. Preservar bloco antigo e propor comando com corpo que executa no máximo uma vez por intervalo, com chave por ação.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Duelo de Heróis",
-        "Sobrevivente"
-      ],
+      "local_examples": ["Duelo de Heróis", "Sobrevivente"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:635",
@@ -1911,11 +1792,7 @@
       "rationale": "Remover vínculo com grupo não equivale a destruir um sprite; distinguir prazo, saída da tela e limpeza imediata.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói",
-        "Vila Ninja",
-        "Herói que Evolui"
-      ],
+      "local_examples": ["Aventura do Herói", "Vila Ninja", "Herói que Evolui"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:647",
@@ -1932,12 +1809,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mundo Pirata",
-        "Safári de Monstros",
-        "Duelo de Heróis",
-        "Reino Zero"
-      ],
+      "local_examples": ["Mundo Pirata", "Safári de Monstros", "Duelo de Heróis", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:663",
@@ -1953,9 +1825,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de Meteoros",
         "Mundo Pirata",
@@ -2013,9 +1883,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Aventura do Herói",
@@ -2071,9 +1939,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:716",
@@ -2149,9 +2015,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:750",
@@ -2185,11 +2049,7 @@
       "rationale": "Espelhar aparência e direção visual não é girar o ângulo.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói",
-        "Vila Ninja",
-        "Herói que Evolui"
-      ],
+      "local_examples": ["Aventura do Herói", "Vila Ninja", "Herói que Evolui"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:768",
@@ -2223,9 +2083,7 @@
       "rationale": "Tamanho absoluto e multiplicação acumulativa são diferentes; explicitar que multiplicar repetidamente faz crescer a cada quadro.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:805",
@@ -2276,9 +2134,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:848",
@@ -2295,9 +2151,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:858",
@@ -2314,9 +2168,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:867",
@@ -2401,9 +2253,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Aventura do Herói"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:925",
@@ -2437,9 +2287,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Aventura do Herói"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:953",
@@ -2489,9 +2337,7 @@
       "priority": "P1",
       "rationale": "Mostrar visualização junto da configuração; escala afeta detecção, não toda resolução física.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
@@ -2542,9 +2388,7 @@
       "priority": "P0",
       "rationale": "Separar resolução lógica e ocupação da janela; preservar coordenadas e padrões. Preparação não pertence à aparência de um sprite.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "start-only-command",
@@ -2562,9 +2406,7 @@
       "rationale": "Fundos devem ser descobertos pelo propósito; kits mantêm atalhos. Configurar fundo e desenhá-lo são operações distintas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Cenário do meu desenho"
-      ],
+      "local_examples": ["Cenário do meu desenho"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogFundamentals.ts:1068",
@@ -2581,9 +2423,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Muralha do Reino"
-      ],
+      "local_examples": ["Muralha do Reino"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:17",
@@ -2599,10 +2439,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -2665,12 +2502,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Mundo Pirata"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Mundo Pirata"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:89",
@@ -2686,9 +2519,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
@@ -2706,12 +2537,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói",
-        "Duelo de Heróis",
-        "Vila Ninja",
-        "Herói que Evolui"
-      ],
+      "local_examples": ["Aventura do Herói", "Duelo de Heróis", "Vila Ninja", "Herói que Evolui"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:122",
@@ -2728,11 +2554,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Equilibrista",
-        "Balão"
-      ],
+      "local_examples": ["Chuva de números", "Equilibrista", "Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:150",
@@ -2773,13 +2595,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "O jogo do meu jeito"
-      ],
-      "local_examples": [
-        "Herói que anda",
-        "Sala com paredes"
-      ],
+      "courses": ["O jogo do meu jeito"],
+      "local_examples": ["Herói que anda", "Sala com paredes"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:172",
@@ -2812,12 +2629,8 @@
       "priority": "P1",
       "rationale": "A animação nomeada já preenche quadros. Explorar apresentação compacta, preservando números personalizados, entradas conectadas e repetição/execução única.",
       "replacement": "",
-      "courses": [
-        "O jogo do meu jeito"
-      ],
-      "local_examples": [
-        "Herói que anda"
-      ],
+      "courses": ["O jogo do meu jeito"],
+      "local_examples": ["Herói que anda"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:204",
@@ -2833,12 +2646,8 @@
       "priority": "P1",
       "rationale": "A animação nomeada já preenche quadros. Explorar apresentação compacta, preservando números personalizados, entradas conectadas e repetição/execução única.",
       "replacement": "",
-      "courses": [
-        "O jogo do meu jeito"
-      ],
-      "local_examples": [
-        "Herói que anda"
-      ],
+      "courses": ["O jogo do meu jeito"],
+      "local_examples": ["Herói que anda"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:221",
@@ -2906,9 +2715,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Plataforma com inimigos"
-      ],
+      "local_examples": ["Plataforma com inimigos"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:306",
@@ -2925,9 +2732,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "mold-declaration",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:322",
@@ -3020,9 +2825,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Plataforma com inimigos"
-      ],
+      "local_examples": ["Plataforma com inimigos"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "mold-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:441",
@@ -3137,10 +2940,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Plataforma com inimigos",
-        "Reino Zero"
-      ],
+      "local_examples": ["Plataforma com inimigos", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:539",
@@ -3216,9 +3016,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:611",
@@ -3269,10 +3067,7 @@
       "rationale": "Manter chão na borda, terreno confirmado e controlador clássico com gravidade própria separados; oferecer receitas de combinações válidas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mini plataforma",
-        "Plataforma com inimigos"
-      ],
+      "local_examples": ["Mini plataforma", "Plataforma com inimigos"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:658",
@@ -3355,9 +3150,7 @@
       "rationale": "Comportamentos diferentes: movimento direto, inércia, água, impulso e nave. Nomear o efeito físico e controles; não fundir por semelhança visual.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:719",
@@ -3390,9 +3183,7 @@
       "priority": "P1",
       "rationale": "Conter e atravessar para o outro lado produzem resultados diferentes.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Pegue a moeda",
@@ -3427,10 +3218,7 @@
       "rationale": "Explicitar geração, avanço e desenho de efeitos. draw_particles também avança partículas; fade desenha cobertura, não troca tela.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo",
-        "Equilibrista"
-      ],
+      "local_examples": ["Portas do Castelo", "Equilibrista"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:760",
@@ -3446,10 +3234,7 @@
       "priority": "P1",
       "rationale": "Explicitar geração, avanço e desenho de efeitos. draw_particles também avança partículas; fade desenha cobertura, não troca tela.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Nave contra Asteroides",
         "Asteroides clássico",
@@ -3551,10 +3336,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sala com paredes",
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Sala com paredes", "Aventura do Herói"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:827",
@@ -3605,10 +3387,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sala com paredes",
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Sala com paredes", "Aventura do Herói"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:881",
@@ -3733,10 +3512,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -3807,13 +3583,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "O jogo do meu jeito"
-      ],
-      "local_examples": [
-        "Aventura do Herói",
-        "Aventura com câmera"
-      ],
+      "courses": ["O jogo do meu jeito"],
+      "local_examples": ["Aventura do Herói", "Aventura com câmera"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:49",
@@ -3829,10 +3600,7 @@
       "priority": "P0",
       "rationale": "update_group move usando velocidade; gravidade permanece explícita. Nomear a ação, não Atualizar genericamente.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Plataforma com inimigos",
@@ -3860,11 +3628,7 @@
       "rationale": "update_group move usando velocidade; gravidade permanece explícita. Nomear a ação, não Atualizar genericamente.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Plataforma com inimigos",
-        "Reino Zero",
-        "Vale Ensolarado"
-      ],
+      "local_examples": ["Plataforma com inimigos", "Reino Zero", "Vale Ensolarado"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:83",
@@ -3880,10 +3644,7 @@
       "priority": "P1",
       "rationale": "Ordem de desenho e pertencimento são conceitos distintos; preservar ordenação por base e suas implicações no clique.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -3923,9 +3684,7 @@
       "rationale": "Ordem de desenho e pertencimento são conceitos distintos; preservar ordenação por base e suas implicações no clique.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Aventura do Herói"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:104",
@@ -3967,9 +3726,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Chuva de números",
         "Plataforma com inimigos",
@@ -3994,10 +3751,7 @@
       "rationale": "Remover vínculo com grupo não equivale a destruir um sprite; distinguir prazo, saída da tela e limpeza imediata.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo",
-        "Reino Zero"
-      ],
+      "local_examples": ["Portas do Castelo", "Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:141",
@@ -4013,10 +3767,7 @@
       "priority": "P1",
       "rationale": "Remover vínculo com grupo não equivale a destruir um sprite; distinguir prazo, saída da tela e limpeza imediata.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Plataforma com inimigos",
@@ -4060,9 +3811,7 @@
       "priority": "P1",
       "rationale": "Remover vínculo com grupo não equivale a destruir um sprite; distinguir prazo, saída da tela e limpeza imediata.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Plataforma com inimigos",
@@ -4095,9 +3844,7 @@
       "priority": "P0",
       "rationale": "Distinguir evento ao começar, pergunta sobre agora e varredura a cada quadro; preservar ordem dos callbacks e remoção durante iteração.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Nave contra Asteroides",
@@ -4125,14 +3872,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
-      "local_examples": [
-        "Nave contra Asteroides",
-        "Dino Run",
-        "Reino Zero"
-      ],
+      "courses": ["Desafio primeiro jogo"],
+      "local_examples": ["Nave contra Asteroides", "Dino Run", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-periodic",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:222",
@@ -4148,9 +3889,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Asteroides clássico",
         "Dino Run",
@@ -4180,9 +3919,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Batalha de Monstrinhos"
-      ],
+      "local_examples": ["Batalha de Monstrinhos"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-periodic",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:250",
@@ -4198,10 +3935,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4318,9 +4052,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
+      "courses": ["Corre Dino"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4373,10 +4105,7 @@
       "priority": "P0",
       "rationale": "Separar estado atual da partida e desenho da interface; set_scene não pausa automaticamente simulação, temporizadores ou entradas.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4423,10 +4152,7 @@
       "priority": "P0",
       "rationale": "Separar estado atual da partida e desenho da interface; set_scene não pausa automaticamente simulação, temporizadores ou entradas.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4490,10 +4216,7 @@
       "priority": "P0",
       "rationale": "Separar estado atual da partida e desenho da interface; set_scene não pausa automaticamente simulação, temporizadores ou entradas.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4539,10 +4262,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4601,14 +4321,8 @@
       "priority": "P1",
       "rationale": "Fundos devem ser descobertos pelo propósito; kits mantêm atalhos. Configurar fundo e desenhá-lo são operações distintas.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
-      "local_examples": [
-        "Nave contra Asteroides",
-        "Asteroides clássico",
-        "Chuva de Meteoros"
-      ],
+      "courses": ["Desafio primeiro jogo"],
+      "local_examples": ["Nave contra Asteroides", "Asteroides clássico", "Chuva de Meteoros"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:439",
@@ -4625,10 +4339,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Chuva de números",
-        "Nave contra Asteroides"
-      ],
+      "local_examples": ["Chuva de números", "Nave contra Asteroides"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:451",
@@ -4644,10 +4355,7 @@
       "priority": "P0",
       "rationale": "Separar resolução lógica e ocupação da janela; preservar coordenadas e padrões. Preparação não pertence à aparência de um sprite.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Quiz de números",
@@ -4758,9 +4466,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Plataforma com inimigos",
         "Chuva de Meteoros",
@@ -4782,9 +4488,7 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Escalada do Guerreiro",
@@ -4807,10 +4511,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Batalha de Monstrinhos",
-        "Treinador de Criaturas"
-      ],
+      "local_examples": ["Batalha de Monstrinhos", "Treinador de Criaturas"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:540",
@@ -4895,9 +4596,7 @@
       "rationale": "Criação de sprite com figura e troca de figura ficam junto das imagens; definir a figura continua em desenho.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:591",
@@ -4979,10 +4678,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Batalha de Monstrinhos",
-        "Mundo Pirata"
-      ],
+      "local_examples": ["Batalha de Monstrinhos", "Mundo Pirata"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:638",
@@ -5074,14 +4770,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
-      "local_examples": [
-        "Nave contra Asteroides",
-        "Asteroides clássico",
-        "Chuva de Meteoros"
-      ],
+      "courses": ["Desafio primeiro jogo"],
+      "local_examples": ["Nave contra Asteroides", "Asteroides clássico", "Chuva de Meteoros"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:707",
@@ -5097,13 +4787,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
-      "local_examples": [
-        "Nave contra Asteroides",
-        "Chuva de Meteoros"
-      ],
+      "courses": ["Desafio primeiro jogo"],
+      "local_examples": ["Nave contra Asteroides", "Chuva de Meteoros"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogGroups.ts:727",
@@ -5119,10 +4804,7 @@
       "priority": "P1",
       "rationale": "Explosão é efeito genérico usado também no Corre Dino; o kit Espaço pode oferecer atalho.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Nave contra Asteroides",
         "Asteroides clássico",
@@ -5152,9 +4834,7 @@
       "priority": "P1",
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Nave contra Asteroides",
         "Asteroides clássico",
@@ -5176,9 +4856,7 @@
       "priority": "P1",
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
-      "courses": [
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Desafio primeiro jogo"],
       "local_examples": [
         "Nave contra Asteroides",
         "Asteroides clássico",
@@ -5201,10 +4879,7 @@
       "priority": "P0",
       "rationale": "Distinguir evento ao começar, pergunta sobre agora e varredura a cada quadro; preservar ordem dos callbacks e remoção durante iteração.",
       "replacement": "",
-      "courses": [
-        "Corre Dino",
-        "Desafio primeiro jogo"
-      ],
+      "courses": ["Corre Dino", "Desafio primeiro jogo"],
       "local_examples": [
         "Chuva de números",
         "Plataforma com inimigos",
@@ -5256,13 +4931,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Dino Run",
-        "Dino Corredor"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Dino Run", "Dino Corredor"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:27",
@@ -5278,13 +4948,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Dino Run",
-        "Dino Corredor"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Dino Run", "Dino Corredor"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:45",
@@ -5300,13 +4965,8 @@
       "priority": "P1",
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Dino Run",
-        "Dino Corredor"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Dino Run", "Dino Corredor"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:60",
@@ -5323,9 +4983,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Dino Run"
-      ],
+      "local_examples": ["Dino Run"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:87",
@@ -5341,13 +4999,8 @@
       "priority": "P1",
       "rationale": "Fundos devem ser descobertos pelo propósito; kits mantêm atalhos. Configurar fundo e desenhá-lo são operações distintas.",
       "replacement": "",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Dino Run",
-        "Dino Corredor"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Dino Run", "Dino Corredor"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:104",
@@ -5363,12 +5016,8 @@
       "priority": "P1",
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
-      "courses": [
-        "Corre Dino"
-      ],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "courses": ["Corre Dino"],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:116",
@@ -5385,9 +5034,7 @@
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
       "courses": [],
-      "local_examples": [
-        "Dino Run"
-      ],
+      "local_examples": ["Dino Run"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:126",
@@ -5404,10 +5051,7 @@
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
       "courses": [],
-      "local_examples": [
-        "Dino Run",
-        "Equilibrista"
-      ],
+      "local_examples": ["Dino Run", "Equilibrista"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:136",
@@ -5424,9 +5068,7 @@
       "rationale": "Comportamentos diferentes: movimento direto, inércia, água, impulso e nave. Nomear o efeito físico e controles; não fundir por semelhança visual.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Asteroides clássico"
-      ],
+      "local_examples": ["Asteroides clássico"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:148",
@@ -5443,9 +5085,7 @@
       "rationale": "Agrupar o alvo e as medidas do movimento; manter operações distintas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:164",
@@ -5530,10 +5170,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Asteroides clássico",
-        "Sobrevivente"
-      ],
+      "local_examples": ["Asteroides clássico", "Sobrevivente"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:233",
@@ -5550,9 +5187,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Asteroides clássico"
-      ],
+      "local_examples": ["Asteroides clássico"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:250",
@@ -5569,10 +5204,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:269",
@@ -5589,10 +5221,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:280",
@@ -5609,10 +5238,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:291",
@@ -5629,10 +5255,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:314",
@@ -5649,10 +5272,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:324",
@@ -5669,10 +5289,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:335",
@@ -5689,10 +5306,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:346",
@@ -5709,10 +5323,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:355",
@@ -5729,10 +5340,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:368",
@@ -5749,10 +5357,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:379",
@@ -5769,10 +5374,7 @@
       "rationale": "Perguntas consomem a banana; cidade também abre cratera e retorna verdadeiro ao sair da tela. Preservar legado; nova autoria precisa resolução explícita e resultado legível.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:389",
@@ -5789,10 +5391,7 @@
       "rationale": "Perguntas consomem a banana; cidade também abre cratera e retorna verdadeiro ao sair da tela. Preservar legado; nova autoria precisa resolução explícita e resultado legível.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:401",
@@ -5809,10 +5408,7 @@
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:410",
@@ -5829,11 +5425,7 @@
       "rationale": "playFx já despacha os mesmos helpers; kits podem oferecer o mesmo bloco com opção preenchida. IDs e parsers antigos continuam aceitos.",
       "replacement": "sz_g2d_play_fx (opção equivalente)",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas",
-        "Guerra de Gorilas vs Robô",
-        "Balão"
-      ],
+      "local_examples": ["Guerra de Gorilas", "Guerra de Gorilas vs Robô", "Balão"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:420",
@@ -5850,9 +5442,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:430",
@@ -5869,9 +5459,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Guerra de Gorilas vs Robô"
-      ],
+      "local_examples": ["Guerra de Gorilas vs Robô"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:445",
@@ -5888,9 +5476,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:458",
@@ -5907,9 +5493,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:475",
@@ -5926,9 +5510,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:491",
@@ -5945,9 +5527,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:502",
@@ -5964,9 +5544,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:517",
@@ -5983,9 +5561,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:528",
@@ -6002,9 +5578,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:544",
@@ -6021,9 +5595,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:555",
@@ -6040,9 +5612,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:569",
@@ -6059,9 +5629,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Equilibrista"
-      ],
+      "local_examples": ["Equilibrista"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:583",
@@ -6078,9 +5646,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:593",
@@ -6097,9 +5663,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:613",
@@ -6116,9 +5680,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:624",
@@ -6135,9 +5697,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:635",
@@ -6154,9 +5714,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:650",
@@ -6173,9 +5731,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:661",
@@ -6192,9 +5748,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "event",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:677",
@@ -6211,9 +5765,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:691",
@@ -6230,9 +5782,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:699",
@@ -6249,9 +5799,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Balão"
-      ],
+      "local_examples": ["Balão"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "expression",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogKits.ts:708",
@@ -6268,9 +5816,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sala com paredes"
-      ],
+      "local_examples": ["Sala com paredes"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:20",
@@ -6304,9 +5850,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Sala com paredes"
-      ],
+      "local_examples": ["Sala com paredes"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:48",
@@ -6323,9 +5867,7 @@
       "rationale": "Manter chão na borda, terreno confirmado e controlador clássico com gravidade própria separados; oferecer receitas de combinações válidas.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mundo Pirata"
-      ],
+      "local_examples": ["Mundo Pirata"],
       "evidence_scope": "catálogo e inspeção direcionada; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:61",
@@ -6383,9 +5925,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói"
-      ],
+      "local_examples": ["Aventura do Herói"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:110",
@@ -6419,10 +5959,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mundo Pirata",
-        "Portas do Castelo"
-      ],
+      "local_examples": ["Mundo Pirata", "Portas do Castelo"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:140",
@@ -6473,9 +6010,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mundo Pirata"
-      ],
+      "local_examples": ["Mundo Pirata"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:182",
@@ -6516,10 +6051,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Mundo Pirata",
-        "Reino Zero"
-      ],
+      "local_examples": ["Mundo Pirata", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:240",
@@ -6561,11 +6093,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Aventura do Herói",
-        "Mundo Pirata",
-        "Reino Zero"
-      ],
+      "local_examples": ["Aventura do Herói", "Mundo Pirata", "Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:268",
@@ -6582,9 +6110,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo"
-      ],
+      "local_examples": ["Portas do Castelo"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "start-only-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:281",
@@ -6601,9 +6127,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo"
-      ],
+      "local_examples": ["Portas do Castelo"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:298",
@@ -6637,9 +6161,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Reino Zero"
-      ],
+      "local_examples": ["Reino Zero"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:326",
@@ -6690,9 +6212,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo"
-      ],
+      "local_examples": ["Portas do Castelo"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:361",
@@ -6726,9 +6246,7 @@
       "rationale": "Manter a capacidade; reorganizar na família proposta. Ausência nos cursos ou exemplos não prova desuso.",
       "replacement": "",
       "courses": [],
-      "local_examples": [
-        "Portas do Castelo"
-      ],
+      "local_examples": ["Portas do Castelo"],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "loop-command",
       "source": "packages/studio/src/official-extensions/game-2d/blockCatalogWorlds.ts:382",
