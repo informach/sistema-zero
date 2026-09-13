@@ -49,7 +49,7 @@ function sessaoCompleta() {
   let s = initialExperiment(start)
   s = stepExperiment(start, s, { type: 'create' }).session
   s = stepExperiment(start, s, { type: 'connect', port: 'draw', enabled: true }).session
-  return packExperiment(s)
+  return packExperiment('world', s)
 }
 describe('learning contracts', () => {
   test('⚠️ uma cena não aceita pergunta anexa', () => {
@@ -243,7 +243,7 @@ describe('the 27 adapted lessons', () => {
           let sessao = initialExperiment(start)
           for (const action of scenePaths[activity.scene])
             sessao = stepExperiment(start, sessao, action).session
-          answers.sceneCheckpoint = packExperiment(sessao)
+          answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
         }
         if (activity.type === 'demonstration') {
           const start = { scene: activity.scene }
@@ -259,7 +259,7 @@ describe('the 27 adapted lessons', () => {
             if (sessao.ready && sessao.step < script.length - 1)
               sessao = stepDemonstration(start, script, sessao, { type: 'next' }).session
           }
-          answers.sceneCheckpoint = packDemonstration(sessao)
+          answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
         }
         if (activity.type === 'html') answers.participated = true
         if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId

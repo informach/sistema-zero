@@ -6,6 +6,7 @@ import {
   type SceneState,
   type SceneTrial,
   sceneContact,
+  sceneFromTrial,
   sceneTrial,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -84,7 +85,8 @@ export function ExperienceScene({
         <>
           {[0, 100, 200, 300].map((n) => (
             <g key={n}>
-              <path className="stroke-scene-grid" d={`M48 ${floor - n * 0.65}h12`} />
+              {/* Os traços da régua de altura. */}
+              <path className="stroke-scene-rule" d={`M48 ${floor - n * 0.65}h12`} />
               <text
                 className="fill-scene-ink-soft"
                 x="35"
@@ -104,7 +106,7 @@ export function ExperienceScene({
                 strokeWidth="2"
                 strokeDasharray="5 5"
               />
-              <text className="fill-scene-b" x="400" y={floor - peak + 4} fontSize="12">
+              <text className="fill-scene-b-ink" x="400" y={floor - peak + 4} fontSize="12">
                 {Math.round(state.flight.peak)} de altura
               </text>
             </g>
@@ -160,7 +162,7 @@ export function ExperienceScene({
             <text className="fill-scene-ink-soft" x="14" y="26" fontSize="12">
               IMPULSO
             </text>
-            <text className="fill-scene-b" x="14" y="57" fontSize="27" fontWeight="700">
+            <text className="fill-scene-b-ink" x="14" y="57" fontSize="27" fontWeight="700">
               {state.flight.force}
               <tspan fontSize="14"> ↑</tspan>
             </text>
@@ -349,9 +351,11 @@ export function ExperienceComparison({
         {[
           {
             label: 'Experiência guardada',
-            state: { ...initialScene(activity), ...trial.state },
+            state: sceneFromTrial(activity, trial),
           },
-          { label: 'Agora', state: { ...current, ...sceneTrial(current, '').state } },
+          // ⚠️ "Agora" passa pelo MESMO retrato: depois de um salto o que interessa comparar são
+          // as condições daquele voo, não as que estão nos controles neste instante.
+          { label: 'Agora', state: sceneFromTrial(activity, sceneTrial(current, '')) },
         ].map((item) => (
           <figure key={item.label} className="min-w-0 space-y-2">
             <figcaption className="text-sm font-semibold">{item.label}</figcaption>
@@ -372,10 +376,10 @@ export function ExperienceComparison({
 }
 
 function replayTrial(activity: SceneActivity, state: SceneState, seconds: number) {
-  const initial = {
-    ...initialScene(activity),
-    force: state.flight.force,
-    gravity: state.flight.gravity,
+  const base = initialScene(activity)
+  const initial: SceneState = {
+    ...base,
+    flight: { ...base.flight, force: state.flight.force, gravity: state.flight.gravity },
   }
   const jumped = stepScene(activity, initial, { type: 'jump', input: 'tap' })
   return seconds > 0 ? stepScene(activity, jumped, { type: 'advance', seconds }) : jumped

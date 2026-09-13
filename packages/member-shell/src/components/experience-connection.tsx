@@ -133,14 +133,16 @@ export function ExperienceConnection({
             strokeWidth="4"
             className="text-primary"
           />
+          {/* ⚠️ O vazado vem por UTILITÁRIA. `fill="var(…)"` não funciona: navegador nenhum
+              resolve custom property em atributo de apresentação do SVG, e a bolinha do fio
+              saía preta em vez de vazada. */}
           <circle
             cx={wire.x}
             cy={wire.y}
             r="9"
-            fill="var(--background)"
             stroke="currentColor"
             strokeWidth="3"
-            className="text-primary"
+            className="fill-background text-primary"
           />
         </svg>
       )}

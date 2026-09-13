@@ -9,7 +9,6 @@ const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 })
   minItems: 2,
   maxItems: 20,
 })
-const Media = t.Object({ label: Label, url: t.String({ maxLength: 4000 }), alt: Label })
 /**
  * As ações de cena, em TypeBox.
  *

@@ -138,7 +138,7 @@ describe('o que vai e volta do servidor', () => {
     }).session
     s = stepExperiment({ scene: 'spawn' }, s, { type: 'advance', seconds: 2 }).session
     s = stepExperiment({ scene: 'spawn' }, s, { type: 'capture' }).session
-    const volta = readExperimentSession(packExperiment(s))
+    const volta = readExperimentSession('spawn', packExperiment('spawn', s))
     expect(volta).not.toBeNull()
     expect(volta?.state.crowd.born).toBe(s.state.crowd.born)
     expect(volta?.state.crowd.cacti).toEqual(s.state.crowd.cacti)
@@ -152,20 +152,40 @@ describe('o que vai e volta do servidor', () => {
       type: 'tick',
       seconds: 0.5,
     }).session
-    const volta = readDemonstrationSession(packDemonstration(s))
+    const volta = readDemonstrationSession('world', packDemonstration('world', s))
     expect(volta).not.toBeNull()
     expect(volta?.step).toBe(s.step)
     expect(volta?.before).toEqual(s.before)
   })
 
+  test('⚠️ retrato de OUTRA cena é recusado, não relido como se fosse desta', () => {
+    // O estado das 14 cenas tem a mesma FORMA, e várias compartilham ids de descoberta. Sem a
+    // cena gravada junto, o registro do `spawn` passava como registro do `world` — e as cenas
+    // que já começam com o mundo montado fariam a criança aparecer com uma descoberta que ela
+    // nunca fez. Quem troca a cena de um bloco publicado cai exatamente nisso.
+    let s = initialExperiment({ scene: 'spawn' })
+    s = stepExperiment({ scene: 'spawn' }, s, {
+      type: 'connect',
+      port: 'timer',
+      enabled: true,
+    }).session
+    const pacote = packExperiment('spawn', s)
+    expect(readExperimentSession('spawn', pacote)).not.toBeNull()
+    expect(readExperimentSession('world', pacote)).toBeNull()
+    const demo = packDemonstration('world', initialDemonstration(world))
+    expect(readDemonstrationSession('layers', demo)).toBeNull()
+  })
+
   test('recusa pacote corrompido, estado inválido e passo fora do roteiro', () => {
-    expect(readExperimentSession('nada')).toBeNull()
-    expect(readExperimentSession(['{isso não é json'])).toBeNull()
-    expect(readExperimentSession([JSON.stringify({ state: { flight: 1 } })])).toBeNull()
-    const bom = packDemonstration(initialDemonstration(world))
+    expect(readExperimentSession('world', 'nada')).toBeNull()
+    expect(readExperimentSession('world', ['{isso não é json'])).toBeNull()
+    expect(
+      readExperimentSession('world', [JSON.stringify({ scene: 'world', state: { flight: 1 } })]),
+    ).toBeNull()
+    const bom = packDemonstration('world', initialDemonstration(world))
     const cru = JSON.parse(bom.join(''))
-    expect(readDemonstrationSession([JSON.stringify({ ...cru, step: 99 })])).toBeNull()
-    expect(readDemonstrationSession([JSON.stringify({ ...cru, ready: 'sim' })])).toBeNull()
+    expect(readDemonstrationSession('world', [JSON.stringify({ ...cru, step: 99 })])).toBeNull()
+    expect(readDemonstrationSession('world', [JSON.stringify({ ...cru, ready: 'sim' })])).toBeNull()
   })
 
   test('o segmento do cliente tem forma e teto', () => {

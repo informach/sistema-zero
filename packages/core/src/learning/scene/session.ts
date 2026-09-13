@@ -1,4 +1,4 @@
-import { isRecord, isSceneAction, type SceneAction } from './actions'
+import { isRecord, isSceneAction, type SceneAction, type SceneId } from './actions'
 
 /** Os mesmos tetos do validador de roteiro — um checkpoint não pode apontar para um passo
  *  que nenhum roteiro válido teria. */
@@ -43,6 +43,37 @@ export interface SceneTrial {
     points: number
     born: number
     removed: number
+  }
+}
+
+/**
+ * O caminho de volta: o retrato vira um estado de cena de novo, para ser DESENHADO.
+ *
+ * ⚠️ O retrato é achatado de propósito (ele viaja até o servidor, e guardar o estado inteiro
+ * duas vezes por sessão custa caro). Quem o desenha precisa recompor os grupos — espalhar o
+ * retrato por cima de um estado inicial só empilha chaves órfãs no topo e a comparação mostra
+ * a cena INICIAL: a criança guarda um salto de impulso 14 e vê o de 9, lado a lado com o de
+ * agora. O `tsc` não pega (o objeto passa por variável, sem checagem de excesso), então a
+ * recomposição mora aqui, num lugar só, com teste.
+ */
+export function sceneFromTrial(start: SceneStart, trial: SceneTrial): SceneState {
+  const base = initialScene(start)
+  const t = trial.state
+  return {
+    ...base,
+    flight: {
+      ...base.flight,
+      force: t.force,
+      gravity: t.gravity,
+      peak: t.peak,
+      y: t.y,
+      atForce: t.force,
+      atGravity: t.gravity,
+    },
+    contact: { distance: t.distance, width: t.width },
+    sound: { onJump: t.soundOnJump, count: t.soundCount, jumps: t.jumpCount },
+    match: { ...base.match, screen: t.screen, points: t.points },
+    crowd: { ...base.crowd, born: t.born, removed: t.removed },
   }
 }
 
@@ -327,22 +358,32 @@ const unpack = (key: string, value: unknown) =>
     ? value.map((c) => ({ id: c[0], x: c[1], velocity: c[2] }))
     : value
 
-export function packExperiment(session: ExperimentSession): string[] {
+/**
+ * ⚠️ A cena vai GRAVADA no que se guarda, e a leitura exige que ela confira.
+ *
+ * O estado de todas as cenas tem a mesma forma, então um retrato do `spawn` passa como
+ * retrato do `world` sem nada acusar — e as cenas compartilham ids de descoberta. O professor
+ * que troca a cena de um bloco já publicado faria o registro antigo ser relido como se fosse
+ * desta cena: a criança apareceria com uma descoberta que nunca fez, ou com uma montagem que
+ * nunca montou. A revisão do bloco esconde esse registro do PLAYER, mas não do relatório.
+ */
+export function packExperiment(scene: SceneId, session: ExperimentSession): string[] {
   return chunks(
     JSON.stringify({
+      scene,
       state: pack(session.state),
       past: session.past.map(pack),
       trials: session.trials,
     }),
   )
 }
-export function packDemonstration(session: DemonstrationSession): string[] {
-  return chunks(JSON.stringify({ ...session, state: pack(session.state) }))
+export function packDemonstration(scene: SceneId, session: DemonstrationSession): string[] {
+  return chunks(JSON.stringify({ ...session, scene, state: pack(session.state) }))
 }
 
-export function readExperimentSession(parts: unknown): ExperimentSession | null {
+export function readExperimentSession(scene: SceneId, parts: unknown): ExperimentSession | null {
   const raw = parseChunks(parts)
-  if (!isRecord(raw) || !isSceneState(raw.state)) return null
+  if (!isRecord(raw) || raw.scene !== scene || !isSceneState(raw.state)) return null
   if (!Array.isArray(raw.past) || raw.past.length > SESSION_LIMITS.past) return null
   if (!raw.past.every(isSceneState)) return null
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
@@ -350,9 +391,12 @@ export function readExperimentSession(parts: unknown): ExperimentSession | null 
   return { state: raw.state, past: raw.past, trials: raw.trials }
 }
 
-export function readDemonstrationSession(parts: unknown): DemonstrationSession | null {
+export function readDemonstrationSession(
+  scene: SceneId,
+  parts: unknown,
+): DemonstrationSession | null {
   const raw = parseChunks(parts)
-  if (!isRecord(raw) || !isSceneState(raw.state)) return null
+  if (!isRecord(raw) || raw.scene !== scene || !isSceneState(raw.state)) return null
   const { step, action, elapsed, ready, viewed, before } = raw
   if (!Number.isInteger(step) || (step as number) < 0 || (step as number) >= SCRIPT_STEPS)
     return null

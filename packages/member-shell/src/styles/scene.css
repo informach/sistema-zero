@@ -20,7 +20,11 @@
   --color-scene-sky: #eaf0e6;
   --color-scene-grass: #e4ebd2;
   --color-scene-line: #8ba077;
+  /* ⚠️ `grid` é a DECORAÇÃO (os pontinhos do fundo, a montanha, a borda de um cartãozinho).
+   * A RÉGUA é outra coisa: é o instrumento com que a criança mede o salto, e ela precisa se
+   * ver. As duas tinham colapsado no mesmo cinza, e a régua ficou em 1,39:1 — invisível. */
   --color-scene-grid: #c9ceba;
+  --color-scene-rule: #7d8c78;
 
   /* O que se lê dentro da cena. */
   --color-scene-ink: #42503a;
@@ -29,12 +33,20 @@
   /* A paisagem. O Dino NÃO entra aqui: ele é `currentColor` e veste o tema do app. */
   --color-scene-leaf: #457953;
   --color-scene-leaf-dark: #3e6a4e;
+  /* A vegetação de FUNDO. Sem ela a floresta perde profundidade: as duas fileiras de árvores
+   * ficavam a 1,22:1 uma da outra, e a cena `layers` é sobre exatamente essa diferença. */
+  --color-scene-leaf-soft: #7aa87a;
   --color-scene-bark: #896746;
 
   /* O par de comparação. É a cor que carrega o sentido da descoberta: a medida A contra a
    * medida B, o antes contra o depois. Elas têm que se distinguir à primeira vista. */
   --color-scene-a: #315f92;
   --color-scene-b: #c67431;
+  /* ⚠️ `b-ink` é a medida B quando ela vira TEXTO. O laranja tem 3,26:1 sobre o papel da cena:
+   * serve para um traço grosso e reprova a AA de texto pequeno — que é justamente onde ele
+   * estava, nos números da altura do salto e no rótulo da saída dos cactos. O azul da medida A
+   * não precisa de irmão: ele já passa com 6,08:1. */
+  --color-scene-b-ink: #85601f;
   --color-scene-a-wash: #315f9226;
   --color-scene-b-wash: #c6743140;
 

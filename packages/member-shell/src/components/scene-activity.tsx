@@ -160,8 +160,11 @@ export function SceneActivityView({
         if (mounted) {
           if (draft && !controller.restore(draft)) {
             await archiveSceneDraft(cacheKey, draft)
+            // ⚠️ Sem inventar a causa: o rascunho pode estar atrás da conta por outra aba, mas
+            // também por um fechar de aba em que o envio chegou e a gravação local não — e aí
+            // dizer "outra aba" manda a criança (e quem a ajuda) procurar o que não existe.
             setError(
-              'Outra aba avançou nesta experiência. Recuperamos a versão da conta e guardamos a cópia anterior neste navegador.',
+              'A versão da sua conta estava mais adiantada que a cópia deste navegador. Continuamos da versão da conta; a cópia anterior ficou guardada aqui.',
             )
           }
           setStatus('Sua experiência está pronta.')
@@ -238,7 +241,12 @@ export function SceneActivityView({
       controller.dispatch({ type: 'start' })
   }, [ready, demoMode, controller])
   useEffect(() => {
-    if (!demoMode && result.passed) setRunning(false)
+    if (!result.passed) return
+    if (!demoMode) setRunning(false)
+    // ⚠️ Fechar a atividade grava NA HORA, sem esperar a batida de um segundo. A criança acabou
+    // de ver "concluído": um segundo de "guardando" depois disso é tempo em que ela fecha a aba
+    // e perde o registro — e, na prévia do professor, é a seção que não destrava ao vivo.
+    void flush.current()
   }, [demoMode, result.passed])
   flush.current = async () => {
     if (!ready || conflict) return
@@ -260,19 +268,22 @@ export function SceneActivityView({
           ),
         )
       if (!base || !player) {
-        if (!segment) return
-        const answers = controller.previewConfirm()
-        rehearsal?.onChange(
-          block.id,
-          answers,
-          Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
-        )
-        if (
-          !registered &&
-          evaluateExperimentation(activity.scene, controller.getSnapshot().state).passed &&
-          previewContent
-        ) {
-          if (rehearsal) await rehearsal.onAttempt(block.id, previewContent, answers)
+        // ⚠️ O registro da tentativa NÃO pode depender de haver comando novo. O `previewConfirm`
+        // já consumiu os pendentes na primeira ida; se ela falhou, na segunda não sobra segmento
+        // e o botão "Tentar salvar" virava um clique morto — o professor conclui que a atividade
+        // não registra, quando o que não funciona é a repetição.
+        if (segment) {
+          const confirmadas = controller.previewConfirm()
+          rehearsal?.onChange(
+            block.id,
+            confirmadas,
+            Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
+          )
+        }
+        // ⚠️ E o avaliador é o DO TIPO: cobrar as metas da cena de quem só assistiu nunca
+        // registraria uma demonstração no ensaio.
+        if (!registered && result.passed && previewContent) {
+          if (rehearsal) await rehearsal.onAttempt(block.id, previewContent, controller.answers())
           setRegistered(true)
         }
         return
@@ -294,10 +305,12 @@ export function SceneActivityView({
         controller.acknowledge(progress.answers)
         player.onLearningProgress?.(progress)
       }
-      if (
-        !registered &&
-        evaluateExperimentation(activity.scene, controller.getSnapshot().state).passed
-      ) {
+      // ⚠️ Quem decide é o avaliador DO TIPO (`result`), não o da experimentação. Cobrar as metas
+      // da cena de quem só assistiu nunca registra a demonstração: medido, em `jump-sound` e
+      // `controls` o roteiro do modelo termina SEM fechar as metas, e nas outras doze só fecha
+      // por coincidência do último passo — um roteiro autoral quebra a coincidência nos dois
+      // sentidos (registra antes do fim, ou nunca).
+      if (!registered && result.passed) {
         const response = await apiSend<{
           attempt: LearningAttemptView
           progress: LearningBlockProgress
@@ -316,9 +329,18 @@ export function SceneActivityView({
         player.onLearningProgress?.(response.progress)
         player.refreshAfterLearning?.()
       }
-      if (cacheKey) await writeSceneDraft(cacheKey, controller.draft())
+      // ⚠️ Com `.catch()`: esta era a única gravação local SEM rede-de-proteção, e num navegador
+      // sem IndexedDB (aba privada, armazenamento bloqueado) ela derrubava o resto do bloco — a
+      // criança lia "aguardando conexão" com o POST tendo voltado 200.
+      let copiaLocal = true
+      if (cacheKey)
+        await writeSceneDraft(cacheKey, controller.draft()).catch(() => {
+          copiaLocal = false
+        })
       setStatus('Experiência salva na sua conta.')
-      setError('')
+      setError(
+        copiaLocal ? '' : 'O resultado foi salvo na conta. A cópia neste navegador não guardou.',
+      )
     } catch (e) {
       const stale = typeof e === 'object' && e !== null && 'status' in e && e.status === 409
       if (stale) {
@@ -326,6 +348,16 @@ export function SceneActivityView({
         setRunning(false)
         setError(
           'Esta experiência foi atualizada em outra aba ou mudou de versão. Sua cópia ficou guardada neste navegador. Reabra a aula para continuar da versão salva.',
+        )
+      } else if (!player) {
+        // ⚠️ No ensaio de autoria não existe conexão a aguardar: a falha veio do próprio ensaio
+        // (o professor pediu "falhar na próxima confirmação") ou do avaliador. Traduzir isso
+        // para "aguardando conexão" esconde dele exatamente o que ele mandou acontecer.
+        setStatus('')
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : 'Não foi possível registrar este resultado na prévia.',
         )
       } else {
         setStatus('Aguardando conexão para salvar na conta.')

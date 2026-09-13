@@ -61,7 +61,7 @@ function servidorFalso(scene: SceneId) {
     sceneSequence: checkpoint?.sequence ?? 0,
     sceneSessionId: checkpoint?.sessionId ?? '',
     sceneSegmentId: checkpoint?.segmentId ?? '',
-    sceneCheckpoint: checkpoint ? packExperiment(checkpoint.session) : [],
+    sceneCheckpoint: checkpoint ? packExperiment(scene, checkpoint.session) : [],
   })
   const progresso = () => ({
     blockId: 'discovery',

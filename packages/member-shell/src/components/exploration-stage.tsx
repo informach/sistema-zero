@@ -56,7 +56,7 @@ export function TreeFigure({
       <path className="fill-scene-bark" d="M-6 -73H6V0H-6Z" />
       <path
         d="M-43 -28L-25 -61H-35L-16 -91H-25L0 -138L25 -91H16L35 -61H25L43 -28Z"
-        className={dark ? 'fill-scene-leaf-dark' : 'fill-scene-leaf'}
+        className={dark ? 'fill-scene-leaf-dark' : 'fill-scene-leaf-soft'}
       />
     </g>
   )
@@ -79,7 +79,12 @@ export function SceneButton({ children, className = '', ...props }: ComponentPro
  *
  * ⚠️ Antes os divisores estavam à mão no meio do JSX (`x / 6`, `y / 3.1`, `28.33%`, `600 /
  * largura`), derivados deste viewBox. Mudar o enquadramento de uma cena — que é justamente o
- * que a régua nova pede — deslocava todos os controles em silêncio. Agora só existe um lugar.
+ * que a passada modelo a modelo pede — deslocava todos os controles em silêncio.
+ *
+ * ⚠️ Isto cobre a MOLDURA e os controles por cima dela: o `viewBox`, o fundo e o recorte da
+ * pista. O DESENHO em si (as centenas de coordenadas dos `d="…"`) continua escrito à mão em
+ * unidades desta caixa — reenquadrar uma cena segue sendo redesenhá-la, e é por isso que a
+ * passada modelo a modelo existe.
  */
 const STAGE = { w: 600, h: 310 } as const
 const emX = (x: number) => `${(x / STAGE.w) * 100}%`
@@ -184,7 +189,7 @@ export function ExplorationStage({
   const motion = ['gravity', 'impulse', 'jump-sound'].includes(m)
   const collision = m === 'hitbox' || m === 'restart'
   const speed = m === 'random' || m === 'acceleration'
-  const visibleSpeedCacti = state.crowd.cacti.filter((c) => c.x >= 0 && c.x * 0.9 <= 600)
+  const visibleSpeedCacti = state.crowd.cacti.filter((c) => c.x >= 0 && c.x * 0.9 <= STAGE.w)
   const outsideSpeedCount = state.crowd.cacti.length - visibleSpeedCacti.length
   const population = ['spawn', 'cleanup', 'game-state'].includes(m)
   const screen = ['controls', 'restart', 'game-state', 'score'].includes(m)
@@ -225,7 +230,7 @@ export function ExplorationStage({
               <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
             </pattern>
           </defs>
-          <rect width="600" height="310" fill={`url(#${sceneId}-dots)`} opacity="0.35" />
+          <rect width={STAGE.w} height={STAGE.h} fill={`url(#${sceneId}-dots)`} opacity="0.35" />
           <path className="fill-scene-grass" d="M0 238H600V310H0Z" />
           <path className="stroke-scene-line" d="M0 238H600" strokeWidth="2" />
           <path className="fill-scene-grid" d="M390 180L460 115L530 180Z" />
@@ -259,7 +264,8 @@ export function ExplorationStage({
           )}
           {motion && (
             <>
-              <path className="stroke-scene-grid" d="M220 238V58" strokeDasharray="3 5" />
+              {/* A guia da altura é INSTRUMENTO: ela precisa se ver contra o papel. */}
+              <path className="stroke-scene-rule" d="M220 238V58" strokeDasharray="3 5" />
               {state.evidence.observations
                 .filter((o) => ['first-height', 'other-height', 'landed'].includes(o.id))
                 .slice(-2)
@@ -359,7 +365,7 @@ export function ExplorationStage({
                 strokeWidth="3"
                 strokeDasharray="7 4"
               />
-              <text className="fill-scene-b" x="65" y="90" fontSize="12">
+              <text className="fill-scene-b-ink" x="65" y="90" fontSize="12">
                 saída
               </text>
             </>
@@ -392,7 +398,7 @@ export function ExplorationStage({
           {speed && (
             <>
               <path className="stroke-scene-b" d="M450 76H504" strokeWidth="8" opacity="0.5" />
-              <text className="fill-scene-b" x="477" y="60" textAnchor="middle" fontSize="13">
+              <text className="fill-scene-b-ink" x="477" y="60" textAnchor="middle" fontSize="13">
                 {m === 'random' ? 'nascer: 500–560' : 'nascer: 500'}
               </text>
               {visibleSpeedCacti.slice(-4).map((c, i) => {

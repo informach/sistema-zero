@@ -88,7 +88,7 @@ export class SceneController<S, C> {
         sessionId,
         {
           inicial: () => initialDemonstration(start),
-          ler: readDemonstrationSession,
+          ler: (parts) => readDemonstrationSession(activity.scene, parts),
           passo: (session, command) =>
             stepDemonstration(
               start,
@@ -97,7 +97,8 @@ export class SceneController<S, C> {
               command as DemonstrationCommand,
             ),
           aceita: (c): c is SceneCommand => isDemonstrationCommand(c),
-          empacotar: (session) => packDemonstration(session as DemonstrationSession),
+          empacotar: (session) =>
+            packDemonstration(activity.scene, session as DemonstrationSession),
           aplicar: (checkpoint, segment) =>
             applyDemonstrationSegment(
               start,
@@ -114,11 +115,11 @@ export class SceneController<S, C> {
       sessionId,
       {
         inicial: () => initialExperiment(start),
-        ler: readExperimentSession,
+        ler: (parts) => readExperimentSession(activity.scene, parts),
         passo: (session, command) =>
           stepExperiment(start, session as ExperimentSession, command as ExperimentCommand),
         aceita: (c): c is SceneCommand => isExperimentCommand(c, start),
-        empacotar: (session) => packExperiment(session as ExperimentSession),
+        empacotar: (session) => packExperiment(activity.scene, session as ExperimentSession),
         aplicar: (checkpoint, segment) =>
           applyExperimentSegment(
             start,
@@ -212,7 +213,12 @@ export class SceneController<S, C> {
     if (v.sessionId !== this.sessionId || !Array.isArray(v.pending)) return false
     if (!v.pending.every((c) => this.motor.aceita(c))) return false
     if (!isLearningAnswers(v.confirmed)) return false
-    const checkpoint = lerCheckpoint(v.confirmed, this.motor.ler)
+    const checkpoint = lerCheckpoint(v.confirmed, this.motor.ler, this.sessionId)
+    // ⚠️ Rascunho SEM checkpoint é legítimo (a criança ainda não gravou nada). Rascunho COM um
+    // checkpoint que não lê — adulterado, de outra sessão, de uma versão anterior do jogo — é
+    // outra coisa: seguir em frente o descartaria em silêncio e a criança voltaria ao começo
+    // sem saber por quê. Recusar manda o efeito guardar a cópia à parte antes de recomeçar.
+    if (v.confirmed.sceneCheckpoint !== undefined && !checkpoint) return false
     let flight = lerSegmento<C>(v.inFlight, this.sessionId, this.motor.aceita)
     if (v.inFlight != null && !flight) return false
     if (flight && flight.baseSequence !== (checkpoint?.sequence ?? 0)) return false
@@ -258,10 +264,16 @@ export class SceneController<S, C> {
 function lerCheckpoint<S>(
   answers: LearningAnswers,
   ler: (parts: unknown) => S | null,
+  sessionId?: string,
 ): SceneCheckpoint<S> | null {
   const { sceneSequence, sceneSessionId, sceneSegmentId, sceneCheckpoint } = answers
   if (!Number.isSafeInteger(sceneSequence) || Number(sceneSequence) < 0) return null
   if (typeof sceneSessionId !== 'string' || typeof sceneSegmentId !== 'string') return null
+  // ⚠️ Checkpoint do RASCUNHO tem de ser desta sessão. O servidor já recusa um forjado, mas a
+  // tela acreditava nele: um rascunho adulterado com todas as descobertas deixava o `fieldset`
+  // desabilitado por "concluído" e trancava a criança fora da própria cena, guardando para
+  // sempre. Na leitura do que veio DO SERVIDOR não há com o que comparar, e o parâmetro é omitido.
+  if (sessionId !== undefined && sceneSessionId !== sessionId) return null
   const session = ler(sceneCheckpoint)
   if (!session) return null
   return {
@@ -282,7 +294,11 @@ function lerSegmento<C>(
   if (v.sessionId !== sessionId) return null
   if (typeof v.segmentId !== 'string') return null
   if (!Number.isSafeInteger(v.baseSequence) || Number(v.baseSequence) < 0) return null
-  if (!Array.isArray(v.commands) || v.commands.length > SESSION_LIMITS.segment) return null
+  // ⚠️ O PISO importa tanto quanto o teto: um segmento sem comando nenhum é recusado pelo
+  // servidor a cada ciclo, e o `inFlight` nunca é trocado (`??=`) — nada do que a criança
+  // fizer daí em diante chega à conta, e nem o F5 cura, porque o rascunho volta igual.
+  if (!Array.isArray(v.commands) || v.commands.length === 0) return null
+  if (v.commands.length > SESSION_LIMITS.segment) return null
   if (!v.commands.every(aceita)) return null
   return {
     sessionId,

@@ -109,10 +109,10 @@ function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuarda
     segmentId: sceneSegmentId,
   }
   if (cena.kind === 'demonstration') {
-    const session = readDemonstrationSession(sceneCheckpoint)
+    const session = readDemonstrationSession(cena.start.scene, sceneCheckpoint)
     return session ? { kind: 'demonstration', checkpoint: { ...comum, session } } : null
   }
-  const session = readExperimentSession(sceneCheckpoint)
+  const session = readExperimentSession(cena.start.scene, sceneCheckpoint)
   return session ? { kind: 'experimentation', checkpoint: { ...comum, session } } : null
 }
 
@@ -141,8 +141,8 @@ function applySceneSegment(
     sceneSegmentId: c.segmentId,
     sceneCheckpoint:
       cena.kind === 'demonstration'
-        ? packDemonstration(c.session as DemonstrationSession)
-        : packExperiment(c.session as ExperimentSession),
+        ? packDemonstration(cena.start.scene, c.session as DemonstrationSession)
+        : packExperiment(cena.start.scene, c.session as ExperimentSession),
   }
   // ⚠️ O que o SERVIDOR monta também tem de caber. Numa cena cheia de cactos o checkpoint
   // passa do limite, a gravação iria ao banco em silêncio e a tentativa seguinte — que ecoa

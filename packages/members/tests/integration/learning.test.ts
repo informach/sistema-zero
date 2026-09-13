@@ -210,7 +210,7 @@ describe('learning activities and sections', () => {
       throw new Error('Invalid progress response')
     // O servidor guarda a sessão inteira; o que a criança descobriu vem de lá.
     expect(
-      readExperimentSession(progress.answers.sceneCheckpoint)?.state.evidence.discoveries,
+      readExperimentSession('world', progress.answers.sceneCheckpoint)?.state.evidence.discoveries,
     ).toEqual(['hidden'])
     expect((await save(first)).status).toBe(200)
     expect(

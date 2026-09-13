@@ -380,12 +380,12 @@ export function evaluateLearning(
 function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): LearningResult {
   const parts = answers.sceneCheckpoint
   if (a.type === 'demonstration') {
-    const session = readDemonstrationSession(parts)
+    const session = readDemonstrationSession(a.scene, parts)
     // Sem nada guardado a criança ainda não abriu: não é evidência inválida, é ausência.
     if (!session) return evaluateDemonstration(false, parts === undefined, false)
     return evaluateDemonstration(session.viewed, true, true)
   }
-  const session = readExperimentSession(parts)
+  const session = readExperimentSession(a.scene, parts)
   if (!session) return evaluateExperimentation(a.scene, initialScene(a), parts === undefined)
   return evaluateExperimentation(a.scene, session.state)
 }
