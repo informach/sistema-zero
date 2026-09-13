@@ -874,8 +874,12 @@ na hora, mas voltaria). O que mudou, e é contrato:
    aula pelo CSS DELE a partir destes nomes — o kids no `globals.css` dele e, desde `994f2eac`
    (a paleta do Pen), a comunidade ADULTA também, sob o escopo `.sz-aula-adulto`. Ou seja: hoje
    renomear um gancho quebra o desenho dos DOIS apps, não só o do kids. Os nomes:
-   `sz-lesson-sections` (raiz, só com a flag `kids`), `sz-lesson-toolbar`, `sz-lesson-section-head`
-   (o `<header>` do título da seção), `sz-lesson-block` (cada bloco), `sz-lesson-requirement` +
+   `sz-lesson-sections` (raiz, só com a flag `kids`), `sz-lesson-toolbar` (⚠️ desde 13/09/2026 ele
+   só RENDERIZA sem a flag `kids`: no kids a barra "O que falta para concluir / Índice da aula"
+   saiu inteira e o índice passou para dentro do `sz-lesson-section-head`, então regra do kids
+   para este gancho é regra morta), `sz-lesson-section-head`
+   (o `<header>` do título da seção; no kids ele é flex e carrega o índice à direita do `<h2>`),
+   `sz-lesson-block` (cada bloco), `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
    dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
    **`sz-lesson-split-handle`** (a área de arrasto) + **`sz-lesson-split-grip`** (o fio dentro

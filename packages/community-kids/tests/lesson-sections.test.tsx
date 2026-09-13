@@ -200,6 +200,55 @@ describe('aula por seções', () => {
     fireEvent.click(future)
     expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
   })
+  // ⚠️ Os testes acima (e quase todo este arquivo) renderizam SEM a flag `kids`: eles
+  // cobrem o layout do ADULTO, que mantém a barra. Os dois abaixo são o único lugar
+  // que exercita o caminho do kids, onde a barra deixou de existir (13/09/2026).
+  test('no kids o índice mora no cabeçalho da seção, e "o que falta para concluir" sai de vez', () => {
+    // A conta das pendências já aparecia em outros DOIS lugares: a barra do topo do kids
+    // (que recebe as mesmas `requirements`) e o próprio índice, que marca a seção com
+    // "Atividade pendente". O cartão a mais só empurrava o conteúdo para baixo.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progression() }}
+          kids
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.queryByText(/O que falta para concluir/)).toBeNull()
+    const titulo = screen.getByRole('heading', { name: 'Preparar' })
+    const indice = screen.getByText('Índice da aula')
+    // O MESMO cartão: é o que a mudança promete, e é o `sz-lesson-section-head` que o
+    // CSS do kids veste. Separá-los de novo devolveria o cartão extra sem ninguém ver.
+    expect(indice.closest('header')).toBe(titulo.closest('header'))
+    // Título ANTES do índice no DOM: o cabeçalho é flex e não usa `order`, então a
+    // ordem do documento é a ordem visual — título à esquerda, índice à direita.
+    expect(titulo.compareDocumentPosition(indice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+  test('no kids o índice continua navegando e travando as seções futuras', async () => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progression(1) }}
+          kids
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    const summary = screen.getByText('Índice da aula')
+    fireEvent.click(summary)
+    expect(
+      screen.getByRole('button', { name: /Bloqueada Melhorar/ }).hasAttribute('disabled'),
+    ).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: /2\. Observar/ }))
+    await screen.findByRole('heading', { name: 'Observar' })
+    // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da seção nova.
+    expect(summary.closest('details')?.open).toBe(false)
+  })
   test('falha de navegação mantém a seção atual; a nova tentativa preserva o projeto', async () => {
     let fail = true
     globalThis.fetch = Object.assign(

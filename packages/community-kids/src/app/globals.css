@@ -1558,26 +1558,26 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
    A borda é a `--borda-carta` (transparente no claro, o fio no escuro, onde cartão e
    faixa têm claridade parecida). Borda, e não sombra: o bloco usa o anel de foco em
    `box-shadow`, e uma sombra aqui fora de camada o apagaria. */
-.sz-lesson-sections .sz-lesson-toolbar {
-  border: 1px solid var(--borda-carta);
-  border-radius: 1rem;
-  background: var(--card);
-  padding: 0.375rem 0.75rem;
-}
-.sz-lesson-sections .sz-lesson-toolbar summary {
-  font-weight: 800;
-}
+/* ⚠️ O `sz-lesson-toolbar` NÃO renderiza mais aqui (13/09/2026): a barra "O que falta
+   para concluir / Índice da aula" saiu do kids inteira, e o índice desceu para dentro
+   deste cabeçalho. Não devolver regra para aquele gancho sem devolver o JSX antes — no
+   adulto ele continua existindo, mas o adulto não lê este arquivo.
 
-/* O título ocupa um cartão acima dos painéis. O `space-y-5` do contêiner
-   mantém o intervalo também quando há Estúdio ou controles no modo compacto. */
+   O título ocupa um cartão acima dos painéis, agora com o índice na direita. O
+   `space-y-5` do contêiner mantém o intervalo também quando há Estúdio ou controles no
+   modo compacto. O padding vertical é menor que o de um bloco porque o `summary` do
+   índice já traz 44px de alvo de toque: com 1.25rem o cartão ficava alto demais. */
 .sz-lesson-sections .sz-lesson-section-head {
   border: 1px solid var(--borda-carta);
   border-radius: 1.25rem;
   background: var(--card);
-  padding: 1.25rem;
+  padding: 0.875rem 1.25rem;
 }
 .sz-lesson-sections .sz-lesson-section-head h2 {
   font-size: 1.625rem;
+}
+.sz-lesson-sections .sz-lesson-section-head summary {
+  font-weight: 800;
 }
 .sz-lesson-sections .sz-lesson-block {
   border: 1px solid var(--borda-carta);

@@ -1105,7 +1105,18 @@ mudava). Cada bloco vira cartão branco; o título da seção abre o primeiro (s
 `.sz-lesson-section-head + .sz-lesson-block`); a borda é a `--borda-carta` e NÃO sombra, porque o
 bloco usa o anel de foco em `box-shadow`. A barra de cima
 (`components/kids/kids-lesson-progress.tsx`), o chip "AULA N DE M", o índice da direita e o pé
-moram no `lesson-player-client.tsx`. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
+moram no `lesson-player-client.tsx`.
+
+⭐ **O cartão com "O que falta para concluir / Índice da aula" SAIU do kids (13/09/2026)** e não
+volta. Ele era a terceira cópia da mesma conta: a barra do topo recebe as mesmas `requirements` e
+já mede as atividades, e o índice já marca "Atividade pendente" na seção. O **"o que falta para
+concluir" não existe mais aqui**; o **índice desceu para o cabeçalho da seção** (título à esquerda,
+índice à direita, SEMPRE na mesma linha, inclusive no celular). Isso revoga a linha do plano de
+design de 11/09 que pedia a barra como cartão branco de raio 16. No member-shell a bifurcação é a
+flag `kids` (o `sz-lesson-toolbar` segue existindo no ADULTO e no ensaio do admin, que não leem
+este arquivo), e os dois únicos testes que exercitam o caminho do kids estão em
+`tests/lesson-sections.test.tsx` — o resto do arquivo renderiza sem a flag, ou seja, testa o
+adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
 

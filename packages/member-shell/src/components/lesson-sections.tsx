@@ -571,6 +571,60 @@ function LessonSectionsContent({
       </BlockScope>
     </div>
   )
+  // O ÍNDICE mora em dois lugares, conforme o app: no adulto e no ensaio do admin
+  // ele é a metade direita do `sz-lesson-toolbar`; no kids a barra inteira saiu
+  // (13/09/2026) e ele passou para o cabeçalho da seção. Só um dos dois ramos
+  // renderiza por vez, então o `indexMenu` continua com um dono só.
+  const indiceDaAula = (
+    <details ref={indexMenu} className={cn('relative', kids && 'shrink-0')}>
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+        <List className="size-4" />
+        Índice da aula
+      </summary>
+      <nav
+        aria-label="Seções da aula"
+        className="absolute right-0 z-30 mt-2 max-h-96 w-72 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
+      >
+        {sections.map((s, i) => (
+          <button
+            key={s.id}
+            type="button"
+            disabled={navigating || locked(s.id)}
+            aria-current={s.id === section.id ? 'step' : undefined}
+            onClick={() => navigate(i)}
+            className={cn(
+              'flex min-h-12 w-full gap-3 rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-ring',
+              s.id === section.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+            )}
+          >
+            <span className="tabular-nums">
+              {locked(s.id) ? (
+                <Lock className="size-4" aria-label="Bloqueada" />
+              ) : state?.sections.find((p) => p.id === s.id)?.status === 'completed' ? (
+                <Check className="size-4" aria-label="Concluída" />
+              ) : (
+                `${i + 1}.`
+              )}
+            </span>
+            <span>
+              {s.title}
+              {locked(s.id) ? (
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Abre após concluir a anterior
+                </span>
+              ) : (
+                pending.some((r) => r.sectionId === s.id) && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Atividade pendente
+                  </span>
+                )
+              )}
+            </span>
+          </button>
+        ))}
+      </nav>
+    </details>
+  )
   return (
     <LessonPlayerProvider
       value={
@@ -617,107 +671,75 @@ function LessonSectionsContent({
       }
     >
       <div ref={container} className={cn('space-y-5', kids && 'sz-lesson-sections')}>
-        {/* `sz-lesson-toolbar`: gancho ESTÁVEL para o tema do kids. Por posição não
-            funciona — a barra já perdeu um `:first-of-type` quando outro elemento
+        {/* ⚠️ A barra existe só FORA do kids (13/09/2026). Lá ela sumiu inteira: "O que
+            falta para concluir" era a terceira cópia da mesma conta (a barra do topo do
+            kids já mede as atividades e o índice já marca a seção pendente), e o cartão
+            a mais empurrava o conteúdo para baixo. O índice desceu para o cabeçalho da
+            seção. `sz-lesson-toolbar` segue sendo o gancho ESTÁVEL do adulto: por posição
+            não funciona, a barra já perdeu um `:first-of-type` quando outro elemento
             entrou na frente dela. */}
-        <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
-          <details ref={requirementsMenu} className="relative">
-            <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-              O que falta para concluir · {pending.length}
-            </summary>
-            <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
-              {requirements.length === 0 ? (
-                <p className="p-2 text-sm text-muted-foreground">
-                  Explore o conteúdo e conclua a aula quando terminar.
-                </p>
-              ) : (
-                requirements.map((r) => (
-                  <button
-                    key={r.blockId}
-                    type="button"
-                    disabled={navigating || Boolean(r.sectionId && locked(r.sectionId))}
-                    className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-                    onClick={() => {
-                      const target = sections.findIndex((s) => s.id === r.sectionId)
-                      if (target >= 0) navigate(target, r.blockId)
-                    }}
-                  >
-                    <span className="text-sm font-medium">
-                      {r.complete ? '✓ ' : ''}
-                      {r.title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {r.complete ? 'Concluído' : r.action}
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-          </details>
-          <details ref={indexMenu} className="relative">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-              <List className="size-4" />
-              Índice da aula
-            </summary>
-            <nav
-              aria-label="Seções da aula"
-              className="absolute right-0 z-30 mt-2 max-h-96 w-72 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
-            >
-              {sections.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  disabled={navigating || locked(s.id)}
-                  aria-current={s.id === section.id ? 'step' : undefined}
-                  onClick={() => navigate(i)}
-                  className={cn(
-                    'flex min-h-12 w-full gap-3 rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-ring',
-                    s.id === section.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
-                  )}
-                >
-                  <span className="tabular-nums">
-                    {locked(s.id) ? (
-                      <Lock className="size-4" aria-label="Bloqueada" />
-                    ) : state?.sections.find((p) => p.id === s.id)?.status === 'completed' ? (
-                      <Check className="size-4" aria-label="Concluída" />
-                    ) : (
-                      `${i + 1}.`
-                    )}
-                  </span>
-                  <span>
-                    {s.title}
-                    {locked(s.id) ? (
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        Abre após concluir a anterior
+        {!kids && (
+          <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
+            <details ref={requirementsMenu} className="relative">
+              <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+                O que falta para concluir · {pending.length}
+              </summary>
+              <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
+                {requirements.length === 0 ? (
+                  <p className="p-2 text-sm text-muted-foreground">
+                    Explore o conteúdo e conclua a aula quando terminar.
+                  </p>
+                ) : (
+                  requirements.map((r) => (
+                    <button
+                      key={r.blockId}
+                      type="button"
+                      disabled={navigating || Boolean(r.sectionId && locked(r.sectionId))}
+                      className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                      onClick={() => {
+                        const target = sections.findIndex((s) => s.id === r.sectionId)
+                        if (target >= 0) navigate(target, r.blockId)
+                      }}
+                    >
+                      <span className="text-sm font-medium">
+                        {r.complete ? '✓ ' : ''}
+                        {r.title}
                       </span>
-                    ) : (
-                      pending.some((r) => r.sectionId === s.id) && (
-                        <span className="mt-1 block text-xs text-muted-foreground">
-                          Atividade pendente
-                        </span>
-                      )
-                    )}
-                  </span>
-                </button>
-              ))}
-            </nav>
-          </details>
-        </div>
+                      <span className="text-xs text-muted-foreground">
+                        {r.complete ? 'Concluído' : r.action}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </details>
+            {indiceDaAula}
+          </div>
+        )}
         {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
             ~900-1290px para ~350-505px, e o Vimeo escolhe a rendition pelo tamanho
             renderizado do iframe — daí o "vídeo ruim em tela cheia" que a dona
             reportou. Agora a criança decide onde fica a divisória. */}
-        <header className="sz-lesson-section-head space-y-2 px-1">
+        <header
+          className={cn(
+            'sz-lesson-section-head px-1',
+            // No kids: título à esquerda, índice à direita, SEMPRE na mesma linha. O
+            // `min-w-0 flex-1` do h2 é o que faz um título comprido quebrar em linhas
+            // em vez de espremer o botão.
+            kids ? 'flex items-start justify-between gap-3' : 'space-y-2',
+          )}
+        >
           <h2
             ref={heading}
             tabIndex={-1}
             className={cn(
               'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
-              kids && 'sz-display',
+              kids && 'sz-display min-w-0 flex-1',
             )}
           >
             {section.title}
           </h2>
+          {kids ? indiceDaAula : null}
         </header>
         {hasWorkspace && !arrastavel && (
           <div className="flex gap-2" role="group" aria-label="Orientação e criação">
