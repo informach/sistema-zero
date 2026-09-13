@@ -1595,6 +1595,11 @@ function LessonEditorSession({
               <div hidden={area === 'data' || blockOpen}>
                 <LessonStructureEditor
                   authorId={authorId}
+                  // A prévia e o ensaio montam a aula no layout do app de destino: os
+                  // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
+                  // leva o índice para o cabeçalho da seção). Mesmo default do
+                  // catálogo de conteúdo abaixo, que o admin trata como kids-first.
+                  audience={courseInfo?.audience ?? 'kids'}
                   area={area === 'materials' ? 'materials' : 'sections'}
                   focusRequest={focusRequest}
                   uploadStatus={videoUploadStatusLabels(uploadStates)}

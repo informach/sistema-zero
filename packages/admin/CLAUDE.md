@@ -805,7 +805,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   Body de curso também aceita **`audience`** (`adult`|`kids`, 06/2026 — plataforma Kids): select
   "Audiência" no dialog, **Kids por padrão no curso novo**, sempre enviado (o members PRESERVA
   quando ausente — ≠ salesPageUrl; o default legado do endpoint segue Adult);
-  `CourseView.audience` devolvido; badge "Kids" na listagem. Curso `kids` fica FORA da chave-mestra
+  `CourseView.audience` devolvido; badge "Kids" na listagem.
+  ⭐ A `audience` também desce até a **prévia e o ensaio da aula** (`LessonStructureEditor` →
+  "Conferir livremente" e `LessonRehearsal` → "Ensaiar como aluno"), que passam `kids` ao
+  `LessonSections`: desde 13/09/2026 os dois layouts DIVERGEM de verdade (no kids não existe a
+  barra "O que falta para concluir / Índice da aula" e o índice mora no cabeçalho da seção), então
+  ensaiar sempre no layout adulto mostrava ao professor uma tela que a criança não tem. ⚠️ O admin
+  não carrega o `globals.css` do kids: aqui sai a ESTRUTURA certa, sem a pele (cartões brancos).
+  Travado por `tests/lesson-rehearsal.test.tsx`, que monta o ensaio nas DUAS audiências. Curso `kids` fica FORA da chave-mestra
   `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
   sufixo `[Kids]`). Body de curso também aceita **`sequentialLock`** (boolean, 06/2026 — trava
   sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**

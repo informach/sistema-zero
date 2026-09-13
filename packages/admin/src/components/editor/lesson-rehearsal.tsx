@@ -41,10 +41,19 @@ export function LessonRehearsal({
   lesson,
   document,
   renderBlocks,
+  kids,
 }: {
   lesson: LessonDetailView
   document: LessonDraftDocument<LessonBlockContent>
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
+  /**
+   * Curso infantil: o ensaio tem que montar a aula como a CRIANÇA vai ver. Desde
+   * 13/09/2026 os dois layouts divergem de verdade (no kids a barra "O que falta
+   * para concluir / Índice da aula" não existe e o índice mora no cabeçalho da
+   * seção), então ensaiar sem isto mostraria ao professor uma tela que ninguém tem.
+   * ⚠️ O admin não carrega o CSS do kids: aqui sai a ESTRUTURA certa, sem a pele.
+   */
+  kids?: boolean
 }) {
   const [state, setState] = useState(empty)
   const [epoch, setEpoch] = useState(0)
@@ -211,6 +220,7 @@ export function LessonRehearsal({
       >
         <LessonSections
           key={epoch}
+          kids={kids}
           lesson={{
             ...lesson,
             sectionProgress: progress,

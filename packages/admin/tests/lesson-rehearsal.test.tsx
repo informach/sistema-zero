@@ -317,3 +317,82 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     fetch.mockRestore()
   }
 })
+
+test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do topo', async () => {
+  // ⚠️ Os dois layouts divergem desde 13/09/2026: no kids a barra "O que falta para
+  // concluir / Índice da aula" não existe e o índice mora no cabeçalho da seção. Sem
+  // a audiência chegando até aqui, o professor ensaiava uma aula infantil na tela do
+  // adulto — uma prévia fiel de nada. Nenhum CSS prova isto (o admin não carrega o do
+  // kids), então a ESTRUTURA é o que dá para travar.
+  const documentValue: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Ensaio',
+    slug: 'ensaio',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    supportBlockIds: [],
+    blocks: [],
+    sections: [
+      { ...defaultLessonSection('a', 'Preparar', []), completion: { version: 1, blockIds: [] } },
+      { ...defaultLessonSection('b', 'Observar', []), completion: { version: 1, blockIds: [] } },
+    ],
+  }
+  const lesson: LessonDetailView = {
+    id: 'lesson',
+    slug: 'ensaio',
+    title: 'Ensaio',
+    courseSlug: '',
+    moduleId: '',
+    completed: false,
+    estimatedMinutes: null,
+    positionSeconds: null,
+    sections: documentValue.sections,
+    attachments: [],
+    blocks: [],
+  }
+  const montar = async (kids: boolean) => {
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <LessonRehearsal
+          lesson={lesson}
+          document={documentValue}
+          renderBlocks={() => null}
+          kids={kids}
+        />,
+      ),
+    )
+    const indice = [...container.querySelectorAll('summary')].find((s) =>
+      s.textContent?.includes('Índice da aula'),
+    )
+    return {
+      container,
+      root,
+      temBarra: container.querySelector('.sz-lesson-toolbar') !== null,
+      pedePendencias: container.textContent?.includes('O que falta para concluir') ?? false,
+      indiceNoCabecalho:
+        indice?.closest('header')?.classList.contains('sz-lesson-section-head') ?? false,
+    }
+  }
+  const kids = await montar(true)
+  try {
+    expect(kids.temBarra).toBe(false)
+    expect(kids.pedePendencias).toBe(false)
+    expect(kids.indiceNoCabecalho).toBe(true)
+  } finally {
+    await act(async () => kids.root.unmount())
+    kids.container.remove()
+  }
+  // E o contrário também: ensaiar um curso ADULTO não pode virar a tela do kids.
+  const adulto = await montar(false)
+  try {
+    expect(adulto.temBarra).toBe(true)
+    expect(adulto.pedePendencias).toBe(true)
+    expect(adulto.indiceNoCabecalho).toBe(false)
+  } finally {
+    await act(async () => adulto.root.unmount())
+    adulto.container.remove()
+  }
+})

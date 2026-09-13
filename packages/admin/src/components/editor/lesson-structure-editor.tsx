@@ -12,7 +12,7 @@ import { Button } from '@sistemazero/ui/button'
 import { useRef, useState } from 'react'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
-import type { BlockView } from '@/lib/types'
+import type { BlockView, CourseAudience } from '@/lib/types'
 import { LessonRehearsal } from './lesson-rehearsal'
 import { LessonSectionAuthoring, type SectionAuthoringProps } from './lesson-section-authoring'
 
@@ -89,9 +89,17 @@ export function LessonStructureEditor(
   props: SectionAuthoringProps & {
     preview: boolean
     onPreviewChange: (value: boolean) => void
+    /**
+     * Plataforma do curso. A prévia e o ensaio precisam montar a aula como o ALUNO
+     * daquele app vai ver: desde 13/09/2026 o kids não tem a barra "O que falta para
+     * concluir / Índice da aula" e leva o índice para o cabeçalho da seção, então
+     * conferir sempre no layout adulto mostraria uma tela que a criança não tem.
+     */
+    audience?: CourseAudience
   },
 ) {
-  const { lesson, document, preview, onPreviewChange } = props
+  const { lesson, document, preview, onPreviewChange, audience } = props
+  const kids = audience === 'kids'
   const [rehearsalMode, setRehearsalMode] = useState(false)
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
   const previewLesson: LessonDetailView = {
@@ -163,9 +171,10 @@ export function LessonStructureEditor(
               lesson={previewLesson}
               document={document}
               renderBlocks={renderPreviewBlocks}
+              kids={kids}
             />
           ) : (
-            <LessonSections lesson={previewLesson} renderBlocks={renderPreviewBlocks} />
+            <LessonSections lesson={previewLesson} renderBlocks={renderPreviewBlocks} kids={kids} />
           )}
         </div>
       )}
