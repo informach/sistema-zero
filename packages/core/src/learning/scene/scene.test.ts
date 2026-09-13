@@ -1,0 +1,242 @@
+import { describe, expect, test } from 'bun:test'
+import { experienceScript } from '../experience'
+import { EXPLORATION_DEFINITIONS, EXPLORATION_MISSIONS } from '../exploration'
+import {
+  type ExplorationAction,
+  initialExploration,
+  transitionExploration,
+} from '../exploration-model'
+import { SCENE_IDS, type SceneAction } from './actions'
+import { SCENE_MODELS } from './catalog'
+import { stepScene } from './engine'
+import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './evaluate'
+import { isSceneActivity, isSceneScript } from './index'
+import { initialScene, isSceneState } from './state'
+
+describe('cena: o motor novo faz o mesmo que o antigo', () => {
+  // ⚠️ Este é o teste que sustenta a reescrita. O estado deixou de ser uma struct plana de 44
+  // campos e virou grupos; a física e a pedagogia NÃO podiam mudar junto. Para cada cena,
+  // tocamos o roteiro do catálogo nos dois motores e comparamos o que a criança descobre.
+  test.each([...SCENE_IDS])('%s: as mesmas descobertas, na mesma ordem', (scene) => {
+    const activity = {
+      type: 'exploration',
+      version: 3,
+      mission: scene,
+      mode: 'demonstrate',
+    } as const
+    const steps = experienceScript(activity)
+    const acoes = steps.flatMap((s) => s.actions)
+
+    let velho = initialExploration(activity)
+    for (const a of acoes) velho = transitionExploration(activity, velho, a as ExplorationAction)
+
+    let novo = initialScene({ scene })
+    for (const a of acoes) novo = stepScene({ scene }, novo, a as SceneAction)
+
+    expect(novo.evidence.discoveries).toEqual(velho.discoveries)
+    expect(novo.evidence.observations.map((o) => o.id)).toEqual(velho.observations.map((o) => o.id))
+    expect(novo.caption).toBe(velho.caption)
+    expect(novo.evidence.actions).toBe(velho.actions)
+  })
+
+  test.each([...SCENE_IDS])('%s: o mundo termina no mesmo lugar', (scene) => {
+    const activity = {
+      type: 'exploration',
+      version: 3,
+      mission: scene,
+      mode: 'demonstrate',
+    } as const
+    const acoes = experienceScript(activity).flatMap((s) => s.actions)
+    let velho = initialExploration(activity)
+    for (const a of acoes) velho = transitionExploration(activity, velho, a as ExplorationAction)
+    let novo = initialScene({ scene })
+    for (const a of acoes) novo = stepScene({ scene }, novo, a as SceneAction)
+
+    // Os 44 campos planos, conferidos um a um contra o seu novo endereço.
+    expect(novo.world).toEqual({ created: velho.created, drawn: velho.drawn, front: velho.front })
+    expect(novo.flight).toEqual({
+      gravity: velho.gravity,
+      force: velho.force,
+      y: velho.y,
+      time: velho.flightTime,
+      atForce: velho.flightForce,
+      atGravity: velho.flightGravity,
+      peak: velho.peak,
+    })
+    expect(novo.sound).toEqual({
+      onJump: velho.soundOnJump,
+      count: velho.soundCount,
+      jumps: velho.jumpCount,
+    })
+    expect(novo.crowd).toEqual({
+      timer: velho.timer,
+      interval: velho.interval,
+      cleanup: velho.cleanup,
+      remainder: velho.spawnRemainder,
+      born: velho.born,
+      removed: velho.removed,
+      cacti: velho.cacti,
+      elapsed: velho.elapsed,
+    })
+    expect(novo.match).toEqual({
+      guarded: velho.guarded,
+      touch: velho.touch,
+      restartConnected: velho.restartConnected,
+      screen: velho.screen,
+      points: velho.points,
+      clockRemainder: velho.clockRemainder,
+      scoreIdle: velho.scoreIdleSeconds,
+    })
+    expect(novo.contact).toEqual({ distance: velho.distance, width: velho.width })
+    expect(novo.speed).toEqual({
+      limited: velho.limited,
+      base: velho.base,
+      ticks: velho.ticks,
+      samples: {
+        x: velho.sampleX,
+        velocity: velho.sampleVelocity,
+        positions: velho.positionSamples,
+        velocities: velho.velocitySamples,
+      },
+    })
+  })
+})
+
+describe('cena: o catálogo', () => {
+  test('tem os 14 modelos, e cada um traz metas, três dicas e um roteiro', () => {
+    expect(SCENE_IDS).toHaveLength(14)
+    for (const scene of SCENE_IDS) {
+      const m = SCENE_MODELS[scene]
+      expect(m.id).toBe(scene)
+      expect(m.goals.length).toBeGreaterThan(0)
+      expect(m.hints).toHaveLength(3)
+      expect(m.script.length).toBeGreaterThan(0)
+      expect(m.title.length).toBeGreaterThan(0)
+      expect(m.manipulates.length).toBeGreaterThan(0)
+    }
+  })
+
+  test('o texto pedagógico é o mesmo que estava nas definições antigas', () => {
+    for (const mission of EXPLORATION_MISSIONS) {
+      const velho = EXPLORATION_DEFINITIONS[mission]
+      const novo = SCENE_MODELS[mission]
+      expect(novo.title).toBe(velho.title)
+      expect(novo.instruction).toBe(velho.instruction)
+      expect(novo.manipulates).toBe(velho.manipulates)
+      expect(novo.success).toBe(velho.success)
+      expect(novo.goals).toEqual(velho.goals)
+      expect(novo.hints).toEqual(velho.hints)
+    }
+  })
+
+  test('todo roteiro do catálogo é executável e cumpre o que promete', () => {
+    // `isSceneScript` não confere só a forma: ele TOCA o roteiro e exige que cada `waitFor`
+    // realmente aconteça. Se um modelo prometesse uma descoberta que não ocorre, a criança
+    // ficaria presa esperando — e é isso que este teste impede de entrar no catálogo.
+    for (const scene of SCENE_IDS)
+      expect(isSceneScript([...SCENE_MODELS[scene].script], scene)).toBe(true)
+  })
+})
+
+describe('cena: as duas atividades', () => {
+  test('demonstração e experimentação são tipos irmãos, cada um com os seus campos', () => {
+    expect(isSceneActivity({ type: 'demonstration', scene: 'world' })).toBe(true)
+    expect(isSceneActivity({ type: 'experimentation', scene: 'world' })).toBe(true)
+    // Não existe mais nem `mode` nem `version`: a forma antiga não é aceita.
+    expect(isSceneActivity({ type: 'exploration', version: 3, mission: 'world' })).toBe(false)
+    expect(isSceneActivity({ type: 'demonstration', scene: 'inexistente' })).toBe(false)
+  })
+
+  test('o impulso inicial só existe nas duas cenas de salto', () => {
+    expect(isSceneActivity({ type: 'experimentation', scene: 'impulse', initialImpulse: 9 })).toBe(
+      true,
+    )
+    expect(isSceneActivity({ type: 'experimentation', scene: 'world', initialImpulse: 9 })).toBe(
+      false,
+    )
+    expect(isSceneActivity({ type: 'experimentation', scene: 'impulse', initialImpulse: 99 })).toBe(
+      false,
+    )
+  })
+
+  test('roteiro que promete uma descoberta sem produzi-la é recusado', () => {
+    const promessaVazia = [
+      { id: 'a', caption: 'Nada acontece aqui.', actions: [{ type: 'create' as const }] },
+    ]
+    // `world` não tem meta chamada assim, e mesmo que tivesse o passo não avança o tempo.
+    expect(isSceneScript([{ ...promessaVazia[0], waitFor: 'visible' }], 'world')).toBe(false)
+  })
+
+  test('dica não entra em roteiro de demonstração', () => {
+    const comDica = [{ id: 'a', caption: 'Olhe.', actions: [{ type: 'hint' as const, level: 1 }] }]
+    expect(isSceneScript(comDica, 'world')).toBe(false)
+  })
+})
+
+describe('cena: a avaliação', () => {
+  test('experimentação cobra as metas; demonstração cobra ter assistido', () => {
+    const vazio = initialScene({ scene: 'world' })
+    expect(evaluateExperimentation('world', vazio).passed).toBe(false)
+    expect(evaluateExperimentation('world', vazio).participated).toBe(false)
+    expect(evaluateDemonstration(false).passed).toBe(false)
+    expect(evaluateDemonstration(true).passed).toBe(true)
+    // Quem só assistiu participou, mesmo sem ter tocado em nada.
+    expect(evaluateDemonstration(false).participated).toBe(true)
+  })
+
+  test('descobrir e desfazer não fecha as duas cenas que pedem montagem final', () => {
+    // ⚠️ `layers` e `jump-sound` exigem que a montagem FIQUE no estado descoberto.
+    let s = initialScene({ scene: 'layers' })
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: false })
+    expect(sceneGoals('layers', s).every((g) => g.complete)).toBe(true)
+    expect(evaluateExperimentation('layers', s).passed).toBe(false)
+
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
+    expect(evaluateExperimentation('layers', s).passed).toBe(true)
+  })
+
+  test('recomeçar guarda as descobertas', () => {
+    let s = initialScene({ scene: 'world' })
+    s = stepScene({ scene: 'world' }, s, { type: 'create' })
+    const antes = [...s.evidence.discoveries]
+    expect(antes.length).toBeGreaterThan(0)
+    s = stepScene({ scene: 'world' }, s, { type: 'reset' })
+    expect(s.evidence.discoveries).toEqual(antes)
+    expect(s.world.created).toBe(false)
+  })
+
+  test('ação que não pertence à cena não muda nada', () => {
+    const s = initialScene({ scene: 'world' })
+    // `impulse` é de outra cena: no-op silencioso, sem contar como ação.
+    const depois = stepScene({ scene: 'world' }, s, { type: 'impulse', force: 9 })
+    expect(depois).toBe(s)
+  })
+})
+
+describe('cena: o estado que volta do servidor', () => {
+  test('aceita o estado inicial de todas as cenas', () => {
+    for (const scene of SCENE_IDS) expect(isSceneState(initialScene({ scene }))).toBe(true)
+  })
+
+  test('recusa grupo ausente, campo de tipo errado e array acima do teto', () => {
+    const bom = initialScene({ scene: 'world' })
+    expect(isSceneState({ ...bom, flight: undefined })).toBe(false)
+    expect(isSceneState({ ...bom, match: { ...bom.match, screen: 'meio' } })).toBe(false)
+    expect(isSceneState({ ...bom, contact: { distance: 'longe', width: 48 } })).toBe(false)
+    expect(
+      isSceneState({
+        ...bom,
+        evidence: { ...bom.evidence, discoveries: Array.from({ length: 41 }, (_, i) => `d${i}`) },
+      }),
+    ).toBe(false)
+    // ⚠️ O validador antigo descobria os campos por reflexão e deixava passar array novo com
+    // um limite genérico. Este exige que cada grupo tenha a forma declarada.
+    expect(
+      isSceneState({
+        ...bom,
+        speed: { ...bom.speed, samples: { ...bom.speed.samples, positions: 'nenhuma' } },
+      }),
+    ).toBe(false)
+  })
+})
