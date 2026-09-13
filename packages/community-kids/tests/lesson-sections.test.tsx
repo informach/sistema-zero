@@ -239,13 +239,17 @@ describe('aula por seções', () => {
         />
       </LessonPlayerProvider>,
     )
+    // ⚠️ A aula ABRE na primeira seção disponível, que aqui é "Observar". Navegar para
+    // ELA não provaria nada: a espera pelo título passaria sozinha, e um índice que
+    // levasse à seção errada seguiria verde. O destino precisa ser OUTRA seção.
+    expect(screen.getByRole('heading', { name: 'Observar' })).toBeTruthy()
     const summary = screen.getByText('Índice da aula')
     fireEvent.click(summary)
     expect(
       screen.getByRole('button', { name: /Bloqueada Melhorar/ }).hasAttribute('disabled'),
     ).toBe(true)
-    fireEvent.click(screen.getByRole('button', { name: /2\. Observar/ }))
-    await screen.findByRole('heading', { name: 'Observar' })
+    fireEvent.click(screen.getByRole('button', { name: /Concluída Preparar/ }))
+    await screen.findByRole('heading', { name: 'Preparar' })
     // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da seção nova.
     expect(summary.closest('details')?.open).toBe(false)
   })
