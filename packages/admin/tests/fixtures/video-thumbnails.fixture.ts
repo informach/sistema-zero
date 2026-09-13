@@ -2,6 +2,12 @@ import { expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 process.env.VIMEO_ACCESS_TOKEN = 'qa-vimeo-token'
+// ⚠️ A env inteira é conferida por Zod na PRIMEIRA leitura (`getEnv`), e o `.refine`
+// exige JWT_HS256_SECRET ou JWT_JWKS_URL. Sem isto o teste passava na máquina (que tem
+// `.env`) e reprovava no CI (que não tem): a rota estourava "Env inválida no
+// @sistemazero/admin" antes de chegar ao Vimeo. O valor não é verificado aqui — quem
+// autoriza é o `requireMediaSession` trocado logo abaixo.
+process.env.JWT_HS256_SECRET = 'qa-admin-jwt-secret-0123456789'
 const actualMedia = await import('../../src/server/media')
 let authorized = true
 const { NextResponse } = await import('next/server')
