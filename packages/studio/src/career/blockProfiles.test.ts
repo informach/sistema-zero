@@ -3,9 +3,11 @@ import { BLOCK_CATALOG } from '../blockly/blockCatalog'
 import { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './blockProfiles'
 
 describe('perfil Jogo 2D Essencial', () => {
-  test('contém os 48 tipos da referência (com o Kit espaço COMPLETO), sem duplicatas', () => {
-    expect(ESSENTIAL_2D_BLOCK_TYPES).toHaveLength(48)
-    expect(new Set(ESSENTIAL_2D_BLOCK_TYPES).size).toBe(48)
+  test('contém os 58 tipos da referência (com o Kit espaço COMPLETO), sem duplicatas', () => {
+    // 48 até 13/09/2026; os dez blocos de SPRITE DE TEXTO (criar, escrever, estilo, caixa,
+    // dado do sprite e os dois cliques) entraram no perfil junto com a fatia de text-sprites.
+    expect(ESSENTIAL_2D_BLOCK_TYPES).toHaveLength(58)
+    expect(new Set(ESSENTIAL_2D_BLOCK_TYPES).size).toBe(58)
   })
 
   test('o 🚀 Kit espaço entra INTEIRO (variações do jogo de nave do Faísca)', () => {

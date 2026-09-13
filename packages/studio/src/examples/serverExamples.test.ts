@@ -7,8 +7,8 @@ describe('server-examples (índice distilado p/ o tutor)', () => {
     expect(SERVER_EXAMPLES_INDEX).toEqual(buildServerExamplesIndex())
   })
 
-  it('cobre os 153 exemplos e todo item tem mecânica pesquisável', () => {
-    expect(SERVER_EXAMPLES_INDEX.length).toBe(153)
+  it('cobre os 155 exemplos e todo item tem mecânica pesquisável', () => {
+    expect(SERVER_EXAMPLES_INDEX.length).toBe(155)
     for (const entry of SERVER_EXAMPLES_INDEX) {
       expect(entry.promise.length).toBeGreaterThan(0)
       expect(entry.scenario.length).toBeGreaterThan(0)

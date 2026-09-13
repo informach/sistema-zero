@@ -6,7 +6,11 @@ import { OFFICIAL_CATALOG } from './index'
 
 const goldenCatalogs = {
   'game-2d': {
-    count: 33,
+    // ⚠️ 33 até 13/09/2026: a fatia de SPRITES DE TEXTO somou "Chuva de números" e "Quiz de
+    // números", os dois no TOPO da lista — então mudam a contagem E a ordem, e o hash muda por
+    // causa das duas coisas. Conferido recalculando os cinco catálogos: os outros quatro
+    // bateram com o golden que já estava aqui, o que prova que o cálculo é o mesmo do teste.
+    count: 35,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
     // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
@@ -54,7 +58,7 @@ const goldenCatalogs = {
     // e as setas viraram um bloco cada, e o tamanho do campo saiu das contas
     // (440/300 cravados → "a largura/altura da tela"). A IR do exemplo encolheu
     // de 1036 para 733 linhas.
-    sha256: '72a65546c047b9c400585c04eb406ac786945cd8a5e2101095b3a673af1fad94',
+    sha256: 'eaa8f6ba36c6c66e2c7b42831708305c0838cc260bca8b8a3fa6f39487c0d964',
   },
   'game-2d-advanced': {
     count: 37,
