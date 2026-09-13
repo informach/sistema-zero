@@ -3482,7 +3482,7 @@
       "local_examples": [],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
-      "source": "",
+      "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:967",
       "tooltip": "Bloco antigo mantido no Ao iniciar para preservar a ordem de projetos salvos. Projetos novos usam a versão em Meus moldes."
     },
     {
@@ -3499,7 +3499,7 @@
       "local_examples": [],
       "evidence_scope": "triagem editorial do catálogo; uso externo não medido",
       "placement": "command",
-      "source": "",
+      "source": "packages/studio/src/official-extensions/game-2d/blockCatalogInteraction.ts:968",
       "tooltip": "Bloco antigo mantido no Ao iniciar para preservar a ordem de projetos salvos. Projetos novos usam a versão em Meus moldes."
     },
     {

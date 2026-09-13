@@ -66,6 +66,10 @@ for (const name of readdirSync(catalogDir).filter(
     const line = contents.slice(0, match.index).split('\n').length
     sourceByType.set(match[1], `packages/studio/src/official-extensions/game-2d/${name}:${line}`)
   }
+  for (const match of contents.matchAll(/legacyStartVariant\('[^']+', '(sz_g2d_[^']+)'\)/g)) {
+    const line = contents.slice(0, match.index).split('\n').length
+    sourceByType.set(match[1], `packages/studio/src/official-extensions/game-2d/${name}:${line}`)
+  }
 }
 
 const destinationByCategory: Record<string, string> = {
