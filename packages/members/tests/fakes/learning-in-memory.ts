@@ -142,7 +142,12 @@ export class InMemoryLearningRepository implements LearningRepository {
       blockId: a.blockId,
       lessonId,
       revision: a.revision,
-      answers: same && old.answers.experienceVersion === 3 ? old.answers : a.answers,
+      // ⚠️ Espelha o `case when` do `recordAttempt` no Drizzle: a sessão da CENA não é
+      // atropelada por uma tentativa que chegue depois. Este fake e aquele SQL carregavam a
+      // MESMA chave morta (`experienceVersion === 3`) — como os dois erravam igual, eles
+      // concordavam, e nenhum teste de integração via a proteção desligada. Quem pega isto é
+      // `tests/db/learning-migrations.test.ts`, que roda contra Postgres de verdade.
+      answers: same && typeof old.answers.sceneSequence === 'number' ? old.answers : a.answers,
       hintsUsed: a.hintsUsed,
       positionSeconds: null,
       attemptsCount: (same ? old.attemptsCount : 0) + 1,

@@ -312,9 +312,9 @@ export function lessonDraftCases(getDb: () => Database) {
         id: randomUUID(),
         blockId: activity.id,
         revision: activity.contentRevision,
-        answers: { order: ['a', 'b'] },
+        answers: { checkpoint: 'a' },
         hintsUsed: 0,
-        result: evaluateLearning(interactive, { order: ['a', 'b'] }),
+        result: evaluateLearning(interactive, { checkpoint: 'a' }),
         createdAt: f.now.toISOString(),
       })
       await f.db.insert(studioSubmissions).values({

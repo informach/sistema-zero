@@ -76,6 +76,21 @@ const activity: InteractiveBlock = {
   },
 }
 
+/**
+ * ⚠️ O bloco de CENA, para o caso do checkpoint. Ele usava a fixture de pergunta acima e as
+ * chaves do modelo anterior (`experienceVersion`/`sequence`), então exercitava um caminho que
+ * não existe mais: a proteção real mora em `sceneSequence`, e era justamente ela que o SQL do
+ * `recordAttempt` tinha deixado de enxergar.
+ */
+const scene: InteractiveBlock = {
+  kind: 'interactive',
+  title: 'Faça o Dino aparecer',
+  instructions: 'Crie o Dino e ligue o desenho.',
+  hints: ['Olhe os bastidores.'],
+  required: true,
+  activity: { type: 'experimentation', scene: 'world' },
+}
+
 describe.skipIf(!url)(
   'learning upgrade and real persistence in an empty disposable database',
   () => {
@@ -440,7 +455,11 @@ describe.skipIf(!url)(
       const repo = new DrizzleLearningRepository(db)
       const block = await content.createBlock(lessonId, 'interactive', activity)
       if (!block.contentRevision) throw new Error('Missing revision')
-      const answers = { order: ['prepare', 'draw'] }
+      // ⚠️ Era `{ order: [...] }`, a forma de resposta do modelo `sequence`, que saiu na
+      // reescrita das experiências. O bloco já tinha sido convertido para pergunta, mas a
+      // RESPOSTA ficou para trás: o avaliador devolvia "Escolha uma resposta antes de
+      // conferir" e o teste só falhava no CI, porque `tests/db` se auto-pula sem Postgres.
+      const answers = { checkpoint: 'prepare' }
       const attempt = {
         id: randomUUID(),
         blockId: block.id,
@@ -493,12 +512,12 @@ describe.skipIf(!url)(
       const { db } = get()
       const repo = new DrizzleLearningRepository(db)
       const content = new DrizzleContentAdminRepository(db)
-      const block = await content.createBlock(lessonId, 'interactive', activity)
+      const block = await content.createBlock(lessonId, 'interactive', scene)
       if (!block.contentRevision) throw new Error('Missing revision')
       const progress = {
         blockId: block.id,
         revision: block.contentRevision,
-        answers: { experienceVersion: 3, sequence: 1 },
+        answers: { sceneCheckpoint: ['{"scene":"world"}'], sceneSequence: 1 },
         hintsUsed: 0,
         positionSeconds: null,
         attemptsCount: 0,
@@ -510,7 +529,10 @@ describe.skipIf(!url)(
         repo.saveProgress({
           ...owner,
           lessonId,
-          progress: { ...progress, answers: { experienceVersion: 3, sequence: 2 } },
+          progress: {
+            ...progress,
+            answers: { sceneCheckpoint: ['{"scene":"world"}'], sceneSequence: 2 },
+          },
           expectedExperienceSequence: null,
         }),
       ])
@@ -524,7 +546,7 @@ describe.skipIf(!url)(
         id: randomUUID(),
         blockId: block.id,
         revision: block.contentRevision,
-        answers: { experienceVersion: 3, sequence: 0 },
+        answers: { sceneCheckpoint: ['{"scene":"world"}'], sceneSequence: 0 },
         hintsUsed: 0,
         result: {
           participated: true,

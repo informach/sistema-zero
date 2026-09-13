@@ -432,7 +432,18 @@ export class DrizzleLearningRepository implements LearningRepository {
           target: [lessonBlockProgress.userId, lessonBlockProgress.blockId],
           set: {
             revision: attempt.revision,
-            answers: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} and ${lessonBlockProgress.answers}->>'experienceVersion' = '3' then ${lessonBlockProgress.answers} else ${JSON.stringify(attempt.answers)}::jsonb end`,
+            // ⚠️⚠️ Este `case when` protege a SESSÃO DA CENA de ser atropelada por uma
+            // tentativa: a criança mexe na cena (o controlador grava `sceneSequence` e o
+            // checkpoint) e uma conferência que chegue depois não pode apagar isso.
+            //
+            // A condição comparava `answers->>'experienceVersion' = '3'`, chave do modelo
+            // ANTERIOR. Com a reescrita das experiências ela deixou de existir, então o `case`
+            // era SEMPRE falso e toda tentativa passou a sobrescrever a sessão guardada — a
+            // proteção virou letra morta em silêncio. O `saveProgress` acima já tinha sido
+            // migrado para `sceneSequence`; este ficou para trás.
+            //
+            // ⚠️ As DUAS pontas leem a mesma chave de propósito. Mexeu numa, mexa na outra.
+            answers: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} and ${lessonBlockProgress.answers}->>'sceneSequence' is not null then ${lessonBlockProgress.answers} else ${JSON.stringify(attempt.answers)}::jsonb end`,
             hintsUsed: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} then greatest(${lessonBlockProgress.hintsUsed}, ${attempt.hintsUsed}) else ${attempt.hintsUsed} end`,
             attemptsCount: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} then ${lessonBlockProgress.attemptsCount} + 1 else 1 end`,
             result: sql`case when ${lessonBlockProgress.revision} = ${attempt.revision} and ${lessonBlockProgress.result}->>'passed' = 'true' then ${lessonBlockProgress.result} else ${JSON.stringify(attempt.result)}::jsonb end`,
