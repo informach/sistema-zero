@@ -1,7 +1,7 @@
 import { isRecord, isSceneAction, SCENE_IDS, SCENE_LIMITS, type SceneId } from './actions'
-import { type SceneStep, sceneGoalIds } from './catalog'
+import { type SceneStep, sceneGoalIds, sceneModel } from './catalog'
 import { stepScene } from './engine'
-import { initialScene } from './state'
+import { initialScene, type SceneStart } from './state'
 
 export * from './actions'
 export * from './catalog'
@@ -123,4 +123,17 @@ function playsOut(steps: SceneStep[], scene: SceneId): boolean {
     if (!state.evidence.discoveries.includes(step.waitFor)) return false
   }
   return true
+}
+
+/** Por onde a cena desta atividade começa. */
+export function sceneStart(activity: SceneActivity): SceneStart {
+  if (activity.type === 'experimentation' && activity.initialImpulse !== undefined)
+    return { scene: activity.scene, initialImpulse: activity.initialImpulse }
+  return { scene: activity.scene }
+}
+
+/** O roteiro que vale: o autorado, quando existe; senão o do modelo da cena. */
+export function sceneScript(activity: SceneActivity): readonly SceneStep[] {
+  if (activity.type === 'demonstration' && activity.script) return activity.script
+  return sceneModel(activity.scene).script
 }

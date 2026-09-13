@@ -879,7 +879,14 @@ na hora, mas voltaria). O que mudou, e é contrato:
    saiu inteira e o índice passou para dentro do `sz-lesson-section-head`, então regra do kids
    para este gancho é regra morta), `sz-lesson-section-head`
    (o `<header>` do título da seção; no kids ele é flex e carrega o índice à direita do `<h2>`),
-   `sz-lesson-block` (cada bloco), `sz-lesson-requirement` +
+   `sz-lesson-block` (cada bloco), **`sz-lesson-scene`** (a raiz da atividade de cena —
+   demonstração e experimentação. ⚠️ Desde 13/09/2026 a cena NÃO desenha cartão próprio: quem
+   desenha é o app, e é por este gancho que ele sabe qual bloco é uma cena. O kids já dá cartão a
+   TODO bloco; o adulto e o ensaio do admin têm regra própria, e sem ela a cena fica solta na
+   página. A cena também tem TETO de largura, `max-w-scene` = `--container-scene` (560px), que vem
+   de `src/styles/scene.css` junto com a paleta `--color-scene-*` — folha que cada app precisa
+   `@import`ar, senão as utilitárias `fill-scene-*` não são geradas e o desenho sai preto),
+   `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
    dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
    **`sz-lesson-split-handle`** (a área de arrasto) + **`sz-lesson-split-grip`** (o fio dentro

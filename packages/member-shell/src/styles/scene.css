@@ -1,0 +1,48 @@
+/* A régua das cenas de aula (demonstração e experimentação).
+ *
+ * Duas coisas moram aqui: o TETO de largura da cena e a paleta dela. Antes eram 108 cores
+ * literais espalhadas por três componentes e uma cena que ocupava o cartão inteiro (1149px de
+ * largura medidos em aula real, contra os 532 do Brilliant) — larga demais para a criança
+ * varrer com os olhos e incoerente com a comunidade kids.
+ *
+ * ⚠️ Este arquivo precisa de um `@import` no globals.css de CADA app que renderiza aula
+ * (community-kids, community, admin). Só o `@source` não basta: sem o import as cores não
+ * existem, o Tailwind não gera `fill-scene-*` e a cena sai preta. Mesmo par do studio.css.
+ */
+
+@theme {
+  /* O teto da cena. `--container-*` é o que gera `max-w-scene` no Tailwind v4.
+   * ⚠️ É um TETO, não uma largura: em tela estreita a cena continua acompanhando o cartão. */
+  --container-scene: 560px;
+
+  /* O papel da cena: fundo, chão e as linhas de apoio. */
+  --color-scene-ground: #f8f6e9;
+  --color-scene-sky: #eaf0e6;
+  --color-scene-grass: #e4ebd2;
+  --color-scene-line: #8ba077;
+  --color-scene-grid: #c9ceba;
+
+  /* O que se lê dentro da cena. */
+  --color-scene-ink: #42503a;
+  --color-scene-ink-soft: #5b6b54;
+
+  /* A paisagem. O Dino NÃO entra aqui: ele é `currentColor` e veste o tema do app. */
+  --color-scene-leaf: #457953;
+  --color-scene-leaf-dark: #3e6a4e;
+  --color-scene-bark: #896746;
+
+  /* O par de comparação. É a cor que carrega o sentido da descoberta: a medida A contra a
+   * medida B, o antes contra o depois. Elas têm que se distinguir à primeira vista. */
+  --color-scene-a: #315f92;
+  --color-scene-b: #c67431;
+  --color-scene-a-wash: #315f9226;
+  --color-scene-b-wash: #c6743140;
+
+  /* O encosto: quando as áreas se tocam, a cena inteira avisa. */
+  --color-scene-alert: #ae3e2c;
+  --color-scene-alert-wash: #ae3e2c26;
+
+  /* Os cartõezinhos de medida dentro da cena (placar, cronômetro, altura). */
+  --color-scene-card: #fffdf7;
+  --color-scene-card-line: #d9dfd1;
+}

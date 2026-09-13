@@ -1,22 +1,17 @@
-import {
-  EXPLORATION_DEFINITIONS,
-  EXPLORATION_MISSIONS,
-  type ExplorationActivity,
-  type InteractiveBlock,
-} from '@sistemazero/core/learning'
+import type { InteractiveBlock } from '@sistemazero/core/learning'
+import { SCENE_IDS, SCENE_MODELS, type SceneActivity } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ExperienceAuthoring } from '../../../admin/src/components/editor/experience-authoring'
 
 function Preview() {
-  const [activity, setActivity] = useState<ExplorationActivity>({
-    type: 'exploration',
-    version: 3,
-    mission: 'hitbox',
+  const [activity, setActivity] = useState<SceneActivity>({
+    type: 'experimentation',
+    scene: 'hitbox',
   })
   const [teacher, setTeacher] = useState(false)
-  const d = EXPLORATION_DEFINITIONS[activity.mission]
+  const d = SCENE_MODELS[activity.scene]
   const content: InteractiveBlock = {
     kind: 'interactive',
     title: d.title,
@@ -28,22 +23,39 @@ function Preview() {
   return (
     <main className="mx-auto max-w-4xl space-y-5 p-4 sm:p-8">
       <nav className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-sm font-bold tracking-wider">SISTEMA ZERO · ENSAIO V6</span>
-        <select
-          aria-label="Missão"
-          value={activity.mission}
-          onChange={(e) => {
-            const mission = EXPLORATION_MISSIONS.find((m) => m === e.target.value)
-            if (mission) setActivity({ type: 'exploration', version: 3, mission })
-          }}
-          className="min-h-11 rounded-xl border border-border bg-card px-3"
-        >
-          {EXPLORATION_MISSIONS.map((m) => (
-            <option key={m} value={m}>
-              {EXPLORATION_DEFINITIONS[m].title}
-            </option>
-          ))}
-        </select>
+        <span className="text-sm font-bold tracking-wider">SISTEMA ZERO · ENSAIO DAS CENAS</span>
+        <div className="flex flex-wrap gap-3">
+          <select
+            aria-label="Tipo"
+            value={activity.type}
+            onChange={(e) =>
+              setActivity(
+                e.target.value === 'demonstration'
+                  ? { type: 'demonstration', scene: activity.scene }
+                  : { type: 'experimentation', scene: activity.scene },
+              )
+            }
+            className="min-h-11 rounded-xl border border-border bg-card px-3"
+          >
+            <option value="experimentation">Experimentação</option>
+            <option value="demonstration">Demonstração</option>
+          </select>
+          <select
+            aria-label="Cena"
+            value={activity.scene}
+            onChange={(e) => {
+              const scene = SCENE_IDS.find((s) => s === e.target.value)
+              if (scene) setActivity({ ...activity, scene })
+            }}
+            className="min-h-11 rounded-xl border border-border bg-card px-3"
+          >
+            {SCENE_IDS.map((id) => (
+              <option key={id} value={id}>
+                {SCENE_MODELS[id].title}
+              </option>
+            ))}
+          </select>
+        </div>
       </nav>
       <div className="flex gap-3">
         <button
@@ -67,18 +79,18 @@ function Preview() {
         <section className="space-y-4 rounded-2xl bg-card p-5">
           <h1 className="text-xl font-bold">Prepare a experiência</h1>
           <p className="text-sm text-muted-foreground">
-            Escolha a missão acima. Configure a experiência aqui e confira abaixo o que o aluno vai
-            encontrar. Este ensaio usa os componentes reais do editor e da aula, sem salvar ou
-            publicar.
+            Escolha o tipo e a cena acima. Configure a experiência aqui e confira abaixo o que o
+            aluno vai encontrar. Este ensaio usa os componentes reais do editor e da aula, sem
+            salvar ou publicar.
           </p>
-          <ExperienceAuthoring key={activity.mission} activity={activity} onChange={setActivity} />
+          <ExperienceAuthoring key={activity.scene} activity={activity} onChange={setActivity} />
         </section>
       )}
       <InteractiveLessonBlock
         key={JSON.stringify(activity)}
         previewContent={content}
         block={{
-          id: `preview-${activity.mission}`,
+          id: `preview-${activity.type}-${activity.scene}`,
           kind: 'interactive',
           sortOrder: 0,
           blockRevision: 'preview',

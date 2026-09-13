@@ -1,20 +1,24 @@
 'use client'
 
 import {
-  type ExperienceCommand,
-  type ExplorationActivity,
-  evaluateExperience,
-  evaluateExplorationState,
-  experienceHint,
-  experienceScript,
-  experienceTrial,
-  explorationGoals,
   type InteractiveBlock,
   type LearningAttemptView,
   type LearningBlockProgress,
   learningHints,
   type PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
+import {
+  type DemonstrationSession,
+  type ExperimentSession,
+  evaluateDemonstration,
+  evaluateExperimentation,
+  type SceneActivity,
+  type SceneCommand,
+  sceneGoals,
+  sceneHint,
+  sceneScript,
+  sceneTrial,
+} from '@sistemazero/core/learning/scene'
 import {
   Camera,
   Check,
@@ -30,16 +34,16 @@ import {
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { apiSend } from '../lib/api'
 import {
-  archiveExperienceDraft,
-  ExperienceController,
-  readExperienceDraft,
-  writeExperienceDraft,
-} from '../lib/experience-controller'
-import {
   hasLessonMediaFocus,
   registerLessonMedia,
   requestLessonMediaFocus,
 } from '../lib/lesson-media-focus'
+import {
+  archiveSceneDraft,
+  readSceneDraft,
+  SceneController,
+  writeSceneDraft,
+} from '../lib/scene-controller'
 import type { LessonBlockView } from '../lib/types'
 import { ExperienceComparison, ExperienceScene } from './experience-scene'
 import { ExplorationPieces } from './exploration-pieces'
@@ -47,7 +51,7 @@ import { ExplorationStage, SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 
-export function LearningExperience({
+export function SceneActivityView({
   block,
   content,
   activity,
@@ -55,7 +59,7 @@ export function LearningExperience({
 }: {
   block: LessonBlockView
   content: PublicInteractiveBlock
-  activity: ExplorationActivity
+  activity: SceneActivity
   previewContent?: InteractiveBlock
 }) {
   const player = useLessonPlayer()
@@ -79,8 +83,8 @@ export function LearningExperience({
       return crypto.randomUUID()
     }
   })
-  const [controller] = useState(
-    () => new ExperienceController(activity, tabId, saved?.answers ?? rehearsal?.answers[block.id]),
+  const [controller] = useState(() =>
+    SceneController.create(activity, tabId, saved?.answers ?? rehearsal?.answers[block.id] ?? {}),
   )
   const session = useSyncExternalStore(
     controller.subscribe,
@@ -104,28 +108,29 @@ export function LearningExperience({
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
   const flush = useRef<() => Promise<void>>(async () => {})
-  const action = useRef<(command: ExperienceCommand) => void>(() => {})
+  const action = useRef<(command: SceneCommand) => void>(() => {})
   const cacheKey = scope ? `${scope}:${tabId}` : null
   const base = player
     ? `/api/members/lessons/${encodeURIComponent(player.lessonId)}/blocks/${encodeURIComponent(block.id)}`
     : null
+  const demoMode = activity.type === 'demonstration'
+  const demo = demoMode ? (session as DemonstrationSession) : null
+  const lab = demoMode ? null : (session as ExperimentSession)
+
   const state = session.state
-  const demoMode = activity.mode === 'demonstrate'
-  const m = activity.mission
+  const m = activity.scene
   const reference = ['gravity', 'impulse', 'hitbox', 'jump-sound'].includes(m)
-  const demoStep = session.demo ? experienceScript(activity)[session.demo.step] : null
-  const learner = session.demo?.learner ?? state
-  const result =
-    activity.mode === 'demonstrate'
-      ? { passed: session.viewed, feedback: 'Demonstração concluída.' }
-      : evaluateExplorationState(activity, learner)
-  const goals = explorationGoals(activity, learner)
+  const demoStep = demo ? sceneScript(activity)[demo.step] : null
+  const result = demo
+    ? evaluateDemonstration(demo.viewed)
+    : evaluateExperimentation(activity.scene, state)
+  const goals = sceneGoals(activity.scene, state)
   const instruction =
     demoStep?.caption ??
     (hint
       ? content.hints.length
         ? (hints[hint - 1] ?? content.instructions)
-        : experienceHint(activity, session, hint)
+        : sceneHint(activity.scene, state, hint)
       : content.instructions)
 
   useEffect(() => {
@@ -150,11 +155,11 @@ export function LearningExperience({
   useEffect(() => {
     if (!cacheKey) return
     let mounted = true
-    void readExperienceDraft(cacheKey)
+    void readSceneDraft(cacheKey)
       .then(async (draft) => {
         if (mounted) {
           if (draft && !controller.restore(draft)) {
-            await archiveExperienceDraft(cacheKey, draft)
+            await archiveSceneDraft(cacheKey, draft)
             setError(
               'Outra aba avançou nesta experiência. Recuperamos a versão da conta e guardamos a cópia anterior neste navegador.',
             )
@@ -219,20 +224,19 @@ export function LearningExperience({
       )
     }
   }
-  const dispatch = (command: ExperienceCommand) => {
+  const dispatch = (command: SceneCommand) => {
     action.current(command)
     if (command.type === 'jump' && !reduced) setRunning(true)
   }
   useEffect(() => {
     if (
       ready &&
-      activity.mode === 'demonstrate' &&
-      !controller.getSnapshot().viewed &&
-      !controller.getSnapshot().demo &&
-      controller.getSnapshot().state.actions === 0
+      demoMode &&
+      !(controller.getSnapshot() as DemonstrationSession).viewed &&
+      controller.getSnapshot().state.evidence.actions === 0
     )
-      controller.dispatch({ type: 'demo-start' })
-  }, [ready, activity.mode, controller])
+      controller.dispatch({ type: 'start' })
+  }, [ready, demoMode, controller])
   useEffect(() => {
     if (!demoMode && result.passed) setRunning(false)
   }, [demoMode, result.passed])
@@ -240,7 +244,7 @@ export function LearningExperience({
     if (!ready || conflict) return
     if (saving.current) {
       if (cacheKey)
-        await writeExperienceDraft(cacheKey, controller.draft()).catch(() =>
+        await writeSceneDraft(cacheKey, controller.draft()).catch(() =>
           setError('Não foi possível guardar a cópia local.'),
         )
       return
@@ -250,7 +254,7 @@ export function LearningExperience({
       // Persist the retry identifier BEFORE the request. A lost response must not create a new command.
       const segment = controller.segment()
       if (cacheKey)
-        await writeExperienceDraft(cacheKey, controller.draft()).catch(() =>
+        await writeSceneDraft(cacheKey, controller.draft()).catch(() =>
           setError(
             'Não foi possível atualizar a cópia neste navegador. Mantenha a aula aberta até salvar na conta.',
           ),
@@ -261,9 +265,13 @@ export function LearningExperience({
         rehearsal?.onChange(
           block.id,
           answers,
-          Math.min(controller.getSnapshot().state.hints, hints.length),
+          Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
         )
-        if (!registered && evaluateExperience(activity, answers).passed && previewContent) {
+        if (
+          !registered &&
+          evaluateExperimentation(activity.scene, controller.getSnapshot().state).passed &&
+          previewContent
+        ) {
           if (rehearsal) await rehearsal.onAttempt(block.id, previewContent, answers)
           setRegistered(true)
         }
@@ -277,7 +285,7 @@ export function LearningExperience({
           {
             revision: block.blockRevision,
             answers: segment,
-            hintsUsed: Math.min(controller.getSnapshot().state.hints, hints.length),
+            hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
             positionSeconds: null,
           },
           { 'x-sz-viewer': player.viewerId ?? '' },
@@ -286,7 +294,10 @@ export function LearningExperience({
         controller.acknowledge(progress.answers)
         player.onLearningProgress?.(progress)
       }
-      if (!registered && evaluateExperience(activity, controller.answers()).passed) {
+      if (
+        !registered &&
+        evaluateExperimentation(activity.scene, controller.getSnapshot().state).passed
+      ) {
         const response = await apiSend<{
           attempt: LearningAttemptView
           progress: LearningBlockProgress
@@ -297,7 +308,7 @@ export function LearningExperience({
             id: attemptId.current,
             revision: block.blockRevision,
             answers: controller.answers(),
-            hintsUsed: Math.min(controller.getSnapshot().state.hints, hints.length),
+            hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
           },
           { 'x-sz-viewer': player.viewerId ?? '' },
         )
@@ -305,7 +316,7 @@ export function LearningExperience({
         player.onLearningProgress?.(response.progress)
         player.refreshAfterLearning?.()
       }
-      if (cacheKey) await writeExperienceDraft(cacheKey, controller.draft())
+      if (cacheKey) await writeSceneDraft(cacheKey, controller.draft())
       setStatus('Experiência salva na sua conta.')
       setError('')
     } catch (e) {
@@ -366,20 +377,20 @@ export function LearningExperience({
       last = now
       if (elapsed >= 0.04) {
         const current = controller.getSnapshot()
-        if (current.demo?.ready) {
+        // Numa demonstração o relógio serve ao roteiro; numa experimentação, ao mundo.
+        if (demoMode && (current as DemonstrationSession).ready) {
           setRunning(false)
           return
         }
         action.current(
-          current.demo
-            ? { type: 'demo-tick', seconds: elapsed }
-            : { type: 'advance', seconds: elapsed },
+          demoMode ? { type: 'tick', seconds: elapsed } : { type: 'advance', seconds: elapsed },
         )
         elapsed = 0
+        // Acabou o salto: parar o relógio em vez de rodar à toa.
         if (
-          !current.demo &&
+          !demoMode &&
           ['gravity', 'impulse', 'jump-sound'].includes(m) &&
-          controller.getSnapshot().state.flightTime === null
+          controller.getSnapshot().state.flight.time === null
         ) {
           setRunning(false)
           return
@@ -389,14 +400,15 @@ export function LearningExperience({
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [controller, running, ready, conflict, slow, m])
+  }, [controller, running, ready, conflict, slow, m, demoMode])
 
   return (
-    <section
-      aria-labelledby={`${id}-title`}
-      className="overflow-hidden rounded-3xl border border-primary/20 bg-card shadow-sm"
-    >
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-5 sm:px-7">
+    /* ⚠️ A cena NÃO desenha cartão. Quem desenha é o app, pelo gancho `sz-lesson-scene`:
+       no kids todo bloco já é um cartão, e a cena fazia o segundo dentro dele — duas molduras
+       aninhadas empurram o desenho para dentro e a criança lê duas bordas antes do que importa.
+       Adulto e ensaio do admin vestem este gancho no globals.css deles. */
+    <section aria-labelledby={`${id}-title`} className="sz-lesson-scene space-y-4">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-primary">
             {demoMode ? 'Demonstração' : 'Experimentação'}
@@ -406,13 +418,22 @@ export function LearningExperience({
           </h3>
         </div>
         {!demoMode && (
-          <div className="flex gap-1">
+          /* ⚠️ UM medidor, não uma insígnia por meta: com `role="img"` em cada bolinha o leitor
+             de tela anunciava as metas uma a uma a cada descoberta. Aqui ele lê "2 de 3
+             descobertas" e as bolinhas ficam sendo o que são — desenho. */
+          <div
+            className="flex gap-1"
+            role="meter"
+            aria-valuemin={0}
+            aria-valuemax={goals.length}
+            aria-valuenow={goals.filter((g) => g.complete).length}
+            aria-label={`${goals.filter((g) => g.complete).length} de ${goals.length} descobertas`}
+          >
             {goals.map((g) => (
               <span
                 key={g.id}
                 title={g.label}
-                role="img"
-                aria-label={`${g.label}: ${g.complete ? 'descoberto' : 'para explorar'}`}
+                aria-hidden
                 className={`grid h-8 w-8 place-items-center rounded-full border ${g.complete ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-muted'}`}
               >
                 {g.complete ? <Check size={16} /> : '·'}
@@ -421,12 +442,12 @@ export function LearningExperience({
           </div>
         )}
       </header>
-      <div className="space-y-4 p-4 sm:p-6">
+      <div className="space-y-4">
         <div className="min-h-16 rounded-2xl bg-primary/5 px-4 py-3" aria-live="polite">
           {player?.renderInstruction ? (
             player.renderInstruction(
               instruction,
-              session.demo ? 'speaking' : hint ? 'thinking' : 'speaking',
+              demo ? 'speaking' : hint ? 'thinking' : 'speaking',
             )
           ) : (
             <p className="text-sm font-medium leading-relaxed sm:text-base">{instruction}</p>
@@ -436,12 +457,14 @@ export function LearningExperience({
           disabled={!ready || conflict || (!demoMode && result.passed)}
           className="min-w-0 space-y-4"
         >
+          {/* O teto da cena. Ela não ocupa mais o cartão inteiro: fica centralizada e com
+              largura de leitura, como no Brilliant. O token vive em `styles/scene.css`. */}
           <div
-            className={
+            className={`mx-auto w-full max-w-scene ${
               demoStep?.highlight === 'scene'
                 ? 'rounded-2xl ring-2 ring-primary ring-offset-4 ring-offset-card'
                 : ''
-            }
+            }`}
           >
             {reference ? (
               <ExperienceScene
@@ -481,27 +504,24 @@ export function LearningExperience({
           {demoMode ? (
             <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-primary/5 p-3">
               <span className="mr-2 text-sm font-semibold">
-                Etapa {(session.demo?.step ?? 0) + 1} de {experienceScript(activity).length}
+                Etapa {(demo?.step ?? 0) + 1} de {sceneScript(activity).length}
               </span>
-              <SceneButton
-                onClick={() => setRunning((v) => !v)}
-                disabled={!session.demo || session.demo.ready}
-              >
+              <SceneButton onClick={() => setRunning((v) => !v)} disabled={!demo || demo.ready}>
                 {running ? <Pause size={16} /> : <Play size={16} />}
                 {running ? 'Pausar' : 'Observar'}
               </SceneButton>
               <SceneButton
-                onClick={() => dispatch({ type: 'demo-tick', seconds: 0.2 })}
-                disabled={!session.demo || session.demo.ready}
+                onClick={() => dispatch({ type: 'tick', seconds: 0.2 })}
+                disabled={!demo || demo.ready}
               >
                 <StepForward size={16} />
                 Um passo
               </SceneButton>
-              {(session.demo?.step ?? 0) < experienceScript(activity).length - 1 && (
+              {(demo?.step ?? 0) < sceneScript(activity).length - 1 && (
                 <SceneButton
-                  disabled={!session.demo?.ready}
+                  disabled={!demo?.ready}
                   onClick={() => {
-                    dispatch({ type: 'demo-next' })
+                    dispatch({ type: 'next' })
                     setRunning(!reduced)
                   }}
                 >
@@ -510,7 +530,7 @@ export function LearningExperience({
               )}
               <SceneButton
                 onClick={() => {
-                  dispatch({ type: 'demo-start' })
+                  dispatch({ type: 'start' })
                   setRunning(!reduced)
                 }}
               >
@@ -579,7 +599,7 @@ export function LearningExperience({
                     className="flex flex-wrap items-center gap-4 rounded-2xl border border-border p-4 text-sm font-semibold"
                     htmlFor={`${id}-force`}
                   >
-                    Impulso <output className="text-lg text-amber-700">{state.force}</output>
+                    Impulso <output className="text-lg text-amber-700">{state.flight.force}</output>
                     <input
                       id={`${id}-force`}
                       aria-label="Impulso do salto"
@@ -587,7 +607,7 @@ export function LearningExperience({
                       min="5"
                       max="14"
                       step="1"
-                      value={state.force}
+                      value={state.flight.force}
                       disabled={m === 'gravity'}
                       onChange={(e) => dispatch({ type: 'impulse', force: Number(e.target.value) })}
                       className="h-11 min-w-32 flex-1 accent-amber-600"
@@ -604,14 +624,14 @@ export function LearningExperience({
                     {[
                       {
                         label: 'Distância do cacto',
-                        value: state.distance,
+                        value: state.contact.distance,
                         min: 20,
                         max: 260,
                         field: 'distance',
                       },
                       {
                         label: 'Largura da área do Dino',
-                        value: state.width,
+                        value: state.contact.width,
                         min: 24,
                         max: 120,
                         field: 'width',
@@ -654,24 +674,23 @@ export function LearningExperience({
               </div>
             </>
           )}
-          {session.demo && demoStep?.highlight === 'tools' && (
+          {demo && demoStep?.highlight === 'tools' && (
             <fieldset disabled className="rounded-2xl border-2 border-primary p-3">
               <legend className="px-2 text-sm font-semibold">Observe a montagem</legend>
               {['gravity', 'impulse'].includes(m) && (
                 <p className="mb-3 text-sm">
-                  Impulso {state.force} · gravidade {state.gravity ? 'ligada' : 'desligada'}
+                  Impulso {state.flight.force} · gravidade{' '}
+                  {state.flight.gravity ? 'ligada' : 'desligada'}
                 </p>
               )}
               <ExplorationPieces activity={activity} state={state} dispatch={dispatch} more />
             </fieldset>
           )}
-          {session.demo && reference && demoStep?.highlight === 'compare' && (
+          {demo && reference && demoStep?.highlight === 'compare' && (
             <div className="rounded-2xl border-2 border-primary p-3">
               <ExperienceComparison
                 activity={activity}
-                trials={[
-                  session.demo.before ?? experienceTrial(session.demo.learner, 'Antes desta etapa'),
-                ]}
+                trials={[demo.before ?? sceneTrial(demo.state, 'Antes desta etapa')]}
                 current={state}
               />
             </div>
@@ -684,7 +703,7 @@ export function LearningExperience({
                     setRunning(false)
                     dispatch({ type: 'undo' })
                   }}
-                  disabled={!session.past.length}
+                  disabled={!(lab?.past ?? []).length}
                 >
                   <Undo2 size={16} />
                   Desfazer
@@ -741,7 +760,7 @@ export function LearningExperience({
             )}
           </div>
         </fieldset>
-        {reference && session.trials.length > 0 && (
+        {reference && (lab?.trials ?? []).length > 0 && (
           <details
             open={compared}
             onToggle={(e) => setCompared(e.currentTarget.open)}
@@ -751,7 +770,11 @@ export function LearningExperience({
               O que mudou? Compare suas experiências
             </summary>
             <div className="mt-4">
-              <ExperienceComparison activity={activity} trials={session.trials} current={state} />
+              <ExperienceComparison
+                activity={activity}
+                trials={lab?.trials ?? []}
+                current={state}
+              />
             </div>
           </details>
         )}
@@ -765,7 +788,7 @@ export function LearningExperience({
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
               {registered
-                ? activity.mode === 'demonstrate'
+                ? activity.type === 'demonstration'
                   ? 'Exemplo registrado.'
                   : 'Descoberta registrada.'
                 : 'Guardando este resultado…'}

@@ -76,3 +76,24 @@ export function evaluateDemonstration(
     evidence: 'demonstration',
   }
 }
+
+/**
+ * A dica do momento. Os três degraus do modelo valem quase sempre, mas três cenas ganham um
+ * atalho quando o estado já diz em que ponto a criança travou — mandá-la reler a mesma frase
+ * genérica ali seria não responder.
+ */
+export function sceneHint(scene: SceneId, state: SceneState, level: number): string {
+  const d = state.evidence.discoveries
+  if (scene === 'hitbox' && level < 3)
+    return d.includes('contact')
+      ? 'Guarde a posição do cacto. Mude só a largura da área e compare.'
+      : 'Aproxime o cacto devagar. Observe a borda da área do Dino.'
+  if (scene === 'jump-sound' && level < 3)
+    return state.sound.onJump
+      ? 'Tente pular outra vez enquanto está no ar. Depois experimente o toque.'
+      : 'Aperte Espaço duas vezes durante o mesmo salto. Conte os sons e os saltos.'
+  if (scene === 'impulse' && d.includes('first-height') && level < 3)
+    return 'Guarde este salto, mude o impulso e repita. A gravidade permanece igual.'
+  const hints = sceneModel(scene).hints
+  return hints[level <= 1 ? 0 : level === 2 ? 1 : 2]
+}

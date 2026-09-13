@@ -10,6 +10,9 @@
    ⚠️ O @import fica JUNTO dos outros, ANTES de qualquer @source: `@import` depois de outra
    regra é inválido (o CSS o descarta em silêncio e o editor sai sem cor). */
 @import "../../../pinta/src/styles/pinta.css";
+/* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
+   sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
+@import "../../../member-shell/src/styles/scene.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";
@@ -260,6 +263,13 @@
   padding: 1.5rem 1.5rem 0.5rem;
 }
 .sz-aula-adulto .sz-lesson-block:has(> div > .lesson-prose) {
+  border-radius: 1.5rem;
+  background: var(--card);
+  padding: 1.5rem;
+}
+/* A cena de aula (demonstração e experimentação) desenhava o cartão dela mesma; agora o
+   cartão é do BLOCO, como no kids, e o gancho `sz-lesson-scene` diz qual bloco é esse. */
+.sz-aula-adulto .sz-lesson-block:has(.sz-lesson-scene) {
   border-radius: 1.5rem;
   background: var(--card);
   padding: 1.5rem;

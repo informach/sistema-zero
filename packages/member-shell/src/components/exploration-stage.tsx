@@ -1,12 +1,19 @@
 'use client'
 
 import {
-  type ExplorationAction,
-  type ExplorationActivity,
-  type ExplorationState,
-  explorationContact,
-} from '@sistemazero/core/learning'
-import { type ComponentProps, type PointerEvent, type ReactNode, useId, useRef } from 'react'
+  type SceneAction,
+  type SceneActivity,
+  type SceneState,
+  sceneContact,
+} from '@sistemazero/core/learning/scene'
+import {
+  type ComponentProps,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+  useId,
+  useRef,
+} from 'react'
 
 // A small workbench around the child's Dino: the scene, pieces and consequences share space.
 // Existing Kids typography/tokens carry the chrome; blue gravity and amber impulse stay distinct.
@@ -25,10 +32,11 @@ export function CactusFigure({ x, y = 238 }: { x: number; y?: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <path
+        className="fill-scene-leaf"
         d="M-7 0V-20H-20V-40H-12V-29H-7V-54Q0 -64 7 -54V-36H14V-47H22V-27H7V0Z"
-        fill="#457953"
       />
-      <path d="M0 -49V-8" stroke="#b3d59a" strokeWidth="2" />
+      {/* A nervura do cacto: clara sobre o verde, senão some dentro do corpo. */}
+      <path className="stroke-scene-grass" d="M0 -49V-8" strokeWidth="2" />
     </g>
   )
 }
@@ -45,10 +53,10 @@ export function TreeFigure({
 }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>
-      <path d="M-6 -73H6V0H-6Z" fill="#896746" />
+      <path className="fill-scene-bark" d="M-6 -73H6V0H-6Z" />
       <path
         d="M-43 -28L-25 -61H-35L-16 -91H-25L0 -138L25 -91H16L35 -61H25L43 -28Z"
-        fill={dark ? '#3e6a4e' : '#678865'}
+        className={dark ? 'fill-scene-leaf-dark' : 'fill-scene-leaf'}
       />
     </g>
   )
@@ -65,9 +73,22 @@ export function SceneButton({ children, className = '', ...props }: ComponentPro
   )
 }
 
+/**
+ * A caixa de coordenadas da cena. Os controles de arraste são botões HTML POR CIMA do SVG, e
+ * eles precisam saber onde o desenho começa e termina.
+ *
+ * ⚠️ Antes os divisores estavam à mão no meio do JSX (`x / 6`, `y / 3.1`, `28.33%`, `600 /
+ * largura`), derivados deste viewBox. Mudar o enquadramento de uma cena — que é justamente o
+ * que a régua nova pede — deslocava todos os controles em silêncio. Agora só existe um lugar.
+ */
+const STAGE = { w: 600, h: 310 } as const
+const emX = (x: number) => `${(x / STAGE.w) * 100}%`
+const emY = (y: number) => `${(y / STAGE.h) * 100}%`
+
 /** Pointer input has click destinations and semantic buttons elsewhere in the scene.
  * Pointer capture tracks touch without requiring native HTML drag-and-drop. */
 function Handle({
+  stage,
   label,
   x,
   y,
@@ -79,6 +100,7 @@ function Handle({
   onValue,
   children,
 }: {
+  stage: RefObject<SVGSVGElement | null>
   label: string
   x: number
   y: number
@@ -94,12 +116,16 @@ function Handle({
   const clamp = (n: number) => Math.max(min, Math.min(max, Math.round(n)))
   function down(event: PointerEvent<HTMLButtonElement>) {
     if (event.button !== 0) return
-    const bounds = event.currentTarget.parentElement?.getBoundingClientRect()
-    if (!bounds) return
+    // ⚠️ Quantas unidades da cena vale um pixel da tela. Quem responde é o próprio SVG, pelo
+    // `getScreenCTM`: ele já embute escala, teto de largura e zoom da página. Medir o elemento
+    // em volta supunha que ele tivesse exatamente o tamanho do desenho — e com a cena agora
+    // centralizada sob um teto, essa suposição é falsa na hora em que alguém põe um respiro.
+    const matrix = stage.current?.getScreenCTM()
+    if (!matrix) return
     drag.current = {
       start: axis === 'x' ? event.clientX : event.clientY,
       value,
-      scale: 600 / bounds.width,
+      scale: 1 / (axis === 'x' ? matrix.a : matrix.d),
     }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -109,7 +135,7 @@ function Handle({
       aria-label={label}
       title={label}
       className="absolute z-10 grid min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 touch-none place-items-center rounded-xl border-2 border-primary/60 bg-background/90 px-2 text-primary shadow-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary active:cursor-grabbing"
-      style={{ left: `${x / 6}%`, top: `${y / 3.1}%` }}
+      style={{ left: emX(x), top: emY(y) }}
       onPointerDown={down}
       onPointerMove={(event) => {
         if (!drag.current) return
@@ -147,22 +173,23 @@ export function ExplorationStage({
   dispatch,
   paused,
 }: {
-  activity: ExplorationActivity
-  state: ExplorationState
-  dispatch: (action: ExplorationAction) => void
+  activity: SceneActivity
+  state: SceneState
+  dispatch: (action: SceneAction) => void
   paused: boolean
 }) {
   const sceneId = useId()
-  const m = activity.mission
+  const stage = useRef<SVGSVGElement>(null)
+  const m = activity.scene
   const motion = ['gravity', 'impulse', 'jump-sound'].includes(m)
   const collision = m === 'hitbox' || m === 'restart'
   const speed = m === 'random' || m === 'acceleration'
-  const visibleSpeedCacti = state.cacti.filter((c) => c.x >= 0 && c.x * 0.9 <= 600)
-  const outsideSpeedCount = state.cacti.length - visibleSpeedCacti.length
+  const visibleSpeedCacti = state.crowd.cacti.filter((c) => c.x >= 0 && c.x * 0.9 <= 600)
+  const outsideSpeedCount = state.crowd.cacti.length - visibleSpeedCacti.length
   const population = ['spawn', 'cleanup', 'game-state'].includes(m)
   const screen = ['controls', 'restart', 'game-state', 'score'].includes(m)
-  const dinoY = 238 - Math.min(160, state.y * 0.8)
-  const contact = explorationContact(state)
+  const dinoY = 238 - Math.min(160, state.flight.y * 0.8)
+  const contact = sceneContact(state.contact)
   const layer = (
     <g>
       {[110, 170, 235].map((x, i) => (
@@ -175,12 +202,13 @@ export function ExplorationStage({
       <DinoFigure x={170} y={motion ? dinoY : 238} />
     </g>
   )
-  const canJump = motion && (state.flightTime === null || m === 'jump-sound')
+  const canJump = motion && (state.flight.time === null || m === 'jump-sound')
   return (
     <div className="space-y-3">
-      <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-[#f8f6e9]">
+      <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
         <svg
-          viewBox="0 0 600 310"
+          ref={stage}
+          viewBox={`0 0 ${STAGE.w} ${STAGE.h}`}
           className="block w-full"
           role="img"
           aria-labelledby={`${sceneId}-title ${sceneId}-desc`}
@@ -188,77 +216,81 @@ export function ExplorationStage({
           <title id={`${sceneId}-title`}>Cena da descoberta</title>
           <desc id={`${sceneId}-desc`}>
             {state.caption ||
-              (activity.mode === 'demonstrate'
+              (activity.type === 'demonstration'
                 ? 'Observe o que acontece na cena.'
                 : 'Use as peças e os controles da cena para começar.')}
           </desc>
           <defs>
             <pattern id={`${sceneId}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1" fill="#c9ceba" />
+              <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
             </pattern>
           </defs>
           <rect width="600" height="310" fill={`url(#${sceneId}-dots)`} opacity="0.35" />
-          <path d="M0 238H600V310H0Z" fill="#e4ebd2" />
-          <path d="M0 238H600" stroke="#8ba077" strokeWidth="2" />
-          <path d="M390 180L460 115L530 180Z" fill="#dfe5d0" />
-          <text x="20" y="28" fill="#42503a" fontSize="13" fontWeight="600">
+          <path className="fill-scene-grass" d="M0 238H600V310H0Z" />
+          <path className="stroke-scene-line" d="M0 238H600" strokeWidth="2" />
+          <path className="fill-scene-grid" d="M390 180L460 115L530 180Z" />
+          <text className="fill-scene-ink" x="20" y="28" fontSize="13" fontWeight="600">
             {m === 'world'
               ? 'TELA DO JOGO'
               : screen
-                ? state.screen === 'start'
+                ? state.match.screen === 'start'
                   ? 'INÍCIO'
-                  : state.screen === 'end'
+                  : state.match.screen === 'end'
                     ? 'FIM DA PARTIDA'
                     : 'JOGANDO'
                 : 'SEU LABORATÓRIO DINO'}
           </text>
           {m === 'layers' ? (
             <>
-              {state.front ? layer : dino}
-              {state.front ? dino : layer}
+              {state.world.front ? layer : dino}
+              {state.world.front ? dino : layer}
             </>
-          ) : state.created && state.drawn && (!screen || state.screen !== 'start') ? (
+          ) : state.world.created &&
+            state.world.drawn &&
+            (!screen || state.match.screen !== 'start') ? (
             dino
           ) : null}
-          {m === 'world' && !state.drawn && (
-            <text x="300" y="150" textAnchor="middle" fill="#576750" fontSize="16">
-              {state.created ? 'Existe nos bastidores. E aqui?' : 'Quem vai morar neste jogo?'}
+          {m === 'world' && !state.world.drawn && (
+            <text className="fill-scene-ink-soft" x="300" y="150" textAnchor="middle" fontSize="16">
+              {state.world.created
+                ? 'Existe nos bastidores. E aqui?'
+                : 'Quem vai morar neste jogo?'}
             </text>
           )}
           {motion && (
             <>
-              <path d="M220 238V58" stroke="#9aa78c" strokeDasharray="3 5" />
-              {state.observations
+              <path className="stroke-scene-grid" d="M220 238V58" strokeDasharray="3 5" />
+              {state.evidence.observations
                 .filter((o) => ['first-height', 'other-height', 'landed'].includes(o.id))
                 .slice(-2)
                 .map((o, i) => (
                   <g key={o.id}>
                     <path
                       d={`M115 ${238 - o.height * 0.8}H245`}
-                      stroke={i ? '#c67431' : '#587f9a'}
+                      className={i ? 'stroke-scene-b' : 'stroke-scene-a'}
                       strokeWidth="2"
                       strokeDasharray="5 4"
                     />
-                    <text x="250" y={242 - o.height * 0.8} fill="#42503a" fontSize="12">
+                    <text className="fill-scene-ink" x="250" y={242 - o.height * 0.8} fontSize="12">
                       {i ? 'outra altura' : 'altura anterior'}
                     </text>
                   </g>
                 ))}
-              {state.y > 200 && (
-                <text x="170" y="60" textAnchor="middle" fill="#315f92" fontSize="14">
-                  ↑ continua subindo · {Math.round(state.y)} unidades
+              {state.flight.y > 200 && (
+                <text className="fill-scene-a" x="170" y="60" textAnchor="middle" fontSize="14">
+                  ↑ continua subindo · {Math.round(state.flight.y)} unidades
                 </text>
               )}
               {m === 'impulse' && (
-                <g stroke="#c67431" strokeWidth="5" fill="none">
-                  <path d={`M105 236V${225 - state.force * 9}`} />
+                <g className="stroke-scene-b" strokeWidth="5" fill="none">
+                  <path d={`M105 236V${225 - state.flight.force * 9}`} />
                   <path
-                    d={`M97 ${235 - state.force * 9}L105 ${225 - state.force * 9}L113 ${235 - state.force * 9}`}
+                    d={`M97 ${235 - state.flight.force * 9}L105 ${225 - state.flight.force * 9}L113 ${235 - state.flight.force * 9}`}
                   />
                 </g>
               )}
-              {state.gravity && (
-                <g fill="#315f92">
+              {state.flight.gravity && (
+                <g className="fill-scene-a">
                   <path d="M300 100V128H290L306 147L322 128H312V100Z" />
                   <text x="306" y="165" textAnchor="middle" fontSize="12">
                     gravidade
@@ -266,38 +298,41 @@ export function ExplorationStage({
                 </g>
               )}
               {m === 'jump-sound' && (
-                <text x="410" y="85" textAnchor="middle" fill="#42503a" fontSize="15">
-                  ♪ {state.soundCount} sons · {state.jumpCount} saltos
+                <text className="fill-scene-ink" x="410" y="85" textAnchor="middle" fontSize="15">
+                  ♪ {state.sound.count} sons · {state.sound.jumps} saltos
                 </text>
               )}
             </>
           )}
           {collision && (
             <>
-              <CactusFigure x={170 + state.distance} />
+              <CactusFigure x={170 + state.contact.distance} />
               <rect
-                x={170 - state.width / 2}
+                x={170 - state.contact.width / 2}
                 y="181"
-                width={state.width}
+                width={state.contact.width}
                 height="57"
-                fill={contact ? '#de674d22' : '#5196c522'}
-                stroke={contact ? '#ae3e2c' : '#315f92'}
+                className={
+                  contact
+                    ? 'fill-scene-alert-wash stroke-scene-alert'
+                    : 'fill-scene-a-wash stroke-scene-a'
+                }
                 strokeWidth="2"
                 strokeDasharray="4 3"
               />
               <rect
-                x={152 + state.distance}
+                x={152 + state.contact.distance}
                 y="181"
                 width="36"
                 height="57"
                 fill="none"
-                stroke={contact ? '#ae3e2c' : '#457953'}
+                className={contact ? 'stroke-scene-alert' : 'stroke-scene-leaf'}
                 strokeWidth="2"
               />
               <text
                 x="430"
                 y="64"
-                fill={contact ? '#ae3e2c' : '#42503a'}
+                className={contact ? 'fill-scene-alert' : 'fill-scene-ink'}
                 fontSize="16"
                 fontWeight="600"
               >
@@ -306,20 +341,25 @@ export function ExplorationStage({
             </>
           )}
           {population &&
-            state.cacti
+            state.crowd.cacti
               .filter((c) => c.x >= 0 && c.x <= 480)
               .slice(-24)
               .map((c) => <CactusFigure key={c.id} x={60 + c.x} />)}
           {population && (
-            <text x="24" y="282" fill="#42503a" fontSize="14">
-              {state.cacti.filter((c) => c.x >= 0 && c.x <= 480).length} na tela ·{' '}
-              {state.born - state.removed} no grupo · {state.removed} removidos
+            <text className="fill-scene-ink" x="24" y="282" fontSize="14">
+              {state.crowd.cacti.filter((c) => c.x >= 0 && c.x <= 480).length} na tela ·{' '}
+              {state.crowd.born - state.crowd.removed} no grupo · {state.crowd.removed} removidos
             </text>
           )}
           {m === 'cleanup' && (
             <>
-              <path d="M60 75V238" stroke="#a56838" strokeWidth="3" strokeDasharray="7 4" />
-              <text x="65" y="90" fill="#825730" fontSize="12">
+              <path
+                className="stroke-scene-bark"
+                d="M60 75V238"
+                strokeWidth="3"
+                strokeDasharray="7 4"
+              />
+              <text className="fill-scene-b" x="65" y="90" fontSize="12">
                 saída
               </text>
             </>
@@ -327,33 +367,32 @@ export function ExplorationStage({
           {m === 'score' && (
             <g>
               <rect
+                className="fill-scene-card stroke-scene-grid"
                 x="345"
                 y="72"
                 width="170"
                 height="110"
                 rx="18"
-                fill="#fffdf4"
-                stroke="#a3af8f"
               />
-              <text x="430" y="102" textAnchor="middle" fill="#42503a" fontSize="14">
+              <text className="fill-scene-ink" x="430" y="102" textAnchor="middle" fontSize="14">
                 SEU PLACAR
               </text>
               <text
+                className="fill-scene-ink"
                 x="430"
                 y="156"
                 textAnchor="middle"
-                fill="#42503a"
                 fontSize="46"
                 fontWeight="700"
               >
-                {state.points}
+                {state.match.points}
               </text>
             </g>
           )}
           {speed && (
             <>
-              <path d="M450 76H504" stroke="#c67431" strokeWidth="8" opacity="0.5" />
-              <text x="477" y="60" textAnchor="middle" fill="#825730" fontSize="13">
+              <path className="stroke-scene-b" d="M450 76H504" strokeWidth="8" opacity="0.5" />
+              <text className="fill-scene-b" x="477" y="60" textAnchor="middle" fontSize="13">
                 {m === 'random' ? 'nascer: 500–560' : 'nascer: 500'}
               </text>
               {visibleSpeedCacti.slice(-4).map((c, i) => {
@@ -363,19 +402,19 @@ export function ExplorationStage({
                     <CactusFigure x={x} y={232 - i * 3} />
                     <path
                       d={`M${x} ${124 + i * 22}h${c.velocity * 9}l8 -5m-8 5l8 5`}
-                      stroke={i % 2 ? '#c67431' : '#315f92'}
+                      className={i % 2 ? 'stroke-scene-b' : 'stroke-scene-a'}
                       strokeWidth="3"
                       fill="none"
                     />
-                    <text x={x + 5} y={129 + i * 22} fill="#42503a" fontSize="13">
+                    <text className="fill-scene-ink" x={x + 5} y={129 + i * 22} fontSize="13">
                       {c.velocity}
                     </text>
                   </g>
                 )
               })}
-              <text x="22" y="282" fill="#42503a" fontSize="14">
+              <text className="fill-scene-ink" x="22" y="282" fontSize="14">
                 {m === 'acceleration'
-                  ? `base ${state.base} · ${state.ticks} passos do relógio`
+                  ? `base ${state.speed.base} · ${state.speed.ticks} passos do relógio`
                   : 'Base −5 · descontar 0 ou 1 → −5 ou −6'}
               </text>
             </>
@@ -387,7 +426,7 @@ export function ExplorationStage({
             aria-label="Tocar no Dino para pular"
             disabled={!canJump}
             className="absolute z-10 min-h-14 min-w-16 -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-dashed border-primary/60 bg-transparent focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            style={{ left: '28.33%', top: `${dinoY / 3.1}%`, height: '23%', width: '13%' }}
+            style={{ left: emX(170), top: emY(dinoY), height: emY(72), width: emX(78) }}
             onClick={() => dispatch({ type: 'jump', input: 'tap' })}
           >
             <span className="sr-only">Pular</span>
@@ -395,10 +434,11 @@ export function ExplorationStage({
         )}
         {m === 'impulse' && (
           <Handle
+            stage={stage}
             label="Ajustar seta do impulso com arraste ou setas"
             x={105}
-            y={225 - state.force * 9}
-            value={state.force}
+            y={225 - state.flight.force * 9}
+            value={state.flight.force}
             min={5}
             max={14}
             axis="y"
@@ -410,10 +450,11 @@ export function ExplorationStage({
         )}
         {collision && (
           <Handle
+            stage={stage}
             label="Mover cacto com arraste ou setas"
-            x={170 + state.distance}
+            x={170 + state.contact.distance}
             y={215}
-            value={state.distance}
+            value={state.contact.distance}
             min={20}
             max={260}
             onValue={(distance) => dispatch({ type: 'move', distance })}
@@ -423,10 +464,11 @@ export function ExplorationStage({
         )}
         {m === 'hitbox' && (
           <Handle
+            stage={stage}
             label="Redimensionar área do Dino com arraste ou setas"
-            x={170 + state.width / 2}
+            x={170 + state.contact.width / 2}
             y={180}
-            value={state.width}
+            value={state.contact.width}
             unitsPerPixel={2}
             min={24}
             max={120}
@@ -435,14 +477,14 @@ export function ExplorationStage({
             ↔
           </Handle>
         )}
-        {screen && state.screen === 'start' && (
+        {screen && state.match.screen === 'start' && (
           <div className="absolute left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2">
             <SceneButton onClick={() => dispatch({ type: 'start', input: 'tap' })}>
               ▶ Toque para começar
             </SceneButton>
           </div>
         )}
-        {m === 'restart' && state.screen === 'end' && (
+        {m === 'restart' && state.match.screen === 'end' && (
           <div className="absolute left-1/2 top-[40%] -translate-x-1/2">
             <SceneButton onClick={() => dispatch({ type: 'restart' })}>↻ Jogar de novo</SceneButton>
           </div>
@@ -457,13 +499,13 @@ export function ExplorationStage({
             [5, 9, 14].map((force, i) => (
               <SceneButton
                 key={force}
-                aria-pressed={state.force === force}
+                aria-pressed={state.flight.force === force}
                 onClick={() => dispatch({ type: 'impulse', force })}
               >
                 {['↓ Baixo', '↕ Médio', '↑ Alto'][i]}
               </SceneButton>
             ))}
-          {paused && state.flightTime !== null && (
+          {paused && state.flight.time !== null && (
             <span className="text-xs text-muted-foreground">
               Pausado: avance por passos para observar.
             </span>
@@ -489,12 +531,16 @@ export function ExplorationStage({
           {m === 'hitbox' && (
             <>
               <SceneButton
-                onClick={() => dispatch({ type: 'resize', width: Math.max(24, state.width - 24) })}
+                onClick={() =>
+                  dispatch({ type: 'resize', width: Math.max(24, state.contact.width - 24) })
+                }
               >
                 − Área menor
               </SceneButton>
               <SceneButton
-                onClick={() => dispatch({ type: 'resize', width: Math.min(120, state.width + 24) })}
+                onClick={() =>
+                  dispatch({ type: 'resize', width: Math.min(120, state.contact.width + 24) })
+                }
               >
                 + Área maior
               </SceneButton>
@@ -505,20 +551,20 @@ export function ExplorationStage({
       {screen && (
         <div className="flex flex-wrap gap-2">
           <SceneButton
-            disabled={state.screen !== 'start'}
+            disabled={state.match.screen !== 'start'}
             onClick={() => dispatch({ type: 'start', input: 'key' })}
           >
             Enter: começar
           </SceneButton>
           <SceneButton
-            disabled={state.screen === 'start'}
+            disabled={state.match.screen === 'start'}
             onClick={() => dispatch({ type: 'home' })}
           >
             Voltar ao início
           </SceneButton>
           {(m === 'score' || m === 'restart') && (
             <SceneButton
-              disabled={state.screen !== 'playing'}
+              disabled={state.match.screen !== 'playing'}
               onClick={() => dispatch({ type: 'collide' })}
             >
               Aproximar até bater

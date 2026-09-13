@@ -9,21 +9,16 @@ import {
   type LearningAttemptView,
   type LearningBlockProgress,
   type PublicInteractiveBlock,
-  simulationGoals,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
-import { ArrowDown, ArrowUp, CheckCircle2, Lightbulb } from 'lucide-react'
+import { CheckCircle2, Lightbulb } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
-import { DialogueBlockView } from './dialogue-block'
-import { LearningExperience } from './learning-experience'
-import { LearningExperiment } from './learning-experiment'
-import { LearningExploration } from './learning-exploration'
 import { LearningHtml } from './learning-html'
-import { LearningSimulation } from './learning-simulation'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { SceneActivityView } from './scene-activity'
 
 function message(error: unknown) {
   return typeof error === 'object' &&
@@ -43,13 +38,14 @@ export function InteractiveLessonBlock({
   const player = useLessonPlayer()
   if (!isPublicInteractiveBlock(block.content))
     return <p role="alert">Esta atividade precisa de uma configuração válida.</p>
-  if (block.content.activity.type === 'exploration' && block.content.activity.version === 3)
+  const activity = block.content.activity
+  if (activity.type === 'demonstration' || activity.type === 'experimentation')
     return (
-      <LearningExperience
-        key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(block.content.activity)}`}
+      <SceneActivityView
+        key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(activity)}`}
         block={block}
         content={block.content}
-        activity={block.content.activity}
+        activity={activity}
         previewContent={previewContent}
       />
     )
@@ -101,7 +97,7 @@ function Activity({
   callback.current = player?.onLearningProgress
   const requestId = useRef<string | null>(null)
   const checking = useRef(false)
-  const automaticAttemptStarted = useRef(false)
+  const _automaticAttemptStarted = useRef(false)
 
   useEffect(() => {
     if (!key) return
@@ -178,7 +174,7 @@ function Activity({
     }
   }, [])
   function change(next: LearningAnswers, nextHints = hintsUsed) {
-    if ((busy && content.activity.type !== 'exploration') || !isLearningAnswers(next)) return
+    if (busy || !isLearningAnswers(next)) return
     requestId.current = null
     setAnswers(next)
     setHintsUsed(nextHints)
@@ -262,17 +258,9 @@ function Activity({
     }
   }
   const a = content.activity
-  const order = Array.isArray(answers.order)
-    ? answers.order
-    : a.type === 'sequence'
-      ? a.items.map((item) => item.id)
-      : []
   const set = (value: LearningAnswers) => change(value)
   return (
-    <section
-      aria-labelledby={`${id}-title`}
-      className="space-y-5 rounded-2xl border border-primary/20 bg-card p-5 sm:p-7"
-    >
+    <section aria-labelledby={`${id}-title`} className="space-y-5">
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-primary">
           {content.required ? 'Atividade essencial' : 'Explore esta ideia'}
@@ -282,169 +270,13 @@ function Activity({
         </h3>
         {player?.renderInstruction ? (
           player.renderInstruction(content.instructions)
-        ) : a.type === 'simulation' || a.type === 'exploration' ? (
-          <DialogueBlockView content={{ kind: 'dialogue', text: content.instructions }} />
         ) : (
           <p className="max-w-prose leading-relaxed text-muted-foreground">
             {content.instructions}
           </p>
         )}
       </div>
-      <fieldset disabled={busy && a.type !== 'exploration'} className="space-y-5">
-        {a.type === 'exploration' && (
-          <LearningExploration
-            activity={a}
-            answers={answers}
-            hints={content.hints}
-            onChange={(next, hints) => change(next, hints)}
-            onEvidence={() => {
-              if (!result?.passed && !checking.current && !automaticAttemptStarted.current) {
-                automaticAttemptStarted.current = true
-                void check()
-              }
-            }}
-          />
-        )}
-        {a.type === 'simulation' && (
-          <LearningSimulation
-            activity={a}
-            answers={answers}
-            onChange={set}
-            onTrial={(next) => {
-              change(next)
-              if (
-                !content.checkpoint &&
-                !result?.passed &&
-                simulationGoals(a, next).every((goal) => goal.complete)
-              )
-                void check()
-            }}
-          />
-        )}
-        {a.type === 'prediction' && (
-          <div className="space-y-4">
-            <fieldset disabled={busy} className="grid gap-2">
-              <legend className="sr-only">Sua previsão</legend>
-              {a.choices.map((choice) => (
-                <label
-                  key={choice.id}
-                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border p-3 has-checked:border-primary has-checked:bg-primary/5"
-                >
-                  <input
-                    type="radio"
-                    name={`${id}-prediction`}
-                    value={choice.id}
-                    checked={answers.prediction === choice.id}
-                    onChange={() => set({ ...answers, prediction: choice.id, observed: false })}
-                    className="accent-primary"
-                  />
-                  {choice.label}
-                </label>
-              ))}
-            </fieldset>
-            <Button
-              variant="outline"
-              disabled={typeof answers.prediction !== 'string' || busy}
-              onClick={() => set({ ...answers, observed: true })}
-            >
-              Observar o resultado
-            </Button>
-            {answers.observed === true && (
-              <p className="rounded-xl bg-primary/5 p-4 leading-relaxed">{a.outcome}</p>
-            )}
-          </div>
-        )}
-        {a.type === 'comparison' && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {(['left', 'right'] as const).map((side) => (
-              <figure key={side} className="space-y-3">
-                <img
-                  src={a[side].url}
-                  alt={a[side].alt}
-                  className="aspect-video w-full rounded-xl border border-border object-contain"
-                />
-                <figcaption className="font-medium">{a[side].label}</figcaption>
-                <Button
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => set({ ...answers, [`${side}Observed`]: true })}
-                >
-                  {answers[`${side}Observed`] === true ? 'Observado ✓' : 'Observei este lado'}
-                </Button>
-              </figure>
-            ))}
-          </div>
-        )}
-        {a.type === 'sequence' && (
-          <ol className="space-y-2">
-            {order.map((itemId, index) => {
-              const item = a.items.find((candidate) => candidate.id === itemId)
-              return (
-                <li
-                  key={a.mode === 'match' ? a.targets[index] : itemId}
-                  className="flex min-h-14 items-center gap-3 rounded-xl border border-border bg-muted/20 p-3"
-                >
-                  <span className="text-sm tabular-nums text-muted-foreground">{index + 1}</span>
-                  {a.mode === 'match' ? (
-                    <label className="flex flex-1 flex-wrap items-center justify-between gap-3">
-                      {a.targets[index]}
-                      <select
-                        className="min-h-11 rounded-lg border border-border bg-card p-2"
-                        value={itemId}
-                        disabled={busy}
-                        onChange={(e) => {
-                          const next = [...order]
-                          const other = next.indexOf(e.target.value)
-                          next[index] = e.target.value
-                          if (other >= 0) next[other] = itemId
-                          set({ ...answers, order: next })
-                        }}
-                      >
-                        {a.items.map((choice) => (
-                          <option key={choice.id} value={choice.id}>
-                            {choice.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ) : (
-                    <>
-                      <span className="flex-1">{item?.label}</span>
-                      {[-1, 1].map((direction) => (
-                        <Button
-                          key={direction}
-                          variant="ghost"
-                          size="icon"
-                          disabled={
-                            busy || index + direction < 0 || index + direction >= order.length
-                          }
-                          aria-label={`Mover ${item?.label} para ${direction < 0 ? 'cima' : 'baixo'}`}
-                          onClick={() => {
-                            const next = [...order]
-                            const target = next[index + direction]
-                            if (target === undefined) return
-                            next[index] = target
-                            next[index + direction] = itemId
-                            set({ ...answers, order: next })
-                          }}
-                        >
-                          {direction < 0 ? (
-                            <ArrowUp className="size-4" />
-                          ) : (
-                            <ArrowDown className="size-4" />
-                          )}
-                        </Button>
-                      ))}
-                    </>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
-        )}
-        {a.type === 'experiment' && (
-          <LearningExperiment activity={a} answers={answers} onChange={set} />
-        )}
+      <fieldset disabled={busy} className="space-y-5">
         {a.type === 'html' && (
           <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
         )}
@@ -469,46 +301,32 @@ function Activity({
             ))}
           </fieldset>
         )}
-        {a.type !== 'exploration' &&
-          content.hints.slice(0, hintsUsed).map((hint) => (
-            <div key={hint}>
-              {player?.renderInstruction ? (
-                player.renderInstruction(hint, 'thinking')
-              ) : (
-                <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
-                  <Lightbulb className="mr-2 inline size-4 text-primary" />
-                  {hint}
-                </p>
-              )}
-            </div>
-          ))}
+        {content.hints.slice(0, hintsUsed).map((hint) => (
+          <div key={hint}>
+            {player?.renderInstruction ? (
+              player.renderInstruction(hint, 'thinking')
+            ) : (
+              <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
+                <Lightbulb className="mr-2 inline size-4 text-primary" />
+                {hint}
+              </p>
+            )}
+          </div>
+        ))}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {a.type !== 'exploration' && (
-            <Button
-              variant="ghost"
-              disabled={busy || hintsUsed >= content.hints.length}
-              onClick={() => change(answers, hintsUsed + 1)}
-            >
-              <Lightbulb className="size-4" />
-              {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
-            </Button>
-          )}
           <Button
-            disabled={busy || (!base && !previewContent)}
-            onClick={() => {
-              if (a.type === 'sequence' && !Array.isArray(answers.order))
-                change({ ...answers, order })
-              void check()
-            }}
+            variant="ghost"
+            disabled={busy || hintsUsed >= content.hints.length}
+            onClick={() => change(answers, hintsUsed + 1)}
           >
-            {busy
-              ? 'Salvando…'
-              : a.type === 'simulation' || a.type === 'exploration'
-                ? 'Salvar minha exploração'
-                : 'Conferir minha descoberta'}
+            <Lightbulb className="size-4" />
+            {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
+          </Button>
+          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+            {busy ? 'Salvando…' : 'Conferir minha descoberta'}
           </Button>
         </div>
-        {result && (a.type !== 'exploration' || !result.passed) && (
+        {result && (
           <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
             {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
             {player?.renderInstruction
@@ -522,11 +340,7 @@ function Activity({
         {error ? (
           <p role="alert" className="text-sm text-destructive">
             {error}{' '}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => (a.type === 'exploration' ? void check() : persistRef.current())}
-            >
+            <button type="button" className="underline" onClick={() => persistRef.current()}>
               Tentar salvar novamente
             </button>
           </p>

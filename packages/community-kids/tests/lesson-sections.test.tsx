@@ -2,12 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import type { SectionProgressView } from '@sistemazero/core/learning'
 import {
   type InteractiveBlock,
-  type LearningAnswers,
   type LearningBlockProgress,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
-import { LearningExperiment } from '@sistemazero/member-shell/components/learning-experiment'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -63,19 +61,21 @@ const player: LessonPlayerContextValue = {
   viewerWatermark: null,
   initialPositionSeconds: null,
 }
-const prediction: InteractiveBlock = {
+const pergunta: InteractiveBlock = {
   kind: 'interactive',
   title: 'Antes de testar',
   instructions: 'Escolha uma ideia.',
   required: false,
   hints: ['Pense na direção.'],
-  activity: {
-    type: 'prediction',
+  activity: { type: 'question' },
+  checkpoint: {
+    prompt: 'O que acontece com o Dino?',
     choices: [
       { id: 'up', label: 'Sobe' },
       { id: 'down', label: 'Desce' },
     ],
-    outcome: 'Agora observe o movimento.',
+    correctChoiceId: 'up',
+    explanation: 'O impulso empurra para cima.',
   },
 }
 const originalFetch = globalThis.fetch
@@ -317,7 +317,7 @@ describe('aula por seções', () => {
               id: 'unfinished',
               kind: 'interactive',
               sortOrder: 0,
-              content: { ...prediction, title: '' },
+              content: { ...pergunta, title: '' },
             },
           ],
           sections: [{ ...lesson.sections![0]!, blockIds: ['unfinished'], workspaceBlockId: null }],
@@ -340,7 +340,7 @@ describe('aula por seções', () => {
           kind: 'interactive',
           blockRevision: 'revision',
           sortOrder: 0,
-          content: publicInteractiveBlock(prediction),
+          content: publicInteractiveBlock(pergunta),
         },
       ],
     }
@@ -349,7 +349,7 @@ describe('aula por seções', () => {
       handlers.set(viewer, learning.onProgress)
       return (
         <output aria-label="Progresso atual">
-          {String(learning.progress.blocks[0]?.answers.prediction ?? 'Sem resposta')}
+          {String(learning.progress.blocks[0]?.answers.checkpoint ?? 'Sem resposta')}
         </output>
       )
     }
@@ -357,7 +357,7 @@ describe('aula por seções', () => {
       blockId: 'activity',
       revision: 'revision',
       positionSeconds: null,
-      answers: { prediction: 'down' },
+      answers: { checkpoint: 'down' },
       hintsUsed: 0,
       attemptsCount: 0,
       result: null,
@@ -368,7 +368,7 @@ describe('aula por seções', () => {
     view.rerender(<Host viewer="child-b" />)
     act(() => handlers.get('child-b')!(update))
     expect(screen.getByLabelText('Progresso atual').textContent).toBe('down')
-    act(() => previous({ ...update, answers: { prediction: 'up' } }))
+    act(() => previous({ ...update, answers: { checkpoint: 'up' } }))
     expect(screen.getByLabelText('Progresso atual').textContent).toBe('down')
   })
   test('a prévia da sequência permite conferir os blocos completos de autoria', () => {
@@ -376,14 +376,13 @@ describe('aula por seções', () => {
       <LessonSections
         lesson={{
           ...lesson,
-          blocks: [{ id: 'discovery', kind: 'interactive', sortOrder: 0, content: prediction }],
+          blocks: [{ id: 'discovery', kind: 'interactive', sortOrder: 0, content: pergunta }],
           sections: [{ ...lesson.sections![0]!, blockIds: ['discovery'], workspaceBlockId: null }],
         }}
         renderBlocks={() => null}
       />,
     )
     fireEvent.click(screen.getByRole('radio', { name: 'Sobe' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Observar o resultado' }))
     const check = screen.getByRole('button', {
       name: 'Conferir minha descoberta',
     }) as HTMLButtonElement
@@ -398,16 +397,17 @@ describe('aula por seções', () => {
       id: 'preview',
       kind: 'interactive',
       sortOrder: 0,
-      content: publicInteractiveBlock(prediction),
+      content: publicInteractiveBlock(pergunta),
     }
-    render(<InteractiveLessonBlock block={block} previewContent={prediction} />)
+    render(<InteractiveLessonBlock block={block} previewContent={pergunta} />)
     fireEvent.click(screen.getByRole('radio', { name: 'Sobe' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Observar o resultado' }))
     fireEvent.click(screen.getByRole('button', { name: 'Conferir minha descoberta' }))
     expect(
       await screen.findByText('Prévia de autoria. Nenhum progresso de aluno foi registrado.'),
     ).toBeTruthy()
-    expect(screen.getAllByText('Agora observe o movimento.').length).toBeGreaterThan(0)
+    // ⚠️ Na prévia o gabarito está à mão, então a explicação do acerto tem que aparecer: é ela
+    // que o professor confere antes de publicar.
+    expect(screen.getAllByText('O impulso empurra para cima.').length).toBeGreaterThan(0)
     expect(localStorage.length).toBe(0)
   })
   test('preserva a mesma instância e o rascunho do projeto ao ocultar e voltar ao editor', () => {
@@ -612,35 +612,8 @@ describe('aula por seções', () => {
     ])
   })
 
-  test('experimento exige valores distintos e transmite a evidência esperada pelo servidor', () => {
-    let submitted: LearningAnswers = {}
-    function Experiment() {
-      const [answers, setAnswers] = useState<LearningAnswers>({})
-      return (
-        <LearningExperiment
-          activity={{ type: 'experiment', preset: 'motion', parameters: {} }}
-          answers={answers}
-          onChange={(value) => {
-            submitted = value
-            setAnswers(value)
-          }}
-        />
-      )
-    }
-    render(<Experiment />)
-    fireEvent.click(screen.getByRole('button', { name: 'Testar este valor' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Testar este valor' }))
-    expect(submitted.experiments).toBe(1)
-    fireEvent.change(screen.getByRole('slider'), { target: { value: '1.2' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Testar este valor' }))
-    expect(submitted.experiments).toBe(2)
-    expect(submitted.observed).toBe(true)
-    expect(submitted.previous).toBe(0.6)
-    expect(screen.getByText('2 valores testados')).toBeTruthy()
-  })
-
   test('recupera respostas locais por perfil e revisão sem misturar irmãos', async () => {
-    const content = publicInteractiveBlock(prediction)
+    const content = publicInteractiveBlock(pergunta)
     const block = {
       id: 'activity',
       blockRevision: 'revision',
@@ -651,7 +624,7 @@ describe('aula por seções', () => {
     localStorage.setItem(
       'sz:learning:child-a:lesson:activity:revision',
       JSON.stringify({
-        answers: { prediction: 'up' },
+        answers: { checkpoint: 'up' },
         hintsUsed: 1,
         updatedAt: '2026-09-08T12:00:00Z',
       }),

@@ -7,6 +7,9 @@
 /* Tokens `--color-pin-*` do Pinta (autoria do desenho inicial + viewer da entrega). MESMA razão
    do Estúdio: sem eles o editor embutido sai sem cor, e o JS-import sozinho não basta. */
 @import "../../../pinta/src/styles/pinta.css";
+/* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
+   sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
+@import "../../../member-shell/src/styles/scene.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 /* Editor embarcável (bloco `studio`, autoria + entregas): o scanner precisa gerar as
@@ -345,4 +348,14 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
 .rich-text-content a {
   color: var(--primary);
   text-decoration: underline;
+}
+
+/* O ensaio da aula (o professor conferindo antes de publicar). A cena de aula não desenha
+   mais o cartão dela: quem desenha é o app, pelo gancho `sz-lesson-scene` do member-shell —
+   sem esta regra a experiência fica solta na página e o ensaio deixa de parecer a aula. */
+.sz-lesson-block:has(.sz-lesson-scene) {
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--card);
+  padding: 1.5rem;
 }

@@ -7,6 +7,9 @@
    do menu, em @layer components. DEPOIS dos primitivos e ANTES dos CSS dos pacotes, que
    apontam seus tokens para os --sz-tool-* (teste de contrato em packages/ui/tests). */
 @import "@sistemazero/ui/tool-chrome.css";
+/* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
+   sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
+@import "../../../member-shell/src/styles/scene.css";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind do kids: registra as cores
    sz (--color-sz-…) para o @source conseguir GERAR as utilitárias (bg-sz, text-sz,
    border-sz, etc.). Sem este @import (só o @source) as classes do Studio ficam NO-OP

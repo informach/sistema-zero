@@ -503,3 +503,9 @@ export function applyDemonstrationSegment(
     session,
   }
 }
+
+/** Qualquer comando de cena — o player guarda um só tipo de referência para os dois. */
+export type SceneCommand = ExperimentCommand | DemonstrationCommand
+
+/** A sessão de qualquer cena. O player guarda uma referência só e distingue pelo tipo. */
+export type SceneSession = ExperimentSession | DemonstrationSession

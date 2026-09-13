@@ -1,11 +1,11 @@
 'use client'
 
 import type {
-  ExplorationAction,
-  ExplorationActivity,
-  ExplorationPort,
-  ExplorationState,
-} from '@sistemazero/core/learning'
+  SceneAction,
+  SceneActivity,
+  ScenePort,
+  SceneState,
+} from '@sistemazero/core/learning/scene'
 import { type PointerEvent, type RefObject, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ExperienceConnection as Connection } from './experience-connection'
@@ -63,7 +63,7 @@ function LayerPieces({
   dispatch,
 }: {
   front: boolean
-  dispatch: (action: ExplorationAction) => void
+  dispatch: (action: SceneAction) => void
 }) {
   const [selected, setSelected] = useState<'dino' | 'forest'>('dino')
   const tray = useRef<HTMLDivElement>(null)
@@ -145,8 +145,8 @@ function ConditionPiece({
   dispatch,
   score,
 }: {
-  state: ExplorationState
-  dispatch: (action: ExplorationAction) => void
+  state: SceneState
+  dispatch: (action: SceneAction) => void
   score: boolean
 }) {
   const [picked, setPicked] = useState(false)
@@ -209,7 +209,7 @@ function ConditionPiece({
             className={`min-h-28 space-y-3 rounded-2xl border-2 border-dashed p-3 ${drag.slot === (guarded ? 1 : 0) ? 'border-primary bg-primary/10 ring-4 ring-primary/15' : guarded ? 'border-primary/50 bg-primary/5' : 'border-border bg-muted/30'}`}
           >
             <p className="text-sm font-semibold">{guarded ? 'Se jogando' : 'Em qualquer tela'}</p>
-            {state.guarded === guarded ? (
+            {state.match.guarded === guarded ? (
               piece
             ) : (
               <SceneButton disabled={!picked} onClick={() => put(guarded)}>
@@ -232,14 +232,14 @@ export function ExplorationPieces({
   dispatch,
   more,
 }: {
-  activity: ExplorationActivity
-  state: ExplorationState
-  dispatch: (action: ExplorationAction) => void
+  activity: SceneActivity
+  state: SceneState
+  dispatch: (action: SceneAction) => void
   more: boolean
 }) {
-  const m = activity.mission
+  const m = activity.scene
   const connection = (
-    port: ExplorationPort,
+    port: ScenePort,
     source: string,
     target: string,
     enabled: boolean,
@@ -258,13 +258,13 @@ export function ExplorationPieces({
       {m === 'world' && (
         <div className="space-y-3 rounded-2xl border-2 border-dashed border-primary/25 p-3">
           <p className="text-sm font-semibold">
-            Bastidores · {state.created ? '1 Dino guardado' : 'ainda vazio'}
+            Bastidores · {state.world.created ? '1 Dino guardado' : 'ainda vazio'}
           </p>
-          {!state.created ? (
+          {!state.world.created ? (
             <SceneButton onClick={() => dispatch({ type: 'create' })}>＋ Criar Dino</SceneButton>
           ) : (
             <>
-              {connection('draw', 'Desenhar', 'Tela do jogo', state.drawn)}
+              {connection('draw', 'Desenhar', 'Tela do jogo', state.world.drawn)}
               <span className="text-xs text-muted-foreground">
                 O Dino continua guardado aqui com o desenho ligado ou desligado.
               </span>
@@ -272,44 +272,62 @@ export function ExplorationPieces({
           )}
         </div>
       )}
-      {m === 'layers' && <LayerPieces front={state.front} dispatch={dispatch} />}
+      {m === 'layers' && <LayerPieces front={state.world.front} dispatch={dispatch} />}
       {m === 'gravity' &&
-        (state.discoveries.includes('floating') || state.gravity || more) &&
-        connection('gravity', 'Gravidade do mundo', 'Dino', state.gravity, 'Não aplicar')}
+        (state.evidence.discoveries.includes('floating') || state.flight.gravity || more) &&
+        connection('gravity', 'Gravidade do mundo', 'Dino', state.flight.gravity, 'Não aplicar')}
       {m === 'jump-sound' &&
-        (state.discoveries.includes('false-sound') || state.soundOnJump || more) &&
-        connection('sound', 'Som', 'Pulou', state.soundOnJump, 'Voltar para Espaço')}
-      {m === 'spawn' && (state.discoveries.includes('every-frame') || state.timer || more) && (
-        <>
-          {connection('timer', 'Relógio', 'Nascer cacto', state.timer, 'Criar a cada quadro')}
-          {state.timer && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm">◷ Intervalo</span>
-              {[0.5, 1, 2].map((seconds) => (
-                <SceneButton
-                  key={seconds}
-                  aria-pressed={state.interval === seconds}
-                  onClick={() => dispatch({ type: 'interval', seconds })}
-                >
-                  {seconds.toLocaleString('pt-BR')} s
-                </SceneButton>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        (state.evidence.discoveries.includes('false-sound') || state.sound.onJump || more) &&
+        connection('sound', 'Som', 'Pulou', state.sound.onJump, 'Voltar para Espaço')}
+      {m === 'spawn' &&
+        (state.evidence.discoveries.includes('every-frame') || state.crowd.timer || more) && (
+          <>
+            {connection(
+              'timer',
+              'Relógio',
+              'Nascer cacto',
+              state.crowd.timer,
+              'Criar a cada quadro',
+            )}
+            {state.crowd.timer && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm">◷ Intervalo</span>
+                {[0.5, 1, 2].map((seconds) => (
+                  <SceneButton
+                    key={seconds}
+                    aria-pressed={state.crowd.interval === seconds}
+                    onClick={() => dispatch({ type: 'interval', seconds })}
+                  >
+                    {seconds.toLocaleString('pt-BR')} s
+                  </SceneButton>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       {m === 'cleanup' &&
-        (state.discoveries.includes('invisible-stored') || state.cleanup || more) &&
-        connection('cleanup', 'Remover do grupo', 'Saída da tela', state.cleanup, 'Retirar regra')}
+        (state.evidence.discoveries.includes('invisible-stored') || state.crowd.cleanup || more) &&
+        connection(
+          'cleanup',
+          'Remover do grupo',
+          'Saída da tela',
+          state.crowd.cleanup,
+          'Retirar regra',
+        )}
       {(m === 'game-state' || m === 'score') && (
         <ConditionPiece state={state} dispatch={dispatch} score={m === 'score'} />
       )}
       {m === 'controls' &&
-        (state.discoveries.includes('missing-touch') || state.touch || more) &&
-        connection('touch', 'Toque', 'Começar', state.touch)}
+        (state.evidence.discoveries.includes('missing-touch') || state.match.touch || more) &&
+        connection('touch', 'Toque', 'Começar', state.match.touch)}
       {m === 'restart' &&
-        (state.screen === 'end' || state.restartConnected || more) &&
-        connection('restart', 'Jogar de novo', 'Iniciar outra rodada', state.restartConnected)}
+        (state.match.screen === 'end' || state.match.restartConnected || more) &&
+        connection(
+          'restart',
+          'Jogar de novo',
+          'Iniciar outra rodada',
+          state.match.restartConnected,
+        )}
       {m === 'random' && (
         <div className="space-y-3 rounded-2xl border border-primary/20 bg-primary/5 p-3">
           <p className="text-sm font-semibold">🎲 Sorteador · compare uma coisa por vez</p>
@@ -319,25 +337,25 @@ export function ExplorationPieces({
                 dispatch({
                   type: 'sample',
                   kind: 'position',
-                  unit: state.positionSamples.length === 1 ? 1 : 0,
+                  unit: state.speed.samples.positions.length === 1 ? 1 : 0,
                   guided: true,
                 })
               }
             >
-              Exemplo de posição {state.positionSamples.length === 1 ? 'B' : 'A'}
+              Exemplo de posição {state.speed.samples.positions.length === 1 ? 'B' : 'A'}
             </SceneButton>
-            {(state.discoveries.includes('positions') || more) && (
+            {(state.evidence.discoveries.includes('positions') || more) && (
               <SceneButton
                 onClick={() =>
                   dispatch({
                     type: 'sample',
                     kind: 'velocity',
-                    unit: state.velocitySamples.length === 1 ? 1 : 0,
+                    unit: state.speed.samples.velocities.length === 1 ? 1 : 0,
                     guided: true,
                   })
                 }
               >
-                Exemplo de velocidade {state.velocitySamples.length === 1 ? 'B' : 'A'}
+                Exemplo de velocidade {state.speed.samples.velocities.length === 1 ? 'B' : 'A'}
               </SceneButton>
             )}
           </div>
@@ -371,7 +389,7 @@ export function ExplorationPieces({
                 dispatch({
                   type: 'sample',
                   kind: 'velocity',
-                  unit: state.born === 0 ? 0 : 1,
+                  unit: state.crowd.born === 0 ? 0 : 1,
                   guided: true,
                 })
               }
@@ -379,7 +397,7 @@ export function ExplorationPieces({
               <svg width="18" height="24" viewBox="-25 -65 55 70" aria-hidden="true">
                 <CactusFigure x={0} y={0} />
               </svg>
-              Novo cacto · descontar {state.born === 0 ? '0' : '1'}
+              Novo cacto · descontar {state.crowd.born === 0 ? '0' : '1'}
             </SceneButton>
             <SceneButton onClick={() => dispatch({ type: 'clock' })}>
               ◷ Avançar o relógio
@@ -389,7 +407,7 @@ export function ExplorationPieces({
             'limit',
             'Placa: limite −9',
             'Base de velocidade',
-            state.limited,
+            state.speed.limited,
             'Retirar limite',
           )}
         </div>

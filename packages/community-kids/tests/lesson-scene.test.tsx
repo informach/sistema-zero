@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import {
-  EXPLORATION_DEFINITIONS,
-  type ExplorationMission,
-  type InteractiveBlock,
-} from '@sistemazero/core/learning'
+import type { InteractiveBlock } from '@sistemazero/core/learning'
+import { SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
 import { ExperienceConnection } from '@sistemazero/member-shell/components/experience-connection'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 afterEach(cleanup)
-function renderMission(mission: ExplorationMission, mode: 'explore' | 'demonstrate' = 'explore') {
-  const definition = EXPLORATION_DEFINITIONS[mission]
+function renderMission(
+  scene: SceneId,
+  type: 'experimentation' | 'demonstration' = 'experimentation',
+) {
+  const modelo = SCENE_MODELS[scene]
   const content: InteractiveBlock = {
     kind: 'interactive',
-    title: definition.title,
-    instructions: definition.instruction,
-    hints: [...definition.hints],
+    title: modelo.title,
+    instructions: modelo.instruction,
+    hints: [...modelo.hints],
     required: false,
-    activity: { type: 'exploration', version: 3, mission, mode },
+    activity: { type, scene },
   }
   return render(
     <InteractiveLessonBlock
@@ -32,7 +32,7 @@ function renderMission(mission: ExplorationMission, mode: 'explore' | 'demonstra
     />,
   )
 }
-describe('v3 laboratory', () => {
+describe('o laboratório da cena', () => {
   test('contact, same-position area comparison and undo work through accessible controls', async () => {
     renderMission('hitbox')
     fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
@@ -53,18 +53,18 @@ describe('v3 laboratory', () => {
       target: { value: '100' },
     })
     expect(screen.getByText('Experiência guardada')).toBeTruthy()
-    expect(screen.getByText(EXPLORATION_DEFINITIONS.hitbox.success)).toBeTruthy()
+    expect(screen.getByText(SCENE_MODELS.hitbox.success)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Desfazer' }).closest('fieldset')?.disabled).toBe(
       true,
     )
     expect(screen.queryByRole('button', { name: 'Ver um exemplo' })).toBeNull()
-    expect(screen.queryByText(EXPLORATION_DEFINITIONS.hitbox.extra)).toBeNull()
+    expect(screen.queryByText(SCENE_MODELS.hitbox.extra)).toBeNull()
     await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
       timeout: 2500,
     })
   })
   test('a demonstration offers playback only and cannot turn into an experiment', () => {
-    renderMission('hitbox', 'demonstrate')
+    renderMission('hitbox', 'demonstration')
     expect(screen.queryByRole('slider')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Eu quero experimentar' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
