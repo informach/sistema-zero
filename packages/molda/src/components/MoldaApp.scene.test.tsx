@@ -106,8 +106,15 @@ test('abrir um modelo antigo com a oficina ligada promove a criação e abre na 
     await waitFor(() => expect(screen.queryByText(COPY.scene.development) !== null).toBe(true))
     await settle()
     // Promover é gravar o formato novo: o registro antigo sai e o da cena entra.
-    const promoted = await createScenePersistence(db.store).read(legacy.id)
-    expect(promoted.status).toBe('active')
+    // ⚠️ A promoção é uma transação do IndexedDB: uma rodada de `settle()` não
+    // garante que ela já commitou (no CI, com os pacotes disputando CPU, ela
+    // chega depois). Como a transação é ATÔMICA, ver a cena nova já prova que
+    // o registro antigo saiu junto.
+    const promoted = await waitFor(async () => {
+      const atual = await createScenePersistence(db.store).read(legacy.id)
+      expect(atual.status).toBe('active')
+      return atual
+    })
     expect(promoted.status === 'active' && promoted.document.formatVersion).toBe(2)
     expect(await db.read(`${DOCUMENT_KEY_PREFIX}${legacy.id}`)).toBeUndefined()
   } finally {

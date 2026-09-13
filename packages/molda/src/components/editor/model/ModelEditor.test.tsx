@@ -449,7 +449,10 @@ describe('ModelEditor (bancada Montar)', () => {
     await openModel()
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    expect(fake.instances[0]?.disposed).toBe(true)
+    // ⚠️ O `dispose()` mora na LIMPEZA de um efeito, que é passiva: a galeria já
+    // está no DOM enquanto a fila de efeitos ainda não andou. Assertar aqui
+    // direto passava na máquina rápida e falhava no CI.
+    await waitFor(() => expect(fake.instances[0]?.disposed).toBe(true))
   })
 })
 

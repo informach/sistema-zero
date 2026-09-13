@@ -57,6 +57,11 @@ function fakeCelular({ w = 393, h = 660 }: { w?: number; h?: number } = {}) {
 async function renderPlayer() {
   const view = render(<PublicPlayer id="11111111-1111-4111-8111-111111111111" />)
   await screen.findByRole('button', { name: 'Ocultar controles' })
+  // ⚠️ O botão no DOM NÃO prova que os efeitos já rodaram: o ouvinte de
+  // `sz:stage` nasce num efeito passivo, e uma mensagem despachada antes dele
+  // cai no vazio — a moldura ficava no 5:3 de fábrica. Local isso nunca dava,
+  // no CI (pacotes disputando CPU) dava.
+  await act(async () => {})
   return view
 }
 

@@ -463,10 +463,15 @@ describe('aula por seções', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
     await screen.findByRole('heading', { name: 'Observar' })
-    expect(avisos).toEqual([
-      { index: 0, total: 3 },
-      { index: 1, total: 3 },
-    ])
+    // ⚠️ O aviso mora num EFEITO, e efeito passivo roda DEPOIS do commit: o
+    // heading novo já está no DOM enquanto a fila de efeitos ainda não andou.
+    // Assertar aqui direto passava na máquina rápida e falhava no CI.
+    await waitFor(() =>
+      expect(avisos).toEqual([
+        { index: 0, total: 3 },
+        { index: 1, total: 3 },
+      ]),
+    )
 
     // Re-render do pai por motivo alheio não reavisa, e o editor da direita NÃO
     // remonta (o rascunho do Estúdio morreria a cada troca de seção).
