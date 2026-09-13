@@ -46,6 +46,19 @@ test('teacher adds, edits and removes a nested piece through actual catalog cont
     expect(value.inputBlocks?.VX?.inputBlocks).toBeUndefined()
     await choose('select[aria-label="Peça em VX"]', '')
     expect(value.inputBlocks).toBeUndefined()
+    value = {
+      blockType: 'sz_js_if_else',
+      inputBlocks: { THEN: { blockType: 'sz_g2d_apply_gravity' } },
+    }
+    await act(async () => render())
+    await act(async () => {
+      const order = [...container.querySelectorAll('label')]
+        .find((label) => label.textContent?.startsWith('Antes de qual comando'))!
+        .querySelector('select')!
+      order.value = 'sz_g2d_control_dino'
+      order.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    expect(value.inputBlocks?.THEN?.beforeBlock).toBe('sz_g2d_control_dino')
   } finally {
     await act(async () => root.unmount())
     container.remove()

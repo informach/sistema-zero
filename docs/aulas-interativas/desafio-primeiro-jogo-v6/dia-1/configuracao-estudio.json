@@ -1,0 +1,26 @@
+{
+  "kind": "studio",
+  "purpose": "submission",
+  "chain": "desafio-primeiro-jogo",
+  "level": "iniciante-2d",
+  "allowedModes": ["blocks"],
+  "allowLevelReveal": false,
+  "allowBlocks": [
+    "sz_frame_loops",
+    "sz_frame_start",
+    "sz_g2d_arrows_x",
+    "sz_g2d_clamp_to_screen",
+    "sz_g2d_clear",
+    "sz_g2d_create_ship",
+    "sz_g2d_draw_sprite",
+    "sz_g2d_setup_stage",
+    "sz_g2d_starfield",
+    "sz_g2d_update_each_frame",
+    "sz_val_number"
+  ],
+  "showcase": {
+    "enabled": false,
+    "title": "Nave contra Asteroides",
+    "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
+  }
+}

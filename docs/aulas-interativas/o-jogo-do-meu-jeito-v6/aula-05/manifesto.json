@@ -1,0 +1,427 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-05",
+  "title": "O asteroide ganha chama e animação",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Abertura. Entrada: “A sua pedra está pronta, e ela está aí, paradinha. Só que no seu jogo essa pedra não está parada. El”. Saída: “seu você faz do jeito que você quiser. Esse é o nosso trabalho de hoje, e ele vem em quatro passos.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “Sua pedra vai ganhar uma chama de jogo e uma animação. Primeiro vamos descobrir como colocar formas umas atrás das outras. Depois você faz a chama e muda alguns detalhes no segundo quadro. A pedra continua dentro do mesmo desenho.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "experimento-ordem",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare e explique",
+        "instructions": "Compare a chama na frente e atrás da pedra. As duas formas continuam presentes. Mude só a ordem, registre os dois resultados e descubra quando conseguimos ver a pedra inteira.",
+        "hints": ["A lista continua com duas formas. Compare quem cobre quem."],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;background:#f5f2e9;color:#20323c;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:800px;margin:auto}h2{font-size:clamp(23px,4vw,32px);line-height:1.15;letter-spacing:-.5px;margin:8px 0 12px}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#47646a}.intro{margin:0 0 16px}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;min-height:46px;padding:9px 14px;border:2px solid #45606a;border-radius:12px;background:#fff;color:#20323c;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#163f48;color:#fff;border-color:#163f48}button:focus-visible{outline:3px solid #b35400;outline-offset:3px}button:disabled{cursor:default;opacity:.65}.stage{border:1px solid #45606a;background:#102b35;border-radius:18px;padding:16px;color:#f9f5e8}.stage svg{display:block;width:100%;height:auto;max-height:250px}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:12px}.panel{min-width:0;text-align:center}.panel p{margin:8px 0 0;font-size:14px}.graphic{height:180px;display:grid;place-items:center}.graphic svg{max-height:160px}.tag{font-size:13px;color:#aed4d5;display:block;margin-bottom:8px}.caption{min-height:48px;margin:12px 0 0;font-size:15px}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0}.run{background:#f9c267;border-color:#9c5c10;font-weight:bold}.note{font-size:14px;color:#45606a}.results{margin-top:14px;padding:16px;border:1px solid #879797;border-radius:14px;background:#fff}.results h3{font-size:18px;margin:0 0 8px}.results ul{padding-left:20px;margin:0}.done{border-left:4px solid #217264;padding-left:12px;font-weight:bold}.comparison{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}.comparison .stage{padding:12px}.comparison .graphic{height:145px}.comparison .stage svg{max-height:145px}.comparison .caption{font-size:13px}.comparison h4{margin:0 0 8px;font-size:15px}@media(max-width:420px){body{padding:8px}.stage{padding:12px}.choices button{flex:1 1 120px}.graphic{height:145px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n.lab[data-complete=true]>.stage{display:none}.comparison .row{grid-template-columns:repeat(2,minmax(0,1fr))}\n</style>\n<main class=\"lab\"><span class=\"eyebrow\">COMPARE DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p class=\"intro\" id=\"prompt\"></p>\n<div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button type=\"button\" id=\"option-0\" aria-pressed=\"true\"></button><button type=\"button\" id=\"option-1\" aria-pressed=\"false\"></button></div>\n<div class=\"stage\"><div id=\"scene\"></div><p class=\"caption\" id=\"caption\"></p></div>\n<div class=\"actions\"><button type=\"button\" class=\"run\" id=\"run\">Testar e guardar resultado</button><span id=\"progress\" role=\"status\" aria-live=\"polite\">0 de 2 situações registradas</span></div>\n<p class=\"note\" id=\"motion-note\"></p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>O que você observou</h3><ul id=\"records\"></ul><p class=\"done\" id=\"done\" hidden></p><div class=\"comparison\" id=\"comparison\"></div></section></main>\n<script>\n(()=>{'use strict';const config={\"kind\":\"ordem\",\"title\":\"A pedra sumiu?\",\"prompt\":\"Duas formas na mesma posição. Mude apenas quem fica na frente.\",\"options\":[\"Chama na frente\",\"Pedra na frente\"],\"results\":[\"A chama cobre parte da pedra. A pedra continua ali.\",\"A pedra aparece inteira; a chama está atrás.\"],\"takeaway\":\"Cobrir uma forma não a apaga. A ordem decide quem aparece por cima.\"};const $=id=>document.getElementById(id);let selected=0,tested=[],tick=0,timer=null,busy=false;\nconst reduced=matchMedia('(prefers-reduced-motion: reduce)');\nconst svg=(body,view='0 0 32 32',label='Exemplo visual')=>'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+label+'\">'+body+'</svg>';\nconst ship=(long=false)=>'<path d=\"M15 3h2v3h2v4h2v7h5v5h-7v2h-6v-2H6v-5h5v-7h2V6h2Z\" fill=\"#9de2dd\"/><path d=\"M14 9h4v8h-4Z\" fill=\"#286f93\"/><path d=\"M13 24h6v'+(long?4:2)+'h-2v'+(long?3:1)+'h-2v-'+(long?3:1)+'h-2Z\" fill=\"#f6a347\"/><path d=\"M15 24h2v3h-2Z\" fill=\"#ffe7ad\"/>';\nconst stone='<path d=\"M8 14Q13 10 20 13Q27 16 25 24Q22 29 15 28Q6 29 5 22Q4 17 8 14\" fill=\"#c3a79e\"/><ellipse cx=\"12\" cy=\"19\" rx=\"3\" ry=\"2\" fill=\"#716171\"/><ellipse cx=\"21\" cy=\"23\" rx=\"2\" ry=\"1.4\" fill=\"#716171\"/>';\nconst flame='<path d=\"M5 21L6 5L11 11L16 1L19 9L25 4L28 22Q24 28 16 27Q7 28 5 21Z\" fill=\"#f3a34f\"/>';\nfunction panel(label,art){return '<div class=\"panel\"><span class=\"tag\">'+label+'</span>'+art+'</div>'}\nfunction raster(){const cv=document.createElement('canvas');cv.width=16;cv.height=16;const ctx=cv.getContext('2d');const path='M2 7Q3 1 9 2Q16 3 14 10Q11 16 5 13Q1 12 2 7Z';ctx.fill(new Path2D(path));const data=ctx.getImageData(0,0,16,16).data;let squares='';for(let y=0;y<16;y++)for(let x=0;x<16;x++)if(data[(y*16+x)*4+3]>=128)squares+='<rect x=\"'+x+'\" y=\"'+y+'\" width=\"1\" height=\"1\"/>';return {path,squares}}\nconst pixelStone=config.kind==='bordas'?raster():null;\nfunction renderScene(option,frame=0,snapshot=false){\nif(config.kind==='espelho'){const grid='<defs><pattern id=\"grid\" width=\"1\" height=\"1\" patternUnits=\"userSpaceOnUse\"><path d=\"M1 0H0V1\" fill=\"none\" stroke=\"#33515a\" stroke-width=\".06\"/></pattern></defs><rect width=\"32\" height=\"32\" fill=\"url(#grid)\"/><path d=\"M16 0V32\" stroke=\"#f5c777\" stroke-width=\".2\" stroke-dasharray=\"1 1\"/>';const line='<path d=\"M12.5 5.5L7.5 20.5\" fill=\"none\" stroke=\"#9de2dd\" stroke-width=\"1\"/>';return svg(grid+line+(option?'<g transform=\"translate(32 0) scale(-1 1)\">'+line+'</g>':''),'0 0 32 32','Mesmo traço à esquerda'+(option?' e sua cópia simétrica à direita':'')+' do eixo central');}\nif(config.kind==='quadros')return '<div class=\"row\">'+panel('Quadro 1',svg(ship(false)))+panel('Quadro 2',svg(ship(option===1)))+(snapshot?'':panel('Prévia · 8 fps',svg(ship(option===1&&frame%2===1))))+'</div>';\nif(config.kind==='bordas'){const size=option?128:16;return '<div class=\"row\">'+panel('Pixels · '+(option?'8×':'1×'),'<div class=\"graphic\">'+svg('<g fill=\"#9de2dd\" shape-rendering=\"crispEdges\">'+pixelStone.squares+'</g>','0 0 16 16','Borda representada por pixels').replace('<svg ','<svg style=\"width:'+size+'px;height:'+size+'px\" ')+'</div>')+panel('Vetor · '+(option?'8×':'1×'),'<div class=\"graphic\">'+svg('<path d=\"'+pixelStone.path+'\" fill=\"#9de2dd\"/>','0 0 16 16','Mesma silhueta descrita como forma vetorial').replace('<svg ','<svg style=\"width:'+size+'px;height:'+size+'px\" ')+'</div>')+'</div>';}\nif(config.kind==='ordem')return svg(option?flame+stone:stone+flame,'0 0 32 32',option?'Pedra inteira na frente da chama':'Chama cobrindo parte da pedra')+'<p class=\"tag\">Na frente: '+(option?'pedra':'chama')+' · Atrás: '+(option?'chama':'pedra')+'</p>';\nconst width=option?32:16;return '<div class=\"row\">'+panel('Folha inteira · 64 × 32',svg(ship(false)+'<g transform=\"translate(32 0)\">'+ship(true)+'</g><path d=\"M32 0V32\" stroke=\"#60808a\" stroke-width=\".3\"/><rect x=\".3\" y=\".3\" width=\"'+(width-.6)+'\" height=\"31.4\" stroke=\"#f9c267\" stroke-width=\".6\" fill=\"none\"/>','0 0 64 32','Folha de duas naves com o recorte destacado'))+panel('No jogo · 54 × 54', '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 54 54\" role=\"img\" aria-label=\"Resultado do recorte num sprite de 54 por 54\"><svg width=\"54\" height=\"54\" viewBox=\"0 0 '+width+' 32\" preserveAspectRatio=\"none\" overflow=\"hidden\">'+ship(false)+'</svg></svg>')+'</div>';\n}\nfunction resize(){const style=getComputedStyle(document.body);const height=document.querySelector('.lab').getBoundingClientRect().height+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);window.learning?.resize(Math.max(180,Math.ceil(height)))}\nfunction save(){window.learning?.save({selected,tested:[...tested]})}\nfunction render(){const complete=tested.length===2;document.querySelector('.lab').dataset.complete=String(complete);for(let i=0;i<2;i++){$('option-'+i).textContent=config.options[i];$('option-'+i).setAttribute('aria-pressed',String(selected===i));$('option-'+i).disabled=complete||busy;}$('scene').innerHTML=renderScene(selected,tick);$('caption').textContent=config.results[selected];$('run').disabled=complete||busy||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':busy?'Observe a sequência…':tested.includes(String(selected))?'Resultado já guardado':'Testar e guardar resultado';$('progress').textContent=tested.length+' de 2 situações registradas';$('records').replaceChildren(...tested.map(i=>{const li=document.createElement('li');li.textContent=config.options[Number(i)]+': '+config.results[Number(i)];return li}));$('done').hidden=!complete;$('done').textContent=config.takeaway+' Agora responda à pergunta da aula.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+config.options[i]+'</h4><div class=\"stage\">'+renderScene(i,1,true)+'</div></div>').join(''):'';resize()}\nfunction finish(){if(timer!==null)clearInterval(timer);timer=null;busy=false;if(!tested.includes(String(selected)))tested.push(String(selected));tested.sort();save();render();if(tested.length===2)window.learning?.participated()}\nfunction stop(){if(timer!==null)clearInterval(timer);timer=null;busy=false;tick=0}\n$('title').textContent=config.title;$('prompt').textContent=config.prompt;\nfunction motionNote(){$('motion-note').textContent=config.kind==='quadros'?(reduced.matches?'Movimento reduzido: compare os dois desenhos parados.':'O teste toca uma sequência de 2 segundos. Os quadros parados ficam visíveis ao lado.'):'Olhe o resultado e guarde cada situação uma vez.'}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(busy||tested.length===2)return;selected=i;tick=0;save();render()});\n$('run').addEventListener('click',()=>{if(busy||tested.length===2||tested.includes(String(selected)))return;if(config.kind!=='quadros'||reduced.matches){finish();return}busy=true;tick=0;render();timer=setInterval(()=>{tick++;$('scene').innerHTML=renderScene(selected,tick);if(tick>=16)finish()},125)});\naddEventListener('learning:restore',event=>{stop();const state=event.detail&&typeof event.detail==='object'?event.detail:{};selected=state.selected===1?1:0;tested=Array.isArray(state.tested)?[...new Set(state.tested.filter(i=>i==='0'||i==='1'))].sort():[];if(tested.length===1&&tested.includes(String(selected)))selected=selected?0:1;render()});\nreduced.addEventListener('change',()=>{motionNote();if(busy&&reduced.matches){stop();render()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy){stop();render()}});addEventListener('pagehide',stop);addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));motionNote();render();\n})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "A pedra reapareceu quando a chama foi para trás. O que mudou?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A pedra foi desenhada de novo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A ordem das formas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "As formas eram as mesmas. A que fica por cima pode esconder parte da outra."
+        }
+      }
+    },
+    {
+      "key": "video-chama-externa",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: a chama de fora. Entrada: “Pra começar, abre o Pinta ali no menu da esquerda e clica no cartão do asteroide, aquele que você te”. Saída: “ da chama. Pronto: a pedra na frente, a chama atrás, saindo de trás dela. Primeiro passo concluído.\"”. Retirar a explicação de meteoros pegando fogo apenas por velocidade no espaço. Apresentar como desenho estilizado do jogo. Acrescentar desseleção antes da cor e espaço do quadro. Na suavização, nomear Editar os pontos → selecionar só a base → Ponto suave; pontas continuam retas. Complemento: “Abra asteroide, solte qualquer seleção e escolha a cor da chama. Com Caneta, trace uma forma fechada acima da pedra, dentro do quadro. Use Uma camada para trás até a pedra aparecer inteira na frente. Pare nesse resultado.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-chama-externa",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra asteroide, solte qualquer seleção e escolha a cor da chama. Com Caneta, trace uma forma fechada acima da pedra, dentro do quadro. Use Uma camada para trás até a pedra aparecer inteira na frente. Pare nesse resultado.\n\n**Antes de voltar à aula, confira:**\n\n- Chama fechada e acima da pedra, sem sair do quadro.\n- Pedra e crateras ficam à frente.\n- Pontas intencionais e base encostada na pedra.\n\nSe os botões de ordem sumiram, use Selecionar e clique na chama. Se só um pedaço da pedra apareceu, continue um passo por vez.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-chama-externa",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se os botões de ordem sumiram, use Selecionar e clique na chama. Se só um pedaço da pedra apareceu, continue um passo por vez."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Quantas vezes usar Uma camada para trás?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Até a pedra aparecer inteira na frente da chama."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Sempre exatamente duas vezes."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O número depende de quantas formas estão na pilha. O resultado visual é o critério de parada."
+        }
+      }
+    },
+    {
+      "key": "video-chama-interna",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: as chamas de dentro. Entrada: “Agora repara na sua chama: ela é de uma cor só, e fogo de verdade não é assim. Ele é mais claro no m”. Saída: “ está mais claro no miolo e mais escuro na beirada, igual fogo de verdade. Segundo passo concluído.\"”. Preservar cópia deslocada e ordenação. A terceira chama é uma variação breve do professor, sem tarefa extra. Tratar claro por dentro como linguagem visual escolhida, não lei física da temperatura. Complemento: “Selecione a chama e duplique. Deixe a cópia menor e mais clara, dentro da primeira. Ela nasce na frente de tudo: mande para trás até a pedra reaparecer. Duas chamas já completam nossa tarefa.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-chama-interna",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Selecione a chama e duplique. Deixe a cópia menor e mais clara, dentro da primeira. Ela nasce na frente de tudo: mande para trás até a pedra reaparecer. Duas chamas já completam nossa tarefa.\n\n**Antes de voltar à aula, confira:**\n\n- Chama menor por dentro com borda da maior visível.\n- Pedra à frente de todas as chamas.\n- Sem buraco involuntário entre as partes.\n\nSe a chama interna sumiu, ela pode ter ido para trás da externa. Desfaça o último passo e confira a pilha.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-chama-interna",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se a chama interna sumiu, ela pode ter ido para trás da externa. Desfaça o último passo e confira a pilha."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao duplicar, a nova chama cobriu a pedra. Por quê?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O Pinta apagou a pedra ao copiar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A cópia nasceu na frente das outras formas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "A cópia é outra forma no topo da pilha. Ajustar sua ordem recupera a composição."
+        }
+      }
+    },
+    {
+      "key": "video-mudanca-demo",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: fazer a pedra rolar. Entrada: “E agora entra um jeito de animar diferente do da nave: lá você mexeu em quadradinhos, e teve que com”. Saída: “ga uma ponta e arrasta um pouco. Pega outra e empurra pro outro lado. Duas ou três pontas já bastam.”. Mostrar mover uma cratera e editar uma ponta. Apagar uma cratera pode ser mostrado como possibilidade do professor, sem exigir; não vender dois quadros como rotação geométrica contínua. Complemento: “Veja o segundo quadro: a pedra fica no mesmo lugar. Uma cratera muda um pouco de posição e uma ponta da chama muda de forma. Na prévia, isso sugere movimento. Não precisamos arrastar a pedra inteira.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-animar-pedra",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: fazer a pedra rolar. Entrada: “Com o fogo pronto, vem a parte mais legal: a gente vai fazer essa pedra rolar enquanto cai, e o fogo”. Saída: “star diferente é só o que você quis mudar. Arruma o que mudou sem querer. Terceiro passo concluído.\"”. Preservar Duplicar quadro e seleção após troca. Encurtar as três alternativas já demonstradas e retirar convites para muitas mudanças. Complemento: “Duplique o primeiro quadro. Confira o segundo aceso. Mova uma cratera um pouco e ajuste uma ou duas pontas da chama com Editar os pontos. Veja a prévia e compare os dois quadros. Mantenha a pedra e o fogo dentro da tela.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-animar-pedra",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Duplique o primeiro quadro. Confira o segundo aceso. Mova uma cratera um pouco e ajuste uma ou duas pontas da chama com Editar os pontos. Veja a prévia e compare os dois quadros. Mantenha a pedra e o fogo dentro da tela.\n\n**Antes de voltar à aula, confira:**\n\n- Exatamente dois quadros com alterações intencionais.\n- Corpo da pedra permanece no lugar.\n- Sem formas cortadas ou chama cobrindo a pedra no segundo quadro.\n\nSe ficou agitado demais, desfaça uma mudança e compare. O primeiro quadro continua guardando a base.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-animar-pedra",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se ficou agitado demais, desfaça uma mudança e compare. O primeiro quadro continua guardando a base."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Você moveu uma cratera no segundo quadro. O primeiro também precisa mudar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Sim; editar um quadro sempre modifica todos."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Não; cada quadro guarda suas próprias formas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "A duplicação cria uma cópia para editar separadamente."
+        }
+      }
+    },
+    {
+      "key": "video-nome-girando",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: o nome da animação. Entrada: “Falta a mesma coisa que faltou na nave: o nome. Olha na faixa: a sua animação está chamada parado, q”. Saída: “a na setinha apontando pra esquerda, lá na ponta esquerda da barra de cima. Quarto passo concluído.\"”. Manter renomeação e retorno; não prometer miniaturas animadas. Não confundir duas animações em um desenho com uma animação em cada desenho. Complemento: “Use Renomear animação para trocar parado por girando. Mantenha dois quadros e 8 fps. Volte à galeria: nave e asteroide devem estar lá. As miniaturas ficam paradas; abra cada desenho para ver a animação.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-nome-girando",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Use Renomear animação para trocar parado por girando. Mantenha dois quadros e 8 fps. Volte à galeria: nave e asteroide devem estar lá. As miniaturas ficam paradas; abra cada desenho para ver a animação.\n\n**Antes de voltar à aula, confira:**\n\n- asteroide: girando, dois quadros, 8 fps.\n- nave: voando, dois quadros, 8 fps.\n- Dois desenhos salvos e separados.\n\nSe o cartão parece parado, abra o desenho e olhe a Prévia. O cartão não toca a animação.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-nome-girando",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se o cartão parece parado, abra o desenho e olhe a Prévia. O cartão não toca a animação."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "A miniatura do asteroide na galeria está parada. Onde conferir se a animação funciona?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Na Prévia, abrindo o desenho."
+            },
+            {
+              "id": "opcao-2",
+              "label": "No campo do nome do projeto do Estúdio."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A miniatura mostra um quadro; a Prévia mostra a sequência."
+        }
+      }
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Escolha nave e asteroide na galeria do Pinta e envie os dois juntos. Essa entrega permite conferir se a dupla está pronta para entrar no jogo.\n\n**Confira na sua criação:**\n\n- nave pixel 32 × 32, voando, dois quadros, 8 fps.\n- asteroide vetor 64 × 64, girando, dois quadros, 8 fps.\n- Pedra e crateras à frente das chamas nos dois quadros.\n- Chama cabe no quadro e as mudanças são locais, sem teletransporte do desenho inteiro.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-05-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 5! Olha a sua galeria: dois desenhos seus. A nave, em pixel art, com ”. Saída: “hou entram dentro do jogo, no lugar dos que vieram prontos. O jogo vai virar seu de verdade. Até já.”. Reaproveitar a recapitulação, ajustando: Tratar o meteoro flamejante como escolha estética do jogo, sem ensinar que velocidade sozinha causa fogo no vácuo. O roteiro afirma nas notas que o fogo nunca usa Ponto suave, mas a fala suaviza a base: preservar apenas esse arredondamento seletivo e explicitar o gesto. Cópia nasce no topo; o número de cliques para trás varia com as crateras e chamas. Não exigir apagar uma cratera nem acrescentar outras animações. Duas chamas bastam; não avaliar a criança pela quantidade usada por Júlio. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Agora você tem duas artes animadas: a nave e o asteroide. No vetor você mudou formas e pontos; na nave, mudou pixels. A pedra ficou na frente das chamas porque você cuidou da ordem. Na próxima aula vamos levar as artes ao Estúdio. Antes, duas ideias para guardar.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "No segundo quadro, uma chama cobriu a pedra. Onde procurar a correção?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Na ordem das formas desse quadro."
+              },
+              {
+                "id": "b",
+                "label": "No tamanho da nave em outro desenho."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A ordem pode ser revisada no quadro em que a composição ficou diferente."
+          },
+          {
+            "id": "q2",
+            "prompt": "No vetor, o que acontece ao mover uma ponta com Editar os pontos?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Surge obrigatoriamente um buraco de pixels para pintar."
+              },
+              {
+                "id": "a",
+                "label": "A forma é refeita a partir da nova posição do ponto."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O Pinta redesenha a forma vetorial. É diferente de mover um recorte de pixels."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "Reabrir o asteroide vetorial 64 × 64 da aula 4, com espaço superior para a chama.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "ordem",
+      "title": "Experimente: a pedra sumiu ou foi coberta?",
+      "intent": "exploration",
+      "objective": "Comparar as mesmas formas com a chama na frente e atrás.",
+      "blockKeys": ["experimento-ordem"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-ordem"]
+      }
+    },
+    {
+      "key": "chama-externa",
+      "title": "Desenhe a chama atrás da pedra",
+      "intent": "application",
+      "objective": "Traçar chama dentro do quadro e ajustar a ordem pela aparência.",
+      "blockKeys": ["video-chama-externa", "orientacao-chama-externa", "conferir-chama-externa"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-chama-externa"]
+      }
+    },
+    {
+      "key": "chama-interna",
+      "title": "Faça uma chama menor por dentro",
+      "intent": "application",
+      "objective": "Duplicar, reduzir e ordenar uma forma para compor o fogo.",
+      "blockKeys": ["video-chama-interna", "orientacao-chama-interna", "conferir-chama-interna"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-chama-interna"]
+      }
+    },
+    {
+      "key": "mudanca-demo",
+      "title": "Observe: uma mudança pequena já anima",
+      "intent": "demonstration",
+      "objective": "Separar mudança dos detalhes e deslocamento do desenho inteiro.",
+      "blockKeys": ["video-mudanca-demo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-mudanca-demo"]
+      }
+    },
+    {
+      "key": "animar-pedra",
+      "title": "Duplique e mude alguns detalhes",
+      "intent": "application",
+      "objective": "Criar dois quadros com mudanças locais no vetor.",
+      "blockKeys": ["video-animar-pedra", "orientacao-animar-pedra", "conferir-animar-pedra"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-animar-pedra"]
+      }
+    },
+    {
+      "key": "nome-girando",
+      "title": "Dê o nome e confira as duas artes",
+      "intent": "application",
+      "objective": "Renomear para girando e confirmar as artes que serão usadas no Estúdio.",
+      "blockKeys": ["video-nome-girando", "orientacao-nome-girando", "conferir-nome-girando"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-nome-girando"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Asteroide com chamas atrás da pedra e animação girando de dois quadros a 8 fps; nave voando preservada.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Asteroide com chamas atrás da pedra e animação girando de dois quadros a 8 fps; nave voando preservada.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

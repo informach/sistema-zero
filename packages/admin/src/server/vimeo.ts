@@ -1,6 +1,7 @@
 import 'server-only'
 import { ZAPPY_SOURCE_CONTENT_MAX_BYTES, zappySourceContentBytes } from '@sistemazero/core/zappy'
 import { getEnv } from '@/lib/env'
+import type { VideoThumbnail, VideoThumbnails } from '@/lib/video-thumbnails'
 import { parseWhitelistDomains } from '@/lib/vimeo-helpers'
 import { MediaNotConfiguredError } from './r2'
 
@@ -223,7 +224,7 @@ export async function uploadVideoThumbnail(
   vimeoVideoId: string,
   imageBytes: ArrayBuffer,
   mimeType: 'image/jpeg' | 'image/png',
-): Promise<void> {
+): Promise<string> {
   const picture = await vimeoFetch<{ uri: string; link: string }>(
     `/videos/${vimeoVideoId}/pictures`,
     { method: 'POST' },
@@ -248,4 +249,63 @@ export async function uploadVideoThumbnail(
     { method: 'PATCH', body: JSON.stringify({ active: true }) },
     { skipJsonParse: true },
   )
+  const pictureId = picture.uri.match(/\/pictures\/(\d+)$/)?.[1]
+  if (!pictureId) throw new Error('Resposta do Vimeo sem identificador da capa')
+  return pictureId
+}
+
+interface VimeoPicture {
+  uri: string
+  active: boolean
+  type: string
+  sizes?: { width: number; link: string }[]
+}
+function thumbnailView(picture: VimeoPicture | null | undefined): VideoThumbnail | null {
+  if (!picture) return null
+  const id = picture.uri?.match(/\/pictures\/(\d+)$/)?.[1]
+  if (!id) return null
+  const sizes = [...(picture.sizes ?? [])].sort((a, b) => a.width - b.width)
+  const url = (sizes.find((s) => s.width >= 640) ?? sizes.at(-1))?.link ?? null
+  return {
+    id,
+    url: url?.startsWith('https://') ? url : null,
+    active: picture.active,
+    type: picture.type,
+  }
+}
+export async function getVideoThumbnails(videoId: string, page = 1): Promise<VideoThumbnails> {
+  const [video, pictures] = await Promise.all([
+    vimeoFetch<{ pictures?: VimeoPicture }>(`/videos/${videoId}?fields=pictures`, {
+      cache: 'no-store',
+    }),
+    vimeoFetch<{ data: VimeoPicture[]; paging?: { next?: string | null } }>(
+      `/videos/${videoId}/pictures?per_page=24&page=${page}`,
+      { cache: 'no-store' },
+    ),
+  ])
+  return {
+    current: thumbnailView(video.pictures),
+    pictures: (pictures.data ?? []).flatMap((p) => {
+      const view = thumbnailView(p)
+      return view ? [view] : []
+    }),
+    page,
+    hasMore: Boolean(pictures.paging?.next),
+  }
+}
+export async function selectVideoThumbnail(videoId: string, pictureId: string): Promise<void> {
+  await vimeoFetch(
+    `/videos/${videoId}/pictures/${pictureId}`,
+    { method: 'PATCH', body: JSON.stringify({ active: true }) },
+    { skipJsonParse: true },
+  )
+}
+export async function createVideoFrameThumbnail(videoId: string): Promise<string> {
+  const picture = await vimeoFetch<VimeoPicture>(`/videos/${videoId}/pictures`, {
+    method: 'POST',
+    body: JSON.stringify({ time: 0, active: true }),
+  })
+  const view = thumbnailView(picture)
+  if (!view) throw new Error('O Vimeo ainda não disponibilizou a capa do vídeo.')
+  return view.id
 }

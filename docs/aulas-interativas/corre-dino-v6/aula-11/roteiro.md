@@ -56,11 +56,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Usar o valor da variável no desenho do placar.
 
-**Fala de ligação / orientação ao aluno:** “No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo.”
+**Fala de ligação / orientação ao aluno:** “Dentro do Se a tela é jogando, depois de retirar os cactos que saíram, coloque Mostrar placar. Mantenha Pontos:, x 12, y 30 e tamanho 24. No valor, encaixe valor da variável pontos.”
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 2. Passo 2: mostrar o placar.
 
-**Montagem:** Reaproveitar o encaixe. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7.
+**Montagem:** Reaproveitar o encaixe dentro do Se e a troca para cor escura. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. O próximo clipe retoma a comparação com a imagem já montada.
 
 **Na tela:** **Na tela:** Jogo 2D › Placar e HUD, arrastar "Mostrar placar" para dentro do "Se a tela atual é jogando", lá embaixo de tudo. O texto já nasce "Pontos:". Por cima do valor, arrastar "valor da variável" (Programação › Valores) e escolher pontos. Conferir que o x, o y e o tamanho já vêm em 12, 30 e 24, sem mexer em nenhum. **Rodar e mostrar o placar branco quase sumindo no céu claro**, e só então trocar a cor de branco para azul escuro e rodar de novo. A dor do contraste é o ponto desta parte, então filmar as duas rodadas.
 
@@ -70,7 +70,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Critérios automáticos:**
 
-- No placar, conecte o valor da variável pontos à entrada do valor.
+- Dentro de Se jogando, mostre o placar lendo a variável pontos.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -104,7 +104,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Pontos aumentam jogando; Pontos esperam no início; Valor fica parado no fim.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Conte um ponto por segundo
 
@@ -179,7 +179,7 @@ Espere no menu: pontos não crescem. Comece e acompanhe dois incrementos. Termin
 **Critérios da entrega:**
 
 - Crie pontos com valor inicial zero em Ao iniciar.
-- No placar, conecte o valor da variável pontos à entrada do valor.
+- Dentro de Se jogando, mostre o placar lendo a variável pontos.
 - A cada 1 s, some 1 em pontos somente se estiver jogando.
 - No subtítulo do fim, junte texto, valor de pontos e texto nessa ordem.
 - Use um único incremento da variável pontos.

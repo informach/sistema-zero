@@ -1,0 +1,98 @@
+{
+  "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+  "sourceHash": "aea9e2bb22e617e66266f6cd3c3f95d787269b30cb7f95bd6cfdcfbbf02e9c55",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Eu sou a Helena, e eu vou estar com você neste curso inteiro. E parabéns, viu? Você terminou o D",
+      "exit": "a nave pra lá. E no fim eu te conto onde esses jogos ficam guardados, pra você nunca perder nenhum.\"",
+      "narration": "Oi! Eu sou a Helena, e eu vou estar com você neste curso inteiro. E parabéns, viu? Você terminou o Desafio do Primeiro Jogo e publicou o seu jogo no Mural. Foi isso que te deu duas ferramentas novas: o Pinta e o Estúdio Completo. Isso tem uma regra: cada curso que você termina e publica no Mural libera alguma coisa nova pra você. Pode ser uma ferramenta nova. Podem ser bloquinhos novos, que passam a aparecer dentro do Estúdio. E pode ser um curso novo, abrindo pra você fazer. Hoje vieram as duas ferramentas, e elas chegaram de um jeito diferente uma da outra. O Pinta é seu inteiro, com tudo que ele sabe fazer. Já o Estúdio Completo abriu com uma parte dos bloquinhos: os que você já sabe usar, e mais uns que eu separei pra este curso. A cada curso novo, mais aparecem aí dentro. E elas servem pra coisas bem diferentes. O Estúdio Completo é onde os jogos são seus: você começa o que quiser, na hora que quiser, e ninguém te diz o que montar. E o Pinta é onde você desenha. Só que, sozinho, um desenho no Pinta fica paradinho lá na galeria, bonito e sem fazer nada. O que deixa ele interessante é ele entrar no seu jogo e se mexer. É isso que a gente vai fazer neste curso. Você lembra da sua nave e dos asteroides do Desafio? Eles vieram prontos, de um kit: a nave de quem fez o Desafio no mês passado é igualzinha à sua. A gente vai trocar os dois por desenhos seus. Só que, pra isso, o seu jogo precisa sair de dentro da aula do Desafio e ir pro Estúdio Completo. É o que a gente faz hoje, em quatro passos. Primeiro eu te mostro o Estúdio Completo por dentro. Depois você começa um projeto do zero e descobre uma coisa importante sobre os bloquinhos. Aí a gente traz o seu jogo da nave pra lá. E no fim eu te conto onde esses jogos ficam guardados, pra você nunca perder nenhum.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "Oi! O seu jogo da nave já está pronto. Hoje vamos levar uma cópia para o Estúdio Completo, onde você poderá continuar mexendo nele. Vamos conhecer a lista, preparar um projeto de teste e trazer o jogo. No final, você vai saber qual cartão abrir para continuar.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-lista",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: conhecer o Estúdio Completo",
+      "entry": "Então vamos lá. No menu da esquerda tem o Estúdio. Ele já estava aí antes e não abria, e hoje ele ab",
+      "exit": "omeça do zero, sem nada montado. Hoje você usa os dois, um em cada passo. Primeiro passo concluído.\"",
+      "narration": "Então vamos lá. No menu da esquerda tem o Estúdio. Ele já estava aí antes e não abria, e hoje ele abre. Clica nele. Essa tela chama Meus Jogos, e ela é sua. Cada jogo que você fizer daqui pra frente fica guardado aqui, e a gente chama cada um deles de projeto, que é o jogo inteiro num pacote só, com os blocos, os desenhos e os sons dele. E você ainda não tem nenhum. A tela está vazia, com uma frase dizendo isso mesmo. Está certo. O seu jogo da nave não aparece aqui porque ele mora lá dentro da aula do Desafio. São dois lugares diferentes, e daqui a pouco a gente faz a ponte entre eles. Essa ponte começa nos dois botões lá em cima, do lado direito: Importar e Novo projeto. Os dois são jeitos de começar, e eles são bem diferentes um do outro. O Importar traz um jogo que já existe. O Novo projeto começa do zero, sem nada montado. Hoje você usa os dois, um em cada passo. Primeiro passo concluído.\"",
+      "edit": "Manter a apresentação de Meus Jogos e dos dois botões; retirar “Primeiro passo concluído”. Não afirmar que a lista de toda criança estará vazia.",
+      "visual": "Destacar Meus Jogos, Novo projeto e Importar um de cada vez. Mostrar dois lugares nomeados: aula do Desafio e Estúdio Completo.",
+      "newNarration": "Esta é a lista dos projetos do Estúdio. O jogo do Desafio ainda está na aula. Por isso ele pode não aparecer aqui. Daqui a pouco vamos trazer uma cópia.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-projeto-teste",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: começar um projeto do zero e instalar os bloquinhos",
+      "entry": "Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se ",
+      "exit": " projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"",
+      "narration": "Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se chamar Meu jogo novo, e o seu pode ter o nome que você quiser. Escreve e clica em Criar e abrir. Abriu um projeto novo, com a área de montar vazia: não tem nenhum bloco encaixado ainda. Isso é o começo de um novo jogo. Agora olha a coluna da esquerda, onde ficam os bloquinhos. Ali tem algumas categorias: tem Áreas do projeto, e tem Programação, com as variáveis, Lógica e Se, e valores. Esses são do Estúdio, e vêm sempre. Agora procura a categoria Jogo 2D, aquela que você usou o Desafio inteiro. Ela não está lá. Olha a lista toda, de cima até embaixo. Jogo 2D não tem. E, sem ela, não tem Kit espaço, não tem sprite, não tem grupo, não tem colisão. Nada de jogo. Não foi você que fez nada de errado, e não sumiu nada do seu computador. É assim mesmo, de propósito, e o conserto é rapidinho. Clica no botão de três pontinhos, lá em cima. Abriu uma listinha separada em partes, cada uma com o seu título. A que interessa agora chama Exibição, e dentro dela tem Extensões. Clica. Abriu uma janela chamada Extensões oficiais, e dentro dela tem um cartão: o Jogo 2D. Cada cartão desses é uma extensão, que é um pacote de bloquinhos que você instala quando o seu jogo precisa dele. Hoje você tem um só porque é o que você conquistou até agora. Conforme você for terminando os próximos cursos, mais cartões vão aparecendo aqui. Embaixo do nome, o cartão tem a descrição, que diz o que vem dentro: sprites, movimento, mapas, colisões, som, inimigos e os kits prontos. É exatamente o que você usou no Desafio. E do lado direito do cartão tem o botão escrito Instalar. Clica. Apareceu um selo escrito Instalada, ali do lado do nome, e o botão virou Remover. Deu certo. Agora fecha essa janela: lá embaixo, no canto, tem o Fechar. Clica nele. Olha a coluna da esquerda de novo: a categoria Jogo 2D está lá, com os bloquinhos! Então era isso que estava acontecendo. Os bloquinhos de jogo vêm de uma extensão. Nas aulas do Desafio ela já estava instalada, porque a aula vinha preparada pra você. Num projeto que você começa do zero, quem instala é você. Agora, antes de seguir, o caminho de volta, que você vai usar bastante daqui pra frente. Lá em cima, no canto esquerdo da barra, está escrito Sistema Zero Studio. Aquilo é um botão. Clica nele. Voltou pro Meus Jogos, e olha: a tela não está mais vazia. Tem um cartão aí agora, o Meu jogo novo. Todo projeto que você criar vira um cartão aqui, e é por ele que você entra no projeto de novo. E não apaga esse projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"",
+      "edit": "Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão.",
+      "visual": "Zoom em Instalada, Fechar e na marca clicável de retorno. Mostrar o cartão do projeto de teste.",
+      "newNarration": "Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-ponte",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: trazer o seu jogo da nave",
+      "entry": "É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto",
+      "exit": " placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez.",
+      "narration": "É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto: a foto vai com você, e a coisa continua onde estava. O seu jogo continua na aula, inteiro. Então guarda onde esse arquivo caiu. Na maioria dos computadores ele cai numa pasta chamada Downloads. Agora volta pro Estúdio, no menu da esquerda, e clica no Importar. Abriu a janela do seu computador pra você escolher um arquivo. Vai na pasta Downloads, acha aquele que termina com ponto szproject ponto json e dá dois cliques nele. E olha só o que aconteceu! O seu jogo abriu aqui dentro. Clica na área do jogo, ali do lado direito, e mexe a nave com as setas. Os asteroides caindo, o tiro, o placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez.",
+      "edit": "Usar só as definições de exportar e importar com a imagem do arquivo. O gesto completo de navegação fica na próxima seção; substituir as ordens de clicar por esta narração de observação.",
+      "visual": "Diagrama simples: aula → arquivo .szproject.json → Estúdio. A miniatura original permanece visível na aula; não mostrar movimento que sugira exclusão.",
+      "newNarration": "O jogo fica na aula. Exportar cria um arquivo com uma cópia dele. Importar usa esse arquivo para criar um projeto no Estúdio. Não é preciso apagar o jogo da aula.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-importar",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: trazer o seu jogo da nave",
+      "entry": "Agora o outro jeito de começar um projeto. O seu jogo da nave mora dentro da aula do Desafio, e é lá",
+      "exit": "ção, então ele está aqui no Estúdio e no Pinta também, no mesmo cantinho. Terceiro passo concluído.\"",
+      "narration": "Agora o outro jeito de começar um projeto. O seu jogo da nave mora dentro da aula do Desafio, e é lá que a gente vai buscar ele. No menu da esquerda, clica em Cursos. Essa tela mostra os níveis da sua carreira. O Desafio do Primeiro Jogo fica no primeiro deles, o Faísca. Clica nele. Abriu a Trilha Faísca, com os cursos dela. Acha o cartão do Desafio do Primeiro Jogo e clica no Acessar curso. Chegou na lista das aulas do Desafio. Procura a aula do Dia 5, que é onde o seu jogo ficou montado, e abre ela. Desce até o estúdio, aquele que fica embaixo do vídeo. Olha: o seu jogo está lá, inteirinho, do jeito que você deixou. E se ele aparecer vazio aí, ou diferente do que você lembra, tem conserto e é rápido: clica nos três pontinhos da barra do estúdio, vai na parte Arquivo e clica no Sincronizar com o enviado. Ele traz de volta o jogo que você mandou pro professor, e aí é só seguir. Na barra de cima do estúdio, clica nos três pontinhos. Dessa vez a parte que interessa é a primeira, a Arquivo, e dentro dela tem Exportar para o Estúdio. Clica. Pronto, o seu computador baixou um arquivo. Repara no nome dele: é o nome do seu jogo, com ponto szproject ponto json no final. Esse pedacinho no fim é o sobrenome do arquivo, e é ele que faz o Estúdio reconhecer que aquilo ali é um jogo. Dentro dele foi o seu jogo inteiro: todos os blocos que você montou, com os números que você escolheu, as cores, os sons e as telas. É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto: a foto vai com você, e a coisa continua onde estava. O seu jogo continua na aula, inteiro. Então guarda onde esse arquivo caiu. Na maioria dos computadores ele cai numa pasta chamada Downloads. Agora volta pro Estúdio, no menu da esquerda, e clica no Importar. Abriu a janela do seu computador pra você escolher um arquivo. Vai na pasta Downloads, acha aquele que termina com ponto szproject ponto json e dá dois cliques nele. E olha só o que aconteceu! O seu jogo abriu aqui dentro. Clica na área do jogo, ali do lado direito, e mexe a nave com as setas. Os asteroides caindo, o tiro, o placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez. Isso é importar: trazer pra dentro uma cópia que estava fora. E tem uma coisa aqui que vale reparar. Olha a coluna da esquerda: a categoria Jogo 2D já está lá, e você não instalou nada desta vez. Quando você exporta um jogo, as ferramentas dele vão junto dentro do arquivo. Por isso o projeto que veio de fora chegou pronto, e o que você começou do zero chegou vazio. Agora olha o nome lá em cima, do lado do Sistema Zero Studio: está escrito Projeto da aula. Esse nome veio junto dentro do arquivo, e era o nome que ele tinha lá no estúdio da aula do Desafio. Aqui ele não diz muita coisa, e você vai ter vários projetos na lista. Então troca: clica em cima do nome, que ele vira um campo de escrever. Apaga o que está lá, escreve o nome do seu jogo e aperta o Enter. O meu vai ser Nave contra asteroides, e o seu você escolhe. Trocou. E o cartão dele no Meus Jogos já está com o nome novo. E mais uma coisa, agora que você tem um jogo de verdade aberto. Olha a tela: tem bastante coisa nela. O menu da Comunidade de um lado, os bloquinhos, a área de montar e a área do jogo. Dá pra ganhar espaço. Bem na beiradinha esquerda da tela, colado na borda, tem um puxador pequeno. Clica nele. O menu da Comunidade se escondeu, e tudo o que é do jogo ficou maior. Pra trazer de volta, clica no puxador outra vez. Usa sempre que quiser mais espaço pra montar. E guarda essa: esse puxador está nas ferramentas de criação, então ele está aqui no Estúdio e no Pinta também, no mesmo cantinho. Terceiro passo concluído.\"",
+      "edit": "Preservar todas as telas do caminho. Encurtar as definições já demonstradas. Manter recuperação por Sincronizar com o enviado como ajuda condicional, não ação obrigatória. O puxador do menu entra como dica breve ao fim.",
+      "visual": "Mostrar o nome da aula, a extensão do arquivo, o botão Importar e o projeto abrindo. Renomear pela barra; evitar confundir com Meu jogo novo.",
+      "newNarration": "Na aba da ferramenta, abra Cursos → Faísca → Desafio do Primeiro Jogo → Dia 5. Exporte para o Estúdio, volte ao Estúdio e importe o arquivo .szproject.json. Abra o jogo, teste os controles e dê um nome que você reconheça.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-guardar",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 4. Passo 4: onde os seus jogos ficam guardados",
+      "entry": "Agora volta pra lista dos seus jogos, pelo mesmo caminho de antes: o Sistema Zero Studio, lá no cant",
+      "exit": "s não ficam presos neste computador. Se você entrar na sua conta em outro computador, eles estão lá.",
+      "narration": "Agora volta pra lista dos seus jogos, pelo mesmo caminho de antes: o Sistema Zero Studio, lá no canto esquerdo da barra de cima. Voltou pro Meus Jogos, e agora tem dois cartões aí: o seu jogo da nave e o Meu jogo novo, aquele que está vazio. E agora a melhor notícia do dia, que vale pra todos os jogos que você fizer daqui pra frente: você não precisa fazer nada pra salvar. Enquanto você monta, o Estúdio guarda o seu jogo na sua conta sozinho. Olha o aviso aí em cima: Guardado na sua conta. Então esses jogos não ficam presos neste computador. Se você entrar na sua conta em outro computador, eles estão lá.",
+      "edit": "Manter retorno à lista e aviso Guardado na sua conta. Retirar cena antiga de lista vazia em outro navegador, limites numéricos, exclusão e remix; cópia publicada será retomada na aula 8.",
+      "visual": "Mostrar o aviso real, voltar à lista e reabrir o jogo. Não substituir um aviso de sincronização pendente por cartela de sucesso.",
+      "newNarration": "Espere aparecer Guardado na sua conta. Volte a Meus Jogos e abra o mesmo cartão. Confira se o jogo continua completo. É aqui que vamos voltar depois de desenhar.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 1. Olha o que você tem agora: dois projetos seus. O jogo da nave, que",
+      "exit": "você vai desenhar a sua nave. Do seu jeito, com as suas cores, e com o motor dela acendendo. Até já.",
+      "narration": "Parabéns, você terminou a Aula 1. Olha o que você tem agora: dois projetos seus. O jogo da nave, que veio do Desafio e roda aqui fora, e um projeto vazio, esperando uma ideia. E você aprendeu quatro palavras que os criadores usam o tempo todo. Projeto, que é o jogo inteiro num pacote só. Extensão, que é o pacote de bloquinhos que você instala quando precisa. Exportar, que é tirar uma cópia pra fora. E importar, que é trazer uma cópia pra dentro. Na próxima aula a gente vai pro Pinta, que é a outra ferramenta que você liberou, e lá você vai desenhar a sua nave. Do seu jeito, com as suas cores, e com o motor dela acendendo. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: Não fixar “mais de cem jogos”; usar o indicador atual de armazenamento. Não mostrar lista vazia em outro navegador como comportamento esperado após salvar na conta. Não demonstrar Fazer a minha versão agora: evitar um terceiro projeto quase igual. Conferir permissões da Carreira no perfil de revisão; não prometer desbloqueios específicos. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Agora você tem o seu jogo no Estúdio Completo e sabe onde encontrá-lo. Exportar leva uma cópia para um arquivo; importar traz essa cópia para um projeto. A aula original continua lá. Na próxima aula vamos desenhar a nave no Pinta. Antes, duas perguntas para guardar o caminho.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Progress } from '@sistemazero/ui/progress'
 import { CheckCircle2, Clapperboard, Loader2, RefreshCw } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useLessonVideoController, type VideoUploadController } from './lesson-video-uploads'
 import { type ReadyVideo, useVideoUpload } from './use-video-upload'
 import { VimeoPreview } from './vimeo-preview'
 
@@ -14,32 +15,47 @@ const ACCEPTED = 'video/mp4,video/quicktime,video/webm'
  * direto do browser → transcode (polling) → `onReady` preenche src/duração/
  * legendas no form. `currentSrc` permite re-checar um vídeo já salvo.
  */
-export function VideoUploader({
-  onReady,
-  currentSrc,
-  autoCheckStatus = false,
-}: {
+interface VideoUploaderProps {
   onReady: (video: ReadyVideo) => void
-  /** `src` atual do bloco (embed URL) — habilita "verificar status/transcrição". */
   currentSrc?: string
   autoCheckStatus?: boolean
-}) {
+  blockId?: string
+}
+
+export function VideoUploader(props: VideoUploaderProps) {
+  const shared = useLessonVideoController(props.blockId ?? '')
+  return shared && props.blockId ? (
+    <VideoUploadView {...props} controller={shared} />
+  ) : (
+    <OwnedVideoUploader {...props} />
+  )
+}
+
+function OwnedVideoUploader(props: VideoUploaderProps) {
+  const controller = useVideoUpload(props.onReady)
+  return <VideoUploadView {...props} controller={controller} />
+}
+
+function VideoUploadView({
+  currentSrc,
+  autoCheckStatus = false,
+  controller,
+}: VideoUploaderProps & { controller: VideoUploadController }) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const { phase, progress, error, embedUrl, upload, checkStatus, reset } = useVideoUpload(onReady)
+  const { phase, progress, error, embedUrl, upload, checkStatus } = controller
 
   const currentVideoId = currentSrc?.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] ?? null
   const checkedVideoId = useRef<string | null>(null)
   useEffect(() => {
     if (!currentVideoId) {
-      if (checkedVideoId.current) reset()
       checkedVideoId.current = null
       return
     }
-    if (!autoCheckStatus || checkedVideoId.current === currentVideoId) return
+    if (!autoCheckStatus || checkedVideoId.current === currentVideoId || phase !== 'idle') return
     checkedVideoId.current = currentVideoId
     checkStatus(currentVideoId)
-  }, [autoCheckStatus, currentVideoId, checkStatus, reset])
-  const busy = phase === 'requesting-ticket' || phase === 'uploading' || phase === 'processing'
+  }, [autoCheckStatus, currentVideoId, checkStatus, phase])
+  const transferring = phase === 'requesting-ticket' || phase === 'uploading'
 
   return (
     <div className="flex flex-col gap-2">
@@ -100,7 +116,7 @@ export function VideoUploader({
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      {currentVideoId && !busy ? (
+      {currentVideoId && !transferring ? (
         <Button
           type="button"
           variant="outline"

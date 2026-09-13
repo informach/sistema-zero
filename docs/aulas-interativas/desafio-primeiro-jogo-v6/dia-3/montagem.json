@@ -1,0 +1,184 @@
+{
+  "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+  "sourceHash": "42f032a7ead97c237bcb82ed1b6a97405484801d4de4dc6e9d6598bc41446b55",
+  "status": "Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Bem-vindo ao Dia 3. Ontem a sua nave aprendeu a atirar. Mas atirar no nada não tem graça, né? Ho",
+      "exit": "mais legal, a gente explode asteroide com tiro. E no sexto, testa. Então bora começar pelo primeiro.",
+      "narration": "Oi! Bem-vindo ao Dia 3. Ontem a sua nave aprendeu a atirar. Mas atirar no nada não tem graça, né? Hoje os asteroides chegam: uma chuva de pedras espaciais vai cair do céu, e os seus tiros vão explodir elas de verdade, com explosão e som. E pra chegar lá, a gente vai passar por seis passos. O primeiro é criar o grupo dos asteroides. No segundo, a gente monta o relógio da chuva. No terceiro, cria o asteroide surpresa, que nasce num lugar sorteado. No quarto, os asteroides caem e somem lá embaixo. No quinto, a parte mais legal, a gente explode asteroide com tiro. E no sexto, testa. Então bora começar pelo primeiro.",
+      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
+      "newNarration": "Hoje seus tiros vão ter o que acertar. Vamos fazer os asteroides chegarem aos poucos e ensinar o jogo a perceber quando um tiro encontra uma pedra.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-grupo-asteroides",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: criar o grupo dos asteroides",
+      "entry": "Lembra do grupo, o saquinho que guarda muitos sprites do mesmo tipo? Ontem a gente criou o dos tiros",
+      "exit": "que a gente quer. Passo 1 pronto, esse foi rápido. Agora o segundo, que é montar o relógio da chuva.",
+      "narration": "Lembra do grupo, o saquinho que guarda muitos sprites do mesmo tipo? Ontem a gente criou o dos tiros. Hoje precisamos de mais um, porque asteroide também vem em bando. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar grupo de sprites. Arrasta para dentro do Ao iniciar e encaixa logo abaixo do Criar grupo de sprites tiros. E dessa vez nem precisa trocar o nome: o bloco já vem escrito asteroides, que é exatamente o que a gente quer. Passo 1 pronto, esse foi rápido. Agora o segundo, que é montar o relógio da chuva.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-relogio",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 2. Passo 2: montar o relógio da chuva",
+      "entry": "Agora pensa comigo: se nascesse um asteroide a cada quadro, ia ser uma avalanche, o céu ia entupir d",
+      "exit": "s. Passo 2 pronto, o relógio está batendo. Agora o terceiro passo, que é criar o asteroide surpresa.",
+      "narration": "Agora pensa comigo: se nascesse um asteroide a cada quadro, ia ser uma avalanche, o céu ia entupir de pedra. A gente quer um de vez em quando. E existe um bloco pra isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o bloco A cada tantos quadros, aquele que tem um número no meio. Arrasta para dentro da área Enquanto estiver rodando e solta embaixo do A cada quadro do jogo. Atenção aqui: ele fica embaixo, não dentro, eles são como vizinhos. O motor do jogo pode ter vários relógios, e esse é um relógio mais lento. Escreve 40 no número dele. Isso quer dizer que a cada 40 quadros, o jogo faz o que estiver aqui dentro. Depois você vai poder mudar esse número: menor, chove mais. Maior, chove menos. Passo 2 pronto, o relógio está batendo. Agora o terceiro passo, que é criar o asteroide surpresa.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Área Enquanto estiver rodando com dois contornos destacados: o motor principal e o relógio de 40 quadros. Mostrar a conexão de vizinhos e o espaço BODY do novo relógio.",
+      "newNarration": "Em Jogo 2D, Tempo e repetição, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-nascer-fora",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: criar o asteroide surpresa",
+      "entry": "Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as",
+      "exit": " menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
+      "narration": "Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um asteroide e encaixa dentro do A cada 40 quadros. Confere se o grupo é o asteroides. E onde ele nasce? Aqui vem um truque novo. Se todo asteroide nascesse no mesmo lugar, o jogo ficava fácil demais: era só ficar longe daquele ponto. Mas a gente quer surpresa. Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um x aleatório na tela e arrasta ele pra cima do número que já vem no x, até encaixar. Aleatório quer dizer sorteado: cada vez, o jogo sorteia um lugar novo, e nem eu nem você sabemos onde a próxima pedra vai cair. No y, escreve menos 30. E olha que interessante: aqui o menos não é velocidade, é posição. Menos 30 é um pouquinho acima da tela, do lado de fora. O asteroide nasce escondidinho lá em cima e entra na tela caindo, bem natural. O tamanho, deixa 40. A cor, escolhe uma com cara de pedra, tipo um cinza. O vx deixa 0, porque ele não anda pros lados. E no vy, escreve 3. Positivo, sem o menos, porque o asteroide desce. Olha o truque de ontem aí: menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
+      "edit": "Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar.",
+      "visual": "Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. A passagem é observada sem controles.",
+      "newNarration": "Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-asteroide",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: criar o asteroide surpresa",
+      "entry": "Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as",
+      "exit": " menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
+      "narration": "Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um asteroide e encaixa dentro do A cada 40 quadros. Confere se o grupo é o asteroides. E onde ele nasce? Aqui vem um truque novo. Se todo asteroide nascesse no mesmo lugar, o jogo ficava fácil demais: era só ficar longe daquele ponto. Mas a gente quer surpresa. Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um x aleatório na tela e arrasta ele pra cima do número que já vem no x, até encaixar. Aleatório quer dizer sorteado: cada vez, o jogo sorteia um lugar novo, e nem eu nem você sabemos onde a próxima pedra vai cair. No y, escreve menos 30. E olha que interessante: aqui o menos não é velocidade, é posição. Menos 30 é um pouquinho acima da tela, do lado de fora. O asteroide nasce escondidinho lá em cima e entra na tela caindo, bem natural. O tamanho, deixa 40. A cor, escolhe uma com cara de pedra, tipo um cinza. O vx deixa 0, porque ele não anda pros lados. E no vy, escreve 3. Positivo, sem o menos, porque o asteroide desce. Olha o truque de ontem aí: menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
+      "edit": "Aproveitar a montagem dos campos; encurtar a explicação já demonstrada. O tamanho 40 é a base do kit: não prometer que toda pedra tem exatamente a mesma largura.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kit espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Mira e contas. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-ciclo-asteroides",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 4. Passo 4: fazer os asteroides caírem e sumirem",
+      "entry": "Essa parte você já conhece, porque é igualzinha à dos tiros. O motor precisa cuidar dos asteroides t",
+      "exit": " dois podem se bater. É isso que a gente resolve no quinto passo, que é explodir asteroide com tiro.",
+      "narration": "Essa parte você já conhece, porque é igualzinha à dos tiros. O motor precisa cuidar dos asteroides também: mover, fazer a faxina e desenhar. Dentro do A cada quadro do jogo, logo abaixo do Desenhar o grupo tiros, encaixa três blocos da subcategoria Muitos, igual a gente fez com os tiros, mas agora escolhendo o grupo asteroides em todos. Primeiro o Atualizar (mover) o grupo. Depois o Tirar do grupo quem sair da tela, com o espacinho de fazer vazio de novo. E por último o Desenhar o grupo. Viu como foi rápido? Quando a gente aprende um padrão, montar de novo é moleza. Isso é coisa de criador de verdade: usar o que já sabe pra construir mais rápido. E olha a tela do jogo: os asteroides já estão caindo do céu! Mas experimenta atirar num deles... o tiro atravessa direto, como um fantasma. O jogo ainda não sabe que os dois podem se bater. É isso que a gente resolve no quinto passo, que é explodir asteroide com tiro.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "No A cada quadro do jogo, abaixo do Desenhar grupo tiros, coloque Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Agora escolha asteroides nos três. Deixe o fazer da limpeza vazio. O padrão é o mesmo dos tiros.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-encontro",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: explodir asteroide com tiro",
+      "entry": "Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas",
+      "exit": "i aquele ali. Assim, aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram.",
+      "narration": "Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas as colisões entre dois grupos. Na categoria Jogo 2D, subcategoria Colisões, pega o bloco Para cada colisão entre os grupos e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o grupo asteroides. Agora configura ele: o primeiro grupo é o tiros, e o segundo é o asteroides. E repara numa coisa esperta: o bloco dá um apelido pra cada um que se bateu. O do grupo tiros ele chama de tiro, e o do grupo asteroides ele chama de asteroide. É como se ele dissesse: nessa trombada, o tiro foi esse aqui e o asteroide foi aquele ali. Assim, aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram.",
+      "edit": "Aproveitar a explicação dos apelidos. Acrescentar congelamento de uma colisão com outros objetos ao redor. Não mover a colisão para Quando acontecer: este bloco verifica encontros em cada quadro.",
+      "visual": "Congelar três tiros e três pedras, destacar um par, ligar às etiquetas tiro/asteroide e remover só esse par. Voltar ao jogo com os demais presentes.",
+      "newNarration": "Há vários tiros e várias pedras, mas esta colisão tem dois participantes. Aqui dentro, tiro é o tiro que acertou, e asteroide é a pedra atingida. São esses dois que vamos retirar. Os outros continuam no jogo.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-colisao",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: explodir asteroide com tiro",
+      "entry": "Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas",
+      "exit": "bloco Tocar som de explosão e encaixa por último. Passo 5 pronto. Agora o sexto passo, que é testar.",
+      "narration": "Quando dois objetos se encostam no jogo, isso tem nome: colisão. E existe um bloco que percebe todas as colisões entre dois grupos. Na categoria Jogo 2D, subcategoria Colisões, pega o bloco Para cada colisão entre os grupos e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o grupo asteroides. Agora configura ele: o primeiro grupo é o tiros, e o segundo é o asteroides. E repara numa coisa esperta: o bloco dá um apelido pra cada um que se bateu. O do grupo tiros ele chama de tiro, e o do grupo asteroides ele chama de asteroide. É como se ele dissesse: nessa trombada, o tiro foi esse aqui e o asteroide foi aquele ali. Assim, aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram. E o que acontece quando o tiro acerta o asteroide? Quatro coisas, nessa ordem. Primeiro, o tiro some. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Tirar o sprite do grupo e encaixa dentro do Para cada colisão. Escolhe tiro no lugar do sprite e escolhe tiros no lugar do grupo. Depois, o asteroide some também. Pega mais um Tirar o sprite do grupo, na mesma subcategoria Muitos, e encaixa logo abaixo. Nesse, escolhe o sprite asteroide e o grupo asteroides. Agora a melhor parte: a explosão. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Soltar explosão no sprite e encaixa abaixo. Escolhe o sprite asteroide, que é onde a explosão acontece, e uma cor de fogo, tipo laranja. E pra fechar, o barulho. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Tocar som de explosão e encaixa por último. Passo 5 pronto. Agora o sexto passo, que é testar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar primeiro grupos e apelidos, depois os quatro encaixes no mesmo BODY. Destacar que a explosão usa a referência do asteroide atingido, mesmo depois de removido do grupo.",
+      "newNarration": "Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; toque som de explosão.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-teste-colisao",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 6. Passo 6: hora de explodir",
+      "entry": "Clica na área do jogo. Olha essa chuva de pedras! Agora mira num asteroide e aperta a barra de espaç",
+      "exit": "e vêm na sua direção, acerta os que estão longe. Sente como o seu jogo já parece um jogo de verdade.",
+      "narration": "Clica na área do jogo. Olha essa chuva de pedras! Agora mira num asteroide e aperta a barra de espaço. Bum! Explodiu de verdade, com barulho e tudo. Atira em mais alguns. Desvia dos que vêm na sua direção, acerta os que estão longe. Sente como o seu jogo já parece um jogo de verdade.",
+      "edit": "Usar os acertos do início; acrescentar um tiro que erra. Retirar novos testes com 20 e 80, já substituídos pela comparação isolada.",
+      "visual": "Um disparo sem colisão e outro com colisão; contagem visual dos objetos retirados.",
+      "newNarration": "Um tiro que passa longe continua subindo. Um tiro que encontra um asteroide tira os dois e solta a explosão. Nesta aula, a nave ainda não perde vida quando uma pedra encosta nela. Isso vem no Dia 4.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou o Dia 3! Olha os seis passos de hoje: você criou o grupo dos asteroides, mon",
+      "exit": "car, e a sua nave vai ganhar vidas, com coraçõezinhos na tela. Descansa, e te espero lá. Até amanhã!",
+      "narration": "Parabéns, você terminou o Dia 3! Olha os seis passos de hoje: você criou o grupo dos asteroides, montou o relógio da chuva, criou o asteroide surpresa que nasce em lugar sorteado, colocou o motor pra cuidar das pedras, ensinou o jogo a explodir asteroide com tiro e ainda ajustou a chuva do seu jeito. Amanhã, no Dia 4, o jogo ganha regras de verdade: cada asteroide destruído vai valer ponto num placar, e a sua nave vai ganhar vidas, com coraçõezinhos na tela. Descansa, e te espero lá. Até amanhã!",
+      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "visual": "Resultado do dia e convite para duas perguntas finais.",
+      "newNarration": "A chuva de asteroides já funciona, e os tiros conseguem destruí-los. Você usou um relógio para criar e uma colisão para responder ao encontro de dois objetos. Amanhã, cada acerto vai valer ponto.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceReview": [
+    {
+      "heading": "Especificações",
+      "clips": [],
+      "decision": "Referência de formato e ritmo; a duração interativa é estimada separadamente."
+    },
+    {
+      "heading": "Abertura",
+      "clips": ["video-abertura-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 1. Passo 1: criar o grupo dos asteroides",
+      "clips": ["video-grupo-asteroides"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 2. Passo 2: montar o relógio da chuva",
+      "clips": ["video-relogio"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 3. Passo 3: criar o asteroide surpresa",
+      "clips": ["video-nascer-fora", "video-asteroide"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 4. Passo 4: fazer os asteroides caírem e sumirem",
+      "clips": ["video-ciclo-asteroides"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 5. Passo 5: explodir asteroide com tiro",
+      "clips": ["video-encontro", "video-colisao"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 6. Passo 6: hora de explodir",
+      "clips": ["video-teste-colisao"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Fecho",
+      "clips": ["video-fecho-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ]
+}

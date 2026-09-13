@@ -50,7 +50,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "O nome cacto dentro do evento indica o quê?",
+            "prompt": "O nome cacto dentro do bloco de colisão indica o quê?",
             "choices": [
               {
                 "id": "a",
@@ -62,7 +62,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "O evento fornece uma referência ao membro envolvido."
+            "explanation": "O bloco fornece uma referência ao membro envolvido."
           },
           {
             "id": "q2",
@@ -105,18 +105,18 @@
     },
     {
       "key": "video-qual-cacto",
-      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Reaproveitar a apresentação do evento. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11. Ponte nova: “Há vários cactos no grupo. O evento aponta só o que encostou no Dino; dentro dele, vamos chamar esse cacto de cacto.” Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no evento. Manter os outros sem destaque. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Reaproveitar a apresentação do bloco de colisão. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11. Ponte nova: “Há vários cactos no grupo. O bloco de colisão aponta o que encostou no Dino; dentro do fazer, vamos chamar esse cacto de cacto.” Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no bloco. Manter os outros sem destaque. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-colisao-fim",
-      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Preservar a primeira colisão. Explicar que o fundo sem texto é esperado antes do próximo passo. Ponte nova: “Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 1. Passo 1: a colisão que acaba o jogo. Entrada: “A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só is”. Saída: “ado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.”. Preservar a primeira colisão. Explicar que o fundo sem texto é esperado antes do próximo passo. Ponte nova: “Dentro do Se a tela é jogando, entre Desenhar o grupo e a faxina, encaixe Para cada sprite do grupo que colidir com o sprite. Escolha grupo cactos, sprite dino e apelido cacto. No fazer, coloque Ir para a tela fim.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-colisao-fim",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim."
+        "text": "Dentro do Se a tela é jogando, entre Desenhar o grupo e a faxina, encaixe Para cada sprite do grupo que colidir com o sprite. Escolha grupo cactos, sprite dino e apelido cacto. No fazer, coloque Ir para a tela fim."
       }
     },
     {
@@ -133,14 +133,14 @@
     },
     {
       "key": "video-efeitos-batida",
-      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 3. Passo 3: fazer você sentir a batida. Entrada: “São três blocos, todos dentro do espaço de fazer da colisão e antes do Ir para a tela fim. O primeir”. Saída: “é uma coisa só. Passo 3 feito. Agora falta uma coisa importante: dar chance da pessoa jogar de novo.”. Preservar o resultado visual e sonoro; manter texto de fim como alternativa perceptível ao áudio. Ponte nova: “No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Parte 3. Passo 3: fazer você sentir a batida. Entrada: “São três blocos, todos dentro do espaço de fazer da colisão e antes do Ir para a tela fim. O primeir”. Saída: “é uma coisa só. Passo 3 feito. Agora falta uma coisa importante: dar chance da pessoa jogar de novo.”. Preservar o resultado visual e sonoro; manter texto de fim como alternativa perceptível ao áudio. Ponte nova: “No fazer do bloco de colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-efeitos-batida",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem."
+        "text": "No fazer do bloco de colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem."
       }
     },
     {
@@ -185,7 +185,7 @@
     },
     {
       "key": "video-fecho-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Fecho. Entrada: “Parabéns! Você terminou a Aula 9, e ela é especial: o seu jogo está completo. Olha o que aprendeu ho”. Saída: “do nessa colisão que não é bem justa com você, e eu vou te mostrar como enxergar isso. Te espero lá!”. Manter a recapitulação. Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito. A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Fonte: roteiro-aula-09-corre-dino.md, Fecho. Entrada: “Parabéns! Você terminou a Aula 9, e ela é especial: o seu jogo está completo. Olha o que aprendeu ho”. Saída: “do nessa colisão que não é bem justa com você, e eu vou te mostrar como enxergar isso. Te espero lá!”. Manter a recapitulação. Colisão com grupo é um comando contínuo, dentro do Se jogando em A cada quadro. Preservar a montagem do original; não transferir para a área Quando acontecer. Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito. A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     }
   ],
   "sections": [
@@ -207,7 +207,7 @@
       "key": "qual-cacto",
       "title": "Qual cacto participou da batida?",
       "intent": "demonstration",
-      "objective": "Distinguir o grupo inteiro do membro recebido pelo evento.",
+      "objective": "Distinguir o grupo inteiro do cacto recebido pela verificação de colisão.",
       "blockKeys": ["video-qual-cacto"],
       "workspaceKey": null,
       "externalTool": null,
@@ -221,7 +221,7 @@
       "key": "colisao-fim",
       "title": "Faça a batida encerrar a partida",
       "intent": "application",
-      "objective": "Usar a colisão como evento que muda o estado.",
+      "objective": "Verificar a colisão a cada quadro durante a partida para mudar o estado.",
       "blockKeys": ["video-colisao-fim", "fala-colisao-fim"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -232,21 +232,34 @@
         "projectChecks": [
           {
             "id": "colisao",
-            "label": "Ao o dino tocar o grupo cactos, mude para a tela fim.",
+            "label": "No então de Se jogando, confira a colisão com cactos e mude para fim.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_sprite_group_overlap",
-              "area": "events",
-              "fields": {
-                "GROUP": "cactos",
-                "SPRITE": "dino",
-                "ANAME": "cacto"
-              },
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
               "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_set_scene",
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
                   "fields": {
-                    "SCENE": "fim"
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_sprite_group_overlap",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SPRITE": "dino",
+                    "ANAME": "cacto"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen",
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
                   }
                 }
               }
@@ -296,7 +309,7 @@
       "key": "efeitos-batida",
       "title": "Mostre e sinalize a batida",
       "intent": "application",
-      "objective": "Encadear efeitos no evento antes da mudança de cena.",
+      "objective": "Encadear efeitos no fazer da colisão antes da mudança de cena.",
       "blockKeys": ["video-efeitos-batida", "fala-efeitos-batida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -311,7 +324,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_explode",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "fields": {
                 "SPRITE": "cacto"
@@ -325,7 +338,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_shake",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "inputs": {
                 "INTENSITY": 8
@@ -339,7 +352,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_play_fx",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "fields": {
                 "FX": "gameover"
@@ -441,24 +454,46 @@
         "projectChecks": [
           {
             "id": "colisao",
-            "label": "Ao o dino tocar o grupo cactos, mude para a tela fim.",
+            "label": "No então de Se jogando, confira a colisão com cactos e mude para fim.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_sprite_group_overlap",
-              "area": "events",
-              "fields": {
-                "GROUP": "cactos",
-                "SPRITE": "dino",
-                "ANAME": "cacto"
-              },
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
               "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_set_scene",
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
                   "fields": {
-                    "SCENE": "fim"
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_sprite_group_overlap",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SPRITE": "dino",
+                    "ANAME": "cacto"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen",
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
                   }
                 }
               }
+            }
+          },
+          {
+            "id": "colisao-unica",
+            "label": "Mantenha uma única verificação de colisão com os cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "count": 1
             }
           },
           {
@@ -546,7 +581,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_explode",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "fields": {
                 "SPRITE": "cacto"
@@ -560,7 +595,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_shake",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "inputs": {
                 "INTENSITY": 8
@@ -574,7 +609,7 @@
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_play_fx",
-              "area": "events",
+              "area": "loops",
               "withinBlock": "sz_g2d_on_sprite_group_overlap",
               "fields": {
                 "FX": "gameover"

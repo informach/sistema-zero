@@ -1,0 +1,9 @@
+{
+  "extends": "../../../packages/studio/tsconfig.json",
+  "compilerOptions": {
+    "typeRoots": ["../../../packages/studio/node_modules/@types"],
+    "types": ["bun"]
+  },
+  "include": ["desafio-*.ts", "gerar-desafio-v6.ts", "validar-desafio-v6.ts"],
+  "exclude": ["node_modules"]
+}

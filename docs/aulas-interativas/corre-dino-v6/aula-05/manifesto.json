@@ -327,6 +327,34 @@
               "blockType": "sz_g2d_spawn_obstacle",
               "count": 1
             }
+          },
+          {
+            "id": "floresta",
+            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "grupo-apos-dino",
+            "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_update_group"
+            }
           }
         ]
       }
@@ -486,6 +514,34 @@
               "type": "usesBlock",
               "blockType": "sz_g2d_spawn_obstacle",
               "count": 1
+            }
+          },
+          {
+            "id": "floresta",
+            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "grupo-apos-dino",
+            "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_update_group"
             }
           },
           {

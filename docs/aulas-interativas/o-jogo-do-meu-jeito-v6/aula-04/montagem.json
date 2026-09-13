@@ -1,0 +1,98 @@
+{
+  "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+  "sourceHash": "49736e1aa90b056c2778a8337d400329fdaca77f30126bf9af0ff114fd3ba6e1",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi de novo! Nas duas aulas passadas você fez a sua nave em pixel art, quadradinho por quadradinho, e",
+      "exit": " você põe os seus dois desenhos lado a lado, agora que já fez um de cada jeito. Vamos pro primeiro.\"",
+      "narration": "Oi de novo! Nas duas aulas passadas você fez a sua nave em pixel art, quadradinho por quadradinho, e deixou o motor dela aceso. Hoje a gente desenha o asteroide, aquela pedra que cai na tela do seu jogo. E o desenho de hoje é de outro jeito, um jeito que chama vetor. No fim da aula você vai ter uma pedra parecida com essa aqui. Essa é a do Júlio. A sua vai ser diferente, porque pedra é torta e cada um entorta a sua de um jeito. Eu te apresento as ferramentas do vetor uma por uma, e o Júlio desenha a pedra dele aqui na tela. Você desenha a sua, do jeito que você quiser. Isso sai em quatro passos. O primeiro é abrir um desenho novo. Aí você traça a pedra e arredonda ela, que é a parte mais legal. Depois vêm as crateras. E o quarto é o único que não tem desenho: você põe os seus dois desenhos lado a lado, agora que já fez um de cada jeito. Vamos pro primeiro.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "Hoje o Júlio vai desenhar uma pedra usando pontos e formas. Você vai fazer a sua: escolher a cor, traçar, arredondar e pôr crateras. No final vamos comparar a borda do vetor com a dos pixels que você já conhece.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-novo-vetor",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: começar o desenho novo",
+      "entry": "Abre o Pinta ali no menu da esquerda. A sua galeria não está mais vazia: o cartão da nave está lá. C",
+      "exit": "ica em Começar a desenhar. A sua tela abriu, e ela é maior que a da nave. Primeiro passo concluído.\"",
+      "narration": "Abre o Pinta ali no menu da esquerda. A sua galeria não está mais vazia: o cartão da nave está lá. Clica no Criar novo, e o Pinta faz as mesmas quatro perguntas da Aula 2. Só que hoje as suas respostas são outras. E esse passo é o único em que eu vou te pedir pra responder igualzinho ao que aparece na tela, porque o jogo usa essas quatro respostas depois, quando a sua pedra entrar nele. Do segundo passo em diante as escolhas são todas suas. A primeira é Como você quer desenhar?. Hoje não é o Pixel art, então clica no Vetor, e olha o que o cartão dele diz: desenhe com formas e pincel, com linhas sempre lisinhas. Vetor é desenhar com formas: em vez de pintar quadradinho por quadradinho, você marca pontos, e o Pinta desenha a linha ligando eles. A segunda pergunta é O que você quer criar?. O asteroide também é um personagem do seu jogo, então clica em Personagem. A terceira é Qual o tamanho?. E aqui presta atenção, porque os tamanhos do vetor não são os mesmos do pixel art. Olha embaixo do nome de cada cartão: o Pequeno aqui é 32 por 32, o Médio é 64 por 64 e o Grande é 128 por 128. O Pequeno vem marcado, igual aconteceu na Aula 2, e de novo não é ele que a gente quer. Clica no Médio, e o Pinta já pula pra pergunta do nome. O motivo do Médio é simples: quanto maior o espaço, mais fácil de pegar nos pontinhos com o mouse. A quarta pergunta é Qual o nome?. Escreve asteroide, tudo em letra minúscula e sem acento nenhum, do jeito que a frase de ajuda pede ali embaixo. É esse nome que aparece nos blocos do Estúdio. Respondidas as quatro, clica em Começar a desenhar. A sua tela abriu, e ela é maior que a da nave. Primeiro passo concluído.\"",
+      "edit": "Manter o assistente inteiro. Corrigir “quadro maior facilita pegar pontos” como conveniência do exemplo, não garantia de zoom maior na tela.",
+      "visual": "Zoom em 64 × 64 antes de escolher Médio. Comparativo curto: nave 32 × 32, asteroide 64 × 64.",
+      "newNarration": "No Pinta, escolha Criar novo → Vetor → Personagem → Médio, 64 × 64. Escreva asteroide. A nave continua no cartão dela; hoje estamos criando outra arte.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-cores-vetor",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: traçar a pedra e arredondar",
+      "entry": "A primeira parte é a cor, e ela vem antes do traço, pra forma já nascer da cor certa. Olha lá no pé ",
+      "exit": "limpa. Mas isso é gosto dele: se você quiser a sua com linha em volta, deixa uma cor aí no Contorno.",
+      "narration": "A primeira parte é a cor, e ela vem antes do traço, pra forma já nascer da cor certa. Olha lá no pé da caixa de ferramentas: tem dois quadradinhos de cor, e eles são coisas diferentes. O que é uma plaquinha cheia é o Preenchimento, a cor de dentro da forma. O que é uma moldura vazada é o Contorno, a cor da linha em volta. Clica no Preenchimento e, no painel de cores da direita, clica na cor da sua pedra. A do Júlio vai de roxo, e a sua pode ser marrom, ou uma cor que nem está ali na grade. Pra essa, no alto do painel tem um botão redondo com um sinal de mais, o Nova cor. Clica nele e abre a janela Escolher uma cor. Arrasta a bolinha na barra colorida pra escolher a cor, e depois mexe a bolinha no quadrado pra deixar ela mais clara, mais escura ou mais forte. Clica em Adicionar, e ela já vai pra sua pedra. Agora o contorno. Quando o Júlio quer a forma limpa, ele tira a linha. Clica no quadradinho da moldura, o Contorno, e no painel de cores pega a primeira casinha, aquela quadriculada, que se chama Sem cor. O Júlio gosta da pedra dele sem linha, porque no espaço escuro ela fica mais limpa. Mas isso é gosto dele: se você quiser a sua com linha em volta, deixa uma cor aí no Contorno.",
+      "edit": "Usar os slots e exemplo de Sem cor. A janela Nova cor é um caminho opcional mostrado brevemente para escolher a cor; não criar uma tarefa extra de catálogo de cores.",
+      "visual": "Mesma pedra com interior fixo enquanto só a linha muda. Fundo quadriculado continua aparecendo onde não há forma.",
+      "newNarration": "O Preenchimento muda o interior; o Contorno muda a linha da borda. Observe a mesma forma com e sem contorno. Sem cor deixa aquela parte transparente, não pinta de branco.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-traco",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: traçar a pedra e arredondar",
+      "entry": "A segunda parte é o traço. Vai na caixa de ferramentas e clica na Caneta, aquela que diz clique para",
+      "exit": "es ela sai angulosa, com jeitão de rocha lascada, e com muitos ela sai cheia de bicos pequenininhos.",
+      "narration": "A segunda parte é o traço. Vai na caixa de ferramentas e clica na Caneta, aquela que diz clique para marcar os pontos. O Júlio pega ela toda vez que quer uma forma fechada, que dá pra encher de cor. Cada clique marca um ponto, e a Caneta liga um no outro com uma linha reta. Não precisa arrastar. E pra fechar, clica em cima do primeiro ponto, aquele lá do começo, que fica maior que os outros pra você achar. Olha o Júlio fazendo a dele: cliques dando a volta, bem torto, porque pedra é torta. Ele deu seis. Volta no primeiro ponto, e fechou! E olha o que nasceu: a forma já veio cheia da cor que você escolheu, e com uma caixinha tracejada por fora. Essa caixinha quer dizer que a pedra está escolhida, e tudo que você mexer agora mexe nela. Faz a sua, do jeito que você quiser. Com poucos cliques ela sai angulosa, com jeitão de rocha lascada, e com muitos ela sai cheia de bicos pequenininhos.",
+      "edit": "Preservar clique, sem arrastar, e fechamento no primeiro ponto. Acrescentar reserva visual superior que faltava no original. Não dizer que pedra real nunca tem cantos.",
+      "visual": "Caneta com pontos destacados, primeiro ponto maior e fechamento preenchendo a forma. Referência de pedra ocupando a região inferior/central, com margem para chama.",
+      "newNarration": "Escolha o Preenchimento e se quer Contorno. Com Caneta, clique em alguns pontos formando uma pedra irregular. Termine clicando no primeiro ponto. Deixe espaço acima da pedra: a próxima aula usa esse espaço para a chama.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-curvas",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: traçar a pedra e arredondar",
+      "entry": "A terceira parte é o arredondamento. Toda vez que o Júlio desenha uma coisa que não tem canto na vid",
+      "exit": "lheu. Achou alguma coisa? Arruma agora, que os pontos ainda estão à vista. Segundo passo concluído.\"",
+      "narration": "A terceira parte é o arredondamento. Toda vez que o Júlio desenha uma coisa que não tem canto na vida real, ele usa o Ponto suave. Pra chegar nele, vai na caixa de ferramentas e clica no Editar os pontos. Apareceram todos os seus pontos na tela. Clica num lugar vazio, segura e arrasta um retângulo em volta da pedra inteira, pra pegar todos de uma vez. Com os pontos pegos, olha lá em cima: embaixo da barra com o nome do desenho apareceu uma fileira de botões, e o nome de cada um aparece se você parar o mouse em cima. Procura o Ponto suave e clica. Olha o que aconteceu! Cada canto da pedra dele virou uma curva. Faz na sua, e quem decide o quanto é você: dá pra arredondar a pedra inteira, como ele fez, ou pegar só alguns pontos no retângulo e deixar dois ou três cantos afiados de propósito. Antes de fechar o passo, olha a sua pedra inteira com calma. Vê se sobrou algum canto afiado que você não quis e se a cor é a que você escolheu. Achou alguma coisa? Arruma agora, que os pontos ainda estão à vista. Segundo passo concluído.\"",
+      "edit": "Manter seleção por retângulo e Ponto suave; remover generalização de que toda pedra deve ser completamente arredondada.",
+      "visual": "Mostrar os pontos selecionados antes do botão. Um canto permanece reto de propósito; destacar o resultado sem explicar alças de Bézier.",
+      "newNarration": "Com Editar os pontos, selecione os cantos que quer arredondar e use Ponto suave. Pode deixar alguns cantos. Confira se a pedra e o espaço da chama continuam dentro do quadro.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-crateras",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: as crateras",
+      "entry": "Com a pedra arredondada, entram as crateras: aqueles buracos que toda pedra do espaço tem, de quando",
+      "exit": "lecionar ainda está na sua mão. Olha a sua pedra agora. Ela ficou pronta! Terceiro passo concluído.\"",
+      "narration": "Com a pedra arredondada, entram as crateras: aqueles buracos que toda pedra do espaço tem, de quando ela bateu em alguma coisa. E aqui a lógica é a mesma: eu te mostro a ferramenta, o Júlio faz as dele, e você põe as suas onde quiser. Antes da cor, uma coisa importante: a sua pedra ainda está escolhida, com a caixa tracejada em volta. Se você trocar a cor agora, quem muda de cor é ela. Então vai na caixa de ferramentas, clica no Selecionar e dá um clique num lugar vazio, fora da pedra. A caixa sumiu, e a pedra está solta. Agora sim, a cor. Clica no Preenchimento e escolhe uma cor mais escura que a da sua pedra. Isso não é gosto: buraco é sempre mais escuro que o resto. A do Júlio vai de quase preto. Agora a forma. Quando o Júlio quer uma coisa redonda, ele não marca ponto por ponto: vai na caixa de ferramentas e clica no Círculo, que já vem pronta. Clica em cima da pedra, segura e arrasta um pouquinho, e nasce um círculo. E cratera redondinha parece um adesivo colado. Cratera de verdade parece um ovo, meio achatada, porque a gente vê o buraco meio de lado. Então ele achata as dele. Pra achatar, volta no Selecionar e clica na sua cratera. Apareceu uma caixa em volta dela, com uns quadradinhos brancos nas beiradas. Puxa o quadradinho do meio de baixo pra cima e ele vira uma elipse, que é o círculo espichado. Achata a sua o quanto você achar que fica bom, e dá pra virar ela pelo círculo branco que fica em cima da caixa, que é a alça de girar. Agora, em vez de desenhar as outras do zero, o Júlio copia essa: quando ele precisa de várias coisas parecidas, ele faz uma bem-feita e copia. Com a cratera ainda escolhida, aperta Control e C e depois Control e V. Se você preferir não usar o teclado, na fileira de botões lá de cima tem o Duplicar a seleção, que faz a mesma coisa. A cópia nasceu um pouquinho pra baixo e pra direita da primeira, e já veio escolhida. Arrasta ela pra outro lugar da pedra, e muda o tamanho puxando um quadradinho do canto. O Júlio fez quatro na dele. Faz quantas você quiser: uma pedra pode ter duas bem grandes, ou um monte de pequenininhas espalhadas. E aqui vai um conselho que o Júlio segue sempre: ele não deixa as crateras do mesmo tamanho nem enfileiradas. Uma maior, uma menor, uma mais pra beirada. O que faz parecer natural é ser desigual. Antes de fechar, olha a pedra inteira com calma. Vê se nenhuma cratera ficou pela metade pra fora da borda e se todas estão mais escuras que a pedra. Arruma o que faltar agora, que o Selecionar ainda está na sua mão. Olha a sua pedra agora. Ela ficou pronta! Terceiro passo concluído.\"",
+      "edit": "Preservar desseleção antes de trocar cor, círculo, alças e duplicação. Substituir “buraco sempre mais escuro” por escolha de contraste desta ilustração; não exigir quatro crateras.",
+      "visual": "Caixa da pedra some antes de escolher cor. Cópia nasce deslocada e selecionada; reposicionar e comparar tamanhos.",
+      "newNarration": "Com Selecionar, clique num lugar vazio para soltar a pedra. Escolha um preenchimento mais escuro, faça um Círculo e achate um pouco. Duplique para fazer outra cratera; mude tamanho e lugar, mantendo as duas dentro da pedra.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 4. Olha a sua pedra: o formato é seu, o arredondamento é seu, e as cr",
+      "exit": "cende esse fogo, com uma chama dentro da outra. E no fim ela vai estar rolando enquanto cai. Até já.",
+      "narration": "Parabéns, você terminou a Aula 4. Olha a sua pedra: o formato é seu, o arredondamento é seu, e as crateras estão onde você quis. E olha as ferramentas que você ganhou hoje, com a hora de usar cada uma. A Caneta, pra qualquer forma fechada. O Ponto suave, pra tudo que não tem canto na vida real. O Preenchimento, o Contorno e o Sem cor, que mandam na cor de dentro e na linha de fora. E o Círculo com o copiar e colar, pra várias coisas parecidas. Nada disso vale só pra pedra: vale pra qualquer coisa que você desenhar em vetor. Só que tem uma coisa estranha nessa pedra: ela está muito quietinha, parada aí. No seu jogo, ela desce do alto em altíssima velocidade. Uma pedra dessas, descendo assim, ia estar pegando fogo. Na próxima aula a gente acende esse fogo, com uma chama dentro da outra. E no fim ela vai estar rolando enquanto cai. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: Acrescentar espaço superior para o fogo da aula 5: formas fora do quadro são cortadas na exportação. Caneta usa clique para marcar pontos; Pincel não substitui esse gesto. Soltar a seleção antes de escolher a cor de outra forma. O vetor pode ser redesenhado em outra escala no editor; o jogo recebe a folha rasterizada. Não prometer ampliação infinita do PNG no Estúdio. Retirar perguntas abertas de próximos projetos durante a tarefa atual. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Sua pedra nasceu de pontos, ganhou curvas e crateras. Você também comparou os dois jeitos de desenhar. A nave guarda pixels; a pedra guarda formas que o Pinta redesenha. Na próxima aula vamos pôr a chama no espaço que ficou livre. Agora, duas perguntas.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

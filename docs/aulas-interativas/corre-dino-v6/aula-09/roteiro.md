@@ -13,10 +13,10 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 | Seção | Experiência | Objetivo |
 | --- | --- | --- |
 | 1. O que vamos fazer hoje | presentation | Hoje a batida vai encerrar a partida, mostrar uma tela de fim e permitir recomeçar. |
-| 2. Qual cacto participou da batida? | demonstration | Distinguir o grupo inteiro do membro recebido pelo evento. |
-| 3. Faça a batida encerrar a partida | application | Usar a colisão como evento que muda o estado. |
+| 2. Qual cacto participou da batida? | demonstration | Distinguir o grupo inteiro do cacto recebido pela verificação de colisão. |
+| 3. Faça a batida encerrar a partida | application | Verificar a colisão a cada quadro durante a partida para mudar o estado. |
 | 4. Mostre que a partida acabou | application | Acrescentar o terceiro ramo exclusivo de tela. |
-| 5. Mostre e sinalize a batida | application | Encadear efeitos no evento antes da mudança de cena. |
+| 5. Mostre e sinalize a batida | application | Encadear efeitos no fazer da colisão antes da mudança de cena. |
 | 6. Recomeçar é só trocar de tela? | exploration | Distinguir a cena de fim de uma nova partida preparada. |
 | 7. Monte o caminho de volta | application | Usar a mesma entrada com ação diferente conforme o estado. |
 | 8. Teste e entregue sua construção | delivery | Colisão com cactos dispara efeitos uma vez, muda para fim e permite reiniciar pelo mesmo evento de entrada. |
@@ -29,15 +29,15 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Por que aqui:** O nome local cacto será usado na explosão; não é o nome de todo o grupo.
 
-**Foco:** Distinguir o grupo inteiro do membro recebido pelo evento.
+**Foco:** Distinguir o grupo inteiro do cacto recebido pela verificação de colisão.
 
-**Fala de ligação / orientação ao aluno:** “Há vários cactos no grupo. O evento aponta só o que encostou no Dino; dentro dele, vamos chamar esse cacto de cacto.”
+**Fala de ligação / orientação ao aluno:** “Há vários cactos no grupo. O bloco de colisão aponta o que encostou no Dino; dentro do fazer, vamos chamar esse cacto de cacto.”
 
 **Fonte:** roteiro-aula-09-corre-dino.md → Parte 1. Passo 1: a colisão que acaba o jogo.
 
-**Montagem:** Reaproveitar a apresentação do evento. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11.
+**Montagem:** Reaproveitar a apresentação do bloco de colisão. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11.
 
-**Na tela:** Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no evento. Manter os outros sem destaque.
+**Na tela:** Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no bloco. Manter os outros sem destaque.
 
 **Trecho original selecionado, antes da edição:** A palavra mais importante do dia é colisão. Colisão é quando dois objetos do jogo se encostam. Só isso mesmo. E no Estúdio o bloco fala colidir. Colidir e encostar são a mesma coisa aqui, colidir é só o jeito mais técnico de dizer encostou. Quando você ler 'que colidir com o sprite dino', lê na sua cabeça 'que encostar no dino'. Na categoria Jogo 2D, subcategoria Colisões, pega aquele bloco comprido da colisão, o Para cada sprite do grupo. É o maior de todos, dá pra achar de longe. Clica nele, segura, arrasta pra dentro do Se a tela atual é jogando e encaixa entre o Desenhar o grupo e a faxina, aquele Tirar do grupo quem sair da tela. Ele tem três campos e um espaço de fazer. No primeiro, o do grupo, escolhe cactos. No segundo, o do sprite, escolhe dino. E o terceiro é o esperto: ele diz chamar o sprite de. Escreve cacto ali. Isso é um apelido, e serve pro seguinte: são vários cactos no grupo, né? Quando um deles bate no dino, o jogo precisa de um jeito de falar 'esse aqui, o que bateu agora, não os outros'. Daqui pra frente, dentro desse bloco, quando você falar cacto, o jogo entende: é o cacto que acabou de bater. No espaço de fazer vai o que acontece na batida. Por enquanto, uma coisa só: na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco Ir para a tela e encaixa lá dentro. Abre a listinha das telas dele e olha o que tem lá: inicio, jogando, e mais umas prontas que a gente ainda não usou. Uma delas se chama fim, e é exatamente a que você quer: a tela de quando o jogo acaba. Escolhe fim. Repara que você não precisou inventar nome nenhum. As telas mais comuns dos jogos já vêm prontas no Estúdio, e a do fim é uma delas. Guarda esse nome, fim, porque ele vai voltar mais três vezes hoje. Clica na área do jogo pra começar e deixa o dino bater de propósito. Olha só: o jogo parou. Ficou só a floresta passando. E é isso mesmo que era pra acontecer, porque o jogo saiu da tela jogando e foi pra tela fim, que ainda não tem nada desenhado. A gente resolve isso agora. Passo 1 feito, bater no cacto já acaba a partida. Bora pro segundo.
 
@@ -47,9 +47,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Por que aqui:** Primeiro observar a parada da lógica; depois dar um desenho ao estado fim.
 
-**Foco:** Usar a colisão como evento que muda o estado.
+**Foco:** Verificar a colisão a cada quadro durante a partida para mudar o estado.
 
-**Fala de ligação / orientação ao aluno:** “Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim.”
+**Fala de ligação / orientação ao aluno:** “Dentro do Se a tela é jogando, entre Desenhar o grupo e a faxina, encaixe Para cada sprite do grupo que colidir com o sprite. Escolha grupo cactos, sprite dino e apelido cacto. No fazer, coloque Ir para a tela fim.”
 
 **Fonte:** roteiro-aula-09-corre-dino.md → Parte 1. Passo 1: a colisão que acaba o jogo.
 
@@ -63,7 +63,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Critérios automáticos:**
 
-- Ao o dino tocar o grupo cactos, mude para a tela fim.
+- No então de Se jogando, confira a colisão com cactos e mude para fim.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -95,9 +95,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Por que aqui:** Os efeitos comunicam a causa do fim, sem uma nova exploração de estética.
 
-**Foco:** Encadear efeitos no evento antes da mudança de cena.
+**Foco:** Encadear efeitos no fazer da colisão antes da mudança de cena.
 
-**Fala de ligação / orientação ao aluno:** “No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.”
+**Fala de ligação / orientação ao aluno:** “No fazer do bloco de colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.”
 
 **Fonte:** roteiro-aula-09-corre-dino.md → Parte 3. Passo 3: fazer você sentir a batida.
 
@@ -129,7 +129,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Colisão encerrou a partida; Outra partida iniciada pela ação de reinício.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Monte o caminho de volta
 
@@ -162,7 +162,8 @@ Faça uma rodada completa: início → partida → colisão → fim → reiníci
 
 **Critérios da entrega:**
 
-- Ao o dino tocar o grupo cactos, mude para a tela fim.
+- No então de Se jogando, confira a colisão com cactos e mude para fim.
+- Mantenha uma única verificação de colisão com os cactos.
 - Desenhe a tela de fim no segundo senão se, quando a cena for fim.
 - No mesmo evento de entrada, reinicie somente no senão se fim.
 - Abra o jogo na tela inicio.
@@ -171,12 +172,12 @@ Faça uma rodada completa: início → partida → colisão → fim → reiníci
 - Use tremida 8 antes do som de derrota.
 - Toque derrota antes de Ir para fim.
 
-**O nome cacto dentro do evento indica o quê?**
+**O nome cacto dentro do bloco de colisão indica o quê?**
 
 - O cacto que participou daquela colisão. (correta)
 - O grupo inteiro de cactos.
 
-O evento fornece uma referência ao membro envolvido.
+O bloco fornece uma referência ao membro envolvido.
 
 **Onde colocar Reiniciar?**
 
@@ -194,6 +195,7 @@ Uma cena por vez recebe seu desenho.
 
 ## Orientação ao professor e à edição
 
+- Colisão com grupo é um comando contínuo, dentro do Se jogando em A cada quadro. Preservar a montagem do original; não transferir para a área Quando acontecer.
 - Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito.
 - A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la.
 

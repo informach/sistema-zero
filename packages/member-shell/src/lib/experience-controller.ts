@@ -49,19 +49,9 @@ export class ExperienceController {
   dispatch(command: ExperienceCommand): ExperienceEvent[] {
     const { session, events } = stepExperience(this.activity, this.snapshot, command)
     this.snapshot = session
-    const last = this.pending.at(-1)
-    // Never rewrite a segment already in flight, including a retry after a lost response.
-    if (
-      this.pending.length > (this.inFlight?.commands.length ?? 0) &&
-      last?.type === 'advance' &&
-      command.type === 'advance' &&
-      last.seconds + command.seconds <= 30
-    )
-      this.pending[this.pending.length - 1] = {
-        type: 'advance',
-        seconds: last.seconds + command.seconds,
-      }
-    else this.pending.push(command)
+    // Keep the exact transitions seen by the learner. Combining time steps changes
+    // when observations are captured (for example, 3 cacti can become 30 on reload).
+    this.pending.push(command)
     for (const listener of this.listeners) listener()
     return events
   }

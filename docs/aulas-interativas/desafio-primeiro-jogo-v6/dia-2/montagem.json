@@ -1,0 +1,171 @@
+{
+  "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+  "sourceHash": "f86024679543a69d6ac450ee09f6985e2275921c0bf72eb876eec1220036f5e9",
+  "status": "Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Que bom te ver de novo. Ontem você deixou a sua nave voando num espaço cheio de estrelas. Hoje o",
+      "exit": " o motor faz os tiros voarem pela tela. E no sexto, a gente testa. Então bora começar pelo primeiro.",
+      "narration": "Oi! Que bom te ver de novo. Ontem você deixou a sua nave voando num espaço cheio de estrelas. Hoje o seu jogo ganha ação de verdade: a nave vai aprender a atirar, com direito a som de tiro e tudo. E pra chegar lá, a gente vai passar por seis passos. No primeiro, a gente cria o grupo dos tiros. No segundo, monta a área que escuta o teclado. O terceiro é fazer o tiro nascer na nave. No quarto, a gente dá velocidade e som pro tiro. No quinto, o motor faz os tiros voarem pela tela. E no sexto, a gente testa. Então bora começar pelo primeiro.",
+      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
+      "newNarration": "Sua nave já voa. Hoje você vai apertar espaço e ver um tiro sair dela, mesmo quando estiver em outro lugar da tela. Vamos ensinar o jogo a criar, mover e mostrar esses tiros.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-grupo-tiros",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: criar o grupo dos tiros",
+      "entry": "Ontem a gente criou a nave, que é uma só. Mas tiro é diferente: você vai disparar um monte deles, um",
+      "exit": "ocê vai disparar. Passo 1 pronto. Agora vamos pro segundo, que é montar a área que escuta o teclado.",
+      "narration": "Ontem a gente criou a nave, que é uma só. Mas tiro é diferente: você vai disparar um monte deles, um atrás do outro. Pra isso existe o grupo, que é como um saquinho que guarda vários sprites do mesmo tipo juntos. Em vez de mandar uma ordem pra cada tiro, a gente manda uma ordem pro saquinho inteiro. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar grupo de sprites. Arrasta ele para dentro do Ao iniciar e encaixa logo abaixo do Criar nave. Repara que o bloco já vem com um nome escrito, asteroides. Clica nesse nome e troca para tiros, porque esse é o grupo dos nossos tiros. Prontinho: o jogo agora tem um saquinho esperando os tiros que você vai disparar. Passo 1 pronto. Agora vamos pro segundo, que é montar a área que escuta o teclado.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Muitos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-espaco",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 2. Passo 2: a área que escuta o teclado",
+      "entry": "Lembra que no primeiro dia a gente montou duas áreas, a Ao iniciar e a Enquanto estiver rodando? Hoj",
+      "exit": ". Passo 2 pronto. Agora vem o terceiro, o mais esperado de todos, que é fazer o tiro nascer na nave.",
+      "narration": "Lembra que no primeiro dia a gente montou duas áreas, a Ao iniciar e a Enquanto estiver rodando? Hoje entra a terceira. Ela se chama Quando acontecer, e é a área que fica de ouvido em pé, esperando alguma coisa acontecer no jogo, tipo você apertar uma tecla. Na categoria Áreas do projeto, pega o bloco Quando acontecer, arrasta e solta ao lado das outras duas áreas, com um espacinho. Agora a gente coloca o ouvido dentro dela. Na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando apertar a tecla e encaixa dentro da área Quando acontecer. Tá vendo que esse bloco tem um menu de teclas? Clica nele e escolhe a barra de espaço. Isso quer dizer o seguinte: quando o jogador apertar a barra de espaço, o jogo faz tudo o que estiver aqui dentro. E isso tem até nome chique: evento. Uma coisa acontece, e o jogo responde na hora. Todo jogo que você já jogou funciona assim, cheio de eventos esperando a vez deles. Passo 2 pronto. Agora vem o terceiro, o mais esperado de todos, que é fazer o tiro nascer na nave.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Áreas do projeto, coloque Quando acontecer. Dentro, encaixe Quando apertar a tecla, de Jogo 2D, Controles, e escolha barra de espaço. Esse é o evento que vai responder ao disparo.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-origem",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: fazer o tiro nascer na nave",
+      "entry": "Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem co",
+      "exit": "cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela.",
+      "narration": "Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem com um número dentro. A gente vai trocar esse número por um bloco mais esperto. Na categoria Jogo 2D, subcategoria Posição e tamanho, pega o bloco o centro x do sprite e arrasta ele pra cima do número do x, até dar aquele clique de encaixe. E seleciona a nave nele. Isso quer dizer: o tiro nasce alinhado com o meio da nave, não importa onde ela esteja. No y, mesma coisa. Na categoria Jogo 2D, subcategoria Posição e tamanho, pega o bloco a posição y do sprite e arrasta pra cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela.",
+      "edit": "Reaproveitar a explicação de ler a nave e acrescentar duas posições. Trocar a promessa de sair exatamente da pontinha visual por “alinhado com o centro e na altura de cima da caixa”.",
+      "visual": "Dois disparos com nave em posições diferentes. Mostrar marcador centro x e topo y da caixa. A posição é consultada em cada evento, sem atualizar tiros já disparados.",
+      "newNarration": "Veja a nave primeiro à esquerda e depois à direita. Se eu guardar um x fixo para o tiro, ele nasce no mesmo lugar. Se eu ler o centro x da nave na hora do disparo, ele acompanha a nave. A posição y diz a altura de onde ele sai.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-criar-tiro",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: fazer o tiro nascer na nave",
+      "entry": "Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar tiro no grupo e encaixa dentro do Quan",
+      "exit": "asso 3 pronto, o tiro já sabe onde nascer. Agora o quarto passo, que é dar velocidade e som pra ele.",
+      "narration": "Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar tiro no grupo e encaixa dentro do Quando apertar a tecla. Confere se o grupo escolhido é o tiros. Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem com um número dentro. A gente vai trocar esse número por um bloco mais esperto. Na categoria Jogo 2D, subcategoria Posição e tamanho, pega o bloco o centro x do sprite e arrasta ele pra cima do número do x, até dar aquele clique de encaixe. E seleciona a nave nele. Isso quer dizer: o tiro nasce alinhado com o meio da nave, não importa onde ela esteja. No y, mesma coisa. Na categoria Jogo 2D, subcategoria Posição e tamanho, pega o bloco a posição y do sprite e arrasta pra cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela. Agora mais dois números do Criar tiro. O raio é o tamanho da bolinha do tiro: deixa 5. E a cor você escolhe, capricha. Passo 3 pronto, o tiro já sabe onde nascer. Agora o quarto passo, que é dar velocidade e som pra ele.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-velocidade-som",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 4. Passo 4: a velocidade e o som do tiro",
+      "entry": "Faltam dois números no Criar tiro, e eles são novidade: o vx e o vy. Eles são a velocidade do tiro. ",
+      "exit": "senha os tiros. Bora resolver isso no quinto passo, que é colocar o motor pra fazer os tiros voarem.",
+      "narration": "Faltam dois números no Criar tiro, e eles são novidade: o vx e o vy. Eles são a velocidade do tiro. O vx é a velocidade pros lados, e o vy é a velocidade pra cima e pra baixo. O nosso tiro não anda pros lados, então deixa o vx em 0. E no vy, escreve menos 9. Opa, número negativo? É um truque dos jogos: na tela, o menos manda pra cima e o mais manda pra baixo. Como o tiro sobe, ele leva o menos 9. Lembra desse truque, que a gente ainda vai usar ele de novo. E pra fechar com estilo, o som. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Tocar som de tiro e encaixa logo abaixo do Criar tiro, ainda dentro do Quando apertar a tecla. Agora cada disparo vai ter aquele som de nave espacial. Passo 4 pronto. Mas se você apertar espaço agora, ainda não vai ver nada, porque o jogo ainda não desenha os tiros. Bora resolver isso no quinto passo, que é colocar o motor pra fazer os tiros voarem.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-ciclo-tiros",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: fazer os tiros voarem pela tela",
+      "entry": "Lembra do nosso motor, o A cada quadro do jogo? É ele que dá vida pra tudo. Agora a gente ensina ele",
+      "exit": "so 5 pronto, o motor agora cuida dos tiros. E chegou a hora da verdade, o sexto passo, que é testar.",
+      "narration": "Lembra do nosso motor, o A cada quadro do jogo? É ele que dá vida pra tudo. Agora a gente ensina ele a cuidar dos tiros também. Vão ser três blocos, um atrás do outro, encaixados embaixo do Desenhar o sprite nave. O primeiro faz os tiros andarem. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Atualizar (mover) o grupo e encaixa embaixo do Desenhar o sprite nave. Escolhe o grupo tiros. É ele que empurra cada tiro pra cima, usando aquela velocidade que a gente configurou. O segundo é uma faxina. Pensa comigo: o tiro sobe, sai da tela... e aí? Se ninguém tirar ele do jogo, ele continua existindo lá em cima, invisível, ocupando espaço à toa. Com o tempo, isso deixa o jogo pesado e lento. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Tirar do grupo quem sair da tela e encaixa logo abaixo do Atualizar. Escolhe o grupo tiros. Ele joga fora, sozinho, todo tiro que escapar da tela. O espacinho de fazer que vem nele pode ficar vazio, a gente não precisa dele hoje. E o terceiro mostra os tiros na tela. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Desenhar o grupo, encaixa abaixo do Tirar do grupo, e escolhe o grupo tiros. Passo 5 pronto, o motor agora cuida dos tiros. E chegou a hora da verdade, o sexto passo, que é testar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Muitos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-testar",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 6. Passo 6: hora de atirar",
+      "entry": "Clica na área do jogo e aperta a barra de espaço. Olha isso! O tiro saiu da nave, subiu e ainda fez ",
+      "exit": "nho no bico da nave? É o bloco do centro x trabalhando: onde a nave estiver, é de lá que o tiro sai.",
+      "narration": "Clica na área do jogo e aperta a barra de espaço. Olha isso! O tiro saiu da nave, subiu e ainda fez barulho. Aperta mais vezes. Anda com as setas pra um lado, atira, anda pro outro, atira de novo. Viu como o tiro sempre nasce certinho no bico da nave? É o bloco do centro x trabalhando: onde a nave estiver, é de lá que o tiro sai.",
+      "edit": "Usar o primeiro teste de posições. Retirar alterações para −15 e convites de brincar com valores.",
+      "visual": "A mesma nave em dois pontos da tela; um disparo por posição; observar a saída por cima.",
+      "newNarration": "Clique no jogo. Vá para a esquerda e atire. Depois vá para a direita e atire de novo. Os dois tiros nascem na nave e sobem. Deixe vy menos 9 para a próxima aula.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou o Dia 2! Olha os seis passos de hoje: você criou o grupo dos tiros, montou a",
+      "exit": "çar a cair do céu, e você vai explodir eles com os seus tiros. Descansa, e te espero lá. Até amanhã!",
+      "narration": "Parabéns, você terminou o Dia 2! Olha os seis passos de hoje: você criou o grupo dos tiros, montou a área que escuta o teclado, fez o tiro nascer na nave, deu velocidade e som pro disparo, colocou o motor pra cuidar dos tiros e ainda testou cada detalhe. Amanhã, no Dia 3, a coisa fica séria: uma chuva de asteroides vai começar a cair do céu, e você vai explodir eles com os seus tiros. Descansa, e te espero lá. Até amanhã!",
+      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "visual": "Resultado do dia e convite para duas perguntas finais.",
+      "newNarration": "Agora cada disparo nasce na sua nave. O evento cria; o motor move, faz a limpeza e desenha o grupo. No Dia 3, chegam os asteroides para você acertar.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceReview": [
+    {
+      "heading": "Especificações",
+      "clips": [],
+      "decision": "Referência de formato e ritmo; a duração interativa é estimada separadamente."
+    },
+    {
+      "heading": "Abertura",
+      "clips": ["video-abertura-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 1. Passo 1: criar o grupo dos tiros",
+      "clips": ["video-grupo-tiros"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 2. Passo 2: a área que escuta o teclado",
+      "clips": ["video-espaco"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 3. Passo 3: fazer o tiro nascer na nave",
+      "clips": ["video-origem", "video-criar-tiro"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 4. Passo 4: a velocidade e o som do tiro",
+      "clips": ["video-velocidade-som"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 5. Passo 5: fazer os tiros voarem pela tela",
+      "clips": ["video-ciclo-tiros"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 6. Passo 6: hora de atirar",
+      "clips": ["video-testar"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Fecho",
+      "clips": ["video-fecho-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ]
+}

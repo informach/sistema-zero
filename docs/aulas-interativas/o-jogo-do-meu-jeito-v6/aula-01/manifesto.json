@@ -1,0 +1,345 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-01",
+  "title": "Seu jogo no Estúdio Completo",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "video-construir-4-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Abertura. Entrada: “Oi! Eu sou a Helena, e eu vou estar com você neste curso inteiro. E parabéns, viu? Você terminou o D”. Saída: “a nave pra lá. E no fim eu te conto onde esses jogos ficam guardados, pra você nunca perder nenhum.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “Oi! O seu jogo da nave já está pronto. Hoje vamos levar uma cópia para o Estúdio Completo, onde você poderá continuar mexendo nele. Vamos conhecer a lista, preparar um projeto de teste e trazer o jogo. No final, você vai saber qual cartão abrir para continuar.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-lista",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: conhecer o Estúdio Completo. Entrada: “Então vamos lá. No menu da esquerda tem o Estúdio. Ele já estava aí antes e não abria, e hoje ele ab”. Saída: “omeça do zero, sem nada montado. Hoje você usa os dois, um em cada passo. Primeiro passo concluído.\"”. Manter a apresentação de Meus Jogos e dos dois botões; retirar “Primeiro passo concluído”. Não afirmar que a lista de toda criança estará vazia. Complemento: “Esta é a lista dos projetos do Estúdio. O jogo do Desafio ainda está na aula. Por isso ele pode não aparecer aqui. Daqui a pouco vamos trazer uma cópia.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-projeto-teste",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: começar um projeto do zero e instalar os bloquinhos. Entrada: “Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se ”. Saída: “ projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"”. Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão. Complemento: “Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-projeto-teste",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.\n\n**Antes de voltar à aula, confira:**\n\n- Projeto de teste aparece em Meus Jogos.\n- Jogo 2D aparece na paleta depois de instalado.\n\nSe a categoria não apareceu, confira Instalada e feche a janela de extensões.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-projeto-teste",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": ["Se a categoria não apareceu, confira Instalada e feche a janela de extensões."],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Num projeto novo, os blocos de Jogo 2D não apareceram. O que conferir?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Se a extensão Jogo 2D está instalada nesse projeto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Se o nome do projeto tem a palavra nave."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A extensão acrescenta os blocos. Dar nome ao projeto ajuda a encontrá-lo, mas não instala uma extensão."
+        }
+      }
+    },
+    {
+      "key": "video-ponte",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: trazer o seu jogo da nave. Entrada: “É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto”. Saída: “ placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez.”. Usar só as definições de exportar e importar com a imagem do arquivo. O gesto completo de navegação fica na próxima seção; substituir as ordens de clicar por esta narração de observação. Complemento: “O jogo fica na aula. Exportar cria um arquivo com uma cópia dele. Importar usa esse arquivo para criar um projeto no Estúdio. Não é preciso apagar o jogo da aula.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-importar",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: trazer o seu jogo da nave. Entrada: “Agora o outro jeito de começar um projeto. O seu jogo da nave mora dentro da aula do Desafio, e é lá”. Saída: “ção, então ele está aqui no Estúdio e no Pinta também, no mesmo cantinho. Terceiro passo concluído.\"”. Preservar todas as telas do caminho. Encurtar as definições já demonstradas. Manter recuperação por Sincronizar com o enviado como ajuda condicional, não ação obrigatória. O puxador do menu entra como dica breve ao fim. Complemento: “Na aba da ferramenta, abra Cursos → Faísca → Desafio do Primeiro Jogo → Dia 5. Exporte para o Estúdio, volte ao Estúdio e importe o arquivo .szproject.json. Abra o jogo, teste os controles e dê um nome que você reconheça.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-importar",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na aba da ferramenta, abra Cursos → Faísca → Desafio do Primeiro Jogo → Dia 5. Exporte para o Estúdio, volte ao Estúdio e importe o arquivo .szproject.json. Abra o jogo, teste os controles e dê um nome que você reconheça.\n\n**Antes de voltar à aula, confira:**\n\n- O projeto importado contém os blocos, nave, tiros e asteroides do Dia 5.\n- O nome do cartão permite distingui-lo do projeto de teste.\n- A nave responde aos controles do jogo.\n\nSe o Dia 5 estiver vazio, confira o trabalho enviado e use Sincronizar com o enviado apenas para recuperar aquela entrega. Não importe um arquivo de imagem.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-importar",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se o Dia 5 estiver vazio, confira o trabalho enviado e use Sincronizar com o enviado apenas para recuperar aquela entrega. Não importe um arquivo de imagem."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Há um cartão vazio e outro com o jogo completo. Qual usaremos nas aulas 6 e 7?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O cartão do jogo importado, conferindo o nome e o conteúdo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O cartão vazio, porque é o mais novo."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A continuidade está no projeto que já contém o jogo. O projeto vazio fica reservado."
+        }
+      }
+    },
+    {
+      "key": "video-guardar",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: onde os seus jogos ficam guardados. Entrada: “Agora volta pra lista dos seus jogos, pelo mesmo caminho de antes: o Sistema Zero Studio, lá no cant”. Saída: “s não ficam presos neste computador. Se você entrar na sua conta em outro computador, eles estão lá.”. Manter retorno à lista e aviso Guardado na sua conta. Retirar cena antiga de lista vazia em outro navegador, limites numéricos, exclusão e remix; cópia publicada será retomada na aula 8. Complemento: “Espere aparecer Guardado na sua conta. Volte a Meus Jogos e abra o mesmo cartão. Confira se o jogo continua completo. É aqui que vamos voltar depois de desenhar.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-guardar",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Espere aparecer Guardado na sua conta. Volte a Meus Jogos e abra o mesmo cartão. Confira se o jogo continua completo. É aqui que vamos voltar depois de desenhar.\n\n**Antes de voltar à aula, confira:**\n\n- Aviso Guardado na sua conta confirmado.\n- Mesmo projeto reaberto com os blocos e recursos esperados.\n\nSe o salvamento estiver pendente, mantenha a ferramenta aberta e confira a conexão antes de sair.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-guardar",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se o salvamento estiver pendente, mantenha a ferramenta aberta e confira a conexão antes de sair."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "A ferramenta ainda está guardando seu jogo. O que fazer antes de fechar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Criar outro projeto com o mesmo nome."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Esperar o aviso de que ficou guardado na conta."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Uma cópia vazia não termina o salvamento. Confira o aviso do projeto em que trabalhou."
+        }
+      }
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Selecione o jogo importado do Dia 5 na galeria do Estúdio e envie. O projeto de teste fica na lista, mas não é a entrega.\n\n**Confira na sua criação:**\n\n- Receber o jogo completo, não o projeto vazio.\n- Abrir a partida e conferir nave, tiros, asteroides, pontos/vidas, telas e reinício conforme o Dia 5.\n- Confirmar que a criança reconhece a diferença entre a criação na aula, o arquivo e o projeto livre.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-01-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 1. Olha o que você tem agora: dois projetos seus. O jogo da nave, que”. Saída: “você vai desenhar a sua nave. Do seu jeito, com as suas cores, e com o motor dela acendendo. Até já.”. Reaproveitar a recapitulação, ajustando: Não fixar “mais de cem jogos”; usar o indicador atual de armazenamento. Não mostrar lista vazia em outro navegador como comportamento esperado após salvar na conta. Não demonstrar Fazer a minha versão agora: evitar um terceiro projeto quase igual. Conferir permissões da Carreira no perfil de revisão; não prometer desbloqueios específicos. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Agora você tem o seu jogo no Estúdio Completo e sabe onde encontrá-lo. Exportar leva uma cópia para um arquivo; importar traz essa cópia para um projeto. A aula original continua lá. Na próxima aula vamos desenhar a nave no Pinta. Antes, duas perguntas para guardar o caminho.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Depois de exportar o jogo, o que aconteceu com o original da aula?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Continua na aula; o arquivo contém uma cópia."
+              },
+              {
+                "id": "b",
+                "label": "Foi removido da aula e virou o arquivo."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Exportar preserva a origem."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você recebeu o arquivo .szproject.json e quer abri-lo no Estúdio. Qual ação usa?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Instalar extensão."
+              },
+              {
+                "id": "a",
+                "label": "Importar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Importar traz o projeto. Instalar extensão disponibiliza os blocos usados para construí-lo."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "O jogo do Dia 5 está pronto na aula do Desafio. Vamos levá-lo ao Estúdio Completo e aprender a reencontrá-lo.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "lista",
+      "title": "Observe: onde os projetos ficam",
+      "intent": "demonstration",
+      "objective": "Distinguir projeto da aula e projeto livre antes de procurar o jogo no lugar errado.",
+      "blockKeys": ["video-lista"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-lista"]
+      }
+    },
+    {
+      "key": "projeto-teste",
+      "title": "Crie um projeto e encontre os blocos",
+      "intent": "application",
+      "objective": "Criar o projeto de teste, instalar Jogo 2D e voltar à lista.",
+      "blockKeys": ["video-projeto-teste", "orientacao-projeto-teste", "conferir-projeto-teste"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-projeto-teste"]
+      }
+    },
+    {
+      "key": "ponte",
+      "title": "Observe: uma cópia faz a ponte",
+      "intent": "demonstration",
+      "objective": "Entender exportar e importar como cópia, antes de navegar até o Desafio.",
+      "blockKeys": ["video-ponte"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ponte"]
+      }
+    },
+    {
+      "key": "importar",
+      "title": "Traga o jogo do Dia 5",
+      "intent": "application",
+      "objective": "Encontrar o Dia 5 pelo nome, exportar, importar, testar e nomear o projeto.",
+      "blockKeys": ["video-importar", "orientacao-importar", "conferir-importar"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-importar"]
+      }
+    },
+    {
+      "key": "guardar",
+      "title": "Reencontre o mesmo jogo",
+      "intent": "application",
+      "objective": "Conferir salvamento na conta e reabrir o projeto certo.",
+      "blockKeys": ["video-guardar", "orientacao-guardar", "conferir-guardar"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-guardar"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Projeto do Dia 5 importado, reconhecível pelo nome, jogável e guardado na conta; projeto de teste separado.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Projeto do Dia 5 importado, reconhecível pelo nome, jogável e guardado na conta; projeto de teste separado.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

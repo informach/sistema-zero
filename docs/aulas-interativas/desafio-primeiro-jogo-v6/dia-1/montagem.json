@@ -1,0 +1,210 @@
+{
+  "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+  "sourceHash": "047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6",
+  "status": "Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Que bom ter você aqui! Seja bem-vindo ao nosso Desafio do Primeiro Jogo. Aqui nós vamos criar um",
+      "exit": "á vida pra nave. E no sexto, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.",
+      "narration": "Oi! Que bom ter você aqui! Seja bem-vindo ao nosso Desafio do Primeiro Jogo. Aqui nós vamos criar um jogo de nave, e para vencer você precisa destruir os asteroides. Hoje é o nosso primeiro dia, e no fim da aula de hoje a sua nave já vai estar voando num espaço cheio de estrelas, obedecendo o seu teclado. E pra chegar lá, a gente vai passar por seis passos. O primeiro é montar as áreas do projeto, que são os espaços que guardam o jogo. O segundo é preparar a tela. No terceiro, a gente cria a sua nave. No quarto, liga o motor do jogo. No quinto, desenha o mundo e dá vida pra nave. E no sexto, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.",
+      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
+      "newNarration": "Oi! Hoje sua nave vai aparecer num espaço cheio de estrelas e obedecer às setas. Vamos preparar o jogo, descobrir onde a nave fica e montar um pedacinho de cada vez.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-areas",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: montar as áreas do projeto",
+      "entry": "Todo jogo precisa de um lugar pra guardar os passos dele. Aqui no estúdio, esse lugar são as áreas d",
+      "exit": " uma arruma o jogo, a outra é o motor. Agora vamos pro segundo passo, que é preparar a tela do jogo.",
+      "narration": "Todo jogo precisa de um lugar pra guardar os passos dele. Aqui no estúdio, esse lugar são as áreas do projeto, que são uns espaços grandes que seguram os blocos dentro deles. Hoje a gente vai usar duas. A primeira se chama Ao iniciar. Tudo o que a gente colocar dentro dela acontece uma vez só, bem no comecinho, quando o jogo liga. É a hora de preparar as coisas. É como quando você vai desenhar: primeiro você pega o papel e os lápis. Isso você faz uma vez, e depois é só criar. Vamos montar. Na categoria Áreas do projeto, pega o bloco Ao iniciar. Clica nele, segura, arrasta para essa área grande no meio e solta. Prontinho, essa é a área da arrumação do jogo. A segunda se chama Enquanto estiver rodando. Essa é diferente: tudo o que estiver dentro dela fica se repetindo sem parar, o tempo todo, enquanto o jogo estiver ligado. Pensa num ventilador: enquanto está ligado, ele gira, gira, gira, sem parar. Se desliga, para. Essa área é o motor do jogo: fica trabalhando sem parar enquanto o jogo está ligado. Vai de novo na categoria Áreas do projeto, pega o bloco Enquanto estiver rodando, arrasta e solta ao lado do Ao iniciar, com um espacinho entre eles. Primeiro passo pronto. As duas áreas estão no lugar: uma arruma o jogo, a outra é o motor. Agora vamos pro segundo passo, que é preparar a tela do jogo.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando. Deixe um espaço entre eles. O primeiro prepara as coisas; o segundo vai guardar o motor que trabalha enquanto o jogo está ligado.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-tela",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 2. Passo 2: preparar a tela do jogo",
+      "entry": "Agora vamos preparar a tela onde o jogo acontece. A maioria dos blocos que a gente usa fica numa cat",
+      "exit": "escolha é sua. Passo 2 feito. Agora vem o terceiro, e esse é especial: a gente vai criar a sua nave.",
+      "narration": "Agora vamos preparar a tela onde o jogo acontece. A maioria dos blocos que a gente usa fica numa categoria chamada Jogo 2D, que são os cor de rosa. De vez em quando a gente pega um bloco de outra categoria, e nessas horas eu te aviso. Na categoria Jogo 2D, subcategoria Aparência, pega o bloco Preparar o jogo em tela cheia. Arrasta ele para dentro da área Ao iniciar e encaixa bem no topo, até dar aquele clique de peça entrando no lugar. Esse bloco monta a área do jogo pra você. Ele tem dois números: o primeiro é a largura da tela e o segundo é a altura. Eles já vêm preenchidos com 800 e 480, que é um tamanho ótimo pra jogo, então deixa assim mesmo. E tá vendo o quadradinho de cor no fim do bloco? Clicando nele você escolhe a cor de fundo do seu jogo. Pode deixar bem escuro, com cara de espaço de verdade, ou escolher a cor que você mais gostar. Esse jogo é seu, então essa escolha é sua. Passo 2 feito. Agora vem o terceiro, e esse é especial: a gente vai criar a sua nave.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-endereco",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: criar a sua nave",
+      "entry": "Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x ",
+      "exit": "o da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide.",
+      "narration": "Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x e um chamado y. O x diz se a nave fica mais para a esquerda ou mais para a direita. O y diz se ela fica mais para cima ou mais para baixo. Então x e y são só o endereço da nave na tela, é como dizer onde ela mora. Vamos colocar a nave embaixo, no meio. Como a nossa tela tem 800 de largura, a metade é 400. Então escreve 400 no x. E como a altura da tela é 480 e a gente quer a nave lá embaixo, escreve 410 no y, que é quase no fundo, com uma folguinha para aparecer o foguinho dela. Depois tem a largura e a altura, que é o tamanho da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide.",
+      "edit": "Reaproveitar a analogia de endereço e a explicação de largura/altura. Substituir a afirmação de que x 400 centraliza exatamente a nave. Acrescentar origem e sentido dos eixos.",
+      "visual": "Tela 800 × 480 com caixa 54 × 62: x de 200 para 400 com y fixo; depois y de 110 para 410 com x fixo. Marcar o canto em (400,410) e o centro x em 427, sem transformar essa conta em tarefa.",
+      "newNarration": "O x cresce para a direita. O y cresce para baixo. A marca mostra o canto de cima à esquerda da caixa da nave. Com x 400, esse canto fica no meio da tela; o centro da nave fica um pouquinho à direita.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-nave",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: criar a sua nave",
+      "entry": "Chegou a hora da estrela do jogo: a sua nave! Na categoria Jogo 2D, subcategoria Kit espaço, pega o ",
+      "exit": "gente vai resolver no próximo passo. Passo 3 feito. Bora pro quarto passo, que é fazer o jogo rodar.",
+      "narration": "Chegou a hora da estrela do jogo: a sua nave! Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Criar nave. Arrasta ele para dentro do Ao iniciar e encaixa logo abaixo do Preparar o jogo. Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x e um chamado y. O x diz se a nave fica mais para a esquerda ou mais para a direita. O y diz se ela fica mais para cima ou mais para baixo. Então x e y são só o endereço da nave na tela, é como dizer onde ela mora. Vamos colocar a nave embaixo, no meio. Como a nossa tela tem 800 de largura, a metade é 400. Então escreve 400 no x. E como a altura da tela é 480 e a gente quer a nave lá embaixo, escreve 410 no y, que é quase no fundo, com uma folguinha para aparecer o foguinho dela. Depois tem a largura e a altura, que é o tamanho da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide. E agora a parte boa: esse bloco deixa você escolher a cor do corpo e a cor das asas. Clica nos quadradinhos de cor e pinta a sua nave do jeito que você quiser. Capricha, porque ela vai ser só sua. Ué, mas cadê a nave? Calma, a gente criou ela, só que ainda não desenhou ela na tela. É isso que a gente vai resolver no próximo passo. Passo 3 feito. Bora pro quarto passo, que é fazer o jogo rodar.",
+      "edit": "Reaproveitar o gesto de criar e configurar. Encurtar os eixos, já vistos na comparação. Manter a surpresa de ainda não aparecer, sem dizer que houve erro.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-criar-desenhar",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 4. Passo 4: ligar o motor do jogo",
+      "entry": "Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Voc",
+      "exit": "enha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.",
+      "narration": "Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Você já viu aqueles livrinhos que, quando a gente passa as páginas bem rápido, parece que o bonequinho se mexe? Cada página é um desenho um pouquinho diferente, e passando rápido o seu olho enxerga movimento. Um jogo funciona igualzinho. Cada página dessas tem um nome: quadro. O jogo desenha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.",
+      "edit": "Aproveitar a analogia do livrinho. Acrescentar a nave na memória e o desenho na tela em dois quadros. Não pedir montagem durante o clipe.",
+      "visual": "Quadro dividido: cartão “nave criada: 1” permanece; tela muda de vazia para nave desenhada. Em seguida três quadros numerados, com uma só nave na memória.",
+      "newNarration": "Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-quadro",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 4. Passo 4: ligar o motor do jogo",
+      "entry": "E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o",
+      "exit": " ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.",
+      "narration": "E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o bloco A cada quadro do jogo. Arrasta ele para dentro da área Enquanto estiver rodando e encaixa. Faz sentido ele morar aí, né? O motor do jogo é a área que repete sem parar, e desenhar quadro atrás de quadro é justamente uma coisa que repete sem parar. Repara que esse bloco tem um espaço aberto dentro. Tudo o que a gente colocar nesse espaço vai acontecer de novo e de novo, a cada quadro. Passo 4 feito, o motor está ligado. Só que ele ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fundo",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: desenhar o mundo e dar vida à nave",
+      "entry": "O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente",
+      "exit": "arzinho pra dar a sensação de que a nave está viajando pelo espaço. Vamos deixar 1 mesmo, bem suave.",
+      "narration": "O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente quer um desenho novo, primeiro apaga o antigo, senão fica tudo embolado, um desenho por cima do outro. Na categoria Jogo 2D, subcategoria Aparência, pega o bloco Limpar a tela. Arrasta para dentro do A cada quadro do jogo e encaixa bem no topo. Essa é a nossa borracha. O segundo põe as estrelinhas no céu. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Desenhar fundo de estrelas. Encaixa ele logo abaixo do Limpar a tela. Tá vendo o número dele? É a velocidade das estrelas: elas andam devagarzinho pra dar a sensação de que a nave está viajando pelo espaço. Vamos deixar 1 mesmo, bem suave.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-mover",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: desenhar o mundo e dar vida à nave",
+      "entry": "O terceiro é o que dá vida pra sua nave. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco ",
+      "exit": "a some. Viu que legal? Esse aviso não é bronca, é um ajudante: ele te mostra certinho o que arrumar.",
+      "narration": "O terceiro é o que dá vida pra sua nave. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco Mover o sprite nave com as setas. Encaixa embaixo do Desenhar fundo de estrelas. E aqui aparece uma palavra nova: sprite. Sprite é só o nome chique de um objeto do jogo. A sua nave é um sprite. Esse bloco faz ela andar para os lados quando você aperta a seta da esquerda e a da direita no teclado. O número dele é a velocidade. Deixa 7 por enquanto, daqui a pouco você vai poder brincar com ele. O quarto é uma cerquinha. Sem ele, se você segurasse a seta, a nave ia embora pra fora da tela e sumia. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco Manter o sprite dentro da tela e encaixa logo abaixo do Mover. Opa, olha o bloco! Apareceu um iconezinho de alerta nele. Isso é o estúdio avisando que tem alguma coisinha pra ajeitar. Clica nesse iconezinho e olha: aparece uma mensagem em português explicando o problema. Ele está dizendo que não existe nenhum sprite chamado heroi no nosso jogo. E é verdade: o nosso sprite se chama nave. O bloco veio escrito heroi de fábrica, então clica no heroi e troca para nave. Pronto, o alerta some. Viu que legal? Esse aviso não é bronca, é um ajudante: ele te mostra certinho o que arrumar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, abaixo das estrelas. Depois coloque Manter o sprite dentro da tela e escolha nave. Se aparecer um alerta de nome, leia e troque para o sprite que você criou.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-desenhar",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: desenhar o mundo e dar vida à nave",
+      "entry": "E o quinto é o que finalmente mostra a nave. Na categoria Jogo 2D, subcategoria Sprites, pega o bloc",
+      "exit": "io e trabalhando. E agora o melhor de todos, o sexto passo, que é testar e deixar tudo do seu jeito.",
+      "narration": "E o quinto é o que finalmente mostra a nave. Na categoria Jogo 2D, subcategoria Sprites, pega o bloco Desenhar o sprite e encaixa por último, embaixo de tudo. Esse vem escrito jogador, e o iconezinho de alerta aparece de novo no bloco. Você já sabe resolver: clica no jogador e troca para nave. E sabe por que ele vem por último? Olha a ordem do nosso desenho: primeiro a gente limpa a tela, depois desenha as estrelas do fundo, depois move a nave e segura ela dentro da tela, e só no fim desenha a nave por cima de tudo, pra ela ficar na frente, bem na nossa vista. Se a gente desenhasse a nave antes das estrelas, as estrelas iam ficar por cima e tampar ela. Por isso a ordem importa tanto. Passo 5 feito, o motor está cheio e trabalhando. E agora o melhor de todos, o sexto passo, que é testar e deixar tudo do seu jeito.",
+      "edit": "Manter o gesto e a ordem. Substituir “as estrelas iam tampar ela” por “o que é desenhado depois pode cobrir o que veio antes”; não afirmar cobertura total por pontos de estrelas.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Sprites, coloque Desenhar o sprite por último e escolha nave. Confira: limpar, estrelas, mover, manter dentro da tela, desenhar nave. Agora clique no jogo e use as setas para os dois lados.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-teste",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 6. Passo 6: testar e deixar do seu jeito",
+      "entry": "Agora olha pra tela do seu jogo! As estrelas estão se mexendo, e a sua nave apareceu, com as cores q",
+      "exit": "na área do jogo e aperta a seta para a esquerda e a seta para a direita. Tá vendo? Ela obedece você!",
+      "narration": "Agora olha pra tela do seu jogo! As estrelas estão se mexendo, e a sua nave apareceu, com as cores que você escolheu. Clica na área do jogo e aperta a seta para a esquerda e a seta para a direita. Tá vendo? Ela obedece você!",
+      "edit": "Selecionar o primeiro teste; mostrar confirmar campo e focar jogo em gravação atual. Retirar convite a 12 e exploração livre. Não provocar um suposto bug de confirmação sem reproduzi-lo na interface atual.",
+      "visual": "Campo confirmado; clique no jogo; setas esquerda e direita; nave contida nas duas bordas.",
+      "newNarration": "Depois de digitar um valor, confirme saindo do campo. Para testar as setas, clique na área do jogo. Nesta aula, deixe a velocidade em 7. Verifique se a nave vai para os dois lados e para na borda.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou o Dia 1! Olha só os seis passos que você venceu hoje: montou as áreas do pro",
+      "exit": "atirar de verdade, com som e tudo. Descansa, comemora a vitória de hoje, e te espero lá. Até amanhã!",
+      "narration": "Parabéns, você terminou o Dia 1! Olha só os seis passos que você venceu hoje: montou as áreas do projeto, preparou a tela, criou a sua nave, ligou o motor do jogo, encheu ele com o mundo e com a nave viva, e ainda deixou tudo do seu jeito. Amanhã, no Dia 2, a sua nave vai aprender a atirar de verdade, com som e tudo. Descansa, comemora a vitória de hoje, e te espero lá. Até amanhã!",
+      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "visual": "Resultado do dia e convite para duas perguntas finais.",
+      "newNarration": "Sua nave apareceu e já responde a você. Criar preparou o objeto; o motor passou a desenhar e mover. No Dia 2, ela vai aprender a atirar. Agora vamos guardar duas ideias de hoje.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceReview": [
+    {
+      "heading": "Especificações",
+      "clips": [],
+      "decision": "Referência de formato e ritmo; a duração interativa é estimada separadamente."
+    },
+    {
+      "heading": "Abertura",
+      "clips": ["video-abertura-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 1. Passo 1: montar as áreas do projeto",
+      "clips": ["video-areas"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 2. Passo 2: preparar a tela do jogo",
+      "clips": ["video-tela"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 3. Passo 3: criar a sua nave",
+      "clips": ["video-endereco", "video-nave"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 4. Passo 4: ligar o motor do jogo",
+      "clips": ["video-criar-desenhar", "video-quadro"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 5. Passo 5: desenhar o mundo e dar vida à nave",
+      "clips": ["video-fundo", "video-mover", "video-desenhar"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 6. Passo 6: testar e deixar do seu jeito",
+      "clips": ["video-teste"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Fecho",
+      "clips": ["video-fecho-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ]
+}

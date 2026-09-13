@@ -1,0 +1,193 @@
+{
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "introducao",
+  "title": "Bem-vindo: encontre sua aula e saiba continuar",
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → Abertura: aqui é o seu mundo. Entrada: “Oi! Seja muito bem-vindo ao Desafio do Primeiro Jogo! E deixa eu já te contar uma coisa: aqui dentro”. Saída: “ra: o seu avatar, o seu quarto, e o seu próprio jogo. Vem comigo que eu te mostro tudo, é rapidinho!”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Oi! Aqui você vai criar o seu primeiro jogo de nave. Hoje eu vou te mostrar como acompanhar a aula, onde encontrar os materiais e como pedir ajuda. Depois a gente começa a construção no Dia 1.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-percurso",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → O que conta pra completar uma aula. Entrada: “E por falar em aula, deixa eu te mostrar rapidinho o que conta pra você completar uma e ganhar aquel”. Saída: “inho rápido só pra mostrar que você mandou bem. Fez essas coisinhas? Aula concluída, XP conquistado!”. Usar a ideia de acompanhar e entregar; substituir a imagem antiga de vídeo em cima e Estúdio embaixo pela página atual por seções. Regravar as instruções de navegação. Fala complementar: “Cada seção tem uma tarefa. Em algumas você assiste; em outras, observa um exemplo ou faz uma comparação curta. Quando aparecer o Estúdio, é sua vez de montar. Confira o que falta, envie a construção quando a aula pedir e responda ao quiz.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-tela",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → Três jeitos de fazer a atividade. Entrada: “E na hora de fazer a atividade no estúdio, você escolhe o jeito que for mais confortável pra você, p”. Saída: “zer a atividade no estúdio, você escolhe o jeito que for mais confortável pra você, porque tem três.”. Substituir os antigos três modos e a orientação de abrir a mesma aula em duas telas. O vídeo de 4min34s documenta uma interface anterior; reaproveitar apenas gestos ainda presentes e regravar esta parte curta. Fala complementar: “Na tela grande, o exemplo e o Estúdio aparecem lado a lado. Você pode ajustar a divisória. Na tela pequena, use Ver exemplo e Criar. É o mesmo projeto. Para enxergar mais do Estúdio, use Expandir; depois volte à aula.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-materiais",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → Os seus materiais. Entrada: “Aqui no módulo, logo depois desta aula, vêm dois materiais, e eles são as próximas duas aulas. A pri”. Saída: “ tipo qual bloquinho usar ou onde ele encaixa, é só abrir o caderno que está tudo lá, passo a passo.”. Reaproveitar a apresentação dos dois materiais. Não fixar posições “próximas duas aulas” sem conferir a ordem publicada. Acrescentar a ajuda contextual atual. Fala complementar: “No curso, encontre o Caderno do Aluno. Ele ajuda a conferir os bloquinhos. O Mapa dos Pais é para o seu responsável. Se uma coisa não funcionar, use Preciso de ajuda e conte o que você fez e o que apareceu. Assim eu consigo te ajudar naquele ponto.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-salvar",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → O estúdio salva sozinho. Entrada: “E olha, isso vale pros três: pode criar sem medo nenhum, porque o estúdio salva tudo sozinho enquant”. Saída: “se você fechar sem querer, fica calmo. Quando você voltar, está tudo lá do jeitinho que você deixou.”. Reaproveitar a etiqueta de salvamento. Cortar “pode criar sem medo nenhum” e a garantia absoluta após queda de energia. Complementar a diferença entre rascunho local e entrega. Fala complementar: “O Estúdio guarda seu rascunho enquanto você monta. Antes de sair, espere o aviso de salvo. Esse rascunho fica neste navegador; para o professor receber sua construção, use Enviar para o professor na entrega. Nos próximos dias, a aula continua a partir do projeto enviado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md → Fecho pra criança. Entrada: “E é isso, agora esse Mundo da Criação é todo seu! Antes de começar o Dia 1, que tal já criar o seu a”. Saída: “Mapa dos Pais. Vai lá, se diverte, e te espero no Dia 1 pra gente criar o seu primeiro jogo. Até já!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora você já sabe por onde começar. Avise seu responsável sobre o Mapa dos Pais e responda às duas perguntas. O Dia 1 te espera para colocar a nave no espaço!” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você quer fechar a aula e continuar depois. O que faz?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Espera o aviso de salvo e retoma o rascunho no mesmo navegador."
+              },
+              {
+                "id": "b",
+                "label": "Envia uma construção incompleta toda vez que encaixa um bloco."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Salvar conserva o rascunho; a entrega envia o trabalho solicitado ao professor."
+          },
+          {
+            "id": "q2",
+            "prompt": "A nave não apareceu. Qual pedido ajuda mais?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "“Não deu”, sem contar o que tentou."
+              },
+              {
+                "id": "a",
+                "label": "“Criei a nave em Ao iniciar, mas ela não aparece na tela.”"
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Descrever a ação e o resultado ajuda o professor a localizar a dificuldade."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Conhecer o caminho até o primeiro jogo e aprender a usar as seções, o salvamento e a ajuda.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "percurso",
+      "title": "Uma seção de cada vez",
+      "intent": "demonstration",
+      "objective": "Distinguir assistir, observar, experimentar e fazer no Estúdio.",
+      "blockKeys": ["video-percurso"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-percurso"]
+      }
+    },
+    {
+      "key": "tela",
+      "title": "Veja o exemplo e monte com conforto",
+      "intent": "demonstration",
+      "objective": "Usar a disposição atual da aula no tamanho de tela disponível.",
+      "blockKeys": ["video-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-tela"]
+      }
+    },
+    {
+      "key": "materiais",
+      "title": "Seu caderno e o caminho da ajuda",
+      "intent": "demonstration",
+      "objective": "Localizar os materiais e reconhecer como pedir ajuda sem sair do foco.",
+      "blockKeys": ["video-materiais"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-materiais"]
+      }
+    },
+    {
+      "key": "salvar",
+      "title": "Salvar e enviar são coisas diferentes",
+      "intent": "demonstration",
+      "objective": "Esperar o salvamento antes de sair e distinguir rascunho de entrega.",
+      "blockKeys": ["video-salvar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-salvar"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você construiu",
+      "intent": "closing",
+      "objective": "Saber encontrar o Dia 1, acompanhar uma seção e pedir ajuda com uma descrição útil.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Hora do Desafio",
+      "intent": "closing",
+      "objective": "Reconhecer duas relações importantes desta aula.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "checar-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "convite-construir-3",
+    "checar-construir-4",
+    "construir-5",
+    "video-construir-5-1",
+    "fechamento",
+    "checar-fechamento"
+  ]
+}

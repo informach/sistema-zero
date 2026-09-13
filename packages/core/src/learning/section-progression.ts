@@ -6,6 +6,8 @@ export interface ProjectBlockPattern {
   blockType: string
   fields?: Record<string, string | number | boolean>
   inputs?: Record<string, string | number | boolean>
+  /** A later enabled sibling in this same statement chain, never another branch. */
+  beforeBlock?: string
   /** Match an active child in this named input, keeping all conditions on that same child. */
   inputBlocks?: Record<string, ProjectBlockPattern>
 }
@@ -21,8 +23,6 @@ export type SectionStructureRule =
       withinBlock?: string
       /** Exact number of matching active blocks; zero checks removal. */
       count?: number
-      /** A later enabled sibling in the same statement chain, never another branch. */
-      beforeBlock?: string
     })
 
 export interface SectionProjectCheck {
@@ -71,6 +71,7 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
   let remaining = 64
   function valid(v: unknown, depth: number): boolean {
     if (!record(v) || !blockName(v.blockType) || depth > 4 || --remaining < 0) return false
+    if (v.beforeBlock !== undefined && !label(v.beforeBlock)) return false
     if (
       ![v.fields, v.inputs].every(
         (values) =>

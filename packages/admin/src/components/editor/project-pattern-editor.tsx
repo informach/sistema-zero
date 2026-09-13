@@ -52,6 +52,26 @@ export function ProjectPatternEditor({
   const sockets = model.inputs(block)
   return (
     <div className="space-y-2">
+      {depth > 0 && block.connections.previous !== undefined && (
+        <label className="block text-sm">
+          Antes de qual comando neste mesmo espaço?
+          <Select
+            value={pattern.beforeBlock ?? ''}
+            onChange={(event) =>
+              onChange({ ...pattern, beforeBlock: event.target.value || undefined })
+            }
+          >
+            <option value="">Sem exigência de ordem</option>
+            {model.available
+              .filter((entry) => entry.connections.previous !== undefined)
+              .map((entry) => (
+                <option key={entry.type} value={entry.type}>
+                  {entry.label}
+                </option>
+              ))}
+          </Select>
+        </label>
+      )}
       {depth > 0 &&
         block.parameters.map((parameter) => {
           const value = String(pattern[parameter.kind]?.[parameter.name] ?? '')

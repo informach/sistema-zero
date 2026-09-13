@@ -1,0 +1,98 @@
+{
+  "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+  "sourceHash": "6c91114eeff90e43403960ab3b5976383576c498699ee9a98b7bcedca0c9b99f",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "A sua pedra está pronta, e ela está aí, paradinha. Só que no seu jogo essa pedra não está parada. El",
+      "exit": "seu você faz do jeito que você quiser. Esse é o nosso trabalho de hoje, e ele vem em quatro passos.\"",
+      "narration": "A sua pedra está pronta, e ela está aí, paradinha. Só que no seu jogo essa pedra não está parada. Ela desce do alto, em altíssima velocidade, bem em cima da sua nave. E uma pedra descendo desse jeito esquenta tanto que pega fogo. É por isso que meteoro de verdade aparece com aquele rastro aceso atrás. No fim da aula você vai ter um meteoro parecido com esse aqui. Esse é o do Júlio. E hoje é igual à aula passada: ele faz o fogo dele aqui na tela, e o seu você faz do jeito que você quiser. Esse é o nosso trabalho de hoje, e ele vem em quatro passos.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "Sua pedra vai ganhar uma chama de jogo e uma animação. Primeiro vamos descobrir como colocar formas umas atrás das outras. Depois você faz a chama e muda alguns detalhes no segundo quadro. A pedra continua dentro do mesmo desenho.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-chama-externa",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: a chama de fora",
+      "entry": "Pra começar, abre o Pinta ali no menu da esquerda e clica no cartão do asteroide, aquele que você te",
+      "exit": " da chama. Pronto: a pedra na frente, a chama atrás, saindo de trás dela. Primeiro passo concluído.\"",
+      "narration": "Pra começar, abre o Pinta ali no menu da esquerda e clica no cartão do asteroide, aquele que você terminou na aula passada. A primeira parte é a cor, igual foi na pedra: clica no Preenchimento, lá no pé da caixa de ferramentas, e escolhe no painel de cores a cor de fora do seu fogo. A do Júlio vai de laranja bem forte, e a sua pode ser vermelha, ou até azul ou verde, se o seu meteoro vier de um lugar diferente do dele. E aqui também a gente deixa sem linha em volta: clica no quadradinho da moldura, o Contorno, e no painel de cores pega a primeira casinha, aquela quadriculada, que se chama Sem cor. É o mesmo caminho da pedra, na aula passada. A segunda parte é o traço. Vai na caixa de ferramentas e clica na Caneta, porque de novo a gente quer uma forma fechada, pra encher de cor. Antes de clicar, pensa numa coisa: a pedra está caindo, então o fogo fica do lado de onde ela veio, arrastado pra trás. Se ela cai pra baixo, o fogo fica em cima. Escolhe de que lado o seu fogo sai. Olha o Júlio fazendo a chama dele: ele começa perto da pedra e vai afinando pra longe, com as pontas desiguais, umas mais compridas, outras mais curtas, porque fogo não tem formato certinho. Quando termina a volta, ele fecha no primeiro ponto. E repara nas pontas: elas ficaram retas, igual a pedra ficou na aula passada, antes da gente arredondar. Aqui o Júlio arredonda só a parte que contorna a pedra, ali onde o fogo encosta nela. As pontas do rastro ficam retas mesmo, e o critério é esse: ponta reta é pra coisa afiada, ponta redonda é pra coisa macia. O fogo afina até virar um bico, e a parte que abraça a pedra é curva. Agora olha o outro problema, que aconteceu no dele e no seu: a chama nasceu na frente da pedra, tapando ela. Isso é normal, e é assim que funciona no vetor: cada forma nova nasce por cima das que já estavam. É tipo ir empilhando papel recortado numa mesa: o último que você solta fica em cima de todos. Então a terceira parte é a ordem das formas. E repara numa coisa que apareceu quando a chama ficou pronta: embaixo da barra com o nome do desenho tem uma fileira de botões, e o nome de cada um aparece se você parar o mouse em cima. Ela só existe quando tem alguma forma escolhida, e a sua chama está escolhida desde a hora em que você fechou ela. Se a fileira sumir, clica na chama com a ferramenta Selecionar que ela volta. Procura o Uma camada para trás e clica. A chama desceu um degrau na pilha. Nas primeiras vezes pode até parecer que não mudou nada, porque ela ainda está na frente da pedra. Continua clicando, e para quando a pedra aparecer inteira na frente da chama. Pronto: a pedra na frente, a chama atrás, saindo de trás dela. Primeiro passo concluído.\"",
+      "edit": "Retirar a explicação de meteoros pegando fogo apenas por velocidade no espaço. Apresentar como desenho estilizado do jogo. Acrescentar desseleção antes da cor e espaço do quadro. Na suavização, nomear Editar os pontos → selecionar só a base → Ponto suave; pontas continuam retas.",
+      "visual": "Chama nasce por cima; mostrar sucessivos passos até ficar atrás da pedra e crateras. Número de cliques não é fixo. Mostrar limites 64 × 64.",
+      "newNarration": "Abra asteroide, solte qualquer seleção e escolha a cor da chama. Com Caneta, trace uma forma fechada acima da pedra, dentro do quadro. Use Uma camada para trás até a pedra aparecer inteira na frente. Pare nesse resultado.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-chama-interna",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: as chamas de dentro",
+      "entry": "Agora repara na sua chama: ela é de uma cor só, e fogo de verdade não é assim. Ele é mais claro no m",
+      "exit": " está mais claro no miolo e mais escuro na beirada, igual fogo de verdade. Segundo passo concluído.\"",
+      "narration": "Agora repara na sua chama: ela é de uma cor só, e fogo de verdade não é assim. Ele é mais claro no meio e mais escuro na beirada, igual a luz e sombra que você fez na nave: a parte mais quente é a mais clara, e ela fica por dentro. Pra chegar nisso, o Júlio põe uma chama menor e mais clara em cima da que já existe. E não precisa desenhar de novo: dá pra copiar a que já está pronta, igual você fez com as crateras. Com a ferramenta Selecionar na mão, clica na sua chama, aperta Control e C e depois Control e V. Se você preferir não usar o teclado, na mesma fileira de botões de cima tem o Duplicar a seleção, que faz a mesma coisa. Nasceu uma cópia, um pouquinho pra baixo e pra direita, já escolhida. E ela nasceu na frente de tudo, tapando a pedra de novo, porque é sempre ali que a forma nova aparece. Com a cópia ainda escolhida, vai no Preenchimento e troca a cor por uma mais clara que a de fora. A do Júlio, que é laranja, vira amarela. Agora deixa a cópia menor: pega um quadradinho do canto da caixa e puxa pra dentro. E arrasta ela pra ficar em cima da primeira chama, encostada na pedra, com a cor de fora aparecendo em volta. Aí é o Uma camada para trás de novo, clicando até a pedra voltar pra frente. Quando ela aparecer inteira, para. Olha o que já apareceu: um fogo com duas cores, mais claro no meio. O Júlio faz mais uma no dele, ainda menor e mais clara: com a amarela escolhida, Control C, Control V, a cópia nova vira branca, e ela também desce com o Uma camada para trás até a pedra aparecer. Essa é a menorzinha, então ele encosta ela na pedra, no comecinho do fogo, que é a parte mais quente. Faz quantas você quiser no seu. Com duas chamas o fogo já fica bonito. Com três ele fica com mais camadas de cor, que é como o do Júlio ficou. O que não muda é a ordem das cores: a mais escura por fora, a mais clara por dentro. Antes de fechar o passo, olha o seu meteoro inteiro com calma. Vê se a pedra está na frente de todas as chamas e se elas estão encostadas umas nas outras, sem buraco no meio. Arruma o que faltar agora. Olha o seu fogo! Ele está mais claro no miolo e mais escuro na beirada, igual fogo de verdade. Segundo passo concluído.\"",
+      "edit": "Preservar cópia deslocada e ordenação. A terceira chama é uma variação breve do professor, sem tarefa extra. Tratar claro por dentro como linguagem visual escolhida, não lei física da temperatura.",
+      "visual": "Nomear maior/menor e mostrar o contorno externo da primeira chama ao redor da cópia. Pedra à frente de ambas.",
+      "newNarration": "Selecione a chama e duplique. Deixe a cópia menor e mais clara, dentro da primeira. Ela nasce na frente de tudo: mande para trás até a pedra reaparecer. Duas chamas já completam nossa tarefa.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-mudanca-demo",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: fazer a pedra rolar",
+      "entry": "E agora entra um jeito de animar diferente do da nave: lá você mexeu em quadradinhos, e teve que com",
+      "exit": "ga uma ponta e arrasta um pouco. Pega outra e empurra pro outro lado. Duas ou três pontas já bastam.",
+      "narration": "E agora entra um jeito de animar diferente do da nave: lá você mexeu em quadradinhos, e teve que completar o vão com o Lápis. Aqui você mexe nos pontos de uma forma, e ela se refaz sozinha. Então, neste segundo quadro, escolhe o que você quer mudar. Eu vou te mostrar três mudanças que funcionam bem, e você usa as que quiser. A primeira é mover as crateras. Vai na caixa de ferramentas, clica no Selecionar, clica numa cratera e arrasta ela pra um lugar um pouco diferente. O Júlio arrastou duas no meteoro dele. A segunda é apagar uma cratera. Clica nela pra escolher, e na fileira de botões lá de cima procura o Apagar a seleção. Essa mudança parece estranha, mas funciona por um motivo bem concreto: quando a pedra rola de verdade, tem cratera que passa pra trás e some da nossa vista. Sumindo uma, o olho entende que a pedra girou. E você apagou só neste quadro. No primeiro ela continua lá, inteirinha. A terceira é mexer no fogo: vai na caixa de ferramentas, clica no Editar os pontos e clica numa das chamas pra ela mostrar os pontos. Pega uma ponta e arrasta um pouco. Pega outra e empurra pro outro lado. Duas ou três pontas já bastam.",
+      "edit": "Mostrar mover uma cratera e editar uma ponta. Apagar uma cratera pode ser mostrado como possibilidade do professor, sem exigir; não vender dois quadros como rotação geométrica contínua.",
+      "visual": "Congelar corpo com guia discreta; alternar primeiro e segundo quadro, depois prévia breve. A alteração exagerada serve só como contraste de dois segundos.",
+      "newNarration": "Veja o segundo quadro: a pedra fica no mesmo lugar. Uma cratera muda um pouco de posição e uma ponta da chama muda de forma. Na prévia, isso sugere movimento. Não precisamos arrastar a pedra inteira.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-animar-pedra",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: fazer a pedra rolar",
+      "entry": "Com o fogo pronto, vem a parte mais legal: a gente vai fazer essa pedra rolar enquanto cai, e o fogo",
+      "exit": "star diferente é só o que você quis mudar. Arruma o que mudou sem querer. Terceiro passo concluído.\"",
+      "narration": "Com o fogo pronto, vem a parte mais legal: a gente vai fazer essa pedra rolar enquanto cai, e o fogo mexer. Olha a faixa lá embaixo: tem um quadro, com o seu meteoro, e embaixo do nome está escrito 1 quadro. Na ponta direita daquela linha tem a fileira de botõezinhos, a mesma da Aula 3. Procura o Duplicar quadro e clica. Nasceu o segundo, igualzinho, com a pedra, as crateras e as chamas. Tudo copiado. E o Pinta já te levou pra ele: o quadradinho aceso é o da direita. E agora entra um jeito de animar diferente do da nave: lá você mexeu em quadradinhos, e teve que completar o vão com o Lápis. Aqui você mexe nos pontos de uma forma, e ela se refaz sozinha. Então, neste segundo quadro, escolhe o que você quer mudar. Eu vou te mostrar três mudanças que funcionam bem, e você usa as que quiser. A primeira é mover as crateras. Vai na caixa de ferramentas, clica no Selecionar, clica numa cratera e arrasta ela pra um lugar um pouco diferente. O Júlio arrastou duas no meteoro dele. A segunda é apagar uma cratera. Clica nela pra escolher, e na fileira de botões lá de cima procura o Apagar a seleção. Essa mudança parece estranha, mas funciona por um motivo bem concreto: quando a pedra rola de verdade, tem cratera que passa pra trás e some da nossa vista. Sumindo uma, o olho entende que a pedra girou. E você apagou só neste quadro. No primeiro ela continua lá, inteirinha. A terceira é mexer no fogo: vai na caixa de ferramentas, clica no Editar os pontos e clica numa das chamas pra ela mostrar os pontos. Pega uma ponta e arrasta um pouco. Pega outra e empurra pro outro lado. Duas ou três pontas já bastam. Feitas as suas mudanças, dá uma olhada na prévia, ali do lado. Olha isso! A pedra parece que está rolando, e o fogo está tremulando, como fogo de verdade. E são dois quadros, só. E quanto você mexe é o que decide o resultado. Se ficou doido demais, volta e mexe menos. Se ficou parado demais, mexe um pouquinho mais. Vai olhando a prévia e ajustando, que é assim que se faz animação. Antes de fechar o passo, clica no primeiro quadradinho e depois no segundo, olhando os dois com calma. O que tem que estar diferente é só o que você quis mudar. Arruma o que mudou sem querer. Terceiro passo concluído.\"",
+      "edit": "Preservar Duplicar quadro e seleção após troca. Encurtar as três alternativas já demonstradas e retirar convites para muitas mudanças.",
+      "visual": "Troca de quadro solta a seleção: escolher de novo a cratera ou chama. Mostrar edição local e prévia.",
+      "newNarration": "Duplique o primeiro quadro. Confira o segundo aceso. Mova uma cratera um pouco e ajuste uma ou duas pontas da chama com Editar os pontos. Veja a prévia e compare os dois quadros. Mantenha a pedra e o fogo dentro da tela.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-nome-girando",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 4. Passo 4: o nome da animação",
+      "entry": "Falta a mesma coisa que faltou na nave: o nome. Olha na faixa: a sua animação está chamada parado, q",
+      "exit": "a na setinha apontando pra esquerda, lá na ponta esquerda da barra de cima. Quarto passo concluído.\"",
+      "narration": "Falta a mesma coisa que faltou na nave: o nome. Olha na faixa: a sua animação está chamada parado, que é o nome que toda animação nova ganha. E a sua pedra não está parada, ela está rolando e pegando fogo. Naquela mesma fileira de botõezinhos, depois de um risquinho, tem o Renomear animação. Clica nele, apaga o parado, escreve girando, tudo em letra minúscula, e clica no botão Renomear. A janela fecha, e o nome novo aparece na linha da faixa e embaixo da prévia. Daqui a duas aulas, quando eu levar o seu asteroide pro jogo, vai aparecer uma listinha no Estúdio com o nome das suas animações. Uma vai estar escrita voando, que é a da nave. E a outra vai estar escrita girando, que é a desta pedra, porque é esse nome que ela vai procurar lá. Com o nome trocado, volta pra galeria: clica na setinha apontando pra esquerda, lá na ponta esquerda da barra de cima. Quarto passo concluído.\"",
+      "edit": "Manter renomeação e retorno; não prometer miniaturas animadas. Não confundir duas animações em um desenho com uma animação em cada desenho.",
+      "visual": "Animação girando na faixa do asteroide. Galeria com dois cartões; conferir voando só ao abrir a nave.",
+      "newNarration": "Use Renomear animação para trocar parado por girando. Mantenha dois quadros e 8 fps. Volte à galeria: nave e asteroide devem estar lá. As miniaturas ficam paradas; abra cada desenho para ver a animação.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 5! Olha a sua galeria: dois desenhos seus. A nave, em pixel art, com ",
+      "exit": "hou entram dentro do jogo, no lugar dos que vieram prontos. O jogo vai virar seu de verdade. Até já.",
+      "narration": "Parabéns, você terminou a Aula 5! Olha a sua galeria: dois desenhos seus. A nave, em pixel art, com o motor aceso. E o meteoro, em vetor, rolando e pegando fogo. Os dois com o formato que você escolheu, e os dois se mexendo quando você abre eles. E olha as ferramentas que você ganhou nesta aula, com a hora de usar cada uma. A ordem das formas, que ficam empilhadas uma na frente da outra, e o Uma camada para trás, que é como você manda nessa ordem. As cores em camadas, do escuro por fora pro claro por dentro, que servem pra qualquer coisa que brilha. E a ponta reta, pra tudo que é afiado. Repara numa coisa. Na nave, você animou mexendo em quadradinhos, e teve que completar o vão com o Lápis. Aqui, você mexeu nos pontos de uma forma, e ela se refez sozinha. São dois jeitos de animar, e agora você conhece os dois. Com os dois desenhos prontos, as aulas no Pinta terminam aqui. Nestas quatro aulas o Júlio desenhou os dele aqui na tela, e os seus ficaram diferentes dos dele. Era pra ser assim. Na próxima a gente vai pro Estúdio, e é lá que acontece a parte que eu mais gosto: a nave e o meteoro que você desenhou entram dentro do jogo, no lugar dos que vieram prontos. O jogo vai virar seu de verdade. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: Tratar o meteoro flamejante como escolha estética do jogo, sem ensinar que velocidade sozinha causa fogo no vácuo. O roteiro afirma nas notas que o fogo nunca usa Ponto suave, mas a fala suaviza a base: preservar apenas esse arredondamento seletivo e explicitar o gesto. Cópia nasce no topo; o número de cliques para trás varia com as crateras e chamas. Não exigir apagar uma cratera nem acrescentar outras animações. Duas chamas bastam; não avaliar a criança pela quantidade usada por Júlio. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Agora você tem duas artes animadas: a nave e o asteroide. No vetor você mudou formas e pontos; na nave, mudou pixels. A pedra ficou na frente das chamas porque você cuidou da ordem. Na próxima aula vamos levar as artes ao Estúdio. Antes, duas ideias para guardar.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

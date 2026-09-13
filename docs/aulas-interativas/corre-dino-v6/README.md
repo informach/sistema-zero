@@ -10,7 +10,7 @@ Cada pasta contém `roteiro.md` (percurso, decisões, fala e montagem), `manifes
 | --- | --- | --- | --- |
 | Apresentação | Seleciona o recorte que retoma o projeto e apresenta a meta | Assiste, pausa e revê | 90% do clipe isolado assistido |
 | Demonstração | Prepara uma sequência visual com uma explicação específica | Observa, pausa e revê, sem mudar o exemplo | 90% do clipe; esta seção não vira experimento |
-| Experimentação | Escolhe uma missão com controles e evidências delimitados | Compara as situações pedidas, recebe ajuda e pode refazer | Evidências da missão verificadas; depois continuar ou rever |
+| Experimentação | Escolhe uma missão com controles e evidências delimitados | Compara as situações pedidas, recebe ajuda e pode refazer enquanto investiga | Evidências verificadas encerram os controles; depois continuar e consultar comparações guardadas |
 | Construção | Combina clipe do gesto, orientação curta e critérios de montagem | Pausa o vídeo, monta no mesmo projeto e usa Conferir | Peças, valores, ordem e conexões exigidas; vídeo não substitui a montagem |
 | Entrega | Define o estado esperado e revisa o jogo recebido | Testa, confere e envia o projeto | Critérios finais e envio |
 | Fechamento e quiz | Reaproveita a recapitulação e confere compreensão | Assiste à retomada e responde três perguntas curtas | Progresso de vídeo e respostas corrigidas |
@@ -57,8 +57,10 @@ A checagem estrutural não prova toda a jogabilidade. Cada roteiro também descr
 - Aula 2: o rastro é sutil nas pernas, antes da floresta. Não encenar um borrão inexistente.
 - Aula 3: no projeto original, o Dino suspenso não consegue pular antes de cair. O laboratório de trajetória já fornece um impulso e é explicitamente apresentado como modelo separado.
 - Aula 6: seguir a retirada do medidor descrita na Parte 4 e no Fecho; a nota inicial que o deixava até a aula 7 está desatualizada.
+- Aula 9: a colisão com grupo é conferida dentro de Se jogando a cada quadro, entre desenhar o grupo e a faxina. Esse bloco não é um registro de evento na área Quando acontecer.
 - Aula 10: ajustar a área do Dino, não a do cacto. 80% é a escolha desta versão, não uma regra universal de justiça.
 - Aula 11: atualizar as referências históricas ao medidor e à introdução do Se.
+- Aula 11: manter o placar dentro do Se jogando, com os valores originais x 12, y 30 e tamanho 24; ele não aparece no menu.
 - Aula 12: sorteio pode repetir. Os exemplos A/B servem para comparar, não para demonstrar propriedades estatísticas.
 - Aula 13: -9 limita a **base**; o sorteio ainda pode produzir -10. Cactos antigos mantêm a velocidade recebida. Publicar ou compartilhar não é requisito de conclusão.
 
@@ -80,3 +82,5 @@ bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
 ```
 
 O [relatório de verificação](../qa/revisao-13-aulas-verificacao.json) confere os 13 hashes de fonte, as âncoras dos 88 clipes, todas as seções e os programas finais de referência. Há também teste de carregar/salvar os 13 programas no Blockly real e gerar JavaScript com sintaxe válida. Isso não substitui revisar os vídeos produzidos nem percorrer as aulas publicadas com uma criança.
+
+O [full review](../qa/full-review-2026-09-12.md) acrescenta execução dos 13 projetos no motor real, casos de montagem incorreta, retomada das experiências e verificações da API. A ordem também pode ser conferida dentro de um encaixe, como gravidade antes do controle no então de Se jogando.

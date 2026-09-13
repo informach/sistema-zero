@@ -35,6 +35,7 @@ export function SectionCompletionEditor({
   hasStudio,
   allowBlocks,
   workspace,
+  allowPlatformAction = true,
   onChange,
 }: {
   value: SectionCompletion
@@ -42,9 +43,11 @@ export function SectionCompletionEditor({
   hasStudio: boolean
   allowBlocks?: string[]
   workspace?: unknown
+  allowPlatformAction?: boolean
   onChange: (value: SectionCompletion) => void
 }) {
   const checks = value.projectChecks ?? []
+  const [expandedChecks, setExpandedChecks] = useState<string[]>([])
   const fallbackAllowBlocks = workspace === undefined ? allowBlocks : undefined
   const authoring = useMemo(
     () => projectCheckAuthoring(workspace ?? { allowBlocks: fallbackAllowBlocks }),
@@ -90,11 +93,21 @@ export function SectionCompletionEditor({
         >
           <option value="">Usar atividades desta seção</option>
           {PLATFORM_ACTIONS.map((action) => (
-            <option key={action} value={action}>
+            <option
+              key={action}
+              value={action}
+              disabled={!allowPlatformAction && value.platformAction !== action}
+            >
               {PLATFORM_ACTION_LABELS[action]}
             </option>
           ))}
         </Select>
+        {!allowPlatformAction && !value.platformAction && (
+          <span className="block text-xs text-muted-foreground">
+            Ações de perfil precisam de uma seção sem ferramenta associada e fora de Material do
+            curso.
+          </span>
+        )}
         {value.platformAction && (
           <span className="block text-muted-foreground">
             O botão “Verificar minha ação” consulta o que o perfil salvou. Uma personalização
@@ -133,91 +146,124 @@ export function SectionCompletionEditor({
         ))}
       {checks.map((check, index) => (
         <div key={check.id} className="space-y-2 rounded-lg bg-muted/40 p-3">
-          <Input
-            aria-label={`Objetivo ${index + 1}`}
-            placeholder="Objetivo que o aluno deve cumprir"
-            value={check.label}
-            maxLength={200}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                projectChecks: checks.map((c) =>
-                  c.id === check.id ? { ...c, label: e.target.value } : c,
-                ),
-              })
-            }
-          />
-          <Select
-            aria-label={`Regra do objetivo ${index + 1}`}
-            value={check.rule.type}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                projectChecks: checks.map((c) =>
-                  c.id === check.id ? { ...c, rule: newRule(e.target.value) } : c,
-                ),
-              })
-            }
-          >
-            <option value="usesBlock">Usar um bloco</option>
-            <option value="usesLoop">Usar repetição</option>
-            <option value="declaresVariable">Criar variável</option>
-            <option value="definesFunction">Definir função</option>
-            <option value="callsFunction">Chamar função</option>
-          </Select>
-          {check.rule.type === 'usesBlock' && (
-            <ProjectRuleEditor
-              rule={check.rule}
-              allowBlocks={allowBlocks}
-              workspace={workspace}
-              onChange={(rule) =>
-                onChange({
-                  ...value,
-                  projectChecks: checks.map((c) => (c.id === check.id ? { ...c, rule } : c)),
-                })
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">
+                {check.label || `Objetivo ${index + 1} · falta preencher`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {check.rule.type === 'usesBlock'
+                  ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
+                  : check.rule.type === 'usesLoop'
+                    ? 'Usar repetição'
+                    : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-expanded={expandedChecks.includes(check.id)}
+              aria-controls={`check-editor-${check.id}`}
+              onClick={() =>
+                setExpandedChecks((ids) =>
+                  ids.includes(check.id) ? ids.filter((id) => id !== check.id) : [...ids, check.id],
+                )
               }
-            />
-          )}
-          {check.rule.type !== 'usesLoop' && check.rule.type !== 'usesBlock' && (
+            >
+              {expandedChecks.includes(check.id) ? 'Recolher objetivo' : 'Editar objetivo'}
+            </Button>
+          </div>
+          <div
+            id={`check-editor-${check.id}`}
+            hidden={!expandedChecks.includes(check.id)}
+            className="space-y-3"
+          >
             <Input
-              aria-label={`Nome esperado no objetivo ${index + 1}`}
+              aria-label={`Objetivo ${index + 1}`}
+              placeholder="Objetivo que o aluno deve cumprir"
+              value={check.label}
               maxLength={200}
-              value={check.rule.name}
               onChange={(e) =>
                 onChange({
                   ...value,
                   projectChecks: checks.map((c) =>
-                    c.id !== check.id
-                      ? c
-                      : {
-                          ...c,
-                          rule:
-                            c.rule.type === 'usesBlock'
-                              ? { ...c.rule, blockType: e.target.value }
-                              : c.rule.type === 'usesLoop'
-                                ? c.rule
-                                : { ...c.rule, name: e.target.value },
-                        },
+                    c.id === check.id ? { ...c, label: e.target.value } : c,
                   ),
                 })
               }
             />
-          )}
-          {check.rule.type !== 'usesBlock' &&
-            authoring.issues(check.rule).map((issue) => (
-              <p key={issue} role="alert" className="text-xs text-destructive">
-                {issue}
-              </p>
-            ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              onChange({ ...value, projectChecks: checks.filter((c) => c.id !== check.id) })
-            }
-          >
-            Remover objetivo
-          </Button>
+            <Select
+              aria-label={`Regra do objetivo ${index + 1}`}
+              value={check.rule.type}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  projectChecks: checks.map((c) =>
+                    c.id === check.id ? { ...c, rule: newRule(e.target.value) } : c,
+                  ),
+                })
+              }
+            >
+              <option value="usesBlock">Usar um bloco</option>
+              <option value="usesLoop">Usar repetição</option>
+              <option value="declaresVariable">Criar variável</option>
+              <option value="definesFunction">Definir função</option>
+              <option value="callsFunction">Chamar função</option>
+            </Select>
+            {check.rule.type === 'usesBlock' && (
+              <ProjectRuleEditor
+                rule={check.rule}
+                allowBlocks={allowBlocks}
+                workspace={workspace}
+                onChange={(rule) =>
+                  onChange({
+                    ...value,
+                    projectChecks: checks.map((c) => (c.id === check.id ? { ...c, rule } : c)),
+                  })
+                }
+              />
+            )}
+            {check.rule.type !== 'usesLoop' && check.rule.type !== 'usesBlock' && (
+              <Input
+                aria-label={`Nome esperado no objetivo ${index + 1}`}
+                maxLength={200}
+                value={check.rule.name}
+                onChange={(e) =>
+                  onChange({
+                    ...value,
+                    projectChecks: checks.map((c) =>
+                      c.id !== check.id
+                        ? c
+                        : {
+                            ...c,
+                            rule:
+                              c.rule.type === 'usesBlock'
+                                ? { ...c.rule, blockType: e.target.value }
+                                : c.rule.type === 'usesLoop'
+                                  ? c.rule
+                                  : { ...c.rule, name: e.target.value },
+                          },
+                    ),
+                  })
+                }
+              />
+            )}
+            {check.rule.type !== 'usesBlock' &&
+              authoring.issues(check.rule).map((issue) => (
+                <p key={issue} role="alert" className="text-xs text-destructive">
+                  {issue}
+                </p>
+              ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                onChange({ ...value, projectChecks: checks.filter((c) => c.id !== check.id) })
+              }
+            >
+              Remover objetivo
+            </Button>
+          </div>
         </div>
       ))}
       {hasStudio && !value.platformAction && (
@@ -225,15 +271,17 @@ export function SectionCompletionEditor({
           variant="outline"
           size="sm"
           disabled={checks.length >= 20}
-          onClick={() =>
+          onClick={() => {
+            const id = crypto.randomUUID()
+            setExpandedChecks((ids) => [...ids, id])
             onChange({
               ...value,
               projectChecks: [
                 ...checks,
-                { id: crypto.randomUUID(), label: '', rule: { type: 'usesBlock', blockType: '' } },
+                { id, label: '', rule: { type: 'usesBlock', blockType: '' } },
               ],
             })
-          }
+          }}
         >
           Adicionar objetivo do Estúdio
         </Button>

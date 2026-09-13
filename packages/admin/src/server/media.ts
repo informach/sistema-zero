@@ -349,9 +349,12 @@ export async function getVideoStatus(vimeoVideoId: string): Promise<VideoStatus>
  * Sobe a capa custom direto no Vimeo (pictures API) — o player do aluno usa a
  * capa do próprio Vimeo; não guardamos cópia no R2 (decisão da autoria v3).
  */
-export async function storeVideoThumbnail(vimeoVideoId: string, file: File): Promise<{ ok: true }> {
+export async function storeVideoThumbnail(
+  vimeoVideoId: string,
+  file: File,
+): Promise<{ ok: true; pictureId: string }> {
   const bytes = await file.arrayBuffer()
   const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
-  await uploadVideoThumbnail(vimeoVideoId, bytes, mime)
-  return { ok: true }
+  const pictureId = await uploadVideoThumbnail(vimeoVideoId, bytes, mime)
+  return { ok: true, pictureId }
 }

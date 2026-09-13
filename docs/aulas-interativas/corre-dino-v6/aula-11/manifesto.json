@@ -116,14 +116,14 @@
     },
     {
       "key": "video-mostrar-pontos",
-      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 2. Passo 2: mostrar o placar. Entrada: “E agora um reencontro: lembra daquele bloco que a gente pegou emprestado na Aula 6, pra ser o medido”. Saída: “acabou de montar o HUD do seu jogo. Passo 2 feito. Agora o terceiro, e nesse quem vai pensar é você.”. Reaproveitar o encaixe. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. Ponte nova: “No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Fonte: roteiro-aula-11-corre-dino.md, Parte 2. Passo 2: mostrar o placar. Entrada: “E agora um reencontro: lembra daquele bloco que a gente pegou emprestado na Aula 6, pra ser o medido”. Saída: “acabou de montar o HUD do seu jogo. Passo 2 feito. Agora o terceiro, e nesse quem vai pensar é você.”. Reaproveitar o encaixe dentro do Se e a troca para cor escura. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. O próximo clipe retoma a comparação com a imagem já montada. Ponte nova: “Dentro do Se a tela é jogando, depois de retirar os cactos que saíram, coloque Mostrar placar. Mantenha Pontos:, x 12, y 30 e tamanho 24. No valor, encaixe valor da variável pontos.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-mostrar-pontos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo."
+        "text": "Dentro do Se a tela é jogando, depois de retirar os cactos que saíram, coloque Mostrar placar. Mantenha Pontos:, x 12, y 30 e tamanho 24. No valor, encaixe valor da variável pontos."
       }
     },
     {
@@ -252,20 +252,31 @@
         "projectChecks": [
           {
             "id": "mostrar-pontos",
-            "label": "No placar, conecte o valor da variável pontos à entrada do valor.",
+            "label": "Dentro de Se jogando, mostre o placar lendo a variável pontos.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_draw_score",
+              "blockType": "sz_js_if_else",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
               "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_val_variable",
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
                   "fields": {
-                    "NAME": "pontos"
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_score",
+                  "fields": {
+                    "LABEL": "Pontos:"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "pontos"
+                      }
+                    }
                   }
                 }
               }
@@ -456,20 +467,31 @@
           },
           {
             "id": "mostrar-pontos",
-            "label": "No placar, conecte o valor da variável pontos à entrada do valor.",
+            "label": "Dentro de Se jogando, mostre o placar lendo a variável pontos.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_draw_score",
+              "blockType": "sz_js_if_else",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "LABEL": "Pontos:"
-              },
               "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_val_variable",
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
                   "fields": {
-                    "NAME": "pontos"
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_score",
+                  "fields": {
+                    "LABEL": "Pontos:"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "pontos"
+                      }
+                    }
                   }
                 }
               }

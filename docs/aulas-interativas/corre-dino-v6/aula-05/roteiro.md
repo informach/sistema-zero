@@ -80,7 +80,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Criação em cada quadro; Criação com intervalo.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Monte os dois ritmos do jogo
 
@@ -106,6 +106,8 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
 - Mantenha apenas um bloco de criação de cacto.
+- Desenhe a floresta com velocidade 5 antes do Dino.
+- Desenhe o Dino antes de atualizar e desenhar os cactos.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -180,6 +182,8 @@ Observe dois cactos entrando pela direita. Eles andam para a esquerda, separados
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
 - Mantenha apenas um bloco de criação de cacto.
+- Desenhe a floresta com velocidade 5 antes do Dino.
+- Desenhe o Dino antes de atualizar e desenhar os cactos.
 - Deixe a criação fora de A cada quadro.
 
 **O que deve acontecer a cada quadro?**

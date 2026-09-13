@@ -1,0 +1,255 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-08",
+  "title": "Publique o jogo do seu jeito",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Abertura. Entrada: “Olha o seu jogo. A sua nave, os seus asteroides, tudo mexendo, tudo desenhado por você. Hoje a gente”. Saída: “ onde buscar ideia quando não vier nenhuma. E no quarto, o lugar onde os criadores daqui conversam.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “O jogo com a sua arte está pronto. Hoje a primeira tarefa é publicar e conferir que as outras pessoas conseguem jogar. Depois vou mostrar algumas possibilidades para quando você quiser criar de novo. Você não precisa construir outro jogo para terminar este curso.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-publicar",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: publicar o seu jogo no Mural. Entrada: “Então vamos publicar. Volta pra lista de projetos pelo Sistema Zero Studio, lá no canto esquerdo da ”. Saída: “sua nave, no Mural dos Criadores, do lado dos jogos dos outros criadores. Primeiro passo concluído.\"”. Reaproveitar o caminho de publicação. Cortar a explicação longa do Desafio do mês para a seção de orientação posterior; deixar desmarcado nesta publicação guiada. Não prometer rankings, selos ou prêmios não confirmados. Preservar o aviso de cópias separadas. Complemento: “Abra o projeto com a sua nave e seus asteroides. Teste e use Compartilhar. Escolha título, resumo e capa; confira o aviso da cópia publicada e publique. Feche a janela, vá ao Mural e abra o cartão do seu jogo. Jogue a versão que está lá.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-publicar",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra o projeto com a sua nave e seus asteroides. Teste e use Compartilhar. Escolha título, resumo e capa; confira o aviso da cópia publicada e publique. Feche a janela, vá ao Mural e abra o cartão do seu jogo. Jogue a versão que está lá.\n\n**Antes de voltar à aula, confira:**\n\n- Cartão com título, capa e resumo da criação.\n- Link publicado abre o jogo com as duas artes.\n- Partida publicada responde e permite reinício.\n\nSe o cartão mostra uma versão antiga, confira qual projeto publicou. Alterar o projeto depois não substitui automaticamente a versão que já está no Mural.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-publicar",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se o cartão mostra uma versão antiga, confira qual projeto publicou. Alterar o projeto depois não substitui automaticamente a versão que já está no Mural."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Você mudou o projeto depois de publicar. O jogo daquela publicação mudou sozinho?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Sim; qualquer alteração no Pinta muda toda publicação antiga."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Não; a versão publicada e o projeto editável são cópias separadas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "A publicação guarda o estado daquele momento. Abra a versão publicada para conferir o que os outros recebem."
+        }
+      }
+    },
+    {
+      "key": "video-versoes",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: a rotina depois de cada curso. Entrada: “Com o jogo publicado, o curso fechou. E agora vem a parte que vale pra sempre. Olha esse jogo aqui: ”. Saída: “uda tudo, porque quem faz fica bom, e quem só assiste fica no mesmo lugar. Segundo passo concluído.\"”. Usar no máximo dois exemplos reais e uma comparação de estilo. Não afirmar “mesmos blocos” se o exemplo de carrinho retirou tiros, vidas ou vitória. Trocar obrigação de duas versões por convite para prática futura. Complemento: “Veja a nave e depois o carrinho. Se os controles, tiros, obstáculos e pontuação seguem as mesmas regras, a mecânica foi preservada. O tema e o desenho mudaram. Essas são ideias para outro dia, não uma tarefa nova desta aula.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-ideias",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: onde buscar ideia quando não vier nenhuma. Entrada: “Tem dia que você senta pra criar e não vem ideia nenhuma. Isso acontece com todo mundo que cria, inc”. Saída: “sa que funciona, abre pra ver como ela foi feita por dentro, e faz a sua. Terceiro passo concluído.\"”. Reaproveitar os caminhos e o projeto de teste da aula 1. Professor demonstra remix em projeto de demonstração, sem pedir clique da criança. Corrigir a afirmação de que outro tema quase sempre exige começar do zero: às vezes cabe adaptar as mesmas regras. Complemento: “Quando quiser uma ideia nova, veja o tema do mês na página inicial ou jogue uma criação no Mural. Fazer a minha versão cria outro projeto, com o nome Remix de. O jogo publicado que você acabou de conferir continua separado.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-clube",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: o Clube dos Criadores. Entrada: “O último passo de hoje é o lugar que faz tudo isso ficar mais fácil: o Clube, ali no menu da esquerd”. Saída: “hoje começou com alguém daqui perguntando. Ninguém aprende a criar sozinho. Quarto passo concluído.\"”. Reaproveitar apresentação do Clube. Remover obrigação de postar, promessa de resposta pessoal e frase absoluta “ninguém aprende sozinho”. Preferir exemplos preparados para a gravação a dados de crianças expostos sem necessidade. Complemento: “No Clube você pode mostrar o que está criando e pedir uma sugestão. Uma pergunta ajuda mais quando conta o que você queria, o que tentou e o que aconteceu. Por exemplo: queria que o fogo pulsasse, dupliquei o quadro, mas os dois desenhos ficaram iguais.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Envie o projeto que acabou de publicar pela galeria do Estúdio. Na mensagem da entrega, cole o endereço da publicação para o professor conferir o jogo no Mural. Você não precisa criar nem enviar uma segunda versão.\n\n**Confira na sua criação:**\n\n- Projeto entregue corresponde ao jogo próprio terminado na aula 7.\n- Professor abre o endereço da publicação e confere identidade, artes, partida, telas e reinício.\n- Pergunta sobre cópias separadas respondida; não interpretar isso como prova automática de publicação.\n- Não exigir publicação no Clube, participação no tema mensal, remix ou duas versões adicionais.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-08-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou o curso O Jogo do Meu Jeito! E aconteceu de novo aquilo que eu te contei na ”. Saída: “, desenha uma coisa que você tem vontade de ver mexendo, e põe ela dentro de um jogo. Até a próxima!”. Reaproveitar a recapitulação, ajustando: Publicação vem primeiro, como a decisão original de 23/08. O recebimento pela galeria é automático; verificação do link no Mural é humana. O manifesto não tem uma ação automática de publicar jogo. Não prometer desbloqueio, XP, selo, premiação ou posições no ranking sem conferir o produto configurado. Apresentar a rotina das versões como prática futura, compatível com o pedido de foco da criança. Preparar os jogos de comparação antes de editar o vídeo; não afirmar que os exemplos já estão implementados neste pacote. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Você levou um jogo para o Estúdio, desenhou em pixels e em vetor, animou e colocou suas artes no jogo. Sua versão está pronta para ser jogada. Quando quiser continuar, pode trocar a arte, imaginar outro tema ou buscar uma ideia no Mural. Termine as duas perguntas; a criação de hoje já está completa.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Trocar a nave por um submarino, conservando controles e regras, muda principalmente o quê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O tema e a aparência."
+              },
+              {
+                "id": "b",
+                "label": "Obrigatoriamente todas as regras do jogo."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O tema pode mudar mantendo a mecânica. Se você também mudar controles ou objetivos, a mecânica pode mudar junto."
+          },
+          {
+            "id": "q2",
+            "prompt": "Para pedir ajuda sobre uma animação parada, qual mensagem ajuda mais?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Não ficou bom."
+              },
+              {
+                "id": "a",
+                "label": "Dupliquei o quadro, mas os dois desenhos ficaram iguais e o fogo não pulsa."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Contar o que tentou e o resultado facilita localizar a próxima ação."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "Jogo com as duas artes próprias pronto e testado na aula 7.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "publicar",
+      "title": "Publique e abra o jogo no Mural",
+      "intent": "application",
+      "objective": "Publicar a versão pronta e verificar o cartão e o jogo abertos pela publicação.",
+      "blockKeys": ["video-publicar", "orientacao-publicar", "conferir-publicar"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-publicar"]
+      }
+    },
+    {
+      "key": "versoes",
+      "title": "Observe: a mesma regra com outra aparência",
+      "intent": "demonstration",
+      "objective": "Distinguir mecânica, tema e estilo visual, sem abrir uma nova construção.",
+      "blockKeys": ["video-versoes"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-versoes"]
+      }
+    },
+    {
+      "key": "ideias",
+      "title": "Observe: onde procurar uma próxima ideia",
+      "intent": "demonstration",
+      "objective": "Conhecer as opções de tema do mês e remix, sem sair para uma atividade extra.",
+      "blockKeys": ["video-ideias"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ideias"]
+      }
+    },
+    {
+      "key": "clube",
+      "title": "Observe: como pedir uma ajuda que funciona",
+      "intent": "demonstration",
+      "objective": "Saber descrever uma dúvida concreta no Clube.",
+      "blockKeys": ["video-clube"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-clube"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Projeto enviado ao professor, publicação conferida no Mural e compreensão de tema, mecânica e caminhos para continuar após o curso.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Projeto enviado ao professor, publicação conferida no Mural e compreensão de tema, mecânica e caminhos para continuar após o curso.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

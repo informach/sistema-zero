@@ -1,5 +1,43 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Autoria de aulas — 12/09/2026
+
+O cadastro prioriza criação do zero. `LessonSectionAuthoring` apresenta seções recolhíveis,
+resumos de conteúdo/projeto/avanço e menus de organização. Preferências de abertura ficam no
+localStorage por professor/aula; não pertencem ao documento publicado. As áreas Seções,
+Materiais e anexos e Dados da aula compartilham a mesma `LessonDraftSession`.
+
+O catálogo conserva os 13 tipos de bloco. O editor de conteúdo ocupa a largura da página,
+com retorno ao ponto de origem; não usa mais `BLOCK_DIALOG_WIDTH`. Estruturas iniciais e cópias
+são opcionais. Novo projeto, projeto existente e ferramenta externa exigem escolha explícita.
+`appendLessonSection` mantém cada bloco existente associado exatamente uma vez em **cada**
+operação salva, inclusive ao mover um projeto para a seção de entrega. Não altere vínculos ou
+critérios silenciosamente para passar pela publicação; incompatibilidades aparecem na revisão.
+
+Avanços usam os validadores compartilhados. Objetivos estruturais mantêm todos os detalhes e
+a simulação. Demonstrações oferecem ações e ordem visuais; JSON/importação continuam disponíveis.
+`Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
+
+Vídeo tem um único editor com capa. `LessonVideoUploads` mantém os workers acima dos campos:
+fechar um editor ou recolher uma seção não desmonta a transferência. Callbacks atualizam o ID
+original e ignoram blocos removidos. Publicação aguarda vídeos em envio/processamento.
+`/api/media/videos/[id]/thumbnail` mantém o guard de mídia: GET consulta capa atual/páginas;
+POST aplica imagem e retorna `{ok:true,pictureId}`; PATCH seleciona uma capa ou gera o primeiro
+quadro. Só apresentar confirmação quando a leitura devolver a imagem esperada. Capas Vimeo
+são compartilhadas por todas as aulas que usam o vídeo. Vídeo legado mantém provider,
+`posterUrl`, duração e legendas; arquivo direto oferece capa própria.
+
+Registro de entrega e limites da verificação:
+[implementação](../../docs/plans/2026-09-12-admin-autoria-aulas-implementacao.md).
+
+Full review de 12/09: o estado do editor/upload é isolado por professor/curso/aula; restaurar a
+versão do servidor encerra formulários e jobs locais antes de recarregar. Resultados de revisão
+pertencem ao documento validado e não sobrevivem a alterações. Trocar uma ferramenta incorporada
+para galeria captura o projeto atual antes de desmontar; dependências compartilhadas são
+confirmadas. Aula de certificado oferece o fluxo próprio, com remoção explícita dos critérios
+por seção. Vídeo processando conserva verificação manual. Compatibilidade: 54 manifestos válidos
+e 16 testes de importação/reimportação passaram. [Review](../../docs/plans/2026-09-12-admin-autoria-aulas-full-review.md).
+
 ## Recados e critérios de seção — 11/09/2026
 
 No Kids, `BroadcastPanel` oferece Novo recado para perfil, curso ou todos, prévia de destinatários
@@ -426,7 +464,7 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   Quando ready, baixa o VTT do Vimeo (link assinado, **EXPIRA**) e **re-hospeda no R2**
   (`admin/captions/<id>-<lang>.vtt`) → `captions[].url` estável p/ o bloco do members.
 - `POST /api/media/videos/:id/thumbnail` (multipart jpg/png ≤5MB) → **SÓ Vimeo pictures** →
-  `{ok:true}`. O player do aluno usa a capa do próprio Vimeo; a cópia WebP no R2 + `posterUrl`
+  `{ok:true,pictureId}`. O player do aluno usa a capa do próprio Vimeo; a cópia WebP no R2 + `posterUrl`
   da v2 foram removidas (decisão do usuário: capa direto no Vimeo, sem R2).
 
 **Decisões load-bearing:** `src` do bloco vídeo = **embed URL** `player.vimeo.com/video/<id>?h=…`
@@ -933,7 +971,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   do projeto seguem carregando.
 
 - **Bloco `pinta` — o ateliê de DESENHO na aula (15/08/2026):** o irmão do `studio`. O form
-  (`lesson-editor-client.tsx`: `KIND_LABELS.pinta`, `BLOCK_DIALOG_WIDTH.pinta = 'max-w-7xl'`,
+  (`lesson-editor-client.tsx`: `KIND_LABELS.pinta`, editor contextual amplo,
   campos `pinta*`) tem **Tipo do desenho** + **Tamanho** (`PINTA_LESSON_ASSET_OPTIONS` do pacote —
   personagem/cenário × pixel/formas; cenário para em **256** de propósito: acima disso o JSON não
   cabe no teto de corpo do gateway), o **Pinta embutido** (`components/pinta/pinta-embed.tsx`,
@@ -971,8 +1009,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   aluno e a DATA entram sozinhos na emissão (não há campo). A **mensagem** (frase E/OU parágrafo, abaixo do
   nome) é **OBRIGATÓRIA** (`validateBlock` exige ≥1 das duas); o resto é opcional. `buildContent` PRESERVA os
   campos legados (`title`/`issuerName`/`logoUrl`/`signatureImageUrl`/`message`) via `previousContent` ao
-  editar um bloco antigo. Sem `baseImageUrl` o BFF cai no layout "marca" antigo. Sem editor pesado →
-  `max-w-lg` padrão. Validação client de URLs `^https?://` (imagem base/assinaturas; o `ImageUploader`
+  editar um bloco antigo. Sem `baseImageUrl` o BFF cai no layout "marca" antigo. O formulário usa o
+  editor contextual da aula. Validação client de URLs `^https?://` (imagem base/assinaturas; o `ImageUploader`
   do admin sobe WebP no R2 — o renderizador do BFF converte WebP→PNG via sharp). ⚠️ **A aula do
   certificado NÃO pode ter blocos que TRAVAM a conclusão** (quiz com nota de corte / Estúdio) — o
   members recusa (`VALIDATION_ERROR`→400, `lessonHasGatingBlock`); conteúdo livre (vídeo/texto de

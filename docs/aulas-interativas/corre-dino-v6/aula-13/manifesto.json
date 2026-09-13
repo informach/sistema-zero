@@ -488,6 +488,15 @@
             }
           },
           {
+            "id": "cacto-unico",
+            "label": "Use um único bloco para criar o cacto com posição e velocidade sorteadas.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          },
+          {
             "id": "usar-base",
             "label": "Use valor de velocidade menos sorteio de 0 a 1 no VX dos novos cactos.",
             "rule": {

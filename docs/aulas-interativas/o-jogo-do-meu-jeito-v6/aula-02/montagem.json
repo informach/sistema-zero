@@ -1,0 +1,111 @@
+{
+  "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+  "sourceHash": "e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Hoje a gente começa a desenhar, e tem mais gente na aula: quem vai desenhar aqui na tela é o Júl",
+      "exit": " sombra. E o último é aprender a guardar o seu desenho pra ele nunca se perder. Vamos pro primeiro.\"",
+      "narration": "Oi! Hoje a gente começa a desenhar, e tem mais gente na aula: quem vai desenhar aqui na tela é o Júlio. Ele é o artista aqui da Comunidade, faz os desenhos e as animações dos jogos. Diz oi, Júlio. A partir de agora é assim: eu vou te contando o caminho, e ele vai desenhando. Na aula passada eu levei o seu jogo pro Estúdio Completo. Olha ele aí rodando. E olha a nave: ela veio pronta, do Kit espaço. Todo mundo que fez o Desafio tem essa mesma nave. Hoje a sua nave vira outra. Você vai desenhar ela, com o formato que você quiser e as suas cores. E no fim da aula você vai ter uma nave parecida com essa aqui. Essa é a do Júlio. A sua vai ter o formato e as cores que você escolher. Pra chegar nela, são cinco passos. A gente começa abrindo o Pinta e criando um desenho novo. Aí você faz o contorno da nave. Depois vem a cor. Em seguida a gente dá volume, com luz e sombra. E o último é aprender a guardar o seu desenho pra ele nunca se perder. Vamos pro primeiro.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "Oi! Eu vou contar o caminho e o Júlio vai desenhar na tela. Hoje você cria a sua nave: primeiro o formato, depois as cores e a luz. As escolhas de desenho são suas. Vamos guardar um espaço embaixo para o motor da próxima aula.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-novo-desenho",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: conhecer o Pinta e começar o desenho",
+      "entry": "O Pinta fica ali no menu da esquerda. Igual o Estúdio, ele já estava aí antes e não abria, e hoje el",
+      "exit": " e ajuda no começo, porque você enxerga onde cada pixel começa e termina. Primeiro passo concluído.\"",
+      "narration": "O Pinta fica ali no menu da esquerda. Igual o Estúdio, ele já estava aí antes e não abria, e hoje ele abre. Clica nele. Essa tela é a sua galeria. É aqui que ficam todos os desenhos que você fizer, e hoje ela está vazia porque você ainda não desenhou nenhum. Vamos começar a sua nave. Clica no Criar novo. O Pinta faz quatro perguntas antes de abrir a sua tela de desenho. A primeira é Como você quer desenhar?, e são esses dois cartões aí na tela. Eles são os dois jeitos de desenhar um jogo, e são bem diferentes um do outro. Um chama pixel art. Você pinta quadradinho por quadradinho, e cada quadradinho desses chama pixel. É o estilo dos jogos antigos de videogame, e ele é assim de propósito: os quadradinhos aparecem, e isso faz parte da beleza dele. O outro chama vetor. Nele você não pinta quadradinho: você põe formas na tela, tipo um círculo, uma linha, e o computador desenha essas formas sempre lisinhas, sem quadradinho nenhum. Nenhum dos dois é melhor que o outro, e o mais comum é o jogo inteiro ser feito num estilo só, porque aí tudo combina sem esforço. Mas isso não é regra, e misturar não é erro: tem jogo famoso que usa os dois de propósito e fica lindo. O Celeste, por exemplo, é todo em pixel art na hora de jogar, e as cenas em que os personagens conversam são desenhadas em vetor. Cada estilo faz a parte que ele faz melhor. Aqui, neste curso, a gente vai fazer os dois de propósito. A nave de hoje vai ser em pixel art, e o asteroide, daqui a duas aulas, vai ser em vetor. Assim você experimenta os dois e descobre de qual você gosta mais. Nos seus próximos jogos, aí sim, escolhe um e vai até o fim com ele. Pra sua nave, clica no Pixel art. A segunda pergunta é O que você quer criar?. A sua nave é um personagem do jogo, então clica em Personagem. A terceira é Qual o tamanho?, e aparecem quatro cartões: Pequeno, Médio, Grande e Gigante. Antes de clicar em qualquer um, olha embaixo do nome de cada um: tem um numerozinho ali. Embaixo do Médio está escrito 32 por 32, e isso quer dizer que o desenho tem 32 quadradinhos de largura e 32 de altura. É esse que a gente quer, e esse número volta lá na frente, quando eu levar a sua nave pro jogo. Repara que o Pequeno já vem marcado, mas não é ele. Clica no Médio. Assim que você clica, o Pinta já pula pra última pergunta. A última é Qual o nome?. Escreve nave, tudo em letra minúscula. E lê a frase que o Pinta escreveu embaixo do campo: use letras minúsculas e traços, esse nome aparece nos blocos do Estúdio. É esse nome que você vai procurar lá. Respondidas as quatro, clica em Começar a desenhar. Abriu a sua tela de desenho, com a grade de quadradinhos à vista. Ela já vem ligada e ajuda no começo, porque você enxerga onde cada pixel começa e termina. Primeiro passo concluído.\"",
+      "edit": "Manter assistente e breve explicação dos dois estilos. Retirar a afirmação não fundamentada de que os retratos de Celeste são vetoriais; usar um exemplo produzido no Pinta. Não ensinar exportações.",
+      "visual": "Mostrar grade com 32 colunas e 32 linhas sem contá-las uma a uma. Destacar que Pequeno vem marcado e precisa trocar.",
+      "newNarration": "Abra o Pinta e escolha Criar novo → Pixel art → Personagem → Médio, 32 × 32. Escreva nave e comece a desenhar. Confira o número embaixo de Médio antes de clicar.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-contorno",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: o contorno da nave",
+      "entry": "Agora a nave, e a partir daqui a nave é sua. O Júlio vai desenhar a nave dele aqui na tela pra você ",
+      "exit": " vai ter onde aparecer. Olha o contorno da sua nave aí. Ela já está de pé. Segundo passo concluído.\"",
+      "narration": "Agora a nave, e a partir daqui a nave é sua. O Júlio vai desenhar a nave dele aqui na tela pra você ver como ele faz, mas não copia não: a graça é a sua ficar diferente. Antes de começar, uma coisa que ajuda muito: olha uma nave de verdade. Procura uma imagem de nave de jogo, ou rabisca uma no papel. Desenhar olhando alguma coisa é muito mais fácil do que desenhar de cabeça, e todo desenhista faz isso. Olha as do Júlio: ele achou duas naves que gostou. Desta aqui ele pegou o formato do corpo, e desta o jeito da asa. A nave dele não vai ser nenhuma das duas, vai ser um pedaço de cada. É assim que se usa referência: você junta o que gostou de mais de uma e faz a sua. Pega duas ou três que você gostar. Com as referências na mão, a gente começa a desenhar, e a primeira parte é o esboço, que é o desenho rascunhado, só o contorno, sem cor nenhuma ainda. Pro contorno ele pega o preto, a última cor da paleta. Preto é o que mais separa o desenho do fundo, então é o melhor pra enxergar o formato enquanto você rascunha. Com a cor escolhida, entra a ferramenta que o Júlio mais usa quando o desenho é simétrico, quer dizer, quando o lado direito é igual ao lado esquerdo. Uma nave é assim. O seu rosto também é assim. Ela chama Espelho lado a lado. Procura ela na caixa de ferramentas e clica. Repara que ele ficou aceso. Isso é um interruptor: enquanto ele estiver aceso, tudo que você desenhar de um lado aparece igualzinho do outro lado, na mesma hora. Ali perto tem dois botões com nome parecido, o Espelhar na horizontal e o Espelhar na vertical. Não são esses. O nosso é o Espelho lado a lado, o que fica aceso. E olha o que apareceu no seu desenho: uma linha tracejada bem no meio, mostrando onde uma metade encontra a outra. Ela é só uma ajuda pra você enxergar o meio: não faz parte do seu desenho. Com o espelho aceso, agora é traçar. A ferramenta que o Júlio usa é a Linha: você clica, segura e arrasta, e vê a linha esticar antes de soltar. Dá pra usar o Lápis também, se você preferir desenhar mais solto. Olha ele fazendo a lateral do corpo da nave dele, de cima pra baixo. Assim que ele solta, nasce a lateral do outro lado junto. E olha uma coisa que todo desenhista sabe: não sai bom de primeira. O ângulo dele ficou muito aberto. Pra desfazer tem dois caminhos, e os dois fazem a mesma coisa. Lá em cima, naquela barra do nome do desenho, tem uma setinha curva pra trás: esse é o Desfazer. E no teclado é o Control e o Z, apertados juntos. O Júlio vai de Control e Z, que é mais rápido. Desfeito. Agora ele traça de novo, um pouquinho mais fechado. Olha como ficou melhor. Faz assim mesmo: traça, olha, desfaz, traça de novo. Isso não é errar, é desenhar! Agora vai desenhando a sua nave inteira. O Júlio vai fazendo a dele: as asas saindo do corpo, a ponta lá em cima, a traseira embaixo, e a cabine, que é o vidro onde fica quem pilota. A sua pode ter asa grande, asa pequena, ponta redonda, mais janelas. Só tem uma coisa que eu preciso te pedir, e é a única regra do desenho de hoje: deixa um espaço vazio embaixo da nave, umas quatro fileiras de quadradinhos, sem desenhar nada. É dali que o fogo do motor vai sair na próxima aula. Se você preencher esse espaço agora, o fogo não vai ter onde aparecer. Olha o contorno da sua nave aí. Ela já está de pé. Segundo passo concluído.\"",
+      "edit": "Oferecer duas ou três referências na própria aula, sem mandar pesquisar na internet. Encurtar a teoria já experimentada; preservar botão aceso, Linha, Desfazer e reserva para o motor.",
+      "visual": "Júlio combina corpo e asas de duas referências. Zoom no espelho aceso e na faixa livre inferior. Não exigir cópia do contorno dele.",
+      "newNarration": "Escolha um corpo e um par de asas entre as referências desta aula. Com preto e Linha, use Espelho lado a lado para fazer o contorno. Deixe cerca de quatro fileiras vazias embaixo. Se um traço não ficou bom, desfaça e ajuste.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-cor-base",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: pintar",
+      "entry": "Agora a cor, e nenhuma cor desta aula é obrigatória. Antes da tinta, desliga o Espelho lado a lado, ",
+      "exit": "ocê: a cabine de outra cor, listra na asa, bolinha na ponta, uma estrela. Terceiro passo concluído.\"",
+      "narration": "Agora a cor, e nenhuma cor desta aula é obrigatória. Antes da tinta, desliga o Espelho lado a lado, clicando nele de novo. Ele apagou, e a linha tracejada do meio sumiu junto. Já te explico por quê. A parte que começa agora é a cor base, que é a cor que cobre a maior área do desenho. Pra escolher ela o Júlio segue sempre a mesma regra: uma cor média, nem muito clara nem muito escura, porque na cor mais escura que existe não sobra pra onde escurecer. A dele vai naquele lilás, que é um roxo clarinho meio acinzentado, e a sua vai na cor que você gostar mais. Escolhida a cor, vai na caixa de ferramentas e clica no Balde de tinta. Ele pinta de uma vez toda a área fechada onde você clicar. Olha ele clicando dentro do corpo da nave dele: um clique e encheu. E aqui vem o aviso da aula: o espelho não funciona com o Balde de tinta. Com o Lápis, com a Linha e com a Borracha funciona, com o balde não. E o que engana é que a linha tracejada continua na tela com o balde na mão, como se os dois lados fossem pintar juntos. Por isso a gente desliga o espelho antes de pintar. Agora vai pintando a sua nave inteira, um pedaço de cada vez. O Júlio vai pintando a dele: o corpo e as duas asas na cor base, que é a maior parte dela. Com o corpo cheio, entram as outras cores. Vai na paleta, escolhe um azul e clica dentro da cabine: azul é bem diferente do lilás do corpo, e vidro da mesma cor do corpo desaparece dentro dele. Agora os detalhes, que são riscos finos demais pro balde. Escolhe um verde na paleta, vai na caixa de ferramentas e clica no Lápis, que é o que faz risco fino, um quadradinho por vez. Olha os do Júlio, na asa e na ponta. Repara na proporção: a cor base ocupa a maior parte, e as outras entram só nos pedacinhos. É isso que faz detalhe ser detalhe. Na sua, quem escolhe é você: a cabine de outra cor, listra na asa, bolinha na ponta, uma estrela. Terceiro passo concluído.\"",
+      "edit": "Manter clique em cada área e aviso de que o espelho não atua no balde. Corrigir referências a “verde escuro” caso a paleta ativa não tenha esse tom.",
+      "visual": "Mostrar um clique que preenche apenas a região conectada. Se a tinta escapar, mostrar Desfazer e fechamento da abertura do contorno.",
+      "newNarration": "Desligue Espelho lado a lado. Escolha uma cor média para o corpo e pinte cada área fechada com o Balde. Use outra cor na cabine e o Lápis para um ou dois detalhes pequenos. As suas cores podem ser diferentes das do Júlio.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-luz-demo",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 4. Passo 4: luz e sombra",
+      "entry": "A sua nave está pintada, mas ela ainda parece um adesivo, uma coisa chapada. Quem resolve isso é a l",
+      "exit": ". O único cuidado é escolher um lado e ficar nele até o fim. Na nave do Júlio a luz vem da esquerda.",
+      "narration": "A sua nave está pintada, mas ela ainda parece um adesivo, uma coisa chapada. Quem resolve isso é a luz e sombra. E antes da cor tem uma decisão sua: de que lado vem a luz. Da esquerda, da direita, de cima, nenhum é o certo. O único cuidado é escolher um lado e ficar nele até o fim. Na nave do Júlio a luz vem da esquerda.",
+      "edit": "Usar o antes/depois previsto na Parte 4 e complementar com seta da luz e close nas famílias de cor. Não mandar a criança mexer durante a demonstração.",
+      "visual": "Mesma nave, posição e escala em comparação; seta fica fora da arte. Mostrar corpo e cabine separadamente.",
+      "newNarration": "Olhe a mesma nave antes e depois. A luz vem deste lado; o outro recebe a sombra. Agora repare na cabine: a cor mais clara continua da família do azul. Poucos pixels já mudam o volume.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-volume",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 4. Passo 4: luz e sombra",
+      "entry": "Sabendo o lado, é uma regra só: sombra no lado contrário ao da luz. E antes de sair riscando, mais u",
+      "exit": "Lápis ainda está na sua mão. Olha a do Júlio antes e depois. Que diferença! Quarto passo concluído.\"",
+      "narration": "Sabendo o lado, é uma regra só: sombra no lado contrário ao da luz. E antes de sair riscando, mais uma regra, que é a que organiza este passo: cada cor recebe a sombra e a luz da própria família dela. A nave do Júlio tem três cores, o lilás do corpo, o azul da cabine e o verde dos detalhes. Então o lilás vai receber um roxo escuro, a cabine vai receber um azul escuro, e os detalhes, um verde escuro. Se ele pusesse o roxo escuro na cabine azul, ela ia deixar de parecer azul. A gente faz todas as sombras primeiro, e só depois todas as luzes. É mais rápido assim, porque você não fica trocando de cor a cada risco. Então vai na caixa de ferramentas e clica no Lápis. Ele vai ficar na sua mão o passo inteiro. Primeira sombra, a do corpo. Escolhe na paleta uma cor mais escura que a sua cor base. Repara no que o Júlio fez na dele: uma linha fina encostada na borda, do lado contrário ao da luz, e outra embaixo da asa. Segunda, a da cabine. O Júlio já pintou ela num azul escuro lá atrás, então ela já está escura e ele não mexe nela. Terceira, a dos detalhes. Mesma coisa: os dele já são de um verde escuro, então também ficam como estão. Sombras prontas. Agora as luzes, na mesma ordem. No corpo, uma cor mais clara que a cor base, no lado de onde a luz vem. Na cabine, um azul mais claro. E nos detalhes, um verde mais claro. Só que detalhe pequeno nem sempre tem espaço: num risco de dois quadradinhos não cabe sombra e luz junto. Aí escolhe um. Se ele fica do lado da luz, põe só a luz. Se fica do lado escuro, só a sombra. E olha uma coisa boa da paleta: as três cores do corpo da nave do Júlio ficam uma do lado da outra, uma escura, uma média e uma clara. Os azuis também ficam vizinhos entre si, num outro pedaço da paleta. Escolheu uma cor? Procura as vizinhas dela. E sombra e luz são pouca coisa: duas ou três linhas finas fazem o trabalho. Se você pintar metade da nave de escuro, o formato dela some. Agora dá uma olhada geral na sua nave inteira, com calma. Vê se não ficou nenhum pedaço sem sombra ou sem luz, e se todas as sombras estão do mesmo lado. Se achar alguma coisa faltando, é só pôr agora, que o Lápis ainda está na sua mão. Olha a do Júlio antes e depois. Que diferença! Quarto passo concluído.\"",
+      "edit": "Manter ordem sombras → luzes e exceção para detalhes muito pequenos. Não exigir sombra adicional numa cabine já escura. Evitar dizer que toda cor da Arcade tem duas vizinhas da mesma família.",
+      "visual": "Zoom em corpo, cabine e detalhe, com a nave inteira disponível ao lado para conferir proporção. Retirar a seta auxiliar se desenhada dentro da arte.",
+      "newNarration": "Escolha um lado para a luz. Com o Lápis, ponha primeiro as sombras, depois as luzes. Use tons da família de cada cor e poucos pixels. Desligue o espelho: luz e sombra não precisam ser iguais dos dois lados.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-salvamento",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 5. Passo 5: guardar o seu desenho",
+      "entry": "Último passo de hoje, e ele é uma boa notícia: você não precisa fazer nada pra salvar. Olha lá em ci",
+      "exit": "brir a Comunidade em outro computador e entrar na sua conta, os seus desenhos estão lá te esperando.",
+      "narration": "Último passo de hoje, e ele é uma boa notícia: você não precisa fazer nada pra salvar. Olha lá em cima, na barra: depois daquelas duas setinhas do desfazer e do refazer, está escrito Salvo. Isso aparece sozinho toda vez que você para de desenhar por um segundinho. E agora olha mais em cima ainda, lá no cantinho direito: Guardado na sua conta. Essa é a mais importante do dia. Quer dizer que o seu desenho não fica só neste computador: ele sobe pra sua conta sozinho, sem você apertar nada. Então, se você abrir a Comunidade em outro computador e entrar na sua conta, os seus desenhos estão lá te esperando.",
+      "edit": "Retirar cota numérica e explicações sobre apagar desenhos. Acrescentar o retorno pela setinha, previsto no fim desta Parte. Não mostrar os dois avisos lado a lado.",
+      "visual": "Localização real dos dois avisos, em barras distintas. Voltar à galeria; miniatura estática.",
+      "newNarration": "O Pinta salva o desenho enquanto você trabalha. Antes de sair, procure também Guardado na sua conta, na barra acima do editor. Depois use Voltar para encontrar o cartão da nave na galeria.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 2. Olha a sua nave. Você desenhou ela quadradinho por quadradinho, e ",
+      "exit": "xou embaixo dela? Na próxima aula é ele que vai receber o fogo do motor. E o fogo vai mexer. Até já.",
+      "narration": "Parabéns, você terminou a Aula 2. Olha a sua nave. Você desenhou ela quadradinho por quadradinho, e ela não é igual à de mais ninguém. E olha quantas coisas você aprendeu hoje sem nem perceber. Você começou pelo esboço, olhando uma referência. Usou o espelho pra fazer os dois lados de uma vez. Pintou com uma cor média pra sobrar espaço pra sombra e pra luz. E deu volume com duas linhas finas. Isso não vale só pra nave. Vale pra qualquer coisa que você for desenhar daqui pra frente. Está vendo aquele espaço vazio que a gente deixou embaixo dela? Na próxima aula é ele que vai receber o fogo do motor. E o fogo vai mexer. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: Preservar uma única aula, como solicitado no roteiro original; a divisão é em seções, não em aulas novas. A paleta pode não oferecer uma rampa escura/média/clara para toda cor; mostrar os tons realmente disponíveis. Retirar Celeste como prova de vetor; visual rasterizado não comprova a técnica original. Referências visuais serão fornecidas na edição, evitando saída para busca livre. O espelho não atua no balde; não confundir com os comandos de virar o desenho. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Sua nave tem um formato que você escolheu, cores e volume. O espelho ajudou no contorno; a luz e a sombra ajudaram a enxergar as partes. O desenho fica no Pinta, esperando o motor da próxima aula. Agora vamos guardar duas ideias.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

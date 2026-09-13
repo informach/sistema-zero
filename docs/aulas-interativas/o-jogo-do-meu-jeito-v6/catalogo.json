@@ -1,0 +1,122 @@
+[
+  {
+    "path": "aula-01",
+    "title": "Seu jogo no Estúdio Completo",
+    "source": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+    "sourceHash": "aea9e2bb22e617e66266f6cd3c3f95d787269b30cb7f95bd6cfdcfbbf02e9c55",
+    "sections": 9,
+    "clips": 7,
+    "demonstrations": 2,
+    "experiments": 0,
+    "gallery": {
+      "kind": "studio",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-02",
+    "title": "Desenhe a sua nave no Pinta",
+    "source": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+    "sourceHash": "e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451",
+    "sections": 11,
+    "clips": 8,
+    "demonstrations": 2,
+    "experiments": 1,
+    "gallery": {
+      "kind": "pinta",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-03",
+    "title": "O motor da nave ganha movimento",
+    "source": "roteiro-aula-03-o-jogo-do-meu-jeito.md",
+    "sourceHash": "6cb8b8f7b1280f626cd3c915090ecd208c43a9dbf96132ddd84481c652f26bf4",
+    "sections": 10,
+    "clips": 7,
+    "demonstrations": 2,
+    "experiments": 1,
+    "gallery": {
+      "kind": "pinta",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-04",
+    "title": "Desenhe seu asteroide em vetor",
+    "source": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+    "sourceHash": "49736e1aa90b056c2778a8337d400329fdaca77f30126bf9af0ff114fd3ba6e1",
+    "sections": 10,
+    "clips": 7,
+    "demonstrations": 1,
+    "experiments": 1,
+    "gallery": {
+      "kind": "pinta",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-05",
+    "title": "O asteroide ganha chama e animação",
+    "source": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+    "sourceHash": "6c91114eeff90e43403960ab3b5976383576c498699ee9a98b7bcedca0c9b99f",
+    "sections": 10,
+    "clips": 7,
+    "demonstrations": 1,
+    "experiments": 1,
+    "gallery": {
+      "kind": "pinta",
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  {
+    "path": "aula-06",
+    "title": "A sua nave entra no jogo",
+    "source": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+    "sourceHash": "9ad05f5ccb2dab008f1b093e66a0b75b003a3f4d193754813bb5d2b8571114e8",
+    "sections": 10,
+    "clips": 7,
+    "demonstrations": 1,
+    "experiments": 1,
+    "gallery": {
+      "kind": "studio",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-07",
+    "title": "Os seus asteroides entram no jogo",
+    "source": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+    "sourceHash": "8c6a62c7bee3bb50f7fb44aa1422d8bf18ed5744b6962819d43009532f7cfaf6",
+    "sections": 8,
+    "clips": 6,
+    "demonstrations": 1,
+    "experiments": 0,
+    "gallery": {
+      "kind": "studio",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  {
+    "path": "aula-08",
+    "title": "Publique o jogo do seu jeito",
+    "source": "roteiro-aula-08-o-jogo-do-meu-jeito.md",
+    "sourceHash": "d7ef094360dfb4535e0a34b11c6c3a6252fee1ae7cc467bd89664ed7f3e8cde2",
+    "sections": 8,
+    "clips": 6,
+    "demonstrations": 3,
+    "experiments": 0,
+    "gallery": {
+      "kind": "studio",
+      "minItems": 1,
+      "maxItems": 1
+    }
+  }
+]

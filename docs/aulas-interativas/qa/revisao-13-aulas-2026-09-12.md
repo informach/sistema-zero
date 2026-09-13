@@ -1,5 +1,7 @@
 # Verificação da revisão das 13 aulas — 12/09/2026
 
+Este documento registra a rodada anterior ao full review. A [revisão posterior](full-review-2026-09-12.md) encontrou e corrigiu problemas que estes testes não detectavam, principalmente a execução da colisão na aula 9, e passou a executar os projetos no motor Jogo 2D.
+
 A revisão atual está no [guia do Corre Dino](../corre-dino-v6/README.md). Foram reescritos os 13 roteiros interativos e manifestos com base nos 13 roteiros originais fornecidos: 128 seções, 17 demonstrações planejadas em vídeo, 14 experimentos nativos e 88 clipes com âncoras textuais.
 
 ## Evidência desta rodada

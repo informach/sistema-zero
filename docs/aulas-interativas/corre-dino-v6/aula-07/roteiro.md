@@ -86,12 +86,12 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Critérios automáticos:**
 
-- Aplicar gravidade deve ficar no então de Se a tela é jogando.
-- Controlar o dinossauro deve ficar no então de Se a tela é jogando.
-- Desenhar o Dino deve ficar no então de Se a tela é jogando.
-- Atualizar cactos deve ficar no então de Se a tela é jogando.
-- Desenhar cactos deve ficar no então de Se a tela é jogando.
-- Remover cactos fora da tela deve ficar no então de Se a tela é jogando.
+- Aplicar gravidade deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Controlar o dinossauro deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Desenhar o Dino deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Atualizar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Desenhar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Remover cactos fora da tela deve ficar no então de Se a tela é jogando, na ordem da montagem.
 - Limpeza da tela deve continuar fora do Se, diretamente no quadro.
 - Floresta deve continuar fora do Se, diretamente no quadro.
 
@@ -109,7 +109,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Relógio funcionando no início; Relógio espera no início; Relógio funciona jogando.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Faça o relógio esperar também
 
@@ -142,12 +142,12 @@ Reinicie a prévia em inicio: a floresta aparece, mas o Dino e os cactos não co
 **Critérios da entrega:**
 
 - Abra o jogo na tela inicio.
-- Aplicar gravidade deve ficar no então de Se a tela é jogando.
-- Controlar o dinossauro deve ficar no então de Se a tela é jogando.
-- Desenhar o Dino deve ficar no então de Se a tela é jogando.
-- Atualizar cactos deve ficar no então de Se a tela é jogando.
-- Desenhar cactos deve ficar no então de Se a tela é jogando.
-- Remover cactos fora da tela deve ficar no então de Se a tela é jogando.
+- Aplicar gravidade deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Controlar o dinossauro deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Desenhar o Dino deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Atualizar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Desenhar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.
+- Remover cactos fora da tela deve ficar no então de Se a tela é jogando, na ordem da montagem.
 - Mantenha uma única ação Aplicar gravidade.
 - Mantenha uma única ação Controlar o dinossauro.
 - Mantenha uma única ação Desenhar o Dino.

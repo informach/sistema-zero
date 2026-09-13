@@ -330,7 +330,7 @@ export function editorialMarkdown(result: ReturnType<typeof buildEditorial>) {
         '',
         `**Conclusão observável:** ${definition.goals.map((goal) => goal.label).join('; ')}.`,
         '',
-        '**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.',
+        '**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.',
         '',
       )
     } else {

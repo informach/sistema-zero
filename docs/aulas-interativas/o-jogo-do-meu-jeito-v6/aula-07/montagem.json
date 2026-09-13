@@ -1,0 +1,85 @@
+{
+  "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+  "sourceHash": "8c6a62c7bee3bb50f7fb44aa1422d8bf18ed5744b6962819d43009532f7cfaf6",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "A sua nave está no jogo, com o motor aceso. Agora olha em volta dela: essas pedras cinzas continuam ",
+      "exit": "cria os asteroides por um que aceita imagem. E o terceiro é fazer eles girarem. Vamos pro primeiro.\"",
+      "narration": "A sua nave está no jogo, com o motor aceso. Agora olha em volta dela: essas pedras cinzas continuam sendo as do kit, as mesmas de todo mundo. E o seu asteroide está aqui, na sua galeria, girando, esperando pra entrar. Hoje ele entra. E o caminho dele é diferente do caminho da nave, por um motivo simples: a nave é uma só, e ela fica no jogo do começo ao fim. Os asteroides não. Eles vão nascendo enquanto você joga, um atrás do outro, sem parar. Por causa disso, o trabalho de hoje tem três passos. Começa preparando a folha do seu asteroide. Depois vem a parte principal, que é trocar o bloco que cria os asteroides por um que aceita imagem. E o terceiro é fazer eles girarem. Vamos pro primeiro.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "A nave já usa a sua arte. Hoje vamos trocar os asteroides. A nave foi criada uma vez; as pedras nascem ao longo da partida. Por isso vamos preparar a folha no início e animar cada pedra logo depois que ela nascer.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-folha-asteroide",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: preparar a folha do asteroide",
+      "entry": "Pra começar, abre o seu jogo: menu da esquerda, Estúdio, e clica no cartão do projeto do jogo da nav",
+      "exit": " do próximo passo. Os asteroides que estão caindo aí ainda são os cinzas. Primeiro passo concluído.\"",
+      "narration": "Pra começar, abre o seu jogo: menu da esquerda, Estúdio, e clica no cartão do projeto do jogo da nave. O primeiro passo de hoje é curtinho, e ele é só uma preparação. Vai na coluna da esquerda, clica no Jogo 2D, clica na Animação e pega de novo o Carregar folha de quadros, o mesmo bloco que você usou na aula passada. A gente usa ele uma vez pra cada folha, uma pra nave e uma pro asteroide. Arrasta e encaixa entre o Animar sprite e o Criar grupo de sprites tiros. São quatro campos de novo, e você já sabe como cada um funciona. No nome da folha, clica e escreve folha traço asteroide, pela regra da aula passada: o nome asteroide vai ser de outra coisa daqui a pouco. No campo da imagem, clica e pega o asteroide na gradezinha, que é o seu outro desenho. E agora os dois campos do tamanho do quadro, que dessa vez você mexe: eles vêm com 32, e você clica em cada um e escreve 64. Repara que aqui o número é outro. Na nave era 32, e aqui é 64, porque no Pinta você desenhou o asteroide num quadro maior, no Médio do vetor. Cada folha tem o tamanho que ela tem, e o bloco precisa saber o tamanho certo de cada uma. Agora olha a área do jogo: não mudou nada, e é isso mesmo que era pra acontecer. Esse bloco só deixou a folha do asteroide pronta pra ser usada, e quem vai usar ela é um bloco do próximo passo. Os asteroides que estão caindo aí ainda são os cinzas. Primeiro passo concluído.\"",
+      "edit": "Manter todos os campos, destacando a troca de ambos os 32 por 64. Não usar tamanho visível 40 como tamanho do quadro.",
+      "visual": "Duas folhas nomeadas, tamanhos 32 e 64. Mostrar a área do jogo sem troca automática.",
+      "newNarration": "Abra o mesmo jogo. No Ao iniciar, coloque Carregar folha de quadros depois da animação da nave e antes do grupo tiros. Nome folha-asteroide, imagem asteroide, quadros 64 × 64. As pedras do kit ainda não mudam.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-tempo-demo",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: trocar o bloco que cria os asteroides",
+      "entry": "Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A c",
+      "exit": "o asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.",
+      "narration": "Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A cada quadro do jogo. O quadro desse nome conta o tempo do jogo, ele não é o desenho da sua animação: são duas coisas diferentes com o mesmo nome. Dentro dele tem o Se a tela atual é jogando, e dentro desse tem um bloco só, o que começa com No grupo asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.",
+      "edit": "Complementar o recorte com uma linha do tempo; não converter 40 quadros em duração exata em segundos.",
+      "visual": "Três trilhas: Ao iniciar prepara folha; relógio cria pedra A, depois B; cada pedra alterna quadros 0/1. Mesmas cores/rótulos para cada objeto, sem controle do aluno.",
+      "newNarration": "Este relógio conta atualizações do jogo. Os quadros do Pinta são desenhos da animação. Veja a ordem: quando o relógio dispara durante a partida, nasce uma pedra e logo ela recebe a animação. A folha já foi preparada no início.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-novo-criador",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: trocar o bloco que cria os asteroides",
+      "entry": "Olha os campos dele: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. E isso não",
+      "exit": "ito que você fez na aula passada. Olha a área do jogo de novo: só os seus! Segundo passo concluído.\"",
+      "narration": "Olha os campos dele: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. E isso não é erro seu. Esse bloco veio do Kit espaço, o mesmo kit de onde veio aquela nave que você apagou, e ele desenha a pedra cinza dele sozinho. Ele nunca teve onde pôr um desenho. Então a gente troca ele por outro, igual você fez com a nave. Só que aqui a ordem é ao contrário: primeiro monta o novo, depois apaga o velho. É que dentro deste bloco velho tem uma peça que você vai aproveitar, e daqui a pouco você vê qual. Vai na coluna da esquerda, clica no Jogo 2D e clica na subcategoria Muitos. Desce a lista até um bloco comprido que começa com No grupo criar um sprite chamado. O que você quer é o mais comprido de todos: ele começa com No grupo, depois vem criar um sprite chamado, e no fim tem com imagem, vx e vy. É por esse com imagem que você reconhece ele. Arrasta ele pra dentro do Se a tela atual é jogando, logo embaixo do bloco velho. Os dois ficam juntos ali por um tempinho, e é de propósito. Esse bloco tem nove campos, e a gente passa por todos, um de cada vez. Começa pelo grupo, que vem escrito inimigos. Esse é de escolher: clica nele e, na listinha dos grupos do seu jogo, clica no asteroides. Logo em seguida vem o nome do sprite, e esse nasce vazio. Clica nele e escreve asteroide. Ele pode até ficar vazio, mas a gente vai precisar dele no último passo pra mandar nesse asteroide que acabou de nascer. Aí vem o x, e ele é o único que você não digita nem escolhe. Olha o bloco velho: tem uma pecinha encaixada no x dele, escrita um x aleatório na tela, e é ela que faz cada pedra nascer num lugar diferente da tela. Então pega essa pecinha com o mouse, arrasta ela pra fora do bloco velho e solta por cima do campo x do bloco novo. Arrasta, não copia. Se você copiar, fica uma em cada bloco, e a gente quer ela só no novo. Repara que o x do bloco velho ficou sem a pecinha. Ele vai continuar criando pedras, só que todas no mesmo lugar agora. Fica assim mesmo, que ele já vai embora. No campo do y, que vem depois, clica e escreve menos 30, com o sinal de menos na frente. Esse número negativo faz a pedra nascer um pouco acima da tela, pra ela entrar caindo. Os dois seguintes são o tamanho: clica na largura e escreve 40, clica na altura e escreve 40 também. Depois deles vem a imagem, que está escrita inimigo. Esse é de escolher também: clica nele e pega o asteroide na gradezinha. E os dois últimos são o vx e o vy, que são a velocidade. O vx já está em 0, e deixa assim, porque a pedra não anda pros lados. Já no vy você clica e escreve 3, que é a velocidade com que ela desce. Preenchidos os nove, olha a área do jogo. Estão caindo asteroides seus, espalhados. E estão caindo pedras cinzas junto, todas no mesmo ponto, porque os dois blocos estão montados ao mesmo tempo, cada um criando o dele. A gente resolve isso já. E se você reparou que os seus ainda não giram, é isso mesmo: girar é o último passo. Agora sim, apaga o bloco velho. Clica nele com o botão direito e escolhe Apagar este bloco, lendo o texto antes de clicar, do mesmo jeito que você fez na aula passada. Olha a área do jogo de novo: só os seus! Segundo passo concluído.\"",
+      "edit": "Preservar o gesto de mover, não copiar, a peça x. Identificar pelo rótulo com imagem, sem posição de gaveta. Mostrar coexistência como etapa temporária, nunca resultado a entregar.",
+      "visual": "Novo criador no mesmo Se/relógio. Mover a peça x, preencher os nove campos, comparar e usar Apagar este bloco no antigo. O x vazio antigo pode gerar pedras no canto até a retirada.",
+      "newNarration": "No A cada 40 quadros, dentro de Se a tela atual é jogando, monte No grupo … criar um sprite chamado … com imagem. Escolha asteroides; nome asteroide; mova o x aleatório do velho; y −30; tamanho 40 × 40; imagem asteroide; vx 0; vy 3. Confira e apague só o criador velho.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-animar-cada",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: fazer os asteroides girarem",
+      "entry": "Último passo, e ele é rápido, porque esse bloco você já montou uma vez, na aula passada, pra sua nav",
+      "exit": "as pedras, girando. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade.",
+      "narration": "Último passo, e ele é rápido, porque esse bloco você já montou uma vez, na aula passada, pra sua nave. Na coluna da esquerda, clica no Jogo 2D, clica na Animação e pega de novo o bloco comprido que começa com Animar sprite com a folha na animação. Arrasta ele pra dentro do Se a tela atual é jogando, logo embaixo do bloco que você acabou de montar, o que cria o asteroide. Ele fica bem embaixo desse por um motivo: cada vez que um asteroide novo nasce, esse bloco manda ele girar. É pra isso que serve aquele nome que você escreveu no segundo campo do bloco de cima, porque o bloco de animar precisa de um nome pra saber em quem mandar. Agora os campos, e os três são de escolher, igual na aula passada. Clica no primeiro, que é o sprite, e pega o asteroide na listinha. Clica no segundo, que é a folha: hoje tem duas aí dentro, e você pega a folha traço asteroide. E no terceiro clica no Escolher e pega a girando. Os outros três se preencheram sozinhos outra vez, do quadro zero ao quadro um, a oito fps, que são os dois desenhos que você fez da sua pedra rolando e pegando fogo. Agora clica na área do jogo, aperta o Enter e joga um pouco. Essa é a sua nave, com o seu motor! Essas são as suas pedras, girando. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade.",
+      "edit": "Preservar seletores e teste. Não incluir aqui uma tarefa nova de melhorar as artes. Atualizar “caixa pelos pixels” para explicar caixa delimitadora do conteúdo opaco apenas na revisão do professor.",
+      "visual": "Destaque no encaixe imediatamente depois do criador, antes de fechar o Se. Teste com pelo menos três nascimentos; nova partida também funciona.",
+      "newNarration": "Logo abaixo do novo criador, dentro do mesmo Se jogando e do mesmo relógio, coloque Animar sprite. Escolha asteroide, folha-asteroide e girando. Confira 0 a 1, 8 fps. Inicie e teste: cada pedra nova deve animar, e tiros, pontos e vidas precisam continuar funcionando.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 7, e essa foi a mais importante do curso! Olha o que está na sua tela",
+      "exit": "ses mesmos blocos e outras histórias por cima, e no fim a gente publica o seu jogo no Mural. Até já.",
+      "narration": "Parabéns, você terminou a Aula 7, e essa foi a mais importante do curso! Olha o que está na sua tela: o seu jogo inteiro, com a sua arte. A sua nave e os seus asteroides. E hoje você fez uma coisa que os criadores fazem o tempo todo: trocou uma peça do jogo por outra que faz quase a mesma coisa, com a diferença que você precisava. O jogo inteiro continuou funcionando em volta dela, com as colisões, a explosão e o placar, e você não precisou remontar nada disso. Na próxima aula a gente não monta nada. Eu vou te mostrar quanta coisa dá pra fazer com esses mesmos blocos e outras histórias por cima, e no fim a gente publica o seu jogo no Mural. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: Nesta aula montar antes de apagar preserva a peça x; o criador antigo não declara um nome próprio como o Criar nave da aula 6. A caixa automática é baseada nos limites do conteúdo opaco; não prometer precisão pixel a pixel em todos os vazios. Editar desenho atualiza os projetos vinculados após salvar/sincronizar; não promete atualizar a publicação já feita. Manter o caminho editar desenho como orientação de ajuda: Imagens → editar desenho → salvar no Pinta → voltar e conferir atualização. Não iniciar outra tarefa. No fecho gravado, atualizar a ordem da aula 8: publicar vem antes de apresentar outras versões. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Agora a sua nave e os seus asteroides estão no jogo. Você trocou a peça que precisava de imagem e conservou as outras regras. Cada asteroide novo nasce e já começa a animação. Na próxima aula vamos publicar esta versão. Antes, duas perguntas rápidas.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

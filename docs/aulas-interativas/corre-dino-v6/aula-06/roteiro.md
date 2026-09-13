@@ -85,7 +85,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Fora da tela, ainda no grupo; Regra retira automaticamente.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Limpe os cactos que saíram
 

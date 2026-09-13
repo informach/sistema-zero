@@ -1,0 +1,451 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-02",
+  "title": "Desenhe a sua nave no Pinta",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "convite-construir-3",
+    "checar-construir-4",
+    "construir-5",
+    "video-construir-5-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Abertura. Entrada: “Oi! Hoje a gente começa a desenhar, e tem mais gente na aula: quem vai desenhar aqui na tela é o Júl”. Saída: “ sombra. E o último é aprender a guardar o seu desenho pra ele nunca se perder. Vamos pro primeiro.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “Oi! Eu vou contar o caminho e o Júlio vai desenhar na tela. Hoje você cria a sua nave: primeiro o formato, depois as cores e a luz. As escolhas de desenho são suas. Vamos guardar um espaço embaixo para o motor da próxima aula.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-novo-desenho",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: conhecer o Pinta e começar o desenho. Entrada: “O Pinta fica ali no menu da esquerda. Igual o Estúdio, ele já estava aí antes e não abria, e hoje el”. Saída: “ e ajuda no começo, porque você enxerga onde cada pixel começa e termina. Primeiro passo concluído.\"”. Manter assistente e breve explicação dos dois estilos. Retirar a afirmação não fundamentada de que os retratos de Celeste são vetoriais; usar um exemplo produzido no Pinta. Não ensinar exportações. Complemento: “Abra o Pinta e escolha Criar novo → Pixel art → Personagem → Médio, 32 × 32. Escreva nave e comece a desenhar. Confira o número embaixo de Médio antes de clicar.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-novo-desenho",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra o Pinta e escolha Criar novo → Pixel art → Personagem → Médio, 32 × 32. Escreva nave e comece a desenhar. Confira o número embaixo de Médio antes de clicar.\n\n**Antes de voltar à aula, confira:**\n\n- Pixel art e Personagem.\n- Quadro 32 × 32 e nome nave.\n\nSe aparecer 16 × 16, você ficou no Pequeno; confira o tamanho antes de desenhar.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-novo-desenho",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se aparecer 16 × 16, você ficou no Pequeno; confira o tamanho antes de desenhar."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Para escolher o tamanho certo, o que você deve olhar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A cor do cartão do tamanho."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O número 32 × 32 embaixo de Médio."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Os números indicam largura e altura do quadro, que usaremos depois na folha de animação."
+        }
+      }
+    },
+    {
+      "key": "experimento-espelho",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare e explique",
+        "instructions": "Neste exemplo, faça o mesmo traço com o espelho desligado e ligado. Registre os dois resultados. O que apareceu do outro lado? Depois vamos usar essa ideia na sua nave.",
+        "hints": [
+          "Compare os dois lados do eixo. Este exemplo usa Linha; o balde tem outro comportamento."
+        ],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;background:#f5f2e9;color:#20323c;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:800px;margin:auto}h2{font-size:clamp(23px,4vw,32px);line-height:1.15;letter-spacing:-.5px;margin:8px 0 12px}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#47646a}.intro{margin:0 0 16px}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{font:inherit;min-height:46px;padding:9px 14px;border:2px solid #45606a;border-radius:12px;background:#fff;color:#20323c;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#163f48;color:#fff;border-color:#163f48}button:focus-visible{outline:3px solid #b35400;outline-offset:3px}button:disabled{cursor:default;opacity:.65}.stage{border:1px solid #45606a;background:#102b35;border-radius:18px;padding:16px;color:#f9f5e8}.stage svg{display:block;width:100%;height:auto;max-height:250px}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:12px}.panel{min-width:0;text-align:center}.panel p{margin:8px 0 0;font-size:14px}.graphic{height:180px;display:grid;place-items:center}.graphic svg{max-height:160px}.tag{font-size:13px;color:#aed4d5;display:block;margin-bottom:8px}.caption{min-height:48px;margin:12px 0 0;font-size:15px}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0}.run{background:#f9c267;border-color:#9c5c10;font-weight:bold}.note{font-size:14px;color:#45606a}.results{margin-top:14px;padding:16px;border:1px solid #879797;border-radius:14px;background:#fff}.results h3{font-size:18px;margin:0 0 8px}.results ul{padding-left:20px;margin:0}.done{border-left:4px solid #217264;padding-left:12px;font-weight:bold}.comparison{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}.comparison .stage{padding:12px}.comparison .graphic{height:145px}.comparison .stage svg{max-height:145px}.comparison .caption{font-size:13px}.comparison h4{margin:0 0 8px;font-size:15px}@media(max-width:420px){body{padding:8px}.stage{padding:12px}.choices button{flex:1 1 120px}.graphic{height:145px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n.lab[data-complete=true]>.stage{display:none}.comparison .row{grid-template-columns:repeat(2,minmax(0,1fr))}\n</style>\n<main class=\"lab\"><span class=\"eyebrow\">COMPARE DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p class=\"intro\" id=\"prompt\"></p>\n<div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button type=\"button\" id=\"option-0\" aria-pressed=\"true\"></button><button type=\"button\" id=\"option-1\" aria-pressed=\"false\"></button></div>\n<div class=\"stage\"><div id=\"scene\"></div><p class=\"caption\" id=\"caption\"></p></div>\n<div class=\"actions\"><button type=\"button\" class=\"run\" id=\"run\">Testar e guardar resultado</button><span id=\"progress\" role=\"status\" aria-live=\"polite\">0 de 2 situações registradas</span></div>\n<p class=\"note\" id=\"motion-note\"></p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>O que você observou</h3><ul id=\"records\"></ul><p class=\"done\" id=\"done\" hidden></p><div class=\"comparison\" id=\"comparison\"></div></section></main>\n<script>\n(()=>{'use strict';const config={\"kind\":\"espelho\",\"title\":\"Um traço, dois lados\",\"prompt\":\"O mesmo traço de Linha. Só o espelho muda.\",\"options\":[\"Espelho desligado\",\"Espelho ligado\"],\"results\":[\"O traço aparece só à esquerda.\",\"O mesmo traço aparece também à direita do eixo.\"],\"takeaway\":\"O espelho repete o traço do outro lado enquanto você desenha.\"};const $=id=>document.getElementById(id);let selected=0,tested=[],tick=0,timer=null,busy=false;\nconst reduced=matchMedia('(prefers-reduced-motion: reduce)');\nconst svg=(body,view='0 0 32 32',label='Exemplo visual')=>'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+label+'\">'+body+'</svg>';\nconst ship=(long=false)=>'<path d=\"M15 3h2v3h2v4h2v7h5v5h-7v2h-6v-2H6v-5h5v-7h2V6h2Z\" fill=\"#9de2dd\"/><path d=\"M14 9h4v8h-4Z\" fill=\"#286f93\"/><path d=\"M13 24h6v'+(long?4:2)+'h-2v'+(long?3:1)+'h-2v-'+(long?3:1)+'h-2Z\" fill=\"#f6a347\"/><path d=\"M15 24h2v3h-2Z\" fill=\"#ffe7ad\"/>';\nconst stone='<path d=\"M8 14Q13 10 20 13Q27 16 25 24Q22 29 15 28Q6 29 5 22Q4 17 8 14\" fill=\"#c3a79e\"/><ellipse cx=\"12\" cy=\"19\" rx=\"3\" ry=\"2\" fill=\"#716171\"/><ellipse cx=\"21\" cy=\"23\" rx=\"2\" ry=\"1.4\" fill=\"#716171\"/>';\nconst flame='<path d=\"M5 21L6 5L11 11L16 1L19 9L25 4L28 22Q24 28 16 27Q7 28 5 21Z\" fill=\"#f3a34f\"/>';\nfunction panel(label,art){return '<div class=\"panel\"><span class=\"tag\">'+label+'</span>'+art+'</div>'}\nfunction raster(){const cv=document.createElement('canvas');cv.width=16;cv.height=16;const ctx=cv.getContext('2d');const path='M2 7Q3 1 9 2Q16 3 14 10Q11 16 5 13Q1 12 2 7Z';ctx.fill(new Path2D(path));const data=ctx.getImageData(0,0,16,16).data;let squares='';for(let y=0;y<16;y++)for(let x=0;x<16;x++)if(data[(y*16+x)*4+3]>=128)squares+='<rect x=\"'+x+'\" y=\"'+y+'\" width=\"1\" height=\"1\"/>';return {path,squares}}\nconst pixelStone=config.kind==='bordas'?raster():null;\nfunction renderScene(option,frame=0,snapshot=false){\nif(config.kind==='espelho'){const grid='<defs><pattern id=\"grid\" width=\"1\" height=\"1\" patternUnits=\"userSpaceOnUse\"><path d=\"M1 0H0V1\" fill=\"none\" stroke=\"#33515a\" stroke-width=\".06\"/></pattern></defs><rect width=\"32\" height=\"32\" fill=\"url(#grid)\"/><path d=\"M16 0V32\" stroke=\"#f5c777\" stroke-width=\".2\" stroke-dasharray=\"1 1\"/>';const line='<path d=\"M12.5 5.5L7.5 20.5\" fill=\"none\" stroke=\"#9de2dd\" stroke-width=\"1\"/>';return svg(grid+line+(option?'<g transform=\"translate(32 0) scale(-1 1)\">'+line+'</g>':''),'0 0 32 32','Mesmo traço à esquerda'+(option?' e sua cópia simétrica à direita':'')+' do eixo central');}\nif(config.kind==='quadros')return '<div class=\"row\">'+panel('Quadro 1',svg(ship(false)))+panel('Quadro 2',svg(ship(option===1)))+(snapshot?'':panel('Prévia · 8 fps',svg(ship(option===1&&frame%2===1))))+'</div>';\nif(config.kind==='bordas'){const size=option?128:16;return '<div class=\"row\">'+panel('Pixels · '+(option?'8×':'1×'),'<div class=\"graphic\">'+svg('<g fill=\"#9de2dd\" shape-rendering=\"crispEdges\">'+pixelStone.squares+'</g>','0 0 16 16','Borda representada por pixels').replace('<svg ','<svg style=\"width:'+size+'px;height:'+size+'px\" ')+'</div>')+panel('Vetor · '+(option?'8×':'1×'),'<div class=\"graphic\">'+svg('<path d=\"'+pixelStone.path+'\" fill=\"#9de2dd\"/>','0 0 16 16','Mesma silhueta descrita como forma vetorial').replace('<svg ','<svg style=\"width:'+size+'px;height:'+size+'px\" ')+'</div>')+'</div>';}\nif(config.kind==='ordem')return svg(option?flame+stone:stone+flame,'0 0 32 32',option?'Pedra inteira na frente da chama':'Chama cobrindo parte da pedra')+'<p class=\"tag\">Na frente: '+(option?'pedra':'chama')+' · Atrás: '+(option?'chama':'pedra')+'</p>';\nconst width=option?32:16;return '<div class=\"row\">'+panel('Folha inteira · 64 × 32',svg(ship(false)+'<g transform=\"translate(32 0)\">'+ship(true)+'</g><path d=\"M32 0V32\" stroke=\"#60808a\" stroke-width=\".3\"/><rect x=\".3\" y=\".3\" width=\"'+(width-.6)+'\" height=\"31.4\" stroke=\"#f9c267\" stroke-width=\".6\" fill=\"none\"/>','0 0 64 32','Folha de duas naves com o recorte destacado'))+panel('No jogo · 54 × 54', '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 54 54\" role=\"img\" aria-label=\"Resultado do recorte num sprite de 54 por 54\"><svg width=\"54\" height=\"54\" viewBox=\"0 0 '+width+' 32\" preserveAspectRatio=\"none\" overflow=\"hidden\">'+ship(false)+'</svg></svg>')+'</div>';\n}\nfunction resize(){const style=getComputedStyle(document.body);const height=document.querySelector('.lab').getBoundingClientRect().height+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);window.learning?.resize(Math.max(180,Math.ceil(height)))}\nfunction save(){window.learning?.save({selected,tested:[...tested]})}\nfunction render(){const complete=tested.length===2;document.querySelector('.lab').dataset.complete=String(complete);for(let i=0;i<2;i++){$('option-'+i).textContent=config.options[i];$('option-'+i).setAttribute('aria-pressed',String(selected===i));$('option-'+i).disabled=complete||busy;}$('scene').innerHTML=renderScene(selected,tick);$('caption').textContent=config.results[selected];$('run').disabled=complete||busy||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':busy?'Observe a sequência…':tested.includes(String(selected))?'Resultado já guardado':'Testar e guardar resultado';$('progress').textContent=tested.length+' de 2 situações registradas';$('records').replaceChildren(...tested.map(i=>{const li=document.createElement('li');li.textContent=config.options[Number(i)]+': '+config.results[Number(i)];return li}));$('done').hidden=!complete;$('done').textContent=config.takeaway+' Agora responda à pergunta da aula.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+config.options[i]+'</h4><div class=\"stage\">'+renderScene(i,1,true)+'</div></div>').join(''):'';resize()}\nfunction finish(){if(timer!==null)clearInterval(timer);timer=null;busy=false;if(!tested.includes(String(selected)))tested.push(String(selected));tested.sort();save();render();if(tested.length===2)window.learning?.participated()}\nfunction stop(){if(timer!==null)clearInterval(timer);timer=null;busy=false;tick=0}\n$('title').textContent=config.title;$('prompt').textContent=config.prompt;\nfunction motionNote(){$('motion-note').textContent=config.kind==='quadros'?(reduced.matches?'Movimento reduzido: compare os dois desenhos parados.':'O teste toca uma sequência de 2 segundos. Os quadros parados ficam visíveis ao lado.'):'Olhe o resultado e guarde cada situação uma vez.'}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(busy||tested.length===2)return;selected=i;tick=0;save();render()});\n$('run').addEventListener('click',()=>{if(busy||tested.length===2||tested.includes(String(selected)))return;if(config.kind!=='quadros'||reduced.matches){finish();return}busy=true;tick=0;render();timer=setInterval(()=>{tick++;$('scene').innerHTML=renderScene(selected,tick);if(tick>=16)finish()},125)});\naddEventListener('learning:restore',event=>{stop();const state=event.detail&&typeof event.detail==='object'?event.detail:{};selected=state.selected===1?1:0;tested=Array.isArray(state.tested)?[...new Set(state.tested.filter(i=>i==='0'||i==='1'))].sort():[];if(tested.length===1&&tested.includes(String(selected)))selected=selected?0:1;render()});\nreduced.addEventListener('change',()=>{motionNote();if(busy&&reduced.matches){stop();render()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy){stop();render()}});addEventListener('pagehide',stop);addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));motionNote();render();\n})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "O que o espelho mudou neste teste?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Criou o traço correspondente do outro lado."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Virou o desenho inteiro de cabeça para baixo."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Espelho lado a lado repete o traço enquanto você desenha. Espelhar na horizontal ou na vertical transforma algo já desenhado."
+        }
+      }
+    },
+    {
+      "key": "video-contorno",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: o contorno da nave. Entrada: “Agora a nave, e a partir daqui a nave é sua. O Júlio vai desenhar a nave dele aqui na tela pra você ”. Saída: “ vai ter onde aparecer. Olha o contorno da sua nave aí. Ela já está de pé. Segundo passo concluído.\"”. Oferecer duas ou três referências na própria aula, sem mandar pesquisar na internet. Encurtar a teoria já experimentada; preservar botão aceso, Linha, Desfazer e reserva para o motor. Complemento: “Escolha um corpo e um par de asas entre as referências desta aula. Com preto e Linha, use Espelho lado a lado para fazer o contorno. Deixe cerca de quatro fileiras vazias embaixo. Se um traço não ficou bom, desfaça e ajuste.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-contorno",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Escolha um corpo e um par de asas entre as referências desta aula. Com preto e Linha, use Espelho lado a lado para fazer o contorno. Deixe cerca de quatro fileiras vazias embaixo. Se um traço não ficou bom, desfaça e ajuste.\n\n**Antes de voltar à aula, confira:**\n\n- Contorno reconhecível de nave com partes que podem receber cor.\n- Cerca de quatro fileiras livres embaixo para o fogo.\n- Desfazer permite corrigir sem começar outro desenho.\n\nSe ocupou a parte inferior, ajuste agora. O fogo da próxima aula precisa caber dentro do quadro.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-contorno",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se ocupou a parte inferior, ajuste agora. O fogo da próxima aula precisa caber dentro do quadro."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que deixamos uma faixa vazia embaixo da nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Porque o Pinta não consegue pintar os pixels de baixo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Para desenhar e aumentar o fogo do motor dentro do quadro."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O espaço é uma decisão do desenho para preparar a animação."
+        }
+      }
+    },
+    {
+      "key": "video-cor-base",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: pintar. Entrada: “Agora a cor, e nenhuma cor desta aula é obrigatória. Antes da tinta, desliga o Espelho lado a lado, ”. Saída: “ocê: a cabine de outra cor, listra na asa, bolinha na ponta, uma estrela. Terceiro passo concluído.\"”. Manter clique em cada área e aviso de que o espelho não atua no balde. Corrigir referências a “verde escuro” caso a paleta ativa não tenha esse tom. Complemento: “Desligue Espelho lado a lado. Escolha uma cor média para o corpo e pinte cada área fechada com o Balde. Use outra cor na cabine e o Lápis para um ou dois detalhes pequenos. As suas cores podem ser diferentes das do Júlio.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-cor-base",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Desligue Espelho lado a lado. Escolha uma cor média para o corpo e pinte cada área fechada com o Balde. Use outra cor na cabine e o Lápis para um ou dois detalhes pequenos. As suas cores podem ser diferentes das do Júlio.\n\n**Antes de voltar à aula, confira:**\n\n- Cor base ocupa a maior parte do corpo.\n- Cabine distinguível e detalhes pequenos.\n- Fundo e espaço do motor permanecem transparentes.\n\nO balde preenche uma região conectada. Se a tinta escapar, desfaça e procure uma abertura no contorno.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-cor-base",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "O balde preenche uma região conectada. Se a tinta escapar, desfaça e procure uma abertura no contorno."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O Balde pintou só uma das asas. O que isso indica?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A outra asa está em outra região fechada e precisa de seu próprio clique."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O desenho precisa ser apagado e criado novamente."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O balde preenche a região conectada do clique; não repete o preenchimento pelo espelho."
+        }
+      }
+    },
+    {
+      "key": "video-luz-demo",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: luz e sombra. Entrada: “A sua nave está pintada, mas ela ainda parece um adesivo, uma coisa chapada. Quem resolve isso é a l”. Saída: “. O único cuidado é escolher um lado e ficar nele até o fim. Na nave do Júlio a luz vem da esquerda.”. Usar o antes/depois previsto na Parte 4 e complementar com seta da luz e close nas famílias de cor. Não mandar a criança mexer durante a demonstração. Complemento: “Olhe a mesma nave antes e depois. A luz vem deste lado; o outro recebe a sombra. Agora repare na cabine: a cor mais clara continua da família do azul. Poucos pixels já mudam o volume.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-volume",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: luz e sombra. Entrada: “Sabendo o lado, é uma regra só: sombra no lado contrário ao da luz. E antes de sair riscando, mais u”. Saída: “Lápis ainda está na sua mão. Olha a do Júlio antes e depois. Que diferença! Quarto passo concluído.\"”. Manter ordem sombras → luzes e exceção para detalhes muito pequenos. Não exigir sombra adicional numa cabine já escura. Evitar dizer que toda cor da Arcade tem duas vizinhas da mesma família. Complemento: “Escolha um lado para a luz. Com o Lápis, ponha primeiro as sombras, depois as luzes. Use tons da família de cada cor e poucos pixels. Desligue o espelho: luz e sombra não precisam ser iguais dos dois lados.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-volume",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Escolha um lado para a luz. Com o Lápis, ponha primeiro as sombras, depois as luzes. Use tons da família de cada cor e poucos pixels. Desligue o espelho: luz e sombra não precisam ser iguais dos dois lados.\n\n**Antes de voltar à aula, confira:**\n\n- Uma direção de luz consistente.\n- Sombra e luz preservam a família da cor ou usam o tom disponível mais adequado.\n- Silhueta, cabine e espaço inferior continuam legíveis.\n\nSe a nave ficou muito escura, desfaça alguns traços. Um detalhe de dois pixels pode receber só luz ou só sombra.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-volume",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se a nave ficou muito escura, desfaça alguns traços. Um detalhe de dois pixels pode receber só luz ou só sombra."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "A cabine já está azul-escura. Como realçar o lado iluminado?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Acrescentar poucos pixels de um azul mais claro."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Cobrir a cabine inteira com a sombra roxa do corpo."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O tom mais claro preserva a cor da cabine e dá a indicação de luz."
+        }
+      }
+    },
+    {
+      "key": "video-salvamento",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 5. Passo 5: guardar o seu desenho. Entrada: “Último passo de hoje, e ele é uma boa notícia: você não precisa fazer nada pra salvar. Olha lá em ci”. Saída: “brir a Comunidade em outro computador e entrar na sua conta, os seus desenhos estão lá te esperando.”. Retirar cota numérica e explicações sobre apagar desenhos. Acrescentar o retorno pela setinha, previsto no fim desta Parte. Não mostrar os dois avisos lado a lado. Complemento: “O Pinta salva o desenho enquanto você trabalha. Antes de sair, procure também Guardado na sua conta, na barra acima do editor. Depois use Voltar para encontrar o cartão da nave na galeria.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Selecione apenas nave na galeria do Pinta e envie o desenho. Não precisa baixar uma imagem nem montar a nave no jogo hoje.\n\n**Confira na sua criação:**\n\n- Personagem pixel art 32 × 32 chamado nave.\n- Silhueta legível, áreas de cor, direção de luz e espaço inferior transparente.\n- Não comparar beleza, simetria perfeita, cor ou fidelidade ao modelo como nota.\n- Orientar uma correção de cada vez quando faltar espaço, houver contorno aberto ou a luz apagar a forma.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 2. Olha a sua nave. Você desenhou ela quadradinho por quadradinho, e ”. Saída: “xou embaixo dela? Na próxima aula é ele que vai receber o fogo do motor. E o fogo vai mexer. Até já.”. Reaproveitar a recapitulação, ajustando: Preservar uma única aula, como solicitado no roteiro original; a divisão é em seções, não em aulas novas. A paleta pode não oferecer uma rampa escura/média/clara para toda cor; mostrar os tons realmente disponíveis. Retirar Celeste como prova de vetor; visual rasterizado não comprova a técnica original. Referências visuais serão fornecidas na edição, evitando saída para busca livre. O espelho não atua no balde; não confundir com os comandos de virar o desenho. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Sua nave tem um formato que você escolheu, cores e volume. O espelho ajudou no contorno; a luz e a sombra ajudaram a enxergar as partes. O desenho fica no Pinta, esperando o motor da próxima aula. Agora vamos guardar duas ideias.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você quer mudar apenas um detalhe pequeno na asa. Qual ferramenta cabe melhor?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Lápis."
+              },
+              {
+                "id": "b",
+                "label": "Balde em todo o fundo."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O Lápis atua pixel a pixel e permite uma alteração pequena."
+          },
+          {
+            "id": "q2",
+            "prompt": "Com a luz vindo da direita, onde faz sentido colocar a sombra principal?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Do mesmo lado da luz em todas as partes."
+              },
+              {
+                "id": "a",
+                "label": "Do lado esquerdo, oposto à luz."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Uma direção consistente ajuda a perceber volume. O lado escolhido pode ser seu."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "O jogo ficou no Estúdio. Hoje a criança abre o Pinta pela primeira vez e desenha a nave.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "novo-desenho",
+      "title": "Prepare a tela da sua nave",
+      "intent": "application",
+      "objective": "Criar nave como personagem em pixel art de 32 × 32.",
+      "blockKeys": ["video-novo-desenho", "orientacao-novo-desenho", "conferir-novo-desenho"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-novo-desenho"]
+      }
+    },
+    {
+      "key": "espelho",
+      "title": "Experimente: um traço, dois lados",
+      "intent": "exploration",
+      "objective": "Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado.",
+      "blockKeys": ["experimento-espelho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-espelho"]
+      }
+    },
+    {
+      "key": "contorno",
+      "title": "Desenhe o contorno e reserve o motor",
+      "intent": "application",
+      "objective": "Fazer a silhueta com espaço inferior reservado.",
+      "blockKeys": ["video-contorno", "orientacao-contorno", "conferir-contorno"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-contorno"]
+      }
+    },
+    {
+      "key": "cor-base",
+      "title": "Pinte o corpo, a cabine e os detalhes",
+      "intent": "application",
+      "objective": "Escolher uma base média e distinguir balde de lápis.",
+      "blockKeys": ["video-cor-base", "orientacao-cor-base", "conferir-cor-base"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-cor-base"]
+      }
+    },
+    {
+      "key": "luz-demo",
+      "title": "Observe: a luz dá volume",
+      "intent": "demonstration",
+      "objective": "Visualizar direção da luz e sombra antes de pintar.",
+      "blockKeys": ["video-luz-demo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-luz-demo"]
+      }
+    },
+    {
+      "key": "volume",
+      "title": "Dê luz e sombra à sua nave",
+      "intent": "application",
+      "objective": "Aplicar poucos traços de luz e sombra com uma direção consistente.",
+      "blockKeys": ["video-volume", "orientacao-volume", "conferir-volume"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-volume"]
+      }
+    },
+    {
+      "key": "salvamento",
+      "title": "Observe: salvo e guardado na conta",
+      "intent": "demonstration",
+      "objective": "Distinguir o salvamento do editor e a confirmação na conta.",
+      "blockKeys": ["video-salvamento"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-salvamento"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Nave em pixel art, Personagem 32 × 32, com silhueta, cor, luz/sombra e espaço inferior para o motor; salva na galeria.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Nave em pixel art, Personagem 32 × 32, com silhueta, cor, luz/sombra e espaço inferior para o motor; salva na galeria.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

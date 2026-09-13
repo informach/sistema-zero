@@ -1,0 +1,74 @@
+{
+  "status": "passed",
+  "scope": "Fontes, reprodução editorial, contratos do catálogo, critérios dos projetos e correção das respostas. Não inclui publicação nem mídia editada.",
+  "totals": {
+    "sections": 78,
+    "clips": 61,
+    "demonstrations": 17,
+    "applications": 32,
+    "experiments": 6,
+    "questions": 12
+  },
+  "results": [
+    {
+      "lesson": "introducao",
+      "sourceHash": "d3cb9fa0eb04bef925ae16af822ecb9222d66b10a498fd87cfd081b869b4e9fe",
+      "sections": 7,
+      "clips": 6,
+      "demonstrations": 4,
+      "applications": 0,
+      "experiments": 0,
+      "questions": 2
+    },
+    {
+      "lesson": "dia-1",
+      "sourceHash": "047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6",
+      "sections": 16,
+      "clips": 12,
+      "demonstrations": 3,
+      "applications": 7,
+      "experiments": 2,
+      "questions": 2
+    },
+    {
+      "lesson": "dia-2",
+      "sourceHash": "f86024679543a69d6ac450ee09f6985e2275921c0bf72eb876eec1220036f5e9",
+      "sections": 12,
+      "clips": 9,
+      "demonstrations": 2,
+      "applications": 5,
+      "experiments": 1,
+      "questions": 2
+    },
+    {
+      "lesson": "dia-3",
+      "sourceHash": "42f032a7ead97c237bcb82ed1b6a97405484801d4de4dc6e9d6598bc41446b55",
+      "sections": 13,
+      "clips": 10,
+      "demonstrations": 3,
+      "applications": 5,
+      "experiments": 1,
+      "questions": 2
+    },
+    {
+      "lesson": "dia-4",
+      "sourceHash": "5920b27b0007ee632bd60f587f59ed06e48fa2167acd5115f5c385d30fc0db1a",
+      "sections": 13,
+      "clips": 10,
+      "demonstrations": 2,
+      "applications": 6,
+      "experiments": 1,
+      "questions": 2
+    },
+    {
+      "lesson": "dia-5",
+      "sourceHash": "4752ff35745d17cd7df1473ed1da40f115a8437a87f3d1b455ecd2c27a1ceb7c",
+      "sections": 17,
+      "clips": 14,
+      "demonstrations": 3,
+      "applications": 9,
+      "experiments": 1,
+      "questions": 2
+    }
+  ]
+}

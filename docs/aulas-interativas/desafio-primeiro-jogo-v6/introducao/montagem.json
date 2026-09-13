@@ -1,0 +1,157 @@
+{
+  "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+  "sourceHash": "d3cb9fa0eb04bef925ae16af822ecb9222d66b10a498fd87cfd081b869b4e9fe",
+  "status": "Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "Abertura: aqui é o seu mundo",
+      "entry": "Oi! Seja muito bem-vindo ao Desafio do Primeiro Jogo! E deixa eu já te contar uma coisa: aqui dentro",
+      "exit": "ra: o seu avatar, o seu quarto, e o seu próprio jogo. Vem comigo que eu te mostro tudo, é rapidinho!",
+      "narration": "Oi! Seja muito bem-vindo ao Desafio do Primeiro Jogo! E deixa eu já te contar uma coisa: aqui dentro é o seu Mundo da Criação. E nesse mundo você vai criar três coisas incríveis, cada uma melhor que a outra: o seu avatar, o seu quarto, e o seu próprio jogo. Vem comigo que eu te mostro tudo, é rapidinho!",
+      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
+      "newNarration": "Oi! Aqui você vai criar o seu primeiro jogo de nave. Hoje eu vou te mostrar como acompanhar a aula, onde encontrar os materiais e como pedir ajuda. Depois a gente começa a construção no Dia 1.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-percurso",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "O que conta pra completar uma aula",
+      "entry": "E por falar em aula, deixa eu te mostrar rapidinho o que conta pra você completar uma e ganhar aquel",
+      "exit": "inho rápido só pra mostrar que você mandou bem. Fez essas coisinhas? Aula concluída, XP conquistado!",
+      "narration": "E por falar em aula, deixa eu te mostrar rapidinho o que conta pra você completar uma e ganhar aquele XP. É bem simples: você assiste o vídeo da aula, faz no estúdio tudo que a aula pedir, envia a sua atividade pro professor ali no botão, e responde a Hora do Desafio, que é um quizinho rápido só pra mostrar que você mandou bem. Fez essas coisinhas? Aula concluída, XP conquistado!",
+      "edit": "Usar a ideia de acompanhar e entregar; substituir a imagem antiga de vídeo em cima e Estúdio embaixo pela página atual por seções. Regravar as instruções de navegação.",
+      "visual": "Percorrer uma seção de vídeo, uma demonstração sem controles, uma comparação encerrada e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.",
+      "newNarration": "Cada seção tem uma tarefa. Em algumas você assiste; em outras, observa um exemplo ou faz uma comparação curta. Quando aparecer o Estúdio, é sua vez de montar. Confira o que falta, envie a construção quando a aula pedir e responda ao quiz.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-tela",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "Três jeitos de fazer a atividade",
+      "entry": "E na hora de fazer a atividade no estúdio, você escolhe o jeito que for mais confortável pra você, p",
+      "exit": "zer a atividade no estúdio, você escolhe o jeito que for mais confortável pra você, porque tem três.",
+      "narration": "E na hora de fazer a atividade no estúdio, você escolhe o jeito que for mais confortável pra você, porque tem três.",
+      "edit": "Substituir os antigos três modos e a orientação de abrir a mesma aula em duas telas. O vídeo de 4min34s documenta uma interface anterior; reaproveitar apenas gestos ainda presentes e regravar esta parte curta.",
+      "visual": "Gravação atual: divisória na tela larga, alternância Ver exemplo/Criar na compacta e Expandir/Reduzir do Estúdio. Não mostrar seleção de ferramentas extras.",
+      "newNarration": "Na tela grande, o exemplo e o Estúdio aparecem lado a lado. Você pode ajustar a divisória. Na tela pequena, use Ver exemplo e Criar. É o mesmo projeto. Para enxergar mais do Estúdio, use Expandir; depois volte à aula.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-materiais",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "Os seus materiais",
+      "entry": "Aqui no módulo, logo depois desta aula, vêm dois materiais, e eles são as próximas duas aulas. A pri",
+      "exit": " tipo qual bloquinho usar ou onde ele encaixa, é só abrir o caderno que está tudo lá, passo a passo.",
+      "narration": "Aqui no módulo, logo depois desta aula, vêm dois materiais, e eles são as próximas duas aulas. A primeira é o Mapa dos Pais, esse que eu acabei de falar. Ele é pros seus pais, e é muito importante que eles leiam com atenção, porque é lá que está explicado tudo que eles precisam saber pra te acompanhar: a segurança, como liberar o perfil público, o ritmo das aulas. Então faz uma coisa importante por mim: avisa os seus pais pra lerem o Mapa dos Pais, combinado? E a segunda é o Caderno do Aluno, e esse é o seu companheiro nas aulas. Se durante uma aula bater aquela dúvida, tipo qual bloquinho usar ou onde ele encaixa, é só abrir o caderno que está tudo lá, passo a passo.",
+      "edit": "Reaproveitar a apresentação dos dois materiais. Não fixar posições “próximas duas aulas” sem conferir a ordem publicada. Acrescentar a ajuda contextual atual.",
+      "visual": "Localizar os materiais pelo título no curso. Na aula, apontar Preciso de ajuda; usar exemplo visual de mensagem, sem enviar uma dúvida fictícia.",
+      "newNarration": "No curso, encontre o Caderno do Aluno. Ele ajuda a conferir os bloquinhos. O Mapa dos Pais é para o seu responsável. Se uma coisa não funcionar, use Preciso de ajuda e conte o que você fez e o que apareceu. Assim eu consigo te ajudar naquele ponto.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-salvar",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "O estúdio salva sozinho",
+      "entry": "E olha, isso vale pros três: pode criar sem medo nenhum, porque o estúdio salva tudo sozinho enquant",
+      "exit": "se você fechar sem querer, fica calmo. Quando você voltar, está tudo lá do jeitinho que você deixou.",
+      "narration": "E olha, isso vale pros três: pode criar sem medo nenhum, porque o estúdio salva tudo sozinho enquanto você monta. Tá vendo essa etiquetinha escrita SALVO? É ele te avisando que já guardou. Aí se faltar luz, se o computador desligar, se você fechar sem querer, fica calmo. Quando você voltar, está tudo lá do jeitinho que você deixou.",
+      "edit": "Reaproveitar a etiqueta de salvamento. Cortar “pode criar sem medo nenhum” e a garantia absoluta após queda de energia. Complementar a diferença entre rascunho local e entrega.",
+      "visual": "Mostrar mudança, estado salvando, confirmação de salvo e botão de entrega em uma aula de exemplo. Não fazer uma entrega nesta introdução.",
+      "newNarration": "O Estúdio guarda seu rascunho enquanto você monta. Antes de sair, espere o aviso de salvo. Esse rascunho fica neste navegador; para o professor receber sua construção, use Enviar para o professor na entrega. Nos próximos dias, a aula continua a partir do projeto enviado.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+      "sourceSection": "Fecho pra criança",
+      "entry": "E é isso, agora esse Mundo da Criação é todo seu! Antes de começar o Dia 1, que tal já criar o seu a",
+      "exit": "Mapa dos Pais. Vai lá, se diverte, e te espero no Dia 1 pra gente criar o seu primeiro jogo. Até já!",
+      "narration": "E é isso, agora esse Mundo da Criação é todo seu! Antes de começar o Dia 1, que tal já criar o seu avatar e montar o seu quarto do seu jeito? E não esquece de avisar os seus pais do Mapa dos Pais. Vai lá, se diverte, e te espero no Dia 1 pra gente criar o seu primeiro jogo. Até já!",
+      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "visual": "Resultado do dia e convite para duas perguntas finais.",
+      "newNarration": "Agora você já sabe por onde começar. Avise seu responsável sobre o Mapa dos Pais e responda às duas perguntas. O Dia 1 te espera para colocar a nave no espaço!",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceReview": [
+    {
+      "heading": "Especificações",
+      "clips": [],
+      "decision": "Referência de formato e ritmo; a duração interativa é estimada separadamente."
+    },
+    {
+      "heading": "Abertura: aqui é o seu mundo",
+      "clips": ["video-abertura-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "O seu avatar",
+      "clips": [],
+      "decision": "Reservar para ambientação opcional; sem personalizar para liberar o curso."
+    },
+    {
+      "heading": "O seu quarto (e como deixar todo mundo ver)",
+      "clips": [],
+      "decision": "Reservar para ambientação opcional. Não orientar a criança a tornar o perfil público como tarefa."
+    },
+    {
+      "heading": "Os seus materiais",
+      "clips": ["video-materiais"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Moedas e missões",
+      "clips": [],
+      "decision": "Reservar para ambientação opcional; não interromper a preparação para criar o jogo."
+    },
+    {
+      "heading": "XP, ranking e a sua Carreira de Criador",
+      "clips": [],
+      "decision": "Reservar para ambientação opcional. A fala de Carreira depende de gravação nova, conforme aviso da fonte."
+    },
+    {
+      "heading": "O que conta pra completar uma aula",
+      "clips": ["video-percurso"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Três jeitos de fazer a atividade",
+      "clips": ["video-tela"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Modo normal",
+      "clips": [],
+      "decision": "Substituído pela demonstração da página atual; montagem antiga não corresponde às seções."
+    },
+    {
+      "heading": "Modo criação guiada",
+      "clips": [],
+      "decision": "Substituído por divisória larga e Ver exemplo/Criar na tela compacta."
+    },
+    {
+      "heading": "Modo tela cheia",
+      "clips": [],
+      "decision": "Aproveitar somente Expandir/Reduzir, se o gesto ainda corresponder. Retirar duas instâncias da mesma aula editando o projeto."
+    },
+    {
+      "heading": "O estúdio salva sozinho",
+      "clips": ["video-salvar"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Fecho pra criança",
+      "clips": ["video-fecho-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ]
+}

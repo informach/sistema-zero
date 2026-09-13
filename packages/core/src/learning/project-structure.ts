@@ -74,6 +74,7 @@ function matchesBlock(
     const fields = record(node.fields) ? node.fields : {}
     const inputs = record(node.inputs) ? node.inputs : {}
     return (
+      (!pattern.beforeBlock || follows(node, pattern.beforeBlock)) &&
       Object.entries(pattern.fields ?? {}).every(
         ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
       ) &&
@@ -110,8 +111,7 @@ function matchesBlock(
     if (
       (!rule.area || rule.area === area) &&
       (!rule.withinBlock || ancestors.includes(rule.withinBlock)) &&
-      patternMatches(rule, node) &&
-      (!rule.beforeBlock || follows(node, rule.beforeBlock))
+      patternMatches(rule, node)
     ) {
       count++
       if (rule.count === undefined) return !exhausted

@@ -1,0 +1,646 @@
+{
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-2",
+  "title": "O tiro nasce na nave e sobe",
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom te ver de novo. Ontem você deixou a sua nave voando num espaço cheio de estrelas. Hoje o”. Saída: “ o motor faz os tiros voarem pela tela. E no sexto, a gente testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Sua nave já voa. Hoje você vai apertar espaço e ver um tiro sair dela, mesmo quando estiver em outro lugar da tela. Vamos ensinar o jogo a criar, mover e mostrar esses tiros.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-grupo-tiros",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar o grupo dos tiros. Entrada: “Ontem a gente criou a nave, que é uma só. Mas tiro é diferente: você vai disparar um monte deles, um”. Saída: “ocê vai disparar. Passo 1 pronto. Agora vamos pro segundo, que é montar a área que escuta o teclado.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Muitos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-grupo-tiros",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Muitos, coloque Criar grupo de sprites no final de Ao iniciar. Troque o nome para tiros. O grupo começa vazio; cada disparo vai colocar um tiro nele."
+      }
+    },
+    {
+      "key": "video-espaco",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 2. Passo 2: a área que escuta o teclado. Entrada: “Lembra que no primeiro dia a gente montou duas áreas, a Ao iniciar e a Enquanto estiver rodando? Hoj”. Saída: “. Passo 2 pronto. Agora vem o terceiro, o mais esperado de todos, que é fazer o tiro nascer na nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Quando acontecer. Dentro, encaixe Quando apertar a tecla, de Jogo 2D, Controles, e escolha barra de espaço. Esse é o evento que vai responder ao disparo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-espaco",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, coloque Quando acontecer. Dentro, encaixe Quando apertar a tecla, de Jogo 2D, Controles, e escolha barra de espaço. Esse é o evento que vai responder ao disparo."
+      }
+    },
+    {
+      "key": "video-origem",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Agora vamos dizer onde o tiro nasce. Ele tem que sair da nave, né? Repara que o campo do x já vem co”. Saída: “cima do número do y, e seleciona a nave. Assim o tiro nasce na altura da nave, bem na pontinha dela.”. Reaproveitar a explicação de ler a nave e acrescentar duas posições. Trocar a promessa de sair exatamente da pontinha visual por “alinhado com o centro e na altura de cima da caixa”. Fala complementar: “Veja a nave primeiro à esquerda e depois à direita. Se eu guardar um x fixo para o tiro, ele nasce no mesmo lugar. Se eu ler o centro x da nave na hora do disparo, ele acompanha a nave. A posição y diz a altura de onde ele sai.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-criar-tiro",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 3. Passo 3: fazer o tiro nascer na nave. Entrada: “Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar tiro no grupo e encaixa dentro do Quan”. Saída: “asso 3 pronto, o tiro já sabe onde nascer. Agora o quarto passo, que é dar velocidade e som pra ele.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-criar-tiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível."
+      }
+    },
+    {
+      "key": "experiencia-direcao",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare o sinal da velocidade",
+        "instructions": "Os dois tiros começam no mesmo lugar. Compare vy menos 9 e vy mais 9. Avance os passos e observe o número y e a direção. Só o sinal mudou; o vx continua zero.",
+        "hints": ["O topo da tela tem valores menores de y. Veja em qual teste o y diminui."],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;color:#152f44;background:#eef5fa;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:780px;margin:auto}h2{font-size:clamp(24px,4vw,32px);line-height:1.18;margin:8px 0 12px}p{margin:10px 0}.eyebrow{font-size:12px;font-weight:bold;letter-spacing:2px;color:#476377}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button{font:inherit;min-height:46px;border:2px solid #386386;border-radius:12px;padding:9px 14px;background:white;color:#173c59;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#173c59;color:white}button:focus-visible{outline:3px solid #a75400;outline-offset:3px}button:disabled{opacity:.65;cursor:default}.stage{background:#112b46;color:#eff9ff;border:1px solid #58718b;border-radius:18px;padding:14px}.stage svg{width:100%;display:block;max-height:280px}#caption{min-height:48px}#run{background:#ffd184;border-color:#9a611a;font-weight:bold;margin:14px 8px 4px 0}.results{margin-top:16px;padding:16px;border:1px solid #86a1b5;background:#fff;border-radius:14px}.results h3{margin:0 0 10px;font-size:18px}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px}.comparison>div{min-width:0}.comparison h4{font-size:14px;margin:12px 0 8px}.comparison .stage{padding:8px}.comparison svg{max-height:150px}.comparison p{font-size:14px}.done{font-weight:bold;border-left:4px solid #1f7865;padding-left:12px}.lab[data-complete=true]>.stage{display:none}.note{font-size:14px;color:#476377}@media(max-width:420px){body{padding:8px}.choices button{flex:1 1 120px}.stage{padding:10px}.results{padding:12px}.comparison{gap:8px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n</style><main class=\"lab\"><span class=\"eyebrow\">UMA IDEIA · DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p id=\"prompt\"></p><div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button id=\"option-0\" type=\"button\" aria-pressed=\"true\"></button><button id=\"option-1\" type=\"button\" aria-pressed=\"false\"></button></div><div class=\"stage\"><div id=\"scene\"></div><p id=\"caption\" aria-live=\"polite\"></p></div><button id=\"run\" type=\"button\">Avançar a comparação</button><span id=\"progress\" role=\"status\"></span><p class=\"note\">Você controla o ritmo. Modelo didático separado do seu jogo.</p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>Sua comparação</h3><p id=\"records\">Os resultados aparecem aqui ao terminar cada situação.</p><div id=\"comparison\" class=\"comparison\"></div><p id=\"done\" class=\"done\" hidden></p></section></main>\n<script>(()=>{'use strict';const c={\"kind\":\"direcao\",\"title\":\"Qual tiro sobe?\",\"prompt\":\"Mesma posição inicial, vx = 0 e mesma quantidade de passos. Só o sinal do vy muda.\",\"options\":[\"vy = −9\",\"vy = +9\"],\"steps\":3,\"results\":[\"O y diminui: o tiro sobe.\",\"O y aumenta: o tiro desce.\"],\"conclusion\":\"O sinal decide a direção. Este modelo mostra três passos ampliados de 10 quadros cada.\"},$=id=>document.getElementById(id);let selected=0,step=0,tested=[],ready=!window.learning;\nconst ship=(x,y,opacity=1)=>'<g opacity=\"'+opacity+'\" transform=\"translate('+x+' '+y+')\"><path d=\"M27 0L54 54L35 46L27 62L19 46L0 54Z\" fill=\"#93e2ee\"/><path d=\"M23 16h8v20h-8Z\" fill=\"#2874a6\"/></g>';\nconst stone=(x,y)=>'<g transform=\"translate('+x+' '+y+')\"><path d=\"M0 12L14 0L37 4L46 23L35 43L10 46L-3 30Z\" fill=\"#e8b77b\"/><circle cx=\"15\" cy=\"18\" r=\"6\" fill=\"#98724e\"/></g>';\nfunction scene(option,n){let art='',caption='',view='0 0 800 480';const initial=n===0;\nif(c.kind==='coordenadas'){const y=option?410:110;art='<path d=\"M0 0H800M0 0V480M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><text x=\"15\" y=\"38\">0</text><text x=\"675\" y=\"38\">x → 800</text><text x=\"12\" y=\"460\">y ↓ 480</text>'+(!initial?ship(400,y)+'<circle cx=\"400\" cy=\"'+y+'\" r=\"7\" fill=\"#ffd184\"/>':'');caption=initial?'Aperte Mostrar posição.':'x = 400 · y = '+y+'. A marca é o canto superior esquerdo da caixa.';}\nif(c.kind==='limpeza'){for(let i=0;i<n;i++)if(!option||i===n-1)art+=ship(150+i*190,205,(!option&&i<n-1)?.45:1);caption='Quadro '+n+' · '+(option?Math.min(1,n):n)+' desenho(s) na tela · 1 nave no jogo.';}\nif(c.kind==='direcao'){const y=240+(option?1:-1)*n*90;art='<path d=\"M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><circle cx=\"400\" cy=\"240\" r=\"14\" fill=\"none\" stroke=\"#9eb4c7\" stroke-width=\"3\"/>'+(y>=0&&y<=480?'<circle cx=\"400\" cy=\"'+y+'\" r=\"12\" fill=\"#ffd184\"/>':'<text x=\"235\" y=\"'+(y<0?45:440)+'\">Saiu '+(y<0?'por cima':'por baixo')+'</text>');caption=(n*10)+' quadros · y = '+y+' · '+(n?'o tiro '+(option?'desce':'sobe'):'mesmo ponto de partida')+'.';}\nif(c.kind==='intervalo'){view='0 0 340 220';const births=n*(option?1:2);for(let i=0;i<births;i++)art+=stone(35+(i%3)*110,40+Math.floor(i/3)*95);caption=n*40+' quadros observados · '+births+' nascimento(s). Mesma queda nos dois testes.';}\nif(c.kind==='protecao'){view='0 0 220 180';const hp=3-(option?Math.min(1,n):n);art=ship(83,105);for(let i=0;i<3;i++)art+='<text x=\"'+(32+i*65)+'\" y=\"65\" fill=\"'+(i<hp?'#ffb2ab':'#718296')+'\">'+(i<hp?'♥':'♡')+'</text>';caption=n===0?'3 vidas · aguardando a primeira batida.':'Batida '+n+' (quadro '+(1+(n-1)*5)+') · '+hp+' vida(s) · asteroide removido'+(option&&n>1?' · dano ignorado pela proteção.':'.');}\nif(c.kind==='telas'){if(option){for(let i=0;i<n;i++)art+=stone(120+i*220,145);art+=ship(373,365);}else art='<text x=\"170\" y=\"200\">Nave contra Asteroides</text><text x=\"225\" y=\"265\">Aperte Enter</text>';caption=n+' toque(s) do relógio · '+(option?n:0)+' nascimento(s) · condição '+(option?'verdadeira':'falsa')+'.';}\nreturn {art:'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+caption+'\" style=\"font:32px sans-serif;fill:#eff9ff\">'+art+'</svg>',caption};}\nfunction resize(){const css=getComputedStyle(document.body);window.learning?.resize(Math.max(180,Math.ceil(document.querySelector('.lab').getBoundingClientRect().height+parseFloat(css.paddingTop)+parseFloat(css.paddingBottom))))}\nfunction save(){window.learning?.save({selected,step,tested:[...tested]})}\nfunction render(){const complete=tested.length===2,view=scene(selected,step);document.querySelector('.lab').dataset.complete=String(complete);$('scene').innerHTML=view.art;$('caption').textContent=view.caption;for(let i=0;i<2;i++){$('option-'+i).textContent=c.options[i];$('option-'+i).setAttribute('aria-pressed',String(i===selected));$('option-'+i).disabled=!ready||complete;}$('run').disabled=!ready||complete||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':tested.includes(String(selected))?'Situação guardada':c.steps===1?'Mostrar posição':'Avançar · passo '+(step+1)+' de '+c.steps;$('progress').textContent=tested.length+' de 2 situações guardadas';$('records').hidden=complete;$('records').textContent=tested.length?tested.map(i=>c.results[Number(i)]).join(' '):'Os resultados aparecem aqui ao terminar cada situação.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+c.options[i]+'</h4><div class=\"stage\">'+scene(i,c.steps).art+'</div><p>'+c.results[i]+'</p></div>').join(''):'';$('done').hidden=!complete;$('done').textContent=c.conclusion+' Agora responda à pergunta da aula.';resize()}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(tested.length===2||selected===i)return;selected=i;step=tested.includes(String(i))?c.steps:0;save();render()});$('run').addEventListener('click',()=>{if(tested.length===2||tested.includes(String(selected)))return;step++;if(step===c.steps)tested=[...new Set([...tested,String(selected)])].sort();save();render();if(tested.length===2)window.learning?.participated()});\naddEventListener('learning:restore',event=>{ready=true;const s=event.detail&&typeof event.detail==='object'?event.detail:{};selected=s.selected===1?1:0;tested=Array.isArray(s.tested)?[...new Set(s.tested.filter(i=>i==='0'||i==='1'))].sort():[];step=Number.isInteger(s.step)?Math.max(0,Math.min(c.steps,s.step)):0;if(tested.includes(String(selected)))step=c.steps;else if(step===c.steps)step=0;render()});$('title').textContent=c.title;$('prompt').textContent=c.prompt;addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));render();})();</script>"
+        },
+        "checkpoint": {
+          "prompt": "Qual vy faz o tiro subir?",
+          "choices": [
+            {
+              "id": "a",
+              "label": "vy = −9."
+            },
+            {
+              "id": "b",
+              "label": "vy = +9."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "Subir diminui o y. A velocidade negativa produz essa diminuição."
+        }
+      }
+    },
+    {
+      "key": "video-velocidade-som",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 4. Passo 4: a velocidade e o som do tiro. Entrada: “Faltam dois números no Criar tiro, e eles são novidade: o vx e o vy. Eles são a velocidade do tiro. ”. Saída: “senha os tiros. Bora resolver isso no quinto passo, que é colocar o motor pra fazer os tiros voarem.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-velocidade-som",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro."
+      }
+    },
+    {
+      "key": "video-ciclo-tiros",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 5. Passo 5: fazer os tiros voarem pela tela. Entrada: “Lembra do nosso motor, o A cada quadro do jogo? É ele que dá vida pra tudo. Agora a gente ensina ele”. Saída: “so 5 pronto, o motor agora cuida dos tiros. E chegou a hora da verdade, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Muitos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-ciclo-tiros",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No motor, abaixo de Desenhar nave, coloque três blocos de Jogo 2D, Muitos: Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Escolha tiros nos três. O fazer da limpeza fica vazio hoje."
+      }
+    },
+    {
+      "key": "video-testar",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de atirar. Entrada: “Clica na área do jogo e aperta a barra de espaço. Olha isso! O tiro saiu da nave, subiu e ainda fez ”. Saída: “nho no bico da nave? É o bloco do centro x trabalhando: onde a nave estiver, é de lá que o tiro sai.”. Usar o primeiro teste de posições. Retirar alterações para −15 e convites de brincar com valores. Fala complementar: “Clique no jogo. Vá para a esquerda e atire. Depois vá para a direita e atire de novo. Os dois tiros nascem na nave e sobem. Deixe vy menos 9 para a próxima aula.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "entrega-fala-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No seu projeto, faça um disparo à esquerda e outro à direita. Confira origem, subida, som e desaparecimento dos tiros fora da tela. Mantenha raio 5, vx 0 e vy −9. Envie a construção; ela será o começo do Dia 3."
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-dia2-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 2! Olha os seis passos de hoje: você criou o grupo dos tiros, montou a”. Saída: “çar a cair do céu, e você vai explodir eles com os seus tiros. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora cada disparo nasce na sua nave. O evento cria; o motor move, faz a limpeza e desenha o grupo. No Dia 3, chegam os asteroides para você acertar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A nave mudou de lugar. O que mantém o tiro novo alinhado com ela?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Ler o centro x da nave na hora do disparo."
+              },
+              {
+                "id": "b",
+                "label": "Usar sempre o número 400 no x do tiro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Ler o sprite acompanha sua posição atual; um número fixo continua igual."
+          },
+          {
+            "id": "q2",
+            "prompt": "O tiro saiu por cima. Por que retirá-lo do grupo?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para apagar a nave também."
+              },
+              {
+                "id": "a",
+                "label": "Para não continuar atualizando um objeto que já foi embora."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A limpeza cuida dos tiros que saíram, sem apagar a nave nem os tiros que ainda estão visíveis."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Retomar a entrega do Dia 1, com nave, estrelas e setas funcionando.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "grupo-tiros",
+      "title": "Prepare o grupo dos tiros",
+      "intent": "application",
+      "objective": "Usar um grupo para cuidar de vários tiros.",
+      "blockKeys": ["video-grupo-tiros", "fala-grupo-tiros"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "grupo-tiros",
+            "label": "Crie o grupo tiros em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "tiros"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "espaco",
+      "title": "Escute a barra de espaço",
+      "intent": "application",
+      "objective": "Criar uma resposta a uma tecla específica.",
+      "blockKeys": ["video-espaco", "fala-espaco"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "evento-espaco",
+            "label": "Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Space"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "origem",
+      "title": "Observe de onde o tiro sai",
+      "intent": "demonstration",
+      "objective": "Distinguir número fixo de leitura da posição atual.",
+      "blockKeys": ["video-origem"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-origem"]
+      }
+    },
+    {
+      "key": "criar-tiro",
+      "title": "Encaixe o endereço da nave no tiro",
+      "intent": "application",
+      "objective": "Ler centro x e posição y ao criar o tiro.",
+      "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tiro-origem",
+            "label": "Dentro de Espaço, crie o tiro usando centro x e posição y da nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "inputs": {
+                    "R": 5
+                  }
+                }
+              },
+              "area": "events"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "direcao",
+      "title": "Compare o sinal da velocidade",
+      "intent": "exploration",
+      "objective": "Descobrir o que o sinal de vy muda.",
+      "blockKeys": ["experiencia-direcao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-direcao"]
+      }
+    },
+    {
+      "key": "velocidade-som",
+      "title": "Configure o disparo e seu som",
+      "intent": "application",
+      "objective": "Criar velocidade vertical e som no evento.",
+      "blockKeys": ["video-velocidade-som", "fala-velocidade-som"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "disparo",
+            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputs": {
+                    "R": 5,
+                    "VX": 0,
+                    "VY": -9
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "beforeBlock": "sz_g2d_play_shoot"
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "tiro-unico",
+            "label": "Mantenha apenas um comando de criar tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "ciclo-tiros",
+      "title": "Mova, retire e desenhe os tiros",
+      "intent": "application",
+      "objective": "Aplicar um mesmo ciclo ao grupo inteiro.",
+      "blockKeys": ["video-ciclo-tiros", "fala-ciclo-tiros"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "mover-tiros",
+            "label": "Mova tiros antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-tiros",
+            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-tiros",
+            "label": "Desenhe o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "testar",
+      "title": "Observe o teste de dois disparos",
+      "intent": "demonstration",
+      "objective": "Conferir a origem do tiro em duas posições.",
+      "blockKeys": ["video-testar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-testar"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Teste e envie sua construção",
+      "intent": "delivery",
+      "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados ao sair da tela.",
+      "blockKeys": ["entrega-fala-v6", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "nave",
+            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "fields": {
+                "NAME": "nave"
+              },
+              "inputs": {
+                "X": 400,
+                "Y": 410,
+                "W": 54,
+                "H": 62
+              },
+              "area": "start",
+              "count": 1
+            }
+          },
+          {
+            "id": "grupo-tiros",
+            "label": "Crie o grupo tiros em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "tiros"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "disparo",
+            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputs": {
+                    "R": 5,
+                    "VX": 0,
+                    "VY": -9
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "beforeBlock": "sz_g2d_play_shoot"
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "tiro-unico",
+            "label": "Mantenha apenas um comando de criar tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-tiros",
+            "label": "Mova tiros antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-tiros",
+            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-tiros",
+            "label": "Desenhe o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você construiu",
+      "intent": "closing",
+      "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados ao sair da tela.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Hora do Desafio",
+      "intent": "closing",
+      "objective": "Reconhecer duas relações importantes desta aula.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-3",
+    "checar-construir-3",
+    "construir-6",
+    "video-construir-6-1",
+    "fechamento"
+  ]
+}

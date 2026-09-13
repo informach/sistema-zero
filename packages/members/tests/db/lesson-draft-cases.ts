@@ -608,6 +608,19 @@ export function lessonDraftCases(getDb: () => Database) {
           provider: 'vimeo',
           src: 'https://player.vimeo.com/video/987654321',
         })
+        // ⚠️ O rascunho precisa ter TODO tipo de bloco que os manifestos reutilizam por
+        // `existing`. Só Estúdio e vídeo aqui reprovava assim que um curso novo passou a
+        // reaproveitar o Pinta que a autora já cadastrou na aula (`o-jogo-do-meu-jeito-v6`,
+        // aulas 02 a 05) — e a régua abaixo é o anti-vácuo: se um `existing.kind` novo
+        // aparecer, o teste diz qual é, em vez de estourar lá dentro do importador.
+        await f.content.createBlock(f.lessonId, 'pinta', {
+          kind: 'pinta',
+          initialAsset: pintaAssetToWire(createLessonAsset('pixel-sprite', 32, 'Nave')),
+        })
+        const SEMEADOS = ['studio', 'video', 'pinta']
+        for (const entry of manifest.blocks)
+          if ('existing' in entry)
+            expect(SEMEADOS).toContain((entry as { existing: { kind: string } }).existing.kind)
         const before = await f.reader.findLessonWithContent(f.lessonId)
         const service = new LearningImportService(f.repo, f.reader)
         const plan = await service.preview(f.lessonId, linkedManifest),

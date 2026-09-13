@@ -781,8 +781,6 @@ function LessonSectionsContent({
               hasWorkspace && !arrastavel && toolMode === 'create' && 'hidden!',
             )}
           >
-            {/* `sz-lesson-section-head`: gancho ESTÁVEL do tema do kids, onde o título
-                abre o primeiro cartão da seção. */}
             {section.blockIds
               .map((id) => blockById.get(id))
               .filter(

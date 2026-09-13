@@ -36,9 +36,23 @@ const points = c(
 )
 const score = c(
   'mostrar-pontos',
-  'No placar, conecte o valor da variável pontos à entrada do valor.',
-  'sz_g2d_draw_score',
-  { ...inLoop, fields: { LABEL: 'Pontos:' }, inputBlocks: { VALUE: variable('pontos') } },
+  'Dentro de Se jogando, mostre o placar lendo a variável pontos.',
+  iff,
+  {
+    ...inLoop,
+    inputBlocks: guarded(
+      p('sz_g2d_draw_score', {
+        fields: { LABEL: 'Pontos:' },
+        inputBlocks: { VALUE: variable('pontos') },
+      }),
+    ).inputBlocks,
+  },
+)
+const singleSpawn = c(
+  'cacto-unico',
+  'Use um único bloco para criar o cacto com posição e velocidade sorteadas.',
+  'sz_g2d_spawn_obstacle',
+  { count: 1 },
 )
 const pointClock = c(
   'relogio-pontos',
@@ -309,8 +323,8 @@ export const lateRecipes: Record<number, Recipe> = {
         part: 2,
         focus: 'Usar o valor da variável no desenho do placar.',
         reason: 'Distinguir um zero digitado de uma leitura que acompanhará a variável.',
-        say: 'No quadro, mostre um placar com o rótulo Pontos:. No valor, encaixe valor da variável pontos. Coloque-o depois do desenho do mundo.',
-        edit: 'Reaproveitar o encaixe. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7.',
+        say: 'Dentro do Se a tela é jogando, depois de retirar os cactos que saíram, coloque Mostrar placar. Mantenha Pontos:, x 12, y 30 e tamanho 24. No valor, encaixe valor da variável pontos.',
+        edit: 'Reaproveitar o encaixe dentro do Se e a troca para cor escura. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. O próximo clipe retoma a comparação com a imagem já montada.',
         checks: [score],
       },
       {
@@ -444,7 +458,7 @@ export const lateRecipes: Record<number, Recipe> = {
         reason: 'Primeira aplicação muda um único campo e preserva o tempo de criação.',
         say: 'No x do bloco que cria cacto, conecte Sorteio entre 500 e 560. Os dois limites ficam depois da borda 480. O relógio continua em 1,4.',
         edit: 'Preservar o encaixe em x e a faixa externa. Explicar que muda o tempo de chegada até o Dino, mesmo com o mesmo relógio de nascimento.',
-        checks: [randomX, spawnClock],
+        checks: [randomX, spawnClock, singleSpawn],
       },
       {
         key: 'menos-corre-mais',
@@ -467,10 +481,10 @@ export const lateRecipes: Record<number, Recipe> = {
         reason: 'Montagem logo depois da visualização, sem outro parâmetro novo.',
         say: 'No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x.',
         edit: 'Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição.',
-        checks: [randomX, randomV],
+        checks: [randomX, randomV, singleSpawn],
       },
     ],
-    finalChecks: [randomX, randomV, spawnClock],
+    finalChecks: [randomX, randomV, spawnClock, singleSpawn],
     test: 'Observe alguns nascimentos. Todos começam fora da tela e andam à esquerda. Um resultado pode repetir. Confira os dois sorteios em tomadas diferentes, sem alterar o relógio.',
     corrections: [
       'Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1.',
@@ -586,6 +600,7 @@ export const lateRecipes: Record<number, Recipe> = {
     ],
     finalChecks: [
       speed,
+      singleSpawn,
       baseFormula,
       acceleration,
       randomX,

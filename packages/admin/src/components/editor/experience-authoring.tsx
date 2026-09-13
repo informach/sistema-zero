@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  EXPLORATION_DEFINITIONS,
   type ExplorationActivity,
   experienceScript,
   isExperienceScript,
@@ -9,6 +10,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useState } from 'react'
+import { demonstrationActionChoices, ExperienceActionEditor } from './experience-action-editor'
 
 export function ExperienceAuthoring({
   activity,
@@ -21,6 +23,9 @@ export function ExperienceAuthoring({
   const [raw, setRaw] = useState('')
   const [error, setError] = useState('')
   const script = experienceScript(activity)
+  const supportsComparison = ['gravity', 'impulse', 'hitbox', 'jump-sound'].includes(
+    activity.mission,
+  )
   return (
     <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
       {activity.version === 3 && (
@@ -96,23 +101,135 @@ export function ExperienceAuthoring({
                     >
                       <option value="scene">Palco</option>
                       <option value="tools">Controles</option>
-                      <option value="compare">Comparação</option>
+                      {(supportsComparison || step.highlight === 'compare') && (
+                        <option value="compare" disabled={!supportsComparison}>
+                          Comparação
+                        </option>
+                      )}
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {step.actions
-                        .map((a) => (a.type === 'advance' ? `observar ${a.seconds}s` : a.type))
-                        .join(' → ')}
-                    </p>
+                    {!supportsComparison && step.highlight === 'compare' && (
+                      <p role="alert" className="text-xs text-destructive">
+                        Esta cena não oferece comparação lado a lado. Escolha Palco ou Controles.
+                      </p>
+                    )}
+                    <details className="rounded-lg border border-border p-3">
+                      <summary className="cursor-pointer text-sm font-medium">
+                        Ações da cena · {step.actions.length}
+                      </summary>
+                      <div className="mt-3 space-y-3">
+                        <ExperienceActionEditor
+                          mission={activity.mission}
+                          value={step.actions}
+                          stepNumber={index + 1}
+                          onChange={(actions) =>
+                            onChange({
+                              ...activity,
+                              demonstration: script.map((s, i) =>
+                                i === index ? { ...s, actions } : s,
+                              ),
+                            })
+                          }
+                        />
+                        <label className="block space-y-1 text-xs">
+                          Descoberta a acompanhar antes de avançar
+                          <Select
+                            value={step.waitFor ?? ''}
+                            onChange={(e) =>
+                              onChange({
+                                ...activity,
+                                demonstration: script.map((s, i) =>
+                                  i === index ? { ...s, waitFor: e.target.value || undefined } : s,
+                                ),
+                              })
+                            }
+                          >
+                            <option value="">Concluir as ações desta etapa</option>
+                            {EXPLORATION_DEFINITIONS[activity.mission].goals.map((goal) => (
+                              <option key={goal.id} value={goal.id}>
+                                {goal.label}
+                              </option>
+                            ))}
+                          </Select>
+                        </label>
+                      </div>
+                    </details>
+                    <div className="flex flex-wrap gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={index === 0}
+                        onClick={() => {
+                          const next = [...script]
+                          ;[next[index - 1], next[index]] = [next[index]!, next[index - 1]!]
+                          onChange({ ...activity, demonstration: next })
+                        }}
+                      >
+                        Subir etapa
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={index === script.length - 1}
+                        onClick={() => {
+                          const next = [...script]
+                          ;[next[index], next[index + 1]] = [next[index + 1]!, next[index]!]
+                          onChange({ ...activity, demonstration: next })
+                        }}
+                      >
+                        Descer etapa
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={script.length <= 1}
+                        onClick={() =>
+                          onChange({
+                            ...activity,
+                            demonstration: script.filter((_, i) => i !== index),
+                          })
+                        }
+                      >
+                        Remover etapa
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
+              <Button
+                variant="outline"
+                disabled={script.length >= 12}
+                onClick={() => {
+                  const action = demonstrationActionChoices(activity.mission)[0]?.value
+                  if (action)
+                    onChange({
+                      ...activity,
+                      demonstration: [
+                        ...script,
+                        {
+                          id: crypto.randomUUID(),
+                          caption: 'Observe o que acontece.',
+                          highlight: 'scene',
+                          actions: [{ ...action }],
+                        },
+                      ],
+                    })
+                }}
+              >
+                Adicionar etapa ao roteiro
+              </Button>
+              {!isExperienceScript(script, activity.mission, activity.initialImpulse) && (
+                <p role="alert" className="text-sm text-destructive">
+                  Revise o roteiro: cada etapa precisa de fala e ações válidas. Uma descoberta
+                  exigida precisa acontecer até a última ação de observação dessa etapa.
+                </p>
+              )}
               <details
                 onToggle={(e) => {
                   if (e.currentTarget.open) setRaw(JSON.stringify(script, null, 2))
                 }}
               >
                 <summary className="cursor-pointer text-sm font-medium">
-                  Editar ações e ordem do roteiro
+                  Importar ou editar roteiro em JSON
                 </summary>
                 <p className="my-2 text-xs text-muted-foreground">
                   Até 12 etapas; cada etapa tem fala, destaque e até 16 ações válidas da missão.

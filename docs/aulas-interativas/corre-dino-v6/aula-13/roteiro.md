@@ -124,7 +124,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Base chega a −9 e permanece; No limite, sorteio produz −10; Cacto anterior conserva sua velocidade.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Monte o acelerador com limite
 
@@ -181,6 +181,7 @@ Confira início, salto, colisão, pontos e reinício por teclado e toque. Observ
 **Critérios da entrega:**
 
 - Crie velocidade com valor -5 em Ao iniciar.
+- Use um único bloco para criar o cacto com posição e velocidade sorteadas.
 - Use valor de velocidade menos sorteio de 0 a 1 no VX dos novos cactos.
 - A cada 5 s, se jogando e velocidade > -9, some -1 em velocidade.
 - No x do cacto, conecte Sorteio entre 500 e 560.

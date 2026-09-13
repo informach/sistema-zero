@@ -19,7 +19,7 @@ if (!bundle.success || !bundle.outputs[0]) throw new Error(bundle.logs.join('\n'
 const javascript = await bundle.outputs[0].text()
 const server = Bun.serve({
   hostname: '127.0.0.1',
-  port: 4319,
+  port: Number(process.env.EXPERIENCE_PREVIEW_PORT ?? 4319),
   fetch(request) {
     const path = new URL(request.url).pathname
     if (path === '/app.js')

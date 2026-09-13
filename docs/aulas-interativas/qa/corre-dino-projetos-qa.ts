@@ -110,7 +110,9 @@ export function courseProjects() {
   const inputEvent = body(b('sz_g2d_on_any_input'), 'BODY', [inputBranches])
   events.push(inputEvent)
   save(8)
-  events.push(
+  actions.splice(
+    actions.length - 1,
+    0,
     body(
       b('sz_g2d_on_sprite_group_overlap', { GROUP: 'cactos', SPRITE: 'dino', ANAME: 'cacto' }),
       'BODY',
@@ -122,6 +124,7 @@ export function courseProjects() {
       ],
     ),
   )
+  body(game, 'THEN', actions)
   const end = b(
     'sz_g2d_show_screen',
     { BG: '#102030' },
@@ -144,9 +147,11 @@ export function courseProjects() {
   const score = b(
     'sz_g2d_draw_score',
     { LABEL: 'Pontos:', COLOR: '#102030' },
-    { VALUE: variable('pontos'), X: 10, Y: 10, SIZE: 20 },
+    { VALUE: variable('pontos'), X: 12, Y: 30, SIZE: 24 },
   )
-  body(loop, 'BODY', [...background, game, score])
+  actions.push(score)
+  body(game, 'THEN', actions)
+  body(loop, 'BODY', [...background, game])
   timers.push(
     body(b('sz_g2d_every_seconds', {}, { SECS: 1 }), 'BODY', [
       condition('jogando', [b('sz_js_var_increment', { NAME: 'pontos', DELTA: 1 })]),

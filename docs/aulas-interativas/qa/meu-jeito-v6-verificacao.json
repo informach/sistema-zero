@@ -1,0 +1,94 @@
+{
+  "status": "passed",
+  "scope": "Oito fontes e hashes, todas as Partes, 55 recortes por âncoras, geração reproduzível, manifestos, critérios de progressão com galeria previamente configurada, respostas corretas/incorretas e geometria real de exportação. Não comprova importação em conta real, mídia editada, qualidade artística, jogabilidade das criações dos alunos ou publicação.",
+  "totals": {
+    "lessons": 8,
+    "sections": 76,
+    "clips": 55,
+    "demonstrations": 13,
+    "experiments": 5,
+    "quizQuestions": 16
+  },
+  "results": [
+    {
+      "lesson": "aula-01",
+      "sourceHash": "aea9e2bb22e617e66266f6cd3c3f95d787269b30cb7f95bd6cfdcfbbf02e9c55",
+      "sections": 9,
+      "clips": 7,
+      "demonstrations": 2,
+      "experiments": 0,
+      "gallery": "estudio",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-02",
+      "sourceHash": "e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451",
+      "sections": 11,
+      "clips": 8,
+      "demonstrations": 2,
+      "experiments": 1,
+      "gallery": "pinta",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-03",
+      "sourceHash": "6cb8b8f7b1280f626cd3c915090ecd208c43a9dbf96132ddd84481c652f26bf4",
+      "sections": 10,
+      "clips": 7,
+      "demonstrations": 2,
+      "experiments": 1,
+      "gallery": "pinta",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-04",
+      "sourceHash": "49736e1aa90b056c2778a8337d400329fdaca77f30126bf9af0ff114fd3ba6e1",
+      "sections": 10,
+      "clips": 7,
+      "demonstrations": 1,
+      "experiments": 1,
+      "gallery": "pinta",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-05",
+      "sourceHash": "6c91114eeff90e43403960ab3b5976383576c498699ee9a98b7bcedca0c9b99f",
+      "sections": 10,
+      "clips": 7,
+      "demonstrations": 1,
+      "experiments": 1,
+      "gallery": "pinta",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-06",
+      "sourceHash": "9ad05f5ccb2dab008f1b093e66a0b75b003a3f4d193754813bb5d2b8571114e8",
+      "sections": 10,
+      "clips": 7,
+      "demonstrations": 1,
+      "experiments": 1,
+      "gallery": "estudio",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-07",
+      "sourceHash": "8c6a62c7bee3bb50f7fb44aa1422d8bf18ed5744b6962819d43009532f7cfaf6",
+      "sections": 8,
+      "clips": 6,
+      "demonstrations": 1,
+      "experiments": 0,
+      "gallery": "estudio",
+      "quizQuestions": 2
+    },
+    {
+      "lesson": "aula-08",
+      "sourceHash": "d7ef094360dfb4535e0a34b11c6c3a6252fee1ae7cc467bd89664ed7f3e8cde2",
+      "sections": 8,
+      "clips": 6,
+      "demonstrations": 3,
+      "experiments": 0,
+      "gallery": "estudio",
+      "quizQuestions": 2
+    }
+  ]
+}

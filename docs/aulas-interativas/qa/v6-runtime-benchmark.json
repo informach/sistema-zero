@@ -1,27 +1,27 @@
 {
-  "date": "2026-09-12T20:05:27.294Z",
+  "date": "2026-09-12T21:45:25.625Z",
   "runtime": "Bun 1.3.11",
   "scope": "Local pure runtime only; excludes DOM, rendering, disk and network. Not device or child testing.",
   "results": [
     {
       "mission": "impulse",
       "commands": 10000,
-      "medianMs": 0.0014000000000038426,
-      "p95Ms": 0.005299999999991201,
+      "medianMs": 0.0024999999999977263,
+      "p95Ms": 0.007800000000003138,
       "maxCheckpointBytes": 946
     },
     {
       "mission": "spawn",
       "commands": 10000,
-      "medianMs": 0.012300000000010414,
-      "p95Ms": 0.028999999999996362,
+      "medianMs": 0.02050000000002683,
+      "p95Ms": 0.05269999999998731,
       "maxCheckpointBytes": 8512
     },
     {
       "mission": "hitbox",
       "commands": 10000,
-      "medianMs": 0.0016000000000531145,
-      "p95Ms": 0.003700000000037562,
+      "medianMs": 0.0036000000000058208,
+      "p95Ms": 0.006900000000086948,
       "maxCheckpointBytes": 4497
     }
   ]

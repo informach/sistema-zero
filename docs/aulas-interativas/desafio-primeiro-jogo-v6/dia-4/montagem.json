@@ -1,0 +1,184 @@
+{
+  "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+  "sourceHash": "5920b27b0007ee632bd60f587f59ed06e48fa2167acd5115f5c385d30fc0db1a",
+  "status": "Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Abertura",
+      "entry": "Oi! Bem-vindo ao Dia 4. O seu jogo já tem nave, tiro e uma chuva de asteroides explodindo. Mas me re",
+      "exit": "atida machucar. No quinto, pendura os corações. E no sexto, testa. Então bora começar pelo primeiro.",
+      "narration": "Oi! Bem-vindo ao Dia 4. O seu jogo já tem nave, tiro e uma chuva de asteroides explodindo. Mas me responde rápido: quantos asteroides você destruiu ontem? Pois é, ninguém sabe. Hoje o jogo ganha regras de verdade: cada acerto vai valer um ponto no placar, e a sua nave vai ganhar vidas, com coraçõezinhos na tela. E pra chegar lá, a gente vai passar por seis passos. No primeiro, a gente cria e soma os pontos. No segundo, mostra o placar na tela. O terceiro é dar vidas pra nave. No quarto, a gente faz a batida machucar. No quinto, pendura os corações. E no sexto, testa. Então bora começar pelo primeiro.",
+      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
+      "newNarration": "Hoje o jogo vai lembrar seus acertos e mostrar quantas vidas a nave ainda tem. Você vai ver um placar subir e descobrir por que uma nave precisa de um respiro depois de levar uma batida.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-memoria",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: criar e somar os pontos",
+      "entry": "Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos,",
+      "exit": " chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.",
+      "narration": "Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos, o jogo precisa de uma memória, um lugarzinho que guarda um número. Isso se chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.",
+      "edit": "Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar.",
+      "visual": "Caixa pontos e placar lado a lado. Uma colisão muda 0 para 1; dois quadros seguintes mostram 1. Não ensinar por um contador abstrato desconectado da colisão.",
+      "newNarration": "Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-pontos",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: criar e somar os pontos",
+      "entry": "Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao",
+      "exit": "sas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.",
+      "narration": "Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao iniciar, logo abaixo do Criar grupo de sprites asteroides. Olha a cor dele: laranja! Os blocos de Programação são laranjas, e os de Jogo 2D são rosas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.",
+      "edit": "Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-somar",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 1. Passo 1: criar e somar os pontos",
+      "entry": "Agora vamos fazer essa caixinha crescer. Quando é que você marca ponto? Quando um tiro explode um as",
+      "exit": "asteroide destruído põe mais 1 na caixinha. Passo 1 pronto. Agora o segundo, que é mostrar o placar.",
+      "narration": "Agora vamos fazer essa caixinha crescer. Quando é que você marca ponto? Quando um tiro explode um asteroide. E onde isso acontece? Dentro daquele bloco de colisão de ontem. Vai até ele. Na categoria Programação, subcategoria Variáveis, pega o bloco Somar em variável e encaixa dentro do Para cada colisão, lá no finalzinho dele, logo depois do Tocar som de explosão. Onde está contador, selecione pontos. Pronto: cada asteroide destruído põe mais 1 na caixinha. Passo 1 pronto. Agora o segundo, que é mostrar o placar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-placar",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 2. Passo 2: mostrar o placar",
+      "entry": "Os pontos já estão sendo contados, mas em segredo, dentro da caixinha. O jogador precisa ver o placa",
+      "exit": "sando. Passo 2 pronto. Agora vamos pro terceiro, que é dar vidas pra nave e fazer a batida machucar.",
+      "narration": "Os pontos já estão sendo contados, mas em segredo, dentro da caixinha. O jogador precisa ver o placar. Na categoria Jogo 2D, subcategoria Placar e HUD, pega o bloco Mostrar placar e encaixa dentro do A cada quadro do jogo, logo abaixo do bloco da colisão. Ah, e esse nome HUD que aparece na subcategoria é o jeito que os criadores de jogos chamam tudo o que fica desenhado por cima do jogo: o placar, os corações, os avisos. Você está montando o seu primeiro HUD. Agora configura ele. No textinho, deixa escrito Pontos:, que é o que aparece antes do número. O campo do valor já vem com um número, mas a gente não quer um número fixo: a gente quer mostrar o que está guardado dentro da caixinha dos pontos. Tem um bloco pra isso. Na categoria Programação, subcategoria Valores, pega o bloco valor da variável e arrasta ele pra cima do número do valor, até encaixar. E escolhe a variável pontos. Nos números do lugar, pode deixar x 12 e y 30, que é o cantinho de cima, à esquerda. A cor, escolhe uma que apareça bem com o fundo escuro, tipo branco. E no tamanho, deixa 24. Olha a tela! O placar apareceu: Pontos: 0. Clica na área do jogo e explode um asteroide... subiu pra 1! A caixinha e o placar estão conversando. Passo 2 pronto. Agora vamos pro terceiro, que é dar vidas pra nave e fazer a batida machucar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-vida",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 3. Passo 3: dar vidas à nave",
+      "entry": "Até agora, os asteroides passam direto pela nave, sem machucar. Jogo sem perigo não tem emoção, né? ",
+      "exit": "Passo 3 feito, a nave tem três vidas guardadas. Agora o quarto passo, que é fazer a batida machucar.",
+      "narration": "Até agora, os asteroides passam direto pela nave, sem machucar. Jogo sem perigo não tem emoção, né? Vamos resolver em duas partes: primeiro as vidas, depois a batida. Na categoria Jogo 2D, subcategoria Vida, pega o bloco Dar ao sprite de vida e encaixa dentro do Ao iniciar, logo abaixo do Criar variável pontos. Confere se o sprite é a nave, e deixa o número 3. Três vidas, como nos jogos clássicos. Passo 3 feito, a nave tem três vidas guardadas. Agora o quarto passo, que é fazer a batida machucar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-batida",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 4. Passo 4: fazer a batida machucar",
+      "entry": "Agora, a batida. Lembra do bloco de ontem, que vigiava a colisão entre dois grupos? Hoje tem um pare",
+      "exit": "la treme inteira, e você sente a pancada. Passo 4 pronto. Agora o quinto, que é mostrar os corações.",
+      "narration": "Agora, a batida. Lembra do bloco de ontem, que vigiava a colisão entre dois grupos? Hoje tem um parecido, que vigia um grupo e um sprite, que são os asteroides e a sua nave. Na categoria Jogo 2D, subcategoria Colisões, pega o bloco Para cada sprite do grupo que colidir com o sprite e encaixa dentro do A cada quadro do jogo, logo abaixo do Mostrar placar. Configura: o grupo é o asteroides, o sprite é a nave. E o apelido do encrenqueiro ele já dá: inimigo. E o que acontece na batida? Quatro coisas, na ordem. Primeiro, o asteroide que bateu some. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Tirar o sprite do grupo e encaixa dentro. Escolhe o sprite inimigo e o grupo asteroides. Depois, a explosão. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco Soltar explosão no sprite, encaixa abaixo, e escolhe o sprite inimigo. Agora o machucado. Na categoria Jogo 2D, subcategoria Vida, pega o bloco Machucar o sprite e encaixa abaixo. Escolhe a nave e deixa o 1, que é quanto de vida a batida tira. E olha que legal o final desse bloco: e deixá-lo invencível por 45 quadros. Sabe quando o personagem leva um golpe e fica um tempinho piscando, sem poder ser machucado de novo? É isso. Sem essa invencibilidade, uma batida só podia tirar as 3 vidas de uma vez, porque a colisão acontece em vários quadros seguidos. Os 45 quadros são o respiro pra nave escapar. Deixa 45 mesmo. E pra fechar, o susto. Na categoria Jogo 2D, subcategoria Aparência, pega o bloco Tremer a tela com intensidade e encaixa por último. Deixa 8. Quando a nave bater, a tela treme inteira, e você sente a pancada. Passo 4 pronto. Agora o quinto, que é mostrar os corações.",
+      "edit": "Manter a montagem. Corrigir a explicação da invencibilidade: o mesmo asteroide já foi removido, então o respiro protege de outras pedras que chegam logo depois. Manter a tremida breve da gravação, sem repetição automática.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-coracoes",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 5. Passo 5: mostrar os corações",
+      "entry": "As vidas existem, mas o jogador precisa ver quantas sobraram. E jogo mostra vida de um jeito clássic",
+      "exit": "22. E a cor... vermelho de coração, né? Passo 5 pronto. Agora o melhor, o sexto passo, que é testar.",
+      "narration": "As vidas existem, mas o jogador precisa ver quantas sobraram. E jogo mostra vida de um jeito clássico: coraçõezinhos. Na categoria Jogo 2D, subcategoria Vida, pega o bloco Desenhar as vidas do sprite e encaixa dentro do A cada quadro do jogo, logo abaixo do bloco da batida. Escolhe o sprite nave. No menuzinho do jeito de mostrar, deixa corações. No x, escreve 12, e no y, 48, pra ficar bem embaixo do placar. No tamanho, deixa 22. E a cor... vermelho de coração, né? Passo 5 pronto. Agora o melhor, o sexto passo, que é testar.",
+      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
+      "newNarration": "Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-teste-vidas",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Parte 6. Passo 6: hora de testar",
+      "entry": "Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora expl",
+      "exit": "nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.",
+      "narration": "Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora explode uns asteroides e vê os pontos subirem. E aí, faz uma coisa que quase nunca se pede num jogo: deixa um asteroide te acertar de propósito. Sentiu? Explosão, a tela tremeu, a nave ficou piscando invencível e um coração apagou. Leva mais uma batida... dois corações. O seu jogo agora tem o que ganhar e o que perder. Só falta uma coisa: quando os corações acabarem, nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.",
+      "edit": "Reaproveitar um acerto e uma batida. Corrigir a contagem: depois da segunda perda, sobra 1, não 2. Mostrar a espera antes da próxima batida.",
+      "visual": "Placar 0 → 1; corações 3 → 2; após proteção, 2 → 1. Cada mudança acompanhada de rótulo, sem depender apenas do som ou do vermelho.",
+      "newNarration": "Acertou uma pedra com tiro: mais um ponto. Uma pedra bateu na nave: de três vidas para duas. Espere a proteção acabar; outra batida deixa uma vida. Quando as vidas chegam a zero, ainda falta ensinar o jogo a terminar. Vamos fazer isso no próximo dia.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou o Dia 4! Olha os seis passos de hoje: você criou a caixinha dos pontos, fez ",
+      "exit": "vitória e de derrota, e você vai publicar ele pro mundo jogar. Descansa, e te espero lá. Até amanhã!",
+      "narration": "Parabéns, você terminou o Dia 4! Olha os seis passos de hoje: você criou a caixinha dos pontos, fez cada acerto somar 1, mostrou o placar na tela, deu 3 vidas pra nave, fez a batida machucar com direito a invencibilidade, e pendurou os coraçõezinhos. Amanhã é o grande dia: o Dia 5, o último. O jogo vai ganhar tela de início, de vitória e de derrota, e você vai publicar ele pro mundo jogar. Descansa, e te espero lá. Até amanhã!",
+      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "visual": "Resultado do dia e convite para duas perguntas finais.",
+      "newNarration": "Agora os acertos ficam guardados nos pontos, e as batidas mudam as vidas. O placar e os corações mostram essas informações. No Dia 5, vamos usar esses valores para decidir vitória e derrota.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceReview": [
+    {
+      "heading": "Especificações",
+      "clips": [],
+      "decision": "Referência de formato e ritmo; a duração interativa é estimada separadamente."
+    },
+    {
+      "heading": "Abertura",
+      "clips": ["video-abertura-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 1. Passo 1: criar e somar os pontos",
+      "clips": ["video-memoria", "video-pontos", "video-somar"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 2. Passo 2: mostrar o placar",
+      "clips": ["video-placar"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 3. Passo 3: dar vidas à nave",
+      "clips": ["video-vida"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 4. Passo 4: fazer a batida machucar",
+      "clips": ["video-batida"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 5. Passo 5: mostrar os corações",
+      "clips": ["video-coracoes"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Parte 6. Passo 6: hora de testar",
+      "clips": ["video-teste-vidas"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    },
+    {
+      "heading": "Fecho",
+      "clips": ["video-fecho-v6"],
+      "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ]
+}

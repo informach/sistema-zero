@@ -1,0 +1,98 @@
+{
+  "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+  "sourceHash": "9ad05f5ccb2dab008f1b093e66a0b75b003a3f4d193754813bb5d2b8571114e8",
+  "status": "Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.",
+  "clips": [
+    {
+      "key": "video-abertura-v6",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Abertura",
+      "entry": "Você tem duas coisas prontas. De um lado, o seu jogo da nave rodando aqui no Estúdio Completo. Do ou",
+      "exit": "nta a sua no lugar. E no fim a gente faz a sua nave ganhar a animação do motor. Vamos pro primeiro.\"",
+      "narration": "Você tem duas coisas prontas. De um lado, o seu jogo da nave rodando aqui no Estúdio Completo. Do outro, na sua galeria do Pinta, a nave e o asteroide que você desenhou. Hoje eles começam a se encontrar. No fim da aula, no lugar dessa nave pronta vai estar uma nave feita por você, do zero, com o motor acendendo. Os asteroides ficam pra próxima. Uma coisa antes de começar: o desenho e o jogo são dois lugares diferentes que conversam. Você desenha no Pinta, e no Estúdio você traz o desenho pra dentro do projeto. O jogo não sabe desenhar, ele sabe mostrar um desenho que já existe. E é essa ponte que a gente atravessa hoje, em três passos. Primeiro você traz os seus dois desenhos pro projeto. Depois você apaga a nave que veio pronta e monta a sua no lugar. E no fim a gente faz a sua nave ganhar a animação do motor. Vamos pro primeiro.\"",
+      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
+      "newNarration": "Hoje o desenho da sua nave vai entrar no jogo. Vamos trazer as duas artes para o projeto, trocar a nave do kit e ensinar o jogo a mostrar um quadro por vez. O motor vai pulsar como na Prévia do Pinta. Os asteroides ficam para a próxima aula.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-trazer-artes",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 1. Passo 1: trazer os seus desenhos para dentro do projeto",
+      "entry": "Então vai no menu da esquerda e clica em Estúdio. Abriu o Meus Jogos, com os seus projetos. Clica no",
+      "exit": "nda usar são os blocos, e é isso que a gente faz agora. Primeiro passo concluído. Bora pro segundo.\"",
+      "narration": "Então vai no menu da esquerda e clica em Estúdio. Abriu o Meus Jogos, com os seus projetos. Clica no cartão do seu jogo da nave. Com o projeto aberto, na barra de cima tem aquele botão de três pontinhos. Clica. A parte da listinha que interessa hoje chama Exibição, e dentro dela tem Imagens. Clica. Abriu uma janela chamada Imagens e sons. A primeira parte dela chama No projeto, e está escrito ali que ainda não tem imagem nenhuma. Essa parte é a lista dos desenhos que existem dentro deste projeto: os seus estão no Pinta, e ninguém trouxe eles pra cá ainda. Mais embaixo tem uma Biblioteca, com uns desenhos prontos, e hoje não é deles que a gente precisa. Lá em cima dessa janela tem uma fileira de botões, e um deles está escrito Trazer do Pinta. Clica nele. Abriu outra janela por cima, chamada Trazer do Pinta, e ela mesma te diz o que fazer: escolha um desenho da sua galeria do Pinta para usar neste projeto. Os desenhos que aparecem aí são os seus. Procura o cartão da nave. Embaixo do nome dele tem um botão escrito Adicionar ao projeto. Clica. O botão sumiu, e no lugar dele apareceu no projeto, com um sinal de certo na frente. A sua nave já está guardada dentro deste projeto. Faz a mesma coisa com o asteroide: acha o cartão dele e clica em Adicionar ao projeto. Agora fecha essa janela no Fechar, lá embaixo. Voltou pra janela Imagens e sons, e olha o No projeto: os seus dois desenhos estão lá dentro agora. Fecha essa também, no Fechar dela. Com as duas janelas fechadas, olha a área do jogo: continua tudo igual, com a nave pronta. Trazer o desenho pra dentro do projeto não troca nada sozinho, ele só deixa o desenho guardado ali. Quem manda usar são os blocos, e é isso que a gente faz agora. Primeiro passo concluído. Bora pro segundo.\"",
+      "edit": "Reutilizar o caminho inteiro, incluindo ambos os Fechar. Não afirmar que No projeto estará vazio em toda conta. Manter botão de adição de cada desenho.",
+      "visual": "Selo no projeto em cada arte e lista No projeto com as duas. Não selecionar desenhos da Biblioteca pronta.",
+      "newNarration": "Abra o jogo da nave em Meus Jogos. Em Mais opções → Exibição → Imagens, escolha Trazer do Pinta. Adicione nave e asteroide. Feche as duas janelas e confira: os desenhos estão No projeto, mas o jogo ainda usa as peças do kit.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-trocar-nave",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: apagar a nave do kit e montar a sua",
+      "entry": "Com os seus desenhos guardados no projeto, olha a nave que está voando aí. Ela veio pronta, de um ki",
+      "exit": "uas naves. Duas, espremidas uma do lado da outra, dentro do lugar de uma só. Não foi você que errou.",
+      "narration": "Com os seus desenhos guardados no projeto, olha a nave que está voando aí. Ela veio pronta, de um kit de peças, e o bloco que criou ela só deixa trocar a cor do corpo e a cor das asas. Não tem onde pôr o seu desenho. Então a gente vai apagar essa nave e fazer a sua no lugar, do zero. Sobe até a área Ao iniciar e olha o segundo bloco da pilha, logo embaixo do Preparar o jogo em tela cheia. É o Criar nave. Clica nele com o botão direito do mouse. Abriu um menu, e nele tem Apagar este bloco. Lê o que está escrito antes de clicar, porque quando um bloco tem outros encaixados dentro dele, esse texto muda e conta quantos vão embora junto. Esse não tem nada dentro, então pode clicar. A pilha se juntou sozinha, e os blocos de baixo continuam todos aí. E se você apagar alguma coisa sem querer, o Control e o Z juntos desfazem, e o Desfazer também está no menu do botão direito num lugar vazio da área de montar. Agora olha os bloquinhos: vários ficaram com um sinal de aviso. Clica em um pra ler: o nome nave ainda não foi criado neste jogo. É isso mesmo, porque todos eles chamam a sua nave pelo nome, e quem criava esse nome era o bloco que você apagou. E a área do jogo não muda enquanto tem aviso: o Estúdio segura a última versão que funcionava, então a nave cinza continua voando ali. Vamos criar a sua. Na coluna da esquerda, onde ficam os bloquinhos, clica na categoria Jogo 2D e, na lista de partes, clica em Sprites. Abriu a gaveta dos bloquinhos de sprite. O que você quer chama Criar sprite, e ele é o mais comprido de todos: começa com Criar sprite, depois vem em x, y, largura e altura, e no fim está escrito com imagem. É por esse final que você reconhece ele. Arrasta ele pra área Ao iniciar e encaixa no lugar que ficou vago, entre o Preparar o jogo em tela cheia e o Criar grupo de sprites tiros. São seis campos, e você preenche todos, da esquerda pra direita, olhando a área do jogo a cada um. O primeiro é o nome, escrito heroi: clica em cima dele e escreve nave. Os avisos sumiram todos de uma vez, porque você criou o nome que eles procuravam. E na área do jogo a nave cinza foi embora, e no lugar dela apareceu um quadradinho azul-claro perto do canto de cima. É a sua nave nascendo, ainda sem lugar, sem tamanho e sem desenho. Depois do nome vêm o x e o y, que são o lugar dela na tela, os dois com 100. Clica no x e escreve 400, clica no y e escreve 410. O quadradinho andou pro meio, lá embaixo, que é onde a nave sempre ficou. Em seguida vêm a largura e a altura, os dois com 40. Clica na largura e escreve 54, clica na altura e escreve 54 também. Os dois são iguais por causa do seu desenho: você desenhou num quadrado de 32 por 32, e num lugar mais alto do que largo a sua nave ia esticar pra caber. E o último é a imagem, o único que não se digita: clica nele e abre uma gradezinha com os desenhos deste projeto, os dois que você trouxe agorinha. Clica na nave. Agora olha a área do jogo. Apareceram duas naves. Duas, espremidas uma do lado da outra, dentro do lugar de uma só. Não foi você que errou.",
+      "edit": "Preservar exclusão isolada e pilha religada. Identificar blocos pelo rótulo, não por “segundo da gaveta”. Não prometer o quadrado azul em toda etapa de digitação: o preview pode manter a última versão válida.",
+      "visual": "Bloco entre Preparar o jogo e Criar grupo tiros. Zoom em cada campo e nos avisos enquanto o nome nave está ausente. Ao fim, imagem inteira espremida.",
+      "newNarration": "No Ao iniciar, use botão direito → Apagar este bloco no Criar nave do kit. Coloque Criar sprite … com imagem no lugar. Preencha nave; x 400; y 410; largura 54; altura 54; imagem nave. Se aparecerem duas naves espremidas, vamos entender isso na próxima seção.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-folha-demo",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 2. Passo 2: apagar a nave do kit e montar a sua",
+      "entry": "E as duas vieram do seu próprio desenho: a sua nave tem dois quadros, um com o motor apagado e um co",
+      "exit": "m de cada vez, bem depressa. Isso chama animar. Segundo passo concluído, e o terceiro é o conserto.\"",
+      "narration": "E as duas vieram do seu próprio desenho: a sua nave tem dois quadros, um com o motor apagado e um com o motor aceso, que você desenhou lá no Pinta. Quando o desenho sai do Pinta e vem pro jogo, ele não vem um quadro de cada vez. Ele vem numa imagem só, com os dois quadros em fila, um do lado do outro. Isso tem nome: chama folha de quadros. E o bloco pegou essa imagem inteira e esticou ela dentro do lugar da sua nave. A imagem inteira tem os dois quadros, então apareceram dois. A gente quer outra coisa: que o jogo entenda que ali tem uma fila de desenhos e mostre um de cada vez, bem depressa. Isso chama animar. Segundo passo concluído, e o terceiro é o conserto.\"",
+      "edit": "Substituir “apagado e aceso” por “menor e maior”. Mostrar 64 × 32 como dimensão total desta folha de dois quadros 32 × 32; não confundir com 54 × 54 no jogo.",
+      "visual": "Folha com dois quadros, divisória em 32, rótulos primeiro/segundo e índices do Estúdio 0/1. Uma moldura de sprite ao lado mostra a folha comprimida.",
+      "newNarration": "O Pinta levou os dois quadros numa imagem só. O sprite está mostrando essa imagem inteira dentro de seu quadrado. Vamos marcar onde termina cada quadro e mostrar um de cada vez. Um fogo é menor e o outro maior.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-carregar-folha",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: carregar a folha e animar a nave",
+      "entry": "Pra separar essa fila em quadros, faltam dois blocos, e os dois moram no mesmo lugar. Na coluna da e",
+      "exit": " o tamanho e você marcou o Médio. O bloco precisa dele pra cortar a fila de desenhos no lugar certo.",
+      "narration": "Pra separar essa fila em quadros, faltam dois blocos, e os dois moram no mesmo lugar. Na coluna da esquerda, clica de novo no Jogo 2D e, na lista de partes, clica na Animação. Ela tem um bloco comprido que começa com Carregar folha de quadros. Arrasta ele pra área Ao iniciar e encaixa logo embaixo do bloco que você montou agora, e ainda em cima do Criar grupo de sprites tiros. Ele só funciona aqui na área Ao iniciar, porque a folha se carrega uma vez só, quando o jogo começa. Ele tem quatro campos, e a gente passa por todos. O primeiro é o nome da folha, e esse você digita: clica em cima do andar e escreve folha traço nave, com um tracinho no meio. O tracinho está aí por uma regra que vale pro seu jogo inteiro: cada nome só pode ser de uma coisa. O nome nave já é da sua nave, então a folha dela precisa de um nome só dela. Depois do nome vem a imagem, escrita heroi traço andando. Esse é do tipo que se escolhe: clica nele e, na gradezinha que abriu, clica na nave. E os dois últimos são o tamanho de cada quadro. Repara que os dois já vêm com 32, e é justamente esse o número que a gente quer, então não mexe neles. Esse 32 foi você que escolheu lá no Pinta, quando o assistente perguntou o tamanho e você marcou o Médio. O bloco precisa dele pra cortar a fila de desenhos no lugar certo.",
+      "edit": "Manter os campos e a razão do 32. Esclarecer nomes de recurso/imagem/variável: imagem nave pode ser usada pelo sprite nave; folha recebe outro identificador para não conflitar no programa.",
+      "visual": "Nome digitado folha-nave, imagem escolhida e tamanhos 32/32. Preparar a folha uma vez no Ao iniciar, sem mudá-la para o loop.",
+      "newNarration": "Em Jogo 2D → Animação, coloque Carregar folha de quadros logo abaixo do Criar sprite nave. Digite folha-nave e escolha imagem nave. Os dois campos de tamanho ficam em 32. O bloco de animar virá em seguida.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-animacao-nave",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Parte 3. Passo 3: carregar a folha e animar a nave",
+      "entry": "Agora vem o bloco que faz a nave se mexer, e ele está aí mesmo, na Animação: um bloco comprido que c",
+      "exit": "rea do jogo! É a sua nave! Com o motor dela acendendo e apagando sozinho. Terceiro passo concluído.\"",
+      "narration": "Agora vem o bloco que faz a nave se mexer, e ele está aí mesmo, na Animação: um bloco comprido que começa com Animar sprite com a folha na animação. Arrasta ele pra logo embaixo do Carregar folha de quadros, e ainda em cima do Criar grupo de sprites tiros. Esse tem seis campos, e você só vai mexer em três, todos de escolher. Clica no primeiro, que é o sprite, e pega a nave na listinha. Clica no segundo, que é a folha: abriu a lista das folhas que existem no seu jogo, e hoje tem uma só, a folha traço nave. Clica nela. E o terceiro é a animação, que está escrito Escolher. Clica nele. Abriu uma listinha com os nomes das suas animações. Escolhe a voando, que é o nome que você deu pra animação da nave lá no Pinta. E agora olha os outros três campos. Eles se preencheram sozinhos. Está escrito do quadro zero ao quadro um, a oito fps. O zero e o um são os seus dois quadros, e o oito é quantos quadros passam em um segundo. Não digita nada aí, porque o bloco pegou tudo da sua folha. Agora olha a área do jogo! É a sua nave! Com o motor dela acendendo e apagando sozinho. Terceiro passo concluído.\"",
+      "edit": "Corrigir todas as falas de acender/apagar. Mostrar preenchimento por metadados e conferir os valores reais; se a faixa estiver diferente, revisar os dois quadros no Pinta.",
+      "visual": "Seletores sprite/folha/animação e campos 0, 1, 8. Uma prévia em escala legível e um teste rápido dentro da partida.",
+      "newNarration": "Logo abaixo da folha, coloque Animar sprite. Escolha nave, folha-nave e voando. Confira os campos: do quadro 0 ao 1, a 8 fps. Inicie a partida e teste movimento, tiro e reinício. O motor deve pulsar, com uma nave por vez.",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v6",
+      "sourceFile": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 6! Olha a sua nave aí, com o motor acendendo e apagando. E ela não ve",
+      "exit": "um pouquinho diferente do da nave, porque os asteroides nascem sem parar, um atrás do outro. Até já.",
+      "narration": "Parabéns, você terminou a Aula 6! Olha a sua nave aí, com o motor acendendo e apagando. E ela não veio de kit nenhum: você apagou a que veio pronta e escreveu cada campo dessa aqui, um por um. E hoje você aprendeu duas palavras novas. Folha de quadros, que é a fila dos seus desenhos numa imagem só, do jeito que ela sai do Pinta. E animar, que é trocar os quadros bem depressa pro desenho parecer que se mexe. E aprendeu uma ordem que vale pra grande maioria dos jogos que você vai fazer: primeiro carrega a folha, depois manda animar o sprite. Sempre nessa ordem. Agora repara numa coisa. A sua nave está pronta, e as pedras que estão caindo continuam cinzas, do jeito que vieram do kit. O seu asteroide está lá na galeria do Pinta, esperando. Na próxima aula ele entra no jogo. E o caminho dele é um pouquinho diferente do da nave, porque os asteroides nascem sem parar, um atrás do outro. Até já.",
+      "edit": "Reaproveitar a recapitulação, ajustando: A nave tem fogo pequeno e grande; atualizar referências ao motor apagado/aceso. O azul de recurso ausente e a última prévia válida são estados transitórios, não critério de aprovação. A folha tem 64 × 32 no total; cada quadro é 32 × 32 e o sprite no jogo é 54 × 54. Nome do recurso de imagem pode coincidir com nome do sprite; identificadores de sprite e folha devem ser distintos. Se a criança já personalizou nomes no Desafio, adaptar todas as referências ao mesmo nome, sem renomear apenas um campo. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
+      "newNarration": "Sua nave desenhada está no jogo. A imagem entrou no projeto, o sprite ganhou nome, lugar e tamanho, e a folha separou os quadros para animar. O motor cresce e diminui como você desenhou. Na próxima aula os asteroides também mudam. Agora, duas ideias para conferir.",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ]
+}

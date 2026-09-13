@@ -4,6 +4,7 @@ import {
   type ExplorationActivity,
   experienceAnswers,
   type LearningAnswers,
+  readExperienceCheckpoint,
   readExperienceSegment,
 } from '@sistemazero/core/learning'
 import { ExperienceController } from '../src/lib/experience-controller'
@@ -15,6 +16,16 @@ function accept(answers: LearningAnswers) {
   return experienceAnswers(activity, applyExperienceSegment(activity, null, segment))
 }
 describe('experience persistence controller', () => {
+  test('saving and reloading preserves the observations seen during the animation', () => {
+    const activity = { type: 'exploration', version: 3, mission: 'spawn' } as const
+    const controller = new ExperienceController(activity, 'session-123')
+    for (let frame = 0; frame < 20; frame++) controller.dispatch({ type: 'advance', seconds: 0.05 })
+    const seen = controller.getSnapshot()
+    const saved = controller.previewConfirm()
+    expect(readExperienceCheckpoint(activity, saved)?.session).toEqual(seen)
+    const reloaded = new ExperienceController(activity, 'session-123', saved)
+    expect(reloaded.getSnapshot()).toEqual(seen)
+  })
   test('restoring time commands preserves the boundary of a pending request', () => {
     const motion = { type: 'exploration', version: 3, mission: 'impulse' } as const
     const original = new ExperienceController(motion, 'session-123')

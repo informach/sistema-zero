@@ -72,6 +72,12 @@ const drawGroup = c(
   'sz_g2d_draw_group',
   { ...inLoop, fields: { GROUP: 'cactos' } },
 )
+const groupAfterDino = c(
+  'grupo-apos-dino',
+  'Desenhe o Dino antes de atualizar e desenhar os cactos.',
+  'sz_g2d_draw_sprite',
+  { ...inLoop, fields: { SPRITE: 'dino' }, beforeBlock: 'sz_g2d_update_group' },
+)
 const spawn = (x: number) =>
   p('sz_g2d_spawn_obstacle', {
     fields: { GROUP: 'cactos', SHAPE: 'cactus' },
@@ -454,7 +460,7 @@ export const earlyRecipes: Record<number, Recipe> = {
         reason: 'Aplicar o resultado com dois contêineres irmãos na área Repetições.',
         say: 'Dentro de Enquanto estiver rodando, coloque A cada 1,4 segundos ao lado de A cada quadro. No relógio, crie o cacto em x 400, tamanho 44 e velocidade -5. No quadro, depois de desenhar o Dino, atualize e desenhe o grupo cactos.',
         edit: 'Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro.',
-        checks: [spawnTimer(400), update, drawGroup, singleSpawn],
+        checks: [spawnTimer(400), update, drawGroup, singleSpawn, forest, groupAfterDino],
       },
       {
         key: 'fora-da-tela',
@@ -498,6 +504,8 @@ export const earlyRecipes: Record<number, Recipe> = {
       update,
       drawGroup,
       singleSpawn,
+      forest,
+      groupAfterDino,
       c('fora-do-quadro', 'Deixe a criação fora de A cada quadro.', 'sz_g2d_spawn_obstacle', {
         withinBlock: frame,
         count: 0,

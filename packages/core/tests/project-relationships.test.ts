@@ -125,3 +125,42 @@ test('patterns reject excessive nesting and contradictory literal and block requ
   for (let i = 0; i < 5; i++) pattern = { blockType: 'x', inputBlocks: { A: pattern } }
   expect(isSectionCompletion(completion({ ...pattern, type: 'usesBlock' }))).toBe(false)
 })
+
+test('an ordered command inside a named branch must precede its sibling in that branch', () => {
+  const rule = {
+    type: 'usesBlock',
+    blockType: 'if',
+    inputBlocks: { THEN: { blockType: 'gravity', beforeBlock: 'control' } },
+  } as const
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project(
+        node('if', {
+          THEN: { block: { ...node('gravity'), next: { block: node('control') } } },
+        }),
+      ),
+    ),
+  ).toBe(true)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project(
+        node('if', {
+          THEN: { block: { ...node('control'), next: { block: node('gravity') } } },
+        }),
+      ),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      rule,
+      project(
+        node('if', {
+          THEN: { block: node('gravity') },
+          ELSE: { block: node('control') },
+        }),
+      ),
+    ),
+  ).toBe(false)
+})

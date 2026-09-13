@@ -7,13 +7,18 @@ const values = () =>
     { maxProperties: 20 },
   )
 const base = () => ({
-  blockType: t.String({ minLength: 1, maxLength: 200 }),
+  // Empty selections are valid drafts; publication requires a selected block.
+  blockType: t.String({ maxLength: 200 }),
   fields: t.Optional(values()),
   inputs: t.Optional(values()),
+  beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })
 // The core guard also limits the entire pattern to 64 nodes and rejects literal/socket conflicts.
-const p4 = t.Object(base())
-const nested = <T extends typeof p4>(child: T) =>
+const pattern = () => t.Object(base())
+// Declare this forbidden property explicitly: Elysia removes unknown properties
+// during normalization, which would otherwise silently weaken a deep criterion.
+const p4 = t.Object({ ...base(), inputBlocks: t.Optional(t.Never()) })
+const nested = <T extends ReturnType<typeof pattern>>(child: T) =>
   t.Object({
     ...base(),
     inputBlocks: t.Optional(

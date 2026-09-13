@@ -1,0 +1,331 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-07",
+  "title": "Os seus asteroides entram no jogo",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "video-construir-3-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Abertura. Entrada: “A sua nave está no jogo, com o motor aceso. Agora olha em volta dela: essas pedras cinzas continuam ”. Saída: “cria os asteroides por um que aceita imagem. E o terceiro é fazer eles girarem. Vamos pro primeiro.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “A nave já usa a sua arte. Hoje vamos trocar os asteroides. A nave foi criada uma vez; as pedras nascem ao longo da partida. Por isso vamos preparar a folha no início e animar cada pedra logo depois que ela nascer.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-folha-asteroide",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: preparar a folha do asteroide. Entrada: “Pra começar, abre o seu jogo: menu da esquerda, Estúdio, e clica no cartão do projeto do jogo da nav”. Saída: “ do próximo passo. Os asteroides que estão caindo aí ainda são os cinzas. Primeiro passo concluído.\"”. Manter todos os campos, destacando a troca de ambos os 32 por 64. Não usar tamanho visível 40 como tamanho do quadro. Complemento: “Abra o mesmo jogo. No Ao iniciar, coloque Carregar folha de quadros depois da animação da nave e antes do grupo tiros. Nome folha-asteroide, imagem asteroide, quadros 64 × 64. As pedras do kit ainda não mudam.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-folha-asteroide",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra o mesmo jogo. No Ao iniciar, coloque Carregar folha de quadros depois da animação da nave e antes do grupo tiros. Nome folha-asteroide, imagem asteroide, quadros 64 × 64. As pedras do kit ainda não mudam.\n\n**Antes de voltar à aula, confira:**\n\n- Folha-asteroide usa imagem asteroide e quadros 64 × 64 no Ao iniciar.\n- Folha-nave continua 32 × 32.\n\nOs dois campos devem ser 64. Esse número vem do Médio do vetor escolhido no Pinta.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-folha-asteroide",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Os dois campos devem ser 64. Esse número vem do Médio do vetor escolhido no Pinta."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O asteroide vai aparecer com 40 × 40 no jogo. Qual tamanho colocar na folha?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "40 × 40, copiando o tamanho do sprite."
+            },
+            {
+              "id": "opcao-2",
+              "label": "64 × 64, o tamanho original de cada quadro."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O recorte da folha e o tamanho de exibição têm funções diferentes."
+        }
+      }
+    },
+    {
+      "key": "video-tempo-demo",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: trocar o bloco que cria os asteroides. Entrada: “Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A c”. Saída: “o asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.”. Complementar o recorte com uma linha do tempo; não converter 40 quadros em duração exata em segundos. Complemento: “Este relógio conta atualizações do jogo. Os quadros do Pinta são desenhos da animação. Veja a ordem: quando o relógio dispara durante a partida, nasce uma pedra e logo ela recebe a animação. A folha já foi preparada no início.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-novo-criador",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: trocar o bloco que cria os asteroides. Entrada: “Olha os campos dele: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. E isso não”. Saída: “ito que você fez na aula passada. Olha a área do jogo de novo: só os seus! Segundo passo concluído.\"”. Preservar o gesto de mover, não copiar, a peça x. Identificar pelo rótulo com imagem, sem posição de gaveta. Mostrar coexistência como etapa temporária, nunca resultado a entregar. Complemento: “No A cada 40 quadros, dentro de Se a tela atual é jogando, monte No grupo … criar um sprite chamado … com imagem. Escolha asteroides; nome asteroide; mova o x aleatório do velho; y −30; tamanho 40 × 40; imagem asteroide; vx 0; vy 3. Confira e apague só o criador velho.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-novo-criador",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No A cada 40 quadros, dentro de Se a tela atual é jogando, monte No grupo … criar um sprite chamado … com imagem. Escolha asteroides; nome asteroide; mova o x aleatório do velho; y −30; tamanho 40 × 40; imagem asteroide; vx 0; vy 3. Confira e apague só o criador velho.\n\n**Antes de voltar à aula, confira:**\n\n- Um único criador de asteroides ativo ao final, o com imagem.\n- Grupo asteroides, nome asteroide, x aleatório conectado nesse criador.\n- y −30, largura/altura 40, VX 0, VY 3; dentro de Se jogando no relógio de 40 quadros.\n\nSe saem pedras do kit junto, procure o criador antigo ainda ativo. Se as novas saem todas no mesmo x, confira onde ficou conectada a peça aleatória.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-novo-criador",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se saem pedras do kit junto, procure o criador antigo ainda ativo. Se as novas saem todas no mesmo x, confira onde ficou conectada a peça aleatória."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Estão caindo pedras suas e pedras cinzas. O que conferir primeiro?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Se a cor da nave está errada."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Se o criador antigo do kit ainda está ativo junto do novo."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Dois criadores podem gerar duas famílias de pedras. Esta substituição termina com apenas o novo."
+        }
+      }
+    },
+    {
+      "key": "video-animar-cada",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: fazer os asteroides girarem. Entrada: “Último passo, e ele é rápido, porque esse bloco você já montou uma vez, na aula passada, pra sua nav”. Saída: “as pedras, girando. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade.”. Preservar seletores e teste. Não incluir aqui uma tarefa nova de melhorar as artes. Atualizar “caixa pelos pixels” para explicar caixa delimitadora do conteúdo opaco apenas na revisão do professor. Complemento: “Logo abaixo do novo criador, dentro do mesmo Se jogando e do mesmo relógio, coloque Animar sprite. Escolha asteroide, folha-asteroide e girando. Confira 0 a 1, 8 fps. Inicie e teste: cada pedra nova deve animar, e tiros, pontos e vidas precisam continuar funcionando.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-animar-cada",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Logo abaixo do novo criador, dentro do mesmo Se jogando e do mesmo relógio, coloque Animar sprite. Escolha asteroide, folha-asteroide e girando. Confira 0 a 1, 8 fps. Inicie e teste: cada pedra nova deve animar, e tiros, pontos e vidas precisam continuar funcionando.\n\n**Antes de voltar à aula, confira:**\n\n- Animar asteroide/folha-asteroide/girando, 0–1, 8 fps depois do criador, no mesmo ramo.\n- Três asteroides sucessivos animam.\n- Tiro acerta, pontuação/vidas reagem e nova partida reinicia corretamente.\n\nSe a primeira pedra anima e as outras não, confira se Animar sprite está junto de cada criação. Não coloque esse bloco só no Ao iniciar.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-animar-cada",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira esta ideia",
+        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
+        "hints": [
+          "Se a primeira pedra anima e as outras não, confira se Animar sprite está junto de cada criação. Não coloque esse bloco só no Ao iniciar."
+        ],
+        "required": false,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que Animar sprite fica logo depois do criador dentro do relógio?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Para animar cada asteroide novo depois que ele existe."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Para mudar a velocidade de queda de todas as pedras."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A sequência é criar e animar o objeto recém-criado. A queda é controlada por vx e vy."
+        }
+      }
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Jogue uma partida, perca ou vença, reinicie e confira a nova partida. Envie o mesmo projeto com nave e asteroides usando suas artes.\n\n**Confira na sua criação:**\n\n- Folha-asteroide 64 × 64 preparada no Ao iniciar, com nome distinto do sprite.\n- Criador do kit ausente; novo criador único com x aleatório, y −30, 40 × 40, VX 0, VY 3 no relógio de 40 quadros e condição jogando.\n- Animar o recém-criado imediatamente depois, mesmo ramo; girando, 0–1, 8 fps.\n- Arte nova não altera inadvertidamente controles, estado, placar, vidas, explosão ou reinício.\n- Conferir colisão real com a arte enviada: o contorno visual irregular não implica colisão pixel a pixel.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-07-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 7, e essa foi a mais importante do curso! Olha o que está na sua tela”. Saída: “ses mesmos blocos e outras histórias por cima, e no fim a gente publica o seu jogo no Mural. Até já.”. Reaproveitar a recapitulação, ajustando: Nesta aula montar antes de apagar preserva a peça x; o criador antigo não declara um nome próprio como o Criar nave da aula 6. A caixa automática é baseada nos limites do conteúdo opaco; não prometer precisão pixel a pixel em todos os vazios. Editar desenho atualiza os projetos vinculados após salvar/sincronizar; não promete atualizar a publicação já feita. Manter o caminho editar desenho como orientação de ajuda: Imagens → editar desenho → salvar no Pinta → voltar e conferir atualização. Não iniciar outra tarefa. No fecho gravado, atualizar a ordem da aula 8: publicar vem antes de apresentar outras versões. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Agora a sua nave e os seus asteroides estão no jogo. Você trocou a peça que precisava de imagem e conservou as outras regras. Cada asteroide novo nasce e já começa a animação. Na próxima aula vamos publicar esta versão. Antes, duas perguntas rápidas.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O y −30 serve para quê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Começar a pedra um pouco acima da tela antes de ela entrar caindo."
+              },
+              {
+                "id": "b",
+                "label": "Escolher o quadro −30 da animação."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "y indica posição; neste jogo o sentido positivo para baixo permite a pedra entrar com vy 3."
+          },
+          {
+            "id": "q2",
+            "prompt": "Mudar a arte exige remontar o placar?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Sim, a imagem sempre apaga os blocos de pontos."
+              },
+              {
+                "id": "a",
+                "label": "Não, se mantivermos os grupos, nomes e conexões que a lógica usa."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A aparência pode mudar conservando o comportamento. Ainda assim, testar confirma que a troca preservou as referências."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "Mesmo projeto da aula 6, nave animada e arte asteroide já em No projeto.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "folha-asteroide",
+      "title": "Prepare a folha de 64 por 64",
+      "intent": "application",
+      "objective": "Carregar a folha uma vez, mantendo a folha da nave intacta.",
+      "blockKeys": [
+        "video-folha-asteroide",
+        "orientacao-folha-asteroide",
+        "conferir-folha-asteroide"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-folha-asteroide"]
+      }
+    },
+    {
+      "key": "tempo-demo",
+      "title": "Observe: uma nave, muitos nascimentos",
+      "intent": "demonstration",
+      "objective": "Distinguir relógio do jogo e quadros de animação; situar nascimento e animação de cada asteroide.",
+      "blockKeys": ["video-tempo-demo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-tempo-demo"]
+      }
+    },
+    {
+      "key": "novo-criador",
+      "title": "Troque a peça e aproveite o sorteio",
+      "intent": "application",
+      "objective": "Substituir o criador do kit preservando o x aleatório e eliminando a duplicação.",
+      "blockKeys": ["video-novo-criador", "orientacao-novo-criador", "conferir-novo-criador"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-novo-criador"]
+      }
+    },
+    {
+      "key": "animar-cada",
+      "title": "Anime cada asteroide que nascer",
+      "intent": "application",
+      "objective": "Animar o sprite recém-criado no mesmo ramo e testar a mecânica.",
+      "blockKeys": ["video-animar-cada", "orientacao-animar-cada", "conferir-animar-cada"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-animar-cada"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Um único criador de asteroides com imagem, dentro do relógio e da condição jogando; cada novo sprite animado, mecânica preservada.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Um único criador de asteroides com imagem, dentro do relógio e da condição jogando; cada novo sprite animado, mecânica preservada.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 # Aulas com descoberta, explicação e criação
 
+As revisões atuais baseadas nos roteiros gravados estão em [Desafio do Primeiro Jogo — introdução e 5 dias](desafio-primeiro-jogo-v6/README.md), [Corre Dino — 13 aulas](corre-dino-v6/README.md) e [O jogo do meu jeito — 8 aulas](o-jogo-do-meu-jeito-v6/README.md). Cada pacote tem seu próprio catálogo, roteiro de cada seção, manifesto importável e mapa de montagem dos vídeos. Use esses guias para a nova produção.
+
+O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas contagens e decisões anteriores não substituem as revisões acima. As pastas históricas foram preservadas para referência e migração.
+
+## Histórico do pacote inicial
+
 Este pacote adapta os 27 roteiros fornecidos: introdução e cinco dias do Desafio do Primeiro Jogo, 13 aulas de Corre, Dino! e oito de O Jogo do Meu Jeito. Cada roteiro original continua sendo uma aula. O [catálogo](catalogo.json) registra o arquivo de origem, sua assinatura SHA-256, o destino e a quantidade de seções.
 
 A revisão v4 começa pelas 13 aulas de **Corre, Dino!**: 60 seções, 13 descobertas manipuláveis, criação no mesmo Estúdio, entrega antes do quiz e 26 perguntas finais. O piloto troca texto corrido e perguntas antecipadas por vídeo curto e Zappy. Prevê 77 clipes, ainda a produzir. Outros cursos mantêm v3. O catálogo completo soma **109 seções e 144 clipes planejados**. A [revisão anterior](qa/revisao-pedagogica-2026-09-12.md) registra a etapa histórica; o [guia atual](guia-de-autoria.md) descreve o fluxo vigente.

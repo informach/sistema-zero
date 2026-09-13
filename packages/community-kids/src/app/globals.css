@@ -1568,37 +1568,22 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   font-weight: 800;
 }
 
-/* O título da seção ABRE o primeiro cartão; o bloco logo abaixo dele fecha o mesmo
-   cartão (sem o vão do `space-y-6`, sem os cantos de cima). */
+/* O título ocupa um cartão acima dos painéis. O `space-y-5` do contêiner
+   mantém o intervalo também quando há Estúdio ou controles no modo compacto. */
 .sz-lesson-sections .sz-lesson-section-head {
-  margin-block-end: 0;
   border: 1px solid var(--borda-carta);
-  border-bottom: 0;
-  border-radius: 1.25rem 1.25rem 0 0;
+  border-radius: 1.25rem;
   background: var(--card);
-  padding: 1.25rem 1.25rem 0.75rem;
+  padding: 1.25rem;
 }
 .sz-lesson-sections .sz-lesson-section-head h2 {
   font-size: 1.625rem;
-}
-/* Seção cujo primeiro conteúdo é a ferramenta (no painel ao lado): o título fecha o
-   próprio cartão. */
-.sz-lesson-sections .sz-lesson-section-head:not(:has(+ .sz-lesson-block)) {
-  border-bottom: 1px solid var(--borda-carta);
-  border-radius: 1.25rem;
-  padding-bottom: 1.25rem;
 }
 .sz-lesson-sections .sz-lesson-block {
   border: 1px solid var(--borda-carta);
   border-radius: 1.25rem;
   background: var(--card);
   padding: 1.25rem;
-}
-.sz-lesson-sections .sz-lesson-section-head + .sz-lesson-block {
-  border-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  padding-top: 0.5rem;
 }
 
 /* "Atividade concluída" em verde, com o ✓ desenhado (máscara, e não texto: um "✓"

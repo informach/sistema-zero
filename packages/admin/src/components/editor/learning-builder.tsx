@@ -141,7 +141,7 @@ export function LearningBuilder({
           onChange={(e) => onChange({ ...value, instructions: e.target.value })}
         />
       </Field>
-      <Field label="Modelo" htmlFor={`${id}-model`}>
+      <Field label="Tipo de atividade" htmlFor={`${id}-model`}>
         <Select
           id={`${id}-model`}
           value={a.type}
@@ -193,10 +193,6 @@ export function LearningBuilder({
       </Field>
       {a.type === 'exploration' && (
         <div className="space-y-4">
-          <ExperienceAuthoring
-            activity={a}
-            onChange={(activity) => onChange({ ...value, activity })}
-          />
           <Field label="Cena e conceito" htmlFor={`${id}-mission`}>
             <Select
               id={`${id}-mission`}
@@ -247,6 +243,10 @@ export function LearningBuilder({
               )}
             </Select>
           </Field>
+          <ExperienceAuthoring
+            activity={a}
+            onChange={(activity) => onChange({ ...value, activity })}
+          />
           <div className="space-y-2 rounded-xl bg-muted/40 p-4 text-sm">
             <p>
               <strong>A criança vai:</strong>{' '}

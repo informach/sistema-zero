@@ -54,7 +54,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Conclusão observável:** Posições diferentes, mesma velocidade; Velocidades −5 e −6, mesma posição.
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, oferecer continuar ou rever; não acrescentar outra missão.
+**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
 
 ### Sorteie o lugar de nascimento
 
@@ -78,6 +78,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 - No x do cacto, conecte Sorteio entre 500 e 560.
 - Preserve o relógio de 1,4 s com criação protegida por jogando.
+- Use um único bloco para criar o cacto com posição e velocidade sorteadas.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -121,6 +122,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 - No x do cacto, conecte Sorteio entre 500 e 560.
 - Na velocidade do cacto, use -5 menos Sorteio entre 0 e 1.
+- Use um único bloco para criar o cacto com posição e velocidade sorteadas.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -133,6 +135,7 @@ Observe alguns nascimentos. Todos começam fora da tela e andam à esquerda. Um 
 - No x do cacto, conecte Sorteio entre 500 e 560.
 - Na velocidade do cacto, use -5 menos Sorteio entre 0 e 1.
 - Preserve o relógio de 1,4 s com criação protegida por jogando.
+- Use um único bloco para criar o cacto com posição e velocidade sorteadas.
 
 **Um sorteio pode produzir o mesmo resultado de novo?**
 

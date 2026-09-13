@@ -239,7 +239,7 @@
         "projectChecks": [
           {
             "id": "proteger-gravidade",
-            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando.",
+            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -253,14 +253,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_apply_gravity"
+                  "blockType": "sz_g2d_apply_gravity",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_control_dino"
                 }
               }
             }
           },
           {
             "id": "proteger-controle",
-            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando.",
+            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -274,14 +278,21 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_control_dino"
+                  "blockType": "sz_g2d_control_dino",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "inputs": {
+                    "JUMP": 14
+                  },
+                  "beforeBlock": "sz_g2d_draw_sprite"
                 }
               }
             }
           },
           {
             "id": "proteger-desenho",
-            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando.",
+            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -295,14 +306,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_draw_sprite"
+                  "blockType": "sz_g2d_draw_sprite",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_update_group"
                 }
               }
             }
           },
           {
             "id": "proteger-mover",
-            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando.",
+            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -316,14 +331,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_update_group"
+                  "blockType": "sz_g2d_update_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_draw_group"
                 }
               }
             }
           },
           {
             "id": "proteger-desenhar",
-            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando.",
+            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -337,14 +356,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_draw_group"
+                  "blockType": "sz_g2d_draw_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen"
                 }
               }
             }
           },
           {
             "id": "proteger-limpeza",
-            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando.",
+            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -358,7 +381,10 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_prune_offscreen"
+                  "blockType": "sz_g2d_prune_offscreen",
+                  "fields": {
+                    "GROUP": "cactos"
+                  }
                 }
               }
             }
@@ -372,7 +398,8 @@
               "area": "loops",
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_clear"
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_forest"
                 }
               }
             }
@@ -386,7 +413,8 @@
               "area": "loops",
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_forest"
+                  "blockType": "sz_g2d_forest",
+                  "beforeBlock": "sz_js_if_else"
                 }
               }
             }
@@ -482,7 +510,7 @@
           },
           {
             "id": "proteger-gravidade",
-            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando.",
+            "label": "Aplicar gravidade deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -496,14 +524,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_apply_gravity"
+                  "blockType": "sz_g2d_apply_gravity",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_control_dino"
                 }
               }
             }
           },
           {
             "id": "proteger-controle",
-            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando.",
+            "label": "Controlar o dinossauro deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -517,14 +549,21 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_control_dino"
+                  "blockType": "sz_g2d_control_dino",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "inputs": {
+                    "JUMP": 14
+                  },
+                  "beforeBlock": "sz_g2d_draw_sprite"
                 }
               }
             }
           },
           {
             "id": "proteger-desenho",
-            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando.",
+            "label": "Desenhar o Dino deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -538,14 +577,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_draw_sprite"
+                  "blockType": "sz_g2d_draw_sprite",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_update_group"
                 }
               }
             }
           },
           {
             "id": "proteger-mover",
-            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando.",
+            "label": "Atualizar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -559,14 +602,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_update_group"
+                  "blockType": "sz_g2d_update_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_draw_group"
                 }
               }
             }
           },
           {
             "id": "proteger-desenhar",
-            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando.",
+            "label": "Desenhar cactos deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -580,14 +627,18 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_draw_group"
+                  "blockType": "sz_g2d_draw_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen"
                 }
               }
             }
           },
           {
             "id": "proteger-limpeza",
-            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando.",
+            "label": "Remover cactos fora da tela deve ficar no então de Se a tela é jogando, na ordem da montagem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -601,7 +652,10 @@
                   }
                 },
                 "THEN": {
-                  "blockType": "sz_g2d_prune_offscreen"
+                  "blockType": "sz_g2d_prune_offscreen",
+                  "fields": {
+                    "GROUP": "cactos"
+                  }
                 }
               }
             }
@@ -669,7 +723,8 @@
               "area": "loops",
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_clear"
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_forest"
                 }
               }
             }
@@ -683,7 +738,8 @@
               "area": "loops",
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_forest"
+                  "blockType": "sz_g2d_forest",
+                  "beforeBlock": "sz_js_if_else"
                 }
               }
             }

@@ -1,0 +1,854 @@
+{
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-4",
+  "title": "Pontos, vidas e tempo para escapar",
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Bem-vindo ao Dia 4. O seu jogo já tem nave, tiro e uma chuva de asteroides explodindo. Mas me re”. Saída: “atida machucar. No quinto, pendura os corações. E no sexto, testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Hoje o jogo vai lembrar seus acertos e mostrar quantas vidas a nave ainda tem. Você vai ver um placar subir e descobrir por que uma nave precisa de um respiro depois de levar uma batida.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-memoria",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos,”. Saída: “ chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.”. Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar. Fala complementar: “Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-pontos",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao”. Saída: “sas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.”. Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos. Fala complementar: “Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar."
+      }
+    },
+    {
+      "key": "video-somar",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Agora vamos fazer essa caixinha crescer. Quando é que você marca ponto? Quando um tiro explode um as”. Saída: “asteroide destruído põe mais 1 na caixinha. Passo 1 pronto. Agora o segundo, que é mostrar o placar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-somar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor."
+      }
+    },
+    {
+      "key": "video-placar",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 2. Passo 2: mostrar o placar. Entrada: “Os pontos já estão sendo contados, mas em segredo, dentro da caixinha. O jogador precisa ver o placa”. Saída: “sando. Passo 2 pronto. Agora vamos pro terceiro, que é dar vidas pra nave e fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-placar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo."
+      }
+    },
+    {
+      "key": "video-vida",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 3. Passo 3: dar vidas à nave. Entrada: “Até agora, os asteroides passam direto pela nave, sem machucar. Jogo sem perigo não tem emoção, né? ”. Saída: “Passo 3 feito, a nave tem três vidas guardadas. Agora o quarto passo, que é fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-vida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo."
+      }
+    },
+    {
+      "key": "experiencia-protecao",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare três batidas bem próximas",
+        "instructions": "Três pedras diferentes vão bater uma depois da outra. Compare a nave sem proteção e com 45 quadros de proteção. Cada pedra é retirada ao bater. Observe quantas vidas sobraram em cada teste.",
+        "hints": ["As três pedras desaparecem nos dois testes. Compare somente a perda de vidas."],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;color:#152f44;background:#eef5fa;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:780px;margin:auto}h2{font-size:clamp(24px,4vw,32px);line-height:1.18;margin:8px 0 12px}p{margin:10px 0}.eyebrow{font-size:12px;font-weight:bold;letter-spacing:2px;color:#476377}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button{font:inherit;min-height:46px;border:2px solid #386386;border-radius:12px;padding:9px 14px;background:white;color:#173c59;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#173c59;color:white}button:focus-visible{outline:3px solid #a75400;outline-offset:3px}button:disabled{opacity:.65;cursor:default}.stage{background:#112b46;color:#eff9ff;border:1px solid #58718b;border-radius:18px;padding:14px}.stage svg{width:100%;display:block;max-height:280px}#caption{min-height:48px}#run{background:#ffd184;border-color:#9a611a;font-weight:bold;margin:14px 8px 4px 0}.results{margin-top:16px;padding:16px;border:1px solid #86a1b5;background:#fff;border-radius:14px}.results h3{margin:0 0 10px;font-size:18px}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px}.comparison>div{min-width:0}.comparison h4{font-size:14px;margin:12px 0 8px}.comparison .stage{padding:8px}.comparison svg{max-height:150px}.comparison p{font-size:14px}.done{font-weight:bold;border-left:4px solid #1f7865;padding-left:12px}.lab[data-complete=true]>.stage{display:none}.note{font-size:14px;color:#476377}@media(max-width:420px){body{padding:8px}.choices button{flex:1 1 120px}.stage{padding:10px}.results{padding:12px}.comparison{gap:8px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n</style><main class=\"lab\"><span class=\"eyebrow\">UMA IDEIA · DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p id=\"prompt\"></p><div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button id=\"option-0\" type=\"button\" aria-pressed=\"true\"></button><button id=\"option-1\" type=\"button\" aria-pressed=\"false\"></button></div><div class=\"stage\"><div id=\"scene\"></div><p id=\"caption\" aria-live=\"polite\"></p></div><button id=\"run\" type=\"button\">Avançar a comparação</button><span id=\"progress\" role=\"status\"></span><p class=\"note\">Você controla o ritmo. Modelo didático separado do seu jogo.</p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>Sua comparação</h3><p id=\"records\">Os resultados aparecem aqui ao terminar cada situação.</p><div id=\"comparison\" class=\"comparison\"></div><p id=\"done\" class=\"done\" hidden></p></section></main>\n<script>(()=>{'use strict';const c={\"kind\":\"protecao\",\"title\":\"Um respiro depois da batida\",\"prompt\":\"A nave começa com 3 vidas. Três asteroides diferentes batem nos quadros 1, 6 e 11.\",\"options\":[\"Proteção de 0 quadros\",\"Proteção de 45 quadros\"],\"steps\":3,\"results\":[\"Sem proteção, as três batidas tiraram três vidas.\",\"Com proteção, apenas a primeira batida tirou vida.\"],\"conclusion\":\"A proteção ignora novos danos por um tempo. Cada asteroide que bate é removido nos dois casos.\"},$=id=>document.getElementById(id);let selected=0,step=0,tested=[],ready=!window.learning;\nconst ship=(x,y,opacity=1)=>'<g opacity=\"'+opacity+'\" transform=\"translate('+x+' '+y+')\"><path d=\"M27 0L54 54L35 46L27 62L19 46L0 54Z\" fill=\"#93e2ee\"/><path d=\"M23 16h8v20h-8Z\" fill=\"#2874a6\"/></g>';\nconst stone=(x,y)=>'<g transform=\"translate('+x+' '+y+')\"><path d=\"M0 12L14 0L37 4L46 23L35 43L10 46L-3 30Z\" fill=\"#e8b77b\"/><circle cx=\"15\" cy=\"18\" r=\"6\" fill=\"#98724e\"/></g>';\nfunction scene(option,n){let art='',caption='',view='0 0 800 480';const initial=n===0;\nif(c.kind==='coordenadas'){const y=option?410:110;art='<path d=\"M0 0H800M0 0V480M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><text x=\"15\" y=\"38\">0</text><text x=\"675\" y=\"38\">x → 800</text><text x=\"12\" y=\"460\">y ↓ 480</text>'+(!initial?ship(400,y)+'<circle cx=\"400\" cy=\"'+y+'\" r=\"7\" fill=\"#ffd184\"/>':'');caption=initial?'Aperte Mostrar posição.':'x = 400 · y = '+y+'. A marca é o canto superior esquerdo da caixa.';}\nif(c.kind==='limpeza'){for(let i=0;i<n;i++)if(!option||i===n-1)art+=ship(150+i*190,205,(!option&&i<n-1)?.45:1);caption='Quadro '+n+' · '+(option?Math.min(1,n):n)+' desenho(s) na tela · 1 nave no jogo.';}\nif(c.kind==='direcao'){const y=240+(option?1:-1)*n*90;art='<path d=\"M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><circle cx=\"400\" cy=\"240\" r=\"14\" fill=\"none\" stroke=\"#9eb4c7\" stroke-width=\"3\"/>'+(y>=0&&y<=480?'<circle cx=\"400\" cy=\"'+y+'\" r=\"12\" fill=\"#ffd184\"/>':'<text x=\"235\" y=\"'+(y<0?45:440)+'\">Saiu '+(y<0?'por cima':'por baixo')+'</text>');caption=(n*10)+' quadros · y = '+y+' · '+(n?'o tiro '+(option?'desce':'sobe'):'mesmo ponto de partida')+'.';}\nif(c.kind==='intervalo'){view='0 0 340 220';const births=n*(option?1:2);for(let i=0;i<births;i++)art+=stone(35+(i%3)*110,40+Math.floor(i/3)*95);caption=n*40+' quadros observados · '+births+' nascimento(s). Mesma queda nos dois testes.';}\nif(c.kind==='protecao'){view='0 0 220 180';const hp=3-(option?Math.min(1,n):n);art=ship(83,105);for(let i=0;i<3;i++)art+='<text x=\"'+(32+i*65)+'\" y=\"65\" fill=\"'+(i<hp?'#ffb2ab':'#718296')+'\">'+(i<hp?'♥':'♡')+'</text>';caption=n===0?'3 vidas · aguardando a primeira batida.':'Batida '+n+' (quadro '+(1+(n-1)*5)+') · '+hp+' vida(s) · asteroide removido'+(option&&n>1?' · dano ignorado pela proteção.':'.');}\nif(c.kind==='telas'){if(option){for(let i=0;i<n;i++)art+=stone(120+i*220,145);art+=ship(373,365);}else art='<text x=\"170\" y=\"200\">Nave contra Asteroides</text><text x=\"225\" y=\"265\">Aperte Enter</text>';caption=n+' toque(s) do relógio · '+(option?n:0)+' nascimento(s) · condição '+(option?'verdadeira':'falsa')+'.';}\nreturn {art:'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+caption+'\" style=\"font:32px sans-serif;fill:#eff9ff\">'+art+'</svg>',caption};}\nfunction resize(){const css=getComputedStyle(document.body);window.learning?.resize(Math.max(180,Math.ceil(document.querySelector('.lab').getBoundingClientRect().height+parseFloat(css.paddingTop)+parseFloat(css.paddingBottom))))}\nfunction save(){window.learning?.save({selected,step,tested:[...tested]})}\nfunction render(){const complete=tested.length===2,view=scene(selected,step);document.querySelector('.lab').dataset.complete=String(complete);$('scene').innerHTML=view.art;$('caption').textContent=view.caption;for(let i=0;i<2;i++){$('option-'+i).textContent=c.options[i];$('option-'+i).setAttribute('aria-pressed',String(i===selected));$('option-'+i).disabled=!ready||complete;}$('run').disabled=!ready||complete||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':tested.includes(String(selected))?'Situação guardada':c.steps===1?'Mostrar posição':'Avançar · passo '+(step+1)+' de '+c.steps;$('progress').textContent=tested.length+' de 2 situações guardadas';$('records').hidden=complete;$('records').textContent=tested.length?tested.map(i=>c.results[Number(i)]).join(' '):'Os resultados aparecem aqui ao terminar cada situação.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+c.options[i]+'</h4><div class=\"stage\">'+scene(i,c.steps).art+'</div><p>'+c.results[i]+'</p></div>').join(''):'';$('done').hidden=!complete;$('done').textContent=c.conclusion+' Agora responda à pergunta da aula.';resize()}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(tested.length===2||selected===i)return;selected=i;step=tested.includes(String(i))?c.steps:0;save();render()});$('run').addEventListener('click',()=>{if(tested.length===2||tested.includes(String(selected)))return;step++;if(step===c.steps)tested=[...new Set([...tested,String(selected)])].sort();save();render();if(tested.length===2)window.learning?.participated()});\naddEventListener('learning:restore',event=>{ready=true;const s=event.detail&&typeof event.detail==='object'?event.detail:{};selected=s.selected===1?1:0;tested=Array.isArray(s.tested)?[...new Set(s.tested.filter(i=>i==='0'||i==='1'))].sort():[];step=Number.isInteger(s.step)?Math.max(0,Math.min(c.steps,s.step)):0;if(tested.includes(String(selected)))step=c.steps;else if(step===c.steps)step=0;render()});$('title').textContent=c.title;$('prompt').textContent=c.prompt;addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));render();})();</script>"
+        },
+        "checkpoint": {
+          "prompt": "Por que só a primeira batida tira vida durante a proteção?",
+          "choices": [
+            {
+              "id": "a",
+              "label": "As próximas tentativas de dano são ignoradas por um tempo."
+            },
+            {
+              "id": "b",
+              "label": "A nave ganhou vidas infinitas para a partida inteira."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "A proteção dura 45 quadros após o dano aceito. Depois desse tempo, outra batida pode tirar vida."
+        }
+      }
+    },
+    {
+      "key": "video-batida",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 4. Passo 4: fazer a batida machucar. Entrada: “Agora, a batida. Lembra do bloco de ontem, que vigiava a colisão entre dois grupos? Hoje tem um pare”. Saída: “la treme inteira, e você sente a pancada. Passo 4 pronto. Agora o quinto, que é mostrar os corações.”. Manter a montagem. Corrigir a explicação da invencibilidade: o mesmo asteroide já foi removido, então o respiro protege de outras pedras que chegam logo depois. Manter a tremida breve da gravação, sem repetição automática. Fala complementar: “Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-batida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8."
+      }
+    },
+    {
+      "key": "video-coracoes",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 5. Passo 5: mostrar os corações. Entrada: “As vidas existem, mas o jogador precisa ver quantas sobraram. E jogo mostra vida de um jeito clássic”. Saída: “22. E a cor... vermelho de coração, né? Passo 5 pronto. Agora o melhor, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-coracoes",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo."
+      }
+    },
+    {
+      "key": "video-teste-vidas",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de testar. Entrada: “Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora expl”. Saída: “nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.”. Reaproveitar um acerto e uma batida. Corrigir a contagem: depois da segunda perda, sobra 1, não 2. Mostrar a espera antes da próxima batida. Fala complementar: “Acertou uma pedra com tiro: mais um ponto. Uma pedra bateu na nave: de três vidas para duas. Espere a proteção acabar; outra batida deixa uma vida. Quando as vidas chegam a zero, ainda falta ensinar o jogo a terminar. Vamos fazer isso no próximo dia.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "entrega-fala-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Destrua um asteroide e veja o placar subir uma vez. Deixe outra pedra bater na nave: devem sobrar duas vidas. Espere a proteção passar e observe outra perda. Confira contraste do placar e dos corações. Envie ao professor; a tela de derrota ainda não faz parte deste dia."
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 4! Olha os seis passos de hoje: você criou a caixinha dos pontos, fez ”. Saída: “vitória e de derrota, e você vai publicar ele pro mundo jogar. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora os acertos ficam guardados nos pontos, e as batidas mudam as vidas. O placar e os corações mostram essas informações. No Dia 5, vamos usar esses valores para decidir vitória e derrota.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O placar foi redesenhado três vezes sem nenhum novo acerto. O que deve acontecer?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Continuar mostrando o mesmo número de pontos."
+              },
+              {
+                "id": "b",
+                "label": "Somar três pontos por ter sido desenhado três vezes."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Desenhar lê a variável; a colisão é que soma."
+          },
+          {
+            "id": "q2",
+            "prompt": "Onde dar as três vidas iniciais à nave?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "No motor, a cada quadro."
+              },
+              {
+                "id": "a",
+                "label": "Em Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Preparar uma vez permite que as vidas diminuam durante a partida."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Retomar a chuva de asteroides e a colisão com os tiros do Dia 3.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "memoria",
+      "title": "Observe o número e o placar",
+      "intent": "demonstration",
+      "objective": "Separar guardar, alterar e mostrar um valor.",
+      "blockKeys": ["video-memoria"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-memoria"]
+      }
+    },
+    {
+      "key": "pontos",
+      "title": "Crie a memória dos pontos",
+      "intent": "application",
+      "objective": "Preparar uma variável uma vez.",
+      "blockKeys": ["video-pontos", "fala-pontos"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos com 0 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "somar",
+      "title": "Faça o acerto valer um ponto",
+      "intent": "application",
+      "objective": "Somar por acerto dentro da colisão certa.",
+      "blockKeys": ["video-somar", "fala-somar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "somar-no-acerto",
+            "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "pontos",
+                    "DELTA": 1
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "soma-unica",
+            "label": "Mantenha um único Somar 1 em pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "placar",
+      "title": "Mostre o que está guardado",
+      "intent": "application",
+      "objective": "Ler a variável no HUD a cada quadro.",
+      "blockKeys": ["video-placar", "fala-placar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "placar",
+            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 30,
+                "SIZE": 24
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "vida",
+      "title": "Dê três vidas à nave",
+      "intent": "application",
+      "objective": "Preparar vida atual e máxima na inicialização.",
+      "blockKeys": ["video-vida", "fala-vida"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "protecao",
+      "title": "Compare três batidas bem próximas",
+      "intent": "exploration",
+      "objective": "Compreender a proteção temporária contra novos danos.",
+      "blockKeys": ["experiencia-protecao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-protecao"]
+      }
+    },
+    {
+      "key": "batida",
+      "title": "Faça a nave sentir a batida",
+      "intent": "application",
+      "objective": "Responder à colisão nave × asteroides com remoção e dano protegido.",
+      "blockKeys": ["video-batida", "fala-batida"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "remover-inimigo",
+            "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "inimigo",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-protegido",
+            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_damage_sprite",
+                  "fields": {
+                    "SPRITE": "nave"
+                  },
+                  "inputs": {
+                    "AMOUNT": 1,
+                    "FRAMES": 45
+                  },
+                  "beforeBlock": "sz_g2d_shake"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explodir-inimigo",
+            "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "inimigo"
+                  },
+                  "beforeBlock": "sz_g2d_damage_sprite"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "coracoes",
+      "title": "Mostre as vidas que restam",
+      "intent": "application",
+      "objective": "Ler a vida da nave no desenho dos corações.",
+      "blockKeys": ["video-coracoes", "fala-coracoes"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "coracoes",
+            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite_health",
+              "fields": {
+                "SPRITE": "nave",
+                "STYLE": "hearts"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 48,
+                "SIZE": 22
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "teste-vidas",
+      "title": "Observe ponto e vida mudarem",
+      "intent": "demonstration",
+      "objective": "Associar cada mudança à sua causa.",
+      "blockKeys": ["video-teste-vidas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-vidas"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Teste e envie sua construção",
+      "intent": "delivery",
+      "objective": "Cada acerto soma um ponto; a nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
+      "blockKeys": ["entrega-fala-v6", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos com 0 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "somar-no-acerto",
+            "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "pontos",
+                    "DELTA": 1
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "soma-unica",
+            "label": "Mantenha um único Somar 1 em pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "placar",
+            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 30,
+                "SIZE": 24
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
+          },
+          {
+            "id": "remover-inimigo",
+            "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "inimigo",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-protegido",
+            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_damage_sprite",
+                  "fields": {
+                    "SPRITE": "nave"
+                  },
+                  "inputs": {
+                    "AMOUNT": 1,
+                    "FRAMES": 45
+                  },
+                  "beforeBlock": "sz_g2d_shake"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explodir-inimigo",
+            "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "inimigo"
+                  },
+                  "beforeBlock": "sz_g2d_damage_sprite"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "coracoes",
+            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite_health",
+              "fields": {
+                "SPRITE": "nave",
+                "STYLE": "hearts"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 48,
+                "SIZE": 22
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-tiro",
+            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "tiro",
+                    "GROUP": "tiros"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-pedra",
+            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "asteroide",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explosao",
+            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "asteroide"
+                  },
+                  "beforeBlock": "sz_g2d_play_explosion"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você construiu",
+      "intent": "closing",
+      "objective": "Cada acerto soma um ponto; a nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Hora do Desafio",
+      "intent": "closing",
+      "objective": "Reconhecer duas relações importantes desta aula.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-3",
+    "checar-construir-4",
+    "construir-6",
+    "video-construir-6-1",
+    "fechamento"
+  ]
+}

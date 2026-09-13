@@ -46,11 +46,22 @@ const playingActions = [
   ['desenhar', 'Desenhar cactos', 'sz_g2d_draw_group'],
   ['limpeza', 'Remover cactos fora da tela', 'sz_g2d_prune_offscreen'],
 ] as const
-const guardedActions = playingActions.map(([id, label, type]) =>
-  c(`proteger-${id}`, `${label} deve ficar no então de Se a tela é jogando.`, iff, {
-    ...inLoop,
-    inputBlocks: guarded(p(type)).inputBlocks,
-  }),
+const guardedActions = playingActions.map(([id, label, type], index) =>
+  c(
+    `proteger-${id}`,
+    `${label} deve ficar no então de Se a tela é jogando, na ordem da montagem.`,
+    iff,
+    {
+      ...inLoop,
+      inputBlocks: guarded(
+        p(type, {
+          fields: index < 3 ? { SPRITE: 'dino' } : { GROUP: 'cactos' },
+          ...(type === 'sz_g2d_control_dino' ? { inputs: { JUMP: 14 } } : {}),
+          ...(playingActions[index + 1] ? { beforeBlock: playingActions[index + 1]![2] } : {}),
+        }),
+      ).inputBlocks,
+    },
+  ),
 )
 const uniqueActions = playingActions.map(([id, label, type]) =>
   c(`unico-${id}`, `Mantenha uma única ação ${label}.`, type, { count: 1 }),
@@ -60,7 +71,10 @@ const background = ['sz_g2d_clear', 'sz_g2d_forest'].map((type, index) =>
     `fundo-${index}`,
     `${index ? 'Floresta' : 'Limpeza da tela'} deve continuar fora do Se, diretamente no quadro.`,
     frame,
-    { area: 'loops', inputBlocks: { BODY: p(type) } },
+    {
+      area: 'loops',
+      inputBlocks: { BODY: p(type, { beforeBlock: index ? iff : 'sz_g2d_forest' }) },
+    },
   ),
 )
 const guardedSpawn = c(
@@ -96,12 +110,17 @@ const inputStart = c(
 )
 const collision = c(
   'colisao',
-  'Ao o dino tocar o grupo cactos, mude para a tela fim.',
-  'sz_g2d_on_sprite_group_overlap',
+  'No então de Se jogando, confira a colisão com cactos e mude para fim.',
+  iff,
   {
-    area: 'events',
-    fields: { GROUP: 'cactos', SPRITE: 'dino', ANAME: 'cacto' },
-    inputBlocks: { BODY: p('sz_g2d_set_scene', { fields: { SCENE: 'fim' } }) },
+    ...inLoop,
+    inputBlocks: guarded(
+      p('sz_g2d_on_sprite_group_overlap', {
+        fields: { GROUP: 'cactos', SPRITE: 'dino', ANAME: 'cacto' },
+        beforeBlock: 'sz_g2d_prune_offscreen',
+        inputBlocks: { BODY: p('sz_g2d_set_scene', { fields: { SCENE: 'fim' } }) },
+      }),
+    ).inputBlocks,
   },
 )
 const endScreen = c(
@@ -131,19 +150,19 @@ const restart = c(
 
 const effects = [
   c('explodir', 'Exploda o cacto que colidiu antes da tremida.', 'sz_g2d_explode', {
-    area: 'events',
+    area: 'loops',
     withinBlock: 'sz_g2d_on_sprite_group_overlap',
     fields: { SPRITE: 'cacto' },
     beforeBlock: 'sz_g2d_shake',
   }),
   c('tremida', 'Use tremida 8 antes do som de derrota.', 'sz_g2d_shake', {
-    area: 'events',
+    area: 'loops',
     withinBlock: 'sz_g2d_on_sprite_group_overlap',
     inputs: { INTENSITY: 8 },
     beforeBlock: 'sz_g2d_play_fx',
   }),
   c('derrota', 'Toque derrota antes de Ir para fim.', 'sz_g2d_play_fx', {
-    area: 'events',
+    area: 'loops',
     withinBlock: 'sz_g2d_on_sprite_group_overlap',
     fields: { FX: 'gameover' },
     beforeBlock: 'sz_g2d_set_scene',
@@ -466,21 +485,21 @@ export const middleRecipes: Record<number, Recipe> = {
         title: 'Qual cacto participou da batida?',
         kind: 'observe',
         part: 1,
-        focus: 'Distinguir o grupo inteiro do membro recebido pelo evento.',
+        focus: 'Distinguir o grupo inteiro do cacto recebido pela verificação de colisão.',
         reason: 'O nome local cacto será usado na explosão; não é o nome de todo o grupo.',
-        say: 'Há vários cactos no grupo. O evento aponta só o que encostou no Dino; dentro dele, vamos chamar esse cacto de cacto.',
+        say: 'Há vários cactos no grupo. O bloco de colisão aponta o que encostou no Dino; dentro do fazer, vamos chamar esse cacto de cacto.',
         visual:
-          'Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no evento. Manter os outros sem destaque.',
-        edit: 'Reaproveitar a apresentação do evento. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11.',
+          'Congelar três cactos. Destacar o que colidiu e uma seta até o nome cacto no bloco. Manter os outros sem destaque.',
+        edit: 'Reaproveitar a apresentação do bloco de colisão. Acrescentar a visualização da referência local; não ensinar criação de variável geral antes da aula 11.',
       },
       {
         key: 'colisao-fim',
         title: 'Faça a batida encerrar a partida',
         kind: 'build',
         part: 1,
-        focus: 'Usar a colisão como evento que muda o estado.',
+        focus: 'Verificar a colisão a cada quadro durante a partida para mudar o estado.',
         reason: 'Primeiro observar a parada da lógica; depois dar um desenho ao estado fim.',
-        say: 'Dentro de Quando acontecer, use Quando o sprite dino tocar o grupo cactos, chamando o que tocou de cacto. Dentro, vá para a tela fim.',
+        say: 'Dentro do Se a tela é jogando, entre Desenhar o grupo e a faxina, encaixe Para cada sprite do grupo que colidir com o sprite. Escolha grupo cactos, sprite dino e apelido cacto. No fazer, coloque Ir para a tela fim.',
         edit: 'Preservar a primeira colisão. Explicar que o fundo sem texto é esperado antes do próximo passo.',
         checks: [collision],
       },
@@ -500,9 +519,9 @@ export const middleRecipes: Record<number, Recipe> = {
         title: 'Mostre e sinalize a batida',
         kind: 'build',
         part: 3,
-        focus: 'Encadear efeitos no evento antes da mudança de cena.',
+        focus: 'Encadear efeitos no fazer da colisão antes da mudança de cena.',
         reason: 'Os efeitos comunicam a causa do fim, sem uma nova exploração de estética.',
-        say: 'No evento da colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.',
+        say: 'No fazer do bloco de colisão, antes de Ir para fim: exploda o cacto que tocou, tremida 8 e som de derrota. Mantenha essa ordem.',
         edit: 'Preservar o resultado visual e sonoro; manter texto de fim como alternativa perceptível ao áudio.',
         checks: effects,
       },
@@ -537,6 +556,12 @@ export const middleRecipes: Record<number, Recipe> = {
     ],
     finalChecks: [
       collision,
+      c(
+        'colisao-unica',
+        'Mantenha uma única verificação de colisão com os cactos.',
+        'sz_g2d_on_sprite_group_overlap',
+        { count: 1 },
+      ),
       endScreen,
       restart,
       initialScene,
@@ -547,15 +572,16 @@ export const middleRecipes: Record<number, Recipe> = {
     ],
     test: 'Faça uma rodada completa: início → partida → colisão → fim → reinício. Confira efeitos e repita o reinício pelo toque. Na nova partida, nenhum cacto antigo deve permanecer.',
     corrections: [
+      'Colisão com grupo é um comando contínuo, dentro do Se jogando em A cada quadro. Preservar a montagem do original; não transferir para a área Quando acontecer.',
       'Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito.',
       'A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la.',
     ],
     quiz: [
       [
-        'O nome cacto dentro do evento indica o quê?',
+        'O nome cacto dentro do bloco de colisão indica o quê?',
         'O cacto que participou daquela colisão.',
         'O grupo inteiro de cactos.',
-        'O evento fornece uma referência ao membro envolvido.',
+        'O bloco fornece uma referência ao membro envolvido.',
       ],
       [
         'Onde colocar Reiniciar?',

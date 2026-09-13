@@ -34,3 +34,5 @@ Os resultados e limites da verificação estão no [relatório do piloto v6](../
 - [x] Validar os programas finais independentes das 13 aulas, inclusive carregamento/salvamento no Blockly e geração de JavaScript.
 
 O resultado editorial atual é o [guia completo do Corre Dino](../aulas-interativas/corre-dino-v6/README.md). Ele substitui a descrição anterior dos candidatos como simples preservação da sequência v5. A produção e vinculação dos vídeos continuam uma etapa de mídia: foram fornecidos roteiros, sem arquivos de gravação ou timecodes.
+
+O [full review posterior](../aulas-interativas/qa/full-review-2026-09-12.md) acrescentou execução dos 13 projetos e corrigiu colisão, HUD, relações de ordem, divisão indevida de fórmulas, fidelidade da retomada e contratos de rascunho da API. A verificação inicial de sintaxe não demonstrava jogabilidade.

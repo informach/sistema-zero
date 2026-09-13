@@ -42,3 +42,7 @@ export function LessonBlockKindBadge({ kind }: { kind: LessonBlockContent['kind'
     </span>
   )
 }
+
+export function lessonBlockKindLabel(kind: LessonBlockContent['kind']): string {
+  return kinds[kind].label
+}

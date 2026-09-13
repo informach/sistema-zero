@@ -1,0 +1,763 @@
+{
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-1",
+  "title": "A nave ganha vida",
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom ter você aqui! Seja bem-vindo ao nosso Desafio do Primeiro Jogo. Aqui nós vamos criar um”. Saída: “á vida pra nave. E no sexto, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Oi! Hoje sua nave vai aparecer num espaço cheio de estrelas e obedecer às setas. Vamos preparar o jogo, descobrir onde a nave fica e montar um pedacinho de cada vez.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-areas",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 1. Passo 1: montar as áreas do projeto. Entrada: “Todo jogo precisa de um lugar pra guardar os passos dele. Aqui no estúdio, esse lugar são as áreas d”. Saída: “ uma arruma o jogo, a outra é o motor. Agora vamos pro segundo passo, que é preparar a tela do jogo.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando. Deixe um espaço entre eles. O primeiro prepara as coisas; o segundo vai guardar o motor que trabalha enquanto o jogo está ligado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-areas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando. Deixe um espaço entre eles. O primeiro prepara as coisas; o segundo vai guardar o motor que trabalha enquanto o jogo está ligado."
+      }
+    },
+    {
+      "key": "video-tela",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 2. Passo 2: preparar a tela do jogo. Entrada: “Agora vamos preparar a tela onde o jogo acontece. A maioria dos blocos que a gente usa fica numa cat”. Saída: “escolha é sua. Passo 2 feito. Agora vem o terceiro, e esse é especial: a gente vai criar a sua nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-tela",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas."
+      }
+    },
+    {
+      "key": "video-endereco",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x ”. Saída: “o da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide.”. Reaproveitar a analogia de endereço e a explicação de largura/altura. Substituir a afirmação de que x 400 centraliza exatamente a nave. Acrescentar origem e sentido dos eixos. Fala complementar: “O x cresce para a direita. O y cresce para baixo. A marca mostra o canto de cima à esquerda da caixa da nave. Com x 400, esse canto fica no meio da tela; o centro da nave fica um pouquinho à direita.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "experiencia-coordenadas",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare duas alturas",
+        "instructions": "O x vai ficar em 400. Mostre a nave em y 110 e depois em y 410. Compare a altura e responda: quando o y aumenta, a nave vai para qual lado?",
+        "hints": ["Compare a distância até o alto da tela; o x ficou igual."],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;color:#152f44;background:#eef5fa;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:780px;margin:auto}h2{font-size:clamp(24px,4vw,32px);line-height:1.18;margin:8px 0 12px}p{margin:10px 0}.eyebrow{font-size:12px;font-weight:bold;letter-spacing:2px;color:#476377}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button{font:inherit;min-height:46px;border:2px solid #386386;border-radius:12px;padding:9px 14px;background:white;color:#173c59;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#173c59;color:white}button:focus-visible{outline:3px solid #a75400;outline-offset:3px}button:disabled{opacity:.65;cursor:default}.stage{background:#112b46;color:#eff9ff;border:1px solid #58718b;border-radius:18px;padding:14px}.stage svg{width:100%;display:block;max-height:280px}#caption{min-height:48px}#run{background:#ffd184;border-color:#9a611a;font-weight:bold;margin:14px 8px 4px 0}.results{margin-top:16px;padding:16px;border:1px solid #86a1b5;background:#fff;border-radius:14px}.results h3{margin:0 0 10px;font-size:18px}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px}.comparison>div{min-width:0}.comparison h4{font-size:14px;margin:12px 0 8px}.comparison .stage{padding:8px}.comparison svg{max-height:150px}.comparison p{font-size:14px}.done{font-weight:bold;border-left:4px solid #1f7865;padding-left:12px}.lab[data-complete=true]>.stage{display:none}.note{font-size:14px;color:#476377}@media(max-width:420px){body{padding:8px}.choices button{flex:1 1 120px}.stage{padding:10px}.results{padding:12px}.comparison{gap:8px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n</style><main class=\"lab\"><span class=\"eyebrow\">UMA IDEIA · DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p id=\"prompt\"></p><div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button id=\"option-0\" type=\"button\" aria-pressed=\"true\"></button><button id=\"option-1\" type=\"button\" aria-pressed=\"false\"></button></div><div class=\"stage\"><div id=\"scene\"></div><p id=\"caption\" aria-live=\"polite\"></p></div><button id=\"run\" type=\"button\">Avançar a comparação</button><span id=\"progress\" role=\"status\"></span><p class=\"note\">Você controla o ritmo. Modelo didático separado do seu jogo.</p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>Sua comparação</h3><p id=\"records\">Os resultados aparecem aqui ao terminar cada situação.</p><div id=\"comparison\" class=\"comparison\"></div><p id=\"done\" class=\"done\" hidden></p></section></main>\n<script>(()=>{'use strict';const c={\"kind\":\"coordenadas\",\"title\":\"Mais para cima ou para baixo?\",\"prompt\":\"O x fica em 400. Mude somente o y e localize a nave.\",\"options\":[\"y = 110\",\"y = 410\"],\"steps\":1,\"results\":[\"Com y = 110, a nave fica mais perto do alto.\",\"Com y = 410, a nave fica mais perto de baixo.\"],\"conclusion\":\"O y cresce para baixo. A marca aponta o canto da caixa; o centro da nave fica um pouco à direita.\"},$=id=>document.getElementById(id);let selected=0,step=0,tested=[],ready=!window.learning;\nconst ship=(x,y,opacity=1)=>'<g opacity=\"'+opacity+'\" transform=\"translate('+x+' '+y+')\"><path d=\"M27 0L54 54L35 46L27 62L19 46L0 54Z\" fill=\"#93e2ee\"/><path d=\"M23 16h8v20h-8Z\" fill=\"#2874a6\"/></g>';\nconst stone=(x,y)=>'<g transform=\"translate('+x+' '+y+')\"><path d=\"M0 12L14 0L37 4L46 23L35 43L10 46L-3 30Z\" fill=\"#e8b77b\"/><circle cx=\"15\" cy=\"18\" r=\"6\" fill=\"#98724e\"/></g>';\nfunction scene(option,n){let art='',caption='',view='0 0 800 480';const initial=n===0;\nif(c.kind==='coordenadas'){const y=option?410:110;art='<path d=\"M0 0H800M0 0V480M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><text x=\"15\" y=\"38\">0</text><text x=\"675\" y=\"38\">x → 800</text><text x=\"12\" y=\"460\">y ↓ 480</text>'+(!initial?ship(400,y)+'<circle cx=\"400\" cy=\"'+y+'\" r=\"7\" fill=\"#ffd184\"/>':'');caption=initial?'Aperte Mostrar posição.':'x = 400 · y = '+y+'. A marca é o canto superior esquerdo da caixa.';}\nif(c.kind==='limpeza'){for(let i=0;i<n;i++)if(!option||i===n-1)art+=ship(150+i*190,205,(!option&&i<n-1)?.45:1);caption='Quadro '+n+' · '+(option?Math.min(1,n):n)+' desenho(s) na tela · 1 nave no jogo.';}\nif(c.kind==='direcao'){const y=240+(option?1:-1)*n*90;art='<path d=\"M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><circle cx=\"400\" cy=\"240\" r=\"14\" fill=\"none\" stroke=\"#9eb4c7\" stroke-width=\"3\"/>'+(y>=0&&y<=480?'<circle cx=\"400\" cy=\"'+y+'\" r=\"12\" fill=\"#ffd184\"/>':'<text x=\"235\" y=\"'+(y<0?45:440)+'\">Saiu '+(y<0?'por cima':'por baixo')+'</text>');caption=(n*10)+' quadros · y = '+y+' · '+(n?'o tiro '+(option?'desce':'sobe'):'mesmo ponto de partida')+'.';}\nif(c.kind==='intervalo'){view='0 0 340 220';const births=n*(option?1:2);for(let i=0;i<births;i++)art+=stone(35+(i%3)*110,40+Math.floor(i/3)*95);caption=n*40+' quadros observados · '+births+' nascimento(s). Mesma queda nos dois testes.';}\nif(c.kind==='protecao'){view='0 0 220 180';const hp=3-(option?Math.min(1,n):n);art=ship(83,105);for(let i=0;i<3;i++)art+='<text x=\"'+(32+i*65)+'\" y=\"65\" fill=\"'+(i<hp?'#ffb2ab':'#718296')+'\">'+(i<hp?'♥':'♡')+'</text>';caption=n===0?'3 vidas · aguardando a primeira batida.':'Batida '+n+' (quadro '+(1+(n-1)*5)+') · '+hp+' vida(s) · asteroide removido'+(option&&n>1?' · dano ignorado pela proteção.':'.');}\nif(c.kind==='telas'){if(option){for(let i=0;i<n;i++)art+=stone(120+i*220,145);art+=ship(373,365);}else art='<text x=\"170\" y=\"200\">Nave contra Asteroides</text><text x=\"225\" y=\"265\">Aperte Enter</text>';caption=n+' toque(s) do relógio · '+(option?n:0)+' nascimento(s) · condição '+(option?'verdadeira':'falsa')+'.';}\nreturn {art:'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+caption+'\" style=\"font:32px sans-serif;fill:#eff9ff\">'+art+'</svg>',caption};}\nfunction resize(){const css=getComputedStyle(document.body);window.learning?.resize(Math.max(180,Math.ceil(document.querySelector('.lab').getBoundingClientRect().height+parseFloat(css.paddingTop)+parseFloat(css.paddingBottom))))}\nfunction save(){window.learning?.save({selected,step,tested:[...tested]})}\nfunction render(){const complete=tested.length===2,view=scene(selected,step);document.querySelector('.lab').dataset.complete=String(complete);$('scene').innerHTML=view.art;$('caption').textContent=view.caption;for(let i=0;i<2;i++){$('option-'+i).textContent=c.options[i];$('option-'+i).setAttribute('aria-pressed',String(i===selected));$('option-'+i).disabled=!ready||complete;}$('run').disabled=!ready||complete||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':tested.includes(String(selected))?'Situação guardada':c.steps===1?'Mostrar posição':'Avançar · passo '+(step+1)+' de '+c.steps;$('progress').textContent=tested.length+' de 2 situações guardadas';$('records').hidden=complete;$('records').textContent=tested.length?tested.map(i=>c.results[Number(i)]).join(' '):'Os resultados aparecem aqui ao terminar cada situação.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+c.options[i]+'</h4><div class=\"stage\">'+scene(i,c.steps).art+'</div><p>'+c.results[i]+'</p></div>').join(''):'';$('done').hidden=!complete;$('done').textContent=c.conclusion+' Agora responda à pergunta da aula.';resize()}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(tested.length===2||selected===i)return;selected=i;step=tested.includes(String(i))?c.steps:0;save();render()});$('run').addEventListener('click',()=>{if(tested.length===2||tested.includes(String(selected)))return;step++;if(step===c.steps)tested=[...new Set([...tested,String(selected)])].sort();save();render();if(tested.length===2)window.learning?.participated()});\naddEventListener('learning:restore',event=>{ready=true;const s=event.detail&&typeof event.detail==='object'?event.detail:{};selected=s.selected===1?1:0;tested=Array.isArray(s.tested)?[...new Set(s.tested.filter(i=>i==='0'||i==='1'))].sort():[];step=Number.isInteger(s.step)?Math.max(0,Math.min(c.steps,s.step)):0;if(tested.includes(String(selected)))step=c.steps;else if(step===c.steps)step=0;render()});$('title').textContent=c.title;$('prompt').textContent=c.prompt;addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));render();})();</script>"
+        },
+        "checkpoint": {
+          "prompt": "O y foi de 110 para 410, com o mesmo x. A nave foi…",
+          "choices": [
+            {
+              "id": "b",
+              "label": "Mais para a direita."
+            },
+            {
+              "id": "a",
+              "label": "Mais para baixo."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "Mudar y altera a posição vertical. Na tela, os valores crescem para baixo."
+        }
+      }
+    },
+    {
+      "key": "video-nave",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Chegou a hora da estrela do jogo: a sua nave! Na categoria Jogo 2D, subcategoria Kit espaço, pega o ”. Saída: “gente vai resolver no próximo passo. Passo 3 feito. Bora pro quarto passo, que é fazer o jogo rodar.”. Reaproveitar o gesto de criar e configurar. Encurtar os eixos, já vistos na comparação. Manter a surpresa de ainda não aparecer, sem dizer que houve erro. Fala complementar: “Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-nave",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar."
+      }
+    },
+    {
+      "key": "video-criar-desenhar",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Voc”. Saída: “enha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.”. Aproveitar a analogia do livrinho. Acrescentar a nave na memória e o desenho na tela em dois quadros. Não pedir montagem durante o clipe. Fala complementar: “Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "video-quadro",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o”. Saída: “ ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-quadro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro."
+      }
+    },
+    {
+      "key": "experiencia-limpeza",
+      "content": {
+        "kind": "interactive",
+        "title": "O que acontece sem a borracha?",
+        "instructions": "Passe três quadros sem limpar. Depois passe os mesmos três quadros limpando antes de desenhar. Observe quantos desenhos ficam. É sempre uma só nave; você está comparando as imagens que ela deixa.",
+        "hints": ["Conte os desenhos que sobraram depois do terceiro quadro."],
+        "required": false,
+        "activity": {
+          "type": "html",
+          "html": "<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;color:#152f44;background:#eef5fa;font:16px/1.5 \"Trebuchet MS\",sans-serif}.lab{max-width:780px;margin:auto}h2{font-size:clamp(24px,4vw,32px);line-height:1.18;margin:8px 0 12px}p{margin:10px 0}.eyebrow{font-size:12px;font-weight:bold;letter-spacing:2px;color:#476377}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button{font:inherit;min-height:46px;border:2px solid #386386;border-radius:12px;padding:9px 14px;background:white;color:#173c59;cursor:pointer;touch-action:manipulation}button[aria-pressed=true]{background:#173c59;color:white}button:focus-visible{outline:3px solid #a75400;outline-offset:3px}button:disabled{opacity:.65;cursor:default}.stage{background:#112b46;color:#eff9ff;border:1px solid #58718b;border-radius:18px;padding:14px}.stage svg{width:100%;display:block;max-height:280px}#caption{min-height:48px}#run{background:#ffd184;border-color:#9a611a;font-weight:bold;margin:14px 8px 4px 0}.results{margin-top:16px;padding:16px;border:1px solid #86a1b5;background:#fff;border-radius:14px}.results h3{margin:0 0 10px;font-size:18px}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px}.comparison>div{min-width:0}.comparison h4{font-size:14px;margin:12px 0 8px}.comparison .stage{padding:8px}.comparison svg{max-height:150px}.comparison p{font-size:14px}.done{font-weight:bold;border-left:4px solid #1f7865;padding-left:12px}.lab[data-complete=true]>.stage{display:none}.note{font-size:14px;color:#476377}@media(max-width:420px){body{padding:8px}.choices button{flex:1 1 120px}.stage{padding:10px}.results{padding:12px}.comparison{gap:8px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n</style><main class=\"lab\"><span class=\"eyebrow\">UMA IDEIA · DUAS SITUAÇÕES</span><h2 id=\"title\"></h2><p id=\"prompt\"></p><div class=\"choices\" role=\"group\" aria-label=\"Situação para comparar\"><button id=\"option-0\" type=\"button\" aria-pressed=\"true\"></button><button id=\"option-1\" type=\"button\" aria-pressed=\"false\"></button></div><div class=\"stage\"><div id=\"scene\"></div><p id=\"caption\" aria-live=\"polite\"></p></div><button id=\"run\" type=\"button\">Avançar a comparação</button><span id=\"progress\" role=\"status\"></span><p class=\"note\">Você controla o ritmo. Modelo didático separado do seu jogo.</p><section class=\"results\" aria-label=\"Resultados guardados\"><h3>Sua comparação</h3><p id=\"records\">Os resultados aparecem aqui ao terminar cada situação.</p><div id=\"comparison\" class=\"comparison\"></div><p id=\"done\" class=\"done\" hidden></p></section></main>\n<script>(()=>{'use strict';const c={\"kind\":\"limpeza\",\"title\":\"O desenho anterior fica?\",\"prompt\":\"É a mesma nave em três posições. Compare com e sem limpar antes de desenhar.\",\"options\":[\"Sem limpar\",\"Limpar a cada quadro\"],\"steps\":3,\"results\":[\"Sem limpar, os três desenhos permanecem.\",\"Limpando, só o desenho mais recente permanece.\"],\"conclusion\":\"Criar prepara um objeto. Limpar e desenhar novamente mostram cada quadro.\"},$=id=>document.getElementById(id);let selected=0,step=0,tested=[],ready=!window.learning;\nconst ship=(x,y,opacity=1)=>'<g opacity=\"'+opacity+'\" transform=\"translate('+x+' '+y+')\"><path d=\"M27 0L54 54L35 46L27 62L19 46L0 54Z\" fill=\"#93e2ee\"/><path d=\"M23 16h8v20h-8Z\" fill=\"#2874a6\"/></g>';\nconst stone=(x,y)=>'<g transform=\"translate('+x+' '+y+')\"><path d=\"M0 12L14 0L37 4L46 23L35 43L10 46L-3 30Z\" fill=\"#e8b77b\"/><circle cx=\"15\" cy=\"18\" r=\"6\" fill=\"#98724e\"/></g>';\nfunction scene(option,n){let art='',caption='',view='0 0 800 480';const initial=n===0;\nif(c.kind==='coordenadas'){const y=option?410:110;art='<path d=\"M0 0H800M0 0V480M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><text x=\"15\" y=\"38\">0</text><text x=\"675\" y=\"38\">x → 800</text><text x=\"12\" y=\"460\">y ↓ 480</text>'+(!initial?ship(400,y)+'<circle cx=\"400\" cy=\"'+y+'\" r=\"7\" fill=\"#ffd184\"/>':'');caption=initial?'Aperte Mostrar posição.':'x = 400 · y = '+y+'. A marca é o canto superior esquerdo da caixa.';}\nif(c.kind==='limpeza'){for(let i=0;i<n;i++)if(!option||i===n-1)art+=ship(150+i*190,205,(!option&&i<n-1)?.45:1);caption='Quadro '+n+' · '+(option?Math.min(1,n):n)+' desenho(s) na tela · 1 nave no jogo.';}\nif(c.kind==='direcao'){const y=240+(option?1:-1)*n*90;art='<path d=\"M400 0V480\" stroke=\"#638cac\" stroke-width=\"3\" stroke-dasharray=\"10 10\"/><circle cx=\"400\" cy=\"240\" r=\"14\" fill=\"none\" stroke=\"#9eb4c7\" stroke-width=\"3\"/>'+(y>=0&&y<=480?'<circle cx=\"400\" cy=\"'+y+'\" r=\"12\" fill=\"#ffd184\"/>':'<text x=\"235\" y=\"'+(y<0?45:440)+'\">Saiu '+(y<0?'por cima':'por baixo')+'</text>');caption=(n*10)+' quadros · y = '+y+' · '+(n?'o tiro '+(option?'desce':'sobe'):'mesmo ponto de partida')+'.';}\nif(c.kind==='intervalo'){view='0 0 340 220';const births=n*(option?1:2);for(let i=0;i<births;i++)art+=stone(35+(i%3)*110,40+Math.floor(i/3)*95);caption=n*40+' quadros observados · '+births+' nascimento(s). Mesma queda nos dois testes.';}\nif(c.kind==='protecao'){view='0 0 220 180';const hp=3-(option?Math.min(1,n):n);art=ship(83,105);for(let i=0;i<3;i++)art+='<text x=\"'+(32+i*65)+'\" y=\"65\" fill=\"'+(i<hp?'#ffb2ab':'#718296')+'\">'+(i<hp?'♥':'♡')+'</text>';caption=n===0?'3 vidas · aguardando a primeira batida.':'Batida '+n+' (quadro '+(1+(n-1)*5)+') · '+hp+' vida(s) · asteroide removido'+(option&&n>1?' · dano ignorado pela proteção.':'.');}\nif(c.kind==='telas'){if(option){for(let i=0;i<n;i++)art+=stone(120+i*220,145);art+=ship(373,365);}else art='<text x=\"170\" y=\"200\">Nave contra Asteroides</text><text x=\"225\" y=\"265\">Aperte Enter</text>';caption=n+' toque(s) do relógio · '+(option?n:0)+' nascimento(s) · condição '+(option?'verdadeira':'falsa')+'.';}\nreturn {art:'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"'+view+'\" role=\"img\" aria-label=\"'+caption+'\" style=\"font:32px sans-serif;fill:#eff9ff\">'+art+'</svg>',caption};}\nfunction resize(){const css=getComputedStyle(document.body);window.learning?.resize(Math.max(180,Math.ceil(document.querySelector('.lab').getBoundingClientRect().height+parseFloat(css.paddingTop)+parseFloat(css.paddingBottom))))}\nfunction save(){window.learning?.save({selected,step,tested:[...tested]})}\nfunction render(){const complete=tested.length===2,view=scene(selected,step);document.querySelector('.lab').dataset.complete=String(complete);$('scene').innerHTML=view.art;$('caption').textContent=view.caption;for(let i=0;i<2;i++){$('option-'+i).textContent=c.options[i];$('option-'+i).setAttribute('aria-pressed',String(i===selected));$('option-'+i).disabled=!ready||complete;}$('run').disabled=!ready||complete||tested.includes(String(selected));$('run').textContent=complete?'Comparação guardada':tested.includes(String(selected))?'Situação guardada':c.steps===1?'Mostrar posição':'Avançar · passo '+(step+1)+' de '+c.steps;$('progress').textContent=tested.length+' de 2 situações guardadas';$('records').hidden=complete;$('records').textContent=tested.length?tested.map(i=>c.results[Number(i)]).join(' '):'Os resultados aparecem aqui ao terminar cada situação.';$('comparison').innerHTML=complete?[0,1].map(i=>'<div><h4>'+c.options[i]+'</h4><div class=\"stage\">'+scene(i,c.steps).art+'</div><p>'+c.results[i]+'</p></div>').join(''):'';$('done').hidden=!complete;$('done').textContent=c.conclusion+' Agora responda à pergunta da aula.';resize()}\nfor(let i=0;i<2;i++)$('option-'+i).addEventListener('click',()=>{if(tested.length===2||selected===i)return;selected=i;step=tested.includes(String(i))?c.steps:0;save();render()});$('run').addEventListener('click',()=>{if(tested.length===2||tested.includes(String(selected)))return;step++;if(step===c.steps)tested=[...new Set([...tested,String(selected)])].sort();save();render();if(tested.length===2)window.learning?.participated()});\naddEventListener('learning:restore',event=>{ready=true;const s=event.detail&&typeof event.detail==='object'?event.detail:{};selected=s.selected===1?1:0;tested=Array.isArray(s.tested)?[...new Set(s.tested.filter(i=>i==='0'||i==='1'))].sort():[];step=Number.isInteger(s.step)?Math.max(0,Math.min(c.steps,s.step)):0;if(tested.includes(String(selected)))step=c.steps;else if(step===c.steps)step=0;render()});$('title').textContent=c.title;$('prompt').textContent=c.prompt;addEventListener('resize',resize);if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(document.querySelector('.lab'));render();})();</script>"
+        },
+        "checkpoint": {
+          "prompt": "Qual sequência evita deixar os desenhos antigos na tela?",
+          "choices": [
+            {
+              "id": "b",
+              "label": "Criar uma nave nova em cada quadro."
+            },
+            {
+              "id": "a",
+              "label": "Limpar e depois desenhar a nave em cada quadro."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "A limpeza apaga a imagem anterior; não apaga o objeto guardado no jogo."
+        }
+      }
+    },
+    {
+      "key": "video-fundo",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente”. Saída: “arzinho pra dar a sensação de que a nave está viajando pelo espaço. Vamos deixar 1 mesmo, bem suave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-fundo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho."
+      }
+    },
+    {
+      "key": "video-mover",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O terceiro é o que dá vida pra sua nave. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco ”. Saída: “a some. Viu que legal? Esse aviso não é bronca, é um ajudante: ele te mostra certinho o que arrumar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, abaixo das estrelas. Depois coloque Manter o sprite dentro da tela e escolha nave. Se aparecer um alerta de nome, leia e troque para o sprite que você criou.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-mover",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, abaixo das estrelas. Depois coloque Manter o sprite dentro da tela e escolha nave. Se aparecer um alerta de nome, leia e troque para o sprite que você criou."
+      }
+    },
+    {
+      "key": "video-desenhar",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “E o quinto é o que finalmente mostra a nave. Na categoria Jogo 2D, subcategoria Sprites, pega o bloc”. Saída: “io e trabalhando. E agora o melhor de todos, o sexto passo, que é testar e deixar tudo do seu jeito.”. Manter o gesto e a ordem. Substituir “as estrelas iam tampar ela” por “o que é desenhado depois pode cobrir o que veio antes”; não afirmar cobertura total por pontos de estrelas. Fala complementar: “Em Jogo 2D, Sprites, coloque Desenhar o sprite por último e escolha nave. Confira: limpar, estrelas, mover, manter dentro da tela, desenhar nave. Agora clique no jogo e use as setas para os dois lados.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "fala-desenhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Sprites, coloque Desenhar o sprite por último e escolha nave. Confira: limpar, estrelas, mover, manter dentro da tela, desenhar nave. Agora clique no jogo e use as setas para os dois lados."
+      }
+    },
+    {
+      "key": "video-teste",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 6. Passo 6: testar e deixar do seu jeito. Entrada: “Agora olha pra tela do seu jogo! As estrelas estão se mexendo, e a sua nave apareceu, com as cores q”. Saída: “na área do jogo e aperta a seta para a esquerda e a seta para a direita. Tá vendo? Ela obedece você!”. Selecionar o primeiro teste; mostrar confirmar campo e focar jogo em gravação atual. Retirar convite a 12 e exploração livre. Não provocar um suposto bug de confirmação sem reproduzi-lo na interface atual. Fala complementar: “Depois de digitar um valor, confirme saindo do campo. Para testar as setas, clique na área do jogo. Nesta aula, deixe a velocidade em 7. Verifique se a nave vai para os dois lados e para na borda.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "entrega-fala-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Clique no jogo e teste esquerda e direita até as duas bordas. Confira que a nave aparece por cima do espaço e não deixa rastros. Deixe velocidade 7 e estrelas 1. Espere salvar e envie ao professor. As cores são suas; não há outra tarefa depois desta."
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 1! Olha só os seis passos que você venceu hoje: montou as áreas do pro”. Saída: “atirar de verdade, com som e tudo. Descansa, comemora a vitória de hoje, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Sua nave apareceu e já responde a você. Criar preparou o objeto; o motor passou a desenhar e mover. No Dia 2, ela vai aprender a atirar. Agora vamos guardar duas ideias de hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A nave foi criada, mas não aparece. Qual ação está faltando?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Desenhar o sprite nave no motor de quadros."
+              },
+              {
+                "id": "b",
+                "label": "Criar várias naves iguais."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O objeto pode estar preparado sem ter sido desenhado."
+          },
+          {
+            "id": "q2",
+            "prompt": "Onde preparar a tela e criar a nave?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Dentro de cada quadro, repetindo a criação."
+              },
+              {
+                "id": "a",
+                "label": "Em Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A preparação ocorre uma vez; o motor atualiza e desenha depois."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos fazer hoje",
+      "intent": "presentation",
+      "objective": "Começar um projeto vazio com a extensão Jogo 2D já preparada pelo professor.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "areas",
+      "title": "Monte os dois lugares do jogo",
+      "intent": "application",
+      "objective": "Separar a preparação da repetição.",
+      "blockKeys": ["video-areas", "fala-areas"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "inicio",
+            "label": "Coloque Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_start",
+              "count": 1
+            }
+          },
+          {
+            "id": "motor",
+            "label": "Coloque Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_loops",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "tela",
+      "title": "Prepare o espaço da nave",
+      "intent": "application",
+      "objective": "Preparar largura e altura do jogo uma vez.",
+      "blockKeys": ["video-tela", "fala-tela"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tela",
+            "label": "Prepare a tela de 800 × 480 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 800,
+                "H": 480
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "endereco",
+      "title": "Observe o endereço na tela",
+      "intent": "demonstration",
+      "objective": "Reconhecer x horizontal, y vertical e a origem no alto à esquerda.",
+      "blockKeys": ["video-endereco"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-endereco"]
+      }
+    },
+    {
+      "key": "coordenadas",
+      "title": "Compare duas alturas",
+      "intent": "exploration",
+      "objective": "Descobrir o efeito de aumentar somente y.",
+      "blockKeys": ["experiencia-coordenadas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-coordenadas"]
+      }
+    },
+    {
+      "key": "nave",
+      "title": "Crie sua nave",
+      "intent": "application",
+      "objective": "Criar o sprite uma vez com posição e tamanho definidos.",
+      "blockKeys": ["video-nave", "fala-nave"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "nave",
+            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "fields": {
+                "NAME": "nave"
+              },
+              "inputs": {
+                "X": 400,
+                "Y": 410,
+                "W": 54,
+                "H": 62
+              },
+              "area": "start",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "criar-desenhar",
+      "title": "Criar não é desenhar",
+      "intent": "demonstration",
+      "objective": "Distinguir o objeto preparado do desenho repetido.",
+      "blockKeys": ["video-criar-desenhar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-criar-desenhar"]
+      }
+    },
+    {
+      "key": "quadro",
+      "title": "Ligue o motor de quadros",
+      "intent": "application",
+      "objective": "Encaixar o motor na área de repetição.",
+      "blockKeys": ["video-quadro", "fala-quadro"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "quadro",
+            "label": "Coloque A cada quadro do jogo em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "limpeza",
+      "title": "O que acontece sem a borracha?",
+      "intent": "exploration",
+      "objective": "Relacionar a limpeza com a remoção dos desenhos anteriores.",
+      "blockKeys": ["experiencia-limpeza"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-limpeza"]
+      }
+    },
+    {
+      "key": "fundo",
+      "title": "Desenhe o espaço",
+      "intent": "application",
+      "objective": "Limpar antes de pintar o fundo em cada quadro.",
+      "blockKeys": ["video-fundo", "fala-fundo"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "borracha",
+            "label": "Limpe antes de desenhar o fundo de estrelas.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_starfield"
+            }
+          },
+          {
+            "id": "estrelas",
+            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "mover",
+      "title": "Dê as setas e uma borda à nave",
+      "intent": "application",
+      "objective": "Mover horizontalmente sem sair da tela.",
+      "blockKeys": ["video-mover", "fala-mover"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "setas",
+            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "SPEED": 7
+              },
+              "beforeBlock": "sz_g2d_clamp_to_screen"
+            }
+          },
+          {
+            "id": "limite",
+            "label": "Mantenha nave dentro da tela, no motor.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "desenhar",
+      "title": "Faça a nave aparecer por último",
+      "intent": "application",
+      "objective": "Desenhar a nave depois do fundo e de atualizar a posição.",
+      "blockKeys": ["video-desenhar", "fala-desenhar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "nave-visivel",
+            "label": "Desenhe nave depois de manter dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "sprite-certo",
+            "label": "Desenhe o sprite nave a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          },
+          {
+            "id": "fundo-atras",
+            "label": "As estrelas vêm antes do movimento da nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "teste",
+      "title": "Observe como conferir uma mudança",
+      "intent": "demonstration",
+      "objective": "Aprender a confirmar uma edição e testar com o foco no jogo.",
+      "blockKeys": ["video-teste"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Teste e envie sua construção",
+      "intent": "delivery",
+      "objective": "Tela 800 × 480, nave visível e controlada pelas setas, sem sair das bordas.",
+      "blockKeys": ["entrega-fala-v6", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "tela",
+            "label": "Prepare a tela de 800 × 480 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 800,
+                "H": 480
+              }
+            }
+          },
+          {
+            "id": "nave",
+            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "fields": {
+                "NAME": "nave"
+              },
+              "inputs": {
+                "X": 400,
+                "Y": 410,
+                "W": 54,
+                "H": 62
+              },
+              "area": "start",
+              "count": 1
+            }
+          },
+          {
+            "id": "borracha",
+            "label": "Limpe antes de desenhar o fundo de estrelas.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_starfield"
+            }
+          },
+          {
+            "id": "estrelas",
+            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 1
+              }
+            }
+          },
+          {
+            "id": "setas",
+            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "SPEED": 7
+              },
+              "beforeBlock": "sz_g2d_clamp_to_screen"
+            }
+          },
+          {
+            "id": "limite",
+            "label": "Mantenha nave dentro da tela, no motor.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          },
+          {
+            "id": "nave-visivel",
+            "label": "Desenhe nave depois de manter dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "sprite-certo",
+            "label": "Desenhe o sprite nave a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          },
+          {
+            "id": "fundo-atras",
+            "label": "As estrelas vêm antes do movimento da nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você construiu",
+      "intent": "closing",
+      "objective": "Tela 800 × 480, nave visível e controlada pelas setas, sem sair das bordas.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Hora do Desafio",
+      "intent": "closing",
+      "objective": "Reconhecer duas relações importantes desta aula.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-4",
+    "construir-6",
+    "video-construir-6-1",
+    "fechamento"
+  ]
+}
