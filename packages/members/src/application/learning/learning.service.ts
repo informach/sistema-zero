@@ -31,6 +31,8 @@ import {
   SceneConflictError,
   type SceneSegment,
   type SceneStart,
+  type SceneStep,
+  sceneModel,
 } from '@sistemazero/core/learning/scene'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import type { LessonWithContent } from '../../domain/course/course'
@@ -66,6 +68,8 @@ export interface LearningProgressInput {
 interface Cena {
   start: SceneStart
   kind: 'demonstration' | 'experimentation'
+  /** O roteiro AUTORADO da demonstração; sem ele, o do modelo da cena. */
+  script: readonly SceneStep[]
 }
 type CenaGuardada =
   | { kind: 'demonstration'; checkpoint: SceneCheckpoint<DemonstrationSession> }
@@ -75,7 +79,12 @@ type CenaGuardada =
 function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): Cena | null {
   if (content.kind !== 'interactive') return null
   const a = content.activity
-  if (a?.type === 'demonstration') return { start: { scene: a.scene }, kind: 'demonstration' }
+  if (a?.type === 'demonstration')
+    return {
+      start: { scene: a.scene },
+      kind: 'demonstration',
+      script: a.script ?? sceneModel(a.scene).script,
+    }
   if (a?.type === 'experimentation')
     return {
       start: {
@@ -83,6 +92,7 @@ function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): C
         ...(a.initialImpulse === undefined ? {} : { initialImpulse: a.initialImpulse }),
       },
       kind: 'experimentation',
+      script: [],
     }
   return null
 }
@@ -116,6 +126,7 @@ function applySceneSegment(
     cena.kind === 'demonstration'
       ? applyDemonstrationSegment(
           cena.start,
+          cena.script,
           guardado?.kind === 'demonstration' ? guardado.checkpoint : null,
           segment,
         )
@@ -124,7 +135,7 @@ function applySceneSegment(
           guardado?.kind === 'experimentation' ? guardado.checkpoint : null,
           segment,
         )
-  return {
+  const answers: LearningAnswers = {
     sceneSequence: c.sequence,
     sceneSessionId: c.sessionId,
     sceneSegmentId: c.segmentId,
@@ -133,6 +144,12 @@ function applySceneSegment(
         ? packDemonstration(c.session as DemonstrationSession)
         : packExperiment(c.session as ExperimentSession),
   }
+  // ⚠️ O que o SERVIDOR monta também tem de caber. Numa cena cheia de cactos o checkpoint
+  // passa do limite, a gravação iria ao banco em silêncio e a tentativa seguinte — que ecoa
+  // estas mesmas respostas — voltaria 400 sem caminho de volta para a criança.
+  if (!isLearningAnswers(answers))
+    throw new ValidationError('O estado desta experiência passou do tamanho que cabe.')
+  return answers
 }
 
 export class LearningService {

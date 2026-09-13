@@ -5,7 +5,7 @@ import { isRecord, isSceneAction, type SceneAction } from './actions'
 const SCRIPT_STEPS = 12
 const SCRIPT_ACTIONS = 16
 
-import { type SceneStep, sceneModel } from './catalog'
+import type { SceneStep } from './catalog'
 import { stepScene } from './engine'
 import {
   cloneScene,
@@ -206,7 +206,9 @@ export function stepDemonstration(
         action: 0,
         elapsed: 0,
         ready: false,
-        viewed: false,
+        // ⚠️ Rever NÃO desconclui. A criança que terminou e clicou em "assistir de novo"
+        // não pode perder o bloco que já estava concluído.
+        viewed: previous.viewed,
         before: sceneTrial(inicio, 'Antes desta etapa'),
       },
       events: [],
@@ -479,11 +481,16 @@ export function applyExperimentSegment(
 
 export function applyDemonstrationSegment(
   start: SceneStart,
+  /**
+   * ⚠️ O roteiro AUTORADO, quando existe — nunca presuma o do modelo aqui. Com um roteiro
+   * de 5 passos na atividade e 3 no modelo, o servidor marcaria "assistido" no passo errado:
+   * a criança concluiria sem ter visto, ou nunca concluiria.
+   */
+  script: readonly SceneStep[],
   checkpoint: SceneCheckpoint<DemonstrationSession> | null,
   segment: SceneSegment,
 ): SceneCheckpoint<DemonstrationSession> {
   if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new SceneConflictError()
-  const script = sceneModel(start.scene).script
   let session = checkpoint?.session ?? initialDemonstration(start)
   for (const command of segment.commands) {
     if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')

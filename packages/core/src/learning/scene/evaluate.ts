@@ -58,9 +58,14 @@ export function evaluateExperimentation(
  * A criança assistiu. Aqui as metas NÃO são cobradas: quem conduz é o roteiro, e exigir
  * descoberta de quem só observou seria cobrar por um gesto que a tela não ofereceu.
  */
-export function evaluateDemonstration(viewed: boolean, valid = true): LearningResult {
+export function evaluateDemonstration(
+  viewed: boolean,
+  valid = true,
+  /** Houve sessão guardada? Quem nunca abriu não participou — é ausência, não evidência. */
+  started = true,
+): LearningResult {
   return {
-    participated: valid,
+    participated: valid && started,
     passed: valid && viewed,
     feedback: !valid
       ? 'Esta demonstração mudou. Abra de novo para assistir do começo.'

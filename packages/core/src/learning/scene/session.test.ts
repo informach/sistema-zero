@@ -208,7 +208,7 @@ describe('o que vai e volta do servidor', () => {
   })
 
   test('aplicar um segmento avança a versão pelo número de comandos', () => {
-    const c = applyDemonstrationSegment(world, null, {
+    const c = applyDemonstrationSegment(world, SCENE_MODELS.world.script, null, {
       sessionId: 'a',
       segmentId: 'um',
       baseSequence: 0,
@@ -216,6 +216,43 @@ describe('o que vai e volta do servidor', () => {
     })
     expect(c.sequence).toBe(2)
     expect(c.session.step).toBe(0)
+  })
+
+  test('⚠️ o servidor reaplica o roteiro AUTORADO, não o do modelo', () => {
+    // Com um roteiro autoral de 1 passo e o do modelo com 2, usar o do modelo marcaria
+    // "assistido" no passo errado: a criança concluiria sem ter visto, ou nunca concluiria.
+    const autoral = [
+      {
+        id: 'unico',
+        caption: 'Só isto acontece.',
+        actions: [{ type: 'create' as const }],
+      },
+    ]
+    const c = applyDemonstrationSegment(world, autoral, null, {
+      sessionId: 'a',
+      segmentId: 'um',
+      baseSequence: 0,
+      commands: [{ type: 'start' }, { type: 'tick', seconds: 0.5 }],
+    })
+    // Um passo só: terminar esse passo termina a demonstração inteira.
+    expect(c.session.viewed).toBe(true)
+    expect(SCENE_MODELS.world.script.length).toBeGreaterThan(autoral.length)
+  })
+
+  test('⚠️ rever uma demonstração já concluída não a desconclui', () => {
+    const script = SCENE_MODELS.world.script
+    let s = stepDemonstration(world, script, initialDemonstration(world), { type: 'start' }).session
+    for (let i = 0; i < 400 && !s.viewed; i++) {
+      s = stepDemonstration(world, script, s, { type: 'tick', seconds: 0.1 }).session
+      if (s.ready && s.step < script.length - 1)
+        s = stepDemonstration(world, script, s, { type: 'next' }).session
+    }
+    expect(s.viewed).toBe(true)
+    // A criança clica em "assistir de novo": o bloco continua concluído.
+    const revendo = stepDemonstration(world, script, s, { type: 'start' }).session
+    expect(revendo.viewed).toBe(true)
+    expect(revendo.step).toBe(0)
+    expect(revendo.state.evidence.discoveries).toEqual([])
   })
 
   test('comando inválido dentro do segmento derruba o segmento inteiro', () => {

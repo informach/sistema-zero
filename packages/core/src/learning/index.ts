@@ -1,8 +1,5 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
-export * from './experience'
-export * from './exploration'
-export * from './exploration-model'
 export * from './gallery-delivery'
 export * from './legacy-layout'
 export * from './manifest-quiz'
@@ -11,7 +8,6 @@ export * from './quiz'
 export * from './requirements'
 export * from './section-progression'
 export * from './section-templates'
-export * from './simulation'
 export * from './video-watch'
 
 import {
@@ -119,9 +115,27 @@ export interface PublicInteractiveBlock extends Omit<InteractiveBlock, 'activity
   activity: PublicLearningActivity
   checkpoint?: Omit<LearningCheckpoint, 'correctChoiceId' | 'explanation'>
 }
+const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
+  demonstration: ['type', 'scene', 'script', 'instructionAudioUrl'],
+  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl'],
+  question: ['type'],
+  html: ['type', 'html'],
+}
+function publicActivity(activity: LearningActivity): LearningActivity {
+  const permitidos = PUBLIC_ACTIVITY_FIELDS[activity.type]
+  if (!permitidos) return { type: 'question' }
+  const cru = activity as unknown as Record<string, unknown>
+  const saida: Record<string, unknown> = {}
+  for (const campo of permitidos) if (cru[campo] !== undefined) saida[campo] = cru[campo]
+  return saida as unknown as LearningActivity
+}
+
 /** Answer keys stay on the server, including for custom HTML activities. */
 export function publicInteractiveBlock(block: InteractiveBlock): PublicInteractiveBlock {
-  const activity = block.activity
+  // ⚠️ Poda defensiva: a projeção roda sobre o conteúdo CRU do banco, sem passar pelo
+  // guard. Uma linha gravada antes desta reescrita pode carregar um gabarito (`solution`) —
+  // copiar a atividade inteira mandaria a resposta para o navegador da criança.
+  const activity = publicActivity(block.activity)
   return {
     kind: 'interactive',
     title: block.title,
@@ -339,12 +353,17 @@ export function evaluateLearning(
   if (a.type === 'question') {
     participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
     feedback = 'Escolha uma resposta antes de conferir.'
-  } else {
+  } else if (a.type === 'html') {
     participated = answers.participated === true
     verifiedBy = 'client'
     feedback = participated
       ? 'Exploração registrada.'
       : 'Conclua a exploração para registrar sua participação.'
+  } else {
+    // ⚠️ Forma desconhecida (um bloco gravado antes desta reescrita) NÃO conclui nada. Um
+    // `else` genérico aqui aceitaria um `{participated:true}` do cliente e daria o bloco por
+    // cumprido sem ninguém ter respondido coisa alguma.
+    feedback = 'Esta atividade precisa ser reconfigurada na autoria.'
   }
   let passed = participated
   if (passed && block.checkpoint) {
@@ -362,7 +381,9 @@ function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): Learnin
   const parts = answers.sceneCheckpoint
   if (a.type === 'demonstration') {
     const session = readDemonstrationSession(parts)
-    return evaluateDemonstration(session?.viewed ?? false, session !== null || parts === undefined)
+    // Sem nada guardado a criança ainda não abriu: não é evidência inválida, é ausência.
+    if (!session) return evaluateDemonstration(false, parts === undefined, false)
+    return evaluateDemonstration(session.viewed, true, true)
   }
   const session = readExperimentSession(parts)
   if (!session) return evaluateExperimentation(a.scene, initialScene(a), parts === undefined)

@@ -97,6 +97,37 @@ describe('learning contracts', () => {
     expect(publicInteractiveBlock(block).checkpoint).not.toHaveProperty('correctChoiceId')
     expect(isInteractiveBlock({ ...block, checkpoint: undefined })).toBe(false)
   })
+  test('⚠️ atividade de forma desconhecida não conclui com um "participei" do cliente', () => {
+    // Um bloco gravado antes desta reescrita (uma sequência, uma previsão) não tem como ser
+    // avaliado. Aceitar `{participated:true}` daria o bloco obrigatório por cumprido sem
+    // ninguém ter respondido nada.
+    const legado = { ...experimento, activity: { type: 'sequence' } } as unknown as InteractiveBlock
+    const r = evaluateLearning(legado, { participated: true })
+    expect(r.passed).toBe(false)
+    expect(r.participated).toBe(false)
+  })
+
+  test('⚠️ a projeção pública poda campo que não pertence à forma da atividade', () => {
+    // A projeção roda sobre o conteúdo CRU do banco, sem passar pelo guard: uma linha antiga
+    // pode carregar um gabarito, e copiá-la inteira mandaria a resposta para a criança.
+    const comGabarito = {
+      ...experimento,
+      activity: { type: 'experimentation', scene: 'world', solution: ['a', 'b'] },
+    } as unknown as InteractiveBlock
+    const publico = publicInteractiveBlock(comGabarito)
+    expect(publico.activity).not.toHaveProperty('solution')
+    expect(publico.activity).toMatchObject({ type: 'experimentation', scene: 'world' })
+  })
+
+  test('quem nunca abriu a demonstração não consta como participante', () => {
+    const demo = {
+      ...experimento,
+      activity: { type: 'demonstration', scene: 'world' },
+    } as InteractiveBlock
+    expect(evaluateLearning(demo, {}).participated).toBe(false)
+    expect(evaluateLearning(demo, {}).passed).toBe(false)
+  })
+
   test('untrusted frames cannot use another instance, oversized or invalid state', () => {
     expect(isLearningAnswers({ constructor: { nested: 'bad' } })).toBe(false)
     expect(isLearningAnswers({ value: Number.NaN })).toBe(false)
