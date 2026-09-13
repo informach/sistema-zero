@@ -83,11 +83,7 @@ for (let lesson = 1; lesson <= 13; lesson++) {
   )
   for (const block of interactions)
     if ('content' in block && block.content.kind === 'interactive') {
-      assert(
-        block.content.activity.type === 'exploration' &&
-          block.content.activity.version === 3 &&
-          block.content.activity.mode === 'explore',
-      )
+      assert(block.content.activity.type === 'experimentation')
     }
   results.push({
     lesson: slug,

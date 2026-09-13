@@ -321,7 +321,11 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     // Mas um bloco que TRAVA a conclusão (estúdio) na aula do certificado → 400.
     const studio = await createBlock(app, lessonIds[0], {
       kind: 'studio',
-      initialProject: { name: 'Atividade', files: { 'index.html': '<h1>Oi</h1>' } },
+      initialProject: {
+        formatVersion: 2,
+        name: 'Atividade',
+        files: { 'index.html': '<h1>Oi</h1>' },
+      },
     } as never)
     expect(studio.status).toBe(400)
     expect((await readJson(studio)).error.code).toBe('VALIDATION_ERROR')
@@ -339,7 +343,7 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
       sortOrder: 0,
       content: {
         kind: 'studio',
-        initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+        initialProject: { formatVersion: 2, name: 'Jogo', files: { 'index.html': '' } },
       },
     })
     const cert = await createBlock(app, lessonIds[1], { kind: 'certificate' })

@@ -1,27 +1,29 @@
-import * as Blockly from 'blockly/core'
-import type { BehaviorArea } from '../core/behaviorAreas'
+import { contractProvidesUserGesture, effectiveBodyExecution } from '../blockly/blockContracts'
 import {
-  areaForBlockType,
-  areasForBlockType,
-  contractProvidesUserGesture,
-  effectiveBodyExecution,
-  getBlockContract,
-} from './blockContracts'
-import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from './blocksStateVersion'
-import { collectFlatFromWorkspace, FRAME_BEHAVIOR } from './buildIR'
-import { VARIABLE_DECL_BLOCKS } from './fields/FieldNamePicker'
-import { migrateAsyncBlocks } from './migrateAsyncBlocks'
-import { migrateHTMLStructure } from './migrateHTMLStructure'
-import { migrateIfElseBlocks } from './migrateIfElse'
-import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
+  BEHAVIOR_AREAS_STATE_KEY,
+  BEHAVIOR_AREAS_STATE_VERSION,
+  markLifecycleBlocksState,
+} from '../blockly/blocksStateVersion'
 import {
   BEHAVIOR_AREA_BY_FRAME,
   PROJECT_AREA_FRAME_TYPES,
   PROJECT_AREA_FRAMES,
-} from './projectAreas'
-import { ensureBlocklyInitialized } from './setup'
-import { buildWorkspaceStateFromIR } from './workspaceState'
+} from '../blockly/projectAreas'
+import type { BehaviorArea } from '../core/behaviorAreas'
+import { ProjectDocumentError } from '../core/projectDocument'
+import {
+  areaForBlockType,
+  areasForBlockType,
+  getBlockContract,
+  VARIABLE_DECL_BLOCKS,
+} from './legacyContracts'
+import { migrateAsyncBlocks } from './migrateAsyncBlocks'
+import { migrateHTMLStructure } from './migrateHTMLStructure'
+import { migrateIfElseBlocks } from './migrateIfElse'
+import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
+import { sortLegacyTopBlocks } from './readingOrder'
 
+const FRAME_BEHAVIOR = 'sz_frame_behavior'
 const FRAME_TYPES = new Set<string>([...PROJECT_AREA_FRAME_TYPES, FRAME_BEHAVIOR])
 const CURRENT_FRAME_TYPES = PROJECT_AREA_FRAME_TYPES
 const START_WRAPPER_BLOCK_TYPES = new Set([
@@ -45,36 +47,12 @@ interface SerializedBlock {
   [key: string]: unknown
 }
 
-type LifecycleVersionedState = Record<string, unknown> & {
-  [BEHAVIOR_AREAS_STATE_KEY]: typeof BEHAVIOR_AREAS_STATE_VERSION
-}
-
-export function markLifecycleBlocksState<T>(state: T): T | (T & LifecycleVersionedState) {
-  if (typeof state !== 'object' || state === null || Array.isArray(state)) return state
-  const record = state as Record<string, unknown>
-  if (record[BEHAVIOR_AREAS_STATE_KEY] === BEHAVIOR_AREAS_STATE_VERSION) return state
-  return {
-    ...record,
-    [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION,
-  } as T & LifecycleVersionedState
-}
-
 function hasCurrentLifecycleVersion(state: unknown): boolean {
   return (
     typeof state === 'object' &&
     state !== null &&
     !Array.isArray(state) &&
     (state as Record<string, unknown>)[BEHAVIOR_AREAS_STATE_KEY] === BEHAVIOR_AREAS_STATE_VERSION
-  )
-}
-
-/** O `blocksState` serializado já tem algum frame (container) no topo? */
-export function blocksStateHasFrame(state: unknown): boolean {
-  const blocks = (state as { blocks?: { blocks?: Array<{ type?: string }> } } | null | undefined)
-    ?.blocks?.blocks
-  return (
-    Array.isArray(blocks) &&
-    blocks.some((b) => typeof b?.type === 'string' && FRAME_TYPES.has(b.type))
   )
 }
 
@@ -460,7 +438,8 @@ function migrateLooseTopBlocks(state: unknown): unknown {
   }
   let changed = false
 
-  for (const top of tops) {
+  const ordered = tops.some((top) => FRAME_TYPES.has(top.type)) ? tops : sortLegacyTopBlocks(tops)
+  for (const top of ordered) {
     if (FRAME_TYPES.has(top.type)) {
       kept.push(top)
       continue
@@ -539,24 +518,8 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
   return markLifecycleBlocksState(cloned)
 }
 
-/**
- * MIGRAÇÃO transparente para o modelo CONTAINER (frames). Um projeto LEGADO
- * (blocos soltos, sem Áreas do projeto) é reemitido nas áreas necessárias:
- * 🧱 Estrutura, 🎨 Aparência, 🧩 Meus moldes, ⚙️ Ao iniciar, ⚡ Quando acontecer
- * e 🔁 Enquanto estiver rodando, sempre **preservando a saída**. Áreas antigas
- * duplicadas viram rascunhos soltos para
- * não executar duas vezes nem apagar o trabalho da criança.
- *
- * Carrega o estado num workspace HEADLESS de descarte, deriva a IR PLANA (a mesma
- * coleta do modelo antigo, `collectFlatFromWorkspace`) e re-emite com
- * `buildWorkspaceStateFromIR` (que embrulha tudo nos frames). Reusa o round-trip
- * blocos→IR→blocos já confiável, então o programa da criança não muda.
- *
- * ⚠️ Os blocos de extensão precisam estar registrados ANTES (o `BlocklyPanel`
- * chama `reregisterInstalledExtensions` antes do load) — senão o headless dropa
- * o tipo e a migração cairia no `catch`.
- */
-export function normalizeBlocksStateToFrames(state: unknown): unknown {
+/** Converte a estrutura serializada com os contratos históricos, sem carregar o Blockly. */
+export function normalizeLegacyBlocksStateToFrames(state: unknown): unknown {
   // Antes de tudo: migra campos que viraram soquetes de valor (`field_*` → `input_value`),
   // preservando o valor salvo pela criança. Roda SEMPRE — inclusive em projetos já
   // framados (o campo legado pode estar dentro de um frame). Devolve a MESMA referência
@@ -583,7 +546,6 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
     preserveTopLevelDrafts: hasCurrentLifecycleVersion(premigrated),
   })
   if (!migrated) return migrated
-  ensureBlocklyInitialized()
   if (hasCurrentLifecycleVersion(migrated)) return migrated
   // Encaminha primeiro somente os blocos que já estavam soltos. A conversão da
   // área legada pode criar rascunhos a partir de áreas duplicadas; eles devem
@@ -597,14 +559,11 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   if (topBlocks?.some((block) => CURRENT_FRAME_TYPES.has(block.type))) return withCurrentPlacements
   const blocks = (withCurrentPlacements as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
   if (!Array.isArray(blocks) || blocks.length === 0) return migrated
-  const scratch = new Blockly.Workspace()
-  try {
-    Blockly.serialization.workspaces.load(withCurrentPlacements as Record<string, unknown>, scratch)
-    return markLifecycleBlocksState(buildWorkspaceStateFromIR(collectFlatFromWorkspace(scratch)))
-  } catch (e) {
-    console.warn('Migração de blocos para frames falhou; mantendo o estado original:', e)
-    return migrated
-  } finally {
-    scratch.dispose()
-  }
+  throw new ProjectDocumentError(
+    'migration-pending',
+    'A organização dos blocos deste projeto precisa de revisão antes da conversão. Tipos encontrados: ' +
+      (serializedTopBlocks(state) ?? []).map((block) => block.type).join(', '),
+  )
 }
+
+export { blocksStateHasFrame, markLifecycleBlocksState } from '../blockly/blocksStateVersion'

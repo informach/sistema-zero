@@ -1,9 +1,9 @@
 import type * as Blockly from 'blockly/core'
 import type { ProjectAreaKind } from '../core/behaviorAreas'
-import { FRAME_BEHAVIOR_LEGACY, PROJECT_AREA_BY_FRAME } from './projectAreas'
+import { PROJECT_AREA_BY_FRAME } from './projectAreas'
 
 function areaKind(type: string): ProjectAreaKind | undefined {
-  return PROJECT_AREA_BY_FRAME.get(type) ?? (type === FRAME_BEHAVIOR_LEGACY ? 'start' : undefined)
+  return PROJECT_AREA_BY_FRAME.get(type)
 }
 
 export interface ProjectAreaGuardResult {

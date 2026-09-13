@@ -150,9 +150,12 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Você perdeu!", "Brasinha ficou sem vida. Use a Poção na hora certa e tente de novo!", "Aperte Enter para batalhar de novo", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.afterSeconds("abertura-da-batalha", 2)) {
   aberturaPronta = 1;
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("liberar-comandos", 0.5)) {
   if (SZGame2D.sceneIs("jogando")) {
     if (aberturaPronta == 1) {
@@ -163,6 +166,8 @@ if (SZGame2D.everySeconds("liberar-comandos", 0.5)) {
     }
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("vez-do-folhito", 1.5)) {
   if (SZGame2D.sceneIs("jogando")) {
     if (turno == "inimigo") {
@@ -181,6 +186,7 @@ if (SZGame2D.everySeconds("vez-do-folhito", 1.5)) {
     }
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

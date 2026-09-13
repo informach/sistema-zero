@@ -221,6 +221,8 @@ export function compileExpr(
       objectKey,
     })
   }
+  if (expr.type === 'g2d:circleTouches')
+    return `SZGame2D.circleCollides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
   if (isTextSpriteExpression(expr))
     return textSpriteExpressionToCode(
       expr,

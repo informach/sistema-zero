@@ -51,8 +51,8 @@ describe('Exemplo Chuva de Meteoros — drift contra o parser real', () => {
       'g2d:randomBetween',
       'g2d:randomX',
       'g2d:centerX', // o laser nasce no centro da nave
-      'g2d:playShoot',
-      'g2d:playExplosion',
+      'g2d:playFx',
+      'g2d:playFx',
       'g2d:playMusic',
       'g2d:playFx',
       'g2d:setScene',

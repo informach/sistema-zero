@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import {
   type CreationPartRef,
@@ -272,6 +273,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const formatVersion = input.formatVersion ?? 1
       // Sob o mesmo lock da reserva: uma aba velha não cancela um upload novo em voo.
       const requiredVersion = Math.max(
+        input.tool === 'studio' ? STUDIO_PROJECT_FORMAT_VERSION : 1,
         existing?.formatVersion ?? 1,
         existing?.pendingFormatVersion ?? 1,
       )
@@ -402,6 +404,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     revision: number
     storageRef: string
     uploadedParts?: readonly string[]
+    verifiedPartHashes?: readonly string[]
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -478,16 +481,26 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // NÃO morre: um retry honesto pode passar.
       const formatVersion = row.pendingFormatVersion ?? 1
       // Defesa contra reservas legadas de um deploy misto; o corpo do commit não escolhe formato.
-      if (formatVersion < row.formatVersion) {
+      const requiredVersion = Math.max(
+        row.formatVersion,
+        input.tool === 'studio' ? STUDIO_PROJECT_FORMAT_VERSION : 1,
+      )
+      if (formatVersion < requiredVersion) {
         await tx
           .update(creations)
           .set(clearPending())
           .where(whereItem(input.userId, input.tool, input.itemId))
-        return { ok: false, reason: 'client-outdated', requiredVersion: row.formatVersion }
+        return { ok: false, reason: 'client-outdated', requiredVersion }
       }
       const committed = row.deletedAt === null && row.storageRef ? sanitizeParts(row.parts) : []
       const committedSet = new Set(committed.map((part) => part.hash))
       const pendingParts = sanitizeParts(row.pendingParts)
+      if (
+        input.verifiedPartHashes &&
+        (input.verifiedPartHashes.length !== pendingParts.length ||
+          pendingParts.some((part) => !input.verifiedPartHashes?.includes(part.hash)))
+      )
+        return { ok: false, reason: 'manifest-mismatch' }
       const uploaded = new Set(input.uploadedParts ?? [])
       const missing = pendingParts
         .filter((part) => !committedSet.has(part.hash) && !uploaded.has(part.hash))

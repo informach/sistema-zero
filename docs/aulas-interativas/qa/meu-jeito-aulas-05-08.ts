@@ -301,7 +301,7 @@ export const lateRecipes: Record<number, Recipe> = {
         focus: 'Carregar folha-nave da imagem nave com quadros 32 × 32 no Ao iniciar.',
         reason:
           'Preparar e animar são ações distintas; uma folha carregada sozinha não troca o desenho do sprite.',
-        say: 'Em Jogo 2D → Animação, coloque Carregar folha de quadros logo abaixo do Criar sprite nave. Digite folha-nave e escolha imagem nave. Os dois campos de tamanho ficam em 32. O bloco de animar virá em seguida.',
+        say: 'Em Jogo 2D → Sprites → Animação, coloque Carregar folha de quadros logo abaixo do Criar sprite nave. Digite folha-nave e escolha imagem nave. Os dois campos de tamanho ficam em 32. O bloco de animar virá em seguida.',
         edit: 'Manter os campos e a razão do 32. Esclarecer nomes de recurso/imagem/variável: imagem nave pode ser usada pelo sprite nave; folha recebe outro identificador para não conflitar no programa.',
         visual:
           'Nome digitado folha-nave, imagem escolhida e tamanhos 32/32. Preparar a folha uma vez no Ao iniciar, sem mudá-la para o loop.',

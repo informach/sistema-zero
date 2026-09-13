@@ -1,6 +1,5 @@
 import { useContext } from 'react'
 import { createTranslator, type Locale, type StudioProBuildLimits } from '#core'
-import { createLocalPersistenceAdapter } from '../persistence/local'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import { createChecksStore } from './checksStore'
@@ -9,7 +8,12 @@ import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
-import { createProjectStore, type StudioLimits, useProjectStore } from './projectStore'
+import {
+  createLocalPersistenceAdapter,
+  createProjectStore,
+  type StudioLimits,
+  useProjectStore,
+} from './projectStore'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'

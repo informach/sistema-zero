@@ -657,7 +657,7 @@ ${gameKitShellRuntime}
     if (activeMap && typeof activeMap.draw === 'function') {
       try { activeMap.draw(ctx2d); }
       catch (e) { warnOnce('mapdraw:' + rpg.currentMap, 'erro ao desenhar o mapa "' + rpg.currentMap + '": ' + e); }
-      if (activeMap.empty) drawEmptyMapNotice(rpg.currentMap);
+      if (activeMap.empty && !drawHooks.length) drawEmptyMapNotice(rpg.currentMap);
     }
     drawCampaign();
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
@@ -4144,21 +4144,23 @@ ${towerDefenseRuntime}
     ctx2d.fillText('Use formas, um mapa do Pinta ou uma imagem importada.', config.w / 2, config.h / 2 + 22);
     ctx2d.restore();
   }
-  function rpgCreateMap(name, cols, rows, draw, hasDrawing) {
+  /** bounds escolhe bordas físicas ou espaço aberto; o desenho também pode usar onDraw. */
+  function rpgCreateMap(name, cols, rows, draw, hasDrawing, bounds) {
     var k = text(name, '');
+    var unbounded = bounds === 'unbounded';
+    if (bounds !== undefined && bounds !== 'bounded' && !unbounded) { warn('revise os limites do mapa'); return; }
     var requestedCols = Math.round(num(cols, 0));
     var requestedRows = Math.round(num(rows, 0));
-    var c = Math.min(MAX_GRID_SIDE, requestedCols);
-    var r = Math.min(MAX_GRID_SIDE, requestedRows);
+    var c = unbounded ? 0 : Math.min(MAX_GRID_SIDE, requestedCols);
+    var r = unbounded ? 0 : Math.min(MAX_GRID_SIDE, requestedRows);
     if (!k) { warn('"Criar o mapa" precisa de um nome'); return; }
-    if (requestedCols <= 0 || requestedRows <= 0) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
-    if (requestedCols > MAX_GRID_SIDE || requestedRows > MAX_GRID_SIDE) {
+    if (!unbounded && (requestedCols <= 0 || requestedRows <= 0)) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
+    if (!unbounded && (requestedCols > MAX_GRID_SIDE || requestedRows > MAX_GRID_SIDE)) {
       warnOnce('rpgmap:limit', 'o mapa foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' células para o jogo continuar responsivo');
     }
     if (typeof draw !== 'function') { warn('o mapa "' + k + '" precisa de um corpo de desenho'); return; }
     if (rpg.maps[k]) { warn('o mapa "' + k + '" foi criado mais de uma vez — usando a primeira criação'); return; }
     var empty = hasDrawing === false;
-    if (empty) warn('o mapa "' + k + '" foi criado sem desenho — adicione formas, um mapa do Pinta ou uma imagem');
     rpg.maps[k] = { cols: c, rows: r, draw: draw, empty: empty };
     rpg.mapOrder.push(k);
   }
@@ -4169,6 +4171,9 @@ ${towerDefenseRuntime}
     rpg.mapEnter[k].push(fn);
   }
   function rpgValidateMapEvents() {
+    if (!drawHooks.length) for (var name in rpg.maps) {
+      if (rpg.maps[name].empty) warnOnce('emptymap:' + name, 'o mapa "' + name + '" foi criado sem desenho — adicione formas, um mapa do Pinta ou uma imagem');
+    }
     for (var k in rpg.mapEnter) {
       if (!rpg.maps[k]) warnOnce('mapenter:' + k, 'há um evento de entrada para o mapa "' + k + '", mas ele não foi criado');
     }

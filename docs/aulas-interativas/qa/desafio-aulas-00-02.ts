@@ -410,7 +410,7 @@ export const earlyRecipes: Record<number, Recipe> = {
         'Parte 4.',
         'build',
         'Criar velocidade vertical e som no evento.',
-        'No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Kit espaço, pegue Tocar som de tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.',
+        'No Criar tiro, deixe vx 0 e vy menos 9. Em Jogo 2D, Som, pegue Tocar efeito, escolha tiro e coloque logo abaixo, dentro do evento. Assim o som acontece quando você dispara, e não a cada quadro.',
         { checks: k.disparo },
       ),
       step(

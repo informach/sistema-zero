@@ -36,7 +36,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 1. Passo 1: criar a caixinha dos pontos.
 
-**Montagem:** Preservar a caixa e o valor inicial. Não acrescentar um laboratório que repita criar versus desenhar da aula 1.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a caixa e o valor inicial. Não acrescentar um laboratório que repita criar versus desenhar da aula 1.
 
 **Na tela:** **Na tela:** Programação › Variáveis, arrastar "Criar variável __ com valor __" para dentro do Ao iniciar, logo ACIMA do "Ir para a tela inicio"; nome "pontos", valor 0.
 
@@ -60,9 +60,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 2. Passo 2: mostrar o placar.
 
-**Montagem:** Reaproveitar o encaixe dentro do Se e a troca para cor escura. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. O próximo clipe retoma a comparação com a imagem já montada.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar o encaixe dentro do Se e a troca para cor escura. Corrigir a referência ao medidor: ele foi retirado na aula 6, não na 7. O próximo clipe retoma a comparação com a imagem já montada.
 
-**Na tela:** **Na tela:** Jogo 2D › Placar e HUD, arrastar "Mostrar placar" para dentro do "Se a tela atual é jogando", lá embaixo de tudo. O texto já nasce "Pontos:". Por cima do valor, arrastar "valor da variável" (Programação › Valores) e escolher pontos. Conferir que o x, o y e o tamanho já vêm em 12, 30 e 24, sem mexer em nenhum. **Rodar e mostrar o placar branco quase sumindo no céu claro**, e só então trocar a cor de branco para azul escuro e rodar de novo. A dor do contraste é o ponto desta parte, então filmar as duas rodadas.
+**Na tela:** **Na tela:** Jogo 2D › Vida e placar, arrastar "Mostrar placar" para dentro do "Se a tela atual é jogando", lá embaixo de tudo. O texto já nasce "Pontos:". Por cima do valor, arrastar "valor da variável" (Programação › Valores) e escolher pontos. Conferir que o x, o y e o tamanho já vêm em 12, 30 e 24, sem mexer em nenhum. **Rodar e mostrar o placar branco quase sumindo no céu claro**, e só então trocar a cor de branco para azul escuro e rodar de novo. A dor do contraste é o ponto desta parte, então filmar as duas rodadas.
 
 **Trecho original selecionado, antes da edição:** E agora um reencontro: lembra daquele bloco que a gente pegou emprestado na Aula 6, pra ser o medidor de cactos, e aposentou no comecinho da Aula 7? Pois é, ele volta agora. E dessa vez é pra ficar. Na categoria Jogo 2D, subcategoria Placar e HUD, pega o bloco Mostrar placar. Clica, segura e arrasta pra dentro do Se a tela atual é jogando, soltando lá embaixo de tudo, depois do Tirar do grupo cactos quem sair da tela. Ele vai dentro do Se porque o placar é coisa de quem está jogando: não precisa aparecer no menu. Ele tem seis campos. O primeiro é o textinho, e já vem escrito Pontos:, que é o que a gente quer, então deixa como veio. O segundo é o valor. Ele vem com um número solto, mas a gente não quer um número fixo: a gente quer o que está dentro da caixinha. Então, na categoria Programação, subcategoria Valores, pega o bloco valor da variável e arrasta ele por cima do número que já está ali. Não tem buraquinho vazio pra encaixar: é por cima mesmo. Depois escolhe pontos nele. Esse bloco é o espião da caixinha: ele vai lá, olha o que tem dentro, e traz o número. Agora os números de posição, e aqui é fácil: eles já vêm bons. O x vem em 12 e o y em 30, que põem o placar lá no cantinho de cima, do lado esquerdo. E o tamanho já vem em 24. Confere os três e deixa como estão. Clica na área do jogo, começa uma partida e tenta ler o placar. E aí, conseguiu? Eu quase não consigo. Olha lá no cantinho: o Pontos: 0 está escrito, sim, mas ele nasceu branco, e o nosso céu é azul clarinho. Branco em cima de claro quase some. Isso acontece direto quando a gente escreve alguma coisa na tela, e tem conserto fácil: falta o último campo do bloco, que é a cor. Clica no quadradinho de cor e escolhe uma cor escura. Eu vou de azul bem escuro, quase preto. Olha de novo. Agora sim, dá pra ler de longe: Pontos: 0. E lembra disso: não basta o texto estar na tela, ele precisa dar pra ler. Fundo claro pede letra escura, fundo escuro pede letra clara. E olha o nome dessa subcategoria: Placar e HUD. HUD é como os criadores de jogos chamam tudo aquilo que fica desenhado por cima do jogo pra te informar: o placar, a barra de vida, o mapinha. Você acabou de montar o HUD do seu jogo. Passo 2 feito. Agora o terceiro, e nesse quem vai pensar é você.
 
@@ -84,7 +84,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 2. Passo 2: mostrar o placar.
 
-**Montagem:** Separar a comparação de contraste da montagem. No trecho de construção, orientar a escolher o tom escuro demonstrado.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Separar a comparação de contraste da montagem. No trecho de construção, orientar a escolher o tom escuro demonstrado.
 
 **Na tela:** Mostrar o mesmo placar sobre o mesmo céu, uma versão clara e outra escura. Incluir a palavra Pontos; não depender apenas de cor para identificar as versões.
 
@@ -116,9 +116,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 3. Passo 3: fazer o número subir.
 
-**Montagem:** Preservar o relógio irmão, não aninhado. Corrigir referências históricas do Se para aula 7. Retirar testes livres com intervalos 0,5 e 3.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o relógio irmão, não aninhado. Corrigir referências históricas do Se para aula 7. Retirar testes livres com intervalos 0,5 e 3.
 
-**Na tela:** **Na tela:** primeiro a pausa; depois a resolução: Jogo 2D › Tempo e repetição, um "A cada __ segundos" novo no Enquanto estiver rodando, ao lado dos outros, com 1; dentro dele, um "Se" (Programação › Lógica & Se) com a comparação de fábrica retirada e, no lugar dela, "a tela atual é __ ?" (Jogo 2D › Telas e cenas) em "jogando"; dentro do Se, "Somar 1 em variável pontos" (Programação › Variáveis).
+**Na tela:** **Na tela:** primeiro a pausa; depois a resolução: Jogo 2D › Tempo › Quadros e intervalos, um "A cada __ segundos" novo no Enquanto estiver rodando, ao lado dos outros, com 1; dentro dele, um "Se" (Programação › Lógica & Se) com a comparação de fábrica retirada e, no lugar dela, "a tela atual é __ ?" (Jogo 2D › Jogo e telas › Telas e partida) em "jogando"; dentro do Se, "Somar 1 em variável pontos" (Programação › Variáveis).
 
 **Trecho original selecionado, antes da edição:** Agora eu vou fazer diferente. Em vez de eu te mostrar, você vai me dizer. A gente quer que o jogador ganhe 1 ponto por segundo que sobreviver. E o bloco que faz isso chama Somar em variável, que fica na categoria Programação, subcategoria Variáveis. A pergunta é: onde esse bloco tem que ir? E a resposta está na Aula 5, quando a gente tentou criar cacto no lugar errado e virou avalanche. Repara: se a gente encaixasse o Somar 1 direto no A cada quadro do jogo, ia ganhar 60 pontos por segundo, porque o quadro roda 60 vezes por segundo. É a mesma armadilha da avalanche. Então o que a gente precisa é de um relógio. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o bloco A cada tantos segundos. Clica, segura e solta dentro do Enquanto estiver rodando, ao lado do A cada quadro do jogo e do relógio de 1.4 que já moram lá. Ao lado, e não dentro deles. Agora o seu motor tem dois relógios vizinhos, cada um com o seu ritmo. Nesse novo, põe 1 segundo. E tem mais uma coisa, que você fez três vezes na Aula 7: todo relógio precisa de um Se a tela atual é jogando por dentro, senão o ponto ia subir até no menu, antes de começar. Essa é aquela manobra que a gente batizou lá na Aula 7 de embrulhar no Se, e são sempre os mesmos quatro movimentos. Vamos juntos. O primeiro movimento: na categoria Programação, subcategoria Lógica e Se, pega o bloco Se. No segundo, repara que ele vem com uma comparação de fábrica lá dentro, e hoje ela não serve, então arrasta ela pra fora e joga na lixeira. No terceiro, vai na categoria Jogo 2D, subcategoria Telas e cenas, pega a pergunta a tela atual é e encaixa no lugar que ficou vazio, escolhendo jogando na listinha. E no quarto, solta esse Se dentro do relógio novo, porque é ele que vai embrulhar o que vier agora. Agora o bloco Somar em variável, lá na categoria Programação, subcategoria Variáveis. Encaixa ele dentro do Se. Ele tem dois campos: o número já vem em 1, que é o que a gente quer, então deixa. E na variável escolhe pontos. Clica na área do jogo e joga. Olha o placar subindo, um ponto por segundo! E olha o tamanho do que você acabou de montar: não foi repetir um passo, foi usar uma peça que você aprendeu seis aulas atrás numa situação diferente. É exatamente isso que quem cria jogo faz o dia inteiro. O número já sobe. Agora o quarto passo, que é um capricho na tela de fim.
 
@@ -140,7 +140,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 4. Passo 4: contar os pontos na tela de fim.
 
-**Montagem:** Reaproveitar a explicação da peça de texto da aula 8; separar conceito e gesto de montagem.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a explicação da peça de texto da aula 8; separar conceito e gesto de montagem.
 
 **Na tela:** Mostrar três cartões alinhados, depois o encaixe no subtítulo. Trocar apenas o número 3 por 7. Destacar espaços antes/depois do número e o botão + usado três vezes.
 
@@ -158,7 +158,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-11-corre-dino.md → Parte 4. Passo 4: contar os pontos na tela de fim.
 
-**Montagem:** Manter os três cliques em +, a substituição dos zeros, os espaços e o uso de − para retirar um encaixe extra. Não exigir um resultado de 12 pontos: esse é só o exemplo gravado.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter os três cliques em +, a substituição dos zeros, os espaços e o uso de − para retirar um encaixe extra. Não exigir um resultado de 12 pontos: esse é só o exemplo gravado.
 
 **Na tela:** **Na tela:** no "Mostrar tela" da tela fim: arrastar o "juntar texto" (Programação › Valores) por cima do subtítulo; dar zoom no bloco vazio e clicar três vezes no "+", mostrando os espaços nascendo com o "0" de sombra; encaixar, em ordem, "texto Você fez", "valor da variável pontos" e "texto pontos. Tente bater essa marca!".
 
@@ -213,3 +213,55 @@ A conta matemática e a composição de texto têm funções diferentes.
 O professor acompanha os objetivos e a entrega, confere o comportamento descrito acima e intervém no ponto da dificuldade. A checagem estrutural verifica a montagem; não equivale a uma prova automática de jogabilidade, contraste ou áudio.
 
 Fonte íntegra conferida por SHA-256: b30f94be234e9fb0da4db2fd54da6d3d070b01e51b7b5c0569f6db7568006c6e. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D › Movimento › Velocidade e gravidade | Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite. |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Controlar o dinossauro , força do pulo | Jogo 2D › Kits prontos › Dino | Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro". |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Criar grupo de sprites | Jogo 2D › Grupos › Criar e percorrer | Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas). |
+| Desenhar o grupo | Jogo 2D › Grupos › Desenho e ordem | Desenha todos os sprites do grupo. Use a cada quadro, depois de mover. |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D › Vida e placar › Indicadores e texto na tela | Escreve "rótulo valor" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| A cada segundos | Jogo 2D › Tempo › Quadros e intervalos | Roda o “fazer” a cada N segundos. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”. |
+| Soltar explosão no sprite cor | Jogo 2D › Desenho e efeitos › Partículas | Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite. |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama. |
+| Quando apertar qualquer tecla ou tocar na tela | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro quando a criança aperta qualquer tecla ou toca na tela. É o "aperte qualquer coisa para começar" das telas de início. Segurar a tecla dispara uma vez só. |
+| Quando o sprite pular | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro. |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D › Colisões › Encostar e bloquear | Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o "fazer" com aquele sprite. Use dentro do "a cada quadro". |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D › Grupos › Participação e limpeza | Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo. |
+| Reiniciar o jogo | Jogo 2D › Jogo e telas › Telas e partida | Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto. |
+| o estado do jogo é ? | Jogo 2D › Jogo e telas › Telas e partida | Verdadeiro se o jogo está naquela tela. Use dentro de um "se". |
+| Usar área de colisão de % do tamanho para o sprite | Jogo 2D › Colisões › Área de contato | Muda o tamanho da área de colisão do sprite: menor que 100% = colisão mais justa para DANO; maior = mais fácil de PEGAR (moedas). Vale para as perguntas de encostar; "impedir de atravessar" continua usando o tamanho cheio. Veja a área real com "Mostrar a caixa de colisão". |
+| Mudar o estado do jogo para | Jogo 2D › Jogo e telas › Telas e partida | Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| Tremer a tela com intensidade | Jogo 2D › Desenho e efeitos › Efeitos | Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão. |
+| Mostrar tela com título subtítulo dica fundo | Jogo 2D › Jogo e telas › Telas e partida | Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota. |
+| No grupo criar obstáculo em x tamanho com vx | Jogo 2D › Kits prontos › Dino | Cria um obstáculo desenhado e coloca no grupo. Cacto e pedra nascem no chão (pule por cima); o pássaro vem no alto (abaixe por baixo). Ligue o x na borda direita e um vx negativo para ele vir vindo. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D › Grupos › Movimento | Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro. |
+| Condição se, senão se e senão | Programação › ❓ Lógica & Se | Executa o "então" quando a condição for verdadeira. Use + para juntar "senão se" e "senão". |
+| Criar variável com valor | Programação › 🏷️ Variáveis | Cria uma variável e guarda nela um valor: número, conta, aleatório, etc. |
+| Somar em variável | Programação › 🏷️ Variáveis | Soma ou tira uma quantidade do valor atual de uma variável. |
+| juntar texto | Programação › 🔣 Valores | Junta vários pedaços (texto fixo e valores) num só texto. Use + para adicionar pedaços. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+| texto | Programação › 🔣 Valores | Um valor de texto. |
+| valor da variável | Programação › 🔣 Valores | Usa o conteúdo de uma variável já criada como valor. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

@@ -38,6 +38,7 @@ test.each([
   const content = {
     ...studioSettings(day),
     initialProject: {
+      formatVersion: 2,
       name: 'Nave contra Asteroides',
       files: {},
       installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],

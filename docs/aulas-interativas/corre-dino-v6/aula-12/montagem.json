@@ -9,11 +9,11 @@
       "sourceSection": "Abertura",
       "entry": "Oi! Antes de começar, joga o seu jogo umas cinco ou seis vezes seguidas, prestando atenção numa cois",
       "exit": ". No terceiro, sorteia a velocidade dele. E no quarto, você testa. Então bora começar pelo primeiro.",
-      "edit": "Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.",
       "narration": "Oi! Antes de começar, joga o seu jogo umas cinco ou seis vezes seguidas, prestando atenção numa coisa só: o ritmo dos cactos. Pode ir, que eu jogo aqui junto com você. Percebeu? Os cactos vêm sempre no mesmo compasso. Tum... tum... tum... igual um relógio. E depois de umas partidas, você já sabe a hora exata de apertar o espaço. Nem precisa mais olhar direito, o seu dedo já decorou. E quando isso acontece, o jogo vira uma decoreba. Perde a graça, porque não sobrou surpresa nenhuma. Agora pensa nos jogos que você joga um tempão sem cansar: o segredo deles é esse, eles nunca são exatamente iguais. Sempre tem uma variaçãozinha que te obriga a prestar atenção. Então é isso que a gente põe no seu jogo hoje, e no fim da aula duas partidas suas nunca mais vão ser iguais. E pra chegar lá, a gente vai passar por quatro passos. No primeiro, você entende o problema direito. No segundo, a gente sorteia o lugar onde o cacto nasce. No terceiro, sorteia a velocidade dele. E no quarto, você testa. Então bora começar pelo primeiro.",
       "visual": "**Na tela:** o jogo da Aula 11 rodando por um bom tempo, mostrando os cactos chegando em intervalos idênticos, como um metrônomo.",
       "newNarration": "Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     },
@@ -23,11 +23,11 @@
       "sourceSection": "Parte 1. Passo 1: entender por que está sempre igual",
       "entry": "Antes de consertar, bora entender. Abre aí o seu bloco de criar o cacto e olha os números dele. O x ",
       "exit": "ue vem. Passo 1 feito, e agora você já sabe o que está deixando o seu jogo previsível. Bora sortear.",
-      "edit": "Manter o padrão e os números destacados. Não prometer que sorteio garante uma partida sempre diferente de todas as anteriores.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter o padrão e os números destacados. Não prometer que sorteio garante uma partida sempre diferente de todas as anteriores.",
       "narration": "Antes de consertar, bora entender. Abre aí o seu bloco de criar o cacto e olha os números dele. O x está em 560. Sempre 560. Todo cacto nasce exatamente no mesmo lugar. O vx está em menos 5. Sempre menos 5. Todo cacto anda exatamente na mesma velocidade. E o relógio está em 1.4. Sempre 1.4. Todo cacto nasce exatamente no mesmo tempo depois do anterior. Aproveita e confere esses dois comigo, porque eles são os números do nosso jogo e a última aula parte deles: o vx em menos 5 e o relógio em 1.4. Se algum estiver diferente, ajusta agora, que é rapidinho. Junta as três coisas: mesmo lugar, mesma velocidade, mesmo tempo. É impossível não ficar igual. O jogo está fazendo certinho o que você mandou, e o que você mandou é sempre a mesma coisa. Agora, como é que a gente faz um computador fazer uma coisa diferente a cada vez? Ele é uma máquina, ele faz exatamente o que a gente manda... A gente manda ele sortear! É isso: em vez de dar um número pronto, a gente dá uma faixa e deixa ele tirar um número de dentro dela, na hora. Igual tirar papelzinho de um saquinho. E aí o jogo fica imprevisível, que é a palavra chique pra dizer que ninguém consegue adivinhar o que vem. Passo 1 feito, e agora você já sabe o que está deixando o seu jogo previsível. Bora sortear.",
       "visual": "**Na tela:** abrir o bloco de criar cacto e apontar cada número fixo: x 560, tamanho 44, vx -5; e o relógio em 1.4.",
       "newNarration": "O relógio, o x e a velocidade continuam iguais. Observe dois trechos do mesmo padrão; vamos alterar uma propriedade por vez.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     },
@@ -37,11 +37,11 @@
       "sourceSection": "Parte 2. Passo 2: sortear o lugar do cacto",
       "entry": "Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um número de tanto a tanto. Clica nel",
       "exit": " mudou. Passo 2 feito, com o primeiro sorteio no lugar. O terceiro é o outro sorteio, na velocidade.",
-      "edit": "Preservar o encaixe em x e a faixa externa. Explicar que muda o tempo de chegada até o Dino, mesmo com o mesmo relógio de nascimento.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o encaixe em x e a faixa externa. Explicar que muda o tempo de chegada até o Dino, mesmo com o mesmo relógio de nascimento.",
       "narration": "Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um número de tanto a tanto. Clica nele, segura e arrasta por cima do x do bloco de criar cacto, aquele 560. Igualzinho você fez com o valor da variável na Aula 11: o bloco novo toma o lugar do número, não tem buraquinho vazio. Ele tem dois campos, e vêm com 1 e 6, que é a faixa de um dadinho. Troca por 500 e 560. Agora cada cacto vai nascer num lugar sorteado entre 500 e 560. Todos continuam nascendo fora da tela, que é a nossa regra de sempre, mas uns nascem mais pertinho da beirada e outros mais longe. Clica na área do jogo e joga um pouco. Repara: agora tem cacto que chega rapidinho depois do outro, e tem cacto que demora mais. O espaço entre eles mudou, e aí já não dá mais pra jogar no automático: você tem que olhar de verdade. E repara numa coisa esperta: a gente nem mexeu no relógio. Ele continua batendo no mesmo compasso de antes, certinho. Mas como o cacto nasce mais longe ou mais perto, ele demora mais ou menos pra chegar no dino. Um numerozinho sorteado, e o ritmo inteiro do jogo mudou. Passo 2 feito, com o primeiro sorteio no lugar. O terceiro é o outro sorteio, na velocidade.",
-      "visual": "**Na tela:** Jogo 2D › Mira e contas, arrastar \"um número de a\" por cima do x (560) do bloco de criar cacto; trocar os números para 500 e 560. Rodar e mostrar os intervalos variando.",
+      "visual": "**Na tela:** Jogo 2D › Sorteios, arrastar \"um número de a\" por cima do x (560) do bloco de criar cacto; trocar os números para 500 e 560. Rodar e mostrar os intervalos variando.",
       "newNarration": "No x do bloco que cria cacto, conecte Sorteio entre 500 e 560. Os dois limites ficam depois da borda 480. O relógio continua em 1,4.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     },
@@ -51,11 +51,11 @@
       "sourceSection": "Parte 3. Passo 3: sortear a velocidade",
       "entry": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno",
       "exit": "r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
-      "edit": "Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5.",
       "narration": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em menos 5. A gente quer que ele seja menos 5 ou um pouquinho mais rápido, sorteado. Na categoria Programação, subcategoria Matemática, pega o bloco de conta, aquele com dois espaços e o sinal no meio. Esse é novo, você nunca usou. O nome já entrega: ele serve pra fazer conta. Clica, segura e arrasta ele por cima do vx. Esse bloco de conta tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje a gente não quer o mais. Abre a listinha e escolhe o menos. No espaço da esquerda, que já vem com um número, escreve -5 por cima. E no espaço da direita, vai de novo em Jogo 2D, subcategoria Mira e contas, pega outro um número de tanto a tanto e arrasta por cima do que está lá. Nele, põe 0 e 1. Lê junto comigo: menos 5, menos um número sorteado entre 0 e 1. Se sortear 0, o cacto anda a menos 5. Se sortear 1, ele anda a menos 6, ou seja, um tiquinho mais rápido. Espera... menos um número deixa ele mais rápido? Parece esquisito, mas faz sentido: lembra da Aula 5, que velocidade negativa é pra esquerda, e quanto mais negativo, mais rápido? Então tirar 1 de menos 5 dá menos 6, que é mais rápido ainda. Isso engana a cabeça da gente, e por isso vale reparar. Clica na área do jogo e joga. Agora, além do espaço entre eles variar, uns cactos vêm um tiquinho mais rápidos que os outros. Você não consegue nem decorar o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
       "visual": "Duas contas alinhadas e duas setas à esquerda com origem igual. Não alterar o tamanho do cacto nem o intervalo. Distinguir valor numérico de rapidez.",
       "newNarration": "Se sair zero, -5 menos zero continua -5. Se sair um, fica -6. Em direção à esquerda, -6 percorre mais distância por quadro.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     },
@@ -65,11 +65,11 @@
       "sourceSection": "Parte 3. Passo 3: sortear a velocidade",
       "entry": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno",
       "exit": "r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
-      "edit": "Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição.",
       "narration": "Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em menos 5. A gente quer que ele seja menos 5 ou um pouquinho mais rápido, sorteado. Na categoria Programação, subcategoria Matemática, pega o bloco de conta, aquele com dois espaços e o sinal no meio. Esse é novo, você nunca usou. O nome já entrega: ele serve pra fazer conta. Clica, segura e arrasta ele por cima do vx. Esse bloco de conta tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje a gente não quer o mais. Abre a listinha e escolhe o menos. No espaço da esquerda, que já vem com um número, escreve -5 por cima. E no espaço da direita, vai de novo em Jogo 2D, subcategoria Mira e contas, pega outro um número de tanto a tanto e arrasta por cima do que está lá. Nele, põe 0 e 1. Lê junto comigo: menos 5, menos um número sorteado entre 0 e 1. Se sortear 0, o cacto anda a menos 5. Se sortear 1, ele anda a menos 6, ou seja, um tiquinho mais rápido. Espera... menos um número deixa ele mais rápido? Parece esquisito, mas faz sentido: lembra da Aula 5, que velocidade negativa é pra esquerda, e quanto mais negativo, mais rápido? Então tirar 1 de menos 5 dá menos 6, que é mais rápido ainda. Isso engana a cabeça da gente, e por isso vale reparar. Clica na área do jogo e joga. Agora, além do espaço entre eles variar, uns cactos vêm um tiquinho mais rápidos que os outros. Você não consegue nem decorar o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.",
       "visual": "**Na tela:** Programação › Matemática, arrastar o bloco de conta por cima do vx (-5); sinal −; esquerda -5; direita outro \"um número de a\" com 0 e 1. Rodar.",
       "newNarration": "No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     },
@@ -79,13 +79,294 @@
       "sourceSection": "Fecho",
       "entry": "Parabéns, você terminou a Aula 12! O seu jogo nunca mais vai ser igual duas vezes. Hoje você aprende",
       "exit": "o jogo ficar mais difícil sozinho, quanto mais você sobrevive. Te espero lá pra terminar o seu jogo!",
-      "edit": "Manter a recapitulação. Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1. As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade. Terminar indicando o quiz, sem abrir desafios extras.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1. As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade. Terminar indicando o quiz, sem abrir desafios extras.",
       "narration": "Parabéns, você terminou a Aula 12! O seu jogo nunca mais vai ser igual duas vezes. Hoje você aprendeu o sorteio, que é dar uma faixa em vez de um número pronto, e deixar o computador tirar um número dali na hora. E descobriu que o tamanho da faixa muda o jogo. Faixa estreita demais e dá pra adivinhar tudo. Faixa larga demais e vira bagunça. E conheceu o bloco de conta, que monta um valor a partir de dois pedaços e um sinal. Na próxima aula, a última do curso, a gente resolve o último probleminha do seu jogo: ele começa gostoso, mas depois de um tempo cansa. Você vai fazer o jogo ficar mais difícil sozinho, quanto mais você sobrevive. Te espero lá pra terminar o seu jogo!",
       "visual": "**Na tela:** cartela \"Aula 12 concluída\".",
       "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
-      "production": "recorte-e-complemento",
+      "production": "regravar-estudio-atual",
       "inSeconds": null,
       "outSeconds": null
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_events",
+        "label": "⚡ Quando acontecer",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "events",
+        "tooltip": "Roda quando alguma coisa acontece."
+      },
+      {
+        "type": "sz_frame_loops",
+        "label": "🔁 Enquanto estiver rodando",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "loops",
+        "tooltip": "Repete enquanto o projeto estiver rodando."
+      },
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_apply_gravity",
+        "label": "Aplicar a gravidade do mundo ao sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Velocidade e gravidade"],
+        "area": "start",
+        "tooltip": "Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite."
+      },
+      {
+        "type": "sz_g2d_clear",
+        "label": "Limpar a tela",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+      },
+      {
+        "type": "sz_g2d_control_dino",
+        "label": "Controlar o dinossauro , força do pulo",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Dino"],
+        "area": "start",
+        "tooltip": "Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o \"Aplicar a gravidade do mundo\" logo acima. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_create_dino",
+        "label": "Criar dinossauro em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Dino"],
+        "area": "start",
+        "tooltip": "Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa."
+      },
+      {
+        "type": "sz_g2d_create_group",
+        "label": "Criar grupo de sprites",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+      },
+      {
+        "type": "sz_g2d_draw_group",
+        "label": "Desenhar o grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+        "area": "start",
+        "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+      },
+      {
+        "type": "sz_g2d_draw_score",
+        "label": "Mostrar placar valor em x y cor tamanho",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+        "area": "start",
+        "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+      },
+      {
+        "type": "sz_g2d_draw_sprite",
+        "label": "Desenhar o sprite",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+      },
+      {
+        "type": "sz_g2d_every_seconds",
+        "label": "A cada segundos",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Roda o “fazer” a cada N segundos. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+      },
+      {
+        "type": "sz_g2d_explode",
+        "label": "Soltar explosão no sprite cor",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+        "area": "start",
+        "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+      },
+      {
+        "type": "sz_g2d_forest",
+        "label": "Desenhar fundo de floresta (velocidade )",
+        "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+        "area": "start",
+        "tooltip": "Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do \"a cada quadro\", depois de limpar a tela. O dino corre sobre a grama."
+      },
+      {
+        "type": "sz_g2d_on_any_input",
+        "label": "Quando apertar qualquer tecla ou tocar na tela",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro quando a criança aperta qualquer tecla ou toca na tela. É o \"aperte qualquer coisa para começar\" das telas de início. Segurar a tecla dispara uma vez só."
+      },
+      {
+        "type": "sz_g2d_on_jump",
+        "label": "Quando o sprite pular",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro."
+      },
+      {
+        "type": "sz_g2d_on_sprite_group_overlap",
+        "label": "Para cada sprite do grupo que colidir com o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_play_fx",
+        "label": "Tocar efeito",
+        "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+        "area": "start",
+        "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+      },
+      {
+        "type": "sz_g2d_prune_offscreen",
+        "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+      },
+      {
+        "type": "sz_g2d_random_between",
+        "label": "um número de a",
+        "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+        "area": "value",
+        "tooltip": "Sorteia um número inteiro entre os dois valores (incluindo as pontas). Limites com vírgula são ajustados para os inteiros internos; se o intervalo não tiver nenhum inteiro, usa o mais próximo do meio."
+      },
+      {
+        "type": "sz_g2d_restart",
+        "label": "Reiniciar o jogo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+      },
+      {
+        "type": "sz_g2d_scene_is",
+        "label": "o estado do jogo é ?",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "value",
+        "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+      },
+      {
+        "type": "sz_g2d_set_hitbox_scale",
+        "label": "Usar área de colisão de % do tamanho para o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Área de contato"],
+        "area": "start",
+        "tooltip": "Muda o tamanho da área de colisão do sprite: menor que 100% = colisão mais justa para DANO; maior = mais fácil de PEGAR (moedas). Vale para as perguntas de encostar; \"impedir de atravessar\" continua usando o tamanho cheio. Veja a área real com \"Mostrar a caixa de colisão\"."
+      },
+      {
+        "type": "sz_g2d_set_scene",
+        "label": "Mudar o estado do jogo para",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+      },
+      {
+        "type": "sz_g2d_set_stage_description",
+        "label": "Descrever o jogo para leitor de tela",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_shake",
+        "label": "Tremer a tela com intensidade",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+      },
+      {
+        "type": "sz_g2d_show_screen",
+        "label": "Mostrar tela com título subtítulo dica fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+      },
+      {
+        "type": "sz_g2d_spawn_obstacle",
+        "label": "No grupo criar obstáculo em x tamanho com vx",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Dino"],
+        "area": "start",
+        "tooltip": "Cria um obstáculo desenhado e coloca no grupo. Cacto e pedra nascem no chão (pule por cima); o pássaro vem no alto (abaixe por baixo). Ligue o x na borda direita e um vx negativo para ele vir vindo."
+      },
+      {
+        "type": "sz_g2d_update_each_frame",
+        "label": "A cada quadro do jogo",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+      },
+      {
+        "type": "sz_g2d_update_group",
+        "label": "Mover os sprites do grupo usando suas velocidades",
+        "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+        "area": "start",
+        "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+      },
+      {
+        "type": "sz_js_if_else",
+        "label": "Condição se, senão se e senão",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "start",
+        "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+      },
+      {
+        "type": "sz_js_var_create",
+        "label": "Criar variável com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+      },
+      {
+        "type": "sz_js_var_increment",
+        "label": "Somar em variável",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+      },
+      {
+        "type": "sz_math_arithmetic",
+        "label": "Conta matemática",
+        "palettePath": ["Programação", "🔢 Matemática"],
+        "area": "value",
+        "tooltip": "Faz uma conta entre dois valores (somar, subtrair, multiplicar, dividir, resto, potência)."
+      },
+      {
+        "type": "sz_val_join",
+        "label": "juntar texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Junta vários pedaços (texto fixo e valores) num só texto. Use + para adicionar pedaços."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      },
+      {
+        "type": "sz_val_text",
+        "label": "texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor de texto."
+      },
+      {
+        "type": "sz_val_variable",
+        "label": "valor da variável",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+      }
+    ]
+  }
 }

@@ -10,6 +10,7 @@ import { earlyRecipes } from './corre-dino-aulas-02-05'
 import { middleRecipes } from './corre-dino-aulas-06-09'
 import { lateRecipes } from './corre-dino-aulas-10-13'
 import { buildEditorial, editorialMarkdown, readOriginal } from './corre-dino-editorial'
+import { annotateStudioRecording, lessonStudioEdition } from './jogo-2d-edicao-atual'
 import { lessonOneCuts, reviseLessonOne } from './revisao-editorial-aula-01'
 import { lessonOneMarkdown } from './revisao-editorial-aula-01-texto'
 
@@ -55,6 +56,15 @@ for (let lesson = 1; lesson <= 13; lesson++) {
   const original = readOriginal(sourceDirectory, lesson)
   const editorial = lesson > 1 ? buildEditorial(manifest, recipes[lesson]!, original) : undefined
   if (editorial) manifest = editorial.manifest
+  const firstMontage =
+    lesson === 1
+      ? {
+          ...structuredClone(lessonOneCuts),
+          sourceHash: original.hash,
+          studio: lessonStudioEdition(manifest),
+        }
+      : undefined
+  if (firstMontage) annotateStudioRecording(manifest, firstMontage.clips)
   if (!isLearningManifest(manifest)) throw new Error(`Invalid candidate ${slug}`)
   mkdirSync(resolve(destination, slug), { recursive: true })
   writeFileSync(
@@ -63,7 +73,7 @@ for (let lesson = 1; lesson <= 13; lesson++) {
   )
   writeFileSync(
     resolve(destination, slug, 'montagem.json'),
-    `${JSON.stringify(editorial?.montage ?? { ...lessonOneCuts, sourceHash: original.hash }, null, 2)}\n`,
+    `${JSON.stringify(editorial?.montage ?? firstMontage, null, 2)}\n`,
   )
   writeFileSync(
     resolve(destination, slug, 'manifesto.json'),

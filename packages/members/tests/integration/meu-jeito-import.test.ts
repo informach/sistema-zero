@@ -47,7 +47,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
         : {
             kind: 'studio' as const,
             purpose: 'submission' as const,
-            initialProject: { name: 'Entrega da galeria', files: {} },
+            initialProject: { formatVersion: 2, name: 'Entrega da galeria', files: {} },
             gallery: { minItems: 1, maxItems: 1 },
           }
       expect(

@@ -14,8 +14,8 @@ import {
 } from '#ir'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
-import { normalizeBlocksStateToFrames } from '../../../blockly/normalizeFrames'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
+import { migrateBlocksState as normalizeBlocksStateToFrames } from '../../../testing/migrateBlocksState'
 import { gameTwoDBlocks } from '../blocks'
 
 /**
@@ -40,10 +40,7 @@ const DA_IDENTIDADE = [
 /** Os que também podem aparecer DENTRO de um corpo (a receita do chefão). */
 const ANINHAVEIS = ['sz_g2d_enemy_add_behavior', 'sz_g2d_enemy_type_param'] as const
 const ANIMACAO_DE_ESTADO = 'sz_g2d_enemy_state_anim'
-const AJUSTES_LEGADOS_NO_START = [
-  'sz_g2d_enemy_add_behavior_legacy_start',
-  'sz_g2d_enemy_type_param_legacy_start',
-] as const
+const AJUSTES_LEGADOS_NO_START = ['sz_g2d_enemy_add_behavior', 'sz_g2d_enemy_type_param'] as const
 
 function conecta(ws: Blockly.Workspace, frameType: string, blockType: string): boolean {
   const frame = ws.newBlock(frameType)
@@ -72,11 +69,13 @@ describe('a identidade do inimigo mora em 🧩 Meus moldes', () => {
       }
     })
 
-    it('os três RECUSAM o Ao iniciar e ACEITAM a área de moldes', () => {
+    it('ajustes aceitam início e moldes; grupo geral permanece nos moldes', () => {
       for (const tipo of DA_IDENTIDADE) {
         const ws = new Blockly.Workspace()
         try {
-          expect(conecta(ws, 'sz_frame_start', tipo), `${tipo} no Ao iniciar`).toBe(false)
+          expect(conecta(ws, 'sz_frame_start', tipo), `${tipo} no Ao iniciar`).toBe(
+            tipo !== 'sz_g2d_all_enemies_group',
+          )
           expect(conecta(ws, 'sz_frame_molds', tipo), `${tipo} nos moldes`).toBe(true)
         } finally {
           ws.dispose()
@@ -192,8 +191,8 @@ describe('a identidade do inimigo mora em 🧩 Meus moldes', () => {
         'g2d:allEnemiesGroup',
       ])
       expect(partido.start.map((s) => s.type)).toEqual([
-        'g2d:enemyAddBehaviorLegacyStart',
-        'g2d:setEnemyTypeParamLegacyStart',
+        'g2d:enemyAddBehavior',
+        'g2d:setEnemyTypeParam',
         'g2d:loadSpritesheet',
         'g2d:enemyStateAnim',
         'g2d:setGravity',
@@ -401,7 +400,7 @@ describe('a identidade do inimigo mora em 🧩 Meus moldes', () => {
       expect(tiposDoFrame(normalizado, 'sz_frame_molds')).toEqual([])
       expect(tiposDoFrame(normalizado, 'sz_frame_start')).toEqual([
         'sz_js_var_create',
-        'sz_g2d_enemy_type_param_legacy_start',
+        'sz_g2d_enemy_type_param',
       ])
     })
 
@@ -415,8 +414,8 @@ describe('a identidade do inimigo mora em 🧩 Meus moldes', () => {
           'g2d:allEnemiesGroup',
         ])
         expect(ir.behavior.start.map((statement) => statement.type)).toEqual([
-          'g2d:enemyAddBehaviorLegacyStart',
-          'g2d:setEnemyTypeParamLegacyStart',
+          'g2d:enemyAddBehavior',
+          'g2d:setEnemyTypeParam',
         ])
         // E a vista linear segue entregando tudo, na ordem de execução.
         expect(behaviorStatements(ir).length).toBe(DA_IDENTIDADE.length)

@@ -159,3 +159,9 @@ Descrever a ação e o resultado ajuda o professor a localizar a dificuldade.
 - **Fecho pra criança:** Recortar com as substituições e imagens indicadas. Clipes: video-fecho-v6.
 
 Fonte preservada, SHA-256: d3cb9fa0eb04bef925ae16af822ecb9222d66b10a498fd87cfd081b869b4e9fe. [Mapa de montagem](montagem.json) com âncoras textuais, falas novas e imagens. Os tempos ficam nulos até conferir a gravação. Cortes substituem falas; não concatenar toda a narração original com todos os complementos.
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Esta aula não monta blocos no Estúdio. Preserve o percurso e a entrega previstos; os blocos do jogo entram nas aulas de integração.

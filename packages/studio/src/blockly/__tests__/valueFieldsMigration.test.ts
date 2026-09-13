@@ -4,8 +4,9 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import { behaviorStatements } from '#ir'
 import { gameTwoDExtension } from '../../official-extensions/game-2d/index'
 import { parseJS } from '../../parsers/js'
+import { migrateLegacyValueFields } from '../../project-migrations/migrateValueFields'
+import { registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace } from '../buildIR'
-import { migrateLegacyValueFields } from '../migrateValueFields'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
 
@@ -104,9 +105,7 @@ describe('migrateLegacyValueFields — campos legados viram soquetes preservando
 describe('Round-trip dos blocos convertidos — aceitam variável/conta', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
-    Blockly.defineBlocksWithJsonArray(
-      gameTwoDExtension.blockly.blocks as Parameters<typeof Blockly.defineBlocksWithJsonArray>[0],
-    )
+    registerExtensionBlocks(gameTwoDExtension.blockly.blocks)
   })
 
   it('set_position com X = variável e Y = número entra no IR como expressão (não rawJS)', () => {
@@ -118,7 +117,7 @@ describe('Round-trip dos blocos convertidos — aceitam variável/conta', () => 
             languageVersion: 0,
             blocks: [
               {
-                type: 'sz_frame_behavior',
+                type: 'sz_frame_start',
                 inputs: {
                   CHILDREN: {
                     block: {

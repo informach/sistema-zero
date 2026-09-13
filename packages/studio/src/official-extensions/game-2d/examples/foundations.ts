@@ -451,7 +451,12 @@ export const catchCoinExample: ExtensionExample = beginnerGameExample({
               then: [
                 { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
                 { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
-                { type: 'g2d:collides', aVar: 'heroi', bVar: 'moeda', varName: 'pegou' },
+                {
+                  type: 'var',
+                  kind: 'const',
+                  name: 'pegou',
+                  value: { type: 'g2d:touches', aVar: 'heroi', bVar: 'moeda' },
+                },
                 {
                   type: 'if',
                   cond: { type: 'var', name: 'pegou' },

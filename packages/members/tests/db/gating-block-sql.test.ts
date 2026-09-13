@@ -65,7 +65,7 @@ describe.skipIf(!testDatabaseUrl)('lessonHasGatingBlock: espelho SQL × domínio
     {
       nome: 'experimento do Estúdio não exige entrega',
       kind: 'studio',
-      content: { kind: 'studio', purpose: 'experiment', initialProject: {} },
+      content: { kind: 'studio', purpose: 'experiment', initialProject: { formatVersion: 2 } },
     },
     {
       nome: 'experimento do Pinta não exige entrega',
@@ -85,7 +85,7 @@ describe.skipIf(!testDatabaseUrl)('lessonHasGatingBlock: espelho SQL × domínio
     {
       nome: 'estúdio SEMPRE trava',
       kind: 'studio',
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     },
     {
       nome: 'Pinta SEMPRE trava (a entrega do desenho é gate, como a do Estúdio)',

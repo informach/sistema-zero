@@ -63,7 +63,7 @@ SZGame2D.onKey("Space", function () {
 SZGame2D.onEnemyDefeated(inimigos, function (bicho) {
   pontos = pontos + 3;
   SZGame2D.emitParticles(SZGame2D.centerX(bicho), SZGame2D.centerY(bicho), 14, "#ffb347");
-  SZGame2D.playExplosion();
+  SZGame2D.playFx("explosion");
 });
 SZGame2D.gameLoop(function update() {
   SZGame2D.clear();
@@ -87,7 +87,7 @@ SZGame2D.gameLoop(function update() {
       SZGame2D.aimAt(heroi, maisPerto);
       if (SZGame2D.cooldownReady(heroi, 16)) {
         SZGame2D.shootFrom(heroi, tiros, { speed: 7, color: "#9cff57" });
-        SZGame2D.playShoot();
+        SZGame2D.playFx("shoot");
       }
     }
     SZGame2D.updateGroup(tiros);
@@ -118,6 +118,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Os monstrinhos te alcançaram!", "Você fez " + pontos + " pontos. Tente aguentar mais tempo!", "Aperte Enter ou espaço para tentar de novo", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("nasce-inimigo", 0.8)) {
   if (SZGame2D.sceneIs("jogando")) {
     let bx = SZGame2D.randomBetween(30, 450);
@@ -128,11 +129,14 @@ if (SZGame2D.everySeconds("nasce-inimigo", 0.8)) {
     SZGame2D.spawnEnemy(inimigos, bx, by);
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("ponto-por-segundo", 1)) {
   if (SZGame2D.sceneIs("jogando")) {
     pontos = pontos + 1;
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

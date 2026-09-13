@@ -158,7 +158,7 @@ describe('o banco dos projetos só vê transações com commit explícito', () =
     // O `get` do idb-keyval: pede e devolve, sem commit; a transação só termina quando a
     // página processar o resultado.
     await store('readonly', (objectStore) => {
-      objectStore.get('sz:project-meta:x')
+      objectStore.get('sz:v2:project-meta:x')
     })
 
     expect(withoutExplicitCommit(fakeIdbTransactions())).toHaveLength(1)

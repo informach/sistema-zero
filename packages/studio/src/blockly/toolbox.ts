@@ -32,6 +32,7 @@ import {
 } from './blocks'
 import type { BlockDefinition } from './blocks/types'
 import { type SocketShadow, socketInputsFor } from './blocks/valueSockets'
+import { paletteEntryFor } from './paletteEntries'
 import {
   isEventProgrammingDefinition,
   PROGRAMMING_CONDITION_VALUE_TYPES,
@@ -353,7 +354,7 @@ export function buildCoreToolbox(
   // entram na paleta (os frames seguem sempre). Decidido aqui p/ alcançar TAMBÉM os flyouts
   // dinâmicos (Funções/Classes) e as categorias de EXTENSÃO; o resto restringe via toEntries.
   const restrict = (profile.allowBlocks?.length ?? 0) > 0
-  const only = new Set(profile.allowBlocks ?? [])
+  const only = new Set([...(profile.allowBlocks ?? []), ...(profile.projectTools ?? [])])
 
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
     const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
@@ -582,6 +583,25 @@ export function buildCoreToolbox(
   // ainda não estava instalada não sobrava evento nem laço para "provar" que a
   // criança tem direito àquelas áreas. Pelo universo, o direito vem do NÍVEL e
   // da lista, e instalar ou remover uma extensão não muda mais as áreas.
+  const tools = new Set(profile.projectTools ?? [])
+  const installedTypes = new Set<string>()
+  const collectInstalled = (category: ToolboxCategory): void => {
+    for (const entry of category.contents) {
+      if (entry.kind === 'block') installedTypes.add(entry.type)
+      else if ('contents' in entry) collectInstalled(entry)
+    }
+  }
+  extraCategories.forEach(collectInstalled)
+  const projectEntries = SERVER_BLOCK_CATALOG.filter(
+    (entry) => tools.has(entry.type) && (!entry.extension || installedTypes.has(entry.type)),
+  ).map((entry) => paletteEntryFor(entry.type))
+  if (projectEntries.length)
+    contents.splice(2, 0, {
+      kind: 'category',
+      name: '🧰 Blocos deste jogo',
+      colour: '#2563eb',
+      contents: projectEntries,
+    })
   const offeredAreas = allowedAreasForProfile(profile)
   for (const area of dynamicAreas) offeredAreas.add(area)
   collectOfferedAreas(contents, offeredAreas)

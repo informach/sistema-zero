@@ -33,7 +33,7 @@ interface Engine {
   playFx: (name: string) => void
   playNote: (note: string, ms: number) => void
   playMusic: (name: string) => void
-  stopMusic: () => void
+  stopTrack: (scope?: 'all' | 'synth' | 'file') => void
   distance: (a: Sprite, b: Sprite) => number
   angleTo: (a: Sprite, b: Sprite) => number
   setHealth: (s: Sprite, n: number) => void
@@ -66,7 +66,6 @@ interface Engine {
   wrapEdges: (s: Sprite) => void
   touches: (a: Sprite, b: Sprite) => boolean
   randomChance: (percent: number) => boolean
-  playJump: () => void
 }
 function loadRuntime(): Engine {
   const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
@@ -85,9 +84,14 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(gen({ type: 'g2d:bounceOnEdges', spriteVar: 'bola', ctxVar: 'ctx' })).toBe(
       'SZGame2D.bounceOnEdges(bola, ctx);',
     )
-    expect(gen({ type: 'g2d:circleCollides', aVar: 'a', bVar: 'b', varName: 'bateu' })).toBe(
-      'const bateu = SZGame2D.circleCollides(a, b);',
-    )
+    expect(
+      gen({
+        type: 'var',
+        kind: 'const',
+        name: 'bateu',
+        value: { type: 'g2d:circleTouches', aVar: 'a', bVar: 'b' },
+      }),
+    ).toBe('const bateu = SZGame2D.circleCollides(a, b);')
   })
 
   it('áudio e ponteiro', () => {
@@ -109,7 +113,7 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(gen({ type: 'g2d:playMusic', tune: 'adventure' })).toBe(
       'SZGame2D.playMusic("adventure");',
     )
-    expect(gen({ type: 'g2d:stopMusic' })).toBe('SZGame2D.stopMusic();')
+    expect(gen({ type: 'g2d:stopTrack', scope: 'synth' })).toBe('SZGame2D.stopTrack("synth");')
     expect(gen({ type: 'g2d:playNote', note: 'C', ms: 300 })).toBe('SZGame2D.playNote("C", 300);')
   })
 
@@ -118,15 +122,15 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(typeof api.playFx).toBe('function')
     expect(typeof api.playNote).toBe('function')
     expect(typeof api.playMusic).toBe('function')
-    expect(typeof api.stopMusic).toBe('function')
-    expect(typeof api.playJump).toBe('function')
+    expect(typeof api.stopTrack).toBe('function')
+    expect(typeof api.playFx).toBe('function')
     // Sem AudioContext no ambiente de teste, são no-op silencioso (não lançam).
     expect(() => {
       api.playFx('coin')
       api.playNote('C', 100)
       api.playMusic('happy')
-      api.stopMusic()
-      api.playJump()
+      api.stopTrack('synth')
+      api.playFx('jump')
     }).not.toThrow()
   })
 
@@ -371,10 +375,50 @@ describe('game-2d — gerador dos novos statements', () => {
   })
 
   it('Tier 2: gerador de comandos (câmera, mapa, ordem, depuração)', () => {
-    expect(gen({ type: 'g2d:cameraFollow', spriteVar: 'jogador', worldW: 800, worldH: 600 })).toBe(
-      'SZGame2D.cameraFollow(jogador, 800, 600);',
-    )
-    expect(gen({ type: 'g2d:setCamera', x: 10, y: 20 })).toBe('SZGame2D.setCamera(10, 20);')
+    expect(
+      gen({
+        type: 'memberCall',
+        object: {
+          type: 'var',
+          name: 'SZGame2D',
+        },
+        method: 'cameraFollow',
+        args: [
+          {
+            type: 'var',
+            name: 'jogador',
+          },
+          {
+            type: 'num',
+            value: 800,
+          },
+          {
+            type: 'num',
+            value: 600,
+          },
+        ],
+      }),
+    ).toBe('SZGame2D.cameraFollow(jogador, 800, 600);')
+    expect(
+      gen({
+        type: 'memberCall',
+        object: {
+          type: 'var',
+          name: 'SZGame2D',
+        },
+        method: 'setCamera',
+        args: [
+          {
+            type: 'num',
+            value: 10,
+          },
+          {
+            type: 'num',
+            value: 20,
+          },
+        ],
+      }),
+    ).toBe('SZGame2D.setCamera(10, 20);')
     expect(gen({ type: 'g2d:breakTile', mapVar: 'mapa', spriteVar: 'jogador' })).toBe(
       'SZGame2D.breakTileAtSprite(mapa, jogador);',
     )
@@ -406,11 +450,11 @@ describe('game-2d — gerador dos novos statements', () => {
       'g2d:setGravity',
       'g2d:applyVelocity',
       'g2d:bounceOnEdges',
-      'g2d:circleCollides',
+
       'g2d:playSound',
       'g2d:playFx',
       'g2d:playMusic',
-      'g2d:stopMusic',
+      'g2d:stopTrack',
       'g2d:playNote',
       'g2d:aimAt',
       'g2d:moveToward',
@@ -424,8 +468,6 @@ describe('game-2d — gerador dos novos statements', () => {
       'g2d:pruneOld',
       'g2d:pauseGame',
       'g2d:resumeGame',
-      'g2d:cameraFollow',
-      'g2d:setCamera',
       'g2d:breakTile',
       'g2d:setTile',
       'g2d:bringToFront',

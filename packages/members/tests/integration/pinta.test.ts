@@ -67,7 +67,7 @@ function seedStudioBlock(
     sortOrder: 20,
     content: {
       kind: 'studio',
-      initialProject: { name: 'p', files: { 'index.html': '' } },
+      initialProject: { formatVersion: 2, name: 'p', files: { 'index.html': '' } },
       ...content,
     },
   })
@@ -307,7 +307,9 @@ describe('bloco Pinta — cadeia entre aulas (carryover)', () => {
         {
           method: 'POST',
           headers: authHeaders,
-          body: JSON.stringify({ project: { name: 'p', files: { 'index.html': '<p>oi</p>' } } }),
+          body: JSON.stringify({
+            project: { formatVersion: 2, name: 'p', files: { 'index.html': '<p>oi</p>' } },
+          }),
         },
       ),
     )
@@ -459,7 +461,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     await publishBlock(app, aulas[0].id, {
       content: {
         kind: 'studio',
-        initialProject: { name: 'p', files: { 'index.html': '' } },
+        initialProject: { formatVersion: 2, name: 'p', files: { 'index.html': '' } },
         chain: 'heroi',
       },
     })

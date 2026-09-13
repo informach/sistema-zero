@@ -23,6 +23,7 @@ function seedStudioBlock(courses: InMemoryCourseRepository, lessonId: string): s
       level: 'iniciante',
       allowCategories: ['HTML', 'JavaScript'],
       initialProject: {
+        formatVersion: 2,
         name: 'Atividade da aula',
         files: { 'index.html': '<h1>Oi</h1>', 'style.css': '', 'script.js': '' },
       },
@@ -71,11 +72,13 @@ const getOwnSubmission = (app: App, lessonId: string, blockId: string) =>
   )
 
 const STUDENT_PROJECT = {
+  formatVersion: 2,
   name: 'Minha entrega',
   files: { 'index.html': '<h1>Feito</h1>', 'style.css': '', 'script.js': 'console.log(1)' },
 }
 
 const STUDIO_LOOP_PROJECT = {
+  formatVersion: 2,
   name: 'Projeto com loop',
   files: { 'index.html': '', 'style.css': '', 'script.js': 'for (let i = 0; i < 3; i++) {}' },
   ir: { js: [{ type: 'repeat' }] },
@@ -83,6 +86,7 @@ const STUDIO_LOOP_PROJECT = {
 }
 
 const STUDIO_FUNCTION_PROJECT = {
+  formatVersion: 2,
   name: 'Projeto com função',
   files: { 'index.html': '', 'style.css': '', 'script.js': 'function go() { return 1 }' },
   ir: { js: [{ type: 'funcDecl', name: 'go', body: [] }] },
@@ -116,6 +120,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },
@@ -128,6 +133,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     })
     // Projeto SEM laço → o servidor recalcula a estrutura, reprova → não passa.
     const submitRes = await submit(app, lessonIds[0], blockId, {
+      formatVersion: 2,
       name: 'sem laço',
       files: { 'index.html': '', 'style.css': '', 'script.js': 'console.log(1)' },
       ir: { js: [{ type: 'consoleLog' }] },
@@ -151,6 +157,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
       level: 'iniciante' as const,
       allowCategories: ['JavaScript'],
       initialProject: {
+        formatVersion: 2,
         name: 'x',
         files: { 'index.html': '', 'style.css': '', 'script.js': '' },
       },
@@ -236,6 +243,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },
@@ -256,6 +264,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
       level: 'intermediario',
       allowBlocks: ['sz_js_var_create'],
       initialProject: {
+        formatVersion: 2,
         name: 'x (retocado pela professora)',
         files: { 'index.html': '<h1>novo</h1>', 'style.css': '', 'script.js': '' },
       },
@@ -358,6 +367,24 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(studioSubmissions.submissions.filter((s) => s.blockId === blockId)).toHaveLength(1)
   })
 
+  test('cliente antigo não substitui uma entrega atual nem seu backup', async () => {
+    const { app, courses, entitlements, studioSubmissions } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    expect((await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)).status).toBe(200)
+    const before = structuredClone(await studioSubmissions.getOne(USER, blockId))
+    for (const formatVersion of [undefined, 1, 3]) {
+      const res = await submit(app, lessonIds[0], blockId, {
+        ...STUDENT_PROJECT,
+        formatVersion,
+        name: 'Documento incompatível',
+      })
+      expect(res.status).toBe(400)
+      expect(await studioSubmissions.getOne(USER, blockId)).toEqual(before)
+    }
+  })
+
   test('submeter num bloco que não é estúdio → 404', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)
@@ -378,7 +405,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     const blockId = seedStudioBlock(courses, lessonIds[0])
 
     // ~300 KB: passa do teto pequeno (64 KB) mas cabe no teto do Estúdio (2 MB).
-    const big = { name: 'Grande', files: { 'app.js': 'x'.repeat(300_000) } }
+    const big = { formatVersion: 2, name: 'Grande', files: { 'app.js': 'x'.repeat(300_000) } }
     const res = await submit(app, lessonIds[0], blockId, big)
     expect(res.status).toBe(200)
   })
@@ -1084,6 +1111,7 @@ describe('Versão anterior da entrega — backup do último reenvio', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },

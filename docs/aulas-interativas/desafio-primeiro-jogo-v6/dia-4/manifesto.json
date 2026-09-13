@@ -13,15 +13,15 @@
     },
     {
       "key": "video-abertura-v6",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Bem-vindo ao Dia 4. O seu jogo já tem nave, tiro e uma chuva de asteroides explodindo. Mas me re”. Saída: “atida machucar. No quinto, pendura os corações. E no sexto, testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Hoje o jogo vai lembrar seus acertos e mostrar quantas vidas a nave ainda tem. Você vai ver um placar subir e descobrir por que uma nave precisa de um respiro depois de levar uma batida.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Bem-vindo ao Dia 4. O seu jogo já tem nave, tiro e uma chuva de asteroides explodindo. Mas me re”. Saída: “atida machucar. No quinto, pendura os corações. E no sexto, testa. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Hoje o jogo vai lembrar seus acertos e mostrar quantas vidas a nave ainda tem. Você vai ver um placar subir e descobrir por que uma nave precisa de um respiro depois de levar uma batida.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-memoria",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos,”. Saída: “ chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.”. Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar. Fala complementar: “Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos,”. Saída: “ chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.”. Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar. Fala complementar: “Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-pontos",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao”. Saída: “sas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.”. Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos. Fala complementar: “Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao”. Saída: “sas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.”. Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos. Fala complementar: “Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-pontos",
@@ -33,7 +33,7 @@
     },
     {
       "key": "video-somar",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Agora vamos fazer essa caixinha crescer. Quando é que você marca ponto? Quando um tiro explode um as”. Saída: “asteroide destruído põe mais 1 na caixinha. Passo 1 pronto. Agora o segundo, que é mostrar o placar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Agora vamos fazer essa caixinha crescer. Quando é que você marca ponto? Quando um tiro explode um as”. Saída: “asteroide destruído põe mais 1 na caixinha. Passo 1 pronto. Agora o segundo, que é mostrar o placar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-somar",
@@ -45,26 +45,26 @@
     },
     {
       "key": "video-placar",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 2. Passo 2: mostrar o placar. Entrada: “Os pontos já estão sendo contados, mas em segredo, dentro da caixinha. O jogador precisa ver o placa”. Saída: “sando. Passo 2 pronto. Agora vamos pro terceiro, que é dar vidas pra nave e fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 2. Passo 2: mostrar o placar. Entrada: “Os pontos já estão sendo contados, mas em segredo, dentro da caixinha. O jogador precisa ver o placa”. Saída: “sando. Passo 2 pronto. Agora vamos pro terceiro, que é dar vidas pra nave e fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida e placar, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-placar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo."
+        "text": "Em Jogo 2D, Vida e placar, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo."
       }
     },
     {
       "key": "video-vida",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 3. Passo 3: dar vidas à nave. Entrada: “Até agora, os asteroides passam direto pela nave, sem machucar. Jogo sem perigo não tem emoção, né? ”. Saída: “Passo 3 feito, a nave tem três vidas guardadas. Agora o quarto passo, que é fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 3. Passo 3: dar vidas à nave. Entrada: “Até agora, os asteroides passam direto pela nave, sem machucar. Jogo sem perigo não tem emoção, né? ”. Saída: “Passo 3 feito, a nave tem três vidas guardadas. Agora o quarto passo, que é fazer a batida machucar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida e placar, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-vida",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo."
+        "text": "Em Jogo 2D, Vida e placar, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo."
       }
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "key": "video-batida",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 4. Passo 4: fazer a batida machucar. Entrada: “Agora, a batida. Lembra do bloco de ontem, que vigiava a colisão entre dois grupos? Hoje tem um pare”. Saída: “la treme inteira, e você sente a pancada. Passo 4 pronto. Agora o quinto, que é mostrar os corações.”. Manter a montagem. Corrigir a explicação da invencibilidade: o mesmo asteroide já foi removido, então o respiro protege de outras pedras que chegam logo depois. Manter a tremida breve da gravação, sem repetição automática. Fala complementar: “Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 4. Passo 4: fazer a batida machucar. Entrada: “Agora, a batida. Lembra do bloco de ontem, que vigiava a colisão entre dois grupos? Hoje tem um pare”. Saída: “la treme inteira, e você sente a pancada. Passo 4 pronto. Agora o quinto, que é mostrar os corações.”. Manter a montagem. Corrigir a explicação da invencibilidade: o mesmo asteroide já foi removido, então o respiro protege de outras pedras que chegam logo depois. Manter a tremida breve da gravação, sem repetição automática. Fala complementar: “Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-batida",
@@ -110,19 +110,19 @@
     },
     {
       "key": "video-coracoes",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 5. Passo 5: mostrar os corações. Entrada: “As vidas existem, mas o jogador precisa ver quantas sobraram. E jogo mostra vida de um jeito clássic”. Saída: “22. E a cor... vermelho de coração, né? Passo 5 pronto. Agora o melhor, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 5. Passo 5: mostrar os corações. Entrada: “As vidas existem, mas o jogador precisa ver quantas sobraram. E jogo mostra vida de um jeito clássic”. Saída: “22. E a cor... vermelho de coração, né? Passo 5 pronto. Agora o melhor, o sexto passo, que é testar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Vida e placar, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-coracoes",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo."
+        "text": "Em Jogo 2D, Vida e placar, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo."
       }
     },
     {
       "key": "video-teste-vidas",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de testar. Entrada: “Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora expl”. Saída: “nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.”. Reaproveitar um acerto e uma batida. Corrigir a contagem: depois da segunda perda, sobra 1, não 2. Mostrar a espera antes da próxima batida. Fala complementar: “Acertou uma pedra com tiro: mais um ponto. Uma pedra bateu na nave: de três vidas para duas. Espere a proteção acabar; outra batida deixa uma vida. Quando as vidas chegam a zero, ainda falta ensinar o jogo a terminar. Vamos fazer isso no próximo dia.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 6. Passo 6: hora de testar. Entrada: “Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora expl”. Saída: “nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.”. Reaproveitar um acerto e uma batida. Corrigir a contagem: depois da segunda perda, sobra 1, não 2. Mostrar a espera antes da próxima batida. Fala complementar: “Acertou uma pedra com tiro: mais um ponto. Uma pedra bateu na nave: de três vidas para duas. Espere a proteção acabar; outra batida deixa uma vida. Quando as vidas chegam a zero, ainda falta ensinar o jogo a terminar. Vamos fazer isso no próximo dia.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "entrega-fala-v6",
@@ -133,7 +133,7 @@
     },
     {
       "key": "video-fecho-v6",
-      "plannedVideo": "roteiro-aula-dia4-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 4! Olha os seis passos de hoje: você criou a caixinha dos pontos, fez ”. Saída: “vitória e de derrota, e você vai publicar ele pro mundo jogar. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora os acertos ficam guardados nos pontos, e as batidas mudam as vidas. O placar e os corações mostram essas informações. No Dia 5, vamos usar esses valores para decidir vitória e derrota.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 4! Olha os seis passos de hoje: você criou a caixinha dos pontos, fez ”. Saída: “vitória e de derrota, e você vai publicar ele pro mundo jogar. Descansa, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Agora os acertos ficam guardados nos pontos, e as batidas mudam as vidas. O placar e os corações mostram essas informações. No Dia 5, vamos usar esses valores para decidir vitória e derrota.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "quiz-v6",
@@ -722,6 +722,30 @@
             }
           },
           {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
             "id": "remover-tiro",
             "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
             "rule": {
@@ -790,7 +814,7 @@
                   "fields": {
                     "SPRITE": "asteroide"
                   },
-                  "beforeBlock": "sz_g2d_play_explosion"
+                  "beforeBlock": "sz_g2d_play_fx"
                 }
               },
               "area": "loops",

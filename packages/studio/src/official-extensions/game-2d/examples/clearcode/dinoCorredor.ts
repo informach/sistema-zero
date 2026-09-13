@@ -380,6 +380,7 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1.4,
           },
+          key: 'nasce-cacto',
           body: [
             {
               type: 'if',
@@ -438,6 +439,7 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1,
           },
+          key: 'ponto-por-segundo',
           body: [
             {
               type: 'if',
@@ -472,6 +474,7 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 5,
           },
+          key: 'acelera',
           body: [
             {
               type: 'if',

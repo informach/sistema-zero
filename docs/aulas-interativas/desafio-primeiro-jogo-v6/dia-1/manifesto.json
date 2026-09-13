@@ -13,11 +13,11 @@
     },
     {
       "key": "video-abertura-v6",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom ter você aqui! Seja bem-vindo ao nosso Desafio do Primeiro Jogo. Aqui nós vamos criar um”. Saída: “á vida pra nave. E no sexto, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Oi! Hoje sua nave vai aparecer num espaço cheio de estrelas e obedecer às setas. Vamos preparar o jogo, descobrir onde a nave fica e montar um pedacinho de cada vez.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Que bom ter você aqui! Seja bem-vindo ao nosso Desafio do Primeiro Jogo. Aqui nós vamos criar um”. Saída: “á vida pra nave. E no sexto, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Oi! Hoje sua nave vai aparecer num espaço cheio de estrelas e obedecer às setas. Vamos preparar o jogo, descobrir onde a nave fica e montar um pedacinho de cada vez.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-areas",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 1. Passo 1: montar as áreas do projeto. Entrada: “Todo jogo precisa de um lugar pra guardar os passos dele. Aqui no estúdio, esse lugar são as áreas d”. Saída: “ uma arruma o jogo, a outra é o motor. Agora vamos pro segundo passo, que é preparar a tela do jogo.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando. Deixe um espaço entre eles. O primeiro prepara as coisas; o segundo vai guardar o motor que trabalha enquanto o jogo está ligado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 1. Passo 1: montar as áreas do projeto. Entrada: “Todo jogo precisa de um lugar pra guardar os passos dele. Aqui no estúdio, esse lugar são as áreas d”. Saída: “ uma arruma o jogo, a outra é o motor. Agora vamos pro segundo passo, que é preparar a tela do jogo.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando. Deixe um espaço entre eles. O primeiro prepara as coisas; o segundo vai guardar o motor que trabalha enquanto o jogo está ligado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-areas",
@@ -29,19 +29,19 @@
     },
     {
       "key": "video-tela",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 2. Passo 2: preparar a tela do jogo. Entrada: “Agora vamos preparar a tela onde o jogo acontece. A maioria dos blocos que a gente usa fica numa cat”. Saída: “escolha é sua. Passo 2 feito. Agora vem o terceiro, e esse é especial: a gente vai criar a sua nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 2. Passo 2: preparar a tela do jogo. Entrada: “Agora vamos preparar a tela onde o jogo acontece. A maioria dos blocos que a gente usa fica numa cat”. Saída: “escolha é sua. Passo 2 feito. Agora vem o terceiro, e esse é especial: a gente vai criar a sua nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Jogo e telas, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Aparência, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas."
+        "text": "Em Jogo 2D, Jogo e telas, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480. Escolha um fundo escuro para enxergar a nave e as estrelas."
       }
     },
     {
       "key": "video-endereco",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x ”. Saída: “o da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide.”. Reaproveitar a analogia de endereço e a explicação de largura/altura. Substituir a afirmação de que x 400 centraliza exatamente a nave. Acrescentar origem e sentido dos eixos. Fala complementar: “O x cresce para a direita. O y cresce para baixo. A marca mostra o canto de cima à esquerda da caixa da nave. Com x 400, esse canto fica no meio da tela; o centro da nave fica um pouquinho à direita.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Esse bloco tem uns números, e não precisa ter medo deles, eu te explico um por um. Tem um chamado x ”. Saída: “o da nave. Pode deixar 54 na largura e 62 na altura, que é um tamanho bom para desviar de asteroide.”. Reaproveitar a analogia de endereço e a explicação de largura/altura. Substituir a afirmação de que x 400 centraliza exatamente a nave. Acrescentar origem e sentido dos eixos. Fala complementar: “O x cresce para a direita. O y cresce para baixo. A marca mostra o canto de cima à esquerda da caixa da nave. Com x 400, esse canto fica no meio da tela; o centro da nave fica um pouquinho à direita.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "experiencia-coordenadas",
@@ -74,30 +74,30 @@
     },
     {
       "key": "video-nave",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Chegou a hora da estrela do jogo: a sua nave! Na categoria Jogo 2D, subcategoria Kit espaço, pega o ”. Saída: “gente vai resolver no próximo passo. Passo 3 feito. Bora pro quarto passo, que é fazer o jogo rodar.”. Reaproveitar o gesto de criar e configurar. Encurtar os eixos, já vistos na comparação. Manter a surpresa de ainda não aparecer, sem dizer que houve erro. Fala complementar: “Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar a sua nave. Entrada: “Chegou a hora da estrela do jogo: a sua nave! Na categoria Jogo 2D, subcategoria Kit espaço, pega o ”. Saída: “gente vai resolver no próximo passo. Passo 3 feito. Bora pro quarto passo, que é fazer o jogo rodar.”. Reaproveitar o gesto de criar e configurar. Encurtar os eixos, já vistos na comparação. Manter a surpresa de ainda não aparecer, sem dizer que houve erro. Fala complementar: “Em Jogo 2D, Kits prontos › Espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-nave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Kit espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar."
+        "text": "Em Jogo 2D, Kits prontos › Espaço, encaixe Criar nave abaixo de Preparar o jogo, em Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. Você escolhe as cores do corpo e das asas. Ela ainda não aparece: falta desenhar."
       }
     },
     {
       "key": "video-criar-desenhar",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Voc”. Saída: “enha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.”. Aproveitar a analogia do livrinho. Acrescentar a nave na memória e o desenho na tela em dois quadros. Não pedir montagem durante o clipe. Fala complementar: “Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Voc”. Saída: “enha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.”. Aproveitar a analogia do livrinho. Acrescentar a nave na memória e o desenho na tela em dois quadros. Não pedir montagem durante o clipe. Fala complementar: “Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-quadro",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o”. Saída: “ ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o”. Saída: “ ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-quadro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro."
+        "text": "Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro."
       }
     },
     {
@@ -131,19 +131,19 @@
     },
     {
       "key": "video-fundo",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente”. Saída: “arzinho pra dar a sensação de que a nave está viajando pelo espaço. Vamos deixar 1 mesmo, bem suave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente”. Saída: “arzinho pra dar a sensação de que a nave está viajando pelo espaço. Vamos deixar 1 mesmo, bem suave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Desenho e efeitos. Abaixo, encaixe Desenhar fundo de estrelas, em Cenários › Fundos, com velocidade 1. A borracha vem antes do novo desenho.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-fundo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Aparência. Abaixo, encaixe Desenhar fundo de estrelas, em Kit espaço, com velocidade 1. A borracha vem antes do novo desenho."
+        "text": "Dentro de A cada quadro do jogo, encaixe Limpar a tela, em Jogo 2D, Desenho e efeitos. Abaixo, encaixe Desenhar fundo de estrelas, em Cenários › Fundos, com velocidade 1. A borracha vem antes do novo desenho."
       }
     },
     {
       "key": "video-mover",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O terceiro é o que dá vida pra sua nave. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco ”. Saída: “a some. Viu que legal? Esse aviso não é bronca, é um ajudante: ele te mostra certinho o que arrumar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, abaixo das estrelas. Depois coloque Manter o sprite dentro da tela e escolha nave. Se aparecer um alerta de nome, leia e troque para o sprite que você criou.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “O terceiro é o que dá vida pra sua nave. Na categoria Jogo 2D, subcategoria Movimento, pega o bloco ”. Saída: “a some. Viu que legal? Esse aviso não é bronca, é um ajudante: ele te mostra certinho o que arrumar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, abaixo das estrelas. Depois coloque Manter o sprite dentro da tela e escolha nave. Se aparecer um alerta de nome, leia e troque para o sprite que você criou.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-mover",
@@ -155,7 +155,7 @@
     },
     {
       "key": "video-desenhar",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “E o quinto é o que finalmente mostra a nave. Na categoria Jogo 2D, subcategoria Sprites, pega o bloc”. Saída: “io e trabalhando. E agora o melhor de todos, o sexto passo, que é testar e deixar tudo do seu jeito.”. Manter o gesto e a ordem. Substituir “as estrelas iam tampar ela” por “o que é desenhado depois pode cobrir o que veio antes”; não afirmar cobertura total por pontos de estrelas. Fala complementar: “Em Jogo 2D, Sprites, coloque Desenhar o sprite por último e escolha nave. Confira: limpar, estrelas, mover, manter dentro da tela, desenhar nave. Agora clique no jogo e use as setas para os dois lados.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 5. Passo 5: desenhar o mundo e dar vida à nave. Entrada: “E o quinto é o que finalmente mostra a nave. Na categoria Jogo 2D, subcategoria Sprites, pega o bloc”. Saída: “io e trabalhando. E agora o melhor de todos, o sexto passo, que é testar e deixar tudo do seu jeito.”. Manter o gesto e a ordem. Substituir “as estrelas iam tampar ela” por “o que é desenhado depois pode cobrir o que veio antes”; não afirmar cobertura total por pontos de estrelas. Fala complementar: “Em Jogo 2D, Sprites, coloque Desenhar o sprite por último e escolha nave. Confira: limpar, estrelas, mover, manter dentro da tela, desenhar nave. Agora clique no jogo e use as setas para os dois lados.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-desenhar",
@@ -167,7 +167,7 @@
     },
     {
       "key": "video-teste",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 6. Passo 6: testar e deixar do seu jeito. Entrada: “Agora olha pra tela do seu jogo! As estrelas estão se mexendo, e a sua nave apareceu, com as cores q”. Saída: “na área do jogo e aperta a seta para a esquerda e a seta para a direita. Tá vendo? Ela obedece você!”. Selecionar o primeiro teste; mostrar confirmar campo e focar jogo em gravação atual. Retirar convite a 12 e exploração livre. Não provocar um suposto bug de confirmação sem reproduzi-lo na interface atual. Fala complementar: “Depois de digitar um valor, confirme saindo do campo. Para testar as setas, clique na área do jogo. Nesta aula, deixe a velocidade em 7. Verifique se a nave vai para os dois lados e para na borda.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 6. Passo 6: testar e deixar do seu jeito. Entrada: “Agora olha pra tela do seu jogo! As estrelas estão se mexendo, e a sua nave apareceu, com as cores q”. Saída: “na área do jogo e aperta a seta para a esquerda e a seta para a direita. Tá vendo? Ela obedece você!”. Selecionar o primeiro teste; mostrar confirmar campo e focar jogo em gravação atual. Retirar convite a 12 e exploração livre. Não provocar um suposto bug de confirmação sem reproduzi-lo na interface atual. Fala complementar: “Depois de digitar um valor, confirme saindo do campo. Para testar as setas, clique na área do jogo. Nesta aula, deixe a velocidade em 7. Verifique se a nave vai para os dois lados e para na borda.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "entrega-fala-v6",
@@ -178,7 +178,7 @@
     },
     {
       "key": "video-fecho-v6",
-      "plannedVideo": "roteiro-aula-dia1-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 1! Olha só os seis passos que você venceu hoje: montou as áreas do pro”. Saída: “atirar de verdade, com som e tudo. Descansa, comemora a vitória de hoje, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Sua nave apareceu e já responde a você. Criar preparou o objeto; o motor passou a desenhar e mover. No Dia 2, ela vai aprender a atirar. Agora vamos guardar duas ideias de hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, você terminou o Dia 1! Olha só os seis passos que você venceu hoje: montou as áreas do pro”. Saída: “atirar de verdade, com som e tudo. Descansa, comemora a vitória de hoje, e te espero lá. Até amanhã!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Sua nave apareceu e já responde a você. Criar preparou o objeto; o motor passou a desenhar e mover. No Dia 2, ela vai aprender a atirar. Agora vamos guardar duas ideias de hoje.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "quiz-v6",

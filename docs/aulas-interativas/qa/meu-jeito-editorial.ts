@@ -2,6 +2,12 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isLearningManifest, type LearningManifest } from '../../../packages/core/src/learning'
+import {
+  annotateStudioRecording,
+  currentStudioRecipe,
+  lessonStudioEdition,
+  studioGuideMarkdown,
+} from './jogo-2d-edicao-atual'
 
 export type Question = [prompt: string, correct: string, wrong: string, explanation: string]
 export interface Step {
@@ -62,6 +68,7 @@ export function buildLesson(
   recipe: Recipe,
   original: ReturnType<typeof originalOf>,
 ) {
+  recipe = currentStudioRecipe(recipe)
   const root = resolve(import.meta.dir, '..')
   const slug = `aula-${String(lesson).padStart(2, '0')}`
   const previous = JSON.parse(
@@ -159,7 +166,7 @@ export function buildLesson(
         instructions,
         hints: [help],
         required: false,
-        activity: html ? { type: 'html', html } : { type: 'checkpoint' },
+        activity: html ? { type: 'html', html } : { type: 'question' },
         checkpoint: { prompt, choices, correctChoiceId: correctId, explanation },
       },
     })
@@ -294,12 +301,14 @@ export function buildLesson(
     sections,
   }
   if (!isLearningManifest(manifest)) throw new Error(`Manifesto inválido: ${slug}`)
+  annotateStudioRecording(manifest, clips)
   const montage = {
     sourceFile: original.file,
     sourceHash: original.hash,
     status:
       'Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.',
     clips,
+    studio: lessonStudioEdition(manifest),
   }
   return { manifest, montage, recipe }
 }
@@ -432,5 +441,5 @@ export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof 
     `Fonte: ${montage.sourceFile}. SHA-256: ${montage.sourceHash}. Mapa completo: [montagem.json](montagem.json).`,
     '',
   )
-  return lines.join('\n')
+  return lines.join('\n') + studioGuideMarkdown(manifest)
 }

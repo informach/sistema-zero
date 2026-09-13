@@ -25,6 +25,7 @@ interface ReviewApi {
   loadSound(name: string, asset: string): void
   playClip(name: string): void
   playTrack(name: string): void
+  stopTrack(scope?: 'all' | 'synth' | 'file'): void
   onStart(callback: () => void): void
   restart(): void
 }
@@ -130,6 +131,21 @@ function loadReviewRuntime(): {
 }
 
 describe('regressões do full review de game-2d', () => {
+  it('parar só a melodia pronta preserva a música de arquivo, inclusive aguardando gesto', async () => {
+    const { api, listeners, audios } = loadReviewRuntime()
+    api.loadSound('musica', 'clip')
+    api.playTrack('musica')
+    api.stopTrack('synth')
+    for (const listener of listeners.pointerdown ?? []) listener({})
+    await Promise.resolve()
+    expect(audios[0]?.paused).toBe(false)
+    api.stopTrack('file')
+    expect(audios[0]?.paused).toBe(true)
+    api.playTrack('musica')
+    await Promise.resolve()
+    api.stopTrack('all')
+    expect(audios[0]?.paused).toBe(true)
+  })
   it('nomes herdados são apelidos de áudio comuns e o restart para a trilha', async () => {
     const { api, listeners, audios } = loadReviewRuntime()
     const warning = spyOn(console, 'warn').mockImplementation(() => {})

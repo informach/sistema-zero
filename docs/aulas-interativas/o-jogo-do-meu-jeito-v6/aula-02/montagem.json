@@ -107,5 +107,12 @@
       "inSeconds": null,
       "outSeconds": null
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "revisar-midia-da-ferramenta",
+    "blocks": []
+  }
 }

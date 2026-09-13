@@ -13,6 +13,7 @@ import { studioSectionCompletionIssues } from '@sistemazero/studio/server-projec
 import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
 import {
   assertBlockCoherent,
+  assertCurrentStudioAuthoring,
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../../application/content-admin/content-admin.service'
@@ -252,6 +253,9 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
       const document = await update(draft, tx)
       checkDocumentBounds(document)
+      for (const block of document.blocks)
+        if (block.content.kind === 'studio')
+          assertCurrentStudioAuthoring(block.content.initialProject)
       const revision = randomUUID()
       const updatedAt = new Date()
       const snapshot = await publishedSnapshot(tx, lessonId)

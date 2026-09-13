@@ -6,10 +6,8 @@ import type {
   HTMLNode,
   JSExpr,
   JSStatement,
-  SZIR,
   SZIRV2,
 } from '#ir'
-import { splitLegacyBehavior } from '#ir'
 import { PROGRAMMING_CODEC_UNHANDLED } from '../codecs/programming/blockToIR'
 import { programmingRegistrationForBlockType } from '../codecs/programming/registry'
 import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/web/canvasBlockToIR'
@@ -17,10 +15,17 @@ import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
 import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
 import { nativeSoundBlockToIR } from '../codecs/web/nativeSoundBlockCodec'
 import { webCodecForBlockType } from '../codecs/web/registry'
+import { requiredRuntimeExtensions } from '../ir/runtimeDependencies'
+import {
+  gameTwoDActionBlockExpression,
+  gameTwoDActionBlockToIR,
+} from '../official-extensions/game-2d/actionCodec'
+import { gameTwoDAudioBlockToIR } from '../official-extensions/game-2d/audioCodec'
 import {
   classicGameTwoDBlockExpression,
   classicGameTwoDBlockToIR,
 } from '../official-extensions/game-2d/classicCodec'
+import { periodicKeyFromBlock } from '../official-extensions/game-2d/periodicCodec'
 import {
   textSpriteBlockExpression,
   textSpriteBlockToIR,
@@ -37,7 +42,6 @@ import {
 import { resolveCanvas3DAddonImports } from '../three/canvas3dAddons'
 import {
   FRAME_APPEARANCE,
-  FRAME_BEHAVIOR_LEGACY,
   FRAME_EVENTS,
   FRAME_LOOPS,
   FRAME_MOLDS,
@@ -48,16 +52,8 @@ import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
 export { SHADOW_PRESETS } from '../codecs/web/cssBlockToIR'
-/** Tipos das seis Áreas do projeto e da moldura legada de migração. */
-export {
-  FRAME_APPEARANCE,
-  FRAME_BEHAVIOR_LEGACY as FRAME_BEHAVIOR,
-  FRAME_EVENTS,
-  FRAME_LOOPS,
-  FRAME_MOLDS,
-  FRAME_START,
-  FRAME_STRUCTURE,
-}
+/** Tipos das seis Áreas do projeto. */
+export { FRAME_APPEARANCE, FRAME_EVENTS, FRAME_LOOPS, FRAME_MOLDS, FRAME_START, FRAME_STRUCTURE }
 
 function resolveCanvas3DAddonStatements(statements: JSStatement[]): JSStatement[] {
   return statements.flatMap<JSStatement>((statement) => {
@@ -103,14 +99,6 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
   const appearance = firstOf(FRAME_APPEARANCE)
   if (appearance) ir.css.push(...getCssEntryChildren(appearance, 'CHILDREN', seen))
   const molds: JSStatement[] = []
-  const legacyBehavior = firstOf(FRAME_BEHAVIOR_LEGACY)
-  if (legacyBehavior) {
-    const migrated = splitLegacyBehavior(getStatementChildren(legacyBehavior, 'CHILDREN', seen))
-    molds.push(...(migrated.molds ?? []))
-    ir.behavior.start.push(...migrated.start)
-    ir.behavior.events.push(...migrated.events)
-    ir.behavior.loops.push(...migrated.loops)
-  }
   // 🧩 Meus moldes é coletado ANTES do Ao iniciar: a ordem das áreas aqui é a
   // ordem em que o gerador emite, e é o que faz uma figura existir antes do
   // tipo de inimigo que a usa.
@@ -130,101 +118,9 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
   ir.behavior.events = resolveCanvas3DAddonStatements(ir.behavior.events)
   ir.behavior.loops = resolveCanvas3DAddonStatements(ir.behavior.loops)
 
+  for (const id of requiredRuntimeExtensions(ir.behavior)) seen.add(id)
   ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
-}
-
-/**
- * Coleta PLANA (modelo ANTIGO, pré-frames): anda TODOS os blocos top-level em
- * ordem de leitura e roteia por tipo (HTML/CSS/JS). Usada SÓ pela MIGRAÇÃO
- * (`normalizeBlocksStateToFrames`) para reproduzir a saída de projetos legados
- * (sem frames) antes de re-emiti-los já framados — preserva o programa da criança.
- */
-export function collectFlatFromWorkspace(workspace: Blockly.Workspace): SZIR {
-  const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
-  const seen = new Set<string>()
-  for (const top of sortTopBlocksReadingOrder(workspace.getTopBlocks(true))) {
-    if (top.isInsertionMarker()) continue
-    visitStack(top, ir, seen)
-  }
-  ir.js = resolveCanvas3DAddonStatements(ir.js)
-  ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
-  return ir
-}
-
-/** Distância máxima em X (px de workspace) para duas pilhas contarem como a mesma coluna. */
-const COLUMN_TOLERANCE = 150
-
-/**
- * Ordena os blocos top-level em ORDEM DE LEITURA (coluna→linha): a coluna mais à
- * esquerda primeiro e, dentro de cada coluna, de cima para baixo. Isso torna o
- * código gerado previsível quando o aluno tem VÁRIAS pilhas do mesmo tipo (estilo
- * Scratch/MakeCode) — em JS a ordem define a execução.
- *
- * As colunas são inferidas agrupando o X por proximidade ({@link COLUMN_TOLERANCE}).
- * Em workspace headless (testes), os blocos não têm geometria — então devolvemos
- * a ordem original do `getTopBlocks` (fallback estável).
- *
- * Exportada para teste unitário (o end-to-end roda headless, sem posição).
- */
-export function sortTopBlocksReadingOrder(tops: Blockly.Block[]): Blockly.Block[] {
-  const positions: { x: number; y: number }[] = []
-  for (const block of tops) {
-    const svg = block as Blockly.BlockSvg
-    if (typeof svg.getRelativeToSurfaceXY !== 'function') return tops
-    const xy = svg.getRelativeToSurfaceXY()
-    positions.push({ x: xy.x, y: xy.y })
-  }
-  return readingOrderIndices(positions)
-    .map((i) => tops[i])
-    .filter((b): b is Blockly.Block => Boolean(b))
-}
-
-/**
- * Ordem de leitura (coluna→linha) para um conjunto de posições. Agrupa o X em
- * colunas por proximidade ({@link COLUMN_TOLERANCE}) e ordena por (coluna, Y).
- * Compartilhado entre o sort de blocos vivos e a derivação de layout a partir do
- * `blocksState` serializado, para que os índices batam. Comparador transitivo.
- */
-export function readingOrderIndices(positions: { x: number; y: number }[]): number[] {
-  const indices = positions.map((_, i) => i)
-  if (positions.length <= 1) return indices
-  const byX = [...indices].sort((a, b) => (positions[a]?.x ?? 0) - (positions[b]?.x ?? 0))
-  const columnOf = new Map<number, number>()
-  let column = 0
-  let prevX = positions[byX[0] ?? 0]?.x ?? 0
-  for (const i of byX) {
-    const x = positions[i]?.x ?? 0
-    if (x - prevX > COLUMN_TOLERANCE) column += 1
-    columnOf.set(i, column)
-    prevX = x
-  }
-  return indices.sort((a, b) => {
-    const colA = columnOf.get(a) ?? 0
-    const colB = columnOf.get(b) ?? 0
-    if (colA !== colB) return colA - colB
-    return (positions[a]?.y ?? 0) - (positions[b]?.y ?? 0)
-  })
-}
-
-function visitStack(block: Blockly.Block, ir: SZIR, seen: Set<string>): void {
-  let cur: Blockly.Block | null = block
-  while (cur) {
-    if (cur.isInsertionMarker()) {
-      cur = cur.getNextBlock()
-      continue
-    }
-    const node = blockToIR(cur, seen)
-    if (node) {
-      attachBlockId(node, cur.id)
-      if (node.kind === 'html') {
-        mergeClassField(cur, node.value)
-        mergeBlockData(cur, node.value)
-      }
-      routeNode(node, ir)
-    }
-    cur = cur.getNextBlock()
-  }
 }
 
 /**
@@ -272,26 +168,10 @@ function mergeClassField(block: Blockly.Block, node: HTMLNode): void {
   node.attrs = { ...(node.attrs ?? {}), class: cls }
 }
 
-/**
- * Atribui o id do bloco Blockly ao campo `__id` do nó IR correspondente. Isso
- * permite construir source maps cruzados (bloco ↔ linha de código).
- */
-function attachBlockId(node: RoutedNode, blockId: string): void {
-  // `__id` é opcional em todas as variants — atribuição direta é segura.
-  const value = node.value as { __id?: string }
-  value.__id ??= blockId
-}
-
 type RoutedNode =
   | { kind: 'html'; value: HTMLNode }
   | { kind: 'css'; value: CSSEntry }
   | { kind: 'js'; value: JSStatement }
-
-function routeNode(node: RoutedNode, ir: SZIR): void {
-  if (node.kind === 'html') ir.html.push(node.value)
-  else if (node.kind === 'css') ir.css.push(node.value)
-  else ir.js.push(node.value)
-}
 
 function f(block: Blockly.Block, name: string): string {
   return String(block.getFieldValue(name) ?? '')
@@ -440,6 +320,8 @@ function blockToExpr(block: Blockly.Block | null): JSExpr | null {
 }
 
 function blockToExprInner(block: Blockly.Block): JSExpr | null {
+  const actionExpression = gameTwoDActionBlockExpression(block, f)
+  if (actionExpression) return actionExpression
   const textExpression = textSpriteBlockExpression(block, f, exprInput)
   if (textExpression) return textExpression
   const classicExpression = classicGameTwoDBlockExpression(block, f, exprInput)
@@ -1249,12 +1131,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   if (nativeSound) return { kind: 'js', value: nativeSound }
 
   switch (block.type) {
-    case 'sz_legacy_nested_start':
-    case 'sz_legacy_nested_event':
-    case 'sz_legacy_nested_loop': {
-      const [statement] = getStatementChildren(block, 'CHILD', seen)
-      return statement ? { kind: 'js', value: statement } : null
-    }
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
 
@@ -2150,6 +2026,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   }
 
   function gameTwoDBlockToIR(): RoutedNode | null {
+    const audio = gameTwoDAudioBlockToIR(block, f, exprInput)
+    if (audio) {
+      seen.add('game-2d')
+      return { kind: 'js', value: audio }
+    }
+    const action = gameTwoDActionBlockToIR(block, seen, {
+      field: f,
+      expression: exprInput,
+      statements: getStatementChildren,
+    })
+    if (action) return { kind: 'js', value: action }
     const textStatement = textSpriteBlockToIR(block, seen, {
       field: f,
       expression: exprInput,
@@ -2206,27 +2093,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
           },
         }
-      case 'sz_g2d_collides':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:collides',
-            aVar: f(block, 'A'),
-            bVar: f(block, 'B'),
-            varName: f(block, 'NAME'),
-          },
-        }
-      case 'sz_g2d_score':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:score',
-            varName: f(block, 'NAME'),
-            initial: exprInput(block, 'INITIAL', { type: 'num', value: 0 }),
-          },
-        }
+
       case 'sz_g2d_game_over':
         seen.add('game-2d')
         return {
@@ -2240,15 +2107,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       case 'sz_g2d_clear':
         seen.add('game-2d')
         return { kind: 'js', value: { type: 'g2d:clear' } }
-      case 'sz_g2d_on_start':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:onStart',
-            body: getStatementChildren(block, 'BODY', seen),
-          },
-        }
+
       case 'sz_g2d_update_each_frame':
         seen.add('game-2d')
         return {
@@ -2283,77 +2142,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             ctxVar: 'ctx',
           },
         }
-      case 'sz_g2d_circle_collides':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:circleCollides',
-            varName: f(block, 'NAME'),
-            aVar: f(block, 'A'),
-            bVar: f(block, 'B'),
-          },
-        }
-      case 'sz_g2d_play_sound':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:playSound',
-            freq: exprInput(block, 'FREQ', { type: 'num', value: 440 }),
-            durationMs: exprInput(block, 'MS', { type: 'num', value: 200 }),
-          },
-        }
-      case 'sz_g2d_play_fx':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playFx', fx: f(block, 'FX') } }
-      case 'sz_g2d_play_music':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playMusic', tune: f(block, 'MUSIC') } }
-      case 'sz_g2d_stop_music':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:stopMusic' } }
-      case 'sz_g2d_load_sound':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:loadSound',
-            name: f(block, 'NAME') || 'som',
-            asset: f(block, 'ASSET'),
-          },
-        }
-      case 'sz_g2d_play_clip':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playClip', name: f(block, 'NAME') || 'som' } }
-      case 'sz_g2d_stop_clip':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:stopClip', name: f(block, 'NAME') || 'som' } }
-      case 'sz_g2d_play_track':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playTrack', name: f(block, 'NAME') || 'musica' } }
-      case 'sz_g2d_stop_track':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:stopTrack' } }
-      case 'sz_g2d_set_volume':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:setVolume',
-            level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }),
-          },
-        }
-      case 'sz_g2d_play_note':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:playNote',
-            note: f(block, 'NOTE'),
-            ms: exprInput(block, 'MS', { type: 'num', value: 300 }),
-          },
-        }
+
       case 'sz_g2d_aim_at':
         seen.add('game-2d')
         return {
@@ -2471,27 +2260,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       case 'sz_g2d_resume':
         seen.add('game-2d')
         return { kind: 'js', value: { type: 'g2d:resumeGame' } }
-      case 'sz_g2d_camera_follow':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:cameraFollow',
-            spriteVar: f(block, 'SPRITE'),
-            worldW: exprInput(block, 'WORLDW', { type: 'num', value: 800 }),
-            worldH: exprInput(block, 'WORLDH', { type: 'num', value: 600 }),
-          },
-        }
-      case 'sz_g2d_set_camera':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:setCamera',
-            x: exprInput(block, 'X', { type: 'num', value: 0 }),
-            y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          },
-        }
+
       case 'sz_g2d_break_tile_at':
         seen.add('game-2d')
         return {
@@ -2832,30 +2601,22 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           },
         }
       case 'sz_g2d_enemy_type_param':
-      case 'sz_g2d_enemy_type_param_legacy_start':
         seen.add('game-2d')
         return {
           kind: 'js',
           value: {
-            type:
-              block.type === 'sz_g2d_enemy_type_param_legacy_start'
-                ? 'g2d:setEnemyTypeParamLegacyStart'
-                : 'g2d:setEnemyTypeParam',
+            type: 'g2d:setEnemyTypeParam',
             typeVar: f(block, 'TYPE'),
             param: f(block, 'PARAM'),
             value: exprInput(block, 'VALUE', { type: 'num', value: 10 }),
           },
         }
       case 'sz_g2d_enemy_add_behavior':
-      case 'sz_g2d_enemy_add_behavior_legacy_start':
         seen.add('game-2d')
         return {
           kind: 'js',
           value: {
-            type:
-              block.type === 'sz_g2d_enemy_add_behavior_legacy_start'
-                ? 'g2d:enemyAddBehaviorLegacyStart'
-                : 'g2d:enemyAddBehavior',
+            type: 'g2d:enemyAddBehavior',
             typeVar: f(block, 'TYPE'),
             behavior: f(block, 'BEHAVIOR'),
           },
@@ -3153,19 +2914,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: { type: 'g2d:drawPreparedTileMap', mapVar: f(block, 'MAP'), ctxVar: 'ctx' },
         }
-      case 'sz_g2d_draw_tilemap':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:drawTileMap',
-            mapVar: f(block, 'MAP'),
-            ctxVar: 'ctx',
-            x: exprInput(block, 'X', { type: 'num', value: 0 }),
-            y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-            size: exprInput(block, 'SIZE', { type: 'num', value: 0 }),
-          },
-        }
+
       case 'sz_g2d_tilemap_collide':
         seen.add('game-2d')
         return {
@@ -3524,6 +3273,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: {
             type: 'g2d:everyFrames',
+            ...periodicKeyFromBlock(block.data),
             n: exprInput(block, 'N', { type: 'num', value: 30 }),
             body: getStatementChildren(block, 'BODY', seen),
           },
@@ -3534,6 +3284,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: {
             type: 'g2d:everySeconds',
+            ...periodicKeyFromBlock(block.data),
             seconds: exprInput(block, 'SECS', { type: 'num', value: 2 }),
             body: getStatementChildren(block, 'BODY', seen),
           },
@@ -3544,6 +3295,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: {
             type: 'g2d:afterSeconds',
+            ...periodicKeyFromBlock(block.data),
             seconds: exprInput(block, 'SECS', { type: 'num', value: 3 }),
             body: getStatementChildren(block, 'BODY', seen),
           },
@@ -3575,20 +3327,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             size: exprInput(block, 'SIZE', { type: 'num', value: 24 }),
           },
         }
-      case 'sz_g2d_draw_hearts':
-        seen.add('game-2d')
-        return {
-          kind: 'js',
-          value: {
-            type: 'g2d:drawHearts',
-            ctxVar: 'ctx',
-            count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
-            x: exprInput(block, 'X', { type: 'num', value: 10 }),
-            y: exprInput(block, 'Y', { type: 'num', value: 10 }),
-            size: exprInput(block, 'SIZE', { type: 'num', value: 22 }),
-            color: f(block, 'COLOR'),
-          },
-        }
+
       case 'sz_g2d_draw_sprite_health':
         seen.add('game-2d')
         return {
@@ -3784,12 +3523,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: { type: 'g2d:explode', spriteVar: f(block, 'SPRITE'), color: f(block, 'COLOR') },
         }
-      case 'sz_g2d_play_shoot':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playShoot' } }
-      case 'sz_g2d_play_explosion':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playExplosion' } }
+
       case 'sz_g2d_on_sprite_group_overlap':
         seen.add('game-2d')
         return {
@@ -4084,15 +3818,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             speed: exprInput(block, 'SPEED', { type: 'num', value: 4 }),
           },
         }
-      case 'sz_g2d_play_jump':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playJump' } }
-      case 'sz_g2d_play_dino_hurt':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playDinoHurt' } }
-      case 'sz_g2d_play_collect':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playCollect' } }
 
       // ---- Kit gorilas: batalha de bananas ----
       case 'sz_g2d_create_city':
@@ -4150,12 +3875,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: { type: 'g2d:drawBanana', cityVar: f(block, 'CITY'), ctxVar: 'ctx' },
         }
-      case 'sz_g2d_play_whistle':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playWhistle' } }
-      case 'sz_g2d_play_boom':
-        seen.add('game-2d')
-        return { kind: 'js', value: { type: 'g2d:playBoom' } }
+
       case 'sz_g2d_computer_turn':
         seen.add('game-2d')
         return {
@@ -5505,6 +5225,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           kind: 'js',
           value: {
             type: 'gk:rpgCreateMap',
+            ...(f(block, 'BOUNDS') === 'unbounded' ? { bounds: 'unbounded' as const } : {}),
             map: f(block, 'MAP'),
             cols: exprInput(block, 'COLS', { type: 'num', value: 15 }),
             rows: exprInput(block, 'ROWS', { type: 'num', value: 10 }),

@@ -102,7 +102,7 @@ export const gameTwoDTextSpritesRuntime = `
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {unknown} text */
   function setSpriteText(sprite, text) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _cancelSpriteImageRedraw(sprite);
     sprite.image = null;
     sprite.anim = null;
@@ -125,7 +125,7 @@ export const gameTwoDTextSpritesRuntime = `
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {number} size @param {string} color */
   function setTextStyle(sprite, size, color) {
-    if (!sprite || !sprite.textAppearance) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sprite.textAppearance) return;
     sprite.textAppearance.size = Math.min(512, _positiveFiniteNumber(size, 32));
     sprite.textAppearance.color = color || '#ffffff';
     _layoutSpriteText(sprite);
@@ -138,7 +138,7 @@ export const gameTwoDTextSpritesRuntime = `
    * @param {string} background
    */
   function setTextBox(sprite, width, align, padding, background) {
-    if (!sprite || !sprite.textAppearance) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sprite.textAppearance) return;
     var style = sprite.textAppearance;
     style.width = Math.max(0, Math.min(4096, _finiteNumber(width, 0)));
     style.padding = Math.max(0, Math.min(256, _finiteNumber(padding, 4)));
@@ -189,7 +189,7 @@ export const gameTwoDTextSpritesRuntime = `
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {string} key @param {unknown} value */
   function setSpriteData(sprite, key, value) {
-    if (!sprite || typeof key !== 'string') return;
+    if (!sprite || _isDestroyedSprite(sprite) || typeof key !== 'string') return;
     if (!sprite.data) sprite.data = Object.create(null);
     Object.defineProperty(sprite.data, key, { value: value, writable: true, enumerable: true, configurable: true });
   }
@@ -199,7 +199,7 @@ export const gameTwoDTextSpritesRuntime = `
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {number} x @param {number} y */
   function _spriteContainsPointer(sprite, x, y) {
-    if (!sprite || sprite._paintEpoch !== _spritePaintEpoch || !sprite._paintOrder || (sprite.opacity !== undefined && sprite.opacity <= 0)) return false;
+    if (!sprite || _isDestroyedSprite(sprite) || sprite._paintEpoch !== _spritePaintEpoch || !sprite._paintOrder || (sprite.opacity !== undefined && sprite.opacity <= 0)) return false;
     _layoutSpriteText(sprite);
     var dx = x + camera.x - sprite.x - sprite.w / 2;
     var dy = y + camera.y - sprite.y - sprite.h / 2;
@@ -210,13 +210,29 @@ export const gameTwoDTextSpritesRuntime = `
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {() => void} fn @param {string} [id] */
   function onSpriteClick(sprite, fn, id) {
-    if (!sprite || typeof fn !== 'function') return;
+    if (!sprite || _isDestroyedSprite(sprite) || typeof fn !== 'function') return;
     if (_runningLoopId && !id) {
       warnOnce('evento-sprite-no-quadro', 'Registre o clique no sprite em “Quando acontecer”, fora de “A cada quadro”.');
       return;
     }
     var handlerId = _targetClickHandlerId('sprite-clique', id, sprite, fn);
     onPointer(function (x, y) { if (_spriteContainsPointer(sprite, x, y)) fn(); }, handlerId);
+    _spriteClickTargets.set('clique:' + handlerId, sprite);
+  }
+  var _spriteClickTargets = new Map();
+  /** @param {import('./runtimeContract').GameTwoDSprite} sprite */
+  function _removeSpriteClickHandlers(sprite) {
+    var hudKey = _textHudIds.get(sprite);
+    if (hudKey) _updateAccessibleHud(hudKey, '');
+    _textHudIds.delete(sprite);
+    _spriteClickTargets.forEach(function (target, id) {
+      if (target !== sprite) return;
+      delete pointerHandlers[id];
+      var index = pointerHandlerOrder.indexOf(id);
+      if (index >= 0) pointerHandlerOrder.splice(index, 1);
+      _spriteClickTargets.delete(id);
+    });
+    _targetClickIds.delete(sprite);
   }
   /** @param {import('./runtimeContract').GameTwoDGroup} group @param {(sprite: import('./runtimeContract').GameTwoDSprite) => void} fn @param {string} [id] */
   function onGroupClick(group, fn, id) {
@@ -251,6 +267,7 @@ export const gameTwoDTextSpritesRuntime = `
   }
   _registerRuntimeDomain('text-sprites', {
     reset: function () {
+      _spriteClickTargets.clear();
       _targetClickIds = new WeakMap();
       _textHudIds = new WeakMap();
       _nextTextHudId = 1;

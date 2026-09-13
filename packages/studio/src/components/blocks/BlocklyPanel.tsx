@@ -12,7 +12,6 @@ import {
   ensureBlocklyInitialized,
   HTMLConnectionChecker,
   markLifecycleBlocksState,
-  normalizeBlocksStateToFrames,
   type PasteTargetHandlers,
   registerClassesFlyout,
   registerFunctionsFlyout,
@@ -28,6 +27,7 @@ import { extensionMinLevel } from '#extensions'
 import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
+import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
 import { isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import {
   attachAnimationNameWatcher,
@@ -303,14 +303,16 @@ export interface BlocklyPanelProps {
 }
 
 export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
-  const { blocksState, installedExtensions, projectMode, blocksHydration } = useProjectStore(
-    useShallow((s) => ({
-      blocksState: s.project?.blocksState ?? null,
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-      projectMode: s.project?.mode ?? 'blocks',
-      blocksHydration: s.blocksHydration,
-    })),
-  )
+  const { blocksState, installedExtensions, projectMode, blocksHydration, projectToolsKey } =
+    useProjectStore(
+      useShallow((s) => ({
+        blocksState: s.project?.blocksState ?? null,
+        projectToolsKey: s.project?.projectTools?.join('\n') ?? '',
+        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        projectMode: s.project?.mode ?? 'blocks',
+        blocksHydration: s.blocksHydration,
+      })),
+    )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
   const diagnosticsStoreApi = useDiagnosticsStoreApi()
@@ -407,14 +409,22 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // revelar o avançado (settings), se o professor permitir.
   const learning = useStudioConfig().learning
   const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const projectTools = useMemo(() => {
+    const requested = new Set(projectToolsKey.split('\n'))
+    const installed = new Set(installedIdsKey.split('\n'))
+    return SERVER_BLOCK_CATALOG.filter(
+      (entry) => requested.has(entry.type) && (!entry.extension || installed.has(entry.extension)),
+    ).map((entry) => entry.type)
+  }, [projectToolsKey, installedIdsKey])
   const profile = useMemo<LearningProfile>(
     () => ({
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
+      projectTools,
       allowCategories: learning.allowCategories,
     }),
-    [learning, revealAdvanced],
+    [learning, revealAdvanced, projectTools],
   )
 
   const toolbox = useMemo(() => {
@@ -922,11 +932,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       })
       return
     }
-    // Migração transparente p/ o modelo CONTAINER: um projeto LEGADO (blocos
-    // soltos, sem áreas) é distribuído pelas seis áreas preservando a saída.
-    // Idempotente (no-op se já tem frame). As extensões já foram re-registradas no
-    // efeito acima, então o load headless da migração enxerga os blocos delas.
-    const stateToLoad = normalizeBlocksStateToFrames(blocksState)
+    // A fronteira de abertura já entregou o documento atual.
+    const stateToLoad = blocksState
     const serialized = JSON.stringify(stateToLoad)
     if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)

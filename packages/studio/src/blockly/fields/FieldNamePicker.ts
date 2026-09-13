@@ -321,9 +321,7 @@ export const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   sz_js_create_element: ['NAME'],
   sz_js_create_element_ns: ['NAME'],
   // Jogo 2D: pontuação e resultado de colisão são variáveis.
-  sz_g2d_score: ['NAME'],
-  sz_g2d_collides: ['NAME'],
-  sz_g2d_circle_collides: ['NAME'],
+
   // Kits que guardam um "objeto" nomeado numa variável (o caminho do
   // equilibrista/balão, a cidade dos gorilas) — os consumidores (PATH/CITY)
   // redigitavam o nome.
@@ -347,7 +345,6 @@ const CANVAS_CONTEXT_DECL_BLOCKS: NameFieldRegistry = {
 const MUTABLE_VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_js_var_declare: ['NAME'],
   sz_js_var_create: ['NAME'],
-  sz_g2d_score: ['NAME'],
 }
 
 /** Blocos que DECLARAM uma classe / uma função (fonte das listas de classe/função). */

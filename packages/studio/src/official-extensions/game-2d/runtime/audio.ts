@@ -375,12 +375,12 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _trackKey = key;
     _requestClip(key, true);
   }
-  function stopTrack() {
-    // ⚠️ Para as DUAS: a do arquivo e a melodia sintetizada. Assim "Parar a
-    // musica" sempre faz o que a crianca espera, sem ela precisar lembrar de
-    // qual dos dois blocos de musica usou.
-    if (_trackKey) stopClip(_trackKey);
-    stopMusic();
+  /** @param {'all' | 'synth' | 'file'} [scope] */
+  function stopTrack(scope) {
+    var target = scope === undefined ? 'all' : scope;
+    if (target !== 'all' && target !== 'synth' && target !== 'file') return;
+    if (target !== 'synth' && _trackKey) stopClip(_trackKey);
+    if (target !== 'file') stopMusic();
   }
   function setSoundVolume(level) {
     // ⚠️ NAO usar _positiveFiniteNumber aqui: ele so aceita > 0, entao o ZERO

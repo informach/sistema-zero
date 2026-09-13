@@ -66,8 +66,8 @@ describe('Exemplo Sobrevivente — drift contra o parser real', () => {
       'g2d:sceneIs',
       'g2d:showScreen',
       'g2d:restart',
-      'g2d:playShoot',
-      'g2d:playExplosion',
+      'g2d:playFx',
+      'g2d:playFx',
     ]) {
       expect(types.has(t)).toBe(true)
     }

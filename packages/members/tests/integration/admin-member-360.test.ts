@@ -45,7 +45,7 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
         lessonId: lesson,
         kind: 'studio',
         sortOrder: 10,
-        content: { kind: 'studio', initialProject: { name: 'p', files: {} } },
+        content: { kind: 'studio', initialProject: { formatVersion: 2, name: 'p', files: {} } },
       },
       {
         id: pintaBlock,

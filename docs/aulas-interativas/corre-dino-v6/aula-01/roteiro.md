@@ -114,7 +114,7 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Fala original selecionada, antes dos cortes acima:** Chegou a hora do seu dinossauro. Na categoria Jogo 2D, subcategoria Kit dino, pega o bloco Criar dinossauro. Encaixa dentro do Ao iniciar, logo abaixo do Descrever o jogo para leitor de tela. Esse bloco cria um sprite. Sprite é uma palavra que quem faz jogo usa muito, e você vai ouvir ela várias vezes neste curso. Sprite é cada coisinha que existe dentro de um jogo e que se mexe ou que dá pra tocar. O seu dino é um sprite, e os cactos que vêm depois também são. Esse bloco tem cinco campos, e quase todos já vêm do jeito que a gente quer. O primeiro é o nome, e já vem escrito dino. O meu vai ficar dino mesmo, e o seu pode ser o nome que você quiser: Rex, Trovão, o nome que te vier na cabeça. Só escolhe um que você lembre fácil, porque é por esse nome que o jogo vai procurar o seu dinossauro daqui pra frente: quando mandar desenhar, quando mandar pular, quando o cacto encostar nele. E fica esperto numa coisa: daqui pra frente eu vou falar dino o tempo todo, porque o meu se chama assim. Se você deu outro nome, é o seu que vale. Nos próximos blocos você não digita o nome de novo, você escolhe o sprite numa listinha, e o que vai estar lá é o nome que você escreveu aqui. Depois vêm o x e o y, que juntos são o endereço do sprite na tela. O x diz se ele fica mais pra esquerda ou mais pra direita. O y diz se fica mais pra cima ou mais pra baixo. E tem uma coisa do y que pega todo mundo de surpresa: o y cresce pra baixo. Quanto maior o y, mais embaixo na tela. É o contrário da aula de matemática, e o motivo é que a tela conta as linhas de cima pra baixo, igual você lê um texto. A linha 150 está bem mais embaixo que a linha 1. Então lembra desse par: x maior é mais pra direita, y maior é mais pra baixo. E não vale só aqui, não. É assim na grande maioria dos jogos que você vai fazer. O y já está em 150, que é uma boa altura pra ele começar, então deixa. O quarto campo é o tamanho, e já está em 64, deixa também. O único que a gente troca é o x. Ele vem com 120, e você escreve 110. Joga o dino um tiquinho mais pra esquerda, e isso te dá um pouquinho a mais de tempo pra ver o cacto chegando e pular. O quinto e último campo é a cor. Já vem num verde de dinossauro, e se você gostar pode deixar. Mas clica no quadradinho e dá uma olhada nas outras antes de decidir, porque esse dino é seu. O meu vai ficar no verde mesmo, mas o seu pode ficar da cor que você quiser. E agora repara na tela do jogo: o dino não está lá. Calma, está certo, você não errou nada. A gente criou o dino, e ele existe. Só que criar é uma coisa e desenhar na tela é outra, e a gente ainda não mandou desenhar ele. É isso que a gente faz na próxima aula, e aí ele aparece. Quarto passo concluído.
 
-**Orientação ao aluno:** “Em Jogo 2D, Kit dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula.”
+**Orientação ao aluno:** “Em Jogo 2D, Kits prontos, Dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula.”
 
 **Critérios da construção:**
 
@@ -173,3 +173,24 @@ Produzir o complemento com leitor de tela real, legendas e descrição visível;
 A descrição do palco não torna sozinha o jogo inteiro acessível e não liga o leitor de tela. Ela fornece informação ao recurso que a pessoa utiliza. [Referência: nomes e descrições acessíveis, W3C](https://www.w3.org/WAI/ARIA/apg/practices/names-and-descriptions/).
 
 Fonte: roteiro-aula-01-corre-dino.md; SHA-256 738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf. [Mapa de cortes](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| Mostrar a borda da tela, cor espessura | Jogo 2D › Jogo e telas › Preparar a área do jogo | Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

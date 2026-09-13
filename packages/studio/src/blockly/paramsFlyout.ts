@@ -43,7 +43,7 @@ function dynamicBlockAllowed(
   profile: LearningProfile,
 ): boolean {
   if (profile.allowBlocks && profile.allowBlocks.length > 0) {
-    return profile.allowBlocks.includes(type)
+    return profile.allowBlocks.includes(type) || profile.projectTools?.includes(type) === true
   }
   if (profile.allowCategories?.includes(category)) return true
   return isBlockTypeAllowed(type, resolveBlockLevel(type), profile)

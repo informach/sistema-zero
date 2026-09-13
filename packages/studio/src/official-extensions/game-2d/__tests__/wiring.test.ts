@@ -172,13 +172,38 @@ describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () =
 
   it('⭐ drawHearts: 3 de 3 em (20,30) → TRÊS corações, o 1º EM (20,30) (não 3 corações em (3,3))', () => {
     const stmt = {
-      type: 'g2d:drawHearts',
-      ctxVar: 'ctx',
-      count: N(3),
-      x: N(20),
-      y: N(30),
-      size: N(22),
-      color: '#ff0000',
+      type: 'memberCall',
+      object: {
+        type: 'var',
+        name: 'SZGame2D',
+      },
+      method: 'drawHearts',
+      args: [
+        {
+          type: 'var',
+          name: 'ctx',
+        },
+        {
+          type: 'num',
+          value: 3,
+        },
+        {
+          type: 'num',
+          value: 20,
+        },
+        {
+          type: 'num',
+          value: 30,
+        },
+        {
+          type: 'num',
+          value: 22,
+        },
+        {
+          type: 'str',
+          value: '#ff0000',
+        },
+      ],
     } as unknown as JSStatement
     expect(compileStatements([stmt], 0).trim()).toBe(
       'SZGame2D.drawHearts(ctx, 3, 20, 30, 22, "#ff0000");',

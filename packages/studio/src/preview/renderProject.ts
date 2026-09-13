@@ -13,7 +13,7 @@ import {
 import { findExtension } from '#official-extensions'
 import { loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
-import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
+import { prepareProjectForHost } from '../state/projectValidation'
 import { buildPreviewDoc } from './bootstrap'
 import { withCoreImports } from './coreImports'
 import type { PreviewSecurityProfile } from './csp'
@@ -44,7 +44,8 @@ export async function renderProjectToPreviewDocAsync(
   project: Project,
   opts: RenderProjectOptions = {},
 ): Promise<string> {
-  const playableProject = migrateLegacyBlockProjectSnapshot(project)
+  const playableProject = await prepareProjectForHost(project)
+  if (!playableProject) throw new Error('Não foi possível preparar este jogo.')
   const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
   const installedExtensions = Array.isArray(playableProject.installedExtensions)
     ? playableProject.installedExtensions

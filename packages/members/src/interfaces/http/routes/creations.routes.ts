@@ -90,6 +90,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             tool: params.tool,
             itemId: params.itemId,
             revision: body.revision,
+            ...(body.verifiedPartHashes ? { verifiedPartHashes: body.verifiedPartHashes } : {}),
             ...(body.uploadedParts ? { uploadedParts: body.uploadedParts } : {}),
           }),
         { params: CreationItemParams, body: CreationCommitBody },

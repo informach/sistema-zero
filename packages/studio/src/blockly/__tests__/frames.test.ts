@@ -5,14 +5,14 @@ import { generateProjectFiles } from '#generators'
 import { behaviorStatements, SZIRV2Schema } from '#ir'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
 import { gameKitBlocks } from '../../official-extensions/game-2d-advanced/blocks'
-import { registerExtensionBlocks } from '../blocks'
-import { BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
-import { buildIRFromWorkspace, collectFlatFromWorkspace } from '../buildIR'
 import {
   blocksStateHasFrame,
   markLifecycleBlocksState,
-  normalizeBlocksStateToFrames,
-} from '../normalizeFrames'
+  normalizeLegacyBlocksStateToFrames as normalizeBlocksStateToFrames,
+} from '../../project-migrations/legacyFrames'
+import { registerExtensionBlocks } from '../blocks'
+import { BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
+import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
 
@@ -122,7 +122,12 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
 
     // Saída ANTES (modelo plano, exatamente o que o projeto já gerava).
     const filesBefore = generateProjectFiles({
-      ir: collectFlatFromWorkspace(ws),
+      ir: {
+        html: [{ type: 'element', tag: 'h1', text: 'Olá mundo' }],
+        css: [],
+        js: [{ type: 'consoleLog', value: { type: 'str', value: 'Olá' } }],
+        extensions: [],
+      },
       projectName: 'X',
     })
 

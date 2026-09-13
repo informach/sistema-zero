@@ -304,3 +304,9 @@ Uma direção consistente ajuda a perceber volume. O lado escolhido pode ser seu
 As falas originais selecionadas são matéria-prima: aplicar cortes e substituições antes de exportar. Não somar a narração antiga inteira à ponte nova. Nenhum timecode foi inventado; marcar entrada e saída assistindo ao arquivo gravado. Textos e títulos devem ter legenda, foco visual único e tamanho legível.
 
 Fonte: roteiro-aula-02-o-jogo-do-meu-jeito.md. SHA-256: e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451. Mapa completo: [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Esta aula não monta blocos no Estúdio. Preserve o percurso e a entrega previstos; os blocos do jogo entram nas aulas de integração.

@@ -36,7 +36,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 1. Passo 1: criar a caixinha da velocidade.
 
-**Montagem:** Manter o valor negativo e o identificador velocidade. Não confundir a base com a velocidade já atribuída a cada cacto.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter o valor negativo e o identificador velocidade. Não confundir a base com a velocidade já atribuída a cada cacto.
 
 **Na tela:** **Na tela:** Programação › Variáveis, arrastar "Criar variável __ com valor __" para dentro do Ao iniciar, logo abaixo da variável pontos e logo ACIMA do "Ir para a tela inicio"; nome "velocidade", valor -5.
 
@@ -60,7 +60,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 2. Passo 2: fazer o cacto obedecer a caixinha.
 
-**Montagem:** Complementar a gravação com placas base/antigo/novo. Primeiro demonstrar a troca -5 literal por variável -5 sem alteração de comportamento.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Complementar a gravação com placas base/antigo/novo. Primeiro demonstrar a troca -5 literal por variável -5 sem alteração de comportamento.
 
 **Na tela:** Congelar um cacto antigo com sua seta -5. Mudar a placa da base para -6 e criar outro com seta -6. Mesma posição inicial de comparação; não mudar o sorteio nesta explicação.
 
@@ -78,7 +78,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 2. Passo 2: fazer o cacto obedecer a caixinha.
 
-**Montagem:** Preservar o sorteio e o operador. Destacar o lado A da conta para não trocar o limite do sorteio por engano.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o sorteio e o operador. Destacar o lado A da conta para não trocar o limite do sorteio por engano.
 
 **Na tela:** **Na tela:** no bloco de criar cacto, dentro da conta do vx, arrastar "valor da variável velocidade" (Programação › Valores) por cima do -5. Rodar e mostrar que nada mudou.
 
@@ -104,7 +104,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 3. Passo 3: fazer a velocidade acelerar sozinha.
 
-**Montagem:** Reaproveitar a analogia de temperatura, encurtando para a régua. Substituir “quinto da lista” pelo símbolo > e nome maior que, pois a ordem da interface pode mudar.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a analogia de temperatura, encurtando para a régua. Substituir “quinto da lista” pelo símbolo > e nome maior que, pois a ordem da interface pode mudar.
 
 **Na tela:** Régua com -9, -8, -7, -6, -5; percorrer uma marca por vez. Mostrar a comparação verdadeira/falsa por texto e ícone. Mostrar = riscado e > escolhido sem depender da posição na lista.
 
@@ -136,9 +136,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 3. Passo 3: fazer a velocidade acelerar sozinha.
 
-**Montagem:** Preservar os três relógios irmãos e a troca de = por >. Encurtar a explicação de negativos já demonstrada. A configuração final é 5 s e base mínima -9.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar os três relógios irmãos e a troca de = por >. Encurtar a explicação de negativos já demonstrada. A configuração final é 5 s e base mínima -9.
 
-**Na tela:** **Na tela:** Jogo 2D › Tempo e repetição, um novo "A cada __ segundos" no Enquanto estiver rodando, ao lado dos outros dois, com 5; dentro, um "Se" (Programação › Lógica & Se) com a comparação de fábrica retirada e, no lugar dela, "a tela atual é __ ?" (Jogo 2D › Telas e cenas) em "jogando"; dentro dele, um segundo "Se" (Programação › Lógica & Se) aproveitando a comparação de fábrica: "valor da variável velocidade" > -9, **trocando o sinal de `=` para `>` na listinha** (o `>` é o quinto da lista); e dentro desse, "Somar -1 em variável velocidade".
+**Na tela:** **Na tela:** Jogo 2D › Tempo › Quadros e intervalos, um novo "A cada __ segundos" no Enquanto estiver rodando, ao lado dos outros dois, com 5; dentro, um "Se" (Programação › Lógica & Se) com a comparação de fábrica retirada e, no lugar dela, "a tela atual é __ ?" (Jogo 2D › Jogo e telas › Telas e partida) em "jogando"; dentro dele, um segundo "Se" (Programação › Lógica & Se) aproveitando a comparação de fábrica: "valor da variável velocidade" > -9, **trocando o sinal de `=` para `>` na listinha** (o `>` é o quinto da lista); e dentro desse, "Somar -1 em variável velocidade".
 
 **Trecho original selecionado, antes da edição:** Agora a gente vai fazer a caixinha da velocidade mudar sozinha, de tempo em tempo, enquanto o jogador sobrevive. E você já sabe o que faz coisa acontecer de tempo em tempo, porque montou um na Aula 5 e outro na Aula 11: o relógio. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega mais um bloco A cada tantos segundos. Clica, segura e solta dentro do Enquanto estiver rodando, ao lado dos outros dois relógios. Ao lado, e não dentro deles. Agora são três relógios vizinhos, cada um com o seu trabalho. Nesse novo, põe 5 segundos. E, como sempre, todo relógio precisa de um Se a tela atual é jogando por dentro. Essa é a manobra que a gente batizou lá na Aula 7 de embrulhar no Se, e são sempre os mesmos quatro movimentos. O primeiro movimento: na categoria Programação, subcategoria Lógica e Se, pega o bloco Se. No segundo, ele vem com uma comparação de fábrica lá dentro, e essa não serve, então arrasta ela pra fora e joga na lixeira. No terceiro, vai na categoria Jogo 2D, subcategoria Telas e cenas, pega a pergunta a tela atual é e encaixa no lugar que ficou vazio, escolhendo jogando na listinha. E no quarto, solta esse Se dentro do relógio novo, porque é ele que vai embrulhar tudo que vier agora. Agora, dentro desse Se, vem outro Se. E esse é diferente, presta atenção. Volta na categoria Programação, subcategoria Lógica e Se, pega mais um bloco Se e solta ele dentro do primeiro. Dessa vez a gente aproveita a comparação de fábrica que vem dentro dele, porque a nossa pergunta é justamente uma comparação. Essa aqui não vai pra lixeira. Ela tem três pedaços: o da esquerda, o sinal do meio e o da direita. Do lado esquerdo, na categoria Programação, subcategoria Valores, pega o bloco valor da variável e arrasta ele por cima do número que já está ali. Nele você escolhe a velocidade. Agora o sinal do meio, e esse é o mais importante da aula inteira. Ele vem no igual, e a gente não quer igual, quer maior. Abre a listinha dos sinais e conta comigo: o maior é o quinto da lista, aquele biquinho que aponta pra direita. Clica nele. Confere na tela se ficou o biquinho apontando pra direita mesmo, e não o igual. Repara bem nisso, porque se você esquecer o sinal no igual o jogo não vai dar erro nenhum. Nenhum iconezinho, nenhum aviso. Ele só nunca vai acelerar, e você ia ficar procurando o problema sem achar. Tem erro que grita e tem erro que fica quietinho, e esse é dos quietinhos. E no pedaço da direita, escreve -9. Ficou: 'Se o valor da variável velocidade for maior que menos 9'. E agora a parte que confunde todo mundo no começo: números negativos. Pensa em temperatura. Faz menos 5 graus lá fora. Está frio, né? Agora imagina menos 9 graus. Está ainda mais frio. Então menos 5 é mais quente que menos 9. Ou seja: menos 5 é maior que menos 9. Com a velocidade é igual: menos 5 é mais devagar, menos 9 é mais rápido. Então essa pergunta quer dizer: 'a velocidade ainda não chegou no limite de menos 9?' E se ainda não chegou, o que a gente faz? Deixa ela mais rápida. Dentro desse segundo Se, na categoria Programação, subcategoria Variáveis, põe o bloco Somar em variável. Ele tem dois campos: no número escreve -1, e na variável escolhe a velocidade. Somar menos 1? Isso mesmo: somar um número negativo é o mesmo que tirar. Menos 5 somado com menos 1 dá menos 6, que é mais rápido. E por que esse limite de menos 9? Porque sem ele o jogo ia acelerar pra sempre, e depois de dois minutos os cactos estariam passando tão rápido que ninguém conseguiria nada. Todo acelerador precisa de um freio. O menos 9 é o nosso. Clica na área do jogo e joga uma partida longa, tentando sobreviver bastante. Sentiu? Começou tranquilo e foi apertando. A cada cinco segundos que você aguenta, os cactos ficam um tiquinho mais rápidos, até o limite. O jogo já acelera sozinho. Agora o último passo do curso.
 
@@ -160,7 +160,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-13-corre-dino.md → Parte 4. Passo 4: testar e ajustar o seu jogo.
 
-**Montagem:** Selecionar o trecho final sobre descrição. Tirar os testes livres -7/-14 e 2/10 da tarefa obrigatória. A revisão do jogo é a entrega seguinte.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Selecionar o trecho final sobre descrição. Tirar os testes livres -7/-14 e 2/10 da tarefa obrigatória. A revisão do jogo é a entrega seguinte.
 
 **Na tela:** **Na tela:** jogar partidas longas; depois a pausa, mexendo no limite (-7 e -14) e no ritmo do relógio (2 e 10).
 
@@ -223,3 +223,59 @@ Cada cacto mantém a velocidade atribuída na criação.
 O professor acompanha os objetivos e a entrega, confere o comportamento descrito acima e intervém no ponto da dificuldade. A checagem estrutural verifica a montagem; não equivale a uma prova automática de jogabilidade, contraste ou áudio.
 
 Fonte íntegra conferida por SHA-256: 05eb185cda62071bb736bbdf7461cdfbc0e03e694f8dad6609cf73972550660e. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D › Movimento › Velocidade e gravidade | Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite. |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Controlar o dinossauro , força do pulo | Jogo 2D › Kits prontos › Dino | Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro". |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Criar grupo de sprites | Jogo 2D › Grupos › Criar e percorrer | Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas). |
+| Desenhar o grupo | Jogo 2D › Grupos › Desenho e ordem | Desenha todos os sprites do grupo. Use a cada quadro, depois de mover. |
+| Mostrar a caixa de colisão do sprite | Jogo 2D › Colisões › Área de contato | Desenha um contorno rosa na área de colisão do sprite (para depurar colisões). |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D › Vida e placar › Indicadores e texto na tela | Escreve "rótulo valor" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| A cada segundos | Jogo 2D › Tempo › Quadros e intervalos | Roda o “fazer” a cada N segundos. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”. |
+| Soltar explosão no sprite cor | Jogo 2D › Desenho e efeitos › Partículas | Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite. |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama. |
+| Quando apertar qualquer tecla ou tocar na tela | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro quando a criança aperta qualquer tecla ou toca na tela. É o "aperte qualquer coisa para começar" das telas de início. Segurar a tecla dispara uma vez só. |
+| Quando o sprite pular | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro. |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D › Colisões › Encostar e bloquear | Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o "fazer" com aquele sprite. Use dentro do "a cada quadro". |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D › Grupos › Participação e limpeza | Remove do grupo os sprites que saíram da tela e roda o "fazer" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo. |
+| um número de a | Jogo 2D › Sorteios › Números e posições | Sorteia um número inteiro entre os dois valores (incluindo as pontas). Limites com vírgula são ajustados para os inteiros internos; se o intervalo não tiver nenhum inteiro, usa o mais próximo do meio. |
+| Reiniciar o jogo | Jogo 2D › Jogo e telas › Telas e partida | Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto. |
+| o estado do jogo é ? | Jogo 2D › Jogo e telas › Telas e partida | Verdadeiro se o jogo está naquela tela. Use dentro de um "se". |
+| Usar área de colisão de % do tamanho para o sprite | Jogo 2D › Colisões › Área de contato | Muda o tamanho da área de colisão do sprite: menor que 100% = colisão mais justa para DANO; maior = mais fácil de PEGAR (moedas). Vale para as perguntas de encostar; "impedir de atravessar" continua usando o tamanho cheio. Veja a área real com "Mostrar a caixa de colisão". |
+| Mudar o estado do jogo para | Jogo 2D › Jogo e telas › Telas e partida | Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| Tremer a tela com intensidade | Jogo 2D › Desenho e efeitos › Efeitos | Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão. |
+| Mostrar tela com título subtítulo dica fundo | Jogo 2D › Jogo e telas › Telas e partida | Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota. |
+| No grupo criar obstáculo em x tamanho com vx | Jogo 2D › Kits prontos › Dino | Cria um obstáculo desenhado e coloca no grupo. Cacto e pedra nascem no chão (pule por cima); o pássaro vem no alto (abaixe por baixo). Ligue o x na borda direita e um vx negativo para ele vir vindo. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D › Grupos › Movimento | Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro. |
+| Condição se, senão se e senão | Programação › ❓ Lógica & Se | Executa o "então" quando a condição for verdadeira. Use + para juntar "senão se" e "senão". |
+| Criar variável com valor | Programação › 🏷️ Variáveis | Cria uma variável e guarda nela um valor: número, conta, aleatório, etc. |
+| Somar em variável | Programação › 🏷️ Variáveis | Soma ou tira uma quantidade do valor atual de uma variável. |
+| Conta matemática | Programação › 🔢 Matemática | Faz uma conta entre dois valores (somar, subtrair, multiplicar, dividir, resto, potência). |
+| Comparar dois valores | Programação › ❓ Lógica & Se | Compara dois valores e devolve verdadeiro ou falso. |
+| juntar texto | Programação › 🔣 Valores | Junta vários pedaços (texto fixo e valores) num só texto. Use + para adicionar pedaços. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+| texto | Programação › 🔣 Valores | Um valor de texto. |
+| valor da variável | Programação › 🔣 Valores | Usa o conteúdo de uma variável já criada como valor. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

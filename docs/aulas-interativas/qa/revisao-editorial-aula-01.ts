@@ -124,7 +124,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     ),
     dialogue(
       'orientacao-dino-v7',
-      'Em Jogo 2D, Kit dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula.',
+      'Em Jogo 2D, Kits prontos, Dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula.',
     ),
     discovery,
     dialogue(

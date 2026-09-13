@@ -37,7 +37,7 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
     sortOrder: 0,
     content: {
       kind: 'studio',
-      initialProject: { name: 'Meu jogo', files: { 'index.html': '' } },
+      initialProject: { formatVersion: 2, name: 'Meu jogo', files: { 'index.html': '' } },
       showcase: { enabled: true, title: 'Meu jogo' },
     },
   })

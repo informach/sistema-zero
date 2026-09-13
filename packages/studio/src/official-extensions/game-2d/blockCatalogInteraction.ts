@@ -843,24 +843,7 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
     tooltip:
       'Monta os DADOS do mapa a partir de um tileset. O tamanho informado é o de cada quadro NA ARTE. Depois escolha uma preparação: encaixar na tela, posicionar no mundo ou criar um Mundo desse mapa. Cada número da grade escolhe um quadro; ";" separa linhas, espaço separa números e "." deixa vazio. Tiles sólidos barram por todos os lados; tiles plataforma deixam passar por baixo.',
   },
-  {
-    type: 'sz_g2d_draw_tilemap',
-    hidden: true,
-    placement: 'command',
-    message0: 'Bloco antigo: preparar e desenhar o mapa %1 em x %2 y %3 com tiles de %4 px',
-    args0: [
-      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
-      { type: 'input_value', name: 'X', check: 'JSValue' },
-      { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'Compatibilidade com projetos antigos. Este bloco mistura preparação e desenho, por isso pode deslocar a colisão. Substitua por “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles” em Ao iniciar e “Desenhar o mapa preparado” no quadro.',
-  },
+
   {
     // Irmão do "Pôr o cenário atrás de tudo" (✨ Aparência): mesma geometria de
     // cobertura, mas quem manda na ordem das camadas é a criança. É
@@ -949,21 +932,4 @@ const currentGameTwoDInteractionBlocks: BlockDefinition[] = [
   },
 ]
 
-function legacyStartVariant(sourceType: string, legacyType: string): BlockDefinition {
-  const source = currentGameTwoDInteractionBlocks.find((block) => block.type === sourceType)
-  if (!source) throw new Error(`Bloco canônico ausente para a compatibilidade: ${sourceType}`)
-  return {
-    ...source,
-    type: legacyType,
-    placement: 'command',
-    hidden: true,
-    tooltip:
-      'Bloco antigo mantido no Ao iniciar para preservar a ordem de projetos salvos. Projetos novos usam a versão em Meus moldes.',
-  }
-}
-
-export const gameTwoDInteractionBlocks: BlockDefinition[] = [
-  ...currentGameTwoDInteractionBlocks,
-  legacyStartVariant('sz_g2d_enemy_type_param', 'sz_g2d_enemy_type_param_legacy_start'),
-  legacyStartVariant('sz_g2d_enemy_add_behavior', 'sz_g2d_enemy_add_behavior_legacy_start'),
-]
+export const gameTwoDInteractionBlocks: BlockDefinition[] = currentGameTwoDInteractionBlocks

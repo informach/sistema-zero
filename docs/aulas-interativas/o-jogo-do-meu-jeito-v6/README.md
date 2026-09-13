@@ -92,3 +92,7 @@ bun packages/community-kids/tests/visual/serve-meu-jeito-preview.ts
 O último comando abre um ensaio local em `http://127.0.0.1:4322`, com o componente real de iframe e correção local de demonstração. Ele não usa conta, API ou banco. O botão de reabrir permite conferir a retomada. Encerre com Ctrl+C.
 
 O [relatório estrutural](../qa/meu-jeito-v6-verificacao.json) registra fontes, âncoras, seções e contratos. O [relatório de revisão](../qa/meu-jeito-v6-revisao.md) distingue testes locais, inspeção visual e o que ainda depende dos vídeos e do ambiente de publicação.
+
+## Edição atual do Jogo 2D
+
+Os roteiros e os mapas de montagem desta pasta foram atualizados para a paleta 1.0 e documentos de projeto no formato 2. Consulte [a atualização dos três cursos](../ATUALIZACAO-JOGO-2D.md), [a lista completa de blocos](blocos-o-jogo-do-meu-jeito.json) e [a matriz por aula](blocos-por-aula.json). As gravações indicadas nos mapas ainda precisam ser feitas e validadas em staging.

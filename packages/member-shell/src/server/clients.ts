@@ -1226,7 +1226,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     commitCreationUpload(
       tool: CreationToolView,
       itemId: string,
-      body: { revision: number; uploadedParts?: string[] },
+      body: { revision: number; uploadedParts?: string[]; verifiedPartHashes?: string[] },
     ): Promise<GatewayResponse<CreationCommitResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/commit`, {
         method: 'POST',

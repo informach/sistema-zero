@@ -49,8 +49,8 @@ export function GallerySubmissionViewer({
           if (!value) throw new Error('Este desenho não pôde ser aberto.')
           if (!controller.signal.aborted) setLoaded({ tool: 'pinta', value })
         } else {
-          const { sanitizeProjectForHost } = await import('@sistemazero/studio')
-          const value = sanitizeProjectForHost(raw)
+          const { prepareProjectForHost } = await import('@sistemazero/studio')
+          const value = await prepareProjectForHost(raw)
           if (!value) throw new Error('Este projeto não pôde ser aberto.')
           if (!controller.signal.aborted) setLoaded({ tool: 'studio', value })
         }

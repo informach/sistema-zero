@@ -119,7 +119,7 @@ export const lateRecipes: Record<number, Recipe> = {
         'Parte 5.',
         'build',
         'Responder à colisão entre os grupos a cada quadro.',
-        'Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; toque som de explosão.',
+        'Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; use Tocar efeito, na família Som, e escolha explosão.',
         {
           checks: k.colisaoTiros,
           visual:
@@ -432,7 +432,7 @@ export const lateRecipes: Record<number, Recipe> = {
         'Parte 6.',
         'build',
         'Evitar tiros e sons acumulados no menu e depois do fim.',
-        'Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar som de tiro para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.',
+        'Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.',
         {
           checks: k.guardarTiro,
           edit: 'Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter.',

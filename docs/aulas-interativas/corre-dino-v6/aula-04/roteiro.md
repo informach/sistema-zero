@@ -33,7 +33,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-04-corre-dino.md → Parte 1. Passo 1: a área que escuta o teclado.
 
-**Montagem:** Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter o evento vazio. A sequência anuncia que esta é uma primeira versão que vamos testar.
 
 **Na tela:** **Na tela:** categoria "Áreas do projeto", arrastar "Quando acontecer" e soltar ao lado das outras duas; depois Jogo 2D › Controles, arrastar "Quando apertar a tecla" para dentro dela e escolher "barra de espaço" no menu.
 
@@ -53,13 +53,13 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Ouvir a resposta de um evento de entrada.
 
-**Fala de ligação / orientação ao aluno:** “Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste.”
+**Fala de ligação / orientação ao aluno:** “Dentro do evento de espaço, encaixe Tocar efeito com pulo selecionado. Ative o áudio pelo controle da página e teste.”
 
 **Fonte:** roteiro-aula-04-corre-dino.md → Parte 2. Passo 2: o som do pulo.
 
-**Montagem:** Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo.
 
-**Na tela:** **Na tela:** Jogo 2D › Kit dino, arrastar "Tocar som de pulo" para dentro do "Quando apertar a tecla". Rodar e pular com o espaço.
+**Na tela:** **Na tela:** Jogo 2D › Som › Efeitos prontos, arrastar "Tocar efeito, com pulo selecionado" para dentro do "Quando apertar a tecla". Rodar e pular com o espaço.
 
 **Trecho original selecionado, antes da edição:** Na categoria Jogo 2D, volta na subcategoria Kit dino, aquela mesma de onde saiu o seu dinossauro e a floresta. Lá embaixo tem o bloco Tocar som de pulo. Clica, segura, arrasta pra dentro do Quando apertar a tecla, que está vazio, e encaixa. Esse bloco não tem campo nenhum. Ele faz uma coisa só, e o nome dele já diz qual é. Clica na área do jogo e aperta o espaço. Ouviu? O seu dino pula fazendo o somzinho. Um bloquinho só, e o jogo já parece outro. Segundo passo feito. Agora eu quero testar isso direito com você, porque tem uma coisa aí que não está certa.
 
@@ -67,7 +67,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Critérios automáticos:**
 
-- Encaixe Som de pulo no evento de espaço.
+- Encaixe Tocar efeito com pulo selecionado no evento de espaço.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
@@ -91,13 +91,13 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Trocar o evento preservando um único bloco de som.
 
-**Fala de ligação / orientação ao aluno:** “Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio.”
+**Fala de ligação / orientação ao aluno:** “Coloque Quando o dino pular. Mova o mesmo Tocar efeito com pulo selecionado para dentro dele e apague o evento de espaço que ficou vazio.”
 
 **Fonte:** roteiro-aula-04-corre-dino.md → Parte 3. Passo 3: o som está escutando a coisa errada.
 
-**Montagem:** Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar.
 
-**Na tela:** **Na tela:** os quatro testes, um a um e sem pressa, com o áudio bem audível: espaço (tem som), seta pra cima (mudo), clique na parte de cima da área do jogo (mudo), e espaço com o dino no ar (som sem pulo). Depois: Jogo 2D › Controles, arrastar "Quando o sprite pular" para dentro do Quando acontecer, trocar "jogador" por "dino", arrastar o "Tocar som de pulo" de dentro do evento de tecla pra dentro do evento novo, e apagar o "Quando apertar a tecla" vazio com o botão direito. Refazer os quatro testes.
+**Na tela:** **Na tela:** os quatro testes, um a um e sem pressa, com o áudio bem audível: espaço (tem som), seta pra cima (mudo), clique na parte de cima da área do jogo (mudo), e espaço com o dino no ar (som sem pulo). Depois: Jogo 2D › Controles, arrastar "Quando o sprite pular" para dentro do Quando acontecer, trocar "jogador" por "dino", arrastar o "Tocar efeito, com pulo selecionado" de dentro do evento de tecla pra dentro do evento novo, e apagar o "Quando apertar a tecla" vazio com o botão direito. Refazer os quatro testes.
 
 **Trecho original selecionado, antes da edição:** Vamos testar de quatro jeitos. Faz junto comigo, um de cada vez. Primeiro: clica na área do jogo e aperta o espaço. Pulou e tocou o som. Esse funcionou. Segundo: agora pula com a seta pra cima. Pulou... e não teve som nenhum. Mudo. Terceiro: clica com o mouse na parte de cima da área do jogo. Pulou também... e mudo de novo. E olha que esse é o pior dos três, porque é o jeito de jogar no celular. Quem abrir o seu jogo no telefone nunca vai ouvir o som do pulo. E o quarto é o contrário de todos: pula com o espaço e, enquanto o dino está lá no alto, aperta o espaço mais umas cinco vezes. Ouviu? O som tocou todas as vezes, e o dino não pulou nenhuma delas, porque ele já estava no ar. Então olha o tamanho do estrago: em três jeitos de pular, o som só sai em um. E ainda por cima ele sai quando não teve pulo. Agora a pergunta boa: por que aconteceu isso? Porque o bloco que a gente montou não está escutando o dino. Ele está escutando o seu dedo na barra de espaço. São coisas diferentes, e a gente confundiu as duas. Pensa assim. O seu dedo é o pedido. O pulo é o que aconteceu de verdade. Nem todo pedido vira pulo, porque o dino não pula no ar. E nem todo pulo vem de um pedido na barra de espaço, porque tem a seta e tem o dedo na tela. E aí a frase do dia, que vale pro resto da sua vida de quem faz jogo: não pergunta qual tecla foi apertada, pergunta o que aconteceu no jogo. Bora consertar, e o conserto é um bloco só. Na categoria Jogo 2D, subcategoria Controles, do lado daquele Quando apertar a tecla, tem o bloco Quando o sprite pular. Clica, segura, arrasta pra dentro do Quando acontecer e solta logo abaixo do evento que já está lá. Ele tem um campo, o nome do sprite, e nasce escrito jogador. Você já conhece essa: clica e troca pra dino. Agora presta atenção neste gesto, porque é o coração da aula. Pega o Tocar som de pulo, que está lá dentro do evento de tecla, arrasta ele e solta dentro do Quando o sprite dino pular. O mesmo bloco de som, o mesmíssimo, só que agora ele obedece a outro chefe. E o evento de tecla ficou vazio, sem servir pra nada. Clica com o botão direito em cima dele e escolhe Apagar este bloco, igual você fez na Aula 2 com a borda da tela. Agora refaz os quatro testes comigo. Espaço: som. Seta pra cima: som. Clique na parte de cima da tela: som. E com o dino lá no alto, aperta o espaço cinco vezes: silêncio. Os quatro de uma vez, com um bloco só. Porque agora quem avisa o som não é o teclado. É o próprio dino, na hora exata em que ele sai do chão.
 
@@ -105,8 +105,8 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Critérios automáticos:**
 
-- Coloque Som de pulo dentro de Quando o dino pular.
-- Mantenha apenas um bloco Som de pulo ativo.
+- Coloque Tocar efeito com pulo selecionado dentro de Quando o dino pular.
+- Mantenha apenas um Tocar efeito com pulo selecionado.
 - Retire o evento provisório de tecla.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
@@ -117,8 +117,8 @@ Teste espaço, seta para cima e toque. Deve haver som em cada pulo real, sem um 
 
 **Critérios da entrega:**
 
-- Coloque Som de pulo dentro de Quando o dino pular.
-- Mantenha apenas um bloco Som de pulo ativo.
+- Coloque Tocar efeito com pulo selecionado dentro de Quando o dino pular.
+- Mantenha apenas um Tocar efeito com pulo selecionado.
 - Retire o evento provisório de tecla.
 - Aplique gravidade ao dino antes do controle do pulo.
 - Controle o dino com força 14, antes de desenhá-lo.
@@ -152,3 +152,34 @@ O evento de pulo atende aos diferentes controles.
 O professor acompanha os objetivos e a entrega, confere o comportamento descrito acima e intervém no ponto da dificuldade. A checagem estrutural verifica a montagem; não equivale a uma prova automática de jogabilidade, contraste ou áudio.
 
 Fonte íntegra conferida por SHA-256: 7b0c677793fae8c30bcef617c4ecc50ed6173beba622d672907eab8b72b6ab4f. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D › Movimento › Velocidade e gravidade | Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite. |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Controlar o dinossauro , força do pulo | Jogo 2D › Kits prontos › Dino | Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro". |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama. |
+| Quando o sprite pular | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro. |
+| Quando apertar a tecla | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar). |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

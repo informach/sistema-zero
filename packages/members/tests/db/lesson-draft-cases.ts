@@ -98,12 +98,38 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    test('old Studio authoring cannot replace an updated shared draft', async () => {
+      const f = await fixture()
+      const block = await f.content.createBlock(f.lessonId, 'studio', {
+        kind: 'studio',
+        initialProject: { formatVersion: 2, name: 'Atual', files: {} },
+      })
+      const draft = await f.repo.read(f.lessonId)
+      const document = structuredClone(draft.document)
+      document.blocks.find((b) => b.id === block.id)!.content.initialProject = {
+        formatVersion: 1,
+        name: 'Aba antiga',
+        files: {},
+      }
+      let failure: unknown
+      try {
+        await f.repo.replace(f.lessonId, actor, draft.revision, randomUUID(), document)
+      } catch (error) {
+        failure = error
+      }
+      expect(failure).toBeInstanceOf(Error)
+      expect((failure as Error).message).toContain('Studio atualizado')
+      expect((await f.repo.read(f.lessonId)).document).toEqual(draft.document)
+      expect((await f.repo.read(f.lessonId)).revision).toBe(draft.revision)
+    })
+
     test('publication refuses impossible Studio criteria and keeps the published snapshot unchanged', async () => {
       const f = await fixture()
       const workspace = await f.content.createBlock(f.lessonId, 'studio', {
         kind: 'studio',
         purpose: 'experiment',
         initialProject: {
+          formatVersion: 2,
           name: 'Jogo',
           files: {},
           installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
@@ -303,7 +329,7 @@ export function lessonDraftCases(getDb: () => Database) {
         owner = { userId: randomUUID(), accountId: randomUUID() }
       const studio = await f.content.createBlock(f.lessonId, 'studio', {
         kind: 'studio',
-        initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+        initialProject: { formatVersion: 2, name: 'Jogo', files: { 'index.html': '' } },
       })
       const activity = await f.content.createBlock(f.lessonId, 'interactive', interactive)
       if (!activity.contentRevision) throw new Error('Missing revision')
@@ -371,7 +397,7 @@ export function lessonDraftCases(getDb: () => Database) {
       const f = await fixture(),
         block = await f.content.createBlock(f.lessonId, 'studio', {
           kind: 'studio',
-          initialProject: { name: 'Jogo', files: {} },
+          initialProject: { formatVersion: 2, name: 'Jogo', files: {} },
         })
       await f.db.insert(studioSubmissions).values({
         id: randomUUID(),
@@ -601,7 +627,7 @@ export function lessonDraftCases(getDb: () => Database) {
         }
         const studio = await f.content.createBlock(f.lessonId, 'studio', {
           kind: 'studio',
-          initialProject: { name: 'Jogo existente', files: {} },
+          initialProject: { formatVersion: 2, name: 'Jogo existente', files: {} },
         })
         const video = await f.content.createBlock(f.lessonId, 'video', {
           kind: 'video',

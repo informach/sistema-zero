@@ -3,6 +3,7 @@ import { ValidationError } from '@sistemazero/core/errors'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
@@ -153,6 +154,18 @@ export class SubmitStudioProjectService {
     if (JSON.stringify(submissionProject).length > limits.maxChars) {
       throw new PayloadTooLargeError('Projeto excede o tamanho máximo permitido')
     }
+
+    if (
+      kind === 'studio' &&
+      !gallery &&
+      (!project ||
+        typeof project !== 'object' ||
+        !('formatVersion' in project) ||
+        project.formatVersion !== STUDIO_PROJECT_FORMAT_VERSION)
+    )
+      throw new ValidationError(
+        'Atualize a página e abra o projeto no Estúdio antes de enviar esta versão.',
+      )
 
     const submittedAt = this.clock()
     // Auto-correção é do Estúdio: o bloco de Pinta é só entrega (a régua de "desenho certo" não

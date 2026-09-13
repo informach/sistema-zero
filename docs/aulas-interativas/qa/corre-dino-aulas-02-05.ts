@@ -48,13 +48,23 @@ const jump = (force: number) =>
   })
 const sound = c(
   'som-pulo',
-  'Coloque Som de pulo dentro de Quando o dino pular.',
+  'Coloque Tocar efeito com pulo selecionado dentro de Quando o dino pular.',
   'sz_g2d_on_jump',
-  { area: 'events', fields: { SPRITE: 'dino' }, inputBlocks: { BODY: p('sz_g2d_play_jump') } },
+  {
+    area: 'events',
+    fields: { SPRITE: 'dino' },
+    inputBlocks: { BODY: p('sz_g2d_play_fx', { fields: { FX: 'jump' } }) },
+  },
 )
-const oneSound = c('som-unico', 'Mantenha apenas um bloco Som de pulo ativo.', 'sz_g2d_play_jump', {
-  count: 1,
-})
+const oneSound = c(
+  'som-unico',
+  'Mantenha apenas um Tocar efeito com pulo selecionado.',
+  'sz_g2d_play_fx',
+  {
+    fields: { FX: 'jump' },
+    count: 1,
+  },
+)
 const noKey = absent('sem-evento-tecla', 'Retire o evento provisório de tecla.', 'sz_g2d_on_key')
 const group = c('grupo', 'Crie o grupo cactos em Ao iniciar.', 'sz_g2d_create_group', {
   area: 'start',
@@ -356,14 +366,19 @@ export const earlyRecipes: Record<number, Recipe> = {
         part: 2,
         focus: 'Ouvir a resposta de um evento de entrada.',
         reason: 'A primeira versão precisa ser compreendida antes de mostrar seu limite.',
-        say: 'Dentro do evento de espaço, encaixe Som de pulo. Ative o áudio pelo controle da página e teste.',
+        say: 'Dentro do evento de espaço, encaixe Tocar efeito com pulo selecionado. Ative o áudio pelo controle da página e teste.',
         edit: 'Manter a ativação de áudio real. Mostrar legenda ou indicador de som para quem não pode ouvi-lo.',
         checks: [
-          c('som-na-tecla', 'Encaixe Som de pulo no evento de espaço.', 'sz_g2d_on_key', {
-            area: 'events',
-            fields: { KEY: 'Space' },
-            inputBlocks: { BODY: p('sz_g2d_play_jump') },
-          }),
+          c(
+            'som-na-tecla',
+            'Encaixe Tocar efeito com pulo selecionado no evento de espaço.',
+            'sz_g2d_on_key',
+            {
+              area: 'events',
+              fields: { KEY: 'Space' },
+              inputBlocks: { BODY: p('sz_g2d_play_fx', { fields: { FX: 'jump' } }) },
+            },
+          ),
         ],
       },
       {
@@ -383,7 +398,7 @@ export const earlyRecipes: Record<number, Recipe> = {
         part: 3,
         focus: 'Trocar o evento preservando um único bloco de som.',
         reason: 'Aplicar a descoberta à montagem; impedir que o som antigo continue duplicando.',
-        say: 'Coloque Quando o dino pular. Mova o mesmo Som de pulo para dentro dele e apague o evento de espaço que ficou vazio.',
+        say: 'Coloque Quando o dino pular. Mova o mesmo Tocar efeito com pulo selecionado para dentro dele e apague o evento de espaço que ficou vazio.',
         edit: 'Reaproveitar os quatro testes e a transferência do bloco. Encurtar a explicação já vista no laboratório; manter o gesto de mover, não copiar.',
         checks: [sound, oneSound, noKey],
       },

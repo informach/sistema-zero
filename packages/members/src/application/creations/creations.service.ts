@@ -1,3 +1,4 @@
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 /**
  * "Guardado na sua conta" — os casos de uso do ÍNDICE das criações (Estúdio
  * Completo e Pinta). O blob nunca passa por aqui: o BFF assina PUT/GET no R2 UGC
@@ -221,6 +222,10 @@ export class ReserveCreationUploadService {
     if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
       throw new ValidationError('Versão de formato inválida')
     }
+    if (input.tool === 'studio' && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
+      throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
+    if (input.tool === 'studio' && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
+      throw new ValidationError('Esta versão do servidor ainda não aceita esse formato de projeto')
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
     }
@@ -356,11 +361,23 @@ export class CommitCreationUploadService {
     revision: number
     /** Hashes das partes que o cliente PUTou nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
+    verifiedPartHashes?: readonly string[]
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
     }
     const uploadedParts = input.uploadedParts ?? []
+    if (input.tool === 'studio' && !input.verifiedPartHashes)
+      throw new ValidationError(
+        'O serviço precisa conferir o manifesto antes de confirmar o projeto',
+      )
+    if (
+      input.verifiedPartHashes &&
+      (input.verifiedPartHashes.length > CREATION_LIMITS.maxPartsPerItem ||
+        new Set(input.verifiedPartHashes).size !== input.verifiedPartHashes.length ||
+        input.verifiedPartHashes.some((hash) => !isCreationPartHash(hash)))
+    )
+      throw new ValidationError('Lista de recursos do manifesto inválida')
     if (uploadedParts.length > CREATION_LIMITS.maxPartsPerItem) {
       throw new ValidationError('Partes demais para um item')
     }
@@ -374,6 +391,7 @@ export class CommitCreationUploadService {
       revision: input.revision,
       storageRef: creationStorageKey(input.userId, input.tool, input.itemId, input.revision),
       ...(uploadedParts.length > 0 ? { uploadedParts } : {}),
+      ...(input.verifiedPartHashes ? { verifiedPartHashes: input.verifiedPartHashes } : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -386,6 +404,8 @@ export class CommitCreationUploadService {
         throw new CreationClientOutdatedError(result.requiredVersion)
       }
       if (result.reason === 'parts-missing') throw new CreationPartMissingError(result.hashes)
+      if (result.reason === 'manifest-mismatch')
+        throw new ValidationError('Os recursos do manifesto não correspondem à revisão reservada')
       if (result.reason === 'palette-library-identity') {
         throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')
       }

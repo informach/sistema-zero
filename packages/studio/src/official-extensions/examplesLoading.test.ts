@@ -58,7 +58,8 @@ const goldenCatalogs = {
     // e as setas viraram um bloco cada, e o tamanho do campo saiu das contas
     // (440/300 cravados → "a largura/altura da tela"). A IR do exemplo encolheu
     // de 1036 para 733 linhas.
-    sha256: 'eaa8f6ba36c6c66e2c7b42831708305c0838cc260bca8b8a3fa6f39487c0d964',
+    // 13/09: sons consolidados e temporizadores com contexto de quadro explícito.
+    sha256: '4438f90c2d5dc68a7f439e82f2f515a63209bbfed67faf2d29c29f14ce7040a1',
   },
   'game-2d-advanced': {
     count: 37,

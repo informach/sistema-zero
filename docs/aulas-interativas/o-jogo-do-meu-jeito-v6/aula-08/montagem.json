@@ -10,11 +10,12 @@
       "entry": "Olha o seu jogo. A sua nave, os seus asteroides, tudo mexendo, tudo desenhado por você. Hoje a gente",
       "exit": " onde buscar ideia quando não vier nenhuma. E no quarto, o lugar onde os criadores daqui conversam.\"",
       "narration": "Olha o seu jogo. A sua nave, os seus asteroides, tudo mexendo, tudo desenhado por você. Hoje a gente não monta bloco nenhum. A primeira coisa que a gente faz é a mais natural de todas: o seu jogo está pronto, então ele vai pro Mural, pra Comunidade inteira jogar. E depois que ele estiver lá, eu te conto o que fazer daqui pra frente pra você continuar criando por conta própria, sem precisar de aula. São quatro passos. No primeiro você publica. No segundo eu te passo a rotina que faz uma pessoa ficar boa nisso. No terceiro, onde buscar ideia quando não vier nenhuma. E no quarto, o lugar onde os criadores daqui conversam.\"",
-      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
       "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
       "newNarration": "O jogo com a sua arte está pronto. Hoje a primeira tarefa é publicar e conferir que as outras pessoas conseguem jogar. Depois vou mostrar algumas possibilidades para quando você quiser criar de novo. Você não precisa construir outro jogo para terminar este curso.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-publicar",
@@ -23,11 +24,12 @@
       "entry": "Então vamos publicar. Volta pra lista de projetos pelo Sistema Zero Studio, lá no canto esquerdo da ",
       "exit": "sua nave, no Mural dos Criadores, do lado dos jogos dos outros criadores. Primeiro passo concluído.\"",
       "narration": "Então vamos publicar. Volta pra lista de projetos pelo Sistema Zero Studio, lá no canto esquerdo da barra de cima, e clica no cartão do seu jogo da nave, o que está com a sua arte. Na barra de cima tem um botão escrito Compartilhar, solto, do lado de fora daquele botão de três pontinhos. Clica nele. Abriu uma janela chamada Compartilhar no Mural dos Criadores, e ela é uma tela só, com tudo o que você precisa aí dentro. O primeiro campo é o Título, que é o nome que os outros criadores vão ver. Põe o nome do seu jogo. Embaixo dele tem o Resumo do projeto, onde você escreve em duas ou três linhas o que o seu jogo faz e o que você mudou nele. Se você não souber o que escrever, tem um botão ali que te ajuda a montar o texto. Depois vem a Capa do projeto, que é a imagem que aparece no cartão do seu jogo lá no Mural. São dois botões: o Gerar capa, que tira uma foto do seu jogo do jeito que ele está agora, e o Enviar uma imagem, se você já tem uma pronta. Eu vou clicar no Gerar capa. E olha esse quadradinho aqui embaixo, com um troféu: Participar do Desafio do mês, e do lado o nome de um tema. Funciona assim: todo mês eu escolho um tema, e ele fica na página inicial da Comunidade. Quem faz um jogo com aquele tema marca este quadradinho na hora de compartilhar. Marcou e publicou, está participando. Os jogos de quem marcou ficam juntos numa prateleira só deles, no topo do Mural. No fim do mês eu jogo todos e anuncio no Clube dos Criadores o primeiro, o segundo e o terceiro lugar, mais as menções honrosas, que são os jogos que quase chegaram lá. E logo na primeira vez que você entra num desafio, aparece um selo novo no seu perfil: o Desafiante do mês. O seu jogo de hoje é o da nave, e ele não foi feito pro tema deste mês, então deixa esse quadradinho em branco. Ele vai estar aqui toda vez que você publicar, e no terceiro passo eu te mostro como usar ele a seu favor. Antes de publicar, olha o aviso ali embaixo: a versão publicada fica salva do jeito que ela está agora. Se amanhã você mexer no seu projeto, o que está no Mural continua igual. São duas cópias separadas. Agora clica no Publicar. Publicado! Apareceram três botões. O Ver no Mural abre o Mural numa aba nova do navegador. O Abrir o jogo abre ele pra jogar. E o Copiar link copia o endereço, pra você mandar pra quem você quiser. E lá embaixo tem o Fechar. Clica nele, que a janela some e você volta pro seu projeto. Agora vai no menu da esquerda e clica no Mural. Está lá. O seu jogo, com a sua nave, no Mural dos Criadores, do lado dos jogos dos outros criadores. Primeiro passo concluído.\"",
-      "edit": "Reaproveitar o caminho de publicação. Cortar a explicação longa do Desafio do mês para a seção de orientação posterior; deixar desmarcado nesta publicação guiada. Não prometer rankings, selos ou prêmios não confirmados. Preservar o aviso de cópias separadas.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar o caminho de publicação. Cortar a explicação longa do Desafio do mês para a seção de orientação posterior; deixar desmarcado nesta publicação guiada. Não prometer rankings, selos ou prêmios não confirmados. Preservar o aviso de cópias separadas.",
       "visual": "Título, resumo, capa, aviso e Publicar; depois Fechar e Mural pelo menu. Conferir nome/arte corretos no cartão e abrir o jogo publicado. Não mostrar apenas tela de sucesso.",
       "newNarration": "Abra o projeto com a sua nave e seus asteroides. Teste e use Compartilhar. Escolha título, resumo e capa; confira o aviso da cópia publicada e publique. Feche a janela, vá ao Mural e abra o cartão do seu jogo. Jogue a versão que está lá.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-versoes",
@@ -36,11 +38,12 @@
       "entry": "Com o jogo publicado, o curso fechou. E agora vem a parte que vale pra sempre. Olha esse jogo aqui: ",
       "exit": "uda tudo, porque quem faz fica bom, e quem só assiste fica no mesmo lugar. Segundo passo concluído.\"",
       "narration": "Com o jogo publicado, o curso fechou. E agora vem a parte que vale pra sempre. Olha esse jogo aqui: um carrinho numa estrada, desviando de buracos. Agora olha os blocos dele. São os mesmos do seu jogo. O que mudou foi o desenho da nave, que virou um carro, e o desenho da pedra, que virou um buraco. Isso tem nome: mesma mecânica, outro tema. Mecânica é o que o jogo faz, as regras dele. Tema é a história que você conta por cima. Olha mais um: um submarino, no fundo do mar, desviando de águas-vivas, e os mesmos blocos de novo. E mais um, um passarinho voando por uma floresta, desviando de galhos. E dá pra ir bem longe com isso: um peixe desviando de anzóis, um menino desviando de poças de água, uma formiga fugindo dos pingos de chuva. O tema é seu, e aqui não tem certo nem errado. Agora tem um segundo jeito de fazer uma versão nova, e nesse o tema nem muda. Olha essas duas telas. É o mesmo jogo da nave nas duas, com a mesma história, e a diferença está no desenho: essa aqui é toda em pixel art, e essa é toda em vetor. O mesmo jogo, parecendo dois jogos diferentes. E é daí que sai a rotina que eu quero te passar hoje. Cada curso que você fizer aqui vai te ensinar coisas novas. Quando você terminar um, faz assim: duas versões. Uma é o mesmo jogo do curso, com os seus desenhos no lugar dos que vieram prontos, que é exatamente o que você acabou de fazer neste. A outra é a mesma mecânica com outro tema, como o carrinho. Duas versões depois de cada curso. É pouca coisa, e muda tudo, porque quem faz fica bom, e quem só assiste fica no mesmo lugar. Segundo passo concluído.\"",
-      "edit": "Usar no máximo dois exemplos reais e uma comparação de estilo. Não afirmar “mesmos blocos” se o exemplo de carrinho retirou tiros, vidas ou vitória. Trocar obrigação de duas versões por convite para prática futura.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Usar no máximo dois exemplos reais e uma comparação de estilo. Não afirmar “mesmos blocos” se o exemplo de carrinho retirou tiros, vidas ou vitória. Trocar obrigação de duas versões por convite para prática futura.",
       "visual": "Comparação de dois jogos jogáveis preparados pelo professor. Destacar uma regra igual e um elemento visual diferente; encerrar sem abrir o editor da criança.",
       "newNarration": "Veja a nave e depois o carrinho. Se os controles, tiros, obstáculos e pontuação seguem as mesmas regras, a mecânica foi preservada. O tema e o desenho mudaram. Essas são ideias para outro dia, não uma tarefa nova desta aula.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-ideias",
@@ -49,11 +52,12 @@
       "entry": "Tem dia que você senta pra criar e não vem ideia nenhuma. Isso acontece com todo mundo que cria, inc",
       "exit": "sa que funciona, abre pra ver como ela foi feita por dentro, e faz a sua. Terceiro passo concluído.\"",
       "narration": "Tem dia que você senta pra criar e não vem ideia nenhuma. Isso acontece com todo mundo que cria, inclusive comigo. Então eu vou te dar dois lugares pra buscar. O primeiro é o Desafio do mês. Vai na página inicial da Comunidade. Tem um cartão lá com um troféu, e dentro dele o tema deste mês. Ele muda todo mês, e é o mesmo tema pra Comunidade inteira. Aí é só fazer um jogo com aquele tema e, na hora de compartilhar, marcar aquele quadradinho que você viu no primeiro passo. Marcou e publicou, você está no desafio. E é uma das melhores formas de praticar, porque o tema já te dá o assunto e você só precisa pensar no jogo. E o desafio quase sempre pede um jogo começado do zero, porque o tema é outro. Começar do zero é mais fácil do que parece, e você já tem onde. Lembra do Meu jogo novo, aquele projeto vazio que você criou na primeira aula? Ele ficou guardado esse tempo todo, esperando, já com a extensão Jogo 2D instalada. Clica no cartão dele. Aqui dentro tem uma tela vazia e a coluna da esquerda cheia de bloquinhos, esperando você. Por onde começar é escolha sua. O segundo lugar pra buscar ideia é o Mural. Entra lá e joga o que os outros criadores fizeram. Quando achar um jogo que você gostou muito, olha o cartão dele: tem um botão escrito Fazer a minha versão. Clica nele. A Comunidade cria um projeto novo aí no seu Estúdio, com aquele jogo inteirinho, blocos e tudo, e ele aparece na sua lista com o nome começando em Remix de. Daí pra frente ele é seu: troca os desenhos, mexe nos números, muda as regras e deixa do seu jeito. E é assim que quase todo criador aprende: pega uma coisa que funciona, abre pra ver como ela foi feita por dentro, e faz a sua. Terceiro passo concluído.\"",
-      "edit": "Reaproveitar os caminhos e o projeto de teste da aula 1. Professor demonstra remix em projeto de demonstração, sem pedir clique da criança. Corrigir a afirmação de que outro tema quase sempre exige começar do zero: às vezes cabe adaptar as mesmas regras.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar os caminhos e o projeto de teste da aula 1. Professor demonstra remix em projeto de demonstração, sem pedir clique da criança. Corrigir a afirmação de que outro tema quase sempre exige começar do zero: às vezes cabe adaptar as mesmas regras.",
       "visual": "Tema atual sem narrar seu nome; cartão do Mural e surgimento de Remix de na conta de demonstração. Mostrar Meu jogo novo como ponto de partida disponível, sem montar blocos.",
       "newNarration": "Quando quiser uma ideia nova, veja o tema do mês na página inicial ou jogue uma criação no Mural. Fazer a minha versão cria outro projeto, com o nome Remix de. O jogo publicado que você acabou de conferir continua separado.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-clube",
@@ -62,11 +66,12 @@
       "entry": "O último passo de hoje é o lugar que faz tudo isso ficar mais fácil: o Clube, ali no menu da esquerd",
       "exit": "hoje começou com alguém daqui perguntando. Ninguém aprende a criar sozinho. Quarto passo concluído.\"",
       "narration": "O último passo de hoje é o lugar que faz tudo isso ficar mais fácil: o Clube, ali no menu da esquerda. Ele é o Clube dos Criadores. É onde a turma daqui conversa sobre o que está fazendo. Põe lá o que você está criando. E põe também o que você quer criar, mesmo que ainda seja só uma ideia solta na sua cabeça. Quando você escreve, a Comunidade inteira fica sabendo, e aparece gente com sugestão, com um jeito que você não tinha pensado, e às vezes com a resposta pronta. Pede sugestão quando você travar. E dá sugestão quando você souber de alguma coisa. Essa parte é a mais importante do Clube: quanto mais você ajuda os outros, mais gente aparece pra te ajudar. É assim que funciona lá, e você vai ver. E tem uma coisa que eu quero que você faça toda vez que acontecer: se você quiser pôr uma coisa no seu jogo e não souber como se faz, escreve lá. Se for uma coisa rápida, eu te respondo por lá mesmo. E se for uma coisa grande, ela pode virar um curso novo aqui na Comunidade. Muita coisa que existe aqui hoje começou com alguém daqui perguntando. Ninguém aprende a criar sozinho. Quarto passo concluído.\"",
-      "edit": "Reaproveitar apresentação do Clube. Remover obrigação de postar, promessa de resposta pessoal e frase absoluta “ninguém aprende sozinho”. Preferir exemplos preparados para a gravação a dados de crianças expostos sem necessidade.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar apresentação do Clube. Remover obrigação de postar, promessa de resposta pessoal e frase absoluta “ninguém aprende sozinho”. Preferir exemplos preparados para a gravação a dados de crianças expostos sem necessidade.",
       "visual": "Tela de demonstração com uma pergunta em três partes: queria/tentei/aconteceu. Nenhum envio automático ou ação exigida do aluno.",
       "newNarration": "No Clube você pode mostrar o que está criando e pedir uma sugestão. Uma pergunta ajuda mais quando conta o que você queria, o que tentou e o que aconteceu. Por exemplo: queria que o fogo pulsasse, dupliquei o quadro, mas os dois desenhos ficaram iguais.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-fecho-v6",
@@ -75,11 +80,356 @@
       "entry": "Parabéns, você terminou o curso O Jogo do Meu Jeito! E aconteceu de novo aquilo que eu te contei na ",
       "exit": ", desenha uma coisa que você tem vontade de ver mexendo, e põe ela dentro de um jogo. Até a próxima!",
       "narration": "Parabéns, você terminou o curso O Jogo do Meu Jeito! E aconteceu de novo aquilo que eu te contei na primeira aula: cada curso que você termina e publica no Mural libera alguma coisa nova pra você. Publicar dá XP, o seu ranking sobe, e a sua Carreira de Criador vai crescendo. Pode vir uma ferramenta inteira, como foi o Pinta desta vez. Podem vir bloquinhos novos, aparecendo dentro do seu Estúdio sem você instalar nada. E pode vir um curso novo, abrindo pra você fazer. Então, quando você terminar o próximo, abre o Estúdio e olha a coluna da esquerda com calma: provavelmente vai ter coisa lá que hoje ainda não tem. E guarda a rotina de hoje, que é o que eu mais quero que você leve daqui. Terminou um curso, faz as duas versões: o mesmo jogo com os seus desenhos, e a mesma mecânica com outro tema. Sem ideia, olha o tema do mês ou entra no Mural. Travou em alguma coisa, escreve no Clube. O que faz uma pessoa ficar cada vez melhor nisso é criar muito. Fazer um jogo, olhar pra ele e achar ele meio esquisito, fazer outro melhor, e outro, e outro. E tem uma coisa bonita nisso: daqui a um mês, cada pessoa que fez este curso vai ter feito uma coisa completamente diferente da outra, com os mesmos bloquinhos. Não vai ter dois jogos iguais. Então vai lá. Abre o Pinta, desenha uma coisa que você tem vontade de ver mexendo, e põe ela dentro de um jogo. Até a próxima!",
-      "edit": "Reaproveitar a recapitulação, ajustando: Publicação vem primeiro, como a decisão original de 23/08. O recebimento pela galeria é automático; verificação do link no Mural é humana. O manifesto não tem uma ação automática de publicar jogo. Não prometer desbloqueio, XP, selo, premiação ou posições no ranking sem conferir o produto configurado. Apresentar a rotina das versões como prática futura, compatível com o pedido de foco da criança. Preparar os jogos de comparação antes de editar o vídeo; não afirmar que os exemplos já estão implementados neste pacote. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a recapitulação, ajustando: Publicação vem primeiro, como a decisão original de 23/08. O recebimento pela galeria é automático; verificação do link no Mural é humana. O manifesto não tem uma ação automática de publicar jogo. Não prometer desbloqueio, XP, selo, premiação ou posições no ranking sem conferir o produto configurado. Apresentar a rotina das versões como prática futura, compatível com o pedido de foco da criança. Preparar os jogos de comparação antes de editar o vídeo; não afirmar que os exemplos já estão implementados neste pacote. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
       "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
       "newNarration": "Você levou um jogo para o Estúdio, desenhou em pixels e em vetor, animou e colocou suas artes no jogo. Sua versão está pronta para ser jogada. Quando quiser continuar, pode trocar a arte, imaginar outro tema ou buscar uma ideia no Mural. Termine as duas perguntas; a criação de hoje já está completa.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_events",
+        "label": "⚡ Quando acontecer",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "events",
+        "tooltip": "Roda quando alguma coisa acontece."
+      },
+      {
+        "type": "sz_frame_loops",
+        "label": "🔁 Enquanto estiver rodando",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "loops",
+        "tooltip": "Repete enquanto o projeto estiver rodando."
+      },
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_animate_sprite",
+        "label": "Animar sprite com a folha na animação , do quadro ao a fps",
+        "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+        "area": "start",
+        "tooltip": "Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último)."
+      },
+      {
+        "type": "sz_g2d_arrows_x",
+        "label": "Mover o sprite com as setas <- -> (velocidade )",
+        "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+        "area": "start",
+        "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+      },
+      {
+        "type": "sz_g2d_center_x",
+        "label": "o centro x do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+      },
+      {
+        "type": "sz_g2d_clamp_to_screen",
+        "label": "Manter o sprite dentro da tela",
+        "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+        "area": "start",
+        "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+      },
+      {
+        "type": "sz_g2d_clear",
+        "label": "Limpar a tela",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+      },
+      {
+        "type": "sz_g2d_create_group",
+        "label": "Criar grupo de sprites",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+      },
+      {
+        "type": "sz_g2d_create_image_sprite",
+        "label": "Criar sprite em x y largura altura com imagem",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar."
+      },
+      {
+        "type": "sz_g2d_damage_sprite",
+        "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+      },
+      {
+        "type": "sz_g2d_draw_group",
+        "label": "Desenhar o grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+        "area": "start",
+        "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+      },
+      {
+        "type": "sz_g2d_draw_score",
+        "label": "Mostrar placar valor em x y cor tamanho",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+        "area": "start",
+        "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+      },
+      {
+        "type": "sz_g2d_draw_sprite",
+        "label": "Desenhar o sprite",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+      },
+      {
+        "type": "sz_g2d_draw_sprite_health",
+        "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+      },
+      {
+        "type": "sz_g2d_every_frames",
+        "label": "A cada quadros",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+      },
+      {
+        "type": "sz_g2d_explode",
+        "label": "Soltar explosão no sprite cor",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+        "area": "start",
+        "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+      },
+      {
+        "type": "sz_g2d_health_depleted",
+        "label": "as vidas do sprite acabaram?",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "value",
+        "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+      },
+      {
+        "type": "sz_g2d_load_spritesheet",
+        "label": "Carregar folha de quadros da imagem com quadros de x px",
+        "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+        "area": "start",
+        "tooltip": "Prepara uma folha de sprites (vários quadros numa única imagem) para animar. Informe o tamanho de CADA quadro em pixels."
+      },
+      {
+        "type": "sz_g2d_on_group_overlap",
+        "label": "Para cada colisão entre os grupos e",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_on_key",
+        "label": "Quando apertar a tecla",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+      },
+      {
+        "type": "sz_g2d_on_sprite_group_overlap",
+        "label": "Para cada sprite do grupo que colidir com o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_play_fx",
+        "label": "Tocar efeito",
+        "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+        "area": "start",
+        "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+      },
+      {
+        "type": "sz_g2d_prune_offscreen",
+        "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+      },
+      {
+        "type": "sz_g2d_random_x",
+        "label": "um x aleatório na tela",
+        "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+        "area": "value",
+        "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+      },
+      {
+        "type": "sz_g2d_remove_from_group",
+        "label": "Tirar o sprite do grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+      },
+      {
+        "type": "sz_g2d_restart",
+        "label": "Reiniciar o jogo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+      },
+      {
+        "type": "sz_g2d_scene_is",
+        "label": "o estado do jogo é ?",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "value",
+        "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+      },
+      {
+        "type": "sz_g2d_set_health",
+        "label": "Dar ao sprite de vida",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+      },
+      {
+        "type": "sz_g2d_set_scene",
+        "label": "Mudar o estado do jogo para",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_shake",
+        "label": "Tremer a tela com intensidade",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+      },
+      {
+        "type": "sz_g2d_show_screen",
+        "label": "Mostrar tela com título subtítulo dica fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+      },
+      {
+        "type": "sz_g2d_spawn_asteroid",
+        "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+      },
+      {
+        "type": "sz_g2d_spawn_bullet",
+        "label": "Criar tiro no grupo em x y raio cor vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+      },
+      {
+        "type": "sz_g2d_spawn_image_in_group",
+        "label": "No grupo criar um sprite chamado em x y largura altura com imagem vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Como \"criar no grupo\", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset). O nome é opcional: preencha quando quiser animar ou mexer nesse sprite logo depois."
+      },
+      {
+        "type": "sz_g2d_sprite_y",
+        "label": "a posição y do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+      },
+      {
+        "type": "sz_g2d_starfield",
+        "label": "Desenhar fundo de estrelas (velocidade )",
+        "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+        "area": "start",
+        "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+      },
+      {
+        "type": "sz_g2d_update_each_frame",
+        "label": "A cada quadro do jogo",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+      },
+      {
+        "type": "sz_g2d_update_group",
+        "label": "Mover os sprites do grupo usando suas velocidades",
+        "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+        "area": "start",
+        "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+      },
+      {
+        "type": "sz_js_const_create",
+        "label": "Criar constante com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+      },
+      {
+        "type": "sz_js_if_else",
+        "label": "Condição se, senão se e senão",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "start",
+        "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+      },
+      {
+        "type": "sz_js_var_create",
+        "label": "Criar variável com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+      },
+      {
+        "type": "sz_js_var_increment",
+        "label": "Somar em variável",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+      },
+      {
+        "type": "sz_val_compare",
+        "label": "Comparar dois valores",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "value",
+        "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      },
+      {
+        "type": "sz_val_text",
+        "label": "texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor de texto."
+      },
+      {
+        "type": "sz_val_variable",
+        "label": "valor da variável",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+      }
+    ]
+  }
 }

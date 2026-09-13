@@ -387,7 +387,7 @@ describe('learning activities and sections', () => {
           ? {
               kind,
               purpose: 'experiment',
-              initialProject: { name: 'Exploração', files: { 'index.html': '' } },
+              initialProject: { formatVersion: 2, name: 'Exploração', files: { 'index.html': '' } },
             }
           : {
               kind,

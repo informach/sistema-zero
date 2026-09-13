@@ -247,7 +247,11 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     })
 
     test('bloco de Estúdio com o MESMO nome de cadeia não entra', async () => {
-      await inserirBloco(aula1, 'studio', { kind: 'studio', initialProject: {}, chain: 'heroi' })
+      await inserirBloco(aula1, 'studio', {
+        kind: 'studio',
+        initialProject: { formatVersion: 2 },
+        chain: 'heroi',
+      })
       expect(await content.listPintaChainBlocks(courseId, 'heroi')).toEqual([])
     })
 
@@ -281,7 +285,11 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     })
 
     test('🚨 o kind entra na busca: cadeia de Pinta não enxerga bloco de Estúdio homônimo', async () => {
-      await inserirBloco(aula1, 'studio', { kind: 'studio', initialProject: {}, chain: 'heroi' })
+      await inserirBloco(aula1, 'studio', {
+        kind: 'studio',
+        initialProject: { formatVersion: 2 },
+        chain: 'heroi',
+      })
       await inserirBloco(aula2, 'pinta', pinta('pixel-sprite', 'heroi'))
 
       expect(await courses.findPrecedingChainBlock(courseId, aula2, 'heroi', 'pinta')).toBeNull()

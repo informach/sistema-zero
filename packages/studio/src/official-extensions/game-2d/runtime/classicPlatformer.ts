@@ -270,7 +270,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
    * agachamento, gravidade e pulo de altura variável.
    */
   function classicPlatformer(sprite, speed, jump) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var maxWalk = _positiveFiniteNumber(speed, 2.5);
     var maxRun = maxWalk * CLASSIC_RUN_RATIO;
@@ -407,7 +407,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   }
 
   function _beginTileContacts(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if (_runningLoopId) {
       if (sprite._tileContactsFrame !== _frameStamp) sprite._tileContacts = [];
       sprite._tileContactsFrame = _frameStamp;
@@ -417,7 +417,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     }
   }
   function _recordTileContact(sprite, map, row, col, side) {
-    if (!sprite || !map || !map.rows || !map.rows[row]) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !map || !map.rows || !map.rows[row]) return;
     var contacts = sprite._tileContacts || (sprite._tileContacts = []);
     for (var i = 0; i < contacts.length; i++) {
       var known = contacts[i];
@@ -437,7 +437,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     });
   }
   function forEachTileContact(sprite, map, side, visit) {
-    if (!sprite || !map || typeof visit !== 'function') return;
+    if (!sprite || _isDestroyedSprite(sprite) || !map || typeof visit !== 'function') return;
     if (_runningLoopId && sprite._tileContactsFrame !== _frameStamp) return;
     // ⚠️ A régua sai da LISTA, não de uma cadeia de comparações escrita à mão. A
     // versão anterior listava head/feet/left/right e caía em "qualquer" para

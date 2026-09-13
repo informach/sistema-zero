@@ -1,5 +1,6 @@
 import type { LearningManifest } from '../../../packages/core/src/learning'
 import type { readOriginal } from './corre-dino-editorial'
+import { studioGuideMarkdown } from './jogo-2d-edicao-atual'
 import { lessonOneCuts } from './revisao-editorial-aula-01'
 
 export function lessonOneMarkdown(
@@ -83,5 +84,5 @@ export function lessonOneMarkdown(
     `Fonte: ${source.file}; SHA-256 ${source.hash}. [Mapa de cortes](montagem.json).`,
     '',
   )
-  return lines.join('\n')
+  return lines.join('\n') + studioGuideMarkdown(manifest)
 }

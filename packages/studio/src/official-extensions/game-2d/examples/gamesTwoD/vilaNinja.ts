@@ -376,16 +376,28 @@ export const vilaNinjaExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:createWorld',
           varName: 'areaJogo',
-          width: { type: 'num', value: 720 },
-          height: { type: 'num', value: 540 },
+          width: {
+            type: 'num',
+            value: 720,
+          },
+          height: {
+            type: 'num',
+            value: 540,
+          },
         },
         {
           type: 'g2d:configureWorldCamera',
           worldVar: 'areaJogo',
           horizontal: 'free',
           vertical: 'free',
-          deadZoneX: { type: 'num', value: 0 },
-          deadZoneY: { type: 'num', value: 0 },
+          deadZoneX: {
+            type: 'num',
+            value: 0,
+          },
+          deadZoneY: {
+            type: 'num',
+            value: 0,
+          },
         },
         {
           type: 'g2d:createShapeSprite',

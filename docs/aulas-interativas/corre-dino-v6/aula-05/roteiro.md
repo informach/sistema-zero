@@ -36,9 +36,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 1. Passo 1: criar o grupo dos cactos.
 
-**Montagem:** Preservar a analogia da caixa; não confundir grupo com cacto visível.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a analogia da caixa; não confundir grupo com cacto visível.
 
-**Na tela:** **Na tela:** Jogo 2D › Muitos, arrastar "Criar grupo de sprites" para dentro do Ao iniciar, logo ABAIXO do "Criar dinossauro"; trocar o nome para "cactos". (Ele fica sempre abaixo do Criar dinossauro; a partir da Aula 10, abaixo também do "Usar área de colisão".)
+**Na tela:** **Na tela:** Jogo 2D › Grupos, arrastar "Criar grupo de sprites" para dentro do Ao iniciar, logo ABAIXO do "Criar dinossauro"; trocar o nome para "cactos". (Ele fica sempre abaixo do Criar dinossauro; a partir da Aula 10, abaixo também do "Usar área de colisão".)
 
 **Trecho original selecionado, antes da edição:** Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro, sem parar. E cada um deles é um sprite, aquele nome que você aprendeu na Aula 1 pra cada coisinha do jogo. Só que seria uma loucura criar um bloquinho pra cada cacto, né? Cacto 1, cacto 2, cacto 3... Uma bagunça sem fim. Na categoria Jogo 2D, subcategoria Muitos, pega o bloco Criar grupo de sprites. Clica, segura, arrasta pra dentro do Ao iniciar e encaixa logo abaixo do Criar dinossauro. Ele tem um campo só, o nome do grupo: ali você escreve cactos, tudo junto e sem acento. Isso que você acabou de montar é um grupo, e ele funciona igual a um time: em vez de falar com cada cacto, você fala com o time inteiro de uma vez. 'Ó, grupo, todo mundo aí andar.' E todos andam. É uma das ideias mais poderosas que existem em jogos. Esse foi rapidinho, e o passo 1 já está pronto. O segundo é onde a gente começa a errar de propósito.
 
@@ -60,9 +60,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 2. Passo 2: fazer o cacto nascer, andar e aparecer.
 
-**Montagem:** Reutilizar a montagem e a avalanche como observação. A criança ainda não copia esta pilha; destacar só o comando Criar.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reutilizar a montagem e a avalanche como observação. A criança ainda não copia esta pilha; destacar só o comando Criar.
 
-**Na tela:** **Na tela:** dentro do "A cada quadro do jogo", logo abaixo do "Desenhar o sprite dino", encaixar na ordem: "No grupo __ criar obstáculo" (Kit dino, grupo cactos, o resto nos valores de fábrica), "Atualizar (mover) o grupo __" e "Desenhar o grupo __" (Muitos, grupo cactos nos dois). Rodar e mostrar a avalanche.
+**Na tela:** **Na tela:** dentro do "A cada quadro do jogo", logo abaixo do "Desenhar o sprite dino", encaixar na ordem: "No grupo __ criar obstáculo" (Kits prontos › Dino, grupo cactos, o resto nos valores de fábrica), "Atualizar (mover) o grupo __" e "Desenhar o grupo __" (Grupos, grupo cactos nos dois). Rodar e mostrar a avalanche.
 
 **Trecho original selecionado, antes da edição:** Agora três blocos, e os três vão dentro do A cada quadro do jogo. O primeiro está na categoria Jogo 2D, subcategoria Kit dino, e chama No grupo criar obstáculo. Clica, segura, arrasta pra dentro do A cada quadro do jogo e encaixa logo abaixo do Desenhar o sprite dino. Ele é quem faz nascer um obstáculo dentro do grupo, e tem cinco campos. No primeiro, o grupo, escolhe cactos. O segundo é a forma, e já vem no cacto, que é justo o que a gente quer. Os três últimos são números, o x, o tamanho e o vx: não mexe em nenhum deles agora, deixa os três do jeito que vieram. Os outros dois estão na mesma categoria Jogo 2D, na subcategoria Muitos. Pega o Atualizar (mover) o grupo, arrasta e encaixa logo abaixo do criar obstáculo. Ele tem um campo só, o grupo, e ali escolhe cactos. É ele que faz todo mundo do grupo andar de uma vez. Depois pega o Desenhar o grupo, encaixa logo abaixo dele, e no campo do grupo escolhe cactos também. Esse mostra todos eles na tela. Agora olha ali na área do jogo. Nossa, que zoeira é essa? A tela virou uma parede de cacto, não dá nem pra ver o dino! Calma, está tudo certo, isso era pra acontecer mesmo. Onde a gente encaixou o bloco de criar o cacto? Dentro do A cada quadro do jogo. E o que você aprendeu na Aula 2 sobre o A cada quadro? Que ele roda 60 vezes por segundo. Então a gente pediu pro jogo criar um cacto 60 vezes por segundo. Em três segundinhos são quase duzentos cactos. O computador fez exatamente o que você mandou. Ele é obediente demais. Passo 2 feito, com avalanche e tudo. O terceiro passo é justamente consertar isso, e o conserto é uma das peças mais úteis que existem.
 
@@ -92,9 +92,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 3. Passo 3: o relógio.
 
-**Montagem:** Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Complementar o início da montagem: a criança ainda não copiou a avalanche. Reaproveitar a distinção entre criar no relógio e atualizar/desenhar no quadro.
 
-**Na tela:** **Na tela:** Jogo 2D › Tempo e repetição, arrastar "A cada __ segundos fazer" para dentro do Enquanto estiver rodando, AO LADO do "A cada quadro do jogo"; mover o bloco de criar cacto para dentro dele; trocar o 2 por 1.4. Rodar.
+**Na tela:** **Na tela:** Jogo 2D › Tempo › Quadros e intervalos, arrastar "A cada __ segundos fazer" para dentro do Enquanto estiver rodando, AO LADO do "A cada quadro do jogo"; mover o bloco de criar cacto para dentro dele; trocar o 2 por 1.4. Rodar.
 
 **Trecho original selecionado, antes da edição:** O problema não é o bloco de criar o cacto, ele está certinho. O problema é onde ele está. A gente não quer um cacto a cada quadro. A gente quer um de vez em quando. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o bloco A cada tantos segundos, aquele que tem um numerinho no meio. Clica, segura, arrasta pra dentro da área Enquanto estiver rodando e solta ao lado do A cada quadro do jogo, com um espacinho. Repara bem: ao lado, não dentro. Os dois são vizinhos, cada um com o seu ritmo. O A cada quadro é rápido, sessenta vezes por segundo. Esse novo é lento, do jeito que você mandar. Agora o bloco de criar o cacto, que está lá no meio do A cada quadro, vai mudar de lugar. E lembra da Aula 2, quando a gente arrastou um bloco do meio e os de baixo vieram junto? Aqui é a mesma coisa: embaixo do criar o cacto estão o Atualizar e o Desenhar, e eles precisam ficar onde estão. Lá na Aula 2 a gente usou o botão direito, mas ali era pra apagar o bloco. Hoje é diferente: a gente quer mudar ele de lugar, e pra isso tem outro jeito. Segura a tecla Ctrl do teclado enquanto clica e arrasta. Com o Ctrl segurado, sai só o bloco que você clicou. Então: segura o Ctrl, pega o criar o cacto, arrasta ele pra fora e solta dentro do bloco novo. Solta o Ctrl e dá uma olhada: o Atualizar e o Desenhar continuam no A cada quadro, e o criar o cacto está lá dentro do bloco novo. Se vier tudo junto sem querer, aperta Ctrl+Z e tenta de novo. Esse bloco novo tem um campo só, o número de segundos, e vem com 2. Troca por 1.4. E ó, no Estúdio, número quebrado se escreve com ponto, não com vírgula: 1 ponto 4. Olha a tela agora. Que diferença, né? Agora nasce um cacto de vez em quando, do jeito que a gente queria. Esse bloco tem um nome, e vale lembrar: é o relógio. Ele serve pra fazer uma coisa acontecer no ritmo certo, em vez de acontecer sempre. E não é só pra cacto, não: relógio serve pra um inimigo aparecer, pra um item nascer, pro veneno tirar uma vida de tempo em tempo. É uma peça que você vai usar em muito jogo daqui pra frente. Passo 3 feito. Só que tem outra coisa esquisita acontecendo na sua tela. Bora pro quarto passo.
 
@@ -121,7 +121,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 4. Passo 4: nascer fora da tela.
 
-**Montagem:** Reaproveitar a explicação de x e o resultado antes/depois. Separar nascimento fora da tela da questão do sinal da velocidade.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a explicação de x e o resultado antes/depois. Separar nascimento fora da tela da questão do sinal da velocidade.
 
 **Na tela:** Mostrar o retângulo 480 × 270 e uma faixa externa à direita. Marcar 400, 480 e 560 na mesma escala. Um cacto por vez; deixar sua posição externa visível só na demonstração.
 
@@ -139,7 +139,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 4. Passo 4: nascer fora da tela.
 
-**Montagem:** Usar apenas o gesto e a entrada suave; cortar a explicação já vista na demonstração.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Usar apenas o gesto e a entrada suave; cortar a explicação já vista na demonstração.
 
 **Na tela:** **Na tela:** apontar o cacto materializando perto da borda direita; trocar o x de 400 para 560; depois trocar o vx de -3 para -5. Rodar.
 
@@ -163,7 +163,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-05-corre-dino.md → Parte 5. Passo 5: testar.
 
-**Montagem:** Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4.
 
 **Na tela:** Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo.
 
@@ -215,3 +215,38 @@ Velocidade e intervalo são propriedades diferentes.
 O professor acompanha os objetivos e a entrega, confere o comportamento descrito acima e intervém no ponto da dificuldade. A checagem estrutural verifica a montagem; não equivale a uma prova automática de jogabilidade, contraste ou áudio.
 
 Fonte íntegra conferida por SHA-256: 7a103a2dd829c7795d691ef38ec384b3da742f02566db055e311358df080352d. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto | Roda quando alguma coisa acontece. |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D › Movimento › Velocidade e gravidade | Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite. |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Controlar o dinossauro , força do pulo | Jogo 2D › Kits prontos › Dino | Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro". |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Criar grupo de sprites | Jogo 2D › Grupos › Criar e percorrer | Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas). |
+| Desenhar o grupo | Jogo 2D › Grupos › Desenho e ordem | Desenha todos os sprites do grupo. Use a cada quadro, depois de mover. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| A cada segundos | Jogo 2D › Tempo › Quadros e intervalos | Roda o “fazer” a cada N segundos. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”. |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama. |
+| Quando o sprite pular | Jogo 2D › Controles › Teclado, ações e toque | Roda o que está dentro toda vez que o sprite pula de verdade (ex.: tocar um som, contar os pulos). Vale para os três jeitos de pular: estilo plataforma, pular no chão e o kit do dinossauro. |
+| Tocar efeito | Jogo 2D › Som › Efeitos prontos | Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| No grupo criar obstáculo em x tamanho com vx | Jogo 2D › Kits prontos › Dino | Cria um obstáculo desenhado e coloca no grupo. Cacto e pedra nascem no chão (pule por cima); o pássaro vem no alto (abaixe por baixo). Ligue o x na borda direita e um vx negativo para ele vir vindo. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D › Grupos › Movimento | Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

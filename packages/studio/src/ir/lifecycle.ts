@@ -85,7 +85,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:createBalloonPath',
   'g2d:createGroup',
   'g2d:allEnemiesGroup',
-  'g2d:score',
+
   'g2d:setHealth',
   'g2d:loadSpritesheet',
   'g2d:setStateAnim',
@@ -329,7 +329,12 @@ export const MOLD_NESTABLE_STATEMENT_TYPES = new Set([
   'g2d:setEnemyTypeParam',
 ])
 
-export const MOLD_OR_START_STATEMENT_TYPES = new Set(['funcDecl', 'var', 'declareVar'])
+export const MOLD_OR_START_STATEMENT_TYPES = new Set([
+  'funcDecl',
+  'var',
+  'declareVar',
+  ...MOLD_NESTABLE_STATEMENT_TYPES,
+])
 
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
 
@@ -429,7 +434,6 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
  */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
   if (MOLD_ONLY_STATEMENT_TYPES.has(statement.type)) return 'molds'
-  if (MOLD_NESTABLE_STATEMENT_TYPES.has(statement.type)) return 'molds'
   if (LOOP_ROOT_TYPES.has(statement.type) || isContinuousCommandType(statement.type)) {
     return 'loops'
   }

@@ -1075,6 +1075,7 @@ export const heroiQueEvoluiExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1.4,
           },
+          key: 'nasce-monstro',
           body: [
             {
               type: 'if',

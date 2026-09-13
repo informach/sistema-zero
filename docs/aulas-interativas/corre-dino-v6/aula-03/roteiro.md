@@ -34,9 +34,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-03-corre-dino.md → Parte 1. Passo 1: dar o comando de pulo ao dino.
 
-**Montagem:** Preservar o Dino flutuando e parado; não substituir pelo salto sem retorno do modelo simplificado.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o Dino flutuando e parado; não substituir pelo salto sem retorno do modelo simplificado.
 
-**Na tela:** **Na tela:** categoria "Jogo 2D", subcategoria "Kit dino", arrastar "Controlar o dinossauro" pra dentro do "A cada quadro do jogo", logo abaixo de "Desenhar fundo de floresta" e logo acima de "Desenhar o sprite dino". Deixar a força do pulo em 15. Aproximar o zoom no dino pra mostrar a pose travada e os pés no ar. Apertar espaço e a seta pra cima várias vezes, mostrando que nada acontece.
+**Na tela:** **Na tela:** categoria "Jogo 2D", subcategoria "Kits prontos › Dino", arrastar "Controlar o dinossauro" pra dentro do "A cada quadro do jogo", logo abaixo de "Desenhar fundo de floresta" e logo acima de "Desenhar o sprite dino". Deixar a força do pulo em 15. Aproximar o zoom no dino pra mostrar a pose travada e os pés no ar. Apertar espaço e a seta pra cima várias vezes, mostrando que nada acontece.
 
 **Trecho original selecionado, antes da edição:** Na categoria Jogo 2D, subcategoria Kit dino, pega o bloco Controlar o dinossauro. Clica, segura, arrasta pra dentro do loop A cada quadro do jogo e encaixa logo abaixo do Desenhar fundo de floresta e logo acima do Desenhar o sprite dino, até dar o cliquinho. Ele tem dois campos. O primeiro é o nome do sprite, e já vem escrito dino, que é justo o nome que você deu ao seu dinossauro na Aula 1. Confere se está dino e deixa assim. O segundo é o número da força do pulo, que decide a altura do salto: vem com 15, e por enquanto deixa em 15, que no fim da aula a gente brinca com ele. Agora olha a área do jogo, porque uma coisa esquisita aconteceu. O dino parou de correr. As perninhas dele congelaram, e ele ficou com aquela cara de quem está no meio de um pulo, só que parado. Ele está lá, no mesmo lugar, sem se mexer. E aperta o espaço. Nada. Aperta a seta pra cima. Nada de novo. Espera, mas eu não acabei de encaixar o bloco do comando? Encaixou. O bloco está lá e ele está funcionando. O problema é outro, e ele está na tela, na frente dos seus olhos: olha os pés do dino. Os pés dele não estão encostando na grama. Tem um espacinho ali embaixo. Ele está flutuando. E é por isso que ele ficou com essa cara. Pro jogo, o dino está no ar, no meio de um pulo que nunca acaba. Por isso as perninhas pararam: quem está no ar não corre, quem está no ar está voando. E agora vem a parte mais importante do dia, então presta atenção nesta frase: ninguém consegue pular sem ter chão embaixo do pé. Pensa em você. Pra pular, você dobra o joelho, empurra o chão e sobe. Se você estivesse boiando no meio do ar, sem nada embaixo, você ia empurrar o quê? Nada. Não tem como pular. O seu dino está exatamente assim. O comando de pular está montado e funcionando, mas ele não tem em que se apoiar. Passo 1 feito, e ele te deu o problema de bandeja. Falta uma coisa nesse jogo, e é ela que vai trazer o dino pro chão.
 
@@ -72,7 +72,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-03-corre-dino.md → Parte 2. Passo 2: a gravidade traz o dino pro chão.
 
-**Montagem:** Preservar a queda inicial, o pouso e o primeiro pulo. Relembrar y crescendo para baixo em uma frase, sem abrir outra aula de coordenadas.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a queda inicial, o pouso e o primeiro pulo. Relembrar y crescendo para baixo em uma frase, sem abrir outra aula de coordenadas.
 
 **Na tela:** **Na tela:** categoria "Jogo 2D", subcategoria "Movimento", arrastar "Aplicar a gravidade do mundo ao sprite" e encaixar logo ACIMA do "Controlar o dinossauro". Mostrar o campo escrito "jogador", clicar e trocar pra "dino". Mostrar o dino descendo, pousando na grama e as perninhas voltando a correr. Depois pular com espaço, com a seta pra cima, com o clique na parte de cima da área do jogo, e abaixar com a seta pra baixo e com o clique segurado embaixo. Cartela ilustrando a bolinha subindo, perdendo força, parando no alto e voltando.
 
@@ -111,7 +111,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Fonte:** roteiro-aula-03-corre-dino.md → Parte 3. Passo 3: você escolhe a altura.
 
-**Montagem:** Pode reaproveitar a comparação gravada de 2 e 30 como demonstração breve no clipe. Substituir a escolha livre de 12 a 18 pelo fechamento em 14; não alegar equivalência numérica com o laboratório.
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Pode reaproveitar a comparação gravada de 2 e 30 como demonstração breve no clipe. Substituir a escolha livre de 12 a 18 pelo fechamento em 14; não alegar equivalência numérica com o laboratório.
 
 **Na tela:** **Na tela:** trocar a força do pulo pra 2, clicar na área do jogo e pular; depois pra 30 e pular, mostrando o dino saindo da tela e o tempo que demora pra voltar. Por fim, deixar em 14 e testar pular por cima de um cacto imaginário.
 
@@ -166,3 +166,30 @@ Calculamos o movimento antes de mostrar o personagem.
 O professor acompanha os objetivos e a entrega, confere o comportamento descrito acima e intervém no ponto da dificuldade. A checagem estrutural verifica a montagem; não equivale a uma prova automática de jogabilidade, contraste ou áudio.
 
 Fonte íntegra conferida por SHA-256: 98f59a849d4d2f0fb36aa23422de7cb453cb6bf39057665cdfc4fac573495b3b. O mapa de cortes completo, com entrada, saída e novas falas, está em [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Use os endereços abaixo ao gravar os gestos e a narração. As falas e âncoras identificadas como originais documentam a gravação anterior. Capture a paleta atual e substitua as indicações de localização antigas antes de publicar a aula.
+
+No seletor Tocar efeito, escolha pulo, tiro, explosão ou derrota conforme a ação. O som fica no evento ou na colisão que o dispara. Preparar o jogo continua em Ao iniciar; seus eventos e relógios ficam nas áreas indicadas no passo a passo.
+
+Confira com o perfil de aluno: abrir a aula, encontrar cada peça, montar, testar, conferir os critérios, guardar, reabrir e continuar na aula seguinte. Nas aulas de publicação, teste também Fazer minha versão e a edição da cópia.
+
+| Bloco | Onde encontrar | O que faz |
+| --- | --- | --- |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto | Repete enquanto o projeto estiver rodando. |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto | Roda ao abrir ou a cada nova partida. |
+| Aplicar a gravidade do mundo ao sprite | Jogo 2D › Movimento › Velocidade e gravidade | Soma a gravidade do mundo à velocidade vertical do sprite neste quadro. Sem definir outro valor, usa 0,6. Encaixe logo ANTES do bloco que movimenta o sprite. |
+| Limpar a tela | Jogo 2D › Desenho e efeitos › Efeitos | Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo. |
+| Controlar o dinossauro , força do pulo | Jogo 2D › Kits prontos › Dino | Pula com ↑/Espaço ou toque na metade de cima da tela; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira. Para o dino cair, encaixe o "Aplicar a gravidade do mundo" logo acima. Use dentro do "a cada quadro". |
+| Criar dinossauro em x y tamanho cor | Jogo 2D › Kits prontos › Dino | Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa. |
+| Desenhar o sprite | Jogo 2D › Sprites › Criar e trocar aparência | Desenha o sprite na tela do jogo. Use a cada quadro, depois de "Limpar a tela". |
+| Desenhar fundo de floresta (velocidade ) | Jogo 2D › Cenários › Fundos | Desenha um céu com sol, nuvens, morros e uma faixa de grama que rola (parallax). Use no começo do "a cada quadro", depois de limpar a tela. O dino corre sobre a grama. |
+| Descrever o jogo para leitor de tela | Jogo 2D › Jogo e telas › Telas e partida | Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”. |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D › Jogo e telas › Preparar a área do jogo | Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”. |
+| A cada quadro do jogo | Jogo 2D › Tempo › Quadros e intervalos | Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo. |
+| Número | Programação › 🔣 Valores | Um valor numérico. |
+
+Os identificadores para configuração estão em blocos-por-aula.json na pasta do curso. A lista reúne o programa herdado e as peças usadas durante esta aula, inclusive as retiradas no resultado final. Ela não concede modos ou extensões adicionais.

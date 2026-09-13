@@ -1,28 +1,28 @@
 export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/contas, vida/tempo, aparência, mundo, pausa =====
   // Distância entre os CENTROS de dois sprites (em pixels).
   function distance(a, b) {
-    if (!a || !b) return 0;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return 0;
     var dx = (a.x + (a.w || 0) / 2) - (b.x + (b.w || 0) / 2);
     var dy = (a.y + (a.h || 0) / 2) - (b.y + (b.h || 0) / 2);
     return Math.sqrt(dx * dx + dy * dy);
   }
   // Ângulo (GRAUS, 0 = pra cima, horário) do sprite A até o sprite B.
   function angleTo(a, b) {
-    if (!a || !b) return 0;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return 0;
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
     var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
     return Math.atan2(dx, -dy) / DEG;
   }
   // Faz o sprite A apontar para o sprite B (ajusta o ângulo).
   function aimAt(a, b) {
-    if (!a || !b) return;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return;
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
     var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
     a.angle = Math.atan2(dx, -dy);
   }
   // Move o sprite A na direção do sprite B (px por quadro). Move a posição direto.
   function moveToward(a, b, speed) {
-    if (!a || !b) return;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return;
     _recordPreviousPosition(a);
     var sp = Math.max(0, _finiteNumber(speed, 3));
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
@@ -74,14 +74,14 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     );
   }
   function setHealth(sprite, health) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var valid = _isFiniteNumber(health);
     if (!valid) warnOnce('vida-inicial-invalida', 'a vida inicial precisa ser um número; usei 0.');
     var v = valid ? Math.max(0, Math.floor(health)) : 0;
     sprite.hp = v; sprite.hpMax = v;
   }
   function changeHealth(sprite, delta) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     if (!_isFiniteNumber(delta)) {
       warnOnce('mudanca-de-vida-invalida', 'a mudança de vida precisa ser um número.');
@@ -105,7 +105,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   function isInvincible(sprite) { return !!sprite && (sprite.blinkFrames || 0) > 0; }
   function damageSprite(sprite, amount, invincibilityFrames) {
-    if (!sprite || isInvincible(sprite)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || isInvincible(sprite)) return;
     if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     if (!_isFiniteNumber(amount)) {
       warnOnce('dano-invalido', 'o dano precisa ser um número.');
@@ -146,7 +146,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function randomY() { var visible = _visibleWorldRect(ensureStage()); return visible.top + Math.random() * visible.height; }
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(sprite, frames, key) {
-    if (!sprite) return false;
+    if (!sprite || _isDestroyedSprite(sprite)) return false;
     var n = (_isFiniteNumber(frames) && frames > 0) ? Math.max(1, Math.round(frames)) : 1;
     var id = (typeof key === 'string' && key) ? key : 'default';
     if (!sprite._cooldowns || typeof sprite._cooldowns !== 'object') sprite._cooldowns = Object.create(null);
@@ -157,6 +157,11 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     if (_finiteNumber(sprite._cooldowns[id], 0) > _frameStamp) return false;
     sprite._cooldowns[id] = _frameStamp + n;
     return true;
+  }
+  /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {number} frames @param {() => void} fn @param {string} key */
+  function withCooldown(sprite, frames, fn, key) {
+    if (typeof fn !== 'function' || !cooldownReady(sprite, frames, key)) return;
+    _invokeProjectCallback(fn, undefined, []);
   }
   // Tira do grupo quem "nasceu" há mais de N segundos (tempo de vida).
   function pruneOld(group, seconds) {
@@ -172,7 +177,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // ---- Aparência do sprite (direção, transparência, tamanho) ----
   function flipSprite(sprite, direction) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var dir = direction === 'left' || direction === 'up' || direction === 'down'
       ? direction
       : 'right';
@@ -182,7 +187,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     sprite.facing = dir === 'left' ? -1 : 1;
   }
   function setOpacity(sprite, percent) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var p = _finiteNumber(percent, 100);
     sprite.opacity = Math.max(0, Math.min(1, p / 100));
   }
@@ -191,7 +196,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
    * contínuo. É a única saída dos blocos de posição e também serve ao modo Código.
    */
   function setPosition(sprite, x, y) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.x = _finiteNumber(x, _finiteNumber(sprite.x, 0));
     sprite.y = _finiteNumber(y, _finiteNumber(sprite.y, 0));
     _detachGroundSupport(sprite);
@@ -199,12 +204,12 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     _commitRecordedMotion(sprite);
   }
   function setSize(sprite, width, height) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if (_isFiniteNumber(width) && width > 0) sprite.w = width;
     if (_isFiniteNumber(height) && height > 0) sprite.h = height;
   }
   function scaleSprite(sprite, factor) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var f = (_isFiniteNumber(factor) && factor > 0) ? factor : 1;
     var sx = _finiteNumber(sprite.x, 0), sy = _finiteNumber(sprite.y, 0);
     var sw = _finiteNumber(sprite.w, 0), sh = _finiteNumber(sprite.h, 0);
@@ -214,7 +219,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // ---- Mundo: dar a volta na tela (Pac-Man/Asteroids) ----
   function wrapEdges(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var c = ensureStage();
     var visible = _visibleWorldRect(c);
     var x = sprite.x, y = sprite.y;
@@ -262,7 +267,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // Centraliza a câmera no sprite, presa aos limites do mundo (0..worldW/H).
   function cameraFollow(sprite, worldWidth, worldHeight) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var c = ensureStage();
     var vw = c ? stageW(c) : 0, vh = c ? stageH(c) : 0;
     var x = (_finiteNumber(sprite.x, 0) + _finiteNumber(sprite.w, 0) / 2) - vw / 2;
@@ -310,13 +315,13 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   function _spriteCenter(s) { return { x: s.x + (s.w || 0) / 2, y: s.y + (s.h || 0) / 2 }; }
   function breakTileAtSprite(map, sprite) {
-    if (sprite) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, -1); }
+    if (sprite && !_isDestroyedSprite(sprite)) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, -1); }
   }
   function setTileAtSprite(map, index, sprite) {
-    if (sprite) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, index); }
+    if (sprite && !_isDestroyedSprite(sprite)) { var p = _spriteCenter(sprite); setTileAt(map, p.x, p.y, index); }
   }
   function tileAtSprite(map, sprite) {
-    if (!sprite) return -1;
+    if (!sprite || _isDestroyedSprite(sprite)) return -1;
     var p = _spriteCenter(sprite);
     return tileAt(map, p.x, p.y);
   }
@@ -359,7 +364,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // ---- Depuração: caixa de colisão e contador de FPS ----
   function drawHitbox(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var c = ensureStage();
     if (!c) return;
     var camOn = camera.x !== 0 || camera.y !== 0;

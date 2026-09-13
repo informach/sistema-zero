@@ -217,6 +217,8 @@ API global injetada como window.SZGameKit:
   nome inexistente avisa e cai no 1º mapa válido. Viagem:
   rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); MUNDO ABERTO estilo Zelda:
   o tamanho de rpgCreateMap trava a câmera e faz a borda virar fim do mundo;
+  para um espaço sem bordas use rpgCreateMap(nome, 0, 0, desenho, fundo, "unbounded");
+  esse modo não limita a posição do herói; o padrão é "bounded";
   dentro de rpgOnEnterMap use rpgConnectEdge("leste"|"oeste"|"norte"|"sul", "mapa") —
   atravessou, entra no vizinho pelo lado oposto na MESMA linha (declare a borda
   espelhada NOS DOIS mapas; sai o aviso "mapa:<nome>"); rpgCurrentMap() = o nome

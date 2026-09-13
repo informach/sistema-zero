@@ -13,22 +13,22 @@
     },
     {
       "key": "video-abertura-v6",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Chegou o grande dia: o Dia 5, o último. O seu jogo está incrível, mas repara só: ele começa do n”. Saída: “nter comandar tudo. E no sétimo, testa do começo ao fim e publica. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Chegou a hora de dar começo e final ao seu jogo. Hoje vamos guardar a partida atrás de uma pergunta: estamos jogando? Depois entram as telas, o Enter e o teste completo. Vamos por partes; seu projeto continua guardado se você precisar de uma pausa.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Abertura. Entrada: “Oi! Chegou o grande dia: o Dia 5, o último. O seu jogo está incrível, mas repara só: ele começa do n”. Saída: “nter comandar tudo. E no sétimo, testa do começo ao fim e publica. Então bora começar pelo primeiro.”. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira. Fala complementar: “Chegou a hora de dar começo e final ao seu jogo. Hoje vamos guardar a partida atrás de uma pergunta: estamos jogando? Depois entram as telas, o Enter e o teste completo. Vamos por partes; seu projeto continua guardado se você precisar de uma pausa.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-telas-observar",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 1. Passo 1: o alvo e a primeira tela. Entrada: “Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm”. Saída: “ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.”. Usar a apresentação de telas e da constante. Acrescentar um percurso visual das quatro telas, sem ainda mostrar a reorganização de todos os blocos. Fala complementar: “O jogo abre em inicio. Enter leva para jogando. Se os pontos chegam a 26, vai para vitoria; se as vidas acabam, vai para fim. Pontos mudam durante a partida. O alvo fica em 26: ele é uma constante, a meta deste jogo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 1. Passo 1: o alvo e a primeira tela. Entrada: “Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm”. Saída: “ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.”. Usar a apresentação de telas e da constante. Acrescentar um percurso visual das quatro telas, sem ainda mostrar a reorganização de todos os blocos. Fala complementar: “O jogo abre em inicio. Enter leva para jogando. Se os pontos chegam a 26, vai para vitoria; se as vidas acabam, vai para fim. Pontos mudam durante a partida. O alvo fica em 26: ele é uma constante, a meta deste jogo.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-alvo",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 1. Passo 1: o alvo e a primeira tela. Entrada: “Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm”. Saída: “ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 1. Passo 1: o alvo e a primeira tela. Entrada: “Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm”. Saída: “ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-alvo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado."
+        "text": "Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado."
       }
     },
     {
@@ -62,23 +62,23 @@
     },
     {
       "key": "video-pergunta",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 2. Passo 2: fazer a pergunta da tela \"jogando\". Entrada: “Aqui vem a manobra mais legal do desafio inteiro. Hoje, tudo o que está no A cada quadro do jogo rod”. Saída: “2 pronto, a pergunta está feita. Agora o terceiro passo, que é mudar o jogo inteiro pra dentro dela.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Telas e cenas, e escolha jogando. Ainda vamos levar os blocos para dentro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 2. Passo 2: fazer a pergunta da tela \"jogando\". Entrada: “Aqui vem a manobra mais legal do desafio inteiro. Hoje, tudo o que está no A cada quadro do jogo rod”. Saída: “2 pronto, a pergunta está feita. Agora o terceiro passo, que é mudar o jogo inteiro pra dentro dela.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Jogo e telas › Telas e partida, e escolha jogando. Ainda vamos levar os blocos para dentro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-pergunta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Telas e cenas, e escolha jogando. Ainda vamos levar os blocos para dentro."
+        "text": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Jogo e telas › Telas e partida, e escolha jogando. Ainda vamos levar os blocos para dentro."
       }
     },
     {
       "key": "video-mover-cadeia",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De”. Saída: “ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.”. Reaproveitar só o arraste da cadeia. Gravar zoom e pausa no contorno do então. Não incluir ainda o relógio neste clipe. Fala complementar: “Vou pegar a sequência pelo primeiro bloco, Limpar a tela. Os que estão encaixados abaixo vêm junto. Eu solto a sequência dentro do então do Se. Confira o começo e o fim: Limpar a tela lá em cima e Desenhar as vidas lá embaixo, todos dentro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De”. Saída: “ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.”. Reaproveitar só o arraste da cadeia. Gravar zoom e pausa no contorno do então. Não incluir ainda o relógio neste clipe. Fala complementar: “Vou pegar a sequência pelo primeiro bloco, Limpar a tela. Os que estão encaixados abaixo vêm junto. Eu solto a sequência dentro do então do Se. Confira o começo e o fim: Limpar a tela lá em cima e Desenhar as vidas lá embaixo, todos dentro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "video-guardar-jogo",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De”. Saída: “ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No seu Estúdio, arraste a sequência de Limpar a tela até Desenhar as vidas para o então do Se jogando. Preserve a ordem. Enquanto a tela for inicio, essa sequência não roda. A tela pode ficar vazia por enquanto: vamos desenhar a abertura daqui a pouco.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De”. Saída: “ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No seu Estúdio, arraste a sequência de Limpar a tela até Desenhar as vidas para o então do Se jogando. Preserve a ordem. Enquanto a tela for inicio, essa sequência não roda. A tela pode ficar vazia por enquanto: vamos desenhar a abertura daqui a pouco.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-guardar-jogo",
@@ -90,7 +90,7 @@
     },
     {
       "key": "video-guardar-relogio",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Ah, e tem um lugarzinho a mais: o relógio dos asteroides. Vai no A cada 40 quadros e faz igualzinho:”. Saída: “ nada nela. Já já ela ganha vida. Passo 3 pronto. Agora o quarto, que é criar a vitória e a derrota.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro de A cada 40 quadros, coloque outro Se com a pergunta a tela atual é jogando. Leve Criar asteroide para o então desse Se. Proteger o motor principal não protege automaticamente este outro relógio.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 3. Passo 3: mudar o jogo pra dentro. Entrada: “Ah, e tem um lugarzinho a mais: o relógio dos asteroides. Vai no A cada 40 quadros e faz igualzinho:”. Saída: “ nada nela. Já já ela ganha vida. Passo 3 pronto. Agora o quarto, que é criar a vitória e a derrota.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Dentro de A cada 40 quadros, coloque outro Se com a pergunta a tela atual é jogando. Leve Criar asteroide para o então desse Se. Proteger o motor principal não protege automaticamente este outro relógio.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-guardar-relogio",
@@ -102,19 +102,19 @@
     },
     {
       "key": "video-guardar-tiro",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 6. Passo 6: o Enter comanda o jogo. Entrada: “A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego”. Saída: “ agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.”. Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter. Fala complementar: “Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar som de tiro para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 6. Passo 6: o Enter comanda o jogo. Entrada: “A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego”. Saída: “ agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.”. Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter. Fala complementar: “Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-guardar-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar som de tiro para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age."
+        "text": "Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age."
       }
     },
     {
       "key": "video-vitoria",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 4. Passo 4: criar a vitória e a derrota. Entrada: “O jogo precisa perceber sozinho a hora de ganhar e a hora de perder. São duas perguntas novas, e as ”. Saída: “a Telas e cenas, pega o bloco Ir para a tela, encaixa dentro desse Se e escolhe vitoria na listinha.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No fim do então de Se jogando, depois dos corações, coloque outro Se. Na comparação, leia pontos à esquerda, escolha maior ou igual e leia alvo à direita. Dentro dele, coloque Ir para a tela vitoria.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 4. Passo 4: criar a vitória e a derrota. Entrada: “O jogo precisa perceber sozinho a hora de ganhar e a hora de perder. São duas perguntas novas, e as ”. Saída: “a Telas e cenas, pega o bloco Ir para a tela, encaixa dentro desse Se e escolhe vitoria na listinha.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “No fim do então de Se jogando, depois dos corações, coloque outro Se. Na comparação, leia pontos à esquerda, escolha maior ou igual e leia alvo à direita. Dentro dele, coloque Ir para a tela vitoria.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-vitoria",
@@ -126,19 +126,19 @@
     },
     {
       "key": "video-derrota",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 4. Passo 4: criar a vitória e a derrota. Entrada: “Agora, a derrota. Pega mais um Se, na categoria Programação, subcategoria Lógica e Se, e encaixa log”. Saída: “de Telas e cenas, escolhendo fim na listinha. Passo 4 pronto. Agora o quinto, que é montar as telas.”. Manter a ordem original. O professor deve saber: se meta e zero vidas acontecerem no mesmo quadro, a segunda condição leva a fim. Não prometer prioridade de vitória. Fala complementar: “Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida, escolhendo nave. Dentro, coloque Ir para a tela fim.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 4. Passo 4: criar a vitória e a derrota. Entrada: “Agora, a derrota. Pega mais um Se, na categoria Programação, subcategoria Lógica e Se, e encaixa log”. Saída: “de Telas e cenas, escolhendo fim na listinha. Passo 4 pronto. Agora o quinto, que é montar as telas.”. Manter a ordem original. O professor deve saber: se meta e zero vidas acontecerem no mesmo quadro, a segunda condição leva a fim. Não prometer prioridade de vitória. Fala complementar: “Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida e placar, escolhendo nave. Dentro, coloque Ir para a tela fim.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-derrota",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida, escolhendo nave. Dentro, coloque Ir para a tela fim."
+        "text": "Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida e placar, escolhendo nave. Dentro, coloque Ir para a tela fim."
       }
     },
     {
       "key": "video-mostrar-telas",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 5. Passo 5: montar as telas de início, de vitória e de derrota. Entrada: “O jogo já troca de tela, mas as telas estão vazias. Bora desenhar elas. E tem um jeito esperto: o no”. Saída: “jogo brilhando. Que orgulho, hein? Passo 5 pronto. Agora o sexto, que é fazer o Enter comandar tudo.”. Reaproveitar a criação dos ramos e telas. Nos finais, trocar a dica por “Aperte Enter para voltar ao início”: o reinício executa Ao iniciar e volta ao menu, não entra imediatamente em jogando. Fala complementar: “No Se grande, use + senão se três vezes: inicio, vitoria e fim. Cada pergunta usa a tela atual é. Em cada ramo, encaixe Mostrar tela. Na abertura: Nave contra Asteroides e dica Aperte Enter para começar. Nos dois finais, use a dica Aperte Enter para voltar ao início. Escolha títulos e fundos legíveis.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 5. Passo 5: montar as telas de início, de vitória e de derrota. Entrada: “O jogo já troca de tela, mas as telas estão vazias. Bora desenhar elas. E tem um jeito esperto: o no”. Saída: “jogo brilhando. Que orgulho, hein? Passo 5 pronto. Agora o sexto, que é fazer o Enter comandar tudo.”. Reaproveitar a criação dos ramos e telas. Nos finais, trocar a dica por “Aperte Enter para voltar ao início”: o reinício executa Ao iniciar e volta ao menu, não entra imediatamente em jogando. Fala complementar: “No Se grande, use + senão se três vezes: inicio, vitoria e fim. Cada pergunta usa a tela atual é. Em cada ramo, encaixe Mostrar tela. Na abertura: Nave contra Asteroides e dica Aperte Enter para começar. Nos dois finais, use a dica Aperte Enter para voltar ao início. Escolha títulos e fundos legíveis.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-mostrar-telas",
@@ -150,7 +150,7 @@
     },
     {
       "key": "video-enter",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 6. Passo 6: o Enter comanda o jogo. Entrada: “A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego”. Saída: “ agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.”. Reaproveitar montagem de Enter e seus ramos. Complementar o retorno ao menu e o segundo Enter. Não dizer que o primeiro Enter após derrota já começa a partida. Fala complementar: “Em Quando acontecer, adicione Quando apertar a tecla Enter. Dentro: Se a tela é inicio, vá para jogando. No senão se fim, use Reiniciar o jogo. No senão se vitoria, também Reiniciar o jogo. Depois de reiniciar, você volta à abertura; Enter mais uma vez começa outra partida.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 6. Passo 6: o Enter comanda o jogo. Entrada: “A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego”. Saída: “ agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.”. Reaproveitar montagem de Enter e seus ramos. Complementar o retorno ao menu e o segundo Enter. Não dizer que o primeiro Enter após derrota já começa a partida. Fala complementar: “Em Quando acontecer, adicione Quando apertar a tecla Enter. Dentro: Se a tela é inicio, vá para jogando. No senão se fim, use Reiniciar o jogo. No senão se vitoria, também Reiniciar o jogo. Depois de reiniciar, você volta à abertura; Enter mais uma vez começa outra partida.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "fala-enter",
@@ -162,7 +162,7 @@
     },
     {
       "key": "video-ciclo-completo",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 7. Passo 7: testar do começo ao fim e publicar. Entrada: “Clica na área do jogo. A tela de início está lá. Aperta Enter... o jogo começou! Joga de verdade ago”. Saída: “uem você quiser. Todo mundo vai poder jogar o jogo que você criou, do zero, bloquinho por bloquinho.”. Reaproveitar os testes e o Compartilhar, com corte do tempo repetido de jogo. Corrigir o ciclo de dois Enter. Conferir campos atuais de publicação, sem prometer edição ou geração de capa que não esteja presente. Fala complementar: “Teste primeiro o menu: espaço não dispara e as pedras não nascem. Enter começa. Depois de perder, Enter volta ao início, com zero ponto e três vidas; outro Enter começa. Faça também o caminho até 26 pontos e veja a vitória. Na entrega, envie ao professor e use Compartilhar quando estiver disponível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Parte 7. Passo 7: testar do começo ao fim e publicar. Entrada: “Clica na área do jogo. A tela de início está lá. Aperta Enter... o jogo começou! Joga de verdade ago”. Saída: “uem você quiser. Todo mundo vai poder jogar o jogo que você criou, do zero, bloquinho por bloquinho.”. Reaproveitar os testes e o Compartilhar, com corte do tempo repetido de jogo. Corrigir o ciclo de dois Enter. Conferir campos atuais de publicação, sem prometer edição ou geração de capa que não esteja presente. Fala complementar: “Teste primeiro o menu: espaço não dispara e as pedras não nascem. Enter começa. Depois de perder, Enter volta ao início, com zero ponto e três vidas; outro Enter começa. Faça também o caminho até 26 pontos e veja a vitória. Na entrega, envie ao professor e use Compartilhar quando estiver disponível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "entrega-fala-v6",
@@ -173,7 +173,7 @@
     },
     {
       "key": "video-fecho-v6",
-      "plannedVideo": "roteiro-aula-dia5-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, criador! Você terminou o Desafio do Primeiro Jogo! Olha o tamanho dessa conquista: em cinc”. Saída: “squece de deixar o seu jogo publicado no Mural dos Criadores. Te vejo na próxima aventura. Até logo!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Seu jogo agora tem começo, partida e dois finais. O Enter também permite voltar ao início e jogar outra vez. Confira a entrega e o Compartilhar quando estiver pronto. Você terminou a construção do seu primeiro jogo; faltam só duas ideias para guardar no quiz.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia5-desafio-primeiro-jogo.md → Fecho. Entrada: “Parabéns, criador! Você terminou o Desafio do Primeiro Jogo! Olha o tamanho dessa conquista: em cinc”. Saída: “squece de deixar o seu jogo publicado no Mural dos Criadores. Te vejo na próxima aventura. Até logo!”. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu. Fala complementar: “Seu jogo agora tem começo, partida e dois finais. O Enter também permite voltar ao início e jogar outra vez. Confira a entrega e o Compartilhar quando estiver pronto. Você terminou a construção do seu primeiro jogo; faltam só duas ideias para guardar no quiz.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
       "key": "quiz-v6",
@@ -566,7 +566,7 @@
                           }
                         }
                       },
-                      "beforeBlock": "sz_g2d_play_shoot"
+                      "beforeBlock": "sz_g2d_play_fx"
                     }
                   }
                 }
@@ -1147,7 +1147,7 @@
                           }
                         }
                       },
-                      "beforeBlock": "sz_g2d_play_shoot"
+                      "beforeBlock": "sz_g2d_play_fx"
                     }
                   }
                 }

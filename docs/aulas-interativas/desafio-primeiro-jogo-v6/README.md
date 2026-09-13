@@ -89,3 +89,7 @@ bun packages/community-kids/tests/visual/serve-desafio-preview.ts
 ```
 
 O ensaio abre em `http://127.0.0.1:4323/`, com seletor das seis experiências e remontagem do estado guardado. `?spacing` usa o componente real de seções e o CSS atual, com conteúdo de exemplo para conferir o espaçamento. Essa página é uma ferramenta local de QA, não parte do percurso infantil.
+
+## Edição atual do Jogo 2D
+
+Os roteiros e os mapas de montagem desta pasta foram atualizados para a paleta 1.0 e documentos de projeto no formato 2. Consulte [a atualização dos três cursos](../ATUALIZACAO-JOGO-2D.md), [a lista completa de blocos](blocos-desafio-primeiro-jogo.json) e [a matriz por aula](blocos-por-aula.json). As gravações indicadas nos mapas ainda precisam ser feitas e validadas em staging.

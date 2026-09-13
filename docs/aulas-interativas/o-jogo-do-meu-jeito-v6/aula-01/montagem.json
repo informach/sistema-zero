@@ -10,11 +10,12 @@
       "entry": "Oi! Eu sou a Helena, e eu vou estar com você neste curso inteiro. E parabéns, viu? Você terminou o D",
       "exit": "a nave pra lá. E no fim eu te conto onde esses jogos ficam guardados, pra você nunca perder nenhum.\"",
       "narration": "Oi! Eu sou a Helena, e eu vou estar com você neste curso inteiro. E parabéns, viu? Você terminou o Desafio do Primeiro Jogo e publicou o seu jogo no Mural. Foi isso que te deu duas ferramentas novas: o Pinta e o Estúdio Completo. Isso tem uma regra: cada curso que você termina e publica no Mural libera alguma coisa nova pra você. Pode ser uma ferramenta nova. Podem ser bloquinhos novos, que passam a aparecer dentro do Estúdio. E pode ser um curso novo, abrindo pra você fazer. Hoje vieram as duas ferramentas, e elas chegaram de um jeito diferente uma da outra. O Pinta é seu inteiro, com tudo que ele sabe fazer. Já o Estúdio Completo abriu com uma parte dos bloquinhos: os que você já sabe usar, e mais uns que eu separei pra este curso. A cada curso novo, mais aparecem aí dentro. E elas servem pra coisas bem diferentes. O Estúdio Completo é onde os jogos são seus: você começa o que quiser, na hora que quiser, e ninguém te diz o que montar. E o Pinta é onde você desenha. Só que, sozinho, um desenho no Pinta fica paradinho lá na galeria, bonito e sem fazer nada. O que deixa ele interessante é ele entrar no seu jogo e se mexer. É isso que a gente vai fazer neste curso. Você lembra da sua nave e dos asteroides do Desafio? Eles vieram prontos, de um kit: a nave de quem fez o Desafio no mês passado é igualzinha à sua. A gente vai trocar os dois por desenhos seus. Só que, pra isso, o seu jogo precisa sair de dentro da aula do Desafio e ir pro Estúdio Completo. É o que a gente faz hoje, em quatro passos. Primeiro eu te mostro o Estúdio Completo por dentro. Depois você começa um projeto do zero e descobre uma coisa importante sobre os bloquinhos. Aí a gente traz o seu jogo da nave pra lá. E no fim eu te conto onde esses jogos ficam guardados, pra você nunca perder nenhum.\"",
-      "edit": "Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil.",
       "visual": "Mostrar primeiro o resultado de hoje, sem antecipar ferramentas ou detalhes de outras aulas.",
       "newNarration": "Oi! O seu jogo da nave já está pronto. Hoje vamos levar uma cópia para o Estúdio Completo, onde você poderá continuar mexendo nele. Vamos conhecer a lista, preparar um projeto de teste e trazer o jogo. No final, você vai saber qual cartão abrir para continuar.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-lista",
@@ -23,11 +24,12 @@
       "entry": "Então vamos lá. No menu da esquerda tem o Estúdio. Ele já estava aí antes e não abria, e hoje ele ab",
       "exit": "omeça do zero, sem nada montado. Hoje você usa os dois, um em cada passo. Primeiro passo concluído.\"",
       "narration": "Então vamos lá. No menu da esquerda tem o Estúdio. Ele já estava aí antes e não abria, e hoje ele abre. Clica nele. Essa tela chama Meus Jogos, e ela é sua. Cada jogo que você fizer daqui pra frente fica guardado aqui, e a gente chama cada um deles de projeto, que é o jogo inteiro num pacote só, com os blocos, os desenhos e os sons dele. E você ainda não tem nenhum. A tela está vazia, com uma frase dizendo isso mesmo. Está certo. O seu jogo da nave não aparece aqui porque ele mora lá dentro da aula do Desafio. São dois lugares diferentes, e daqui a pouco a gente faz a ponte entre eles. Essa ponte começa nos dois botões lá em cima, do lado direito: Importar e Novo projeto. Os dois são jeitos de começar, e eles são bem diferentes um do outro. O Importar traz um jogo que já existe. O Novo projeto começa do zero, sem nada montado. Hoje você usa os dois, um em cada passo. Primeiro passo concluído.\"",
-      "edit": "Manter a apresentação de Meus Jogos e dos dois botões; retirar “Primeiro passo concluído”. Não afirmar que a lista de toda criança estará vazia.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a apresentação de Meus Jogos e dos dois botões; retirar “Primeiro passo concluído”. Não afirmar que a lista de toda criança estará vazia.",
       "visual": "Destacar Meus Jogos, Novo projeto e Importar um de cada vez. Mostrar dois lugares nomeados: aula do Desafio e Estúdio Completo.",
       "newNarration": "Esta é a lista dos projetos do Estúdio. O jogo do Desafio ainda está na aula. Por isso ele pode não aparecer aqui. Daqui a pouco vamos trazer uma cópia.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-projeto-teste",
@@ -36,11 +38,12 @@
       "entry": "Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se ",
       "exit": " projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"",
       "narration": "Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se chamar Meu jogo novo, e o seu pode ter o nome que você quiser. Escreve e clica em Criar e abrir. Abriu um projeto novo, com a área de montar vazia: não tem nenhum bloco encaixado ainda. Isso é o começo de um novo jogo. Agora olha a coluna da esquerda, onde ficam os bloquinhos. Ali tem algumas categorias: tem Áreas do projeto, e tem Programação, com as variáveis, Lógica e Se, e valores. Esses são do Estúdio, e vêm sempre. Agora procura a categoria Jogo 2D, aquela que você usou o Desafio inteiro. Ela não está lá. Olha a lista toda, de cima até embaixo. Jogo 2D não tem. E, sem ela, não tem Kit espaço, não tem sprite, não tem grupo, não tem colisão. Nada de jogo. Não foi você que fez nada de errado, e não sumiu nada do seu computador. É assim mesmo, de propósito, e o conserto é rapidinho. Clica no botão de três pontinhos, lá em cima. Abriu uma listinha separada em partes, cada uma com o seu título. A que interessa agora chama Exibição, e dentro dela tem Extensões. Clica. Abriu uma janela chamada Extensões oficiais, e dentro dela tem um cartão: o Jogo 2D. Cada cartão desses é uma extensão, que é um pacote de bloquinhos que você instala quando o seu jogo precisa dele. Hoje você tem um só porque é o que você conquistou até agora. Conforme você for terminando os próximos cursos, mais cartões vão aparecendo aqui. Embaixo do nome, o cartão tem a descrição, que diz o que vem dentro: sprites, movimento, mapas, colisões, som, inimigos e os kits prontos. É exatamente o que você usou no Desafio. E do lado direito do cartão tem o botão escrito Instalar. Clica. Apareceu um selo escrito Instalada, ali do lado do nome, e o botão virou Remover. Deu certo. Agora fecha essa janela: lá embaixo, no canto, tem o Fechar. Clica nele. Olha a coluna da esquerda de novo: a categoria Jogo 2D está lá, com os bloquinhos! Então era isso que estava acontecendo. Os bloquinhos de jogo vêm de uma extensão. Nas aulas do Desafio ela já estava instalada, porque a aula vinha preparada pra você. Num projeto que você começa do zero, quem instala é você. Agora, antes de seguir, o caminho de volta, que você vai usar bastante daqui pra frente. Lá em cima, no canto esquerdo da barra, está escrito Sistema Zero Studio. Aquilo é um botão. Clica nele. Voltou pro Meus Jogos, e olha: a tela não está mais vazia. Tem um cartão aí agora, o Meu jogo novo. Todo projeto que você criar vira um cartão aqui, e é por ele que você entra no projeto de novo. E não apaga esse projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"",
-      "edit": "Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão.",
       "visual": "Zoom em Instalada, Fechar e na marca clicável de retorno. Mostrar o cartão do projeto de teste.",
       "newNarration": "Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-ponte",
@@ -49,11 +52,12 @@
       "entry": "É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto",
       "exit": " placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez.",
       "narration": "É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto: a foto vai com você, e a coisa continua onde estava. O seu jogo continua na aula, inteiro. Então guarda onde esse arquivo caiu. Na maioria dos computadores ele cai numa pasta chamada Downloads. Agora volta pro Estúdio, no menu da esquerda, e clica no Importar. Abriu a janela do seu computador pra você escolher um arquivo. Vai na pasta Downloads, acha aquele que termina com ponto szproject ponto json e dá dois cliques nele. E olha só o que aconteceu! O seu jogo abriu aqui dentro. Clica na área do jogo, ali do lado direito, e mexe a nave com as setas. Os asteroides caindo, o tiro, o placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez.",
-      "edit": "Usar só as definições de exportar e importar com a imagem do arquivo. O gesto completo de navegação fica na próxima seção; substituir as ordens de clicar por esta narração de observação.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Usar só as definições de exportar e importar com a imagem do arquivo. O gesto completo de navegação fica na próxima seção; substituir as ordens de clicar por esta narração de observação.",
       "visual": "Diagrama simples: aula → arquivo .szproject.json → Estúdio. A miniatura original permanece visível na aula; não mostrar movimento que sugira exclusão.",
       "newNarration": "O jogo fica na aula. Exportar cria um arquivo com uma cópia dele. Importar usa esse arquivo para criar um projeto no Estúdio. Não é preciso apagar o jogo da aula.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-importar",
@@ -62,11 +66,12 @@
       "entry": "Agora o outro jeito de começar um projeto. O seu jogo da nave mora dentro da aula do Desafio, e é lá",
       "exit": "ção, então ele está aqui no Estúdio e no Pinta também, no mesmo cantinho. Terceiro passo concluído.\"",
       "narration": "Agora o outro jeito de começar um projeto. O seu jogo da nave mora dentro da aula do Desafio, e é lá que a gente vai buscar ele. No menu da esquerda, clica em Cursos. Essa tela mostra os níveis da sua carreira. O Desafio do Primeiro Jogo fica no primeiro deles, o Faísca. Clica nele. Abriu a Trilha Faísca, com os cursos dela. Acha o cartão do Desafio do Primeiro Jogo e clica no Acessar curso. Chegou na lista das aulas do Desafio. Procura a aula do Dia 5, que é onde o seu jogo ficou montado, e abre ela. Desce até o estúdio, aquele que fica embaixo do vídeo. Olha: o seu jogo está lá, inteirinho, do jeito que você deixou. E se ele aparecer vazio aí, ou diferente do que você lembra, tem conserto e é rápido: clica nos três pontinhos da barra do estúdio, vai na parte Arquivo e clica no Sincronizar com o enviado. Ele traz de volta o jogo que você mandou pro professor, e aí é só seguir. Na barra de cima do estúdio, clica nos três pontinhos. Dessa vez a parte que interessa é a primeira, a Arquivo, e dentro dela tem Exportar para o Estúdio. Clica. Pronto, o seu computador baixou um arquivo. Repara no nome dele: é o nome do seu jogo, com ponto szproject ponto json no final. Esse pedacinho no fim é o sobrenome do arquivo, e é ele que faz o Estúdio reconhecer que aquilo ali é um jogo. Dentro dele foi o seu jogo inteiro: todos os blocos que você montou, com os números que você escolheu, as cores, os sons e as telas. É isso que exportar quer dizer: tirar uma cópia do jogo pra fora, num arquivo. É tipo tirar uma foto: a foto vai com você, e a coisa continua onde estava. O seu jogo continua na aula, inteiro. Então guarda onde esse arquivo caiu. Na maioria dos computadores ele cai numa pasta chamada Downloads. Agora volta pro Estúdio, no menu da esquerda, e clica no Importar. Abriu a janela do seu computador pra você escolher um arquivo. Vai na pasta Downloads, acha aquele que termina com ponto szproject ponto json e dá dois cliques nele. E olha só o que aconteceu! O seu jogo abriu aqui dentro. Clica na área do jogo, ali do lado direito, e mexe a nave com as setas. Os asteroides caindo, o tiro, o placar, tudo funcionando. É o seu jogo, com os seus blocos, rodando fora da aula pela primeira vez. Isso é importar: trazer pra dentro uma cópia que estava fora. E tem uma coisa aqui que vale reparar. Olha a coluna da esquerda: a categoria Jogo 2D já está lá, e você não instalou nada desta vez. Quando você exporta um jogo, as ferramentas dele vão junto dentro do arquivo. Por isso o projeto que veio de fora chegou pronto, e o que você começou do zero chegou vazio. Agora olha o nome lá em cima, do lado do Sistema Zero Studio: está escrito Projeto da aula. Esse nome veio junto dentro do arquivo, e era o nome que ele tinha lá no estúdio da aula do Desafio. Aqui ele não diz muita coisa, e você vai ter vários projetos na lista. Então troca: clica em cima do nome, que ele vira um campo de escrever. Apaga o que está lá, escreve o nome do seu jogo e aperta o Enter. O meu vai ser Nave contra asteroides, e o seu você escolhe. Trocou. E o cartão dele no Meus Jogos já está com o nome novo. E mais uma coisa, agora que você tem um jogo de verdade aberto. Olha a tela: tem bastante coisa nela. O menu da Comunidade de um lado, os bloquinhos, a área de montar e a área do jogo. Dá pra ganhar espaço. Bem na beiradinha esquerda da tela, colado na borda, tem um puxador pequeno. Clica nele. O menu da Comunidade se escondeu, e tudo o que é do jogo ficou maior. Pra trazer de volta, clica no puxador outra vez. Usa sempre que quiser mais espaço pra montar. E guarda essa: esse puxador está nas ferramentas de criação, então ele está aqui no Estúdio e no Pinta também, no mesmo cantinho. Terceiro passo concluído.\"",
-      "edit": "Preservar todas as telas do caminho. Encurtar as definições já demonstradas. Manter recuperação por Sincronizar com o enviado como ajuda condicional, não ação obrigatória. O puxador do menu entra como dica breve ao fim.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar todas as telas do caminho. Encurtar as definições já demonstradas. Manter recuperação por Sincronizar com o enviado como ajuda condicional, não ação obrigatória. O puxador do menu entra como dica breve ao fim.",
       "visual": "Mostrar o nome da aula, a extensão do arquivo, o botão Importar e o projeto abrindo. Renomear pela barra; evitar confundir com Meu jogo novo.",
       "newNarration": "Na aba da ferramenta, abra Cursos → Faísca → Desafio do Primeiro Jogo → Dia 5. Exporte para o Estúdio, volte ao Estúdio e importe o arquivo .szproject.json. Abra o jogo, teste os controles e dê um nome que você reconheça.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-guardar",
@@ -75,11 +80,12 @@
       "entry": "Agora volta pra lista dos seus jogos, pelo mesmo caminho de antes: o Sistema Zero Studio, lá no cant",
       "exit": "s não ficam presos neste computador. Se você entrar na sua conta em outro computador, eles estão lá.",
       "narration": "Agora volta pra lista dos seus jogos, pelo mesmo caminho de antes: o Sistema Zero Studio, lá no canto esquerdo da barra de cima. Voltou pro Meus Jogos, e agora tem dois cartões aí: o seu jogo da nave e o Meu jogo novo, aquele que está vazio. E agora a melhor notícia do dia, que vale pra todos os jogos que você fizer daqui pra frente: você não precisa fazer nada pra salvar. Enquanto você monta, o Estúdio guarda o seu jogo na sua conta sozinho. Olha o aviso aí em cima: Guardado na sua conta. Então esses jogos não ficam presos neste computador. Se você entrar na sua conta em outro computador, eles estão lá.",
-      "edit": "Manter retorno à lista e aviso Guardado na sua conta. Retirar cena antiga de lista vazia em outro navegador, limites numéricos, exclusão e remix; cópia publicada será retomada na aula 8.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter retorno à lista e aviso Guardado na sua conta. Retirar cena antiga de lista vazia em outro navegador, limites numéricos, exclusão e remix; cópia publicada será retomada na aula 8.",
       "visual": "Mostrar o aviso real, voltar à lista e reabrir o jogo. Não substituir um aviso de sincronização pendente por cartela de sucesso.",
       "newNarration": "Espere aparecer Guardado na sua conta. Volte a Meus Jogos e abra o mesmo cartão. Confira se o jogo continua completo. É aqui que vamos voltar depois de desenhar.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-fecho-v6",
@@ -88,11 +94,335 @@
       "entry": "Parabéns, você terminou a Aula 1. Olha o que você tem agora: dois projetos seus. O jogo da nave, que",
       "exit": "você vai desenhar a sua nave. Do seu jeito, com as suas cores, e com o motor dela acendendo. Até já.",
       "narration": "Parabéns, você terminou a Aula 1. Olha o que você tem agora: dois projetos seus. O jogo da nave, que veio do Desafio e roda aqui fora, e um projeto vazio, esperando uma ideia. E você aprendeu quatro palavras que os criadores usam o tempo todo. Projeto, que é o jogo inteiro num pacote só. Extensão, que é o pacote de bloquinhos que você instala quando precisa. Exportar, que é tirar uma cópia pra fora. E importar, que é trazer uma cópia pra dentro. Na próxima aula a gente vai pro Pinta, que é a outra ferramenta que você liberou, e lá você vai desenhar a sua nave. Do seu jeito, com as suas cores, e com o motor dela acendendo. Até já.",
-      "edit": "Reaproveitar a recapitulação, ajustando: Não fixar “mais de cem jogos”; usar o indicador atual de armazenamento. Não mostrar lista vazia em outro navegador como comportamento esperado após salvar na conta. Não demonstrar Fazer a minha versão agora: evitar um terceiro projeto quase igual. Conferir permissões da Carreira no perfil de revisão; não prometer desbloqueios específicos. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a recapitulação, ajustando: Não fixar “mais de cem jogos”; usar o indicador atual de armazenamento. Não mostrar lista vazia em outro navegador como comportamento esperado após salvar na conta. Não demonstrar Fazer a minha versão agora: evitar um terceiro projeto quase igual. Conferir permissões da Carreira no perfil de revisão; não prometer desbloqueios específicos. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar.",
       "visual": "Retomar o antes e o depois da criação, sem animação decorativa atrás de texto. Finalizar com o resultado desta aula.",
       "newNarration": "Agora você tem o seu jogo no Estúdio Completo e sabe onde encontrá-lo. Exportar leva uma cópia para um arquivo; importar traz essa cópia para um projeto. A aula original continua lá. Na próxima aula vamos desenhar a nave no Pinta. Antes, duas perguntas para guardar o caminho.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_events",
+        "label": "⚡ Quando acontecer",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "events",
+        "tooltip": "Roda quando alguma coisa acontece."
+      },
+      {
+        "type": "sz_frame_loops",
+        "label": "🔁 Enquanto estiver rodando",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "loops",
+        "tooltip": "Repete enquanto o projeto estiver rodando."
+      },
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_arrows_x",
+        "label": "Mover o sprite com as setas <- -> (velocidade )",
+        "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+        "area": "start",
+        "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+      },
+      {
+        "type": "sz_g2d_center_x",
+        "label": "o centro x do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+      },
+      {
+        "type": "sz_g2d_clamp_to_screen",
+        "label": "Manter o sprite dentro da tela",
+        "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+        "area": "start",
+        "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+      },
+      {
+        "type": "sz_g2d_clear",
+        "label": "Limpar a tela",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+      },
+      {
+        "type": "sz_g2d_create_group",
+        "label": "Criar grupo de sprites",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+      },
+      {
+        "type": "sz_g2d_create_ship",
+        "label": "Criar nave em x y largura altura , cor do corpo cor das asas",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado."
+      },
+      {
+        "type": "sz_g2d_damage_sprite",
+        "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+      },
+      {
+        "type": "sz_g2d_draw_group",
+        "label": "Desenhar o grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+        "area": "start",
+        "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+      },
+      {
+        "type": "sz_g2d_draw_score",
+        "label": "Mostrar placar valor em x y cor tamanho",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+        "area": "start",
+        "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+      },
+      {
+        "type": "sz_g2d_draw_sprite",
+        "label": "Desenhar o sprite",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+      },
+      {
+        "type": "sz_g2d_draw_sprite_health",
+        "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+      },
+      {
+        "type": "sz_g2d_every_frames",
+        "label": "A cada quadros",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+      },
+      {
+        "type": "sz_g2d_explode",
+        "label": "Soltar explosão no sprite cor",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+        "area": "start",
+        "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+      },
+      {
+        "type": "sz_g2d_health_depleted",
+        "label": "as vidas do sprite acabaram?",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "value",
+        "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+      },
+      {
+        "type": "sz_g2d_on_group_overlap",
+        "label": "Para cada colisão entre os grupos e",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_on_key",
+        "label": "Quando apertar a tecla",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+      },
+      {
+        "type": "sz_g2d_on_sprite_group_overlap",
+        "label": "Para cada sprite do grupo que colidir com o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_play_fx",
+        "label": "Tocar efeito",
+        "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+        "area": "start",
+        "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+      },
+      {
+        "type": "sz_g2d_prune_offscreen",
+        "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+      },
+      {
+        "type": "sz_g2d_random_x",
+        "label": "um x aleatório na tela",
+        "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+        "area": "value",
+        "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+      },
+      {
+        "type": "sz_g2d_remove_from_group",
+        "label": "Tirar o sprite do grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+      },
+      {
+        "type": "sz_g2d_restart",
+        "label": "Reiniciar o jogo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+      },
+      {
+        "type": "sz_g2d_scene_is",
+        "label": "o estado do jogo é ?",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "value",
+        "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+      },
+      {
+        "type": "sz_g2d_set_health",
+        "label": "Dar ao sprite de vida",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+      },
+      {
+        "type": "sz_g2d_set_scene",
+        "label": "Mudar o estado do jogo para",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_shake",
+        "label": "Tremer a tela com intensidade",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+      },
+      {
+        "type": "sz_g2d_show_screen",
+        "label": "Mostrar tela com título subtítulo dica fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+      },
+      {
+        "type": "sz_g2d_spawn_asteroid",
+        "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+      },
+      {
+        "type": "sz_g2d_spawn_bullet",
+        "label": "Criar tiro no grupo em x y raio cor vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+      },
+      {
+        "type": "sz_g2d_sprite_y",
+        "label": "a posição y do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+      },
+      {
+        "type": "sz_g2d_starfield",
+        "label": "Desenhar fundo de estrelas (velocidade )",
+        "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+        "area": "start",
+        "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+      },
+      {
+        "type": "sz_g2d_update_each_frame",
+        "label": "A cada quadro do jogo",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+      },
+      {
+        "type": "sz_g2d_update_group",
+        "label": "Mover os sprites do grupo usando suas velocidades",
+        "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+        "area": "start",
+        "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+      },
+      {
+        "type": "sz_js_const_create",
+        "label": "Criar constante com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+      },
+      {
+        "type": "sz_js_if_else",
+        "label": "Condição se, senão se e senão",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "start",
+        "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+      },
+      {
+        "type": "sz_js_var_create",
+        "label": "Criar variável com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+      },
+      {
+        "type": "sz_js_var_increment",
+        "label": "Somar em variável",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+      },
+      {
+        "type": "sz_val_compare",
+        "label": "Comparar dois valores",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "value",
+        "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      },
+      {
+        "type": "sz_val_text",
+        "label": "texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor de texto."
+      },
+      {
+        "type": "sz_val_variable",
+        "label": "valor da variável",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+      }
+    ]
+  }
 }

@@ -13,9 +13,9 @@ import {
 import { gameThreeDBlocks } from '../../../official-extensions/game-3d/blocks'
 import { gameKit3DBlocks } from '../../../official-extensions/game-3d-advanced/blocks'
 import { world3DBlocks } from '../../../official-extensions/world-3d/blocks'
+import { restoreShadowLiterals } from '../../../project-migrations/migrateValueFields'
 import { CORE_BLOCKS, registerExtensionBlocks } from '../../blocks'
 import { VALUE_SOCKETS } from '../../blocks/valueSockets'
-import { restoreShadowLiterals } from '../../migrateValueFields'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
   applySuggestedSize,

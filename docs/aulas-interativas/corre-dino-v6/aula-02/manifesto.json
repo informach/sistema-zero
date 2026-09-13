@@ -91,15 +91,15 @@
     },
     {
       "key": "video-abertura-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Abertura. Entrada: “Oi! Olha aqui a telinha do seu jogo. Ela está igualzinha você deixou: a sua cor, a borda em volta, e”. Saída: “ente aparece. E no terceiro, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Abertura. Entrada: “Oi! Olha aqui a telinha do seu jogo. Ela está igualzinha você deixou: a sua cor, a borda em volta, e”. Saída: “ente aparece. E no terceiro, você testa e deixa tudo do seu jeito. Então bora começar pelo primeiro.”. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo. Ponte nova: “Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-quadros",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 1. Passo 1: ligar o motor do jogo. Entrada: “Você já viu um daqueles livrinhos de folhear, que tem um desenho em cada página, e quando você passa”. Saída: “ão: é a mesma figura desenhada um tiquinho mais pra lá a cada quadro. E quem faz essa ilusão é você.”. Usar a analogia do caderno; não repetir a montagem que vem na próxima seção. Ponte nova: “Veja três desenhos das pernas, primeiro separados e depois em sequência. Cada desenho é um quadro.” Cartela com três poses do Dino, contador de quadros e reprodução curta. Mostrar um quadro por vez, sem controles de velocidade. Com movimento reduzido, trocar por cartões numerados. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 1. Passo 1: ligar o motor do jogo. Entrada: “Você já viu um daqueles livrinhos de folhear, que tem um desenho em cada página, e quando você passa”. Saída: “ão: é a mesma figura desenhada um tiquinho mais pra lá a cada quadro. E quem faz essa ilusão é você.”. Usar a analogia do caderno; não repetir a montagem que vem na próxima seção. Ponte nova: “Veja três desenhos das pernas, primeiro separados e depois em sequência. Cada desenho é um quadro.” Cartela com três poses do Dino, contador de quadros e reprodução curta. Mostrar um quadro por vez, sem controles de velocidade. Com movimento reduzido, trocar por cartões numerados. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "video-motor",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 1. Passo 1: ligar o motor do jogo. Entrada: “Pra fazer isso, o seu jogo precisa de uma área nova. Vai lá na categoria Áreas do projeto e pega o b”. Saída: “o. O motor está ligado, e vazio. É isso que o segundo passo resolve: encher ele, desenhando o mundo.”. Preservar o gesto de colocar as áreas lado a lado e o contêiner ainda vazio. Ponte nova: “Ao lado de Ao iniciar, coloque a área Enquanto estiver rodando. Dentro dela, encaixe A cada quadro do jogo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 1. Passo 1: ligar o motor do jogo. Entrada: “Pra fazer isso, o seu jogo precisa de uma área nova. Vai lá na categoria Áreas do projeto e pega o b”. Saída: “o. O motor está ligado, e vazio. É isso que o segundo passo resolve: encher ele, desenhando o mundo.”. Preservar o gesto de colocar as áreas lado a lado e o contêiner ainda vazio. Ponte nova: “Ao lado de Ao iniciar, coloque a área Enquanto estiver rodando. Dentro dela, encaixe A cada quadro do jogo.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-motor",
@@ -111,7 +111,7 @@
     },
     {
       "key": "video-primeiro-desenho",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora a gente enche o motor. E eu vou fazer com você numa ordem meio esquisita de propósito, porque ”. Saída: “coisa, desenhar é outra. Na Aula 1 você criou ele, e agora o jogo está desenhando ele a cada quadro.”. Manter o aparecimento. Na trilha revisada usamos dino como identificador; retirar o parágrafo sobre nomes diferentes. Ponte nova: “Dentro de A cada quadro, coloque Desenhar o sprite. Selecione dino e veja-o aparecer.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora a gente enche o motor. E eu vou fazer com você numa ordem meio esquisita de propósito, porque ”. Saída: “coisa, desenhar é outra. Na Aula 1 você criou ele, e agora o jogo está desenhando ele a cada quadro.”. Manter o aparecimento. Na trilha revisada usamos dino como identificador; retirar o parágrafo sobre nomes diferentes. Ponte nova: “Dentro de A cada quadro, coloque Desenhar o sprite. Selecione dino e veja-o aparecer.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-primeiro-desenho",
@@ -123,7 +123,7 @@
     },
     {
       "key": "video-limpeza",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora chega perto da tela e olha as perninhas dele correndo. Repara que sobra um rastrinho, como se ”. Saída: “com a tela limpa. O Limpar a tela é sempre o primeiro bloco do loop, por hábito, não por emergência.”. Manter o zoom no rastro sutil; não fabricar um borrão enorme. Preservar a explicação de por que limpar fica mesmo quando o fundo cobre tudo. Ponte nova: “Olhe as perninhas. Coloque Limpar a tela antes de Desenhar o sprite e compare.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora chega perto da tela e olha as perninhas dele correndo. Repara que sobra um rastrinho, como se ”. Saída: “com a tela limpa. O Limpar a tela é sempre o primeiro bloco do loop, por hábito, não por emergência.”. Manter o zoom no rastro sutil; não fabricar um borrão enorme. Preservar a explicação de por que limpar fica mesmo quando o fundo cobre tudo. Ponte nova: “Olhe as perninhas. Coloque Limpar a tela antes de Desenhar o sprite e compare.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-limpeza",
@@ -135,7 +135,7 @@
     },
     {
       "key": "video-floresta-cobre",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora falta a floresta. Ainda na categoria Jogo 2D, subcategoria Kit dino, pega o bloco Desenhar fun”. Saída: “ade, e vem com 4. Troca por 5. Olha o seu jogo e me diz: cadê o dino? Sumiu! Ele estava aí agorinha.”. Parar antes da explicação e antes do conserto. Mostrar as duas peças e destacar a última, sem pedir à criança que monte a ordem errada. Ponte nova: “Observe: o Dino continua criado, mas a floresta desenhada depois cobre ele. Vamos comparar as duas ordens em um exemplo separado.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Agora falta a floresta. Ainda na categoria Jogo 2D, subcategoria Kit dino, pega o bloco Desenhar fun”. Saída: “ade, e vem com 4. Troca por 5. Olha o seu jogo e me diz: cadê o dino? Sumiu! Ele estava aí agorinha.”. Parar antes da explicação e antes do conserto. Mostrar as duas peças e destacar a última, sem pedir à criança que monte a ordem errada. Ponte nova: “Observe: o Dino continua criado, mas a floresta desenhada depois cobre ele. Vamos comparar as duas ordens em um exemplo separado.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "experiencia-camadas",
@@ -157,7 +157,7 @@
     },
     {
       "key": "video-ordem-certa",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Então é só arrumar a ordem: arrasta a floresta pra ficar no meio, logo abaixo do Limpar a tela e log”. Saída: “nho onde a telinha do jogo termina, e o espaço em volta continua da cor que você escolheu na Aula 1.”. Acrescentar a entrada mostrando a floresta ainda na paleta, pois a ordem errada só apareceu na demonstração. Preservar o gesto de encaixe e a fronteira do palco. Ponte nova: “Coloque a floresta com velocidade 5 entre Limpar a tela e Desenhar o sprite. Arraste a peça, sem duplicar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “Então é só arrumar a ordem: arrasta a floresta pra ficar no meio, logo abaixo do Limpar a tela e log”. Saída: “nho onde a telinha do jogo termina, e o espaço em volta continua da cor que você escolheu na Aula 1.”. Acrescentar a entrada mostrando a floresta ainda na paleta, pois a ordem errada só apareceu na demonstração. Preservar o gesto de encaixe e a fronteira do palco. Ponte nova: “Coloque a floresta com velocidade 5 entre Limpar a tela e Desenhar o sprite. Arraste a peça, sem duplicar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-ordem-certa",
@@ -169,7 +169,7 @@
     },
     {
       "key": "video-retirar-borda",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “E aí, olha só: agora a própria floresta mostra onde a telinha começa e termina. Quer dizer que a bor”. Saída: “ntinuam no seu Ao iniciar. O retângulo continua lá, marcado pela floresta, e o seu jogo ficou limpo.”. Preservar Ctrl+Z e o menu de contexto. Em tela de toque, complementar com a forma de abrir o menu usada pelo Estúdio atual. Não exigir que a criança apague três blocos de propósito. Ponte nova: “Use Apagar este bloco na borda. Confira se a descrição e a criação do Dino continuam em Ao iniciar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 2. Passo 2: desenhar o mundo. Entrada: “E aí, olha só: agora a própria floresta mostra onde a telinha começa e termina. Quer dizer que a bor”. Saída: “ntinuam no seu Ao iniciar. O retângulo continua lá, marcado pela floresta, e o seu jogo ficou limpo.”. Preservar Ctrl+Z e o menu de contexto. Em tela de toque, complementar com a forma de abrir o menu usada pelo Estúdio atual. Não exigir que a criança apague três blocos de propósito. Ponte nova: “Use Apagar este bloco na borda. Confira se a descrição e a criação do Dino continuam em Ao iniciar.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
       "key": "fala-retirar-borda",
@@ -189,7 +189,7 @@
     },
     {
       "key": "video-fecho-editorial",
-      "plannedVideo": "Fonte: roteiro-aula-02-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 2! Olha o que você fez hoje. Você ligou o motor do jogo, encheu ele d”. Saída: “róxima aula o seu dino ganha um poder novo: o pulo. Ele vai saltar quando você mandar. Te espero lá!”. Manter a recapitulação. Parte 3: aproveitar a ilusão de movimento no fechamento; retirar a exploração livre das velocidades 2 e 9 e manter 5. Nomes dos identificadores ficam canônicos na trilha guiada; a cor do Dino pode ser escolhida. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 2! Olha o que você fez hoje. Você ligou o motor do jogo, encheu ele d”. Saída: “róxima aula o seu dino ganha um poder novo: o pulo. Ele vai saltar quando você mandar. Te espero lá!”. Manter a recapitulação. Parte 3: aproveitar a ilusão de movimento no fechamento; retirar a exploração livre das velocidades 2 e 9 e manter 5. Nomes dos identificadores ficam canônicos na trilha guiada; a cor do Dino pode ser escolhida. Terminar indicando o quiz, sem abrir desafios extras. Ponte nova: “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     }
   ],
   "sections": [

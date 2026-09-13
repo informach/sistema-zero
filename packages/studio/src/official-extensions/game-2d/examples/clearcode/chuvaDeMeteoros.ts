@@ -188,7 +188,8 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
                   },
                 },
                 {
-                  type: 'g2d:playShoot',
+                  type: 'g2d:playFx',
+                  fx: 'shoot',
                 },
               ],
             },
@@ -318,7 +319,8 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
                       color: '#ffb347',
                     },
                     {
-                      type: 'g2d:playExplosion',
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
                     },
                     {
                       type: 'g2d:removeFromGroup',
@@ -465,6 +467,7 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 0.5,
           },
+          key: 'nasce-meteoro',
           body: [
             {
               type: 'if',
@@ -536,6 +539,7 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1,
           },
+          key: 'ponto-por-segundo',
           body: [
             {
               type: 'if',
@@ -570,6 +574,7 @@ export const chuvaDeMeteorosExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 6,
           },
+          key: 'acelera',
           body: [
             {
               type: 'if',

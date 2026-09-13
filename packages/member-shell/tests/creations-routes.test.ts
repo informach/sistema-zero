@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { createEmptyProject } from '@sistemazero/studio/project'
 
 // `server-only` lança fora do React Server; neutraliza para testar os handlers.
 mock.module('server-only', () => ({}))
@@ -25,6 +26,7 @@ const r2 = {
   batchDelete: false,
 }
 const storage = {
+  readJson: async (key: string) => createEmptyProject(key.split('/')[3] ?? '', 'Nave'),
   presignPut: async (input: {
     key: string
     contentType: string
@@ -494,6 +496,7 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
         }),
       },
       storage: {
+        readJson: storage.readJson,
         presignPut: storage.presignPut,
         presignGet: storage.presignGet,
         deleteObject: storage.deleteObject,
@@ -528,7 +531,7 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
     )
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ item: SUMMARY })
-    expect(sentToMembers).toEqual({ revision: 3, uploadedParts: [HASH_A] })
+    expect(sentToMembers).toEqual({ revision: 3, uploadedParts: [HASH_A], verifiedPartHashes: [] })
     await settle()
     expect(r2.deletedBatches).toEqual([released])
   })
@@ -612,11 +615,27 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
 })
 
 describe('BFF das criações — commit', () => {
-  test('manda só a revisão ao members, apaga a revisão anterior no R2 e devolve só o resumo', async () => {
+  test('confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar', async () => {
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async () => ({ ...createEmptyProject('proj-1', 'Antigo'), formatVersion: 1 }),
+      },
+    })
+    const response = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({ error: { code: 'CREATION_DOCUMENT_INVALID' } })
+    expect(calls.commitCreationUpload).toBeUndefined()
+    expect(r2.deleted).toEqual([])
+  })
+  test('manda a revisão e os recursos conferidos ao members, apaga a revisão anterior e devolve o resumo', async () => {
     const { routes, calls } = buildRoutes()
     const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
     expect(res.status).toBe(200)
-    expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({ revision: 2 })
+    expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({
+      revision: 2,
+      verifiedPartHashes: [],
+    })
     expect(r2.deleted).toEqual(['creations/u/studio/proj-1/1.json.gz'])
     const body = await res.json()
     expect(body).toEqual({ item: SUMMARY })

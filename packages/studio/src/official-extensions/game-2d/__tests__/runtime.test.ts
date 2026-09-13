@@ -211,7 +211,8 @@ describe('gameTwoDRuntime', () => {
         fps: number,
       ) => void
       createTileMap: (options: Record<string, unknown>) => NumericMap
-      drawTileMap: (ctx: unknown, map: NumericMap, x: number, y: number, size: number) => void
+      drawTileMap: (ctx: unknown, map: NumericMap) => void
+      centerTileMap: (ctx: unknown, map: NumericMap, x: number, y: number, size: number) => void
       createDino: (options: Record<string, unknown>) => NumericSprite
       controlDino: (sprite: NumericSprite, ctx: unknown, jump: number) => void
       drawStarfield: (ctx: unknown, speed: number) => void
@@ -253,13 +254,14 @@ describe('gameTwoDRuntime', () => {
       expect(animated.anim).toMatchObject({ from: 0, to: 0, fps: 8 })
 
       const map = sz.createTileMap({ grid: '1', tile: 32, solid: '1', image: '' })
-      sz.drawTileMap(
+      sz.centerTileMap(
         ctx,
         map,
         Number.POSITIVE_INFINITY,
         Number.NEGATIVE_INFINITY,
         Number.POSITIVE_INFINITY,
       )
+      sz.drawTileMap(ctx, map)
       expect([map.draw, map.ox, map.oy].every(Number.isFinite)).toBe(true)
 
       const dino = sz.createDino({ size: Number.POSITIVE_INFINITY })
@@ -408,7 +410,8 @@ describe('gameTwoDRuntime', () => {
         ox: number
         oy: number
       }
-      drawTileMap: (ctx: unknown, map: unknown, x?: number, y?: number) => void
+      drawTileMap: (ctx: unknown, map: unknown) => void
+      centerTileMap: (ctx: unknown, map: unknown, x?: number, y?: number, size?: number) => void
       tileAt: (map: unknown, px: number, py: number) => number
     }
     // ctx permissivo: canvas 800×480; qualquer método é no-op (não rasteriza no teste).
@@ -428,7 +431,8 @@ describe('gameTwoDRuntime', () => {
     expect(map.tile).toBe(16) // tamanho na ARTE (fatiar o tileset)
     expect(map.draw).toBe(0) // ainda não desenhou
 
-    sz.drawTileMap(ctx, map, 0, 0)
+    sz.centerTileMap(ctx, map, 0, 0, 0)
+    sz.drawTileMap(ctx, map)
     // 4 colunas × 2 linhas → cabe: min(800/4=200, 480/2=240) = 200 px por tile NA TELA.
     expect(map.draw).toBe(200)
     expect(map.ox).toBe(0) // centralizado: (800 − 4·200)/2 = 0
@@ -442,7 +446,8 @@ describe('gameTwoDRuntime', () => {
   it('tilemap grande desenha somente as células que cruzam a viewport', () => {
     const sz = api as unknown as {
       createTileMap: (o: unknown) => unknown
-      drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size: number) => void
+      drawTileMap: (ctx: unknown, map: unknown) => void
+      centerTileMap: (ctx: unknown, map: unknown, x: number, y: number, size: number) => void
     }
     const grid = Array.from({ length: 128 }, () => Array(128).fill('0').join(' ')).join(';')
     const map = sz.createTileMap({ image: 'tiles', tile: 16, grid, solid: '' })
@@ -462,7 +467,8 @@ describe('gameTwoDRuntime', () => {
       },
     })
 
-    sz.drawTileMap(ctx, map, 0, 0, 16)
+    sz.centerTileMap(ctx, map, 0, 0, 16)
+    sz.drawTileMap(ctx, map)
 
     expect(draws).toHaveLength(20 * 12)
     expect(draws.every(([x, y, w, h]) => x < 320 && x + w > 0 && y < 192 && y + h > 0)).toBe(true)
@@ -559,9 +565,9 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
       'spawnObstacle',
       'spawnEgg',
       'drawForest',
-      'playJump',
-      'playDinoHurt',
-      'playCollect',
+      'playFx',
+      'playFx',
+      'playFx',
     ]) {
       expect(typeof sz[fn]).toBe('function')
     }
@@ -706,6 +712,7 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     sendToBack: (group: { items: unknown[] }, sprite: unknown) => void
     clearGroup: (group: { items: unknown[] }) => void
     removeFromGroup: (group: { items: unknown[] }, sprite: unknown) => void
+    destroySprite: (sprite: unknown) => void
     drawSprite: (ctx: unknown, s: unknown) => void
     drawFrame: (
       ctx: unknown,
@@ -951,6 +958,21 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(created[0]?.listenerCount('error')).toBe(0)
     created[0]?.fireLoad()
     expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('destruir libera o carregamento pendente e uma imagem tardia não reaparece', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    api.destroySprite(sprite)
+    expect(created[0]?.listenerCount('load')).toBe(0)
+    expect(created[0]?.listenerCount('error')).toBe(0)
+    const before = calls.length
+    created[0]?.fireLoad()
+    api.drawSprite(ctx, sprite)
+    expect(calls.length).toBe(before)
   })
 
   it('mutações públicas de group.items também cancelam redraws removidos', () => {
@@ -1391,12 +1413,12 @@ describe('gameTwoDRuntime — música e pausa', () => {
         SZGame2D: {
           playMusic: (name: string) => void
           playSound: (frequency: number, durationMs: number) => void
-          playJump: () => void
+          playFx: (fx: string) => void
           pauseGame: () => void
           resumeGame: () => void
           restart: () => void
           onStart: (callback: () => void, id: string) => void
-          stopMusic: () => void
+          stopTrack: (scope: 'synth' | 'all' | 'file') => void
         }
       }
     ).SZGame2D
@@ -1440,7 +1462,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
 
     api.playMusic('happy')
     expect(timers.keys().next().value).not.toBe(firstTimer)
-    api.stopMusic()
+    api.stopTrack('synth')
   })
 
   it('suspende o agendamento da música na pausa e continua ao retomar', () => {
@@ -1455,7 +1477,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     expect(timers.size).toBe(1)
     expect(runNextTimer()).toBe(true)
     expect(timers.size).toBe(1)
-    api.stopMusic()
+    api.stopTrack('synth')
     expect(timers.size).toBe(0)
   })
 
@@ -1470,7 +1492,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     fireKeydown()
 
     expect(frequencies[0]).toBe(262)
-    api.stopMusic()
+    api.stopTrack('synth')
   })
 
   it('suspende o AudioContext inteiro na pausa e o retoma com a partida', () => {
@@ -1493,7 +1515,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     api.pauseGame()
 
     fireKeydown()
-    api.playJump()
+    api.playFx('jump')
     api.playSound(660, 100)
 
     expect(audioLifecycle()).toEqual({ resumeCalls: 1, state: 'suspended', suspendCalls: 1 })
@@ -1519,7 +1541,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     const { api, fireKeydown, frequencies, frequencyRamps, sourceStops } = loadMusicRuntime()
     fireKeydown()
 
-    api.playJump()
+    api.playFx('jump')
 
     expect(frequencies.at(-1)).toBe(330)
     expect(frequencyRamps.at(-1)).toBe(760)
@@ -1536,7 +1558,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
         const notesBefore = frequencies.length
         expect(() => api.playMusic(name)).not.toThrow()
         expect(frequencies[notesBefore]).toBe(262)
-        api.stopMusic()
+        api.stopTrack('synth')
       }
     } finally {
       warning.mockRestore()
@@ -1570,7 +1592,8 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
       oy: number
       _drawn?: boolean
     }
-    drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
+    drawTileMap: (ctx: unknown, map: unknown) => void
+    centerTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
     tileAt: (map: unknown, px: number, py: number) => number
     tileAtSprite: (map: unknown, s: { x: number; y: number; w: number; h: number }) => number
@@ -1674,7 +1697,8 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     const api = load()
     const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '. . 1;1 . 1' })
     const { ctx, calls } = fakeCtx()
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     // 3 células não vazias → 3 placeholders (fillRect), 0 drawImage (imagem não carregada).
     expect(calls.filter((c) => c === 'fillRect')).toHaveLength(3)
     expect(map.ox).toBe(0)
@@ -1691,17 +1715,20 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
       clearRect: noop,
     }
     // Encaixe automático: 2×2 num canvas 200×100 → célula 50, centrado (ox 50, oy 0).
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     expect(map.draw).toBe(50)
     expect(map.ox).toBe(50)
     expect(map.oy).toBe(0)
     // Tamanho manual: célula 20, mapa 40×40 centrado (ox 80, oy 30).
-    api.drawTileMap(ctx, map, 0, 0, 20)
+    api.centerTileMap(ctx, map, 0, 0, 20)
+    api.drawTileMap(ctx, map)
     expect(map.draw).toBe(20)
     expect(map.ox).toBe(80)
     expect(map.oy).toBe(30)
     // 0 (a sombra padrão do bloco) mantém o encaixe automático de sempre.
-    api.drawTileMap(ctx, map, 0, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     expect(map.draw).toBe(50)
   })
 
@@ -1718,7 +1745,8 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
 
     const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '', grid: '0 0;0 0' })
     const ctx = { canvas, fillRect() {}, drawImage() {}, clearRect() {} }
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     expect(map.draw).toBe(240)
     expect(map.ox).toBe(160)
     expect(map.oy).toBe(0)
@@ -3196,7 +3224,7 @@ describe('gameTwoDRuntime — Kit gorilas (v0.11.0)', () => {
       'drawBanana',
       'bananaHitThrower',
       'bananaHitCity',
-      'playWhistle',
+      'playFx',
       'computerTurn',
       'drawAimReadout',
     ]) {

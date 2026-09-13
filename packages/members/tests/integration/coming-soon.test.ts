@@ -223,7 +223,7 @@ describe('Bloco "em breve" (aula em produção)', () => {
       sortOrder: 6,
       content: {
         kind: 'studio',
-        initialProject: { name: 'Jogo', files: { 'script.js': '// ...' } },
+        initialProject: { formatVersion: 2, name: 'Jogo', files: { 'script.js': '// ...' } },
       },
     })
 
@@ -249,7 +249,7 @@ describe('Bloco "em breve" (aula em produção)', () => {
           method: 'POST',
           headers: staffHeaders,
           body: JSON.stringify({
-            project: { name: 'Conferindo', files: { 'script.js': '// ok' } },
+            project: { formatVersion: 2, name: 'Conferindo', files: { 'script.js': '// ok' } },
           }),
         },
       ),
@@ -267,7 +267,7 @@ describe('Bloco "em breve" (aula em produção)', () => {
       sortOrder: 7,
       content: {
         kind: 'studio',
-        initialProject: { name: 'Jogo', files: { 'script.js': '// ...' } },
+        initialProject: { formatVersion: 2, name: 'Jogo', files: { 'script.js': '// ...' } },
         showcase: { enabled: true, title: 'TÍTULO AUTORAL', summary: 'RESUMO AUTORAL' },
       },
     })

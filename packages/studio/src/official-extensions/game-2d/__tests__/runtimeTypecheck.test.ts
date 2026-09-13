@@ -321,7 +321,10 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +42 parâmetros de texto, layout, dados e seleção por clique; APIs tipadas
   // em JSDoc e verificadas contra o contrato público pelo arquivo composto.
   // +6 parâmetros com JSDoc: identidade de clique por alvo e publicação no HUD acessível.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1206)
+  // +13: destruição, vínculos reais de grupos, limpeza de clique, ação com
+  // recarga e alcance da parada de música. APIs novas com JSDoc e contrato público.
+  // +2 líquidos: centralização explícita (cinco), desenho perde os três opcionais.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1221)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

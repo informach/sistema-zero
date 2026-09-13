@@ -1,6 +1,6 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isInteractiveBlock } from '@sistemazero/core/learning'
-import { isStudioProTemplateId } from '@sistemazero/core/studio'
+import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
@@ -453,6 +453,7 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
   // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto
   // Pro. O restante do snapshot continua defensivo e é sanitizado pelo Studio.
   if (content.kind === 'studio') {
+    assertCurrentStudioAuthoring(content.initialProject)
     if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
       throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
     }
@@ -482,6 +483,18 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
       if (problem) throw new InvalidContentCommandError(problem)
     }
   }
+}
+
+/** Escritores antigos não podem reintroduzir projetos históricos nas aulas. */
+export function assertCurrentStudioAuthoring(project: unknown): void {
+  if (
+    !project ||
+    typeof project !== 'object' ||
+    (project as { formatVersion?: unknown }).formatVersion !== STUDIO_PROJECT_FORMAT_VERSION
+  )
+    throw new InvalidContentCommandError(
+      'Abra o projeto no Studio atualizado antes de salvar a aula.',
+    )
 }
 
 /** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */

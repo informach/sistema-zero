@@ -90,7 +90,7 @@ export function courseProjects() {
         VY: -9,
       },
     ),
-    b('sz_g2d_play_shoot'),
+    b('sz_g2d_play_fx', { FX: 'shoot' }),
   ]
   const space = body(b('sz_g2d_on_key', { KEY: 'Space' }), 'BODY', shot)
   events.push(space)
@@ -109,7 +109,7 @@ export function courseProjects() {
     b('sz_g2d_remove_from_group', { SPRITE: 'tiro', GROUP: 'tiros' }),
     b('sz_g2d_remove_from_group', { SPRITE: 'asteroide', GROUP: 'asteroides' }),
     b('sz_g2d_explode', { SPRITE: 'asteroide', COLOR: '#ffb13b' }),
-    b('sz_g2d_play_explosion'),
+    b('sz_g2d_play_fx', { FX: 'explosion' }),
   ]
   const hit = body(
     b('sz_g2d_on_group_overlap', {

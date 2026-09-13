@@ -274,3 +274,9 @@ A cópia é outra forma selecionável e editável.
 As falas originais selecionadas são matéria-prima: aplicar cortes e substituições antes de exportar. Não somar a narração antiga inteira à ponte nova. Nenhum timecode foi inventado; marcar entrada e saída assistindo ao arquivo gravado. Textos e títulos devem ter legenda, foco visual único e tamanho legível.
 
 Fonte: roteiro-aula-04-o-jogo-do-meu-jeito.md. SHA-256: 49736e1aa90b056c2778a8337d400329fdaca77f30126bf9af0ff114fd3ba6e1. Mapa completo: [montagem.json](montagem.json).
+
+## Blocos e gravação no Estúdio atual
+
+Edição: jogo-2d-1.0-documento-2.
+
+Esta aula não monta blocos no Estúdio. Preserve o percurso e a entrega previstos; os blocos do jogo entram nas aulas de integração.

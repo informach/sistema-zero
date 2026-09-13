@@ -974,6 +974,7 @@ export const fazendaFelizExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 3,
           },
+          key: 'crescer',
           body: [
             {
               type: 'if',

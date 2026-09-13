@@ -10,11 +10,12 @@
       "entry": "Oi! Chegou o grande dia: o Dia 5, o último. O seu jogo está incrível, mas repara só: ele começa do n",
       "exit": "nter comandar tudo. E no sétimo, testa do começo ao fim e publica. Então bora começar pelo primeiro.",
       "narration": "Oi! Chegou o grande dia: o Dia 5, o último. O seu jogo está incrível, mas repara só: ele começa do nada, no meio da ação, e nunca termina. Hoje ele vira um jogo de verdade, com tela de início, vitória, derrota e recomeço. E no final, você vai publicar ele pro mundo jogar. E pra chegar lá, a gente vai passar por sete passos. No primeiro, a gente cria o alvo e a primeira tela. No segundo, monta a pergunta da tela de jogar. No terceiro, muda o jogo inteiro pra dentro dela. No quarto, cria a vitória e a derrota. No quinto, monta as telas de início, de vitória e de derrota. No sexto, faz o Enter comandar tudo. E no sétimo, testa do começo ao fim e publica. Então bora começar pelo primeiro.",
-      "edit": "Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a apresentação do resultado; substituir a enumeração antiga de passos. Usar somente a abertura curta revisada, sem repetir a fala inteira.",
       "visual": "Jogo no resultado possível ao final deste dia; na introdução, entrada do curso.",
       "newNarration": "Chegou a hora de dar começo e final ao seu jogo. Hoje vamos guardar a partida atrás de uma pergunta: estamos jogando? Depois entram as telas, o Enter e o teste completo. Vamos por partes; seu projeto continua guardado se você precisar de uma pausa.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-telas-observar",
@@ -23,11 +24,12 @@
       "entry": "Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm",
       "exit": "ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.",
       "narration": "Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse número não muda nunca durante o jogo, e número que não muda tem um nome especial: constante. É uma caixinha lacrada: você escreve o número uma vez e ele fica firme até o fim. Na categoria Programação, subcategoria Variáveis, pega o bloco Criar constante e encaixa dentro do Ao iniciar, logo abaixo do Dar ao sprite nave 3 de vida. No nome, escreve alvo, e no valor, 26. Agora, uma ideia nova, e é a mais importante de hoje: as telas. Pensa nos jogos que você joga: tem a tela de abertura, a tela do jogo rodando, a tela de você venceu... O jogo troca de tela conforme o que acontece. O nosso vai ter quatro: inicio, jogando, vitoria e fim. E a primeira coisa que precisamos fazer é dizer em qual tela o jogo abre. Na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco Ir para a tela e encaixa como o último bloco do Ao iniciar, embaixo do Criar constante. Olha só: ele já vem com a tela inicio escolhida, que é justamente a nossa tela de início. Então é só deixar assim. E quando você clicar naquele menuzinho de telas, vai ver que já tem umas prontas pra escolher, como jogando, vitoria e fim, que a gente vai usar daqui a pouco. Pronto: quando o jogo ligar, ele vai direto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.",
-      "edit": "Usar a apresentação de telas e da constante. Acrescentar um percurso visual das quatro telas, sem ainda mostrar a reorganização de todos os blocos.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Usar a apresentação de telas e da constante. Acrescentar um percurso visual das quatro telas, sem ainda mostrar a reorganização de todos os blocos.",
       "visual": "Quatro cartões de estado, uma seta de cada vez e valores pontos/vidas. De inicio para jogando; uma partida de exemplo termina em fim e outra em vitoria. Não trocar estados por cliques do aluno.",
       "newNarration": "O jogo abre em inicio. Enter leva para jogando. Se os pontos chegam a 26, vai para vitoria; se as vidas acabam, vai para fim. Pontos mudam durante a partida. O alvo fica em 26: ele é uma constante, a meta deste jogo.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-alvo",
@@ -36,11 +38,12 @@
       "entry": "Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse núm",
       "exit": "ireto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.",
       "narration": "Primeiro, o jogo precisa saber quando alguém vence. A nossa regra é destruir 26 asteroides. Esse número não muda nunca durante o jogo, e número que não muda tem um nome especial: constante. É uma caixinha lacrada: você escreve o número uma vez e ele fica firme até o fim. Na categoria Programação, subcategoria Variáveis, pega o bloco Criar constante e encaixa dentro do Ao iniciar, logo abaixo do Dar ao sprite nave 3 de vida. No nome, escreve alvo, e no valor, 26. Agora, uma ideia nova, e é a mais importante de hoje: as telas. Pensa nos jogos que você joga: tem a tela de abertura, a tela do jogo rodando, a tela de você venceu... O jogo troca de tela conforme o que acontece. O nosso vai ter quatro: inicio, jogando, vitoria e fim. E a primeira coisa que precisamos fazer é dizer em qual tela o jogo abre. Na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco Ir para a tela e encaixa como o último bloco do Ao iniciar, embaixo do Criar constante. Olha só: ele já vem com a tela inicio escolhida, que é justamente a nossa tela de início. Então é só deixar assim. E quando você clicar naquele menuzinho de telas, vai ver que já tem umas prontas pra escolher, como jogando, vitoria e fim, que a gente vai usar daqui a pouco. Pronto: quando o jogo ligar, ele vai direto pra tela de início. Passo 1 pronto. Agora o segundo, que é montar a pergunta da tela de jogar.",
-      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
-      "newNarration": "Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.",
+      "newNarration": "Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-pergunta",
@@ -49,11 +52,12 @@
       "entry": "Aqui vem a manobra mais legal do desafio inteiro. Hoje, tudo o que está no A cada quadro do jogo rod",
       "exit": "2 pronto, a pergunta está feita. Agora o terceiro passo, que é mudar o jogo inteiro pra dentro dela.",
       "narration": "Aqui vem a manobra mais legal do desafio inteiro. Hoje, tudo o que está no A cada quadro do jogo roda o tempo todo. Mas a nave, os tiros e os asteroides só deviam funcionar quando a gente estiver de fato jogando, né? Então a gente vai guardar o jogo inteiro dentro de uma pergunta: a tela atual é jogando? Primeiro, o bloco de decisão. Na categoria Programação, subcategoria Lógica e Se, pega o bloco Se e encaixa dentro do A cada quadro do jogo, bem no topo, antes de tudo. Esse bloco laranja é o bloco das decisões: se a resposta da pergunta for sim, ele faz o que está dentro dele. Agora, a pergunta. Repara que o Se já vem com uma comparação de fábrica ali na pergunta, um valor da variável de um lado e um número do outro. A gente não quer ela aqui, então tira ela primeiro: arrasta pra fora e apaga. No lugar dela, na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco a tela atual é e encaixa. Ele vem com inicio, então clica no menuzinho e escolhe jogando na listinha. Ficou: se a tela atual é jogando, então faça o que está dentro. Passo 2 pronto, a pergunta está feita. Agora o terceiro passo, que é mudar o jogo inteiro pra dentro dela.",
-      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
-      "newNarration": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Telas e cenas, e escolha jogando. Ainda vamos levar os blocos para dentro.",
+      "newNarration": "Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Jogo e telas › Telas e partida, e escolha jogando. Ainda vamos levar os blocos para dentro.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-mover-cadeia",
@@ -62,11 +66,12 @@
       "entry": "Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De",
       "exit": "ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.",
       "narration": "Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o Desenhar as vidas, pra dentro desse Se. Uma dica: se você arrastar o Limpar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.",
-      "edit": "Reaproveitar só o arraste da cadeia. Gravar zoom e pausa no contorno do então. Não incluir ainda o relógio neste clipe.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar só o arraste da cadeia. Gravar zoom e pausa no contorno do então. Não incluir ainda o relógio neste clipe.",
       "visual": "Realçar a cadeia inteira, arrastar uma vez e mostrar o contorno do Se envolvendo todos os blocos. Alternar visão geral e aproximação, sem cortes que escondam a conexão.",
       "newNarration": "Vou pegar a sequência pelo primeiro bloco, Limpar a tela. Os que estão encaixados abaixo vêm junto. Eu solto a sequência dentro do então do Se. Confira o começo e o fim: Limpar a tela lá em cima e Desenhar as vidas lá embaixo, todos dentro.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-guardar-jogo",
@@ -75,11 +80,12 @@
       "entry": "Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o De",
       "exit": "ar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.",
       "narration": "Agora, a mudança: arrasta todos os blocos que já estavam no A cada quadro, do Limpar a tela até o Desenhar as vidas, pra dentro desse Se. Uma dica: se você arrastar o Limpar a tela, todos os que estão encaixados embaixo dele vêm junto, de uma vez só. Capricha no encaixe.",
-      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
       "newNarration": "No seu Estúdio, arraste a sequência de Limpar a tela até Desenhar as vidas para o então do Se jogando. Preserve a ordem. Enquanto a tela for inicio, essa sequência não roda. A tela pode ficar vazia por enquanto: vamos desenhar a abertura daqui a pouco.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-guardar-relogio",
@@ -88,11 +94,12 @@
       "entry": "Ah, e tem um lugarzinho a mais: o relógio dos asteroides. Vai no A cada 40 quadros e faz igualzinho:",
       "exit": " nada nela. Já já ela ganha vida. Passo 3 pronto. Agora o quarto, que é criar a vitória e a derrota.",
       "narration": "Ah, e tem um lugarzinho a mais: o relógio dos asteroides. Vai no A cada 40 quadros e faz igualzinho: pega mais um Se na categoria Programação, subcategoria Lógica e Se, encaixa dentro do bloco, tira a comparação de fábrica dele também e põe no lugar a pergunta a tela atual é, de Telas e cenas, escolhendo jogando na listinha, e arrasta o bloco de criar asteroide pra dentro desse Se. Senão os asteroides iam continuar chovendo até na tela de início. Olha a tela do jogo agora: tudo sumiu! Calma, é sinal de que funcionou. O jogo está na tela inicio, e a gente ainda não desenhou nada nela. Já já ela ganha vida. Passo 3 pronto. Agora o quarto, que é criar a vitória e a derrota.",
-      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
       "newNarration": "Dentro de A cada 40 quadros, coloque outro Se com a pergunta a tela atual é jogando. Leve Criar asteroide para o então desse Se. Proteger o motor principal não protege automaticamente este outro relógio.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-guardar-tiro",
@@ -101,11 +108,12 @@
       "entry": "A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego",
       "exit": " agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.",
       "narration": "A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando apertar a tecla e encaixa dentro da área Quando acontecer, embaixo do bloco da barra de espaço. No menu de teclas, escolhe o Enter. Agora, dentro dele, as decisões. Na categoria Programação, subcategoria Lógica e Se, pega um Se. Ele vem com a comparação de fábrica. Tira ela e, para a pergunta, vai na subcategoria Telas e cenas e encaixa um a tela atual é, escolhendo inicio na listinha. E dentro, vai novamente na subcategoria Telas e cenas e pega o bloco Ir para a tela, escolhendo jogando na listinha. Ou seja: se estou na tela de início e apertei Enter, o jogo começa! Agora clica no mais senão se desse Se. Ele vem com a comparação de fábrica de novo. Tira ela e vai na categoria Telas e cenas e pega o bloco a tela atual é, e escolhe fim. E dentro vai um bloco novo e poderoso: na categoria Jogo 2D, subcategoria Telas e cenas, pega o Reiniciar o jogo e encaixa aí. Ele zera tudo: pontos, vidas, asteroides, e recomeça do comecinho. E mais um clique no mais senão se: Ele vem com a comparação de fábrica de novo. Tira ela e vai na categoria Telas e cenas e pega o bloco a tela atual é, e escolhe vitoria. E dentro vai novamente na subcategoria Telas e cenas, pega outro Reiniciar o jogo e encaixa aí dentro. Passo 6 pronto. E agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.",
-      "edit": "Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter.",
       "visual": "Evento Espaço já existente, pergunta jogando e os dois comandos transferidos para dentro; teste curto no menu sem tiro e sem som.",
-      "newNarration": "Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar som de tiro para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.",
+      "newNarration": "Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-vitoria",
@@ -114,11 +122,12 @@
       "entry": "O jogo precisa perceber sozinho a hora de ganhar e a hora de perder. São duas perguntas novas, e as ",
       "exit": "a Telas e cenas, pega o bloco Ir para a tela, encaixa dentro desse Se e escolhe vitoria na listinha.",
       "narration": "O jogo precisa perceber sozinho a hora de ganhar e a hora de perder. São duas perguntas novas, e as duas moram no finalzinho do Se a tela atual é jogando, depois do Desenhar as vidas. Primeiro, a vitória. Na categoria Programação, subcategoria Lógica e Se, pega mais um bloco Se e encaixa lá no final, dentro do Se grande. E aqui vem uma sorte boa: a comparação que já vem de fábrica dentro do Se é justamente o que a gente precisa, então dessa vez não tira nada, só ajusta. Do lado esquerdo já tem um valor da variável. Clica nele e troca o nome pra pontos. No sinalzinho do meio, escolhe o maior ou igual. E do lado direito tem um número. Esse a gente troca: na categoria Programação, subcategoria Valores, pega outro valor da variável, arrasta por cima do número e escolhe alvo. A pergunta ficou: os pontos chegaram no alvo? E se a resposta for sim: na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco Ir para a tela, encaixa dentro desse Se e escolhe vitoria na listinha.",
-      "edit": "Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
       "newNarration": "No fim do então de Se jogando, depois dos corações, coloque outro Se. Na comparação, leia pontos à esquerda, escolha maior ou igual e leia alvo à direita. Dentro dele, coloque Ir para a tela vitoria.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-derrota",
@@ -127,11 +136,12 @@
       "entry": "Agora, a derrota. Pega mais um Se, na categoria Programação, subcategoria Lógica e Se, e encaixa log",
       "exit": "de Telas e cenas, escolhendo fim na listinha. Passo 4 pronto. Agora o quinto, que é montar as telas.",
       "narration": "Agora, a derrota. Pega mais um Se, na categoria Programação, subcategoria Lógica e Se, e encaixa logo abaixo. Esse Se também vem com aquela comparação de fábrica. Tira ela e, no lugar, na categoria Jogo 2D, subcategoria Vida, pega o bloco as vidas do sprite acabaram? e encaixa. Escolhe a nave. E dentro, mais um Ir para a tela, de Telas e cenas, escolhendo fim na listinha. Passo 4 pronto. Agora o quinto, que é montar as telas.",
-      "edit": "Manter a ordem original. O professor deve saber: se meta e zero vidas acontecerem no mesmo quadro, a segunda condição leva a fim. Não prometer prioridade de vitória.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a ordem original. O professor deve saber: se meta e zero vidas acontecerem no mesmo quadro, a segunda condição leva a fim. Não prometer prioridade de vitória.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
-      "newNarration": "Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida, escolhendo nave. Dentro, coloque Ir para a tela fim.",
+      "newNarration": "Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida e placar, escolhendo nave. Dentro, coloque Ir para a tela fim.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-mostrar-telas",
@@ -140,11 +150,12 @@
       "entry": "O jogo já troca de tela, mas as telas estão vazias. Bora desenhar elas. E tem um jeito esperto: o no",
       "exit": "jogo brilhando. Que orgulho, hein? Passo 5 pronto. Agora o sexto, que é fazer o Enter comandar tudo.",
       "narration": "O jogo já troca de tela, mas as telas estão vazias. Bora desenhar elas. E tem um jeito esperto: o nosso Se grande pode ganhar irmãos. Olha na parte de baixo dele: tem um botãozinho escrito mais senão se. Clica nele. Apareceu um espaço novo, o senão se, com mais um buraquinho de pergunta. Quer dizer: se não for a tela jogando, será que é outra? Esse senão se também nasce com uma comparação de fábrica na pergunta. Tira ela e, no lugar, encaixa um a tela atual é, da categoria Jogo 2D, subcategoria Telas e cenas, escrito inicio. E dentro dele vai o bloco que desenha a tela inteira. Na categoria Jogo 2D, subcategoria Telas e cenas, pega o bloco Mostrar tela e encaixa dentro. Ele tem espacinho pra tudo: no título, escreve o nome do seu jogo, Nave contra Asteroides. No subtítulo, Destrua os asteroides. Na dica, Aperte Enter para começar. E escolhe uma cor de fundo bonita. Agora repete a receita mais duas vezes. Mais um clique no mais senão se, depois Na subcategoria Telas e cenas pega o bloco a tela atual é, encaixa e escolhe a tela vitoria. E dentro, da subcategoria Telas e Cenas, pegue o blocoMostrar tela e coloque o título Você Ganhou e a dica Aperte Enter para jogar novamente. O subtítulo pode deixar em branco. E mais um clique no mais senão se, depois Na subcategoria Telas e cenas pega o bloco a tela atual é, encaixa e escolhe a tela fim. E dentro, da subcategoria Telas e Cenas, pegue o bloco Mostrar tela e coloque o título Você Perdeu e a dica Aperte Enter para tentar novamente. O subtítulo também pode deixar em branco. Olha a tela do jogo! A tela de início apareceu, com o nome do seu jogo brilhando. Que orgulho, hein? Passo 5 pronto. Agora o sexto, que é fazer o Enter comandar tudo.",
-      "edit": "Reaproveitar a criação dos ramos e telas. Nos finais, trocar a dica por “Aperte Enter para voltar ao início”: o reinício executa Ao iniciar e volta ao menu, não entra imediatamente em jogando.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a criação dos ramos e telas. Nos finais, trocar a dica por “Aperte Enter para voltar ao início”: o reinício executa Ao iniciar e volta ao menu, não entra imediatamente em jogando.",
       "visual": "Construir inicio com todos os campos; repetir vitoria/fim destacando só o nome do estado, título e dica. Pausa em cada ramo.",
       "newNarration": "No Se grande, use + senão se três vezes: inicio, vitoria e fim. Cada pergunta usa a tela atual é. Em cada ramo, encaixe Mostrar tela. Na abertura: Nave contra Asteroides e dica Aperte Enter para começar. Nos dois finais, use a dica Aperte Enter para voltar ao início. Escolha títulos e fundos legíveis.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-enter",
@@ -153,11 +164,12 @@
       "entry": "A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na catego",
       "exit": " agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.",
       "narration": "A tela de início diz aperte Enter, mas o Enter ainda não faz nada. Bora dar poder pra ele. Na categoria Jogo 2D, subcategoria Controles, pega o bloco Quando apertar a tecla e encaixa dentro da área Quando acontecer, embaixo do bloco da barra de espaço. No menu de teclas, escolhe o Enter. Agora, dentro dele, as decisões. Na categoria Programação, subcategoria Lógica e Se, pega um Se. Ele vem com a comparação de fábrica. Tira ela e, para a pergunta, vai na subcategoria Telas e cenas e encaixa um a tela atual é, escolhendo inicio na listinha. E dentro, vai novamente na subcategoria Telas e cenas e pega o bloco Ir para a tela, escolhendo jogando na listinha. Ou seja: se estou na tela de início e apertei Enter, o jogo começa! Agora clica no mais senão se desse Se. Ele vem com a comparação de fábrica de novo. Tira ela e vai na categoria Telas e cenas e pega o bloco a tela atual é, e escolhe fim. E dentro vai um bloco novo e poderoso: na categoria Jogo 2D, subcategoria Telas e cenas, pega o Reiniciar o jogo e encaixa aí. Ele zera tudo: pontos, vidas, asteroides, e recomeça do comecinho. E mais um clique no mais senão se: Ele vem com a comparação de fábrica de novo. Tira ela e vai na categoria Telas e cenas e pega o bloco a tela atual é, e escolhe vitoria. E dentro vai novamente na subcategoria Telas e cenas, pega outro Reiniciar o jogo e encaixa aí dentro. Passo 6 pronto. E agora sim, o momento da verdade: o sétimo e último passo, que é testar do começo ao fim e publicar.",
-      "edit": "Reaproveitar montagem de Enter e seus ramos. Complementar o retorno ao menu e o segundo Enter. Não dizer que o primeiro Enter após derrota já começa a partida.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar montagem de Enter e seus ramos. Complementar o retorno ao menu e o segundo Enter. Não dizer que o primeiro Enter após derrota já começa a partida.",
       "visual": "Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.",
       "newNarration": "Em Quando acontecer, adicione Quando apertar a tecla Enter. Dentro: Se a tela é inicio, vá para jogando. No senão se fim, use Reiniciar o jogo. No senão se vitoria, também Reiniciar o jogo. Depois de reiniciar, você volta à abertura; Enter mais uma vez começa outra partida.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-ciclo-completo",
@@ -166,11 +178,12 @@
       "entry": "Clica na área do jogo. A tela de início está lá. Aperta Enter... o jogo começou! Joga de verdade ago",
       "exit": "uem você quiser. Todo mundo vai poder jogar o jogo que você criou, do zero, bloquinho por bloquinho.",
       "narration": "Clica na área do jogo. A tela de início está lá. Aperta Enter... o jogo começou! Joga de verdade agora: explode asteroides, vê o placar subir. Deixa bater umas vezes e perde de propósito, só pra ver a tela de Você Perdeu aparecer. Aperta Enter e olha: recomeçou zeradinho. Agora joga pra valer e alcança os 26 pontos... Você Ganhou! O seu jogo tem começo, meio, fim e recomeço. Ele está completo. E agora, o momento mais especial do desafio. Primeiro clica em Enviar para o professor, pra eu receber o seu jogo. Aí o botão Compartilhar libera: clica nele, escreve um resuminho do seu jogo, gera uma capa e publica. Pronto! O seu jogo ganhou um link só dele. Manda pros seus amigos, pra sua família, pra quem você quiser. Todo mundo vai poder jogar o jogo que você criou, do zero, bloquinho por bloquinho.",
-      "edit": "Reaproveitar os testes e o Compartilhar, com corte do tempo repetido de jogo. Corrigir o ciclo de dois Enter. Conferir campos atuais de publicação, sem prometer edição ou geração de capa que não esteja presente.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar os testes e o Compartilhar, com corte do tempo repetido de jogo. Corrigir o ciclo de dois Enter. Conferir campos atuais de publicação, sem prometer edição ou geração de capa que não esteja presente.",
       "visual": "Menu imóvel, espaço sem efeito; partida; derrota; Enter no menu; Enter na partida; montagem acelerada até 26 pontos e vitória. Gravação atual do botão Compartilhar depois do envio.",
       "newNarration": "Teste primeiro o menu: espaço não dispara e as pedras não nascem. Enter começa. Depois de perder, Enter volta ao início, com zero ponto e três vidas; outro Enter começa. Faça também o caminho até 26 pontos e veja a vitória. Na entrega, envie ao professor e use Compartilhar quando estiver disponível.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     },
     {
       "key": "video-fecho-v6",
@@ -179,11 +192,12 @@
       "entry": "Parabéns, criador! Você terminou o Desafio do Primeiro Jogo! Olha o tamanho dessa conquista: em cinc",
       "exit": "squece de deixar o seu jogo publicado no Mural dos Criadores. Te vejo na próxima aventura. Até logo!",
       "narration": "Parabéns, criador! Você terminou o Desafio do Primeiro Jogo! Olha o tamanho dessa conquista: em cinco dias, você fez uma nave voar, atirar, explodir asteroides, marcar ponto, ganhar vidas, e hoje deu começo, vitória, derrota e recomeço pro seu jogo, e ainda publicou ele pro mundo. E fica um segredo entre a gente: tudo isso que você montou, os grupos, as variáveis, os eventos, as colisões, as telas... são as mesmas peças que os criadores de jogos profissionais usam todos os dias. Você já está no caminho. Não esquece de deixar o seu jogo publicado no Mural dos Criadores. Te vejo na próxima aventura. Até logo!",
-      "edit": "Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a conquista. Substituir o resumo numerado e convites abertos pela fala curta revisada. No Dia 5, não afirmar que a publicação já ocorreu.",
       "visual": "Resultado do dia e convite para duas perguntas finais.",
       "newNarration": "Seu jogo agora tem começo, partida e dois finais. O Enter também permite voltar ao início e jogar outra vez. Confira a entrega e o Compartilhar quando estiver pronto. Você terminou a construção do seu primeiro jogo; faltam só duas ideias para guardar no quiz.",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "production": "regravar-estudio-atual"
     }
   ],
   "sourceReview": [
@@ -237,5 +251,328 @@
       "clips": ["video-fecho-v6"],
       "decision": "Recortar com as substituições e imagens indicadas."
     }
-  ]
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_events",
+        "label": "⚡ Quando acontecer",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "events",
+        "tooltip": "Roda quando alguma coisa acontece."
+      },
+      {
+        "type": "sz_frame_loops",
+        "label": "🔁 Enquanto estiver rodando",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "loops",
+        "tooltip": "Repete enquanto o projeto estiver rodando."
+      },
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_arrows_x",
+        "label": "Mover o sprite com as setas <- -> (velocidade )",
+        "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+        "area": "start",
+        "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+      },
+      {
+        "type": "sz_g2d_center_x",
+        "label": "o centro x do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+      },
+      {
+        "type": "sz_g2d_clamp_to_screen",
+        "label": "Manter o sprite dentro da tela",
+        "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+        "area": "start",
+        "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+      },
+      {
+        "type": "sz_g2d_clear",
+        "label": "Limpar a tela",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+      },
+      {
+        "type": "sz_g2d_create_group",
+        "label": "Criar grupo de sprites",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+      },
+      {
+        "type": "sz_g2d_create_ship",
+        "label": "Criar nave em x y largura altura , cor do corpo cor das asas",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado."
+      },
+      {
+        "type": "sz_g2d_damage_sprite",
+        "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+      },
+      {
+        "type": "sz_g2d_draw_group",
+        "label": "Desenhar o grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+        "area": "start",
+        "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+      },
+      {
+        "type": "sz_g2d_draw_score",
+        "label": "Mostrar placar valor em x y cor tamanho",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+        "area": "start",
+        "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+      },
+      {
+        "type": "sz_g2d_draw_sprite",
+        "label": "Desenhar o sprite",
+        "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+        "area": "start",
+        "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+      },
+      {
+        "type": "sz_g2d_draw_sprite_health",
+        "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+      },
+      {
+        "type": "sz_g2d_every_frames",
+        "label": "A cada quadros",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+      },
+      {
+        "type": "sz_g2d_explode",
+        "label": "Soltar explosão no sprite cor",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+        "area": "start",
+        "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+      },
+      {
+        "type": "sz_g2d_health_depleted",
+        "label": "as vidas do sprite acabaram?",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "value",
+        "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+      },
+      {
+        "type": "sz_g2d_on_group_overlap",
+        "label": "Para cada colisão entre os grupos e",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_on_key",
+        "label": "Quando apertar a tecla",
+        "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+        "area": "events",
+        "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+      },
+      {
+        "type": "sz_g2d_on_sprite_group_overlap",
+        "label": "Para cada sprite do grupo que colidir com o sprite",
+        "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+        "area": "start",
+        "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+      },
+      {
+        "type": "sz_g2d_play_fx",
+        "label": "Tocar efeito",
+        "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+        "area": "start",
+        "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+      },
+      {
+        "type": "sz_g2d_prune_offscreen",
+        "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+      },
+      {
+        "type": "sz_g2d_random_x",
+        "label": "um x aleatório na tela",
+        "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+        "area": "value",
+        "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+      },
+      {
+        "type": "sz_g2d_remove_from_group",
+        "label": "Tirar o sprite do grupo",
+        "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+        "area": "start",
+        "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+      },
+      {
+        "type": "sz_g2d_restart",
+        "label": "Reiniciar o jogo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+      },
+      {
+        "type": "sz_g2d_scene_is",
+        "label": "o estado do jogo é ?",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "value",
+        "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+      },
+      {
+        "type": "sz_g2d_set_health",
+        "label": "Dar ao sprite de vida",
+        "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+        "area": "start",
+        "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+      },
+      {
+        "type": "sz_g2d_set_scene",
+        "label": "Mudar o estado do jogo para",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_shake",
+        "label": "Tremer a tela com intensidade",
+        "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+        "area": "start",
+        "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+      },
+      {
+        "type": "sz_g2d_show_screen",
+        "label": "Mostrar tela com título subtítulo dica fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+        "area": "start",
+        "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+      },
+      {
+        "type": "sz_g2d_spawn_asteroid",
+        "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+        "area": "start",
+        "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+      },
+      {
+        "type": "sz_g2d_spawn_bullet",
+        "label": "Criar tiro no grupo em x y raio cor vx vy",
+        "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+        "area": "start",
+        "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+      },
+      {
+        "type": "sz_g2d_sprite_y",
+        "label": "a posição y do sprite",
+        "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+        "area": "value",
+        "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+      },
+      {
+        "type": "sz_g2d_starfield",
+        "label": "Desenhar fundo de estrelas (velocidade )",
+        "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+        "area": "start",
+        "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+      },
+      {
+        "type": "sz_g2d_update_each_frame",
+        "label": "A cada quadro do jogo",
+        "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+        "area": "loops",
+        "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+      },
+      {
+        "type": "sz_g2d_update_group",
+        "label": "Mover os sprites do grupo usando suas velocidades",
+        "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+        "area": "start",
+        "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+      },
+      {
+        "type": "sz_js_const_create",
+        "label": "Criar constante com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+      },
+      {
+        "type": "sz_js_if_else",
+        "label": "Condição se, senão se e senão",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "start",
+        "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+      },
+      {
+        "type": "sz_js_var_create",
+        "label": "Criar variável com valor",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+      },
+      {
+        "type": "sz_js_var_increment",
+        "label": "Somar em variável",
+        "palettePath": ["Programação", "🏷️ Variáveis"],
+        "area": "start",
+        "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+      },
+      {
+        "type": "sz_val_compare",
+        "label": "Comparar dois valores",
+        "palettePath": ["Programação", "❓ Lógica & Se"],
+        "area": "value",
+        "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      },
+      {
+        "type": "sz_val_text",
+        "label": "texto",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor de texto."
+      },
+      {
+        "type": "sz_val_variable",
+        "label": "valor da variável",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+      }
+    ]
+  }
 }

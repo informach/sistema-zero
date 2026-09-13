@@ -279,6 +279,7 @@ export const ProjectCard = memo(function ProjectCard({
               title="Duplo clique para renomear"
               onDoubleClick={(e) => {
                 e.stopPropagation()
+                if (summary.migrationPending) return
                 setEditing(true)
               }}
               onClick={(e) => e.stopPropagation()}
@@ -305,6 +306,7 @@ export const ProjectCard = memo(function ProjectCard({
               ref={triggerRef}
               type="button"
               aria-label="Mais ações"
+              disabled={summary.migrationPending}
               aria-expanded={menuOpen}
               aria-haspopup="menu"
               style={{ touchAction: 'manipulation' }}
@@ -419,7 +421,13 @@ export const ProjectCard = memo(function ProjectCard({
             (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
             ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
         <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sz-fg-soft text-xs">
-          <span className="whitespace-nowrap">Atualizado em {formatDate(summary.updatedAt)}</span>
+          <span className="whitespace-nowrap">
+            {summary.migrationPending
+              ? 'Preservado — peça ajuda para abrir'
+              : summary.hasPreservedEdit
+                ? 'Há uma edição anterior preservada'
+                : `Atualizado em ${formatDate(summary.updatedAt)}`}
+          </span>
           {/* A pílula azul chapada de largura inteira, com a pasta aberta (a imagem-modelo). O
               nome acessível segue "Abrir" (o e2e usa) — o ícone é decorativo. */}
           <button
