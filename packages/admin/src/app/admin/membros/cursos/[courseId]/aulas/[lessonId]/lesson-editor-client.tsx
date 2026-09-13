@@ -1597,9 +1597,15 @@ function LessonEditorSession({
                   authorId={authorId}
                   // A prévia e o ensaio montam a aula no layout do app de destino: os
                   // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
-                  // leva o índice para o cabeçalho da seção). Mesmo default do
-                  // catálogo de conteúdo abaixo, que o admin trata como kids-first.
-                  audience={courseInfo?.audience ?? 'kids'}
+                  // leva o índice para o cabeçalho da seção).
+                  // ⚠️ O fallback é 'adult', NÃO o 'kids' do catálogo de conteúdo aqui
+                  // embaixo. A árvore do curso é best-effort: se ela falhar (sessão
+                  // expirada, 502) o `courseInfo` fica null PARA SEMPRE, e um default
+                  // kids montaria um curso ADULTO na tela da criança — o mesmo bug ao
+                  // contrário. 'adult' é o layout de sempre, então o pior caso aqui é
+                  // o comportamento anterior a esta mudança. Casa com a leitura da
+                  // árvore, que já resolve audiência ausente como 'adult'.
+                  audience={courseInfo?.audience ?? 'adult'}
                   area={area === 'materials' ? 'materials' : 'sections'}
                   focusRequest={focusRequest}
                   uploadStatus={videoUploadStatusLabels(uploadStates)}
