@@ -152,6 +152,29 @@ function memory(corpus: Corpus) {
 }
 
 describe('lote isolado de documentos Studio', () => {
+  test('recupera objetos sem exigir promoção do banco quando a aplicação parou antes da transação', async () => {
+    const corpus = fixture()
+    const plan = await makePlan(corpus)
+    const state = memory(corpus)
+    state.interrupt(true)
+    await expect(applyPlan(plan, state.adapter)).rejects.toThrow('Conexão interrompida')
+    expect(await state.adapter.rows()).toEqual(corpus.rows)
+    const mural = corpus.objects.find((object) => object.bucket === 'private')!
+    expect(state.objects.get(`private:${mural.key}`)?.bytes).not.toBe(mural.bytes)
+    state.interrupt(false)
+    const swap = state.adapter.swap
+    state.adapter.swap = async (changes, sources) => {
+      expect(changes).toEqual([])
+      // The real SQL compares every source row even when there are no updates.
+      expect(sources).toEqual(corpus.rows)
+      await swap(changes, sources)
+    }
+    await rollbackPlan(plan, state.adapter)
+    await rollbackPlan(plan, state.adapter)
+    expect(await state.adapter.rows()).toEqual(corpus.rows)
+    expect(state.objects.get(`private:${mural.key}`)?.bytes).toBe(mural.bytes)
+  })
+
   test('critério equivalente conserva aprovações parciais de cada perfil e a revisão pedagógica', async () => {
     const corpus = fixture()
     corpus.rows['members.lessons'].push({

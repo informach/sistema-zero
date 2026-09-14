@@ -1,7 +1,7 @@
 import { canonical, objectId } from './content'
 import { applyPlan, type BatchAdapter, rollbackPlan } from './engine'
 import { type Corpus, makePlan } from './plan'
-import { hash, rowIdentity, type StoredObject } from './railway'
+import { hash, rowIdentity, type StoredObject, TABLES, type Table } from './railway'
 
 /** Ensaio offline com os bytes reais: interromper, retomar, repetir e recuperar. */
 export async function simulate(corpus: Corpus): Promise<Record<string, unknown>> {
@@ -26,8 +26,21 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
       if (old && etag !== old.etag) throw new Error('Conflito de objeto na simulação')
       objects.set(objectId(object), { ...object, etag: hash(object.bytes) })
     },
-    swap: async (changes) => {
+    swap: async (changes, sources) => {
       if (interrupt) throw new Error('interrupção-simulada')
+      for (const table of Object.keys(TABLES) as Table[]) {
+        if (table === 'hub.threads') continue
+        const allowed = new Set(
+          [...sources[table], ...changes.filter((c) => c.table === table).map((c) => c.after)].map(
+            canonical,
+          ),
+        )
+        if (
+          rows[table].length !== sources[table].length ||
+          rows[table].some((row) => !allowed.has(canonical(row)))
+        )
+          throw new Error(`Inventário mudou na simulação: ${table}`)
+      }
       const next = structuredClone(rows)
       for (const change of changes) {
         const index = next[change.table].findIndex(
@@ -50,6 +63,24 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
     if (!(error instanceof Error) || error.message !== 'interrupção-simulada') throw error
   }
   if (canonical(rows) !== canonical(corpus.rows)) throw new Error('A interrupção alterou o banco')
+  interrupt = false
+  await rollbackPlan(plan, adapter)
+  await rollbackPlan(plan, adapter)
+  if (canonical(rows) !== canonical(corpus.rows))
+    throw new Error('Recuperar a aplicação interrompida alterou o banco')
+  for (const original of corpus.objects)
+    if (objects.get(objectId(original))?.bytes !== original.bytes)
+      throw new Error('Recuperar a aplicação interrompida alterou os objetos originais')
+  // Independent scenario: resume an interrupted application instead of rolling it back.
+  objects.clear()
+  for (const original of corpus.objects) objects.set(objectId(original), structuredClone(original))
+  interrupt = true
+  try {
+    await applyPlan(plan, adapter)
+    throw new Error('A segunda interrupção não ocorreu')
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== 'interrupção-simulada') throw error
+  }
   interrupt = false
   await applyPlan(plan, adapter)
   await applyPlan(plan, adapter)
@@ -100,6 +131,7 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
     changedRows: plan.rows.length,
     changedObjects: plan.objects.length,
     interruption: 'passed',
+    interruptedRecovery: 'passed',
     resume: 'passed',
     repeat: 'passed',
     secondMigration: 'empty',

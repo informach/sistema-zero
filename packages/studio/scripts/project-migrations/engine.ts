@@ -174,7 +174,16 @@ export async function rollbackPlan(plan: BatchPlan, adapter: BatchAdapter): Prom
   for (const change of recovery.objects)
     if (found.find((o) => objectId(o) === objectId(change.after))?.bytes !== change.after.bytes)
       throw new Error('Verificação da recuperação falhou')
-  await adapter.swap(recovery.rows, promotedRows(plan.sources, plan.rows))
+  // Rows never promoted still have the original source. A failed application can
+  // already have replaced mural objects while its database transaction never ran.
+  const promoted = new Set(recovery.rows.map(rowId))
+  await adapter.swap(
+    recovery.rows,
+    promotedRows(
+      plan.sources,
+      plan.rows.filter((change) => promoted.has(rowId(change))),
+    ),
+  )
   const final = rowMap(await adapter.rows())
   for (const change of recovery.rows)
     if (canonical(final.get(rowId(change))) !== canonical(change.after))
