@@ -1157,12 +1157,26 @@ porque o índice muda no CLIENTE e o `learningProgress.sectionId` só se mexe nu
 
 ⭐ **A divisória do lado a lado ficou visível** (`.sz-lesson-split-handle`/`-grip` no bloco da aula
 do `globals.css`, fora de camada): 44px de alvo, fio em `--linha-carta` (⚠️ NUNCA `--borda-carta`,
-que é `transparent` no tema Padrão) e uma pastilha `sticky` com três pontinhos no meio da tela.
+que é `transparent` no tema Padrão) e uma pastilha de três pontinhos PARADA no meio dos painéis.
 Acende na cor de ação por `[data-resize-handle-state="hover"|"drag"]` (a lib marca "hover" já na
 folga de 6/20px, antes de o dedo encostar). ⚠️ Nada aqui pode criar contexto de contenção
 (`contain`, `container-type`, `transform`, `filter`): foi o que prendeu o `position: fixed` do
 "Expandir" do Estúdio e derrubou o `@container` em `c21f576d`. O achado que consertou o arrasto
 (a divisória tinha ZERO de altura) está no CLAUDE.md do member-shell.
+
+⚠️ **A pastilha já foi `sticky` no meio da viewport e a dona reprovou (13/09/2026):** ela deslizava
+pela divisória a cada rolagem ("ficou estranho o fato de ela se movimentar ao rolar a tela"). Hoje
+ela é `margin: auto` + `position: relative` sem deslocamento, e não se mexe; quem garante o alcance
+ao rolar é o FIO de alto a baixo, que é a zona de arrasto inteira. Não reintroduzir o `sticky`.
+⚠️⚠️ As duas declarações que sobraram no lugar dele são load-bearing, e as duas foram achadas no
+full review do próprio lote: **`margin: auto`** centra sem depender do `items-center`/`justify-center`
+que o member-shell põe no handle (tirar o `sticky` tinha criado essa dependência invisível em
+utilitárias de outro pacote); **`position: relative`** só devolve a CAMADA DE PINTURA — o fio é
+`absolute`, e elemento posicionado pinta acima de item de fluxo, então com o `::after` estático o
+fio passava a CORTAR a pastilha ao meio. Medido no navegador: margem 573px/10px (centro exato) e
+0px de deslocamento ao rolar 400px. No mesmo lote os
+limites do arrasto mudaram (o Estúdio encolhe até 380px e o lado a lado só liga com coluna ≥1080px)
+— a régua é `lib/lesson-split.ts` do member-shell, com o porquê no CLAUDE.md de lá.
 
 ⚠️ **O Estúdio e o Pinta da aula ENCOLHERAM** (`h-[36rem] lg:h-[40rem]` e `h-[34rem] lg:h-[36rem]`;
 eram 44/60rem e 40/52rem): 960px de altura numa coluna de metade da tela viravam um retângulo

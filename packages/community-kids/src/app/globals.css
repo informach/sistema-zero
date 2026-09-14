@@ -1662,12 +1662,24 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   background: var(--linha-carta);
 }
 
-/* A PEGA: pastilha branca com três pontinhos. `sticky` porque a coluna da aula é
-   alta, e uma pega centrada nela ficaria fora da tela. */
+/* A PEGA: pastilha branca com três pontinhos, PARADA no meio dos painéis.
+   ⚠️ Ela já foi `sticky` no meio da viewport, para nunca sumir numa coluna alta, e a
+   dona reprovou: a pega deslizava pela divisória a cada rolagem. Quem garante que o
+   controle segue alcançável ao rolar é o FIO de alto a baixo, que é a zona de arrasto
+   inteira (com o cursor de redimensionar e acendendo na folga da lib). */
 .sz-lesson-sections .sz-lesson-split-handle::after {
   content: "";
-  position: sticky;
-  top: calc(50vh - 1.75rem);
+  /* ⚠️ `relative` SEM deslocamento nenhum, só para a camada de pintura: o fio
+     (`-grip`) é `absolute`, e elemento posicionado pinta ACIMA de um item de fluxo.
+     O `sticky` de antes já era posicionado e, vindo depois no DOM, cobria o fio —
+     tirando-o, o fio passava a CORTAR a pastilha ao meio. `relative` devolve a
+     ordem sem devolver o movimento. */
+  position: relative;
+  /* Centra por margem AUTO, e não pelo `items-center`/`justify-center` que o
+     member-shell põe no handle: tirando o `sticky`, a pega passaria a depender de
+     duas utilitárias de outro pacote para não encostar no canto. Com `auto` a regra
+     se basta (em flex, margem auto vence o alinhamento do container). */
+  margin: auto;
   width: 1.5rem;
   height: 3.5rem;
   border-radius: 9999px;
