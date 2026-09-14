@@ -7,6 +7,7 @@ import { registerExtensionBlocks } from '../blockly/blocks'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildKitGroups, buildProjectFromKitEntry, type KitEntry } from '../projects/KitGallery'
+import { sanitizeProjectForHost } from '../state/projectValidation'
 import {
   EXAMPLE_QA_CONTRACTS,
   EXAMPLE_QA_TIMEOUTS,
@@ -147,6 +148,8 @@ describe('contrato transversal dos 155 exemplos da KitGallery', () => {
         }
 
         const project = buildProjectFromKitEntry(entry)
+        // O host precisa aceitar o documento inteiro sem descartar ou reescrever conteúdo.
+        expect(sanitizeProjectForHost(project)?.id).toBe(project.id)
         expect(project.name).toBe(entry.name)
         expect(project.ir).toBe(entry.ir)
         expect(project.blocksState).toBeDefined()

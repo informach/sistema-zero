@@ -1,6 +1,6 @@
 import type { BlockContract } from '../blockly/blockContracts'
 import type { ProjectAreaKind } from '../core/behaviorAreas'
-import snapshot from './legacy-contracts.json'
+import snapshot from './legacy-contracts.json' with { type: 'json' }
 
 // Fotografia do formato 1. Alterar a paleta atual não reclassifica documentos históricos.
 const contracts = snapshot.contracts as Record<string, BlockContract>

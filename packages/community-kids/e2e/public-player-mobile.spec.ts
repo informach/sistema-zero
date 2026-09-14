@@ -22,6 +22,7 @@ function fakeProject(canvas: { w: number; h: number } | null, opts: { atrasoMs?:
     : ''
   return {
     id: ID,
+    formatVersion: 2,
     name: 'Meu primeiro jogo',
     createdAt: now,
     updatedAt: now,
@@ -88,6 +89,8 @@ async function abrirComRegistro(
   const now = Date.now()
   const projeto = {
     id: ID,
+    // Documento atual instrumentado: a fachada registra as teclas enviadas pelo host.
+    formatVersion: 2,
     name: 'Meu primeiro jogo',
     createdAt: now,
     updatedAt: now,
@@ -112,7 +115,7 @@ ${pedeTelaCheia ? "document.querySelector('canvas').addEventListener('pointerdow
       extensions: [],
     },
     blocksState: { blocks: { languageVersion: 0, blocks: [] } },
-    installedExtensions: [],
+    installedExtensions: ir.length ? [{ id: 'game-2d', version: '1.0.0', installedAt: now }] : [],
   }
   await page.route(`**/api/studio/play/${ID}`, async (route) => {
     await route.fulfill({
@@ -296,7 +299,10 @@ test('a cruz faz DIAGONAL: um dedo no canto pede as duas direções', async ({ p
 })
 
 test('o botão de fogo manda a tecla com o code que o 3D exige', async ({ page }) => {
-  await abrirComRegistro(page, [{ type: 'g2d:keyDown', key: 'f' }])
+  await abrirComRegistro(page, [
+    // biome-ignore lint/suspicious/noThenProperty: `then` é a lista de comandos do nó if da IR.
+    { type: 'if', cond: { type: 'g2d:keyDown', key: 'f' }, then: [] },
+  ])
 
   const fogo = page.getByRole('button', { name: 'Soltar fogo (Y)' })
   await expect(fogo).toBeVisible()
