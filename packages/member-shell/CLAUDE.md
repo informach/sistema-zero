@@ -905,15 +905,45 @@ então o que sobrava era uma tira no ALTO da coluna, invisível. Era por isso qu
 "não tem mais o resize". Quem mexer nas classes do handle precisa preservar o `self-stretch`.
 - O handle leva `aria-label` (a lib põe `aria-controls`/`aria-valuenow`, mas nenhum NOME) e
   `tabIndex={arrastavel ? 0 : -1}` (desabilitada, a lib mantém 0 e sobraria um foco morto).
-- ⚠️ **`autoSaveId` é VERSIONADO** (`sz:lesson-split:v2:<viewer>`): a lib guarda o layout por
+- ⚠️ **`autoSaveId` é VERSIONADO** (`sz:lesson-split:v4:<viewer>`): a lib guarda o layout por
   (autoSaveId, ids dos Panel) e o guardado VENCE o `defaultSize` — e ele é gravado na MONTAGEM,
   sem ninguém arrastar. Mudou o padrão dos painéis? SUBA a versão, senão o valor novo é letra
-  morta para quem já abriu uma aula. Os painéis nascem 50/50 desde 09/2026 (eram 55/45, e o lado
-  menor era justo o da ferramenta).
+  morta para quem já abriu uma aula. Os painéis nascem **50/50** desde a `v4` (13/09/2026; eram
+  30/70, e a seção com vídeo abria com o vídeo espremido).
 - **`onSectionChange?: ({index, total}) => void`** (opcional) avisa a posição no percurso na
   montagem e a cada troca de seção. É como o kids desenha a barra do topo, que mora FORA do
   `LessonSections`. ⚠️ O callback vive num REF: com ele nas deps do efeito, uma função inline do
   consumidor viraria laço de render. O adulto e a prévia do admin não passam a prop.
+
+⭐⭐ **O que a divisória deixa a criança fazer é `lib/lesson-split.ts` (puro, testado), e o número
+que importa é o CURSO DE ARRASTO** — não os pisos. Com a régua anterior (piso de **640px** para a
+ferramenta) o teto do vídeo era `coluna − 640`: numa coluna de 1108px ele andava **104px**, e a
+dona relatou "tento aumentar a área do vídeo e não consigo… só escondendo os menus, e bem
+limitado". Os números de hoje:
+- `CONTENT_MIN_WIDTH_PX` **320** e `TOOL_MIN_WIDTH_PX` **380** são os pisos do ARRASTO.
+  ⚠️ Os 380 NÃO são requisito do editor: o `@sistemazero/studio` vira abas por dentro abaixo de
+  1024px de largura PRÓPRIA (`STUDIO_NARROW_MAX_PX`), ou seja ele **já abria em abas** com os 640.
+  O número era editorial. Quem quer o editor grande usa o "Expandir".
+- ⚠️⚠️ `SPLIT_COMFORT_WIDTH_PX` **1080** é o limiar que LIGA o lado a lado, e é DELIBERADAMENTE
+  maior que a soma dos pisos (744). Enquanto o limiar era a própria soma, uma coluna de 1010px
+  mostrava a alça com curso ~zero — o que lê como "às vezes funciona, às vezes não". Abaixo do
+  conforto a aula empilha e oferece "Ver exemplo"/"Criar", que é a resposta honesta.
+- ⚠️ `SPLIT_DEFAULT_SIZE` **50** mora na régua, e não no componente, porque ele e os pisos são um
+  PAR: padrão fora de `[piso, 100 − piso do outro]` é clampado pela lib em silêncio e a aula nasce
+  num layout que ninguém escolheu. O antigo 30 já era isso — em 1080px ele ficava ABAIXO do piso do
+  conteúdo (30,9%), ou seja o "30/70" era mentira ali.
+- O teste (`tests/lesson-split.test.ts`) cobra o CURSO nas três colunas reais do kids (1108, 1260,
+  1376) e **reprova com os números antigos** — é o que impede o piso de voltar a subir sem ninguém
+  medir o que a criança sente. Ele também trava que o adulto (coluna presa em 792px pelo
+  `max-w-6xl` do layout dele) segue empilhado: baixar os pisos não podia ligá-lo por acidente.
+- ⚠️⚠️ **O teste deriva os pixels do RESULTADO da régua, nunca das constantes.** A 1ª versão dele
+  recalculava o curso a partir de `CONTENT_MIN_WIDTH_PX`/`TOOL_MIN_WIDTH_PX` e passaria inteira com
+  a `resolveLessonSplit` devolvendo lixo — testava aritmética, não a função. Pelo mesmo motivo o
+  piso de leitura é cobrado como **literal** (300px): comparar com a constante é tautológico, e
+  zerá-la mantinha os 35 casos verdes. Validado por mutação: piso 640, padrão 30, piso do conteúdo
+  0, fórmula sobre a coluna em vez da sobra, e limiar igual à soma dos pisos — as cinco reprovam.
+- Contas de bolso do kids: coluna = `viewport − 660` (menu + lista de aulas abertos), `− 332` (sem
+  a lista), `− 392` (sem o menu), `− 64` (sem os dois).
 
 **Ranking geral (full review 06/09/2026):** o BFF valida `limit`, encaminha `cursor` sem
 interpretá-lo e espelha `nextCursor` no contrato compartilhado. A primeira página server-side não

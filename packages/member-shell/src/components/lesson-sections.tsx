@@ -21,6 +21,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
+import { resolveLessonSplit, SPLIT_DEFAULT_SIZE, SPLIT_HANDLE_WIDTH_PX } from '../lib/lesson-split'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
@@ -250,13 +251,8 @@ function BlockScope({
   )
 }
 
-/** Useful panel widths, independent of the viewport or the app's open sidebars. */
-const CONTENT_MIN_WIDTH_PX = 320
-const TOOL_MIN_WIDTH_PX = 640
-const SPLIT_HANDLE_WIDTH_PX = 24
-
 /** Chave do layout guardado. Mudou o `defaultSize` dos painéis? SUBA a versão. */
-const SPLIT_LAYOUT_KEY = 'sz:lesson-split:v3'
+const SPLIT_LAYOUT_KEY = 'sz:lesson-split:v4'
 
 /** Measure on attachment, including content mounted after a deferred child. The
  * observer follows sidebar and viewport changes; SSR starts in the compact mode. */
@@ -439,12 +435,14 @@ function LessonSectionsContent({
       !supportIds.has(b.id),
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
-  // A divisória só é interativa onde ela APARECE. Ver o comentário no handle.
-  const arrastavel =
-    hasWorkspace && contentWidth >= CONTENT_MIN_WIDTH_PX + TOOL_MIN_WIDTH_PX + handleWidth
-  const panelWidth = Math.max(1, contentWidth - handleWidth)
-  const contentMinimum = arrastavel ? (CONTENT_MIN_WIDTH_PX / panelWidth) * 100 : 0
-  const toolMinimum = arrastavel ? (TOOL_MIN_WIDTH_PX / panelWidth) * 100 : 0
+  // A régua mora em `lib/lesson-split` (pura, testada): ela decide se o lado a lado
+  // vale a pena NESTA largura e até onde cada painel encolhe. A divisória só é
+  // interativa onde ela APARECE — ver o comentário no handle.
+  const { arrastavel, contentMinimum, toolMinimum } = resolveLessonSplit({
+    contentWidth,
+    handleWidth,
+    hasWorkspace,
+  })
   async function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next || locked(next.id) || navigationBusy.current) return
@@ -719,7 +717,11 @@ function LessonSectionsContent({
         {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
             ~900-1290px para ~350-505px, e o Vimeo escolhe a rendition pelo tamanho
             renderizado do iframe — daí o "vídeo ruim em tela cheia" que a dona
-            reportou. Agora a criança decide onde fica a divisória. */}
+            reportou. Agora a criança decide onde fica a divisória.
+            ⚠️ E o quanto ela decide é a régua de `lib/lesson-split`: o lado a lado
+            só liga com coluna confortável, e o piso da ferramenta (380px) existe
+            para o VÍDEO poder crescer — o editor não precisa dele (ele vira abas
+            por dentro abaixo de 1024px, ou seja já virava com o piso antigo). */}
         <header
           className={cn(
             'sz-lesson-section-head px-1',
@@ -780,9 +782,10 @@ function LessonSectionsContent({
           // A chave é versionada porque a lib guarda o layout por
           // (autoSaveId, ids dos Panel) e o que está guardado VENCE o `defaultSize` —
           // e ele é gravado na MONTAGEM, sem ninguém arrastar (o estado nasce `[]`, o
-          // primeiro layout já difere e cai no autosave). Ou seja: o 55/45 antigo está
-          // no localStorage de todo mundo que abriu uma aula. Mudou o padrão? Suba a
-          // versão, senão o valor novo é letra morta.
+          // primeiro layout já difere e cai no autosave). Ou seja: o padrão anterior
+          // está no localStorage de todo mundo que abriu uma aula. Mudou o padrão?
+          // Suba a versão, senão o valor novo é letra morta. Os painéis nascem 50/50
+          // desde a `v4` (eram 30/70, e a seção com vídeo abria com o vídeo espremido).
           autoSaveId={player?.viewerId ? `${SPLIT_LAYOUT_KEY}:${player.viewerId}` : null}
           className={cn(
             // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
@@ -795,7 +798,7 @@ function LessonSectionsContent({
           <Panel
             id="lesson-content"
             order={1}
-            defaultSize={30}
+            defaultSize={SPLIT_DEFAULT_SIZE}
             minSize={contentMinimum}
             maxSize={100 - toolMinimum}
             className={cn(
@@ -886,7 +889,7 @@ function LessonSectionsContent({
           <Panel
             id="lesson-tool"
             order={2}
-            defaultSize={70}
+            defaultSize={SPLIT_DEFAULT_SIZE}
             minSize={toolMinimum}
             maxSize={100 - contentMinimum}
             className={cn(
