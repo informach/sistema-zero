@@ -1,11 +1,15 @@
-import { describe, expect, test } from 'bun:test'
-import { watermarkCacheKey } from '../src/lib/download-mime'
-import { type InlineWatermarkIo, watermarkedPdfInline } from '../src/server/private-delivery'
-import {
-  type ConcurrencyGate,
-  createGate,
-  WatermarkQueueBusyError,
-} from '../src/server/watermark-queue'
+import { describe, expect, mock, test } from 'bun:test'
+
+// `server-only` lança fora do React Server — neutraliza p/ importar a entrega inline.
+// ⚠️ Sem isto o arquivo falhava SOZINHO e na suíte, dependendo da ordem: o mock do
+// `bun:test` é global, então ele só passava quando outro arquivo carregava antes.
+mock.module('server-only', () => ({}))
+
+const { watermarkCacheKey } = await import('../src/lib/download-mime')
+const { watermarkedPdfInline } = await import('../src/server/private-delivery')
+const { createGate, WatermarkQueueBusyError } = await import('../src/server/watermark-queue')
+type InlineWatermarkIo = import('../src/server/private-delivery').InlineWatermarkIo
+type ConcurrencyGate = import('../src/server/watermark-queue').ConcurrencyGate
 
 /**
  * Entrega INLINE do PDF (≤20MB) com marca d'água por aluno — o caminho do livro 3D.
