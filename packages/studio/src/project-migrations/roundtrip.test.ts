@@ -11,9 +11,73 @@ import { SZIRV2Schema } from '../ir/schema'
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
 import { gameKitBlocks } from '../official-extensions/game-2d-advanced/blocks'
 import { parseProjectFilesWithDiagnostics } from '../parsers/project'
+import { prepareProjectForHost } from '../state/projectValidation'
 import { migrateProjectDocument } from './index'
 
 describe('conversão executável e editável', () => {
+  it('não ativa rascunhos ao converter áreas antigas sem marcador de versão', async () => {
+    const raw = {
+      ...createEmptyProject('drafts', 'Áreas antigas'),
+      formatVersion: 1,
+      installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 1 }],
+      ir: null,
+      blocksState: {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'sz_frame_behavior',
+              inputs: {
+                CHILDREN: {
+                  block: {
+                    type: 'sz_js_console_log_text',
+                    id: 'active',
+                    fields: { VALUE: 'ativo' },
+                  },
+                },
+              },
+            },
+            { type: 'sz_js_console_log_text', id: 'draft', fields: { VALUE: 'rascunho' } },
+            {
+              type: 'sz_g2d_every_frames',
+              id: 'draft-timer',
+              inputs: {
+                BODY: {
+                  block: {
+                    type: 'sz_g2d_set_state_anim',
+                    id: 'draft-animation',
+                    fields: { SPRITE: 'aindaNaoCriado', STATE: 'parado', ANIM: 'idle' },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    }
+    const { document } = await migrateProjectDocument(raw)
+    expect(await prepareProjectForHost(document)).not.toBeNull()
+    const workspace = new Blockly.Workspace()
+    try {
+      if (!isDocumentRecord(document.blocksState)) throw new Error('Sem blocos convertidos')
+      Blockly.serialization.workspaces.load(document.blocksState, workspace)
+      expect(workspace.getBlockById('draft')?.getParent()).toBeNull()
+      expect(workspace.getBlockById('draft-timer')?.getParent()).toBeNull()
+      expect(workspace.getBlockById('draft-animation')?.getParent()).toBeNull()
+      expect(workspace.getBlockById('draft-animation')?.getFieldValue('SPRITE')).toBe(
+        'aindaNaoCriado',
+      )
+      const ir = buildIRFromWorkspace(workspace)
+      expect(ir.behavior.start).toHaveLength(1)
+      const files = generateProjectFiles({ ir, projectName: 'Áreas antigas' })
+      expect(files['script.js']).toContain('ativo')
+      expect(files['script.js']).not.toContain('rascunho')
+      expect((await migrateProjectDocument(document)).document).toEqual(document)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
   it('o mapa centralizado ganha função editável que sobrevive à Ponte', async () => {
     const { document } = await migrateProjectDocument({
       ...createEmptyProject('tiles', 'Mapa'),

@@ -1,5 +1,6 @@
 import { contractProvidesUserGesture, effectiveBodyExecution } from '../blockly/blockContracts'
 import {
+  BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION,
   BEHAVIOR_AREAS_STATE_KEY,
   BEHAVIOR_AREAS_STATE_VERSION,
   markLifecycleBlocksState,
@@ -62,6 +63,27 @@ function serializedTopBlocks(state: unknown): SerializedBlock[] | null {
   return blocks as SerializedBlock[]
 }
 
+/** Uma área já delimitava o programa; blocos externos eram rascunhos, mesmo sem marcador. */
+export function historicalAreasHaveDrafts(state: unknown): boolean {
+  if (!state || typeof state !== 'object' || Array.isArray(state)) return false
+  const version = (state as Record<string, unknown>)[BEHAVIOR_AREAS_STATE_KEY]
+  if (version !== undefined) {
+    if (
+      typeof version !== 'number' ||
+      !Number.isInteger(version) ||
+      version < BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION ||
+      version > BEHAVIOR_AREAS_STATE_VERSION
+    )
+      throw new ProjectDocumentError(
+        'migration-pending',
+        'A versão das áreas deste projeto precisa de um conversor correspondente.',
+        `$.blocksState.${BEHAVIOR_AREAS_STATE_KEY}`,
+      )
+    return true
+  }
+  return serializedTopBlocks(state)?.some((block) => FRAME_TYPES.has(block.type)) ?? false
+}
+
 function unlinkChain(head: SerializedBlock | undefined): SerializedBlock[] {
   const result: SerializedBlock[] = []
   let current = head
@@ -82,6 +104,50 @@ function linkChain(blocks: SerializedBlock[]): SerializedBlock | undefined {
     if (current && next) current.next = { block: next }
   }
   return blocks[0]
+}
+
+/** Comandos exclusivos de raiz não cabem em corpos; fora das áreas, ambos continuam rascunhos. */
+export function detachRootOnlyDraftCommands(state: unknown): boolean {
+  const tops = serializedTopBlocks(state)
+  if (!tops) return false
+  const detached: SerializedBlock[] = []
+  const visit = (
+    head: SerializedBlock | undefined,
+    inBody: boolean,
+  ): SerializedBlock | undefined => {
+    const kept: SerializedBlock[] = []
+    for (const block of unlinkChain(head)) {
+      const placement = getBlockContract(block.type)?.placement
+      const rootOnly =
+        placement &&
+        placement.role !== 'value' &&
+        placement.root.length > 0 &&
+        placement.nested.length === 0
+      for (const [name, input] of Object.entries(block.inputs ?? {})) {
+        if (!input.block) continue
+        const child = visit(input.block, true)
+        if (child) input.block = child
+        else {
+          delete input.block
+          if (!input.shadow) delete block.inputs![name]
+        }
+      }
+      if (inBody && rootOnly) detached.push(block)
+      else kept.push(block)
+    }
+    return linkChain(kept)
+  }
+  for (let i = 0; i < tops.length; i++) {
+    const top = tops[i]!
+    if (FRAME_TYPES.has(top.type)) continue
+    tops[i] = visit(top, false)!
+  }
+  for (const [index, block] of detached.entries()) {
+    block.x ??= 32 + index * 32
+    block.y ??= 760 + index * 48
+    tops.push(block)
+  }
+  return detached.length > 0
 }
 
 function firstStatementInput(block: SerializedBlock): SerializedBlock | undefined {
@@ -519,7 +585,11 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
 }
 
 /** Converte a estrutura serializada com os contratos históricos, sem carregar o Blockly. */
-export function normalizeLegacyBlocksStateToFrames(state: unknown): unknown {
+export function normalizeLegacyBlocksStateToFrames(
+  state: unknown,
+  options: { preserveTopLevelDrafts?: boolean } = {},
+): unknown {
+  const preserveTopLevelDrafts = options.preserveTopLevelDrafts ?? historicalAreasHaveDrafts(state)
   // Antes de tudo: migra campos que viraram soquetes de valor (`field_*` → `input_value`),
   // preservando o valor salvo pela criança. Roda SEMPRE — inclusive em projetos já
   // framados (o campo legado pode estar dentro de um frame). Devolve a MESMA referência
@@ -543,18 +613,18 @@ export function normalizeLegacyBlocksStateToFrames(state: unknown): unknown {
   // se auto-encaixou e duplicou o resto", bug 24/07). Só estados LEGADOS normalizam
   // o topo; o conteúdo DENTRO dos frames segue normalizado sempre (cura de saves).
   const migrated = migrateHTMLStructure(premigrated, {
-    preserveTopLevelDrafts: hasCurrentLifecycleVersion(premigrated),
+    preserveTopLevelDrafts,
   })
   if (!migrated) return migrated
   if (hasCurrentLifecycleVersion(migrated)) return migrated
-  // Encaminha primeiro somente os blocos que já estavam soltos. A conversão da
-  // área legada pode criar rascunhos a partir de áreas duplicadas; eles devem
-  // continuar soltos, não ser recolhidos por esta mesma migração.
-  const withLooseTopBlocks = migrateLooseTopBlocks(migrated)
+  // Só o formato anterior às áreas executava pilhas soltas. Converter uma área
+  // histórica nunca deve ativar seus rascunhos nem os de uma área duplicada.
+  const withLooseTopBlocks = preserveTopLevelDrafts ? migrated : migrateLooseTopBlocks(migrated)
   const withLifecycleAreas = migrateLegacyBehaviorFrame(withLooseTopBlocks)
   const withCurrentPlacements = migrateCurrentLifecyclePlacements(withLifecycleAreas, true)
   if (hasCurrentLifecycleVersion(withCurrentPlacements)) return withCurrentPlacements
   if (withCurrentPlacements !== migrated) return markLifecycleBlocksState(withCurrentPlacements)
+  if (preserveTopLevelDrafts) return markLifecycleBlocksState(withCurrentPlacements)
   const topBlocks = serializedTopBlocks(withCurrentPlacements)
   if (topBlocks?.some((block) => CURRENT_FRAME_TYPES.has(block.type))) return withCurrentPlacements
   const blocks = (withCurrentPlacements as { blocks?: { blocks?: unknown[] } }).blocks?.blocks

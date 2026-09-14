@@ -143,13 +143,15 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(filesAfter).toEqual(filesBefore)
   })
 
-  it('idempotente: estado JÁ com frames volta igual (mesma referência)', () => {
-    const framed = buildWorkspaceStateFromIR({
-      html: [],
-      css: [],
-      js: [{ type: 'consoleLog', value: { type: 'str', value: 'oi' } }],
-      extensions: [],
-    })
+  it('idempotente: estado atual JÁ com frames volta igual (mesma referência)', () => {
+    const framed = markLifecycleBlocksState(
+      buildWorkspaceStateFromIR({
+        html: [],
+        css: [],
+        js: [{ type: 'consoleLog', value: { type: 'str', value: 'oi' } }],
+        extensions: [],
+      }),
+    )
     expect(normalizeBlocksStateToFrames(framed)).toBe(framed)
   })
 
@@ -297,7 +299,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
   })
 
-  it('migra por área quando o projeto legado já estava parcialmente framado', () => {
+  it('preserva rascunhos quando o projeto antigo já tinha uma área sem marcador', () => {
     const partial = {
       blocks: {
         languageVersion: 0,
@@ -308,7 +310,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
             id: 'comando-solto',
             x: 32,
             y: 400,
-            fields: { VALUE: 'continua executando' },
+            fields: { VALUE: 'continua como rascunho' },
           },
         ],
       },
@@ -318,13 +320,14 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(migrated).not.toBe(partial)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_structure',
-      'sz_frame_start',
+      'sz_js_console_log_text',
     ])
     expect(JSON.stringify(migrated)).toContain('"id":"comando-solto"')
 
     const workspace = new Blockly.Workspace()
     Blockly.serialization.workspaces.load(migrated, workspace)
-    expect(buildIRFromWorkspace(workspace).behavior.start[0]?.type).toBe('consoleLog')
+    expect(buildIRFromWorkspace(workspace).behavior.start).toEqual([])
+    expect(workspace.getBlockById('comando-solto')?.getParent()).toBeNull()
     workspace.dispose()
     expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
   })
@@ -688,7 +691,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     }
   })
 
-  it('termina a migração v2 parcialmente framada antes de gravar a versão nova', () => {
+  it('atualiza áreas v2 sem ativar eventos e laços que estavam soltos', () => {
     const previousVersion = {
       szBehaviorAreasVersion: 2,
       blocks: {
@@ -708,8 +711,8 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_start',
-      'sz_frame_events',
-      'sz_frame_loops',
+      'sz_g2d_on_key',
+      'sz_g2d_update_each_frame',
     ])
     expect(JSON.stringify(migrated)).toContain('evento-solto')
     expect(JSON.stringify(migrated)).toContain('loop-solto')

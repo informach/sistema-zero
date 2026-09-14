@@ -13,7 +13,11 @@ import { migrateUnusedKitDeclaration } from './extensionDeclarations'
 import { migrateGameTwoDBlocks, migrateGameTwoDIR, migrateGameTwoDToolTypes } from './gameTwoD'
 import { migrateGameTwoDHTML } from './html'
 import { migrateGameTwoDJavaScript } from './javascript'
-import { normalizeLegacyBlocksStateToFrames } from './legacyFrames'
+import {
+  detachRootOnlyDraftCommands,
+  historicalAreasHaveDrafts,
+  normalizeLegacyBlocksStateToFrames,
+} from './legacyFrames'
 import { assertConvertedLifecycle } from './lifecycleAudit'
 import { migrateNestedPeriodicBlocks, migrateNestedPeriodicIR } from './nestedPeriodics'
 import { migrateRpgMapBlocks, migrateRpgMapsIR } from './rpgMaps'
@@ -65,6 +69,8 @@ export async function migrateProjectDocument(raw: unknown): Promise<ProjectMigra
     document.blocksState = null
     changes.push({ rule: 'document.code-authority', path: '$' })
   } else {
+    // Captura o contrato original antes que a conversão de mapas insira áreas novas.
+    const preserveTopLevelDrafts = historicalAreasHaveDrafts(document.blocksState)
     migrateDisabledBlocks(document.blocksState, changes)
     migrateShadowIdentities(document.blocksState, changes)
     projectBlockTypes(document.blocksState)
@@ -73,10 +79,12 @@ export async function migrateProjectDocument(raw: unknown): Promise<ProjectMigra
     migrateNestedPeriodicBlocks(document.blocksState, changes)
     migrateNestedPeriodicIR(document.ir, changes)
     document.blocksState = markLifecycleBlocksState(
-      normalizeLegacyBlocksStateToFrames(document.blocksState),
+      normalizeLegacyBlocksStateToFrames(document.blocksState, { preserveTopLevelDrafts }),
     )
     migrateTileMaps(document, changes)
     migrateGameTwoDBlocks(document.blocksState, changes)
+    if (detachRootOnlyDraftCommands(document.blocksState))
+      changes.push({ rule: 'document.draft-placement', path: '$.blocksState' })
     assignMissingBlockIdentities(document.blocksState, changes)
     document.ir = migrateGameTwoDIR(document.ir, changes)
     if (isDocumentRecord(document.ir) && !('behavior' in document.ir)) {
