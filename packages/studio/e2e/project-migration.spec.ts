@@ -92,6 +92,71 @@ test('importação desconhecida preserva a lista sem criar uma cópia incompleta
   ).toEqual([])
 })
 
+test('rascunhos das áreas antigas continuam editáveis e inativos depois de salvar e reabrir', async ({
+  page,
+}) => {
+  const project = {
+    ...createEmptyProject('drafts', 'Rascunhos antigos'),
+    formatVersion: 1,
+    installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 1 }],
+    blocksState: {
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_behavior',
+            x: 30,
+            y: 30,
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_console_log_text',
+                  id: 'active',
+                  fields: { VALUE: 'ativo' },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_g2d_every_frames',
+            id: 'draft-timer',
+            x: 500,
+            y: 300,
+            inputs: {
+              BODY: {
+                block: {
+                  type: 'sz_g2d_set_state_anim',
+                  id: 'draft-animation',
+                  fields: { SPRITE: 'aindaNaoCriado', STATE: 'parado', ANIM: 'idle' },
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  }
+  await page.goto('/')
+  await importProject(page, project)
+  await expect(page).toHaveURL(/\/editor\//)
+  const active = page.locator('.blocklyBlockCanvas [data-id="active"]').first()
+  await expect(active).toBeVisible()
+  await expect(page.locator('.blocklyBlockCanvas > [data-id="draft-timer"]')).toBeAttached()
+  await expect(page.locator('.blocklyBlockCanvas > [data-id="draft-animation"]')).toBeAttached()
+  await active.click()
+  await page.keyboard.press('Delete')
+  await expect(active).toHaveCount(0)
+  await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
+  await page.reload()
+  await expect(page.locator('.blocklyBlockCanvas > [data-id="draft-animation"]')).toBeAttached()
+  const saved = await records(page)
+  const id = decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)!)
+  expect(JSON.stringify(saved[`sz:v2:project-blocks:${id}`])).toContain('aindaNaoCriado')
+  expect(saved[`sz:v2:project-state:${id}`].ir.behavior.start).toEqual([])
+  expect(typeof saved[`sz:v2:project-files:${id}`].files['script.js']).toBe('string')
+  expect(saved[`sz:v2:project-files:${id}`].files['script.js']).not.toContain('aindaNaoCriado')
+})
+
 test('original local incompleto aparece preservado sem bloquear os demais projetos', async ({
   page,
 }) => {

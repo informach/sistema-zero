@@ -32,8 +32,8 @@ function totalBlocks(state: unknown): number {
  * encaixe semântico vira RASCUNHO solto — num projeto ATUAL, a normalização do
  * load NÃO pode reescrevê-lo (a reescrita embrulhava o rascunho num svg novo, o
  * restore do BlocklyPanel recarregava o canvas no meio da edição e a criança via
- * "o bloco se auto-encaixar e duplicar o resto"). Estado LEGADO (sem marcador)
- * segue migrando o topo — lá o bloco solto ERA o programa.
+ * "o bloco se auto-encaixar e duplicar o resto"). Isso também vale para áreas
+ * antigas sem marcador: somente o formato anterior às áreas executava o topo.
  */
 describe('normalização × rascunho de filho-de-svg solto', () => {
   const ir: SZIR = {
@@ -70,6 +70,7 @@ describe('normalização × rascunho de filho-de-svg solto', () => {
       blocks: { blocks: SerializedBlocklyBlock[] }
       szBehaviorAreasVersion?: number
     }
+    if (!marked) delete state.szBehaviorAreasVersion
     state.blocks.blocks.push({
       type: 'sz_svg_title',
       fields: { TEXT: 'Meu desenho', CLASS: '' },
@@ -89,14 +90,16 @@ describe('normalização × rascunho de filho-de-svg solto', () => {
     expect(totalBlocks(normalized)).toBe(before)
   })
 
-  it('estado LEGADO (sem marcador): o topo ainda migra (título absorvido num svg)', () => {
+  it('áreas antigas sem marcador também preservam o título solto como rascunho', () => {
     const state = stateWithLooseTitle(false)
     const before = totalBlocks(state)
     const normalized = normalizeBlocksStateToFrames(state)
     const tops = (normalized as { blocks: { blocks: Array<{ type: string }> } }).blocks.blocks
-    // O título solto foi recolhido para dentro da Estrutura (embrulhado num svg
-    // novo → +1 bloco) — comportamento de MIGRAÇÃO, correto p/ estados legados.
-    expect(tops.map((t) => t.type)).toEqual(['sz_frame_structure', 'sz_frame_start'])
-    expect(totalBlocks(normalized)).toBe(before + 1)
+    expect(tops.map((t) => t.type)).toEqual([
+      'sz_frame_structure',
+      'sz_frame_start',
+      'sz_svg_title',
+    ])
+    expect(totalBlocks(normalized)).toBe(before)
   })
 })

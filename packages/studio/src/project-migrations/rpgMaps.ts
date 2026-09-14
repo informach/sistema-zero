@@ -1,4 +1,5 @@
 import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocument'
+import { historicalAreasHaveDrafts } from './legacyFrames'
 import type { MigrationChange } from './types'
 
 function mapName(value: unknown, path: string): string {
@@ -96,14 +97,19 @@ export function migrateRpgMapBlocks(raw: unknown, changes: MigrationChange[]): v
       'A aventura mistura contratos de criação de mapa; revise a ordem das declarações.',
       '$.blocksState',
     )
-  const currentAreas = raw.szBehaviorAreasVersion === 7
+  const currentAreas = historicalAreasHaveDrafts(raw)
   const pending = tops
-    .map((node, index) => ({ node, root: true, path: `$.blocksState.blocks.blocks[${index}]` }))
+    .map((node, index) => ({
+      node,
+      root: true,
+      draft: currentAreas && isDocumentRecord(node) && !String(node.type).startsWith('sz_frame_'),
+      path: `$.blocksState.blocks.blocks[${index}]`,
+    }))
     .reverse()
   const creations: Record<string, unknown>[] = []
   const names = new Set<string>()
   while (pending.length) {
-    const { node, root, path } = pending.pop()!
+    const { node, root, draft, path } = pending.pop()!
     if (!isDocumentRecord(node) || typeof node.type !== 'string') continue
     const type = node.type
     if (root && type === 'sz_gk_rpg_go_map' && serialized.includes('sz_gk_rpg_on_map'))
@@ -113,7 +119,7 @@ export function migrateRpgMapBlocks(raw: unknown, changes: MigrationChange[]): v
         path,
       )
     if (node.type === 'sz_gk_rpg_on_map') {
-      if (currentAreas && tops.includes(node))
+      if (draft)
         throw new ProjectDocumentError(
           'migration-pending',
           'O registro de mapa está em um rascunho; ele precisa ser convertido sem ativar sua criação.',
@@ -141,12 +147,17 @@ export function migrateRpgMapBlocks(raw: unknown, changes: MigrationChange[]): v
       changes.push({ rule: 'gk.explicit-unbounded-map', path })
     }
     if (isDocumentRecord(node.next))
-      pending.push({ node: node.next.block, root, path: `${path}.next.block` })
+      pending.push({ node: node.next.block, root, draft, path: `${path}.next.block` })
     if (isDocumentRecord(node.inputs))
       for (const [key, input] of Object.entries(node.inputs).reverse()) {
         if (!isDocumentRecord(input)) continue
         const nestedRoot = root && (type.startsWith('sz_frame_') || type === 'sz_gk_on_game_start')
-        pending.push({ node: input.block, root: nestedRoot, path: `${path}.inputs.${key}.block` })
+        pending.push({
+          node: input.block,
+          root: nestedRoot,
+          draft,
+          path: `${path}.inputs.${key}.block`,
+        })
       }
   }
   if (!creations.length) return

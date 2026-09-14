@@ -5,6 +5,36 @@ import { migrateGameTwoDJavaScript } from './javascript'
 import { assertConvertedLifecycle } from './lifecycleAudit'
 import { migrateRpgMapsIR } from './rpgMaps'
 
+test('versão desconhecida das áreas não é promovida como se fosse antiga', async () => {
+  await expect(
+    migrateProjectDocument({
+      ...createEmptyProject('future-areas', 'Áreas futuras'),
+      formatVersion: 1,
+      blocksState: { szBehaviorAreasVersion: 8, blocks: { blocks: [] } },
+    }),
+  ).rejects.toThrow('versão das áreas')
+})
+
+test('registro de mapa no meio de um rascunho antigo não ativa sua criação', async () => {
+  await expect(
+    migrateProjectDocument({
+      ...createEmptyProject('draft-map', 'Mapa solto'),
+      formatVersion: 1,
+      blocksState: {
+        blocks: {
+          blocks: [
+            { type: 'sz_frame_behavior' },
+            {
+              type: 'sz_js_console_log_text',
+              next: { block: { type: 'sz_gk_rpg_on_map', fields: { MAP: 'vila' } } },
+            },
+          ],
+        },
+      },
+    }),
+  ).rejects.toThrow('rascunho')
+})
+
 test('encaixe desconhecido de área é recusado antes de o Blockly descartar seu conteúdo', async () => {
   const project = {
     ...createEmptyProject('bad-frame', 'Original'),
