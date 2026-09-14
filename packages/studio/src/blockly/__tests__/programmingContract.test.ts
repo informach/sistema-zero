@@ -43,7 +43,7 @@ describe('contrato exaustivo da categoria Programação', () => {
     ])
   })
 
-  it('mantém um orçamento explícito de 25 peças no primeiro degrau', () => {
+  it('mantém um orçamento explícito de 26 peças no primeiro degrau', () => {
     expect(PROGRAMMING_BEGINNER_TYPES).toHaveLength(PROGRAMMING_BEGINNER_BUDGET)
     expect(new Set(PROGRAMMING_BEGINNER_TYPES).size).toBe(PROGRAMMING_BEGINNER_BUDGET)
     expect(PROGRAMMING_BEGINNER_TYPES).toEqual([
@@ -66,6 +66,8 @@ describe('contrato exaustivo da categoria Programação', () => {
       'sz_val_number',
       'sz_val_text',
       'sz_val_color',
+      // A sombra de fábrica do "Caixa de texto do sprite" (Kit essencial).
+      'sz_val_color_alpha',
       'sz_val_variable',
       'sz_val_bool',
       'sz_val_compare',

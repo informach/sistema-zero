@@ -324,7 +324,13 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +13: destruição, vínculos reais de grupos, limpeza de clique, ação com
   // recarga e alcance da parada de música. APIs novas com JSDoc e contrato público.
   // +2 líquidos: centralização explícita (cinco), desenho perde os três opcionais.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1221)
+  // 1221 → 1235: +14 do fundo de imagem no sprite de texto —
+  // `_scheduleSpriteImageRedraw` (4, EXTRAÍDO do desenho para os dois donos de
+  // imagem compartilharem um agendador só), `_drawTextBackgroundImage` (5),
+  // `setTextImage` (3), `_textBackgroundImage` (1) e `_paintsBackground` (1).
+  // +1: `_drawTextBackgroundImage` leva também o tamanho FINAL na tela, que é quem
+  // decide nitidez (a medida local mentiria na placa reduzida pela criança).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1236)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

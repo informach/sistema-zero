@@ -218,7 +218,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (!sprite) return;
     var cancel = sprite._cancelImageRedraw;
     sprite._cancelImageRedraw = null;
-    sprite._imgHooked = false;
+    sprite._hookedHandle = null;
     if (typeof cancel === 'function') cancel();
   }
 
@@ -264,7 +264,6 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     sprite.image = name ? loadImage(name) : null;
     sprite.anim = null;
     sprite._animState = null;
-    sprite._imgHooked = false;
     _applyArtHitbox(sprite, name);
   }
 
@@ -455,7 +454,6 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
-    sprite._imgHooked = false;
     var loopRequests = Object.create(null);
     if (_runningLoopId) loopRequests[_runningLoopId] = _frameStamp;
     sprite.anim = {
@@ -686,51 +684,83 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       });
       if (okDraw) return;
     }
-    // Imagem ainda CARREGANDO: agenda UM redraw para quando ela chegar. Assim um
-    // desenho ÚNICO (fora do "a cada frame") também mostra a imagem assim que ela
-    // termina de carregar — senão o aluno via só o retângulo (placeholder) para
-    // sempre. Num loop, isto dispara uma vez e o loop segue desenhando normalmente.
+    // Imagem ainda CARREGANDO: agenda UM redraw para quando ela chegar (ver
+    // _scheduleSpriteImageRedraw, logo abaixo).
     var fixed = sprite.image;
-    if (fixed && fixed.img && !fixed.loaded && !sprite._imgHooked) {
-      sprite._imgHooked = true;
-      var generation = _driverGeneration;
-      var redrawFinishedImage = null;
-      var detachFinishedImage = function () {
-        if (fixed.img && typeof fixed.img.removeEventListener === 'function' && redrawFinishedImage) {
-          fixed.img.removeEventListener('load', redrawFinishedImage);
-          fixed.img.removeEventListener('error', redrawFinishedImage);
-        }
-        _pendingImageRedraws.delete(detachFinishedImage);
-        if (sprite._cancelImageRedraw === detachFinishedImage) sprite._cancelImageRedraw = null;
-      };
-      redrawFinishedImage = function () {
-        detachFinishedImage();
-        if (_runGenerationChanged(generation)) return;
-        // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
-        if (sprite.image !== fixed) return;
-        try {
-          _camWrap(function (redrawCtx, redrawSprite) {
-            drawSprite(redrawCtx, redrawSprite);
-          })(ctx, sprite);
-        } catch (e) {
-          warnOnce('imgredraw:' + fixed.url, 'não consegui redesenhar a imagem que terminou de carregar.');
-        }
-      };
-      sprite._cancelImageRedraw = detachFinishedImage;
-      _pendingImageRedraws.add(detachFinishedImage);
-      try {
-        fixed.img.addEventListener('load', redrawFinishedImage, { once: true });
-        fixed.img.addEventListener('error', redrawFinishedImage, { once: true });
-      } catch (e) {
-        detachFinishedImage();
-        warnOnce('imghook:' + fixed.url, 'não consegui acompanhar o carregamento da imagem.');
-      }
+    // ⚠️ A guarda fica AQUI, e não só dentro do agendador: o callback é uma closure
+    // NOVA a cada chamada, e este caminho roda para todo sprite desenhado, 60× por
+    // segundo. Lixo de GC é o custo que este runtime menos pode pagar; no caso
+    // comum (sem imagem, ou já carregada) não se aloca nada.
+    if (fixed && fixed.img && !fixed.loaded) {
+      _scheduleSpriteImageRedraw(ctx, sprite, fixed, function () { return sprite.image === fixed; });
     }
     // Enquanto carrega, não pinta um retângulo por cima do cenário. Se a carga
     // falhar, o retângulo colorido continua sendo um fallback claro e seguro.
     if (fixed && !fixed.loaded && !fixed.failed) return;
     ctx.fillStyle = sprite.color;
     ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
+  }
+
+  /**
+   * Agenda UM redraw para quando a imagem chegar. Assim um desenho ÚNICO (fora do
+   * "a cada quadro") também mostra a imagem assim que ela termina de carregar —
+   * senão o aluno via só o retângulo (placeholder) para sempre. Num loop, isto
+   * dispara uma vez e o loop segue desenhando normalmente.
+   *
+   * ⭐ Vale para os DOIS donos de imagem que um sprite pode ter: a imagem fixa
+   * (sprite.image) e o fundo do sprite de TEXTO (textAppearance.imageHandle). Cada
+   * um diz, pelo stillCurrent, se ainda é ele que manda quando a carga termina —
+   * duplicar este bloco deixaria um dos dois para trás no próximo conserto.
+   *
+   * ⚠️⚠️ O que marca "já agendei" é o HANDLE, não um booleano do sprite. Com um
+   * booleano só, dois donos dividem um estado: trocar de placa enquanto a primeira
+   * carregava deixava a SEGUNDA sem agendamento nenhum (o booleano ainda estava
+   * ligado pela primeira), e num jogo sem laço ela não aparecia nunca. Derivar a
+   * função sem derivar o estado só muda o lugar do defeito.
+   *
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite
+   * @param {import('./runtimeContract').GameTwoDImageHandle | null} handle
+   * @param {() => boolean} stillCurrent
+   */
+  function _scheduleSpriteImageRedraw(ctx, sprite, handle, stillCurrent) {
+    if (!handle || !handle.img || handle.loaded) return;
+    if (sprite._hookedHandle === handle) return;
+    // Outro handle estava agendado: solta o dele antes de tomar a vez.
+    _cancelSpriteImageRedraw(sprite);
+    sprite._hookedHandle = handle;
+    var generation = _driverGeneration;
+    var redrawFinishedImage = null;
+    var detachFinishedImage = function () {
+      if (handle.img && typeof handle.img.removeEventListener === 'function' && redrawFinishedImage) {
+        handle.img.removeEventListener('load', redrawFinishedImage);
+        handle.img.removeEventListener('error', redrawFinishedImage);
+      }
+      _pendingImageRedraws.delete(detachFinishedImage);
+      if (sprite._cancelImageRedraw === detachFinishedImage) sprite._cancelImageRedraw = null;
+    };
+    redrawFinishedImage = function () {
+      detachFinishedImage();
+      if (_runGenerationChanged(generation)) return;
+      // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
+      if (!stillCurrent()) return;
+      try {
+        _camWrap(function (redrawCtx, redrawSprite) {
+          drawSprite(redrawCtx, redrawSprite);
+        })(ctx, sprite);
+      } catch (e) {
+        warnOnce('imgredraw:' + handle.url, 'não consegui redesenhar a imagem que terminou de carregar.');
+      }
+    };
+    sprite._cancelImageRedraw = detachFinishedImage;
+    _pendingImageRedraws.add(detachFinishedImage);
+    try {
+      handle.img.addEventListener('load', redrawFinishedImage, { once: true });
+      handle.img.addEventListener('error', redrawFinishedImage, { once: true });
+    } catch (e) {
+      detachFinishedImage();
+      warnOnce('imghook:' + handle.url, 'não consegui acompanhar o carregamento da imagem.');
+    }
   }
 
   /**

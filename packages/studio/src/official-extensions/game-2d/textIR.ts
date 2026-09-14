@@ -47,6 +47,12 @@ export type TextSpriteStatement = Id &
         padding: JSExpr
         background: JSExpr
       }
+    | {
+        type: 'g2d:setTextImage'
+        spriteVar: string
+        image: string
+        valign: 'top' | 'middle' | 'bottom'
+      }
     | { type: 'g2d:setSpriteData'; spriteVar: string; key: string; value: JSExpr }
     | { type: 'g2d:onSpriteClick'; spriteVar: string; eventId?: string; body: JSStatement[] }
     | {
@@ -69,6 +75,7 @@ export const TEXT_SPRITE_STATEMENT_TYPES = [
   'g2d:setSpriteText',
   'g2d:setTextStyle',
   'g2d:setTextBox',
+  'g2d:setTextImage',
   'g2d:setSpriteData',
   'g2d:onSpriteClick',
   'g2d:onGroupClick',
@@ -154,6 +161,13 @@ export function textSpriteStatementSchemas(
       align: z.enum(['left', 'center', 'right']),
       padding: expr,
       background: expr,
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:setTextImage'),
+      spriteVar: irText(),
+      image: irText(),
+      valign: z.enum(['top', 'middle', 'bottom']),
       ...id,
     }),
     z.object({

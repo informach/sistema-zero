@@ -1575,7 +1575,7 @@ inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão n
 `blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
 com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.0.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.1.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2744,6 +2744,129 @@ modo é dono do eixo Y a gravidade nunca roda, e quando outro comportamento LEVA
 quatro superfícies de copy (dropdown, os cinco níveis do manual, a família "Anda no chão" e o
 `ai.ts`) descrevem os três modos sem divergência, e as duas menções restantes ao `_enemyTrackMove`
 são os comentários que explicam a remoção dele, não referências.
+
+## Jogo 2D — fundo de IMAGEM no sprite de texto + seletor de cor (v1.1.0, 14/09)
+
+Pedido dela: *"só posso ter uma cor no fundo do texto; seria interessante poder
+escolher uma imagem, aí o sprite teria a forma da imagem e o texto seria escrito por
+cima"*. É o que destrava placa, botão, balão de fala e carta de quiz desenhados no
+Pinta. Antes era impossível por construção: `skin.kind === 'text'` retorna cedo no
+`_drawSpriteBody` (`runtime/sprites.ts`), antes do ramo de imagem.
+
+**Bloco NOVO, não campo no `sz_g2d_set_text_box`** (a régua de 02/08), por três
+motivos independentes: (1) um `input_value` novo naquele bloco NÃO ficaria vazio em
+projeto salvo — `migrateValueFields.ts` já cura os soquetes dele e a sombra entraria
+na reabertura, que é exatamente o defeito do `random_x` que ela mandou reverter;
+(2) a semântica é outra — a cor não mexe no tamanho, a imagem MANDA nele, e um
+soquete que às vezes redimensiona é impossível de explicar; (3) faltava campo (a
+altura do texto só faz sentido com imagem).
+
+**`sz_g2d_set_text_image`** — "Fundo do sprite ⟨resposta⟩ com a imagem ⟨placa⟩, texto
+⟨no meio⟩" (`command`, em Sprites › Texto e números). IR `g2d:setTextImage
+{spriteVar, image, valign}`; `image` é string literal, como o `g2d:setImage`.
+Decisões dela: **a imagem manda no tamanho** (sem deformar; o texto quebra na largura
+dela menos a margem, e a placa nunca estica) e **ela escolhe a altura do texto**
+(em cima / no meio / embaixo).
+
+- ⭐⭐ **A `layoutKey` ganhou a imagem** (`nome`, `imgW`, `imgH`, `valign`). A imagem
+  chega 1–2 quadros depois, como a fonte: sem isso o cache congela a medida do TEXTO
+  e a placa nunca aparece no tamanho certo.
+- ⭐⭐ **`sizeSource` reancora a escala.** As duas linhas que preservam um
+  redimensionamento feito à mão (`sprite.w / measuredW`) viram lixo quando a medida
+  troca de dono: o fator do TEXTO multiplicaria a IMAGEM. Ao mudar de `'text'` para
+  `'image'` (ou o contrário), a escala volta a 1.
+- ⭐ **`_scheduleSpriteImageRedraw` foi EXTRAÍDO** do `_drawSpriteBody` (era um bloco
+  inline) e agora serve aos DOIS donos de imagem de um sprite — a imagem fixa e o
+  fundo do texto —, cada um dizendo pelo `stillCurrent` se ainda manda quando a carga
+  termina. Sem ele, um jogo sem "a cada quadro" mostraria a placa vazia para sempre.
+- ⭐⭐ **O full review do mesmo dia achou que a extração estava pela METADE, e é a
+  lição do lote: derivei a FUNÇÃO e deixei o ESTADO compartilhado.** `sprite._imgHooked`
+  era um booleano único para os dois donos, e isso produziu dois defeitos mudos, os
+  dois só visíveis em jogo SEM laço: (1) trocar de placa no meio da carga deixava a
+  SEGUNDA sem agendamento nenhum (o booleano ainda estava ligado pela primeira); e
+  (2) o `_cancelSpriteImageRedraw` do `setSpriteText`, que existe para soltar a
+  IMAGEM FIXA, matava o redraw da PLACA — trocar o texto do botão fazia a moldura
+  dele nunca aparecer. Hoje o que marca "já agendei" é o **HANDLE**
+  (`sprite._hookedHandle`), um handle novo cancela o anterior e reagenda, e o
+  `setSpriteText` só cancela quando o pendente É a imagem fixa. Regressões nos dois,
+  com anti-vácuo na imagem fixa.
+- ⚠️ **A guarda de "ainda carregando" fica no CHAMADOR, não só dentro do agendador**:
+  o callback é uma closure NOVA por chamada e o `_drawSpriteBody` roda para todo
+  sprite desenhado, 60× por segundo. Era uma alocação por sprite por quadro no
+  caminho mais quente — a mesma classe que o `drawGroupByY` já pagou em 14/08.
+- ⚠️ **`setSpriteText` não pode mais zerar a caixa de arte**: ele fazia
+  `_applyArtHitbox(sprite, '')`, e trocar o texto de um botão apagaria a moldura dele.
+  Hoje consulta `style.image`.
+- ⚠️ **O `telaW` do `_crispDraw` é o tamanho FINAL na tela**, não a medida local: o
+  desenho roda sob um `ctx.scale`, e ali medida local e tamanho natural são iguais —
+  passar a local faria a placa REDUZIDA pela criança sair serrilhada.
+- **Texto que não cabe TRANSBORDA e avisa uma vez** (cortar esconderia em silêncio;
+  crescer contradiria a decisão dela). ⚠️ O aviso não dispara enquanto a imagem
+  carrega: ali a medida ainda é a do texto e ele acusaria quem está certo.
+
+**Parte 2 — o fundo de cor deixou de ser código digitado.** A sombra do soquete
+`BACKGROUND` era `sz_val_text('transparent')`: para pintar de azul, a criança digitava
+`#3b82f6`. Hoje nasce `sz_val_color_alpha` com **`ALPHA: 0`**. ⚠️ O campo mede
+OPACIDADE apesar do rótulo ("0% = invisível, 100% = sólida", diz o tooltip do bloco do
+núcleo; `codecs/programming/blockToIR.ts` faz `alpha: ALPHA / 100`), então alfa 0
+preserva o padrão histórico de **nascer sem fundo** — um `sz_val_color` puro estrearia
+o bloco com um retângulo que ninguém pediu, e o bloco existe sobretudo para quebrar
+linha. O runtime ganhou `_paintsBackground`: a régua literal `'transparent'` continua
+valendo (projeto salvo e código à mão) e cor com opacidade 0 também não pinta.
+
+⭐⭐ **Duas coisas que o full review mudou aqui, e a segunda virou rede para sempre:**
+1. **O rótulo do `sz_val_color_alpha` dizia o oposto do que o campo mede** ("cor ⟨⟩
+   transparência ⟨N⟩ %" para uma escala em que 0 é invisível). Virou **"opacidade %"**.
+   É bloco do NÚCLEO em uso, mas mexer no `message0` é seguro: não muda campo, valor,
+   IR nem forma. Sem isso, a criança escolhia a cor, via o número 0 ao lado e nada
+   acontecia — com um rótulo dizendo que ali havia 0% de transparência.
+2. ⭐⭐ **Uma sombra de fábrica nunca pode ser de um degrau ACIMA do bloco que a
+   contém**, e esta era a **única violação em toda a base**: o "Caixa de texto" é do
+   Kit essencial (`iniciante-2d`) e o "cor + opacidade" era do segundo degrau. A
+   sombra RENDERIZA estando ou não na paleta, então ninguém perceberia — só a criança,
+   que veria a peça e não a acharia. O bloco entrou no primeiro degrau
+   (`PROGRAMMING_BEGINNER_BUDGET` 25 → **26**, decisão da dona): o orçamento já estava
+   furado na prática, porque a sombra fazia 26 peças aparecerem ali; contá-la acerta a
+   conta em vez de inflá-la. A regra virou drift em
+   **`blockly/__tests__/shadowLevels.test.ts`**, varrendo as cinco extensões, com
+   anti-vácuo e a metade que morde.
+⚠️ Isso NÃO muda a forma do bloco (mesmos campos, mesma IR, mesmo helper) — só o que
+vem pré-encaixado; `LEGACY_VALUE_FIELDS` continua `'text'`, porque é ele que cura os
+`"transparent"` que já existem. A sombra nova é composta, logo só de paleta, e o drift
+`restoreShadowLiterals` a pula (só conhece literal simples).
+
+- **QA de pixel em Chrome real** (o `bun test` roda com `ctx` dublê, que prova ordem e
+  contagem e **não prova pixel**): sem placa 109×45, com placa 200×80; a faixa de 8 px
+  da imagem sai com 8 px **inclusive com o texto em 3 linhas** (é o que denuncia
+  deformação); nada vaza além dos 200; o texto sai em 10–29 / 28–47 / 46–65 para
+  cima / meio / baixo; e a cor de fábrica (alfa 0) deixa o pixel em `0,0,0,0`.
+- ⚠️ **Crase crua pela 9ª vez neste repositório**, escrevendo o comentário sobre o
+  `telaW`. O `templateGuard` MORDE (verificado reinserindo-a: 1 fail contra 7 pass) —
+  o erro foi não rodá-lo antes. É o primeiro comando, sempre.
+- ⚠️⚠️ **O soquete do fundo aceita QUALQUER valor (`JSValue`), e a régua nova lia a
+  string**: um número encaixado por engano derrubava a partida com
+  `color.slice is not a function`. O Canvas sempre ignorou um `fillStyle` que não
+  fosse cor — o motor não pode passar a quebrar por dado da criança. A normalização
+  ficou na FRONTEIRA (`setTextBox`, como o `_spriteText` faz com o texto), com guarda
+  de tipo na régua e regressão sobre número, booleano, objeto, lista, null e undefined.
+- ⚠️ **O default do seletor de imagem nasce VAZIO.** Um nome de fábrica que não existe
+  no projeto (`'placa'`) fazia o `loadImage` avisar "a imagem não está no projeto"
+  assim que a criança arrastava o bloco: aviso acusando quem acabou de chegar, a
+  classe que esta extensão já pagou cinco vezes. Os seletores opcionais dos irmãos já
+  nasciam vazios.
+- ⚠️ **Teste que passava por VÁCUO, achado no review**: "trocar o texto preserva a
+  caixa de colisão" comparava `null` com `null`, porque o manifesto de teste não tinha
+  `hitbox` nenhuma. Com a caixa medida no manifesto, ele morde (provado reinserindo o
+  `_applyArtHitbox(sprite, '')` antigo).
+- Contadores: blocos 283 → **284**, API 291 → **292**, arquivos 168 → **169**, catraca
+  de parâmetros 1221 → **1236**, payload 486k → **501k** (teto E piso reancorados),
+  Kit essencial 57 → **58**, orçamento do 1º degrau de Programação 25 → **26**. Testes
+  novos: `game-2d/__tests__/textSpriteImage.test.ts` (33) e o drift
+  `blockly/__tests__/shadowLevels.test.ts` (6).
+- **Fora do escopo, de propósito**: exemplo novo na vitrine (mexeria no `sha256`
+  travado do `examplesLoading.test.ts`) e o equivalente na gk (que não tem sprite de
+  texto). O rótulo do `sz_val_color_alpha` e o degrau dele foram
+  corrigidos no full review do mesmo dia (ver a Parte 2).
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

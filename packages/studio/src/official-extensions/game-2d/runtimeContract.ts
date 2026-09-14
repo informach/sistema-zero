@@ -94,6 +94,14 @@ export interface GameTwoDTextAppearance {
   measuredW: number
   measuredH: number
   layoutKey: string
+  /** Imagem de fundo: quando ela carrega, é ELA que manda no tamanho do sprite. */
+  image: string
+  imageHandle: GameTwoDImageHandle | null
+  imageW: number
+  imageH: number
+  valign: 'top' | 'middle' | 'bottom'
+  /** Quem mediu o sprite da última vez; trocar de dono reancora a escala. */
+  sizeSource: 'text' | 'image'
 }
 
 export interface GameTwoDSprite {
@@ -124,6 +132,10 @@ export interface GameTwoDSprite {
   _cooldowns?: Record<string, number>
   /** Dial da colisão perdoadora: fator da hitbox (1 = tamanho cheio). */
   _hitboxScale?: number
+  /** O handle com um redraw agendado, se houver (ver _scheduleSpriteImageRedraw). */
+  _hookedHandle?: GameTwoDImageHandle | null
+  /** Solta o redraw agendado (ver _scheduleSpriteImageRedraw). */
+  _cancelImageRedraw?: (() => void) | null
 }
 
 export interface GameTwoDGroup<TSprite extends GameTwoDSprite = GameTwoDSprite> {
@@ -326,6 +338,7 @@ export interface GameTwoDSpriteApi {
     padding: number,
     background: string,
   ): void
+  setTextImage(sprite: GameTwoDSprite, image: string, valign: 'top' | 'middle' | 'bottom'): void
   setSpriteData(sprite: GameTwoDSprite, key: string, value: unknown): void
   spriteData(sprite: GameTwoDSprite, key: string, fallback: unknown): unknown
   createSprite(options?: GameTwoDSpriteOptions): GameTwoDSprite
@@ -989,6 +1002,7 @@ export const GAME_TWO_D_API_KEYS = [
   'spriteText',
   'setTextStyle',
   'setTextBox',
+  'setTextImage',
   'setSpriteData',
   'spriteData',
   'onKey',

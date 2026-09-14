@@ -38,7 +38,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_color_alpha',
-    message0: 'cor %1 transparência %2 %',
+    message0: 'cor %1 opacidade %2 %',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#000000' },
       { type: 'field_number', name: 'ALPHA', value: 10, min: 0, max: 100, precision: 1 },

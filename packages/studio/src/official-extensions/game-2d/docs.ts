@@ -30,7 +30,11 @@ necessárias para modificar o projeto, mesmo depois de apagar o último bloco de
 
 Em **Sprites** e **Grupos**, crie texto ou números a partir de variáveis, contas e
 listas. Use movimento, desenho e colisão normalmente. Ajuste letra, cor, largura,
-alinhamento, margem e fundo; largura 0 ajusta ao conteúdo. Guarde dados por sprite.
+alinhamento, margem e fundo; largura 0 ajusta ao conteúdo. No fundo, escolha a cor e
+suba a opacidade para ela aparecer. O fundo também pode ser uma **imagem**: aí é
+ela que manda no tamanho do sprite, sem deformar, e o texto é escrito por cima,
+quebrando linha na margem. É assim que se faz placa, botão e balão de fala com um
+desenho do Pinta. Guarde dados por sprite.
 **Controles** oferece clique/toque individual ou em grupo. Textos visíveis entram
 no HUD acessível; **Escrever** também aceita variáveis. Veja **Chuva de números**
 e **Quiz de números**: no quiz, responda com 1, 2 ou 3 e use Enter para avançar ou

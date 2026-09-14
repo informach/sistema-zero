@@ -33,6 +33,12 @@ const VISIBLE_BLOCK_TYPES = new Set(
 // "juntar texto" ou o resultado de uma função.
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
+// Cor com OPACIDADE (0% = invisível, 100% = sólida). Opacidade 0 é o jeito de a
+// paleta oferecer o SELETOR de cor sem estrear o bloco com um retângulo que ninguém
+// pediu: a criança escolhe a cor e sobe o número para ela aparecer.
+const colShadow = (color: string, alpha: number) => ({
+  shadow: { type: 'sz_val_color_alpha', fields: { COLOR: color, ALPHA: alpha } },
+})
 const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_with_cooldown: { FRAMES: numShadow(30) },
   sz_g2d_create_text_sprite: { TEXT: txtShadow('Olá!'), X: numShadow(100), Y: numShadow(100) },
@@ -42,7 +48,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_text_box: {
     WIDTH: numShadow(240),
     PADDING: numShadow(12),
-    BACKGROUND: txtShadow('transparent'),
+    BACKGROUND: colShadow('#000000', 0),
   },
   sz_g2d_set_sprite_data: { VALUE: numShadow(0) },
   sz_g2d_sprite_data: { FALLBACK: numShadow(0) },

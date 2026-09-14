@@ -29,6 +29,7 @@ export const GAME_TWO_D_SEARCH_TERMS: Readonly<Record<string, readonly string[]>
   sz_g2d_set_scene: ['Ir para a tela'],
   sz_g2d_scene_is: ['a tela atual é ?'],
   sz_g2d_create_text_sprite: ['texto número resposta pergunta letras educativo'],
+  sz_g2d_set_text_image: ['placa botão balão moldura fundo imagem atrás do texto'],
   sz_g2d_with_cooldown: ['recarga intervalo esperar ataque atirar cooldown'],
   sz_g2d_destroy_sprite: ['apagar excluir destruir sprite remover completamente'],
 }

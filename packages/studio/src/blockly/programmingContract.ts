@@ -109,7 +109,7 @@ export const PROGRAMMING_VISIBLE_TYPES: ReadonlySet<string> = new Set(
  * reagir, guardar valores, decidir, repetir e observar o resultado. APIs de
  * navegador, milissegundos, armazenamento e formas duplicadas entram depois.
  */
-export const PROGRAMMING_BEGINNER_BUDGET = 25
+export const PROGRAMMING_BEGINNER_BUDGET = 26
 
 export const PROGRAMMING_BEGINNER_TYPES = [
   'sz_js_on_click',
@@ -131,6 +131,12 @@ export const PROGRAMMING_BEGINNER_TYPES = [
   'sz_val_number',
   'sz_val_text',
   'sz_val_color',
+  // ⭐ Entrou em 14/09 junto do fundo do sprite de texto: é a SOMBRA de fábrica do
+  // "Caixa de texto do sprite", que é do Kit essencial. O orçamento já estava
+  // furado na prática (a sombra faz a peça aparecer no primeiro degrau); contá-la
+  // acerta a conta em vez de inflá-la, e mantém o invariante de que nenhuma sombra
+  // é de um degrau acima do bloco que a contém.
+  'sz_val_color_alpha',
   'sz_val_variable',
   'sz_val_bool',
   'sz_val_compare',

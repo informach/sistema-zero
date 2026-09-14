@@ -104,7 +104,35 @@ export const gameTwoDTextBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Largura 0 ajusta ao texto. Uma largura maior quebra frases em linhas. A margem dá espaço ao redor das letras. Fundo aceita uma cor ou "transparent". Toda a caixa pode ser clicada.',
+      'Largura 0 ajusta ao texto. Uma largura maior quebra frases em linhas. A margem dá espaço ao redor das letras. No fundo, escolha a cor e suba a opacidade para ela aparecer (0% = sem fundo). Toda a caixa pode ser clicada.',
+  },
+  {
+    type: 'sz_g2d_set_text_image',
+    placement: 'command',
+    message0: 'Fundo do sprite %1 com a imagem %2, texto %3',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'resposta' },
+      // ⚠️ Nasce VAZIO, como os outros seletores de imagem opcionais. Um nome de
+      // fábrica que não existe no projeto ("placa") faz o runtime avisar que a
+      // imagem não está lá assim que a criança arrasta o bloco: aviso acusando
+      // quem acabou de chegar.
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      {
+        type: 'field_dropdown',
+        name: 'VALIGN',
+        options: [
+          ['no meio', 'middle'],
+          ['em cima', 'top'],
+          ['embaixo', 'bottom'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolha um desenho seu: ele vira a moldura do sprite, que fica do tamanho dele, sem deformar, e o texto é escrito por cima, quebrando linha na margem. Serve para placa, botão e balão de fala. Sem imagem escolhida, vale o fundo de cor.',
   },
   {
     type: 'sz_g2d_set_sprite_data',

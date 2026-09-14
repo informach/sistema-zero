@@ -19,6 +19,7 @@ export const ESSENTIAL_2D_BLOCK_TYPES = [
   'sz_g2d_sprite_text',
   'sz_g2d_set_text_style',
   'sz_g2d_set_text_box',
+  'sz_g2d_set_text_image',
   'sz_g2d_set_sprite_data',
   'sz_g2d_sprite_data',
   'sz_g2d_on_sprite_click',

@@ -93,8 +93,12 @@ describe('bundle inicial do Jogo 2D', () => {
 // 1.125 travessias de contexto para 2, e as 400 partículas de 800 para 2.
 // Sprites de texto (13/09): 476.776 B crus / 141.033 B gzip.
 // Novo layout, dados e seleção adicionam ~12 KB; preservamos a margem de 2%.
-const RUNTIME_TETO_CRU = 486_000
-const RUNTIME_TETO_GZIP = 143_800
+// Fundo de IMAGEM no sprite de texto (14/09): 491.160 B crus / 144.145 B gzip.
+// São ~3,3 KB: o layout que deixa a imagem mandar na medida, o desenho da placa e
+// o agendador de redraw, que saiu do desenho e agora serve aos DOIS donos de
+// imagem (antes era um bloco copiado dentro de `_drawSpriteBody`).
+const RUNTIME_TETO_CRU = 501_000
+const RUNTIME_TETO_GZIP = 147_000
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do

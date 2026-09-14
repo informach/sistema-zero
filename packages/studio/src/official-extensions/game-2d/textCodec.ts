@@ -127,6 +127,18 @@ export function textSpriteBlockToIR(
       }
       break
     }
+    case 'sz_g2d_set_text_image': {
+      const valign = f('VALIGN')
+      statement = {
+        type: 'g2d:setTextImage',
+        spriteVar: f('SPRITE'),
+        image: f('IMAGE'),
+        // O dropdown coage valor desconhecido para a 1ª opção; normalizar aqui
+        // mantém o bloco e o parser dizendo a mesma coisa.
+        valign: valign === 'top' || valign === 'bottom' ? valign : 'middle',
+      }
+      break
+    }
     case 'sz_g2d_set_sprite_data':
       statement = {
         type: 'g2d:setSpriteData',
@@ -181,6 +193,8 @@ export function textSpriteStatementToCode(s: JSStatement, t: CodeTools): string 
       return `${t.pad}SZGame2D.setTextStyle(${id(s.spriteVar)}, ${expr(s.size)}, ${JSON.stringify(s.color)});`
     case 'g2d:setTextBox':
       return `${t.pad}SZGame2D.setTextBox(${id(s.spriteVar)}, ${expr(s.width)}, ${JSON.stringify(s.align)}, ${expr(s.padding)}, ${expr(s.background)});`
+    case 'g2d:setTextImage':
+      return `${t.pad}SZGame2D.setTextImage(${id(s.spriteVar)}, ${JSON.stringify(s.image)}, ${JSON.stringify(s.valign)});`
     case 'g2d:setSpriteData':
       return `${t.pad}SZGame2D.setSpriteData(${id(s.spriteVar)}, ${JSON.stringify(s.key)}, ${expr(s.value)});`
     case 'g2d:onSpriteClick':
@@ -262,6 +276,12 @@ export function textSpriteStatementToBlock(
         'sz_g2d_set_text_box',
         { SPRITE: s.spriteVar, ALIGN: s.align },
         { WIDTH: s.width, PADDING: s.padding, BACKGROUND: s.background },
+      )
+    case 'g2d:setTextImage':
+      return make(
+        'sz_g2d_set_text_image',
+        { SPRITE: s.spriteVar, IMAGE: s.image, VALIGN: s.valign },
+        {},
       )
     case 'g2d:setSpriteData':
       return make('sz_g2d_set_sprite_data', { SPRITE: s.spriteVar, KEY: s.key }, { VALUE: s.value })
@@ -418,6 +438,15 @@ export function textSpriteCallToIR(
         t.simple(background) &&
         (align === 'left' || align === 'center' || align === 'right')
         ? { type: 'g2d:setTextBox', spriteVar: target, width: value, align, padding, background }
+        : undefined
+    }
+    case 'setTextImage': {
+      const image = literal(args[1]),
+        valign = literal(args[2])
+      return args.length === 3 &&
+        image !== null &&
+        (valign === 'top' || valign === 'middle' || valign === 'bottom')
+        ? { type: 'g2d:setTextImage', spriteVar: target, image, valign }
         : undefined
     }
     case 'setSpriteData': {
