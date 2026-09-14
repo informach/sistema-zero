@@ -274,7 +274,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (map._fitStageRevision === _stageViewportRevision) return;
     _fitTileMapToCurrentStage(ctx || ensureStage(), map);
   }
-  /** Tamanho do tile no layout preparado; compatibilidade cai no tamanho da arte. */
+  /** Tamanho do tile no layout preparado; antes do preparo usa o tamanho da arte. */
   function tileScreenSize(map) {
     if (!map) return 0;
     _refreshFittedTileMapLayout(null, map);

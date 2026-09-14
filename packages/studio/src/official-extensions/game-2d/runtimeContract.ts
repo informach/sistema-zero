@@ -544,9 +544,9 @@ export interface GameTwoDInputAndMotionApi {
 }
 
 export interface GameTwoDWorldApi {
-  /** @deprecated Prefira a câmera configurada por `GameTwoDWorld`. */
+  /** Centraliza a câmera global no sprite e limita o deslocamento às dimensões fornecidas. */
   cameraFollow(sprite: GameTwoDSprite, worldWidth: number, worldHeight: number): void
-  /** @deprecated Prefira `configureWorldCamera` + `followCameraInWorld`. */
+  /** Posiciona diretamente a câmera global, sem exigir um objeto Mundo. */
   setCamera(x: number, y: number): void
   cameraX(): number
   cameraY(): number

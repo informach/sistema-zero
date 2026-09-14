@@ -166,9 +166,10 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   ('inicio', 'jogando', 'ganhou', 'perdeu') e não são Fases. ONDAS são grupos/ritmos de inimigos
   dentro da mesma Fase ou do mesmo Mundo: conte a onda numa variável; só crie outra Fase quando
   também mudar a etapa jogável (mundo, início ou regras de entrada).
-- cameraFollow(s, worldW, worldH) e setCamera(x, y) são compatibilidade para projetos antigos.
-  Em projetos novos com terreno rolável, prefira a câmera do Mundo. cameraX()/cameraY() continuam
-  úteis para parallax. ⚠️ onPointer/pointer usam coordenadas de TELA; mundo = tela + câmera.
+- cameraFollow(s, worldW, worldH) e setCamera(x, y) controlam diretamente a câmera global em
+  Código ou por chamada de função. Para construir terreno rolável em Blocos, use a câmera do
+  Mundo. cameraX()/cameraY() leem o deslocamento, inclusive para parallax.
+  ⚠️ onPointer/pointer usam coordenadas de TELA; mundo = tela + câmera.
 
 Mapa destrutível, ordem de desenho e depuração:
 - breakTileAtSprite(map, s)/setTileAtSprite(map, index, s)/tileAtSprite(map, s): muda/quebra/lê o tile na
