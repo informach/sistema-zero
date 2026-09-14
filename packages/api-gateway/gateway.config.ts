@@ -1687,7 +1687,7 @@ const config: GatewayConfigInput = {
     },
     {
       id: 'members-pensa-project',
-      methods: ['GET', 'PATCH'],
+      methods: ['GET', 'PATCH', 'DELETE'],
       pathPattern: '/members/pensa/projects/:projectId',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },

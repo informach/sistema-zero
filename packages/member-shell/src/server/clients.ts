@@ -777,6 +777,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body,
       })
     },
+    /**
+     * Apaga o plano DE VEZ. O members leva ciclos, conversas, artefatos e cartões
+     * junto (cascata); o XP já ganho fica. Quem pergunta antes é a tela.
+     */
+    pensaDeleteProject(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
+        method: 'DELETE',
+        query: { audience },
+      })
+    },
     /** Cria a Versão N+1 (exige a anterior `done`). */
     pensaCreateCycle(
       projectId: string,

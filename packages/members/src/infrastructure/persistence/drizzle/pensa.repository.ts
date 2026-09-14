@@ -235,6 +235,18 @@ export class DrizzlePensaRepository implements PensaRepository {
     return row ? toProject(row) : null
   }
 
+  /**
+   * Um DELETE só: as FKs de `pensa_cycles` → conversas/artefatos/cartões são
+   * `on delete cascade` (migration `0060_pensa_planner_v2`), então a árvore inteira
+   * cai junto. O `ownedProject` no WHERE é o portão: plano de outro perfil (ou de
+   * outra vitrine) não é alcançado nem com o id certo.
+   */
+  async deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void> {
+    await this.db
+      .delete(pensaProjects)
+      .where(and(eq(pensaProjects.id, projectId), ownedProject(userId, audience)))
+  }
+
   async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
     await this.db
       .update(pensaProjects)

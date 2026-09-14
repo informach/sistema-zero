@@ -1504,6 +1504,27 @@ progresso `planned | in_progress | completed`.
 - Todos os acessos resolvem `user_id` + `audience`; mismatch retorna 404. O gate de produto
   continua no create. As cotas e os limites de conversa/artefato permanecem nos use cases.
 - A gamificação do avanço preserva os source IDs determinísticos existentes.
+- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
+  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
+  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
+  repositório faz UM `delete` com o mesmo `ownedProject` no WHERE — ciclos, conversas, artefatos e
+  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
+  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
+  badge de quem o fez. Gateway: o DELETE entrou nos `methods` da rota `members-pensa-project`, que
+  já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a cascata (é ele que os testes de
+  integração exercitam). A mensagem do 404 é a frase que a CRIANÇA lê ("Esse plano não está mais
+  aqui.") — o BFF repassa `error.message` inteiro, e o padrão "Recurso do Pensa não encontrado"
+  é recado de servidor; o caso real é apagar o mesmo plano em duas abas. Um teste prova que o
+  ledger de XP/badges sobrevive ao DELETE.
+- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
+  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
+  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
+  repositório faz UM `delete` com o mesmo `ownedProject` do WHERE — ciclos, conversas, artefatos e
+  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
+  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
+  badge de quem o fez — e é assim que tem que ser. Gateway: o DELETE entrou nos `methods` da rota
+  `members-pensa-project` que já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a
+  cascata (é ele que os testes de integração exercitam).
 
 Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:

@@ -438,6 +438,52 @@
   color: var(--pz-muted);
   font-size: 0.875rem;
 }
+/* O par de ações do rodapé: a lixeira e o "Continuar", juntos à direita. */
+.pensa-project-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* ⚠️⚠️ A lixeira precisa SUBIR: o `::after` do "Continuar" (logo abaixo) cobre o cartão
+   inteiro para que clicar em qualquer ponto abra o plano, e é pintado depois. Sem o
+   `position` + `z-index` aqui, o botão aparece mas NUNCA recebe o clique — quem o recebe
+   é a camada invisível, e a criança abriria o plano ao tentar apagá-lo. Pelo mesmo motivo
+   ele não anda no hover (ver o comentário do `__open`): a cor basta. */
+.pensa-planner .pensa-project-card__remove {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--sz-tool-hit, 40px);
+  height: var(--sz-tool-hit, 40px);
+  /* ⚠️ `.pensa-planner` na frente pelo mesmo motivo dos três CTAs lá de cima: a regra de
+     ELEMENTO dos botões deste arquivo (0-1-1) dá 44px de altura a todos e venceria a classe
+     sozinha — a lixeira saía 40x44 (medido no playground). O alvo de 44px continua garantido
+     no TOQUE: é o que o `--sz-tool-hit` faz em `any-pointer: coarse`.
+     ⚠️ E nada de citar aqui o seletor de elemento por extenso: o `tokens.test.ts` conta as
+     ocorrências dele no texto do arquivo, comentário incluído. */
+  min-height: var(--sz-tool-hit, 40px);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--pz-muted);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+.pensa-project-card__remove:hover {
+  border-color: color-mix(in oklab, var(--pz-danger) 40%, transparent);
+  color: var(--pz-danger);
+  background: color-mix(in oklab, var(--pz-danger) 10%, var(--pz-surface));
+}
+.pensa-project-card__remove:focus-visible {
+  outline: 2px solid var(--pz-danger);
+  outline-offset: 2px;
+}
 /* A área clicável do "Continuar" é o cartão inteiro. */
 .pensa-project-card__open::after {
   content: "";
@@ -1658,4 +1704,76 @@ button.pensa-map-node:hover {
 .pensa-task-edit label:not(.pensa-task-time) input {
   width: 100%;
   margin: 0;
+}
+
+/* ── A janela de confirmação (apagar um plano, apagar um Cartão de Criação) ──────────
+   Cobre a TELA, como as do Pinta e do Molda. ⚠️ Medido, não deduzido: o
+   `container-type: inline-size` do `.pensa-planner` NÃO faz dele o bloco de referência
+   deste `fixed` (o Chrome reporta `contain: none` — o container de tamanho INLINE não
+   liga o containment de layout que ancoraria um fixed). Com a página rolada 900px, o
+   planner sai da tela e o escurecido segue em 0..altura da janela, com o cartão no
+   meio. Ou seja: não há risco de a janela nascer fora da vista quando o host deixar o
+   planner crescer. */
+.pensa-dialog-scrim {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: color-mix(in oklab, var(--pz-ink) 55%, transparent);
+}
+.pensa-dialog {
+  width: 100%;
+  max-width: 26rem;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  box-shadow: 0 18px 40px color-mix(in oklab, var(--pz-ink) 25%, transparent);
+}
+.pensa-dialog:focus-visible {
+  outline: 2px solid var(--pz-accent);
+  outline-offset: 2px;
+}
+.pensa-dialog__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.pensa-dialog__body {
+  margin: 12px 0 0;
+  color: var(--pz-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.pensa-dialog__error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in oklab, var(--pz-danger) 45%, var(--pz-line));
+  border-radius: 12px;
+  color: var(--pz-danger);
+  background: color-mix(in oklab, var(--pz-danger) 8%, var(--pz-surface));
+  font-size: 0.875rem;
+}
+.pensa-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+/* O botão que apaga. Vermelho CHEIO: é a ação sem volta da janela, e a criança precisa
+   ler isso antes de clicar. Não existe pílula de perigo na receita compartilhada. */
+.pensa-dialog__danger {
+  border-color: transparent;
+  color: var(--sz-tool-on-cta, #fff);
+  background: var(--pz-danger);
+}
+.pensa-dialog__danger:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--pz-danger) 88%, var(--pz-ink));
 }

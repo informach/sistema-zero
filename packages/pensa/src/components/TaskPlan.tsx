@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PensaHostAdapter, PensaStageView, PensaTaskView } from '../core/types'
+import { ConfirmDialog } from './ConfirmDialog'
 
 export interface TaskPlanProps {
   adapter: PensaHostAdapter
@@ -101,8 +102,12 @@ function TaskCard(
       setEditing(false)
       await props.refresh()
     })
+  // A pergunta antes de apagar sai na janela da casa, nunca no `window.confirm` do
+  // navegador (cinza, fora do tema e em inglês no botão dependendo do sistema).
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const removeButtonRef = useRef<HTMLButtonElement | null>(null)
   const remove = () => {
-    if (!window.confirm(`Apagar o cartão “${props.task.title}”?`)) return
+    setConfirmRemove(false)
     void props.run(`task-${props.task.id}`, async () => {
       await props.adapter.transport.request(`/tasks/${props.task.id}`, { method: 'DELETE' })
       await props.refresh()
@@ -206,7 +211,7 @@ function TaskCard(
                 {props.task.progress.status === 'planned' ? 'Editar cartão' : 'Criar revisão'}
               </button>
               {props.task.progress.status === 'planned' ? (
-                <button type="button" onClick={remove}>
+                <button ref={removeButtonRef} type="button" onClick={() => setConfirmRemove(true)}>
                   Apagar cartão
                 </button>
               ) : null}
@@ -236,6 +241,15 @@ function TaskCard(
           ) : null}
         </footer>
       </article>
+      <ConfirmDialog
+        open={confirmRemove}
+        title="Apagar este cartão?"
+        body={`O cartão "${props.task.title}" sai do plano. Não dá para desfazer.`}
+        confirmLabel="Apagar"
+        onConfirm={remove}
+        onClose={() => setConfirmRemove(false)}
+        returnFocusTo={removeButtonRef}
+      />
     </li>
   )
 }

@@ -134,7 +134,9 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
     // Home no desenho das telas-modelo (11/09/2026): o título é a receita COMPARTILHADA das
     // galerias (`.sz-tool-title`, Baloo 800), sem o herói antigo.
     // ⚠️ A classe é a única trava possível aqui: em jsdom a folha externa não é
@@ -144,7 +146,7 @@ describe('Pensa planejador', () => {
       'sz-tool-title',
     )
     expect(screen.queryByText('PLANEJADOR DE JOGOS')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Meu plano' })).toBeTruthy())
     expect(screen.getByText('PRÓXIMA')).toBeTruthy()
     expect(screen.getByText(/Depois de: Desenhar a estrela/)).toBeTruthy()
@@ -259,8 +261,10 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => screen.getByText('Bíblia Visual'))
     // Paleta: papel e hex visíveis como TEXTO (antes o hex vivia só no title).
     expect(screen.getByText('herói')).toBeTruthy()
@@ -349,8 +353,10 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => screen.getByRole('group', { name: 'Sugestões do Zappy' }))
     // O corpo da resposta fica na bolha; a linha SUGESTÕES: some do texto.
     expect(screen.getByText(/Qual é o objetivo do jogo\?/)).toBeTruthy()
@@ -448,8 +454,10 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => screen.getByText('Cartões de Criação'))
     fireEvent.click(
       screen.getByRole('button', { name: 'Rever a etapa Zerar a Bagunça (concluída)' }),
@@ -522,8 +530,10 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => screen.getByRole('heading', { name: 'Meu plano' }))
     fireEvent.click(
       screen.getByRole('button', { name: 'Rever a etapa Roteirizar a Criação (concluída)' }),
@@ -595,8 +605,10 @@ describe('Pensa planejador', () => {
       },
     }
     render(<PensaApp adapter={adapter} />)
-    await waitFor(() => screen.getByRole('button', { name: /Bosque das Estrelas/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Bosque das Estrelas/ }))
+    await waitFor(() =>
+      screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => screen.getByRole('button', { name: 'Editar cartão' }))
     fireEvent.click(screen.getByRole('button', { name: 'Editar cartão' }))
     expect(screen.queryByLabelText('Definição completa do cartão')).toBeNull()

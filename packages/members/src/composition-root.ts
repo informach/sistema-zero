@@ -73,6 +73,7 @@ import { AppendPensaConversationTurnService } from './application/pensa/append-c
 import { AppendPensaTasksService } from './application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from './application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from './application/pensa/create-project.service'
+import { DeletePensaProjectService } from './application/pensa/delete-project.service'
 import { DeletePensaTaskService } from './application/pensa/delete-task.service'
 import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
@@ -543,6 +544,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
   const getPensaProject = new GetPensaProjectService(pensaRepo)
   const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
+  const deletePensaProject = new DeletePensaProjectService(pensaRepo)
   const createPensaCycle = new CreatePensaCycleService(pensaRepo, pensaNewId, clock)
   const getPensaStage = new GetPensaStageService(pensaRepo)
   const appendPensaConversationTurn = new AppendPensaConversationTurnService(pensaRepo, clock)
@@ -712,6 +714,7 @@ export async function createApplication(env: Env): Promise<Application> {
       createProject: createPensaProject,
       getProject: getPensaProject,
       updateProject: updatePensaProject,
+      deleteProject: deletePensaProject,
       createCycle: createPensaCycle,
       getStage: getPensaStage,
       appendConversationTurn: appendPensaConversationTurn,

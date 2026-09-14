@@ -7,6 +7,7 @@ import type { AppendPensaConversationTurnService } from '../../../application/pe
 import type { AppendPensaTasksService } from '../../../application/pensa/append-tasks.service'
 import type { CreatePensaCycleService } from '../../../application/pensa/create-cycle.service'
 import type { CreatePensaProjectService } from '../../../application/pensa/create-project.service'
+import type { DeletePensaProjectService } from '../../../application/pensa/delete-project.service'
 import type { DeletePensaTaskService } from '../../../application/pensa/delete-task.service'
 import type { GetPensaProjectService } from '../../../application/pensa/get-project.service'
 import type { GetPensaStageService } from '../../../application/pensa/get-stage.service'
@@ -52,6 +53,7 @@ export interface PensaRoutesDeps {
   createProject: CreatePensaProjectService
   getProject: GetPensaProjectService
   updateProject: UpdatePensaProjectService
+  deleteProject: DeletePensaProjectService
   createCycle: CreatePensaCycleService
   getStage: GetPensaStageService
   appendConversationTurn: AppendPensaConversationTurnService
@@ -186,6 +188,20 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           ),
         }),
         { body: PensaUpdateProjectBody, params: PensaProjectParams, query: AudienceQuery },
+      )
+      // Apaga o plano DE VEZ (a tela pergunta antes). Ciclos, conversas, artefatos e
+      // cartões vão junto pela cascata do banco; o XP já ganho fica no ledger.
+      .delete(
+        '/projects/:projectId',
+        async ({ headers, params, query }) => {
+          await deps.deleteProject.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.projectId,
+          )
+          return { ok: true }
+        },
+        { params: PensaProjectParams, query: AudienceQuery },
       )
       // Ciclo n+1 (exige o anterior `done`; ≤10). Devolve o detail atualizado.
       .post(

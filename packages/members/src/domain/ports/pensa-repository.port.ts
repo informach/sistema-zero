@@ -112,6 +112,12 @@ export interface PensaRepository {
     audience: CourseAudience,
   ): Promise<PensaProject | null>
   updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void>
+  /**
+   * Apaga o plano INTEIRO do dono (ciclos, conversas, artefatos e cartões vão junto
+   * pelas FKs `on delete cascade`). O ledger de XP/badges NÃO é tocado: `xp_events`
+   * guarda snapshot sem FK, e a criança não perde o que já conquistou.
+   */
+  deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void>
 
   listCycles(projectId: string): Promise<PensaCycle[]>
   createCycle(cycle: NewPensaCycle, now: Date, inherit?: InheritedPensaArtifact[]): Promise<void>

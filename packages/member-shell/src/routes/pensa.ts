@@ -297,6 +297,14 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const result = await members.pensaUpdateProject(projectId, parsed.data)
       return response(result.status, result.body)
     },
+    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaDeleteProject(projectId)
+      return response(result.status, result.body)
+    },
   }
 
   const pensaCycleCreate = {

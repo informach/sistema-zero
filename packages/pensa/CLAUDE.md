@@ -103,6 +103,57 @@ do `.pensa-planner`.
   `components/PensaApp.hostChrome.test.tsx` (a seta), `styles/tokens.test.ts` e
   `styles/headingFont.test.ts`.
 
+## Apagar um plano (14/09/2026)
+
+A criança apaga o plano pelo próprio cartão, e some **de vez** — decisão dela: sem lixeira, com
+uma janela que pergunta antes. O `DELETE /projects/:id` nasceu nesta leva em TODAS as camadas
+(members → gateway → BFF → shim do kids), espelhando o `DELETE /tasks/:taskId` que já existia; no
+banco, um só DELETE leva ciclos, conversas, artefatos e cartões pelas FKs em cascata. O XP e as
+medalhas FICAM (o ledger guarda snapshot sem FK): ela fez o trabalho.
+
+- **A lixeira** (`.pensa-project-card__remove`, `TrashIcon`) fica no rodapé do cartão, à esquerda
+  do "Continuar", com o nome do plano no `aria-label` ("Apagar o plano X" — "Apagar" repetido na
+  grade não diria qual).
+- ⚠️⚠️ **Ela PRECISA de `position: relative` + `z-index: 1`.** O `::after` do "Continuar" cobre o
+  cartão INTEIRO (é o "clicar em qualquer ponto abre") e é pintado depois: sem subir, o botão
+  aparece e NUNCA recebe o clique — quem recebe é a camada invisível, e a criança abriria o plano
+  ao tentar apagá-lo. Medido no playground com `elementFromPoint`. Pelo mesmo motivo ela não anda
+  no hover; o que responde é a cor.
+- ⚠️ A regra leva **`.pensa-planner` na frente**, como os três CTAs: a regra de ELEMENTO deste
+  arquivo (`.pensa-planner button:where(…)`, 0-1-1) dá 44px de altura a todo botão e venceria a
+  classe sozinha — a lixeira saía 40x44. Os 44px do TOQUE seguem garantidos pelo `--sz-tool-hit`.
+- **`ConfirmDialog`** (`components/ConfirmDialog.tsx`) é a janela da casa, no molde do Molda (que
+  veio do Pinta): `role="dialog"` + `aria-modal`, foco no card ao abrir, Tab preso, Esc fecha
+  (nunca durante a gravação) e o foco volta a **quem abriu** — `returnFocusTo` é lido no
+  FECHAMENTO, nunca `document.activeElement` na abertura (clicar num botão nem sempre o foca, e
+  em teste nunca). Quando o alvo some junto com o cartão, quem abriu vira o "+ Novo plano".
+  Erro NÃO fecha a janela: ela fica com o recado (`role="alert"`) para tentar de novo.
+- ⚠️ Apagar **não** chama `loadProjects()`: ele acende o "Preparando seu mapa de criação…", que
+  desmonta a lista (e a janela) no meio do gesto. O servidor já confirmou — tirar o cartão da
+  lista basta.
+- A janela é irmã das faixas, **fora** do `.sz-tool-bands`: lá dentro as pílulas ganhariam o
+  relevo 3D das galerias, que é desenho de grade, não de diálogo. Ela cobre a TELA inteira, como
+  as do Pinta e do Molda. ⚠️ **Medido, não deduzido:** o `container-type: inline-size` do
+  `.pensa-planner` NÃO ancora este `fixed` nele (o Chrome dá `contain: none`; o container de
+  tamanho inline não liga o containment de layout). Com a página rolada 900px o planner sai da
+  tela e o escurecido continua colado na janela — nada de diálogo nascendo fora da vista se um
+  dia o host deixar o planner crescer. Contraste medido: "Apagar" 4,66:1 e o corpo 5,39:1 nos
+  dois temas.
+- O `window.confirm` do "Apagar cartão" (`TaskPlan.tsx`) virou a mesma janela. Sobraram os dois
+  de "Descartar as mudanças deste cartão?", que são outro fluxo.
+- ⭐ **A copy diz o que NÃO some.** "Tudo que você criou nele" fazia a criança entender que o
+  jogo do Estúdio e os desenhos do Pinta iam junto — e eles ficam: o vínculo com o Estúdio é um
+  projeto LOCAL de id `pensa-<id>` (`community-kids/src/lib/pensa-studio-link.ts`) que continua
+  na galeria dela. A frase agora separa as duas coisas, senão ela não apaga por medo (ou apaga
+  achando que limpou tudo). Sobram no navegador uma chave de localStorage e o projeto local
+  órfãos, inertes: o Pensa não conhece o IndexedDB do host, e o Estúdio é vendido à parte.
+- ⭐ **Apagar o ÚLTIMO plano abre o campo de criar**, como no primeiro acesso: o `creating` só
+  olhava a lista na primeira renderização, então o vazio aparecia com o convite "dê um nome ao
+  jogo" e nenhum campo à vista.
+- Testes: `PensaApp.home.test.tsx` (a lixeira por plano, a janela, o cancelar, o erro, o foco).
+  ⚠️ Os testes que achavam o cartão por "botão com o nome do plano" agora dizem qual: com a
+  lixeira existem DOIS ("Continuar o plano X" e "Apagar o plano X").
+
 ## A tela do plano das telas-modelo (11/09/2026)
 
 O detalhe de um plano segue a segunda imagem-modelo dela (lote 7, passo 8), nas faixas

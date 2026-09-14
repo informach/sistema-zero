@@ -59,6 +59,46 @@ async function home(projects: PensaProjectListView[] = DOIS_PLANOS) {
   return result
 }
 
+/**
+ * Adapter que apaga DE VERDADE: o DELETE tira o plano da lista que a home recarrega
+ * em seguida. `fail` simula a rede caindo no meio (a janela tem que ficar aberta).
+ */
+function adapterWithRemoval(
+  initial: PensaProjectListView[],
+  options: { fail?: boolean } = {},
+): { adapter: PensaHostAdapter; request: ReturnType<typeof mock> } {
+  let atual = [...initial]
+  const request = mock(async (path: string, init?: { method?: string }) => {
+    if (path === '/projects' && !init?.method) return { projects: atual }
+    if (init?.method === 'DELETE' && path.startsWith('/projects/')) {
+      if (options.fail) throw new Error('Não deu para apagar agora.')
+      const id = decodeURIComponent(path.slice('/projects/'.length))
+      atual = atual.filter((project) => project.id !== id)
+      return { ok: true }
+    }
+    throw new Error(`Unexpected request: ${path}`)
+  })
+  return {
+    request,
+    adapter: {
+      mode: 'kids',
+      capabilities: { pintaOwned: true, studioOwned: true, moldaOwned: true },
+      onOpenTask: () => undefined,
+      transport: {
+        request: request as PensaHostAdapter['transport']['request'],
+        streamChat: () => () => {},
+      },
+    },
+  }
+}
+
+async function homeParaApagar(options: { fail?: boolean } = {}) {
+  const result = adapterWithRemoval(DOIS_PLANOS, options)
+  render(<PensaApp adapter={result.adapter} />)
+  await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
+  return result
+}
+
 describe('a home do Pensa nas três faixas', () => {
   test('creme com o cabeçalho e o selo do Pensa, céu com os planos, lilás com as oficinas', async () => {
     await home()
@@ -167,5 +207,70 @@ describe('a home do Pensa nas três faixas', () => {
     expect(
       screen.getByRole('region', { name: 'Cada Cartão de Criação vai para o lugar certo' }),
     ).toBeTruthy()
+  })
+
+  test('apagar um plano: a janela pergunta antes, o plano some e o foco fica em pé', async () => {
+    const { request } = await homeParaApagar()
+    fireEvent.click(screen.getByRole('button', { name: 'Apagar o plano Runo' }))
+
+    const janela = screen.getByRole('dialog', { name: 'Apagar este plano?' })
+    // O nome do plano e o que vai junto: a criança precisa saber o tamanho do que perde.
+    expect(within(janela).getByText(/O plano "Runo" vai sumir/)).toBeTruthy()
+    // E o que NÃO some: o jogo e os desenhos vivem nas outras oficinas, e a criança
+    // precisa saber disso antes de decidir (senão ela não apaga por medo, ou apaga
+    // achando que limpou tudo).
+    expect(
+      within(janela).getByText(/O que você já fez no Estúdio, no Pinta e no Molda continua/),
+    ).toBeTruthy()
+    expect(within(janela).getByText(/Não dá para desfazer/)).toBeTruthy()
+    expect(request).not.toHaveBeenCalledWith('/projects/runo', { method: 'DELETE' })
+
+    fireEvent.click(within(janela).getByRole('button', { name: 'Apagar' }))
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith('/projects/runo', { method: 'DELETE' }),
+    )
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.queryByRole('button', { name: 'Continuar o plano Runo' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Continuar o plano Guardiões da Lua' })).toBeTruthy()
+    // Quem abriu a janela sumiu com o cartão: o foco vai para o "+ Novo plano".
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Novo plano' }))
+  })
+
+  test('apagar o ÚLTIMO plano deixa o vazio com o campo de criar já aberto', async () => {
+    const result = adapterWithRemoval([plan('runo', 'Runo', 'done', DAY)])
+    render(<PensaApp adapter={result.adapter} />)
+    await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
+    // Com um plano na lista, o campo nasce fechado.
+    expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apagar o plano Runo' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Apagar' }))
+
+    await waitFor(() => screen.getByText('Seu primeiro mundo começa aqui'))
+    // A mesma tela do primeiro acesso: convite + campo aberto, sem o cartão "Novo plano".
+    expect(screen.getByRole('textbox', { name: 'Nome do novo jogo' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Novo plano/ })).toBeNull()
+  })
+
+  test('cancelar não apaga nada e devolve o foco à lixeira', async () => {
+    const { request } = await homeParaApagar()
+    const lixeira = screen.getByRole('button', { name: 'Apagar o plano Runo' })
+    fireEvent.click(lixeira)
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(request).not.toHaveBeenCalledWith('/projects/runo', { method: 'DELETE' })
+    expect(screen.getByRole('button', { name: 'Continuar o plano Runo' })).toBeTruthy()
+    expect(document.activeElement).toBe(lixeira)
+  })
+
+  test('deu errado: a janela fica aberta com o recado e o plano continua na lista', async () => {
+    await homeParaApagar({ fail: true })
+    fireEvent.click(screen.getByRole('button', { name: 'Apagar o plano Runo' }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Apagar' }))
+
+    await waitFor(() => screen.getByRole('alert'))
+    expect(screen.getByRole('alert').textContent).toContain('Não deu para apagar agora.')
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Continuar o plano Runo' })).toBeTruthy()
   })
 })

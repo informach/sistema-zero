@@ -426,6 +426,11 @@ const transport: PensaHostAdapter['transport'] = {
       if (!plan) throw new Error('Esse plano não existe mais.')
       return { project: plan.detail } as T
     }
+    if (method === 'DELETE' && project) {
+      const id = decodeURIComponent(project[1] ?? '')
+      if (!plans.delete(id)) throw new Error('Esse plano não existe mais.')
+      return { ok: true } as T
+    }
     const stage = /^\/cycles\/([^/]+)\/stages\/([^/]+)$/.exec(path)
     if (method === 'GET' && stage) {
       const plan = [...plans.values()].find((item) => item.detail.currentCycle.id === stage[1])

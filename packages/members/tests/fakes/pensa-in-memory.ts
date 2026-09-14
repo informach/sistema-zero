@@ -141,6 +141,28 @@ export class InMemoryPensaRepository implements PensaRepository {
     if (project) this.projects.set(projectId, { ...project, ...patch, updatedAt: now })
   }
 
+  /** Espelha a CASCATA do Postgres: o que pende do projeto cai junto. */
+  async deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void> {
+    const project = this.projects.get(projectId)
+    if (project?.userId !== userId || project.audience !== audience) return
+    const cycleIds = new Set(
+      [...this.cycles.values()]
+        .filter((cycle) => cycle.projectId === projectId)
+        .map((cycle) => cycle.id),
+    )
+    for (const cycleId of cycleIds) {
+      this.cycles.delete(cycleId)
+      for (const [key, conversation] of this.conversations)
+        if (conversation.cycleId === cycleId) this.conversations.delete(key)
+      for (const [key, task] of this.tasks) if (task.cycleId === cycleId) this.tasks.delete(key)
+    }
+    for (let index = this.artifacts.length - 1; index >= 0; index -= 1) {
+      const artifact = this.artifacts[index]
+      if (artifact && cycleIds.has(artifact.cycleId)) this.artifacts.splice(index, 1)
+    }
+    this.projects.delete(projectId)
+  }
+
   async listCycles(projectId: string): Promise<PensaCycle[]> {
     return [...this.cycles.values()]
       .filter((cycle) => cycle.projectId === projectId)

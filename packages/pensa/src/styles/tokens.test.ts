@@ -99,4 +99,15 @@ describe('o cartão do plano abre em qualquer ponto', () => {
       .replace(/\/\*[\s\S]*?\*\//g, '')
     expect(antes).not.toMatch(/@layer\s+[\w-]+\s*\{/)
   })
+
+  it('a lixeira sobe acima da área esticada, senão existe sem nunca receber um clique', () => {
+    // A MESMA camada invisível que faz o cartão inteiro abrir engole qualquer botão novo
+    // do cartão: ela é pintada depois. Sem `position` + `z-index` aqui, o defeito é mudo —
+    // o botão aparece, o hover responde, e o clique abre o plano em vez de apagar.
+    const regra = bloco('.pensa-planner .pensa-project-card__remove {')
+    expect(regra).toMatch(/position:\s*relative/)
+    expect(regra).toMatch(/z-index:\s*[1-9]/)
+    // E o alvo não encolhe: a regra de elemento dos botões daria 44 de altura e 40 de largura.
+    expect(regra).toMatch(/min-height:\s*var\(--sz-tool-hit/)
+  })
 })

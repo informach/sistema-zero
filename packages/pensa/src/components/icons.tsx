@@ -57,6 +57,19 @@ export function ArrowRightIcon({ size }: IconProps) {
   )
 }
 
+/** Lixeira ("Apagar"): o mesmo desenho que o Pinta e o Molda usam na galeria. */
+export function TrashIcon({ size }: IconProps) {
+  return (
+    <Icon size={size}>
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </Icon>
+  )
+}
+
 export function PlusIcon({ size }: IconProps) {
   return (
     <Icon size={size}>

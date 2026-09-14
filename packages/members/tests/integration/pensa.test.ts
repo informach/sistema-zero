@@ -354,6 +354,101 @@ describe('Pensa planejador — HTTP', () => {
     expect(checklist.status).toBe(404)
   })
 
+  test('apaga o plano de vez, com tudo que pendura nele', async () => {
+    const ctx = buildWithAccess()
+    const project = await createProject(ctx)
+    const cycleId = project.currentCycle.id
+    await req(ctx.app, 'POST', `/members/pensa/cycles/${cycleId}/artifacts?audience=kids`, {
+      stage: 'z',
+      type: 'idea',
+      content: {
+        title: 'Nave Zero',
+        idea: 'Uma nave coleta estrelas',
+        objective: 'Coletar todas as estrelas',
+        controls: ['setas'],
+        victory: 'todas coletadas',
+        defeat: 'tempo acabou',
+        dimension: '2d',
+      },
+    })
+    expect(ctx.pensa.artifacts.length).toBe(1)
+
+    // Plano de outro perfil não é alcançado nem com o id certo.
+    const foreign = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=kids`,
+      undefined,
+      { 'x-auth-user-id': OTHER, 'content-type': 'application/json' },
+    )
+    expect(foreign.status).toBe(404)
+    expect(ctx.pensa.projects.size).toBe(1)
+
+    // Vitrine errada também é 404 (a régua é user_id + audience, como no resto do Pensa).
+    const outraVitrine = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=adult`,
+    )
+    expect(outraVitrine.status).toBe(404)
+    expect(ctx.pensa.projects.size).toBe(1)
+
+    const removed = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=kids`,
+    )
+    expect(removed.status).toBe(200)
+    expect(await json(removed)).toEqual({ ok: true })
+
+    const list = await json(await req(ctx.app, 'GET', '/members/pensa/projects?audience=kids'))
+    expect(list.projects).toEqual([])
+    expect(
+      (await req(ctx.app, 'GET', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(404)
+    // A cascata levou ciclo e artefatos junto.
+    expect(ctx.pensa.cycles.size).toBe(0)
+    expect(ctx.pensa.artifacts).toHaveLength(0)
+
+    // Apagar de novo é 404: não há lixeira para ressuscitar.
+    expect(
+      (await req(ctx.app, 'DELETE', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(404)
+  })
+
+  test('o XP e as medalhas do plano apagado FICAM com a criança', async () => {
+    const ctx = buildWithAccess()
+    const project = await createProject(ctx)
+    const base = `/members/pensa/cycles/${project.currentCycle.id}`
+    await req(ctx.app, 'POST', `${base}/artifacts?audience=kids`, {
+      stage: 'z',
+      type: 'idea',
+      content: {
+        title: 'Nave Zero',
+        idea: 'Uma nave coleta estrelas',
+        objective: 'Coletar todas as estrelas',
+        controls: ['setas'],
+        victory: 'todas coletadas',
+        defeat: 'tempo acabou',
+        dimension: '2d',
+      },
+    })
+    await req(ctx.app, 'POST', `${base}/artifacts/idea/validate?audience=kids`)
+    expect(
+      (await req(ctx.app, 'POST', `${base}/advance?audience=kids`, { from: 'z' })).status,
+    ).toBe(200)
+    const ganhos = ctx.gamification.events.length
+    expect(ganhos).toBeGreaterThan(0)
+
+    expect(
+      (await req(ctx.app, 'DELETE', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(200)
+
+    // O ledger guarda snapshot sem FK: ela fez o trabalho, o XP é dela. Se um dia alguém
+    // "limpar o histórico junto com o plano", este teste é quem avisa.
+    expect(ctx.gamification.events.length).toBe(ganhos)
+  })
+
   test('valida IDs na borda e exige autenticação', async () => {
     const ctx = buildWithAccess()
     expect(
@@ -361,5 +456,12 @@ describe('Pensa planejador — HTTP', () => {
     ).toBe(400)
     const anonymous = await ctx.app.handle(new Request('http://localhost/members/pensa/projects'))
     expect(anonymous.status).toBe(401)
+    // O DELETE entrou no MESMO grupo guardado: sem identidade, nem chega ao serviço.
+    const anonymousDelete = await ctx.app.handle(
+      new Request(`http://localhost/members/pensa/projects/${USER}?audience=kids`, {
+        method: 'DELETE',
+      }),
+    )
+    expect(anonymousDelete.status).toBe(401)
   })
 })

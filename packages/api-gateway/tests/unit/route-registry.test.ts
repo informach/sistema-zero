@@ -113,7 +113,7 @@ const registry = new RouteRegistry([
   r({ id: 'pensa-projects', methods: ['GET', 'POST'], pathPattern: '/members/pensa/projects' }),
   r({
     id: 'pensa-project',
-    methods: ['GET', 'PATCH'],
+    methods: ['GET', 'PATCH', 'DELETE'],
     pathPattern: '/members/pensa/projects/:projectId',
   }),
   r({
@@ -442,6 +442,10 @@ describe('RouteRegistry', () => {
     const detail = registry.resolve('PATCH', '/members/pensa/projects/p-1', 'v1')
     expect(detail?.route.id).toBe('pensa-project')
     expect(detail?.params.projectId).toBe('p-1')
+    // Apagar o plano entra na MESMA rota do detalhe (o DELETE foi somado aos métodos).
+    expect(registry.resolve('DELETE', '/members/pensa/projects/p-1', 'v1')?.route.id).toBe(
+      'pensa-project',
+    )
     // 5 segmentos de cycles não caem no detalhe de 4.
     expect(registry.resolve('POST', '/members/pensa/projects/p-1/cycles', 'v1')?.route.id).toBe(
       'pensa-cycle-create',

@@ -73,6 +73,7 @@ import { AppendPensaConversationTurnService } from '../src/application/pensa/app
 import { AppendPensaTasksService } from '../src/application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
+import { DeletePensaProjectService } from '../src/application/pensa/delete-project.service'
 import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
 import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
@@ -501,6 +502,7 @@ export function buildApp(
       createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
       getProject: new GetPensaProjectService(pensa),
       updateProject: new UpdatePensaProjectService(pensa, clock),
+      deleteProject: new DeletePensaProjectService(pensa),
       createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
       getStage: new GetPensaStageService(pensa),
       appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
