@@ -136,8 +136,8 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
    * Posição inicial confiável da varredura contínua. Se código manual teleportou
    * o sprite depois de um helper de movimento, o deslocamento deixa de bater com
    * o passo registrado e a nova posição vira o começo — nunca atravessamos o
-   * caminho antigo. Sem histórico deste quadro, mantemos a compatibilidade com
-   * código que soma x/y pela velocidade diretamente.
+   * caminho anterior ao teleporte. Sem histórico deste quadro, calcula a origem
+   * pela velocidade para movimentos que somam x/y diretamente em Código.
    */
   function _motionPreviousPosition(sprite) {
     var currentX = _finiteNumber(sprite && sprite.x, 0);

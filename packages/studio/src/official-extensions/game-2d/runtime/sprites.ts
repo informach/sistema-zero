@@ -607,9 +607,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
 
   /**
    * Desenha o sprite no contexto 2d. Prioridade: animação de spritesheet →
-   * imagem fixa → placeholder (retângulo da cor, se a carga falhar ou se não
-   * houver imagem). Mantém o comportamento antigo (só fillRect) para sprites
-   * sem imagem — retrocompatível.
+   * imagem fixa → retângulo da cor, se a carga falhar ou se não houver imagem.
+   * Texto e formas usam seus renderizadores próprios em _drawSpriteRaw.
    */
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
@@ -620,7 +619,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var op = _finiteNumber(sprite.opacity, 1);
     if (sprite.blinkFrames > 0) {
       // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
-      // do jogo" ativo (aluno desenhando no rAF do núcleo), cai no modo antigo.
+      // do jogo" ativo (aluno desenhando no rAF do núcleo), decai a cada desenho.
       if (_loopOrder.length === 0 || sprite._blinkStamp !== _frameStamp) {
         sprite.blinkFrames--;
         sprite._blinkStamp = _frameStamp;
