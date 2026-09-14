@@ -259,7 +259,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   do tipo", senão andariam duas vezes por quadro.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
-  atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
+  atirador + remove derrotados (hp<=0 -> partículas + evento onEnemyDefeated). Alvo = quem perseguir/mirar.
 - drawEnemyType(ctx, tipo): desenha inimigos + tiros.
 - onEnemyDefeated(tipo, function (inimigo) {...}): registrar UMA vez, fora do gameLoop.
 - overlapEnemyShots(() => sprite, tipo, function (tiro) {...}): DENTRO do gameLoop; remove o
