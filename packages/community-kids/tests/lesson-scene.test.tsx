@@ -65,9 +65,20 @@ describe('o laboratório da cena', () => {
     })
     expect(screen.getByText('Experiência guardada')).toBeTruthy()
     expect(screen.getByText(SCENE_MODELS.hitbox.success)).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Desfazer' }).closest('fieldset')?.disabled).toBe(
-      true,
-    )
+    // ⚠️ Cumprir o objetivo NÃO encerra a cena (14/09/2026). O `<fieldset disabled>` que
+    // travava tudo aqui desabilitava também Recomeçar, Uma pista e Ligar som — e ao reabrir a
+    // aula a cena já nascia morta, porque o checkpoint salvo faz `passed` nascer true. A
+    // criança que acertou apertando botão de qualquer jeito precisa poder refazer.
+    // ⚠️ `button.disabled` NÃO reflete a herança do `<fieldset disabled>`: quem morde é o
+    // fieldset. Os quatro botões são conferidos por ele, um a um.
+    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista', 'Ligar som'])
+      expect(screen.getByRole('button', { name: nome }).closest('fieldset')?.disabled).toBe(false)
+    // E continuam FUNCIONANDO: o guard dos comandos também olhava o `passed`, então destravar
+    // só o fieldset deixaria os botões clicáveis e mudos.
+    fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
+    expect(
+      (screen.getByRole('slider', { name: 'Largura da área do Dino' }) as HTMLInputElement).value,
+    ).not.toBe('100')
     expect(screen.queryByRole('button', { name: 'Ver um exemplo' })).toBeNull()
     expect(screen.queryByText(SCENE_MODELS.hitbox.extra)).toBeNull()
     await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {

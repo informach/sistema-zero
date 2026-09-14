@@ -21,7 +21,14 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
-import { resolveLessonSplit, SPLIT_DEFAULT_SIZE, SPLIT_HANDLE_WIDTH_PX } from '../lib/lesson-split'
+import {
+  ehEditorDeSecao,
+  partirSecao,
+  resolveLessonSplit,
+  SPLIT_DEFAULT_SIZE,
+  SPLIT_HANDLE_WIDTH_PX,
+  type SplitBlock,
+} from '../lib/lesson-split'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
@@ -423,26 +430,51 @@ function LessonSectionsContent({
     if (totalSecoes > 0) avisarSecao.current?.({ index, total: totalSecoes })
   }, [index, totalSecoes])
   if (!section) return null
+  const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
+  const supportIds = new Set(lesson.supportBlockIds ?? [])
+  // `gallery` é contexto da AULA (o mesmo Estúdio é bancada numa seção e entrega noutra), por
+  // isso ele é calculado aqui e a régua só o consome.
+  const paraSplit = (b: LessonBlockView): SplitBlock => ({
+    id: b.id,
+    kind: b.kind,
+    content: b.content,
+    gallery: isGalleryBlock(b.content),
+  })
+  // ⚠️ Os EDITORES são da aula inteira, não da seção: eles ficam montados o tempo todo (ver o
+  // comentário no `Panel` da direita). As CENAS não entram aqui de propósito — cada uma tem
+  // controlador próprio, rascunho em IndexedDB e uma batida de gravação de 1s, e mantê-las
+  // vivas fora da seção pagaria esse custo pela aula inteira.
+  const editores = lesson.blocks.filter(
+    (b) => ehEditorDeSecao(paraSplit(b)) && !supportIds.has(b.id),
+  )
   const activeIds = new Set([
     ...section.blockIds,
     ...(section.workspaceBlockId ? [section.workspaceBlockId] : []),
   ])
-  const supportIds = new Set(lesson.supportBlockIds ?? [])
-  const tools = lesson.blocks.filter(
-    (b) =>
-      (b.kind === 'studio' || b.kind === 'pinta') &&
-      !isGalleryBlock(b.content) &&
-      !supportIds.has(b.id),
-  )
-  const hasWorkspace = tools.some((b) => activeIds.has(b.id))
-  // A régua mora em `lib/lesson-split` (pura, testada): ela decide se o lado a lado
-  // vale a pena NESTA largura e até onde cada painel encolhe. A divisória só é
-  // interativa onde ela APARECE — ver o comentário no handle.
+  // A ordem de iteração de um Set é a de INSERÇÃO, então os blocos saem na ordem da seção.
+  const ativos = [...activeIds]
+    .map((id) => blockById.get(id))
+    .filter((b): b is LessonBlockView => b !== undefined && !supportIds.has(b.id))
+  // A régua mora em `lib/lesson-split` (pura, testada): ela decide quem mora em cada coluna,
+  // se há o que dividir, se o lado a lado vale a pena NESTA largura e até onde cada painel
+  // encolhe. A divisória só é interativa onde ela APARECE — ver o comentário no handle.
+  const { contentIds, toolIds, podeDividir, temEditor } = partirSecao({
+    blocks: ativos.map(paraSplit),
+    // A ação da plataforma e o atalho da ferramenta moram no painel da ESQUERDA: uma seção
+    // com eles tem conteúdo dos dois lados mesmo sem um bloco de texto.
+    extraContent: Boolean(section.completion?.platformAction || section.externalTool),
+  })
   const { arrastavel, contentMinimum, toolMinimum } = resolveLessonSplit({
     contentWidth,
     handleWidth,
-    hasWorkspace,
+    hasWorkspace: podeDividir,
   })
+  // As abas são a saída honesta para uma coluna estreita com um EDITOR — "o exemplo" contra
+  // "a minha criação". Uma seção cuja direita é só cena não tem esse par: a cena É a aula, e
+  // numa coluna estreita ela simplesmente empilha.
+  const mostraAbas = podeDividir && !arrastavel && temEditor
+  const editorIds = new Set(editores.map((b) => b.id))
+  const cenasAtivas = toolIds.filter((id) => !editorIds.has(id))
   async function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next || locked(next.id) || navigationBusy.current) return
@@ -523,7 +555,6 @@ function LessonSectionsContent({
       setSending(false)
     }
   }
-  const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
   const render = (block: LessonBlockView) => (
     <div
       key={`${block.id}:${block.blockRevision ?? ''}`}
@@ -743,7 +774,7 @@ function LessonSectionsContent({
           </h2>
           {kids ? indiceDaAula : null}
         </header>
-        {hasWorkspace && !arrastavel && (
+        {mostraAbas && (
           <div className="flex gap-2" role="group" aria-label="Orientação e criação">
             <Button
               variant={toolMode === 'example' ? 'default' : 'outline'}
@@ -761,8 +792,7 @@ function LessonSectionsContent({
             </Button>
           </div>
         )}
-        {hasWorkspace &&
-          !arrastavel &&
+        {mostraAbas &&
           toolMode === 'create' &&
           section.blockIds
             .map((id) => dialogueText(blockById.get(id)?.content))
@@ -803,15 +833,12 @@ function LessonSectionsContent({
             maxSize={100 - toolMinimum}
             className={cn(
               'min-w-0 space-y-6 overflow-visible!',
-              hasWorkspace && !arrastavel && toolMode === 'create' && 'hidden!',
+              mostraAbas && toolMode === 'create' && 'hidden!',
             )}
           >
-            {section.blockIds
+            {contentIds
               .map((id) => blockById.get(id))
-              .filter(
-                (b): b is LessonBlockView =>
-                  Boolean(b) && b?.kind !== 'studio' && b?.kind !== 'pinta',
-              )
+              .filter((b): b is LessonBlockView => Boolean(b))
               .map(render)}
             {section.completion?.platformAction && (
               <SectionPlatformAction
@@ -895,16 +922,30 @@ function LessonSectionsContent({
             className={cn(
               // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
               'overflow-visible!',
-              hasWorkspace && (arrastavel || toolMode === 'create')
+              // ⚠️ `toolIds.length > 0` e não `podeDividir`: a seção cujo ÚNICO bloco é a
+              // ferramenta não divide, e nem por isso ela pode sumir — ela ocupa a largura
+              // toda (o `PanelGroup` vira `block!` quando não arrasta).
+              toolIds.length > 0 && (arrastavel || !mostraAbas || toolMode === 'create')
                 ? 'min-w-0 space-y-6'
                 : 'hidden!',
             )}
           >
-            {tools.map((block) => (
+            {editores.map((block) => (
               <div key={block.id} style={{ display: activeIds.has(block.id) ? undefined : 'none' }}>
                 {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
               </div>
             ))}
+            {/* A cena monta e desmonta com a seção — ao contrário do editor, ela é barata de
+                montar e cara de manter viva (controlador, rascunho local e gravação de 1s).
+                ⚠️ EMPILHADO (coluna estreita) a bancada cai para o FIM da seção, como sempre foi
+                com o Estúdio: trocar a cena de painel conforme a largura a REMONTARIA, e como a
+                medição começa em zero isso aconteceria na abertura de toda aula larga. A ordem
+                autoral sobrevive porque o padrão de autoria já põe a cena por último ("vídeo
+                curto, missão do Zappy e cena manipulável", em `section-templates`). */}
+            {cenasAtivas
+              .map((id) => blockById.get(id))
+              .filter((b): b is LessonBlockView => Boolean(b))
+              .map(render)}
           </Panel>
         </PanelGroup>
         {supportIds.size > 0 && (

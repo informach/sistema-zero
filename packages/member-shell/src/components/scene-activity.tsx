@@ -23,7 +23,9 @@ import {
 import {
   Camera,
   Check,
+  FlaskConical,
   Lightbulb,
+  MonitorPlay,
   Pause,
   Play,
   RotateCcw,
@@ -102,6 +104,12 @@ export function SceneActivityView({
   const [conflict, setConflict] = useState(false)
   const [compared, setCompared] = useState(false)
   const [registered, setRegistered] = useState(!!saved?.result?.passed)
+  // ⚠️ A frase de sucesso é um LATCH, não um espelho de `result.passed`. Duas das catorze
+  // cenas (`layers` e `jump-sound`) exigem que a montagem FIQUE no estado descoberto, então
+  // com a cena viva depois da conclusão mexer de novo faria `passed` voltar a false — e o
+  // cartão "Descoberta registrada" piscaria e sumiria na cara de quem acabou de acertar.
+  // Concluir é um acontecimento; ele não se desfaz (o servidor também nunca rebaixa).
+  const [conclusao, setConclusao] = useState(saved?.result?.passed ? saved.result.feedback : '')
   const [reduced, setReduced] = useState(false)
   const owner = useRef(Symbol('experience'))
   const audio = useRef<AudioContext | null>(null)
@@ -186,7 +194,12 @@ export function SceneActivityView({
   }, [cacheKey, controller])
 
   action.current = (command) => {
-    if (!ready || conflict || (!demoMode && result.passed)) return
+    // ⚠️ SEM `result.passed` aqui (14/09/2026): cumprir o objetivo não encerra a cena. A
+    // criança que chegou no resultado apertando botão de qualquer jeito precisa poder
+    // desfazer, recomeçar e refazer para entender — e um guard mudo aqui esvaziaria os
+    // botões mesmo com o `fieldset` liberado. Quem registra a conclusão é o `flush`, uma
+    // vez só; continuar mexendo nunca a desfaz (ver o `case when` do `recordAttempt`).
+    if (!ready || conflict) return
     const events = controller.dispatch(command)
     if (
       events.some((e) => e.type === 'sound') &&
@@ -243,12 +256,13 @@ export function SceneActivityView({
   }, [ready, demoMode, controller])
   useEffect(() => {
     if (!result.passed) return
+    setConclusao(result.feedback)
     if (!demoMode) setRunning(false)
     // ⚠️ Fechar a atividade grava NA HORA, sem esperar a batida de um segundo. A criança acabou
     // de ver "concluído": um segundo de "guardando" depois disso é tempo em que ela fecha a aba
     // e perde o registro — e, na prévia do professor, é a seção que não destrava ao vivo.
     void flush.current()
-  }, [demoMode, result.passed])
+  }, [demoMode, result.passed, result.feedback])
   flush.current = async () => {
     if (!ready || conflict) return
     if (saving.current) {
@@ -327,6 +341,13 @@ export function SceneActivityView({
           { 'x-sz-viewer': player.viewerId ?? '' },
         )
         setRegistered(response.attempt.result.passed)
+        // ⚠️ Com a cena viva depois da conclusão, existe uma janela estreita nas duas cenas
+        // que pedem montagem ASSENTADA: a criança mexe antes de o registro subir, o servidor
+        // reavalia pelo checkpoint DELE e grava `passed:false`. Como o `attemptId` é um por
+        // montagem, `findAttempt` devolveria essa mesma tentativa para sempre e a conclusão
+        // nunca mais registraria. Sortear um id novo só DEPOIS da resposta preserva o motivo
+        // de ele existir (repetir um pedido perdido não pode criar tentativa nova).
+        if (!response.attempt.result.passed) attemptId.current = crypto.randomUUID()
         player.onLearningProgress?.(response.progress)
         player.refreshAfterLearning?.()
       }
@@ -443,8 +464,20 @@ export function SceneActivityView({
     <section aria-labelledby={`${id}-title`} className="sz-lesson-scene space-y-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-[.16em] text-primary">
-            {demoMode ? 'Demonstração' : 'Experimentação'}
+          {/* `sz-lesson-chip` + `data-chip`: gancho ESTÁVEL do tema (invariante 8). No kids
+              ele vira a MESMA pílula colorida dos outros blocos (Assista, Responda, Crie);
+              aqui fica só a linha de sempre, com o ícone. O rótulo é VERBO, como os demais
+              chips da aula: a criança lê o que fazer, não o nome do formato. */}
+          <p
+            className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
+            data-chip={demoMode ? 'demonstration' : 'experimentation'}
+          >
+            {demoMode ? (
+              <MonitorPlay size={14} aria-hidden />
+            ) : (
+              <FlaskConical size={14} aria-hidden />
+            )}
+            {demoMode ? 'Observe' : 'Experimente'}
           </p>
           <h3 id={`${id}-title`} className="text-xl font-bold sm:text-2xl">
             {content.title}
@@ -486,10 +519,12 @@ export function SceneActivityView({
             <p className="text-sm font-medium leading-relaxed sm:text-base">{instruction}</p>
           )}
         </div>
-        <fieldset
-          disabled={!ready || conflict || (!demoMode && result.passed)}
-          className="min-w-0 space-y-4"
-        >
+        {/* ⚠️ `<fieldset disabled>` desabilita TODO `<button>` descendente por HTML nativo —
+            e daqui até o fecho estão também Ligar som e Ouvir instrução, que não são da
+            experimentação. Por isso ele nunca pode olhar `result.passed`: a cena concluída
+            ficava sem desfazer, sem recomeçar, sem pista e MUDA, inclusive ao reabrir a aula
+            (o checkpoint salvo faz `passed` já nascer true). */}
+        <fieldset disabled={!ready || conflict} className="min-w-0 space-y-4">
           {/* O teto da cena. Ela não ocupa mais o cartão inteiro: fica centralizada e com
               largura de leitura, como no Brilliant. O token vive em `styles/scene.css`. */}
           <div
@@ -503,19 +538,21 @@ export function SceneActivityView({
               <ExperienceScene
                 activity={activity}
                 state={state}
+                // O `!demoMode` FICA: é ele que separa os dois tipos de bloco (na
+                // demonstração a criança assiste, não toca). O `!result.passed` saiu.
                 onJump={
-                  !demoMode && !result.passed && m !== 'hitbox'
+                  !demoMode && m !== 'hitbox'
                     ? (input) => dispatch({ type: 'jump', input })
                     : undefined
                 }
                 onDistance={
-                  !demoMode && !result.passed && m === 'hitbox'
+                  !demoMode && m === 'hitbox'
                     ? (distance) => dispatch({ type: 'move', distance })
                     : undefined
                 }
               />
             ) : (
-              <fieldset disabled={demoMode || result.passed}>
+              <fieldset disabled={demoMode}>
                 <ExplorationStage
                   activity={activity}
                   state={state}
@@ -816,9 +853,9 @@ export function SceneActivityView({
             </div>
           </details>
         )}
-        {result.passed && (
+        {conclusao && (
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <p className="font-semibold">{result.feedback}</p>
+            <p className="font-semibold">{conclusao}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {demoMode
                 ? 'Você acompanhou o conceito em funcionamento.'

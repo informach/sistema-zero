@@ -290,14 +290,15 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     await click('Tentar salvar')
     expect(button('Próxima seção').disabled).toBe(false)
     await click('Próxima seção')
-    await click('Criar')
+    // ⚠️ Sem "Criar" (14/09/2026): as duas seções de criação têm o Estúdio como ÚNICO bloco,
+    // e seção assim não divide mais a tela — ela ocupa a largura toda, então o editor já está
+    // à vista. As abas "Ver exemplo"/"Criar" só existem quando há conteúdo do outro lado.
     await click('Mudar projeto')
     const original = identity
     await click('Conferir repetição')
     await click('Próxima seção')
     await click('Depois')
     await click('Próxima seção')
-    await click('Criar')
     expect(identity).toBe(original)
     expect(
       container.querySelector<HTMLInputElement>('input[aria-label="Nome do projeto"]')?.value,

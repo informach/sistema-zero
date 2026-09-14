@@ -883,9 +883,18 @@ na hora, mas voltaria). O que mudou, e é contrato:
    demonstração e experimentação. ⚠️ Desde 13/09/2026 a cena NÃO desenha cartão próprio: quem
    desenha é o app, e é por este gancho que ele sabe qual bloco é uma cena. O kids já dá cartão a
    TODO bloco; o adulto e o ensaio do admin têm regra própria, e sem ela a cena fica solta na
-   página. A cena também tem TETO de largura, `max-w-scene` = `--container-scene` (560px), que vem
+   página. A cena também tem TETO de largura, `max-w-scene` = `--container-scene` (**680px**
+   desde 14/09/2026; nasceu 560 e a dona achou que tinha encolhido demais), que vem
    de `src/styles/scene.css` junto com a paleta `--color-scene-*` — folha que cada app precisa
    `@import`ar, senão as utilitárias `fill-scene-*` não são geradas e o desenho sai preto),
+   **`sz-lesson-activity`** (o irmão do anterior: a raiz da pergunta curta e da experiência em
+   HTML — sem ele o app não alcançaria esses dois pelo CSS),
+   **`sz-lesson-chip`** + `data-chip` (14/09/2026 — o selo de TIPO dos blocos interativos:
+   `experimentation`|`demonstration`|`question`|`html`, com ícone e rótulo em verbo — Experimente,
+   Observe, Responda, Brinque. Aqui ele é só uma linha em versalete; no kids vira a MESMA pílula
+   colorida dos outros blocos. ⚠️ Bloco `interactive` NUNCA passa pelo `renderBlocks` do app — o
+   `LessonSections` o manda direto ao `InteractiveLessonBlock` —, então este gancho é o ÚNICO
+   caminho para o chip deles; mexeu nele, mexa no `BlockChip` do kids),
    `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
    dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
@@ -894,6 +903,70 @@ na hora, mas voltaria). O que mudou, e é contrato:
    (nenhum teste de lá mira a classe, salvo o do handle); mudar a ESTRUTURA (ex.: o bloco deixar
    de ser irmão logo depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num
    cartão só pelo seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
+
+## A cena de aula: viva depois do objetivo, e na coluna da direita (14/09/2026)
+
+Quatro pedidos dela num lote só. Os dois blocos de CENA (`activity.type` `experimentation` e
+`demonstration`, ambos no `scene-activity.tsx`) passaram a se comportar como o Estúdio.
+
+⭐⭐ **Cumprir o objetivo NÃO encerra a experimentação.** O `<fieldset disabled>` que embrulha a
+atividade inteira olhava `result.passed` — e `<fieldset disabled>` desabilita TODO `<button>`
+descendente por HTML nativo, então morriam junto Desfazer, Recomeçar, Uma pista e o **Ligar
+som**, que nem é exclusivo da experimentação. Pior: ao reabrir a aula o estado vem do checkpoint
+salvo, então `passed` já nascia `true` e a cena abria morta. Regras que ficaram:
+- ⚠️ O `passed` saiu de TRÊS lugares, e os três são necessários: o `fieldset` mestre, o guard do
+  `action.current` (sem ele os botões ficariam clicáveis e MUDOS, com os comandos morrendo num
+  `return` silencioso) e o `fieldset` do palco + os gestos diretos (`onJump`/`onDistance`). O
+  `!demoMode` FICA em todos: é ele que separa os dois tipos de bloco.
+- ⚠️⚠️ **A frase de sucesso virou LATCH (`conclusao`), não espelho de `result.passed`.** Duas das
+  catorze cenas (`layers` e `jump-sound`) exigem a montagem ASSENTADA no estado descoberto
+  (`settled`, no core), então com a cena viva mexer depois de concluir faz `passed` voltar a
+  false — e o cartão "Descoberta registrada" piscava e sumia na cara de quem tinha acabado de
+  acertar. Concluir é um acontecimento e não se desfaz (o servidor também nunca rebaixa um
+  `passed:true`, pelo `case when` do `recordAttempt`).
+- ⚠️ **`attemptId` novo quando o servidor recusa.** Ele é um por MONTAGEM e o members reavalia a
+  tentativa pelo checkpoint DELE. Nas duas cenas acima existe uma janela estreita (mexer antes de
+  o registro subir) em que a tentativa grava `passed:false` — e, com o id fixo, `findAttempt`
+  devolveria essa mesma tentativa para sempre. Sortear um id novo só DEPOIS da resposta preserva
+  o motivo de ele existir: repetir um pedido perdido não pode criar tentativa nova.
+- A condição do POST segue `!registered && result.passed`: só se registra o que passa AGORA.
+
+⭐ **Quem mora em cada coluna virou régua PURA** (`lib/lesson-split.ts`: `ehEditorDeSecao`,
+`ehCenaDeSecao`, `ehLadoFerramenta`, `partirSecao`), testada em `tests/lesson-split.test.ts`.
+- A **cena** vai para a coluna da direita junto do Estúdio e do Pinta. ⚠️ Classificar por `kind`
+  não serve: pergunta curta e experiência em HTML também são `interactive` e ficam à ESQUERDA —
+  elas são de ler e responder no meio da aula, a cena é bancada. Quem decide é a ATIVIDADE.
+- ⚠️⚠️ **Dividir exige conteúdo dos DOIS lados** (`podeDividir`), que é o pedido dela: "se forem
+  o único bloco da seção, têm que ocupar a largura toda". De quebra fecha um buraco antigo — uma
+  seção com `workspaceBlockId` e `blockIds: []` abria ao meio com o painel esquerdo VAZIO,
+  reservando 320px de piso para quem não renderiza nada. A ação da plataforma e o atalho da
+  ferramenta contam como conteúdo (moram naquele painel).
+- ⚠️ A visibilidade do painel da direita é `toolIds.length > 0`, **não** `podeDividir`: não
+  dividir não pode virar sumiço, senão a seção cujo único bloco é a ferramenta fica vazia.
+- ⚠️ As abas **"Ver exemplo"/"Criar"** só aparecem quando a direita tem um EDITOR (`temEditor`).
+  Elas são o par de um editor — o exemplo contra a minha criação; a cena É a aula, e numa coluna
+  estreita ela simplesmente empilha.
+- ⚠️⚠️ **O editor fica montado entre seções; a cena, não.** O `display:none` do painel da direita
+  existe porque remontar o Blockly é caro e re-semeia o rascunho. Cada cena tem controlador
+  próprio, rascunho em IndexedDB e uma batida de gravação de 1s: mantê-las vivas fora da seção
+  pagaria esse custo pela aula inteira. Por isso `editores` é da AULA e `cenasAtivas` é da SEÇÃO.
+
+Os números da régua de largura (1080 / 320 / 380 / 50) e o `autoSaveId` **não mudaram** — o
+layout guardado por perfil continua valendo, então a versão `v4` não subiu.
+
+⚠️ **Empilhado, a bancada cai para o FIM da seção** (como sempre foi com o Estúdio). Trocar a
+cena de painel conforme a largura a REMONTARIA, e como a medição começa em ZERO isso aconteceria
+na abertura de toda aula larga. O que torna aceitável é o padrão de autoria: os templates de
+exploração e demonstração já pedem a cena como último bloco ("vídeo curto, missão do Zappy e cena
+manipulável", em `core/learning/section-templates`).
+
+⭐ **Achado do full review: o bloco de ENTREGA por galeria sumia da aula.** O painel do conteúdo
+filtrava por KIND (`!== 'studio' && !== 'pinta'`) e a lista da ferramenta descartava a galeria —
+então um bloco de entrega colocado numa SEÇÃO não era renderizado em lugar nenhum. O admin só o
+proíbe como espaço de trabalho, e o `validateLessonSections` do core exige que todo bloco esteja
+numa seção ou nos materiais de apoio: ele sumia para a criança em silêncio, e o `render` daqui já
+tinha o ramo `isGalleryBlock` pronto (só era alcançável pelo material de apoio). Classificar por
+PAPEL, e não por kind, fechou o buraco — travado em `community-kids/tests/lesson-sections.test.tsx`.
 
 ## A divisória e a barra do topo da aula (09/2026)
 

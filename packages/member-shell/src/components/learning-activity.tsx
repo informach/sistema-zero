@@ -11,7 +11,7 @@ import {
   type PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
-import { CheckCircle2, Lightbulb } from 'lucide-react'
+import { CheckCircle2, Gamepad2, Lightbulb, ListChecks } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
@@ -260,10 +260,23 @@ function Activity({
   const a = content.activity
   const set = (value: LearningAnswers) => change(value)
   return (
-    <section aria-labelledby={`${id}-title`} className="space-y-5">
+    /* `sz-lesson-activity` é o irmão do `sz-lesson-scene`: sem um gancho de raiz o app não
+       alcançaria a pergunta curta e a experiência em HTML pelo CSS dele. Sem regra aqui. */
+    <section aria-labelledby={`${id}-title`} className="sz-lesson-activity space-y-5">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-          {content.required ? 'Atividade essencial' : 'Explore esta ideia'}
+        {/* ⚠️ O chip diz o que FAZER, não se a atividade é obrigatória: isso já tem linha
+            própria logo acima do bloco (`sz-lesson-requirement`, "Atividade obrigatória" ×
+            "Atividade concluída"), e o texto antigo daqui era a segunda cópia dela. */}
+        <p
+          className="sz-lesson-chip inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary"
+          data-chip={a.type === 'html' ? 'html' : 'question'}
+        >
+          {a.type === 'html' ? (
+            <Gamepad2 size={14} aria-hidden />
+          ) : (
+            <ListChecks size={14} aria-hidden />
+          )}
+          {a.type === 'html' ? 'Brinque' : 'Responda'}
         </p>
         <h3 id={`${id}-title`} className="font-semibold text-xl">
           {content.title}

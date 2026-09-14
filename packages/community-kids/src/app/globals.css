@@ -1589,6 +1589,40 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   padding: 1.25rem;
 }
 
+/* O chip dos blocos INTERATIVOS (cena de experimentação e de demonstração, pergunta curta,
+   experiência em HTML). ⚠️ Eles não passam pelo renderizador do kids — o `LessonSections`
+   manda `kind: 'interactive'` direto ao `InteractiveLessonBlock` do member-shell —, então
+   este NÃO é o `BlockChip` do `kids-lesson-blocks`: é o gancho `sz-lesson-chip` vestido aqui
+   com a MESMA pílula (mexeu num, mexa no outro). O member-shell só põe a classe, o ícone e o
+   rótulo; a forma e a cor são daqui, como manda a invariante 8 de lá. */
+.sz-lesson-sections .sz-lesson-chip {
+  border-radius: 9999px;
+  padding: 0.375rem 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background-color: var(--unit-bg);
+  color: var(--unit-fg);
+}
+/* As famílias são as MESMAS dos outros chips, pelo que a criança FAZ: experimentar e brincar
+   são da família "Crie" (verde), observar é da família "Assista" (azul) e responder é a do
+   quiz (laranja). O azul de identidade não muda no tema Pink — ver "identidade × ação". */
+.sz-lesson-sections .sz-lesson-chip[data-chip="experimentation"],
+.sz-lesson-sections .sz-lesson-chip[data-chip="html"] {
+  --unit: var(--kids-verde);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
+.sz-lesson-sections .sz-lesson-chip[data-chip="demonstration"] {
+  --unit: var(--kids-cyan);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
+.sz-lesson-sections .sz-lesson-chip[data-chip="question"] {
+  --unit: var(--kids-lime);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
+
 /* "Atividade concluída" em verde, com o ✓ desenhado (máscara, e não texto: um "✓"
    no `content` seria lido pelo leitor de tela). A obrigatória fica no cinza. */
 .sz-lesson-sections .sz-lesson-requirement[data-done] {

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   CONTENT_MIN_WIDTH_PX,
   type LessonSplit,
+  partirSecao,
   resolveLessonSplit,
   SPLIT_COMFORT_WIDTH_PX,
   SPLIT_DEFAULT_SIZE,
@@ -170,5 +171,103 @@ describe('o tipo LessonSplit', () => {
     // Campo a mais é campo que ninguém usa; a menos, e o componente quebra no build.
     const r: LessonSplit = split(1200)
     expect(Object.keys(r).sort()).toEqual(['arrastavel', 'contentMinimum', 'toolMinimum'])
+  })
+})
+
+/**
+ * Quem mora em cada coluna, e se vale dividir.
+ *
+ * Duas coisas que a régua de largura sozinha não decide: (1) a CENA — demonstração e
+ * experimentação — também é bancada e vai para a direita, junto do Estúdio e do Pinta;
+ * (2) dividir só faz sentido com conteúdo dos DOIS lados. Antes bastava haver ferramenta,
+ * e uma seção cujo único bloco era o Estúdio abria ao meio com metade da tela vazia.
+ */
+const editor = { id: 'projeto', kind: 'studio', content: { kind: 'studio' } }
+const texto = { id: 'fala', kind: 'dialogue', content: { kind: 'dialogue', text: 'Oi!' } }
+function cena(type: 'experimentation' | 'demonstration', id = 'cena') {
+  return {
+    id,
+    kind: 'interactive',
+    content: {
+      kind: 'interactive',
+      title: 'O salto',
+      instructions: 'Mexa no impulso.',
+      hints: [],
+      required: false,
+      activity: { type, scene: 'impulse' },
+    },
+  }
+}
+
+describe('a partição da seção', () => {
+  test('a cena vai para a mesma coluna do editor', () => {
+    const r = partirSecao({
+      blocks: [texto, cena('experimentation'), cena('demonstration', 'demo')],
+    })
+    expect(r.toolIds).toEqual(['cena', 'demo'])
+    expect(r.contentIds).toEqual(['fala'])
+    expect(r.podeDividir).toBe(true)
+    // ⚠️ Sem editor não há abas: "Ver exemplo"/"Criar" é o par de um EDITOR, e a cena é a
+    // própria aula. Numa coluna estreita ela empilha em vez de virar aba para o vazio.
+    expect(r.temEditor).toBe(false)
+  })
+
+  test('pergunta curta e experiência em HTML ficam no conteúdo', () => {
+    // As três são `kind: 'interactive'`, então classificar pelo kind mandaria as duas para a
+    // bancada — e elas são de ler e responder, no meio da aula.
+    const pergunta = {
+      id: 'pergunta',
+      kind: 'interactive',
+      content: {
+        kind: 'interactive',
+        title: 'Antes de testar',
+        instructions: 'Escolha uma ideia.',
+        hints: [],
+        required: false,
+        activity: { type: 'question' },
+      },
+    }
+    const html = {
+      ...pergunta,
+      id: 'html',
+      content: { ...pergunta.content, activity: { type: 'html', html: '<p>oi</p>' } },
+    }
+    const r = partirSecao({ blocks: [pergunta, html, editor] })
+    expect(r.contentIds).toEqual(['pergunta', 'html'])
+    expect(r.toolIds).toEqual(['projeto'])
+    expect(r.temEditor).toBe(true)
+  })
+
+  test('a ferramenta SOZINHA na seção não divide — ela ocupa a largura toda', () => {
+    for (const bloco of [editor, cena('experimentation')]) {
+      const r = partirSecao({ blocks: [bloco] })
+      expect(r.toolIds).toHaveLength(1)
+      expect(r.contentIds).toEqual([])
+      expect(r.podeDividir).toBe(false)
+    }
+    // E o mesmo pela seção VAZIA à esquerda (o caso `blockIds: []` com `workspaceBlockId`,
+    // que reservava 320px de piso para um painel que não renderiza nada).
+    expect(
+      resolveLessonSplit({ contentWidth: 1400, handleWidth: 44, hasWorkspace: false }),
+    ).toHaveProperty('arrastavel', false)
+  })
+
+  test('ferramenta + texto divide, e a ação da plataforma conta como conteúdo', () => {
+    expect(partirSecao({ blocks: [texto, editor] }).podeDividir).toBe(true)
+    // A ação da plataforma e o atalho da ferramenta moram no painel da esquerda, então uma
+    // seção com eles tem os dois lados mesmo sem um bloco de texto.
+    expect(partirSecao({ blocks: [editor], extraContent: true }).podeDividir).toBe(true)
+  })
+
+  test('o Estúdio de ENTREGA (galeria) é conteúdo, não bancada', () => {
+    // O mesmo `kind` é bancada numa seção e vitrine noutra; por isso `gallery` é contexto da
+    // aula, calculado pelo componente, e não algo que a régua adivinhe do bloco.
+    const r = partirSecao({ blocks: [{ ...editor, gallery: true }, texto] })
+    expect(r.toolIds).toEqual([])
+    expect(r.podeDividir).toBe(false)
+  })
+
+  test('seção sem nada à direita nunca divide', () => {
+    expect(partirSecao({ blocks: [texto], extraContent: true }).podeDividir).toBe(false)
   })
 })

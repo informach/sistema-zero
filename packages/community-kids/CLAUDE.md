@@ -1142,6 +1142,31 @@ adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
 
+⭐ **O chip dos blocos INTERATIVOS (14/09/2026).** Experimentação, demonstração, pergunta curta e
+experiência em HTML não tinham o selo colorido dos outros blocos — tinham uma linha de texto solta
+("Experimentação", "Atividade essencial"). ⚠️ Eles não passam pelo `BlockRenderer` daqui: o
+`LessonSections` manda `kind: 'interactive'` direto ao `InteractiveLessonBlock` do member-shell, e
+fazê-los passar significaria mexer no `parseLessonBlock`, no union `ParsedLessonBlock` e no desvio
+de lá — refator grande por um chip. O caminho é o gancho **`sz-lesson-chip`** + `data-chip`: o
+member-shell põe classe, ícone e rótulo (VERBO, como os outros: **Experimente**, **Observe**,
+**Responda**, **Brinque**) e o `globals.css` daqui veste a MESMA pílula do `BlockChip`, com as
+mesmas famílias de cor — experimentar e brincar no verde ("Crie"), observar no azul ("Assista"),
+responder no laranja (o do quiz). **Mexeu num, mexa no outro.** ⚠️ Em pergunta/HTML o chip
+SUBSTITUIU o texto de obrigatoriedade, que já tem linha própria logo acima do bloco
+(`sz-lesson-requirement`); era a segunda cópia da mesma informação.
+
+⭐ **E um bloco que sumia voltou:** a ENTREGA por galeria (`studio`/`pinta` com `gallery`)
+colocada numa SEÇÃO não aparecia em lugar nenhum — o painel do conteúdo filtrava por kind e a
+lista da ferramenta descartava a galeria. Detalhe no CLAUDE.md do member-shell.
+
+⚠️ **A cena agora divide a tela como o Estúdio, e o teto dela subiu para 680px** — a régua é do
+member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que muda AQUI é o que se
+vê: seção com cena + conteúdo abre lado a lado numa coluna ≥1080px; seção cujo ÚNICO bloco é a
+cena (ou o Estúdio) ocupa a largura toda em vez de deixar meia tela vazia; e coluna estreita com
+cena EMPILHA, sem as abas "Ver exemplo"/"Criar". Cumprir o objetivo também deixou de travar os
+controles da experimentação (Desfazer, Recomeçar, Uma pista e Ligar som seguem vivos, inclusive ao
+reabrir a aula) — a marcação da seção continua sendo de primeira vez e não se desfaz.
+
 ⭐⭐ **A barra do topo NUNCA some (09/2026), e a régua tem três degraus** — pura em
 `lib/lesson-progress.ts` (`vistaProgressoAula`), pintada pelo `KidsLessonProgress`:
 (1) com `lesson.sectionProgress` ela mede a CONCLUSÃO conferida no servidor ("67%"); (2) sem ele e

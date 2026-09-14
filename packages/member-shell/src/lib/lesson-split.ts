@@ -1,5 +1,11 @@
+import { isPublicInteractiveBlock } from '@sistemazero/core/learning'
+import { isSceneActivity } from '@sistemazero/core/learning/scene'
+
 /**
  * A régua do lado a lado da aula (o conteúdo à esquerda, a ferramenta à direita).
+ *
+ * Duas perguntas moram aqui: QUEM vai para cada coluna (`partirSecao`, no fim do arquivo) e se
+ * a divisória vale a pena NESTA largura (`resolveLessonSplit`).
  *
  * Mora fora do componente porque é ela que a dona sente na mão: com os números
  * antigos (ferramenta com piso de 640px) o vídeo ficava preso em "largura da coluna
@@ -76,5 +82,84 @@ export function resolveLessonSplit({
     arrastavel,
     contentMinimum: arrastavel ? (CONTENT_MIN_WIDTH_PX / panelWidth) * 100 : 0,
     toolMinimum: arrastavel ? (TOOL_MIN_WIDTH_PX / panelWidth) * 100 : 0,
+  }
+}
+
+/**
+ * Um bloco da aula, do jeito que a régua precisa dele. `gallery` é contexto da AULA (o mesmo
+ * Estúdio é bancada numa seção e entrega noutra), então quem o calcula é o componente.
+ */
+export type SplitBlock = { id: string; kind: string; content?: unknown; gallery?: boolean }
+
+/** O editor embarcado: Estúdio e Pinta. É o único que fica MONTADO entre as seções. */
+export function ehEditorDeSecao(block: SplitBlock): boolean {
+  return (block.kind === 'studio' || block.kind === 'pinta') && !block.gallery
+}
+
+/**
+ * A cena de aula — demonstração e experimentação.
+ *
+ * ⚠️ `interactive` NÃO basta: pergunta curta e experiência em HTML também são `interactive` e
+ * ficam na coluna do CONTEÚDO. Elas se leem e se respondem no meio da aula; a cena é bancada,
+ * como o editor.
+ */
+function ehCenaDeSecao(block: SplitBlock): boolean {
+  return (
+    block.kind === 'interactive' &&
+    isPublicInteractiveBlock(block.content) &&
+    isSceneActivity(block.content.activity)
+  )
+}
+
+/** Vai para a coluna da DIREITA. */
+function ehLadoFerramenta(block: SplitBlock): boolean {
+  return ehEditorDeSecao(block) || ehCenaDeSecao(block)
+}
+
+export type SecaoPartida = {
+  /** Blocos da coluna da esquerda, na ordem da seção. */
+  contentIds: string[]
+  /** Blocos da coluna da direita, na ordem da seção. */
+  toolIds: string[]
+  /** Há o que dividir: conteúdo dos DOIS lados. */
+  podeDividir: boolean
+  /** A direita tem um EDITOR (não só cena) — é o que decide as abas "Ver exemplo"/"Criar". */
+  temEditor: boolean
+}
+
+/**
+ * Onde cada bloco ATIVO da seção mora, e se vale dividir a tela.
+ *
+ * ⚠️⚠️ `podeDividir` exige conteúdo dos DOIS lados, e isso é o pedido dela: "se forem o único
+ * bloco da seção, têm que ocupar a largura toda". Antes a divisão só olhava se havia
+ * ferramenta, então uma seção só com o Estúdio abria ao meio com metade da tela VAZIA — e uma
+ * seção com `workspaceBlockId` e `blockIds: []` reservava 320px de piso para um painel que não
+ * renderiza nada.
+ */
+export function partirSecao({
+  blocks,
+  extraContent = false,
+}: {
+  /** Blocos ATIVOS da seção, na ORDEM, já sem o material de apoio. */
+  blocks: SplitBlock[]
+  /** A esquerda tem algo que não é bloco (ação da plataforma, atalho da ferramenta). */
+  extraContent?: boolean
+}): SecaoPartida {
+  const toolIds: string[] = []
+  const contentIds: string[] = []
+  let temEditor = false
+  for (const block of blocks) {
+    if (!ehLadoFerramenta(block)) {
+      contentIds.push(block.id)
+      continue
+    }
+    toolIds.push(block.id)
+    if (ehEditorDeSecao(block)) temEditor = true
+  }
+  return {
+    contentIds,
+    toolIds,
+    podeDividir: toolIds.length > 0 && (contentIds.length > 0 || extraContent),
+    temEditor,
   }
 }

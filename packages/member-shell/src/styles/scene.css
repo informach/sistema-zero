@@ -12,8 +12,10 @@
 
 @theme {
   /* O teto da cena. `--container-*` é o que gera `max-w-scene` no Tailwind v4.
-   * ⚠️ É um TETO, não uma largura: em tela estreita a cena continua acompanhando o cartão. */
-  --container-scene: 560px;
+   * ⚠️ É um TETO, não uma largura: em tela estreita (e na coluna da direita, quando a seção
+   * divide ao meio) a cena continua acompanhando o cartão. Nasceu 560px em 13/09/2026 e subiu
+   * para 680px no dia seguinte: a dona achou que tinha encolhido demais. */
+  --container-scene: 680px;
 
   /* O papel da cena: fundo, chão e as linhas de apoio. */
   --color-scene-ground: #f8f6e9;

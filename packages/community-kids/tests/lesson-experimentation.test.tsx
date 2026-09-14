@@ -178,6 +178,57 @@ describe('a criança mexendo na cena', () => {
     expect(screen.getByText('Bastidores · 1 Dino guardado')).toBeTruthy()
   })
 
+  test('⚠️ cumprir o objetivo NÃO encerra a cena, e a descoberta registrada não pisca', async () => {
+    // Pedido dela (14/09/2026): "a primeira vez que ela cumpre o objetivo já marca a sessão,
+    // mas os botões não podem ficar desativados — ela pode querer refazer para ver se
+    // entendeu mesmo". `layers` é o caso duro: ele exige a montagem ASSENTADA no estado
+    // descoberto, então desfazer depois de concluir faz o avaliador local dizer "não passou".
+    // O registro é um acontecimento e não se desfaz — nem na tela, nem no servidor.
+    const { fetchFalso, enviados } = servidorFalso('layers')
+    globalThis.fetch = fetchFalso
+    render(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: 'child-v6',
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+        }}
+      >
+        <InteractiveLessonBlock block={block('layers')} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: 'Depois' }))
+    await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
+      timeout: 5000,
+    })
+    const tentativas = () =>
+      enviados.filter((e) => String(e.url).endsWith('/learning-attempts')).length
+    const gestos = () => enviados.filter((e) => e.hintsUsed !== undefined).length
+    const antes = gestos()
+    const registradas = tentativas()
+    // ⚠️ O `<fieldset disabled>` é quem travava tudo, e ele NÃO marca os botões de dentro:
+    // `button.disabled` continua false mesmo desabilitado por herança (e o happy-dom ainda
+    // dispara o clique). Quem morde é o fieldset — asserção nos dois níveis.
+    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista', 'Ligar som']) {
+      const botao = screen.getByRole('button', { name: nome })
+      expect(botao).toHaveProperty('disabled', false)
+      expect(botao.closest('fieldset')?.disabled).toBe(false)
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
+    // Os comandos RODARAM: o guard dos comandos também olhava o `passed`, então destravar só
+    // o fieldset deixaria os botões clicáveis e mudos — e o servidor não veria gesto nenhum.
+    await waitFor(() => expect(gestos()).toBeGreaterThan(antes), { timeout: 5000 })
+    // A descoberta ficou (desfazer volta o MUNDO, não o que ela aprendeu) e o cartão de
+    // conclusão continua ali, embora `layers` peça a montagem assentada para "passar".
+    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2')
+    expect(screen.getByText('Descoberta registrada.')).toBeTruthy()
+    // E ninguém registra duas vezes: a marcação é primeira-vez-só.
+    expect(tentativas()).toBe(registradas)
+  })
+
   test('⚠️ envio em voo não trava a cena, e o que ela fez DEPOIS não se perde', async () => {
     // O caso real: a criança mexe, o salvamento sai, a rede demora. Se a cena congelasse até a
     // resposta, ela pararia no meio de um pensamento; e se o aceite do servidor limpasse os

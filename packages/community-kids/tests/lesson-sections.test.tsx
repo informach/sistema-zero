@@ -167,6 +167,85 @@ describe('aula por seções', () => {
     expect(project?.isConnected).toBe(true)
     expect(container.querySelectorAll('#lesson-block-project')).toHaveLength(1)
   })
+  const cenaDeAula = (id: string) => ({
+    id,
+    kind: 'interactive',
+    sortOrder: 1,
+    blockRevision: 'revision',
+    content: {
+      kind: 'interactive',
+      title: 'Quem fica na frente?',
+      instructions: 'Troque as peças de lugar.',
+      hints: [],
+      required: false,
+      activity: { type: 'experimentation', scene: 'layers' },
+    },
+  })
+  const fala = {
+    id: 'fala',
+    kind: 'dialogue',
+    sortOrder: 0,
+    content: { kind: 'dialogue', text: 'Oi!' },
+  }
+  function renderSecaoUnica(blocks: LessonDetailView['blocks'], blockIds: string[]) {
+    return render(
+      <LessonSections
+        lesson={{
+          ...lesson,
+          blocks,
+          sections: [
+            {
+              id: 'only',
+              title: 'Descobrir',
+              externalTool: null,
+              workspaceBlockId: null,
+              blockIds,
+            },
+          ],
+        }}
+        renderBlocks={(items) => items.map((b) => <p key={b.id}>{b.id}</p>)}
+      />,
+    )
+  }
+  const painelDe = (container: HTMLElement, id: string) =>
+    container.querySelector(`#lesson-block-${id}`)?.closest('[data-panel-id]')
+
+  test('a cena de aula mora na coluna da ferramenta, ao lado do conteúdo', () => {
+    // ⚠️ Pedido dela (14/09/2026): experimentação e demonstração se comportam como o Estúdio.
+    // Elas são `kind: 'interactive'` como a pergunta curta, então quem decide é a ATIVIDADE.
+    const { container } = renderSecaoUnica([fala, cenaDeAula('cena')], ['fala', 'cena'])
+    expect(painelDe(container, 'cena')?.getAttribute('data-panel-id')).toBe('lesson-tool')
+    expect(painelDe(container, 'fala')?.getAttribute('data-panel-id')).toBe('lesson-content')
+    // Sem abas: "Ver exemplo"/"Criar" é o par de um EDITOR; a cena É a aula.
+    expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
+  })
+
+  test('a ENTREGA por galeria é conteúdo da seção, e não some da aula', () => {
+    // ⚠️ Achado do full review (14/09/2026): o painel do conteúdo filtrava por KIND
+    // (`!== 'studio' && !== 'pinta'`) e a lista da ferramenta descartava a galeria — então um
+    // bloco de entrega colocado numa seção não aparecia em LUGAR NENHUM. A autoria permite
+    // esse bloco (o admin só o proíbe como espaço de trabalho) e a validação do core exige que
+    // todo bloco esteja numa seção ou nos materiais de apoio: ele sumia da criança em
+    // silêncio. Classificar por PAPEL, e não por kind, fechou o buraco.
+    const entrega = {
+      id: 'entrega',
+      kind: 'pinta',
+      sortOrder: 1,
+      content: { kind: 'pinta', gallery: { minItems: 1, maxItems: 3 } },
+    }
+    const { container } = renderSecaoUnica([fala, entrega], ['fala', 'entrega'])
+    expect(painelDe(container, 'entrega')?.getAttribute('data-panel-id')).toBe('lesson-content')
+  })
+
+  test('cena sozinha na seção não divide, e continua na tela', () => {
+    const { container } = renderSecaoUnica([cenaDeAula('cena')], ['cena'])
+    const painel = painelDe(container, 'cena')
+    expect(painel?.getAttribute('data-panel-id')).toBe('lesson-tool')
+    // ⚠️ Não dividir não pode virar sumiço: sem a ferramenta visível a seção ficaria VAZIA.
+    expect(painel?.className.includes('hidden!')).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
+  })
+
   const progression = (completed = 0): SectionProgressView => ({
     revision: 'structure',
     completed,
@@ -471,11 +550,32 @@ describe('aula por seções', () => {
   })
 
   test('Ver exemplo e Criar preservam a mesma instância e o trabalho em tela estreita', () => {
+    // ⚠️ A seção precisa de conteúdo dos DOIS lados para as abas existirem (14/09/2026):
+    // seção cujo único bloco é a ferramenta não divide mais, ela ocupa a largura toda — e
+    // "Ver exemplo"/"Criar" sem exemplo nenhum à esquerda seria uma aba para o vazio.
+    const comTexto: LessonDetailView = {
+      ...lesson,
+      blocks: [
+        ...lesson.blocks,
+        { id: 'intro', kind: 'dialogue', sortOrder: 1, content: { kind: 'dialogue', text: 'Oi!' } },
+      ],
+      sections: lesson.sections?.map((s) =>
+        s.id === 'first' ? { ...s, blockIds: ['intro', 'project'] } : s,
+      ),
+    }
     render(
       <LessonPlayerProvider value={player}>
         <LessonSections
-          lesson={lesson}
-          renderBlocks={() => <input aria-label="Trabalho no projeto" defaultValue="" />}
+          lesson={comTexto}
+          renderBlocks={(items) =>
+            items.map((b) =>
+              b.kind === 'studio' ? (
+                <input key={b.id} aria-label="Trabalho no projeto" defaultValue="" />
+              ) : (
+                <p key={b.id}>Oi!</p>
+              ),
+            )
+          }
         />
       </LessonPlayerProvider>,
     )
