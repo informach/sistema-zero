@@ -66,7 +66,7 @@ export const invadersNaMaoExample: CoreExample = {
   assets: [
     {
       id: 'core-invaders-bg',
-      name: 'background.png',
+      name: 'backgroundpng',
       kind: 'image',
       dataUrl: invadersStarfieldPng,
       width: 64,
