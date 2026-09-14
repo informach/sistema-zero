@@ -2,7 +2,7 @@
 
 Implementação da proposta autorizada em 13/09/2026, em worktree separado. O [registro por fase](2026-09-13-jogo-2d-atual.md) conserva os achados e as verificações intermediárias. Produção não foi alterada.
 
-**Estado em 14/09/2026:** implementação integrada e implantada em staging, com reviews por fase, revisão final, aplicação, recuperação, recuperação repetida e reaplicação verificadas. A homologação autenticada com perfil de teste e a atualização das mídias dos cursos permanecem pendentes.
+**Estado em 14/09/2026:** implementação integrada e implantada em staging, com reviews por fase, revisão final, aplicação, recuperação, recuperação repetida e reaplicação verificadas. A conta de teste foi autenticada e as fronteiras remotas passaram; falta somente conferir visualmente o clique de remix numa sessão de navegador. A atualização das mídias dos cursos também permanece pendente.
 
 ## Editor e motor
 
@@ -116,10 +116,22 @@ A reaplicação concluiu sem divergências nem reparos adicionais. A captura fin
 
 Os backups dos dois lotes, os diários de recuperação e o registro do incidente de transporte foram conservados no armazenamento privado. Não houve exclusão de revisões antigas. Os dados de staging terminaram no formato atual.
 
+### Homologação autenticada
+
+A conta de staging `helena@informach.com.br` foi confirmada como ativa e o perfil infantil **André Rocha** foi selecionado pelo fluxo normal de código temporário. A rodada autenticada comprovou:
+
+- login e seleção de perfil com HTTP 200;
+- Mural liberado, com um canal e seis publicações jogáveis;
+- abertura autenticada do Mural e do Studio sem redirecionamento;
+- snapshot de jogo válido no formato 2, com identidade e assets presentes;
+- listagem das 18 criações do perfil e carregamento das permissões de blocos com HTTP 200.
+
+Cookies e tokens ficaram somente na memória do processo e não foram registrados. Nenhuma criação foi criada, editada ou apagada nessa rodada. O navegador integrado não estava disponível, portanto a hidratação visual do botão e a sequência de clicar em **Fazer a minha versão**, abrir, salvar e reabrir a cópia ainda exigem uma sessão visual. As fronteiras desse percurso já estão cobertas pelos testes de navegador locais e pelo CI; este relatório não apresenta essa cobertura automatizada como se fosse o clique real na conta.
+
 ## Pendências e limites
 
 - Regravar e conferir os trechos de Studio identificados nos roteiros; preencher timecodes a partir das mídias reais e publicar as aulas revisadas.
 - Validar clareza e ritmo com crianças e conferir as atividades com perfil de aluno. Testes automatizados não substituem essa avaliação pedagógica.
-- Homologar a sessão autenticada de staging com uma conta de testes, incluindo a sequência completa de mural, versão própria e versão da cópia. Falta identificar uma conta/perfil reservado para esse ensaio; a solicitação feita durante o trabalho não recebeu resposta. Os testes locais e públicos usaram Playwright, pois o navegador integrado não estava disponível.
+- Completar a interação visual autenticada em staging: clicar em **Fazer a minha versão**, abrir, editar/salvar, recarregar e reabrir a cópia com o perfil André Rocha. Login, acesso, Mural, snapshot atual, lista de criações e permissões já passaram; falta disponibilizar uma aba do navegador integrado com a sessão autenticada.
 - Investigar separadamente a falha de carregamento da textura de um projeto 3D de staging, reproduzida também com o código anterior à reforma. O arquivo original foi conservado.
 - Preparar a promoção de produção somente depois de avaliar o ensaio de staging. Os nove alunos de produção não foram migrados nesta entrega.
