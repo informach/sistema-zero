@@ -36,7 +36,7 @@ IMAGENS E MAPAS: use assets do projeto; nomes precisam coincidir. Tilemaps vêm 
 Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventado
 automaticamente. Sprites sem imagem continuam visíveis por cor. Mapa guarda tiles:
 prepare-o UMA vez com “encaixar na tela” ou “posicionar no mundo” e depois apenas
-desenhe; a forma antiga de desenhar passando x/y/tamanho é só compatibilidade.
+desenhe com drawTileMap(ctx, mapa). Posição e tamanho pertencem ao preparo do mapa.
 Para arte sem arquivos, use tiles vetoriais ligados a Figuras. Em blocos de prêmio,
 teste o índice do contato antes de trocar a célula.
 
