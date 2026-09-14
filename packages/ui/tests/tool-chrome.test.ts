@@ -193,6 +193,30 @@ describe('tool-chrome.css: receitas', () => {
     }
   })
 
+  it('o cartão "novo" NÃO anda no hover nem no aperto: cartão de grade não pode tremer', () => {
+    // 14/09/2026: o cartão é a única peça de GRADE com relevo, e grade tem aresta longa. Com
+    // 1px de movimento, o ponteiro parado na borda de baixo entra e sai do hover várias vezes
+    // por segundo — é o "cursor tremendo" que ela relatou no Pensa. A sombra e a borda ficam.
+    const regras = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(
+      ([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }),
+    )
+    const trava = regras.findIndex(
+      ({ seletor, corpo }) =>
+        seletor.includes('.sz-tool-card--new') &&
+        seletor.includes(':hover') &&
+        /translate:\s*none/.test(corpo),
+    )
+    expect(trava).toBeGreaterThanOrEqual(0)
+    expect(regras[trava]?.corpo).toMatch(/transform:\s*none/)
+    // E ela vence: vem DEPOIS de toda regra que dá `translate` ao cartão (mesma especificidade).
+    const ultimoMovimento = regras.reduce(
+      (indice, { seletor, corpo }, atual) =>
+        seletor.includes('.sz-tool-card--new') && /translate:\s*0/.test(corpo) ? atual : indice,
+      -1,
+    )
+    expect(trava).toBeGreaterThan(ultimoMovimento)
+  })
+
   it('as receitas ANTIGAS saíram na limpeza do lote (11/09/2026), com os tokens que só elas liam', () => {
     // O secundário de borda 2px com sombra dura, a pílula 3D, o painel e o pulo no hover.
     expect(semComentarios).not.toMatch(/\.sz-tool-btn(?!-menu)/)

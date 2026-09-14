@@ -70,7 +70,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    clicável esticada por `::after` ("o cartão inteiro abre") NÃO pode andar: o `translate` faz
    dela o bloco de referência do `::after`, que encolhe no meio do gesto (hover piscando, clique
    perdido). Desligue o movimento na folha do pacote, fora de camada, como o
-   `.pensa-project-card__open` do Pensa (`ba43b146`). Quem importa: o community-kids (`globals.css`, DEPOIS do
+   `.pensa-project-card__open` do Pensa (`ba43b146`). ⚠️⚠️ **E o cartão `--new` também NÃO anda
+   (14/09/2026):** cartão de grade tem aresta longa, e 1px de movimento faz o ponteiro parado na
+   borda de baixo entrar e sair do hover várias vezes por segundo — é o "cursor tremendo/piscando"
+   que ela relatou no Pensa (medido no playground: o cartão termina em 502,15 parado e em 501,15
+   no hover). A regra que zera o movimento dele vem DEPOIS do `:active` (mesma especificidade,
+   0-4-0) e o relevo fica: a sombra cresce e a borda amarela acende. Quem importa: o community-kids (`globals.css`, DEPOIS do
    `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda/pensa; admin e
    community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
    pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`

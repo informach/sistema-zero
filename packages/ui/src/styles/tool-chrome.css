@@ -806,7 +806,16 @@
      peça no meio do gesto: o hover pisca e o clique solta fora. Quem usa esse padrão desliga o
      movimento na própria folha, fora de camada (`transform: none; translate: none` no
      `:hover` e no `:active`); o aperto continua visível no relevo. Hoje só o Pensa
-     (`.pensa-project-card__open`, no pensa.css). */
+     (`.pensa-project-card__open`, no pensa.css).
+     ⚠️⚠️ **E o cartão `--new` também NÃO anda (14/09/2026).** Ele é o único CARTÃO da lista, e
+     cartão de grade tem aresta longa: com o ponteiro parado na faixa de 1px da borda de baixo,
+     o hover sobe a peça, ela sai de baixo do ponteiro, o hover cai, a transição a traz de
+     volta — e recomeça, várias vezes por segundo. É o "cursor tremendo/piscando" que ela
+     relatou no Pensa, o mesmo defeito de fundo que o `content-visibility` causava no Pinta
+     (13/09). Medido no playground do Pensa: em repouso o cartão termina em 502,15 e no hover
+     em 501,15. Um botão de barra tem borda curta e some rápido do caminho; um cartão de 271px
+     de altura fica ali embaixo do ponteiro. O relevo FICA (a sombra cresce, a borda acende):
+     só o movimento saiu. */
   .sz-tool-bands
   :is(.sz-tool-pill, .sz-tool-back, .sz-tool-btn-menu, .sz-tool-icon-btn, .sz-tool-card--new) {
     --sz-3d-altura: 4px;
@@ -843,6 +852,13 @@
     ):active:not(:disabled) {
     --sz-3d-altura: 1px;
     translate: 0 3px;
+    transform: none;
+  }
+  /* O cartão não anda, nem no hover nem no aperto (ver o ⚠️⚠️ acima): dele o relevo é só
+     a sombra que cresce e a borda que acende. Mesma especificidade (0,4,0) das duas regras
+     de cima e DEPOIS delas: vence sem `!important`, que esta folha não usa. */
+  .sz-tool-bands .sz-tool-card--new:is(:hover, :active):not(:disabled) {
+    translate: none;
     transform: none;
   }
 
