@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
+import { REMOTE_EVALUATE_SOURCE } from './transport'
 
 /** Ferramenta operacional isolada. Não é importada pelo editor nem pelo servidor. */
 export const STAGING_PROJECT = '415d5a1c-5f75-432c-8445-b395d0977ce3'
@@ -74,8 +75,7 @@ export const hash = (value: string | Uint8Array): string =>
 
 async function remote<T>(service: keyof typeof SERVICES, source: string): Promise<T> {
   // Payload pelo stdin: não passa pelo shell nem pelo limite de argumentos do Windows.
-  const evaluate =
-    'let source="";for await(const chunk of process.stdin)source+=chunk;await eval("(async()=>{"+source+"})()")'
+  const evaluate = REMOTE_EVALUATE_SOURCE
   const command =
     service === 'database'
       ? `bun -e '${evaluate}'`
