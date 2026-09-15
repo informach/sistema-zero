@@ -20,7 +20,7 @@ A aula é montada pelo professor. Ele decide quais conceitos serão demonstrados
 
 O professor pode usar somente uma demonstração, somente uma experimentação ou ambas em blocos separados. Os roteiros prontos servem como ponto de partida. Não é obrigatório demonstrar antes de experimentar.
 
-A biblioteca inicial cobre 14 missões do Corre Dino. Cada missão já define os controles e os critérios relacionados ao conceito. Criar uma simulação de outro assunto exige desenvolver uma nova cena; o editor não é um construtor universal de simulações.
+A biblioteca cobre **24 missões** e serve os três cursos: a tela e quem a lê (endereço, leitor de tela, tamanho da tela, laço de desenho), desenho e animação (dois quadros, fantasma do quadro anterior, espelho, pixel contra vetor, folha contra sprite), mundo e desenho, movimento, eventos e estados (incluindo ponto e vida), objetos no grupo, áreas e contato, sorteio e velocidade. Cada missão já define os controles e os critérios relacionados ao conceito. Criar uma simulação de outro assunto exige desenvolver uma nova cena; o editor não é um construtor universal de simulações.
 
 ## Um exemplo concreto: salto
 

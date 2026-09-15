@@ -1,0 +1,1182 @@
+<meta charset="utf-8">
+<title>As experiências que faltam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#eceff4;
+  --surface:#ffffff;
+  --surface-sunk:#e4e9ef;
+  --ink:#15202c;
+  --ink-soft:#4d5d6e;
+  --ink-faint:#7b8b9a;
+  --line:#d2dae2;
+  --line-strong:#b2bfcc;
+  --brand:#2b6199;
+  --brand-wash:#2b619914;
+  --action:#c62f68;
+  --action-wash:#c62f6814;
+  --amber:#9c6416;
+  --amber-wash:#9c641618;
+  --leaf:#3f6f4c;
+  --leaf-wash:#3f6f4c16;
+  /* citação literal dos tokens de packages/member-shell/src/styles/scene.css */
+  --stage-ground:#f8f6e9;
+  --stage-sky:#eaf0e6;
+  --stage-grid:#c9ceba;
+  --stage-rule:#7d8c78;
+  --stage-ink:#42503a;
+  --stage-ink-soft:#5b6b54;
+  --stage-a:#315f92;
+  --stage-b:#c67431;
+  --stage-b-ink:#85601f;
+  --stage-leaf:#457953;
+  --stage-card:#fffdf7;
+  --stage-card-line:#d9dfd1;
+  --stage-alert:#ae3e2c;
+
+  --shadow:0 1px 2px #15202c0d, 0 8px 24px -14px #15202c40;
+  --radius:14px;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0f151c;
+    --surface:#18212b;
+    --surface-sunk:#121a23;
+    --ink:#e8eef4;
+    --ink-soft:#a4b3c1;
+    --ink-faint:#7a8b9a;
+    --line:#2a3746;
+    --line-strong:#3d4f61;
+    --brand:#78b2ea;
+    --brand-wash:#78b2ea1f;
+    --action:#f2799f;
+    --action-wash:#f2799f1f;
+    --amber:#e0a75f;
+    --amber-wash:#e0a75f1f;
+    --leaf:#7cc08e;
+    --leaf-wash:#7cc08e1c;
+    --shadow:0 1px 2px #0008, 0 10px 30px -18px #000c;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0f151c;
+  --surface:#18212b;
+  --surface-sunk:#121a23;
+  --ink:#e8eef4;
+  --ink-soft:#a4b3c1;
+  --ink-faint:#7a8b9a;
+  --line:#2a3746;
+  --line-strong:#3d4f61;
+  --brand:#78b2ea;
+  --brand-wash:#78b2ea1f;
+  --action:#f2799f;
+  --action-wash:#f2799f1f;
+  --amber:#e0a75f;
+  --amber-wash:#e0a75f1f;
+  --leaf:#7cc08e;
+  --leaf-wash:#7cc08e1c;
+  --shadow:0 1px 2px #0008, 0 10px 30px -18px #000c;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.62;
+  padding-inline:20px;
+  padding-block:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px;margin-inline:auto}
+.col{max-width:68ch}
+
+h1,h2,h3,h4{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.14;letter-spacing:-.015em}
+h1{font-size:clamp(34px,6.2vw,54px);font-weight:800;font-stretch:96%}
+h2{font-size:clamp(25px,3.6vw,33px);font-weight:700}
+h3{font-size:19px;font-weight:700;letter-spacing:-.005em}
+h4{font-size:15px;font-weight:700}
+p{margin:0}
+a{color:var(--brand)}
+strong{font-weight:700}
+code,.mono{font-family:var(--mono);font-size:.92em}
+
+/* régua: o divisor do documento é a régua do chão da cena */
+.rule{
+  height:13px;margin-block:56px;border-top:1.5px solid var(--line-strong);
+  background:repeating-linear-gradient(to right,var(--line-strong) 0 1.5px,transparent 1.5px 11px);
+  opacity:.75;
+}
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+
+header.top{padding-block:64px 8px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--action);font-weight:600}
+.lede{font-size:20px;line-height:1.55;color:var(--ink-soft);margin-top:20px;max-width:60ch}
+.lede b{color:var(--ink)}
+.meta{
+  display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:26px;
+  font-family:var(--mono);font-size:12.5px;color:var(--ink-faint);
+}
+.meta span{display:inline-flex;gap:7px;align-items:center}
+.meta b{color:var(--ink-soft);font-weight:500}
+
+section{margin-block:0}
+.stack{display:flex;flex-direction:column;gap:20px}
+.stack-lg{display:flex;flex-direction:column;gap:32px}
+.section-head{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+
+/* ——— diagnóstico ——— */
+.tally{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:20px;
+}
+.tally-row{display:flex;flex-direction:column;gap:7px}
+.tally-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tally-head h4{font-size:15.5px}
+.tally-head .count{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.grid-cells{display:flex;flex-wrap:wrap;gap:2.5px}
+.cell{width:11px;height:11px;border-radius:2px;background:var(--surface-sunk);border:1px solid transparent}
+.cell.scene{background:var(--brand)}
+.cell.html{background:var(--leaf)}
+.cell.ask{background:transparent;border-color:var(--line-strong)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--ink-soft);padding-top:4px;border-top:1px dashed var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block;flex:none}
+
+.figures{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.fig{background:var(--surface);padding:18px 20px;display:flex;flex-direction:column;gap:2px}
+.fig .n{font-family:var(--display);font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.fig .n.bad{color:var(--action)}
+.fig .l{font-size:13.5px;color:var(--ink-soft);line-height:1.4}
+
+/* ——— padrões ——— */
+.patterns{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.pat{display:flex;flex-direction:column;gap:6px;padding-left:15px;border-left:2px solid var(--brand)}
+.pat h4{font-size:15.5px}
+.pat p{font-size:15px;color:var(--ink-soft);line-height:1.5}
+.pat .said{font-family:var(--mono);font-size:12.5px;color:var(--ink-faint)}
+
+.warn{
+  background:var(--amber-wash);border:1px solid var(--amber);border-radius:var(--radius);
+  padding:20px 22px;display:flex;flex-direction:column;gap:10px;
+}
+.warn h3{color:var(--amber)}
+.warn p{font-size:15.5px}
+.warn pre{
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink-soft);
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:12px 14px;margin:0;overflow-x:auto;
+}
+
+/* ——— protótipos ——— */
+.proto{
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:18px;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.proto-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:13px 18px;border-bottom:1px solid var(--line);background:var(--surface-sunk);
+}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);
+}
+.chip.demo{color:var(--action)}
+.proto-bar .tag{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+.proto-body{padding:22px 18px 24px}
+.proto-title{font-family:var(--display);font-size:21px;font-weight:700;margin-bottom:6px}
+.proto-instr{font-size:15.5px;color:var(--ink-soft);margin-bottom:18px;max-width:58ch}
+
+/* HUD de variáveis — o padrão do Brilliant que falta na cena */
+.hud{
+  display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--stage-card-line);
+  border-bottom:none;border-radius:11px 11px 0 0;background:var(--stage-card);overflow:hidden;
+}
+.hud div{
+  padding:9px 16px;font-family:var(--mono);font-size:14px;color:var(--stage-ink);
+  border-right:1px solid var(--stage-card-line);font-variant-numeric:tabular-nums;
+}
+.hud div:last-child{border-right:none;margin-left:auto;color:var(--stage-ink-soft)}
+.hud b{font-weight:600;color:var(--stage-a)}
+.hud .chg{color:var(--stage-b-ink)}
+
+.stage-box{
+  border:1px solid var(--stage-card-line);border-radius:0 0 11px 11px;
+  background:var(--stage-ground);padding:12px;
+}
+.stage-box svg{display:block;width:100%;height:auto;touch-action:none}
+.stage-cap{
+  font-size:14px;color:var(--stage-ink-soft);text-align:center;padding-top:8px;min-height:22px;
+}
+
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.ctl{background:var(--surface-sunk);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.ctl-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:2px}
+.ctl-head label{font-size:14.5px;font-weight:700}
+.ctl-val{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.ctl-x .ctl-val{color:var(--stage-a)}
+.ctl-y .ctl-val{color:var(--stage-b-ink)}
+.ctl-line{display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;min-width:0;accent-color:var(--brand);height:26px}
+.step{
+  font-family:var(--mono);font-size:15px;font-weight:600;width:34px;height:34px;flex:none;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  border-radius:9px;cursor:pointer;line-height:1;
+}
+.step:hover{border-color:var(--brand);color:var(--brand)}
+.hintline{font-size:13px;color:var(--ink-faint);margin-top:4px}
+
+.goals{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.goal{
+  display:inline-flex;align-items:center;gap:8px;font-size:13.5px;
+  border:1px solid var(--line);border-radius:999px;padding:5px 13px 5px 8px;
+  background:var(--surface-sunk);color:var(--ink-faint);
+}
+.goal .dot{
+  width:19px;height:19px;border-radius:50%;flex:none;border:1.5px solid var(--line-strong);
+  display:grid;place-items:center;font-size:11px;font-weight:700;color:transparent;
+}
+.goal[data-done="true"]{border-color:var(--leaf);color:var(--ink);background:var(--leaf-wash)}
+.goal[data-done="true"] .dot{background:var(--leaf);border-color:var(--leaf);color:#fff}
+
+.footbar{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-top:20px;padding-top:16px;border-top:1px dashed var(--line);
+}
+.btn{
+  font-family:var(--body);font-size:16px;font-weight:700;border-radius:999px;cursor:pointer;
+  padding:12px 26px;border:1px solid transparent;background:var(--brand);color:#fff;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line-strong);padding:11px 18px;font-weight:400}
+.btn.ghost:hover{color:var(--brand);border-color:var(--brand);filter:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+
+/* leitor de tela */
+.reader-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.reader-pane{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pane-label{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+.speech{
+  background:#12202b;border:1px solid #2c4657;border-radius:11px;padding:14px 16px;
+  min-height:132px;display:flex;flex-direction:column;gap:9px;
+}
+.speech p{font-family:var(--mono);font-size:13.5px;line-height:1.55;color:#cfe3f0}
+.speech p.muted{color:#7d95a6;font-style:italic}
+.speech .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6f8ea3}
+.speech .live{color:#8fd6b0}
+textarea{
+  width:100%;font-family:var(--body);font-size:15.5px;line-height:1.5;
+  border:1px solid var(--line-strong);border-radius:11px;padding:11px 13px;
+  background:var(--surface);color:var(--ink);resize:vertical;min-height:84px;
+}
+textarea:focus-visible,input:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--action);outline-offset:2px;
+}
+
+/* ——— tabelas ——— */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px}
+th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:600;background:var(--surface-sunk);
+}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td b{font-weight:700}
+.pill{
+  display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:2px 9px;border-radius:999px;white-space:nowrap;
+}
+.pill.new{background:var(--action-wash);color:var(--action)}
+.pill.reuse{background:var(--brand-wash);color:var(--brand)}
+.pill.keep{background:var(--surface-sunk);color:var(--ink-faint)}
+
+/* ——— antes/depois ——— */
+.fixes{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--line)}
+.fix{background:var(--surface);padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;align-items:start}
+.fix h4{grid-column:1/-1;margin-bottom:4px}
+.fix .side{font-size:14.5px;line-height:1.5;color:var(--ink-soft);display:flex;gap:9px}
+.fix .side::before{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;
+  padding-top:4px;flex:none;
+}
+.fix .now::before{content:"HOJE";color:var(--ink-faint)}
+.fix .next::before{content:"VIRA";color:var(--action)}
+.fix .next{color:var(--ink)}
+
+/* ——— lotes ——— */
+.lots{display:flex;flex-direction:column;gap:14px;counter-reset:lot}
+.lot{
+  display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;
+}
+.lot .n{
+  font-family:var(--display);font-size:15px;font-weight:800;color:var(--brand);
+  background:var(--brand-wash);width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+}
+.lot h4{margin-bottom:3px}
+.lot p{font-size:15px;color:var(--ink-soft)}
+.lot .cost{font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-top:7px;display:block}
+
+.note{font-size:14.5px;color:var(--ink-faint);line-height:1.55}
+footer{padding-block:20px 72px;font-size:14px;color:var(--ink-faint)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:15.5px;color:var(--ink-soft)}
+ul.tight b{color:var(--ink)}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .reader-grid{grid-template-columns:1fr}
+  .fix{grid-template-columns:1fr;gap:8px}
+  .rule{margin-block:44px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Estudo do Brilliant · proposta para as aulas</p>
+  <h1>As experiências que faltam</h1>
+  <p class="lede">Percorri o Brilliant por dentro — programação, coordenadas e ciência — e depois medi os três cursos v6. O resultado: <b>282 seções de aula e 25 delas deixam a criança mexer em alguma coisa</b>. As 47 seções marcadas como “demonstração” não têm nenhuma demonstração: esperam por clipes de vídeo que ainda não existem. Abaixo, o que o Brilliant faz bem, o que ele faz mal, e as experiências novas — duas delas funcionando aqui na página.</p>
+  <p style="margin:18px 0 0;padding:14px 16px;border-radius:12px;background:#e8f2e8;border:1px solid #9cbf9c;font-size:15px;line-height:1.5">
+    <b>Implantado em 15 set 2026.</b> Esta página é a proposta como ela foi apresentada, e fica
+    como registro da decisão. O que foi feito, o que ficou de fora e por quê está em
+    <b>proposta-experiencias.md</b>: as cenas passaram de 14 para 24, e a previsão antes de mexer
+    virou campo próprio do bloco em vez de reusar a pergunta de verificação.
+  </p>
+  <p class="meta">
+    <span><b>14 set 2026</b></span>
+    <span>Fonte: <b>docs/aulas-interativas</b> + <b>core/learning/scene</b></span>
+    <span>Brilliant visitado em <b>6 cursos</b></span>
+  </p>
+</header>
+
+<div class="rule"></div>
+
+<!-- ───────────────── DIAGNÓSTICO ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">Diagnóstico</p>
+    <h2>Onde a aula para de se mexer</h2>
+    <p class="note">Contagem feita sobre os 27 manifestos v6 (introdução + 5 dias do Desafio, 13 aulas do Corre Dino, 8 de O Jogo do Meu Jeito). Cada quadrado é uma seção de aula; as coloridas são as que têm atividade interativa, agrupadas por tipo.</p>
+  </div>
+
+  <div class="stack">
+    <div class="tally" id="tally"></div>
+
+    <div class="figures">
+      <div class="fig"><span class="n">282</span><span class="l">seções de aula nos três cursos</span></div>
+      <div class="fig"><span class="n">25</span><span class="l">deixam a criança manipular algo<br>(14 cenas nativas + 11 páginas HTML)</span></div>
+      <div class="fig"><span class="n bad">47</span><span class="l">seções com intenção “demonstração”<br>e nenhuma demonstração interativa</span></div>
+      <div class="fig"><span class="n bad">144</span><span class="l">clipes de vídeo planejados<br>de que essas seções dependem</span></div>
+    </div>
+
+    <div class="col stack" style="gap:14px">
+      <h3>Três coisas que a contagem revelou</h3>
+      <ul class="tight">
+        <li><b>Cada uma das 14 cenas é usada exatamente uma vez.</b> São todas do Corre Dino e nenhuma reaparece — nem em outra aula do mesmo curso, nem nos outros dois cursos, embora os conceitos se repitam (criar ≠ desenhar, colisão, placar, telas do jogo estão nos três).</li>
+        <li><b>O Desafio e O Jogo do Meu Jeito não têm uma única cena nativa.</b> O Desafio tem 6 páginas HTML em 78 seções; o Meu Jeito tem 5 páginas e 26 perguntas curtas em 76 seções. Uma pergunta de múltipla escolha não é uma experiência.</li>
+        <li><b>As cinco experiências de <span class="mono">docs/aulas-interativas/interacoes/</span> ficaram para trás.</b> Coordenadas, pixel × vetor, quadros, telas e pontos, velocidade-limite: estão no disco, testadas, e nenhuma delas foi para os manifestos v6.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ───────────────── BRILLIANT ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">O que o Brilliant faz</p>
+    <h2>Oito padrões que dá para levar hoje</h2>
+    <p class="note">Recolhidos jogando: <i>Programming with Variables</i>, <i>Thinking in Code</i>, <i>Programming with Functions</i>, <i>Coordinate Plane</i> e <i>Scientific Thinking</i>.</p>
+  </div>
+
+  <div class="patterns">
+    <div class="pat">
+      <h4>A saída é o feedback</h4>
+      <p>Errar não mostra um X: mostra o que o programa da criança de fato desenhou. Pedi um quadrado azul depois de um círculo vermelho, entreguei só o círculo — e a tela exibiu o círculo, com a moldura em âmbar.</p>
+    </div>
+    <div class="pat">
+      <h4>Errar é âmbar, não vermelho</h4>
+      <p>Os botões viram <i>Tentar de novo</i> e <i>Ver a resposta</i>. Não há vidas, não há perda de pontos, não há como travar.</p>
+    </div>
+    <div class="pat">
+      <h4>A dica diz o que falta, não que está errado</h4>
+      <p class="said">“The program should draw exactly 2 shapes.”</p>
+      <p>É uma observação verificável sobre o que ela fez, não um julgamento.</p>
+    </div>
+    <div class="pat">
+      <h4>Um botão principal, sempre no mesmo lugar</h4>
+      <p>Embaixo, largo, sozinho: <i>Conferir</i> vira <i>Continuar</i>. Tudo o mais — inclusive o “Por quê?” que abre a explicação — é secundário e menor.</p>
+    </div>
+    <div class="pat">
+      <h4>Acertar aciona a simulação</h4>
+      <p>Na lição de engrenagens, a confirmação de que a resposta está certa é a engrenagem girando. A recompensa é ver o fenômeno, não um selo.</p>
+    </div>
+    <div class="pat">
+      <h4>O estado tem nome e fica à vista</h4>
+      <p class="said">truckX = 7 · deliveryY = ? · distance = ?</p>
+      <p>Uma faixa acima do palco liga o número escrito no código ao lugar no desenho. É o elo que falta nas nossas cenas.</p>
+    </div>
+    <div class="pat">
+      <h4>O andaime muda com a pergunta</h4>
+      <p>Quando a pergunta é sobre x, o plano só numera o eixo x; quando vira y, os números trocam de eixo. A figura destaca exatamente o que está em jogo.</p>
+    </div>
+    <div class="pat">
+      <h4>Sobe pela estrutura, não pela quantidade</h4>
+      <p>Engrenagens: duas, depois três, depois cinco em fila, depois uma cadeia que se divide, depois um emaranhado. A mecânica não muda uma vez sequer.</p>
+    </div>
+  </div>
+
+  <div class="stack" style="margin-top:32px">
+    <div class="warn col">
+      <h3>E o que não dá para copiar</h3>
+      <p>Pedi a árvore de acessibilidade de um exercício de código do Brilliant — aquele em que se arrastam blocos para montar o programa. Ela devolve isto, inteiro:</p>
+      <pre>button "Close"            button "Your current streak"
+button "left"             button "report a problem"
+button "right"            button "mute"
+button "chat with tutor"  button "record message"
+button                    button</pre>
+      <p>Dez botões, e <b>nenhum deles é o exercício</b>. Os blocos de código, o palco e as linhas do programa não existem para um leitor de tela, e só respondem a arrastar — não há clique nem teclado como alternativa. Num curso que dedica uma seção inteira da primeira aula a ensinar o que é um leitor de tela, herdar isso seria desmentir a própria aula. As cenas daqui já saem na frente: medidor com <span class="mono">role="meter"</span>, fala ao vivo com <span class="mono">aria-live</span> e, na cena da colisão, um controle deslizante que faz o mesmo que o arraste.</p>
+    </div>
+    <p class="note col">Dois outros pontos ficam de fora de propósito: o XP por exercício (a carreira de 8 níveis já cumpre esse papel, e uma segunda moeda competiria com ela) e o tema único — a comunidade kids tem Padrão e Pink, e a cena precisa acompanhar.</p>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ───────────────── PROTÓTIPOS ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">Protótipos</p>
+    <h2>As duas que a Aula 1 do Corre Dino pede</h2>
+    <p class="note">Estão funcionando: mexa nelas. Hoje as duas seções são vídeo — a de coordenadas é “um marcador se move, sem arraste nem parâmetros para a criança”, e a do leitor de tela é uma captura de tela gravada.</p>
+  </div>
+
+  <div class="stack-lg">
+
+    <!-- PROTÓTIPO A -->
+    <div>
+      <div class="proto">
+        <div class="proto-bar">
+          <span class="chip">◇ Experimente</span>
+          <span class="tag">cena nova · <span class="mono">coordinates</span> · Dino aula 1 §6</span>
+        </div>
+        <div class="proto-body">
+          <p class="proto-title">O endereço na tela</p>
+          <p class="proto-instr">Mude o x e veja para que lado o Dino vai. Depois mude só o y. Um deles faz uma coisa que pega todo mundo de surpresa.</p>
+
+          <div class="hud" aria-hidden="true">
+            <div>x = <b id="hud-x">110</b></div>
+            <div>y = <b id="hud-y">150</b></div>
+            <div>tela 480 × 270</div>
+          </div>
+
+          <div class="stage-box">
+            <svg id="stage" viewBox="0 0 540 320" role="img" aria-labelledby="stage-desc">
+              <desc id="stage-desc">Tela do jogo de 480 por 270 com o Dino posicionado pelo x e pelo y.</desc>
+              <defs>
+                <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+                  <circle cx="1.5" cy="1.5" r="1.5" fill="var(--stage-grid)"></circle>
+                </pattern>
+              </defs>
+              <!-- papel -->
+              <rect x="0" y="0" width="540" height="320" fill="var(--stage-ground)"></rect>
+              <!-- régua de x (topo) -->
+              <g id="ruler-x" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--stage-ink-soft)"></g>
+              <!-- régua de y (esquerda) -->
+              <g id="ruler-y" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--stage-ink-soft)"></g>
+              <!-- tela do jogo -->
+              <rect x="44" y="30" width="480" height="270" fill="var(--stage-sky)" stroke="var(--stage-rule)" stroke-width="2"></rect>
+              <rect x="44" y="30" width="480" height="270" fill="url(#dots)"></rect>
+              <!-- origem -->
+              <circle cx="44" cy="30" r="4" fill="var(--stage-ink)"></circle>
+              <text x="52" y="46" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--stage-ink)">0, 0</text>
+              <!-- fantasma da posição anterior -->
+              <g id="ghost" opacity="0"></g>
+              <!-- guias -->
+              <line id="guide-x" x1="44" y1="30" x2="44" y2="30" stroke="var(--stage-a)" stroke-width="2" stroke-dasharray="5 4"></line>
+              <line id="guide-y" x1="44" y1="30" x2="44" y2="30" stroke="var(--stage-b)" stroke-width="2" stroke-dasharray="5 4"></line>
+              <!-- dino -->
+              <g id="dino"></g>
+              <!-- alvo -->
+              <g id="target">
+                <circle r="5" fill="none" stroke="var(--stage-ink)" stroke-width="2"></circle>
+                <line x1="-11" y1="0" x2="11" y2="0" stroke="var(--stage-ink)" stroke-width="1.5"></line>
+                <line x1="0" y1="-11" x2="0" y2="11" stroke="var(--stage-ink)" stroke-width="1.5"></line>
+              </g>
+            </svg>
+            <p class="stage-cap" id="stage-cap" role="status">O Dino está em x 110, y 150.</p>
+          </div>
+
+          <div class="controls">
+            <div class="ctl ctl-x">
+              <div class="ctl-head">
+                <label for="in-x">x — esquerda e direita</label>
+                <span class="ctl-val" id="val-x">110</span>
+              </div>
+              <div class="ctl-line">
+                <button class="step" type="button" data-axis="x" data-delta="-20" aria-label="Diminuir x em 20">−</button>
+                <input type="range" id="in-x" min="0" max="480" step="1" value="110">
+                <button class="step" type="button" data-axis="x" data-delta="20" aria-label="Aumentar x em 20">+</button>
+              </div>
+            </div>
+            <div class="ctl ctl-y">
+              <div class="ctl-head">
+                <label for="in-y">y — cima e baixo</label>
+                <span class="ctl-val" id="val-y">150</span>
+              </div>
+              <div class="ctl-line">
+                <button class="step" type="button" data-axis="y" data-delta="-20" aria-label="Diminuir y em 20">−</button>
+                <input type="range" id="in-y" min="0" max="270" step="1" value="150">
+                <button class="step" type="button" data-axis="y" data-delta="20" aria-label="Aumentar y em 20">+</button>
+              </div>
+            </div>
+          </div>
+          <p class="hintline">Clique no palco e use as setas do teclado: elas movem de 10 em 10, sem precisar de mouse.</p>
+
+          <div class="goals" id="goals-a">
+            <span class="goal" data-done="false" data-goal="right"><span class="dot">✓</span>x maior leva para a direita</span>
+            <span class="goal" data-done="false" data-goal="down"><span class="dot">✓</span>y maior leva para baixo</span>
+            <span class="goal" data-done="false" data-goal="same"><span class="dot">✓</span>mesmo x, altura diferente</span>
+          </div>
+
+          <div class="footbar">
+            <div class="tools">
+              <button class="btn ghost" type="button" id="reset-a">Recomeçar</button>
+              <button class="btn ghost" type="button" id="hint-a">Uma pista</button>
+            </div>
+            <button class="btn" type="button" id="done-a" disabled>Conferir</button>
+          </div>
+          <p class="stage-cap" id="verdict-a" style="text-align:left;padding-top:14px"></p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:12px">Três coisas aqui não existem na cena de hoje: a <b>faixa de estado</b> com os dois números vivos, o <b>fantasma</b> da posição anterior (comparar sem guardar de memória) e a <b>frase que narra a mudança</b> em vez de dizer “siga a missão e observe o resultado”.</p>
+    </div>
+
+    <!-- PROTÓTIPO B -->
+    <div>
+      <div class="proto">
+        <div class="proto-bar">
+          <span class="chip">◇ Experimente</span>
+          <span class="tag">cena nova · <span class="mono">screen-reader</span> · Dino aula 1 §4</span>
+        </div>
+        <div class="proto-body">
+          <p class="proto-title">O que o leitor de tela lê</p>
+          <p class="proto-instr">Quem não enxerga a tela usa um programa que lê em voz alta. Ele não vê o seu desenho. Aperte ouvir com o campo vazio, depois escreva a descrição e ouça de novo.</p>
+
+          <div class="reader-grid">
+            <div class="reader-pane">
+              <p class="pane-label">O que aparece na tela</p>
+              <div class="stage-box" style="border-radius:11px">
+                <svg viewBox="0 0 240 150" role="img" aria-label="Um dinossauro correndo diante de cactos, num jogo.">
+                  <rect x="0" y="0" width="240" height="150" fill="var(--stage-sky)"></rect>
+                  <rect x="0" y="118" width="240" height="32" fill="var(--stage-ground)"></rect>
+                  <line x1="0" y1="118" x2="240" y2="118" stroke="var(--stage-rule)" stroke-width="2"></line>
+                  <g id="mini-dino"></g>
+                  <g fill="var(--stage-leaf)">
+                    <rect x="168" y="92" width="7" height="26"></rect>
+                    <rect x="161" y="99" width="7" height="8"></rect>
+                    <rect x="175" y="96" width="7" height="8"></rect>
+                    <rect x="212" y="98" width="6" height="20"></rect>
+                  </g>
+                  <text x="10" y="20" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--stage-ink-soft)">pontos 0</text>
+                </svg>
+              </div>
+            </div>
+            <div class="reader-pane">
+              <p class="pane-label">O que a pessoa ouve</p>
+              <div class="speech" id="speech">
+                <p class="who">Leitor de tela</p>
+                <p class="muted" id="speech-text">Ainda não leu nada. Aperte “Ouvir a tela”.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <label for="desc" style="font-size:14.5px;font-weight:700;display:block;margin-bottom:7px">Descrição do jogo — o campo do bloco <span class="mono">Descrever o jogo para leitor de tela</span></label>
+            <textarea id="desc" placeholder="Escreva aqui o que é o seu jogo e como se joga"></textarea>
+          </div>
+
+          <div class="goals" id="goals-b">
+            <span class="goal" data-done="false" data-goal="empty"><span class="dot">✓</span>ouviu a tela sem descrição</span>
+            <span class="goal" data-done="false" data-goal="goal"><span class="dot">✓</span>a frase diz o objetivo</span>
+            <span class="goal" data-done="false" data-goal="key"><span class="dot">✓</span>a frase diz o controle</span>
+          </div>
+
+          <div class="footbar">
+            <div class="tools">
+              <button class="btn ghost" type="button" id="voice-b" aria-pressed="false">Ligar a voz</button>
+              <button class="btn ghost" type="button" id="reset-b">Recomeçar</button>
+            </div>
+            <button class="btn" type="button" id="read-b">Ouvir a tela</button>
+          </div>
+          <p class="stage-cap" id="verdict-b" style="text-align:left;padding-top:14px"></p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:12px">A criança escreve a frase do próprio jogo e ouve a diferença que ela faz. O reconhecimento de objetivo e controle é por palavra-chave e roda no navegador: serve para orientar, não para aprovar — a conferência continua no servidor, como nas outras cenas.</p>
+    </div>
+
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ───────────────── AJUSTES ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">Design das 14 cenas que já existem</p>
+    <h2>Sete ajustes sem motor novo</h2>
+    <p class="note">Tudo abaixo é <span class="mono">scene-activity.tsx</span>, <span class="mono">exploration-stage.tsx</span> e <span class="mono">scene.css</span>. Nenhum exige ação nova no motor nem migração de conteúdo.</p>
+  </div>
+
+  <div class="fixes">
+    <div class="fix">
+      <h4>O rodapé tem quatro botões e nenhum é o principal</h4>
+      <p class="side now">Desfazer · Recomeçar · Uma pista · Ligar som, todos do mesmo tamanho e do mesmo cinza. A criança não sabe qual é o caminho para a frente.</p>
+      <p class="side next">Um botão largo à direita — <i>Conferir</i>, depois <i>Continuar</i> — e os outros três como ícones pequenos à esquerda. Mesmo lugar em toda cena, como no Estúdio.</p>
+    </div>
+    <div class="fix">
+      <h4>A pista apaga a instrução</h4>
+      <p class="side now">A pista entra no mesmo balão e a instrução some. Quem pede ajuda perde o enunciado.</p>
+      <p class="side next">A instrução fica. A pista aparece abaixo, como fala do Zappy, marcada <span class="mono">1 de 3</span> — a escada de três degraus do catálogo já está escrita, só não se vê.</p>
+    </div>
+    <div class="fix">
+      <h4>“Siga a missão e observe o resultado”</h4>
+      <p class="side now">Frase fixa embaixo do palco, igual em todas as cenas, que não diz nada sobre o que acabou de acontecer.</p>
+      <p class="side next">A frase narra a mudança: “y foi de 150 para 210 — o Dino desceu.” A cena da colisão já faz isso (“As áreas encostaram: batida!”); é estender às outras treze.</p>
+    </div>
+    <div class="fix">
+      <h4>Dois controles abertos ao mesmo tempo</h4>
+      <p class="side now">Na cena da colisão, distância do cacto e largura da área do Dino mexem juntas. Duas variáveis soltas não ensinam qual causou o quê.</p>
+      <p class="side next">O segundo controle nasce fechado e abre quando a primeira descoberta acontece. Uma variável por vez, como o Brilliant faz com os eixos.</p>
+    </div>
+    <div class="fix">
+      <h4>Falta a faixa de estado</h4>
+      <p class="side now">Os números que a criança vai digitar no bloco não aparecem em lugar nenhum do palco.</p>
+      <p class="side next">Uma faixa acima da cena com os valores vivos e nomeados — <span class="mono">x = 110 · y = 150</span>, <span class="mono">velocidade = −5</span>, <span class="mono">pontos = 3</span>. É o que liga o bloco ao desenho.</p>
+    </div>
+    <div class="fix">
+      <h4>“OBSERVATÓRIO DE CONTATO”</h4>
+      <p class="side now">Selo em caixa alta no alto do palco, em vocabulário de adulto. O mesmo vale para “Prévia de autoria” vazando na visão do aluno.</p>
+      <p class="side next">O título da cena já está escrito em língua de criança no catálogo — “Onde a batida acontece?”. Usar esse.</p>
+    </div>
+    <div class="fix">
+      <h4>A cena não segue o tema</h4>
+      <p class="side now">Céu, chão e linhas são fixos em <span class="mono">scene.css</span>; no tema Pink a cena continua verde e bege.</p>
+      <p class="side next">Céu, chão e grade derivam dos tokens do tema. O par de comparação (azul A, laranja B) e o vermelho do encosto ficam fixos: eles carregam sentido, não decoração.</p>
+    </div>
+  </div>
+
+  <p class="note col" style="margin-top:20px">Um oitavo ajuste é maior e vale ser decidido à parte: <b>a previsão antes de mexer</b>. Uma pergunta de duas opções — “o que vai acontecer se o y aumentar?” — antes de liberar os controles. É o padrão mais forte do Brilliant e o mais barato daqui: o campo <span class="mono">checkpoint</span> do bloco interativo já existe e já é corrigido no servidor. Só falta poder colocá-lo <i>antes</i> da cena, e não depois.</p>
+</section>
+
+<div class="rule"></div>
+
+<!-- ───────────────── CATÁLOGO ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">As cenas que faltam</p>
+    <h2>Dez novas, e o elenco que multiplica as catorze</h2>
+    <p class="note">As colunas “onde entra” vêm dos títulos das seções de demonstração dos três manifestos v6 — são seções que hoje esperam por um clipe.</p>
+  </div>
+
+  <div class="stack">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Cena</th><th>O que a criança mexe</th><th>A descoberta</th><th>Onde entra</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>coordinates</b><br><span class="pill new">nova</span></td>
+            <td>x e y de 0 a 480 e 0 a 270, com fantasma da posição anterior</td>
+            <td>x maior é direita; <b>y maior é baixo</b>; o par é um endereço</td>
+            <td>Dino a1 “Veja como funciona o endereço”; Desafio d1 “Observe o endereço na tela”</td>
+          </tr>
+          <tr>
+            <td><b>screen-reader</b><br><span class="pill new">nova</span></td>
+            <td>o texto da descrição, e o botão que lê a tela</td>
+            <td>o desenho não informa nada; a frase precisa do objetivo e do controle</td>
+            <td>Dino a1 “Ouça o que a descrição informa”</td>
+          </tr>
+          <tr>
+            <td><b>stage-size</b><br><span class="pill new">nova</span></td>
+            <td>largura e altura da tela, e a borda ligada ou desligada</td>
+            <td>a tela tem limite, e o limite é uma escolha de quem faz o jogo</td>
+            <td>Dino a1 “Prepare a tela e veja seus limites”</td>
+          </tr>
+          <tr>
+            <td><b>draw-loop</b><br><span class="pill new">nova</span></td>
+            <td>desenhar a cada quadro, sim ou não; limpar antes, sim ou não</td>
+            <td>sem repetir, o jogo congela; sem limpar, fica rastro</td>
+            <td>Dino a2 (o conceito “que está dentro de todos os jogos”); Desafio d1 “O que acontece sem a borracha?”</td>
+          </tr>
+          <tr>
+            <td><b>frames</b><br><span class="pill new">nova</span></td>
+            <td>troca de dois quadros e a velocidade da troca</td>
+            <td>dois desenhos parados viram movimento</td>
+            <td>Meu Jeito a3 “Cada quadro é um desenho”, “O que faz o fogo pulsar?”</td>
+          </tr>
+          <tr>
+            <td><b>pixel-vector</b><br><span class="pill new">nova</span></td>
+            <td>ampliação da mesma silhueta em grade e em curva</td>
+            <td>de perto, a borda conta qual é qual — e nenhuma é a certa</td>
+            <td>Meu Jeito a4 “A cor de dentro e a linha de fora”, “Aproxime as duas bordas”</td>
+          </tr>
+          <tr>
+            <td><b>sheet-vs-sprite</b><br><span class="pill new">nova</span></td>
+            <td>onde cortar a folha, e o tamanho que o sprite terá no jogo</td>
+            <td>o tamanho da folha não é o tamanho no jogo</td>
+            <td>Meu Jeito a6 “Duas imagens dentro de uma só”, “Onde cortar a folha?”</td>
+          </tr>
+          <tr>
+            <td><b>lives</b><br><span class="pill new">nova</span></td>
+            <td>a batida, e o que acontece com ponto e com vida</td>
+            <td>duas contagens mudam por motivos diferentes</td>
+            <td>Desafio d4 “Observe ponto e vida mudarem”</td>
+          </tr>
+          <tr>
+            <td><b>symmetry</b><br><span class="pill new">nova</span></td>
+            <td>o eixo do espelho e o traço de um lado</td>
+            <td>um traço, dois lados — e o eixo decide onde</td>
+            <td>Meu Jeito a2 “Um traço, dois lados”</td>
+          </tr>
+          <tr>
+            <td><b>onion-skin</b><br><span class="pill new">nova</span></td>
+            <td>ver ou não o quadro anterior por baixo</td>
+            <td>comparar sem guardar de memória muda o desenho que sai</td>
+            <td>Meu Jeito a3 “Comparar sem guardar de memória”</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="background:var(--surface-sunk);font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)">as catorze de hoje, com outro elenco</td>
+          </tr>
+          <tr>
+            <td><b>world</b> · <b>hitbox</b> · <b>score</b><br><b>game-state</b> · <b>spawn</b> · <b>restart</b><br><span class="pill reuse">elenco</span></td>
+            <td>o mesmo de sempre — muda quem está em cena</td>
+            <td>a mesma, com a nave e o asteroide no lugar do Dino e do cacto</td>
+            <td>Desafio d1 “Criar não é desenhar”, d3 “Quais dois objetos se encontraram”, d4 “O número e o placar”, d5 “Os quatro momentos do jogo”; Meu Jeito a5 “A pedra sumiu ou foi coberta?”, a7 “Uma nave, muitos nascimentos”</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="gap:12px">
+      <h3>Por que o elenco vale mais que o número de cenas</h3>
+      <p style="font-size:16px;color:var(--ink-soft)">Seis das catorze cenas ensinam conceitos que os três cursos repetem. Hoje elas só sabem falar de Dino e de cacto, então o Desafio e o Meu Jeito não podem usá-las. Um campo de elenco na cena — quem é o personagem, quem é o obstáculo, como se chama o palco — transforma seis cenas em dezoito usos sem uma linha de motor novo. É o menor custo por seção coberta desta proposta inteira.</p>
+      <p style="font-size:16px;color:var(--ink-soft)">Fica de fora, de propósito, o que não é conceito e sim passeio pelo aplicativo: “onde os projetos ficam”, “salvar e enviar são coisas diferentes”, “seu caderno e o caminho da ajuda”. São quatro seções da introdução do Desafio e três do Meu Jeito, e o lugar delas é o tutorial guiado do kids, que já existe e já sabe apontar para a tela de verdade.</p>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ───────────────── ORDEM ───────────────── -->
+<section>
+  <div class="section-head col">
+    <p class="eyebrow">Ordem de trabalho</p>
+    <h2>Quatro lotes, do mais barato ao mais caro</h2>
+  </div>
+
+  <div class="lots">
+    <div class="lot">
+      <span class="n">1</span>
+      <div>
+        <h4>Os sete ajustes de design</h4>
+        <p>Rodapé com uma ação, pista que não apaga a instrução, frase que narra a mudança, uma variável por vez, faixa de estado, títulos em língua de criança, cena que segue o tema. Melhora as catorze cenas de uma vez e não toca em conteúdo publicado.</p>
+        <span class="cost">member-shell + scene.css · sem migração · sem motor novo</span>
+      </div>
+    </div>
+    <div class="lot">
+      <span class="n">2</span>
+      <div>
+        <h4>Elenco por curso</h4>
+        <p>Um campo de elenco no modelo da cena e no editor do admin. Seis cenas passam a servir o Desafio e o Meu Jeito. Cobre nove seções de demonstração que hoje esperam por vídeo, sem escrever nenhuma cena nova.</p>
+        <span class="cost">core/learning/scene (catálogo) + admin · conteúdo existente intacto</span>
+      </div>
+    </div>
+    <div class="lot">
+      <span class="n">3</span>
+      <div>
+        <h4>As quatro cenas do Corre Dino</h4>
+        <p><span class="mono">coordinates</span>, <span class="mono">screen-reader</span>, <span class="mono">stage-size</span> e <span class="mono">draw-loop</span>. As duas primeiras estão prototipadas aqui em cima; as outras duas são do mesmo feitio. Fecham a Aula 1 e a Aula 2, que são onde a criança decide se fica.</p>
+        <span class="cost">ações novas no motor (definir posição, ligar/desligar desenho) · roteiro de demonstração por cena</span>
+      </div>
+    </div>
+    <div class="lot">
+      <span class="n">4</span>
+      <div>
+        <h4>As seis do Pinta e a previsão</h4>
+        <p><span class="mono">frames</span>, <span class="mono">pixel-vector</span>, <span class="mono">sheet-vs-sprite</span>, <span class="mono">symmetry</span>, <span class="mono">onion-skin</span>, <span class="mono">lives</span> — quatro delas já existem como HTML no disco e só precisam virar cena nativa. Junto, a pergunta de previsão antes da cena.</p>
+        <span class="cost">reaproveita docs/aulas-interativas/interacoes · checkpoint antes da atividade</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="note col" style="margin-top:24px">Depois dos quatro lotes: <b>25 → 59 seções</b> em que a criança mexe em alguma coisa, e as 47 demonstrações deixam de depender só de vídeo. Os clipes continuam valendo — mas para mostrar o <i>gesto</i> no Estúdio, que é o que vídeo faz melhor do que qualquer simulação.</p>
+</section>
+
+<div class="rule"></div>
+
+<footer class="col">
+  <p>Levantamento sobre os 27 manifestos de <span class="mono">docs/aulas-interativas/*-v6</span> e o catálogo de <span class="mono">packages/core/src/learning/scene/catalog.ts</span>. Os protótipos desta página são maquetes para decidir, não código do produto: a avaliação de verdade continua no servidor.</p>
+</footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ── pixel art do Dino: uma linha por fileira, # é um pixel ── */
+  const DINO = [
+    '..........#####.',
+    '..........#.####',
+    '..........######',
+    '..........####..',
+    '..........###...',
+    '#.........#####.',
+    '##.......######.',
+    '###....########.',
+    '.###..#########.',
+    '..##############',
+    '...############.',
+    '....##########..',
+    '.....###..###...',
+    '.....##....##...',
+  ];
+  const DINO_W = 16, DINO_H = DINO.length;
+
+  function paintDino(group, unit, color) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const frag = document.createDocumentFragment();
+    DINO.forEach((row, ry) => {
+      let run = 0;
+      for (let rx = 0; rx <= DINO_W; rx++) {
+        if (row[rx] === '#') { run++; continue; }
+        if (run > 0) {
+          const r = document.createElementNS(ns, 'rect');
+          r.setAttribute('x', ((rx - run) * unit).toFixed(2));
+          r.setAttribute('y', (ry * unit).toFixed(2));
+          r.setAttribute('width', (run * unit + 0.4).toFixed(2));
+          r.setAttribute('height', (unit + 0.4).toFixed(2));
+          r.setAttribute('fill', color);
+          frag.appendChild(r);
+          run = 0;
+        }
+      }
+    });
+    group.replaceChildren(frag);
+  }
+
+  /* ─────────── diagnóstico: a malha de seções ─────────── */
+  const CURSOS = [
+    { nome: 'Desafio do Primeiro Jogo', total: 78, scene: 0, html: 6, ask: 0 },
+    { nome: 'Corre, Dino!', total: 128, scene: 14, html: 0, ask: 0 },
+    { nome: 'O Jogo do Meu Jeito', total: 76, scene: 0, html: 5, ask: 26 },
+  ];
+  const tally = document.getElementById('tally');
+  if (tally) {
+    const frag = document.createDocumentFragment();
+    for (const c of CURSOS) {
+      const row = document.createElement('div');
+      row.className = 'tally-row';
+      const head = document.createElement('div');
+      head.className = 'tally-head';
+      const manip = c.scene + c.html;
+      head.innerHTML = '<h4>' + c.nome + '</h4><span class="count">' + manip +
+        ' de ' + c.total + ' seções com algo para mexer</span>';
+      const grid = document.createElement('div');
+      grid.className = 'grid-cells';
+      grid.setAttribute('role', 'img');
+      grid.setAttribute('aria-label', c.nome + ': ' + c.total + ' seções, ' + c.scene +
+        ' com cena nativa, ' + c.html + ' com página HTML, ' + c.ask + ' com pergunta curta.');
+      for (let i = 0; i < c.total; i++) {
+        const cell = document.createElement('span');
+        cell.className = 'cell' + (i < c.scene ? ' scene'
+          : i < c.scene + c.html ? ' html'
+          : i < c.scene + c.html + c.ask ? ' ask' : '');
+        grid.appendChild(cell);
+      }
+      row.append(head, grid);
+      frag.appendChild(row);
+    }
+    const legend = document.createElement('div');
+    legend.className = 'legend';
+    legend.innerHTML =
+      '<span><i class="swatch" style="background:var(--brand)"></i>cena nativa (14)</span>' +
+      '<span><i class="swatch" style="background:var(--leaf)"></i>página HTML (11)</span>' +
+      '<span><i class="swatch" style="border:1px solid var(--line-strong)"></i>pergunta curta (26)</span>' +
+      '<span><i class="swatch" style="background:var(--surface-sunk)"></i>sem atividade (231)</span>';
+    frag.appendChild(legend);
+    tally.replaceChildren(frag);
+  }
+
+  /* ─────────── protótipo A: coordenadas ─────────── */
+  const OX = 44, OY = 30, W = 480, H = 270;   // origem e tamanho da tela dentro do SVG
+  const UNIT = 3.4;                            // pixel do dino em unidades do palco
+  const DW = DINO_W * UNIT, DH = DINO_H * UNIT;
+
+  const svg = document.getElementById('stage');
+  const dino = document.getElementById('dino');
+  const ghost = document.getElementById('ghost');
+  const target = document.getElementById('target');
+  const gx = document.getElementById('guide-x');
+  const gy = document.getElementById('guide-y');
+  const cap = document.getElementById('stage-cap');
+  const inX = document.getElementById('in-x');
+  const inY = document.getElementById('in-y');
+  const valX = document.getElementById('val-x');
+  const valY = document.getElementById('val-y');
+  const hudX = document.getElementById('hud-x');
+  const hudY = document.getElementById('hud-y');
+  const verdictA = document.getElementById('verdict-a');
+  const doneA = document.getElementById('done-a');
+
+  if (svg) {
+    paintDino(dino, UNIT, 'var(--stage-a)');
+    paintDino(ghost, UNIT, 'var(--stage-ink-soft)');
+    ghost.setAttribute('opacity', '0.22');
+
+    // réguas
+    const ns = 'http://www.w3.org/2000/svg';
+    const rx = document.getElementById('ruler-x');
+    const ry = document.getElementById('ruler-y');
+    for (let v = 0; v <= W; v += 120) {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', OX + v); t.setAttribute('y', 20);
+      t.setAttribute('text-anchor', v === 0 ? 'start' : 'middle');
+      t.textContent = v; rx.appendChild(t);
+      const k = document.createElementNS(ns, 'line');
+      k.setAttribute('x1', OX + v); k.setAttribute('x2', OX + v);
+      k.setAttribute('y1', 24); k.setAttribute('y2', 30);
+      k.setAttribute('stroke', 'var(--stage-rule)'); k.setAttribute('stroke-width', '1.5');
+      rx.appendChild(k);
+    }
+    for (let v = 0; v <= H; v += 90) {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', 36); t.setAttribute('y', OY + v + 4);
+      t.setAttribute('text-anchor', 'end');
+      t.textContent = v; ry.appendChild(t);
+      const k = document.createElementNS(ns, 'line');
+      k.setAttribute('x1', 38); k.setAttribute('x2', 44);
+      k.setAttribute('y1', OY + v); k.setAttribute('y2', OY + v);
+      k.setAttribute('stroke', 'var(--stage-rule)'); k.setAttribute('stroke-width', '1.5');
+      ry.appendChild(k);
+    }
+
+    const state = { x: 110, y: 150, px: 110, py: 150, hint: 0 };
+    const goals = { right: false, down: false, same: false };
+    const seenAt = new Set(['110,150']);
+
+    function place(g, x, y) {
+      g.setAttribute('transform', 'translate(' + (OX + x - DW / 2) + ',' + (OY + y - DH / 2) + ')');
+    }
+
+    function render(moved) {
+      const { x, y, px, py } = state;
+      place(dino, x, y);
+      place(ghost, px, py);
+      ghost.setAttribute('opacity', (px === x && py === y) ? '0' : '0.24');
+      target.setAttribute('transform', 'translate(' + (OX + x) + ',' + (OY + y) + ')');
+      gx.setAttribute('x1', OX); gx.setAttribute('y1', OY + y);
+      gx.setAttribute('x2', OX + x); gx.setAttribute('y2', OY + y);
+      gy.setAttribute('x1', OX + x); gy.setAttribute('y1', OY);
+      gy.setAttribute('x2', OX + x); gy.setAttribute('y2', OY + y);
+      valX.textContent = x; valY.textContent = y;
+      hudX.textContent = x; hudY.textContent = y;
+      inX.value = x; inY.value = y;
+
+      if (!moved) { cap.textContent = 'O Dino está em x ' + x + ', y ' + y + '.'; return; }
+      const dx = x - px, dy = y - py;
+      let frase = '';
+      if (dx !== 0 && dy === 0) {
+        frase = 'x foi de ' + px + ' para ' + x + ': o Dino andou para a ' +
+          (dx > 0 ? 'direita' : 'esquerda') + ', na mesma altura.';
+        if (dx > 0) goals.right = true;
+      } else if (dy !== 0 && dx === 0) {
+        frase = 'y foi de ' + py + ' para ' + y + ': o Dino ' +
+          (dy > 0 ? 'desceu' : 'subiu') + ', sem sair do lugar na largura.';
+        if (dy > 0) goals.down = true;
+      } else if (dx !== 0 && dy !== 0) {
+        frase = 'Mudaram os dois: o Dino foi para a ' + (dx > 0 ? 'direita' : 'esquerda') +
+          ' e para ' + (dy > 0 ? 'baixo' : 'cima') + '.';
+      }
+      for (const chave of seenAt) {
+        const [sx, sy] = chave.split(',').map(Number);
+        if (sx === x && sy !== y) { goals.same = true; break; }
+      }
+      seenAt.add(x + ',' + y);
+      cap.textContent = frase;
+      paintGoals();
+    }
+
+    function paintGoals() {
+      document.querySelectorAll('#goals-a .goal').forEach((el) => {
+        el.dataset.done = String(!!goals[el.dataset.goal]);
+      });
+      const todas = goals.right && goals.down && goals.same;
+      doneA.disabled = !todas;
+      if (todas && !doneA.dataset.ready) {
+        doneA.dataset.ready = '1';
+        verdictA.textContent = 'As três descobertas apareceram. Pode conferir.';
+      }
+    }
+
+    function set(axis, v, moved) {
+      state.px = state.x; state.py = state.y;
+      if (axis === 'x') state.x = Math.max(0, Math.min(W, Math.round(v)));
+      else state.y = Math.max(0, Math.min(H, Math.round(v)));
+      render(moved);
+    }
+
+    inX.addEventListener('input', () => set('x', +inX.value, true));
+    inY.addEventListener('input', () => set('y', +inY.value, true));
+    document.querySelectorAll('.step').forEach((b) => {
+      b.addEventListener('click', () => {
+        const axis = b.dataset.axis;
+        set(axis, (axis === 'x' ? state.x : state.y) + (+b.dataset.delta), true);
+      });
+    });
+
+    svg.setAttribute('tabindex', '0');
+    svg.addEventListener('keydown', (e) => {
+      const passo = 10;
+      const mapa = {
+        ArrowRight: () => set('x', state.x + passo, true),
+        ArrowLeft: () => set('x', state.x - passo, true),
+        ArrowDown: () => set('y', state.y + passo, true),
+        ArrowUp: () => set('y', state.y - passo, true),
+      };
+      if (mapa[e.key]) { e.preventDefault(); mapa[e.key](); }
+    });
+
+    document.getElementById('reset-a').addEventListener('click', () => {
+      state.x = 110; state.y = 150; state.px = 110; state.py = 150; state.hint = 0;
+      goals.right = goals.down = goals.same = false;
+      seenAt.clear(); seenAt.add('110,150');
+      delete doneA.dataset.ready;
+      verdictA.textContent = '';
+      render(false); paintGoals();
+    });
+
+    const PISTAS = [
+      'Pista 1 de 3 — mexa só no x e olhe para que lado o Dino vai.',
+      'Pista 2 de 3 — agora deixe o x parado e aumente o y. Repare que ele não sobe.',
+      'Pista 3 de 3 — escolha um x e visite duas alturas diferentes com ele.',
+    ];
+    document.getElementById('hint-a').addEventListener('click', () => {
+      verdictA.textContent = PISTAS[Math.min(state.hint, 2)];
+      state.hint++;
+    });
+
+    doneA.addEventListener('click', () => {
+      verdictA.textContent = 'Descoberta registrada: x maior leva para a direita e y maior leva para baixo. ' +
+        'O par x, y é o endereço do sprite na tela.';
+      doneA.textContent = 'Continuar';
+    });
+
+    render(false);
+    paintGoals();
+  }
+
+  /* ─────────── protótipo B: leitor de tela ─────────── */
+  const mini = document.getElementById('mini-dino');
+  if (mini) { paintDino(mini, 2.6, 'var(--stage-a)'); mini.setAttribute('transform', 'translate(44,82)'); }
+
+  const desc = document.getElementById('desc');
+  const speechText = document.getElementById('speech-text');
+  const readB = document.getElementById('read-b');
+  const voiceB = document.getElementById('voice-b');
+  const verdictB = document.getElementById('verdict-b');
+  const goalsB = { empty: false, goal: false, key: false };
+
+  const TECLAS = ['espaço', 'espaco', 'enter', 'seta', 'setas', 'clique', 'toque', 'tocar', 'apertar', 'aperte', 'apertando', 'clicar', 'mouse', 'barra'];
+  const VERBOS = ['pule', 'pular', 'corra', 'correr', 'desvie', 'desviar', 'escape', 'escapar', 'atire', 'atirar', 'colete', 'coletar', 'fuja', 'fugir', 'ganhe', 'marque', 'chegue', 'acerte'];
+
+  function analisa(t) {
+    const s = t.toLowerCase();
+    return {
+      objetivo: VERBOS.some((v) => s.includes(v)),
+      controle: TECLAS.some((k) => s.includes(k)),
+    };
+  }
+
+  function paintGoalsB() {
+    document.querySelectorAll('#goals-b .goal').forEach((el) => {
+      el.dataset.done = String(!!goalsB[el.dataset.goal]);
+    });
+  }
+
+  function fala(texto, mudo) {
+    speechText.textContent = texto;
+    speechText.classList.toggle('muted', !!mudo);
+    speechText.classList.toggle('live', !mudo);
+    if (voiceB && voiceB.getAttribute('aria-pressed') === 'true' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(texto);
+        u.lang = 'pt-BR'; u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+      } catch (_) { /* sem voz disponível: o texto já está na tela */ }
+    }
+  }
+
+  if (readB) {
+    readB.addEventListener('click', () => {
+      const t = (desc.value || '').trim();
+      if (!t) {
+        goalsB.empty = true;
+        fala('Tela do jogo. Imagem.', true);
+        verdictB.textContent = 'Foi só isso que a pessoa ouviu. O leitor de tela não enxerga o desenho: ele lê o que estiver escrito.';
+      } else {
+        const a = analisa(t);
+        goalsB.goal = a.objetivo; goalsB.key = a.controle;
+        fala('Tela do jogo. ' + t, false);
+        verdictB.textContent = a.objetivo && a.controle
+          ? 'Agora a descrição informa o objetivo e o controle — é o que alguém precisa para começar a jogar sem ver a tela.'
+          : !a.objetivo && !a.controle
+            ? 'A pessoa ouviu a sua frase, mas ela ainda não diz o que fazer nem como jogar. Tente contar as duas coisas.'
+            : a.objetivo
+              ? 'Ela já sabe o que fazer no jogo. Falta dizer como se joga — qual tecla, qual toque.'
+              : 'Ela já sabe qual é o controle. Falta dizer o que se faz no jogo.';
+      }
+      paintGoalsB();
+    });
+
+    voiceB.addEventListener('click', () => {
+      const on = voiceB.getAttribute('aria-pressed') === 'true';
+      if (!window.speechSynthesis) {
+        verdictB.textContent = 'Este navegador não tem voz disponível. O texto lido continua aparecendo no painel escuro.';
+        return;
+      }
+      voiceB.setAttribute('aria-pressed', String(!on));
+      voiceB.textContent = on ? 'Ligar a voz' : 'Desligar a voz';
+      if (on && window.speechSynthesis) window.speechSynthesis.cancel();
+    });
+
+    document.getElementById('reset-b').addEventListener('click', () => {
+      desc.value = '';
+      goalsB.empty = goalsB.goal = goalsB.key = false;
+      verdictB.textContent = '';
+      fala('Ainda não leu nada. Aperte “Ouvir a tela”.', true);
+      paintGoalsB();
+    });
+  }
+})();
+</script>
