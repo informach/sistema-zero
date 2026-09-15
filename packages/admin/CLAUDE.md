@@ -25,10 +25,12 @@ um interruptor de modo escondido dentro dele; agora são irmãs, e trocar entre 
 escolhida. Saíram `simulation`, `prediction`, `comparison`, `sequence` e `experiment` (nenhum
 tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
 
-- ⭐⭐ **O caso da atividade** (15/09/2026, `editor/scene-setup-editor.tsx`): um `<details>` "O
-  caso desta atividade: por onde começa e o que cobra" com (a) as ações que acontecem ANTES de a
+- ⭐⭐ **O caso da atividade** (15/09/2026, `editor/scene-setup-editor.tsx`): um passo do fluxo —
+  "O caso desta atividade" — com (a) as ações que acontecem ANTES de a
   criança entrar — mesmo editor de ações do roteiro, mesma régua — e (b) as descobertas que ESTA
-  atividade cobra. Sem marcar nenhuma, valem as do modelo; marcando, a mesma cena vira outra
+  atividade cobra. ⚠⚠ **Saiu do `<details>` fechado no lote 4**, e a medição é a razão: o caso
+  estava ligado em **3 dos 52** blocos de cena dos cursos. É a alavanca que faz uma cena render
+  dezenas de exercícios, e estava atrás de um triângulo fechado ao lado de "áudio e ajustes". Sem marcar nenhuma, valem as do modelo; marcando, a mesma cena vira outra
   missão. ⚠️ Missão só na experimentação: a demonstração não cobra meta, e o guard do core recusa.
   ⚠️⚠️ **O caso é APARADO ao trocar de cena** (`casoAoTrocarCena`, puro e testado): as `actions`
   são da cena e as `goals` são ids do modelo DELA, então carregados para outra cena deixavam o
@@ -41,6 +43,23 @@ tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
   MISSÃO sai ao virar demonstração, avisando.
 - ⭐ **Como a demonstração aparece** (só nela): "Guiada" (etapas à vista) × "Animação curta" (um ▶
   e o roteiro inteiro, para ficar no meio da explicação).
+- ⭐⭐ **O editor MOSTRA a pergunta que a cena dá** (15/09/2026, lote 4). Toda cena tem previsão e
+  toda experimentação tem pergunta, herdadas do modelo (`SCENE_QUESTIONS` do core) — então uma
+  caixa DESMARCADA ao lado de "incluir pergunta de verificação" fazia o professor ler "não há
+  pergunta" olhando para o bloco que hoje faz a criança responder uma. Desmarcada, o editor mostra
+  o texto herdado como a criança vai receber (`PerguntaHerdada`, já vestido pelo ELENCO); as caixas
+  passaram a dizer "Escrever a minha previsão/pergunta (substitui a da cena)". ⚠⚠ Ao LIGAR, o campo
+  nasce com a da cena dentro, nunca em branco: marcar a caixa não pode PIORAR a tela da criança —
+  começando vazio, quem clicasse para "dar uma olhada" trocava uma pergunta pronta por uma
+  incompleta, e a aula parava de publicar por causa disso. ⚠ A herança é calculada SEM os campos
+  próprios do bloco, senão devolveria o que o professor acabou de escrever.
+- ⚠⚠ **Aviso editorial novo** (`lesson-editorial-warnings.ts`): experimentação cuja MISSÃO cobra
+  parte das descobertas da cena e que usa a pergunta de FÁBRICA. A pergunta do modelo foi escrita
+  contra a história INTEIRA; recortada a missão, ela pode cobrar a regra de algo que a criança não
+  precisou ver — e a regra da casa é que nada caia sem ela ter VISTO o que a afirmação diz. Avisa
+  e não bloqueia: na maioria das cenas a ideia central sobrevive ao recorte, e só quem escreveu o
+  caso sabe dizer. Hoje ele não dispara em nenhum bloco dos cursos (os três com missão recortada
+  escreveram a própria pergunta) — ele é preventivo, não um passivo.
 - ⭐ **A previsão antes de mexer** (14/09/2026): caixa "Perguntar o que ela acha que vai
   acontecer, antes de abrir a cena", só nos dois tipos de CENA. Pergunta + alternativas + um
   gabarito OPCIONAL ("O que acontece de verdade"). ⚠️ Não vale nota e a criança não vê se

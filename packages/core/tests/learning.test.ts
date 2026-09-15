@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { LearningAnswers } from '../src/learning'
 import {
+  blockCheckpoint,
+  blockPrediction,
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
@@ -10,6 +11,7 @@ import {
   isLearningFrameMessage,
   isLearningManifest,
   LEARNING_PROTOCOL,
+  type LearningAnswers,
   migrateLegacyActivity,
   migrateLegacyInteractiveBlock,
   publicInteractiveBlock,
@@ -128,11 +130,33 @@ describe('learning contracts', () => {
     expect(vazia.feedback).toContain('sem descobertas para cobrar')
   })
 
-  test('a cena é aprovada pela evidência que ela mesma guarda', () => {
+  test('⚠️⚠️ a cena pede a descoberta E a regra: a evidência sozinha não fecha mais', () => {
+    // O TERCEIRO tempo do ciclo (mexer, prever, ENUNCIAR) deixou de ser opcional em 15/09/2026:
+    // a experimentação que não escreve pergunta herda a do modelo da cena, e é ela que dá a
+    // palavra final. Antes, 44 dos 52 blocos dos cursos fechavam sem enunciar regra nenhuma.
     expect(evaluateLearning(experimento, {}).passed).toBe(false)
-    expect(evaluateLearning(experimento, { sceneCheckpoint: sessaoCompleta() }).passed).toBe(true)
+    const descobriu = { sceneCheckpoint: sessaoCompleta() }
+    expect(evaluateLearning(experimento, descobriu).passed).toBe(false)
+    expect(evaluateLearning(experimento, descobriu).feedback).toContain('escolha a frase')
+
+    const pergunta = blockCheckpoint(experimento)
+    if (!pergunta) throw new Error('a experimentação tem de herdar a pergunta do modelo')
+    expect(
+      evaluateLearning(experimento, { ...descobriu, checkpoint: pergunta.correctChoiceId }).passed,
+    ).toBe(true)
     // Pacote corrompido não aprova nem finge que está tudo bem.
     expect(evaluateLearning(experimento, { sceneCheckpoint: ['{lixo'] }).passed).toBe(false)
+  })
+
+  test('⚠️ a DEMONSTRAÇÃO não herda pergunta: ela assistiu, não conduziu', () => {
+    // Cobrar a regra de quem seguiu um roteiro é cobrar um gesto que a tela não ofereceu.
+    const demo: InteractiveBlock = {
+      ...experimento,
+      activity: { type: 'demonstration', scene: 'world' },
+    }
+    expect(blockCheckpoint(demo)).toBeUndefined()
+    // Mas a PREVISÃO vale para as duas: apostar antes de ver é o primeiro tempo do ciclo.
+    expect(blockPrediction(demo)?.prompt.length).toBeGreaterThan(0)
   })
   test('an essential HTML claim requires its independent native checkpoint', () => {
     const block: InteractiveBlock = {
@@ -319,7 +343,12 @@ describe('the 27 adapted lessons', () => {
           answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
         }
         if (activity.type === 'html') answers.participated = true
-        if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId
+        // ⚠️ Pelo RESOLVEDOR, não pelo campo cru: desde 15/09/2026 a experimentação que não
+        // escreve pergunta herda a do MODELO da cena, e é ela que o servidor cobra. Lendo o
+        // campo, a varredura pararia de conferir o caminho completo justamente nos 44 blocos
+        // que não escrevem a própria — que são a maioria.
+        const pergunta = blockCheckpoint(block)
+        if (pergunta) answers.checkpoint = pergunta.correctChoiceId
         expect(evaluateLearning(block, answers).passed).toBe(true)
       }
     })
@@ -476,7 +505,11 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
     answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
   }
   if (activity.type === 'html') answers.participated = true
-  if (block.checkpoint) answers.checkpoint = block.checkpoint.correctChoiceId
+  // ⚠️ Pelo RESOLVEDOR: a experimentação que não escreve pergunta herda a do MODELO da cena, e
+  // é ela que o servidor cobra. O caminho de sucesso é o da criança, e ela responde a pergunta
+  // que a TELA mostrou.
+  const pergunta = blockCheckpoint(block)
+  if (pergunta) answers.checkpoint = pergunta.correctChoiceId
   return answers
 }
 
@@ -525,7 +558,13 @@ describe('os blocos do modelo anterior', () => {
     const casos: Array<{ bloco: InteractiveBlock; respostas: LearningAnswers }> = [
       {
         bloco: { ...experimento, prediction: previsao },
-        respostas: { sceneCheckpoint: sessaoCompleta() },
+        // ⚠️ A experimentação herda a pergunta do MODELO da cena, e ela dá a palavra final:
+        // o caminho de sucesso inclui respondê-la. O que este teste cobra é outra coisa — que
+        // o PALPITE não mexe no veredito, certo ou errado.
+        respostas: {
+          sceneCheckpoint: sessaoCompleta(),
+          checkpoint: blockCheckpoint(experimento)?.correctChoiceId ?? '',
+        },
       },
       {
         bloco: {

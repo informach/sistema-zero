@@ -121,7 +121,15 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "gravity"
+          "scene": "gravity",
+          "setup": {
+            "actions": [
+              {
+                "type": "jump",
+                "input": "tap"
+              }
+            ]
+          }
         },
         "prediction": {
           "prompt": "Antes de mexer: sem a gravidade, o que acontece depois do salto?",

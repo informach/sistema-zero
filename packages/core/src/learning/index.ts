@@ -19,6 +19,7 @@ import {
   readDemonstrationSession,
   readExperimentSession,
   SCENE_IDS,
+  SCENE_QUESTIONS,
   type SceneActivity,
   type SceneId,
   sceneModel,
@@ -179,11 +180,77 @@ function publicActivity(activity: LearningActivity): LearningActivity {
 }
 
 /** Answer keys stay on the server, including for custom HTML activities. */
+/**
+ * A PREVISÃO e a PERGUNTA desta atividade: as do bloco, quando o professor escreveu; as do
+ * MODELO da cena, quando não.
+ *
+ * ⚠️⚠️ É o conserto de raiz do padrão mais caro que construímos e menos usamos. Os dois campos
+ * nasceram OPCIONAIS no bloco, e a medição foi dura: de 52 blocos de cena nos cursos, 7 tinham
+ * previsão e 8 tinham pergunta — 13% e 15%. A pergunta certa para uma cena é propriedade DA
+ * CENA, não do bloco: "o que acontece com a velocidade em zero" é a mesma em toda aula que usa
+ * `velocity`. Escrita uma vez no catálogo, ela chega a todo bloco de toda aula sem tocar em
+ * manifesto nenhum.
+ *
+ * ⚠️ O bloco continua vencendo: quem escreve a sua, usa a sua. O que mudou é o PADRÃO.
+ *
+ * ⚠️ O texto passa pelo ELENCO, como tudo o que a plataforma gera — sem isso uma turma de nave
+ * leria a pergunta falando do Dino.
+ *
+ * ⚠️⚠️ **A busca é opcional (`?.`) de propósito, e o `Record<SceneId, …>` não dispensa isso.**
+ * Estes dois resolvedores são chamados pelo `publicInteractiveBlock`, que roda sobre o conteúdo
+ * CRU do banco, sem passar pelo guard — está escrito lá embaixo, e é por isso que a poda de
+ * gabarito existe. Uma linha gravada com um id de cena que não existe mais faria
+ * `SCENE_QUESTIONS[a.scene].prediction` LANÇAR, e a exceção derrubaria o GET da aula inteira,
+ * não só aquele bloco. Sem modelo, a cena volta a não ter pergunta — que é exatamente o que ela
+ * era antes deste lote.
+ */
+export function blockPrediction(block: InteractiveBlock): LearningPrediction | undefined {
+  if (block.prediction) return block.prediction
+  const a = block.activity
+  if (a.type !== 'experimentation' && a.type !== 'demonstration') return undefined
+  // ⚠️⚠️ A demonstração `inline` fica de FORA do padrão, e é o contrário de um detalhe: ela existe
+  // para ser "um ▶ e nada mais, no meio de uma explicação" — o degrau entre o parágrafo e a
+  // simulação. A previsão TRAVA o palco até a criança escolher, então herdá-la aqui põe uma
+  // pergunta de duas opções e um portão em frente a um botão que devia caber numa frase. Quem
+  // escreve a previsão no bloco continua mandando: o que não pode é a plataforma pôr uma por
+  // conta própria num formato desenhado para não ter nenhuma.
+  if (a.type === 'demonstration' && a.presentation === 'inline') return undefined
+  const modelo = SCENE_QUESTIONS[a.scene]?.prediction
+  if (!modelo) return undefined
+  return {
+    prompt: castText(modelo.prompt, a.cast),
+    choices: modelo.choices.map((c) => ({ id: c.id, label: castText(c.label, a.cast) })),
+    correctChoiceId: modelo.correctChoiceId,
+  }
+}
+
+/**
+ * ⚠️⚠️ A pergunta padrão vale só na EXPERIMENTAÇÃO, e é deliberado: ela dá a palavra final sobre
+ * a conclusão do bloco (o terceiro tempo do ciclo — mexer, prever, enunciar). Na demonstração a
+ * criança assistiu, e cobrar dela a regra depois de um roteiro que ela não conduziu seria cobrar
+ * um gesto que a tela não ofereceu.
+ */
+export function blockCheckpoint(block: InteractiveBlock): LearningCheckpoint | undefined {
+  if (block.checkpoint) return block.checkpoint
+  const a = block.activity
+  if (a.type !== 'experimentation') return undefined
+  const modelo = SCENE_QUESTIONS[a.scene]?.explain
+  if (!modelo) return undefined
+  return {
+    prompt: castText(modelo.prompt, a.cast),
+    choices: modelo.choices.map((c) => ({ id: c.id, label: castText(c.label, a.cast) })),
+    correctChoiceId: modelo.correctChoiceId,
+    explanation: castText(modelo.explanation, a.cast),
+  }
+}
+
 export function publicInteractiveBlock(block: InteractiveBlock): PublicInteractiveBlock {
   // ⚠️ Poda defensiva: a projeção roda sobre o conteúdo CRU do banco, sem passar pelo
   // guard. Uma linha gravada antes desta reescrita pode carregar um gabarito (`solution`) —
   // copiar a atividade inteira mandaria a resposta para o navegador da criança.
   const activity = publicActivity(block.activity)
+  const pergunta = blockCheckpoint(block)
+  const palpite = blockPrediction(block)
   return {
     kind: 'interactive',
     title: block.title,
@@ -191,12 +258,11 @@ export function publicInteractiveBlock(block: InteractiveBlock): PublicInteracti
     hints: block.hints,
     required: block.required,
     activity,
-    ...(block.checkpoint
-      ? { checkpoint: { prompt: block.checkpoint.prompt, choices: block.checkpoint.choices } }
-      : {}),
-    ...(block.prediction
-      ? { prediction: { prompt: block.prediction.prompt, choices: block.prediction.choices } }
-      : {}),
+    // ⚠️ Pelos RESOLVEDORES, não pelos campos crus: é aqui que a previsão e a pergunta do
+    // modelo chegam à criança. A poda do gabarito continua a mesma — `correctChoiceId` e
+    // `explanation` não saem daqui em nenhum dos dois caminhos.
+    ...(pergunta ? { checkpoint: { prompt: pergunta.prompt, choices: pergunta.choices } } : {}),
+    ...(palpite ? { prediction: { prompt: palpite.prompt, choices: palpite.choices } } : {}),
   }
 }
 export function isPublicInteractiveBlock(value: unknown): value is PublicInteractiveBlock {
@@ -510,7 +576,10 @@ function withAttachedQuestion(
   block: InteractiveBlock,
   answers: LearningAnswers,
 ): LearningResult {
-  const pergunta = block.checkpoint
+  // ⚠️ O mesmo resolvedor da projeção pública: se a criança VÊ a pergunta do modelo, é essa
+  // que o servidor cobra. Lendo o campo cru aqui, a cena passaria sem a pergunta que a tela
+  // mostrou — e a tela e o veredito contariam histórias diferentes.
+  const pergunta = blockCheckpoint(block)
   if (!pergunta || !resultado.passed) return resultado
   const acertou = answers.checkpoint === pergunta.correctChoiceId
   return {

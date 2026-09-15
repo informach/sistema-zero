@@ -3,7 +3,7 @@
 import type { SceneAction, SceneCast, SceneId, SceneState } from '@sistemazero/core/learning/scene'
 import { castText, SCENE_LIMITS } from '@sistemazero/core/learning/scene'
 import { SceneButton } from './exploration-stage'
-import { Medida } from './scene-core-controls'
+import { Chave, Escolha, Medida } from './scene-bench'
 
 /**
  * A bancada das dez cenas do motor, do 3D e do ateliê (15/09/2026).
@@ -17,50 +17,6 @@ import { Medida } from './scene-core-controls'
  * seria mais bonito e deixaria de fora quem usa teclado — e o que estas cenas ensinam (a câmera
  * decide o que se vê) não precisa de gesto contínuo: precisa de voltas contáveis.
  */
-
-/**
- * Um interruptor com o ESTADO no rótulo — nunca a ação que o clique vai fazer.
- *
- * ⚠️⚠️ O rótulo que dizia "Desligar a reciclagem" com o botão pintado de primário (o visual de
- * "ativo" desta casa) e `aria-pressed="true"` fazia as três camadas contarem histórias
- * diferentes: o desenho dizia ligado, o texto dizia desligar, e só o `aria-pressed` estava
- * certo. É o mesmo molde do resto do player (`Desenhar a cada quadro: ligado`).
- */
-function Chave({
-  label,
-  ligado,
-  ligadoTexto = 'ligada',
-  desligadoTexto = 'desligada',
-  seletor = false,
-  onToggle,
-}: {
-  label: string
-  ligado: boolean
-  ligadoTexto?: string
-  desligadoTexto?: string
-  /**
-   * ⚠️ Dois VALORES em vez de ligado/desligado (a luz vem da esquerda ou da direita; o jogo
-   * conta quadros ou segundos). Aqui não existe "desligado", e o `aria-pressed` dizia
-   * "não pressionado" para um estado que está tão ligado quanto o outro — a única das três
-   * camadas que ainda contava outra história.
-   */
-  seletor?: boolean
-  onToggle: (valor: boolean) => void
-}) {
-  return (
-    <div className="rounded-2xl border border-border p-4 text-sm font-semibold">
-      <SceneButton
-        aria-pressed={seletor ? undefined : ligado}
-        className={
-          !seletor && ligado ? '!border-primary !bg-primary/10 !text-primary' : '!border-primary'
-        }
-        onClick={() => onToggle(!ligado)}
-      >
-        {label}: {ligado ? ligadoTexto : desligadoTexto}
-      </SceneButton>
-    </div>
-  )
-}
 
 /** As três alturas da câmera do 3D, em palavra. Espelha o `ALTURA` da faixa de estado. */
 const ALTURA: Record<number, string> = { 0: 'por baixo', 1: 'no meio', 2: 'por cima' }
@@ -105,29 +61,14 @@ export function EngineSceneControls({
       return (
         <div className="grid gap-3 sm:grid-cols-3">
           {state.brains.states.map((atual, i) => (
-            <fieldset
+            <Escolha
               // biome-ignore lint/suspicious/noArrayIndexKey: são três cérebros fixos, 1º ao 3º.
               key={`cerebro-${i + 1}`}
-              className="rounded-2xl border border-border p-4"
-            >
-              <legend className="px-1 text-sm font-semibold">O {i + 1}º está</legend>
-              <div className="flex flex-wrap gap-2">
-                {ESTADOS.map((e) => (
-                  <SceneButton
-                    key={e.id}
-                    aria-pressed={atual === e.id}
-                    className={
-                      atual === e.id
-                        ? '!border-primary !bg-primary/10 !px-3 !text-primary'
-                        : '!px-3'
-                    }
-                    onClick={() => dispatch({ type: 'brain', id: i + 1, state: e.id })}
-                  >
-                    {e.label}
-                  </SceneButton>
-                ))}
-              </div>
-            </fieldset>
+              label={`O ${i + 1}º está`}
+              valor={atual}
+              opcoes={ESTADOS}
+              onChange={(estado) => dispatch({ type: 'brain', id: i + 1, state: estado })}
+            />
           ))}
         </div>
       )
@@ -156,7 +97,7 @@ export function EngineSceneControls({
             min={L.centers.min}
             max={L.centers.max}
             passo={20}
-            tom="text-scene-ink-soft"
+            tom="text-muted-foreground"
             onChange={(distance) => dispatch({ type: 'approach', distance })}
           />
           <Medida
@@ -212,7 +153,7 @@ export function EngineSceneControls({
             min={L.spaceZ.min}
             max={L.spaceZ.max}
             passo={10}
-            tom="text-scene-ink-soft"
+            tom="text-muted-foreground"
             onChange={(v) => dispatch(lugar('z', v))}
           />
         </div>

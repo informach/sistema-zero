@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { SCENE_IDS, type SceneId } from './actions'
 import type { SceneCast } from './cast'
-import { stepScene } from './engine'
+import { SCENE_MODELS } from './catalog'
+import { openScene, stepScene } from './engine'
 import { sceneReadout, sceneSituation } from './readout'
 import { initialScene, type SceneState } from './state'
 
@@ -125,6 +126,57 @@ describe('a frase da situação', () => {
     const semCaption = { ...criado, caption: '' }
     expect(sceneSituation('world', { ...inicio, caption: '' })).toContain('vazios')
     expect(sceneSituation('world', semCaption)).toContain('já existe')
+  })
+
+  test('⚠️⚠️ um é UM: a frase concorda em número com o que conta', () => {
+    // A criança lia "1 vidas e 1 pontos", "1 saltos e 1 sons" e "1 cactos nos bastidores" —
+    // sempre no PRIMEIRO acontecimento da cena, que é quando ela está lendo com mais atenção.
+    // ⚠️ Sem o `caption`: com ele a frase é o ACONTECIMENTO ("O impulso iniciou o salto."), e o
+    // que este teste cobra é a descrição da situação, que é o que fica na tela depois.
+    const salto = {
+      ...stepScene({ scene: 'jump-sound' }, nasce('jump-sound'), { type: 'jump', input: 'tap' }),
+      caption: '',
+    }
+    expect(sceneSituation('jump-sound', salto)).toContain('1 salto e')
+    expect(sceneSituation('jump-sound', salto)).not.toContain('1 saltos')
+
+    // ⚠️ Com o relógio no meio: no ar, um segundo toque não é um segundo salto (é a descoberta
+    // `quiet-air` da própria cena), então sem o pouso a contagem não sairia de um.
+    let voo = salto
+    for (let i = 0; i < 10; i++)
+      voo = stepScene({ scene: 'jump-sound' }, voo, { type: 'advance', seconds: 0.2 })
+    const doisSaltos = {
+      ...stepScene({ scene: 'jump-sound' }, voo, { type: 'jump', input: 'tap' }),
+      caption: '',
+    }
+    expect(sceneSituation('jump-sound', doisSaltos)).toContain('2 saltos')
+
+    // A varredura que impede o próximo: NENHUMA frase de NENHUMA cena escreve "1 <coisa>s".
+    //
+    // ⚠️⚠️ Ela cobre as TRÊS superfícies de texto e TODO passo do roteiro, e cada uma dessas
+    // extensões nasceu de um defeito que a versão anterior deixava passar:
+    //  - a **faixa de estado**, que ficava de fora e abria `pixel-vector` com "lupa 1 vezes";
+    //  - o **`caption` do motor**, que o teste antigo APAGAVA (`caption: ''`) para isolar a
+    //    situação — e era do motor o "Desenhou de novo sem limpar: 1 Dinos na tela" do
+    //    `draw-loop`;
+    //  - **cada passo**, e não só o fim do roteiro: contador chega a UM no meio do caminho e
+    //    volta a passar de um depois, então olhar só as pontas é olhar onde o defeito não está.
+    const achados: string[] = []
+    for (const scene of SCENE_IDS) {
+      const start = { scene }
+      let s = openScene(start)
+      const ve = () => {
+        for (const l of sceneReadout(scene, s)) achados.push(`${scene}: ${l.label} ${l.value}`)
+        achados.push(`${scene}: ${sceneSituation(scene, s)}`)
+      }
+      ve()
+      for (const passo of SCENE_MODELS[scene].script)
+        for (const acao of passo.actions) {
+          s = stepScene(start, s, acao)
+          ve()
+        }
+    }
+    expect(achados.filter((f) => /(^|\s)1 \p{L}+s\b/u.test(f))).toEqual([])
   })
 
   test('sem travessão: a voz da casa vale também aqui', () => {

@@ -1,13 +1,16 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import type { InteractiveBlock } from '@sistemazero/core/learning'
+import { type InteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   openScene,
+  SCENE_IDS,
   SCENE_MODELS,
+  SCENE_QUESTIONS,
   type SceneId,
   sceneHint,
   sceneSituation,
 } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import { LessonSectionProvider } from '@sistemazero/member-shell/components/lesson-section-context'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
@@ -289,7 +292,11 @@ describe('as duas cenas da Aula 1', () => {
     await waitFor(() => expect(screen.getByText(/o Dino DESCEU/)).toBeTruthy())
     expect((screen.getByRole('slider', { name: /^x/ }) as HTMLInputElement).value).toBe('110')
     // E o passo de 20 é a via de quem não arrasta.
-    fireEvent.click(screen.getByRole('button', { name: 'Aumentar x em 20' }))
+    // ⚠️ O nome do botão agora é o RÓTULO INTEIRO que a criança vê no controle, e não o nome
+    // curto do eixo: a bancada passou a ser a peça `Medida`, e quem usa leitor de tela ouve a
+    // mesma coisa que está escrita na tela. O "em 20" continua, porque o botão anda mais que o
+    // deslizante — é justamente o que ele precisa dizer.
+    fireEvent.click(screen.getByRole('button', { name: 'Aumentar x, de esquerda a direita em 20' }))
     await waitFor(() =>
       expect((screen.getByRole('slider', { name: /^x/ }) as HTMLInputElement).value).toBe('130'),
     )
@@ -474,11 +481,34 @@ describe('a previsão antes de mexer', () => {
     expect(screen.queryByText(/errou/i)).toBeNull()
   })
 
-  test('sem previsão declarada, a cena abre como sempre abriu', async () => {
-    render(<InteractiveLessonBlock block={block('hitbox')} previewContent={content('hitbox')} />)
-    const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
-    expect(distancia.closest('fieldset')?.disabled).toBe(false)
-    expect(screen.queryByText('Antes de mexer')).toBeNull()
+  test('⚠️⚠️ sem previsão declarada, a criança recebe a DA CENA — pela projeção pública', async () => {
+    /**
+     * ⚠️⚠️ Este é o único teste da suíte que monta o bloco como a CRIANÇA o recebe. Todos os
+     * outros desenham o conteúdo de AUTORIA (é o que a prévia do admin faz), e desde 15/09/2026
+     * a previsão e a pergunta não vêm mais dos campos crus do bloco: vêm dos RESOLVEDORES do
+     * core, aplicados pelo `publicInteractiveBlock`. A versão anterior deste teste afirmava que
+     * "a cena abre como sempre abriu" — verdade só no caminho que a criança não usa, e falsa em
+     * produção desde que toda cena passou a ter previsão.
+     */
+    const publico = publicInteractiveBlock(content('hitbox'))
+    render(
+      <InteractiveLessonBlock
+        block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: publico }}
+      />,
+    )
+    const modelo = SCENE_QUESTIONS.hitbox
+    expect(await screen.findByText(modelo.prediction.prompt)).toBeTruthy()
+    const distancia = screen.getByRole('slider', { name: 'Distância do cacto' })
+    expect(distancia.closest('fieldset')?.disabled).toBe(true)
+    // ⚠️ E o que é do servidor NÃO atravessa: a explicação só chega quando ela acerta.
+    expect(document.body.innerHTML).not.toContain(modelo.explain.explanation)
+    // O palpite abre a cena, e a cena responde de verdade.
+    fireEvent.click(
+      screen.getByRole('radio', { name: modelo.prediction.choices[0]?.label as string }),
+    )
+    await waitFor(() => expect(distancia.closest('fieldset')?.disabled).toBe(false))
+    fireEvent.change(distancia, { target: { value: '25' } })
+    await waitFor(() => expect(screen.getByText('As áreas encostaram: batida!')).toBeTruthy())
   })
 })
 
@@ -601,6 +631,101 @@ describe('as cinco cenas de desenho e a das vidas', () => {
   })
 })
 
+describe('⚠️⚠️ a seção conta ao bloco o que ela já disse', () => {
+  const bloco = (scene: SceneId): InteractiveBlock => ({
+    kind: 'interactive',
+    title: SCENE_MODELS[scene].title,
+    instructions: SCENE_MODELS[scene].instruction,
+    hints: [],
+    required: false,
+    activity: { type: 'experimentation', scene },
+  })
+  const montar = (scene: SceneId, secao: { titulo: string; temDialogo: boolean } | null) => {
+    const c = bloco(scene)
+    const cena = (
+      <InteractiveLessonBlock
+        block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: c }}
+        previewContent={c}
+      />
+    )
+    render(secao ? <LessonSectionProvider value={secao}>{cena}</LessonSectionProvider> : cena)
+    return c
+  }
+
+  test('⚠️ o título não aparece DUAS vezes quando a seção já disse o mesmo', async () => {
+    // A Aula 1 do Corre Dino mostrava a mesma pergunta no cabeçalho da seção e no cartão da
+    // cena, a 130px de distância.
+    const c = montar('world', { titulo: SCENE_MODELS.world.title, temDialogo: false })
+    const titulo = await screen.findByRole('heading', { name: c.title })
+    expect(titulo.className).toContain('sr-only')
+    cleanup()
+
+    // ⚠️ E ele CONTINUA existindo: é o nome acessível da seção da cena.
+    montar('world', { titulo: 'Outro assunto', temDialogo: false })
+    const proprio = await screen.findByRole('heading', { name: c.title })
+    expect(proprio.className).not.toContain('sr-only')
+  })
+
+  test('⚠️⚠️ com um balão de fala na seção, a cena não desenha um SEGUNDO Zappy', async () => {
+    // A instrução continua inteira; o que sai é a repetição do mensageiro. Sem este teste o
+    // ramo inteiro podia ser apagado com as três suítes verdes.
+    const c = montar('world', { titulo: 'Outro assunto', temDialogo: true })
+    expect(await screen.findByText(c.instructions)).toBeTruthy()
+    expect(document.querySelectorAll('img[alt*="Zappy" i]')).toHaveLength(0)
+    cleanup()
+
+    // Sem diálogo na seção, o Zappy da cena é o único da tela e continua lá.
+    montar('world', { titulo: 'Outro assunto', temDialogo: false })
+    expect(await screen.findByText(c.instructions)).toBeTruthy()
+  })
+
+  test('⚠️ sem seção em volta, o bloco desenha como sempre', async () => {
+    // O ensaio do admin e qualquer bloco solto não têm seção: o padrão não pode mudar.
+    const c = montar('world', null)
+    const titulo = await screen.findByRole('heading', { name: c.title })
+    expect(titulo.className).not.toContain('sr-only')
+  })
+})
+
+describe('⚠️ a cena não desenha caixa vazia', () => {
+  const montar = (scene: SceneId) => {
+    const c: InteractiveBlock = {
+      kind: 'interactive',
+      title: SCENE_MODELS[scene].title,
+      instructions: SCENE_MODELS[scene].instruction,
+      hints: [],
+      required: false,
+      activity: { type: 'experimentation', scene },
+    }
+    render(
+      <InteractiveLessonBlock
+        block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: c }}
+        previewContent={c}
+      />,
+    )
+  }
+
+  test('⚠️⚠️ cena sem salto, sem relógio e sem comparação não mostra a caixa dos botões', async () => {
+    // O container dos botões da cena não perguntava se tinha filho. Em `world` nenhum deles
+    // renderiza, e sobrava uma caixa com borda e padding e NADA dentro, entre a frase embaixo do
+    // palco e a bancada — um elemento que a criança vê e não entende.
+    montar('world')
+    await screen.findByRole('meter')
+    const vazias = [...document.querySelectorAll('div')].filter(
+      (el) =>
+        el.className.includes('rounded-2xl') &&
+        el.className.includes('border-border') &&
+        (el.textContent ?? '').trim() === '',
+    )
+    expect(vazias).toHaveLength(0)
+    cleanup()
+
+    // E a cena COM relógio continua mostrando a caixa: o guard não pode esconder o que existe.
+    montar('draw-loop')
+    expect(await screen.findByRole('button', { name: 'Um passo' })).toBeTruthy()
+  })
+})
+
 describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
   /**
    * ⚠️⚠️ Achado do full review: o elenco vestia o que o CORE gera (metas, pistas, faixa, frase,
@@ -614,46 +739,23 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
     obstacle: { name: 'asteroide', gender: 'm' as const },
     scenery: { name: 'nebulosa', gender: 'f' as const },
   }
-  /**
-   * As cenas que o elenco existe para reaproveitar (proposta, lote 2) e a das vidas.
-   *
-   * ⚠️⚠️ E as que têm PALCO E BANCADA PRÓPRIOS. As sete primeiras caem todas no palco
-   * compartilhado, então a varredura ficou verde enquanto `scene-core-controls` e
-   * `scene-engine-controls` — extraídos depois — voltavam a escrever "cacto" e "Dino" crus nos
-   * rótulos dos controles. Teste que não alcança o arquivo novo não trava nada: cena com
-   * bancada própria entra AQUI no mesmo commit em que a bancada nasce.
-   */
-  const REAPROVEITAVEIS: SceneId[] = [
-    'world',
-    'layers',
-    'spawn',
-    'hitbox',
-    'score',
-    'game-state',
-    'lives',
-    // As do núcleo, com bancada própria — `contact`, `camera` e `group-loop` são exatamente as
-    // que o elenco existe para reaproveitar nos níveis 2 e 3.
-    'velocity',
-    'contact',
-    'camera',
-    'group-loop',
-    'enemy-type',
-    'variable',
-    'cooldown',
-    'aim',
-    // As do motor e do 3D.
-    'pool',
-    'entity-state',
-    'delta-time',
-    'circle-collision',
-    'axis-z',
-    'camera-3d',
-    'mesh',
-    'pick-ray',
-  ]
-
   test('⚠️⚠️ nenhuma palavra do Corre Dino sobra na tela vestida de outro curso', () => {
-    for (const scene of REAPROVEITAVEIS) {
+    /**
+     * ⚠️⚠️ **As 45, e não uma lista curada.** Ela era a lista das cenas "que o elenco existe
+     * para reaproveitar", e o comentário dela já registrava o defeito da própria ideia: a
+     * varredura ficou verde enquanto duas bancadas extraídas voltavam a escrever "cacto" e
+     * "Dino" crus, porque os arquivos novos não estavam nela. Curar a lista é carregar uma
+     * segunda lista de cenas para manter em dia — exatamente o que o lote 3 inteiro ataca —, e
+     * o custo de varrer todas é 800ms. O full review achou mais uma assim: a `screen-reader`
+     * descrevia o desenho como "Um dinossauro correndo diante de cactos", e "dinossauro" não é
+     * termo do elenco (a régua casa "Dino"), então numa turma de nave a frase saía com meio
+     * elenco trocado — justo na cena que ENSINA a descrever a tela para quem não a vê.
+     *
+     * ⚠️ O `<title>`/`<desc>` do SVG entrou junto pelo mesmo motivo: é o que o leitor de tela
+     * anuncia NO LUGAR do desenho, e não aparece nem no texto visível nem nos `aria-label`.
+     */
+    const falhas: string[] = []
+    for (const scene of SCENE_IDS) {
       const c: InteractiveBlock = {
         ...content(scene),
         title: 'Título do professor',
@@ -666,20 +768,29 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
           previewContent={c}
         />,
       )
-      // O texto visível E os nomes acessíveis: quem usa leitor de tela ouve os `aria-label`.
+      // O texto visível, os nomes acessíveis e o que o SVG conta a quem não enxerga.
       const visivel = document.body.textContent ?? ''
       const rotulos = [...document.querySelectorAll('[aria-label]')]
         .map((el) => el.getAttribute('aria-label') ?? '')
+        .join(' | ')
+      const desenho = [...document.querySelectorAll('title, desc')]
+        .map((el) => el.textContent ?? '')
         .join(' | ')
       for (const alvo of [/Dino/i, /cactos?/i, /floresta/i])
         for (const [onde, texto] of [
           ['texto', visivel],
           ['rótulo', rotulos],
+          ['desenho', desenho],
         ] as const)
           if (alvo.test(texto))
-            throw new Error(`${scene}: ${onde} ainda fala do Corre Dino (${alvo})`)
+            falhas.push(
+              `${scene}: ${onde} ainda fala do Corre Dino (${alvo}) — ${
+                texto.match(new RegExp(`.{0,40}${alvo.source}.{0,40}`, 'i'))?.[0] ?? ''
+              }`,
+            )
       cleanup()
     }
+    expect([...new Set(falhas)]).toEqual([])
   })
 
   test('⚠️ e a concordância sobrevive à troca, inclusive nos textos do player', async () => {
@@ -714,5 +825,75 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
       new RegExp(`\\basteroides?${meio} (criada|guardada|desenhada|ligada|nova|antiga)\\b`, 'i'),
     ])
       if (errado.test(texto)) throw new Error(`concordância errada na tela: ${errado}`)
+  })
+})
+
+describe('o vocabulário da bancada', () => {
+  /**
+   * A ESCOLHA existe separada da CHAVE por uma razão de acessibilidade, e ela precisa de rede
+   * própria: a migração de cinco grupos (quadro 1/2 nas duas cenas de animação, pixel×vetor, o
+   * pedaço da folha, o modo da batida e os estados do motor) não quebrou teste nenhum — ou seja,
+   * ninguém estava olhando.
+   */
+  test('⚠️⚠️ escolha de dois valores NÃO usa `aria-pressed`', async () => {
+    render(
+      <InteractiveLessonBlock
+        block={block('pixel-vector')}
+        previewContent={content('pixel-vector')}
+      />,
+    )
+    const pixel = await screen.findByRole('button', { name: 'Olhar a de pixel' })
+    const vetor = screen.getByRole('button', { name: 'Olhar a de vetor' })
+    // Nenhum dos dois valores é "desligado": o leitor de tela anunciava "não pressionado" para a
+    // alternativa que a criança não escolheu, como se ela estivesse apagada.
+    expect(pixel.getAttribute('aria-pressed')).toBeNull()
+    expect(vetor.getAttribute('aria-pressed')).toBeNull()
+    // Quem vale diz que vale, e só um de cada vez.
+    expect(pixel.getAttribute('aria-current')).toBe('true')
+    expect(vetor.getAttribute('aria-current')).toBeNull()
+
+    fireEvent.click(vetor)
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Olhar a de vetor' }).getAttribute('aria-current'),
+      ).toBe('true'),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Olhar a de pixel' }).getAttribute('aria-current'),
+    ).toBeNull()
+  })
+
+  test('⚠️⚠️ todo deslizante tem os dois botões de passo, e eles dizem o salto', async () => {
+    // A régua da casa é que toque, teclado e leitor de tela levem ao MESMO lugar. As quatorze
+    // bancadas que moravam dentro do player escreviam o deslizante à mão e não tinham nenhum.
+    render(
+      <InteractiveLessonBlock
+        block={block('pixel-vector')}
+        previewContent={content('pixel-vector')}
+      />,
+    )
+    expect(await screen.findByRole('button', { name: 'Aumentar lupa' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Diminuir lupa' })).toBeTruthy()
+    // O salto só entra no nome quando ele é MAIOR que o passo do deslizante ("aumentar a lupa
+    // em 1" seria ruído); na cena do endereço, onde o botão pula 20, ele entra.
+    cleanup()
+    render(
+      <InteractiveLessonBlock
+        block={block('coordinates')}
+        previewContent={content('coordinates')}
+      />,
+    )
+    expect(
+      await screen.findByRole('button', { name: 'Aumentar x, de esquerda a direita em 20' }),
+    ).toBeTruthy()
+  })
+
+  test('⚠️ fechado NÃO é escondido: o controle trancado fica na tela com o motivo', async () => {
+    // Uma variável por vez é régua de várias cenas. Sumir com o controle faria a criança
+    // procurar o que ela ainda não pode mexer.
+    render(<InteractiveLessonBlock block={block('hitbox')} previewContent={content('hitbox')} />)
+    const largura = await screen.findByRole('slider', { name: /área do Dino/i })
+    expect((largura as HTMLInputElement).disabled).toBe(true)
+    expect(screen.getByText(/Abre quando você descobrir o que a distância faz/)).toBeTruthy()
   })
 })

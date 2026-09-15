@@ -13,6 +13,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { useId, useRef, useState } from 'react'
 import { CactusFigure, DinoFigure } from './exploration-stage'
+import { SceneCanvas } from './scene-canvas'
 
 /** Live view and comparison use the same world coordinates and geometry. */
 export function ExperienceScene({
@@ -43,20 +44,23 @@ export function ExperienceScene({
     return new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse()).x
   }
   return (
-    <svg
-      ref={svg}
-      viewBox="0 0 640 360"
-      role={onJump || onDistance ? 'group' : 'img'}
-      aria-labelledby={`${id}-title ${id}-desc`}
-      className="block h-auto w-full rounded-2xl bg-scene-ground"
-      style={{ touchAction: hitbox && onDistance ? 'none' : 'auto' }}
-    >
-      <title id={`${id}-title`}>{hitbox ? 'Áreas de colisão' : 'Laboratório de saltos'}</title>
-      <desc id={`${id}-desc`}>
-        {hitbox
+    /* ⚠⚠ Este era o SEXTO cromo de palco (achado do full review): as quatro cenas de salto e
+       colisão desenhavam a própria moldura — na verdade nem isso, um `rounded-2xl` sem borda
+       nenhuma —, com `<title>`/`<desc>` próprios. E são justamente as mais usadas do Corre Dino
+       (aulas 3, 4 e 10). Hoje passam pelo `SceneCanvas` como as outras 41. */
+    <SceneCanvas
+      svgRef={svg}
+      view={{ w: 640, h: 360 }}
+      cast={activity.cast}
+      interativo={Boolean(onJump || onDistance)}
+      estilo={{ touchAction: hitbox && onDistance ? 'none' : 'auto' }}
+      titulo={hitbox ? 'Áreas de colisão' : 'Laboratório de saltos'}
+      descricao={
+        hitbox
           ? `Distância ${distance}. Largura ${state.contact.width}. ${contact ? 'As áreas se tocam.' : 'As áreas estão separadas.'}`
-          : `Impulso ${state.flight.force}. Gravidade ${state.flight.gravity ? 'ligada' : 'desligada'}. Altura máxima ${Math.round(state.flight.peak)}. ${state.sound.jumps} saltos, ${state.sound.count} sons.`}
-      </desc>
+          : `Impulso ${state.flight.force}. Gravidade ${state.flight.gravity ? 'ligada' : 'desligada'}. Altura máxima ${Math.round(state.flight.peak)}. ${state.sound.jumps} saltos, ${state.sound.count} sons.`
+      }
+    >
       <defs>
         <pattern id={`${id}-grid`} width="32" height="32" patternUnits="userSpaceOnUse">
           <circle className="fill-scene-grid" cx="1" cy="1" r="1" />
@@ -289,7 +293,7 @@ export function ExperienceScene({
           </text>
         </>
       )}
-    </svg>
+    </SceneCanvas>
   )
 }
 

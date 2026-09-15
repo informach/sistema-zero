@@ -1,4 +1,5 @@
 import type { LessonDraftDocument } from '@sistemazero/core/learning'
+import { sceneGoalIds, sceneTargets } from '@sistemazero/core/learning/scene'
 import type { LessonBlockContent } from '@/lib/types'
 
 /** Advice to the author, separate from publication errors and never a fixed lesson template. */
@@ -41,6 +42,24 @@ export function lessonEditorialWarnings(
       )
         warnings.push(
           `${section.title}: confira a intenção da seção e o tipo da cena. Demonstração é para observar; experimentação é para agir sobre a cena.`,
+        )
+      /**
+       * ⚠️⚠️ O caso recortou a missão, e a pergunta continua sendo a de fábrica.
+       *
+       * A pergunta do modelo foi escrita contra a história INTEIRA da cena. Quando o professor
+       * reduz a missão a parte das descobertas, ela pode cobrar a regra de algo que a criança
+       * não precisou ver — e a regra da casa é que nada caia sem a criança ter VISTO o que a
+       * afirmação diz. ⚠️ Avisa e não bloqueia: na maioria das cenas a ideia central sobrevive
+       * ao recorte, e só quem escreveu o caso sabe dizer se sobreviveu nesta.
+       */
+      if (
+        type === 'experimentation' &&
+        !block.content.checkpoint &&
+        sceneTargets(block.content.activity).length <
+          sceneGoalIds(block.content.activity.scene).length
+      )
+        warnings.push(
+          `${section.title}: a missão cobra parte das descobertas da cena, e a pergunta do fim é a de fábrica. Confira se ela ainda fala do que a criança vai ver, ou escreva a sua.`,
         )
     }
     if (

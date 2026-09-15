@@ -1,6 +1,24 @@
 import { isRecord } from './actions'
 
 /**
+ * "1 cacto" e "3 cactos": o número e o nome concordando.
+ *
+ * ⚠️ É o que a criança LÊ embaixo do palco e na faixa de estado, e estava saindo "1 vidas e 1
+ * pontos", "1 saltos e 1 sons", "1 cactos nos bastidores", "1 Dinos na tela" e "lupa 1 vezes" —
+ * quase sempre no PRIMEIRO acontecimento da cena, que é quando ela lê com mais atenção.
+ *
+ * ⚠️⚠️ Mora AQUI, e não no `readout`, porque quem escreve essas frases são DOIS: o leitor (a
+ * faixa e a situação) e o MOTOR (o `caption` de cada ação). O defeito do `draw-loop` era do
+ * motor, e um helper privado do leitor não o alcançava. Este é o módulo do português que a
+ * plataforma GERA — a concordância é o mesmo assunto da flexão do elenco.
+ *
+ * ⚠️ As duas formas ficam à vista no call site de propósito: quem veste o texto depois é o
+ * elenco, e a régua dele flexiona o que está COLADO ao nome. Escolher singular ou plural é
+ * decisão da frase, não dele.
+ */
+export const quantos = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+
+/**
  * O ELENCO da cena: quem está no palco.
  *
  * As cenas ensinam conceitos que os três cursos repetem — criar não é desenhar, a área

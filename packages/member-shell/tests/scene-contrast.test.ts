@@ -141,6 +141,41 @@ describe('o papel da cena continua legível nos três temas', () => {
     }
   })
 
+  /**
+   * ⚠⚠⚠ O par de comparação também vive no CROMO, e o cromo ficou BRANCO no lote 3.
+   *
+   * O âmbar e o azul foram calibrados contra o papel CREME da cena. Desde 15/09/2026 a faixa de
+   * estado e os rótulos da bancada vestem o cartão do aplicativo, então os mesmos tons passaram a
+   * ser lidos sobre outro fundo — e a promessa do lote era refazer a conta, não estimá-la. Os
+   * fundos saem do CSS de VERDADE dos dois apps de aluno, e não de uma cópia aqui.
+   */
+  test('⚠️⚠️ o par de comparação continua legível sobre o cartão dos DOIS apps', () => {
+    const cartoes = [
+      ['kids', '../../community-kids/src/app/globals.css'],
+      ['adulto', '../../community/src/app/globals.css'],
+    ] as const
+    const falhas: string[] = []
+    let medidos = 0
+    for (const [app, caminho] of cartoes) {
+      const css = readFileSync(join(import.meta.dir, caminho), 'utf8')
+      // Todas as declarações do cartão: a do tema padrão e a de qualquer tema que a redefina.
+      const fundos = [...css.matchAll(/--pen-cartao:\s*(#[0-9a-f]{6})/gi)].map((m) => m[1] ?? '')
+      if (!fundos.length) throw new Error(`--pen-cartao não encontrado no globals.css do ${app}`)
+      for (const fundo of fundos)
+        for (const [tinta, cor] of Object.entries(TINTAS)) {
+          // `ink` e `ink-soft` são do MUNDO: eles não aparecem no cromo desde o lote 3.
+          if (tinta.startsWith('ink')) continue
+          const r = contraste(hex(cor), hex(fundo))
+          medidos++
+          if (r < AA) falhas.push(`${tinta} sobre o cartão do ${app} (${fundo}): ${r.toFixed(2)}`)
+        }
+    }
+    expect(falhas).toEqual([])
+    // Dois apps × as três tintas de SENTIDO (azul, âmbar e o vermelho do encosto). Sobe se um
+    // tema novo redefinir o cartão — e aí a conta tem de ser refeita mesmo.
+    expect(medidos).toBeGreaterThanOrEqual(6)
+  })
+
   test('⚠️ o par de comparação NÃO segue o tema', () => {
     // Azul e âmbar dizem QUAL medida é qual. Se algum dia entrarem num `color-mix`, a leitura
     // da descoberta muda com o tema — e é isso que esta asserção impede.

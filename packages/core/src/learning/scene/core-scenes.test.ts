@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { SceneAction, SceneId } from './actions'
+import { SCENE_IDS, type SceneAction, type SceneId } from './actions'
 import { openScene, stepScene } from './engine'
 import { evaluateExperimentation } from './evaluate'
 import { sceneSituation } from './readout'
@@ -20,6 +20,30 @@ function rodar(scene: SceneId, acoes: SceneAction[]): SceneState {
   return acoes.reduce((estado, acao) => stepScene({ scene }, estado, acao), openScene({ scene }))
 }
 const descobertas = (s: SceneState) => s.evidence.discoveries
+
+describe('⚠️ a frase embaixo do palco narra a CENA, não o sistema', () => {
+  test('⚠️⚠️ recomeçar não deixa recado de persistência no lugar da narração', () => {
+    // "Experiência recomeçada. Suas descobertas foram guardadas." ocupava a frase que descreve
+    // o que está na tela AGORA — a criança recomeçava e lia sobre o banco de dados. O aviso de
+    // que nada se perdeu é do player, e mora no rodapé.
+    // ⚠️ As 45, e não uma: a afirmação do lote é sobre a frase de TODA cena. Uma cena nova cuja
+    // situação caia num texto ruim com o caption vazio entraria sem ninguém ver.
+    for (const scene of SCENE_IDS) {
+      const start = { scene }
+      const recomeçou = stepScene(start, openScene(start), { type: 'reset' })
+      expect(recomeçou.caption, scene).toBe('')
+      const frase = sceneSituation(scene, recomeçou)
+      expect(frase, scene).not.toContain('guardadas')
+      expect(frase.length, scene).toBeGreaterThan(10)
+    }
+    // E o que ela já descobriu continua lá: recomeçar volta o MUNDO, não a história.
+    const start = { scene: 'world' as const }
+    const mexeu = stepScene(start, openScene(start), { type: 'create' })
+    expect(stepScene(start, mexeu, { type: 'reset' }).evidence.discoveries).toEqual(
+      mexeu.evidence.discoveries,
+    )
+  })
+})
 
 describe('velocity: a posição muda porque a velocidade soma nela', () => {
   test('⚠️ a velocidade sozinha NÃO move nada: quem move é o relógio', () => {

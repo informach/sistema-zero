@@ -1,9 +1,10 @@
 'use client'
 
 import type { SceneAction, SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { castText, SCENE_LIMITS, STAGE_TARGET } from '@sistemazero/core/learning/scene'
+import { SCENE_LIMITS, STAGE_TARGET } from '@sistemazero/core/learning/scene'
 import { useEffect, useId, useRef, useState } from 'react'
 import { DinoFigure } from './exploration-stage'
+import { SceneCanvas } from './scene-canvas'
 
 /**
  * Os palcos das duas cenas que a Aula 1 do Corre Dino pedia.
@@ -35,97 +36,87 @@ export function CoordinatesStage({ state, cast }: { state: SceneState; cast?: Sc
   const px = MARGEM.x + x
   const py = MARGEM.y + y
   return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-title ${id}-desc`}
-      >
-        <title id={`${id}-title`}>
-          {castText('Tela do jogo com o Dino no endereço escolhido', cast)}
-        </title>
-        <desc id={`${id}-desc`}>
-          {castText(`Tela de ${TELA.w} por ${TELA.h}. O Dino está em x ${x}, y ${y}.`, cast)}
-        </desc>
-        <defs>
-          <pattern id={`${id}-dots`} width="30" height="30" patternUnits="userSpaceOnUse">
-            <circle className="fill-scene-grid" cx="1.5" cy="1.5" r="1.5" />
-          </pattern>
-        </defs>
-        {/* As réguas: os números que a criança vai digitar, na borda da tela. */}
-        <g className="fill-scene-ink-soft" fontSize="11" fontFamily="inherit">
-          {[0, 120, 240, 360, 480].map((v) => (
-            <g key={`x${v}`}>
-              <text x={MARGEM.x + v} y={18} textAnchor={v === 0 ? 'start' : 'middle'}>
-                {v}
-              </text>
-              <path className="stroke-scene-rule" d={`M${MARGEM.x + v} 22v8`} strokeWidth="1.5" />
-            </g>
-          ))}
-          {[0, 90, 180, 270].map((v) => (
-            <g key={`y${v}`}>
-              <text x={MARGEM.x - 10} y={MARGEM.y + v + 4} textAnchor="end">
-                {v}
-              </text>
-              <path
-                className="stroke-scene-rule"
-                d={`M${MARGEM.x - 8} ${MARGEM.y + v}h8`}
-                strokeWidth="1.5"
-              />
-            </g>
-          ))}
-        </g>
-        <rect
-          className="fill-scene-sky stroke-scene-line"
-          x={MARGEM.x}
-          y={MARGEM.y}
-          width={TELA.w}
-          height={TELA.h}
-          strokeWidth="2"
-        />
-        <rect x={MARGEM.x} y={MARGEM.y} width={TELA.w} height={TELA.h} fill={`url(#${id}-dots)`} />
-        {/* A origem. Ela é o que explica o eixo y virado: a contagem começa em CIMA. */}
-        <circle className="fill-scene-ink" cx={MARGEM.x} cy={MARGEM.y} r="4" />
-        <text
-          className="fill-scene-ink"
-          x={MARGEM.x + 8}
-          y={MARGEM.y + 16}
-          fontSize="11"
-          fontFamily="inherit"
-        >
-          0, 0
-        </text>
-        {mexeu && (
-          <g className="text-scene-ink-soft">
-            <DinoFigure x={MARGEM.x + fromX} y={MARGEM.y + fromY + 26} ghost />
+    <SceneCanvas
+      view={VIEW}
+      cast={cast}
+      titulo="Tela do jogo com o Dino no endereço escolhido"
+      descricao={`Tela de ${TELA.w} por ${TELA.h}. O Dino está em x ${x}, y ${y}.`}
+      rodape="O alvo mostra o endereço. O Dino desenhado fica em volta dele."
+    >
+      <defs>
+        <pattern id={`${id}-dots`} width="30" height="30" patternUnits="userSpaceOnUse">
+          <circle className="fill-scene-grid" cx="1.5" cy="1.5" r="1.5" />
+        </pattern>
+      </defs>
+      {/* As réguas: os números que a criança vai digitar, na borda da tela. */}
+      <g className="fill-scene-ink-soft" fontSize="11" fontFamily="inherit">
+        {[0, 120, 240, 360, 480].map((v) => (
+          <g key={`x${v}`}>
+            <text x={MARGEM.x + v} y={18} textAnchor={v === 0 ? 'start' : 'middle'}>
+              {v}
+            </text>
+            <path className="stroke-scene-rule" d={`M${MARGEM.x + v} 22v8`} strokeWidth="1.5" />
           </g>
-        )}
-        {/* As guias levam o olho do sprite até o número de cada eixo. */}
-        <path
-          className="stroke-scene-a"
-          d={`M${MARGEM.x} ${py}H${px}`}
-          strokeWidth="2"
-          strokeDasharray="5 4"
-        />
-        <path
-          className="stroke-scene-b"
-          d={`M${px} ${MARGEM.y}V${py}`}
-          strokeWidth="2"
-          strokeDasharray="5 4"
-        />
-        <g className="text-primary">
-          <DinoFigure x={px} y={py + 26} />
+        ))}
+        {[0, 90, 180, 270].map((v) => (
+          <g key={`y${v}`}>
+            <text x={MARGEM.x - 10} y={MARGEM.y + v + 4} textAnchor="end">
+              {v}
+            </text>
+            <path
+              className="stroke-scene-rule"
+              d={`M${MARGEM.x - 8} ${MARGEM.y + v}h8`}
+              strokeWidth="1.5"
+            />
+          </g>
+        ))}
+      </g>
+      <rect
+        className="fill-scene-sky stroke-scene-line"
+        x={MARGEM.x}
+        y={MARGEM.y}
+        width={TELA.w}
+        height={TELA.h}
+        strokeWidth="2"
+      />
+      <rect x={MARGEM.x} y={MARGEM.y} width={TELA.w} height={TELA.h} fill={`url(#${id}-dots)`} />
+      {/* A origem. Ela é o que explica o eixo y virado: a contagem começa em CIMA. */}
+      <circle className="fill-scene-ink" cx={MARGEM.x} cy={MARGEM.y} r="4" />
+      <text
+        className="fill-scene-ink"
+        x={MARGEM.x + 8}
+        y={MARGEM.y + 16}
+        fontSize="11"
+        fontFamily="inherit"
+      >
+        0, 0
+      </text>
+      {mexeu && (
+        <g className="text-scene-ink-soft">
+          <DinoFigure x={MARGEM.x + fromX} y={MARGEM.y + fromY + 26} ghost />
         </g>
-        <g className="stroke-scene-ink" strokeWidth="1.5">
-          <circle cx={px} cy={py} r="5" fill="none" strokeWidth="2" />
-          <path d={`M${px - 11} ${py}h22M${px} ${py - 11}v22`} />
-        </g>
-      </svg>
-      <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-        {castText('O alvo mostra o endereço. O Dino desenhado fica em volta dele.', cast)}
-      </p>
-    </div>
+      )}
+      {/* As guias levam o olho do sprite até o número de cada eixo. */}
+      <path
+        className="stroke-scene-a"
+        d={`M${MARGEM.x} ${py}H${px}`}
+        strokeWidth="2"
+        strokeDasharray="5 4"
+      />
+      <path
+        className="stroke-scene-b"
+        d={`M${px} ${MARGEM.y}V${py}`}
+        strokeWidth="2"
+        strokeDasharray="5 4"
+      />
+      <g className="text-primary">
+        <DinoFigure x={px} y={py + 26} />
+      </g>
+      <g className="stroke-scene-ink" strokeWidth="1.5">
+        <circle cx={px} cy={py} r="5" fill="none" strokeWidth="2" />
+        <path d={`M${px - 11} ${py}h22M${px} ${py - 11}v22`} />
+      </g>
+    </SceneCanvas>
   )
 }
 
@@ -192,35 +183,34 @@ export function ScreenReaderStage({
         <p className="text-xs font-semibold uppercase tracking-[.14em] text-muted-foreground">
           O que aparece na tela
         </p>
-        <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-          <svg
-            viewBox="0 0 240 150"
-            className="block w-full"
-            role="img"
-            aria-label={castText(
-              'Um dinossauro correndo diante de cactos, com o placar no canto.',
-              cast,
-            )}
-          >
-            <rect className="fill-scene-sky" width="240" height="150" />
-            <rect className="fill-scene-ground" y="118" width="240" height="32" />
-            <path className="stroke-scene-line" d="M0 118h240" strokeWidth="2" />
-            {/* ⚠️ O pé do Dino assenta NA linha do chão: `y` é o solo dele, e a escala do
+        <SceneCanvas
+          view={{ w: 240, h: 150 }}
+          cast={cast}
+          titulo="A tela do jogo"
+          // ⚠️⚠️ "dinossauro" NÃO é termo do elenco (a régua casa "Dino", e o comentário dela
+          // diz por que: senão "Dinossauro" casaria "Dino" pela metade). Numa turma de nave a
+          // frase saía "Um dinossauro correndo diante de asteroides" — meio elenco trocado,
+          // metade não, justo na cena que ENSINA a descrever a tela para quem não a vê.
+          descricao="O Dino correndo diante dos cactos, com o placar no canto."
+        >
+          <rect className="fill-scene-sky" width="240" height="150" />
+          <rect className="fill-scene-ground" y="118" width="240" height="32" />
+          <path className="stroke-scene-line" d="M0 118h240" strokeWidth="2" />
+          {/* ⚠️ O pé do Dino assenta NA linha do chão: `y` é o solo dele, e a escala do
                 grupo entra na conta (118 = 44 + 87 × 0,85). */}
-            <g className="text-primary" transform="translate(10 44) scale(0.85)">
-              <DinoFigure x={52} y={87} />
-            </g>
-            <g className="fill-scene-leaf">
-              <rect x="168" y="92" width="7" height="26" />
-              <rect x="161" y="99" width="7" height="8" />
-              <rect x="175" y="96" width="7" height="8" />
-              <rect x="212" y="98" width="6" height="20" />
-            </g>
-            <text className="fill-scene-ink-soft" x="10" y="20" fontSize="11">
-              pontos 0
-            </text>
-          </svg>
-        </div>
+          <g className="text-primary" transform="translate(10 44) scale(0.85)">
+            <DinoFigure x={52} y={87} />
+          </g>
+          <g className="fill-scene-leaf">
+            <rect x="168" y="92" width="7" height="26" />
+            <rect x="161" y="99" width="7" height="8" />
+            <rect x="175" y="96" width="7" height="8" />
+            <rect x="212" y="98" width="6" height="20" />
+          </g>
+          <text className="fill-scene-ink-soft" x="10" y="20" fontSize="11">
+            pontos 0
+          </text>
+        </SceneCanvas>
       </div>
       <div className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[.14em] text-muted-foreground">
@@ -270,7 +260,6 @@ export function ScreenReaderStage({
  * o espaço em volta, e não só o retângulo.
  */
 export function StageSizeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const id = useId()
   const { width, height, border } = state.stage
   const noAlvo = width === STAGE_TARGET.width && height === STAGE_TARGET.height
   const VIEW = { w: 560, h: 330 } as const
@@ -286,97 +275,86 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
   const x = (VIEW.w - w) / 2
   const y = (VIEW.h - h) / 2 + 6
   return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-title ${id}-desc`}
-      >
-        <title id={`${id}-title`}>
-          {castText('A tela do jogo dentro do espaço em volta', cast)}
-        </title>
-        <desc id={`${id}-desc`}>
-          {castText(
-            `Tela de ${width} por ${height}, com a moldura ${border ? 'à vista' : 'escondida'}.`,
-            cast,
-          )}
-        </desc>
-        {/* O espaço em volta tem a MESMA cor do céu: é isso que faz o limite sumir sem a borda. */}
-        <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
-        <rect className="fill-scene-sky" x={x} y={y} width={w} height={h} />
-        {/* ⭐ O ALVO fica na tela enquanto ela não chega nele (15/09/2026). No Brilliant, quando
+    <SceneCanvas
+      view={VIEW}
+      cast={cast}
+      titulo="A tela do jogo dentro do espaço em volta"
+      descricao={`Tela de ${width} por ${height}, com a moldura ${border ? 'à vista' : 'escondida'}.`}
+      rodape={
+        border
+          ? 'O que está fora da moldura é só o espaço em volta.'
+          : 'A cor do fundo cobriu tudo: onde começa a tela do jogo?'
+      }
+    >
+      {/* O espaço em volta tem a MESMA cor do céu: é isso que faz o limite sumir sem a borda. */}
+      <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
+      <rect className="fill-scene-sky" x={x} y={y} width={w} height={h} />
+      {/* ⭐ O ALVO fica na tela enquanto ela não chega nele (15/09/2026). No Brilliant, quando
             o comando da criança erra, os pontos param AO LADO do alvo e a distância que sobra é a
             própria correção — em vez de um "tente de novo" que não diz quanto faltou. Aqui o alvo
             é a tela que a Aula 1 pede, e a frase abaixo do palco diz quanto falta em cada lado. */}
-        {!noAlvo && (
-          <g>
-            <rect
-              className="stroke-scene-ink-soft"
-              x={(VIEW.w - STAGE_TARGET.width * escala) / 2}
-              y={(VIEW.h - STAGE_TARGET.height * escala) / 2 + 6}
-              width={STAGE_TARGET.width * escala}
-              height={STAGE_TARGET.height * escala}
-              fill="none"
-              strokeWidth="2"
-              strokeDasharray="7 5"
-            />
-            <text
-              className="fill-scene-ink-soft"
-              x={VIEW.w / 2}
-              y={(VIEW.h + STAGE_TARGET.height * escala) / 2 + 22}
-              textAnchor="middle"
-              fontSize="12"
-              fontWeight="600"
-            >
-              {`o jogo pede ${STAGE_TARGET.width} por ${STAGE_TARGET.height}`}
-            </text>
-          </g>
-        )}
-        {border && (
-          <>
-            <rect
-              className="stroke-scene-alert"
-              x={x}
-              y={y}
-              width={w}
-              height={h}
-              fill="none"
-              strokeWidth="4"
-            />
-            {/* As medidas ficam ao lado da moldura, do lado de fora, para não sujar a tela. */}
-            <text
-              className="fill-scene-ink"
-              x={x + w / 2}
-              y={y - 10}
-              textAnchor="middle"
-              fontSize="13"
-              fontWeight="600"
-            >
-              {width}
-            </text>
-            <text
-              className="fill-scene-ink"
-              x={x - 10}
-              y={y + h / 2}
-              textAnchor="end"
-              fontSize="13"
-              fontWeight="600"
-            >
-              {height}
-            </text>
-          </>
-        )}
-        <g className="text-primary">
-          <DinoFigure x={x + w / 2} y={y + h - 8} />
+      {!noAlvo && (
+        <g>
+          <rect
+            className="stroke-scene-ink-soft"
+            x={(VIEW.w - STAGE_TARGET.width * escala) / 2}
+            y={(VIEW.h - STAGE_TARGET.height * escala) / 2 + 6}
+            width={STAGE_TARGET.width * escala}
+            height={STAGE_TARGET.height * escala}
+            fill="none"
+            strokeWidth="2"
+            strokeDasharray="7 5"
+          />
+          <text
+            className="fill-scene-ink-soft"
+            x={VIEW.w / 2}
+            y={(VIEW.h + STAGE_TARGET.height * escala) / 2 + 22}
+            textAnchor="middle"
+            fontSize="12"
+            fontWeight="600"
+          >
+            {`o jogo pede ${STAGE_TARGET.width} por ${STAGE_TARGET.height}`}
+          </text>
         </g>
-      </svg>
-      <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-        {border
-          ? 'O que está fora da moldura é só o espaço em volta.'
-          : 'A cor do fundo cobriu tudo: onde começa a tela do jogo?'}
-      </p>
-    </div>
+      )}
+      {border && (
+        <>
+          <rect
+            className="stroke-scene-alert"
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+            fill="none"
+            strokeWidth="4"
+          />
+          {/* As medidas ficam ao lado da moldura, do lado de fora, para não sujar a tela. */}
+          <text
+            className="fill-scene-ink"
+            x={x + w / 2}
+            y={y - 10}
+            textAnchor="middle"
+            fontSize="13"
+            fontWeight="600"
+          >
+            {width}
+          </text>
+          <text
+            className="fill-scene-ink"
+            x={x - 10}
+            y={y + h / 2}
+            textAnchor="end"
+            fontSize="13"
+            fontWeight="600"
+          >
+            {height}
+          </text>
+        </>
+      )}
+      <g className="text-primary">
+        <DinoFigure x={x + w / 2} y={y + h - 8} />
+      </g>
+    </SceneCanvas>
   )
 }
 
@@ -389,7 +367,6 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
  * criança entende o que a limpeza faz.
  */
 export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const id = useId()
   const { loop, erase, frames, trail } = state.render
   const VIEW = { w: 560, h: 220 } as const
   const passo = 52
@@ -397,58 +374,48 @@ export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: Scene
   const atual = loop ? Math.min(frames, 7) : 0
   const copias = erase ? [atual] : Array.from({ length: Math.max(1, trail) }, (_, i) => i)
   return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-title ${id}-desc`}
-      >
-        <title id={`${id}-title`}>A tela do jogo enquanto o relógio anda</title>
-        <desc id={`${id}-desc`}>
-          {castText(
-            loop
-              ? erase
-                ? 'Um Dino só, num lugar novo a cada quadro.'
-                : `${Math.max(1, trail)} Dinos desenhados, um em cada lugar por onde ele passou.`
-              : 'A tela não muda: ninguém está mandando desenhar de novo.',
-            cast,
-          )}
-        </desc>
-        <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
-        <rect className="fill-scene-ground" y={VIEW.h - 46} width={VIEW.w} height={46} />
-        <path className="stroke-scene-line" d={`M0 ${VIEW.h - 46}h${VIEW.w}`} strokeWidth="2" />
-        {copias.map((i) => (
-          <g
-            key={i}
-            className="text-primary"
-            // O desenho antigo fica mais apagado: ele é o que SOBROU, não o de agora.
-            opacity={i === copias[copias.length - 1] ? 1 : 0.45}
-          >
-            <DinoFigure x={primeiro + i * passo} y={VIEW.h - 46} />
-          </g>
-        ))}
-        <text
-          className="fill-scene-ink-soft"
-          x="16"
-          y="26"
-          fontSize="12"
-          fontWeight="600"
-          letterSpacing="0.5"
+    <SceneCanvas
+      view={VIEW}
+      cast={cast}
+      titulo="A tela do jogo enquanto o relógio anda"
+      descricao={
+        loop
+          ? erase
+            ? 'Um Dino só, num lugar novo a cada quadro.'
+            : `${Math.max(1, trail)} Dinos desenhados, um em cada lugar por onde ele passou.`
+          : 'A tela não muda: ninguém está mandando desenhar de novo.'
+      }
+      rodape={
+        loop
+          ? erase
+            ? 'Limpa e desenha: sobra um Dino só, num lugar novo.'
+            : 'Desenha sem limpar: cada quadro deixa o desenho anterior.'
+          : 'Nada muda enquanto ninguém mandar desenhar de novo.'
+      }
+    >
+      <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
+      <rect className="fill-scene-ground" y={VIEW.h - 46} width={VIEW.w} height={46} />
+      <path className="stroke-scene-line" d={`M0 ${VIEW.h - 46}h${VIEW.w}`} strokeWidth="2" />
+      {copias.map((i) => (
+        <g
+          key={i}
+          className="text-primary"
+          // O desenho antigo fica mais apagado: ele é o que SOBROU, não o de agora.
+          opacity={i === copias[copias.length - 1] ? 1 : 0.45}
         >
-          {`quadro ${frames}`}
-        </text>
-      </svg>
-      <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-        {castText(
-          loop
-            ? erase
-              ? 'Limpa e desenha: sobra um Dino só, num lugar novo.'
-              : 'Desenha sem limpar: cada quadro deixa o desenho anterior.'
-            : 'Nada muda enquanto ninguém mandar desenhar de novo.',
-          cast,
-        )}
-      </p>
-    </div>
+          <DinoFigure x={primeiro + i * passo} y={VIEW.h - 46} />
+        </g>
+      ))}
+      <text
+        className="fill-scene-ink-soft"
+        x="16"
+        y="26"
+        fontSize="12"
+        fontWeight="600"
+        letterSpacing="0.5"
+      >
+        {`quadro ${frames}`}
+      </text>
+    </SceneCanvas>
   )
 }

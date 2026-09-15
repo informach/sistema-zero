@@ -2,8 +2,8 @@
 
 import type { SceneAction, SceneCast, SceneId, SceneState } from '@sistemazero/core/learning/scene'
 import { castText, MAP_TILES, SCENE_LIMITS } from '@sistemazero/core/learning/scene'
-import { useId } from 'react'
 import { SceneButton } from './exploration-stage'
+import { Escolha, Medida } from './scene-bench'
 
 /**
  * A bancada das onze cenas do núcleo do Iniciante 2D (15/09/2026).
@@ -15,76 +15,6 @@ import { SceneButton } from './exploration-stage'
  * ⚠️ Fica em arquivo próprio porque o `scene-activity` já carrega o player inteiro (sessão,
  * gravação, previsão, rodapé): onze bancadas ali dentro fariam dele um arquivo que ninguém lê.
  */
-
-/**
- * Um deslizante com o valor à vista e dois botões de passo — o molde de todos os controles.
- *
- * ⚠️ Exportado para a bancada do motor e do 3D (`scene-engine-controls`): duas cópias deste
- * molde é como a régua de acessibilidade desta casa (deslizante, passo e valor à vista, os três
- * levando ao mesmo lugar) se perde em silêncio num dos arquivos.
- */
-export function Medida({
-  label,
-  value,
-  min,
-  max,
-  step = 1,
-  passo,
-  texto,
-  tom = 'text-scene-a',
-  onChange,
-}: {
-  label: string
-  value: number
-  min: number
-  max: number
-  step?: number
-  passo?: number
-  /** O valor em PALAVRA, para quem ouve: sem ele o leitor anuncia só o número cru. */
-  texto?: string
-  tom?: string
-  onChange: (valor: number) => void
-}) {
-  const id = useId()
-  const salto = passo ?? step
-  const mover = (delta: number) => onChange(Math.max(min, Math.min(max, value + delta)))
-  return (
-    <div className="rounded-2xl border border-border p-4 text-sm font-semibold">
-      <label className="flex justify-between gap-2" htmlFor={id}>
-        {label}
-        <output className={`text-lg tabular-nums ${tom}`}>{texto ?? value}</output>
-      </label>
-      <div className="mt-2 flex items-center gap-2">
-        <SceneButton
-          className="!min-w-11 !px-2"
-          aria-label={`Diminuir ${label}`}
-          onClick={() => mover(-salto)}
-        >
-          −
-        </SceneButton>
-        <input
-          id={id}
-          aria-label={label}
-          aria-valuetext={texto}
-          className="h-11 min-w-0 flex-1 accent-primary"
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-        />
-        <SceneButton
-          className="!min-w-11 !px-2"
-          aria-label={`Aumentar ${label}`}
-          onClick={() => mover(salto)}
-        >
-          +
-        </SceneButton>
-      </div>
-    </div>
-  )
-}
 
 /**
  * ⚠️⚠️ A bancada recebe o ELENCO pela mesma razão que o palco: os rótulos dos controles são
@@ -132,10 +62,7 @@ export function CoreSceneControls({
     case 'hold-vs-press':
       return (
         <div className="flex flex-wrap items-center gap-3">
-          <SceneButton
-            className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-            onClick={() => dispatch({ type: 'press' })}
-          >
+          <SceneButton tom="gesto" onClick={() => dispatch({ type: 'press' })}>
             Apertar uma vez
           </SceneButton>
           <SceneButton
@@ -202,7 +129,7 @@ export function CoreSceneControls({
                     Olhar o {alvo}º
                   </SceneButton>
                   <SceneButton
-                    className={state.hunt.chosen === alvo ? '!border-primary !text-primary' : ''}
+                    tom={state.hunt.chosen === alvo ? 'ligado' : 'ferramenta'}
                     onClick={() => dispatch({ type: 'choose', id: alvo })}
                   >
                     Escolher ({distancia})
@@ -233,10 +160,7 @@ export function CoreSceneControls({
               onChange={(value) => dispatch({ type: 'define', field: 'life', value })}
             />
           </div>
-          <SceneButton
-            className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-            onClick={() => dispatch({ type: 'spawnOne' })}
-          >
+          <SceneButton tom="gesto" onClick={() => dispatch({ type: 'spawnOne' })}>
             Fazer nascer mais um
           </SceneButton>
         </div>
@@ -265,23 +189,15 @@ export function CoreSceneControls({
             passo={20}
             onChange={(distance) => dispatch({ type: 'approach', distance })}
           />
-          <fieldset className="flex flex-wrap gap-2">
-            <legend className="mb-1 text-sm font-semibold">A pergunta que o jogo faz</legend>
-            <SceneButton
-              aria-pressed={state.hit.mode === 'ask'}
-              className={state.hit.mode === 'ask' ? '!border-primary !text-primary' : ''}
-              onClick={() => dispatch({ type: 'mode', kind: 'ask' })}
-            >
-              Está encostando?
-            </SceneButton>
-            <SceneButton
-              aria-pressed={state.hit.mode === 'event'}
-              className={state.hit.mode === 'event' ? '!border-primary !text-primary' : ''}
-              onClick={() => dispatch({ type: 'mode', kind: 'event' })}
-            >
-              Acabou de encostar
-            </SceneButton>
-          </fieldset>
+          <Escolha
+            label="A pergunta que o jogo faz"
+            valor={state.hit.mode}
+            opcoes={[
+              { id: 'ask' as const, label: 'Está encostando?' },
+              { id: 'event' as const, label: 'Acabou de encostar' },
+            ]}
+            onChange={(kind) => dispatch({ type: 'mode', kind })}
+          />
         </div>
       )
     case 'cooldown':
@@ -295,10 +211,7 @@ export function CoreSceneControls({
             step={0.5}
             onChange={(seconds) => dispatch({ type: 'recharge', seconds })}
           />
-          <SceneButton
-            className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-            onClick={() => dispatch({ type: 'shoot' })}
-          >
+          <SceneButton tom="gesto" onClick={() => dispatch({ type: 'shoot' })}>
             Atirar
           </SceneButton>
         </div>

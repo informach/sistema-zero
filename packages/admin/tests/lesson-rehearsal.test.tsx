@@ -1,6 +1,7 @@
 import { expect, spyOn, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
+  blockCheckpoint,
   defaultLessonSection,
   type InteractiveBlock,
   type LessonDraftDocument,
@@ -108,10 +109,30 @@ test('external confirmations do not bypass discoveries or unfinished section cri
         />,
       ),
     )
+    /**
+     * A frase que explica o que aconteceu — o terceiro tempo do ciclo.
+     *
+     * ⚠⚠ Desde 15/09/2026 toda experimentação HERDA a pergunta do modelo da cena, e é ela
+     * que dá a palavra final sobre a conclusão. O ensaio do professor passa pelo mesmo
+     * caminho da criança: descobrir deixou de bastar. O gabarito vem do resolvedor, e não de
+     * uma letra copiada aqui — reescrever a pergunta da cena não pode apagar este teste.
+     */
+    const explicar = async () => {
+      const pergunta = blockCheckpoint(content)
+      if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
+      const escolha = container.querySelector<HTMLInputElement>(
+        `input[type=radio][id$="-pergunta-${pergunta.correctChoiceId}"]`,
+      )
+      if (!escolha) throw new Error('a pergunta herdada não está na tela')
+      await act(async () => escolha.click())
+    }
     expect(button('Próxima seção').disabled).toBe(true)
     await act(async () => button('Simular confirmação da ação externa').click())
     expect(button('Próxima seção').disabled).toBe(true)
     await act(async () => button('Depois').click())
+    // A descoberta aconteceu, e o bloco ainda não fechou: falta enunciar a regra.
+    expect(button('Próxima seção').disabled).toBe(true)
+    await explicar()
     expect(button('Próxima seção').disabled).toBe(false)
     await act(async () => button('Próxima seção').click())
     expect(button('Próxima seção').disabled).toBe(true)
@@ -264,6 +285,16 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     return found
   }
   const click = (name: string) => act(async () => button(name).click())
+  /** A frase que explica — ver o comentário do teste anterior. */
+  const explicar = async () => {
+    const pergunta = blockCheckpoint(content)
+    if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
+    const escolha = container.querySelector<HTMLInputElement>(
+      `input[type=radio][id$="-pergunta-${pergunta.correctChoiceId}"]`,
+    )
+    if (!escolha) throw new Error('a pergunta herdada não está na tela')
+    await act(async () => escolha.click())
+  }
   try {
     await act(async () =>
       root.render(
@@ -285,6 +316,11 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     expect(button('Próxima seção').disabled).toBe(true)
     await click('Falhar na próxima confirmação')
     await click('Depois')
+    // ⚠️⚠️ A descoberta sozinha não manda mais tentativa nenhuma: a experimentação herda a
+    // pergunta do modelo da cena, e a tentativa só sai com a frase escolhida. Quem tropeça na
+    // falha de gravação é a RESPOSTA, e é depois dela que o "Tentar salvar" tem o que repetir.
+    expect(button('Próxima seção').disabled).toBe(true)
+    await explicar()
     expect(container.textContent).toContain('Falha de salvamento simulada')
     expect(button('Próxima seção').disabled).toBe(true)
     await click('Tentar salvar')
@@ -298,6 +334,7 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     await click('Conferir repetição')
     await click('Próxima seção')
     await click('Depois')
+    await explicar()
     await click('Próxima seção')
     expect(identity).toBe(original)
     expect(

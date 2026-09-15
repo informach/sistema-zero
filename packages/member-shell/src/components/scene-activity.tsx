@@ -29,7 +29,6 @@ import {
 import {
   Camera,
   Check,
-  Ear,
   FlaskConical,
   Lightbulb,
   MonitorPlay,
@@ -55,13 +54,13 @@ import {
   writeSceneDraft,
 } from '../lib/scene-controller'
 import type { LessonBlockView } from '../lib/types'
-import { ExperienceComparison, ExperienceScene } from './experience-scene'
+import { ExperienceComparison } from './experience-scene'
 import { ExplorationPieces } from './exploration-pieces'
-import { ExplorationStage, SceneButton } from './exploration-stage'
+import { ExplorationStage, ehLaboratorio, SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
-import { CoreSceneControls } from './scene-core-controls'
-import { EngineSceneControls } from './scene-engine-controls'
+import { tituloJaDito, useLessonSection } from './lesson-section-context'
+import { LessonSceneControls } from './scene-lesson-controls'
 
 export function SceneActivityView({
   block,
@@ -76,6 +75,7 @@ export function SceneActivityView({
 }) {
   const player = useLessonPlayer()
   const rehearsal = useLessonPreview()
+  const secao = useLessonSection()
   const id = useId()
   const hints = learningHints({ activity, hints: content.hints })
   const saved = player?.learningProgress?.blocks.find(
@@ -119,9 +119,6 @@ export function SceneActivityView({
    */
   const [resposta, setResposta] = useState('')
   const [respostaFeedback, setRespostaFeedback] = useState('')
-  /** A coluna escolhida na cena do espelho. Ela é do CONTROLE, não do mundo: enquanto a criança
-   *  arrasta o deslizante nada é pintado, e o motor só recebe o traço no clique. */
-  const [coluna, setColuna] = useState(3)
   /**
    * ⭐ A PREVISÃO: o que ela acha que vai acontecer, antes de mexer.
    *
@@ -151,6 +148,9 @@ export function SceneActivityView({
   // ⚠️ A frase de sucesso é a DA CENA, sempre a mesma. Semeando com `saved.result.feedback` o
   // cartão trocava de texto num F5: acertando a pergunta anexa aquele campo é a EXPLICAÇÃO que o
   // professor escreveu, e a mesma cena passava a mostrar dois títulos diferentes.
+  // ⚠️ Nasce FALSO num F5: quem reabre a aula não "está revendo", está chegando. Sem isso a
+  // criança abria a cena e era recebida por uma frase sobre um gesto que ela não fez.
+  const [recomeçou, setRecomeçou] = useState(false)
   const [conclusao, setConclusao] = useState(
     saved?.result?.passed
       ? activity.type === 'demonstration'
@@ -199,7 +199,9 @@ export function SceneActivityView({
 
   const state = session.state
   const m = activity.scene
-  const reference = ['gravity', 'impulse', 'hitbox', 'jump-sound'].includes(m)
+  // ⚠️ A MESMA lista do palco: são as cenas do laboratório, e são elas que rendem a comparação
+  // guardada ("Guardar para comparar"). Duas cópias da lista já divergiram uma vez.
+  const reference = ehLaboratorio(m)
   const roteiro = sceneScript(activity)
   const demoStep = demo ? roteiro[demo.step] : null
   // ⚠️ As metas que ESTA atividade cobra: o `setup.goals` do professor, quando há. Sem isto o
@@ -322,6 +324,10 @@ export function SceneActivityView({
   }
   const dispatch = (command: SceneCommand) => {
     action.current(command)
+    // ⚠️ O estado de "está revendo" é ligado pelo RECOMEÇAR e desligado pelo primeiro gesto que
+    // volta a mexer no mundo. `hint` não conta: pedir uma pista não é recomeçar a investigação.
+    if (command.type === 'reset') setRecomeçou(true)
+    else if (command.type !== 'hint') setRecomeçou(false)
     if (command.type === 'jump' && !reduced) setRunning(true)
   }
   useEffect(() => {
@@ -518,6 +524,99 @@ export function SceneActivityView({
   }
   // ⚠️ A descoberta está feita, mas o bloco ainda cobra a frase que a explica. É o único estado
   // em que a cena e o servidor discordam de propósito, e por isso ele tem nome.
+  /**
+   * ⚠️⚠️ Ela já descobriu, e o palco voltou ao começo.
+   *
+   * Acontece o tempo todo: "Ver de novo" é a ação em DESTAQUE do rodapé e faz `reset`, que volta
+   * ao caso. O cartão de sucesso é um latch (concluir é acontecimento e não se desfaz), então a
+   * tela passava a afirmar "Você concluiu a investigação proposta nesta atividade" em cima de um
+   * palco vazio — o prêmio por terminar era uma tela que diz o que ela não mostra.
+   *
+   * ⚠️⚠️ E o sinal é o GESTO (`recomeçou`), nunca o `result.passed`. A primeira versão usou o
+   * avaliador como atalho e funcionou em DUAS cenas de 45: `reset` preserva as descobertas de
+   * propósito (recomeçar volta o mundo, não a história), então `passed` continua verdadeiro em
+   * todas menos `layers` e `jump-sound` — as únicas que exigem a montagem assentada. O teste
+   * que devia ter pego isso usava justamente `layers`.
+   */
+  const revendo = Boolean(conclusao) && recomeçou && !demoMode
+  /**
+   * Os botões que moram na caixa da cena, como LISTA.
+   *
+   * ⚠️⚠️ É a lista que responde se a caixa deve existir (`botoesDaCena.length > 0`). Um booleano
+   * à parte repetindo as condições de dentro esconde o defeito pior: um botão acrescentado e
+   * esquecido no booleano não renderiza, sem erro e sem teste vermelho.
+   *
+   * ⚠️ Quem diz se a cena tem relógio é a RÉGUA DE LEGALIDADE do core, e não uma lista escrita
+   * aqui: a lista à mão já tinha deixado `stage-size` com um "Um passo" que não fazia nada (o
+   * motor recusa `advance` fora das cenas com tempo), e cada cena nova teria que lembrar de
+   * entrar nela. Um play parado é um botão que promete o que a cena não faz.
+   */
+  /**
+   * ⚠️⚠️ Quem SALTA é a régua de legalidade do core, como o relógio logo abaixo — nunca uma lista
+   * de cenas escrita aqui. Ela dava exatamente estas três hoje (medido), então a troca não muda
+   * nada AGORA: o que ela tira é a manutenção. Uma cena nova que aceite `jump` já nasce com o
+   * botão, e uma que deixe de aceitar já nasce sem ele — que é o oposto do que acabou de custar
+   * ~120 linhas mortas no palco compartilhado, onde a lista à mão nunca foi revisitada.
+   */
+  const salta = isSceneAction({ type: 'jump', input: 'tap' }, m)
+  const botoesDaCena = [
+    salta && (
+      <SceneButton
+        key="pular-toque"
+        tom="gesto"
+        onClick={() => dispatch({ type: 'jump', input: 'tap' })}
+      >
+        ↑ Pular com toque
+      </SceneButton>
+    ),
+    m === 'jump-sound' && (
+      <SceneButton
+        key="tecla-espaco"
+        onClick={() => dispatch({ type: 'jump', input: 'key' })}
+        onKeyDown={(e) => {
+          if (e.code === 'Space') {
+            e.preventDefault()
+            if (!e.repeat) dispatch({ type: 'jump', input: 'key' })
+          }
+        }}
+      >
+        Tecla Espaço
+      </SceneButton>
+    ),
+    isSceneAction({ type: 'advance', seconds: 0.2 }, m) && (
+      <SceneButton
+        key="tocar"
+        aria-label={running ? 'Pausar experiência' : 'Continuar experiência'}
+        onClick={() => setRunning((v) => !v)}
+      >
+        {running ? <Pause size={18} /> : <Play size={18} />}
+      </SceneButton>
+    ),
+    isSceneAction({ type: 'advance', seconds: 0.2 }, m) && (
+      <SceneButton key="um-passo" onClick={() => dispatch({ type: 'advance', seconds: 0.2 })}>
+        <StepForward size={16} />
+        Um passo
+      </SceneButton>
+    ),
+    isSceneAction({ type: 'advance', seconds: 0.2 }, m) && (
+      <SceneButton key="meia-velocidade" aria-pressed={slow} onClick={() => setSlow((v) => !v)}>
+        ½ velocidade
+      </SceneButton>
+    ),
+    reference && (
+      <SceneButton
+        key="guardar"
+        onClick={() => {
+          dispatch({ type: 'capture' })
+          setCompared(true)
+        }}
+      >
+        <Camera size={16} />
+        Guardar para comparar
+      </SceneButton>
+    ),
+  ].filter(Boolean)
+
   const pendente = Boolean(content.checkpoint) && Boolean(conclusao) && !registered
   // ⚠️ Errar não é "ainda não respondeu". O core já separa os dois recados; o cartão dizia
   // "escolha a frase que explica" para quem tinha escolhido — contradizendo, duas linhas
@@ -582,11 +681,7 @@ export function SceneActivityView({
         )
         elapsed = 0
         // Acabou o salto: parar o relógio em vez de rodar à toa.
-        if (
-          !demoMode &&
-          ['gravity', 'impulse', 'jump-sound'].includes(m) &&
-          controller.getSnapshot().state.flight.time === null
-        ) {
+        if (!demoMode && salta && controller.getSnapshot().state.flight.time === null) {
           setRunning(false)
           return
         }
@@ -595,7 +690,7 @@ export function SceneActivityView({
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [controller, running, ready, conflict, slow, m, demoMode, inline, roteiro.length])
+  }, [controller, running, ready, conflict, slow, salta, demoMode, inline, roteiro.length])
 
   return (
     /* ⚠️ A cena NÃO desenha cartão. Quem desenha é o app, pelo gancho `sz-lesson-scene`:
@@ -620,7 +715,17 @@ export function SceneActivityView({
             )}
             {demoMode ? 'Observe' : 'Experimente'}
           </p>
-          <h3 id={`${id}-title`} className="text-xl font-bold sm:text-2xl">
+          {/* ⚠️ O título CONTINUA existindo — ele é o nome acessível da `<section>` (o
+              `aria-labelledby`), e sem ele quem usa leitor de tela perde a âncora. O que some é
+              a REPETIÇÃO: quando o cabeçalho da seção já disse a mesma frase, ele vira
+              `sr-only`. Era o caso da Aula 1 do Corre Dino, onde a mesma pergunta aparecia duas
+              vezes em 130px de distância. */}
+          <h3
+            id={`${id}-title`}
+            className={
+              tituloJaDito(content.title, secao) ? 'sr-only' : 'text-xl font-bold sm:text-2xl'
+            }
+          >
             {content.title}
           </h3>
         </div>
@@ -629,13 +734,20 @@ export function SceneActivityView({
              de tela anunciava as metas uma a uma a cada descoberta. Aqui ele lê "2 de 3
              descobertas" e as bolinhas ficam sendo o que são — desenho. */
           <div
-            className="flex gap-1"
+            className="flex items-center gap-2"
             role="meter"
             aria-valuemin={0}
             aria-valuemax={goals.length}
             aria-valuenow={goals.filter((g) => g.complete).length}
             aria-label={`${goals.filter((g) => g.complete).length} de ${goals.length} descobertas`}
           >
+            {/* ⚠⚠ As bolinhas sozinhas não diziam a ninguém o que eram: quem enxerga via dois
+                círculos azuis no alto do cartão e quem usa leitor de tela ouvia "2 de 3
+                descobertas". A conta agora está escrita, e é `aria-hidden` porque o `role="meter"`
+                em volta já anuncia a mesma coisa — a mesma regra da faixa de estado. */}
+            <span aria-hidden className="text-xs font-semibold text-muted-foreground">
+              {goals.filter((g) => g.complete).length} de {goals.length} descobertas
+            </span>
             {goals.map((g) => (
               <span
                 key={g.id}
@@ -652,7 +764,20 @@ export function SceneActivityView({
       <div className="space-y-4">
         <div className="min-h-16 rounded-2xl bg-primary/5 px-4 py-3" aria-live="polite">
           {player?.renderInstruction ? (
-            player.renderInstruction(instruction, 'speaking')
+            /* ⚠️ O segundo Zappy da tela vira texto. Quando a seção já tem um balão de fala
+               num bloco próprio, o avatar aqui não acrescenta voz nenhuma — acrescenta uma
+               segunda moldura, um segundo rosto e mais 90px antes do palco. A instrução
+               continua inteira; o que sai é a repetição do mensageiro. */
+            secao?.temDialogo ? (
+              // ⚠️ `whitespace-pre-line` e `text-base` como no balão que ele substitui: sem os
+              // dois, uma instrução escrita em mais de uma linha vira parágrafo corrido e o
+              // tamanho no celular encolhe. O que sai é o mensageiro, não a forma do recado.
+              <p className="whitespace-pre-line text-pretty text-base font-medium leading-relaxed">
+                {instruction}
+              </p>
+            ) : (
+              player.renderInstruction(instruction, 'speaking')
+            )
           ) : (
             <p className="text-sm font-medium leading-relaxed sm:text-base">{instruction}</p>
           )}
@@ -746,10 +871,19 @@ export function SceneActivityView({
                 Escondida, ela tirava de quem usa leitor de tela justamente os números que a
                 cena existe para mostrar, e numa cena sobre acessibilidade isso é contradição.
                 A `<dl>` dá a relação nome/valor de graça. */}
-              <dl className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-t-2xl border border-scene-card-line border-b-0 bg-scene-card px-3 py-2 text-xs text-scene-ink sm:text-sm">
+              {/* ⚠️ Cartão INTEIRO, com os quatro cantos. Antes eram `rounded-t-2xl` +
+                  `border-b-0` (o desenho de quem encosta no palco) junto de um `mb-2` que
+                  afastava os dois: sem a borda de baixo e sem encostar em nada, a faixa lia como
+                  um cartão cortado ao meio. O palco tem `rounded-2xl` próprio, então encostar
+                  duplicaria o canto — quem cede é a faixa.
+                  ⚠️⚠️ E ela é CROMO, por isso veste o APP (cartão, linha e tinta dele), não o
+                  papel da cena: usava o creme `scene-card` com a linha oliva `scene-card-line` e
+                  era o único elemento de outra família visual encostado no conteúdo — foi ela que
+                  a dona apontou no print. O MUNDO, dentro do palco, continua ilustrado. */}
+              <dl className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-border bg-card px-3 py-2 text-xs text-foreground sm:text-sm">
                 {sceneReadout(activity.scene, state, activity.cast).map((r) => (
                   <div key={r.label} className="flex items-baseline gap-1.5">
-                    <dt className="text-scene-ink-soft">{r.label}</dt>
+                    <dt className="text-muted-foreground">{r.label}</dt>
                     <dd
                       className={`font-semibold tabular-nums ${
                         r.tone === 'a'
@@ -766,33 +900,13 @@ export function SceneActivityView({
                   </div>
                 ))}
               </dl>
-              {reference ? (
-                <ExperienceScene
-                  activity={activity}
-                  state={state}
-                  // O `!demoMode` FICA: é ele que separa os dois tipos de bloco (na
-                  // demonstração a criança assiste, não toca). O `!result.passed` saiu.
-                  onJump={
-                    !demoMode && m !== 'hitbox'
-                      ? (input) => dispatch({ type: 'jump', input })
-                      : undefined
-                  }
-                  onDistance={
-                    !demoMode && m === 'hitbox'
-                      ? (distance) => dispatch({ type: 'move', distance })
-                      : undefined
-                  }
-                />
-              ) : (
-                <fieldset disabled={demoMode}>
-                  <ExplorationStage
-                    activity={activity}
-                    state={state}
-                    dispatch={dispatch}
-                    paused={!running}
-                  />
-                </fieldset>
-              )}
+              {/* ⚠⚠ UM caminho para as 45: quem sabe qual é o palco de cada cena é o palco. O
+                  player escolhia o laboratório de saltos à parte, e era o único lugar do sistema
+                  que sabia disso. O `fieldset` continua aqui porque a trava é do BLOCO: na
+                  demonstração a criança assiste, não toca. */}
+              <fieldset disabled={demoMode}>
+                <ExplorationStage activity={activity} state={state} dispatch={dispatch} />
+              </fieldset>
             </div>
             {/* ⚠️ Era aqui que morava "Siga a missão e observe o resultado", a MESMA frase nas
               catorze cenas e em todo estado — ela aparecia sempre que o motor não tivesse
@@ -810,7 +924,7 @@ export function SceneActivityView({
               // é a animação curta que a criança repete quantas vezes quiser.
               <div className="flex justify-center">
                 <SceneButton
-                  className="!border-primary !bg-primary !px-6 !text-primary-foreground"
+                  tom="gesto"
                   onClick={() => {
                     dispatch({ type: 'start' })
                     // ⚠️⚠️ Quem pediu MENOS MOVIMENTO não fica sem cena: aqui não há "Um passo"
@@ -873,670 +987,28 @@ export function SceneActivityView({
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-border bg-background p-3">
-                  {['gravity', 'impulse', 'jump-sound'].includes(m) && (
-                    <SceneButton
-                      className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-                      onClick={() => dispatch({ type: 'jump', input: 'tap' })}
-                    >
-                      ↑ Pular com toque
-                    </SceneButton>
-                  )}
-                  {m === 'jump-sound' && (
-                    <SceneButton
-                      onClick={() => dispatch({ type: 'jump', input: 'key' })}
-                      onKeyDown={(e) => {
-                        if (e.code === 'Space') {
-                          e.preventDefault()
-                          if (!e.repeat) dispatch({ type: 'jump', input: 'key' })
-                        }
-                      }}
-                    >
-                      Tecla Espaço
-                    </SceneButton>
-                  )}
-                  {/* ⚠️⚠️ Quem diz se a cena tem relógio é a RÉGUA DE LEGALIDADE do core, e não
-                    uma lista escrita aqui: a lista à mão já tinha deixado `stage-size` com um
-                    "Um passo" que não fazia nada (o motor recusa `advance` fora das cenas com
-                    tempo), e cada cena nova teria que lembrar de entrar nela. Um play parado é
-                    um botão que promete o que a cena não faz. */}
-                  {isSceneAction({ type: 'advance', seconds: 0.2 }, m) && (
-                    <>
-                      <SceneButton
-                        aria-label={running ? 'Pausar experiência' : 'Continuar experiência'}
-                        onClick={() => setRunning((v) => !v)}
-                      >
-                        {running ? <Pause size={18} /> : <Play size={18} />}
-                      </SceneButton>
-                      <SceneButton onClick={() => dispatch({ type: 'advance', seconds: 0.2 })}>
-                        <StepForward size={16} />
-                        Um passo
-                      </SceneButton>
-                      <SceneButton aria-pressed={slow} onClick={() => setSlow((v) => !v)}>
-                        ½ velocidade
-                      </SceneButton>
-                    </>
-                  )}
-                  {reference && (
-                    <SceneButton
-                      onClick={() => {
-                        dispatch({ type: 'capture' })
-                        setCompared(true)
-                      }}
-                    >
-                      <Camera size={16} />
-                      Guardar para comparar
-                    </SceneButton>
-                  )}
-                </div>
+                {/* ⚠️⚠️ A caixa pergunta aos FILHOS se há o que mostrar, e não a uma lista de
+                    cenas escrita à parte. A primeira versão repetia as condições de dentro num
+                    booleano, e a falha silenciosa dela é pior que o defeito consertado: um
+                    botão acrescentado aqui e esquecido lá simplesmente NÃO renderiza — sem
+                    erro, sem caixa vazia, sem teste vermelho. Caixa vazia se vê; botão que
+                    nunca apareceu, não. */}
+                {botoesDaCena.length > 0 && (
+                  <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-border bg-background p-3">
+                    {botoesDaCena}
+                  </div>
+                )}
                 <div
                   className={`space-y-3 ${demoStep?.highlight === 'tools' ? 'rounded-2xl ring-2 ring-primary' : ''}`}
                 >
-                  {(m === 'impulse' || m === 'gravity') && (
-                    <label
-                      className="flex flex-wrap items-center gap-4 rounded-2xl border border-border p-4 text-sm font-semibold"
-                      htmlFor={`${id}-force`}
-                    >
-                      Impulso{' '}
-                      <output className="text-lg text-amber-700">{state.flight.force}</output>
-                      <input
-                        id={`${id}-force`}
-                        aria-label="Impulso do salto"
-                        type="range"
-                        min="5"
-                        max="14"
-                        step="1"
-                        value={state.flight.force}
-                        disabled={m === 'gravity'}
-                        onChange={(e) =>
-                          dispatch({ type: 'impulse', force: Number(e.target.value) })
-                        }
-                        className="h-11 min-w-32 flex-1 accent-amber-600"
-                      />
-                      {m === 'gravity' && (
-                        <span className="font-normal text-muted-foreground">
-                          O impulso fica igual para comparar a gravidade.
-                        </span>
-                      )}
-                    </label>
-                  )}
-                  {/* A bancada das onze cenas do núcleo do Iniciante 2D, em arquivo próprio. */}
-                  <CoreSceneControls
+                  <LessonSceneControls
                     scene={m}
                     state={state}
                     dispatch={dispatch}
                     cast={activity.cast}
+                    goals={goals}
+                    onRunning={setRunning}
                   />
-                  <EngineSceneControls
-                    scene={m}
-                    state={state}
-                    dispatch={dispatch}
-                    cast={activity.cast}
-                  />
-                  {m === 'coordinates' && (
-                    /* ⭐ Os dois controles que a Aula 1 pedia e que o vídeo não dava. Cada eixo
-                     tem deslizante, botões de passo e o valor à vista — os três levam ao MESMO
-                     lugar, que é a régua desta casa desde a cena da colisão: quem não arrasta
-                     (teclado, leitor de tela) chega à mesma descoberta. */
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {[
-                        {
-                          eixo: 'x' as const,
-                          label: 'x, de esquerda a direita',
-                          value: state.place.x,
-                          max: SCENE_LIMITS.placeX.max,
-                          cor: 'text-scene-a',
-                        },
-                        {
-                          eixo: 'y' as const,
-                          label: 'y, de cima a baixo',
-                          value: state.place.y,
-                          max: SCENE_LIMITS.placeY.max,
-                          cor: 'text-scene-b-ink',
-                        },
-                      ].map((item) => {
-                        const place = (valor: number) =>
-                          dispatch({
-                            type: 'place',
-                            x: item.eixo === 'x' ? valor : state.place.x,
-                            y: item.eixo === 'y' ? valor : state.place.y,
-                            // ⚠️ Um eixo por vez: o outro vem do estado, nunca do controle. É o
-                            // que faz a descoberta ser sobre UM número.
-                          })
-                        const passo = (delta: number) =>
-                          place(Math.max(0, Math.min(item.max, item.value + delta)))
-                        return (
-                          <div
-                            key={item.eixo}
-                            className="rounded-2xl border border-border p-4 text-sm font-semibold"
-                          >
-                            <label
-                              className="flex justify-between gap-2"
-                              htmlFor={`${id}-${item.eixo}`}
-                            >
-                              {item.label}
-                              <output className={`text-lg tabular-nums ${item.cor}`}>
-                                {item.value}
-                              </output>
-                            </label>
-                            <div className="mt-2 flex items-center gap-2">
-                              <SceneButton
-                                className="!min-w-11 !px-2"
-                                aria-label={`Diminuir ${item.eixo} em 20`}
-                                onClick={() => passo(-20)}
-                              >
-                                −
-                              </SceneButton>
-                              <input
-                                id={`${id}-${item.eixo}`}
-                                aria-label={item.label}
-                                className="h-11 min-w-0 flex-1 accent-primary"
-                                type="range"
-                                min={0}
-                                max={item.max}
-                                step={1}
-                                value={item.value}
-                                onChange={(e) => place(Number(e.target.value))}
-                              />
-                              <SceneButton
-                                className="!min-w-11 !px-2"
-                                aria-label={`Aumentar ${item.eixo} em 20`}
-                                onClick={() => passo(20)}
-                              >
-                                +
-                              </SceneButton>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                  {m === 'stage-size' && (
-                    <div className="space-y-3">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {[
-                          {
-                            eixo: 'width' as const,
-                            label: 'largura da tela',
-                            value: state.stage.width,
-                            min: SCENE_LIMITS.stageWidth.min,
-                            max: SCENE_LIMITS.stageWidth.max,
-                            cor: 'text-scene-a',
-                          },
-                          {
-                            eixo: 'height' as const,
-                            label: 'altura da tela',
-                            value: state.stage.height,
-                            min: SCENE_LIMITS.stageHeight.min,
-                            max: SCENE_LIMITS.stageHeight.max,
-                            cor: 'text-scene-b-ink',
-                          },
-                        ].map((item) => (
-                          <label
-                            key={item.eixo}
-                            className="rounded-2xl border border-border p-4 text-sm font-semibold"
-                          >
-                            <span className="flex justify-between gap-2">
-                              {item.label}
-                              <output className={`text-lg tabular-nums ${item.cor}`}>
-                                {item.value}
-                              </output>
-                            </span>
-                            <input
-                              aria-label={item.label}
-                              className="mt-2 h-11 w-full accent-primary"
-                              type="range"
-                              min={item.min}
-                              max={item.max}
-                              step={10}
-                              value={item.value}
-                              onChange={(e) =>
-                                dispatch({
-                                  type: 'stage',
-                                  width:
-                                    item.eixo === 'width'
-                                      ? Number(e.target.value)
-                                      : state.stage.width,
-                                  height:
-                                    item.eixo === 'height'
-                                      ? Number(e.target.value)
-                                      : state.stage.height,
-                                })
-                              }
-                            />
-                          </label>
-                        ))}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                        {/* ⚠️ O ESTADO no rótulo, o mesmo molde da `Chave` das bancadas novas:
-                            o rótulo com a AÇÃO ("Mostrar a borda") num botão PINTADO de primário
-                            com `aria-pressed="false"` fazia as três camadas contarem histórias
-                            diferentes — o desenho dizia ligado, o texto dizia ligar. */}
-                        <SceneButton
-                          className={
-                            state.stage.border ? '!border-primary !bg-primary/10 !text-primary' : ''
-                          }
-                          aria-pressed={state.stage.border}
-                          onClick={() => dispatch({ type: 'border', visible: !state.stage.border })}
-                        >
-                          A borda da tela: {state.stage.border ? 'à vista' : 'escondida'}
-                        </SceneButton>
-                        <SceneButton
-                          onClick={() => dispatch({ type: 'stage', width: 480, height: 270 })}
-                        >
-                          Usar 480 por 270
-                        </SceneButton>
-                      </div>
-                    </div>
-                  )}
-                  {m === 'draw-loop' && (
-                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                      {/* ⚠️ Uma chave de cada vez, e o relógio à parte: é avançando o tempo que a
-                        criança vê a diferença entre congelado, rastro e movimento. */}
-                      <SceneButton
-                        aria-pressed={state.render.loop}
-                        className={state.render.loop ? '!border-primary !text-primary' : ''}
-                        onClick={() => dispatch({ type: 'loop', on: !state.render.loop })}
-                      >
-                        Desenhar a cada quadro: {state.render.loop ? 'ligado' : 'desligado'}
-                      </SceneButton>
-                      <SceneButton
-                        aria-pressed={state.render.erase}
-                        className={state.render.erase ? '!border-primary !text-primary' : ''}
-                        onClick={() => dispatch({ type: 'erase', on: !state.render.erase })}
-                      >
-                        Limpar antes: {state.render.erase ? 'ligado' : 'desligado'}
-                      </SceneButton>
-                    </div>
-                  )}
-                  {m === 'screen-reader' && (
-                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                      {/* ⚠️ Ícone de ESCUTA, não de som: "Ligar som" (o efeito sonoro da cena)
-                        fica no mesmo rodapé, e dois botões com o mesmo alto-falante na mesma
-                        tela leem como o mesmo controle. */}
-                      <SceneButton
-                        className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-                        onClick={() => dispatch({ type: 'listen' })}
-                      >
-                        <Ear size={16} />
-                        Ouvir a tela
-                      </SceneButton>
-                      <span className="text-sm text-muted-foreground">
-                        O programa lê o que estiver escrito. Ele não enxerga o desenho.
-                      </span>
-                    </div>
-                  )}
-                  {m === 'frames' && (
-                    <div className="w-full space-y-3">
-                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                        {[1, 2].map((n) => (
-                          <SceneButton
-                            key={n}
-                            aria-pressed={state.animation.frame === n}
-                            className={
-                              state.animation.frame === n ? '!border-primary !text-primary' : ''
-                            }
-                            onClick={() => dispatch({ type: 'frame', index: n })}
-                          >
-                            {`Quadro ${n}`}
-                          </SceneButton>
-                        ))}
-                        {/* ⚠️ Ligar a troca LIGA O RELÓGIO junto (e parar para). Sem isso a
-                          criança apertava "Ligar a troca", nada se mexia e a saída era descobrir
-                          sozinha que faltava apertar o play ali do lado: dois interruptores para
-                          uma coisa só. O passo e a pausa continuam à mão, para ela olhar uma
-                          troca de cada vez. */}
-                        <SceneButton
-                          className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-                          aria-pressed={state.animation.playing}
-                          onClick={() => {
-                            const ligando = !state.animation.playing
-                            dispatch({ type: 'play', on: ligando })
-                            setRunning(ligando)
-                          }}
-                        >
-                          {state.animation.playing ? 'Parar a troca' : 'Ligar a troca'}
-                        </SceneButton>
-                      </div>
-                      <label
-                        className="block rounded-2xl border border-border p-4 text-sm font-semibold"
-                        htmlFor={`${id}-rate`}
-                      >
-                        <span className="flex justify-between gap-2">
-                          trocas por segundo
-                          <output className="text-lg tabular-nums text-scene-b-ink">
-                            {state.animation.rate}
-                          </output>
-                        </span>
-                        <input
-                          id={`${id}-rate`}
-                          aria-label="trocas por segundo"
-                          className="mt-2 h-11 w-full accent-primary"
-                          type="range"
-                          min={SCENE_LIMITS.rate.min}
-                          max={SCENE_LIMITS.rate.max}
-                          step={1}
-                          value={state.animation.rate}
-                          onChange={(e) =>
-                            dispatch({ type: 'rate', perSecond: Number(e.target.value) })
-                          }
-                        />
-                      </label>
-                    </div>
-                  )}
-                  {m === 'onion-skin' && (
-                    <div className="w-full space-y-3">
-                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                        {[1, 2].map((n) => (
-                          <SceneButton
-                            key={n}
-                            aria-pressed={state.animation.frame === n}
-                            className={
-                              state.animation.frame === n ? '!border-primary !text-primary' : ''
-                            }
-                            onClick={() => dispatch({ type: 'frame', index: n })}
-                          >
-                            {`Quadro ${n}`}
-                          </SceneButton>
-                        ))}
-                        <SceneButton
-                          aria-pressed={state.animation.onion}
-                          className={state.animation.onion ? '!border-primary !text-primary' : ''}
-                          onClick={() => dispatch({ type: 'onion', on: !state.animation.onion })}
-                        >
-                          Fantasma: {state.animation.onion ? 'ligado' : 'desligado'}
-                        </SceneButton>
-                      </div>
-                      {/* ⚠️ Uma variável por vez, como na cena da colisão: o passo é do desenho do
-                        quadro 2, então no quadro 1 ele fica fechado COM O MOTIVO escrito. Mexer
-                        nele ali mudaria um desenho que não está na tela. */}
-                      <label
-                        className="block rounded-2xl border border-border p-4 text-sm font-semibold"
-                        htmlFor={`${id}-shift`}
-                      >
-                        <span className="flex justify-between gap-2">
-                          passo do quadro 2
-                          <output className="text-lg tabular-nums text-scene-b-ink">
-                            {state.animation.shift}
-                          </output>
-                        </span>
-                        <input
-                          id={`${id}-shift`}
-                          aria-label="passo do quadro 2"
-                          className="mt-2 h-11 w-full accent-primary"
-                          type="range"
-                          min={SCENE_LIMITS.shift.min}
-                          max={SCENE_LIMITS.shift.max}
-                          step={4}
-                          disabled={state.animation.frame !== 2}
-                          value={state.animation.shift}
-                          onChange={(e) =>
-                            dispatch({ type: 'shift', offset: Number(e.target.value) })
-                          }
-                        />
-                        {state.animation.frame !== 2 && (
-                          <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                            Vá para o quadro 2 para mover o desenho dele.
-                          </span>
-                        )}
-                      </label>
-                    </div>
-                  )}
-                  {m === 'symmetry' && (
-                    <div className="w-full space-y-3">
-                      <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-border p-4">
-                        <label
-                          className="min-w-40 flex-1 text-sm font-semibold"
-                          htmlFor={`${id}-col`}
-                        >
-                          <span className="flex justify-between gap-2">
-                            coluna do traço
-                            <output className="text-lg tabular-nums text-scene-a">{coluna}</output>
-                          </span>
-                          <input
-                            id={`${id}-col`}
-                            aria-label="coluna do traço"
-                            className="mt-2 h-11 w-full accent-primary"
-                            type="range"
-                            min={SCENE_LIMITS.column.min}
-                            max={SCENE_LIMITS.column.max}
-                            step={1}
-                            value={coluna}
-                            onChange={(e) => setColuna(Number(e.target.value))}
-                          />
-                        </label>
-                        <SceneButton
-                          className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-                          onClick={() => dispatch({ type: 'paint', column: coluna })}
-                        >
-                          Pintar aqui
-                        </SceneButton>
-                        <SceneButton
-                          aria-pressed={state.mirror.on}
-                          className={state.mirror.on ? '!border-primary !text-primary' : ''}
-                          onClick={() =>
-                            dispatch({
-                              type: 'mirror',
-                              on: !state.mirror.on,
-                              line: state.mirror.line,
-                            })
-                          }
-                        >
-                          Espelho: {state.mirror.on ? 'ligado' : 'desligado'}
-                        </SceneButton>
-                      </div>
-                      <label
-                        className="block rounded-2xl border border-border p-4 text-sm font-semibold"
-                        htmlFor={`${id}-axis`}
-                      >
-                        <span className="flex justify-between gap-2">
-                          linha do eixo
-                          <output className="text-lg tabular-nums text-scene-b-ink">
-                            {state.mirror.line}
-                          </output>
-                        </span>
-                        <input
-                          id={`${id}-axis`}
-                          aria-label="linha do eixo"
-                          className="mt-2 h-11 w-full accent-primary"
-                          type="range"
-                          min={SCENE_LIMITS.mirrorLine.min}
-                          max={SCENE_LIMITS.mirrorLine.max}
-                          step={1}
-                          disabled={!state.mirror.on}
-                          value={state.mirror.line}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'mirror',
-                              on: state.mirror.on,
-                              line: Number(e.target.value),
-                            })
-                          }
-                        />
-                        {!state.mirror.on && (
-                          <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                            Ligue o espelho para escolher onde ele fica.
-                          </span>
-                        )}
-                      </label>
-                    </div>
-                  )}
-                  {m === 'pixel-vector' && (
-                    <div className="w-full space-y-3">
-                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                        {(['pixel', 'vector'] as const).map((kind) => (
-                          <SceneButton
-                            key={kind}
-                            aria-pressed={state.pixels.kind === kind}
-                            className={
-                              state.pixels.kind === kind ? '!border-primary !text-primary' : ''
-                            }
-                            onClick={() =>
-                              dispatch({ type: 'inspect', kind, zoom: state.pixels.zoom })
-                            }
-                          >
-                            {kind === 'pixel' ? 'Olhar a de pixel' : 'Olhar a de vetor'}
-                          </SceneButton>
-                        ))}
-                      </div>
-                      <label
-                        className="block rounded-2xl border border-border p-4 text-sm font-semibold"
-                        htmlFor={`${id}-zoom`}
-                      >
-                        <span className="flex justify-between gap-2">
-                          lupa
-                          <output className="text-lg tabular-nums text-scene-b-ink">
-                            {state.pixels.zoom} vezes
-                          </output>
-                        </span>
-                        <input
-                          id={`${id}-zoom`}
-                          aria-label="lupa"
-                          className="mt-2 h-11 w-full accent-primary"
-                          type="range"
-                          min={SCENE_LIMITS.zoom.min}
-                          max={SCENE_LIMITS.zoom.max}
-                          step={1}
-                          value={state.pixels.zoom}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'inspect',
-                              kind: state.pixels.kind,
-                              zoom: Number(e.target.value),
-                            })
-                          }
-                        />
-                      </label>
-                    </div>
-                  )}
-                  {m === 'sheet-vs-sprite' && (
-                    <div className="w-full space-y-3">
-                      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                        {[1, 2, 3, 4].map((cell) => (
-                          <SceneButton
-                            key={cell}
-                            aria-pressed={state.sheet.cell === cell}
-                            className={
-                              state.sheet.cell === cell ? '!border-primary !text-primary' : ''
-                            }
-                            onClick={() => dispatch({ type: 'cut', cell })}
-                          >
-                            {`Pedaço ${cell}`}
-                          </SceneButton>
-                        ))}
-                      </div>
-                      <label
-                        className="block rounded-2xl border border-border p-4 text-sm font-semibold"
-                        htmlFor={`${id}-sprite`}
-                      >
-                        <span className="flex justify-between gap-2">
-                          tamanho no jogo
-                          <output className="text-lg tabular-nums text-scene-b-ink">
-                            {state.sheet.size}
-                          </output>
-                        </span>
-                        <input
-                          id={`${id}-sprite`}
-                          aria-label="tamanho no jogo"
-                          className="mt-2 h-11 w-full accent-primary"
-                          type="range"
-                          min={SCENE_LIMITS.sprite.min}
-                          max={SCENE_LIMITS.sprite.max}
-                          step={8}
-                          value={state.sheet.size}
-                          onChange={(e) =>
-                            dispatch({ type: 'sprite', size: Number(e.target.value) })
-                          }
-                        />
-                      </label>
-                    </div>
-                  )}
-                  {m === 'lives' && (
-                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-                      <SceneButton
-                        className="!border-primary !bg-primary !px-6 !text-primary-foreground"
-                        disabled={state.lifeline.lives === 0}
-                        onClick={() => dispatch({ type: 'collide' })}
-                      >
-                        {castText('Bater no cacto', activity.cast)}
-                      </SceneButton>
-                      <span className="text-sm text-muted-foreground">
-                        {state.lifeline.lives === 0
-                          ? 'Sem vidas. Use Recomeçar para jogar de novo.'
-                          : 'Os fios ficam logo abaixo: eles decidem o que a batida faz.'}
-                      </span>
-                    </div>
-                  )}
-                  {m === 'hitbox' && (
-                    /* ⭐ Uma variável por vez. Os dois controles nasciam abertos, e duas medidas
-                     soltas ao mesmo tempo não ensinam qual causou o quê: a criança aproximava
-                     o cacto, alargava a área e ficava sem saber qual das duas fez as áreas
-                     encostarem. A largura abre depois da PRIMEIRA descoberta sobre distância
-                     (`contact` ou `separate`), que é justamente quando a pergunta seguinte
-                     ("e se o desenho ficar igual e só a área mudar?") passa a fazer sentido.
-                     ⚠️ Fechado NÃO é escondido: o controle continua na tela, com o motivo
-                     escrito. Sumir com ele faria a cena parecer outra a cada descoberta. */
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {[
-                        {
-                          // ⚠️ Os rótulos dos controles TAMBÉM passam pelo elenco: sem isto a
-                          // criança de uma turma de nave lia "distância do asteroide" na faixa
-                          // de estado e "Distância do cacto" no controle logo abaixo, na mesma
-                          // tela. Achado do full review de 14/09/2026.
-                          label: castText('Distância do cacto', activity.cast),
-                          value: state.contact.distance,
-                          min: 20,
-                          max: 260,
-                          field: 'distance',
-                          locked: false,
-                        },
-                        {
-                          label: castText('Largura da área do Dino', activity.cast),
-                          value: state.contact.width,
-                          min: 24,
-                          max: 120,
-                          field: 'width',
-                          locked: !goals.some(
-                            (g) => (g.id === 'contact' || g.id === 'separate') && g.complete,
-                          ),
-                        },
-                      ].map((item) => (
-                        <label
-                          key={item.field}
-                          className={`rounded-2xl border border-border p-4 text-sm font-semibold ${
-                            item.locked ? 'opacity-60' : ''
-                          }`}
-                        >
-                          <span className="flex justify-between gap-2">
-                            {item.label}
-                            <output>{item.value}</output>
-                          </span>
-                          <input
-                            aria-label={item.label}
-                            className="mt-2 h-11 w-full accent-primary"
-                            type="range"
-                            min={item.min}
-                            max={item.max}
-                            step="1"
-                            value={item.value}
-                            disabled={item.locked}
-                            onChange={(e) =>
-                              dispatch(
-                                item.field === 'width'
-                                  ? { type: 'resize', width: Number(e.target.value) }
-                                  : { type: 'move', distance: Number(e.target.value) },
-                              )
-                            }
-                          />
-                          {item.locked && (
-                            <span className="mt-2 block font-normal text-muted-foreground">
-                              Abre quando você descobrir o que a distância faz.
-                            </span>
-                          )}
-                        </label>
-                      ))}
-                    </div>
-                  )}
                   <ExplorationPieces
                     activity={activity}
                     state={state}
@@ -1580,7 +1052,7 @@ export function SceneActivityView({
               {!demoMode && (
                 <>
                   <SceneButton
-                    className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
+                    tom="discreta"
                     onClick={() => {
                       setRunning(false)
                       dispatch({ type: 'undo' })
@@ -1591,7 +1063,7 @@ export function SceneActivityView({
                     Desfazer
                   </SceneButton>
                   <SceneButton
-                    className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
+                    tom="discreta"
                     onClick={() => {
                       setRunning(false)
                       dispatch({ type: 'reset' })
@@ -1602,11 +1074,7 @@ export function SceneActivityView({
                   </SceneButton>
                 </>
               )}
-              <SceneButton
-                className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
-                onClick={() => void enableSound()}
-                aria-pressed={!muted}
-              >
+              <SceneButton tom="discreta" onClick={() => void enableSound()} aria-pressed={!muted}>
                 {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 {muted ? 'Ligar som' : 'Silenciar'}
               </SceneButton>
@@ -1621,7 +1089,7 @@ export function SceneActivityView({
                     />
                   </audio>
                   <SceneButton
-                    className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
+                    tom="discreta"
                     onClick={async () => {
                       if (await requestLessonMediaFocus(owner.current)) {
                         try {
@@ -1638,7 +1106,7 @@ export function SceneActivityView({
               )}
               {!demoMode && (
                 <SceneButton
-                  className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
+                  tom="discreta"
                   onClick={() => {
                     const level = Math.min(hints.length, hint + 1)
                     setHint(level)
@@ -1665,11 +1133,11 @@ export function SceneActivityView({
                 de novo, com as descobertas guardadas. */}
             {!demoMode && (
               <SceneButton
-                className={
-                  conclusao
-                    ? '!border-primary !bg-primary/10 !px-6 !text-primary'
-                    : '!border-primary !bg-primary !px-6 !text-primary-foreground'
-                }
+                // ⚠️⚠️ É a ação em DESTAQUE da tela: "Já descobri" é o gesto de fechamento e "Ver
+                // de novo" é o prêmio, um degrau abaixo. Sem o tom, os dois viravam botão de
+                // ferramenta — a inversão de hierarquia que a dona apontou no print.
+                tom={conclusao ? 'ligado' : 'gesto'}
+                className={conclusao ? 'border-primary px-6 text-primary' : undefined}
                 onClick={() => {
                   if (conclusao) {
                     setRunning(false)
@@ -1755,8 +1223,14 @@ export function SceneActivityView({
                 members de propósito não deixa atropelar a sessão. Mostrar os rádios vazios E
                 desabilitados era a pior saída das três — parecia que a resposta tinha sumido. */}
             {registered && !resposta ? (
+              /* ⚠⚠ "Esta pergunta já está resolvida", e não "você já respondeu": desde que a
+                 pergunta passou a ser HERDADA do modelo, todo bloco de cena concluído ANTES
+                 disso cai aqui — e a criança que nunca viu pergunta nenhuma leria uma frase
+                 sobre um gesto que ela não fez. A frase precisa ser verdadeira nos dois casos:
+                 no da resposta perdida no F5 e no do bloco que fechou antes de a pergunta
+                 existir. O que vale para os dois é que ela não espera mais nada. */
               <p role="status" className="rounded-xl bg-muted/50 p-3 text-sm">
-                Você já respondeu esta pergunta.
+                Esta pergunta já está resolvida.
               </p>
             ) : (
               content.checkpoint.choices.map((choice) => (
@@ -1816,7 +1290,9 @@ export function SceneActivityView({
                   ? 'A descoberta está feita. Falta acertar a frase que explica o que aconteceu.'
                   : pendente
                     ? 'Falta uma coisa: escolher a frase que explica o que aconteceu.'
-                    : 'Você concluiu a investigação proposta nesta atividade.'}
+                    : revendo
+                      ? 'Você já fez esta descoberta. Agora está mexendo de novo, à vontade.'
+                      : 'Você concluiu a investigação proposta nesta atividade.'}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
               {pendente

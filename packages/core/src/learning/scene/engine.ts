@@ -5,6 +5,7 @@ import {
   type SceneId,
   STAGE_TARGET,
 } from './actions'
+import { quantos } from './cast'
 import {
   cloneScene,
   initialScene,
@@ -221,7 +222,7 @@ export function stepScene(
           if (s.view.follow && s.view.wasLost)
             observe(s, 'follows', 'Com a câmera, o Dino voltou a caber na tela', true)
           s.caption = s.view.follow
-            ? 'A câmera segue o Dino: a tela anda junto com ele.'
+            ? 'A câmera segue o Dino: a tela anda junto.'
             : 'A câmera está parada. O Dino pode sair da tela.'
           break
         case 'aim':
@@ -317,7 +318,7 @@ export function stepScene(
         }
         s.render.trail += 1
         if (s.render.trail >= 2) observe(s, 'trail', 'Sem limpar, fica rastro', true)
-        s.caption = `Desenhou de novo sem limpar: ${s.render.trail} Dinos na tela.`
+        s.caption = `Desenhou de novo sem limpar: ${quantos(s.render.trail, 'Dino', 'Dinos')} na tela.`
         break
       }
       advanceFlight(s, scene, action.seconds)
@@ -846,7 +847,7 @@ export function stepScene(
         observe(s, 'window', 'O mundo continua maior que a tela', true)
       s.caption =
         !s.view.follow && s.view.heroX > TELA_LARGURA
-          ? `O Dino está em ${s.view.heroX}, e a tela acaba em ${TELA_LARGURA}. Ele sumiu.`
+          ? `O Dino está em ${s.view.heroX}, e a tela acaba em ${TELA_LARGURA}. O Dino sumiu.`
           : `O Dino está em ${s.view.heroX} do mundo, e continua à vista.`
       break
     }
@@ -1113,11 +1114,11 @@ export function stepScene(
     case 'reset':
       // Recomeçar o mundo NUNCA apaga o que a criança já descobriu. E recomeça no CASO desta
       // atividade, não no mundo de fábrica: quem abriu numa tela de 480 por 270 volta para ela.
-      return {
-        ...openScene(start),
-        evidence: s.evidence,
-        caption: 'Experiência recomeçada. Suas descobertas foram guardadas.',
-      }
+      // ⚠️ SEM `caption`: a frase embaixo do palco é a narração da CENA, e um recado de
+      // persistência ali ocupava o lugar dela — a criança recomeçava e lia "suas descobertas
+      // foram guardadas" onde devia ler o que está na tela agora. O aviso de que nada se perdeu
+      // é do player, e mora no rodapé, junto do irmão dele ("Experiência salva na sua conta").
+      return { ...openScene(start), evidence: s.evidence, caption: '' }
   }
   return s
 }

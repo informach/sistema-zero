@@ -3,6 +3,7 @@ import { SCENE_IDS } from './actions'
 import { castText, DEFAULT_CAST, isSceneCast, type SceneCast } from './cast'
 import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
+import { SCENE_QUESTIONS } from './questions'
 
 const NAVE: SceneCast = {
   hero: { name: 'nave', gender: 'f' },
@@ -195,6 +196,67 @@ describe('o elenco em português', () => {
         }
     }
     expect(lidas).toBeGreaterThan(80)
+  })
+
+  test('⚠️⚠️ texto que o elenco veste não usa PRONOME de terceira pessoa', () => {
+    /**
+     * A régua flexiona o que está COLADO ao nome ("a nave está escondida"), e nada mais. Um
+     * pronoun duas orações adiante fica para trás, e o resultado é a frase meio trocada que a
+     * criança lê como "ninguém escreveu isto para mim":
+     *  - "Quando a nave perde uma vida, os pontos **dele** voltam a zero?" (pergunta de `lives`,
+     *    e a Aula 4 do Desafio usa `lives` com elenco de nave HOJE);
+     *  - "Ligue Gravidade à nave. Depois toque **nele** para saltar." (instrução do catálogo);
+     *  - "A nave está em 700, e a tela acaba em 480. **Ele** sumiu." (legenda do motor).
+     *
+     * ⚠️ A régua é ABSOLUTA de propósito, e não "pronome que aponta para o personagem": decidir
+     * o referente é coisa que nenhuma varredura faz, e quem escreve também erra. Ela só alcança
+     * o texto que o elenco REALMENTE veste (`castText(t) !== t`), que é um punhado de frases —
+     * repetir o nome ali custa nada e é sempre mais claro para quem tem 9 anos.
+     */
+    const PRONOME = /\b(ele|dele|nele|eles|deles|neles)\b|-l[oa]s?\b/i
+    // A prova de que a régua morde, antes de usá-la.
+    expect('Toque nele para saltar').toMatch(PRONOME)
+    expect('Toque no Dino para saltar').not.toMatch(PRONOME)
+    const FEMININO: SceneCast = {
+      hero: { name: 'nave', gender: 'f' },
+      obstacle: { name: 'pedra', gender: 'f' },
+      scenery: { name: 'chama', gender: 'f' },
+    }
+    const achados: string[] = []
+    const olha = (onde: string, texto: string | undefined) => {
+      if (!texto) return
+      if (castText(texto, FEMININO) !== texto && PRONOME.test(texto))
+        achados.push(`${onde}: ${texto}`)
+    }
+    for (const scene of SCENE_IDS) {
+      const m = SCENE_MODELS[scene]
+      for (const t of [
+        m.title,
+        m.instruction,
+        m.manipulates,
+        m.success,
+        m.extra,
+        ...m.hints,
+        ...m.goals.map((g) => g.label),
+        ...m.script.map((p) => p.caption),
+      ])
+        olha(`catálogo ${scene}`, t)
+      const q = SCENE_QUESTIONS[scene]
+      for (const x of [q.prediction, q.explain]) {
+        olha(`pergunta ${scene}`, x.prompt)
+        for (const c of x.choices) olha(`pergunta ${scene}`, c.label)
+      }
+      olha(`pergunta ${scene}`, q.explain.explanation)
+      // E o que o MOTOR escreve, pelo roteiro do próprio modelo.
+      let estado = openScene({ scene })
+      for (const passo of m.script)
+        for (const acao of passo.actions) {
+          estado = stepScene({ scene }, estado, acao)
+          olha(`motor ${scene}`, estado.caption)
+          for (const o of estado.evidence.observations) olha(`motor ${scene}`, o.label)
+        }
+    }
+    expect(achados).toEqual([])
   })
 
   test('o guard recusa o que não é elenco', () => {

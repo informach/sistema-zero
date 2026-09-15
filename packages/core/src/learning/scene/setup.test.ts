@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { evaluateLearning, type InteractiveBlock } from '../index'
+import { blockCheckpoint, evaluateLearning, type InteractiveBlock } from '../index'
 import { openScene, stepScene } from './engine'
 import { evaluateExperimentation, sceneGoals } from './evaluate'
 import {
@@ -116,10 +116,16 @@ describe('o caso da atividade', () => {
     expect(sessao.state.render.loop).toBe(true)
     for (let i = 0; i < 2; i++)
       sessao = stepExperiment(start, sessao, { type: 'advance', seconds: 1 }).session
-    expect(
-      evaluateLearning(bloco(activity), { sceneCheckpoint: packExperiment('draw-loop', sessao) })
-        .passed,
-    ).toBe(true)
+    // ⚠️ A experimentação herda a pergunta do modelo da cena (o terceiro tempo do ciclo), e ela
+    // dá a palavra final: a missão fecha a DESCOBERTA, e enunciar a regra fecha o bloco.
+    const b = bloco(activity)
+    const guardado = { sceneCheckpoint: packExperiment('draw-loop', sessao) }
+    expect(evaluateLearning(b, guardado).passed).toBe(false)
+    const pergunta = blockCheckpoint(b)
+    if (!pergunta) throw new Error('a experimentação tem de herdar a pergunta do modelo')
+    expect(evaluateLearning(b, { ...guardado, checkpoint: pergunta.correctChoiceId }).passed).toBe(
+      true,
+    )
   })
 
   test('⚠️ o caso recusa o que não é desta cena, o `reset` e a meta que não existe', () => {

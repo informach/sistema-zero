@@ -527,7 +527,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     hints: [
       'O Dino está voltando ou continua subindo?',
       'Repita o mesmo impulso com a gravidade aplicada.',
-      'Ligue Gravidade ao Dino. Depois toque nele para saltar.',
+      'Ligue Gravidade ao Dino. Depois toque no Dino para saltar.',
     ],
     script: [
       {
@@ -673,7 +673,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'cleanup',
     group: 'population',
     title: 'Cuide dos cactos invisíveis',
-    instruction: 'Avance o relógio até um cacto sair. Ele também saiu dos bastidores?',
+    instruction: 'Avance o relógio até um cacto sair. O cacto também saiu dos bastidores?',
     manipulates: 'Regra de remoção na saída e relógio',
     success: 'A regra retira do grupo cada cacto que sai da tela!',
     extra: 'E se você desligar a regra e deixar outros cactos saírem?',
@@ -990,7 +990,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       { id: 'old-speed', label: 'Cacto anterior conserva sua velocidade' },
     ],
     hints: [
-      'A seta de cada cacto mostra a velocidade que ele recebeu ao nascer.',
+      'A seta de cada cacto mostra a velocidade que o cacto recebeu ao nascer.',
       'Compare a base do próximo cacto com a seta de um antigo.',
       'Encaixe o limite −9. Avance cinco passos e crie o exemplo com desconto 1.',
     ],
@@ -1191,7 +1191,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'enemy-type',
     group: 'population',
     title: 'Uma ficha, muitos cactos',
-    instruction: 'Faça nascer alguns cactos. Depois mude a ficha e olhe todos eles.',
+    instruction: 'Faça nascer alguns cactos. Depois mude a ficha e olhe os cactos de novo.',
     manipulates: 'A ficha do tipo (velocidade e vida) e o nascimento de mais um',
     success: 'Mudar a ficha mudou todos de uma vez: o jogo mora nos dados!',
     extra: 'E se você mudar a vida com dez cactos na tela?',
@@ -1233,7 +1233,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       { id: 'window', label: 'O mundo continua maior que a tela' },
     ],
     hints: [
-      'O Dino está no mundo, e a tela mostra um pedaço dele. Ande bem para a direita.',
+      'O Dino está num mundo maior que a tela, e a tela mostra só um pedaço. Ande bem para a direita.',
       'Sem a câmera, a janela fica parada: quem anda é só o Dino, até sumir.',
       'Leve o Dino para depois de 480 e depois ligue a câmera.',
     ],

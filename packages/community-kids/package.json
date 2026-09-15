@@ -15,7 +15,8 @@
     "e2e:smoke": "playwright test --project=chromium",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts"
+    "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts",
+    "galeria:cenas": "bun tests/visual/build-galeria-cenas.tsx tmp/galeria-cenas.html"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",

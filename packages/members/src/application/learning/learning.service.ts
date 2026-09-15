@@ -412,7 +412,22 @@ export class LearningService {
         saved.answers.sceneSegmentId !== answers.sceneSegmentId
       )
         throw new LearningConflictError()
-      answers = saved.answers
+      // ⚠️⚠️ A SESSÃO vem do servidor; o que a CRIANÇA respondeu vem do cliente.
+      //
+      // Trocar o objeto inteiro descartava `checkpoint` e `prediction` — e como a pergunta
+      // anexa é justamente o que dá a palavra final sobre a conclusão, a cena com pergunta
+      // ficava IMPOSSÍVEL de fechar: a criança respondia, o servidor jogava a resposta fora e
+      // devolvia "agora escolha a frase", para sempre. Passou despercebido enquanto só 8 dos
+      // 52 blocos tinham pergunta; com a pergunta herdada do modelo, valeria para todos.
+      //
+      // ⚠️ E não é furo de segurança: a sessão (`sceneSequence`, `sceneSessionId`,
+      // `sceneSegmentId`, `sceneCheckpoint`) continua sendo só a do servidor, que é o que o
+      // cliente poderia forjar. A resposta de múltipla escolha é o que o servidor CORRIGE — é
+      // o mesmo caminho de todos os outros tipos de bloco.
+      const respondido: LearningAnswers = {}
+      for (const chave of ['checkpoint', 'prediction'] as const)
+        if (input.answers[chave] !== undefined) respondido[chave] = input.answers[chave]
+      answers = { ...saved.answers, ...respondido }
     }
     const attempt = existing ?? {
       id: input.id,

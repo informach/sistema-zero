@@ -1,5 +1,5 @@
 import { type SceneId, STAGE_TARGET } from './actions'
-import { castText, type SceneCast } from './cast'
+import { castText, quantos, type SceneCast } from './cast'
 import { type SceneState, sceneContact } from './state'
 
 /**
@@ -153,7 +153,7 @@ function leituras(scene: SceneId, state: SceneState): SceneReading[] {
           value: state.pixels.kind === 'pixel' ? 'de pixel' : 'de vetor',
           tone: 'a',
         },
-        { label: 'lupa', value: `${state.pixels.zoom} vezes`, tone: 'b' },
+        { label: 'lupa', value: quantos(state.pixels.zoom, 'vez', 'vezes'), tone: 'b' },
         {
           label: 'borda',
           value:
@@ -579,7 +579,7 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'lives':
       return state.lifeline.lives === 0
         ? `Sem vidas, a partida acabou. O placar guardou ${state.lifeline.points}.`
-        : `${state.lifeline.lives} vidas e ${state.lifeline.points} pontos. ${
+        : `${quantos(state.lifeline.lives, 'vida', 'vidas')} e ${quantos(state.lifeline.points, 'ponto', 'pontos')}. ${
             state.lifeline.onHit
               ? 'A batida custa uma vida.'
               : 'A batida ainda não custa nada: falta o fio da vida.'
@@ -606,8 +606,8 @@ function situacao(scene: SceneId, state: SceneState): string {
         : `O impulso está em ${state.flight.force}. Faça o Dino saltar para ver a altura.`
     case 'jump-sound':
       return state.sound.onJump
-        ? `O som está ligado ao salto: ${state.sound.jumps} saltos e ${state.sound.count} sons.`
-        : `O som está solto do salto: ${state.sound.jumps} saltos e ${state.sound.count} sons.`
+        ? `O som está ligado ao salto: ${quantos(state.sound.jumps, 'salto', 'saltos')} e ${quantos(state.sound.count, 'som', 'sons')}.`
+        : `O som está solto do salto: ${quantos(state.sound.jumps, 'salto', 'saltos')} e ${quantos(state.sound.count, 'som', 'sons')}.`
     case 'spawn':
       return state.crowd.timer
         ? `Os cactos nascem a cada ${state.crowd.interval}s. Já nasceram ${state.crowd.born}.`
@@ -615,7 +615,7 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'cleanup':
       return state.crowd.cleanup
         ? `Quem sai da pista é removido: ${state.crowd.removed} de ${state.crowd.born} já saíram dos bastidores.`
-        : `Quem sai da pista continua guardado: ${state.crowd.born - state.crowd.removed} cactos nos bastidores.`
+        : `Quem sai da pista continua guardado: ${quantos(state.crowd.born - state.crowd.removed, 'cacto', 'cactos')} nos bastidores.`
     case 'game-state':
       return `Tela ${(TELA[state.match.screen] ?? state.match.screen).toLowerCase()}. O relógio ${state.match.guarded ? 'está dentro de Se jogando' : 'corre em qualquer tela'}.`
     case 'controls':

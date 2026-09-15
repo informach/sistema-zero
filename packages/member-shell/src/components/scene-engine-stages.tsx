@@ -1,9 +1,11 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { castText, facesAVista, PICK_BOXES } from '@sistemazero/core/learning/scene'
-import { useId } from 'react'
+import { facesAVista, PICK_BOXES } from '@sistemazero/core/learning/scene'
 import { CactusFigure, DinoFigure } from './exploration-stage'
+// ⚠️ O `VIEW` vem do canvas: os desenhos leem o enquadramento (`VIEW.w`, `VIEW.h`) para
+// encostar no chão e na borda, então ele e o `viewBox` do SVG têm de ser o MESMO número.
+import { SceneCanvas, SCENE_VIEW as VIEW } from './scene-canvas'
 
 /**
  * Os palcos das dez cenas do motor, do 3D e do ateliê (15/09/2026).
@@ -20,49 +22,6 @@ import { CactusFigure, DinoFigure } from './exploration-stage'
  * ⚠️ O par de comparação segue FIXO nas duas cores de sempre (A azul `scene-a`, B laranja
  * `scene-b`): elas dizem QUAL medida é qual, e não são decoração.
  */
-
-const VIEW = { w: 560, h: 300 } as const
-
-/**
- * ⚠️⚠️ O ELENCO veste o que o PALCO escreve à mão: o `<title>` e a `<desc>` do SVG, os rótulos
- * e o rodapé. É o invariante do full review de 14/09/2026, e ele vale para todo palco novo — a
- * criança de uma turma de nave lia "nave" na faixa e ouvia "o Dino" do leitor de tela, no mesmo
- * desenho. O `Moldura` aplica sozinho; texto solto dentro do SVG precisa do `castText` à mão.
- */
-function Moldura({
-  children,
-  titulo,
-  descricao,
-  rodape,
-  cast,
-}: {
-  children: React.ReactNode
-  titulo: string
-  descricao: string
-  rodape?: string
-  cast?: SceneCast
-}) {
-  const id = useId()
-  return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-t ${id}-d`}
-      >
-        <title id={`${id}-t`}>{castText(titulo, cast)}</title>
-        <desc id={`${id}-d`}>{castText(descricao, cast)}</desc>
-        {children}
-      </svg>
-      {rodape && (
-        <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-          {castText(rodape, cast)}
-        </p>
-      )}
-    </div>
-  )
-}
 
 /** Um número grande com rótulo — o molde dos contadores que estas cenas comparam. */
 function Contador({
@@ -103,7 +62,7 @@ function projetar(x: number, y: number, z: number) {
 export function PoolStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { alive, created, recycling } = state.nursery
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="Os dois contadores do nascedouro"
       descricao={`${alive} vivo(s) agora e ${created} criado(s) desde o começo. Reciclagem ${recycling ? 'ligada' : 'desligada'}.`}
@@ -136,7 +95,7 @@ export function PoolStage({ state, cast }: { state: SceneState; cast?: SceneCast
           </text>
         </>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -151,7 +110,7 @@ const BRAIN_LABEL: Record<string, string> = {
 export function EntityStateStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const estados = state.brains.states
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="Os três personagens e o estado de cada um"
       descricao={estados.map((e, i) => `${i + 1}º ${BRAIN_LABEL[e] ?? e}`).join(', ')}
@@ -199,7 +158,7 @@ export function EntityStateStage({ state, cast }: { state: SceneState; cast?: Sc
           </g>
         </g>
       ))}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -208,7 +167,7 @@ export function DeltaTimeStage({ state, cast }: { state: SceneState; cast?: Scen
   const { mode, fastX, slowX } = state.machines
   const junto = Math.abs(fastX - slowX) < 1
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O mesmo jogo em duas máquinas"
       descricao={`Contando ${mode === 'frames' ? 'quadros' : 'segundos'}: a rápida está em ${Math.round(fastX)} e a devagar em ${Math.round(slowX)}.`}
@@ -247,7 +206,7 @@ export function DeltaTimeStage({ state, cast }: { state: SceneState; cast?: Scen
       >
         chegada
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -260,7 +219,7 @@ export function CircleCollisionStage({ state, cast }: { state: SceneState; cast?
   const bx = Math.min(ax + distance, VIEW.w - 60)
   const cy = 140
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="Os dois círculos da colisão"
       descricao={`Distância entre os centros ${Math.round(distance)}, soma dos raios ${soma}: ${encostando ? 'é uma batida' : 'ainda não é uma batida'}.`}
@@ -309,7 +268,7 @@ export function CircleCollisionStage({ state, cast }: { state: SceneState; cast?
           bateu
         </text>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -319,7 +278,7 @@ export function AxisZStage({ state, cast }: { state: SceneState; cast?: SceneCas
   const alto = projetar(x, y, z)
   const chao = projetar(x, 0, z)
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O objeto no espaço, com a sombra dele no chão"
       descricao={`x ${x}, y ${y}, z ${z}. ${y > 0 ? 'Ele está no ar.' : 'Ele está no chão.'}`}
@@ -369,7 +328,7 @@ export function AxisZStage({ state, cast }: { state: SceneState; cast?: SceneCas
         rx="8"
         strokeWidth="2"
       />
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -388,7 +347,7 @@ export function Camera3dStage({ state, cast }: { state: SceneState; cast?: Scene
   const frente = FACES[yaw % 3] ?? FACES[0]
   const lado = FACES[(yaw + 2) % 3] ?? FACES[0]
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O cubo de três cores, visto de onde a câmera está"
       descricao={`Volta ${yaw} de 8, altura ${pitch === 0 ? 'por baixo' : pitch === 1 ? 'no meio' : 'por cima'}. Daqui aparecem ${vistas} cor(es).`}
@@ -430,7 +389,7 @@ export function Camera3dStage({ state, cast }: { state: SceneState; cast?: Scene
       >
         {vistas} cor(es) à vista
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -450,7 +409,7 @@ export function MeshStage({ state, cast }: { state: SceneState; cast?: SceneCast
     [280, 250],
   ] as const
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo={wire ? 'O modelo em pontos e linhas' : 'O modelo com a textura'}
       descricao={
@@ -494,7 +453,7 @@ export function MeshStage({ state, cast }: { state: SceneState; cast?: SceneCast
       <text className="fill-scene-ink-soft" x={30} y={280} fontSize="12">
         {wire ? 'raio-X ligado' : 'raio-X desligado'}
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -537,7 +496,7 @@ export function PickRayStage({ state, cast }: { state: SceneState; cast?: SceneC
     </g>
   )
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="As caixas e a reta da mira"
       descricao={
@@ -566,7 +525,7 @@ export function PickRayStage({ state, cast }: { state: SceneState; cast?: SceneC
       <text className="fill-scene-ink-soft" x={CAMERA.x - 10} y={293} fontSize="12">
         câmera
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -575,7 +534,7 @@ export function FillStrokeStage({ state, cast }: { state: SceneState; cast?: Sce
   const { fill, stroke } = state.ink
   const forma = 'M280 60 400 150 350 250 210 250 160 150Z'
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A forma, com miolo e contorno"
       descricao={`Miolo ${fill ? 'pintado' : 'vazio'}, contorno ${stroke ? 'à vista' : 'sem cor'}.`}
@@ -612,7 +571,7 @@ export function FillStrokeStage({ state, cast }: { state: SceneState; cast?: Sce
       >
         contorno: {stroke ? 'à vista' : 'sem cor'}
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -621,7 +580,7 @@ export function ShadingStage({ state, cast }: { state: SceneState; cast?: SceneC
   const { shade, side } = state.light
   const esquerda = side === 'left'
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A forma, com e sem sombra"
       descricao={
@@ -672,6 +631,6 @@ export function ShadingStage({ state, cast }: { state: SceneState; cast?: SceneC
       <text className="fill-scene-ink-soft" x={280} y={282} textAnchor="middle" fontSize="12">
         {shade ? 'duas cores da mesma cor' : 'uma cor só'}
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }

@@ -1,11 +1,25 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
+  blockCheckpoint,
   defaultLessonSection,
   type InteractiveBlock,
   isLearningAnswers,
 } from '@sistemazero/core/learning'
 import { readExperimentSession, sceneSegmentAnswers } from '@sistemazero/core/learning/scene'
+
+/**
+ * ⚠️⚠️ A resposta da pergunta que a experimentação HERDA do modelo da cena.
+ *
+ * Desde 15/09/2026 a experimentação que não escreve a própria pergunta recebe a do modelo, e é
+ * ela que dá a palavra final sobre a conclusão (o terceiro tempo do ciclo: mexer, prever,
+ * enunciar). O caminho de sucesso da criança passa por respondê-la, e o destes testes também.
+ */
+const explicando = (block: { content: unknown }) => {
+  const resolvida = blockCheckpoint(block.content as InteractiveBlock)
+  return resolvida ? { checkpoint: resolvida.correctChoiceId } : {}
+}
+
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import {
   changeDraft,
@@ -264,7 +278,7 @@ describe('learning activities and sections', () => {
       id: randomUUID(),
       revision: REVISION,
       hintsUsed: 0,
-      answers: confirmed.answers,
+      answers: { ...confirmed.answers, ...explicando(block) },
     })
     expect(attempt.status).toBe(200)
     expect(await attempt.json()).toMatchObject({ attempt: { result: { passed: true } } })
@@ -331,8 +345,10 @@ describe('learning activities and sections', () => {
     )
     expect(segundo.status).toBe(200)
     const completo = (await segundo.json()) as { answers: Record<string, unknown> }
-    expect(await (await attempt(completo.answers)).json()).toMatchObject({
-      attempt: { result: { passed: true, verifiedBy: 'client' } },
+    expect(
+      await (await attempt({ ...completo.answers, ...explicando(block) })).json(),
+    ).toMatchObject({
+      attempt: { result: { passed: true, verifiedBy: 'server' } },
     })
     expect(await (await ctx.read()).json()).toMatchObject({
       sectionProgress: { sections: [{ id: section.id, status: 'completed' }] },

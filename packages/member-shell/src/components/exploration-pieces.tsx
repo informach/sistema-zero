@@ -220,7 +220,7 @@ function ConditionPiece({
             {state.match.guarded === guarded ? (
               piece
             ) : (
-              <SceneButton disabled={!picked} onClick={() => put(guarded)}>
+              <SceneButton tom="gesto" disabled={!picked} onClick={() => put(guarded)}>
                 Colocar aqui
               </SceneButton>
             )}
@@ -268,14 +268,15 @@ export function ExplorationPieces({
     <div className="space-y-3">
       {m === 'world' && (
         <div className="space-y-3 rounded-2xl border-2 border-dashed border-primary/25 p-3">
-          <p className="text-sm font-semibold">
-            {castText(
-              state.world.created ? 'Bastidores · 1 Dino guardado' : 'Bastidores · ainda vazio',
-              activity.cast,
-            )}
-          </p>
+          {/* ⚠️⚠️ A linha "Bastidores · ainda vazio" SAIU (lote 5). Desde que o palco mostra os
+              bastidores e a tela lado a lado, ela era a mesma informação escrita duas vezes na
+              mesma tela — e o desenho diz melhor: a caixa ou está vazia, ou tem o Dino dentro. */}
           {!state.world.created ? (
-            <SceneButton onClick={() => dispatch({ type: 'create' })}>
+            /* ⚠️⚠️ É ESTE o botão do print: a ação que MOVE a cena era um botãozinho de
+               ferramenta dentro de uma caixa tracejada, enquanto "Ver de novo" era o azul grande
+               do rodapé. A criança abria a primeira experimentação do curso carro-chefe e o
+               caminho para a frente era a coisa mais fraca da tela. */
+            <SceneButton tom="gesto" onClick={() => dispatch({ type: 'create' })}>
               {castText('＋ Criar Dino', activity.cast)}
             </SceneButton>
           ) : (
@@ -440,7 +441,7 @@ export function ExplorationPieces({
               {castText('Novo cacto · descontar', activity.cast)}{' '}
               {state.crowd.born === 0 ? '0' : '1'}
             </SceneButton>
-            <SceneButton onClick={() => dispatch({ type: 'clock' })}>
+            <SceneButton tom="gesto" onClick={() => dispatch({ type: 'clock' })}>
               ◷ Avançar o relógio
             </SceneButton>
           </div>

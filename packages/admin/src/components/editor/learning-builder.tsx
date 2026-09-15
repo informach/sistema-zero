@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  blockCheckpoint,
+  blockPrediction,
   type InteractiveBlock,
   type LearningActivity,
   type LearningChoice,
@@ -38,6 +40,68 @@ const initialChoices = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
   { id: 'second', label: 'Segunda possibilidade' },
 ]
+
+/**
+ * ⚠⚠ O que o PROFESSOR escreve não passa pelo elenco — e com o campo nascendo já preenchido
+ * (para marcar a caixa não piorar a tela da criança), é fácil não perceber isso.
+ *
+ * A régua do elenco veste o que a PLATAFORMA gera (metas, pistas, faixa, frase, palco, bancada e
+ * as perguntas do modelo). Texto de autoria é do professor e fica como ele escreveu: se ele
+ * trocar o elenco depois, a pergunta dele continua falando do personagem antigo, sozinha, no meio
+ * de uma tela que já mudou de nome.
+ */
+function AvisoDeElenco({ campo }: { campo: string }) {
+  return (
+    <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
+      Esta cena tem elenco próprio. O que você escrever {campo} fica como está: o elenco veste o
+      texto que a plataforma gera, não o seu. Trocando o elenco depois, lembre de reescrever aqui.
+    </p>
+  )
+}
+
+/**
+ * A pergunta que vem da CENA, mostrada ao professor exatamente como a criança vai receber.
+ *
+ * ⚠️ Com o elenco já vestido: os resolvedores aplicam o `castText`, então o professor de uma
+ * turma de nave lê "nave" aqui, e não "Dino". Ver o texto de fábrica cru seria conferir
+ * outra tela.
+ */
+function PerguntaHerdada({
+  titulo,
+  prompt,
+  choices,
+  correctChoiceId,
+  explicacao,
+}: {
+  titulo: string
+  prompt: string
+  choices: readonly LearningChoice[]
+  correctChoiceId?: string
+  explicacao?: string
+}) {
+  return (
+    <div className="rounded-xl bg-muted/40 p-3 text-sm">
+      <p className="font-medium">{titulo}</p>
+      <p className="mt-2">{prompt}</p>
+      <ul className="mt-1 space-y-0.5 pl-1">
+        {choices.map((choice) => (
+          <li key={choice.id} className="text-muted-foreground">
+            {choice.label}
+            {/* ⚠️ Em PALAVRA, não num símbolo: um "✓" solto é lido como "marca de seleção" pelo
+                leitor de tela e como enfeite por quem passa o olho. Aqui ele diz qual frase o
+                servidor vai aceitar, que é a informação que o professor veio conferir. */}
+            {choice.id === correctChoiceId ? (
+              <span className="ml-2 font-medium text-foreground">(resposta esperada)</span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {explicacao ? (
+        <p className="mt-2 text-muted-foreground">Ao acertar, ela lê: {explicacao}</p>
+      ) : null}
+    </div>
+  )
+}
 
 /**
  * As quatro formas de atividade, na língua do professor.
@@ -165,6 +229,21 @@ export function LearningBuilder({
   // ⚠️ Em const: dentro dos callbacks o TS perde o estreitamento de `value.prediction` (é
   // propriedade mutável) e o espalhamento volta a ter `prompt` opcional, que não é o tipo.
   const previsao = value.prediction
+  /**
+   * ⚠️⚠️ O que a cena dá a este bloco quando o professor não escreve nada.
+   *
+   * Desde 15/09/2026 toda cena tem previsão e toda experimentação tem pergunta, herdadas do
+   * modelo (`SCENE_QUESTIONS`). O editor PRECISA mostrar isso: uma caixa desmarcada ao lado de
+   * "incluir pergunta de verificação" fazia o professor ler "não há pergunta" — e ele estava
+   * olhando para o bloco que hoje faz a criança responder uma.
+   *
+   * ⚠️ Calculada SEM os campos próprios do bloco, senão ela devolveria o que o professor
+   * acabou de escrever em vez do que a cena oferece.
+   */
+  const heranca = {
+    previsao: blockPrediction({ ...value, prediction: undefined }),
+    pergunta: blockCheckpoint({ ...value, checkpoint: undefined }),
+  }
   // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por roteiro inválido
   // e por impulso fora de faixa — então a tela acusava o endereço (um `https://` perfeito)
   // quando o defeito era outro. Apontar o culpado errado com precisão é pior que a parede.
@@ -263,14 +342,22 @@ export function LearningBuilder({
               .
             </p>
           )}
-          <details className="rounded-xl border border-border p-3">
-            <summary className="cursor-pointer text-sm font-medium">
-              O caso desta atividade: por onde começa e o que cobra
-            </summary>
-            <div className="mt-3">
-              <SceneSetupEditor activity={cena} onChange={activity} />
+          {/* ⚠️⚠️ FORA do `<details>` desde 15/09/2026, e a medição é a razão: o caso estava
+              ligado em 3 dos 52 blocos de cena dos cursos — 5%. É a alavanca que faz uma cena
+              render dezenas de exercícios (o elenco troca QUEM está no palco; o caso troca DE
+              ONDE ele parte e O QUE conta como descoberta), e estava atrás de um triângulo
+              fechado, ao lado de "áudio e ajustes". Recurso que depende de alguém abrir a
+              gaveta não é recurso, é intenção. */}
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <div>
+              <p className="text-sm font-medium">O caso desta atividade</p>
+              <p className="text-xs text-muted-foreground">
+                Por onde a cena começa e o que ela cobra. Sem caso, a criança chega ao mundo de
+                fábrica e a missão é a do modelo.
+              </p>
             </div>
-          </details>
+            <SceneSetupEditor activity={cena} onChange={activity} />
+          </div>
           <details className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
               Elenco, áudio e ajustes da cena
@@ -425,16 +512,41 @@ export function LearningBuilder({
               onChange={(e) =>
                 onChange({
                   ...value,
+                  // ⚠️⚠️ Ao ligar, o campo nasce com a previsão DA CENA dentro, e não em
+                  // branco: marcar a caixa não pode PIORAR a tela da criança. Começando vazio,
+                  // o professor que clicasse para "dar uma olhada" trocava uma pergunta pronta
+                  // por uma incompleta — e a aula parava de publicar por causa disso.
                   prediction: e.target.checked
-                    ? { prompt: '', choices: initialChoices() }
+                    ? (heranca.previsao ?? { prompt: '', choices: initialChoices() })
                     : undefined,
                 })
               }
             />
-            Perguntar o que ela acha que vai acontecer, antes de abrir a cena
+            {heranca.previsao
+              ? 'Escrever a minha previsão (substitui a da cena)'
+              : 'Perguntar o que ela acha que vai acontecer, antes de abrir a cena'}
           </label>
+          {/* ⚠️ A demonstração `inline` é a única cena SEM previsão de fábrica, e o professor
+              precisa saber por quê: ela é um ▶ e nada mais, para caber no meio de uma explicação,
+              e a previsão trava o palco até a criança escolher. Escrever a sua continua valendo:
+              é uma decisão de quem autora, e não uma porta fechada. */}
+          {!heranca.previsao && (
+            <p className="text-xs text-muted-foreground">
+              Esta demonstração é do tipo que roda direto no meio do texto, então ela não recebe a
+              previsão da cena. Escreva a sua se quiser uma aqui.
+            </p>
+          )}
+          {!previsao && heranca.previsao && (
+            <PerguntaHerdada
+              titulo="A criança vai ver esta previsão, escrita para a cena:"
+              prompt={heranca.previsao.prompt}
+              choices={heranca.previsao.choices}
+              correctChoiceId={heranca.previsao.correctChoiceId}
+            />
+          )}
           {previsao && (
             <>
+              {cena?.cast ? <AvisoDeElenco campo="na previsão" /> : null}
               <Field
                 label="Pergunta de antes"
                 htmlFor={`${id}-prediction`}
@@ -510,18 +622,29 @@ export function LearningBuilder({
             onChange({
               ...value,
               checkpoint: e.target.checked
-                ? {
+                ? (heranca.pergunta ?? {
                     prompt: '',
                     choices: initialChoices(),
                     correctChoiceId: 'first',
                     explanation: '',
-                  }
+                  })
                 : undefined,
             })
           }
         />
-        Incluir pergunta de verificação
+        {heranca.pergunta
+          ? 'Escrever a minha pergunta (substitui a da cena)'
+          : 'Incluir pergunta de verificação'}
       </label>
+      {!checkpoint && heranca.pergunta && (
+        <PerguntaHerdada
+          titulo="Depois da descoberta, a criança vai responder esta pergunta da cena:"
+          prompt={heranca.pergunta.prompt}
+          choices={heranca.pergunta.choices}
+          correctChoiceId={heranca.pergunta.correctChoiceId}
+          explicacao={heranca.pergunta.explanation}
+        />
+      )}
       {value.required && a.type === 'html' && !checkpoint && (
         <p role="status" className="text-sm text-destructive">
           Adicione uma pergunta de verificação para tornar esta experiência essencial.
@@ -529,6 +652,7 @@ export function LearningBuilder({
       )}
       {checkpoint && (
         <div className="space-y-4 rounded-xl border border-border p-4">
+          {cena?.cast ? <AvisoDeElenco campo="na pergunta" /> : null}
           <Field label="Pergunta" htmlFor={`${id}-question`}>
             <Textarea
               id={`${id}-question`}

@@ -146,7 +146,7 @@ describe('a criança mexendo na cena', () => {
     })
     const state = stepScene(start, nascido, { type: 'advance', seconds: 4 })
     expect(state.crowd.cacti[0]?.x).toBe(-100)
-    render(<ExplorationStage activity={activity} state={state} dispatch={() => {}} paused />)
+    render(<ExplorationStage activity={activity} state={state} dispatch={() => {}} />)
     expect(screen.getByText('1 cacto fora da pista')).toBeTruthy()
     expect(screen.queryByLabelText('Cacto 1, velocidade -5')).toBeNull()
   })
@@ -185,7 +185,11 @@ describe('a criança mexendo na cena', () => {
     expect(screen.getByText('Agora toque em Tela do jogo para ligar.')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '◎ Tela do jogo' }))
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
-    expect(screen.getByText('Bastidores · 1 Dino guardado')).toBeTruthy()
+    // ⚠️ O MESMO Dino, agora dito pelo DESENHO: desde o lote 5 o palco mostra os bastidores e a
+    // tela lado a lado, e a linha "Bastidores · 1 Dino guardado" saiu do controle porque era a
+    // mesma informação duas vezes na mesma tela.
+    expect(screen.getByTitle('Nos bastidores')).toBeTruthy()
+    expect(screen.getByText(/O mesmo Dino: guardado de um lado, desenhado do outro/)).toBeTruthy()
   })
 
   test('⚠️ cumprir o objetivo NÃO encerra a cena, e a descoberta registrada não pisca', async () => {
@@ -271,6 +275,47 @@ describe('a criança mexendo na cena', () => {
     // E o caminho do teclado continua alcançando os dois estados.
     fireEvent.click(screen.getByRole('button', { name: 'Segurar a tecla' }), { detail: 0 })
     expect(await screen.findByRole('button', { name: 'Soltar a tecla' })).toBeTruthy()
+  })
+
+  test('⚠️⚠️ "Ver de novo" não deixa o cartão afirmar conclusão sobre um palco vazio', async () => {
+    // A ação em DESTAQUE do rodapé faz `reset`, e o cartão de sucesso é um latch (concluir é
+    // acontecimento e não se desfaz). A tela passava a dizer "Você concluiu a investigação
+    // proposta nesta atividade" em cima de um palco que tinha voltado ao começo.
+    // ⚠️⚠️ A cena é `world`, e a escolha É o teste. A primeira versão usou `layers`, uma das
+    // DUAS (de 45) em que o avaliador se auto-reprova depois do reset: ela ficava verde com o
+    // defeito inteiro de pé nas outras 43. O sinal de "está revendo" tem de vir do GESTO, e é
+    // isso que uma cena comum prova.
+    const { fetchFalso } = servidorFalso('world')
+    globalThis.fetch = fetchFalso
+    render(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: 'child-v6',
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+        }}
+      >
+        <InteractiveLessonBlock block={block('world')} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: '◉ Desenhar' }))
+    fireEvent.click(screen.getByRole('button', { name: '◎ Tela do jogo' }))
+    await waitFor(() => expect(screen.getByText(/Você concluiu a investigação/)).toBeTruthy(), {
+      timeout: 5000,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver de novo' }))
+    await waitFor(() => expect(screen.getByText(/está mexendo de novo/)).toBeTruthy())
+    // A frase de sucesso FICA (a descoberta não se desfaz); o que sai é a afirmação de que a
+    // investigação está concluída AGORA, que o palco desmente.
+    expect(screen.queryByText(/Você concluiu a investigação/)).toBeNull()
+
+    // ⚠️ E o primeiro gesto de volta ao mundo desliga o aviso: ela parou de rever, está mexendo.
+    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    await waitFor(() => expect(screen.queryByText(/está mexendo de novo/)).toBeNull())
   })
 
   test('⚠️ envio em voo não trava a cena, e o que ela fez DEPOIS não se perde', async () => {

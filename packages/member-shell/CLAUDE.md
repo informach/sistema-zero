@@ -1,5 +1,207 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A comparação virou ESTRUTURA — 15/09/2026 (lote 5)
+
+⭐⭐ **O `SceneCanvas` ganhou o modo ANTES | DEPOIS**: dois desenhos lado a lado, nomeados, dentro
+da mesma moldura. É o padrão número um do estudo do Brilliant, e nenhum dos 45 palcos o tinha
+como ESTRUTURA — cada um desenhava um estado e a comparação vivia no texto.
+
+⭐⭐ **`world` saiu do palco compartilhado** (`scene-world-stage.tsx`): **bastidores | tela do
+jogo**. É a PRIMEIRA experimentação da PRIMEIRA aula do curso carro-chefe, o assunto dela é
+exatamente esse contraste, e os dois nunca apareciam juntos — a tela era desenhada e "bastidores"
+era um controle lá embaixo. A criança LIA que o Dino existia sem aparecer. Foi o item 2 do
+diagnóstico do print. ⚠ De quebra, a linha "Bastidores · ainda vazio" saiu do controle: com o
+palco mostrando os dois lugares, ela era a mesma informação escrita duas vezes na mesma tela.
+
+⚠⚠⚠ **QUANDO usar, e quando NÃO** — a galeria das 45 mostrou que a proposta tinha
+superestimado o buraco. A maioria das cenas de contraste JÁ compara estruturalmente, cada uma
+dentro do próprio desenho (`hold-vs-press` tem duas pistas, `delta-time` tem dois computadores,
+`pixel-vector` tem as duas pedras, `sheet-vs-sprite` tem a folha e o jogo, `tilemap` tem o texto e
+o desenho). A régua que separa os casos não é "a cena fala de contraste":
+- **Os dois estados COEXISTEM no mundo** (o Dino guardado E desenhado) → lado a lado.
+- **A criança ALTERNA entre dois estados** (`layers` troca a ordem, `fill-stroke` liga e desliga o
+  miolo) → **um estado só, e o gesto é a descoberta.** Mostrar os dois ao mesmo tempo ali não
+  melhora nada: TIRA o experimento, porque não sobra o que descobrir. A comparação com o que ela
+  viu ANTES é outra coisa, e já existe (o "Guardar para comparar").
+
+⚠⚠ **Lado a lado só a partir de `sm`.** Num celular de 360px dois painéis dariam 170px cada, e a
+comparação que existe para ser VISTA ficaria ilegível — empilhado, os nomes de cada lado seguram a
+leitura na vertical. ⚠ As cores do PAR marcam os dois nomes (azul e âmbar), e a divisória usa a
+régua da CENA (`scene-rule`): ela fica sobre o papel ilustrado, onde a linha do Pen sumiria.
+
+## A bancada tem um vocabulário só — 15/09/2026 (lote 2)
+
+⭐⭐ **As QUATORZE bancadas que moravam dentro do player saíram** (`scene-lesson-controls.tsx`).
+O `scene-activity` já carrega o player inteiro — sessão, gravação, previsão, pergunta anexa,
+rodapé — e com elas passava de **1.900 linhas**: ninguém o lia inteiro, e foi assim que a caixa
+de botões vazia sobreviveu a quatro revisões e que `stage-size` ficou com um "Um passo" que não
+fazia nada. Hoje o player tem **1.345** e a bancada, 458.
+
+⭐⭐ **O vocabulário virou um só** (`scene-bench.tsx`): **Medida**, **Chave** e **Escolha**. Antes
+`Medida` vivia na bancada do núcleo e era importada pela do motor, `Chave` era privada da do
+motor, e as quatorze de dentro do player escreviam `<label><input type="range">` à mão — **sem os
+botões de passo que as outras vinte e uma tinham**. A régua desta casa é que toque, teclado e
+leitor de tela levem ao MESMO lugar, e ela se perde exatamente assim: numa cópia que ninguém
+comparou. Dez deslizantes ganharam os botões −/+ nesta passada.
+- **MEDIDA**: deslizante, valor à vista e dois botões de passo. ⚠ Ela ganhou `disabled` + `nota`
+  porque "uma variável por vez" é régua de várias cenas — **fechado não é escondido**, o controle
+  fica na tela com o motivo escrito. ⚠⚠ E o botão DIZ o quanto anda quando anda mais que o
+  deslizante ("Aumentar x, de esquerda a direita **em 20**"): na cena do endereço o dedo arrasta
+  de 1 em 1 e o botão pula de 20 em 20, e quem ouve não tinha como saber disso.
+- **CHAVE**: liga/desliga com o ESTADO no rótulo, nunca a ação do clique.
+- **ESCOLHA**: dois ou três valores, um em vigor. ⚠⚠ **Sem `aria-pressed`**, e é a razão de ela
+  existir separada da Chave: numa escolha nenhum valor é "desligado", e o leitor de tela
+  anunciava "não pressionado" para a alternativa não escolhida, como se ela estivesse apagada.
+  O estado vem do `aria-current`. Cinco grupos migraram (quadro 1/2 nas duas cenas de animação,
+  pixel×vetor, o pedaço da folha, o modo da batida e os três estados do motor).
+- ⚠ A quarta peça, o **GESTO**, não mora lá: é um `SceneButton` com `tom="gesto"`, porque é um
+  botão do aplicativo como qualquer outro — o que muda é o peso.
+- ⚠ A bancada recebe o ELENCO pela mesma razão que o palco: os rótulos dos controles são texto
+  que a criança lê na MESMA tela da faixa de estado.
+- Contrato em `tests/scene-identity.test.ts`: nenhuma bancada escreve deslizante à mão, as peças
+  moram num lugar só, e o PLAYER não tem bancada.
+
+## Cromo é do APP, mundo é da CENA — 15/09/2026 (lote 3)
+
+⭐⭐ **A cena entrou na identidade do kids sem achatar a ilustração.** A paleta `--color-scene-*`
+foi desenhada para ser um mundo ilustrado autônomo (papel creme, tinta oliva) e tinha vazado para
+o CROMO — a faixa de estado usava o cartão creme com a linha oliva, encostada num aplicativo que é
+branco com linha azulada. A decisão, e agora a regra:
+
+- **O CROMO veste o APP** (`card`, `border`, `foreground`, `muted-foreground`, `primary`): a
+  moldura, a faixa, a bancada, a frase, o rodapé e o cartão de conclusão. No kids isso é o Pen; no
+  adulto, o tema dele. Nenhum dos dois precisa de regra própria.
+- **O MUNDO continua ilustrado**: dentro do palco, `--color-scene-*` manda. A cena é o retrato de
+  um JOGO — pintá-la de branco e azul a transformaria num formulário.
+- ⚠⚠ **O par de comparação SOBREVIVE no cromo** (`scene-a`, `scene-b-ink`, `scene-alert`): azul e
+  âmbar dizem QUAL medida é qual, no palco, na faixa E no rótulo do controle logo abaixo. Trocar
+  isso pelos tokens do app desfaria a leitura no meio da descoberta.
+- A regra tem UMA direção e é deliberado (`tests/scene-identity.test.ts`): o cromo não veste a
+  cena. O contrário não se enforça porque os arquivos de palco carregam pedaços de cromo
+  legítimos — a alça de arraste POR CIMA do SVG, a frase embaixo do desenho, o campo de texto do
+  leitor de tela. Uma regra bidirecional reprovaria os três e ensinaria a desligar o teste.
+
+⭐⭐ **O controle da cena é o `Button` do app** (`SceneButton`, em `exploration-stage.tsx`), e o
+motivo é medido: o kids dá a TODO botão o relevo 3D do Brilliant por um seletor que casa
+`button[data-slot="button"]` com a classe da variante (`.bg-primary.text-primary-foreground`,
+`.bg-background`, `.bg-secondary`). O botão da cena era um `<button>` cru com classes próprias —
+não tinha nem o `data-slot` nem as classes de variante, então era o ÚNICO controle CHAPADO da tela.
+Isso lê como "outro aplicativo" mais do que qualquer cor.
+- ⚠⚠ **O TOM entra por `tom`, nunca por `!bg-primary` no `className`**: o `cn` é tailwind-merge,
+  então uma classe de fundo escrita no call site APAGA a da variante — e com ela some o seletor que
+  o app usa para dar o relevo. Um botão plano no meio de três em relevo é a deriva voltando pela
+  porta dos fundos. Os três tons: `ferramenta` (contorno), `ligado` (secundário com a tinta da
+  ação) e **`gesto`** — a ação que MOVE a cena, em destaque.
+- ⚠ `min-h-11` sobrepõe a altura da variante (`min-height` vence `height` quando é maior): 44px é
+  requisito do público infantil, não detalhe de estilo.
+
+⭐⭐ **O PALCO virou um só** (`scene-canvas.tsx`, lote 1). Havia CINCO cromos de palco, e três
+chamavam a própria cópia de `Moldura`: a caixa com borda e recorte, o `<svg role="img">`, o
+`<title>`/`<desc>` ligados por `aria-labelledby` e o rodapé de legenda — tudo repetido. Enquanto
+foi assim, ajustar o desenho custava cinco edições: é por isso que a faixa cortada só foi
+consertada numa família e a caixa vazia sobreviveu a quatro revisões. Hoje as 45 cenas são
+DESENHOS dentro do `SceneCanvas`.
+- ⚠⚠ **O ENQUADRAMENTO continua por FAMÍLIA, e é deliberado.** Três das cinco já usavam 560×300
+  (`SCENE_VIEW`, agora o padrão), mas o palco do Corre Dino é 600×310, os do ateliê são 560×260 e
+  o da tela é derivado do tamanho do jogo — e as centenas de coordenadas dos `d="…"` de cada
+  desenho estão NESSAS unidades. Unificar o `viewBox` não é mudar um número: é redesenhar 45
+  cenas. O que o componente garante é que a cena NOVA nasce no enquadramento comum, então a
+  deriva para de crescer. ⚠ Quem foge do comum PASSA o `view` — esquecer isso emoldura o desenho
+  numa caixa de outro tamanho, e foi o que quase aconteceu com os cinco palcos do ateliê
+  (`tests/scene-identity.test.ts` cobra).
+- ⚠ O `overlay` existe só para o palco compartilhado: ele põe controles HTML POR CIMA do SVG (as
+  alças de arraste, o "Toque para começar"), e eles precisam ser irmãos do `<svg>` dentro da
+  moldura posicionada. Quem não tem overlay não paga nada por ele.
+- ⚠️ O ELENCO é aplicado pelo canvas no `titulo` e na `descricao`. Texto solto DENTRO do desenho
+  continua precisando do `castText` à mão — o componente não alcança o que o desenho escreve.
+- ⚠️⚠️ **Eram SEIS cromos, e não cinco** (achado do full review): o `experience-scene.tsx` — o
+  laboratório de saltos e a área de colisão, usado por `gravity`, `impulse`, `jump-sound` e
+  `hitbox`, ou seja as cenas mais usadas do Corre Dino — desenhava a própria moldura. Na verdade
+  nem isso: um `rounded-2xl` sem borda nenhuma, com `<title>`/`<desc>` próprios. E a ESCOLHA de
+  usá-lo vivia no PLAYER, que era o único lugar do sistema que sabia disso — então qualquer outra
+  superfície que desenhasse uma cena (a galeria das 45) mostrava para essas quatro um palco que a
+  criança nunca vê. Hoje a escolha mora no `ExplorationStage` (`LABORATORIO`, a mesma lista que o
+  player usa para oferecer o "Guardar para comparar") e o palco passa pelo `SceneCanvas`.
+- ⭐⭐ **E a lista virou GUARDA DE TIPO** (`ehLaboratorio`), que foi o que fez o compilador mostrar
+  **~120 linhas MORTAS** dentro do palco compartilhado: o toque para pular, a guia de altura, a
+  seta do impulso, o contador de sons, a alça da área do Dino e a fileira de botões do salto.
+  Todas eram `{m === 'gravity' | 'impulse' | 'jump-sound' | 'hitbox' && …}` — e o player já mandava
+  essas quatro para o laboratório **desde sempre**, então nada daquilo jamais desenhou. Com a lista
+  como `string[]`, o `if` não NARROWAVA o `m` e o TypeScript não tinha como dizer isso; com a guarda,
+  cada ramo morto virou erro de compilação. Sobreviveram quatro variáveis que os ramos sustentavam
+  (`motion`, `canJump`, `dinoY` e a prop `paused`, que o `ExplorationStage` recebia dos três call
+  sites e não usava mais), e `collision` voltou a ser só `m === 'restart'`.
+  ⚠️ A lição é sobre a FERRAMENTA, não sobre esse arquivo: lista de cenas escrita como `string[]`
+  guarda código morto em silêncio para sempre. Cena que ganha palco próprio sai do palco compartilhado
+  por uma guarda, nunca por um `includes`.
+- ⚠️ O canvas ganhou `interativo` por causa deles: o desenho que recebe gesto DIRETO (arrastar o
+  cacto, tocar no Dino) é `role="group"`, não `role="img"` — uma imagem é uma coisa só e o leitor
+  de tela não entra nela. ⚠️ O caminho de teclado continua sendo a BANCADA: o arrasto nunca é a
+  única saída.
+
+⭐ **O medidor de descobertas DIZ o que mede.** As bolinhas sozinhas não diziam nada a quem
+enxerga (quem usa leitor de tela já ouvia "2 de 3 descobertas" pelo `role="meter"`). A conta agora
+está escrita ao lado, `aria-hidden` — a mesma regra da faixa de estado.
+
+⚠⚠ **A conta de contraste foi REFEITA, não estimada** (`tests/scene-contrast.test.ts`): além dos
+três papéis da cena nos três temas, o par de comparação agora é medido também contra o CARTÃO dos
+dois apps de aluno, lido do `globals.css` de VERDADE de cada um. É aí que ele passou a ser lido
+desde que a faixa virou branca.
+
+⭐ **A GALERIA das 45 cenas** vive no kids (`tests/visual/build-galeria-cenas.tsx`, `bun run
+galeria:cenas`): um HTML com todos os palcos, cada um no estado em que o ROTEIRO do próprio modelo
+o deixa, montado com os componentes de PRODUÇÃO e o CSS do app. Ela existe porque não dá para
+autorizar redesenho do que nunca se viu — 21 das 45 nunca tinham aparecido numa aula.
+
+## A tela da cena para de se contradizer — 15/09/2026 (lotes 6 e 4)
+
+⭐⭐ **"Ver de novo" deixou de afirmar conclusão sobre um palco vazio** (`revendo`, em
+`scene-activity.tsx`). "Ver de novo" é a ação em DESTAQUE do rodapé e faz `reset`, que volta ao
+caso; o cartão de sucesso é um latch (concluir é acontecimento e não se desfaz), então a tela
+passava a dizer "Você concluiu a investigação proposta nesta atividade" com o palco no começo — o
+prêmio por terminar era uma tela que afirma o que ela não mostra.
+
+⚠⚠ **O sinal vem do GESTO (`recomeçou`), NUNCA do `result.passed`.** A primeira versão usou o
+avaliador como atalho e funcionava em DUAS cenas de 45: `reset` preserva as descobertas de
+propósito (recomeçar volta o mundo, não a história), então `passed` continua verdadeiro em todas
+menos `layers` e `jump-sound`, as únicas que exigem a montagem ASSENTADA. O teste que devia ter
+pego isso usava justamente `layers`. ⚠ `recomeçou` nasce FALSO num F5: quem reabre a aula não
+"está revendo", está chegando. ⚠ `hint` não desliga o aviso — pedir uma pista não é voltar a mexer.
+
+⭐ **A caixa dos botões da cena pergunta aos FILHOS** (`botoesDaCena`, uma LISTA filtrada). Em
+`world`, `layers` e nas outras sem salto, relógio ou comparação sobrava uma caixa com borda e
+padding e NADA dentro. ⚠⚠ A primeira correção repetia as condições num booleano à parte, e a
+falha silenciosa disso é pior que o defeito consertado: botão acrescentado aqui e esquecido lá
+simplesmente NÃO renderiza — sem erro, sem caixa vazia, sem teste vermelho. Caixa vazia se vê;
+botão que nunca apareceu, não.
+
+⭐ **Um Zappy por tela, um título por tela** (`lesson-section-context.tsx`). O bloco pergunta o que
+a SEÇÃO já disse: o título do cabeçalho e se já existe um balão de fala num bloco próprio. A Aula 1
+do Corre Dino mostrava "Criar e mostrar são a mesma coisa?" no cabeçalho E de novo no cartão, com
+um Zappy na coluna da esquerda e um segundo dentro do cartão — quatro elementos para dizer duas
+coisas. ⚠ É CONTEXTO e não prop: entre a seção e o bloco há o `renderBlocks` de cada app, e uma
+prop atravessaria os dois por um detalhe de apresentação. ⚠⚠ O que NÃO pertence à seção entra com
+o contexto VAZIO: os editores (que são da AULA, montados atravessando as seções) e os "Materiais
+de apoio" (que o core guarda em `supportBlockIds`, fora das seções). ⚠ O parágrafo que substitui
+o balão mantém a FORMA dele (`whitespace-pre-line`, `text-base`): o que sai é o mensageiro, não o
+recado.
+
+⚠⚠ **E quase toda a suíte de cena desenha o conteúdo de AUTORIA, não o que a criança recebe**
+(achado do full review). Os testes montam `<InteractiveLessonBlock>` com o rascunho, que é o
+caminho da PRÉVIA — e desde o lote 4 esse caminho não tem previsão nem pergunta, porque as duas
+chegam pelos RESOLVEDORES. Resultado: a mudança mais visível do lote inteiro (as 45 cenas ganharam
+uma pergunta ANTES do palco) não era exercida por teste de render nenhum, e um deles ainda afirmava
+que "sem previsão declarada, a cena abre como sempre abriu" — verdade só no caminho que a criança
+não usa. Hoje ele monta por `publicInteractiveBlock` e cobra o portão, o palpite abrindo a cena e a
+explicação NÃO atravessando (`community-kids/tests/lesson-scene-design.test.tsx`).
+
+⚠⚠ **A PRÉVIA de autoria monta o bloco interativo pela PROJEÇÃO PÚBLICA** (`lesson-sections.tsx`).
+O rascunho é o conteúdo de AUTORIA, e desde o lote 4 ele não é mais o que a criança recebe — a
+previsão e a pergunta chegam pelos RESOLVEDORES do core. Desenhando o rascunho, a prévia mostrava
+ao professor uma tela sem as duas E o ensaio ficava INTRANSPONÍVEL: o avaliador é o de produção e
+cobrava a resposta de uma pergunta que a tela não tinha desenhado. O rascunho segue junto por
+`previewContent`, que é o que liga o avaliador local.
+
 ## As onze cenas do núcleo do Iniciante 2D — 15/09/2026
 
 `components/scene-core-stages.tsx` (os palcos) e `components/scene-core-controls.tsx` (a
@@ -112,7 +314,10 @@ falta") existem SEMPRE, com o texto por dentro: região montada junto do conteú
 feita, mas quem dá a palavra final é o servidor (`withAttachedQuestion`). Ele aponta para a
 pergunta logo acima. ⚠️ E depois de um F5 a escolha não volta (a sessão da cena mora em
 `answers.sceneCheckpoint`, e a resposta viaja na TENTATIVA, que o members de propósito não deixa
-atropelar a sessão): nesse caso a pergunta aparece como JÁ RESPONDIDA, em vez dos rádios vazios e
+atropelar a sessão): nesse caso a pergunta aparece como JÁ RESOLVIDA (⚠️ "resolvida", e não
+"você já respondeu": desde 15/09/2026 a pergunta é HERDADA do modelo, então todo bloco de cena
+concluído ANTES disso cai neste ramo — e quem nunca viu pergunta nenhuma leria uma frase sobre um
+gesto que não fez), em vez dos rádios vazios e
 desabilitados que pareciam ter perdido a resposta.
 
 ⚠️ **O `flush` recebe a escolha da pergunta por PARÂMETRO.** Ele é reatribuído a cada render,
@@ -190,11 +395,17 @@ turma de nave lia "distância do asteroide" na faixa e "Distância do cacto" no 
 abaixo, na mesma tela. ⚠️ Texto novo no player precisa SOBREVIVER à troca: a régua só flexiona o
 que está COLADO ao nome, então "o Dino continua guardado" viraria "a nave continua guardado" —
 foi reescrito para "continua nos bastidores". ⚠️⚠️ A varredura que cobra isso é o `describe('o elenco veste a cena INTEIRA')` do
-`community-kids/tests/lesson-scene-design.test.tsx` — e ela só alcança as cenas que estão na lista
-`REAPROVEITAVEIS`. Ela cobria sete, todas do palco COMPARTILHADO, e por isso ficou verde enquanto
-as bancadas extraídas (`scene-core-controls`, `scene-engine-controls`) voltavam a escrever "cacto"
-e "Dino" crus nos rótulos. **Cena com palco ou bancada própria entra na lista no mesmo commit em
-que o arquivo nasce.**
+`community-kids/tests/lesson-scene-design.test.tsx`, e desde o full review de 15/09/2026 ela varre
+as **45**, não mais a lista curada `REAPROVEITAVEIS` — que já tinha ficado verde enquanto as
+bancadas extraídas (`scene-core-controls`, `scene-engine-controls`) voltavam a escrever "cacto" e
+"Dino" crus nos rótulos, porque os arquivos novos não estavam nela. Lista curada de cenas é a
+segunda lista que o lote 3 inteiro existe para matar, e varrer todas custa 800ms. Ela olha TRÊS
+superfícies: o texto visível, os `aria-label` e o `<title>`/`<desc>` do SVG — este último entrou
+porque é o que o leitor de tela anuncia NO LUGAR do desenho e não aparece nos outros dois. Foi ele
+que pegou a `screen-reader` descrevendo o desenho como "Um dinossauro correndo diante de cactos":
+**"dinossauro" não é termo do elenco** (a régua casa "Dino", de propósito — senão "Dinossauro"
+casaria pela metade), então numa turma de nave a frase saía com meio elenco trocado, justo na cena
+que ENSINA a descrever a tela para quem não a vê.
 
 ## As cenas do lote 4: desenho e vidas (14/09/2026)
 

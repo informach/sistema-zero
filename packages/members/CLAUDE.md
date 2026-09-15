@@ -2081,6 +2081,16 @@ vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
   Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
   `0077` apenas acrescenta o valor ao enum. Não apagar/recriar planos para migrar.
 
+## A resposta da criança na cena parou de ser descartada — 15/09/2026
+
+⚠⚠ **A tentativa de um bloco de CENA guardava só o que a sessão da cena trazia** (`answers =
+saved.answers`, em `learning.service.ts`), e a escolha da pergunta anexa ia embora no caminho. Isso
+era invisível enquanto a pergunta existia em 8 dos 52 blocos; desde o lote 4 toda experimentação
+tem uma, e com ela sem chegar ao avaliador NENHUM bloco de cena fecharia. Hoje a sessão guardada
+continua mandando no estado da cena (a tentativa não a atropela, de propósito), e por cima dela
+entram as chaves que são da CRIANÇA — `checkpoint` e `prediction`. ⚠ A lista é explicita: aceitar
+tudo o que vier do corpo devolveria ao cliente o poder de reescrever a sessão.
+
 ## Aulas por seções (09/2026)
 
 `lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo carreira e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.

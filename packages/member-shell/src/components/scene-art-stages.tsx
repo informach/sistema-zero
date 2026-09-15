@@ -1,9 +1,9 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { castText } from '@sistemazero/core/learning/scene'
 import { useId } from 'react'
 import { CactusFigure, DinoFigure } from './exploration-stage'
+import { SceneCanvas } from './scene-canvas'
 
 /**
  * Os palcos das cinco cenas de DESENHO e da cena das vidas (lote 4 da proposta).
@@ -19,6 +19,12 @@ import { CactusFigure, DinoFigure } from './exploration-stage'
  * muda. Mexer no desenho sem olhar a meta da cena é como mexer no enunciado.
  */
 
+/**
+ * ⚠️⚠️ Estes cinco palcos são mais BAIXOS que o enquadramento comum (`SCENE_VIEW`, 560 × 300):
+ * o papel do espelho, a faixa de quadros e a folha de sprites não têm chão nem céu. Por isso
+ * cada `SceneCanvas` daqui passa o `view` — sem ele o desenho seria emoldurado numa caixa 40
+ * unidades mais alta e tudo sairia deslocado para cima.
+ */
 const VIEW = { w: 560, h: 260 } as const
 /** Quanto vale UM quadradinho da pedra (a grade é 16 x 16) com a lupa em 1. */
 const UNIDADE = 1.8
@@ -31,43 +37,6 @@ const CHAO = VIEW.h - 40
 // dois lugares precisam caber na parte que a criança olha. Medido no ensaio: em 150 sobrava meio
 // palco vazio à direita e a comparação ficava num canto.
 const BASE_X = 210
-
-/**
- * ⚠️⚠️ O ELENCO veste o que o PALCO escreve à mão: o `<title>` e a `<desc>` do SVG e a legenda.
- * É o invariante do full review de 14/09/2026 — sem ele a criança de uma turma de nave lia
- * "nave" na faixa e ouvia "o Dino" do leitor de tela, no mesmo desenho.
- */
-function Moldura({
-  children,
-  legenda,
-  titulo,
-  descricao,
-  id,
-  cast,
-}: {
-  children: React.ReactNode
-  legenda: string
-  titulo: string
-  descricao: string
-  id: string
-  cast?: SceneCast
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-title ${id}-desc`}
-      >
-        <title id={`${id}-title`}>{castText(titulo, cast)}</title>
-        <desc id={`${id}-desc`}>{castText(descricao, cast)}</desc>
-        {children}
-      </svg>
-      <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">{castText(legenda, cast)}</p>
-    </div>
-  )
-}
 
 /** A faixa de quadros do Pinta: dois quadradinhos, e cada um guarda um desenho inteiro. */
 function FaixaDeQuadros({ frame }: { frame: number }) {
@@ -123,7 +92,6 @@ function AnimationStage({
   ghost: boolean
   cast?: SceneCast
 }) {
-  const id = useId()
   const { frame, shift, onion, playing, rate, swaps } = state.animation
   const x = frame === 2 ? BASE_X + shift : BASE_X
   const mostrarFantasma = ghost && onion && frame === 2
@@ -143,12 +111,12 @@ function AnimationStage({
       ? `Trocando ${rate} por segundo. Trocas até agora: ${swaps}.`
       : 'A troca está parada: dá para olhar um quadro de cada vez.'
   return (
-    <Moldura
+    <SceneCanvas
+      view={VIEW}
       cast={cast}
-      id={id}
       titulo="A tela do desenho, com a faixa de quadros"
       descricao={descricao}
-      legenda={legenda}
+      rodape={legenda}
     >
       <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
       <rect className="fill-scene-ground" y={CHAO} width={VIEW.w} height={VIEW.h - CHAO} />
@@ -183,7 +151,7 @@ function AnimationStage({
       <g className="text-primary">
         <DinoFigure x={x} y={CHAO} />
       </g>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -202,21 +170,20 @@ export function OnionSkinStage({ state, cast }: { state: SceneState; cast?: Scen
  * próximo traço vai. O reflexo que cai fora do papel também precisa ser visível como falta.
  */
 export function SymmetryStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const id = useId()
   const { on, line, painted } = state.mirror
   const larguraCol = (VIEW.w - 80) / COLUNAS.length
   const topo = 46
   const altura = VIEW.h - topo - 42
   const eixoX = 40 + line * larguraCol
   return (
-    <Moldura
+    <SceneCanvas
+      view={VIEW}
       cast={cast}
-      id={id}
       titulo="O papel de doze colunas, com o espelho"
       descricao={`${painted.length} ${painted.length === 1 ? 'traço pintado' : 'traços pintados'}. O espelho está ${
         on ? `ligado na linha ${line}` : 'desligado'
       }.`}
-      legenda={
+      rodape={
         on
           ? `Cada traço aparece dos dois lados da linha ${line}.`
           : 'Com o espelho desligado, o traço fica só onde você pintar.'
@@ -275,7 +242,7 @@ export function SymmetryStage({ state, cast }: { state: SceneState; cast?: Scene
           </text>
         </g>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -311,14 +278,14 @@ export function PixelVectorStage({ state, cast }: { state: SceneState; cast?: Sc
     { chave: 'vector' as const, rotulo: 'pedra de vetor', x: VIEW.w - 40 - painel.w },
   ]
   return (
-    <Moldura
+    <SceneCanvas
+      view={VIEW}
       cast={cast}
-      id={id}
       titulo="As duas pedras, com a lupa numa delas"
       descricao={`A lupa está em ${zoom} vezes, sobre a pedra de ${
         kind === 'pixel' ? 'pixel' : 'vetor'
       }. A borda dela ${zoom < 5 ? 'ainda parece igual à outra' : kind === 'pixel' ? 'virou escadinha' : 'continua lisa'}.`}
-      legenda={
+      rodape={
         zoom < 5
           ? 'De longe, as duas parecem a mesma pedra.'
           : 'De perto, a borda conta como cada uma foi feita.'
@@ -383,7 +350,7 @@ export function PixelVectorStage({ state, cast }: { state: SceneState; cast?: Sc
           </g>
         )
       })}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -395,19 +362,18 @@ export function PixelVectorStage({ state, cast }: { state: SceneState; cast?: Sc
  * o tamanho do jogo, o palco estaria ensinando o contrário do enunciado.
  */
 export function SheetStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const id = useId()
   const { cell, size } = state.sheet
   const folha = { x: 40, y: 56, lado: 160 }
   const meia = folha.lado / 2
   const jogo = { x: 300, y: 56, w: 220, h: 150 }
   const escala = size / 96
   return (
-    <Moldura
+    <SceneCanvas
+      view={VIEW}
       cast={cast}
-      id={id}
       titulo="A folha de desenhos ao lado da tela do jogo"
       descricao={`O pedaço ${cell} de 4 está recortado. Na folha ele tem sempre o mesmo tamanho; no jogo, ${size}.`}
-      legenda="A folha guarda os desenhos. O tamanho no jogo é outra escolha."
+      rodape="A folha guarda os desenhos. O tamanho no jogo é outra escolha."
     >
       <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
       <text className="fill-scene-ink-soft" x={folha.x} y={folha.y - 12} fontSize="12">
@@ -475,7 +441,7 @@ export function SheetStage({ state, cast }: { state: SceneState; cast?: SceneCas
       >
         <DinoFigure x={0} y={0} />
       </g>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -486,18 +452,17 @@ export function SheetStage({ state, cast }: { state: SceneState; cast?: SceneCas
  * diferentes, e isso só se vê quando as duas estão à vista no mesmo instante da batida.
  */
 export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const id = useId()
   const { lives, points, onHit, hits } = state.lifeline
   const acabou = lives === 0
   return (
-    <Moldura
+    <SceneCanvas
+      view={VIEW}
       cast={cast}
-      id={id}
       titulo="A tela do jogo com o placar e os corações"
       descricao={`${lives} ${lives === 1 ? 'vida' : 'vidas'} e ${points} ${
         points === 1 ? 'ponto' : 'pontos'
       }. ${acabou ? 'A partida acabou.' : `Batidas até agora: ${hits}.`}`}
-      legenda={
+      rodape={
         acabou
           ? 'Sem vidas, a partida acabou. O placar guardou o que foi feito.'
           : onHit
@@ -560,6 +525,6 @@ export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCas
           FIM
         </text>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }

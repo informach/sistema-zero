@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
+  blockCheckpoint,
   defaultLessonSection,
   type InteractiveBlock,
   type LessonSection,
@@ -166,10 +167,17 @@ describe('section gates across HTTP and persistence', () => {
       })
       if (gravado.status !== 200) return gravado
       const salvo = (await gravado.json()) as { answers: Record<string, unknown> }
+      // ⚠️ A experimentação herda do modelo da cena a pergunta que fecha o bloco (o terceiro
+      // tempo do ciclo), e o caminho da criança passa por respondê-la.
+      const conteudo = ctx.courses.blocks.find((b) => b.id === ctx.ids[index])?.content
+      const explica = blockCheckpoint(conteudo as InteractiveBlock)
       return ctx.request(`${caminho}/learning-attempts`, 'POST', {
         id: randomUUID(),
         revision: REVISION,
-        answers: salvo.answers,
+        answers: {
+          ...salvo.answers,
+          ...(explica ? { checkpoint: explica.correctChoiceId } : {}),
+        },
         hintsUsed: 0,
       })
     }

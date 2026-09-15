@@ -198,6 +198,62 @@ bancada. O motor é o mesmo; muda só o que o player desenha em volta.
 ("o Dino está escondido", "foi criado", "está vivo") também concorda com o personagem. Sem isso um
 elenco feminino lia "A nave está escondido" — e essa é a PRIMEIRA pista da cena `layers`.
 
+⚠️⚠️ **E texto que o elenco veste NÃO usa pronome de terceira pessoa** (achado do full review de
+15/09/2026). A régua flexiona o que está COLADO ao nome e nada mais, então um `ele`/`dele`/`nele`
+duas orações adiante fica para trás e a frase sai meio trocada — que é como a criança percebe que
+ninguém escreveu aquilo para ela. Eram NOVE, em três camadas: as perguntas novas (`lives`, e a Aula
+4 do Desafio usa `lives` com elenco de nave HOJE), o catálogo (`gravity`, `cleanup`, `acceleration`,
+`enemy-type`, `camera`) e o próprio MOTOR (duas legendas de `camera`). A regra é ABSOLUTA de
+propósito: decidir o referente de um pronome não é coisa que varredura faça, e repetir o nome custa
+nada e é mais claro para quem tem 9 anos. Ela só alcança o texto que o elenco REALMENTE veste
+(`castText(t) !== t`). Travada em `cast.test.ts`, sobre catálogo, perguntas e legendas do motor.
+
+## A previsão e a pergunta viraram propriedade DA CENA — 15/09/2026 (lote 4)
+
+⭐⭐ **`SCENE_QUESTIONS` (`scene/questions.ts`): a previsão e a explicação das 45 cenas, escritas
+uma vez.** Nós construímos os dois padrões mais fortes do estudo do Brilliant como campos
+OPCIONAIS do bloco e medimos o resultado: de **52 blocos de cena** nos cursos, **7** tinham
+previsão e **8** tinham pergunta. 13% e 15%. Recurso que depende de alguém lembrar não é recurso,
+é intenção — e a raiz não era a autoria, era o PADRÃO: a pergunta certa para uma cena é
+propriedade da cena, não do bloco. "O que acontece com a velocidade em zero" é a mesma pergunta
+em toda aula que usa `velocity`, vestida com outro elenco.
+
+- **`blockPrediction(block)` e `blockCheckpoint(block)`** (em `learning/index.ts`) são os
+  RESOLVEDORES, e são a única porta: o campo do bloco vence; sem ele, vale o do modelo, já
+  vestido pelo `castText`. `publicInteractiveBlock` e `withAttachedQuestion` passam pelos dois.
+  ⚠⚠ Ler `block.checkpoint` cru para uma CENA é voltar aos 15%. (As duas leituras cruas que
+  sobraram no `evaluateLearning` são dos tipos `question` e `html`, que não têm padrão nenhum:
+  ali o resolvedor devolveria exatamente o mesmo campo.)
+- ⚠⚠ **A pergunta padrão vale só na EXPERIMENTAÇÃO.** Na demonstração a criança ASSISTIU, e
+  cobrar dela a regra depois de um roteiro que ela não conduziu é cobrar um gesto que a tela não
+  ofereceu. A previsão, essa vale nas duas: apostar antes de ver é de graça.
+- ⚠⚠ **Menos na demonstração `inline`** (achado do full review). A previsão TRAVA o palco até a
+  criança escolher, e a `inline` existe para ser "um ▶ e nada mais, no meio de uma explicação" — o
+  degrau entre o parágrafo e a bancada. Herdar o padrão punha uma pergunta de duas opções e um
+  portão em frente a um botão de dois segundos, no formato desenhado para não ter nenhum. São duas
+  reais hoje (`shading` e `fill-stroke`, no Jogo do Meu Jeito). Quem ESCREVE a previsão no bloco
+  continua mandando: o que sai é o padrão, não a possibilidade.
+- ⚠ **A previsão continua sem nota** e a explicação dá a palavra final sobre a conclusão do
+  bloco. É por isso que a experimentação passou a exigir a frase escolhida para fechar: o
+  terceiro tempo do ciclo deixou de ser enfeite.
+- ⚠ **`Record<SceneId, SceneQuestions>`**: o TS reprova a cena nova que chegar sem as duas.
+- ⚠ A opção errada é sempre uma crença ingênua PLAUSÍVEL, nunca um espantalho — alternativa
+  obviamente boba transforma a pergunta em clique, o oposto do que ela existe para fazer.
+
+⚠⚠ **A frase da cena concorda em NÚMERO** (`quantos`, em `scene/cast.ts`). Ela dizia
+"1 vidas e 1 pontos", "1 saltos e 1 sons", "1 cactos nos bastidores" — sempre no PRIMEIRO
+acontecimento da cena, que é quando a criança está lendo com mais atenção. As duas formas ficam
+à vista na chamada porque quem veste o texto é o ELENCO, e a régua só flexiona o que está colado
+ao nome.
+
+⚠⚠ **Ele mora no `cast.ts`, e não no `readout.ts`, porque quem escreve essas frases são DOIS.**
+O full review achou mais duas, em superfícies que a primeira varredura não alcançava: a FAIXA de
+estado abria `pixel-vector` com "lupa **1 vezes**", e o `caption` do MOTOR dizia "Desenhou de novo
+sem limpar: **1 Dinos** na tela" no `draw-loop` — e o teste antigo apagava o caption (`caption:
+''`) justamente para isolar a situação. Hoje a varredura do `readout.test.ts` cobre a faixa, a
+situação E o caption, em TODO passo do roteiro de cada modelo, e não só nas duas pontas: contador
+chega a UM no meio do caminho e volta a passar de um depois.
+
 ## Comandos (de dentro de `packages/core`)
 
 | Comando | O quê |

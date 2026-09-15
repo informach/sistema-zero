@@ -1,9 +1,11 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { castText, STAGE_TARGET } from '@sistemazero/core/learning/scene'
-import { useId } from 'react'
+import { STAGE_TARGET } from '@sistemazero/core/learning/scene'
 import { CactusFigure, DinoFigure, TreeFigure } from './exploration-stage'
+// ⚠️ O `VIEW` vem do canvas: os desenhos leem o enquadramento (`VIEW.w`, `VIEW.h`) para
+// encostar no chão e na borda, então ele e o `viewBox` do SVG têm de ser o MESMO número.
+import { SceneCanvas, SCENE_VIEW as VIEW } from './scene-canvas'
 
 /**
  * Os palcos das onze cenas do núcleo do Iniciante 2D (15/09/2026).
@@ -17,49 +19,6 @@ import { CactusFigure, DinoFigure, TreeFigure } from './exploration-stage'
  * `scene-b`): elas dizem QUAL medida é qual, e não são decoração.
  */
 
-const VIEW = { w: 560, h: 300 } as const
-
-/**
- * ⚠️⚠️ O ELENCO veste o que o PALCO escreve à mão: o `<title>` e a `<desc>` do SVG, os rótulos
- * e o rodapé. É o invariante do full review de 14/09/2026, e ele vale para todo palco novo — a
- * criança de uma turma de nave lia "nave" na faixa e ouvia "o Dino" do leitor de tela, no mesmo
- * desenho. O `Moldura` aplica sozinho; texto solto dentro do SVG precisa do `castText` à mão.
- */
-function Moldura({
-  children,
-  titulo,
-  descricao,
-  rodape,
-  cast,
-}: {
-  children: React.ReactNode
-  titulo: string
-  descricao: string
-  rodape?: string
-  cast?: SceneCast
-}) {
-  const id = useId()
-  return (
-    <div className="overflow-hidden rounded-2xl border border-primary/15 bg-scene-ground">
-      <svg
-        viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
-        className="block w-full"
-        role="img"
-        aria-labelledby={`${id}-t ${id}-d`}
-      >
-        <title id={`${id}-t`}>{castText(titulo, cast)}</title>
-        <desc id={`${id}-d`}>{castText(descricao, cast)}</desc>
-        {children}
-      </svg>
-      {rodape && (
-        <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-          {castText(rodape, cast)}
-        </p>
-      )}
-    </div>
-  )
-}
-
 /** A velocidade: o quanto ele anda em CADA quadro, com o fantasma de onde estava. */
 export function VelocityStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { x, y, fromX, fromY, vx, vy } = state.drive
@@ -68,7 +27,7 @@ export function VelocityStage({ state, cast }: { state: SceneState; cast?: Scene
   const fx = 40 + fromX
   const fy = 30 + fromY * 0.8
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A pista, com o Dino e o rastro do último quadro"
       descricao={`Velocidade ${vx} para o lado e ${vy} para baixo. O Dino está em x ${Math.round(x)}, y ${Math.round(y)}, e no quadro anterior estava em ${Math.round(fromX)}, ${Math.round(fromY)}.`}
@@ -108,7 +67,7 @@ export function VelocityStage({ state, cast }: { state: SceneState; cast?: Scene
       <g className="text-primary">
         <DinoFigure x={px} y={py + 26} />
       </g>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -125,7 +84,7 @@ export function HoldVsPressStage({ state, cast }: { state: SceneState; cast?: Sc
     </g>
   )
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="Duas raquetes, dois jeitos de ligar a tecla"
       descricao={`A de cima andou ${presses} passo(s) por aperto; a de baixo está em ${Math.round(holdX)} e a tecla está ${holding ? 'segurada' : 'solta'}.`}
@@ -145,7 +104,7 @@ export function HoldVsPressStage({ state, cast }: { state: SceneState; cast?: Sc
           segurando
         </text>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -153,7 +112,7 @@ export function HoldVsPressStage({ state, cast }: { state: SceneState; cast?: Sc
 export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { value, shown, changes } = state.box
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A caixa do placar e a tela do jogo"
       descricao={`A caixa guarda ${value}. A tela ${shown ? `mostra ${value}` : 'não mostra nada'}.`}
@@ -213,7 +172,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
           <DinoFigure x={420} y={195} />
         </g>
       </g>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -221,7 +180,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
 export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { distances, looked, chosen, auto } = state.hunt
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A torre e os três invasores do grupo"
       descricao={`Distâncias ${distances.join(', ')}. Olhados: ${looked.length} de 3. Escolhido: ${chosen || 'nenhum'}.`}
@@ -269,7 +228,7 @@ export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: Scen
           </g>
         )
       })}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -277,7 +236,7 @@ export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: Scen
 export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { speed, life, born } = state.blueprint
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A ficha do inimigo e os que nasceram dela"
       descricao={`Ficha com velocidade ${speed} e vida ${life}; ${born} inimigo(s) nascido(s).`}
@@ -345,7 +304,7 @@ export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: Scen
           ninguém nasceu ainda
         </text>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -356,7 +315,7 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
   const janelaX = follow ? Math.max(0, Math.min(1200 - STAGE_TARGET.width, heroX - 240)) : 0
   const dentro = heroX >= janelaX && heroX <= janelaX + STAGE_TARGET.width
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O mundo do jogo e a janela da tela"
       descricao={`O herói está em ${heroX} de um mundo de 1200. A janela mostra de ${Math.round(janelaX)} a ${Math.round(janelaX + STAGE_TARGET.width)}.`}
@@ -413,7 +372,7 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
         strokeDasharray="6 4"
       />
       <circle className="fill-scene-a" cx={30 + heroX * escala} cy={240} r="7" />
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -422,7 +381,7 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
   const { distance, mode, damage } = state.hit
   const encostando = distance <= 40
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O Dino, o cacto e a vida"
       descricao={`Distância ${distance}. A pergunta é ${mode === 'ask' ? 'contínua' : 'por acontecimento'}. Vida perdida: ${damage}.`}
@@ -473,7 +432,7 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
       >
         {mode === 'ask' ? 'está encostando?' : 'acabou de encostar'}
       </text>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -482,7 +441,7 @@ export function CooldownStage({ state, cast }: { state: SceneState; cast?: Scene
   const { seconds, ready, shots, refused } = state.weapon
   const cheio = seconds > 0 ? 1 - ready / seconds : 1
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="A arma, a barra de recarga e os tiros"
       descricao={`Recarga de ${seconds}s. ${shots} tiro(s) e ${refused} pedido(s) recusado(s).`}
@@ -514,7 +473,7 @@ export function CooldownStage({ state, cast }: { state: SceneState; cast?: Scene
           {refused} pedido(s) na espera
         </text>
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -526,7 +485,7 @@ export function AimStage({ state, cast }: { state: SceneState; cast?: SceneCast 
   const tx = 40 + targetX
   const ty = 30 + targetY * 0.8
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O atirador, a seta e o alvo"
       descricao={`O alvo está em ${targetX}, ${targetY}. A mira está ${chasing ? 'ligada' : 'desligada'}.`}
@@ -559,7 +518,7 @@ export function AimStage({ state, cast }: { state: SceneState; cast?: SceneCast 
       {chasing && (shotX !== 0 || shotY !== 0) && (
         <circle className="fill-scene-alert" cx={40 + shotX} cy={30 + shotY * 0.8} r="7" />
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -580,7 +539,7 @@ export function DiagonalStage({ state, cast }: { state: SceneState; cast?: Scene
     </g>
   )
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="As setas e o quanto ele andou"
       descricao={`Setas ${dx}, ${dy}. Andou ${distance} no último passo; o maior passo foi ${best}.`}
@@ -622,7 +581,7 @@ export function DiagonalStage({ state, cast }: { state: SceneState; cast?: Scene
           {even ? 'correção ligada' : 'sem correção'}
         </text>
       </g>
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
@@ -631,7 +590,7 @@ export function TilemapStage({ state, cast }: { state: SceneState; cast?: SceneC
   const { rows } = state.grid
   const casa = 34
   return (
-    <Moldura
+    <SceneCanvas
       cast={cast}
       titulo="O mapa escrito com letras e o desenho que nasce dele"
       descricao={`Seis linhas de dez casas. A linha do meio está escrita ${rows[3] ?? ''}.`}
@@ -692,7 +651,7 @@ export function TilemapStage({ state, cast }: { state: SceneState; cast?: SceneC
           </g>
         )),
       )}
-    </Moldura>
+    </SceneCanvas>
   )
 }
 
