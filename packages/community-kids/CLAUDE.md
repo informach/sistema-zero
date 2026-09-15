@@ -188,10 +188,37 @@ escuro e logo) e `52de024f` (3D).
 
 - **Temas:** next-themes com `attribute="data-tema"`, `themes=['padrao','pink']`,
   `defaultTheme="padrao"`, `enableSystem={false}` e **`storageKey="sz-kids-tema"` (chave NOVA):**
-  o script sem flash aplicaria o `dark` guardado sem conferir a lista. "Mudar tema" (menu do avatar)
-  alterna Padrão ⇄ Pink. `resolvedTheme` agora é `'padrao'` ou `'pink'`. ⚠️ O
+  o script sem flash aplicaria o `dark` guardado sem conferir a lista. `resolvedTheme` agora é
+  `'padrao'` ou `'pink'`. ⚠️ **Desde `3441a938` (12/09/2026) o tema é do PERFIL e vive no
+  SERVIDOR** (`profile_preferences.kids_theme`, migration `0086` do members): o "Mudar tema" do
+  menu do avatar NÃO chama `setTheme` — ele chama o `toggle()` do `ProfileThemeProvider`
+  (`components/kids/profile-theme.tsx`, montado no layout `(app)` com `key={session.id}`), que
+  PUTa em `/api/members/preferences` e só então aplica. Irmãos no mesmo navegador têm temas
+  independentes, e o next-themes virou só o aplicador no documento. ⚠️ O
   `@custom-variant dark (&:is(.dark *))` FICA: sem ele os `dark:` do ui e do member-shell passariam
   a seguir o modo escuro do sistema operacional; como não existe `.dark`, eles ficam inertes.
+- ⚠️⚠️ **O `setTheme` do next-themes NUNCA entra em dependência de efeito** (regressão de
+  12/09 a 14/09/2026): ele é um `useCallback` com o tema ATUAL na dependência, então a identidade
+  dele MUDA a cada troca. No `ProfileThemeProvider` isso virou laço — aplicar o Pink reexecutava
+  o efeito de carga, que reiniciava para o Padrão, que relia o Pink do servidor: **as cores
+  piscavam** e cada volta gastava um GET, até o limite de 60/min da rota
+  `members-profile-preferences` no gateway devolver 429 e a criança ler "Não consegui carregar o
+  tema do seu perfil.". O conserto é a ref sempre em dia (`aplicarTema`), o mesmo padrão do
+  `onSectionChange` do member-shell. Travado por `tests/profile-theme.test.tsx`, que monta o
+  `ThemeProvider` REAL (um fake com `setTheme` estável não morde). ⚠️ Esse teste instala o
+  `matchMedia` dele e o restaura: o mock de `main-container.test.tsx` vaza para quem roda depois
+  e não tem o `addListener` legado que o next-themes chama.
+- ⚠️ **O reinício no Padrão ao montar é CONDICIONAL, e a condição é o DONO do tema local**
+  (`sz:kids:tema-dono`, achado do full review de 14/09/2026). A chave do next-themes
+  (`sz-kids-tema`) é do APARELHO, não do perfil, e o reinício existia para o tema do irmão não
+  ficar na tela até o GET responder. Só que, incondicional, ele desfazia o trabalho do script sem
+  flash e a tela de quem usa o Pink **piscava azul em TODO F5** (medido: a sequência de `data-tema`
+  era `padrao → pink` em cada carga). Agora o dono é gravado junto a cada tema aplicado: dono igual
+  ao perfil = o valor local é nosso e fica; dono diferente (ou storage bloqueado) = reinicia como
+  antes. ⚠️ Os três pedaços são load-bearing e cada um tem um caso que reprova sem ele — a primeira
+  versão do teste do irmão olhava o estado FINAL e passava até sem reinício nenhum (o que o
+  reinício protege é a JANELA até o GET, então o teste segura a resposta do servidor). De quebra,
+  falha de rede agora deixa o tema da criança na tela em vez de jogá-la no Padrão.
 - **Tokens** (`globals.css`, seção "A PALETA DO PEN"): primitivos `--pen-*` (chão, chão
   alternativo, cartão, superfície 2, linha, tinta, tinta suave, campo, ação e os degraus do 3D) e
   `--menu-*` no `:root`; o Pink (`:root[data-tema="pink"]`) redefine só primitivos. ⚠️ Os
