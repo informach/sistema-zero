@@ -17,11 +17,14 @@ import {
   validateLessonSections,
 } from '../src/learning'
 import {
+  evaluateExperimentation,
   initialDemonstration,
   initialExperiment,
+  initialScene,
   packDemonstration,
   packExperiment,
   sceneModel,
+  sceneStart,
   stepDemonstration,
   stepExperiment,
 } from '../src/learning/scene'
@@ -66,25 +69,65 @@ function demonstracaoVista() {
   return packDemonstration('world', s)
 }
 describe('learning contracts', () => {
-  test('⚠️ uma cena não aceita pergunta anexa', () => {
-    // `answers.checkpoint` seria a alternativa escolhida E os pedaços da sessão ao mesmo
-    // tempo, na mesma chave. Antes isso só era impedido por uma invariante implícita.
+  test('⚠️ a cena aceita pergunta anexa, e as duas respostas viajam em chaves DIFERENTES', () => {
+    // A proibição existia porque `answers.checkpoint` guardaria a alternativa escolhida E os
+    // pedaços da sessão da cena ao mesmo tempo. A sessão mudou para `answers.sceneCheckpoint`,
+    // a colisão acabou, e a pergunta é o terceiro tempo do ciclo: mexer, prever, enunciar.
     expect(isInteractiveBlock(experimento)).toBe(true)
-    expect(
-      isInteractiveBlock({
-        ...experimento,
-        checkpoint: {
-          prompt: 'Por quê?',
-          choices: [
-            { id: 'a', label: 'Uma' },
-            { id: 'b', label: 'Outra' },
-          ],
-          correctChoiceId: 'a',
-          explanation: 'Porque sim.',
-        },
-      }),
-    ).toBe(false)
+    const comPergunta = {
+      ...experimento,
+      checkpoint: {
+        prompt: 'Por quê?',
+        choices: [
+          { id: 'a', label: 'Uma' },
+          { id: 'b', label: 'Outra' },
+        ],
+        correctChoiceId: 'a',
+        explanation: 'Porque sim.',
+      },
+    }
+    expect(isInteractiveBlock(comPergunta)).toBe(true)
+    if (!isInteractiveBlock(comPergunta)) throw new Error('bloco inválido')
+    const sessao = sessaoCompleta()
+    // A descoberta sozinha não fecha mais: falta enunciar a regra.
+    expect(evaluateLearning(comPergunta, { sceneCheckpoint: sessao }).passed).toBe(false)
+    expect(evaluateLearning(comPergunta, { sceneCheckpoint: sessao, checkpoint: 'b' }).passed).toBe(
+      false,
+    )
+    expect(evaluateLearning(comPergunta, { sceneCheckpoint: sessao, checkpoint: 'a' }).passed).toBe(
+      true,
+    )
+    // ⚠️ E a resposta certa NÃO substitui a descoberta: sem a sessão, a pergunta não aprova.
+    expect(evaluateLearning(comPergunta, { checkpoint: 'a' }).passed).toBe(false)
+    // ⚠️ Errar e não ter respondido dão recados DIFERENTES. Davam o mesmo, e quem tinha
+    // escolhido a frase errada lia "agora escolha a frase" — nenhum sinal de que errou, e o
+    // caminho natural era reler e reescolher a mesma opção.
+    const semResposta = evaluateLearning(comPergunta, { sceneCheckpoint: sessao }).feedback
+    const errou = evaluateLearning(comPergunta, {
+      sceneCheckpoint: sessao,
+      checkpoint: 'b',
+    }).feedback
+    expect(errou).not.toBe(semResposta)
+    expect(errou).toContain('não é a frase')
+    // ⚠️ E o gabarito continua sem sair do servidor: o recado diz que não é essa, nunca qual é.
+    expect(errou).not.toContain('Uma')
+    expect(errou).not.toContain('Porque sim')
   })
+  test('⚠️⚠️ missão VAZIA reprova, em vez de passar com evidência zero', () => {
+    // O filtro por `targets` cruza a lista do caso com as metas do modelo. Uma meta renomeada no
+    // catálogo esvaziaria essa lista em todo manifesto que a cita — e `find` numa lista vazia
+    // devolve `undefined`, que o avaliador lia como "não falta nada".
+    const vazia = evaluateExperimentation(
+      'tilemap',
+      initialScene({ scene: 'tilemap' }),
+      true,
+      undefined,
+      ['meta-que-sumiu-do-catalogo'],
+    )
+    expect(vazia.passed).toBe(false)
+    expect(vazia.feedback).toContain('sem descobertas para cobrar')
+  })
+
   test('a cena é aprovada pela evidência que ela mesma guarda', () => {
     expect(evaluateLearning(experimento, {}).passed).toBe(false)
     expect(evaluateLearning(experimento, { sceneCheckpoint: sessaoCompleta() }).passed).toBe(true)
@@ -410,14 +453,17 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
   const answers: LearningAnswers = {}
   const activity = block.activity
   if (activity.type === 'experimentation') {
-    const start = { scene: activity.scene, initialImpulse: activity.initialImpulse }
+    // ⚠️ `sceneStart` e não um objeto à mão: ele leva o CASO do professor (`setup`), e sem isso o
+    // teste montaria a sessão no mundo de fábrica enquanto o servidor avalia outro. Um caso que
+    // torna a missão inalcançável passaria batido — e o defeito só apareceria com a criança nele.
+    const start = sceneStart(activity)
     let sessao = initialExperiment(start)
     for (const action of scenePaths[activity.scene])
       sessao = stepExperiment(start, sessao, action).session
     answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
   }
   if (activity.type === 'demonstration') {
-    const start = { scene: activity.scene }
+    const start = sceneStart(activity)
     const script = activity.script ?? sceneModel(activity.scene).script
     let sessao = stepDemonstration(start, script, initialDemonstration(start), {
       type: 'start',

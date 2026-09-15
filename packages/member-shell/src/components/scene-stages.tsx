@@ -1,7 +1,7 @@
 'use client'
 
-import type { SceneAction, SceneState } from '@sistemazero/core/learning/scene'
-import { SCENE_LIMITS } from '@sistemazero/core/learning/scene'
+import type { SceneAction, SceneCast, SceneState } from '@sistemazero/core/learning/scene'
+import { castText, SCENE_LIMITS, STAGE_TARGET } from '@sistemazero/core/learning/scene'
 import { useEffect, useId, useRef, useState } from 'react'
 import { DinoFigure } from './exploration-stage'
 
@@ -28,7 +28,7 @@ const VIEW = { w: TELA.w + MARGEM.x + 16, h: TELA.h + MARGEM.y + 22 } as const
  * dito), as guias tracejadas do sprite até cada eixo, e o FANTASMA da posição anterior, para
  * comparar sem guardar de memória.
  */
-export function CoordinatesStage({ state }: { state: SceneState }) {
+export function CoordinatesStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const id = useId()
   const { x, y, fromX, fromY } = state.place
   const mexeu = fromX !== x || fromY !== y
@@ -42,9 +42,11 @@ export function CoordinatesStage({ state }: { state: SceneState }) {
         role="img"
         aria-labelledby={`${id}-title ${id}-desc`}
       >
-        <title id={`${id}-title`}>Tela do jogo com o Dino no endereço escolhido</title>
+        <title id={`${id}-title`}>
+          {castText('Tela do jogo com o Dino no endereço escolhido', cast)}
+        </title>
         <desc id={`${id}-desc`}>
-          {`Tela de ${TELA.w} por ${TELA.h}. O Dino está em x ${x}, y ${y}.`}
+          {castText(`Tela de ${TELA.w} por ${TELA.h}. O Dino está em x ${x}, y ${y}.`, cast)}
         </desc>
         <defs>
           <pattern id={`${id}-dots`} width="30" height="30" patternUnits="userSpaceOnUse">
@@ -121,7 +123,7 @@ export function CoordinatesStage({ state }: { state: SceneState }) {
         </g>
       </svg>
       <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-        O alvo mostra o endereço. O Dino desenhado fica em volta dele.
+        {castText('O alvo mostra o endereço. O Dino desenhado fica em volta dele.', cast)}
       </p>
     </div>
   )
@@ -140,10 +142,12 @@ export function ScreenReaderStage({
   state,
   dispatch,
   interactive,
+  cast,
 }: {
   state: SceneState
   dispatch: (action: SceneAction) => void
   interactive: boolean
+  cast?: SceneCast
 }) {
   const id = useId()
   const { text, heard } = state.description
@@ -193,7 +197,10 @@ export function ScreenReaderStage({
             viewBox="0 0 240 150"
             className="block w-full"
             role="img"
-            aria-label="Um dinossauro correndo diante de cactos, com o placar no canto."
+            aria-label={castText(
+              'Um dinossauro correndo diante de cactos, com o placar no canto.',
+              cast,
+            )}
           >
             <rect className="fill-scene-sky" width="240" height="150" />
             <rect className="fill-scene-ground" y="118" width="240" height="32" />
@@ -262,12 +269,18 @@ export function ScreenReaderStage({
  * queixa que o roteiro da Aula 1 usa para introduzir o bloco da borda. Por isso o palco desenha
  * o espaço em volta, e não só o retângulo.
  */
-export function StageSizeStage({ state }: { state: SceneState }) {
+export function StageSizeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const id = useId()
   const { width, height, border } = state.stage
+  const noAlvo = width === STAGE_TARGET.width && height === STAGE_TARGET.height
   const VIEW = { w: 560, h: 330 } as const
-  // A tela cabe na caixa com folga, preservando a proporção que a criança escolheu.
-  const escala = Math.min((VIEW.w - 80) / width, (VIEW.h - 70) / height)
+  // ⚠️⚠️ A escala cabe a tela E o alvo. Medindo só pela tela da criança, uma tela MENOR que o
+  // alvo (160 × 90, o mínimo) deixava a moldura tracejada em x ≈ −413 e a frase fora do
+  // viewBox: o alvo sumia justamente quando ela estava mais longe dele, que é o oposto do que
+  // a régua existe para mostrar.
+  const larguraCaixa = Math.max(width, STAGE_TARGET.width)
+  const alturaCaixa = Math.max(height, STAGE_TARGET.height)
+  const escala = Math.min((VIEW.w - 80) / larguraCaixa, (VIEW.h - 70) / alturaCaixa)
   const w = width * escala
   const h = height * escala
   const x = (VIEW.w - w) / 2
@@ -280,13 +293,46 @@ export function StageSizeStage({ state }: { state: SceneState }) {
         role="img"
         aria-labelledby={`${id}-title ${id}-desc`}
       >
-        <title id={`${id}-title`}>A tela do jogo dentro do espaço em volta</title>
+        <title id={`${id}-title`}>
+          {castText('A tela do jogo dentro do espaço em volta', cast)}
+        </title>
         <desc id={`${id}-desc`}>
-          {`Tela de ${width} por ${height}, com a moldura ${border ? 'à vista' : 'escondida'}.`}
+          {castText(
+            `Tela de ${width} por ${height}, com a moldura ${border ? 'à vista' : 'escondida'}.`,
+            cast,
+          )}
         </desc>
         {/* O espaço em volta tem a MESMA cor do céu: é isso que faz o limite sumir sem a borda. */}
         <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
         <rect className="fill-scene-sky" x={x} y={y} width={w} height={h} />
+        {/* ⭐ O ALVO fica na tela enquanto ela não chega nele (15/09/2026). No Brilliant, quando
+            o comando da criança erra, os pontos param AO LADO do alvo e a distância que sobra é a
+            própria correção — em vez de um "tente de novo" que não diz quanto faltou. Aqui o alvo
+            é a tela que a Aula 1 pede, e a frase abaixo do palco diz quanto falta em cada lado. */}
+        {!noAlvo && (
+          <g>
+            <rect
+              className="stroke-scene-ink-soft"
+              x={(VIEW.w - STAGE_TARGET.width * escala) / 2}
+              y={(VIEW.h - STAGE_TARGET.height * escala) / 2 + 6}
+              width={STAGE_TARGET.width * escala}
+              height={STAGE_TARGET.height * escala}
+              fill="none"
+              strokeWidth="2"
+              strokeDasharray="7 5"
+            />
+            <text
+              className="fill-scene-ink-soft"
+              x={VIEW.w / 2}
+              y={(VIEW.h + STAGE_TARGET.height * escala) / 2 + 22}
+              textAnchor="middle"
+              fontSize="12"
+              fontWeight="600"
+            >
+              {`o jogo pede ${STAGE_TARGET.width} por ${STAGE_TARGET.height}`}
+            </text>
+          </g>
+        )}
         {border && (
           <>
             <rect
@@ -342,7 +388,7 @@ export function StageSizeStage({ state }: { state: SceneState }) {
  * do Dino nas posições por onde ele passou —, porque é vendo os desenhos acumulados que a
  * criança entende o que a limpeza faz.
  */
-export function DrawLoopStage({ state }: { state: SceneState }) {
+export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const id = useId()
   const { loop, erase, frames, trail } = state.render
   const VIEW = { w: 560, h: 220 } as const
@@ -360,11 +406,14 @@ export function DrawLoopStage({ state }: { state: SceneState }) {
       >
         <title id={`${id}-title`}>A tela do jogo enquanto o relógio anda</title>
         <desc id={`${id}-desc`}>
-          {loop
-            ? erase
-              ? 'Um Dino só, num lugar novo a cada quadro.'
-              : `${Math.max(1, trail)} Dinos desenhados, um em cada lugar por onde ele passou.`
-            : 'A tela não muda: ninguém está mandando desenhar de novo.'}
+          {castText(
+            loop
+              ? erase
+                ? 'Um Dino só, num lugar novo a cada quadro.'
+                : `${Math.max(1, trail)} Dinos desenhados, um em cada lugar por onde ele passou.`
+              : 'A tela não muda: ninguém está mandando desenhar de novo.',
+            cast,
+          )}
         </desc>
         <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
         <rect className="fill-scene-ground" y={VIEW.h - 46} width={VIEW.w} height={46} />
@@ -391,11 +440,14 @@ export function DrawLoopStage({ state }: { state: SceneState }) {
         </text>
       </svg>
       <p className="px-3 pb-2 text-center text-xs text-scene-ink-soft">
-        {loop
-          ? erase
-            ? 'Limpa e desenha: sobra um Dino só, num lugar novo.'
-            : 'Desenha sem limpar: cada quadro deixa o desenho anterior.'
-          : 'Nada muda enquanto ninguém mandar desenhar de novo.'}
+        {castText(
+          loop
+            ? erase
+              ? 'Limpa e desenha: sobra um Dino só, num lugar novo.'
+              : 'Desenha sem limpar: cada quadro deixa o desenho anterior.'
+            : 'Nada muda enquanto ninguém mandar desenhar de novo.',
+          cast,
+        )}
       </p>
     </div>
   )

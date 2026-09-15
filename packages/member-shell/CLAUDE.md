@@ -1,5 +1,127 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## As onze cenas do núcleo do Iniciante 2D — 15/09/2026
+
+`components/scene-core-stages.tsx` (os palcos) e `components/scene-core-controls.tsx` (a
+bancada). Palco próprio pela razão de sempre: nenhuma delas cabe na pista do Corre Dino — são a
+régua do quanto se andou num quadro, duas raquetes lado a lado, uma caixa com um número dentro,
+o mundo maior que a tela, o mapa escrito com letras.
+
+⚠️ A bancada fica em arquivo PRÓPRIO porque o `scene-activity` já carrega o player inteiro
+(sessão, gravação, previsão, rodapé): onze conjuntos de controle ali dentro fariam dele um
+arquivo que ninguém lê. O despacho dos dois é por `if (m === …)` no `exploration-stage` e um
+`<CoreSceneControls>` único no `scene-activity`.
+
+⚠️⚠️ `hold-vs-press` tem o único controle de SEGURAR do sistema: `onPointerDown`/`onPointerUp`
+para quem aponta, e um `onClick` que ALTERNA para quem usa teclado ou leitor de tela — sem ele,
+metade da cena ficaria fora do alcance deles. **O `e.detail === 0` no `onClick` é obrigatório**:
+um toque de mouse dispara os três eventos em fila (down segura, up solta, e o click alternava o
+já-falso de volta para VERDADEIRO), então um clique simples terminava com a tecla presa e o
+rótulo dizendo "Soltar a tecla" — o contrário do que tinha acontecido, justo na cena que existe
+para separar acontecimento de estado. Travado em
+`community-kids/tests/lesson-experimentation.test.tsx`.
+
+## As dez cenas do motor, do 3D e do ateliê — 15/09/2026
+
+`components/scene-engine-stages.tsx` (os palcos) e `components/scene-engine-controls.tsx` (a
+bancada), montados pelo mesmo despacho `if (m === …)` do `exploration-stage` e por um
+`<EngineSceneControls>` ao lado do `<CoreSceneControls>` no `scene-activity`.
+
+⚠️⚠️ **O 3D é DESENHADO em SVG, não renderizado.** Uma projeção isométrica à mão: a matriz do
+chão, `projetar(x, y, z)` e um cubo de três cores. Puxar three.js para dentro do player de aula
+custaria o peso dele em TODA cena (o player é compartilhado), e o que estas quatro cenas precisam
+mostrar — o eixo que falta, a câmera que decide o que se vê, os pontos por baixo da roupa, a reta
+que para na primeira caixa — cabe inteiro num cubo e numa sombra. ⚠️ No `AxisZStage` a conta é
+`-y`: no 3D o y cresce para CIMA, e é a cena inteira.
+
+⚠️ **Nenhum controle do 3D é de ARRASTO livre.** Girar a câmera com o dedo seria mais bonito e
+deixaria de fora quem usa teclado — e "a câmera decide o que se vê" não precisa de gesto
+contínuo: precisa de voltas contáveis. O `Medida` (o deslizante com valor à vista e dois botões
+de passo) é EXPORTADO do `scene-core-controls` justamente para não virar duas cópias com réguas
+de acessibilidade diferentes.
+
+⚠️ O `pick-ray` tem atalhos de mira ("mirar onde uma cobre a outra") porque a descoberta da cena
+é o alinhamento, e caçá-lo no deslizante deixaria de fora quem depende do teclado. ⚠️⚠️ Os
+retângulos dele vêm do MOTOR (`PICK_BOXES`) e a ordem de desenho é a de PROFUNDIDADE: a reta
+primeiro, a caixa de trás, e a da frente por último. É isso que faz a reta SUMIR atrás da caixa
+da frente em vez de atravessá-la — o palco estava demonstrando o contrário exato do próprio
+rodapé.
+
+⚠️ **O `aria-pressed` é para liga/desliga, não para seletor de dois valores** (`seletor` na
+`Chave`): "a luz vem da esquerda" não é um estado desligado, e o leitor de tela anunciava "não
+pressionado" para um valor tão ligado quanto o outro.
+
+⚠️⚠️ **A `Chave` diz o ESTADO, nunca a ação do clique.** "Desligar a reciclagem" num botão
+pintado de primário (o visual de "ativo" desta casa) com `aria-pressed="true"` fazia as três
+camadas contarem histórias diferentes. O molde é o do resto do player: `A sombra da forma:
+ligada`.
+
+⚠️ **Deslizante cujo número não é um número para a criança leva `texto`** (`aria-valuetext` +
+o valor à vista): a altura da câmera do 3D anunciava "altura da câmera, 2" no leitor de tela,
+porque a tradução para "por cima" só existe na faixa de estado, que é `aria-hidden`.
+
+## O rodapé da cena, o caso e a animação curta — 15/09/2026
+
+⭐⭐ **A ação PRINCIPAL do rodapé deixou de ser "Uma pista".** O ajuste de 14/09 acertou em tirar os
+quatro botões cinzentos iguais, mas o único que sobrou em destaque convidava a PEDIR AJUDA. No
+Brilliant aquele canto é sempre o caminho para a frente. Hoje ali fica **"Já descobri"** (roda a
+avaliação e responde o que ainda falta, nomeado como ação) e, depois de concluída, **"Ver de
+novo"** — o prêmio: a cena recomeça com as descobertas guardadas. "Uma pista" voltou ao peso das
+ferramentas, à esquerda. ⚠️ Os nomes acessíveis das ferramentas não mudaram.
+
+⭐⭐ **As metas exibidas são as que ESTA atividade cobra** (`sceneTargets(activity)` → `sceneGoals`
+e `evaluateExperimentation`). Sem isso, uma missão que pede uma descoberta mostraria as três do
+modelo, a barra nunca fecharia e o servidor daria a atividade por concluída — duas telas contando
+histórias diferentes.
+
+⭐ **A demonstração `inline`** (`activity.presentation === 'inline'`): um ▶ e nada mais, sem etapas
+nem passo a passo. O laço de tempo emenda a próxima etapa sozinho e só o FIM do roteiro para o
+relógio. É o formato para ficar no meio de uma explicação.
+
+⚠️⚠️ **O carimbo do envio da tentativa é gravado DEPOIS da resposta, nunca antes.** Ele existe
+para impedir que a batida de um segundo reenvie a mesma tentativa; carimbado antes do `await`,
+uma falha de rede o deixava igual à assinatura para SEMPRE — e como a assinatura só muda com
+resposta ou descoberta nova (e descoberta não se desfaz), a criança ficava presa em "Aguardando
+conexão" sem nenhuma nova tentativa de envio. O POST é idempotente pelo `attemptId`.
+
+⚠️⚠️ **O latch (`conclusao`) manda na renderização E no ENVIO.** O conserto da primeira rodada
+mexeu só na renderização, e a criança que respondesse a pergunta depois de apertar "Ver de novo"
+(o botão em DESTAQUE, que faz `reset`) não conseguia mandar a resposta: nenhuma requisição saía,
+sem erro na tela e sem o "Tentar salvar". Quem decide o envio é o `descobriu`, não o
+`result.passed` vivo.
+
+⚠️⚠️ **O latch (`conclusao`) manda na renderização E no ENVIO.** O conserto da primeira rodada
+mexeu só na renderização, e a criança que respondesse a pergunta depois de apertar "Ver de novo"
+(o botão em DESTAQUE, que faz `reset`) não conseguia mandar a resposta: nenhuma requisição saía,
+sem erro na tela e sem o "Tentar salvar". Quem decide o envio é o `descobriu`, não o
+`result.passed` vivo.
+
+⚠️⚠️ **A pergunta anexa é renderizada contra o LATCH (`conclusao`), não contra o `result.passed`
+vivo.** Em `layers` e `jump-sound` o avaliador local volta a reprovar quando a criança mexe depois
+de concluir (a montagem precisa ficar ASSENTADA), e a pergunta SUMIA da tela — enquanto o cartão
+logo abaixo, que já usava o latch, seguia dizendo "a explicação fica logo acima". O bloco ficava
+intransponível até ela adivinhar que precisava recompor o arranjo.
+
+⚠️⚠️ **Acertar a pergunta anexa MOSTRA a explicação do professor.** O `feedback` que volta do
+servidor É o `explanation` quando a resposta está certa, e um guard de `!registered` o escondia:
+quem errava recebia recado e quem acertava não recebia nada — o terceiro tempo do ciclo morria
+calado, com o incentivo invertido. ⚠️ As duas regiões `aria-live` do player (esta e o "Ainda
+falta") existem SEMPRE, com o texto por dentro: região montada junto do conteúdo não é anunciada.
+
+⚠️ **Com pergunta anexa, o cartão de sucesso NÃO diz "concluiu"** (`pendente`): a descoberta está
+feita, mas quem dá a palavra final é o servidor (`withAttachedQuestion`). Ele aponta para a
+pergunta logo acima. ⚠️ E depois de um F5 a escolha não volta (a sessão da cena mora em
+`answers.sceneCheckpoint`, e a resposta viaja na TENTATIVA, que o members de propósito não deixa
+atropelar a sessão): nesse caso a pergunta aparece como JÁ RESPONDIDA, em vez dos rádios vazios e
+desabilitados que pareciam ter perdido a resposta.
+
+⚠️ **O `flush` recebe a escolha da pergunta por PARÂMETRO.** Ele é reatribuído a cada render,
+então o `flush.current` que o `onChange` do rádio alcança é o do render ANTERIOR, com a resposta
+ainda vazia — sem o parâmetro, o envio imediato caía no guard e só a batida de um segundo salvava.
+
+⭐ **O alvo fica na tela enquanto ela não chega nele** (`StageSizeStage`): a moldura tracejada de
+480 × 270 e a frase que diz quanto falta em cada lado. Errar vira medir, não "tente de novo".
+
 ## As cenas depois do estudo do Brilliant — 14/09/2026
 
 Sete ajustes de desenho nas cenas, mais duas cenas novas e o elenco por curso. O levantamento
@@ -22,8 +144,9 @@ o caso comum. `sceneSituation` (core) mantém o acontecimento do motor na frente
 descreve o que está na tela agora. ⚠️ Cena nova precisa de um caso lá, ou volta o genérico.
 
 - **Rodapé com UMA ação principal:** Desfazer, Recomeçar, Ligar som e Ouvir instrução viraram
-  ferramentas discretas à esquerda; "Uma pista" é a única com destaque, à direita. ⚠️ Os NOMES
-  acessíveis não mudaram (são o contrato dos testes e de quem usa leitor de tela) — mudou o peso.
+  ferramentas discretas à esquerda. ⚠️ Os NOMES acessíveis não mudaram (são o contrato dos testes e
+  de quem usa leitor de tela) — mudou o peso. ⚠️ O botão em DESTAQUE era "Uma pista"; desde
+  15/09/2026 é "Já descobri" / "Ver de novo" (ver a seção acima).
 - **Uma variável por vez:** na `hitbox` a largura da área nasce fechada e abre com a primeira
   descoberta sobre distância. Fechado NÃO é escondido: o controle fica na tela com o motivo.
 - **Selo do palco em língua de criança:** "OBSERVATÓRIO DE CONTATO" e "SEU LABORATÓRIO DINO"
@@ -48,6 +171,17 @@ cenas que ensinam conceito repetido passam a servir o Desafio e o Meu Jeito troc
 aparecer", e `do cacto` vira `da pedra`. Título e instrução são do PROFESSOR e não são vestidos;
 o elenco veste o que a plataforma gera (metas, pistas, faixa, frase, roteiro e sucesso).
 
+⚠️⚠️ **E a BANCADA também** (`cast` em `CoreSceneControls`/`EngineSceneControls`): os rótulos
+dos controles são texto que a criança lê na MESMA tela que a faixa de estado, e é onde a
+regressão voltou quando a bancada saiu para arquivo próprio.
+
+⚠️⚠️ **E veste também o que o PALCO escreve à mão**: desde 15/09/2026 o `cast` chega a TODOS os
+palcos (`scene-stages`, `scene-art-stages`, `scene-core-stages`, `scene-engine-stages`) e as
+molduras aplicam o `castText` no `<title>`, na `<desc>` e no rodapé sozinhas. Os palcos novos
+tinham reintroduzido o defeito: em `coordinates`, `draw-loop`, `velocity` e `variable` — as
+quatro com elenco em conteúdo REAL — a criança de uma turma de nave lia "nave" na faixa e o
+leitor de tela anunciava "o Dino" no mesmo desenho.
+
 ⚠️⚠️ **E veste também o que o PLAYER escreve à mão** (achado do full review): o selo do palco
 (`STAGE_LABEL`), a `<desc>` do SVG, os `aria-label` das alças, os nomes dos fios da bancada
 (o helper `connection` já aplica), as peças da ordem de desenho e os rótulos dos controles
@@ -55,8 +189,12 @@ o elenco veste o que a plataforma gera (metas, pistas, faixa, frase, roteiro e s
 turma de nave lia "distância do asteroide" na faixa e "Distância do cacto" no controle logo
 abaixo, na mesma tela. ⚠️ Texto novo no player precisa SOBREVIVER à troca: a régua só flexiona o
 que está COLADO ao nome, então "o Dino continua guardado" viraria "a nave continua guardado" —
-foi reescrito para "continua nos bastidores". A varredura que cobra isso é o
-`describe('o elenco veste a cena INTEIRA')` do `community-kids/tests/lesson-scene-design.test.tsx`.
+foi reescrito para "continua nos bastidores". ⚠️⚠️ A varredura que cobra isso é o `describe('o elenco veste a cena INTEIRA')` do
+`community-kids/tests/lesson-scene-design.test.tsx` — e ela só alcança as cenas que estão na lista
+`REAPROVEITAVEIS`. Ela cobria sete, todas do palco COMPARTILHADO, e por isso ficou verde enquanto
+as bancadas extraídas (`scene-core-controls`, `scene-engine-controls`) voltavam a escrever "cacto"
+e "Dino" crus nos rótulos. **Cena com palco ou bancada própria entra na lista no mesmo commit em
+que o arquivo nasce.**
 
 ## As cenas do lote 4: desenho e vidas (14/09/2026)
 

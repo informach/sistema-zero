@@ -1,4 +1,10 @@
-import { isSceneAction, type SceneAction, type SceneId } from './actions'
+import {
+  isSceneAction,
+  SCENE_LIMITS,
+  type SceneAction,
+  type SceneId,
+  STAGE_TARGET,
+} from './actions'
 import {
   cloneScene,
   initialScene,
@@ -18,6 +24,98 @@ import {
  * ⚠️ Ação ilegal para a cena é um no-op silencioso, não um erro: um roteiro antigo ou um
  * pacote adulterado não derruba a aula da criança no meio.
  */
+/**
+ * Por onde a cena COMEÇA nesta atividade: o mundo de fábrica com o caso do professor aplicado.
+ *
+ * ⚠️⚠️ A evidência é zerada depois das ações do caso. Elas passam pelo motor — é o que garante
+ * que um caso seja um estado alcançável de verdade, e não uma struct escrita à mão —, e o motor
+ * registra descobertas ao longo do caminho. Sem o zeramento, a criança abriria a cena com
+ * metas já fechadas: uma experimentação inteira passaria antes do primeiro gesto dela.
+ *
+ * ⚠️ `reset` é recusado dentro do caso (`isSceneSetup`), senão ele voltaria para cá em laço.
+ */
+export function openScene(start: SceneStart): SceneState {
+  const base = initialScene(start)
+  const acoes = start.setup?.actions
+  if (!acoes?.length) return base
+  const montado = acoes.reduce((estado, acao) => stepScene(start, estado, acao), base)
+  const aberto = { ...montado, evidence: initialScene(start).evidence, caption: '' }
+  esquecerOGesto(aberto, base)
+  return aberto
+}
+
+/**
+ * Apaga a MEMÓRIA DO GESTO que as ações do caso deixaram para trás.
+ *
+ * ⚠️⚠️ Zerar a evidência não bastava. Vários grupos guardam "o que já foi feito" — o fantasma da
+ * posição anterior, os x já visitados, quantas casas foram trocadas, de que lados a luz já veio —
+ * e esses campos ALIMENTAM metas e desenhos. Um caso que leva a nave para (300, 40) deixava o
+ * fantasma em (110, 150), o mundo de fábrica: a cena ABRIA com o rastro de um lugar onde a
+ * criança nunca esteve, e a primeira vez que ela passasse pelo x de fábrica disparava "mesmo x,
+ * altura diferente" comparando com uma posição que o caso tinha substituído.
+ *
+ * O mundo é do professor; a história é da criança, e ela começa vazia.
+ */
+function esquecerOGesto(aberto: SceneState, base: SceneState): void {
+  // Os fantasmas e os "onde eu estava antes" passam a apontar para onde a cena ABRE.
+  aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y, visitedX: [] }
+  aberto.drive = { ...aberto.drive, fromX: aberto.drive.x, fromY: aberto.drive.y, ticks: 0 }
+  aberto.mirror = { ...aberto.mirror, painted: [], lastLine: aberto.mirror.line }
+  // ⚠️ Daqui para baixo é tudo CONTADOR do que já foi feito, e cada um alimenta uma meta que
+  // fala de repetição ("dois lugares", "todo quadro", "vários"). Deixar um de fora é deixar a
+  // criança fechar num gesto o que devia levar vários — foi o achado do full review.
+  aberto.stage = { ...aberto.stage, tried: base.stage.tried }
+  // ⚠️ As duas raquetes vão junto com o contador de apertos: zerando só `presses`, o retrato
+  // se contradizia na abertura ("a de cima andou 0 passo(s)" com ela em 200) e a meta da
+  // comparação ficava mais cara do que é.
+  aberto.input = {
+    ...aberto.input,
+    presses: base.input.presses,
+    pressX: base.input.pressX,
+    holdX: base.input.holdX,
+    ticks: 0,
+  }
+  aberto.box = { ...aberto.box, changes: base.box.changes }
+  aberto.hunt = { ...aberto.hunt, looked: [], ticks: 0 }
+  aberto.grid = { ...aberto.grid, edits: base.grid.edits, written: [] }
+  aberto.view = { ...aberto.view, wasLost: base.view.wasLost }
+  aberto.speed = {
+    ...aberto.speed,
+    ticks: 0,
+    samples: { ...aberto.speed.samples, positions: [], velocities: [] },
+  }
+  aberto.sheet = { ...aberto.sheet, cuts: [] }
+  aberto.animation = { ...aberto.animation, swaps: base.animation.swaps, elapsed: 0 }
+  aberto.weapon = { ...aberto.weapon, shots: base.weapon.shots, refused: base.weapon.refused }
+  aberto.hit = { ...aberto.hit, damage: base.hit.damage, touching: base.hit.touching, away: false }
+  aberto.blueprint = { ...aberto.blueprint, edits: base.blueprint.edits }
+  aberto.render = { ...aberto.render, frames: base.render.frames, trail: base.render.trail }
+  aberto.sound = { ...aberto.sound, count: base.sound.count, jumps: base.sound.jumps }
+  aberto.lifeline = { ...aberto.lifeline, hits: base.lifeline.hits }
+  // ⚠️⚠️ Os cactos que o caso deixou na pista SÃO o mundo, e os contadores falam DELES: zerar
+  // só os números fazia `outside = born − removed − vivos` virar negativo, e a cena `cleanup`
+  // — que existe para a criança comparar "na tela" com "nos bastidores" — abria com os dois
+  // números se desmentindo ("-2 de 6 já saíram").
+  aberto.crowd = { ...aberto.crowd, born: aberto.crowd.cacti.length, removed: 0 }
+  aberto.walkPad = { ...aberto.walkPad, best: base.walkPad.best }
+  aberto.sight = { ...aberto.sight, shotX: base.sight.shotX, shotY: base.sight.shotY }
+  aberto.description = {
+    ...aberto.description,
+    heard: base.description.heard,
+    heardEmpty: base.description.heardEmpty,
+  }
+  aberto.match = { ...aberto.match, scoreIdle: base.match.scoreIdle }
+  aberto.nursery = { ...aberto.nursery, ticks: 0, created: base.nursery.created }
+  aberto.brains = { ...aberto.brains, ticks: 0 }
+  aberto.machines = { ...aberto.machines, elapsed: base.machines.elapsed }
+  aberto.circles = { ...aberto.circles, touched: base.circles.touched }
+  aberto.space = { ...aberto.space, moved: [] }
+  aberto.orbit = { ...aberto.orbit, fewest: base.orbit.fewest, returned: base.orbit.returned }
+  aberto.ray = { ...aberto.ray, hits: [] }
+  aberto.ink = { ...aberto.ink, seen: [] }
+  aberto.light = { ...aberto.light, sides: [] }
+}
+
 export function stepScene(
   start: SceneStart,
   previous: SceneState,
@@ -106,6 +204,49 @@ export function stepScene(
           s.speed.limited = action.enabled
           if (s.speed.limited) s.speed.base = Math.max(-9, s.speed.base)
           break
+        // ── Os fios do núcleo do Iniciante 2D ──────────────────────────────────────────────
+        case 'loop':
+          s.hunt.auto = action.enabled
+          if (s.hunt.auto) {
+            s.hunt.chosen = maisPerto(s.hunt.distances)
+            s.hunt.looked = s.hunt.distances.map((_, i) => i + 1)
+            observe(s, 'auto', 'Com o laço ligado, a escolha acompanha quem está mais perto', true)
+          }
+          s.caption = s.hunt.auto
+            ? 'O laço percorre o grupo sozinho e fica com o mais perto.'
+            : 'Sem o laço, quem escolhe é você — e é preciso olhar um por um.'
+          break
+        case 'camera':
+          s.view.follow = action.enabled
+          if (s.view.follow && s.view.wasLost)
+            observe(s, 'follows', 'Com a câmera, o Dino voltou a caber na tela', true)
+          s.caption = s.view.follow
+            ? 'A câmera segue o Dino: a tela anda junto com ele.'
+            : 'A câmera está parada. O Dino pode sair da tela.'
+          break
+        case 'aim':
+          s.sight.chasing = action.enabled
+          s.caption = s.sight.chasing
+            ? 'A mira está ligada: o tiro vai para onde a seta aponta.'
+            : 'A mira está desligada: o tiro sai sempre para o mesmo lado.'
+          break
+        case 'even':
+          s.walkPad.even = action.enabled
+          s.walkPad.best = 0
+          s.caption = s.walkPad.even
+            ? 'A correção está ligada: a diagonal passa a andar o mesmo que o reto.'
+            : 'Sem correção: os dois passos da diagonal se somam.'
+          break
+        case 'recycle':
+          s.nursery.recycling = action.enabled
+          // ⚠️ O relógio do nascedouro recomeça ao mexer no fio: "o contador PAROU de crescer" só
+          // é uma descoberta depois de alguns passos COM a reciclagem ligada. Sem zerar aqui, os
+          // passos de antes contariam e a criança ganharia a meta no primeiro toque.
+          s.nursery.ticks = 0
+          s.caption = s.nursery.recycling
+            ? 'O nascedouro passa a reaproveitar o corpo de quem saiu.'
+            : 'Sem reciclagem: cada um que nasce é um corpo novo.'
+          break
       }
       break
 
@@ -151,6 +292,8 @@ export function stepScene(
       break
 
     case 'advance': {
+      // O núcleo do Iniciante 2D: cada uma dessas cenas mostra o que o TEMPO faz com o estado.
+      if (avancarNucleo(s, start.scene, action.seconds)) break
       if (start.scene === 'frames') {
         advanceFrames(s, action.seconds)
         break
@@ -359,8 +502,13 @@ export function stepScene(
         s.stage.tried += 1
         observe(s, 'resized', 'A tela mudou de tamanho junto com os números', true)
       }
-      if (action.width === 480 && action.height === 270)
-        observe(s, 'target', 'Chegou na tela de 480 por 270', true)
+      if (action.width === STAGE_TARGET.width && action.height === STAGE_TARGET.height)
+        observe(
+          s,
+          'target',
+          `Chegou na tela de ${STAGE_TARGET.width} por ${STAGE_TARGET.height}`,
+          true,
+        )
       s.caption = `Tela de ${action.width} por ${action.height}.${
         s.stage.border ? '' : ' Ligue a borda para ver onde ela acaba.'
       }`
@@ -583,15 +731,658 @@ export function stepScene(
       break
     }
 
+    /* ── O núcleo do Iniciante 2D ───────────────────────────────────────────────────────── */
+    case 'velocity': {
+      s.drive.vx = action.vx
+      s.drive.vy = action.vy
+      s.caption =
+        action.vx === 0 && action.vy === 0
+          ? 'Velocidade zerada. Avance o relógio e veja se ele sai do lugar.'
+          : // ⚠️ O sinal é o U+2212 do resto do conteúdo, não o hífen do teclado: as pistas e as
+            // outras cenas escrevem "−9", e a criança lê os dois na mesma tela.
+            `Velocidade ${sinal(action.vx)} para o lado e ${sinal(action.vy)} para baixo. Avance o relógio.`
+      break
+    }
+    case 'press': {
+      s.input.presses += 1
+      s.input.pressX = Math.min(440, s.input.pressX + 20)
+      observe(s, 'one-step', 'Apertar uma vez andou um passo', true)
+      s.caption = `Apertou ${s.input.presses} vez(es): a de cima andou um passo por aperto.`
+      break
+    }
+    case 'hold': {
+      s.input.holding = action.on
+      s.caption = action.on
+        ? 'Segurando. Avance o relógio e veja a de baixo andar enquanto durar.'
+        : 'Soltou. A de baixo parou onde estava.'
+      break
+    }
+    case 'store': {
+      s.box.value = action.value
+      observe(s, 'stored', 'A caixa guardou um número', true)
+      s.caption = `A caixa guarda ${action.value}.${s.box.shown ? '' : ' Ninguém está vendo isso ainda.'}`
+      break
+    }
+    case 'change': {
+      const antes = s.box.value
+      s.box.value = Math.max(
+        SCENE_LIMITS.boxValue.min,
+        Math.min(SCENE_LIMITS.boxValue.max, s.box.value + action.by),
+      )
+      s.box.changes += 1
+      // ⚠️ Mudar SEM estar na tela é a descoberta: o valor existe mesmo sem ninguém mostrar.
+      // ⚠️ Mas ela só vale depois de a criança ter GUARDADO um número, que é a ordem que a
+      // instrução pede ("guarde, mude sem mostrar, só depois ligue o mostrar"). A caixa nasce
+      // desligada e com zero: sem esta condição, o primeiro toque em "somar 1" fechava a meta
+      // antes de existir um valor para a tela esconder, e a cena não tinha ensinado nada.
+      if (!s.box.shown && s.evidence.discoveries.includes('stored'))
+        observe(s, 'changed-hidden', 'Mudou o valor sem estar na tela', true)
+      s.caption = `${antes} ${action.by > 0 ? '+' : '−'} ${Math.abs(action.by)} = ${s.box.value}.`
+      break
+    }
+    case 'show': {
+      s.box.shown = action.on
+      if (action.on) {
+        // ⚠️ Irmã do `changed-hidden`, mesmo conserto: a caixa nasce com zero e fora da tela,
+        // então "mostrar não mudou o valor guardado" caía sobre um valor que não existe.
+        if (s.evidence.discoveries.includes('stored'))
+          observe(s, 'shown', 'Mostrar não mudou o valor guardado', true)
+      }
+      s.caption = action.on
+        ? `A tela passou a mostrar ${s.box.value}. O valor guardado continua o mesmo.`
+        : 'A tela parou de mostrar. O valor continua guardado.'
+      break
+    }
+    case 'look': {
+      if (!s.hunt.looked.includes(action.id)) s.hunt.looked.push(action.id)
+      if (s.hunt.looked.length === s.hunt.distances.length)
+        observe(s, 'looked-all', 'Olhou todos do grupo antes de escolher', true)
+      s.caption = `O ${action.id}º está a ${s.hunt.distances[action.id - 1]} de distância.`
+      break
+    }
+    case 'choose': {
+      s.hunt.chosen = action.id
+      const perto = maisPerto(s.hunt.distances)
+      if (action.id === perto && s.hunt.looked.length === s.hunt.distances.length)
+        observe(s, 'nearest', 'Escolheu o mais perto depois de olhar todos', true)
+      s.caption =
+        action.id === perto
+          ? `Escolheu o ${action.id}º, que é o mais perto agora.`
+          : `Escolheu o ${action.id}º. O mais perto é o ${perto}º.`
+      break
+    }
+    case 'define': {
+      // ⚠️ Escrever o valor que já estava não é mudar a ficha, e o deslizante do palco chama o
+      // `onChange` com o MESMO valor quando a criança bate no batente da faixa.
+      const mudou =
+        action.field === 'speed'
+          ? s.blueprint.speed !== action.value
+          : s.blueprint.life !== action.value
+      if (action.field === 'speed') s.blueprint.speed = action.value
+      else s.blueprint.life = action.value
+      if (!mudou) {
+        s.caption = `A ficha já estava com ${action.field === 'speed' ? 'velocidade' : 'vida'} ${action.value}.`
+        break
+      }
+      s.blueprint.edits += 1
+      if (s.blueprint.born >= 2)
+        observe(s, 'all-change', 'Mudou a ficha e TODOS mudaram juntos', true)
+      s.caption = `A ficha agora diz ${action.field === 'speed' ? 'velocidade' : 'vida'} ${action.value}. Os ${s.blueprint.born} que nasceram leem esta ficha.`
+      break
+    }
+    case 'spawnOne': {
+      s.blueprint.born += 1
+      if (s.blueprint.born >= 3) observe(s, 'many', 'Nasceram vários do mesmo molde', true)
+      s.caption = `Nasceu mais um. Agora são ${s.blueprint.born}, todos lendo a mesma ficha.`
+      break
+    }
+    case 'walk': {
+      s.view.heroX = action.x
+      if (!s.view.follow && s.view.heroX > TELA_LARGURA) {
+        s.view.wasLost = true
+        observe(s, 'lost', 'Sem a câmera, o Dino saiu da tela', true)
+      }
+      if (s.view.follow && s.view.wasLost && s.view.heroX > TELA_LARGURA)
+        observe(s, 'window', 'O mundo continua maior que a tela', true)
+      s.caption =
+        !s.view.follow && s.view.heroX > TELA_LARGURA
+          ? `O Dino está em ${s.view.heroX}, e a tela acaba em ${TELA_LARGURA}. Ele sumiu.`
+          : `O Dino está em ${s.view.heroX} do mundo, e continua à vista.`
+      break
+    }
+    case 'approach': {
+      if (scene === 'circle-collision') {
+        s.circles.distance = Math.min(action.distance, SCENE_LIMITS.centers.max)
+        conferirCirculos(s)
+        break
+      }
+      s.hit.distance = action.distance
+      s.caption = `Distância ${action.distance}. Avance o relógio e veja o que acontece com a vida.`
+      break
+    }
+    case 'mode': {
+      s.hit.mode = action.kind
+      s.hit.damage = 0
+      s.hit.touching = false
+      s.caption =
+        action.kind === 'ask'
+          ? 'Agora o jogo PERGUNTA "está encostando?" em todo quadro.'
+          : 'Agora o jogo espera o ACONTECIMENTO "acabou de encostar".'
+      break
+    }
+    case 'shoot': {
+      if (s.weapon.ready > 0) {
+        s.weapon.refused += 1
+        observe(s, 'waiting', 'Atirar durante a recarga não fez nada', true)
+        s.caption = `Ainda recarregando: faltam ${s.weapon.ready.toFixed(1)}s.`
+        break
+      }
+      s.weapon.shots += 1
+      s.weapon.ready = s.weapon.seconds
+      if (s.weapon.seconds > 0 && s.weapon.shots >= 2)
+        observe(s, 'spaced', 'Com recarga, os tiros saem espaçados', true)
+      s.caption =
+        s.weapon.seconds > 0
+          ? `Tiro ${s.weapon.shots}. Agora ele espera ${s.weapon.seconds}s.`
+          : `Tiro ${s.weapon.shots}. Sem recarga, dá para atirar de novo na hora.`
+      break
+    }
+    case 'recharge': {
+      s.weapon.seconds = action.seconds
+      s.weapon.ready = 0
+      s.weapon.shots = 0
+      s.weapon.refused = 0
+      s.caption =
+        action.seconds > 0
+          ? `Recarga de ${action.seconds}s entre dois tiros.`
+          : 'Sem recarga nenhuma: o tiro sai sempre que for pedido.'
+      break
+    }
+    case 'target': {
+      // ⚠️ Arrastar o alvo para onde ele já estava não vira a seta — e é o que o deslizante
+      // manda quando a criança bate no batente da faixa.
+      const moveu = s.sight.targetX !== action.x || s.sight.targetY !== action.y
+      s.sight.targetX = action.x
+      s.sight.targetY = action.y
+      if (!moveu) {
+        s.caption = `O alvo já estava em ${action.x}, ${action.y}.`
+        break
+      }
+      observe(s, 'arrow', 'A seta virou junto com o alvo', true)
+      s.caption = `O alvo está em ${action.x}, ${action.y}. Olhe para onde a seta aponta.`
+      break
+    }
+    case 'direction': {
+      s.walkPad.dx = action.x
+      s.walkPad.dy = action.y
+      s.caption =
+        action.x !== 0 && action.y !== 0
+          ? 'Nas duas setas ao mesmo tempo: é a diagonal.'
+          : 'Numa seta só: é reto.'
+      break
+    }
+    case 'paint-tile': {
+      const linha = s.grid.rows[action.row]
+      if (linha) {
+        const antes = linha[action.col]
+        s.grid.rows[action.row] =
+          linha.slice(0, action.col) + action.tile + linha.slice(action.col + 1)
+        if (antes !== action.tile) {
+          s.grid.edits += 1
+          const repetida = s.grid.written.includes(action.tile)
+          // ⚠️⚠️ Guarda a LETRA, uma vez só — são três no alfabeto do mapa. Empilhando a cada
+          // troca a lista crescia sem teto, e na 25ª casa o retrato passava a ser recusado pelo
+          // próprio leitor (`readExperimentSession` devolvia null): a criança lia "esta
+          // descoberta mudou, recomece" no meio de um mapa de 60 casas que a pista manda pintar.
+          if (!repetida) s.grid.written.push(action.tile)
+          observe(s, 'text-is-map', 'Mudou a letra e o desenho mudou junto', true)
+          if (repetida) observe(s, 'same-letter', 'A mesma letra virou sempre a mesma coisa', true)
+        }
+      }
+      s.caption = `A casa ${action.row + 1},${action.col + 1} agora é "${action.tile}".`
+      break
+    }
+
+    /* ── O motor, o 3D e o ateliê ────────────────────────────────────────────────────────── */
+    case 'brain': {
+      const antes = s.brains.states[action.id - 1]
+      // ⚠️⚠️ A diversidade é medida ANTES da mudança. Contando DEPOIS, a própria mudança
+      // satisfazia o guard: um único toque a partir dos três parados fechava as duas metas de
+      // uma vez, e "cada um ficou no seu próprio estado" caía com dois dos três ainda iguais.
+      const distintosAntes = new Set(s.brains.states).size
+      s.brains.states[action.id - 1] = action.state
+      // A meta diz "cada um no SEU estado", então ela pede os três diferentes — nem dois.
+      if (new Set(s.brains.states).size === 3)
+        observe(s, 'own', 'Cada um ficou no seu próprio estado', true)
+      // ⚠️ "Mudar um não mexe nos outros" só conta quando havia outro para mexer: com os três
+      // iguais, a independência não teria sido mostrada.
+      if (antes !== action.state && distintosAntes > 1)
+        observe(s, 'independent', 'Mudar um cérebro não mexeu nos outros', true)
+      s.caption = `O ${action.id}º está ${action.state}. Os três: ${s.brains.states.join(', ')}.`
+      break
+    }
+    case 'count': {
+      s.machines.mode = action.kind
+      s.machines.fastX = 40
+      s.machines.slowX = 40
+      s.machines.elapsed = 0
+      s.caption =
+        action.kind === 'frames'
+          ? 'Agora o jogo conta QUADROS. Avance o relógio nas duas máquinas.'
+          : 'Agora o jogo conta SEGUNDOS. Avance o relógio nas duas máquinas.'
+      break
+    }
+    case 'radius': {
+      // ⚠️ A descoberta desta cena é a CONTA, e a prova dela é o mesmo lugar deixar de ser (ou
+      // passar a ser) uma batida só porque o raio mudou. Por isso a comparação é aqui, com a
+      // distância PARADA: dentro do `conferirCirculos` (que também roda no relógio) ela não teria
+      // como separar o que mudou o resultado.
+      const antes = s.circles.distance <= s.circles.a + s.circles.b
+      if (action.which === 'a') s.circles.a = action.value
+      else s.circles.b = action.value
+      if (antes !== s.circles.distance <= s.circles.a + s.circles.b)
+        observe(s, 'formula', 'Mudar o raio mudou o instante da batida', true)
+      conferirCirculos(s)
+      break
+    }
+    case 'place3d': {
+      const antes = { ...s.space }
+      s.space.x = action.x
+      s.space.y = action.y
+      s.space.z = action.z
+      const mexeu = (['x', 'y', 'z'] as const).filter((eixo) => antes[eixo] !== action[eixo])
+      // ⚠️ Um eixo por vez, como em `coordinates`: mexer nos três ao mesmo tempo não diz qual
+      // fez o quê, e é exatamente a confusão que a porta do 3D existe para desfazer.
+      if (mexeu.length === 1) {
+        const eixo = mexeu[0] as string
+        if (!s.space.moved.includes(eixo)) s.space.moved.push(eixo)
+        if (eixo === 'z') observe(s, 'depth', 'O z leva para longe e para perto', true)
+        if (eixo === 'y' && action.y > antes.y)
+          observe(s, 'up', 'No 3D, o y maior é mais ALTO', true)
+      }
+      // ⚠️ A sombra só é descoberta para quem a viu SE SEPARAR do objeto: com um caso que já
+      // abre com ele no ar, qualquer gesto (mexer só no x) fechava a meta.
+      if (s.space.y > 0 && s.space.moved.includes('y'))
+        observe(s, 'shadow', 'A sombra no chão diz onde ele está', true)
+      s.caption = `x ${action.x}, y ${action.y}, z ${action.z}.${
+        s.space.y > 0 ? ' A sombra ficou no chão, embaixo dele.' : ''
+      }`
+      break
+    }
+    case 'orbit': {
+      if (start.scene === 'mesh') {
+        s.model.yaw = action.yaw
+        s.caption = 'O modelo girou. Olhe as faces por outro lado.'
+        break
+      }
+      const girou = s.orbit.yaw !== action.yaw || s.orbit.pitch !== action.pitch
+      s.orbit.yaw = action.yaw
+      s.orbit.pitch = action.pitch
+      const faces = facesAVista(action.yaw, action.pitch)
+      s.orbit.fewest = Math.min(s.orbit.fewest, faces)
+      // ⚠️⚠️ As duas metas dizem "GIROU até ver", e a cena ABRE mostrando duas cores — sem o
+      // `girou` a de duas caía sozinha, inclusive num `orbit` que não mexia em nada.
+      if (girou && faces === 1) observe(s, 'one-face', 'Girou até ver uma cor só', true)
+      if (girou && faces === 2) observe(s, 'two-faces', 'Girou até ver exatamente duas cores', true)
+      if (girou && (action.yaw !== 1 || action.pitch !== 1)) s.orbit.returned = false
+      s.caption = `Daqui dá para ver ${faces} cor(es) do cubo.`
+      break
+    }
+    case 'recenter': {
+      // ⚠️ "Voltou à vista de sempre" pede ter SAÍDO dela: apertado como primeiro gesto, o botão
+      // fechava a meta sem a câmera ter andado. O `orbit.returned` existe para isso e era campo
+      // morto — só escrito, nunca lido.
+      const saiu = s.orbit.yaw !== 1 || s.orbit.pitch !== 1
+      s.orbit.yaw = 1
+      s.orbit.pitch = 1
+      s.orbit.returned = saiu || s.orbit.returned
+      if (saiu) observe(s, 'back', 'Voltou à vista de sempre com um toque', true)
+      s.caption = saiu
+        ? 'A câmera voltou para a vista de sempre.'
+        : 'A câmera já estava na vista de sempre.'
+      break
+    }
+    case 'wireframe': {
+      s.model.wire = action.on
+      if (action.on) observe(s, 'points', 'Por baixo, o modelo é feito de pontos ligados', true)
+      else if (s.evidence.discoveries.includes('points'))
+        observe(s, 'skin', 'A textura é a roupa que cobre os pontos', true)
+      s.caption = action.on
+        ? 'Raio-X ligado: dá para ver os pontos e as linhas que formam o modelo.'
+        : 'Raio-X desligado: a roupa do modelo voltou.'
+      break
+    }
+    case 'point': {
+      s.ray.x = action.x
+      s.ray.y = action.y
+      const caixa = caixaMirada(action.x, action.y)
+      s.ray.hit = caixa
+      if (caixa) {
+        if (!s.ray.hits.includes(caixa)) s.ray.hits.push(caixa)
+        observe(s, 'face', 'A face mirada acendeu', true)
+        // ⚠️ A meta é a OCLUSÃO, e ela só existe onde há DUAS caixas no caminho: a faixa em que
+        // a da frente cobre a de trás. Fora dela, "parou na primeira" não teria o que provar.
+        const duasNoCaminho =
+          caixa === PICK_BOXES.frente.id && dentro(PICK_BOXES.atras, action.x, action.y)
+        if (duasNoCaminho) observe(s, 'first', 'A reta parou na primeira caixa do caminho', true)
+      }
+      s.caption = caixa
+        ? `A mira parou na caixa ${caixa}.`
+        : 'A mira passou reto: não havia nada no caminho.'
+      break
+    }
+    case 'ink': {
+      if (action.part === 'fill') s.ink.fill = action.on
+      else s.ink.stroke = action.on
+      const arranjo =
+        s.ink.fill && s.ink.stroke ? 'both' : s.ink.fill ? 'fill' : s.ink.stroke ? 'stroke' : 'none'
+      if (!s.ink.seen.includes(arranjo)) s.ink.seen.push(arranjo)
+      if (arranjo === 'fill')
+        observe(s, 'only-fill', 'Miolo sem linha continua sendo desenho', true)
+      if (arranjo === 'stroke') observe(s, 'only-stroke', 'A linha sozinha guarda a forma', true)
+      if (arranjo === 'both' && s.ink.seen.length > 1)
+        observe(s, 'both', 'Os dois juntos são dois desenhos no mesmo traço', true)
+      s.caption = `Miolo ${s.ink.fill ? 'pintado' : 'vazio'}, contorno ${s.ink.stroke ? 'à vista' : 'sem cor'}.`
+      break
+    }
+    case 'light': {
+      s.light.side = action.side
+      if (s.light.shade && !s.light.sides.includes(action.side)) s.light.sides.push(action.side)
+      if (s.light.sides.length > 1)
+        observe(s, 'side', 'Mudou o lado da luz e a sombra mudou de lado', true)
+      s.caption = `A luz vem da ${action.side === 'left' ? 'esquerda' : 'direita'}.`
+      break
+    }
+    case 'shade': {
+      const antes = s.light.shade
+      s.light.shade = action.on
+      if (action.on) {
+        if (!s.light.sides.includes(s.light.side)) s.light.sides.push(s.light.side)
+        observe(s, 'volume', 'Com as duas cores, a forma ganhou volume', true)
+      }
+      // ⚠️ A forma NASCE chapada, então desligar a sombra sem nunca tê-la ligado não muda um
+      // pixel — e a meta caía nesse nada. "Parece um adesivo" é uma COMPARAÇÃO: só vale depois
+      // de a criança ter visto o volume e tirado ele.
+      else if (antes) observe(s, 'flat', 'Sem sombra, a forma parece um adesivo', true)
+      s.caption = action.on
+        ? 'Com a segunda cor mais escura, ela deixa de parecer chapada.'
+        : 'Só a cor base: a forma fica chapada.'
+      break
+    }
+
     case 'reset':
-      // Recomeçar o mundo NUNCA apaga o que a criança já descobriu.
+      // Recomeçar o mundo NUNCA apaga o que a criança já descobriu. E recomeça no CASO desta
+      // atividade, não no mundo de fábrica: quem abriu numa tela de 480 por 270 volta para ela.
       return {
-        ...initialScene(start),
+        ...openScene(start),
         evidence: s.evidence,
         caption: 'Experiência recomeçada. Suas descobertas foram guardadas.',
       }
   }
   return s
+}
+
+/** A largura da tela do jogo. A cena `camera` existe para mostrar que o MUNDO é maior que ela. */
+const TELA_LARGURA = STAGE_TARGET.width
+
+/** Qual do grupo está mais perto. Um só lugar: o motor e a leitura precisam concordar. */
+export function maisPerto(distancias: readonly number[]): number {
+  let melhor = 1
+  distancias.forEach((d, i) => {
+    if (d < (distancias[melhor - 1] ?? Number.POSITIVE_INFINITY)) melhor = i + 1
+  })
+  return melhor
+}
+
+/**
+ * O relógio das onze cenas do núcleo do Iniciante 2D.
+ *
+ * ⚠️ Devolve `true` quando ELA tratou o tempo — é o que faz o `advance` das outras cenas
+ * continuar exatamente como estava. Cada uma aqui ensina uma coisa diferente sobre o tempo:
+ * a posição que anda sozinha, a tecla que vale enquanto durar, a recarga que espera.
+ */
+function avancarNucleo(s: SceneState, scene: SceneId, seconds: number): boolean {
+  switch (scene) {
+    case 'velocity': {
+      s.drive.fromX = s.drive.x
+      s.drive.fromY = s.drive.y
+      s.drive.x = Math.max(0, Math.min(480, s.drive.x + s.drive.vx * 10 * seconds))
+      s.drive.y = Math.max(0, Math.min(270, s.drive.y + s.drive.vy * 10 * seconds))
+      s.drive.ticks += 1
+      const andou = Math.abs(s.drive.x - s.drive.fromX) + Math.abs(s.drive.y - s.drive.fromY)
+      if (andou > 0.5) {
+        observe(s, 'moves', 'A posição mudou sozinha, com o relógio', true)
+        // ⚠️ "Levou para a ESQUERDA" pede ter andado PARA O LADO: o guard soma os dois eixos,
+        // e com o x travado em 0 um movimento só vertical fechava a meta do sinal.
+        if (s.drive.vx < 0 && s.drive.x !== s.drive.fromX)
+          observe(s, 'left', 'Velocidade negativa levou para a esquerda', true)
+        // ⚠️ Os DOIS eixos: narrando só o x, uma cena com velocidade para baixo dizia "foi de
+        // 60 para 60" enquanto o Dino descia na tela — e é a frase que a criança lê.
+        s.caption = mexeuNoEixo(s.drive.x, s.drive.fromX)
+          ? mexeuNoEixo(s.drive.y, s.drive.fromY)
+            ? `O relógio andou e ele foi de ${Math.round(s.drive.fromX)}, ${Math.round(s.drive.fromY)} para ${Math.round(s.drive.x)}, ${Math.round(s.drive.y)}.`
+            : `O relógio andou e ele foi de ${Math.round(s.drive.fromX)} para ${Math.round(s.drive.x)}.`
+          : `O relógio andou e ele desceu de ${Math.round(s.drive.fromY)} para ${Math.round(s.drive.y)}.`
+      } else if (s.drive.vx === 0 && s.drive.vy === 0) {
+        // ⚠️⚠️ A cena NASCE com velocidade zero, então "com zero ele fica parado" caía no
+        // primeiro toque em "Um passo", sem a criança ter mexido em nada. É uma COMPARAÇÃO:
+        // só vale depois de ela ter visto o relógio mover alguma coisa.
+        if (s.evidence.discoveries.includes('moves'))
+          observe(s, 'stopped', 'Com velocidade zero, ele fica parado', true)
+        s.caption = 'O relógio andou e ele não saiu do lugar: a velocidade é zero.'
+      }
+      return true
+    }
+    case 'hold-vs-press': {
+      s.input.ticks += 1
+      if (s.input.holding) {
+        s.input.holdX = Math.min(440, s.input.holdX + 40 * seconds)
+        observe(s, 'while-held', 'Segurando, ela anda enquanto durar', true)
+      }
+      // ⚠️ A comparação só vale depois de a criança ter feito as DUAS coisas: sem isso, a
+      // diferença entre as duas raquetes seria só "uma delas nunca andou".
+      if (s.input.presses > 0 && s.input.holdX > s.input.pressX + 20)
+        observe(s, 'apart', 'No mesmo tempo, as duas foram parar em lugares diferentes', true)
+      s.caption = s.input.holding
+        ? `Segurando: a de baixo está em ${Math.round(s.input.holdX)}.`
+        : `Solto: a de cima em ${s.input.pressX}, a de baixo em ${Math.round(s.input.holdX)}.`
+      return true
+    }
+    case 'enemy-type': {
+      s.caption = `${s.blueprint.born} no chão, todos com velocidade ${s.blueprint.speed} e vida ${s.blueprint.life}.`
+      return true
+    }
+    case 'contact': {
+      const encostando = s.hit.distance <= 40
+      if (encostando) {
+        if (s.hit.mode === 'ask') {
+          s.hit.damage += 1
+          if (s.hit.damage >= 3)
+            observe(s, 'drain', 'A pergunta contínua tirou vida em todo quadro', true)
+        } else if (!s.hit.touching) {
+          s.hit.damage += 1
+          // ⚠️⚠️ A meta é "afastar e VOLTAR", e ela pede as DUAS metades: uma primeira batida
+          // (`once`) e um passo do relógio com os dois genuinamente LONGE (`away`). Sem o
+          // segundo, alternar os dois botões da pergunta — que zeram o `touching` — fechava a
+          // meta com o cacto parado, encostado, sem nada ter se afastado.
+          if (s.evidence.discoveries.includes('once') && s.hit.away)
+            observe(s, 'apart', 'Afastar e voltar faz o acontecimento valer de novo', true)
+          observe(s, 'once', 'O acontecimento tirou vida uma vez só', true)
+        }
+      } else if (s.evidence.discoveries.includes('once')) s.hit.away = true
+      s.hit.touching = encostando
+      s.caption = encostando
+        ? `Encostado. Já se foram ${s.hit.damage} de vida.`
+        : `Longe. A vida parou em ${s.hit.damage} perdida(s).`
+      return true
+    }
+    case 'cooldown': {
+      if (s.weapon.ready > 0) s.weapon.ready = Math.max(0, s.weapon.ready - seconds)
+      if (s.weapon.seconds === 0 && s.weapon.shots >= 3)
+        observe(s, 'burst', 'Sem recarga, os tiros saem todos juntos', true)
+      s.caption =
+        s.weapon.ready > 0
+          ? `Recarregando: faltam ${s.weapon.ready.toFixed(1)}s.`
+          : 'Pronto para atirar.'
+      return true
+    }
+    case 'aim': {
+      if (!s.sight.chasing) {
+        s.caption = 'O tiro vai reto para a direita, porque ninguém ligou a mira.'
+        return true
+      }
+      s.sight.shotX = s.sight.targetX
+      s.sight.shotY = s.sight.targetY
+      observe(s, 'follows', 'Com a mira ligada, o tiro foi na direção da seta', true)
+      s.caption = 'O tiro seguiu a seta e chegou no alvo.'
+      return true
+    }
+    case 'diagonal': {
+      const diagonal = s.walkPad.dx !== 0 && s.walkPad.dy !== 0
+      // Sem correção, andar nos dois eixos soma os dois passos: é a dor da cena.
+      const passo = diagonal
+        ? s.walkPad.even
+          ? 1
+          : Math.SQRT2
+        : s.walkPad.dx || s.walkPad.dy
+          ? 1
+          : 0
+      s.walkPad.distance = Number((passo * 60 * seconds).toFixed(2))
+      s.walkPad.best = Math.max(s.walkPad.best, s.walkPad.distance)
+      if (diagonal && !s.walkPad.even && s.walkPad.distance > 0)
+        observe(s, 'faster', 'Na diagonal ele andou mais no mesmo tempo', true)
+      if (diagonal && s.walkPad.even && s.walkPad.distance > 0)
+        observe(s, 'same', 'Com a correção, a diagonal anda o mesmo que o reto', true)
+      s.caption =
+        s.walkPad.distance === 0
+          ? 'Nenhuma seta apertada: ele fica parado.'
+          : `Neste passo ele andou ${s.walkPad.distance}.`
+      return true
+    }
+    case 'pool': {
+      s.nursery.ticks += 1
+      // Um nasce e um sai a cada passo: sem reciclagem, o contador de CRIADOS sobe para sempre.
+      if (s.nursery.recycling) {
+        if (s.nursery.created === 0) s.nursery.created = 1
+        s.nursery.alive = 1
+        observe(s, 'recycled', 'Com reciclagem, o mesmo corpo volta a ser usado', true)
+        // ⚠️ "PAROU de crescer" pede ter visto crescer: ligando a reciclagem de saída, a meta
+        // caía sobre um contador que nunca tinha subido.
+        if (s.nursery.ticks >= 4 && s.evidence.discoveries.includes('grows'))
+          observe(s, 'steady', 'O número de criados parou de crescer', true)
+      } else {
+        s.nursery.created += 1
+        s.nursery.alive = 1
+        if (s.nursery.created >= 3)
+          observe(s, 'grows', 'O contador de criados só sobe, e nunca desce', true)
+      }
+      s.caption = `Vivos: ${s.nursery.alive}. Criados desde o começo: ${s.nursery.created}.`
+      return true
+    }
+    case 'entity-state': {
+      s.brains.ticks += 1
+      const fazendo = s.brains.states.map((estado, i) => `${i + 1}º ${acaoDoEstado(estado)}`)
+      if (new Set(s.brains.states).size > 1)
+        observe(s, 'acts', 'O estado de cada um decidiu o que ele fez agora', true)
+      s.caption = fazendo.join('; ')
+      return true
+    }
+    case 'delta-time': {
+      s.machines.elapsed += seconds
+      // A máquina rápida dá DOIS passos no tempo em que a devagar dá um. Contando quadros, ela
+      // anda o dobro; contando segundos, as duas andam o mesmo.
+      // ⚠️ Com teto: o relógio pode andar muitas vezes, e sem ele o retrato guardado sairia da
+      // faixa que o validador aceita — a sessão da criança deixaria de hidratar.
+      const andar = (v: number, quanto: number) => Math.min(SCENE_LIMITS.machineX.max, v + quanto)
+      if (s.machines.mode === 'frames') {
+        s.machines.fastX = andar(s.machines.fastX, 40 * seconds)
+        s.machines.slowX = andar(s.machines.slowX, 20 * seconds)
+        if (Math.abs(s.machines.fastX - s.machines.slowX) > 30)
+          observe(s, 'apart', 'Contando quadros, as duas máquinas se afastaram', true)
+      } else {
+        s.machines.fastX = andar(s.machines.fastX, 30 * seconds)
+        s.machines.slowX = andar(s.machines.slowX, 30 * seconds)
+        // ⚠️ O contraste é a lição inteira: "chegaram juntas" só significa alguma coisa para
+        // quem viu as duas se afastarem antes. Trocar para segundos de saída fechava a meta
+        // sobre duas máquinas que nunca estiveram separadas.
+        if (s.machines.elapsed >= 1 && s.evidence.discoveries.includes('apart'))
+          observe(s, 'together', 'Contando tempo, as duas chegaram juntas', true)
+      }
+      s.caption = `A rápida em ${Math.round(s.machines.fastX)}, a devagar em ${Math.round(s.machines.slowX)}.`
+      return true
+    }
+    case 'circle-collision': {
+      s.circles.distance = Math.max(0, s.circles.distance - 20 * seconds)
+      conferirCirculos(s)
+      return true
+    }
+    default:
+      return false
+  }
+}
+
+/** Mexeu nesse eixo? Meio pixel de folga, como o resto do motor. */
+const mexeuNoEixo = (agora: number, antes: number) => Math.abs(agora - antes) > 0.5
+
+/** O menos do CONTEÚDO (U+2212), não o hífen do teclado. */
+const sinal = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n))
+
+/** O que um personagem FAZ no estado em que está. É o que a cena `entity-state` mostra. */
+function acaoDoEstado(estado: string): string {
+  if (estado === 'mirar') return 'está virando para o alvo'
+  if (estado === 'atirar') return 'soltou um tiro'
+  if (estado === 'recarregar') return 'está esperando a recarga'
+  return 'está parado'
+}
+
+/**
+ * Quantas faces do cubo aparecem desta posição de câmera. De frente, uma; no canto, três.
+ *
+ * ⚠️ EXPORTADA porque o palco também precisa dela (ele DESENHA o número na tela). Era a terceira
+ * cópia da mesma régua; a segunda, no `readout`, existe porque a leitura não pode importar o
+ * motor — essa continua sendo comparada com esta no `engine-scenes.test.ts`.
+ */
+export function facesAVista(yaw: number, pitch: number): number {
+  const canto = yaw % 2 === 1
+  if (pitch === 1) return canto ? 2 : 1
+  return canto ? 3 : 2
+}
+
+/**
+ * As três caixas da cena `pick-ray`, nas MESMAS coordenadas em que o palco as desenha.
+ *
+ * ⚠️⚠️ A 2 fica NA FRENTE e SOBREPÕE a 1 — é nessa faixa comum que a cena inteira acontece.
+ * Enquanto as três eram disjuntas, "a reta parou na primeira caixa do caminho" caía num ponto
+ * onde não havia nada atrás, e a pista mandava a criança procurar um alinhamento que a tela
+ * não tinha. Mexeu aqui, mexa no `PickRayStage` do member-shell.
+ */
+export const PICK_BOXES = {
+  atras: { id: 1, x: 220, y: 60, w: 140, h: 110 },
+  frente: { id: 2, x: 300, y: 120, w: 150, h: 120 },
+  sozinha: { id: 3, x: 60, y: 70, w: 110, h: 100 },
+} as const
+const dentro = (c: { x: number; y: number; w: number; h: number }, x: number, y: number) =>
+  x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h
+
+/** Onde a mira bateu. A da FRENTE é conferida primeiro: a reta para na primeira coisa. */
+function caixaMirada(x: number, y: number): number {
+  if (dentro(PICK_BOXES.frente, x, y)) return PICK_BOXES.frente.id
+  if (dentro(PICK_BOXES.atras, x, y)) return PICK_BOXES.atras.id
+  if (dentro(PICK_BOXES.sozinha, x, y)) return PICK_BOXES.sozinha.id
+  return 0
+}
+
+/** A conta da colisão na mão: a distância entre os centros contra a soma dos raios. */
+function conferirCirculos(s: SceneState): void {
+  const soma = s.circles.a + s.circles.b
+  const encostando = s.circles.distance <= soma
+  if (encostando) {
+    s.circles.touched = true
+    observe(s, 'touch', 'A distância ficou menor que a soma dos raios', true)
+  }
+  s.caption = `Distância ${Math.round(s.circles.distance)} contra ${soma} de soma dos raios: ${
+    encostando ? 'encostaram' : 'ainda não encostaram'
+  }.`
 }
 
 /** As palavras que dizem O QUE se faz no jogo. Lista de orientação, não de gabarito. */

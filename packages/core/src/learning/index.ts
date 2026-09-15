@@ -14,14 +14,16 @@ import {
   castText,
   evaluateDemonstration,
   evaluateExperimentation,
-  initialScene,
   isSceneActivity,
+  openScene,
   readDemonstrationSession,
   readExperimentSession,
   SCENE_IDS,
   type SceneActivity,
   type SceneId,
   sceneModel,
+  sceneStart,
+  sceneTargets,
 } from './scene'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
 export const SECTION_INTENTS = [
@@ -151,8 +153,19 @@ export interface PublicInteractiveBlock
 const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
   // ⚠️ `cast` é PÚBLICO de propósito: é texto que a criança lê, não gabarito. Sem ele na
   // lista, a cena chegaria ao navegador falando de Dino num curso de nave.
-  demonstration: ['type', 'scene', 'script', 'instructionAudioUrl', 'cast'],
-  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl', 'cast'],
+  // ⚠️⚠️ `setup` também é PÚBLICO, e por um motivo mais duro que o do elenco: ele é o estado
+  // de PARTIDA da cena. Sem ele no navegador, a criança abriria o mundo de fábrica enquanto o
+  // servidor avalia o caso do professor — duas cenas diferentes com o mesmo nome.
+  demonstration: [
+    'type',
+    'scene',
+    'script',
+    'instructionAudioUrl',
+    'cast',
+    'setup',
+    'presentation',
+  ],
+  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl', 'cast', 'setup'],
   question: ['type'],
   html: ['type', 'html'],
 }
@@ -420,9 +433,13 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   switch (a.type) {
     case 'demonstration':
     case 'experimentation':
-      // ⚠️ Cena não aceita pergunta anexa: `answers.checkpoint` seria a alternativa
-      // escolhida E os pedaços da sessão ao mesmo tempo, na mesma chave.
-      return isSceneActivity(a) && value.checkpoint === undefined
+      // ⚠️⚠️ A cena ACEITA pergunta anexa desde 15/09/2026, e isso já foi proibido: quando a
+      // sessão da cena morava em `answers.checkpoint`, a mesma chave guardaria a alternativa
+      // escolhida E os pedaços da sessão. Hoje a sessão mora em `answers.sceneCheckpoint` e a
+      // colisão não existe mais — o que a proibição custava era o TERCEIRO tempo do ciclo:
+      // mexer, prever, e então enunciar a regra com as próprias palavras. Sem ela, a regra só
+      // cabia numa seção separada, com outra atividade.
+      return isSceneActivity(a)
     case 'question':
       return value.checkpoint !== undefined
     case 'html':
@@ -447,7 +464,7 @@ export function evaluateLearning(
 ): LearningResult {
   const a = block.activity
   if (a.type === 'demonstration' || a.type === 'experimentation')
-    return evaluateSceneBlock(a, answers)
+    return withAttachedQuestion(evaluateSceneBlock(a, answers), block, answers)
 
   let participated = false
   let feedback = 'Experimente a atividade antes de conferir.'
@@ -478,6 +495,41 @@ export function evaluateLearning(
   return { participated, passed, feedback, verifiedBy }
 }
 
+/**
+ * O TERCEIRO tempo do ciclo: mexer, prever, e enunciar a regra.
+ *
+ * A cena traz a própria evidência e é ela que diz se a criança participou; a pergunta anexa,
+ * quando existe, é quem dá a palavra final sobre o `passed` — a mesma regra do HTML e da
+ * pergunta solta, e corrigida no servidor do mesmo jeito.
+ *
+ * ⚠️ Enquanto a cena não foi concluída, a pergunta NÃO reprova: o feedback continua sendo o da
+ * cena ("falta ver o que acontece com o y"), que é o que diz à criança o que fazer agora.
+ */
+function withAttachedQuestion(
+  resultado: LearningResult,
+  block: InteractiveBlock,
+  answers: LearningAnswers,
+): LearningResult {
+  const pergunta = block.checkpoint
+  if (!pergunta || !resultado.passed) return resultado
+  const acertou = answers.checkpoint === pergunta.correctChoiceId
+  return {
+    ...resultado,
+    passed: acertou,
+    verifiedBy: 'server',
+    // ⚠️ Errar e não ter respondido são coisas diferentes, e davam o MESMO recado: quem tinha
+    // escolhido a frase errada lia "agora escolha a frase", que descreve um estado em que ela
+    // não está — e sem nenhum sinal de que errou, o caminho natural é reler e reescolher a
+    // mesma opção. ⚠️ O gabarito continua sem sair do servidor: o recado diz que não é essa,
+    // nunca qual é.
+    feedback: acertou
+      ? pergunta.explanation
+      : answers.checkpoint === undefined
+        ? 'Você fez a descoberta. Agora escolha a frase que explica o que aconteceu.'
+        : 'Essa não é a frase que explica o que aconteceu. Olhe a cena de novo e escolha outra.',
+  }
+}
+
 /** A cena reconstrói a sessão do checkpoint guardado e pergunta ao módulo dela. */
 function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): LearningResult {
   const parts = answers.sceneCheckpoint
@@ -492,9 +544,16 @@ function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): Learnin
   // SERVIDOR, e o `feedback` que ela devolve é gravado na tentativa e lido de volta pelo cartão
   // "Descoberta registrada" e pelo relatório do professor. Sem o elenco, uma turma de nave
   // recebia a frase de sucesso falando de Dino e de cacto.
+  const alvo = sceneTargets(a)
   if (!session)
-    return evaluateExperimentation(a.scene, initialScene(a), parts === undefined, a.cast)
-  return evaluateExperimentation(a.scene, session.state, true, a.cast)
+    return evaluateExperimentation(
+      a.scene,
+      openScene(sceneStart(a)),
+      parts === undefined,
+      a.cast,
+      alvo,
+    )
+  return evaluateExperimentation(a.scene, session.state, true, a.cast, alvo)
 }
 
 export function isLearningFrameMessage(

@@ -79,8 +79,12 @@ describe('learning activities and sections', () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
     if (!block) throw new Error('Missing fixture')
+    // ⚠️ SEM a pergunta anexa do `content` base: desde 15/09/2026 a cena a aceita, e com ela o
+    // bloco só fecha quando a criança também ENUNCIA a regra. Este teste mede a evidência da
+    // demonstração, que é outra coisa.
+    const { checkpoint: _pergunta, ...semPergunta } = content
     block.content = {
-      ...content,
+      ...semPergunta,
       activity: { type: 'demonstration', scene: 'world' },
     }
     const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`

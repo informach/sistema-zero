@@ -61,17 +61,41 @@ async function montar(inicial: InteractiveBlock) {
   }
 }
 
-test('⚠️ a pergunta de verificação não atravessa a troca para uma cena', async () => {
-  // Ela travava o bloco para sempre: a atividade vira inválida e a caixa de desmarcar some
-  // junto com o tipo. O professor levava um erro que fala de outra coisa, na hora de publicar.
+test('⭐ a pergunta de verificação ATRAVESSA a troca para uma cena', async () => {
+  // Ela era apagada porque a cena recusava pergunta anexa. Desde 15/09/2026 a cena a aceita (é
+  // o terceiro tempo do ciclo), então apagá-la voltou a ser perda de trabalho — e a caixa de
+  // desmarcar existe nos quatro tipos, então o professor tem como tirá-la se quiser.
   const b = await montar(EMPTY_LEARNING)
   try {
     await b.clicar('Pergunta curta')
     expect(b.value.checkpoint).toBeDefined()
     await b.clicar('Experimentação')
+    // A pergunta em BRANCO continua não ficando presa: ela invalidaria o bloco sem dizer onde.
     expect(b.value.checkpoint).toBeUndefined()
     expect(isInteractiveBlock(b.value)).toBe(true)
-    expect(b.alerta).toContain('pergunta de verificação')
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⭐ a pergunta ESCRITA sobrevive à troca para uma cena', async () => {
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'question' },
+    checkpoint: {
+      prompt: 'Por que o y desceu?',
+      choices: [
+        { id: 'a', label: 'Porque cresce para baixo' },
+        { id: 'b', label: 'Porque cresce para cima' },
+      ],
+      correctChoiceId: 'a',
+      explanation: 'Na tela, a contagem começa no alto.',
+    },
+  })
+  try {
+    await b.clicar('Experimentação')
+    expect(b.value.checkpoint?.prompt).toBe('Por que o y desceu?')
+    expect(isInteractiveBlock(b.value)).toBe(true)
   } finally {
     await b.fechar()
   }

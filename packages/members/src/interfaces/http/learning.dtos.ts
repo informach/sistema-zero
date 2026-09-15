@@ -1,5 +1,11 @@
 import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
-import { SCENE_IDS, SCENE_LIMITS, SCENE_PORTS } from '@sistemazero/core/learning/scene'
+import {
+  MAP_TILES,
+  SCENE_IDS,
+  SCENE_LIMITS,
+  SCENE_PORTS,
+  SETUP_LIMITS,
+} from '@sistemazero/core/learning/scene'
 import { t } from 'elysia'
 import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
@@ -119,6 +125,117 @@ const SceneActionSchema = t.Union([
     type: t.Literal('sprite'),
     size: t.Integer({ minimum: L.sprite.min, maximum: L.sprite.max }),
   }),
+  // As onze cenas do núcleo do Iniciante 2D (15/09/2026). Mesma regra: faixa do core.
+  t.Object({
+    type: t.Literal('velocity'),
+    vx: t.Integer({ minimum: L.velocity.min, maximum: L.velocity.max }),
+    vy: t.Integer({ minimum: L.velocity.min, maximum: L.velocity.max }),
+  }),
+  t.Object({ type: t.Literal('press') }),
+  t.Object({ type: t.Literal('hold'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('store'),
+    value: t.Integer({ minimum: L.boxValue.min, maximum: L.boxValue.max }),
+  }),
+  t.Object({
+    type: t.Literal('change'),
+    by: t.Integer({ minimum: L.boxChange.min, maximum: L.boxChange.max }),
+  }),
+  t.Object({ type: t.Literal('show'), on: t.Boolean() }),
+  t.Object({
+    type: t.Union([t.Literal('look'), t.Literal('choose')]),
+    id: t.Integer({ minimum: L.targetId.min, maximum: L.targetId.max }),
+  }),
+  t.Object({
+    type: t.Literal('define'),
+    field: t.Union([t.Literal('speed'), t.Literal('life')]),
+    // ⚠️ A faixa POR CAMPO é do core (`isSceneSetup`/`isSceneAction`): aqui vale a mais larga
+    // das duas, e o guard do domínio aperta a certa na publicação.
+    value: t.Integer({ minimum: L.typeLife.min, maximum: L.typeSpeed.max }),
+  }),
+  t.Object({ type: t.Literal('spawnOne') }),
+  t.Object({
+    type: t.Literal('walk'),
+    x: t.Integer({ minimum: L.worldX.min, maximum: L.worldX.max }),
+  }),
+  t.Object({
+    type: t.Literal('approach'),
+    distance: t.Integer({ minimum: L.approach.min, maximum: L.approach.max }),
+  }),
+  t.Object({
+    type: t.Literal('mode'),
+    kind: t.Union([t.Literal('ask'), t.Literal('event')]),
+  }),
+  t.Object({ type: t.Literal('shoot') }),
+  t.Object({
+    type: t.Literal('recharge'),
+    seconds: t.Number({ minimum: L.recharge.min, maximum: L.recharge.max }),
+  }),
+  t.Object({
+    type: t.Literal('target'),
+    x: t.Integer({ minimum: L.aimX.min, maximum: L.aimX.max }),
+    y: t.Integer({ minimum: L.aimY.min, maximum: L.aimY.max }),
+  }),
+  t.Object({
+    type: t.Literal('direction'),
+    x: t.Integer({ minimum: -1, maximum: 1 }),
+    y: t.Integer({ minimum: -1, maximum: 1 }),
+  }),
+  t.Object({
+    type: t.Literal('paint-tile'),
+    row: t.Integer({ minimum: L.mapRow.min, maximum: L.mapRow.max }),
+    col: t.Integer({ minimum: L.mapCol.min, maximum: L.mapCol.max }),
+    tile: t.Union(MAP_TILES.map((t2) => t.Literal(t2))),
+  }),
+  /* ── O motor, o 3D e o ateliê (15/09/2026) ─────────────────────────────────────────────── */
+  t.Object({
+    type: t.Literal('brain'),
+    id: t.Integer({ minimum: L.brainId.min, maximum: L.brainId.max }),
+    state: t.Union([
+      t.Literal('parado'),
+      t.Literal('mirar'),
+      t.Literal('atirar'),
+      t.Literal('recarregar'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('count'),
+    kind: t.Union([t.Literal('frames'), t.Literal('seconds')]),
+  }),
+  t.Object({
+    type: t.Literal('radius'),
+    which: t.Union([t.Literal('a'), t.Literal('b')]),
+    value: t.Integer({ minimum: L.radius.min, maximum: L.radius.max }),
+  }),
+  t.Object({
+    type: t.Literal('place3d'),
+    x: t.Integer({ minimum: L.spaceX.min, maximum: L.spaceX.max }),
+    // ⚠️ O y do 3D cresce para CIMA e o piso é ZERO: a faixa não é a da tela 2D.
+    y: t.Integer({ minimum: L.spaceY.min, maximum: L.spaceY.max }),
+    z: t.Integer({ minimum: L.spaceZ.min, maximum: L.spaceZ.max }),
+  }),
+  t.Object({
+    type: t.Literal('orbit'),
+    yaw: t.Integer({ minimum: L.yaw.min, maximum: L.yaw.max }),
+    pitch: t.Integer({ minimum: L.pitch.min, maximum: L.pitch.max }),
+  }),
+  t.Object({ type: t.Literal('recenter') }),
+  t.Object({ type: t.Literal('wireframe'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('point'),
+    x: t.Integer({ minimum: L.pointX.min, maximum: L.pointX.max }),
+    y: t.Integer({ minimum: L.pointY.min, maximum: L.pointY.max }),
+  }),
+  t.Object({
+    type: t.Literal('ink'),
+    part: t.Union([t.Literal('fill'), t.Literal('stroke')]),
+    on: t.Boolean(),
+  }),
+  t.Object({
+    type: t.Literal('light'),
+    side: t.Union([t.Literal('left'), t.Literal('right')]),
+  }),
+  t.Object({ type: t.Literal('shade'), on: t.Boolean() }),
 ])
 const SceneId = t.Union(SCENE_IDS.map((id) => t.Literal(id)))
 /**
@@ -137,6 +254,26 @@ const SceneCastSchema = t.Object({
   hero: t.Optional(SceneActorSchema),
   obstacle: t.Optional(SceneActorSchema),
   scenery: t.Optional(SceneActorSchema),
+})
+/**
+ * O CASO da atividade: por onde a cena começa e o que ela cobra.
+ *
+ * ⚠️ Os tetos vêm de `SETUP_LIMITS`, e o conteúdo é conferido de novo pelo `isSceneSetup` do
+ * core na publicação — é lá que mora a régua que recusa ação de outra cena, `reset` dentro do
+ * caso e meta que não existe no modelo. Aqui é a porta de entrada, não o juiz.
+ */
+const SceneSetupActions = t.Array(SceneActionSchema, {
+  minItems: 1,
+  maxItems: SETUP_LIMITS.actions,
+})
+const SceneSetupSchema = t.Object({
+  actions: t.Optional(SceneSetupActions),
+  goals: t.Optional(
+    t.Array(t.String({ minLength: 1, maxLength: 80 }), {
+      minItems: 1,
+      maxItems: SETUP_LIMITS.goals,
+    }),
+  ),
 })
 const SceneScriptSchema = t.Array(
   t.Object({
@@ -176,6 +313,15 @@ export const InteractiveBlockSchema = t.Object({
       /** Sem roteiro próprio, vale o do modelo da cena. */
       script: t.Optional(SceneScriptSchema),
       cast: t.Optional(SceneCastSchema),
+      /**
+       * ⚠️⚠️ O MESMO schema da experimentação, de propósito, mesmo que a demonstração não cobre
+       * meta nenhuma. Declarando só `actions`, o `normalize` do Elysia APAGA o `goals` que
+       * viesse junto em vez de recusá-lo: o payload era aceito com o campo sumido, e o guard do
+       * core — que é quem tem a régua e a mensagem certa — nunca chegava a vê-lo. Quem recusa é
+       * o `isSceneSetup(..., { goals: false })` na publicação.
+       */
+      setup: t.Optional(SceneSetupSchema),
+      presentation: t.Optional(t.Union([t.Literal('guided'), t.Literal('inline')])),
     }),
     t.Object({
       type: t.Literal('experimentation'),
@@ -183,6 +329,7 @@ export const InteractiveBlockSchema = t.Object({
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
       cast: t.Optional(SceneCastSchema),
+      setup: t.Optional(SceneSetupSchema),
     }),
     t.Object({ type: t.Literal('question') }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),

@@ -1,4 +1,4 @@
-import { isRecord, SCENE_LIMITS, type SceneId } from './actions'
+import { isRecord, MAP_TILES, SCENE_LIMITS, type SceneId, type SceneSetup } from './actions'
 
 /**
  * O estado de uma cena, agrupado por assunto.
@@ -184,6 +184,196 @@ export interface SceneLifeline {
   /** O resto do segundo, para o ponto não depender do tamanho do passo do relógio. */
   remainder: number
 }
+/* ── Os grupos do núcleo do Iniciante 2D (15/09/2026) ────────────────────────────────────── */
+/** A velocidade: quanto o sprite anda em cada quadro, e onde ele está agora. */
+export interface SceneDrive {
+  vx: number
+  vy: number
+  x: number
+  y: number
+  /** Onde ele estava antes do último passo do relógio — é o fantasma que mostra o quanto andou. */
+  fromX: number
+  fromY: number
+  ticks: number
+}
+/** O gesto que dispara uma vez contra o que vale enquanto durar. Duas raquetes, um só relógio. */
+export interface SceneInput {
+  holding: boolean
+  presses: number
+  /** A raquete ligada ao acontecimento "apertou". */
+  pressX: number
+  /** A raquete ligada à pergunta "está apertada?". */
+  holdX: number
+  ticks: number
+}
+/** A caixa que guarda um número. Guardar, mudar e mostrar são três coisas diferentes. */
+export interface SceneBox {
+  value: number
+  shown: boolean
+  changes: number
+}
+/** O laço sobre o grupo: quem já foi olhado e quem acabou escolhido. */
+export interface SceneHunt {
+  /** As distâncias dos três invasores, na ordem do grupo. */
+  distances: number[]
+  looked: number[]
+  chosen: number
+  /** O fio do laço que escolhe o mais perto sozinho. */
+  auto: boolean
+  ticks: number
+}
+/** A ficha do tipo de inimigo, e quantos nasceram dela. */
+export interface SceneBlueprint {
+  speed: number
+  life: number
+  born: number
+  edits: number
+}
+/** O mundo maior que a tela, e a janela que anda sobre ele. */
+export interface SceneView {
+  heroX: number
+  follow: boolean
+  /** Já saiu da tela alguma vez sem a câmera? É a dor que a cena existe para provocar. */
+  wasLost: boolean
+}
+/** O contato: a pergunta contínua contra o acontecimento da batida. */
+export interface SceneHit {
+  distance: number
+  mode: 'ask' | 'event'
+  /** Quanto de vida já se foi. */
+  damage: number
+  /** Estava encostado no passo anterior? É o que separa "encostando" de "acabou de encostar". */
+  touching: boolean
+  /**
+   * Já houve um passo do relógio com os dois LONGE, depois da primeira batida?
+   *
+   * ⚠️ É o que separa "afastar e voltar" de "trocar a pergunta". O `mode` zera o `touching` de
+   * propósito (senão o acontecimento nunca dispararia no modo novo), e sem este campo alternar
+   * os dois botões com o cacto parado em cima do Dino fechava a meta do afastamento.
+   */
+  away: boolean
+}
+/** A arma e a recarga entre dois tiros. */
+export interface SceneWeapon {
+  /** Segundos de recarga. Zero é "sem recarga". */
+  seconds: number
+  /** Quanto falta para poder atirar de novo. */
+  ready: number
+  shots: number
+  /** Tiros que a criança pediu enquanto a arma recarregava. */
+  refused: number
+}
+/** A mira: onde está o alvo e para onde o tiro foi. */
+export interface SceneSight {
+  targetX: number
+  targetY: number
+  chasing: boolean
+  /** O último tiro, guardado para a comparação. */
+  shotX: number
+  shotY: number
+}
+/** As setas do teclado e a correção que iguala a diagonal. */
+export interface SceneWalkPad {
+  dx: number
+  dy: number
+  even: boolean
+  /** O quanto o personagem andou de verdade no último passo. */
+  distance: number
+  /** A maior distância já andada num passo — é ela que denuncia a diagonal. */
+  best: number
+}
+/** O mapa escrito em texto: seis linhas de dez casas. */
+export interface SceneGrid {
+  rows: string[]
+  /** Casas que a criança trocou. */
+  edits: number
+  /**
+   * As letras DISTINTAS que ela já escreveu.
+   * ⚠️ "A MESMA letra virou sempre a mesma coisa" precisa da mesma letra em lugares
+   * diferentes; contando só as trocas, escrever três letras DIFERENTES fechava a meta.
+   * ⚠️⚠️ Distintas, e não uma por troca: o mapa tem 60 casas e a lista não pode crescer com
+   * elas — passar do teto que o validador aceita faz o retrato ser recusado pelo leitor.
+   */
+  written: string[]
+}
+
+/* ── Os grupos do motor, do 3D e do ateliê (15/09/2026) ──────────────────────────────────── */
+/** O nascedouro: quantos existem, quantos foram CRIADOS e se o corpo é reaproveitado. */
+export interface SceneNursery {
+  alive: number
+  /** O contador que só sobe — é ele que denuncia o vazamento. */
+  created: number
+  recycling: boolean
+  ticks: number
+}
+/** O cérebro de cada personagem: em que estado ele está agora. */
+export type BrainState = 'parado' | 'mirar' | 'atirar' | 'recarregar'
+export interface SceneBrains {
+  states: BrainState[]
+  ticks: number
+}
+/** Duas máquinas com o mesmo jogo: uma rápida e uma devagar. */
+export interface SceneMachines {
+  /** O que o jogo conta para medir o tempo. */
+  mode: 'frames' | 'seconds'
+  fastX: number
+  slowX: number
+  elapsed: number
+}
+/** A colisão escrita à mão: dois centros e dois raios. */
+export interface SceneCircles {
+  distance: number
+  a: number
+  b: number
+  /** Já encostaram alguma vez? */
+  touched: boolean
+}
+/** O lugar no espaço. ⚠️ Aqui o y cresce para CIMA. */
+export interface SceneSpace {
+  x: number
+  y: number
+  z: number
+  /** Os eixos que a criança já mexeu sozinhos, para a cena saber o que ela comparou. */
+  moved: string[]
+}
+/** De onde a câmera olha, e quantas faces isso deixa ver. */
+export interface SceneOrbit {
+  yaw: number
+  pitch: number
+  /** Menor número de faces já visto de uma vez. */
+  fewest: number
+  /** Voltou à vista inicial depois de girar? */
+  returned: boolean
+}
+/** O modelo: os pontos ligados por baixo da roupa. */
+export interface SceneModelView {
+  wire: boolean
+  yaw: number
+}
+/** A mira que sai da câmera e para na primeira coisa. */
+export interface SceneRay {
+  x: number
+  y: number
+  /** Qual caixa a reta acertou: 0 = nenhuma. */
+  hit: number
+  /** As caixas já acertadas, para a cena saber que ela mirou em mais de uma. */
+  hits: number[]
+}
+/** O miolo e o contorno da mesma forma. */
+export interface SceneInk {
+  fill: boolean
+  stroke: boolean
+  /** Os arranjos que ela já viu: `fill`, `stroke`, `both`, `none`. */
+  seen: string[]
+}
+/** A luz e a sombra que dão volume ao desenho chapado. */
+export interface SceneLight {
+  side: 'left' | 'right'
+  shade: boolean
+  /** Os lados de onde a luz já veio com a sombra pintada. */
+  sides: string[]
+}
+
 export interface SceneSpeed {
   limited: boolean
   base: number
@@ -209,6 +399,27 @@ export interface SceneState {
   pixels: ScenePixels
   sheet: SceneSheet
   lifeline: SceneLifeline
+  drive: SceneDrive
+  input: SceneInput
+  box: SceneBox
+  hunt: SceneHunt
+  blueprint: SceneBlueprint
+  view: SceneView
+  hit: SceneHit
+  weapon: SceneWeapon
+  sight: SceneSight
+  walkPad: SceneWalkPad
+  grid: SceneGrid
+  nursery: SceneNursery
+  brains: SceneBrains
+  machines: SceneMachines
+  circles: SceneCircles
+  space: SceneSpace
+  orbit: SceneOrbit
+  model: SceneModelView
+  ray: SceneRay
+  ink: SceneInk
+  light: SceneLight
   caption: string
 }
 
@@ -216,6 +427,12 @@ export interface SceneStart {
   scene: SceneId
   /** Só `gravity` e `impulse` aceitam; o professor escolhe a altura de partida do salto. */
   initialImpulse?: number
+  /**
+   * O caso desta atividade. ⚠️ `initialScene` NÃO o aplica: quem abre a cena de verdade é o
+   * `openScene` do motor, porque aplicar o caso é rodar ações, e o motor mora em `engine.ts`.
+   * Toda abertura de sessão passa por lá; aqui fica o mundo de fábrica.
+   */
+  setup?: SceneSetup
 }
 
 /** O padrão dos grupos que a cena ganhou depois que já havia retrato guardado por aí. */
@@ -249,6 +466,54 @@ const LIFELINE_PADRAO: SceneLifeline = {
   remainder: 0,
 }
 
+/* Os padrões do núcleo do Iniciante 2D. */
+const DRIVE_PADRAO: SceneDrive = { vx: 0, vy: 0, x: 60, y: 135, fromX: 60, fromY: 135, ticks: 0 }
+const INPUT_PADRAO: SceneInput = { holding: false, presses: 0, pressX: 40, holdX: 40, ticks: 0 }
+// ⚠️ Sem `displayed`: ele era escrito, validado e NUNCA lido. A tela mostra o valor VIVO (é o
+// que a cena ensina), então um retrato do que ela mostrou não tinha leitor.
+const BOX_PADRAO: SceneBox = { value: 0, shown: false, changes: 0 }
+// ⚠️ O do meio é o mais perto de propósito: escolher "o primeiro do grupo" dá errado, e é
+// exatamente essa a dor que o laço existe para resolver.
+const HUNT_PADRAO: SceneHunt = {
+  distances: [180, 90, 140],
+  looked: [],
+  chosen: 0,
+  auto: false,
+  ticks: 0,
+}
+const BLUEPRINT_PADRAO: SceneBlueprint = { speed: 3, life: 2, born: 0, edits: 0 }
+const VIEW_PADRAO: SceneView = { heroX: 200, follow: false, wasLost: false }
+const HIT_PADRAO: SceneHit = {
+  distance: 120,
+  mode: 'ask',
+  damage: 0,
+  touching: false,
+  away: false,
+}
+const WEAPON_PADRAO: SceneWeapon = { seconds: 0, ready: 0, shots: 0, refused: 0 }
+const SIGHT_PADRAO: SceneSight = { targetX: 360, targetY: 80, chasing: false, shotX: 0, shotY: 0 }
+const WALKPAD_PADRAO: SceneWalkPad = { dx: 0, dy: 0, even: false, distance: 0, best: 0 }
+// O mapa que a criança edita: chão embaixo, o resto vazio. `#` é bloco, `o` é moeda.
+const GRID_PADRAO: SceneGrid = {
+  rows: ['..........', '..........', '..........', '..........', '..........', '##########'],
+  edits: 0,
+  written: [],
+}
+
+/* Os padrões do motor, do 3D e do ateliê. */
+const NURSERY_PADRAO: SceneNursery = { alive: 0, created: 0, recycling: false, ticks: 0 }
+const BRAINS_PADRAO: SceneBrains = { states: ['parado', 'parado', 'parado'], ticks: 0 }
+const MACHINES_PADRAO: SceneMachines = { mode: 'frames', fastX: 40, slowX: 40, elapsed: 0 }
+const CIRCLES_PADRAO: SceneCircles = { distance: 140, a: 30, b: 30, touched: false }
+// ⚠️ Nasce no chão e no meio: o y de partida é ZERO porque a cena existe para mostrar que
+// subir é +y — e ela precisa começar de onde dá para subir.
+const SPACE_PADRAO: SceneSpace = { x: 0, y: 0, z: 0, moved: [] }
+const ORBIT_PADRAO: SceneOrbit = { yaw: 1, pitch: 1, fewest: 3, returned: false }
+const MODEL_PADRAO: SceneModelView = { wire: false, yaw: 1 }
+const RAY_PADRAO: SceneRay = { x: 240, y: 135, hit: 0, hits: [] }
+const INK_PADRAO: SceneInk = { fill: true, stroke: true, seen: [] }
+const LIGHT_PADRAO: SceneLight = { side: 'left', shade: false, sides: [] }
+
 /**
  * ⚠️⚠️ Um retrato guardado ANTES de a cena ganhar um grupo novo de estado continua válido.
  *
@@ -274,11 +539,52 @@ export function hydrateSceneState(value: unknown): unknown {
     ['pixels', PIXELS_PADRAO],
     ['sheet', SHEET_PADRAO],
     ['lifeline', LIFELINE_PADRAO],
+    ['drive', DRIVE_PADRAO],
+    ['input', INPUT_PADRAO],
+    ['box', BOX_PADRAO],
+    ['hunt', HUNT_PADRAO],
+    ['blueprint', BLUEPRINT_PADRAO],
+    ['view', VIEW_PADRAO],
+    ['hit', HIT_PADRAO],
+    ['weapon', WEAPON_PADRAO],
+    ['sight', SIGHT_PADRAO],
+    ['walkPad', WALKPAD_PADRAO],
+    ['grid', GRID_PADRAO],
+    ['nursery', NURSERY_PADRAO],
+    ['brains', BRAINS_PADRAO],
+    ['machines', MACHINES_PADRAO],
+    ['circles', CIRCLES_PADRAO],
+    ['space', SPACE_PADRAO],
+    ['orbit', ORBIT_PADRAO],
+    ['model', MODEL_PADRAO],
+    ['ray', RAY_PADRAO],
+    ['ink', INK_PADRAO],
+    ['light', LIGHT_PADRAO],
   ] as const
-  if (grupos.every(([nome]) => isRecord(value[nome]))) return value
   const saida: Record<string, unknown> = { ...value }
-  for (const [nome, padrao] of grupos)
-    if (!isRecord(saida[nome])) saida[nome] = { ...(padrao as object) }
+  for (const [nome, padrao] of grupos) {
+    const guardado = saida[nome]
+    // ⚠️⚠️ CAMPO a campo, não só grupo a grupo. Um grupo que já existe pode ter nascido antes de
+    // um campo novo (`hit.away`, `grid.written`), e o validador recusaria o retrato inteiro: a
+    // sessão da criança deixaria de hidratar e ela voltaria ao começo sem saber por quê.
+    // ⚠️ Cópia PROFUNDA dos arrays: a rasa deixava `BRAINS_PADRAO.states`, `GRID_PADRAO.rows` e
+    // irmãos sendo a MESMA instância em todo retrato legado hidratado no processo do servidor.
+    const base = copiaProfunda(padrao as unknown as Record<string, unknown>)
+    saida[nome] = isRecord(guardado) ? { ...base, ...guardado } : base
+  }
+  return saida
+}
+
+/** Um grupo de estado com os arrays dele copiados — o padrão nunca sai daqui por referência. */
+function copiaProfunda(grupo: Record<string, unknown>): Record<string, unknown> {
+  const saida: Record<string, unknown> = { ...grupo }
+  for (const [chave, valor] of Object.entries(saida)) {
+    if (Array.isArray(valor)) saida[chave] = [...valor]
+    // ⚠️ Recursivo: `speed.samples` é um objeto COM arrays dentro, e uma cópia de um nível só
+    // devolveria o padrão compartilhado no dia em que ele entrasse na lista.
+    else if (valor && typeof valor === 'object')
+      saida[chave] = copiaProfunda(valor as Record<string, unknown>)
+  }
   return saida
 }
 
@@ -332,7 +638,7 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     },
     // ⚠️ x 110 e y 150 são os MESMOS números que a Aula 1 pede no bloco "Criar dinossauro".
     // A cena abre onde o projeto dela vai ficar, para o número ter a mesma cara nos dois lugares.
-    place: { ...PLACE_PADRAO },
+    place: { ...PLACE_PADRAO, visitedX: [...PLACE_PADRAO.visitedX] },
     description: { ...DESCRIPTION_PADRAO },
     stage: { ...STAGE_PADRAO },
     render: { ...RENDER_PADRAO },
@@ -341,6 +647,27 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     pixels: { ...PIXELS_PADRAO },
     sheet: { ...SHEET_PADRAO, cuts: [] },
     lifeline: { ...LIFELINE_PADRAO },
+    drive: { ...DRIVE_PADRAO },
+    input: { ...INPUT_PADRAO },
+    box: { ...BOX_PADRAO },
+    hunt: { ...HUNT_PADRAO, distances: [...HUNT_PADRAO.distances], looked: [] },
+    blueprint: { ...BLUEPRINT_PADRAO },
+    view: { ...VIEW_PADRAO },
+    hit: { ...HIT_PADRAO },
+    weapon: { ...WEAPON_PADRAO },
+    sight: { ...SIGHT_PADRAO },
+    walkPad: { ...WALKPAD_PADRAO },
+    grid: { ...GRID_PADRAO, rows: [...GRID_PADRAO.rows], written: [] },
+    nursery: { ...NURSERY_PADRAO },
+    brains: { ...BRAINS_PADRAO, states: [...BRAINS_PADRAO.states] },
+    machines: { ...MACHINES_PADRAO },
+    circles: { ...CIRCLES_PADRAO },
+    space: { ...SPACE_PADRAO, moved: [] },
+    orbit: { ...ORBIT_PADRAO },
+    model: { ...MODEL_PADRAO },
+    ray: { ...RAY_PADRAO, hits: [] },
+    ink: { ...INK_PADRAO, seen: [] },
+    light: { ...LIGHT_PADRAO, sides: [] },
     caption: '',
   }
 }
@@ -376,6 +703,27 @@ export function cloneScene(state: SceneState): SceneState {
     pixels: { ...state.pixels },
     sheet: { ...state.sheet, cuts: [...state.sheet.cuts] },
     lifeline: { ...state.lifeline },
+    drive: { ...state.drive },
+    input: { ...state.input },
+    box: { ...state.box },
+    hunt: { ...state.hunt, distances: [...state.hunt.distances], looked: [...state.hunt.looked] },
+    blueprint: { ...state.blueprint },
+    view: { ...state.view },
+    hit: { ...state.hit },
+    weapon: { ...state.weapon },
+    sight: { ...state.sight },
+    walkPad: { ...state.walkPad },
+    grid: { ...state.grid, rows: [...state.grid.rows], written: [...state.grid.written] },
+    nursery: { ...state.nursery },
+    brains: { ...state.brains, states: [...state.brains.states] },
+    machines: { ...state.machines },
+    circles: { ...state.circles },
+    space: { ...state.space, moved: [...state.space.moved] },
+    orbit: { ...state.orbit },
+    model: { ...state.model },
+    ray: { ...state.ray, hits: [...state.ray.hits] },
+    ink: { ...state.ink, seen: [...state.ink.seen] },
+    light: { ...state.light, sides: [...state.light.sides] },
     caption: state.caption,
   }
 }
@@ -432,12 +780,21 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!isRecord(value)) return false
   const { evidence, world, flight, sound, crowd, match, contact, speed, place, description } = value
   const { stage, render, animation, mirror, pixels, sheet, lifeline } = value
+  const { drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid } = value
+  const { nursery, brains, machines, circles, space, orbit, model, ray, ink, light } = value
   if (!isRecord(evidence) || !isRecord(world) || !isRecord(flight) || !isRecord(sound)) return false
   if (!isRecord(crowd) || !isRecord(match) || !isRecord(contact) || !isRecord(speed)) return false
   if (!isRecord(place) || !isRecord(description)) return false
   if (!isRecord(stage) || !isRecord(render)) return false
   if (!isRecord(animation) || !isRecord(mirror) || !isRecord(pixels)) return false
   if (!isRecord(sheet) || !isRecord(lifeline)) return false
+  if (!isRecord(drive) || !isRecord(input) || !isRecord(box) || !isRecord(hunt)) return false
+  if (!isRecord(blueprint) || !isRecord(view) || !isRecord(hit) || !isRecord(weapon)) return false
+  if (!isRecord(sight) || !isRecord(walkPad) || !isRecord(grid)) return false
+  if (!isRecord(nursery) || !isRecord(brains) || !isRecord(machines) || !isRecord(circles))
+    return false
+  if (!isRecord(space) || !isRecord(orbit) || !isRecord(model) || !isRecord(ray)) return false
+  if (!isRecord(ink) || !isRecord(light)) return false
   if (typeof value.caption !== 'string' || value.caption.length > 500) return false
   if (!num(evidence.actions) || !num(evidence.hints)) return false
   if (!strings(evidence.discoveries, 40)) return false
@@ -490,7 +847,112 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!bool(stage.border) || !num(stage.tried)) return false
   if (!bool(render.loop) || !bool(render.erase)) return false
   if (!num(render.frames) || !num(render.trail)) return false
-  return isArtState(animation, mirror, pixels, sheet, lifeline)
+  if (!isArtState(animation, mirror, pixels, sheet, lifeline)) return false
+  if (!isCoreState({ drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid }))
+    return false
+  return isEngineState({ nursery, brains, machines, circles, space, orbit, model, ray, ink, light })
+}
+
+/** Os dez grupos do motor, do 3D e do ateliê. Mesma régua: campo a campo, com faixa. */
+function isEngineState(g: Record<string, unknown>): boolean {
+  const L = SCENE_LIMITS
+  const nursery = g.nursery as Record<string, unknown>
+  if (!num(nursery.alive) || !num(nursery.created) || !num(nursery.ticks)) return false
+  if (!bool(nursery.recycling)) return false
+  const brains = g.brains as Record<string, unknown>
+  const ESTADOS = ['parado', 'mirar', 'atirar', 'recarregar']
+  if (!Array.isArray(brains.states) || brains.states.length !== 3) return false
+  if (!brains.states.every((e) => typeof e === 'string' && ESTADOS.includes(e))) return false
+  if (!num(brains.ticks)) return false
+  const machines = g.machines as Record<string, unknown>
+  if (machines.mode !== 'frames' && machines.mode !== 'seconds') return false
+  if (!between(machines.fastX, L.machineX.min, L.machineX.max)) return false
+  if (!between(machines.slowX, L.machineX.min, L.machineX.max)) return false
+  if (!num(machines.elapsed)) return false
+  const circles = g.circles as Record<string, unknown>
+  if (!between(circles.distance, L.centers.min, L.centers.max)) return false
+  if (!between(circles.a, L.radius.min, L.radius.max)) return false
+  if (!between(circles.b, L.radius.min, L.radius.max)) return false
+  if (!bool(circles.touched)) return false
+  const space = g.space as Record<string, unknown>
+  if (!between(space.x, L.spaceX.min, L.spaceX.max)) return false
+  if (!between(space.y, L.spaceY.min, L.spaceY.max)) return false
+  if (!between(space.z, L.spaceZ.min, L.spaceZ.max)) return false
+  if (!strings(space.moved, 3)) return false
+  const orbit = g.orbit as Record<string, unknown>
+  if (!between(orbit.yaw, L.yaw.min, L.yaw.max)) return false
+  if (!between(orbit.pitch, L.pitch.min, L.pitch.max)) return false
+  if (!num(orbit.fewest) || !bool(orbit.returned)) return false
+  const model = g.model as Record<string, unknown>
+  if (!bool(model.wire) || !between(model.yaw, L.yaw.min, L.yaw.max)) return false
+  const ray = g.ray as Record<string, unknown>
+  if (!between(ray.x, L.pointX.min, L.pointX.max)) return false
+  if (!between(ray.y, L.pointY.min, L.pointY.max)) return false
+  if (!num(ray.hit) || !numbers(ray.hits, 6)) return false
+  const ink = g.ink as Record<string, unknown>
+  if (!bool(ink.fill) || !bool(ink.stroke) || !strings(ink.seen, 4)) return false
+  const light = g.light as Record<string, unknown>
+  if (light.side !== 'left' && light.side !== 'right') return false
+  return bool(light.shade) && strings(light.sides, 2)
+}
+
+/**
+ * Os onze grupos do núcleo do Iniciante 2D.
+ *
+ * ⚠️ Mesma régua dos outros: campo a campo, com FAIXA onde o número é desenhado no palco. Um
+ * checkpoint corrompido com `heroX` de um milhão tiraria o herói do mapa sem erro nenhum.
+ */
+function isCoreState(g: Record<string, unknown>): boolean {
+  const L = SCENE_LIMITS
+  const drive = g.drive as Record<string, unknown>
+  if (!between(drive.vx, L.velocity.min, L.velocity.max)) return false
+  if (!between(drive.vy, L.velocity.min, L.velocity.max)) return false
+  // ⚠️ Com FAIXA, e não só "é número": estes quatro são desenhados direto no palco, e é a
+  // mesma justificativa que o arquivo já escreve para o `place` e para o `view.heroX`.
+  if (!between(drive.x, L.placeX.min, L.placeX.max)) return false
+  if (!between(drive.y, L.placeY.min, L.placeY.max)) return false
+  if (!between(drive.fromX, L.placeX.min, L.placeX.max)) return false
+  if (!between(drive.fromY, L.placeY.min, L.placeY.max)) return false
+  if (!num(drive.ticks)) return false
+  const input = g.input as Record<string, unknown>
+  if (!bool(input.holding) || !num(input.presses)) return false
+  if (!between(input.pressX, L.placeX.min, L.placeX.max)) return false
+  if (!between(input.holdX, L.placeX.min, L.placeX.max)) return false
+  if (!num(input.ticks)) return false
+  const box = g.box as Record<string, unknown>
+  if (!between(box.value, L.boxValue.min, L.boxValue.max) || !bool(box.shown)) return false
+  if (!num(box.changes)) return false
+  const hunt = g.hunt as Record<string, unknown>
+  if (!numbers(hunt.distances, 3) || (hunt.distances as number[]).length !== 3) return false
+  if (!numbers(hunt.looked, 3) || !num(hunt.chosen) || !bool(hunt.auto) || !num(hunt.ticks))
+    return false
+  const blueprint = g.blueprint as Record<string, unknown>
+  if (!between(blueprint.speed, L.typeSpeed.min, L.typeSpeed.max)) return false
+  if (!between(blueprint.life, L.typeLife.min, L.typeLife.max)) return false
+  if (!num(blueprint.born) || !num(blueprint.edits)) return false
+  const view = g.view as Record<string, unknown>
+  if (!between(view.heroX, L.worldX.min, L.worldX.max)) return false
+  if (!bool(view.follow) || !bool(view.wasLost)) return false
+  const hit = g.hit as Record<string, unknown>
+  if (!between(hit.distance, L.approach.min, L.approach.max)) return false
+  if (hit.mode !== 'ask' && hit.mode !== 'event') return false
+  if (!num(hit.damage) || !bool(hit.touching) || !bool(hit.away)) return false
+  const weapon = g.weapon as Record<string, unknown>
+  if (!between(weapon.seconds, L.recharge.min, L.recharge.max)) return false
+  if (!num(weapon.ready) || !num(weapon.shots) || !num(weapon.refused)) return false
+  const sight = g.sight as Record<string, unknown>
+  if (!between(sight.targetX, L.aimX.min, L.aimX.max)) return false
+  if (!between(sight.targetY, L.aimY.min, L.aimY.max)) return false
+  if (!bool(sight.chasing) || !num(sight.shotX) || !num(sight.shotY)) return false
+  const walkPad = g.walkPad as Record<string, unknown>
+  if (![-1, 0, 1].includes(walkPad.dx as number)) return false
+  if (![-1, 0, 1].includes(walkPad.dy as number)) return false
+  if (!bool(walkPad.even) || !num(walkPad.distance) || !num(walkPad.best)) return false
+  const grid = g.grid as Record<string, unknown>
+  if (!Array.isArray(grid.rows) || grid.rows.length !== 6) return false
+  if (!grid.rows.every((r) => typeof r === 'string' && /^[.#o]{10}$/.test(r))) return false
+  // A lista guarda LETRAS distintas, e o alfabeto do mapa tem três.
+  return num(grid.edits) && strings(grid.written, MAP_TILES.length)
 }
 
 /**

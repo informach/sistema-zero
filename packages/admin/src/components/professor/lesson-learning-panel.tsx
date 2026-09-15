@@ -6,6 +6,7 @@ import type {
   PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
+  castText,
   evaluateExperimentation,
   readDemonstrationSession,
   readExperimentSession,
@@ -13,13 +14,33 @@ import {
   type SceneState,
   sceneGoals,
   sceneModelFor,
+  sceneTargets,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { LessonEvidenceHistory } from './lesson-evidence-history'
 
-/** A montagem que a criança deixou na cena, em uma frase que o professor lê sem decifrar. */
+/**
+ * A frase que a criança escolheu na pergunta anexa do bloco, quando ela respondeu.
+ *
+ * ⚠️⚠️ Ela vale para os QUATRO tipos, e é por isso que sai numa função. Os dois ramos de cena
+ * fazem `return` com as próprias linhas, e a linha da conclusão só existia depois deles — então
+ * quando a cena voltou a aceitar pergunta anexa (15/09/2026), o campo que passou a decidir o
+ * `passed` ficou invisível justamente para quem precisa dele para intervir.
+ */
+function conclusaoLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
+  if (typeof answers.checkpoint !== 'string') return []
+  const escolha = content?.checkpoint?.choices.find((c) => c.id === answers.checkpoint)
+  return [`Conclusão: ${escolha?.label ?? answers.checkpoint}`]
+}
+
+/**
+ * A montagem que a criança deixou na cena, em uma frase que o professor lê sem decifrar.
+ *
+ * ⚠️ Com o ELENCO: as metas e o feedback ao lado já eram vestidos, e a linha "Montagem atual"
+ * falava de outro personagem no mesmo bloco — o professor lendo "Dino" onde a criança leu "nave".
+ */
 function montagem(scene: SceneId, state: SceneState): string {
   const tela = { start: 'início', playing: 'partida', end: 'fim' }[state.match.screen]
   switch (scene) {
@@ -84,6 +105,60 @@ function montagem(scene: SceneId, state: SceneState): string {
       return `posições testadas: ${state.speed.samples.positions.join(', ') || 'nenhuma'}; velocidades: ${state.speed.samples.velocities.join(', ') || 'nenhuma'}`
     case 'acceleration':
       return `base ${state.speed.base}; limite ${state.speed.limited ? 'ligado' : 'desligado'}; última velocidade ${state.speed.samples.velocity}`
+    /* ── O núcleo do Iniciante 2D ─────────────────────────────────────────────────────────── */
+    case 'velocity':
+      return `velocidade ${state.drive.vx} para o lado e ${state.drive.vy} para baixo; x ${Math.round(state.drive.x)} depois de ${state.drive.ticks} quadro(s)`
+    case 'hold-vs-press':
+      return `${state.input.presses} aperto(s); a de cima em ${Math.round(state.input.pressX)}, a de baixo em ${Math.round(state.input.holdX)}`
+    case 'variable':
+      return `caixa com ${state.box.value}; ${state.box.changes} mudança(s); tela ${state.box.shown ? 'mostrando' : 'sem mostrar'}`
+    case 'group-loop':
+      return `${state.hunt.looked.length} de 3 olhados; escolhido ${state.hunt.chosen || 'nenhum'}; laço ${state.hunt.auto ? 'ligado' : 'desligado'}`
+    case 'enemy-type':
+      return `ficha com velocidade ${state.blueprint.speed} e vida ${state.blueprint.life}; ${state.blueprint.born} nascido(s)`
+    case 'camera':
+      return `Dino em ${state.view.heroX}; câmera ${state.view.follow ? 'seguindo' : 'parada'}`
+    case 'contact':
+      return `distância ${state.hit.distance}; pergunta ${state.hit.mode === 'ask' ? 'contínua' : 'por acontecimento'}; ${state.hit.damage} de vida perdida`
+    case 'cooldown':
+      return `recarga de ${state.weapon.seconds}s; ${state.weapon.shots} tiro(s) e ${state.weapon.refused} pedido(s) recusado(s)`
+    case 'aim':
+      return `alvo em ${state.sight.targetX}, ${state.sight.targetY}; mira ${state.sight.chasing ? 'ligada' : 'desligada'}`
+    case 'diagonal':
+      return `setas ${state.walkPad.dx}, ${state.walkPad.dy}; correção ${state.walkPad.even ? 'ligada' : 'desligada'}; maior passo ${state.walkPad.best}`
+    case 'tilemap':
+      return `${state.grid.edits} casa(s) trocada(s); linha do meio "${state.grid.rows[3] ?? ''}"`
+    /* ── O motor, o 3D e o ateliê ─────────────────────────────────────────────────────────── */
+    case 'pool':
+      return `${state.nursery.alive} vivo(s) e ${state.nursery.created} criado(s) desde o começo; reciclagem ${
+        state.nursery.recycling ? 'ligada' : 'desligada'
+      }`
+    case 'entity-state':
+      return `1º ${state.brains.states[0]}, 2º ${state.brains.states[1]}, 3º ${state.brains.states[2]}`
+    case 'delta-time':
+      return `contando ${state.machines.mode === 'frames' ? 'quadros' : 'segundos'}; a rápida em ${Math.round(
+        state.machines.fastX,
+      )} e a devagar em ${Math.round(state.machines.slowX)}`
+    case 'circle-collision':
+      return `distância ${Math.round(state.circles.distance)} contra ${state.circles.a + state.circles.b} de soma dos raios`
+    case 'axis-z':
+      return `x ${state.space.x}, y ${state.space.y}, z ${state.space.z}; eixos mexidos sozinhos: ${
+        state.space.moved.join(', ') || 'nenhum'
+      }`
+    case 'camera-3d':
+      return `câmera na volta ${state.orbit.yaw} de 8, altura ${state.orbit.pitch}; menos cores já vistas de uma vez: ${state.orbit.fewest}`
+    case 'mesh':
+      return `raio-X ${state.model.wire ? 'ligado' : 'desligado'}; modelo na volta ${state.model.yaw}`
+    case 'pick-ray':
+      return `mira em ${state.ray.x}, ${state.ray.y}; ${
+        state.ray.hit ? `parou na caixa ${state.ray.hit}` : 'no vazio'
+      }; ${state.ray.hits.length} caixa(s) já acertada(s)`
+    case 'fill-stroke':
+      return `miolo ${state.ink.fill ? 'pintado' : 'vazio'}; contorno ${state.ink.stroke ? 'à vista' : 'sem cor'}`
+    case 'shading':
+      return `sombra ${state.light.shade ? 'ligada' : 'desligada'}; luz vindo da ${
+        state.light.side === 'left' ? 'esquerda' : 'direita'
+      }`
   }
 }
 
@@ -102,7 +177,7 @@ function predictionLines(answers: LearningAnswers, content?: PublicInteractiveBl
 
 function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   const activity = content?.activity
-  const previsao = predictionLines(answers, content)
+  const previsao = [...predictionLines(answers, content), ...conclusaoLines(answers, content)]
 
   if (activity?.type === 'demonstration') {
     const session = readDemonstrationSession(activity.scene, answers.sceneCheckpoint)
@@ -136,25 +211,22 @@ function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock)
       // O acompanhamento do professor lê a cena com o ELENCO da atividade: ele precisa ver
       // os mesmos nomes que a criança viu, senão o relatório fala de outro personagem.
       `Cena: ${sceneModelFor(activity).title}`,
-      ...sceneGoals(activity.scene, state, activity.cast).map(
+      ...sceneGoals(activity.scene, state, activity.cast, sceneTargets(activity)).map(
         (g) => `${g.complete ? 'Descobriu' : 'Pendente'}: ${g.label}`,
       ),
       ...state.evidence.observations
         .filter((o) => state.evidence.discoveries.includes(o.id))
         .map((o) => `Observou: ${o.label}`),
-      `Montagem atual: ${montagem(activity.scene, state)}`,
+      `Montagem atual: ${castText(montagem(activity.scene, state), activity.cast)}`,
       `Pistas utilizadas: ${state.evidence.hints}`,
       `Comparações guardadas: ${session.trials.length}`,
-      evaluateExperimentation(activity.scene, state, true, activity.cast).feedback,
+      evaluateExperimentation(activity.scene, state, true, activity.cast, sceneTargets(activity))
+        .feedback,
       'A cena registra o que ela fez ali. A transferência se observa no projeto e nos critérios da seção.',
     ].filter(Boolean)
   }
 
   const lines: string[] = [...previsao]
-  if (typeof answers.checkpoint === 'string')
-    lines.push(
-      `Conclusão: ${content?.checkpoint?.choices.find((c) => c.id === answers.checkpoint)?.label ?? answers.checkpoint}`,
-    )
   if (
     answers.parameters &&
     typeof answers.parameters === 'object' &&

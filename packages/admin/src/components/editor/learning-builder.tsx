@@ -6,7 +6,12 @@ import {
   type LearningChoice,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import { isSceneAudioUrl, SCENE_LIMITS, sceneModelFor } from '@sistemazero/core/learning/scene'
+import {
+  isSceneAudioUrl,
+  SCENE_LIMITS,
+  sceneModelFor,
+  sceneTargets,
+} from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -27,6 +32,7 @@ import { HtmlCodeEditor } from './html-code-editor'
 import { SceneAuthoring } from './scene-authoring'
 import { SceneCastEditor } from './scene-cast-editor'
 import { ScenePicker } from './scene-picker'
+import { SceneSetupEditor } from './scene-setup-editor'
 
 const initialChoices = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
@@ -248,18 +254,67 @@ export function LearningBuilder({
             <p className="rounded-xl bg-muted/40 p-4 text-sm">
               A criança usa os controles da cena. Toque, arraste e teclado levam ao mesmo lugar, e a
               atividade fecha em:{' '}
+              {/* ⚠️ As metas da MISSÃO, não as do modelo: o mesmo editor que deixou o professor
+                  escolher o caso não pode continuar prometendo as três de fábrica. */}
               {sceneModelFor(cena)
-                .goals.map((g) => g.label)
+                .goals.filter((g) => sceneTargets(cena).includes(g.id))
+                .map((g) => g.label)
                 .join('; ')}
               .
             </p>
           )}
           <details className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
+              O caso desta atividade: por onde começa e o que cobra
+            </summary>
+            <div className="mt-3">
+              <SceneSetupEditor activity={cena} onChange={activity} />
+            </div>
+          </details>
+          <details className="rounded-xl border border-border p-3">
+            <summary className="cursor-pointer text-sm font-medium">
               Elenco, áudio e ajustes da cena
             </summary>
             <div className="mt-3 space-y-3">
               <SceneCastEditor activity={cena} onChange={activity} />
+              {cena.type === 'demonstration' && (
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium">Como a demonstração aparece</legend>
+                  {(
+                    [
+                      [
+                        'guided',
+                        'Guiada',
+                        'As etapas à vista, uma fala por etapa, a criança avança quando quiser.',
+                      ],
+                      [
+                        'inline',
+                        'Animação curta',
+                        'Um ▶ e nada mais: o roteiro inteiro de uma vez, para ficar no meio da explicação.',
+                      ],
+                    ] as const
+                  ).map(([valor, titulo, ajuda]) => (
+                    <label
+                      key={valor}
+                      htmlFor={`${id}-presentation-${valor}`}
+                      className="flex min-h-11 cursor-pointer items-start gap-2 text-sm"
+                    >
+                      <input
+                        id={`${id}-presentation-${valor}`}
+                        type="radio"
+                        name={`${id}-presentation`}
+                        className="mt-1"
+                        checked={(cena.presentation ?? 'guided') === valor}
+                        onChange={() => activity({ ...cena, presentation: valor })}
+                      />
+                      <span>
+                        <span className="font-medium">{titulo}</span>
+                        <span className="block text-xs text-muted-foreground">{ajuda}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
               {cena.type === 'experimentation' &&
                 (cena.scene === 'gravity' || cena.scene === 'impulse') && (
                   <Field
@@ -443,29 +498,30 @@ export function LearningBuilder({
           )}
         </div>
       )}
-      {!cena && (
-        <label className="flex min-h-11 items-center gap-3">
-          <input
-            type="checkbox"
-            checked={Boolean(checkpoint)}
-            disabled={a.type === 'question'}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                checkpoint: e.target.checked
-                  ? {
-                      prompt: '',
-                      choices: initialChoices(),
-                      correctChoiceId: 'first',
-                      explanation: '',
-                    }
-                  : undefined,
-              })
-            }
-          />
-          Incluir pergunta de verificação
-        </label>
-      )}
+      {/* ⚠️ A pergunta anexa vale para os QUATRO tipos desde 15/09/2026. Na cena ela é o terceiro
+          tempo do ciclo (mexer, prever, enunciar a regra) e só aparece para a criança DEPOIS de a
+          descoberta acontecer — antes disso, perguntar "por quê?" é pedir adivinhação. */}
+      <label className="flex min-h-11 items-center gap-3">
+        <input
+          type="checkbox"
+          checked={Boolean(checkpoint)}
+          disabled={a.type === 'question'}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              checkpoint: e.target.checked
+                ? {
+                    prompt: '',
+                    choices: initialChoices(),
+                    correctChoiceId: 'first',
+                    explanation: '',
+                  }
+                : undefined,
+            })
+          }
+        />
+        Incluir pergunta de verificação
+      </label>
       {value.required && a.type === 'html' && !checkpoint && (
         <p role="status" className="text-sm text-destructive">
           Adicione uma pergunta de verificação para tornar esta experiência essencial.

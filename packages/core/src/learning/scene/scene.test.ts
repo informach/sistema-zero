@@ -15,13 +15,15 @@ import { initialScene, isSceneState } from './state'
  */
 
 describe('cena: o catálogo', () => {
-  test('tem os 24 modelos, e cada um traz metas, três dicas e um roteiro', () => {
+  test('tem os 45 modelos, e cada um traz metas, três dicas e um roteiro', () => {
     // Eram 14 até 14/09/2026. Entraram as quatro que as duas primeiras aulas do Corre Dino
     // pediam e que só existiam como vídeo planejado (`coordinates`, `screen-reader`,
     // `stage-size` e `draw-loop`) e, no mesmo dia, as seis do lote 4 da proposta: as cinco de
     // desenho de O Jogo do Meu Jeito (`frames`, `onion-skin`, `symmetry`, `pixel-vector`,
-    // `sheet-vs-sprite`) e a das vidas do Desafio (`lives`).
-    expect(SCENE_IDS).toHaveLength(24)
+    // `sheet-vs-sprite`) e a das vidas do Desafio (`lives`). Em 15/09/2026 vieram as onze do
+    // núcleo do Iniciante 2D e as dez do motor, do 3D e do ateliê — os degraus da trilha que
+    // não tinham cena nenhuma (ver `docs/aulas-interativas/proposta-experiencias-trilha.md`).
+    expect(SCENE_IDS).toHaveLength(45)
     for (const scene of SCENE_IDS) {
       const m = SCENE_MODELS[scene]
       expect(m.id).toBe(scene)

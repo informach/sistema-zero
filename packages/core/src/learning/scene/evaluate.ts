@@ -2,6 +2,7 @@ import type { LearningResult } from '../index'
 import type { SceneId } from './actions'
 import { castText, type SceneCast } from './cast'
 import { sceneModel } from './catalog'
+import { sceneSituation } from './readout'
 import type { SceneState } from './state'
 
 /**
@@ -22,12 +23,16 @@ export function sceneGoals(
   state: SceneState,
   /** Quem está no palco. Sem elenco, o texto do catálogo vale como está. */
   cast?: SceneCast,
+  /** As metas que ESTA atividade cobra (o `setup.goals`). Sem lista, todas as do modelo. */
+  targets?: readonly string[],
 ): SceneGoalProgress[] {
-  return sceneModel(scene).goals.map((g) => ({
-    ...g,
-    label: castText(g.label, cast),
-    complete: state.evidence.discoveries.includes(g.id),
-  }))
+  return sceneModel(scene)
+    .goals.filter((g) => !targets?.length || targets.includes(g.id))
+    .map((g) => ({
+      ...g,
+      label: castText(g.label, cast),
+      complete: state.evidence.discoveries.includes(g.id),
+    }))
 }
 
 /**
@@ -35,11 +40,15 @@ export function sceneGoals(
  * em `layers`, o Dino na frente; em `jump-sound`, o fio do som no acontecimento. Descobrir e
  * depois desfazer não fecha essas duas — nas outras doze, descobrir basta.
  */
-function settled(scene: SceneId, state: SceneState): boolean {
-  if (scene === 'layers') return state.world.front
-  if (scene === 'jump-sound') return state.sound.onJump
+function settled(scene: SceneId, state: SceneState, targets?: readonly string[]): boolean {
+  // ⚠️ A exigência de FICAR no estado descoberto acompanha a meta: uma atividade que não cobra
+  // "Dino na frente" não pode travar a criança porque a montagem ficou no outro arranjo.
+  if (scene === 'layers') return !cobra(targets, 'front') || state.world.front
+  if (scene === 'jump-sound') return !cobra(targets, 'key-sound', 'tap-sound') || state.sound.onJump
   return true
 }
+const cobra = (targets: readonly string[] | undefined, ...goals: string[]) =>
+  !targets?.length || goals.some((g) => targets.includes(g))
 
 /** A criança mexeu e descobriu. */
 export function evaluateExperimentation(
@@ -47,16 +56,25 @@ export function evaluateExperimentation(
   state: SceneState,
   valid = true,
   cast?: SceneCast,
+  /** As metas desta atividade. Sem lista, as do modelo. */
+  targets?: readonly string[],
 ): LearningResult {
-  const missing = sceneGoals(scene, state, cast).find((g) => !g.complete)
-  const ready = settled(scene, state)
+  const cobradas = sceneGoals(scene, state, cast, targets)
+  const missing = cobradas.find((g) => !g.complete)
+  const ready = settled(scene, state, targets)
+  // ⚠️⚠️ Missão VAZIA reprova. O filtro por `targets` cruza a lista do caso com as metas do
+  // modelo, e uma meta renomeada no catálogo esvaziaria a lista de todo manifesto que a cita —
+  // transformando a atividade em algo que passa com evidência ZERO, em silêncio.
+  const temMissao = cobradas.length > 0
   return {
     participated: valid && state.evidence.actions > 0,
-    passed: valid && missing === undefined && ready,
+    passed: valid && temMissao && missing === undefined && ready,
     feedback: !valid
       ? 'Esta descoberta mudou. Recomece a experiência; seu projeto está guardado.'
-      : (missing?.label ??
-        (!ready ? 'Deixe a montagem com a descoberta que você fez.' : sceneModel(scene).success)),
+      : !temMissao
+        ? 'Esta atividade está sem descobertas para cobrar. Avise quem montou a aula.'
+        : (missing?.label ??
+          (!ready ? 'Deixe a montagem com a descoberta que você fez.' : sceneModel(scene).success)),
     verifiedBy: 'client',
     evidence: 'exploration',
   }
@@ -96,6 +114,17 @@ export function sceneHint(
   level: number,
   cast?: SceneCast,
 ): string {
+  const escada = degrau(scene, state, level, cast)
+  // ⭐ O primeiro degrau diz ONDE a criança está antes de dizer o que fazer — é o padrão da
+  // ajuda do Brilliant ("seu primeiro ponto foi parar em (−2, 2), mas onde o alvo precisa
+  // estar?"). A situação já é escrita em língua de criança e já passa pelo elenco; repetir a
+  // frase genérica para quem travou é não responder.
+  if (level > 1) return escada
+  const situacao = sceneSituation(scene, state, cast).trim()
+  return situacao && !escada.startsWith(situacao) ? `${situacao} ${escada}` : escada
+}
+
+function degrau(scene: SceneId, state: SceneState, level: number, cast?: SceneCast): string {
   const d = state.evidence.discoveries
   // ⚠️ Os atalhos também passam pelo elenco: eles citam o cacto e o Dino pelo nome, e uma
   // pista que fala de outro personagem é pior que pista nenhuma.

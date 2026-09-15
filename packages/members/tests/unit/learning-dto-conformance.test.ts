@@ -73,15 +73,10 @@ const validos: Array<[string, InteractiveBlock]> = [
     },
   ],
   ['html', { ...base, activity: { type: 'html', html: '<p>oi</p>' } }],
-  ['sem pistas', { ...base, hints: [] }],
-  ['dez pistas', { ...base, hints: Array.from({ length: 10 }, (_, i) => `pista ${i}`) }],
-]
-
-/** Blocos que o domínio RECUSA. A borda pode aceitar (o serviço aperta depois), mas queremos
- *  saber QUAIS — uma divergência nova aqui precisa ser uma decisão, não um acidente. */
-const invalidos: Array<[string, unknown]> = [
-  ['pistas repetidas', { ...base, hints: ['igual', 'igual'] }],
   [
+    // ⚠️ O TERCEIRO tempo do ciclo (15/09/2026): mexer, prever e ENUNCIAR a regra. Era recusado
+    // pelo domínio enquanto a sessão da cena dividia a chave `answers.checkpoint` com a
+    // alternativa escolhida; hoje a sessão mora em `sceneCheckpoint` e as duas convivem.
     'cena com pergunta anexa',
     {
       ...base,
@@ -93,6 +88,75 @@ const invalidos: Array<[string, unknown]> = [
         ],
         correctChoiceId: 'a',
         explanation: 'e',
+      },
+    },
+  ],
+  [
+    'cena com caso e missão',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'stage-size',
+        setup: { actions: [{ type: 'stage', width: 480, height: 270 }], goals: ['border-on'] },
+      },
+    },
+  ],
+  [
+    'cena do 3D, com o caso montado no espaço',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'axis-z',
+        setup: { actions: [{ type: 'place3d', x: 0, y: 0, z: 80 }], goals: ['up'] },
+      },
+    },
+  ],
+  [
+    'demonstração do ateliê com roteiro próprio',
+    {
+      ...base,
+      activity: {
+        type: 'demonstration',
+        scene: 'shading',
+        script: [
+          {
+            id: 'p1',
+            caption: 'Com uma cor só, ela parece um adesivo.',
+            actions: [{ type: 'shade', on: false }],
+          },
+          {
+            id: 'p2',
+            caption: 'Com a segunda cor, ela ganha volume.',
+            actions: [
+              { type: 'shade', on: true },
+              { type: 'light', side: 'right' },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  ['sem pistas', { ...base, hints: [] }],
+  ['dez pistas', { ...base, hints: Array.from({ length: 10 }, (_, i) => `pista ${i}`) }],
+]
+
+/** Blocos que o domínio RECUSA. A borda pode aceitar (o serviço aperta depois), mas queremos
+ *  saber QUAIS — uma divergência nova aqui precisa ser uma decisão, não um acidente. */
+const invalidos: Array<[string, unknown]> = [
+  ['pistas repetidas', { ...base, hints: ['igual', 'igual'] }],
+  // ⚠️⚠️ A demonstração não cobra meta nenhuma. Enquanto o schema dela declarava só `actions`,
+  // o `normalize` do Elysia APAGAVA o `goals` em vez de deixá-lo chegar — o payload passava com
+  // o campo sumido e o guard do domínio, que é quem tem a régua e a mensagem certa, nunca o via.
+  [
+    'demonstração com missão',
+    {
+      ...base,
+      activity: {
+        type: 'demonstration',
+        scene: 'shading',
+        setup: { actions: [{ type: 'shade', on: true }], goals: ['volume'] },
       },
     },
   ],
@@ -154,7 +218,7 @@ describe('o DTO da borda e o guarda do domínio', () => {
     // entrou por acidente.
     expect(frouxos.sort()).toEqual(
       [
-        'cena com pergunta anexa',
+        'demonstração com missão',
         'impulso fora das cenas de salto',
         'pistas repetidas',
         'roteiro com ação de outra cena',

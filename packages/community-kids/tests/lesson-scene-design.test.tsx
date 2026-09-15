@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
+import {
+  openScene,
+  SCENE_MODELS,
+  type SceneId,
+  sceneHint,
+  sceneSituation,
+} from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
@@ -41,6 +47,11 @@ function block(scene: SceneId, hints: string[] = []) {
   }
 }
 
+/** O texto da pista passou a trazer a situação ANTES do degrau; o que importa é o degrau estar lá. */
+const contendo = (trecho: string) => (_: string, node: Element | null) =>
+  node?.textContent?.includes(trecho) === true &&
+  !Array.from(node.children).some((filho) => filho.textContent?.includes(trecho))
+
 describe('a pista não apaga a instrução', () => {
   test('⚠️ o enunciado FICA na tela depois de pedir ajuda', async () => {
     // Era o defeito mais caro dos sete: a pista entrava no MESMO balão e o enunciado sumia.
@@ -48,8 +59,19 @@ describe('a pista não apaga a instrução', () => {
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
     expect(screen.getByText(SCENE_MODELS.layers.instruction)).toBeTruthy()
     fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
-    expect(screen.getByText(SCENE_MODELS.layers.hints[0] as string)).toBeTruthy()
+    expect(screen.getByText(contendo(SCENE_MODELS.layers.hints[0] as string))).toBeTruthy()
     expect(screen.getByText(SCENE_MODELS.layers.instruction)).toBeTruthy()
+  })
+
+  test('⭐ o primeiro degrau da pista DIZ onde a criança está antes de dizer o que fazer', () => {
+    // O padrão da ajuda do Brilliant: ela cita o estado atual ("seu primeiro ponto foi parar em
+    // (−2, 2)") e só então orienta. Repetir a frase genérica para quem travou é não responder.
+    const estado = openScene({ scene: 'layers' })
+    const primeira = sceneHint('layers', estado, 1)
+    expect(primeira.startsWith(sceneSituation('layers', estado))).toBe(true)
+    expect(primeira).toContain(SCENE_MODELS.layers.hints[0] as string)
+    // ⚠️ Do segundo degrau em diante, só a escada: repetir a situação a cada clique vira ruído.
+    expect(sceneHint('layers', estado, 2)).toBe(SCENE_MODELS.layers.hints[1] as string)
   })
 
   test('a pista mostra o degrau, e o degrau anda', async () => {
@@ -361,7 +383,9 @@ describe('as duas cenas da Aula 1 e da Aula 2', () => {
     montar('stage-size')
     // Sem a moldura, a frase diz exatamente a queixa que o roteiro usa para apresentar o bloco.
     expect(await screen.findByText(/a cor do fundo cobre tudo/i)).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Mostrar a borda da tela' }))
+    // ⚠️ O rótulo diz o ESTADO, não a ação (o molde da `Chave` das bancadas): o botão pintado
+    // de primário com `aria-pressed="false"` fazia o desenho e o texto se contradizerem.
+    fireEvent.click(screen.getByRole('button', { name: 'A borda da tela: escondida' }))
     await waitFor(() => expect(screen.getByText(/A moldura apareceu/)).toBeTruthy())
     fireEvent.change(screen.getByRole('slider', { name: 'largura da tela' }), {
       target: { value: '600' },
@@ -569,7 +593,7 @@ describe('as cinco cenas de desenho e a das vidas', () => {
     // A lista de cenas com tempo era escrita à mão no player e já tinha deixado `stage-size`
     // com um passo que não fazia nada. Hoje quem decide é a régua de legalidade do core.
     montar('stage-size')
-    expect(await screen.findByRole('button', { name: 'Mostrar a borda da tela' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'A borda da tela: escondida' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Um passo' })).toBeNull()
     cleanup()
     montar('draw-loop')
@@ -590,7 +614,15 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
     obstacle: { name: 'asteroide', gender: 'm' as const },
     scenery: { name: 'nebulosa', gender: 'f' as const },
   }
-  /** As cenas que o elenco existe para reaproveitar (proposta, lote 2) e a das vidas. */
+  /**
+   * As cenas que o elenco existe para reaproveitar (proposta, lote 2) e a das vidas.
+   *
+   * ⚠️⚠️ E as que têm PALCO E BANCADA PRÓPRIOS. As sete primeiras caem todas no palco
+   * compartilhado, então a varredura ficou verde enquanto `scene-core-controls` e
+   * `scene-engine-controls` — extraídos depois — voltavam a escrever "cacto" e "Dino" crus nos
+   * rótulos dos controles. Teste que não alcança o arquivo novo não trava nada: cena com
+   * bancada própria entra AQUI no mesmo commit em que a bancada nasce.
+   */
   const REAPROVEITAVEIS: SceneId[] = [
     'world',
     'layers',
@@ -599,6 +631,25 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
     'score',
     'game-state',
     'lives',
+    // As do núcleo, com bancada própria — `contact`, `camera` e `group-loop` são exatamente as
+    // que o elenco existe para reaproveitar nos níveis 2 e 3.
+    'velocity',
+    'contact',
+    'camera',
+    'group-loop',
+    'enemy-type',
+    'variable',
+    'cooldown',
+    'aim',
+    // As do motor e do 3D.
+    'pool',
+    'entity-state',
+    'delta-time',
+    'circle-collision',
+    'axis-z',
+    'camera-3d',
+    'mesh',
+    'pick-ray',
   ]
 
   test('⚠️⚠️ nenhuma palavra do Corre Dino sobra na tela vestida de outro curso', () => {

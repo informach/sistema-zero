@@ -181,7 +181,9 @@ export function SceneAuthoring({
         )}
       </div>
 
-      {!isSceneScript(script, activity.scene) && (
+      {/* ⚠️ COM o caso: o domínio valida o roteiro a partir de `openScene(setup)`, e um roteiro
+          que só vale no mundo de fábrica deixaria o bloco inválido sem nada em vermelho aqui. */}
+      {!isSceneScript(script, activity.scene, activity.setup) && (
         <p role="alert" className="text-sm text-destructive">
           Revise o roteiro: cada etapa precisa de fala e de ações que existam nesta cena. Uma
           descoberta exigida precisa acontecer até a última observação da etapa.

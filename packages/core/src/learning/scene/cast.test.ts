@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { SCENE_IDS } from './actions'
 import { castText, DEFAULT_CAST, isSceneCast, type SceneCast } from './cast'
 import { SCENE_MODELS } from './catalog'
+import { openScene, stepScene } from './engine'
 
 const NAVE: SceneCast = {
   hero: { name: 'nave', gender: 'f' },
@@ -77,10 +78,21 @@ describe('o elenco em português', () => {
     const F2 = 'nova|novas|antiga|antigas|nenhuma|toda|todas|criada|criadas|guardada|guardadas'
     const FEM_NOMES = 'nave|naves|pedra|pedras'
     const MASC_NOMES = 'asteroide|asteroides'
+    // ⚠️ E o PREDICATIVO, separado do nome por um verbo de ligação: por aqui passaram "A nave
+    // está escondido", "A nave foi criado" e "a nave está vivo" — os três achados do review do
+    // lote A. O adjetivo longe do nome também concorda com ele.
+    const LIG =
+      'está|estão|estava|estavam|fica|ficam|ficou|ficaram|foi|foram|continua|continuam|parece|parecem|era|eram'
+    const PM =
+      'escondido|escondidos|criado|criados|guardado|guardados|coberto|cobertos|vivo|vivos|pronto|prontos|parado|parados|sozinho|sozinhos|preso|presos|salvo|salvos|ligado|ligados|desenhado|desenhados'
+    const PF =
+      'escondida|escondidas|criada|criadas|guardada|guardadas|coberta|cobertas|viva|vivas|pronta|prontas|parada|paradas|sozinha|sozinhas|presa|presas|salva|salvas|ligada|ligadas|desenhada|desenhadas'
     // Palavra masculina grudada num nome feminino, ou o contrário, dos DOIS lados do nome —
     // que é onde o português cobra a concordância.
     const errado = new RegExp(
       [
+        `\\b(?:${FEM_NOMES})\\s+(?:${LIG})\\s+(?:${PM})\\b`,
+        `\\b(?:${MASC_NOMES})\\s+(?:${LIG})\\s+(?:${PF})\\b`,
         `\\b(?:${M}|${M2})\\s+(?:${FEM_NOMES})\\b`,
         `\\b(?:${FEM_NOMES})\\s+(?:${M2})\\b`,
         `\\b(?:${F}|${F2})\\s+(?:${MASC_NOMES})\\b`,
@@ -97,6 +109,10 @@ describe('o elenco em português', () => {
       'Crie um pedra',
       'Este pedra guarda',
       'as pedras antigos',
+      'A nave está escondido atrás de quê?',
+      'A nave foi criado e aparece na tela.',
+      'enquanto a nave está vivo',
+      'O asteroide está parada',
     ])
       expect(ruim).toMatch(errado)
     for (const bom of [
@@ -104,6 +120,10 @@ describe('o elenco em português', () => {
       'Crie uma pedra',
       'Esta pedra guarda',
       'as pedras antigas',
+      'A nave está escondida atrás de quê?',
+      'A nave foi criada e aparece na tela.',
+      'enquanto a nave está viva',
+      'O asteroide está parado',
     ])
       expect(bom).not.toMatch(errado)
 
@@ -135,6 +155,46 @@ describe('o elenco em português', () => {
     }
     // Guarda que a varredura LEU alguma coisa: laço vazio aprova tudo.
     expect(vistos).toBeGreaterThan(150)
+  })
+
+  test('⚠️⚠️ as legendas que o MOTOR escreve também concordam', () => {
+    // A varredura acima lê o catálogo. Metade do que a criança lê, porém, é escrita pelo motor
+    // em tempo de execução (`state.caption` e o rótulo de cada descoberta) e passa pelo elenco
+    // no `sceneSituation`. Foi lá que estava "O Dino foi criado", que um elenco feminino
+    // transformava em "A nave foi criado". O roteiro de cada modelo é um caminho válido pelo
+    // motor, então ele serve de passeio.
+    const FEMININO: SceneCast = {
+      hero: { name: 'nave', gender: 'f' },
+      obstacle: { name: 'pedra', gender: 'f' },
+      scenery: { name: 'chama', gender: 'f' },
+    }
+    const NOMES = 'nave|naves|pedra|pedras|chama|chamas'
+    const LIGA = 'está|estão|fica|ficam|ficou|ficaram|foi|foram|continua|continuam|parece|parecem'
+    const MASC =
+      'escondido|criado|guardado|coberto|vivo|pronto|parado|sozinho|preso|salvo|ligado|desenhado'
+    const DET = 'o|os|um|uns|este|estes|esse|esses|mesmo|mesmos|outro|outros|novo|novos'
+    const errado = new RegExp(
+      `\\b(?:${NOMES})\\s+(?:${LIGA})\\s+(?:${MASC})s?\\b|\\b(?:${DET})\\s+(?:${NOMES})\\b`,
+      'i',
+    )
+    // A prova de que a régua morde, antes de usá-la.
+    expect('A nave foi criado e aparece na tela.').toMatch(errado)
+    expect('A nave foi criada e aparece na tela.').not.toMatch(errado)
+    let lidas = 0
+    for (const scene of SCENE_IDS) {
+      let estado = openScene({ scene })
+      for (const passo of SCENE_MODELS[scene].script)
+        for (const acao of passo.actions) {
+          estado = stepScene({ scene }, estado, acao)
+          for (const frase of [estado.caption, ...estado.evidence.observations.map((o) => o.label)])
+            if (frase) {
+              const vestida = castText(frase, FEMININO)
+              if (errado.test(vestida)) throw new Error(`${scene}: "${frase}" virou "${vestida}"`)
+              lidas++
+            }
+        }
+    }
+    expect(lidas).toBeGreaterThan(80)
   })
 
   test('o guard recusa o que não é elenco', () => {

@@ -1,8 +1,16 @@
-import { isRecord, isSceneAction, SCENE_IDS, SCENE_LIMITS, type SceneId } from './actions'
+import {
+  isRecord,
+  isSceneAction,
+  SCENE_IDS,
+  SCENE_LIMITS,
+  type SceneId,
+  type SceneSetup,
+  SETUP_LIMITS,
+} from './actions'
 import { castText, isSceneCast, type SceneCast } from './cast'
 import { type SceneModel, type SceneStep, sceneGoalIds, sceneModel } from './catalog'
-import { stepScene } from './engine'
-import { initialScene, type SceneStart } from './state'
+import { openScene, stepScene } from './engine'
+import type { SceneStart } from './state'
 
 export * from './actions'
 export * from './cast'
@@ -33,6 +41,18 @@ export interface DemonstrationActivity {
   instructionAudioUrl?: string
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
+  /** De onde a cena parte. ⚠️ Sem `goals`: a demonstração não cobra meta nenhuma. */
+  setup?: SceneSetup
+  /**
+   * Como a demonstração se apresenta.
+   *
+   * `guided` (o padrão) é a de sempre: as etapas à vista, uma fala por etapa, a criança avança
+   * quando quiser. `inline` é o TERCEIRO FORMATO — a cena rodando o roteiro de uma vez, com um
+   * ▶ e nada mais, dentro do texto da explicação. É o degrau que faltava entre o parágrafo e a
+   * simulação, e é o que o Brilliant usa no meio das lições: dois segundos, sem áudio, que a
+   * criança repete quantas vezes quiser. O motor é o mesmo; muda só a apresentação.
+   */
+  presentation?: 'guided' | 'inline'
 }
 export interface ExperimentationActivity {
   type: 'experimentation'
@@ -42,6 +62,8 @@ export interface ExperimentationActivity {
   instructionAudioUrl?: string
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
+  /** De onde a cena parte e o que ela cobra. Ver `SceneSetup`. */
+  setup?: SceneSetup
 }
 export type SceneActivity = DemonstrationActivity | ExperimentationActivity
 
@@ -67,19 +89,76 @@ export function isDemonstrationActivity(value: unknown): value is DemonstrationA
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
-  return value.script === undefined || isSceneScript(value.script, value.scene)
+  // ⚠️ Meta é assunto de quem experimenta. Numa demonstração a lista não teria efeito nenhum,
+  // e campo sem efeito é armadilha para quem autora: aqui ele é recusado.
+  if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene, { goals: false }))
+    return false
+  if (
+    value.presentation !== undefined &&
+    value.presentation !== 'guided' &&
+    value.presentation !== 'inline'
+  )
+    return false
+  // ⚠️⚠️ Sem roteiro autoral vale o do MODELO — e ele também precisa tocar a partir do caso.
+  // O `playsOut` existe porque um roteiro que promete uma descoberta e não a produz trava a
+  // criança na tela; conferindo só o autoral, uma demonstração com `setup` escapava inteira:
+  // um caso que já liga a reciclagem faz o `waitFor: 'grows'` do `pool` nunca chegar, com a
+  // fala narrando "sem reciclagem, cada passo cria mais um corpo" sobre a tela contrária.
+  if (value.script === undefined)
+    return (
+      value.setup === undefined ||
+      playsOut([...sceneModel(value.scene).script], value.scene, value.setup as SceneSetup)
+    )
+  return isSceneScript(value.script, value.scene, value.setup as SceneSetup | undefined)
 }
 
 export function isExperimentationActivity(value: unknown): value is ExperimentationActivity {
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
+  if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene)) return false
   const { initialImpulse: impulse } = value
   if (impulse === undefined) return true
   if (value.scene !== 'gravity' && value.scene !== 'impulse') return false
   const { min, max } = SCENE_LIMITS.impulse
   return (
     typeof impulse === 'number' && Number.isInteger(impulse) && impulse >= min && impulse <= max
+  )
+}
+
+/**
+ * O caso é legal nesta cena?
+ *
+ * As ações passam pela régua única (`isSceneAction`) e as metas precisam existir no modelo —
+ * uma lista que cita uma meta inexistente é uma atividade que nunca fecha, e é exatamente o
+ * tipo de erro que só aparece com a criança na tela.
+ */
+export function isSceneSetup(
+  value: unknown,
+  scene: SceneId,
+  { goals = true }: { goals?: boolean } = {},
+): value is SceneSetup {
+  if (!isRecord(value)) return false
+  const { actions, goals: alvo } = value
+  if (actions !== undefined) {
+    if (!Array.isArray(actions) || actions.length === 0 || actions.length > SETUP_LIMITS.actions)
+      return false
+    for (const acao of actions) {
+      if (!isSceneAction(acao, scene)) return false
+      // ⚠️ `reset` volta para o próprio caso: dentro dele seria um laço. `hint` é gesto de quem
+      // está travado, não estado de partida.
+      if (isRecord(acao) && (acao.type === 'reset' || acao.type === 'hint')) return false
+    }
+  }
+  if (alvo === undefined) return actions !== undefined
+  if (!goals) return false
+  const disponiveis = sceneGoalIds(scene)
+  return (
+    Array.isArray(alvo) &&
+    alvo.length > 0 &&
+    alvo.length <= SETUP_LIMITS.goals &&
+    new Set(alvo).size === alvo.length &&
+    alvo.every((g) => typeof g === 'string' && disponiveis.includes(g))
   )
 }
 
@@ -95,7 +174,12 @@ const ID = /^[a-zA-Z0-9_-]{1,80}$/
  * passos no motor e confere que cada `waitFor` foi de fato alcançado. Um roteiro que promete
  * uma descoberta e não a produz é um roteiro que trava a criança na tela.
  */
-export function isSceneScript(value: unknown, scene: SceneId): value is SceneStep[] {
+export function isSceneScript(
+  value: unknown,
+  scene: SceneId,
+  /** O caso de onde o roteiro parte: um roteiro válido no mundo de fábrica pode não valer aqui. */
+  setup?: SceneSetup,
+): value is SceneStep[] {
   if (!Array.isArray(value) || value.length === 0 || value.length > SCRIPT_LIMITS.steps)
     return false
   const goals = sceneGoalIds(scene)
@@ -127,13 +211,14 @@ export function isSceneScript(value: unknown, scene: SceneId): value is SceneSte
       }
     }
   }
-  return playsOut(value as SceneStep[], scene)
+  return playsOut(value as SceneStep[], scene, setup)
 }
 
-function playsOut(steps: SceneStep[], scene: SceneId): boolean {
-  let state = initialScene({ scene })
+function playsOut(steps: SceneStep[], scene: SceneId, setup?: SceneSetup): boolean {
+  const start: SceneStart = setup ? { scene, setup } : { scene }
+  let state = openScene(start)
   for (const step of steps) {
-    for (const action of step.actions) state = stepScene({ scene }, state, action)
+    for (const action of step.actions) state = stepScene(start, state, action)
     if (step.waitFor === undefined) continue
     // A espera só faz sentido depois de deixar o tempo correr, e a descoberta tem de existir.
     if (step.actions.at(-1)?.type !== 'advance') return false
@@ -142,11 +227,19 @@ function playsOut(steps: SceneStep[], scene: SceneId): boolean {
   return true
 }
 
-/** Por onde a cena desta atividade começa. */
+/** Por onde a cena desta atividade começa: a cena, o impulso de partida e o caso. */
 export function sceneStart(activity: SceneActivity): SceneStart {
-  if (activity.type === 'experimentation' && activity.initialImpulse !== undefined)
-    return { scene: activity.scene, initialImpulse: activity.initialImpulse }
-  return { scene: activity.scene }
+  const impulso =
+    activity.type === 'experimentation' && activity.initialImpulse !== undefined
+      ? { initialImpulse: activity.initialImpulse }
+      : {}
+  return { scene: activity.scene, ...impulso, ...(activity.setup ? { setup: activity.setup } : {}) }
+}
+
+/** As metas que ESTA atividade cobra: as do caso, quando há; as do modelo, quando não. */
+export function sceneTargets(activity: SceneActivity): readonly string[] {
+  const alvo = activity.type === 'experimentation' ? activity.setup?.goals : undefined
+  return alvo?.length ? alvo : sceneGoalIds(activity.scene)
 }
 
 /**

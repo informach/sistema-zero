@@ -6,11 +6,10 @@ const SCRIPT_STEPS = 12
 const SCRIPT_ACTIONS = 16
 
 import type { SceneStep } from './catalog'
-import { stepScene } from './engine'
+import { openScene, stepScene } from './engine'
 import {
   cloneScene,
   hydrateSceneState,
-  initialScene,
   isSceneState,
   type MatchScreen,
   type SceneStart,
@@ -58,7 +57,7 @@ export interface SceneTrial {
  * recomposição mora aqui, num lugar só, com teste.
  */
 export function sceneFromTrial(start: SceneStart, trial: SceneTrial): SceneState {
-  const base = initialScene(start)
+  const base = openScene(start)
   const t = trial.state
   return {
     ...base,
@@ -120,7 +119,7 @@ export type ExperimentCommand = SceneAction | { type: 'capture' } | { type: 'und
 export const SESSION_LIMITS = { past: 4, trials: 2, population: 500, segment: 100 } as const
 
 export function initialExperiment(start: SceneStart): ExperimentSession {
-  return { state: initialScene(start), past: [], trials: [] }
+  return { state: openScene(start), past: [], trials: [] }
 }
 
 export function isExperimentCommand(value: unknown, start: SceneStart): value is ExperimentCommand {
@@ -204,7 +203,7 @@ const BREATH = 0.45
 const MAX_TICK = 1
 
 export function initialDemonstration(start: SceneStart): DemonstrationSession {
-  return { state: initialScene(start), step: 0, action: 0, elapsed: 0, ready: false, viewed: false }
+  return { state: openScene(start), step: 0, action: 0, elapsed: 0, ready: false, viewed: false }
 }
 
 export function isDemonstrationCommand(value: unknown): value is DemonstrationCommand {
@@ -230,7 +229,7 @@ export function stepDemonstration(
   const next: DemonstrationSession = { ...previous }
 
   if (command.type === 'start') {
-    const inicio = initialScene(start)
+    const inicio = openScene(start)
     return {
       session: {
         state: inicio,

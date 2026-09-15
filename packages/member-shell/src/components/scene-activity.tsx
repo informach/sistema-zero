@@ -19,9 +19,11 @@ import {
   type SceneCommand,
   sceneGoals,
   sceneHint,
+  sceneModel,
   sceneReadout,
   sceneScript,
   sceneSituation,
+  sceneTargets,
   sceneTrial,
 } from '@sistemazero/core/learning/scene'
 import {
@@ -58,6 +60,8 @@ import { ExplorationPieces } from './exploration-pieces'
 import { ExplorationStage, SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { CoreSceneControls } from './scene-core-controls'
+import { EngineSceneControls } from './scene-engine-controls'
 
 export function SceneActivityView({
   block,
@@ -104,6 +108,17 @@ export function SceneActivityView({
   const [slow, setSlow] = useState(false)
   const [muted, setMuted] = useState(true)
   const [hint, setHint] = useState(0)
+  /** A resposta do "Já descobri": o que ainda falta, pedido pela criança. */
+  const [veredito, setVeredito] = useState('')
+  /**
+   * ⭐ O TERCEIRO tempo do ciclo: mexer, prever e ENUNCIAR a regra.
+   *
+   * ⚠️ Diferente da previsão, esta pergunta VALE: é ela que dá a palavra final sobre o `passed`,
+   * e quem corrige é o servidor (o gabarito nunca chega ao navegador). Por isso o que o player
+   * mostra depois de responder é o `feedback` que voltou da tentativa, e não um veredito local.
+   */
+  const [resposta, setResposta] = useState('')
+  const [respostaFeedback, setRespostaFeedback] = useState('')
   /** A coluna escolhida na cena do espelho. Ela é do CONTROLE, não do mundo: enquanto a criança
    *  arrasta o deslizante nada é pintado, e o motor só recebe o traço no clique. */
   const [coluna, setColuna] = useState(3)
@@ -133,31 +148,68 @@ export function SceneActivityView({
   // com a cena viva depois da conclusão mexer de novo faria `passed` voltar a false — e o
   // cartão "Descoberta registrada" piscaria e sumiria na cara de quem acabou de acertar.
   // Concluir é um acontecimento; ele não se desfaz (o servidor também nunca rebaixa).
-  const [conclusao, setConclusao] = useState(saved?.result?.passed ? saved.result.feedback : '')
+  // ⚠️ A frase de sucesso é a DA CENA, sempre a mesma. Semeando com `saved.result.feedback` o
+  // cartão trocava de texto num F5: acertando a pergunta anexa aquele campo é a EXPLICAÇÃO que o
+  // professor escreveu, e a mesma cena passava a mostrar dois títulos diferentes.
+  const [conclusao, setConclusao] = useState(
+    saved?.result?.passed
+      ? activity.type === 'demonstration'
+        ? 'Demonstração concluída.'
+        : castText(sceneModel(activity.scene).success, activity.cast)
+      : '',
+  )
+  /** A cena fechou? É o que libera a pergunta anexa — e o que o rodapé chama de "já descobri". */
   const [reduced, setReduced] = useState(false)
   const owner = useRef(Symbol('experience'))
   const audio = useRef<AudioContext | null>(null)
   const narration = useRef<HTMLAudioElement>(null)
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
-  const flush = useRef<() => Promise<void>>(async () => {})
+  /**
+   * ⚠️⚠️ O que a última tentativa já levou.
+   *
+   * A gravação roda numa batida de 1 s, e a condição de envio era só `!registered &&
+   * result.passed`. Quando o servidor NÃO aprova — porque a pergunta anexa ainda não foi
+   * respondida, ou foi respondida errado — `registered` continua falso e a condição continua
+   * verdadeira: uma tentativa NOVA por segundo, para sempre, enquanto a criança lê a pergunta.
+   * Só se reenvia quando há algo diferente para contar.
+   */
+  const enviado = useRef('')
+  // ⚠️ O flush recebe a escolha da pergunta anexa por PARÂMETRO. Ele é reatribuído a cada
+  // render, então o `flush.current` que o `onChange` do rádio alcança é o do render ANTERIOR —
+  // com `resposta` ainda vazia. Sem o parâmetro, o envio imediato caía no guard e só a batida
+  // de um segundo salvava, que é justamente o que ele existe para evitar.
+  const flush = useRef<(escolha?: string) => Promise<void>>(async () => {})
   const action = useRef<(command: SceneCommand) => void>(() => {})
   const cacheKey = scope ? `${scope}:${tabId}` : null
   const base = player
     ? `/api/members/lessons/${encodeURIComponent(player.lessonId)}/blocks/${encodeURIComponent(block.id)}`
     : null
   const demoMode = activity.type === 'demonstration'
+  /**
+   * ⭐ O TERCEIRO formato: a cena rodando o roteiro dela inteiro, com um ▶ e nada mais.
+   *
+   * Entre o parágrafo de texto e a bancada manipulável faltava um degrau — os dois segundos de
+   * animação, sem áudio e sem etapas, que a criança dispara e repete quantas vezes quiser. O
+   * motor é o mesmo da demonstração guiada; muda só o que aparece em volta.
+   */
+  const inline = activity.type === 'demonstration' && activity.presentation === 'inline'
   const demo = demoMode ? (session as DemonstrationSession) : null
   const lab = demoMode ? null : (session as ExperimentSession)
 
   const state = session.state
   const m = activity.scene
   const reference = ['gravity', 'impulse', 'hitbox', 'jump-sound'].includes(m)
-  const demoStep = demo ? sceneScript(activity)[demo.step] : null
+  const roteiro = sceneScript(activity)
+  const demoStep = demo ? roteiro[demo.step] : null
+  // ⚠️ As metas que ESTA atividade cobra: o `setup.goals` do professor, quando há. Sem isto o
+  // player mostraria as três descobertas do modelo numa missão que só pede uma — e a barra de
+  // progresso nunca fecharia, enquanto o servidor daria a atividade por concluída.
+  const targets = sceneTargets(activity)
   const result = demo
     ? evaluateDemonstration(demo.viewed)
-    : evaluateExperimentation(activity.scene, state, true, activity.cast)
-  const goals = sceneGoals(activity.scene, state, activity.cast)
+    : evaluateExperimentation(activity.scene, state, true, activity.cast, targets)
+  const goals = sceneGoals(activity.scene, state, activity.cast, targets)
   // ⚠️ A instrução NÃO é mais substituída pela pista (14/09/2026). As duas dividiam o mesmo
   // balão, então pedir ajuda APAGAVA o enunciado — e quem mais precisa da pista é justamente
   // quem ainda vai reler o que foi pedido. Hoje a instrução fica onde está e a pista entra
@@ -290,7 +342,7 @@ export function SceneActivityView({
     // e perde o registro — e, na prévia do professor, é a seção que não destrava ao vivo.
     void flush.current()
   }, [demoMode, result.passed, result.feedback])
-  flush.current = async () => {
+  flush.current = async (escolha?: string) => {
     if (!ready || conflict) return
     if (saving.current) {
       if (cacheKey)
@@ -300,6 +352,14 @@ export function SceneActivityView({
       return
     }
     saving.current = true
+    const escolhida = escolha ?? resposta
+    // ⚠️⚠️ O envio olha o LATCH, não o `result.passed` vivo — o mesmo que a pergunta anexa usa
+    // para aparecer. Em `layers` e `jump-sound` o avaliador volta a reprovar quando a montagem
+    // sai do estado descoberto, e é o botão em DESTAQUE do rodapé ("Ver de novo") que faz isso:
+    // a criança respondia a pergunta depois de rever a cena e nenhuma requisição saía, sem erro
+    // na tela e sem o "Tentar salvar". Concluir é um acontecimento e não se desfaz — o servidor
+    // também nunca rebaixa um `passed:true`.
+    const descobriu = Boolean(conclusao) || result.passed
     try {
       // Persist the retry identifier BEFORE the request. A lost response must not create a new command.
       const segment = controller.segment()
@@ -324,9 +384,24 @@ export function SceneActivityView({
         }
         // ⚠️ E o avaliador é o DO TIPO: cobrar as metas da cena de quem só assistiu nunca
         // registraria uma demonstração no ensaio.
-        if (!registered && result.passed && previewContent) {
-          if (rehearsal) await rehearsal.onAttempt(block.id, previewContent, controller.answers())
-          setRegistered(true)
+        if (!registered && descobriu && previewContent && (!content.checkpoint || escolhida)) {
+          // ⚠️⚠️ As MESMAS respostas do caminho com servidor. Mandando só o que o controlador
+          // guarda, a escolha da pergunta anexa não chegava ao avaliador: o ensaio do professor
+          // gravava `passed:false` com o recado de "ainda não respondeu" para quem tinha acabado
+          // de responder, a seção não destravava, e ele não conseguia conferir a explicação que
+          // escreveu — que é a feature inteira.
+          const respostas = {
+            ...controller.answers(),
+            ...(prediction ? { prediction } : {}),
+            ...(escolhida ? { checkpoint: escolhida } : {}),
+          }
+          const avaliado = rehearsal
+            ? await rehearsal.onAttempt(block.id, previewContent, respostas)
+            : null
+          // ⚠️ E o veredito é o DELE: `setRegistered(true)` incondicional dava por registrado o
+          // que o ensaio tinha acabado de reprovar.
+          if (avaliado && content.checkpoint) setRespostaFeedback(avaliado.feedback)
+          setRegistered(avaliado ? avaliado.passed : true)
         }
         return
       }
@@ -352,7 +427,13 @@ export function SceneActivityView({
       // `controls` o roteiro do modelo termina SEM fechar as metas, e nas outras doze só fecha
       // por coincidência do último passo — um roteiro autoral quebra a coincidência nos dois
       // sentidos (registra antes do fim, ou nunca).
-      if (!registered && result.passed) {
+      const assinatura = `${escolhida}|${state.evidence.discoveries.join(',')}`
+      if (
+        !registered &&
+        descobriu &&
+        (!content.checkpoint || escolhida) &&
+        enviado.current !== assinatura
+      ) {
         const response = await apiSend<{
           attempt: LearningAttemptView
           progress: LearningBlockProgress
@@ -364,12 +445,29 @@ export function SceneActivityView({
             revision: block.blockRevision,
             // A previsão viaja com a tentativa: o relatório do professor quer saber o que a
             // turma achou que ia acontecer, e isso não cabe no checkpoint da cena.
-            answers: prediction ? { ...controller.answers(), prediction } : controller.answers(),
+            answers: {
+              ...controller.answers(),
+              // A previsão viaja com a tentativa: o relatório do professor quer saber o que a
+              // turma achou que ia acontecer, e isso não cabe no checkpoint da cena.
+              ...(prediction ? { prediction } : {}),
+              // ⚠️ E a resposta da pergunta anexa, em chave PRÓPRIA (`checkpoint`): a sessão da
+              // cena mora em `sceneCheckpoint`, e é essa separação que permite as duas conviverem.
+              ...(escolhida ? { checkpoint: escolhida } : {}),
+            },
             hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
           },
           { 'x-sz-viewer': player.viewerId ?? '' },
         )
+        // ⚠️⚠️ O carimbo é gravado DEPOIS da resposta, nunca antes. Ele existe para impedir que
+        // a batida de um segundo reenvie a mesma tentativa; carimbado antes do `await`, uma
+        // falha de rede o deixava igual à assinatura para sempre — e como a assinatura só muda
+        // com resposta ou descoberta nova (e descoberta não se desfaz), a criança ficava presa
+        // em "Aguardando conexão" sem NENHUMA nova tentativa de envio. O POST é idempotente
+        // pelo `attemptId`, então repetir é seguro; não repetir é que não era.
+        enviado.current = assinatura
         setRegistered(response.attempt.result.passed)
+        // Com pergunta anexa, é o servidor quem diz se a frase escolhida explica o que aconteceu.
+        if (content.checkpoint) setRespostaFeedback(response.attempt.result.feedback)
         // ⚠️ Com a cena viva depois da conclusão, existe uma janela estreita nas duas cenas
         // que pedem montagem ASSENTADA: a criança mexe antes de o registro subir, o servidor
         // reavalia pelo checkpoint DELE e grava `passed:false`. Como o `attemptId` é um por
@@ -418,6 +516,13 @@ export function SceneActivityView({
       saving.current = false
     }
   }
+  // ⚠️ A descoberta está feita, mas o bloco ainda cobra a frase que a explica. É o único estado
+  // em que a cena e o servidor discordam de propósito, e por isso ele tem nome.
+  const pendente = Boolean(content.checkpoint) && Boolean(conclusao) && !registered
+  // ⚠️ Errar não é "ainda não respondeu". O core já separa os dois recados; o cartão dizia
+  // "escolha a frase que explica" para quem tinha escolhido — contradizendo, duas linhas
+  // abaixo, a região que mostrava o "não é essa" que veio do servidor.
+  const errou = pendente && Boolean(respostaFeedback)
   useEffect(() => {
     if (!ready) return
     const timer = setInterval(() => {
@@ -462,8 +567,15 @@ export function SceneActivityView({
         const current = controller.getSnapshot()
         // Numa demonstração o relógio serve ao roteiro; numa experimentação, ao mundo.
         if (demoMode && (current as DemonstrationSession).ready) {
-          setRunning(false)
-          return
+          // ⭐ Na apresentação INLINE não há "Próxima etapa": o ▶ roda o roteiro inteiro de uma
+          // vez, como os dois segundos de animação que o Brilliant põe no meio do texto. Só o
+          // FIM do roteiro para o relógio; no meio dele, o player emenda a etapa seguinte.
+          if (inline && (current as DemonstrationSession).step < roteiro.length - 1) {
+            action.current({ type: 'next' })
+          } else {
+            setRunning(false)
+            return
+          }
         }
         action.current(
           demoMode ? { type: 'tick', seconds: elapsed } : { type: 'advance', seconds: elapsed },
@@ -483,7 +595,7 @@ export function SceneActivityView({
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [controller, running, ready, conflict, slow, m, demoMode])
+  }, [controller, running, ready, conflict, slow, m, demoMode, inline, roteiro.length])
 
   return (
     /* ⚠️ A cena NÃO desenha cartão. Quem desenha é o app, pelo gancho `sz-lesson-scene`:
@@ -693,10 +805,39 @@ export function SceneActivityView({
             >
               {sceneSituation(activity.scene, state, activity.cast)}
             </p>
-            {demoMode ? (
+            {inline ? (
+              // A apresentação inline tem UM botão. Sem etapas, sem passo a passo, sem pausa:
+              // é a animação curta que a criança repete quantas vezes quiser.
+              <div className="flex justify-center">
+                <SceneButton
+                  className="!border-primary !bg-primary !px-6 !text-primary-foreground"
+                  onClick={() => {
+                    dispatch({ type: 'start' })
+                    // ⚠️⚠️ Quem pediu MENOS MOVIMENTO não fica sem cena: aqui não há "Um passo"
+                    // nem "Próxima etapa" para clicar, então com a animação desligada o ▶ toca
+                    // o roteiro inteiro de uma vez e mostra o RESULTADO. Sem isto, a criança
+                    // clicava e nada acontecia — para sempre, e sem outro caminho.
+                    if (reduced) {
+                      for (let i = 0; i < 400; i++) {
+                        const atual = controller.getSnapshot() as DemonstrationSession
+                        if (atual.viewed) break
+                        if (atual.ready) dispatch({ type: 'next' })
+                        else dispatch({ type: 'tick', seconds: 0.2 })
+                      }
+                      return
+                    }
+                    setRunning(true)
+                  }}
+                  disabled={running}
+                >
+                  <Play size={16} />
+                  {demo?.viewed ? 'Ver de novo' : 'Ver acontecer'}
+                </SceneButton>
+              </div>
+            ) : demoMode ? (
               <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-primary/5 p-3">
                 <span className="mr-2 text-sm font-semibold">
-                  Etapa {(demo?.step ?? 0) + 1} de {sceneScript(activity).length}
+                  Etapa {(demo?.step ?? 0) + 1} de {roteiro.length}
                 </span>
                 <SceneButton onClick={() => setRunning((v) => !v)} disabled={!demo || demo.ready}>
                   {running ? <Pause size={16} /> : <Play size={16} />}
@@ -709,7 +850,7 @@ export function SceneActivityView({
                   <StepForward size={16} />
                   Um passo
                 </SceneButton>
-                {(demo?.step ?? 0) < sceneScript(activity).length - 1 && (
+                {(demo?.step ?? 0) < roteiro.length - 1 && (
                   <SceneButton
                     disabled={!demo?.ready}
                     onClick={() => {
@@ -819,6 +960,19 @@ export function SceneActivityView({
                       )}
                     </label>
                   )}
+                  {/* A bancada das onze cenas do núcleo do Iniciante 2D, em arquivo próprio. */}
+                  <CoreSceneControls
+                    scene={m}
+                    state={state}
+                    dispatch={dispatch}
+                    cast={activity.cast}
+                  />
+                  <EngineSceneControls
+                    scene={m}
+                    state={state}
+                    dispatch={dispatch}
+                    cast={activity.cast}
+                  />
                   {m === 'coordinates' && (
                     /* ⭐ Os dois controles que a Aula 1 pedia e que o vídeo não dava. Cada eixo
                      tem deslizante, botões de passo e o valor à vista — os três levam ao MESMO
@@ -954,16 +1108,18 @@ export function SceneActivityView({
                         ))}
                       </div>
                       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
+                        {/* ⚠️ O ESTADO no rótulo, o mesmo molde da `Chave` das bancadas novas:
+                            o rótulo com a AÇÃO ("Mostrar a borda") num botão PINTADO de primário
+                            com `aria-pressed="false"` fazia as três camadas contarem histórias
+                            diferentes — o desenho dizia ligado, o texto dizia ligar. */}
                         <SceneButton
                           className={
-                            state.stage.border
-                              ? ''
-                              : '!border-primary !bg-primary !text-primary-foreground'
+                            state.stage.border ? '!border-primary !bg-primary/10 !text-primary' : ''
                           }
                           aria-pressed={state.stage.border}
                           onClick={() => dispatch({ type: 'border', visible: !state.stage.border })}
                         >
-                          {state.stage.border ? 'Esconder a borda' : 'Mostrar a borda da tela'}
+                          A borda da tela: {state.stage.border ? 'à vista' : 'escondida'}
                         </SceneButton>
                         <SceneButton
                           onClick={() => dispatch({ type: 'stage', width: 480, height: 270 })}
@@ -1480,26 +1636,85 @@ export function SceneActivityView({
                   </SceneButton>
                 </>
               )}
+              {!demoMode && (
+                <SceneButton
+                  className="!border-transparent !bg-transparent !shadow-none !font-normal !text-muted-foreground hover:!border-border"
+                  onClick={() => {
+                    const level = Math.min(hints.length, hint + 1)
+                    setHint(level)
+                    // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas a caixa de pistas do
+                    // editor aceita dez. Com quatro pistas escritas, o quarto clique mandava
+                    // `level: 4`, o motor recusava e o `dispatch` estourava DENTRO do onClick da
+                    // criança — e o degrau nunca era contado, então o relatório dizia "3 pistas"
+                    // para quem consultou cinco. A tela mostra todas; a evidência satura em três.
+                    dispatch({ type: 'hint', level: Math.min(level, SCENE_LIMITS.hint.max) })
+                  }}
+                >
+                  <Lightbulb size={16} />
+                  Uma pista
+                </SceneButton>
+              )}
             </div>
+            {/* ⭐⭐ A ação PRINCIPAL do rodapé (15/09/2026). O ajuste de 14/09 acertou em tirar os
+                quatro botões cinzentos iguais, mas o único que sobrou em destaque foi "Uma pista"
+                — ou seja, o lugar mais visível da tela convidava a PEDIR AJUDA. No Brilliant
+                aquele canto é sempre o caminho para a frente (Conferir → Continuar), e a ajuda é
+                secundária. Aqui a cena se avalia sozinha o tempo todo, então o que faltava era o
+                gesto de FECHAMENTO: dizer "já descobri" e ouvir o que ainda falta, nomeado como
+                ação. Depois de concluída, o mesmo lugar vira o prêmio: ver a coisa inteira rodar
+                de novo, com as descobertas guardadas. */}
             {!demoMode && (
               <SceneButton
-                className="!border-primary !px-6 !text-primary"
+                className={
+                  conclusao
+                    ? '!border-primary !bg-primary/10 !px-6 !text-primary'
+                    : '!border-primary !bg-primary !px-6 !text-primary-foreground'
+                }
                 onClick={() => {
-                  const level = Math.min(hints.length, hint + 1)
-                  setHint(level)
-                  // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas a caixa de pistas do
-                  // editor aceita dez. Com quatro pistas escritas, o quarto clique mandava
-                  // `level: 4`, o motor recusava e o `dispatch` estourava DENTRO do onClick da
-                  // criança — e o degrau nunca era contado, então o relatório dizia "3 pistas"
-                  // para quem consultou cinco. A tela mostra todas; a evidência satura em três.
-                  dispatch({ type: 'hint', level: Math.min(level, SCENE_LIMITS.hint.max) })
+                  if (conclusao) {
+                    setRunning(false)
+                    setVeredito('')
+                    dispatch({ type: 'reset' })
+                    return
+                  }
+                  // Guarda só o PEDIDO: o texto sai do `result` vivo, senão o balão continuaria
+                  // cobrando uma meta que a criança acabou de fechar.
+                  setVeredito('pedido')
                 }}
               >
-                <Lightbulb size={16} />
-                Uma pista
+                {conclusao ? (
+                  <>
+                    <Play size={16} />
+                    Ver de novo
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    Já descobri
+                  </>
+                )}
               </SceneButton>
             )}
           </div>
+          {/* ⚠️ A região existe SEMPRE: `aria-live` montada junto do texto não é anunciada de
+              forma confiável — vários leitores só observam o que já estava na árvore. */}
+          <p
+            // A resposta do "Já descobri" fica num lugar só, e diz o que FAZER — o
+            // `feedback` da avaliação é o rótulo da meta que ainda não aconteceu.
+            className={
+              veredito && !conclusao
+                ? 'rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm'
+                : 'sr-only'
+            }
+            aria-live="polite"
+          >
+            {veredito && !conclusao && (
+              <>
+                <span className="font-semibold">Ainda falta: </span>
+                {result.feedback}
+              </>
+            )}
+          </p>
         </fieldset>
         {reference && (lab?.trials ?? []).length > 0 && (
           <details
@@ -1519,20 +1734,100 @@ export function SceneActivityView({
             </div>
           </details>
         )}
+        {/* ⭐⭐ O TERCEIRO tempo do ciclo (mexer → prever → ENUNCIAR a regra).
+            ⚠️ Ela só aparece depois de a cena fechar: perguntar "por quê?" antes da descoberta é
+            pedir adivinhação, e a régua do servidor é a mesma — enquanto a cena não fecha, a
+            pergunta não reprova ninguém. ⚠️ Quem corrige é o SERVIDOR: o gabarito nunca chega ao
+            navegador, então o que aparece depois de responder é o `feedback` que voltou de lá. */}
+        {/* ⚠️⚠️ Contra o LATCH, não contra o `result.passed` vivo. Em `layers` e `jump-sound` o
+            avaliador local volta a reprovar quando a criança mexe depois de concluir (a montagem
+            precisa ficar ASSENTADA), e a pergunta SUMIA da tela — enquanto o cartão logo abaixo,
+            que já usava o latch, seguia dizendo "a explicação fica logo acima". O bloco ficava
+            intransponível até ela adivinhar que precisava recompor o arranjo. */}
+        {content.checkpoint && conclusao && (
+          <fieldset className="space-y-2 rounded-2xl border-2 border-primary/30 p-4">
+            <legend className="px-1 text-xs font-bold uppercase tracking-[.14em] text-primary">
+              Agora explique
+            </legend>
+            <p className="font-medium">{content.checkpoint.prompt}</p>
+            {/* ⚠️ Depois de um F5 a escolha não volta: a sessão da cena é guardada em
+                `answers.sceneCheckpoint`, e a resposta da pergunta viaja na TENTATIVA, que o
+                members de propósito não deixa atropelar a sessão. Mostrar os rádios vazios E
+                desabilitados era a pior saída das três — parecia que a resposta tinha sumido. */}
+            {registered && !resposta ? (
+              <p role="status" className="rounded-xl bg-muted/50 p-3 text-sm">
+                Você já respondeu esta pergunta.
+              </p>
+            ) : (
+              content.checkpoint.choices.map((choice) => (
+                <label
+                  key={choice.id}
+                  htmlFor={`${id}-pergunta-${choice.id}`}
+                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border p-3 has-checked:border-primary has-checked:bg-primary/10"
+                >
+                  <input
+                    id={`${id}-pergunta-${choice.id}`}
+                    type="radio"
+                    name={`${id}-pergunta`}
+                    className="accent-primary"
+                    checked={resposta === choice.id}
+                    // ⚠️ O conflito 409 trava o `flush` inteiro: sem isto os rádios ficavam
+                    // clicáveis e MUDOS, enquanto o "Tentar salvar" do rodapé já estava desligado.
+                    disabled={registered || conflict || !ready}
+                    onChange={() => {
+                      setResposta(choice.id)
+                      setRespostaFeedback('')
+                      // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint
+                      // dele, e com o id fixo a primeira resposta errada seria devolvida para
+                      // sempre pelo `findAttempt` — a criança acertaria e continuaria reprovada.
+                      if (!registered) attemptId.current = crypto.randomUUID()
+                      void flush.current(choice.id)
+                    }}
+                  />
+                  {choice.label}
+                </label>
+              ))
+            )}
+            {/* ⚠️⚠️ A explicação do professor é o TERCEIRO tempo do ciclo, e ela chega aqui:
+                acertando, o `feedback` que volta do servidor É o `explanation`. Com o guard de
+                `!registered` ela nunca renderizava — a criança que ERRAVA recebia recado e a que
+                ACERTAVA não recebia nada, com o incentivo invertido. A região existe sempre, com
+                o texto por dentro: `aria-live` montada junto do conteúdo não anuncia. */}
+            <p
+              role="status"
+              aria-live="polite"
+              className={respostaFeedback ? 'rounded-xl bg-muted/50 p-3 text-sm' : 'sr-only'}
+            >
+              {respostaFeedback}
+            </p>
+          </fieldset>
+        )}
         {conclusao && (
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
             <p className="font-semibold">{conclusao}</p>
             <p className="mt-1 text-sm text-muted-foreground">
+              {/* ⚠️ Com pergunta anexa, a descoberta está feita mas o bloco NÃO está concluído —
+                  quem dá a palavra final é o servidor (`withAttachedQuestion`). Dizer "concluiu"
+                  aqui punha duas telas contando histórias diferentes: o cartão dava por encerrado
+                  o que a seção continuava cobrando. */}
               {demoMode
                 ? 'Você acompanhou o conceito em funcionamento.'
-                : 'Você concluiu a investigação proposta nesta atividade.'}
+                : errou
+                  ? 'A descoberta está feita. Falta acertar a frase que explica o que aconteceu.'
+                  : pendente
+                    ? 'Falta uma coisa: escolher a frase que explica o que aconteceu.'
+                    : 'Você concluiu a investigação proposta nesta atividade.'}
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
-              {registered
-                ? activity.type === 'demonstration'
-                  ? 'Exemplo registrado.'
-                  : 'Descoberta registrada.'
-                : 'Guardando este resultado…'}
+              {pendente
+                ? errou
+                  ? 'Você pode escolher outra: a pergunta fica logo acima.'
+                  : 'A explicação fica logo acima.'
+                : registered
+                  ? activity.type === 'demonstration'
+                    ? 'Exemplo registrado.'
+                    : 'Descoberta registrada.'
+                  : 'Guardando este resultado…'}
             </p>
           </div>
         )}

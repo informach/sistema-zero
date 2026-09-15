@@ -25,6 +25,22 @@ um interruptor de modo escondido dentro dele; agora são irmãs, e trocar entre 
 escolhida. Saíram `simulation`, `prediction`, `comparison`, `sequence` e `experiment` (nenhum
 tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
 
+- ⭐⭐ **O caso da atividade** (15/09/2026, `editor/scene-setup-editor.tsx`): um `<details>` "O
+  caso desta atividade: por onde começa e o que cobra" com (a) as ações que acontecem ANTES de a
+  criança entrar — mesmo editor de ações do roteiro, mesma régua — e (b) as descobertas que ESTA
+  atividade cobra. Sem marcar nenhuma, valem as do modelo; marcando, a mesma cena vira outra
+  missão. ⚠️ Missão só na experimentação: a demonstração não cobra meta, e o guard do core recusa.
+  ⚠️⚠️ **O caso é APARADO ao trocar de cena** (`casoAoTrocarCena`, puro e testado): as `actions`
+  são da cena e as `goals` são ids do modelo DELA, então carregados para outra cena deixavam o
+  bloco recusado para sempre com o recado genérico de "complete os campos" — e sem caminho de
+  volta, porque o editor do caso só desenha caixa para as metas da cena NOVA (nenhuma aparece
+  marcada, e o id estranho não tem como sair). É o mesmo beco do `initialImpulse`. Quando só a
+  metade das ações vale, ela sobrevive e o professor é avisado. ⚠️ E o caso ACOMPANHA a troca de
+  TIPO entre as duas irmãs (o grupo de rádio dos quatro cartões atravessa os outros dois sozinho
+  com a seta do teclado, e montar o mundo de partida é o trabalho mais caro da autoria); só a
+  MISSÃO sai ao virar demonstração, avisando.
+- ⭐ **Como a demonstração aparece** (só nela): "Guiada" (etapas à vista) × "Animação curta" (um ▶
+  e o roteiro inteiro, para ficar no meio da explicação).
 - ⭐ **A previsão antes de mexer** (14/09/2026): caixa "Perguntar o que ela acha que vai
   acontecer, antes de abrir a cena", só nos dois tipos de CENA. Pergunta + alternativas + um
   gabarito OPCIONAL ("O que acontece de verdade"). ⚠️ Não vale nota e a criança não vê se
@@ -41,23 +57,54 @@ tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
   roteiro em JSON" **não volta**: era o único caminho para algumas edições e devolvia "JSON
   inválido", que não diz o que consertar. Editar o roteiro que vem com a cena cria o roteiro
   AUTORAL (`activity.script`); "Voltar ao roteiro da cena" desfaz.
+- ⚠️⚠️ **Ação com número precisa de CAMPO, de OPÇÕES, ou de o domínio travar o valor.** Ação com
+  número e sem nenhuma das três é uma ação que o professor escolhe e não consegue ajustar: fica
+  cravada no valor de fábrica da lista, para sempre, naquele bloco. Aconteceu com dezessete tipos
+  de uma vez — e em `camera-3d`, `circle-collision` e `axis-z` o valor de fábrica era o PRÓPRIO
+  estado inicial da cena, então a única ação autorável era um gesto que não muda nada e o `setup`
+  ficou inútil ali. A varredura de 45 cenas está em `tests/scene-action-fields.test.tsx`, e ela
+  deriva a régua do DOMÍNIO (`isSceneAction`), não de uma lista à mão.
+- ⚠️ **O editor de ações serve DOIS donos**, com réguas diferentes: o passo do roteiro (mínimo 1
+  ação, teto `SCRIPT_LIMITS`, `Restaurar a cena` na lista) e o CASO (pode ficar vazio — e aí o
+  caso some —, teto `SETUP_LIMITS`, sem `reset`, que o domínio recusa lá). Reusar a régua do
+  roteiro prendia o professor: quem adicionasse uma ação por engano ficava com ela para sempre.
 - ⚠️ **Os limites dos números das ações vêm de `SCENE_LIMITS`**, nunca reescritos aqui: já houve
   três cópias dessa regra (motor, editor e DTO) e elas divergiram — o `interval` do servidor não
   tinha teto e o do editor ia de 0,5 a 2. Campo que aceita o que o servidor recusa é aula que não
-  salva, sem dizer por quê.
+  salva, sem dizer por quê. ⚠️ Uma exceção, documentada no código: o `direction` (−1..1) não tem
+  entrada no `SCENE_LIMITS` porque o −1..1 é a FORMA da ação, não uma faixa ajustável. ⚠️ E o
+  `advance` tem DOIS tetos: 10s no roteiro (para uma etapa não virar um filme) e o da cena (30s)
+  no CASO — passar o do roteiro nos dois restringia o professor em silêncio.
+- ⚠️ **O campo numérico ARREDONDA e prende na faixa** (`numeroNaFaixa`), como o do endereço já
+  fazia: o domínio exige inteiro em quase toda ação com número, o campo aceitava 2,5, e limpar
+  o campo dava 0 — que o `change` recusa. O bloco ficava recusado na publicação com o recado
+  genérico, apontando para a cena em vez de para o número.
 - ⭐ **Dois defeitos de perda de trabalho, corrigidos com régua PURA** em
   `lib/scene-authoring-rules.ts` (`textoAoTrocarCena`/`roteiroAoTrocarCena`, testadas): trocar a
   cena reconstruía a atividade do zero e o roteiro escrito à mão **sumia sem uma palavra** (agora
   ele sobrevive quando ainda vale na cena nova, e quando não vale o professor é AVISADO); e trocar
   o tipo ou a cena **sobrescrevia o título, a instrução e as pistas** com os do modelo (agora o
   texto do modelo só entra onde o professor não escreveu nada, ou onde o que está escrito é,
-  palavra por palavra, o do modelo anterior).
+  palavra por palavra, o do modelo anterior). ⚠️ O `roteiroAoTrocarCena` recebe o caso APARADO:
+  o domínio toca o roteiro a partir do caso (`isSceneScript(script, scene, setup)` → `openScene`),
+  e conferindo contra o mundo de fábrica o editor guardava sem aviso um roteiro que a publicação
+  depois recusava.
+- ⚠️⚠️ **A identidade de uma ação no `<select>` é uma TABELA** (`DISTINGUE`, em
+  `editor/scene-action-editor.tsx`), não uma escada de ternários. Duas opções com a mesma
+  identidade é defeito silencioso: o `value` do `<select>` deixa de escolher uma delas — clicar
+  em "Desligar a sombra" selecionava "Ligar a sombra" — e o React avisa só no console, onde
+  ninguém olha durante a autoria. A escada anterior tinha esquecido `define`, `mode`, `hold` e
+  `show`, e cada par novo de irmãs esquecia de novo.
 - ⚠️ `intent` da SEÇÃO e `type` da ATIVIDADE são eixos diferentes com nomes parecidos
   (`demonstration`/`exploration` × `demonstration`/`experimentation`).
   `lesson-editorial-warnings.ts` cruza os dois, e o cruzamento ficou uma comparação direta.
 - ⚠️ `learning-builder.tsx` importa `lib/scene-authoring-rules` por CAMINHO RELATIVO, não pelo
   alias `@/`: o ensaio visual do kids (`community-kids/tests/visual/experience-preview.tsx`)
   compila este arquivo pelo caminho, e lá o alias do admin não existe.
+- ⚠️ **A frase escolhida na pergunta anexa aparece nos QUATRO tipos** (`conclusaoLines`). Os dois
+  ramos de cena fazem `return` com as próprias linhas, e a linha da conclusão só existia depois
+  deles — então quando a cena voltou a aceitar pergunta anexa, o campo que passou a decidir o
+  `passed` ficou invisível justamente para quem precisa dele para intervir.
 - **O painel de evidências do professor** (`components/professor/lesson-learning-panel.tsx`) fala
   a língua nova: metas descobertas e pendentes pelo nome, a montagem que ela deixou, e a distinção
   entre "ainda não abriu" e "registro não confere com esta cena" — que são coisas diferentes

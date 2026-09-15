@@ -1,8 +1,10 @@
 import type { InteractiveBlock, LearningActivity, LearningChoice } from '@sistemazero/core/learning'
 import {
   isSceneScript,
+  isSceneSetup,
   SCENE_MODELS,
   type SceneId,
+  type SceneSetup,
   type SceneStep,
 } from '@sistemazero/core/learning/scene'
 
@@ -67,14 +69,54 @@ export function textoAoTrocarCena(
  * meio. Sem isto, a primeira cena do caminho descartava o roteiro de salto e chegar na irmã —
  * onde ele VALE — devolvia a demonstração vazia, sem volta.
  */
+/**
+ * O CASO da atividade (`setup`) na troca de cena ou de tipo.
+ *
+ * ⚠️⚠️ Ele não pode simplesmente atravessar. As `actions` do caso são da CENA e as `goals` são
+ * ids do modelo DELA — carregados para outra cena, o bloco passa a ser recusado na publicação
+ * com o recado genérico de "complete os campos", e o editor do caso não tem como consertar: ele
+ * desenha uma caixa por meta da cena NOVA, então nenhuma aparece marcada e o id estranho fica
+ * lá dentro sem forma de desmarcar. É o mesmo beco do `initialImpulse`, e a saída é a mesma.
+ *
+ * ⚠️ E as `goals` só existem na experimentação: a demonstração não cobra meta nenhuma, e o
+ * guard do domínio recusa o campo. Por isso `metas` — indo para demonstração, o alvo sai e
+ * quem sai AVISA.
+ */
+export function casoAoTrocarCena(
+  setup: SceneSetup | undefined,
+  nova: SceneId,
+  { metas }: { metas: boolean },
+): { setup: SceneSetup | undefined; descartado: 'nada' | 'missao' | 'tudo' } {
+  if (!setup) return { setup: undefined, descartado: 'nada' }
+  // ⚠️ A metade que vale é lida ANTES do guard: depois dele o TS já estreitou o valor e o
+  // acesso ao campo deixa de compilar.
+  //
+  // As ações podem valer na cena nova (um caso só de `advance` vale em quase todas); o alvo é
+  // que quase nunca sobrevive. Salvar a metade que vale é melhor que devolver a caixa vazia.
+  const soAcoes = setup.actions ? { actions: setup.actions } : undefined
+  if (isSceneSetup(setup, nova, { goals: metas })) return { setup, descartado: 'nada' }
+  // ⚠️ Caso SEM ações é caso só de missão, e o que sai dele é a missão: o recado de "o caso é
+  // de outra cena… voltou ao mundo de fábrica" mandava o professor procurar ações que nunca
+  // existiram. É o mesmo erro que o ramo `missao` foi criado para evitar.
+  if (!soAcoes) return { setup: undefined, descartado: 'missao' }
+  // ⚠️ O que SAIU muda o recado. Quando só a missão cai — o caso comum, porque as metas são ids
+  // do modelo e as ações costumam valer em mais de uma cena —, dizer "o caso é de outra cena"
+  // fala de uma perda que não aconteceu, e o professor vai procurar o que consertar nas ações.
+  if (soAcoes && isSceneSetup(soAcoes, nova, { goals: false }))
+    return { setup: soAcoes, descartado: 'missao' }
+  return { setup: undefined, descartado: 'tudo' }
+}
+
 export function roteiroAoTrocarCena(
   script: readonly SceneStep[] | undefined,
   nova: SceneId,
   lembrado?: readonly SceneStep[],
+  /** O caso da atividade: o roteiro é tocado a partir DELE, como o domínio faz. */
+  setup?: SceneSetup,
 ): { script: SceneStep[] | undefined; descartado: boolean } {
   const candidato = script ?? lembrado
   if (!candidato) return { script: undefined, descartado: false }
-  if (isSceneScript(candidato, nova))
+  if (isSceneScript(candidato, nova, setup))
     return { script: candidato.map((p) => ({ ...p })), descartado: false }
   return { script: undefined, descartado: true }
 }
@@ -99,6 +141,7 @@ export interface Troca {
 export interface MemoriaDaAutoria {
   scene?: SceneId
   script?: readonly SceneStep[]
+  setup?: SceneSetup
   initialImpulse?: number
   instructionAudioUrl?: string
   html?: string
@@ -111,6 +154,7 @@ export function lembrar(anterior: MemoriaDaAutoria, value: InteractiveBlock): Me
   if (a.type === 'demonstration' || a.type === 'experimentation') {
     nova.scene = a.scene
     if (a.instructionAudioUrl) nova.instructionAudioUrl = a.instructionAudioUrl
+    if (a.setup) nova.setup = a.setup
   }
   if (a.type === 'demonstration' && a.script) nova.script = a.script
   if (a.type === 'experimentation' && a.initialImpulse !== undefined)
@@ -153,13 +197,30 @@ export function trocarCena(
   const a = value.activity
   if (a.type !== 'demonstration' && a.type !== 'experimentation') return { bloco: value, aviso: '' }
   const texto = textoAoTrocarCena(value, a.scene, scene)
+  const caso = casoAoTrocarCena(a.setup ?? memoria.setup, scene, {
+    metas: a.type === 'experimentation',
+  })
+  const avisoDoCaso =
+    caso.descartado === 'tudo'
+      ? 'O caso que você montou é de outra cena e não vale nesta. A atividade voltou a começar do mundo de fábrica — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher a cena de onde ele saiu.'
+      : caso.descartado === 'missao'
+        ? 'As descobertas que você tinha marcado são do modelo da cena anterior e saíram. O caso de partida ficou; escolha de novo o que esta atividade cobra.'
+        : ''
   if (a.type === 'demonstration') {
-    const { script, descartado } = roteiroAoTrocarCena(a.script, scene, memoria.script)
+    // ⚠️ O roteiro é conferido a partir do caso APARADO, que é de onde o domínio o toca
+    // (`isSceneScript(script, scene, setup)` → `openScene`). Conferindo contra o mundo de
+    // fábrica, o editor guardava sem aviso um roteiro que a publicação depois recusava.
+    const { script, descartado } = roteiroAoTrocarCena(a.script, scene, memoria.script, caso.setup)
     return {
-      bloco: { ...value, ...texto, activity: { ...a, scene, script } },
-      aviso: descartado
-        ? 'O roteiro que você escreveu é de outra cena e não vale nesta. A demonstração está com o roteiro que vem com a cena escolhida — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher uma cena em que ele valha.'
-        : '',
+      bloco: { ...value, ...texto, activity: { ...a, scene, script, setup: caso.setup } },
+      aviso: [
+        descartado
+          ? 'O roteiro que você escreveu é de outra cena e não vale nesta. A demonstração está com o roteiro que vem com a cena escolhida — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher uma cena em que ele valha.'
+          : '',
+        avisoDoCaso,
+      ]
+        .filter(Boolean)
+        .join(' '),
     }
   }
   const mantemImpulso = CENAS_COM_IMPULSO.includes(scene)
@@ -170,15 +231,20 @@ export function trocarCena(
       activity: {
         ...a,
         scene,
+        setup: caso.setup,
         // ⚠️ Mesma história do roteiro: atravessar uma cena sem salto zerava o impulso, e
         // chegar na outra cena de salto dava 9 em vez do que a professora tinha ajustado.
         initialImpulse: mantemImpulso ? (a.initialImpulse ?? memoria.initialImpulse) : undefined,
       },
     },
-    aviso:
+    aviso: [
       !mantemImpulso && a.initialImpulse !== undefined
         ? 'O impulso inicial vale só nas cenas de salto, então saiu junto com a troca de cena.'
         : '',
+      avisoDoCaso,
+    ]
+      .filter(Boolean)
+      .join(' '),
   }
 }
 
@@ -204,13 +270,9 @@ export function trocarTipo(
   const cena = cenaDe(a) ?? memoria.scene ?? null
   const avisos: string[] = []
 
-  // ⚠️ A condição NÃO pode ser `cena === null`: desde que a memória devolve a cena escolhida
-  // antes, `cena` quase nunca é nula, e o aviso morria calado justamente no caminho comum
-  // (Pergunta curta → Experimentação). Quem decide é o DESTINO: toda cena descarta a pergunta.
-  if ((tipo === 'demonstration' || tipo === 'experimentation') && value.checkpoint)
-    avisos.push(
-      'A pergunta de verificação saiu: uma cena não carrega pergunta anexa, porque as duas guardariam a resposta no mesmo lugar.',
-    )
+  // ⚠️ O aviso de que a pergunta SAÍA ao virar cena morreu em 15/09/2026, junto com a regra:
+  // a cena passou a aceitar pergunta anexa (o terceiro tempo do ciclo), então não há mais nada
+  // a avisar aqui — e um aviso que fala de uma perda que não acontece mais é pior que nenhum.
   if (a.type === 'demonstration' && a.script && tipo !== 'demonstration')
     avisos.push(
       'O roteiro que você escreveu vive na demonstração. Ele está guardado enquanto este editor estiver aberto — voltar para Demonstração o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
@@ -222,6 +284,12 @@ export function trocarTipo(
   if (a.type === 'html' && a.html && tipo !== 'html')
     avisos.push(
       'O HTML que você escreveu está guardado enquanto este editor estiver aberto — voltar para Experiência em HTML o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
+    )
+  // ⚠️ A MISSÃO (as metas que esta atividade cobra) só existe na experimentação: a demonstração
+  // não cobra meta nenhuma. O caso de partida segue nas duas.
+  if (a.type === 'experimentation' && a.setup?.goals && tipo !== 'experimentation')
+    avisos.push(
+      'A missão que você escolheu (quais descobertas esta atividade cobra) só existe na experimentação. Ela está guardada enquanto este editor estiver aberto — voltar para Experimentação a traz de volta.',
     )
   // ⚠️⚠️ A previsão é das CENAS (o palco é que responde o palpite) e o editor só a mostra lá.
   // Saindo para pergunta curta ou HTML ela ficava no bloco, INVISÍVEL: o professor não tinha como
@@ -239,12 +307,20 @@ export function trocarTipo(
     a.type === 'demonstration' || a.type === 'experimentation'
       ? a.instructionAudioUrl
       : memoria.instructionAudioUrl
+  // ⚠️ O caso ACOMPANHA as duas irmãs, como a cena e o áudio: montar o mundo de partida é o
+  // trabalho mais caro da autoria de uma atividade, e perdê-lo num passeio pelo grupo de rádio
+  // (que a SETA do teclado faz sozinha) é a pior perda das quatro.
+  const casoLembrado =
+    a.type === 'demonstration' || a.type === 'experimentation'
+      ? (a.setup ?? memoria.setup)
+      : memoria.setup
   let activity: LearningActivity
   if (tipo === 'demonstration')
     activity = {
       type: tipo,
       scene: cena ?? 'world',
       instructionAudioUrl: audio,
+      setup: casoAoTrocarCena(casoLembrado, cena ?? 'world', { metas: false }).setup,
       script: a.type === 'demonstration' ? a.script : memoria.script?.map((p) => ({ ...p })),
     }
   else if (tipo === 'experimentation') {
@@ -253,6 +329,7 @@ export function trocarTipo(
       type: tipo,
       scene: destino,
       instructionAudioUrl: audio,
+      setup: casoAoTrocarCena(casoLembrado, destino, { metas: true }).setup,
       initialImpulse: CENAS_COM_IMPULSO.includes(destino)
         ? a.type === 'experimentation'
           ? a.initialImpulse
@@ -279,12 +356,13 @@ export function trocarTipo(
       ...(!viraCena && cena && value.hints.join('\n') === SCENE_MODELS[cena].hints.join('\n')
         ? { hints: [] }
         : {}),
-      checkpoint: viraCena
-        ? undefined
-        : // ⚠️ A pergunta EM BRANCO criada ao passar por "Pergunta curta" não fica presa: ela
-          // invalida o bloco (o prompt vazio é recusado) e a parede de publicação fala de
-          // "complete os campos", sem dizer qual. Quem escreveu alguma coisa, fica.
-          tipo !== 'question' && perguntaEmBranco(value.checkpoint)
+      // ⚠️ A cena passou a ACEITAR pergunta anexa (15/09/2026), então virar cena não apaga mais
+      // o que o professor escreveu. Ela é o terceiro tempo do ciclo: mexer, prever, enunciar.
+      // ⚠️ A pergunta EM BRANCO criada ao passar por "Pergunta curta" continua não ficando
+      // presa: ela invalida o bloco (o prompt vazio é recusado) e a parede de publicação fala
+      // de "complete os campos", sem dizer qual. Quem escreveu alguma coisa, fica.
+      checkpoint:
+        tipo !== 'question' && perguntaEmBranco(value.checkpoint)
           ? undefined
           : tipo === 'question' && !value.checkpoint
             ? { prompt: '', choices: escolhasNovas(), correctChoiceId: 'first', explanation: '' }

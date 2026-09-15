@@ -175,6 +175,59 @@ const DEPOIS: readonly Formas[] = [
   ['mesmo', 'mesma', 'mesmos', 'mesmas'],
 ]
 
+/**
+ * O PREDICATIVO: o adjetivo que chega depois de um verbo de ligação.
+ *
+ * ⚠️⚠️ Achado do review do lote A. O catálogo diz "O Dino está escondido atrás de quê?", o
+ * motor diz "O Dino foi criado" e a cena das vidas diz "enquanto o Dino está vivo" — e o
+ * elenco só sabia concordar com o que estivesse COLADO no nome. Com um elenco feminino as três
+ * saem "A nave está escondido", "A nave foi criado", "a nave está vivo", e a primeira delas é a
+ * PRIMEIRA PISTA que a criança lê quando trava.
+ *
+ * ⚠️ Só o adjetivo é flexionado; o verbo fica como está. O número vem do determinante do texto
+ * original, que o elenco não muda, então "estão" continua "estão".
+ */
+const PREDICATIVOS: readonly Formas[] = [
+  // ⚠️ `encostado` entrou com a pista 3 do `contact` ("Com o cacto encostado, troque para o
+  // acontecimento"): sem ele uma turma de pedra lia "Com a pedra encostado".
+  ['encostado', 'encostada', 'encostados', 'encostadas'],
+  // ⚠️ `encostado` entrou com a pista 3 do `contact` ("Com o cacto encostado, troque para o
+  // acontecimento"): sem ele uma turma de pedra lia "Com a pedra encostado".
+  ['encostado', 'encostada', 'encostados', 'encostadas'],
+  ['escondido', 'escondida', 'escondidos', 'escondidas'],
+  ['criado', 'criada', 'criados', 'criadas'],
+  ['guardado', 'guardada', 'guardados', 'guardadas'],
+  ['desenhado', 'desenhada', 'desenhados', 'desenhadas'],
+  ['coberto', 'coberta', 'cobertos', 'cobertas'],
+  ['vivo', 'viva', 'vivos', 'vivas'],
+  ['pronto', 'pronta', 'prontos', 'prontas'],
+  ['parado', 'parada', 'parados', 'paradas'],
+  ['sozinho', 'sozinha', 'sozinhos', 'sozinhas'],
+  ['preso', 'presa', 'presos', 'presas'],
+  ['salvo', 'salva', 'salvos', 'salvas'],
+  ['ligado', 'ligada', 'ligados', 'ligadas'],
+  ['novo', 'nova', 'novos', 'novas'],
+]
+/** Os verbos de ligação que o texto das cenas usa. Lista fechada: fora dela, nada é tocado. */
+const LIGACAO = [
+  'está',
+  'estão',
+  'estava',
+  'estavam',
+  'fica',
+  'ficam',
+  'ficou',
+  'ficaram',
+  'foi',
+  'foram',
+  'continua',
+  'continuam',
+  'parece',
+  'parecem',
+  'era',
+  'eram',
+]
+
 const forma = (f: Formas, gender: 'm' | 'f', muitos: boolean) =>
   f[gender === 'm' ? (muitos ? 2 : 0) : muitos ? 3 : 1]
 
@@ -186,6 +239,7 @@ function indice(lista: readonly Formas[]): Map<string, Formas> {
 }
 const ANTES_INDEX = indice(ANTES)
 const DEPOIS_INDEX = indice(DEPOIS)
+const PRED_INDEX = indice(PREDICATIVOS)
 const alternancia = (mapa: Map<string, Formas>) =>
   [...mapa.keys()]
     .flatMap((p) => [p, p.charAt(0).toUpperCase() + p.slice(1)])
@@ -213,8 +267,9 @@ const TERMO_ALT = TERMOS.map((t) => t.termo)
  *
  * ⚠️ O termo tem que terminar em pontuação ou espaço, senão "Dinossauro" casaria "Dino".
  */
+const LIGACAO_ALT = [...LIGACAO].sort((a, b) => b.length - a.length).join('|')
 const RE = new RegExp(
-  `(^|[\\s("'“‘])(?:(${DET_ALT})\\s+)?((?:(?:${alternancia(ANTES_INDEX)})\\s+)*)(${TERMO_ALT})(\\s+(?:${alternancia(DEPOIS_INDEX)}))?(?=$|[\\s.,;:!?)"'”’])`,
+  `(^|[\\s("'“‘])(?:(${DET_ALT})\\s+)?((?:(?:${alternancia(ANTES_INDEX)})\\s+)*)(${TERMO_ALT})(\\s+(?:${alternancia(DEPOIS_INDEX)}))?(\\s+(?:${LIGACAO_ALT})\\s+(?:${alternancia(PRED_INDEX)}))?(?=$|[\\s.,;:!?)"'”’])`,
   'gu',
 )
 
@@ -236,6 +291,7 @@ export function castText(text: string, cast?: SceneCast): string {
       mods: string,
       termo: string,
       posposto: string | undefined,
+      predicativo: string | undefined,
       offset: number,
       todo: string,
     ) => {
@@ -259,7 +315,15 @@ export function castText(text: string, cast?: SceneCast): string {
         .split(/\s+/)
         .filter(Boolean)
         .map((p) => concorda(p, ANTES_INDEX))
-      const cauda = posposto ? ` ${concorda(posposto.trim(), DEPOIS_INDEX)}` : ''
+      // O adjetivo depois do verbo de ligação concorda igual; o verbo entre os dois não muda.
+      const ligado = predicativo
+        ? (() => {
+            const partes = predicativo.trim().split(/\s+/)
+            const adjetivo = partes.pop() ?? ''
+            return ` ${[...partes, concorda(adjetivo, PRED_INDEX)].join(' ')}`
+          })()
+        : ''
+      const cauda = (posposto ? ` ${concorda(posposto.trim(), DEPOIS_INDEX)}` : '') + ligado
 
       // ⚠️⚠️ A caixa vem do que ESTAVA lá, não de uma regra de posição.
       //

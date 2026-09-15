@@ -115,7 +115,17 @@ describe('a criança mexendo na cena', () => {
     )
     expect(SCENE_MODELS.layers.hints).toHaveLength(3)
     fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
-    expect(screen.getByText(SCENE_MODELS.layers.hints[0] as string)).toBeTruthy()
+    // ⚠️ `toContain` e não igualdade: o primeiro degrau passou a citar a SITUAÇÃO antes do
+    // degrau do modelo (15/09/2026), então o texto exibido é maior que a frase do catálogo.
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.textContent?.includes(SCENE_MODELS.layers.hints[0] as string) === true &&
+          !Array.from(node.children).some((filho) =>
+            filho.textContent?.includes(SCENE_MODELS.layers.hints[0] as string),
+          ),
+      ),
+    ).toBeTruthy()
     // O que importa é o que SOBE: a evidência guardada tem que contar a pista lida.
     // ⚠️ O player grava numa batida de 1s, então o `waitFor` padrão (1s) é cara ou coroa: o
     // teste passava sozinho e caía na suíte inteira, que é a pior forma de vermelho.
@@ -227,6 +237,40 @@ describe('a criança mexendo na cena', () => {
     expect(screen.getByText('Descoberta registrada.')).toBeTruthy()
     // E ninguém registra duas vezes: a marcação é primeira-vez-só.
     expect(tentativas()).toBe(registradas)
+  })
+
+  test('⚠️⚠️ um TOQUE no botão de segurar não deixa a tecla presa', async () => {
+    // O botão tem os três eventos: `pointerdown` segura, `pointerup` solta, e o `click`
+    // alterna — este último para quem usa teclado ou leitor de tela, que não têm "segurar".
+    // Um toque de mouse dispara os TRÊS em fila, e o `click` alternava o já-falso de volta
+    // para verdadeiro: um clique simples terminava com a tecla presa e o rótulo dizendo
+    // "Soltar a tecla", o contrário do que tinha acontecido — justo na cena que existe para
+    // separar acontecimento de estado.
+    const { fetchFalso } = servidorFalso('hold-vs-press')
+    globalThis.fetch = fetchFalso
+    render(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: 'child-v6',
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+        }}
+      >
+        <InteractiveLessonBlock block={block('hold-vs-press')} />
+      </LessonPlayerProvider>,
+    )
+    const botao = await screen.findByRole('button', { name: 'Segurar a tecla' })
+    fireEvent.pointerDown(botao)
+    fireEvent.pointerUp(botao)
+    // `detail: 1` é o clique de PONTEIRO. O de teclado chega com `detail: 0`.
+    fireEvent.click(botao, { detail: 1 })
+    expect(screen.getByRole('button', { name: 'Segurar a tecla' })).toBeTruthy()
+
+    // E o caminho do teclado continua alcançando os dois estados.
+    fireEvent.click(screen.getByRole('button', { name: 'Segurar a tecla' }), { detail: 0 })
+    expect(await screen.findByRole('button', { name: 'Soltar a tecla' })).toBeTruthy()
   })
 
   test('⚠️ envio em voo não trava a cena, e o que ela fez DEPOIS não se perde', async () => {

@@ -1,4 +1,4 @@
-import type { SceneId } from './actions'
+import { type SceneId, STAGE_TARGET } from './actions'
 import { castText, type SceneCast } from './cast'
 import { type SceneState, sceneContact } from './state'
 
@@ -37,6 +37,21 @@ export interface SceneReading {
 }
 
 const liga = (on: boolean) => (on ? 'ligada' : 'desligada')
+/** As três alturas de onde a câmera do 3D pode olhar. */
+const ALTURA: Record<number, string> = { 0: 'por baixo', 1: 'no meio', 2: 'por cima' }
+/**
+ * Quantas faces do cubo a câmera vê daqui.
+ *
+ * ⚠️ É a MESMA regra do motor (`facesÀVista`), reescrita aqui de propósito: a leitura não pode
+ * importar o motor (ele já importa a leitura), e a alternativa — guardar o número no estado —
+ * faria um campo derivado que todo retrato antigo traria errado. Mexeu num, mexa no outro: a
+ * varredura do `engine-scenes.test.ts` compara os dois.
+ */
+function faces(yaw: number, pitch: number): number {
+  const canto = yaw % 2 === 1
+  if (pitch === 1) return canto ? 2 : 1
+  return canto ? 3 : 2
+}
 const TELA: Record<string, string> = { start: 'Início', playing: 'Jogando', end: 'Fim' }
 
 /**
@@ -279,6 +294,216 @@ function leituras(scene: SceneId, state: SceneState): SceneReading[] {
         { label: 'limite', value: liga(state.speed.limited), tone: 'b' },
         { label: 'passos do relógio', value: String(state.speed.ticks), tone: 'plain' },
       ]
+    /* ── O núcleo do Iniciante 2D ─────────────────────────────────────────────────────────── */
+    case 'velocity':
+      // ⚠️ Os DOIS eixos. Mostrando só o `vx`, uma criança que pusesse `vx 0, vy 5` via o Dino
+      // descer com a faixa dizendo "velocidade 0" — o rótulo mentindo sobre o estado, na tela
+      // que existe justamente para ligar o número ao que se vê.
+      return [
+        {
+          label: 'velocidade',
+          value:
+            state.drive.vy === 0
+              ? String(state.drive.vx)
+              : `${state.drive.vx} para o lado · ${state.drive.vy} para baixo`,
+          tone: 'a',
+        },
+        {
+          // ⚠️ Os DOIS eixos aqui também: numa cena de velocidade para baixo, o único número
+          // que se mexia na faixa era "quadros".
+          label: 'onde ele está',
+          value:
+            state.drive.vy === 0
+              ? `x ${Math.round(state.drive.x)}`
+              : `x ${Math.round(state.drive.x)} · y ${Math.round(state.drive.y)}`,
+          tone: 'b',
+        },
+        { label: 'quadros', value: String(state.drive.ticks), tone: 'plain' },
+      ]
+    case 'hold-vs-press':
+      return [
+        { label: 'quando apertar', value: String(Math.round(state.input.pressX)), tone: 'a' },
+        { label: 'está apertada?', value: String(Math.round(state.input.holdX)), tone: 'b' },
+        {
+          label: 'a tecla',
+          value: state.input.holding ? 'segurada' : 'solta',
+          tone: state.input.holding ? 'alert' : 'plain',
+        },
+      ]
+    case 'variable':
+      return [
+        { label: 'guardado na caixa', value: String(state.box.value), tone: 'a' },
+        {
+          label: 'na tela',
+          value: state.box.shown ? String(state.box.value) : 'nada',
+          tone: state.box.shown ? 'b' : 'alert',
+        },
+        { label: 'mudanças', value: String(state.box.changes), tone: 'plain' },
+      ]
+    case 'group-loop':
+      return [
+        { label: 'olhados', value: `${state.hunt.looked.length} de 3`, tone: 'a' },
+        {
+          label: 'escolhido',
+          value: state.hunt.chosen ? `o ${state.hunt.chosen}º` : 'nenhum ainda',
+          tone: 'b',
+        },
+        { label: 'laço', value: liga(state.hunt.auto), tone: 'plain' },
+      ]
+    case 'enemy-type':
+      return [
+        { label: 'velocidade na ficha', value: String(state.blueprint.speed), tone: 'a' },
+        { label: 'vida na ficha', value: String(state.blueprint.life), tone: 'b' },
+        { label: 'nasceram', value: String(state.blueprint.born), tone: 'plain' },
+      ]
+    case 'camera':
+      return [
+        { label: 'o Dino no mundo', value: String(state.view.heroX), tone: 'a' },
+        { label: 'tela', value: `0 a ${STAGE_TARGET.width}`, tone: 'b' },
+        {
+          label: 'câmera',
+          value: state.view.follow ? 'seguindo' : 'parada',
+          tone: state.view.follow ? 'plain' : 'alert',
+        },
+      ]
+    case 'contact':
+      return [
+        { label: 'distância', value: String(state.hit.distance), tone: 'a' },
+        {
+          label: 'a pergunta',
+          value: state.hit.mode === 'ask' ? 'está encostando?' : 'acabou de encostar',
+          tone: 'b',
+        },
+        {
+          label: 'vida perdida',
+          value: String(state.hit.damage),
+          tone: state.hit.damage > 2 ? 'alert' : 'plain',
+        },
+      ]
+    case 'cooldown':
+      return [
+        { label: 'recarga', value: `${state.weapon.seconds}s`, tone: 'a' },
+        { label: 'tiros', value: String(state.weapon.shots), tone: 'b' },
+        {
+          label: 'pedidos recusados',
+          value: String(state.weapon.refused),
+          tone: state.weapon.refused > 0 ? 'alert' : 'plain',
+        },
+      ]
+    case 'aim':
+      return [
+        { label: 'alvo', value: `${state.sight.targetX}, ${state.sight.targetY}`, tone: 'a' },
+        { label: 'mira', value: liga(state.sight.chasing), tone: 'b' },
+      ]
+    case 'diagonal':
+      return [
+        {
+          label: 'setas',
+          value:
+            state.walkPad.dx !== 0 && state.walkPad.dy !== 0
+              ? 'duas'
+              : state.walkPad.dx || state.walkPad.dy
+                ? 'uma'
+                : 'nenhuma',
+          tone: 'a',
+        },
+        { label: 'andou no passo', value: String(state.walkPad.distance), tone: 'b' },
+        { label: 'correção', value: liga(state.walkPad.even), tone: 'plain' },
+      ]
+    case 'tilemap':
+      // ⚠️ A linha ESCRITA na faixa é a cena inteira: é ela que a criança compara com o desenho.
+      return [
+        { label: 'a linha do meio, escrita', value: state.grid.rows[3] ?? '', tone: 'a' },
+        { label: 'casas trocadas', value: String(state.grid.edits), tone: 'b' },
+        { label: 'o mapa', value: '6 linhas de 10', tone: 'plain' },
+      ]
+    /* ── O motor, o 3D e o ateliê ──────────────────────────────────────────────────────── */
+    case 'pool':
+      // ⚠️ Os DOIS contadores lado a lado são a cena: é a diferença entre eles que denuncia o
+      // vazamento, e nenhum dos dois sozinho diz nada.
+      return [
+        { label: 'vivos agora', value: String(state.nursery.alive), tone: 'a' },
+        { label: 'criados desde o começo', value: String(state.nursery.created), tone: 'b' },
+        { label: 'reciclagem', value: liga(state.nursery.recycling), tone: 'plain' },
+      ]
+    case 'entity-state':
+      return [
+        { label: '1º', value: state.brains.states[0] ?? 'parado', tone: 'a' },
+        { label: '2º', value: state.brains.states[1] ?? 'parado', tone: 'b' },
+        { label: '3º', value: state.brains.states[2] ?? 'parado', tone: 'plain' },
+      ]
+    case 'delta-time':
+      return [
+        { label: 'a rápida andou', value: String(Math.round(state.machines.fastX)), tone: 'a' },
+        { label: 'a devagar andou', value: String(Math.round(state.machines.slowX)), tone: 'b' },
+        {
+          label: 'o jogo conta',
+          value: state.machines.mode === 'frames' ? 'quadros' : 'segundos',
+          tone: 'plain',
+        },
+      ]
+    case 'circle-collision': {
+      const soma = state.circles.a + state.circles.b
+      return [
+        {
+          label: 'distância entre os centros',
+          value: String(Math.round(state.circles.distance)),
+          tone: 'a',
+        },
+        { label: 'soma dos raios', value: String(soma), tone: 'b' },
+        {
+          label: 'a conta diz',
+          value: state.circles.distance <= soma ? 'bateu' : 'ainda não',
+          tone: state.circles.distance <= soma ? 'alert' : 'plain',
+        },
+      ]
+    }
+    case 'axis-z':
+      return [
+        { label: 'x', value: String(state.space.x), tone: 'a' },
+        { label: 'y (altura)', value: String(state.space.y), tone: 'b' },
+        { label: 'z (profundidade)', value: String(state.space.z), tone: 'plain' },
+      ]
+    case 'camera-3d':
+      return [
+        { label: 'volta da câmera', value: `${state.orbit.yaw} de 8`, tone: 'a' },
+        { label: 'altura da câmera', value: ALTURA[state.orbit.pitch] ?? 'no meio', tone: 'b' },
+        {
+          label: 'cores à vista',
+          value: String(faces(state.orbit.yaw, state.orbit.pitch)),
+          tone: 'plain',
+        },
+      ]
+    case 'mesh':
+      return [
+        { label: 'raio-X', value: liga(state.model.wire), tone: 'a' },
+        { label: 'o que aparece', value: state.model.wire ? 'os pontos' : 'a roupa', tone: 'b' },
+      ]
+    case 'pick-ray':
+      return [
+        { label: 'a mira aponta para', value: `${state.ray.x}, ${state.ray.y}`, tone: 'a' },
+        {
+          label: 'a reta parou em',
+          value: state.ray.hit ? `caixa ${state.ray.hit}` : 'nada',
+          tone: 'b',
+        },
+        { label: 'caixas já acertadas', value: String(state.ray.hits.length), tone: 'plain' },
+      ]
+    case 'fill-stroke':
+      return [
+        { label: 'miolo', value: state.ink.fill ? 'pintado' : 'vazio', tone: 'a' },
+        { label: 'contorno', value: state.ink.stroke ? 'à vista' : 'sem cor', tone: 'b' },
+      ]
+    case 'shading':
+      return [
+        { label: 'sombra', value: liga(state.light.shade), tone: 'a' },
+        {
+          label: 'a luz vem da',
+          value: state.light.side === 'left' ? 'esquerda' : 'direita',
+          tone: 'b',
+        },
+        { label: 'cores na forma', value: state.light.shade ? 'duas' : 'uma', tone: 'plain' },
+      ]
   }
 }
 
@@ -300,10 +525,25 @@ function situacao(scene: SceneId, state: SceneState): string {
   switch (scene) {
     case 'coordinates':
       return `O Dino está em x ${state.place.x}, y ${state.place.y}.`
-    case 'stage-size':
+    case 'stage-size': {
+      // ⭐ A DIFERENÇA até o alvo, em vez de só o valor de agora. É o que o Brilliant faz
+      // quando o comando da criança erra: os pontos param ao lado do alvo, e a distância que
+      // sobra é a própria correção. Aqui o alvo é a tela que a Aula 1 pede.
+      const dl = STAGE_TARGET.width - state.stage.width
+      const da = STAGE_TARGET.height - state.stage.height
+      const falta =
+        dl === 0 && da === 0
+          ? ' É a tela que o jogo pede.'
+          : ` Para chegar em ${STAGE_TARGET.width} por ${STAGE_TARGET.height}, falta ${[
+              dl !== 0 && `${dl > 0 ? 'somar' : 'tirar'} ${Math.abs(dl)} na largura`,
+              da !== 0 && `${da > 0 ? 'somar' : 'tirar'} ${Math.abs(da)} na altura`,
+            ]
+              .filter(Boolean)
+              .join(' e ')}.`
       return state.stage.border
-        ? `Tela de ${state.stage.width} por ${state.stage.height}, com a moldura à vista.`
-        : `Tela de ${state.stage.width} por ${state.stage.height}. Sem a moldura, a cor do fundo cobre tudo.`
+        ? `Tela de ${state.stage.width} por ${state.stage.height}, com a moldura à vista.${falta}`
+        : `Tela de ${state.stage.width} por ${state.stage.height}. Sem a moldura, a cor do fundo cobre tudo.${falta}`
+    }
     case 'draw-loop':
       return state.render.loop
         ? state.render.erase
@@ -402,5 +642,95 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.speed.limited
         ? `O próximo cacto sai com velocidade ${state.speed.base}, e a placa de limite está no lugar.`
         : `O próximo cacto sai com velocidade ${state.speed.base}, sem limite nenhum para segurar.`
+    /* ── O núcleo do Iniciante 2D ─────────────────────────────────────────────────────────── */
+    case 'velocity':
+      // ⚠️ Os DOIS eixos, como na faixa: com a velocidade só para baixo esta frase afirmava
+      // "velocidade 0" embaixo de um palco em que o Dino descia.
+      return state.drive.vx === 0 && state.drive.vy === 0
+        ? `O Dino está parado em x ${Math.round(state.drive.x)}: a velocidade é zero.`
+        : state.drive.vy === 0
+          ? `Velocidade ${state.drive.vx} para o lado, e o Dino já está em x ${Math.round(state.drive.x)}.`
+          : `Velocidade ${state.drive.vx} para o lado e ${state.drive.vy} para baixo. O Dino está em x ${Math.round(state.drive.x)}, y ${Math.round(state.drive.y)}.`
+    case 'hold-vs-press':
+      return state.input.holding
+        ? 'A tecla está segurada: a de baixo anda enquanto o relógio correr.'
+        : `A de cima andou ${state.input.presses} passo(s), um por aperto.`
+    case 'variable':
+      return state.box.shown
+        ? `A caixa guarda ${state.box.value}, e a tela está mostrando esse número.`
+        : `A caixa guarda ${state.box.value}, e ninguém está vendo isso na tela.`
+    case 'group-loop':
+      return state.hunt.auto
+        ? 'O laço percorre o grupo sozinho e fica com o mais perto.'
+        : `Você olhou ${state.hunt.looked.length} de 3 cactos.`
+    case 'enemy-type':
+      return `Uma ficha com velocidade ${state.blueprint.speed} e vida ${state.blueprint.life}, e ${state.blueprint.born} já lendo ela.`
+    case 'camera':
+      return state.view.follow
+        ? `A câmera segue o Dino, que está em ${state.view.heroX} do mundo.`
+        : `O Dino está em ${state.view.heroX}, e a janela parada mostra de 0 a ${STAGE_TARGET.width}.`
+    case 'contact':
+      return state.hit.mode === 'ask'
+        ? `O jogo pergunta "está encostando?" em todo quadro. Vida perdida: ${state.hit.damage}.`
+        : `O jogo espera o acontecimento da batida. Vida perdida: ${state.hit.damage}.`
+    case 'cooldown':
+      return state.weapon.seconds === 0
+        ? `Sem recarga: ${state.weapon.shots} tiro(s) até agora.`
+        : `Recarga de ${state.weapon.seconds}s, ${state.weapon.shots} tiro(s) e ${state.weapon.refused} pedido(s) recusado(s).`
+    case 'aim':
+      return state.sight.chasing
+        ? `A mira está ligada e o alvo está em ${state.sight.targetX}, ${state.sight.targetY}.`
+        : 'A mira está desligada: o tiro sai sempre para o mesmo lado.'
+    case 'diagonal':
+      return state.walkPad.even
+        ? 'A correção está ligada: os dois caminhos andam o mesmo.'
+        : 'Sem correção: apertar duas setas soma os dois passos.'
+    case 'tilemap':
+      return state.grid.edits === 0
+        ? 'O mapa está escrito com letras. Troque uma e olhe o desenho.'
+        : `Você já trocou ${state.grid.edits} casa(s), e o desenho acompanhou.`
+    /* ── O motor, o 3D e o ateliê ──────────────────────────────────────────────────────── */
+    case 'pool':
+      return state.nursery.recycling
+        ? `Com reciclagem: ${state.nursery.alive} vivo(s) e ${state.nursery.created} criado(s) desde o começo.`
+        : `${state.nursery.alive} vivo(s), mas já foram criados ${state.nursery.created} desde o começo.`
+    case 'entity-state':
+      return `1º ${state.brains.states[0]}, 2º ${state.brains.states[1]}, 3º ${state.brains.states[2]}.`
+    case 'delta-time':
+      return state.machines.mode === 'frames'
+        ? `O jogo conta QUADROS: a rápida está em ${Math.round(state.machines.fastX)} e a devagar em ${Math.round(state.machines.slowX)}.`
+        : `O jogo conta SEGUNDOS: a rápida está em ${Math.round(state.machines.fastX)} e a devagar em ${Math.round(state.machines.slowX)}.`
+    case 'circle-collision': {
+      const soma = state.circles.a + state.circles.b
+      return state.circles.distance <= soma
+        ? `Distância ${Math.round(state.circles.distance)} contra ${soma} de soma dos raios: é uma batida.`
+        : `Distância ${Math.round(state.circles.distance)} contra ${soma} de soma dos raios: ainda não é uma batida.`
+    }
+    case 'axis-z':
+      return state.space.y > 0
+        ? `x ${state.space.x}, y ${state.space.y}, z ${state.space.z}. Ele está no ar, e a sombra ficou no chão.`
+        : `x ${state.space.x}, y ${state.space.y}, z ${state.space.z}. Ele está no chão.`
+    case 'camera-3d':
+      return `Daqui a câmera vê ${faces(state.orbit.yaw, state.orbit.pitch)} cor(es) do cubo.`
+    case 'mesh':
+      return state.model.wire
+        ? 'Com o raio-X, o modelo é um monte de pontos ligados por linhas.'
+        : 'A roupa do modelo está no lugar, e os pontos continuam por baixo.'
+    case 'pick-ray':
+      return state.ray.hit
+        ? `A reta saiu da câmera e parou na caixa ${state.ray.hit}.`
+        : 'A mira está apontando para o vazio: a reta não encontrou nada.'
+    case 'fill-stroke':
+      return state.ink.fill && state.ink.stroke
+        ? 'A forma tem miolo pintado e contorno à vista: dois desenhos no mesmo traço.'
+        : state.ink.fill
+          ? 'Só o miolo: a forma continua lá, sem a linha de fora.'
+          : state.ink.stroke
+            ? 'Só o contorno: a linha sozinha guarda a forma.'
+            : 'Sem miolo e sem contorno: não sobrou desenho nenhum.'
+    case 'shading':
+      return state.light.shade
+        ? `Com a luz vindo da ${state.light.side === 'left' ? 'esquerda' : 'direita'}, a sombra do outro lado dá volume.`
+        : 'Com uma cor só, a forma parece um adesivo colado na tela.'
   }
 }

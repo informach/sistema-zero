@@ -24,6 +24,31 @@ import {
   SheetStage,
   SymmetryStage,
 } from './scene-art-stages'
+import {
+  AimStage,
+  CameraStage,
+  ContactStage,
+  CooldownStage,
+  DiagonalStage,
+  EnemyTypeStage,
+  GroupLoopStage,
+  HoldVsPressStage,
+  TilemapStage,
+  VariableStage,
+  VelocityStage,
+} from './scene-core-stages'
+import {
+  AxisZStage,
+  Camera3dStage,
+  CircleCollisionStage,
+  DeltaTimeStage,
+  EntityStateStage,
+  FillStrokeStage,
+  MeshStage,
+  PickRayStage,
+  PoolStage,
+  ShadingStage,
+} from './scene-engine-stages'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
 
 // A small workbench around the child's Dino: the scene, pieces and consequences share space.
@@ -89,6 +114,27 @@ const STAGE_LABEL: Record<string, string> = {
   hitbox: 'Onde a batida acontece',
   random: 'O sorteio de cada cacto',
   acceleration: 'A velocidade dos cactos',
+  velocity: 'O quanto ele anda por quadro',
+  'hold-vs-press': 'Apertar ou segurar',
+  variable: 'A caixa e a tela',
+  'group-loop': 'Quem a torre escolhe',
+  'enemy-type': 'A ficha do inimigo',
+  camera: 'A janela que anda',
+  contact: 'A pergunta da batida',
+  cooldown: 'A recarga do tiro',
+  aim: 'A seta que aponta',
+  diagonal: 'O passo da diagonal',
+  tilemap: 'O mapa escrito',
+  pool: 'O nascedouro',
+  'entity-state': 'O cérebro de cada um',
+  'delta-time': 'As duas máquinas',
+  'circle-collision': 'A conta da batida',
+  'axis-z': 'O eixo que faltava',
+  'camera-3d': 'De onde a câmera olha',
+  mesh: 'Por baixo da roupa',
+  'pick-ray': 'A mira e as caixas',
+  'fill-stroke': 'O miolo e o contorno',
+  shading: 'A luz e a sombra',
 }
 
 export function SceneButton({ children, className = '', ...props }: ComponentProps<'button'>) {
@@ -220,26 +266,54 @@ export function ExplorationStage({
   // ⚠️ As duas cenas de 14/09/2026 têm palco PRÓPRIO: uma é sobre o sistema de coordenadas da
   // tela e a outra sobre o que uma pessoa que não vê a tela recebe. Nenhuma das duas cabe no
   // palco compartilhado (chão, árvores, pista), que é sobre o mundo do jogo.
-  if (m === 'coordinates') return <CoordinatesStage state={state} />
+  if (m === 'coordinates') return <CoordinatesStage state={state} cast={cast} />
   if (m === 'screen-reader')
     return (
       <ScreenReaderStage
         state={state}
         dispatch={dispatch}
         interactive={activity.type === 'experimentation'}
+        cast={cast}
       />
     )
-  if (m === 'stage-size') return <StageSizeStage state={state} />
-  if (m === 'draw-loop') return <DrawLoopStage state={state} />
+  if (m === 'stage-size') return <StageSizeStage state={state} cast={cast} />
+  if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // As cinco do ateliê e a das vidas: mesma razão, palco próprio. A folha de sprites e o
   // papel do espelho não são o mundo do jogo, e o placar com os corações precisa das duas
   // contagens à vista no instante da batida.
-  if (m === 'frames') return <FramesStage state={state} />
-  if (m === 'onion-skin') return <OnionSkinStage state={state} />
-  if (m === 'symmetry') return <SymmetryStage state={state} />
-  if (m === 'pixel-vector') return <PixelVectorStage state={state} />
-  if (m === 'sheet-vs-sprite') return <SheetStage state={state} />
-  if (m === 'lives') return <LivesStage state={state} />
+  if (m === 'frames') return <FramesStage state={state} cast={cast} />
+  if (m === 'onion-skin') return <OnionSkinStage state={state} cast={cast} />
+  if (m === 'symmetry') return <SymmetryStage state={state} cast={cast} />
+  if (m === 'pixel-vector') return <PixelVectorStage state={state} cast={cast} />
+  if (m === 'sheet-vs-sprite') return <SheetStage state={state} cast={cast} />
+  if (m === 'lives') return <LivesStage state={state} cast={cast} />
+  // As onze do núcleo do Iniciante 2D: mesma razão, palco próprio. Nenhuma delas cabe na pista
+  // do Corre Dino — são a régua do passo, duas raquetes, uma caixa com um número, o mundo
+  // maior que a tela, o mapa escrito com letras.
+  if (m === 'velocity') return <VelocityStage state={state} cast={cast} />
+  if (m === 'hold-vs-press') return <HoldVsPressStage state={state} cast={cast} />
+  if (m === 'variable') return <VariableStage state={state} cast={cast} />
+  if (m === 'group-loop') return <GroupLoopStage state={state} cast={cast} />
+  if (m === 'enemy-type') return <EnemyTypeStage state={state} cast={cast} />
+  if (m === 'camera') return <CameraStage state={state} cast={cast} />
+  if (m === 'contact') return <ContactStage state={state} cast={cast} />
+  if (m === 'cooldown') return <CooldownStage state={state} cast={cast} />
+  if (m === 'aim') return <AimStage state={state} cast={cast} />
+  if (m === 'diagonal') return <DiagonalStage state={state} cast={cast} />
+  if (m === 'tilemap') return <TilemapStage state={state} cast={cast} />
+  // As dez do motor, do 3D e do ateliê: dois contadores que discordam, três cérebros lado a
+  // lado, duas máquinas correndo o mesmo jogo, a conta da colisão escrita à vista — e o 3D,
+  // desenhado à mão em SVG (ver o cabeçalho do `scene-engine-stages`).
+  if (m === 'pool') return <PoolStage state={state} cast={cast} />
+  if (m === 'entity-state') return <EntityStateStage state={state} cast={cast} />
+  if (m === 'delta-time') return <DeltaTimeStage state={state} cast={cast} />
+  if (m === 'circle-collision') return <CircleCollisionStage state={state} cast={cast} />
+  if (m === 'axis-z') return <AxisZStage state={state} cast={cast} />
+  if (m === 'camera-3d') return <Camera3dStage state={state} cast={cast} />
+  if (m === 'mesh') return <MeshStage state={state} cast={cast} />
+  if (m === 'pick-ray') return <PickRayStage state={state} cast={cast} />
+  if (m === 'fill-stroke') return <FillStrokeStage state={state} cast={cast} />
+  if (m === 'shading') return <ShadingStage state={state} cast={cast} />
   const motion = ['gravity', 'impulse', 'jump-sound'].includes(m)
   const collision = m === 'hitbox' || m === 'restart'
   const speed = m === 'random' || m === 'acceleration'

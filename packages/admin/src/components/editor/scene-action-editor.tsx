@@ -2,6 +2,7 @@
 
 import {
   isSceneAction,
+  MAP_TILES,
   SCENE_LIMITS,
   SCENE_PORTS,
   SCRIPT_LIMITS,
@@ -25,6 +26,11 @@ const PORTAS: Record<ScenePort, string> = {
   restart: 'Recomeço',
   limit: 'Limite de velocidade',
   life: 'Vida na batida',
+  loop: 'Laço sobre o grupo',
+  camera: 'Câmera que segue',
+  aim: 'Mira no alvo',
+  even: 'Correção da diagonal',
+  recycle: 'Reciclagem do nascedouro',
 }
 
 const TODAS: { label: string; value: SceneAction }[] = [
@@ -50,6 +56,34 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Recomeçar o jogo', value: { type: 'restart' } },
   { label: 'Avançar o relógio', value: { type: 'clock' } },
   { label: 'Restaurar a cena', value: { type: 'reset' } },
+  // O núcleo do Iniciante 2D (15/09/2026).
+  { label: 'Mudar a velocidade', value: { type: 'velocity', vx: 5, vy: 0 } },
+  { label: 'Apertar uma vez', value: { type: 'press' } },
+  { label: 'Segurar a tecla', value: { type: 'hold', on: true } },
+  { label: 'Soltar a tecla', value: { type: 'hold', on: false } },
+  { label: 'Guardar um número', value: { type: 'store', value: 10 } },
+  { label: 'Somar no número', value: { type: 'change', by: 5 } },
+  { label: 'Mostrar na tela', value: { type: 'show', on: true } },
+  { label: 'Parar de mostrar', value: { type: 'show', on: false } },
+  { label: 'Olhar um do grupo', value: { type: 'look', id: 1 } },
+  { label: 'Escolher um do grupo', value: { type: 'choose', id: 2 } },
+  { label: 'Mudar a velocidade da ficha', value: { type: 'define', field: 'speed', value: 7 } },
+  { label: 'Mudar a vida da ficha', value: { type: 'define', field: 'life', value: 3 } },
+  { label: 'Fazer nascer mais um', value: { type: 'spawnOne' } },
+  { label: 'Levar o herói pelo mundo', value: { type: 'walk', x: 700 } },
+  { label: 'Mudar a distância entre os dois', value: { type: 'approach', distance: 20 } },
+  { label: 'Perguntar se está encostando', value: { type: 'mode', kind: 'ask' } },
+  { label: 'Esperar o acontecimento da batida', value: { type: 'mode', kind: 'event' } },
+  { label: 'Atirar', value: { type: 'shoot' } },
+  { label: 'Mudar a recarga', value: { type: 'recharge', seconds: 1 } },
+  { label: 'Mover o alvo da mira', value: { type: 'target', x: 120, y: 220 } },
+  { label: 'Apertar as setas', value: { type: 'direction', x: 1, y: 1 } },
+  // ⚠️ Uma opção por LETRA: com uma só, o professor conseguia pintar mas nunca apagar nem pôr
+  // a moeda, e a cena inteira é sobre a letra decidir o que aparece.
+  ...MAP_TILES.map((tile) => ({
+    label: `Escrever "${tile}" no mapa`,
+    value: { type: 'paint-tile' as const, row: 3, col: 4, tile },
+  })),
   // As duas cenas de 14/09/2026. O endereço vai com os números da Aula 1 (x 110, y 150) e a
   // frase da descrição é a canônica do roteiro — o professor edita as duas no próprio passo.
   { label: 'Levar o Dino a um endereço', value: { type: 'place', x: 110, y: 150 } },
@@ -94,29 +128,78 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Olhar a pedra de vetor', value: { type: 'inspect', kind: 'vector', zoom: 6 } },
   { label: 'Recortar um pedaço da folha', value: { type: 'cut', cell: 1 } },
   { label: 'Mudar o tamanho no jogo', value: { type: 'sprite', size: 48 } },
+  // O motor, o 3D e o ateliê (15/09/2026). Os valores de fábrica são os do roteiro de cada uma.
+  { label: 'Pôr o 1º a mirar', value: { type: 'brain', id: 1, state: 'mirar' } },
+  { label: 'Pôr o 1º a atirar', value: { type: 'brain', id: 1, state: 'atirar' } },
+  { label: 'Pôr o 1º a recarregar', value: { type: 'brain', id: 1, state: 'recarregar' } },
+  { label: 'Pôr o 1º parado', value: { type: 'brain', id: 1, state: 'parado' } },
+  { label: 'Contar quadros', value: { type: 'count', kind: 'frames' } },
+  { label: 'Contar segundos', value: { type: 'count', kind: 'seconds' } },
+  { label: 'Mudar o raio do primeiro', value: { type: 'radius', which: 'a', value: 30 } },
+  { label: 'Mudar o raio do segundo', value: { type: 'radius', which: 'b', value: 30 } },
+  { label: 'Levar o objeto no espaço', value: { type: 'place3d', x: 0, y: 0, z: 80 } },
+  { label: 'Girar a câmera (ou o modelo)', value: { type: 'orbit', yaw: 1, pitch: 1 } },
+  { label: 'Voltar à vista de sempre', value: { type: 'recenter' } },
+  { label: 'Ligar o raio-X do modelo', value: { type: 'wireframe', on: true } },
+  { label: 'Desligar o raio-X do modelo', value: { type: 'wireframe', on: false } },
+  { label: 'Apontar a mira', value: { type: 'point', x: 300, y: 110 } },
+  { label: 'Pintar o miolo', value: { type: 'ink', part: 'fill', on: true } },
+  { label: 'Tirar a cor do miolo', value: { type: 'ink', part: 'fill', on: false } },
+  { label: 'Desenhar o contorno', value: { type: 'ink', part: 'stroke', on: true } },
+  { label: 'Tirar o contorno', value: { type: 'ink', part: 'stroke', on: false } },
+  { label: 'Trazer a luz da esquerda', value: { type: 'light', side: 'left' } },
+  { label: 'Trazer a luz da direita', value: { type: 'light', side: 'right' } },
+  { label: 'Ligar a sombra', value: { type: 'shade', on: true } },
+  { label: 'Desligar a sombra', value: { type: 'shade', on: false } },
 ]
 
-/** A identidade da ação no `<select>`: o tipo mais o que o distingue dos irmãos. */
+/**
+ * Os campos que distinguem uma ação das IRMÃS do mesmo tipo — as que aparecem como opções
+ * separadas na lista (`Ligar`/`Desligar`, `speed`/`life`, `ask`/`event`).
+ */
+const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
+  connect: ['port', 'enabled'],
+  border: ['visible'],
+  layer: ['front'],
+  jump: ['input'],
+  start: ['input'],
+  sample: ['kind'],
+  inspect: ['kind'],
+  mode: ['kind'],
+  count: ['kind'],
+  frame: ['index'],
+  define: ['field'],
+  brain: ['state'],
+  radius: ['which'],
+  light: ['side'],
+  ink: ['part', 'on'],
+  'paint-tile': ['tile'],
+  loop: ['on'],
+  erase: ['on'],
+  hold: ['on'],
+  show: ['on'],
+  play: ['on'],
+  onion: ['on'],
+  mirror: ['on'],
+  wireframe: ['on'],
+  shade: ['on'],
+}
+
+/**
+ * A identidade da ação no `<select>`: o tipo mais o que a distingue das irmãs.
+ *
+ * ⚠️⚠️ Duas opções com a mesma identidade é defeito de verdade e silencioso: o `value` do
+ * `<select>` deixa de escolher uma delas — clicar em "Desligar a sombra" selecionava "Ligar a
+ * sombra" — e o React avisa só no console, onde ninguém olha durante a autoria.
+ *
+ * ⚠️ Por isso a régua virou uma TABELA em vez de uma escada de ternários: a escada tinha
+ * esquecido `define`, `mode`, `hold` e `show`, e cada par novo de irmãs esquecia de novo. Campo
+ * que não distingue nada fica de fora — o tipo sozinho já é identidade.
+ */
 const identidade = (a: SceneAction) =>
-  a.type === 'connect'
-    ? `${a.type}:${a.port}:${a.enabled}`
-    : a.type === 'border'
-      ? `${a.type}:${a.visible}`
-      : a.type === 'loop' || a.type === 'erase'
-        ? `${a.type}:${a.on}`
-        : a.type === 'layer'
-          ? `${a.type}:${a.front}`
-          : a.type === 'jump' || a.type === 'start'
-            ? `${a.type}:${a.input}`
-            : a.type === 'sample' || a.type === 'inspect'
-              ? `${a.type}:${a.kind}`
-              : a.type === 'play' || a.type === 'onion'
-                ? `${a.type}:${a.on}`
-                : a.type === 'frame'
-                  ? `${a.type}:${a.index}`
-                  : a.type === 'mirror'
-                    ? `${a.type}:${a.on}`
-                    : a.type
+  [a.type, ...(DISTINGUE[a.type] ?? []).map((c) => String((a as Record<string, unknown>)[c]))].join(
+    ':',
+  )
 
 /** As ações que ESTA cena aceita. A legalidade é do domínio, não de uma lista daqui. */
 export function sceneActionChoices(scene: SceneId) {
@@ -130,13 +213,26 @@ export function sceneActionChoices(scene: SceneId) {
  * DTO) e elas divergiram: o `interval` do servidor não tinha teto e o do editor ia de 0,5 a 2.
  * Um campo que aceita o que o servidor recusa é uma aula que não salva, sem dizer por quê.
  */
-function campoNumerico(action: SceneAction) {
+/** Um campo numérico do editor. `inteiro: false` só nos que o domínio aceita com vírgula. */
+interface CampoNumerico {
+  label: string
+  field: string
+  min: number
+  max: number
+  value: number
+  inteiro?: boolean
+}
+
+export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumerico | null {
   const L = SCENE_LIMITS
   if (action.type === 'advance')
     return {
       label: 'Tempo em segundos',
       field: 'seconds' as const,
-      ...L.scriptAdvance,
+      // ⚠️ O roteiro tem teto próprio (10s por etapa, para uma etapa não virar um filme); no
+      // CASO vale a régua da cena (30s). Passar o do roteiro nos dois restringia em silêncio.
+      ...(stepNumber > 0 ? L.scriptAdvance : L.advance),
+      inteiro: false,
       value: action.seconds,
     }
   if (action.type === 'interval')
@@ -144,6 +240,7 @@ function campoNumerico(action: SceneAction) {
       label: 'Tempo em segundos',
       field: 'seconds' as const,
       ...L.interval,
+      inteiro: false,
       value: action.seconds,
     }
   if (action.type === 'impulse')
@@ -157,6 +254,7 @@ function campoNumerico(action: SceneAction) {
       label: 'Posição no sorteio (0 a 1)',
       field: 'unit' as const,
       ...L.sample,
+      inteiro: false,
       value: action.unit,
     }
   if (action.type === 'rate')
@@ -179,14 +277,73 @@ function campoNumerico(action: SceneAction) {
     return { label: 'Pedaço da folha', field: 'cell' as const, ...L.cell, value: action.cell }
   if (action.type === 'sprite')
     return { label: 'Tamanho no jogo', field: 'size' as const, ...L.sprite, value: action.size }
-  // ⚠️ O `place` tem DOIS números, e não é mais o único: `mirror` (interruptor + eixo) e
-  // `inspect` (qual pedra + lupa) também misturam um número com outro campo. Quem monta o campo
-  // numérico devolve um só, então esses três são tratados à parte no editor.
+  /* ── O núcleo, o motor e o 3D ─────────────────────────────────────────────────────────────
+     ⚠️⚠️ Ação com número e SEM campo aqui é uma ação que o professor escolhe e não consegue
+     ajustar: ela fica cravada no valor de fábrica da lista, para sempre, naquele bloco. Foi
+     o que aconteceu com dezessete tipos de uma vez — e em `camera-3d`, `circle-collision` e
+     `axis-z` o valor de fábrica é o PRÓPRIO estado inicial, então a única ação autorável era
+     um gesto que não muda nada. O `setup` (o caso) ficou inútil nessas cenas. */
+  if (action.type === 'store')
+    return {
+      label: 'Número guardado',
+      field: 'value' as const,
+      ...L.boxValue,
+      value: action.value,
+    }
+  if (action.type === 'change')
+    return { label: 'Quanto somar', field: 'by' as const, ...L.boxChange, value: action.by }
+  if (action.type === 'look')
+    return { label: 'Qual do grupo', field: 'id' as const, ...L.targetId, value: action.id }
+  if (action.type === 'choose')
+    return { label: 'Qual escolher', field: 'id' as const, ...L.targetId, value: action.id }
+  if (action.type === 'define')
+    return {
+      label: action.field === 'speed' ? 'Velocidade da ficha' : 'Vida da ficha',
+      field: 'value' as const,
+      ...(action.field === 'speed' ? L.typeSpeed : L.typeLife),
+      value: action.value,
+    }
+  if (action.type === 'walk')
+    return { label: 'Lugar no mundo', field: 'x' as const, ...L.worldX, value: action.x }
+  if (action.type === 'approach')
+    return {
+      label: 'Distância de quem bate',
+      field: 'distance' as const,
+      ...L.approach,
+      value: action.distance,
+    }
+  if (action.type === 'recharge')
+    return {
+      label: 'Tempo de recarga',
+      field: 'seconds' as const,
+      ...L.recharge,
+      inteiro: false,
+      value: action.seconds,
+    }
+  if (action.type === 'brain')
+    return { label: 'Qual dos três', field: 'id' as const, ...L.brainId, value: action.id }
+  if (action.type === 'radius')
+    return {
+      label: action.which === 'a' ? 'Raio do primeiro' : 'Raio do segundo',
+      field: 'value' as const,
+      ...L.radius,
+      value: action.value,
+    }
+  // ⚠️ O `place` tem DOIS números, e não é mais o único: `mirror` (interruptor + eixo),
+  // `inspect` (qual pedra + lupa), `velocity`, `target`, `direction`, `point`, `orbit`,
+  // `place3d` e `paint-tile` também misturam números com outro campo. Quem monta o campo
+  // numérico devolve UM só, então todos esses são tratados no `camposDoEndereco`.
   return null
 }
 
-/** Os pares de números: o endereço do sprite e o tamanho da tela. */
-function camposDoEndereco(action: SceneAction) {
+/**
+ * Os GRUPOS de números de uma ação: o endereço do sprite, o tamanho da tela, os três eixos do
+ * espaço. Quem tem um número só passa pelo `campoNumerico`.
+ *
+ * ⚠️ Recebe a `scene` porque uma mesma ação pode ter campos diferentes por cena — é o caso do
+ * `orbit`, cuja altura só existe em `camera-3d`.
+ */
+export function camposDoEndereco(action: SceneAction, scene: SceneId) {
   if (action.type === 'place')
     return [
       { label: 'x', field: 'x' as const, ...SCENE_LIMITS.placeX, value: action.x },
@@ -220,7 +377,83 @@ function camposDoEndereco(action: SceneAction) {
         value: action.height,
       },
     ]
+  if (action.type === 'velocity')
+    return [
+      { label: 'para o lado', field: 'vx' as const, ...SCENE_LIMITS.velocity, value: action.vx },
+      { label: 'para baixo', field: 'vy' as const, ...SCENE_LIMITS.velocity, value: action.vy },
+    ]
+  if (action.type === 'target')
+    return [
+      { label: 'x do alvo', field: 'x' as const, ...SCENE_LIMITS.aimX, value: action.x },
+      { label: 'y do alvo', field: 'y' as const, ...SCENE_LIMITS.aimY, value: action.y },
+    ]
+  // ⚠️ A ÚNICA exceção à regra "os limites vêm de `SCENE_LIMITS`": o `direction` não tem
+  // entrada lá (o `isSceneAction` escreve o −1..1 à mão, porque é a forma da ação e não uma
+  // faixa ajustável). Se um dia virar entrada, esta linha vai junto.
+  if (action.type === 'direction')
+    return [
+      { label: 'seta horizontal (−1 a 1)', field: 'x' as const, min: -1, max: 1, value: action.x },
+      { label: 'seta vertical (−1 a 1)', field: 'y' as const, min: -1, max: 1, value: action.y },
+    ]
+  if (action.type === 'point')
+    return [
+      { label: 'x da mira', field: 'x' as const, ...SCENE_LIMITS.pointX, value: action.x },
+      { label: 'y da mira', field: 'y' as const, ...SCENE_LIMITS.pointY, value: action.y },
+    ]
+  // ⚠️ No `mesh` a altura fica travada no meio (lá quem gira é o MODELO, não uma câmera), então
+  // o campo dela não aparece: um campo que o domínio recusa é pior que campo nenhum.
+  if (action.type === 'orbit')
+    return [
+      { label: 'volta da câmera', field: 'yaw' as const, ...SCENE_LIMITS.yaw, value: action.yaw },
+      ...(action.pitch === 1 && scene === 'mesh'
+        ? []
+        : [
+            {
+              label: 'altura da câmera',
+              field: 'pitch' as const,
+              ...SCENE_LIMITS.pitch,
+              value: action.pitch,
+            },
+          ]),
+    ]
+  if (action.type === 'place3d')
+    return [
+      { label: 'x (lados)', field: 'x' as const, ...SCENE_LIMITS.spaceX, value: action.x },
+      { label: 'y (para cima)', field: 'y' as const, ...SCENE_LIMITS.spaceY, value: action.y },
+      { label: 'z (fundo)', field: 'z' as const, ...SCENE_LIMITS.spaceZ, value: action.z },
+    ]
+  if (action.type === 'paint-tile')
+    return [
+      { label: 'linha', field: 'row' as const, ...SCENE_LIMITS.mapRow, value: action.row },
+      { label: 'casa', field: 'col' as const, ...SCENE_LIMITS.mapCol, value: action.col },
+    ]
   return null
+}
+
+/**
+ * O editor de ações serve DOIS donos: o passo do roteiro e o caso da atividade.
+ *
+ * ⚠️⚠️ As réguas deles são diferentes, e reusar a do roteiro no caso prendia o professor:
+ * (a) um PASSO precisa de pelo menos uma ação, um CASO não — o `aplicar` do editor do caso até
+ * sabe apagar o setup quando a lista esvazia, mas a UI nunca deixava chegar a zero, e quem
+ * adicionasse uma ação por engano ficava com ela para sempre naquele bloco; (b) o teto do
+ * roteiro é 16 e o do caso é 8, então da nona em diante o editor deixava adicionar e a
+ * publicação recusava; (c) `Restaurar a cena` é legal em toda cena e por isso aparecia na lista
+ * do caso, onde o domínio a recusa — com a mensagem apontando para o lugar errado.
+ */
+/**
+ * O número que o campo pode gravar: dentro da faixa, inteiro quando o domínio pede, e nunca o
+ * zero que o `change` recusa (ele existe para SOMAR alguma coisa).
+ */
+function numeroNaFaixa(
+  bruto: string,
+  campo: { min: number; max: number; inteiro?: boolean; value: number },
+): number {
+  const n = Number(bruto)
+  if (!Number.isFinite(n)) return campo.value
+  const preso = Math.max(campo.min, Math.min(campo.max, n))
+  const inteiro = campo.inteiro === false ? preso : Math.round(preso)
+  return inteiro === 0 && campo.min < 0 && campo.max > 0 ? campo.value : inteiro
 }
 
 export function SceneActionEditor({
@@ -228,26 +461,38 @@ export function SceneActionEditor({
   value,
   onChange,
   stepNumber,
+  minimo = 1,
+  maximo = SCRIPT_LIMITS.actions,
+  semReset = false,
 }: {
   scene: SceneId
   value: readonly SceneAction[]
   onChange: (actions: SceneAction[]) => void
+  /** O número da etapa do roteiro, para o leitor de tela. `0` = é o caso, não uma etapa. */
   stepNumber: number
+  minimo?: number
+  maximo?: number
+  /** O caso não aceita `reset`: ele voltaria para o próprio caso, em laço. */
+  semReset?: boolean
 }) {
-  const choices = sceneActionChoices(scene)
+  const choices = sceneActionChoices(scene).filter((c) => !semReset || c.value.type !== 'reset')
   const replace = (index: number, action: SceneAction) =>
     onChange(value.map((a, i) => (i === index ? action : a)))
   return (
     <div className="space-y-3">
       {value.map((action, index) => {
-        const numero = campoNumerico(action)
-        const endereco = camposDoEndereco(action)
+        const numero = campoNumerico(action, stepNumber)
+        const endereco = camposDoEndereco(action, scene)
         return (
           // As ações têm identidade POSICIONAL no contrato do roteiro; todo campo é controlado.
           // biome-ignore lint/suspicious/noArrayIndexKey: o roteiro compartilhado não tem id de ação.
           <div key={index} className="space-y-2 rounded-lg bg-muted/40 p-3">
             <Select
-              aria-label={`Ação ${index + 1} da etapa ${stepNumber}`}
+              aria-label={
+                stepNumber > 0
+                  ? `Ação ${index + 1} da etapa ${stepNumber}`
+                  : `Ação ${index + 1} do caso desta atividade`
+              }
               value={identidade(action)}
               onChange={(e) => {
                 const next = choices.find((c) => identidade(c.value) === e.target.value)
@@ -266,16 +511,20 @@ export function SceneActionEditor({
             {numero && (
               <label className="block space-y-1 text-xs">
                 {numero.label}
+                {/* ⚠️ Arredonda e respeita a faixa, como o `camposDoEndereco` já fazia. O domínio
+                    exige INTEIRO em quase todas essas ações, e o campo aceitava 2,5; limpar o
+                    campo dava 0, que o `change` recusa. O bloco ficava recusado na publicação
+                    com o recado genérico, apontando para a cena em vez de para o número. */}
                 <Input
                   type="number"
                   min={numero.min}
                   max={numero.max}
-                  step="any"
+                  step={numero.inteiro === false ? 'any' : 1}
                   value={numero.value}
                   onChange={(e) =>
                     replace(index, {
                       ...action,
-                      [numero.field]: Number(e.target.value),
+                      [numero.field]: numeroNaFaixa(e.target.value, numero),
                     } as SceneAction)
                   }
                 />
@@ -351,7 +600,7 @@ export function SceneActionEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={value.length <= 1}
+                disabled={value.length <= minimo}
                 onClick={() => onChange(value.filter((_, i) => i !== index))}
               >
                 Remover ação
@@ -363,7 +612,7 @@ export function SceneActionEditor({
       <Button
         variant="outline"
         size="sm"
-        disabled={value.length >= SCRIPT_LIMITS.actions}
+        disabled={value.length >= maximo}
         onClick={() => {
           if (choices[0]) onChange([...value, { ...choices[0].value }])
         }}

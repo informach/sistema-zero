@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { SCENE_MODELS, type SceneStep } from '@sistemazero/core/learning/scene'
 import {
+  casoAoTrocarCena,
   roteiroAoTrocarCena,
   textoAoTrocarCena,
   trocarCena,
@@ -107,6 +108,82 @@ const escolhas = () => [
   { id: 'b', label: 'Outra coisa' },
 ]
 
+describe('⚠️⚠️ o CASO da atividade nas duas trocas', () => {
+  const base: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'A cena',
+    instructions: 'Mexa',
+    hints: [],
+    required: false,
+    activity: { type: 'question' },
+    checkpoint: undefined,
+  }
+  const caso = (scene: 'velocity' | 'variable') =>
+    ({
+      ...base,
+      activity: {
+        type: 'experimentation' as const,
+        scene,
+        setup:
+          scene === 'velocity'
+            ? { actions: [{ type: 'velocity' as const, vx: 5, vy: 0 }], goals: ['moves'] }
+            : { actions: [{ type: 'store' as const, value: 10 }], goals: ['stored'] },
+      },
+    }) satisfies InteractiveBlock
+
+  test('⚠️⚠️ caso de outra cena é APARADO, e o professor é avisado', () => {
+    // Sem isto o bloco fica recusado para sempre com o recado genérico de "complete os
+    // campos": as ações são da cena antiga e o editor do caso só desenha caixa para as metas
+    // da cena NOVA — nenhuma aparece marcada, e o id estranho não tem como sair.
+    const { bloco, aviso } = trocarCena(caso('velocity'), 'variable')
+    expect(isInteractiveBlock(bloco)).toBe(true)
+    expect(aviso).toContain('é de outra cena')
+    const a = bloco.activity
+    if (a.type !== 'experimentation') throw new Error('tipo errado')
+    expect(a.setup).toBeUndefined()
+  })
+
+  test('caso que ainda vale na cena nova SOBREVIVE inteiro, sem aviso', () => {
+    const relogio = {
+      actions: [{ type: 'advance' as const, seconds: 1 }],
+    }
+    expect(casoAoTrocarCena(relogio, 'velocity', { metas: true })).toEqual({
+      setup: relogio,
+      descartado: 'nada',
+    })
+  })
+
+  test('⚠️ a MISSÃO sai ao virar demonstração, mas o caso de partida fica', () => {
+    // O alvo é da experimentação (a demonstração não cobra meta nenhuma, e o guard do domínio
+    // recusa o campo); o mundo de partida serve às duas.
+    const { setup, descartado } = casoAoTrocarCena(
+      { actions: [{ type: 'velocity', vx: 5, vy: 0 }], goals: ['moves'] },
+      'velocity',
+      { metas: false },
+    )
+    expect(setup).toEqual({ actions: [{ type: 'velocity', vx: 5, vy: 0 }] })
+    // ⚠️ `missao`, não `tudo`: o recado tem que falar da perda que ACONTECEU, senão o professor
+    // vai procurar o que consertar nas ações, que estão intactas.
+    expect(descartado).toBe('missao')
+  })
+
+  test('⚠️ o caso ACOMPANHA a ida e volta entre as duas irmãs', () => {
+    // É o trabalho mais caro da autoria, e o grupo de rádio dos quatro cartões atravessa os
+    // outros dois SOZINHO quando o professor usa a seta do teclado.
+    const memoria = { scene: 'velocity' as const }
+    const { bloco: demo } = trocarTipo(caso('velocity'), 'demonstration', memoria)
+    const d = demo.activity
+    if (d.type !== 'demonstration') throw new Error('tipo errado')
+    expect(d.setup).toEqual({ actions: [{ type: 'velocity', vx: 5, vy: 0 }] })
+    expect(isInteractiveBlock(demo)).toBe(true)
+  })
+
+  test('⚠️ a missão avisa que fica guardada ao sair da experimentação', () => {
+    const { aviso } = trocarTipo(caso('velocity'), 'demonstration')
+    expect(aviso).toContain('missão')
+  })
+})
+
 describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
   const pergunta: InteractiveBlock = {
     kind: 'interactive',
@@ -126,13 +203,13 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
     },
   }
 
-  test('a pergunta de verificação sai ao virar cena, e o professor é avisado', () => {
-    // Ela travava o bloco PARA SEMPRE: `isInteractiveBlock` recusa cena com pergunta anexa, e a
-    // caixa de desmarcar só aparece nos tipos que não são cena — sumia junto com a saída.
-    const { bloco, aviso } = trocarTipo(pergunta, 'experimentation')
-    expect(bloco.checkpoint).toBeUndefined()
+  test('⭐ a pergunta de verificação SOBREVIVE ao virar cena', () => {
+    // Ela era apagada porque `isInteractiveBlock` recusava cena com pergunta anexa. Desde
+    // 15/09/2026 a cena a aceita — é o terceiro tempo do ciclo (mexer, prever, enunciar) — e
+    // apagar o que o professor escreveu ao trocar de tipo voltou a ser perda de trabalho.
+    const { bloco } = trocarTipo(pergunta, 'experimentation')
+    expect(bloco.checkpoint?.prompt).toBe('O que acontece?')
     expect(isInteractiveBlock(bloco)).toBe(true)
-    expect(aviso).toContain('pergunta de verificação')
   })
 
   test('⚠️⚠️ a previsão sai ao deixar a cena, e o professor é avisado', () => {
