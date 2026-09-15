@@ -280,6 +280,20 @@
           }
         ]
       }
+    },
+    {
+      "key": "demonstracao-folha",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Veja duas imagens dentro de uma folha só",
+        "instructions": "Acompanhe o recorte de dois pedaços da folha e o tamanho deles dentro do jogo.",
+        "hints": [],
+        "activity": {
+          "type": "demonstration",
+          "scene": "sheet-vs-sprite"
+        }
+      }
     }
   ],
   "sections": [
@@ -330,13 +344,13 @@
       "title": "Observe: duas imagens dentro de uma só",
       "intent": "demonstration",
       "objective": "Distinguir a folha inteira e um quadro que ocupa o sprite.",
-      "blockKeys": ["video-folha-demo"],
+      "blockKeys": ["video-folha-demo", "demonstracao-folha"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-folha-demo"]
+        "blockIds": ["demonstracao-folha"]
       }
     },
     {

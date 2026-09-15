@@ -6,8 +6,8 @@ O jogo pronto aparece só como apresentação. O resultado desta aula é um palc
 
 - A primeira montagem exige apenas a área Ao iniciar vazia. A criança recebe uma confirmação cedo, sem precisar terminar toda a preparação.
 - Tela e borda ficam juntas: o vídeo original já mostra a borda revelando o palco. Uma segunda demonstração repetiria a explicação.
-- A leitura da descrição vem antes da escrita, para a criança entender quem usa a informação. É um leitor de tela real na captura; não afirmar que o bloco ativa voz sozinho.
-- Coordenadas vêm antes de preencher x e y. A demonstração move um marcador por eixo e termina em x 110/y 150. Sem arraste nem escolhas nessa seção.
+- A leitura da descrição vem antes da escrita, para a criança entender quem usa a informação. É um leitor de tela real na captura; não afirmar que o bloco ativa voz sozinho. **Desde 14/09/2026 a seção também traz a cena `screen-reader`: a criança ouve a tela vazia, escreve a descrição e ouve de novo.**
+- Coordenadas vêm antes de preencher x e y. **Desde 14/09/2026 a seção traz a cena `coordinates`, em que ela mexe em x e em y e vê o Dino mudar de lugar no palco de 480 × 270.** O vídeo continua abrindo o assunto; a descoberta passou a ser dela. A cena abre em x 110/y 150, os mesmos números do bloco.
 - Criar versus desenhar é experimentado depois da criação no projeto: a tela vazia produz a pergunta. O laboratório responde sem adiantar a montagem do desenho da aula 2.
 - Na trilha guiada, o identificador é dino. A cor pode ser escolhida; padronizar o nome evita erros de seleção nas próximas aulas. O título visível do jogo poderá ser escolhido na aula 8.
 
@@ -64,7 +64,9 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 ### 4. Ouça o que a descrição informa
 
-**Tipo:** demonstration. **Objetivo:** Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.
+**Tipo:** exploration. **Objetivo:** Ouvir a tela sem descrição, escrever a sua e reconhecer que é a frase que informa objetivo e controle.
+
+**Experiência da seção:** cena `screen-reader` (`experiencia-leitor-de-tela`). Duas colunas: o que aparece na tela contra o que a pessoa ouve. Descobertas: ouviu a tela sem descrição; a frase diz o que fazer; a frase diz como se joga. ⚠️ O reconhecimento é por palavra e serve para orientar enquanto ela escreve — a conferência que vale é a do servidor.
 
 **Reaproveitamento:** Parte 3. Passo 3: contar o que é o seu jogo.
 
@@ -92,13 +94,15 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
 
-### 6. Veja como funciona o endereço na tela
+### 6. Descubra o endereço na tela
 
-**Tipo:** demonstration. **Objetivo:** Observar x crescendo para a direita e y crescendo para baixo, uma direção por vez.
+**Tipo:** exploration. **Objetivo:** Descobrir que x cresce para a direita e y cresce para baixo, mexendo num eixo por vez.
+
+**Experiência da seção:** cena `coordinates` (`experiencia-coordenadas`). Palco de 480 × 270 com régua nos dois eixos, origem marcada no canto de cima, guias até cada eixo e o fantasma da posição anterior. Controles de x e de y com deslizante, passo de 20 e teclado. ⚠️ A descoberta é por EIXO: mexer nos dois ao mesmo tempo não registra nada, porque não diz qual deles levou o Dino para onde. Descobertas: x maior leva para a direita; y maior leva para baixo; mesmo x, altura diferente.
 
 **Reaproveitamento:** Parte 4. Passo 4: criar o dino.
 
-**Montagem / imagem:** Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. Não há arraste nem parâmetros para a criança.
+**Montagem / imagem:** Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. ⚠️ A frase "não há arraste nem parâmetros para a criança" valia até 14/09/2026 e foi REVOGADA: o vídeo abre o assunto e a cena entrega os controles. O clipe pode encurtar, porque a demonstração dos dois eixos agora acontece na cena.
 
 **Fala original selecionada, antes dos cortes acima:** O x diz se ele fica mais pra esquerda ou mais pra direita. O y diz se fica mais pra cima ou mais pra baixo. E tem uma coisa do y que pega todo mundo de surpresa: o y cresce pra baixo. Quanto maior o y, mais embaixo na tela. É o contrário da aula de matemática, e o motivo é que a tela conta as linhas de cima pra baixo, igual você lê um texto. A linha 150 está bem mais embaixo que a linha 1.
 
@@ -168,7 +172,7 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 Conferir o retângulo 480 × 270, contraste da borda, descrição e Dino criado em x 110/y 150/tamanho 64. O Dino invisível é esperado. Não acrescentar Desenhar o sprite nesta aula.
 
-Produzir o complemento com leitor de tela real, legendas e descrição visível; produzir o marcador de coordenadas. Os demais trechos são recortes do vídeo existente, com as correções indicadas. Não há timecodes porque os arquivos gravados não foram fornecidos.
+Produzir o complemento com leitor de tela real, legendas e descrição visível. ⚠️ O marcador de coordenadas NÃO precisa mais ser produzido: a cena `coordinates` faz o papel dele, com a criança no controle. Os demais trechos são recortes do vídeo existente, com as correções indicadas. Não há timecodes porque os arquivos gravados não foram fornecidos.
 
 A descrição do palco não torna sozinha o jogo inteiro acessível e não liga o leitor de tela. Ela fornece informação ao recurso que a pessoa utiliza. [Referência: nomes e descrições acessíveis, W3C](https://www.w3.org/WAI/ARIA/apg/practices/names-and-descriptions/).
 

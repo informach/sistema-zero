@@ -243,6 +243,34 @@
           }
         ]
       }
+    },
+    {
+      "key": "demonstracao-quadros",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Veja dois desenhos virarem movimento",
+        "instructions": "Acompanhe os dois quadros parados e depois a troca entre eles, devagar e rápido.",
+        "hints": [],
+        "activity": {
+          "type": "demonstration",
+          "scene": "frames"
+        }
+      }
+    },
+    {
+      "key": "demonstracao-fantasma",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Veja o fantasma do quadro anterior",
+        "instructions": "Acompanhe o passo escolhido no chute e depois com o fantasma do quadro 1 à vista.",
+        "hints": [],
+        "activity": {
+          "type": "demonstration",
+          "scene": "onion-skin"
+        }
+      }
     }
   ],
   "sections": [
@@ -265,13 +293,13 @@
       "title": "Observe: cada quadro é um desenho",
       "intent": "demonstration",
       "objective": "Entender quadro de animação como um desenho da sequência.",
-      "blockKeys": ["video-livrinho"],
+      "blockKeys": ["video-livrinho", "demonstracao-quadros"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-livrinho"]
+        "blockIds": ["demonstracao-quadros"]
       }
     },
     {
@@ -321,13 +349,13 @@
       "title": "Observe: comparar sem guardar de memória",
       "intent": "demonstration",
       "objective": "Usar o fantasma para comparar tamanho e ponto de saída dos fogos.",
-      "blockKeys": ["video-fantasma"],
+      "blockKeys": ["video-fantasma", "demonstracao-fantasma"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fantasma"]
+        "blockIds": ["demonstracao-fantasma"]
       }
     },
     {

@@ -49,7 +49,9 @@
         "kind": "interactive",
         "title": "Compare duas alturas",
         "instructions": "O x vai ficar em 400. Mostre a nave em y 110 e depois em y 410. Compare a altura e responda: quando o y aumenta, a nave vai para qual lado?",
-        "hints": ["Compare a distância até o alto da tela; o x ficou igual."],
+        "hints": [
+          "Compare a distância até o alto da tela; o x ficou igual."
+        ],
         "required": false,
         "activity": {
           "type": "html",
@@ -89,6 +91,26 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Voc”. Saída: “enha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.”. Aproveitar a analogia do livrinho. Acrescentar a nave na memória e o desenho na tela em dois quadros. Não pedir montagem durante o clipe. Fala complementar: “Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
+      "key": "experiencia-criar-desenhar",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Criar não é desenhar",
+        "instructions": "Crie a nave nos bastidores e olhe a tela. Depois ligue o desenho e compare.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "world",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            }
+          }
+        }
+      }
+    },
+    {
       "key": "video-quadro",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia1-desafio-primeiro-jogo.md → Parte 4. Passo 4: ligar o motor do jogo. Entrada: “E tem um bloco que faz exatamente isso. Na categoria Jogo 2D, subcategoria Tempo e repetição, pega o”. Saída: “ ainda está vazio. Agora o quinto passo, que é encher o motor: desenhar o mundo e dar vida pra nave.”. Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações. Fala complementar: “Em Jogo 2D, Tempo › Quadros e intervalos, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
@@ -106,7 +128,9 @@
         "kind": "interactive",
         "title": "O que acontece sem a borracha?",
         "instructions": "Passe três quadros sem limpar. Depois passe os mesmos três quadros limpando antes de desenhar. Observe quantos desenhos ficam. É sempre uma só nave; você está comparando as imagens que ela deixa.",
-        "hints": ["Conte os desenhos que sobraram depois do terceiro quadro."],
+        "hints": [
+          "Conte os desenhos que sobraram depois do terceiro quadro."
+        ],
         "required": false,
         "activity": {
           "type": "html",
@@ -199,7 +223,9 @@
                 "label": "Criar várias naves iguais."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "O objeto pode estar preparado sem ter sido desenhado."
           },
           {
@@ -215,7 +241,9 @@
                 "label": "Em Ao iniciar."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A preparação ocorre uma vez; o motor atualiza e desenha depois."
           }
         ]
@@ -228,13 +256,17 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Começar um projeto vazio com a extensão Jogo 2D já preparada pelo professor.",
-      "blockKeys": ["video-abertura-v6"],
+      "blockKeys": [
+        "video-abertura-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-v6"]
+        "blockIds": [
+          "video-abertura-v6"
+        ]
       }
     },
     {
@@ -242,7 +274,10 @@
       "title": "Monte os dois lugares do jogo",
       "intent": "application",
       "objective": "Separar a preparação da repetição.",
-      "blockKeys": ["video-areas", "fala-areas"],
+      "blockKeys": [
+        "video-areas",
+        "fala-areas"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -276,7 +311,10 @@
       "title": "Prepare o espaço da nave",
       "intent": "application",
       "objective": "Preparar largura e altura do jogo uma vez.",
-      "blockKeys": ["video-tela", "fala-tela"],
+      "blockKeys": [
+        "video-tela",
+        "fala-tela"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -305,13 +343,17 @@
       "title": "Observe o endereço na tela",
       "intent": "demonstration",
       "objective": "Reconhecer x horizontal, y vertical e a origem no alto à esquerda.",
-      "blockKeys": ["video-endereco"],
+      "blockKeys": [
+        "video-endereco"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-endereco"]
+        "blockIds": [
+          "video-endereco"
+        ]
       }
     },
     {
@@ -319,13 +361,17 @@
       "title": "Compare duas alturas",
       "intent": "exploration",
       "objective": "Descobrir o efeito de aumentar somente y.",
-      "blockKeys": ["experiencia-coordenadas"],
+      "blockKeys": [
+        "experiencia-coordenadas"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-coordenadas"]
+        "blockIds": [
+          "experiencia-coordenadas"
+        ]
       }
     },
     {
@@ -333,7 +379,10 @@
       "title": "Crie sua nave",
       "intent": "application",
       "objective": "Criar o sprite uma vez com posição e tamanho definidos.",
-      "blockKeys": ["video-nave", "fala-nave"],
+      "blockKeys": [
+        "video-nave",
+        "fala-nave"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -366,15 +415,20 @@
     {
       "key": "criar-desenhar",
       "title": "Criar não é desenhar",
-      "intent": "demonstration",
+      "intent": "exploration",
       "objective": "Distinguir o objeto preparado do desenho repetido.",
-      "blockKeys": ["video-criar-desenhar"],
+      "blockKeys": [
+        "video-criar-desenhar",
+        "experiencia-criar-desenhar"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-criar-desenhar"]
+        "blockIds": [
+          "experiencia-criar-desenhar"
+        ]
       }
     },
     {
@@ -382,7 +436,10 @@
       "title": "Ligue o motor de quadros",
       "intent": "application",
       "objective": "Encaixar o motor na área de repetição.",
-      "blockKeys": ["video-quadro", "fala-quadro"],
+      "blockKeys": [
+        "video-quadro",
+        "fala-quadro"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -408,13 +465,17 @@
       "title": "O que acontece sem a borracha?",
       "intent": "exploration",
       "objective": "Relacionar a limpeza com a remoção dos desenhos anteriores.",
-      "blockKeys": ["experiencia-limpeza"],
+      "blockKeys": [
+        "experiencia-limpeza"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-limpeza"]
+        "blockIds": [
+          "experiencia-limpeza"
+        ]
       }
     },
     {
@@ -422,7 +483,10 @@
       "title": "Desenhe o espaço",
       "intent": "application",
       "objective": "Limpar antes de pintar o fundo em cada quadro.",
-      "blockKeys": ["video-fundo", "fala-fundo"],
+      "blockKeys": [
+        "video-fundo",
+        "fala-fundo"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -462,7 +526,10 @@
       "title": "Dê as setas e uma borda à nave",
       "intent": "application",
       "objective": "Mover horizontalmente sem sair da tela.",
-      "blockKeys": ["video-mover", "fala-mover"],
+      "blockKeys": [
+        "video-mover",
+        "fala-mover"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -508,7 +575,10 @@
       "title": "Faça a nave aparecer por último",
       "intent": "application",
       "objective": "Desenhar a nave depois do fundo e de atualizar a posição.",
-      "blockKeys": ["video-desenhar", "fala-desenhar"],
+      "blockKeys": [
+        "video-desenhar",
+        "fala-desenhar"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -562,13 +632,17 @@
       "title": "Observe como conferir uma mudança",
       "intent": "demonstration",
       "objective": "Aprender a confirmar uma edição e testar com o foco no jogo.",
-      "blockKeys": ["video-teste"],
+      "blockKeys": [
+        "video-teste"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste"]
+        "blockIds": [
+          "video-teste"
+        ]
       }
     },
     {
@@ -576,13 +650,18 @@
       "title": "Teste e envie sua construção",
       "intent": "delivery",
       "objective": "Tela 800 × 480, nave visível e controlada pelas setas, sem sair das bordas.",
-      "blockKeys": ["entrega-fala-v6", "projeto"],
+      "blockKeys": [
+        "entrega-fala-v6",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "tela",
@@ -716,13 +795,17 @@
       "title": "Veja o que você construiu",
       "intent": "closing",
       "objective": "Tela 800 × 480, nave visível e controlada pelas setas, sem sair das bordas.",
-      "blockKeys": ["video-fecho-v6"],
+      "blockKeys": [
+        "video-fecho-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-v6"]
+        "blockIds": [
+          "video-fecho-v6"
+        ]
       }
     },
     {
@@ -730,13 +813,17 @@
       "title": "Hora do Desafio",
       "intent": "closing",
       "objective": "Reconhecer duas relações importantes desta aula.",
-      "blockKeys": ["quiz-v6"],
+      "blockKeys": [
+        "quiz-v6"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-v6"]
+        "blockIds": [
+          "quiz-v6"
+        ]
       }
     }
   ],

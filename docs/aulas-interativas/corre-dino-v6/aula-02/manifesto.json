@@ -51,7 +51,9 @@
                 "label": "O que foi criado primeiro."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A ordem do desenho determina as camadas."
           },
           {
@@ -67,7 +69,9 @@
                 "label": "Para atualizar a imagem que vemos."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "A criação ocorreu em Ao iniciar; o mesmo personagem é redesenhado."
           },
           {
@@ -83,7 +87,9 @@
                 "label": "Arrastar a borda e toda a pilha para a lixeira."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "Apagar apenas a peça preserva as que estão abaixo."
           }
         ]
@@ -96,6 +102,20 @@
     {
       "key": "video-quadros",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-02-corre-dino.md, Parte 1. Passo 1: ligar o motor do jogo. Entrada: “Você já viu um daqueles livrinhos de folhear, que tem um desenho em cada página, e quando você passa”. Saída: “ão: é a mesma figura desenhada um tiquinho mais pra lá a cada quadro. E quem faz essa ilusão é você.”. Usar a analogia do caderno; não repetir a montagem que vem na próxima seção. Ponte nova: “Veja três desenhos das pernas, primeiro separados e depois em sequência. Cada desenho é um quadro.” Cartela com três poses do Dino, contador de quadros e reprodução curta. Mostrar um quadro por vez, sem controles de velocidade. Com movimento reduzido, trocar por cartões numerados. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
+    },
+    {
+      "key": "experiencia-laco",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Descubra por que o desenho se repete",
+        "instructions": "Avance o relógio com tudo desligado. Depois ligue o desenho a cada quadro e, por último, a limpeza.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "draw-loop"
+        }
+      }
     },
     {
       "key": "video-motor",
@@ -198,27 +218,36 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.",
-      "blockKeys": ["video-abertura-editorial"],
+      "blockKeys": [
+        "video-abertura-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura-editorial"]
+        "blockIds": [
+          "video-abertura-editorial"
+        ]
       }
     },
     {
       "key": "quadros",
-      "title": "Veja como desenhos viram movimento",
-      "intent": "demonstration",
+      "title": "Descubra como desenhos viram movimento",
+      "intent": "exploration",
       "objective": "Distinguir um quadro da repetição de quadros.",
-      "blockKeys": ["video-quadros"],
+      "blockKeys": [
+        "video-quadros",
+        "experiencia-laco"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-quadros"]
+        "blockIds": [
+          "experiencia-laco"
+        ]
       }
     },
     {
@@ -226,7 +255,10 @@
       "title": "Monte o motor do jogo",
       "intent": "application",
       "objective": "Separar preparação de repetição.",
-      "blockKeys": ["video-motor", "fala-motor"],
+      "blockKeys": [
+        "video-motor",
+        "fala-motor"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -251,7 +283,10 @@
       "title": "Faça o Dino aparecer",
       "intent": "application",
       "objective": "Conectar o desenho ao personagem criado.",
-      "blockKeys": ["video-primeiro-desenho", "fala-primeiro-desenho"],
+      "blockKeys": [
+        "video-primeiro-desenho",
+        "fala-primeiro-desenho"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -280,7 +315,10 @@
       "title": "Limpe antes de desenhar",
       "intent": "application",
       "objective": "Começar um quadro sem resíduos do anterior.",
-      "blockKeys": ["video-limpeza", "fala-limpeza"],
+      "blockKeys": [
+        "video-limpeza",
+        "fala-limpeza"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -320,13 +358,17 @@
       "title": "O que aconteceu com o Dino?",
       "intent": "demonstration",
       "objective": "Perceber que um desenho posterior pode cobrir outro.",
-      "blockKeys": ["video-floresta-cobre"],
+      "blockKeys": [
+        "video-floresta-cobre"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-floresta-cobre"]
+        "blockIds": [
+          "video-floresta-cobre"
+        ]
       }
     },
     {
@@ -334,13 +376,17 @@
       "title": "Quem fica na frente?",
       "intent": "exploration",
       "objective": "Trocar apenas a ordem de dois desenhos e observar a sobreposição.",
-      "blockKeys": ["experiencia-camadas"],
+      "blockKeys": [
+        "experiencia-camadas"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-camadas"]
+        "blockIds": [
+          "experiencia-camadas"
+        ]
       }
     },
     {
@@ -348,7 +394,10 @@
       "title": "Organize as camadas do seu jogo",
       "intent": "application",
       "objective": "Transferir a descoberta para a pilha real de desenho.",
-      "blockKeys": ["video-ordem-certa", "fala-ordem-certa"],
+      "blockKeys": [
+        "video-ordem-certa",
+        "fala-ordem-certa"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -411,7 +460,10 @@
       "title": "Retire só a peça provisória",
       "intent": "application",
       "objective": "Apagar uma peça do meio preservando as demais.",
-      "blockKeys": ["video-retirar-borda", "fala-retirar-borda"],
+      "blockKeys": [
+        "video-retirar-borda",
+        "fala-retirar-borda"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -457,13 +509,18 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "O Dino corre no lugar diante da floresta. A descrição e a criação permanecem; a borda provisória saiu.",
-      "blockKeys": ["fala-entrega-editorial", "projeto"],
+      "blockKeys": [
+        "fala-entrega-editorial",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["projeto"],
+        "blockIds": [
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "desenhar",
@@ -541,13 +598,17 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "O Dino corre no lugar diante da floresta. A descrição e a criação permanecem; a borda provisória saiu.",
-      "blockKeys": ["video-fecho-editorial"],
+      "blockKeys": [
+        "video-fecho-editorial"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho-editorial"]
+        "blockIds": [
+          "video-fecho-editorial"
+        ]
       }
     },
     {
@@ -555,13 +616,17 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": ["quiz-final"],
+      "blockKeys": [
+        "quiz-final"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz-final"]
+        "blockIds": [
+          "quiz-final"
+        ]
       }
     }
   ]

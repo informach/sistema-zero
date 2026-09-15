@@ -175,6 +175,30 @@
           }
         ]
       }
+    },
+    {
+      "key": "demonstracao-vidas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Veja ponto e vida mudarem por motivos diferentes",
+        "instructions": "Acompanhe o placar subindo com o relógio e a vida saindo na batida.",
+        "hints": [],
+        "activity": {
+          "type": "demonstration",
+          "scene": "lives",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          }
+        }
+      }
     }
   ],
   "sections": [
@@ -510,13 +534,13 @@
       "title": "Observe ponto e vida mudarem",
       "intent": "demonstration",
       "objective": "Associar cada mudança à sua causa.",
-      "blockKeys": ["video-teste-vidas"],
+      "blockKeys": ["video-teste-vidas", "demonstracao-vidas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-vidas"]
+        "blockIds": ["demonstracao-vidas"]
       }
     },
     {
