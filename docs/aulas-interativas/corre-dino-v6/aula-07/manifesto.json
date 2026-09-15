@@ -137,6 +137,20 @@
         "activity": {
           "type": "experimentation",
           "scene": "game-state"
+        },
+        "prediction": {
+          "prompt": "Antes de mexer: na tela de início, o relógio dos cactos já está trabalhando?",
+          "choices": [
+            {
+              "id": "espera",
+              "label": "Não, ele espera a partida começar"
+            },
+            {
+              "id": "trabalha",
+              "label": "Sim, ele já está correndo"
+            }
+          ],
+          "correctChoiceId": "trabalha"
         }
       }
     },

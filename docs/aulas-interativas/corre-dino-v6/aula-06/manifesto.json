@@ -138,6 +138,20 @@
         "activity": {
           "type": "experimentation",
           "scene": "cleanup"
+        },
+        "prediction": {
+          "prompt": "Antes de mexer: o cacto que saiu da tela ainda existe no jogo?",
+          "choices": [
+            {
+              "id": "some",
+              "label": "Não, ele sumiu"
+            },
+            {
+              "id": "existe",
+              "label": "Sim, ele continua guardado"
+            }
+          ],
+          "correctChoiceId": "existe"
         }
       }
     },

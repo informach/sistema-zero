@@ -3,6 +3,11 @@
 Estudo do Brilliant (14/09/2026) e plano de trabalho para as seções interativas dos três cursos v6.
 Maquete navegável com dois protótipos funcionais: `docs/aulas-interativas/proposta-experiencias.html`.
 
+> ➡️ **A continuação está em [proposta-experiencias-trilha.md](proposta-experiencias-trilha.md)**
+> (15/09/2026): segunda rodada no Brilliant, as oito melhorias nos modelos que já existem e as
+> cenas que os 48 cursos da trilha vão pedir. Este documento aqui continua sendo o registro dos
+> lotes 1 a 4, já implementados.
+
 ## Estado da implementação (14/09/2026)
 
 | Lote | O quê | Estado |

@@ -168,6 +168,20 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 5. Passo 5: testar. Entrada: “Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula p”. Saída: “to. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.”. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4. Ponte nova: “Veja o x diminuir: 560, 555, 550. O -5 manda andar para a esquerda. O relógio continua igual.” Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
+      "key": "demonstracao-sentido",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Veja para que lado o número negativo leva",
+        "instructions": "Acompanhe cada etapa. Você pode pausar e rever o exemplo.",
+        "hints": [],
+        "activity": {
+          "type": "demonstration",
+          "scene": "velocity"
+        }
+      }
+    },
+    {
       "key": "fala-entrega-editorial",
       "content": {
         "kind": "dialogue",
@@ -418,13 +432,13 @@
       "title": "Por que a velocidade é negativa?",
       "intent": "demonstration",
       "objective": "Entender que diminuir x move para a esquerda.",
-      "blockKeys": ["video-sentido-velocidade"],
+      "blockKeys": ["video-sentido-velocidade", "demonstracao-sentido"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-sentido-velocidade"]
+        "blockIds": ["demonstracao-sentido"]
       }
     },
     {

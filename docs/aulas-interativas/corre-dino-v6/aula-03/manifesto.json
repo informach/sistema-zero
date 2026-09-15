@@ -122,6 +122,20 @@
         "activity": {
           "type": "experimentation",
           "scene": "gravity"
+        },
+        "prediction": {
+          "prompt": "Antes de mexer: sem a gravidade, o que acontece depois do salto?",
+          "choices": [
+            {
+              "id": "volta",
+              "label": "O Dino volta ao chão"
+            },
+            {
+              "id": "sobe",
+              "label": "O Dino sobe e não volta"
+            }
+          ],
+          "correctChoiceId": "sobe"
         }
       }
     },
