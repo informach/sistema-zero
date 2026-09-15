@@ -10,7 +10,7 @@ import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { CourseProgressView, GamificationDelta } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 import { ZappyCoin } from './zappy-coin'
 
 interface LessonCelebrationProps {
@@ -72,7 +72,11 @@ export function LessonCelebration({
         onClick={(e) => e.stopPropagation()}
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
-        <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
+        <KidsMascotAnimated
+          expression="celebrating"
+          className="mx-auto size-24"
+          stillClassName="kid-wiggle"
+        />
         <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           {publicationPending

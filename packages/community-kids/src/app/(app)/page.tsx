@@ -14,7 +14,7 @@ import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
-import { KidsMascot } from '@/components/kids/mascot'
+import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
 import {
@@ -112,7 +112,11 @@ export default async function HomePage() {
         aria-hidden="true"
         className="grid size-16 shrink-0 place-items-center rounded-[1.25rem] bg-(--sz-kids-amarelo) md:size-[4.5rem] md:rounded-[1.375rem]"
       >
-        <KidsMascot
+        {/* ⚠️ A home é quem PAGA o runtime do Rive (~676 KB) para o resto do app:
+            toda criança passa por aqui, e a partir daqui o WASM está em cache por
+            um dia (header em `next.config.ts`), o que torna de graça animar o
+            Zappy nas outras telas. Mudo — saudação é presença, não evento. */}
+        <KidsMascotAnimated
           expression={courses.length === 0 ? 'thinking' : 'happy'}
           className="size-12 md:size-14"
         />

@@ -11,7 +11,7 @@ import {
   toolsGainSubline,
 } from '@/lib/tools-gain'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Comemoração de FERRAMENTA NOVA — a criança tornou um curso elegível (concluiu um bônus ou
@@ -68,7 +68,14 @@ export function ToolsCelebration({ gain, onClose }: { gain: ToolsGain; onClose: 
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
         <div className="relative mx-auto flex size-24 items-center justify-center">
-          <KidsMascot expression="celebrating" className="kid-wiggle size-24" />
+          {/* `sound={false}` pelo MESMO motivo do confete logo acima: este overlay vem
+              atrás da MuralCelebration, que já tocou. O som fica onde é raro. */}
+          <KidsMascotAnimated
+            expression="celebrating"
+            className="size-24"
+            stillClassName="kid-wiggle"
+            sound={false}
+          />
           <span className="-bottom-1 -right-1 absolute grid size-11 place-items-center rounded-full bg-card text-primary shadow-[0_0_0_3px_var(--primary)]">
             <Wrench className="size-5" aria-hidden />
           </span>

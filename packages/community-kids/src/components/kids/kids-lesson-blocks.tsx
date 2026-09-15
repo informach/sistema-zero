@@ -37,6 +37,7 @@ import type {
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 import { MuralCelebration } from './mural-celebration'
 
 /**
@@ -103,7 +104,16 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           <DialogueBlockView
             content={content}
             mascot={
-              <KidsMascot expression={content.pose ?? 'speaking'} className="size-16 sm:size-24" />
+              /* ⚠️ MUDO, sempre, seja qual for a pose que a autora escolher. Este
+                 balão é ESTADO: o texto fica na tela enquanto a criança lê, e uma
+                 aula tem vários. Com som, avançar de seção viraria um chime atrás
+                 do outro — e a autora pode marcar a pose `celebrating` aqui, que
+                 na régua geral toca. O movimento fica; o barulho não. */
+              <KidsMascotAnimated
+                expression={content.pose ?? 'speaking'}
+                className="size-16 sm:size-24"
+                sound={false}
+              />
             }
           />
         </div>

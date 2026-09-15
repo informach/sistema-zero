@@ -14,7 +14,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
@@ -25,7 +25,7 @@ import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
-import { KidsMascot } from '@/components/kids/mascot'
+import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
@@ -73,6 +73,15 @@ export function LessonPlayer({
 }: Props) {
   const router = useRouter()
   const learning = useLessonLearning(lesson, viewerId)
+
+  // A aula termina em festa, e a festa é o Zappy animado. O runtime do Rive são
+  // ~676 KB: baixá-los no clique de "Concluir" atrasaria justo o quadro que a
+  // criança esperou a aula inteira para ver. Puxamos ocioso, agora que ela acabou
+  // de entrar e vai passar minutos aqui. Best-effort — falhar só devolve o WebP.
+  useEffect(() => {
+    prefetchZappyRive()
+  }, [])
+
   const requirements = lessonCompletionRequirements({
     ...lesson,
     learningProgress: learning.progress,
@@ -188,7 +197,11 @@ export function LessonPlayer({
       renderInstruction: (text, pose = 'speaking') => (
         <DialogueBlockView
           content={{ kind: 'dialogue', text, pose }}
-          mascot={<KidsMascot expression={pose} className="size-16 sm:size-20" />}
+          mascot={
+            /* Mudo pelo mesmo motivo do bloco `dialogue` (ver kids-lesson-blocks):
+               instrução de seção é estado, e há uma por seção. */
+            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" sound={false} />
+          }
         />
       ),
     }),

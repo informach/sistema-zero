@@ -28,13 +28,16 @@ interface ConfigComHeaders {
   headers?: () => Promise<unknown>
 }
 
-async function mediaSrcDirectives(mod: { default: unknown }): Promise<string[]> {
+async function directives(mod: { default: unknown }, nome: string): Promise<string[]> {
   const cfg = mod.default as ConfigComHeaders
   const headers = await cfg.headers?.()
   // O `headers()` devolve uma árvore de {source, headers:[{key,value}]}; a busca
   // por texto evita depender do formato exato do Next.
-  return [...JSON.stringify(headers).matchAll(/media-src[^;\\"]*/g)].map((m) => m[0])
+  const re = new RegExp(`${nome}[^;\\\\"]*`, 'g')
+  return [...JSON.stringify(headers).matchAll(re)].map((m) => m[0])
 }
+
+const mediaSrcDirectives = (mod: { default: unknown }) => directives(mod, 'media-src')
 
 describe('CSP: o som embutido do Estúdio precisa poder tocar', () => {
   it('kids: TODA diretiva media-src emitida libera data:', async () => {
@@ -48,5 +51,22 @@ describe('CSP: o som embutido do Estúdio precisa poder tocar', () => {
     const diretivas = await mediaSrcDirectives(await import('../../community/next.config'))
     expect(diretivas.length).toBeGreaterThan(0)
     for (const d of diretivas) expect(d).toContain('data:')
+  })
+})
+
+/**
+ * O mascote Zappy animado é Rive, ou seja, WebAssembly — e `'wasm-unsafe-eval'` é
+ * uma KEYWORD à parte: nem `https:` nem `'unsafe-inline'` no `script-src` liberam a
+ * compilação de um módulo WASM. Sem ela o Chrome recusa, e a recusa é do mesmo
+ * feitio do defeito do som acima: **silenciosa**. O Zappy simplesmente nunca sai do
+ * WebP, sem toast, sem erro na UI, e o fallback funcionando é justamente o que
+ * esconde a quebra. Mesma régua do irmão acima: aqui só dá para travar o cabeçalho.
+ */
+describe('CSP: o mascote animado precisa poder compilar WASM', () => {
+  it('kids: TODA diretiva script-src emitida libera wasm-unsafe-eval', async () => {
+    const diretivas = await directives(await import('../next.config'), 'script-src')
+    // Duas: a CSP estrita e a da rota `/estudio/pro` (WebContainer).
+    expect(diretivas.length).toBeGreaterThan(1)
+    for (const d of diretivas) expect(d).toContain("'wasm-unsafe-eval'")
   })
 })

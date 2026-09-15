@@ -19,6 +19,7 @@ import type {
   CourseRatingView,
 } from '@/lib/types'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Dados da CRIANÇA exibidos no passo de agradecimento (avatar + nome + idade).
@@ -281,7 +282,7 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
         {step === 4 ? (
           <div className="flex flex-col gap-5">
             <div className="flex justify-center">
-              <KidsMascot expression="celebrating" className="size-16" />
+              <KidsMascotAnimated expression="celebrating" className="size-16" />
             </div>
             <div className="flex items-start gap-3 border-border border-y py-4">
               <UserAvatar

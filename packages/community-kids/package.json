@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3008",
-    "build": "next build",
+    "dev": "bun scripts/sync-rive-wasm.ts && next dev -p 3008",
+    "build": "bun scripts/sync-rive-wasm.ts && next build",
     "start": "next start -p 3008",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",
@@ -25,6 +25,7 @@
     "@dicebear/core": "^9",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
+    "@rive-app/react-canvas": "^4.34.2",
     "@sistemazero/core": "workspace:*",
     "@sistemazero/member-shell": "workspace:*",
     "@sistemazero/molda": "workspace:*",

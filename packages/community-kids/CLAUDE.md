@@ -107,7 +107,9 @@ concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra ante
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
 toast). **Mascote Zappy** = o vagalume oficial da marca (`mascot.tsx`, um sprite WebP transparente
 1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping/speaking; `<img>`
-server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`). A
+server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`).
+Desde 15/09/2026 ele também tem uma versão ANIMADA (Rive, com som) em nove pontos escolhidos —
+o `<img>` continua sendo o padrão e o chão de queda; ver §"O Zappy animado" abaixo. A
 **moeda Zappy** (`zappy-coin.tsx` → `<ZappyCoin>`, WebP em `public/zappy/coin.webp`) substituiu o
 ícone genérico `Coins` do lucide nos 6 pontos de saldo/recompensa (streak-widget, missions-panel,
 lesson-celebration, room-builder, configurator). **Página de aula kids (2ª rodada
@@ -2530,9 +2532,96 @@ auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (membe
 - **Literais soltos (BAIXO):** `course-trail.tsx` tirou o "+25 XP" hardcoded do baú ("Baú aberto!");
   `kids-quiz.tsx` trocou o fallback `?? 100` da nota mínima por `null` (nunca há caminho real sem valor).
 
+## O Zappy animado (Rive) — 15/09/2026
+
+O mascote ganhou ONZE pontos ANIMADOS, com som sincronizado ao keyframe, a partir de um lote de
+`.riv` dela. O `<img>` NÃO foi substituído: das 47 aparições do Zappy no app, 38 seguem estáticas
+de propósito, e o WebP é o chão de queda dos outros 11 (e foi ele que segurou o app durante as duas voltas de arquivo).
+
+⚠️⚠️ **TOCAMOS A TIMELINE, NÃO A STATE MACHINE — e foi o erro que custou uma volta inteira.** Os
+`.riv` trazem a `State Machine 1` com ZERO inputs e um estado que não entra na timeline: montar
+por ela deixa o Zappy PARADO, com o runtime a 60 fps desenhando sempre o mesmo quadro (medido: 242
+quadros seguidos idênticos, `ultimaMudanca=-1`). A primeira leitura disso foi "os arquivos não têm
+animação", e estava ERRADA — a dona disse que no editor animava, e animava mesmo: pela
+**`Timeline 1`** as cinco poses se mexem (`happy`/`celebrating`/`thinking` em laço,
+`sleeping`/`speaking` tocam uma vez e assentam). ⚠️ O `animations` do runtime é deprecated em favor
+de `stateMachine`; sair do deprecated depende do EDITOR (a SM ganhar um estado que toque a
+timeline), não daqui — trocar antes disso volta a congelar o mascote. ⚠️ **Lição de método:**
+nenhum teste do pacote pega isso (happy-dom não tem WebGL, e o guarda de bytes só vê NOMES), e o
+`toDataURL()` MENTIU nas primeiras medições — devolveu quadros idênticos onde havia animação. O que
+vale é `getImageData` dentro de `requestAnimationFrame`, com `useOffscreenRenderer: false`.
+
+⚠️⚠️ **O SOM não sai dos `.riv`, e o `KidsConfetti` continua sendo a fonte.** O áudio está EMBUTIDO
+(dá para ler o nome do asset nos bytes) e mesmo assim o pico na saída é ZERO: pendurei um analisador
+em tudo que conecta ao `destination` e o runtime cria o AudioContext mas **nunca conecta nada**,
+nem por timeline nem por state machine. Falta o evento de áudio na timeline. Por isso o
+`ZAPPY_RIVE_COM_SOM` está TODO `false` e as quatro celebrações grandes voltaram a `<KidsConfetti />`
+COM som — eu tinha tirado apostando no `.riv`, o que as deixaria MUDAS. Quando o evento de áudio
+existir, vire `celebrating` no mapa e ponha `sound={false}` no confete NA MESMA PASSADA.
+
+**A régua: som quando o Zappy REAGE, silêncio quando ele só está PRESENTE.** O mesmo `.riv` serve
+os dois casos — quem cala é o `volume` da instância (`ZAPPY_RIVE_COM_SOM` em `mascot.tsx`), nunca
+o arquivo. Hoje só `celebrating` toca: a varredura dos call sites mostrou que **nenhum** uso de
+`speaking`/`thinking`/`sleeping` é evento (são todos balão de aula, tela vazia ou cadeado, que
+repetem a cada navegação; um chime ali vira tortura por repetição).
+
+- **Onde anima:** as 7 celebrações (`chest-reward`, `lesson-celebration`, `level-up-celebration`,
+  `mural-celebration`, `tools-celebration`, `course-rating-flow` passo 4 e o quiz aprovado), o
+  balão de fala da aula (`kids-lesson-blocks` bloco `dialogue` + o `renderInstruction` do
+  `lesson-player-client`) e dois pontos de presença (a saudação da home e o estado vazio do Mural).
+- ⚠️ **No quiz, só quem ACABOU de passar.** Aquela tela é também o que a criança vê ao reabrir uma
+  aula aprovada semanas atrás (`result` nulo) — ali o Zappy comemoraria do nada uma conquista
+  velha. O `result` decide entre `KidsMascotAnimated` e `KidsMascot`.
+- ⚠️ **O confete das 4 celebrações grandes perdeu o som** (`<KidsConfetti sound={false} />`): o
+  áudio agora vem do `.riv`, no keyframe. Dois ao mesmo tempo seria chime por cima de chime. O
+  `tools-celebration` já era mudo (vem atrás da `MuralCelebration`) e o Rive dele também é.
+
+**Quatro caminhos voltam ao WebP, todos calados:** SSR, `prefers-reduced-motion`, a economia de
+dados do aparelho (`navigator.connection.saveData`) e qualquer falha do Rive. A pose nunca some da
+tela. ⚠️ Isso é uma faca de dois gumes: **a quebra também é silenciosa**, e foi para isso que
+nasceram os guardas do `tests/mascot-assets.test.ts` (o `.riv` e o `.webp` de cada pose no disco,
+e os nomes `Artboard 1`/`State Machine 1` DENTRO dos bytes) e a asserção nova no
+`tests/csp-media-data.test.ts`.
+
+- ⚠️⚠️ **`'wasm-unsafe-eval'` entrou na CSP ESTRITA** (`next.config.ts`). É keyword à parte: nem
+  `https:` nem `'unsafe-inline'` liberam a compilação de WASM, e a recusa do Chrome é silenciosa.
+  O `iframe srcDoc` dos blocos interativos HERDA a CSP, então o conteúdo autoral ganhou WASM
+  junto — aceito porque a fronteira real do embed é o sandbox SEM allow-same-origin.
+- ⚠️⚠️ **O WASM é servido da NOSSA origem.** Por padrão o `@rive-app/canvas` baixa o binário de
+  `unpkg.com` (fallback no jsdelivr): código executável de host de terceiro no caminho de render,
+  numa área infantil. `scripts/sync-rive-wasm.ts` copia de `node_modules` para `public/rive/` no
+  `dev` e no `build` (arquivo DERIVADO, no `.gitignore`), e o `mascot-rive-canvas` faz
+  `setWasmUrl` + `setWasmFallbackUrl(null)` + `enableRiveAssetCDN: false`.
+- ⚠️ **`useRive` lê os parâmetros UMA vez** (deps: canvas, "tem params", instância — o `src` não
+  está lá). Trocar de pose no mesmo componente montado NÃO troca o arquivo: por isso a
+  `key={expression}` no canvas, e por isso o estado de carga anda junto com a pose.
+- **Peso e cache:** runtime 676 KB comprimidos (81 de JS + 595 de WASM) contra 120 KB do lote
+  inteiro de WebP. Por isso `/rive/*` e `/zappy/*` ganharam `Cache-Control` (1 dia, como o
+  `/avatar3d/*`) e o player de aula chama `prefetchZappyRive()` ao montar. ⚠️ O `import()` sozinho
+  adianta só o JS — o `aquecerRuntimeRive()` é que puxa os sete oitavos restantes.
+- ⚠️ O `test-setup.ts` neutraliza o `mascot-rive-canvas`: sem isso toda suíte que monta uma
+  celebração tenta buscar o WASM e cospe `Aborted(both async and sync fetching of the wasm failed)`.
+  O WRAPPER segue testado de verdade em `tests/mascot-rive.test.tsx`; o desenho é e2e.
+
+**Pendências no editor (dela), todas registradas em `mascot.tsx`:** o fundo do artboard (acima, a
+que BLOQUEIA); renomear `Artboard 1`/
+`State Machine 1` para nomes estáveis (um reexport que os mude derruba tudo no WebP sem avisar);
+padronizar o `speaking.riv`, único do lote sem `SMLipSync`/`Viseme`/camada `Mouth`; e reexportar
+`thinking`/`sleeping`/`speaking` SEM áudio (~164 KB de MP3 que hoje atravessam a rede e nunca
+tocam). O `alivio.riv` ("Magical Heart UI Chime") ficou FORA do `public/`: não tem tela de destino
+nem WebP de queda — o candidato natural é o quiz reprovado, hoje com o Zappy dormindo.
+
+⭐ Os arquivos trazem `mouth_open`/`mouth_state` + a state machine `SMLipSync` com `Viseme`: é
+infraestrutura de LIP SYNC. Nada disso é consumido ainda, e é o que torna o Rive a escolha certa
+aqui em vez de um WebM com alpha (que faria as poses por um décimo do peso, mas nunca o Zappy
+falando o texto do balão com a boca sincronizada).
+
 ## Comandos
 
 `bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·
+**`galeria:cenas`** (monta `tmp/galeria-cenas.html` com as 45 cenas de aula lado a lado — os
+componentes de PRODUÇÃO e o CSS deste app, cada cena no estado em que o roteiro dela a deixa; é a
+conferência visual das cenas, como o `tmp/pen/` é a das telas-modelo) ·
 **`gen:avatar-thumbs`** (pré-gera os PNGs das miniaturas do avatar → `public/avatar3d/thumbs/`, abre no
 navegador; rode 1× e commite). Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter`
 quebrar o React)**, `typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.

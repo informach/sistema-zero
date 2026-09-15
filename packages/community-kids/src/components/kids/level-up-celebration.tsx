@@ -7,7 +7,7 @@ import { levelInfo } from '@/lib/level-info'
 import { type ToolsGain, toolsGainInline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Comemoração de SUBIU DE NÍVEL (Faísca até Lenda) — overlay com o Zappy, confete e a
@@ -66,7 +66,11 @@ export function LevelUpCelebration({
       >
         {/* Medalhão do nível: ícone grande com aura na cor do nível. */}
         <div className="relative mx-auto flex size-28 items-center justify-center">
-          <KidsMascot expression="celebrating" className="kid-wiggle size-28" />
+          <KidsMascotAnimated
+            expression="celebrating"
+            className="size-28"
+            stillClassName="kid-wiggle"
+          />
           <span
             className="-bottom-1 -right-1 absolute flex size-12 items-center justify-center rounded-full bg-card"
             style={{

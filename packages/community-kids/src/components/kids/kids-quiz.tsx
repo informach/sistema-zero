@@ -11,6 +11,7 @@ import type { QuizAttemptResultView, QuizBlock, QuizQuestion, QuizStateView } fr
 import { badgeInfo } from './badges'
 import { QuizReview, useQuizCooldown } from './kids-quiz-review'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 interface Props {
   blockId: string
@@ -119,10 +120,20 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             quiz já mora num cartão branco da aula, e este é o recado de vitória dele. */}
         <div className="kids-marca flex flex-col items-center gap-3 rounded-[1.25rem] p-6 text-center md:p-8">
           <span className="grid place-items-center rounded-full bg-card p-3">
-            <KidsMascot
-              expression="celebrating"
-              className={cn('size-16', result && 'kid-wiggle')}
-            />
+            {/* ⚠️ Só festeja quem ACABOU de passar. Esta tela também é o que a
+                criança vê ao reabrir uma aula aprovada semanas atrás (`result`
+                nulo), e ali o Zappy animado com chime comemoraria de novo, do
+                nada, uma conquista velha — o caso exato que a régua evento ×
+                estado existe para evitar. */}
+            {result ? (
+              <KidsMascotAnimated
+                expression="celebrating"
+                className="size-16"
+                stillClassName="kid-wiggle"
+              />
+            ) : (
+              <KidsMascot expression="celebrating" className="size-16" />
+            )}
           </span>
           <p className="sz-display inline-flex items-center gap-2 text-2xl">
             <Trophy className="size-6" />

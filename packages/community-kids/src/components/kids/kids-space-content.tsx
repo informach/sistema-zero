@@ -27,7 +27,7 @@ import {
   MuralClosing,
   MuralHeader,
 } from './kids-space-sections'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 import type { MuralSort } from './mural-sort'
 import { AuthorBadge, type AuthorItem, authorText } from './space-author'
 
@@ -488,7 +488,7 @@ function WallFeed({
       // Estado vazio de verdade, e não a caixa tracejada cinza: aqui o Zappy faz o
       // papel do círculo colorido do `KidsEmptyState`, porque a fala é dele.
       <div className="kids-carta flex flex-col items-center gap-2 px-6 py-12 text-center">
-        <KidsMascot expression="happy" className="kid-float size-20" />
+        <KidsMascotAnimated expression="happy" className="size-20" stillClassName="kid-float" />
         <p className="sz-display mt-2 text-xl">{channelPresentation('parede').emptyState}</p>
       </div>
     )
