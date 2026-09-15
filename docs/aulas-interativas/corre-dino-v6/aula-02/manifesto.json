@@ -51,9 +51,7 @@
                 "label": "O que foi criado primeiro."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A ordem do desenho determina as camadas."
           },
           {
@@ -69,9 +67,7 @@
                 "label": "Para atualizar a imagem que vemos."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "A criação ocorreu em Ao iniciar; o mesmo personagem é redesenhado."
           },
           {
@@ -87,9 +83,7 @@
                 "label": "Arrastar a borda e toda a pilha para a lixeira."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Apagar apenas a peça preserva as que estão abaixo."
           }
         ]
@@ -218,17 +212,13 @@
       "title": "O que vamos fazer hoje",
       "intent": "presentation",
       "objective": "Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.",
-      "blockKeys": [
-        "video-abertura-editorial"
-      ],
+      "blockKeys": ["video-abertura-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura-editorial"
-        ]
+        "blockIds": ["video-abertura-editorial"]
       }
     },
     {
@@ -236,18 +226,13 @@
       "title": "Descubra como desenhos viram movimento",
       "intent": "exploration",
       "objective": "Distinguir um quadro da repetição de quadros.",
-      "blockKeys": [
-        "video-quadros",
-        "experiencia-laco"
-      ],
+      "blockKeys": ["video-quadros", "experiencia-laco"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-laco"
-        ]
+        "blockIds": ["experiencia-laco"]
       }
     },
     {
@@ -255,10 +240,7 @@
       "title": "Monte o motor do jogo",
       "intent": "application",
       "objective": "Separar preparação de repetição.",
-      "blockKeys": [
-        "video-motor",
-        "fala-motor"
-      ],
+      "blockKeys": ["video-motor", "fala-motor"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -283,10 +265,7 @@
       "title": "Faça o Dino aparecer",
       "intent": "application",
       "objective": "Conectar o desenho ao personagem criado.",
-      "blockKeys": [
-        "video-primeiro-desenho",
-        "fala-primeiro-desenho"
-      ],
+      "blockKeys": ["video-primeiro-desenho", "fala-primeiro-desenho"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -315,10 +294,7 @@
       "title": "Limpe antes de desenhar",
       "intent": "application",
       "objective": "Começar um quadro sem resíduos do anterior.",
-      "blockKeys": [
-        "video-limpeza",
-        "fala-limpeza"
-      ],
+      "blockKeys": ["video-limpeza", "fala-limpeza"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -358,17 +334,13 @@
       "title": "O que aconteceu com o Dino?",
       "intent": "demonstration",
       "objective": "Perceber que um desenho posterior pode cobrir outro.",
-      "blockKeys": [
-        "video-floresta-cobre"
-      ],
+      "blockKeys": ["video-floresta-cobre"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-floresta-cobre"
-        ]
+        "blockIds": ["video-floresta-cobre"]
       }
     },
     {
@@ -376,17 +348,13 @@
       "title": "Quem fica na frente?",
       "intent": "exploration",
       "objective": "Trocar apenas a ordem de dois desenhos e observar a sobreposição.",
-      "blockKeys": [
-        "experiencia-camadas"
-      ],
+      "blockKeys": ["experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "experiencia-camadas"
-        ]
+        "blockIds": ["experiencia-camadas"]
       }
     },
     {
@@ -394,10 +362,7 @@
       "title": "Organize as camadas do seu jogo",
       "intent": "application",
       "objective": "Transferir a descoberta para a pilha real de desenho.",
-      "blockKeys": [
-        "video-ordem-certa",
-        "fala-ordem-certa"
-      ],
+      "blockKeys": ["video-ordem-certa", "fala-ordem-certa"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -460,10 +425,7 @@
       "title": "Retire só a peça provisória",
       "intent": "application",
       "objective": "Apagar uma peça do meio preservando as demais.",
-      "blockKeys": [
-        "video-retirar-borda",
-        "fala-retirar-borda"
-      ],
+      "blockKeys": ["video-retirar-borda", "fala-retirar-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -509,18 +471,13 @@
       "title": "Teste e entregue sua construção",
       "intent": "delivery",
       "objective": "O Dino corre no lugar diante da floresta. A descrição e a criação permanecem; a borda provisória saiu.",
-      "blockKeys": [
-        "fala-entrega-editorial",
-        "projeto"
-      ],
+      "blockKeys": ["fala-entrega-editorial", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "projeto"
-        ],
+        "blockIds": ["projeto"],
         "projectChecks": [
           {
             "id": "desenhar",
@@ -598,17 +555,13 @@
       "title": "Veja o que você aprendeu",
       "intent": "closing",
       "objective": "O Dino corre no lugar diante da floresta. A descrição e a criação permanecem; a borda provisória saiu.",
-      "blockKeys": [
-        "video-fecho-editorial"
-      ],
+      "blockKeys": ["video-fecho-editorial"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho-editorial"
-        ]
+        "blockIds": ["video-fecho-editorial"]
       }
     },
     {
@@ -616,17 +569,13 @@
       "title": "Confira as ideias de hoje",
       "intent": "closing",
       "objective": "Explicar as relações que acabamos de construir.",
-      "blockKeys": [
-        "quiz-final"
-      ],
+      "blockKeys": ["quiz-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz-final"
-        ]
+        "blockIds": ["quiz-final"]
       }
     }
   ]

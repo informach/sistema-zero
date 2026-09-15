@@ -296,7 +296,6 @@ thead th{
 }
 tbody tr:last-child td{border-bottom:none}
 td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-td b{font-weight:700}
 .pill{
   display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;
   padding:2px 9px;border-radius:999px;white-space:nowrap;
@@ -984,11 +983,11 @@ button                    button</pre>
     const goals = { right: false, down: false, same: false };
     const seenAt = new Set(['110,150']);
 
-    function place(g, x, y) {
+    const place = (g, x, y) => {
       g.setAttribute('transform', 'translate(' + (OX + x - DW / 2) + ',' + (OY + y - DH / 2) + ')');
-    }
+    };
 
-    function render(moved) {
+    const render = (moved) => {
       const { x, y, px, py } = state;
       place(dino, x, y);
       place(ghost, px, py);
@@ -1024,9 +1023,9 @@ button                    button</pre>
       seenAt.add(x + ',' + y);
       cap.textContent = frase;
       paintGoals();
-    }
+    };
 
-    function paintGoals() {
+    const paintGoals = () => {
       document.querySelectorAll('#goals-a .goal').forEach((el) => {
         el.dataset.done = String(!!goals[el.dataset.goal]);
       });
@@ -1036,14 +1035,14 @@ button                    button</pre>
         doneA.dataset.ready = '1';
         verdictA.textContent = 'As três descobertas apareceram. Pode conferir.';
       }
-    }
+    };
 
-    function set(axis, v, moved) {
+    const set = (axis, v, moved) => {
       state.px = state.x; state.py = state.y;
       if (axis === 'x') state.x = Math.max(0, Math.min(W, Math.round(v)));
       else state.y = Math.max(0, Math.min(H, Math.round(v)));
       render(moved);
-    }
+    };
 
     inX.addEventListener('input', () => set('x', +inX.value, true));
     inY.addEventListener('input', () => set('y', +inY.value, true));
