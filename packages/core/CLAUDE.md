@@ -49,6 +49,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/result` | `Result<T,E>` (ok/err) — fluxo de erro sem exceção | `result` |
 | `/http` | envelope de erro `{error:{code,message}}` + erros de borda (edge) | `error-envelope` · `edge-errors` |
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
+| `/learning/scene` | as **24** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`) e o que a cena diz de si (`readout`). ⚠️ Cena nova entra em `SCENE_IDS` + `PORTS` + `SCENE_MODELS` + `leituras`/`situacao` (readout) + o palco do member-shell; o TS reprova o que faltar, menos o palco | `actions` · `catalog` · `engine` · `evaluate` · `cast` · `readout` · `state` · `session` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
 
 ## Comandos (de dentro de `packages/core`)

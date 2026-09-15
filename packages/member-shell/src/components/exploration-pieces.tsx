@@ -3,9 +3,11 @@
 import type {
   SceneAction,
   SceneActivity,
+  SceneCast,
   ScenePort,
   SceneState,
 } from '@sistemazero/core/learning/scene'
+import { castText } from '@sistemazero/core/learning/scene'
 import { type PointerEvent, type RefObject, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ExperienceConnection as Connection } from './experience-connection'
@@ -61,13 +63,19 @@ function usePieceDrag(zones: RefObject<HTMLDivElement | null>, label: string) {
 function LayerPieces({
   front,
   dispatch,
+  cast,
 }: {
   front: boolean
   dispatch: (action: SceneAction) => void
+  cast?: SceneCast
 }) {
   const [selected, setSelected] = useState<'dino' | 'forest'>('dino')
   const tray = useRef<HTMLDivElement>(null)
-  const drag = usePieceDrag(tray, selected === 'dino' ? 'Dino' : 'Floresta')
+  // ⚠️ O nome das peças passa pelo ELENCO: numa turma de nave a criança arrasta "Nave" e
+  // "Nebulosa", não "Dino" e "Floresta". Sem isto a bancada continuava falando de um curso e a
+  // faixa de estado logo acima, de outro.
+  const nome = (peca: string) => castText(peca === 'dino' ? 'Dino' : 'Floresta', cast)
+  const drag = usePieceDrag(tray, nome(selected))
   function place(last: boolean, piece = selected) {
     dispatch({ type: 'layer', front: piece === 'dino' ? last : !last })
   }
@@ -126,7 +134,7 @@ function LayerPieces({
               <span className="block text-xs text-muted-foreground">
                 {index === 0 ? 'Antes' : 'Depois'}
               </span>
-              {piece === 'dino' ? 'Dino' : 'Floresta'}
+              {nome(piece)}
             </span>
           </button>
         ))}
@@ -238,6 +246,9 @@ export function ExplorationPieces({
   more: boolean
 }) {
   const m = activity.scene
+  // ⚠️ O elenco entra AQUI, no helper, e não em cada chamada: os nomes dos fios citam o
+  // personagem e o obstáculo ("Dino", "Nascer cacto"), e uma chamada esquecida deixaria um fio
+  // falando do Corre Dino no meio de um curso de nave.
   const connection = (
     port: ScenePort,
     source: string,
@@ -246,9 +257,9 @@ export function ExplorationPieces({
     alternative = 'Desligar fio',
   ) => (
     <Connection
-      source={source}
-      target={target}
-      alternative={alternative}
+      source={castText(source, activity.cast)}
+      target={castText(target, activity.cast)}
+      alternative={castText(alternative, activity.cast)}
       enabled={enabled}
       onConnect={(enabled) => dispatch({ type: 'connect', port, enabled })}
     />
@@ -258,21 +269,35 @@ export function ExplorationPieces({
       {m === 'world' && (
         <div className="space-y-3 rounded-2xl border-2 border-dashed border-primary/25 p-3">
           <p className="text-sm font-semibold">
-            Bastidores · {state.world.created ? '1 Dino guardado' : 'ainda vazio'}
+            {castText(
+              state.world.created ? 'Bastidores · 1 Dino guardado' : 'Bastidores · ainda vazio',
+              activity.cast,
+            )}
           </p>
           {!state.world.created ? (
-            <SceneButton onClick={() => dispatch({ type: 'create' })}>＋ Criar Dino</SceneButton>
+            <SceneButton onClick={() => dispatch({ type: 'create' })}>
+              {castText('＋ Criar Dino', activity.cast)}
+            </SceneButton>
           ) : (
             <>
               {connection('draw', 'Desenhar', 'Tela do jogo', state.world.drawn)}
               <span className="text-xs text-muted-foreground">
-                O Dino continua guardado aqui com o desenho ligado ou desligado.
+                {/* ⚠️ "continua nos bastidores" e não "continua guardado": a régua do elenco só
+                  flexiona o que está COLADO ao nome, então um particípio distante viraria "A nave
+                  continua guardado" numa turma de nave. Texto do player precisa sobreviver à
+                  troca de elenco. */}
+                {castText(
+                  'O Dino continua nos bastidores com o desenho ligado ou desligado.',
+                  activity.cast,
+                )}
               </span>
             </>
           )}
         </div>
       )}
-      {m === 'layers' && <LayerPieces front={state.world.front} dispatch={dispatch} />}
+      {m === 'layers' && (
+        <LayerPieces front={state.world.front} dispatch={dispatch} cast={activity.cast} />
+      )}
       {m === 'gravity' &&
         (state.evidence.discoveries.includes('floating') || state.flight.gravity || more) &&
         connection('gravity', 'Gravidade do mundo', 'Dino', state.flight.gravity, 'Não aplicar')}
@@ -314,6 +339,21 @@ export function ExplorationPieces({
           state.crowd.cleanup,
           'Retirar regra',
         )}
+      {m === 'lives' && (
+        <div className="space-y-3">
+          {/* ⚠️ Os DOIS fios juntos, e nenhum deles escondido atrás de descoberta: a cena é
+            sobre as duas contagens serem independentes, e isso só aparece quando dá para
+            ligar e desligar cada uma delas com a outra à vista. */}
+          {connection(
+            'condition',
+            '＋ Somar ponto',
+            'Enquanto tem vida',
+            state.lifeline.scoring,
+            'Desligar fio',
+          )}
+          {connection('life', 'Bateu', '− Perder uma vida', state.lifeline.onHit, 'Desligar fio')}
+        </div>
+      )}
       {(m === 'game-state' || m === 'score') && (
         <ConditionPiece state={state} dispatch={dispatch} score={m === 'score'} />
       )}
@@ -397,7 +437,8 @@ export function ExplorationPieces({
               <svg width="18" height="24" viewBox="-25 -65 55 70" aria-hidden="true">
                 <CactusFigure x={0} y={0} />
               </svg>
-              Novo cacto · descontar {state.crowd.born === 0 ? '0' : '1'}
+              {castText('Novo cacto · descontar', activity.cast)}{' '}
+              {state.crowd.born === 0 ? '0' : '1'}
             </SceneButton>
             <SceneButton onClick={() => dispatch({ type: 'clock' })}>
               ◷ Avançar o relógio

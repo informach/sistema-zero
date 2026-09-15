@@ -1,12 +1,15 @@
 import { isRecord, isSceneAction, SCENE_IDS, SCENE_LIMITS, type SceneId } from './actions'
-import { type SceneStep, sceneGoalIds, sceneModel } from './catalog'
+import { castText, isSceneCast, type SceneCast } from './cast'
+import { type SceneModel, type SceneStep, sceneGoalIds, sceneModel } from './catalog'
 import { stepScene } from './engine'
 import { initialScene, type SceneStart } from './state'
 
 export * from './actions'
+export * from './cast'
 export * from './catalog'
 export * from './engine'
 export * from './evaluate'
+export * from './readout'
 export * from './session'
 export * from './state'
 
@@ -28,6 +31,8 @@ export interface DemonstrationActivity {
   /** Sem roteiro próprio, vale o do modelo. O professor só escreve quando quer outro. */
   script?: SceneStep[]
   instructionAudioUrl?: string
+  /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
+  cast?: SceneCast
 }
 export interface ExperimentationActivity {
   type: 'experimentation'
@@ -35,6 +40,8 @@ export interface ExperimentationActivity {
   /** Só `gravity` e `impulse`: a altura de partida do salto. */
   initialImpulse?: number
   instructionAudioUrl?: string
+  /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
+  cast?: SceneCast
 }
 export type SceneActivity = DemonstrationActivity | ExperimentationActivity
 
@@ -59,12 +66,14 @@ const validAudio = isSceneAudioUrl
 export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   return value.script === undefined || isSceneScript(value.script, value.scene)
 }
 
 export function isExperimentationActivity(value: unknown): value is ExperimentationActivity {
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   const { initialImpulse: impulse } = value
   if (impulse === undefined) return true
   if (value.scene !== 'gravity' && value.scene !== 'impulse') return false
@@ -140,8 +149,42 @@ export function sceneStart(activity: SceneActivity): SceneStart {
   return { scene: activity.scene }
 }
 
-/** O roteiro que vale: o autorado, quando existe; senão o do modelo da cena. */
+/**
+ * O roteiro que vale: o autorado, quando existe; senão o do modelo da cena.
+ *
+ * ⚠️ As falas passam pelo elenco, o roteiro do professor inclusive: ele escreve contra a cena
+ * que escolheu, e um curso que veste a cena com outro personagem precisa que as duas falas
+ * sigam juntas. Quem não quiser a troca não declara elenco.
+ */
 export function sceneScript(activity: SceneActivity): readonly SceneStep[] {
-  if (activity.type === 'demonstration' && activity.script) return activity.script
-  return sceneModel(activity.scene).script
+  const roteiro =
+    activity.type === 'demonstration' && activity.script
+      ? activity.script
+      : sceneModel(activity.scene).script
+  if (!activity.cast) return roteiro
+  return roteiro.map((passo) => ({ ...passo, caption: castText(passo.caption, activity.cast) }))
+}
+
+/**
+ * O modelo da cena VESTIDO com o elenco da atividade.
+ *
+ * É por aqui que o título, a instrução, o que a criança mexe, a frase de sucesso, o "e se…" e
+ * a escada de pistas chegam prontos a quem exibe. `sceneModel` continua devolvendo o texto
+ * cru: ele é o conteúdo de fábrica, e é contra ele que o professor escolhe a cena no admin.
+ */
+export function sceneModelFor(activity: SceneActivity) {
+  const m = sceneModel(activity.scene)
+  if (!activity.cast) return m
+  const c = activity.cast
+  return {
+    ...m,
+    title: castText(m.title, c),
+    instruction: castText(m.instruction, c),
+    manipulates: castText(m.manipulates, c),
+    success: castText(m.success, c),
+    extra: castText(m.extra, c),
+    goals: m.goals.map((g) => ({ ...g, label: castText(g.label, c) })),
+    hints: m.hints.map((h) => castText(h, c)) as unknown as SceneModel['hints'],
+    script: sceneScript(activity),
+  }
 }

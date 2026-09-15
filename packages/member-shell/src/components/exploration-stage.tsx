@@ -1,10 +1,12 @@
 'use client'
 
 import {
+  castText,
   type SceneAction,
   type SceneActivity,
   type SceneState,
   sceneContact,
+  sceneModelFor,
 } from '@sistemazero/core/learning/scene'
 import {
   type ComponentProps,
@@ -14,6 +16,15 @@ import {
   useId,
   useRef,
 } from 'react'
+import {
+  FramesStage,
+  LivesStage,
+  OnionSkinStage,
+  PixelVectorStage,
+  SheetStage,
+  SymmetryStage,
+} from './scene-art-stages'
+import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
 
 // A small workbench around the child's Dino: the scene, pieces and consequences share space.
 // Existing Kids typography/tokens carry the chrome; blue gravity and amber impulse stay distinct.
@@ -61,6 +72,25 @@ export function TreeFigure({
     </g>
   )
 }
+/**
+ * O selo no alto do palco, por cena.
+ *
+ * Ele nomeia o que ESTE palco mostra, na língua de quem tem 9 anos. Três grupos de cena não
+ * usam este mapa: `world` e as telas da partida (lá o selo é o rótulo do próprio jogo) e as
+ * duas de 14/09/2026, que têm palco próprio e saem antes daqui.
+ */
+const STAGE_LABEL: Record<string, string> = {
+  layers: 'Quem fica na frente',
+  gravity: 'O salto do Dino',
+  impulse: 'O salto do Dino',
+  'jump-sound': 'O salto e o som',
+  spawn: 'Os cactos que nascem',
+  cleanup: 'A pista e os bastidores',
+  hitbox: 'Onde a batida acontece',
+  random: 'O sorteio de cada cacto',
+  acceleration: 'A velocidade dos cactos',
+}
+
 export function SceneButton({ children, className = '', ...props }: ComponentProps<'button'>) {
   return (
     <button
@@ -186,6 +216,30 @@ export function ExplorationStage({
   const sceneId = useId()
   const stage = useRef<SVGSVGElement>(null)
   const m = activity.scene
+  const cast = activity.cast
+  // ⚠️ As duas cenas de 14/09/2026 têm palco PRÓPRIO: uma é sobre o sistema de coordenadas da
+  // tela e a outra sobre o que uma pessoa que não vê a tela recebe. Nenhuma das duas cabe no
+  // palco compartilhado (chão, árvores, pista), que é sobre o mundo do jogo.
+  if (m === 'coordinates') return <CoordinatesStage state={state} />
+  if (m === 'screen-reader')
+    return (
+      <ScreenReaderStage
+        state={state}
+        dispatch={dispatch}
+        interactive={activity.type === 'experimentation'}
+      />
+    )
+  if (m === 'stage-size') return <StageSizeStage state={state} />
+  if (m === 'draw-loop') return <DrawLoopStage state={state} />
+  // As cinco do ateliê e a das vidas: mesma razão, palco próprio. A folha de sprites e o
+  // papel do espelho não são o mundo do jogo, e o placar com os corações precisa das duas
+  // contagens à vista no instante da batida.
+  if (m === 'frames') return <FramesStage state={state} />
+  if (m === 'onion-skin') return <OnionSkinStage state={state} />
+  if (m === 'symmetry') return <SymmetryStage state={state} />
+  if (m === 'pixel-vector') return <PixelVectorStage state={state} />
+  if (m === 'sheet-vs-sprite') return <SheetStage state={state} />
+  if (m === 'lives') return <LivesStage state={state} />
   const motion = ['gravity', 'impulse', 'jump-sound'].includes(m)
   const collision = m === 'hitbox' || m === 'restart'
   const speed = m === 'random' || m === 'acceleration'
@@ -219,11 +273,17 @@ export function ExplorationStage({
           aria-labelledby={`${sceneId}-title ${sceneId}-desc`}
         >
           <title id={`${sceneId}-title`}>Cena da descoberta</title>
+          {/* ⚠️⚠️ Aqui vai o que o DESENHO mostra, e não o que acabou de acontecer.
+              Três coisas falam com o leitor de tela nesta cena e cada uma tem um papel: a
+              faixa de estado dá os NÚMEROS, o `role="status"` abaixo do palco narra a MUDANÇA,
+              e esta descrição diz o que está desenhado. A primeira correção do full review pôs
+              a narração aqui também, e aí o leitor ouvia a mesma frase duas vezes — trocar uma
+              duplicação por outra. O `manipulates` do modelo é estável e descreve a cena. */}
           <desc id={`${sceneId}-desc`}>
-            {state.caption ||
-              (activity.type === 'demonstration'
-                ? 'Observe o que acontece na cena.'
-                : 'Use as peças e os controles da cena para começar.')}
+            {/* ⚠️ Passa pelo ELENCO como todo o resto: o `manipulates` cita o personagem e o
+              obstáculo pelo nome, e é esta frase que quem usa leitor de tela ouve no lugar do
+              desenho. Ela ficar no curso errado é o pior caso da acessibilidade aqui. */}
+            {castText(`Cena com ${sceneModelFor(activity).manipulates.toLowerCase()}.`, cast)}
           </desc>
           <defs>
             <pattern id={`${sceneId}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
@@ -234,6 +294,11 @@ export function ExplorationStage({
           <path className="fill-scene-grass" d="M0 238H600V310H0Z" />
           <path className="stroke-scene-line" d="M0 238H600" strokeWidth="2" />
           <path className="fill-scene-grid" d="M390 180L460 115L530 180Z" />
+          {/* ⚠️ As três telas seguem em caixa alta porque são o RÓTULO DO JOGO: é assim que
+              início, jogando e fim aparecem para quem joga, e a cena está mostrando a tela.
+              O que saiu daqui foi "SEU LABORATÓRIO DINO", que era o mesmo jargão de adulto do
+              "observatório" da cena de referência — e, pior, dizia a mesma coisa nas cinco
+              cenas que caem neste ramo. O selo agora diz o que ESTE palco mostra. */}
           <text className="fill-scene-ink" x="20" y="28" fontSize="13" fontWeight="600">
             {m === 'world'
               ? 'TELA DO JOGO'
@@ -243,7 +308,7 @@ export function ExplorationStage({
                   : state.match.screen === 'end'
                     ? 'FIM DA PARTIDA'
                     : 'JOGANDO'
-                : 'SEU LABORATÓRIO DINO'}
+                : castText(STAGE_LABEL[m] ?? '', cast)}
           </text>
           {m === 'layers' ? (
             <>
@@ -429,7 +494,7 @@ export function ExplorationStage({
         {motion && (
           <button
             type="button"
-            aria-label="Tocar no Dino para pular"
+            aria-label={castText('Tocar no Dino para pular', cast)}
             disabled={!canJump}
             className="absolute z-10 min-h-14 min-w-16 -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-dashed border-primary/60 bg-transparent focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary"
             style={{ left: emX(170), top: emY(dinoY), height: emY(72), width: emX(78) }}
@@ -457,7 +522,7 @@ export function ExplorationStage({
         {collision && (
           <Handle
             stage={stage}
-            label="Mover cacto com arraste ou setas"
+            label={castText('Mover cacto com arraste ou setas', cast)}
             x={170 + state.contact.distance}
             y={215}
             value={state.contact.distance}
@@ -471,7 +536,7 @@ export function ExplorationStage({
         {m === 'hitbox' && (
           <Handle
             stage={stage}
-            label="Redimensionar área do Dino com arraste ou setas"
+            label={castText('Redimensionar área do Dino com arraste ou setas', cast)}
             x={170 + state.contact.width / 2}
             y={180}
             value={state.contact.width}
@@ -520,14 +585,15 @@ export function ExplorationStage({
       )}
       {speed && outsideSpeedCount > 0 && (
         <p role="status" className="text-center text-sm text-muted-foreground">
-          {outsideSpeedCount} {outsideSpeedCount === 1 ? 'cacto fora' : 'cactos fora'} da pista
+          {outsideSpeedCount}{' '}
+          {castText(outsideSpeedCount === 1 ? 'cacto fora' : 'cactos fora', cast)} da pista
         </p>
       )}
       {collision && (
         <div
           role="group"
           className="flex flex-wrap gap-2"
-          aria-label="Destinos do cacto sem arrastar"
+          aria-label={castText('Destinos do cacto sem arrastar', cast)}
         >
           {[25, 60, 180].map((distance, i) => (
             <SceneButton key={distance} onClick={() => dispatch({ type: 'move', distance })}>

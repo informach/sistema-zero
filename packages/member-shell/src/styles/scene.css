@@ -17,11 +17,31 @@
    * para 680px no dia seguinte: a dona achou que tinha encolhido demais. */
   --container-scene: 680px;
 
-  /* O papel da cena: fundo, chão e as linhas de apoio. */
-  --color-scene-ground: #f8f6e9;
-  --color-scene-sky: #eaf0e6;
-  --color-scene-grass: #e4ebd2;
-  --color-scene-line: #8ba077;
+  /* O papel da cena: fundo, chão e as linhas de apoio.
+   *
+   * ⭐ Desde 14/09/2026 eles SEGUEM O TEMA. Eram seis literais fixos, então no tema Pink a
+   * aula inteira ficava rosa e a cena continuava verde e bege — a única ilha da página que não
+   * acompanhava.
+   *
+   * ⚠️⚠️ A mistura e as bases são CALIBRADAS, não escolhidas no olho. A primeira versão deste
+   * lote misturava 6/10/14% sobre as bases originais e derrubou o contraste sem ninguém medir:
+   * sobre o céu o âmbar caiu de 4,91 para 4,42 e sobre a grama de 4,64 para 4,03 — os dois
+   * abaixo do 4,5 que texto pequeno exige. Foi achado no full review, com a conta refeita nos
+   * três temas (Padrão, Pink e o azul de reserva do ensaio). Os números de hoje: bases
+   * CLAREADAS (é isso que compra a margem, já que misturar sempre escurece) e mistura de 5% a
+   * 8%. O pior par do conjunto fica em 4,50. Mexeu aqui? Refaça a conta — o teste
+   * `tests/scene-contrast.test.ts` reprova a mudança que baixar disso.
+   *
+   * ⚠️ `in oklab`, NUNCA `oklch`: no espaço cilíndrico a interpolação passeia pelo matiz e um
+   * bege puxado para o azul vira ROSA. É o mesmo tropeço que já quebrou os embarcados uma vez.
+   *
+   * ⚠️ E o `var(--primary, …)` tem FALLBACK porque esta folha também é lida pelo ensaio de
+   * autoria e por qualquer superfície que não declare o tema: sem ele a cena sairia preta. */
+  --color-scene-ground: color-mix(in oklab, var(--primary, #315f92) 8%, #faf8ee);
+  --color-scene-sky: color-mix(in oklab, var(--primary, #315f92) 5%, #eef3ea);
+  --color-scene-grass: color-mix(in oklab, var(--primary, #315f92) 5%, #e9efda);
+  /* A linha do chão é TRAÇO, não texto: 3:1 basta, e ela pode puxar mais do tema. */
+  --color-scene-line: color-mix(in oklab, var(--primary, #315f92) 30%, #8ba077);
   /* ⚠️ `grid` é a DECORAÇÃO (os pontinhos do fundo, a montanha, a borda de um cartãozinho).
    * A RÉGUA é outra coisa: é o instrumento com que a criança mede o salto, e ela precisa se
    * ver. As duas tinham colapsado no mesmo cinza, e a régua ficou em 1,39:1 — invisível. */
@@ -41,7 +61,11 @@
   --color-scene-bark: #896746;
 
   /* O par de comparação. É a cor que carrega o sentido da descoberta: a medida A contra a
-   * medida B, o antes contra o depois. Elas têm que se distinguir à primeira vista. */
+   * medida B, o antes contra o depois. Elas têm que se distinguir à primeira vista.
+   * ⚠️⚠️ Estes NÃO seguem o tema, e é deliberado: azul e laranja aqui não são decoração, são o
+   * que diz QUAL medida é qual — no palco, na faixa de estado e na comparação guardada. Um par
+   * que mudasse de matiz com o tema desmancharia a leitura no meio da descoberta. Pelo mesmo
+   * motivo o vermelho do encosto (`alert`) fica onde está. */
   --color-scene-a: #315f92;
   --color-scene-b: #c67431;
   /* ⚠️ `b-ink` é a medida B quando ela vira TEXTO. O laranja tem 3,26:1 sobre o papel da cena:

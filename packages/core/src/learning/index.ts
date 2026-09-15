@@ -11,6 +11,7 @@ export * from './section-templates'
 export * from './video-watch'
 
 import {
+  castText,
   evaluateDemonstration,
   evaluateExperimentation,
   initialScene,
@@ -68,6 +69,26 @@ export interface LearningCheckpoint {
   correctChoiceId: string
   explanation: string
 }
+
+/**
+ * A PREVISÃO: a pergunta que vem ANTES de a criança mexer.
+ *
+ * É o padrão mais forte do Brilliant — "o que você acha que vai acontecer?" — e o mais barato
+ * de trazer, porque quem responde não é o servidor: é a própria cena, quando ela roda.
+ *
+ * ⚠️⚠️ NÃO é um `checkpoint` com outro nome, e é por isso que tem tipo próprio. O checkpoint
+ * entra no `passed` do bloco: errá-lo reprova a atividade. Uma previsão errada é o CAMINHO do
+ * aprendizado ("achei que subiria, e desceu"), e reprovar por ela ensinaria a criança a não
+ * arriscar — que é o contrário do que a cena pede. Por isso ela não tem gabarito obrigatório e
+ * nunca entra na avaliação; o `correctChoiceId` existe só para o relatório do professor saber
+ * quantos previram o quê.
+ */
+export interface LearningPrediction {
+  prompt: string
+  choices: LearningChoice[]
+  /** Opcional, e SEM efeito na conclusão. Serve ao acompanhamento, não à nota. */
+  correctChoiceId?: string
+}
 /** Uma experiência autoral em HTML, isolada num iframe. */
 export interface HtmlActivity {
   type: 'html'
@@ -102,24 +123,36 @@ export interface InteractiveBlock {
   required: boolean
   /** A checkpoint is graded on the server, independently of a custom iframe. */
   checkpoint?: LearningCheckpoint
+  /** A pergunta de antes. Não é avaliada: ver `LearningPrediction`. */
+  prediction?: LearningPrediction
 }
 /** Authoring, presentation and evidence use the same hints, including curated mission defaults. */
 export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'>): string[] {
   // A escada de três degraus do modelo só entra quando o professor não escreveu a dele.
-  if (block.activity.type === 'experimentation' && block.hints.length === 0)
-    return [...sceneModel(block.activity.scene).hints]
+  // ⚠️ E ela passa pelo ELENCO da atividade: as pistas citam o Dino e o cacto pelo nome, e a
+  // cena vestida com outro personagem ficaria com a ajuda falando de um terceiro.
+  // ⚠️ A atividade sai para uma const: dentro do callback do `map` o TypeScript perde o
+  // estreitamento de `block.activity`, e `cast` deixa de existir para ele.
+  const atividade = block.activity
+  if (atividade.type === 'experimentation' && block.hints.length === 0)
+    return sceneModel(atividade.scene).hints.map((h) => castText(h, atividade.cast))
   return block.hints
 }
 /** Nenhuma das quatro atividades carrega gabarito: o que precisa ficar no servidor é o
  *  `correctChoiceId` da pergunta anexa, tratado abaixo. */
 export type PublicLearningActivity = LearningActivity
-export interface PublicInteractiveBlock extends Omit<InteractiveBlock, 'activity' | 'checkpoint'> {
+export interface PublicInteractiveBlock
+  extends Omit<InteractiveBlock, 'activity' | 'checkpoint' | 'prediction'> {
   activity: PublicLearningActivity
   checkpoint?: Omit<LearningCheckpoint, 'correctChoiceId' | 'explanation'>
+  /** Sem o gabarito, como no checkpoint: o que a criança prevê é dela. */
+  prediction?: Omit<LearningPrediction, 'correctChoiceId'>
 }
 const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
-  demonstration: ['type', 'scene', 'script', 'instructionAudioUrl'],
-  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl'],
+  // ⚠️ `cast` é PÚBLICO de propósito: é texto que a criança lê, não gabarito. Sem ele na
+  // lista, a cena chegaria ao navegador falando de Dino num curso de nave.
+  demonstration: ['type', 'scene', 'script', 'instructionAudioUrl', 'cast'],
+  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl', 'cast'],
   question: ['type'],
   html: ['type', 'html'],
 }
@@ -148,6 +181,9 @@ export function publicInteractiveBlock(block: InteractiveBlock): PublicInteracti
     ...(block.checkpoint
       ? { checkpoint: { prompt: block.checkpoint.prompt, choices: block.checkpoint.choices } }
       : {}),
+    ...(block.prediction
+      ? { prediction: { prompt: block.prediction.prompt, choices: block.prediction.choices } }
+      : {}),
   }
 }
 export function isPublicInteractiveBlock(value: unknown): value is PublicInteractiveBlock {
@@ -155,6 +191,9 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
   const a = value.activity
   const checkpoint = value.checkpoint
   if (checkpoint !== undefined && (!record(checkpoint) || !choices(checkpoint.choices)))
+    return false
+  const prediction = value.prediction
+  if (prediction !== undefined && (!record(prediction) || !choices(prediction.choices)))
     return false
   return isInteractiveBlock({
     ...value,
@@ -364,6 +403,19 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
     )
       return false
   }
+  if (value.prediction !== undefined) {
+    const p = value.prediction
+    // ⚠️ O gabarito é OPCIONAL aqui, ao contrário do checkpoint: previsão sem resposta certa é
+    // legítima ("o que você acha que vai acontecer?" numa cena de exploração livre). Quando
+    // existe, ele precisa apontar para uma das alternativas — um id solto seria um relatório
+    // dizendo que ninguém previu certo.
+    if (!record(p) || !text(p.prompt, 5000) || !choices(p.choices)) return false
+    if (
+      p.correctChoiceId !== undefined &&
+      !p.choices.some((choice) => choice.id === p.correctChoiceId)
+    )
+      return false
+  }
   const a = value.activity
   switch (a.type) {
     case 'demonstration':
@@ -436,8 +488,13 @@ function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): Learnin
     return evaluateDemonstration(session.viewed, true, true)
   }
   const session = readExperimentSession(a.scene, parts)
-  if (!session) return evaluateExperimentation(a.scene, initialScene(a), parts === undefined)
-  return evaluateExperimentation(a.scene, session.state)
+  // ⚠️ O ELENCO entra aqui também (achado do full review de 14/09/2026): esta é a avaliação do
+  // SERVIDOR, e o `feedback` que ela devolve é gravado na tentativa e lido de volta pelo cartão
+  // "Descoberta registrada" e pelo relatório do professor. Sem o elenco, uma turma de nave
+  // recebia a frase de sucesso falando de Dino e de cacto.
+  if (!session)
+    return evaluateExperimentation(a.scene, initialScene(a), parts === undefined, a.cast)
+  return evaluateExperimentation(a.scene, session.state, true, a.cast)
 }
 
 export function isLearningFrameMessage(

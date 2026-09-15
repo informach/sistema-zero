@@ -102,6 +102,11 @@ describe('o roteiro ao trocar de cena', () => {
   })
 })
 
+const escolhas = () => [
+  { id: 'a', label: 'Uma coisa' },
+  { id: 'b', label: 'Outra coisa' },
+]
+
 describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
   const pergunta: InteractiveBlock = {
     kind: 'interactive',
@@ -128,6 +133,39 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
     expect(bloco.checkpoint).toBeUndefined()
     expect(isInteractiveBlock(bloco)).toBe(true)
     expect(aviso).toContain('pergunta de verificação')
+  })
+
+  test('⚠️⚠️ a previsão sai ao deixar a cena, e o professor é avisado', () => {
+    // Achado do full review: a caixa da previsão só existe nos dois tipos de CENA, e o player só
+    // a desenha no palco. Saindo para pergunta curta ou HTML ela ficava no bloco INVISÍVEL — o
+    // professor não tinha como apagá-la e, com a pergunta em branco (o estado em que a caixa
+    // nasce), o bloco parava de publicar com o recado genérico de "complete os campos".
+    const comPrevisao: InteractiveBlock = {
+      ...pergunta,
+      activity: { type: 'experimentation', scene: 'world' },
+      checkpoint: undefined,
+      prediction: { prompt: '', choices: escolhas() },
+    }
+    // A prova de que o defeito era real: em branco, ela REPROVA o bloco.
+    expect(isInteractiveBlock(comPrevisao)).toBe(false)
+    const { bloco, aviso } = trocarTipo(comPrevisao, 'question')
+    expect(bloco.prediction).toBeUndefined()
+    expect(aviso).toContain('previsão')
+    // ⚠️ A validade é conferida na Experiência em HTML, e não na Pergunta curta: esta última
+    // cria de propósito uma pergunta EM BRANCO, que também reprova o bloco — só que ela está na
+    // tela, com os campos à vista. O que a previsão fazia era reprovar SEM aparecer.
+    const paraHtml = trocarTipo(comPrevisao, 'html')
+    expect(paraHtml.bloco.prediction).toBeUndefined()
+    expect(isInteractiveBlock(paraHtml.bloco)).toBe(true)
+    // E ela ATRAVESSA entre as duas irmãs, que são o mesmo assunto com o mesmo palco.
+    const escrita: InteractiveBlock = {
+      ...comPrevisao,
+      prediction: { prompt: 'O que vai acontecer?', choices: escolhas() },
+    }
+    expect(trocarTipo(escrita, 'demonstration').bloco.prediction?.prompt).toBe(
+      'O que vai acontecer?',
+    )
+    expect(trocarCena(escrita, 'layers').bloco.prediction?.prompt).toBe('O que vai acontecer?')
   })
 
   test('o impulso inicial não vai parar numa cena que não o tem', () => {

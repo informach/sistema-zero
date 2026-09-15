@@ -223,6 +223,15 @@ export function trocarTipo(
     avisos.push(
       'O HTML que você escreveu está guardado enquanto este editor estiver aberto — voltar para Experiência em HTML o traz de volta —, mas publicar de outro tipo grava o bloco sem ele.',
     )
+  // ⚠️⚠️ A previsão é das CENAS (o palco é que responde o palpite) e o editor só a mostra lá.
+  // Saindo para pergunta curta ou HTML ela ficava no bloco, INVISÍVEL: o professor não tinha como
+  // apagá-la, o player não a renderiza e, com a pergunta em branco, ela derrubava a publicação com
+  // o recado genérico de "complete os campos" sem nada na tela para consertar.
+  const saiDaCena = tipo !== 'demonstration' && tipo !== 'experimentation'
+  if (saiDaCena && value.prediction)
+    avisos.push(
+      'A previsão saiu: ela existe porque a CENA responde o palpite quando a criança mexe, e uma pergunta curta ou uma experiência em HTML não têm esse palco.',
+    )
 
   // ⚠️ A cena ACOMPANHA entre as duas irmãs: são o mesmo assunto, e voltar para `world`
   // obrigaria a reescolher toda vez.
@@ -262,6 +271,7 @@ export function trocarTipo(
     bloco: {
       ...value,
       activity,
+      prediction: viraCena ? value.prediction : undefined,
       // O texto do modelo só entra onde o professor não escreveu nada.
       ...(viraCena ? textoAoTrocarCena(value, cena, cenaDe(activity) as SceneId) : {}),
       // ⚠️ Saindo da cena, as pistas DELA não seguem: "Olhe os bastidores: o Dino já existe?"

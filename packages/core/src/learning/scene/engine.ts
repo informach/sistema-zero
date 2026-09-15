@@ -76,8 +76,25 @@ export function stepScene(
           s.crowd.cleanup = action.enabled
           break
         case 'condition':
+          // ⚠️ A MESMA porta com dois sentidos, por cena: em `score` e `game-state` ela é o
+          // "só enquanto estiver jogando"; em `lives` é o fio que soma ponto. São a mesma
+          // ideia (uma condição que guarda a ação), e dar nome novo a cada cena encheria a
+          // bancada de fios que a criança nunca ligou.
+          if (scene === 'lives') {
+            s.lifeline.scoring = action.enabled
+            s.caption = action.enabled
+              ? 'O fio do ponto está ligado. Avance o relógio e olhe o placar.'
+              : 'O fio do ponto saiu: o placar parou de subir.'
+            break
+          }
           if (s.match.guarded !== action.enabled) s.match.scoreIdle = 0
           s.match.guarded = action.enabled
+          break
+        case 'life':
+          s.lifeline.onHit = action.enabled
+          s.caption = action.enabled
+            ? 'O fio da vida está ligado: a batida vai custar uma vida.'
+            : 'Sem o fio da vida, bater não tira nada.'
           break
         case 'touch':
           s.match.touch = action.enabled
@@ -134,6 +151,32 @@ export function stepScene(
       break
 
     case 'advance': {
+      if (start.scene === 'frames') {
+        advanceFrames(s, action.seconds)
+        break
+      }
+      if (start.scene === 'lives') {
+        advanceLives(s, action.seconds)
+        break
+      }
+      if (start.scene === 'draw-loop') {
+        s.render.frames += 1
+        if (!s.render.loop) {
+          observe(s, 'frozen', 'Sem repetir o desenho, a tela congela', true)
+          s.caption = 'O relógio andou e a tela continua igual: ninguém mandou desenhar de novo.'
+          break
+        }
+        if (s.render.erase) {
+          s.render.trail = 1
+          observe(s, 'moving', 'Com os dois, o Dino se mexe', true)
+          s.caption = 'Limpou e desenhou: um Dino só, num lugar novo. Isso é o movimento.'
+          break
+        }
+        s.render.trail += 1
+        if (s.render.trail >= 2) observe(s, 'trail', 'Sem limpar, fica rastro', true)
+        s.caption = `Desenhou de novo sem limpar: ${s.render.trail} Dinos na tela.`
+        break
+      }
       advanceFlight(s, scene, action.seconds)
       s.crowd.elapsed += action.seconds
       if (scene === 'spawn' || scene === 'cleanup' || scene === 'game-state')
@@ -202,6 +245,10 @@ export function stepScene(
       break
 
     case 'collide':
+      if (scene === 'lives') {
+        collideLives(s)
+        break
+      }
       if (s.match.screen === 'playing') {
         s.match.screen = 'end'
         s.match.scoreIdle = 0
@@ -253,6 +300,289 @@ export function stepScene(
       s.evidence.hints = Math.max(s.evidence.hints, action.level)
       break
 
+    /**
+     * O endereço na tela. A descoberta é por EIXO, e só conta quando o outro ficou parado —
+     * mexer nos dois ao mesmo tempo não diz qual deles levou o Dino para onde.
+     */
+    case 'place': {
+      const { x: antesX, y: antesY } = s.place
+      s.place.fromX = antesX
+      s.place.fromY = antesY
+      s.place.x = action.x
+      s.place.y = action.y
+      const dx = action.x - antesX
+      const dy = action.y - antesY
+      // ⚠️ A narração é aplicada NO FIM, depois dos `observe`: eles carimbam o `caption` com o
+      // rótulo da meta, e sem isto a criança lia "Mesmo x, altura diferente" no lugar de
+      // "y foi de 150 para 190: o Dino DESCEU" — o rótulo serve ao relatório do professor, a
+      // narração serve a quem está mexendo.
+      let narracao = ''
+      if (dx !== 0 && dy === 0) {
+        narracao =
+          dx > 0
+            ? `x foi de ${antesX} para ${action.x}: o Dino andou para a direita, na mesma altura.`
+            : `x foi de ${antesX} para ${action.x}: o Dino andou para a esquerda, na mesma altura.`
+        if (dx > 0) observe(s, 'right', 'x maior leva para a direita', true)
+      } else if (dy !== 0 && dx === 0) {
+        narracao =
+          dy > 0
+            ? `y foi de ${antesY} para ${action.y}: o Dino DESCEU, sem sair do lugar na largura.`
+            : `y foi de ${antesY} para ${action.y}: o Dino subiu, sem sair do lugar na largura.`
+        if (dy > 0) observe(s, 'down', 'y maior leva para baixo', true)
+      } else if (dx !== 0 && dy !== 0) {
+        narracao = `Mudaram os dois: o Dino foi para ${dx > 0 ? 'a direita' : 'a esquerda'} e para ${dy > 0 ? 'baixo' : 'cima'}.`
+      }
+      // "Mesmo x, altura diferente" é o que separa as duas coordenadas na cabeça dela: o
+      // mesmo número da largura pode aparecer em alturas diferentes.
+      if (s.place.visitedX.includes(action.x) && (dy !== 0 || antesY !== action.y))
+        observe(s, 'same-x', 'Mesmo x, altura diferente', true)
+      if (!s.place.visitedX.includes(action.x)) {
+        s.place.visitedX.push(action.x)
+        if (s.place.visitedX.length > 24) s.place.visitedX.shift()
+      }
+      if (narracao) s.caption = narracao
+      break
+    }
+
+    /**
+     * A tela e o limite dela.
+     *
+     * ⚠️ A descoberta do LIMITE é ligar a borda, não mexer no número: sem a moldura a cor do
+     * fundo cobre a área inteira e a criança não tem como ver onde a tela acaba. É a mesma
+     * ordem do roteiro da Aula 1 (preparar a tela e depois revelar a borda).
+     */
+    case 'stage': {
+      const mudou = s.stage.width !== action.width || s.stage.height !== action.height
+      s.stage.width = action.width
+      s.stage.height = action.height
+      if (mudou) {
+        s.stage.tried += 1
+        observe(s, 'resized', 'A tela mudou de tamanho junto com os números', true)
+      }
+      if (action.width === 480 && action.height === 270)
+        observe(s, 'target', 'Chegou na tela de 480 por 270', true)
+      s.caption = `Tela de ${action.width} por ${action.height}.${
+        s.stage.border ? '' : ' Ligue a borda para ver onde ela acaba.'
+      }`
+      break
+    }
+
+    case 'border':
+      s.stage.border = action.visible
+      if (action.visible) observe(s, 'border-on', 'A borda mostra onde a tela acaba', true)
+      s.caption = action.visible
+        ? 'A moldura apareceu: é ali que o jogo acontece.'
+        : 'Sem a moldura, a cor do fundo cobre tudo e o limite some.'
+      break
+
+    /**
+     * O laço de desenho.
+     *
+     * ⚠️ As três descobertas são estados DIFERENTES do mesmo par de chaves, e cada uma só conta
+     * quando o relógio anda: é o tempo passando que mostra a tela congelada, o rastro e o
+     * movimento. Ligar a chave sem avançar não descobre nada — e é isso que faz a criança
+     * avançar o relógio nas três situações em vez de só clicar.
+     */
+    case 'loop':
+      s.render.loop = action.on
+      s.render.trail = 0
+      s.caption = action.on
+        ? 'Agora o jogo desenha a cada quadro. Avance o relógio.'
+        : 'O desenho a cada quadro está desligado. Avance o relógio e veja.'
+      break
+
+    case 'erase':
+      s.render.erase = action.on
+      s.render.trail = 0
+      s.caption = action.on
+        ? 'A limpeza está ligada: o quadro começa vazio. Avance o relógio.'
+        : 'Sem limpar, o desenho de antes continua na tela. Avance o relógio.'
+      break
+
+    case 'describe':
+      s.description.text = action.text
+      s.caption = action.text
+        ? 'A descrição está escrita. Ouça a tela para saber o que ela informa.'
+        : 'A descrição ficou vazia de novo.'
+      break
+
+    /**
+     * Ouvir a tela.
+     *
+     * ⚠️ O reconhecimento do objetivo e do controle é por PALAVRA, e é deliberadamente
+     * generoso: ele existe para orientar a criança enquanto ela escreve, não para aprovar
+     * ninguém. A conferência que vale continua sendo a do servidor, como nas outras cenas.
+     */
+    case 'listen': {
+      const texto = s.description.text.trim()
+      if (!texto) {
+        s.description.heard = 'Tela do jogo. Imagem.'
+        s.description.heardEmpty = true
+        observe(s, 'heard-empty', 'Ouviu a tela sem descrição', true)
+        s.caption = 'Foi só isso que a pessoa ouviu: o desenho não informa nada sozinho.'
+        break
+      }
+      s.description.heard = `Tela do jogo. ${texto}`
+      const alvo = texto.toLowerCase()
+      const diz = (palavras: readonly string[]) => palavras.some((p) => alvo.includes(p))
+      const objetivo = diz(OBJETIVO_PALAVRAS)
+      const controle = diz(CONTROLE_PALAVRAS)
+      if (objetivo) observe(s, 'says-goal', 'A frase diz o que fazer no jogo', true)
+      if (controle) observe(s, 'says-control', 'A frase diz como se joga', true)
+      s.caption =
+        objetivo && controle
+          ? 'Agora a descrição informa o objetivo e o controle.'
+          : objetivo
+            ? 'Ela já sabe o que fazer no jogo. Falta dizer como se joga.'
+            : controle
+              ? 'Ela já sabe qual é o controle. Falta dizer o que se faz no jogo.'
+              : 'A pessoa ouviu a sua frase, mas ela ainda não diz o que fazer nem como jogar.'
+      break
+    }
+
+    /**
+     * Os dois quadros.
+     *
+     * ⚠️ Trocar de quadro NA MÃO é a descoberta que abre a cena: são dois desenhos inteiros, e
+     * a criança precisa ver os dois parados antes de a troca automática juntá-los. Por isso a
+     * meta só conta com a troca desligada: com ela ligada, quem trocou foi o relógio.
+     */
+    case 'frame': {
+      const antes = s.animation.frame
+      s.animation.frame = action.index
+      if (!s.animation.playing && action.index !== antes)
+        observe(s, 'two-drawings', 'São dois desenhos inteiros, um de cada vez', true)
+      // ⚠️ No quadro 1 não há quadro anterior: é o que o roteiro do Pinta diz com todas as
+      // letras, e a cena precisa dizer o mesmo em vez de mostrar um fantasma inventado.
+      s.caption =
+        scene === 'onion-skin' && action.index === 1 && s.animation.onion
+          ? 'No quadro 1 não há quadro anterior para mostrar.'
+          : `Quadro ${action.index} de 2 na tela.`
+      break
+    }
+
+    case 'play':
+      s.animation.playing = action.on
+      s.animation.elapsed = 0
+      s.caption = action.on
+        ? 'A troca começou. Avance o relógio e olhe a tela.'
+        : 'A troca parou: o quadro fica parado na tela.'
+      break
+
+    case 'rate':
+      s.animation.rate = action.perSecond
+      s.animation.elapsed = 0
+      // ⚠️ As trocas contam a partir da velocidade ESCOLHIDA: as duas descobertas são "devagar dá
+      // para ver os dois" e "rápido vira movimento", e sem zerar aqui a segunda vinha de graça
+      // (bastava ter rodado rápido antes e baixar a velocidade para a primeira fechar na hora).
+      s.animation.swaps = 0
+      s.caption = `${action.perSecond} ${action.perSecond === 1 ? 'troca' : 'trocas'} por segundo.`
+      break
+
+    /**
+     * O fantasma do quadro anterior.
+     *
+     * ⚠️ Ele é GUIA, não desenho: não entra na animação, e no quadro 1 não existe. As duas
+     * frases vêm do roteiro da aula, e são o conceito inteiro desta cena.
+     */
+    case 'onion':
+      s.animation.onion = action.on
+      if (action.on && s.animation.frame === 2)
+        observe(s, 'ghost-on', 'O fantasma mostra o quadro anterior por baixo', true)
+      s.caption = !action.on
+        ? 'Fantasma desligado: só o quadro de agora aparece.'
+        : s.animation.frame === 2
+          ? 'O fantasma fraquinho é o quadro 1. Ele é guia, não entra na animação.'
+          : 'No quadro 1 não há quadro anterior para mostrar.'
+      break
+
+    case 'shift': {
+      s.animation.shift = action.offset
+      if (!s.animation.onion) observe(s, 'blind-move', 'Mexeu no quadro 2 sem ver o de antes', true)
+      else if (action.offset >= PASSO_PARELHO.min && action.offset <= PASSO_PARELHO.max)
+        observe(s, 'even-step', 'Com o fantasma, o passo entre os dois ficou parelho', true)
+      s.caption = s.animation.onion
+        ? `Passo de ${action.offset}, comparando com o fantasma.`
+        : `Passo de ${action.offset}, no chute: o quadro 1 não está à vista.`
+      break
+    }
+
+    case 'mirror':
+      s.mirror.on = action.on
+      s.mirror.line = action.line
+      s.caption = action.on
+        ? `Espelho ligado na linha ${action.line}.`
+        : 'Espelho desligado: o que você pintar fica só de um lado.'
+      break
+
+    /**
+     * O traço e o reflexo.
+     *
+     * ⚠️ O reflexo pode cair FORA do papel, e isso não é erro: é a resposta à pergunta "e se o
+     * eixo ficar na beirada?". A cena diz o que aconteceu em vez de mover o eixo sozinha.
+     */
+    case 'paint': {
+      pintar(s, action.column)
+      const reflexo = 2 * s.mirror.line - 1 - action.column
+      const dentro = reflexo >= 0 && reflexo <= 11 && reflexo !== action.column
+      if (!s.mirror.on) {
+        observe(s, 'one-side', 'Sem espelho, um traço é um traço só', true)
+        s.caption = `Traço na coluna ${action.column}. Um traço, um lado.`
+        break
+      }
+      if (dentro) {
+        pintar(s, reflexo)
+        if (s.mirror.lastLine !== 0 && s.mirror.lastLine !== s.mirror.line)
+          observe(s, 'axis-decides', 'Mudou o eixo e o reflexo mudou de lugar', true)
+        observe(s, 'two-sides', 'Com o espelho, um traço vira dois', true)
+        s.caption = `Traço na coluna ${action.column} e reflexo na ${reflexo}.`
+        // ⚠️ O eixo lembrado é o do último traço que REFLETIU de verdade. Guardar o de um reflexo
+        // que caiu fora do papel faria a descoberta seguinte dizer "o reflexo mudou de lugar"
+        // comparando com um reflexo que a criança nunca viu.
+        s.mirror.lastLine = s.mirror.line
+      } else s.caption = 'O reflexo caiu fora do papel: o eixo está muito na beirada.'
+      break
+    }
+
+    /**
+     * A lupa sobre as duas pedras. A terceira descoberta ("de longe parecem iguais") só conta
+     * DEPOIS das outras duas: sem ter visto a diferença de perto, voltar para longe não diz nada.
+     */
+    case 'inspect': {
+      s.pixels.kind = action.kind
+      s.pixels.zoom = action.zoom
+      const d = s.evidence.discoveries
+      if (action.zoom >= PERTO && action.kind === 'pixel')
+        observe(s, 'stairs', 'De perto, o pixel vira escadinha', true)
+      else if (action.zoom >= PERTO && action.kind === 'vector')
+        observe(s, 'smooth', 'De perto, o vetor continua liso', true)
+      else if (action.zoom <= LONGE && d.includes('stairs') && d.includes('smooth'))
+        observe(s, 'alike', 'De longe, as duas parecem iguais', true)
+      else
+        s.caption = `Lupa de ${action.zoom} na pedra de ${action.kind === 'pixel' ? 'pixel' : 'vetor'}.`
+      break
+    }
+
+    case 'cut': {
+      const nova = !s.sheet.cuts.includes(action.cell)
+      s.sheet.cell = action.cell
+      if (nova) s.sheet.cuts.push(action.cell)
+      observe(s, 'cut', 'Cada pedaço da folha é um desenho inteiro', true)
+      if (s.sheet.cuts.length >= 2)
+        observe(s, 'two-cells', 'Dois pedaços diferentes, a mesma folha', true)
+      s.caption = `Pedaço ${action.cell} de 4 recortado. A folha continua a mesma.`
+      break
+    }
+
+    case 'sprite': {
+      const antes = s.sheet.size
+      s.sheet.size = action.size
+      if (action.size !== antes)
+        observe(s, 'size-apart', 'O tamanho no jogo mudou e a folha ficou igual', true)
+      s.caption = `No jogo ele aparece com ${action.size} de altura. Na folha, nada mudou.`
+      break
+    }
+
     case 'reset':
       // Recomeçar o mundo NUNCA apaga o que a criança já descobriu.
       return {
@@ -263,6 +593,51 @@ export function stepScene(
   }
   return s
 }
+
+/** As palavras que dizem O QUE se faz no jogo. Lista de orientação, não de gabarito. */
+const OBJETIVO_PALAVRAS = [
+  'pule',
+  'pular',
+  'corra',
+  'correr',
+  'desvie',
+  'desviar',
+  'escape',
+  'escapar',
+  'fuja',
+  'fugir',
+  'atire',
+  'atirar',
+  'colete',
+  'coletar',
+  'pegue',
+  'pegar',
+  'acerte',
+  'acertar',
+  'chegue',
+  'chegar',
+  'ganhe',
+  'marque',
+  'salve',
+] as const
+/** As palavras que dizem COMO se joga. */
+const CONTROLE_PALAVRAS = [
+  'espaço',
+  'espaco',
+  'enter',
+  'seta',
+  'setas',
+  'clique',
+  'clicar',
+  'toque',
+  'tocar',
+  'aperte',
+  'apertar',
+  'apertando',
+  'barra',
+  'mouse',
+  'tecla',
+] as const
 
 function observeLayer(s: SceneState): void {
   observe(
@@ -421,4 +796,88 @@ function sampleCactus(
   } else if (s.speed.limited && s.speed.base === -9 && velocity === -10)
     observe(s, 'variation-limit', 'A base parou em −9. Descontar 1 criou um cacto a −10.')
   s.speed.samples.positions = s.speed.samples.positions.slice(0, 2)
+}
+
+/** O passo que faz a troca ficar suave. Fora dele a animação salta ou quase não anda. */
+const PASSO_PARELHO = { min: 12, max: 28 } as const
+/** A lupa que revela a borda, e a que devolve as duas pedras ao tamanho de longe. */
+const PERTO = 5
+const LONGE = 2
+
+/** Pinta uma coluna, sem repetir e sem deixar a lista crescer sem fim. */
+function pintar(s: SceneState, column: number): void {
+  if (s.mirror.painted.includes(column)) return
+  s.mirror.painted.push(column)
+  if (s.mirror.painted.length > 24) s.mirror.painted.shift()
+}
+
+/**
+ * A troca automática dos dois quadros.
+ *
+ * ⚠️ As duas descobertas são a MESMA montagem em velocidades diferentes, e cada uma precisa do
+ * relógio andando: é o tempo passando que mostra "são dois desenhos" e "isso virou movimento".
+ * Ligar a troca sem avançar não descobre nada, e é isso que faz a criança mexer na velocidade.
+ */
+function advanceFrames(s: SceneState, seconds: number): void {
+  const a = s.animation
+  if (!a.playing) {
+    s.caption = `A troca está parada: o quadro ${a.frame} fica na tela.`
+    return
+  }
+  a.elapsed += seconds
+  const trocas = Math.floor(a.elapsed * a.rate)
+  if (trocas > 0) {
+    a.elapsed -= trocas / a.rate
+    a.swaps += trocas
+    a.frame = ((a.frame - 1 + trocas) % 2) + 1
+  }
+  if (a.rate <= 2 && a.swaps >= 2)
+    observe(s, 'slow-shows-two', 'Devagar, dá para ver os dois desenhos', true)
+  if (a.rate >= 6 && a.swaps >= 4) observe(s, 'movement', 'Rápido, os dois viram movimento', true)
+  s.caption =
+    a.rate <= 2
+      ? `${a.rate} por segundo: dá para ver um desenho, depois o outro.`
+      : `${a.rate} por segundo: o olho junta os dois e vira movimento.`
+}
+
+/** O placar sobe sozinho enquanto houver vida. O resto do segundo fica guardado para o ponto
+ *  não depender do tamanho do passo do relógio. */
+function advanceLives(s: SceneState, seconds: number): void {
+  const l = s.lifeline
+  if (!l.scoring || l.lives === 0) {
+    s.caption =
+      l.lives === 0
+        ? 'A partida acabou: o placar parou onde estava.'
+        : 'O relógio andou, e o placar continua parado: falta o fio do ponto.'
+    return
+  }
+  l.remainder += seconds
+  const ganhos = Math.floor(l.remainder)
+  l.remainder -= ganhos
+  l.points += ganhos
+  s.caption = `O relógio andou e o placar está em ${l.points}.`
+}
+
+/**
+ * A batida.
+ *
+ * ⚠️ "Os pontos ficaram" só conta quando havia ponto para perder: sem placar nenhum, a criança
+ * não teria como ver que as duas contagens são independentes.
+ */
+function collideLives(s: SceneState): void {
+  const l = s.lifeline
+  if (l.lives === 0) {
+    s.caption = 'A partida já acabou. Recomece para bater de novo.'
+    return
+  }
+  l.hits += 1
+  if (!l.onHit) {
+    s.caption = 'A batida não custou nada: o fio da vida está desligado.'
+    return
+  }
+  l.lives -= 1
+  observe(s, 'life-lost', 'A batida tirou uma vida', true)
+  if (l.points > 0) observe(s, 'points-stay', 'Os pontos ficaram, mesmo perdendo vida', true)
+  if (l.lives === 0) observe(s, 'over', 'Sem vidas, a partida acabou', true)
+  else s.caption = `Uma vida saiu. Restam ${l.lives}, e o placar continua em ${l.points}.`
 }

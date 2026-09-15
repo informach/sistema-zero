@@ -6,7 +6,7 @@ import {
   type LearningChoice,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
-import { isSceneAudioUrl, SCENE_LIMITS, SCENE_MODELS } from '@sistemazero/core/learning/scene'
+import { isSceneAudioUrl, SCENE_LIMITS, sceneModelFor } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -25,6 +25,7 @@ import {
 } from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
 import { SceneAuthoring } from './scene-authoring'
+import { SceneCastEditor } from './scene-cast-editor'
 import { ScenePicker } from './scene-picker'
 
 const initialChoices = (): LearningChoice[] => [
@@ -155,6 +156,9 @@ export function LearningBuilder({
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
   const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
+  // ⚠️ Em const: dentro dos callbacks o TS perde o estreitamento de `value.prediction` (é
+  // propriedade mutável) e o espalhamento volta a ter `prompt` opcional, que não é o tipo.
+  const previsao = value.prediction
   // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por roteiro inválido
   // e por impulso fora de faixa — então a tela acusava o endereço (um `https://` perfeito)
   // quando o defeito era outro. Apontar o culpado errado com precisão é pior que a parede.
@@ -243,14 +247,19 @@ export function LearningBuilder({
           ) : (
             <p className="rounded-xl bg-muted/40 p-4 text-sm">
               A criança usa os controles da cena. Toque, arraste e teclado levam ao mesmo lugar, e a
-              atividade fecha em: {SCENE_MODELS[cena.scene].goals.map((g) => g.label).join('; ')}.
+              atividade fecha em:{' '}
+              {sceneModelFor(cena)
+                .goals.map((g) => g.label)
+                .join('; ')}
+              .
             </p>
           )}
           <details className="rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-sm font-medium">
-              Áudio e ajustes da cena
+              Elenco, áudio e ajustes da cena
             </summary>
             <div className="mt-3 space-y-3">
+              <SceneCastEditor activity={cena} onChange={activity} />
               {cena.type === 'experimentation' &&
                 (cena.scene === 'gravity' || cena.scene === 'impulse') && (
                   <Field
@@ -347,6 +356,92 @@ export function LearningBuilder({
         <p className="text-sm text-muted-foreground">
           A obrigatoriedade é escolhida nos critérios da seção, no percurso da aula.
         </p>
+      )}
+      {cena && (
+        /* ⭐ A previsão é o padrão mais forte do Brilliant: a criança arrisca um palpite antes
+           de a cena abrir, mexe e descobre sozinha se acertou. ⚠️ Ela NÃO avalia nada — errar
+           faz parte, e reprovar por isso ensinaria a não arriscar. Por isso tem campo próprio
+           e não reusa a pergunta de verificação. */
+        <div className="space-y-3 rounded-xl border border-border p-4">
+          <label className="flex min-h-11 items-center gap-3">
+            <input
+              type="checkbox"
+              checked={Boolean(previsao)}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  prediction: e.target.checked
+                    ? { prompt: '', choices: initialChoices() }
+                    : undefined,
+                })
+              }
+            />
+            Perguntar o que ela acha que vai acontecer, antes de abrir a cena
+          </label>
+          {previsao && (
+            <>
+              <Field
+                label="Pergunta de antes"
+                htmlFor={`${id}-prediction`}
+                // ⚠️ Sem esta linha, uma previsão com a pergunta em branco só aparece lá em cima,
+                // no "Complete os campos da descoberta antes de publicar" — a mesma armadilha da
+                // caixa de pistas, que custou uma sessão para alguém achar.
+                error={
+                  previsao.prompt.trim() ? undefined : 'Escreva a pergunta, ou a aula não publica.'
+                }
+              >
+                <Textarea
+                  id={`${id}-prediction`}
+                  value={previsao.prompt}
+                  onChange={(e) =>
+                    onChange({ ...value, prediction: { ...previsao, prompt: e.target.value } })
+                  }
+                />
+              </Field>
+              <ChoiceFields
+                choices={previsao.choices}
+                onChange={(choices) =>
+                  onChange({
+                    ...value,
+                    prediction: {
+                      ...previsao,
+                      choices,
+                      // O gabarito é OPCIONAL e não vale nota, mas se apontar para uma opção
+                      // apagada o guard do core reprova a publicação.
+                      correctChoiceId: choices.some((c) => c.id === previsao.correctChoiceId)
+                        ? previsao.correctChoiceId
+                        : undefined,
+                    },
+                  })
+                }
+              />
+              <Field label="O que acontece de verdade (opcional)">
+                <Select
+                  aria-label="O que acontece de verdade"
+                  value={previsao.correctChoiceId ?? ''}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      prediction: { ...previsao, correctChoiceId: e.target.value || undefined },
+                    })
+                  }
+                >
+                  <option value="">Não dizer</option>
+                  {previsao.choices.map((choice) => (
+                    <option key={choice.id} value={choice.id}>
+                      {choice.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <p className="text-sm text-muted-foreground">
+                Sem nota: errar aqui não reprova nada, e a criança não vê se acertou. Quem responde
+                a previsão é a cena, quando ela mexer. Marcar a opção certa serve só para o seu
+                acompanhamento.
+              </p>
+            </>
+          )}
+        </div>
       )}
       {!cena && (
         <label className="flex min-h-11 items-center gap-3">

@@ -273,3 +273,59 @@ describe('a criança mexendo na cena', () => {
     expect(submitted.length).toBeGreaterThan(0)
   })
 })
+
+describe('a previsão sobe junto da tentativa', () => {
+  test('⚠️ o palpite viaja nas respostas, e NÃO entra no checkpoint da cena', async () => {
+    // O professor quer saber o que a turma achou que ia acontecer. ⚠️ Isso não cabe no
+    // checkpoint: o checkpoint alimenta o `passed`, e um palpite errado reprovaria a atividade
+    // — exatamente o contrário do que a previsão ensina. Por isso ela viaja em `answers` e o
+    // motor da cena nunca a vê.
+    const { fetchFalso, enviados } = servidorFalso('layers')
+    globalThis.fetch = fetchFalso
+    const comPrevisao: InteractiveBlock = {
+      ...content('layers'),
+      prediction: {
+        prompt: 'Quem aparece na frente: quem foi desenhado antes ou depois?',
+        choices: [
+          { id: 'antes', label: 'Quem foi desenhado antes' },
+          { id: 'depois', label: 'Quem foi desenhado depois' },
+        ],
+      },
+    }
+    render(
+      <LessonPlayerProvider
+        value={{
+          lessonId: 'lesson',
+          courseSlug: 'course',
+          viewerId: 'child-previsao',
+          viewerWatermark: null,
+          initialPositionSeconds: null,
+        }}
+      >
+        <InteractiveLessonBlock block={{ ...block('layers'), content: comPrevisao }} />
+      </LessonPlayerProvider>,
+    )
+    // Antes do palpite a cena está fechada: o botão da montagem é herdeiro do fieldset.
+    const depois = await screen.findByRole('button', { name: 'Depois' })
+    expect(depois.closest('fieldset')?.disabled).toBe(true)
+    fireEvent.click(screen.getByRole('radio', { name: 'Quem foi desenhado antes' }))
+    await waitFor(() => expect(depois.closest('fieldset')?.disabled).toBe(false))
+    fireEvent.click(screen.getByRole('button', { name: 'Depois' }))
+    await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
+      timeout: 5000,
+    })
+    const tentativa = enviados.find((e) => String(e.url).endsWith('/learning-attempts'))
+    const respostas = tentativa?.answers as Record<string, unknown>
+    expect(respostas.prediction).toBe('antes')
+    // ⚠️ E o palpite errado não muda o veredito: a cena registrou a descoberta do mesmo jeito.
+    expect(screen.getByText('Descoberta registrada.')).toBeTruthy()
+    // O segmento que o motor manda continua sem ela (é o que o servidor aplica no checkpoint).
+    for (const enviado of enviados.filter((e) => String(e.url).endsWith('/learning-progress')))
+      expect((enviado.answers as Record<string, unknown>).prediction).toBeUndefined()
+    // E ela sobrevive ao recarregar a aba: o palpite é da sessão, não do render.
+    expect(
+      sessionStorage.getItem('sz:scene-prediction:child-previsao:lesson:discovery:revision'),
+    ).toBe('antes')
+    sessionStorage.clear()
+  })
+})

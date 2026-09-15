@@ -1,7 +1,7 @@
 import type { SceneAction, SceneGroup, SceneId } from './actions'
 
 /**
- * Os 14 modelos de cena: o catálogo ÚNICO do sistema.
+ * Os 24 modelos de cena: o catálogo ÚNICO do sistema.
  *
  * Antes o conteúdo de uma cena estava espalhado por três lugares — `LEARNING_SCENE_DEFINITIONS`
  * (a v1, com controles), `EXPLORATION_DEFINITIONS` (a v2/v3, com metas e dicas) e um segundo
@@ -49,6 +49,405 @@ export interface SceneModel {
 }
 
 export const SCENE_MODELS: Record<SceneId, SceneModel> = {
+  coordinates: {
+    id: 'coordinates',
+    group: 'stage',
+    title: 'O endereço na tela',
+    instruction: 'Mude o x e veja para que lado o Dino vai. Depois mude só o y.',
+    manipulates: 'O x e o y do Dino, na tela de 480 por 270',
+    success:
+      'x maior leva para a direita e y maior leva para baixo. Juntos, os dois são o endereço!',
+    extra: 'E se os dois forem 0? Descubra em que canto da tela isso fica.',
+    goals: [
+      { id: 'right', label: 'x maior leva para a direita' },
+      { id: 'down', label: 'y maior leva para baixo' },
+      { id: 'same-x', label: 'Mesmo x, altura diferente' },
+    ],
+    hints: [
+      'Mexa só no x e olhe para que lado o Dino foi.',
+      'Agora deixe o x parado e aumente o y. Repare que ele não sobe.',
+      'Escolha um x e visite duas alturas diferentes com ele.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'O x diz se o Dino fica mais para a esquerda ou mais para a direita.',
+        highlight: 'scene',
+        actions: [{ type: 'place', x: 300, y: 150 }],
+      },
+      {
+        id: 'step-2',
+        caption: 'O y cresce para BAIXO: quanto maior o y, mais embaixo na tela.',
+        highlight: 'scene',
+        actions: [{ type: 'place', x: 300, y: 240 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'O par x, y é o endereço do sprite. Aqui ele volta para 110 e 150.',
+        highlight: 'scene',
+        actions: [{ type: 'place', x: 110, y: 150 }],
+      },
+    ],
+  },
+  'screen-reader': {
+    id: 'screen-reader',
+    group: 'stage',
+    title: 'O que o leitor de tela lê',
+    instruction: 'Ouça a tela com o campo vazio. Depois escreva a sua descrição e ouça de novo.',
+    manipulates: 'A descrição do jogo e o botão de ouvir a tela',
+    success: 'O desenho não informa nada sozinho. A sua frase é que conta o objetivo e o controle!',
+    extra: 'E se a frase falasse só da tecla? Daria para saber o que fazer no jogo?',
+    goals: [
+      { id: 'heard-empty', label: 'Ouviu a tela sem descrição' },
+      { id: 'says-goal', label: 'A frase diz o que fazer no jogo' },
+      { id: 'says-control', label: 'A frase diz como se joga' },
+    ],
+    hints: [
+      'Aperte Ouvir a tela antes de escrever qualquer coisa.',
+      'O programa não enxerga o desenho: ele lê o que estiver escrito.',
+      'Conte as duas coisas numa frase: o que fazer no jogo e qual tecla usar.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Sem descrição, quem não vê a tela ouve só isto.',
+        highlight: 'scene',
+        actions: [{ type: 'listen' }],
+      },
+      {
+        id: 'step-2',
+        caption: 'Agora a descrição conta o objetivo e o controle.',
+        highlight: 'scene',
+        actions: [
+          { type: 'describe', text: 'Corra com o dino e pule os cactos apertando espaço' },
+          { type: 'listen' },
+        ],
+      },
+    ],
+  },
+  'stage-size': {
+    id: 'stage-size',
+    group: 'stage',
+    title: 'A tela e o limite dela',
+    instruction: 'Mude a largura e a altura. Depois ligue a borda e veja onde a tela acaba.',
+    manipulates: 'Largura e altura da tela, e a moldura que mostra o limite',
+    success: 'A tela tem um limite, e o limite é uma escolha sua!',
+    extra: 'E se a tela ficar quadrada? O que muda para quem joga?',
+    goals: [
+      { id: 'border-on', label: 'A borda mostra onde a tela acaba' },
+      { id: 'resized', label: 'A tela mudou de tamanho junto com os números' },
+      { id: 'target', label: 'Chegou na tela de 480 por 270' },
+    ],
+    hints: [
+      'Ligue a borda: sem ela a cor do fundo cobre tudo e o limite some.',
+      'Mude a largura e veja a moldura acompanhar.',
+      'Deixe 480 de largura e 270 de altura, o tamanho do Corre Dino.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Sem a borda, a cor cobre tudo e não dá para ver onde é a tela.',
+        highlight: 'scene',
+        actions: [{ type: 'border', visible: false }],
+      },
+      {
+        id: 'step-2',
+        caption: 'Com a borda, o retângulo aparece: é ali que o jogo acontece.',
+        highlight: 'scene',
+        actions: [{ type: 'border', visible: true }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Os números mandam no formato. Esta é a tela do Corre Dino.',
+        highlight: 'scene',
+        actions: [{ type: 'stage', width: 480, height: 270 }],
+      },
+    ],
+  },
+  'draw-loop': {
+    id: 'draw-loop',
+    group: 'stage',
+    title: 'Por que o desenho se repete',
+    instruction:
+      'Avance o relógio. Depois ligue o desenho a cada quadro e a limpeza, uma de cada vez.',
+    manipulates: 'Desenhar a cada quadro, limpar antes de desenhar e o relógio',
+    success:
+      'Desenhar de novo a cada quadro é o que faz o jogo se mexer, e limpar antes é o que tira o rastro!',
+    extra: 'E se limpar sem desenhar? O que sobra na tela?',
+    goals: [
+      { id: 'frozen', label: 'Sem repetir o desenho, a tela congela' },
+      { id: 'trail', label: 'Sem limpar, fica rastro' },
+      { id: 'moving', label: 'Com os dois, o Dino se mexe' },
+    ],
+    hints: [
+      'Avance o relógio com tudo desligado e veja se alguma coisa muda.',
+      'Ligue só o desenho a cada quadro. Olhe o que fica para trás.',
+      'Agora ligue também a limpeza e avance de novo.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Com o desenho desligado, o relógio anda e a tela fica parada.',
+        highlight: 'scene',
+        actions: [
+          { type: 'loop', on: false },
+          { type: 'advance', seconds: 1 },
+        ],
+      },
+      {
+        id: 'step-2',
+        caption: 'Desenhando a cada quadro, sem limpar, cada desenho fica na tela.',
+        highlight: 'scene',
+        actions: [
+          { type: 'loop', on: true },
+          { type: 'advance', seconds: 1 },
+        ],
+      },
+      {
+        id: 'step-3',
+        caption: 'Limpando antes de desenhar, sobra um Dino só: o movimento aparece.',
+        highlight: 'scene',
+        actions: [
+          { type: 'erase', on: true },
+          { type: 'advance', seconds: 1 },
+        ],
+      },
+    ],
+  },
+  frames: {
+    id: 'frames',
+    group: 'art',
+    title: 'Dois desenhos viram movimento',
+    instruction:
+      'Veja o quadro 1 e o quadro 2. Depois ligue a troca, deixe o relógio andar e mexa na velocidade.',
+    manipulates: 'Qual quadro aparece, a troca ligada e quantas trocas por segundo',
+    success: 'Cada quadro continua sendo um desenho parado. É a troca rápida que faz o movimento!',
+    extra: 'E se os dois quadros fossem iguais? Ainda pareceria que alguma coisa se mexe?',
+    goals: [
+      { id: 'two-drawings', label: 'São dois desenhos inteiros, um de cada vez' },
+      { id: 'slow-shows-two', label: 'Devagar, dá para ver os dois desenhos' },
+      { id: 'movement', label: 'Rápido, os dois viram movimento' },
+    ],
+    hints: [
+      'Aperte quadro 1 e quadro 2 e olhe o que muda de um para o outro.',
+      'Ligue a troca com 1 troca por segundo, deixe o relógio andar e conte os desenhos.',
+      'Agora deixe em 8 trocas por segundo e olhe de novo.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Cada quadro guarda um desenho inteiro. Este é o quadro 1.',
+        highlight: 'scene',
+        actions: [{ type: 'frame', index: 1 }],
+      },
+      {
+        id: 'step-2',
+        caption: 'E este é o quadro 2. Dois desenhos parados, não um desenho que se mexe.',
+        highlight: 'scene',
+        actions: [{ type: 'frame', index: 2 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Trocando devagar, dá para ver que são dois.',
+        highlight: 'scene',
+        actions: [
+          { type: 'rate', perSecond: 1 },
+          { type: 'play', on: true },
+          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 1 },
+        ],
+      },
+      {
+        id: 'step-4',
+        caption: 'Rápido, o olho junta os dois e vira movimento.',
+        highlight: 'scene',
+        actions: [
+          { type: 'rate', perSecond: 8 },
+          { type: 'advance', seconds: 1 },
+        ],
+      },
+    ],
+  },
+  'onion-skin': {
+    id: 'onion-skin',
+    group: 'art',
+    title: 'O fantasma do quadro de antes',
+    instruction: 'No quadro 2, mova o fogo sem o fantasma. Depois ligue o fantasma e compare.',
+    manipulates: 'O fantasma do quadro anterior e o quanto o desenho do quadro 2 andou',
+    success: 'O fantasma é uma guia, não um desenho: ele deixa você comparar sem decorar!',
+    extra: 'E no quadro 1? Tente ligar o fantasma lá e veja o que aparece.',
+    goals: [
+      { id: 'blind-move', label: 'Mexeu no quadro 2 sem ver o de antes' },
+      { id: 'ghost-on', label: 'O fantasma mostra o quadro anterior por baixo' },
+      { id: 'even-step', label: 'Com o fantasma, o passo entre os dois ficou parelho' },
+    ],
+    hints: [
+      'Vá para o quadro 2 e mova o fogo com o fantasma desligado.',
+      'Agora ligue o fantasma. A imagem fraquinha é o quadro 1.',
+      'Deixe o passo entre 12 e 28 para a troca ficar suave.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'No quadro 2, sem o fantasma, o tamanho do passo é chute.',
+        highlight: 'scene',
+        actions: [
+          { type: 'frame', index: 2 },
+          { type: 'shift', offset: 52 },
+        ],
+      },
+      {
+        id: 'step-2',
+        caption: 'Com o fantasma ligado, o quadro 1 aparece fraquinho por baixo.',
+        highlight: 'scene',
+        actions: [{ type: 'onion', on: true }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Agora dá para escolher o passo olhando os dois juntos.',
+        highlight: 'scene',
+        actions: [{ type: 'shift', offset: 20 }],
+      },
+      {
+        id: 'step-4',
+        caption: 'No quadro 1 não há quadro anterior para mostrar.',
+        highlight: 'scene',
+        actions: [{ type: 'frame', index: 1 }],
+      },
+    ],
+  },
+  symmetry: {
+    id: 'symmetry',
+    group: 'art',
+    title: 'Um traço, dois lados',
+    instruction: 'Pinte com o espelho desligado. Ligue o espelho, pinte de novo e mude o eixo.',
+    manipulates: 'Onde você pinta, o espelho ligado e a linha do eixo',
+    success: 'Um traço só vira dois quando o espelho está ligado, e o eixo decide onde!',
+    extra: 'E se o eixo ficar bem na beirada? Para onde vai o reflexo?',
+    goals: [
+      { id: 'one-side', label: 'Sem espelho, um traço é um traço só' },
+      { id: 'two-sides', label: 'Com o espelho, um traço vira dois' },
+      { id: 'axis-decides', label: 'Mudou o eixo e o reflexo mudou de lugar' },
+    ],
+    hints: [
+      'Pinte uma coluna com o espelho desligado e conte os traços.',
+      'Ligue o espelho e pinte de novo na mesma coluna.',
+      'Mude a linha do eixo para outro lugar e pinte mais uma vez.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Espelho desligado: pintou um traço, apareceu um traço.',
+        highlight: 'scene',
+        actions: [
+          { type: 'mirror', on: false, line: 6 },
+          { type: 'paint', column: 3 },
+        ],
+      },
+      {
+        id: 'step-2',
+        caption: 'Com o espelho, o mesmo traço aparece dos dois lados da linha.',
+        highlight: 'scene',
+        actions: [
+          { type: 'mirror', on: true, line: 6 },
+          { type: 'paint', column: 4 },
+        ],
+      },
+      {
+        id: 'step-3',
+        caption: 'O eixo mudou de lugar, e o reflexo foi junto.',
+        highlight: 'scene',
+        actions: [
+          { type: 'mirror', on: true, line: 9 },
+          { type: 'paint', column: 7 },
+        ],
+      },
+    ],
+  },
+  'pixel-vector': {
+    id: 'pixel-vector',
+    group: 'art',
+    title: 'De perto, a borda conta',
+    instruction: 'Escolha uma pedra e aumente a lupa. Depois olhe a outra do mesmo jeito.',
+    manipulates: 'Qual pedra a lupa mostra e de quão perto',
+    success: 'De longe as duas parecem a mesma pedra. De perto, a borda conta qual é qual!',
+    extra: 'Qual das duas você usaria numa nave bem pequena? E numa bem grande?',
+    goals: [
+      { id: 'stairs', label: 'De perto, o pixel vira escadinha' },
+      { id: 'smooth', label: 'De perto, o vetor continua liso' },
+      { id: 'alike', label: 'De longe, as duas parecem iguais' },
+    ],
+    hints: [
+      'Deixe a lupa na pedra de pixel e aumente até 5.',
+      'Agora troque para a pedra de vetor, com a lupa no mesmo lugar.',
+      'Volte a lupa para 1 e compare as duas de longe.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'De longe, as duas pedras parecem a mesma coisa.',
+        highlight: 'scene',
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 1 }],
+      },
+      {
+        id: 'step-2',
+        caption: 'A pedra de pixel é feita de quadradinhos: de perto a borda vira escadinha.',
+        highlight: 'scene',
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 6 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'A pedra de vetor é feita de curvas: de perto a borda continua lisa.',
+        highlight: 'scene',
+        actions: [{ type: 'inspect', kind: 'vector', zoom: 6 }],
+      },
+      {
+        id: 'step-4',
+        caption: 'Nenhuma das duas é a certa. Cada uma serve para um jeito de desenhar.',
+        highlight: 'scene',
+        actions: [{ type: 'inspect', kind: 'vector', zoom: 1 }],
+      },
+    ],
+  },
+  'sheet-vs-sprite': {
+    id: 'sheet-vs-sprite',
+    group: 'art',
+    title: 'A folha não é o tamanho no jogo',
+    instruction: 'Recorte um pedaço da folha. Depois mude o tamanho no jogo e olhe a folha.',
+    manipulates: 'Qual pedaço da folha está recortado e o tamanho dele dentro do jogo',
+    success: 'A folha guarda os desenhos; o tamanho no jogo é outra escolha, feita depois!',
+    extra: 'E se dois pedaços tivessem tamanhos diferentes na folha? O que aconteceria?',
+    goals: [
+      { id: 'cut', label: 'Cada pedaço da folha é um desenho inteiro' },
+      { id: 'two-cells', label: 'Dois pedaços diferentes, a mesma folha' },
+      { id: 'size-apart', label: 'O tamanho no jogo mudou e a folha ficou igual' },
+    ],
+    hints: [
+      'Escolha um dos quatro pedaços da folha.',
+      'Agora escolha outro pedaço e compare o que aparece no jogo.',
+      'Mexa no tamanho no jogo e olhe a folha: ela não muda.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'A folha tem quatro pedaços, e cada um é um desenho inteiro.',
+        highlight: 'scene',
+        actions: [{ type: 'cut', cell: 1 }],
+      },
+      {
+        id: 'step-2',
+        caption: 'Outro pedaço, outro desenho. A folha continua a mesma.',
+        highlight: 'scene',
+        actions: [{ type: 'cut', cell: 2 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'O tamanho no jogo é escolha de depois: a folha não muda com ele.',
+        highlight: 'scene',
+        actions: [{ type: 'sprite', size: 80 }],
+      },
+    ],
+  },
   world: {
     id: 'world',
     group: 'world',
@@ -488,6 +887,54 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
           { type: 'collide' },
           { type: 'advance', seconds: 1 },
         ],
+      },
+    ],
+  },
+  lives: {
+    id: 'lives',
+    group: 'events',
+    title: 'Ponto e vida mudam por motivos diferentes',
+    instruction: 'Ligue os dois fios. Depois bata no cacto e avance o relógio.',
+    manipulates: 'O fio que soma ponto, o fio que tira vida e as batidas',
+    success: 'Ponto e vida são duas contagens separadas: cada uma muda pelo seu próprio motivo!',
+    extra: 'E se a batida tirasse ponto em vez de vida? O jogo ficaria justo?',
+    goals: [
+      { id: 'life-lost', label: 'A batida tirou uma vida' },
+      { id: 'points-stay', label: 'Os pontos ficaram, mesmo perdendo vida' },
+      { id: 'over', label: 'Sem vidas, a partida acabou' },
+    ],
+    hints: [
+      'Ligue o fio que soma ponto e avance o relógio para o placar subir.',
+      'Agora ligue o fio da vida e bata uma vez. Olhe as duas contagens.',
+      'Bata as três vezes e veja o que acontece quando a última vida sai.',
+    ],
+    script: [
+      {
+        id: 'step-1',
+        caption: 'Com o fio do ponto ligado, o placar sobe sozinho enquanto o Dino está vivo.',
+        highlight: 'scene',
+        actions: [
+          { type: 'connect', port: 'condition', enabled: true },
+          { type: 'advance', seconds: 2 },
+        ],
+      },
+      {
+        id: 'step-2',
+        caption: 'Sem o fio da vida, bater não custa nada.',
+        highlight: 'scene',
+        actions: [{ type: 'collide' }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Com o fio ligado, a mesma batida tira uma vida. E os pontos ficam.',
+        highlight: 'scene',
+        actions: [{ type: 'connect', port: 'life', enabled: true }, { type: 'collide' }],
+      },
+      {
+        id: 'step-4',
+        caption: 'Na última vida, a partida acaba. O placar guarda o que foi feito.',
+        highlight: 'scene',
+        actions: [{ type: 'collide' }, { type: 'collide' }],
       },
     ],
   },

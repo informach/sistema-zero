@@ -9,6 +9,7 @@ import type { SceneStep } from './catalog'
 import { stepScene } from './engine'
 import {
   cloneScene,
+  hydrateSceneState,
   initialScene,
   isSceneState,
   type MatchScreen,
@@ -383,12 +384,17 @@ export function packDemonstration(scene: SceneId, session: DemonstrationSession)
 
 export function readExperimentSession(scene: SceneId, parts: unknown): ExperimentSession | null {
   const raw = parseChunks(parts)
-  if (!isRecord(raw) || raw.scene !== scene || !isSceneState(raw.state)) return null
+  // ⚠️ Hidrata ANTES de validar: retrato gravado antes de a cena ganhar um grupo novo de
+  // estado continua válido, e recusá-lo apagaria o trabalho da criança (ver `hydrateSceneState`).
+  if (!isRecord(raw) || raw.scene !== scene) return null
+  const state = hydrateSceneState(raw.state)
+  if (!isSceneState(state)) return null
   if (!Array.isArray(raw.past) || raw.past.length > SESSION_LIMITS.past) return null
-  if (!raw.past.every(isSceneState)) return null
+  const past = raw.past.map(hydrateSceneState)
+  if (!past.every(isSceneState)) return null
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
   if (!raw.trials.every(isSceneTrial)) return null
-  return { state: raw.state, past: raw.past, trials: raw.trials }
+  return { state, past, trials: raw.trials }
 }
 
 export function readDemonstrationSession(
@@ -396,7 +402,9 @@ export function readDemonstrationSession(
   parts: unknown,
 ): DemonstrationSession | null {
   const raw = parseChunks(parts)
-  if (!isRecord(raw) || raw.scene !== scene || !isSceneState(raw.state)) return null
+  if (!isRecord(raw) || raw.scene !== scene) return null
+  const state = hydrateSceneState(raw.state)
+  if (!isSceneState(state)) return null
   const { step, action, elapsed, ready, viewed, before } = raw
   if (!Number.isInteger(step) || (step as number) < 0 || (step as number) >= SCRIPT_STEPS)
     return null
@@ -406,7 +414,7 @@ export function readDemonstrationSession(
   if (typeof ready !== 'boolean' || typeof viewed !== 'boolean') return null
   if (before !== undefined && !isSceneTrial(before)) return null
   return {
-    state: raw.state,
+    state,
     step: step as number,
     action: action as number,
     elapsed,

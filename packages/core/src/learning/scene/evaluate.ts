@@ -1,5 +1,6 @@
 import type { LearningResult } from '../index'
 import type { SceneId } from './actions'
+import { castText, type SceneCast } from './cast'
 import { sceneModel } from './catalog'
 import type { SceneState } from './state'
 
@@ -16,9 +17,15 @@ export interface SceneGoalProgress {
   complete: boolean
 }
 
-export function sceneGoals(scene: SceneId, state: SceneState): SceneGoalProgress[] {
+export function sceneGoals(
+  scene: SceneId,
+  state: SceneState,
+  /** Quem está no palco. Sem elenco, o texto do catálogo vale como está. */
+  cast?: SceneCast,
+): SceneGoalProgress[] {
   return sceneModel(scene).goals.map((g) => ({
     ...g,
+    label: castText(g.label, cast),
     complete: state.evidence.discoveries.includes(g.id),
   }))
 }
@@ -39,8 +46,9 @@ export function evaluateExperimentation(
   scene: SceneId,
   state: SceneState,
   valid = true,
+  cast?: SceneCast,
 ): LearningResult {
-  const missing = sceneGoals(scene, state).find((g) => !g.complete)
+  const missing = sceneGoals(scene, state, cast).find((g) => !g.complete)
   const ready = settled(scene, state)
   return {
     participated: valid && state.evidence.actions > 0,
@@ -82,12 +90,22 @@ export function evaluateDemonstration(
  * atalho quando o estado já diz em que ponto a criança travou — mandá-la reler a mesma frase
  * genérica ali seria não responder.
  */
-export function sceneHint(scene: SceneId, state: SceneState, level: number): string {
+export function sceneHint(
+  scene: SceneId,
+  state: SceneState,
+  level: number,
+  cast?: SceneCast,
+): string {
   const d = state.evidence.discoveries
+  // ⚠️ Os atalhos também passam pelo elenco: eles citam o cacto e o Dino pelo nome, e uma
+  // pista que fala de outro personagem é pior que pista nenhuma.
   if (scene === 'hitbox' && level < 3)
-    return d.includes('contact')
-      ? 'Guarde a posição do cacto. Mude só a largura da área e compare.'
-      : 'Aproxime o cacto devagar. Observe a borda da área do Dino.'
+    return castText(
+      d.includes('contact')
+        ? 'Guarde a posição do cacto. Mude só a largura da área e compare.'
+        : 'Aproxime o cacto devagar. Observe a borda da área do Dino.',
+      cast,
+    )
   if (scene === 'jump-sound' && level < 3)
     return state.sound.onJump
       ? 'Tente pular outra vez enquanto está no ar. Depois experimente o toque.'
@@ -95,5 +113,5 @@ export function sceneHint(scene: SceneId, state: SceneState, level: number): str
   if (scene === 'impulse' && d.includes('first-height') && level < 3)
     return 'Guarde este salto, mude o impulso e repita. A gravidade permanece igual.'
   const hints = sceneModel(scene).hints
-  return hints[level <= 1 ? 0 : level === 2 ? 1 : 2]
+  return castText(hints[level <= 1 ? 0 : level === 2 ? 1 : 2] ?? '', cast)
 }

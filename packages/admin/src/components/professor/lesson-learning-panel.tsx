@@ -9,10 +9,10 @@ import {
   evaluateExperimentation,
   readDemonstrationSession,
   readExperimentSession,
-  SCENE_MODELS,
   type SceneId,
   type SceneState,
   sceneGoals,
+  sceneModelFor,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { useEffect, useState } from 'react'
@@ -23,6 +23,38 @@ import { LessonEvidenceHistory } from './lesson-evidence-history'
 function montagem(scene: SceneId, state: SceneState): string {
   const tela = { start: 'início', playing: 'partida', end: 'fim' }[state.match.screen]
   switch (scene) {
+    case 'coordinates':
+      return `Dino em x ${state.place.x}, y ${state.place.y}`
+    case 'screen-reader':
+      return state.description.text
+        ? `descrição escrita: "${state.description.text}"`
+        : 'descrição ainda vazia'
+    case 'stage-size':
+      return `tela de ${state.stage.width} por ${state.stage.height}; borda ${state.stage.border ? 'à vista' : 'escondida'}`
+    case 'draw-loop':
+      return `desenho a cada quadro ${state.render.loop ? 'ligado' : 'desligado'}; limpeza ${state.render.erase ? 'ligada' : 'desligada'}`
+    case 'frames':
+      return `quadro ${state.animation.frame} de 2; troca ${
+        state.animation.playing ? `andando a ${state.animation.rate} por segundo` : 'parada'
+      }; ${state.animation.swaps} trocas até agora`
+    case 'onion-skin':
+      return `quadro ${state.animation.frame} de 2; fantasma ${
+        state.animation.onion ? 'ligado' : 'desligado'
+      }; passo do quadro 2 em ${state.animation.shift}`
+    case 'symmetry':
+      return `espelho ${state.mirror.on ? `ligado na linha ${state.mirror.line}` : 'desligado'}; ${
+        state.mirror.painted.length
+      } traços no papel`
+    case 'pixel-vector':
+      return `lupa de ${state.pixels.zoom} sobre a pedra de ${
+        state.pixels.kind === 'pixel' ? 'pixel' : 'vetor'
+      }`
+    case 'sheet-vs-sprite':
+      return `pedaço ${state.sheet.cell} de 4 recortado; ${state.sheet.size} de tamanho no jogo`
+    case 'lives':
+      return `${state.lifeline.lives} vidas e ${state.lifeline.points} pontos; ${
+        state.lifeline.hits
+      } batidas; fio da vida ${state.lifeline.onHit ? 'ligado' : 'desligado'}`
     case 'world':
       return `Dino ${state.world.created ? 'criado' : 'ausente'}; desenho ${state.world.drawn ? 'ligado' : 'desligado'}`
     case 'layers':
@@ -55,19 +87,35 @@ function montagem(scene: SceneId, state: SceneState): string {
   }
 }
 
+/**
+ * O palpite de antes, quando a atividade pediu um.
+ *
+ * ⚠️ Sem "acertou/errou": a projeção pública tira o `correctChoiceId` do bloco, e é
+ * deliberado — a previsão não vale nota. O que o professor precisa ver é o que a turma achou
+ * que ia acontecer, que é onde mora a ideia anterior de cada criança.
+ */
+function predictionLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
+  if (typeof answers.prediction !== 'string') return []
+  const escolha = content?.prediction?.choices.find((c) => c.id === answers.prediction)
+  return [`Palpite antes de mexer: ${escolha?.label ?? answers.prediction}`]
+}
+
 function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   const activity = content?.activity
+  const previsao = predictionLines(answers, content)
 
   if (activity?.type === 'demonstration') {
     const session = readDemonstrationSession(activity.scene, answers.sceneCheckpoint)
     if (!session)
       return [
+        ...previsao,
         answers.sceneCheckpoint === undefined
           ? 'A criança ainda não abriu esta demonstração.'
           : 'Registro guardado não confere com esta cena. Não foi reinterpretado.',
       ]
     return [
-      `Demonstração: ${SCENE_MODELS[activity.scene].title}`,
+      ...previsao,
+      `Demonstração: ${sceneModelFor(activity).title}`,
       session.viewed ? 'Roteiro acompanhado até o fim.' : 'Roteiro ainda não concluído.',
       'A evidência registra o acompanhamento. A experimentação, quando existe, é avaliada em outro bloco.',
     ]
@@ -77,14 +125,18 @@ function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock)
     const session = readExperimentSession(activity.scene, answers.sceneCheckpoint)
     if (!session)
       return [
+        ...previsao,
         answers.sceneCheckpoint === undefined
           ? 'A criança ainda não abriu esta experimentação.'
           : 'Registro guardado não confere com esta cena. Não foi reinterpretado.',
       ]
     const state = session.state
     return [
-      `Cena: ${SCENE_MODELS[activity.scene].title}`,
-      ...sceneGoals(activity.scene, state).map(
+      ...previsao,
+      // O acompanhamento do professor lê a cena com o ELENCO da atividade: ele precisa ver
+      // os mesmos nomes que a criança viu, senão o relatório fala de outro personagem.
+      `Cena: ${sceneModelFor(activity).title}`,
+      ...sceneGoals(activity.scene, state, activity.cast).map(
         (g) => `${g.complete ? 'Descobriu' : 'Pendente'}: ${g.label}`,
       ),
       ...state.evidence.observations
@@ -93,12 +145,12 @@ function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock)
       `Montagem atual: ${montagem(activity.scene, state)}`,
       `Pistas utilizadas: ${state.evidence.hints}`,
       `Comparações guardadas: ${session.trials.length}`,
-      evaluateExperimentation(activity.scene, state).feedback,
+      evaluateExperimentation(activity.scene, state, true, activity.cast).feedback,
       'A cena registra o que ela fez ali. A transferência se observa no projeto e nos critérios da seção.',
     ].filter(Boolean)
   }
 
-  const lines: string[] = []
+  const lines: string[] = [...previsao]
   if (typeof answers.checkpoint === 'string')
     lines.push(
       `Conclusão: ${content?.checkpoint?.choices.find((c) => c.id === answers.checkpoint)?.label ?? answers.checkpoint}`,

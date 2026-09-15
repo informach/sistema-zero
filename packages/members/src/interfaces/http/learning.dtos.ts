@@ -68,8 +68,76 @@ const SceneActionSchema = t.Union([
     type: t.Literal('hint'),
     level: t.Number({ minimum: L.hint.min, maximum: L.hint.max }),
   }),
+  // As duas cenas de 14/09/2026. ⚠️ Os limites vêm do core (`SCENE_LIMITS`), nunca reescritos
+  // aqui: já houve três cópias desta regra e elas divergiram.
+  t.Object({
+    type: t.Literal('place'),
+    x: t.Integer({ minimum: L.placeX.min, maximum: L.placeX.max }),
+    y: t.Integer({ minimum: L.placeY.min, maximum: L.placeY.max }),
+  }),
+  t.Object({ type: t.Literal('describe'), text: t.String({ maxLength: L.describe.max }) }),
+  t.Object({ type: t.Literal('listen') }),
+  t.Object({
+    type: t.Literal('stage'),
+    width: t.Integer({ minimum: L.stageWidth.min, maximum: L.stageWidth.max }),
+    height: t.Integer({ minimum: L.stageHeight.min, maximum: L.stageHeight.max }),
+  }),
+  t.Object({ type: t.Literal('border'), visible: t.Boolean() }),
+  t.Object({ type: t.Literal('loop'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('erase'), on: t.Boolean() }),
+  // As seis cenas do lote 4 (desenho e vidas). Mesma regra: faixa do core, nunca literal aqui.
+  t.Object({ type: t.Literal('frame'), index: t.Union([t.Literal(1), t.Literal(2)]) }),
+  t.Object({ type: t.Literal('play'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('rate'),
+    perSecond: t.Number({ minimum: L.rate.min, maximum: L.rate.max }),
+  }),
+  t.Object({ type: t.Literal('onion'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('shift'),
+    offset: t.Integer({ minimum: L.shift.min, maximum: L.shift.max }),
+  }),
+  t.Object({
+    type: t.Literal('paint'),
+    column: t.Integer({ minimum: L.column.min, maximum: L.column.max }),
+  }),
+  t.Object({
+    type: t.Literal('mirror'),
+    on: t.Boolean(),
+    line: t.Integer({ minimum: L.mirrorLine.min, maximum: L.mirrorLine.max }),
+  }),
+  t.Object({
+    type: t.Literal('inspect'),
+    kind: t.Union([t.Literal('pixel'), t.Literal('vector')]),
+    zoom: t.Integer({ minimum: L.zoom.min, maximum: L.zoom.max }),
+  }),
+  t.Object({
+    type: t.Literal('cut'),
+    cell: t.Integer({ minimum: L.cell.min, maximum: L.cell.max }),
+  }),
+  t.Object({
+    type: t.Literal('sprite'),
+    size: t.Integer({ minimum: L.sprite.min, maximum: L.sprite.max }),
+  }),
 ])
 const SceneId = t.Union(SCENE_IDS.map((id) => t.Literal(id)))
+/**
+ * Quem está no palco: a mesma cena servindo outro curso.
+ *
+ * ⚠️ O nome é TEXTO que a criança lê dentro da frase da cena, então ele é limitado aqui e
+ * conferido de novo pelo `isSceneCast` do core na hora de publicar. O gênero não é enfeite: é
+ * ele que decide o artigo em português.
+ */
+const SceneActorSchema = t.Object({
+  name: t.String({ minLength: 1, maxLength: 24 }),
+  gender: t.Union([t.Literal('m'), t.Literal('f')]),
+  plural: t.Optional(t.String({ maxLength: 28 })),
+})
+const SceneCastSchema = t.Object({
+  hero: t.Optional(SceneActorSchema),
+  obstacle: t.Optional(SceneActorSchema),
+  scenery: t.Optional(SceneActorSchema),
+})
 const SceneScriptSchema = t.Array(
   t.Object({
     id: t.String({ minLength: 1, maxLength: 80 }),
@@ -107,12 +175,14 @@ export const InteractiveBlockSchema = t.Object({
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
       /** Sem roteiro próprio, vale o do modelo da cena. */
       script: t.Optional(SceneScriptSchema),
+      cast: t.Optional(SceneCastSchema),
     }),
     t.Object({
       type: t.Literal('experimentation'),
       scene: SceneId,
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
+      cast: t.Optional(SceneCastSchema),
     }),
     t.Object({ type: t.Literal('question') }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
@@ -123,6 +193,17 @@ export const InteractiveBlockSchema = t.Object({
       choices: Choices,
       correctChoiceId: t.String({ maxLength: 80 }),
       explanation: t.String({ minLength: 1, maxLength: 5000 }),
+    }),
+  ),
+  /**
+   * A pergunta de ANTES de mexer. ⚠️ O gabarito é opcional e não avalia nada: previsão errada
+   * é caminho de aprendizado, e reprovar por ela ensinaria a criança a não arriscar.
+   */
+  prediction: t.Optional(
+    t.Object({
+      prompt: t.String({ minLength: 1, maxLength: 5000 }),
+      choices: Choices,
+      correctChoiceId: t.Optional(t.String({ maxLength: 80 })),
     }),
   ),
 })

@@ -53,6 +53,18 @@ function sessaoCompleta() {
   s = stepExperiment(start, s, { type: 'connect', port: 'draw', enabled: true }).session
   return packExperiment('world', s)
 }
+/** O que o servidor guardaria de quem assistiu ao roteiro de `world` até o fim. */
+function demonstracaoVista() {
+  const start = { scene: 'world' } as const
+  const script = sceneModel('world').script
+  let s = stepDemonstration(start, script, initialDemonstration(start), { type: 'start' }).session
+  for (let i = 0; i < 600 && !s.viewed; i++) {
+    s = stepDemonstration(start, script, s, { type: 'tick', seconds: 0.1 }).session
+    if (s.ready && s.step < script.length - 1)
+      s = stepDemonstration(start, script, s, { type: 'next' }).session
+  }
+  return packDemonstration('world', s)
+}
 describe('learning contracts', () => {
   test('⚠️ uma cena não aceita pergunta anexa', () => {
     // `answers.checkpoint` seria a alternativa escolhida E os pedaços da sessão ao mesmo
@@ -450,6 +462,71 @@ describe('os blocos do modelo anterior', () => {
       { type: 'experiment', variable: 'x' },
     ])
       expect(isInteractiveBlock({ ...base, activity }), activity.type).toBe(false)
+  })
+
+  test('⚠️⚠️ a PREVISÃO nunca muda o veredito, em nenhum dos quatro tipos', () => {
+    // É a razão de ela ser campo PRÓPRIO e não a pergunta de verificação: o palpite de antes não
+    // vale nota. Se um dia o avaliador olhar para `answers.prediction`, errar o palpite passa a
+    // reprovar a atividade — e a cena estaria ensinando a criança a não arriscar.
+    const previsao = {
+      prompt: 'O que você acha que vai acontecer?',
+      choices: [
+        { id: 'certa', label: 'Uma coisa' },
+        { id: 'errada', label: 'Outra coisa' },
+      ],
+      correctChoiceId: 'certa',
+    }
+    const casos: Array<{ bloco: InteractiveBlock; respostas: LearningAnswers }> = [
+      {
+        bloco: { ...experimento, prediction: previsao },
+        respostas: { sceneCheckpoint: sessaoCompleta() },
+      },
+      {
+        bloco: {
+          ...experimento,
+          activity: { type: 'demonstration', scene: 'world' },
+          prediction: previsao,
+        },
+        respostas: { sceneCheckpoint: demonstracaoVista() },
+      },
+      {
+        bloco: {
+          ...experimento,
+          activity: { type: 'question' },
+          prediction: previsao,
+          checkpoint: {
+            prompt: 'E agora?',
+            choices: [
+              { id: 'a', label: 'Uma' },
+              { id: 'b', label: 'Outra' },
+            ],
+            correctChoiceId: 'a',
+            explanation: 'Porque sim.',
+          },
+        },
+        respostas: { checkpoint: 'a' },
+      },
+      {
+        bloco: {
+          ...experimento,
+          // ⚠️ `required: false` aqui não é detalhe: experiência em HTML essencial EXIGE pergunta
+          // de verificação (a participação é autodeclarada pelo iframe), e o guard recusa sem ela.
+          required: false,
+          activity: { type: 'html', html: '<p>oi</p>' },
+          prediction: previsao,
+        },
+        respostas: { participated: true },
+      },
+    ]
+    for (const { bloco, respostas } of casos) {
+      expect(isInteractiveBlock(bloco), bloco.activity.type).toBe(true)
+      const semPalpite = evaluateLearning(bloco, respostas)
+      expect(semPalpite.passed, bloco.activity.type).toBe(true)
+      for (const palpite of ['certa', 'errada', 'inventado']) {
+        const r = evaluateLearning(bloco, { ...respostas, prediction: palpite })
+        expect(r, `${bloco.activity.type} com palpite ${palpite}`).toEqual(semPalpite)
+      }
+    }
   })
 
   test('exploração vira a cena de mesmo nome, e o modo escolhe entre as duas irmãs', () => {

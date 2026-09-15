@@ -1,5 +1,95 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## As cenas depois do estudo do Brilliant — 14/09/2026
+
+Sete ajustes de desenho nas cenas, mais duas cenas novas e o elenco por curso. O levantamento
+que motivou tudo (282 seções dos três cursos v6, 25 com algo para mexer, 47 demonstrações sem
+demonstração) e o estudo do Brilliant estão em `docs/aulas-interativas/proposta-experiencias.md`.
+
+⭐⭐ **A faixa de estado** (`sceneReadout`, no core) fica acima do palco com os valores vivos e
+nomeados: `x 110 · y 150`, `distância do cacto 140`, `pontos 3`. Era o elo que faltava entre o
+número que a criança digita no bloco do Estúdio e o desenho que ela vê mudar. ⚠️ Ela é
+`aria-hidden`: a mesma informação está na frase abaixo do palco, e sem isso o leitor de tela
+anunciaria os três pares a cada ponto do controle deslizante.
+
+⭐⭐ **A pista parou de apagar a instrução.** As duas dividiam o mesmo balão, então pedir ajuda
+tirava da tela o enunciado — e quem pede ajuda é justamente quem vai relê-lo. Hoje a instrução
+fica e a pista entra abaixo, com o degrau à vista (`Pista 1 de 3`).
+
+⭐ **"Siga a missão e observe o resultado" MORREU.** Era a mesma frase nas catorze cenas e em
+todo estado, e aparecia sempre que o motor não tivesse escrito um `caption` para aquela ação —
+o caso comum. `sceneSituation` (core) mantém o acontecimento do motor na frente e, sem ele,
+descreve o que está na tela agora. ⚠️ Cena nova precisa de um caso lá, ou volta o genérico.
+
+- **Rodapé com UMA ação principal:** Desfazer, Recomeçar, Ligar som e Ouvir instrução viraram
+  ferramentas discretas à esquerda; "Uma pista" é a única com destaque, à direita. ⚠️ Os NOMES
+  acessíveis não mudaram (são o contrato dos testes e de quem usa leitor de tela) — mudou o peso.
+- **Uma variável por vez:** na `hitbox` a largura da área nasce fechada e abre com a primeira
+  descoberta sobre distância. Fechado NÃO é escondido: o controle fica na tela com o motivo.
+- **Selo do palco em língua de criança:** "OBSERVATÓRIO DE CONTATO" e "SEU LABORATÓRIO DINO"
+  viraram "Onde a batida acontece" e irmãos (`STAGE_LABEL` no `exploration-stage.tsx`). As telas
+  do jogo (INÍCIO/JOGANDO/FIM) seguem em caixa alta: são o rótulo do jogo, não jargão nosso.
+- **A cena segue o tema** (`styles/scene.css`): céu, chão, grade e linha derivam do `--primary`
+  por `color-mix` (⚠️ `in oklab`, nunca `oklch`). O par de comparação (A azul, B laranja) e o
+  vermelho do encosto ficam FIXOS: eles dizem QUAL medida é qual, não são decoração.
+
+⭐⭐ **Duas cenas novas, as que a Aula 1 do Corre Dino pedia** (`components/scene-stages.tsx`,
+palco próprio porque nenhuma delas é sobre o mundo do jogo):
+- **`coordinates`** — x e y com deslizante, passo de 20 e teclado, sobre a tela de 480 × 270 com
+  régua nos dois eixos, origem marcada no canto de cima, guias até cada eixo e o fantasma da
+  posição anterior. ⚠️ A descoberta é por EIXO: mexer nos dois ao mesmo tempo não registra nada.
+- **`screen-reader`** — o que aparece contra o que a pessoa ouve, com o campo da descrição. O
+  reconhecimento de objetivo e controle é por palavra e serve para orientar; quem confere é o
+  servidor, como nas outras cenas.
+
+⭐ **Elenco por curso** (`cast` na atividade; régua em `core/learning/scene/cast.ts`): as seis
+cenas que ensinam conceito repetido passam a servir o Desafio e o Meu Jeito trocando só os NOMES.
+⚠️ Em português isso exige artigo, contração e plural — "Faça o Dino aparecer" vira "Faça a nave
+aparecer", e `do cacto` vira `da pedra`. Título e instrução são do PROFESSOR e não são vestidos;
+o elenco veste o que a plataforma gera (metas, pistas, faixa, frase, roteiro e sucesso).
+
+⚠️⚠️ **E veste também o que o PLAYER escreve à mão** (achado do full review): o selo do palco
+(`STAGE_LABEL`), a `<desc>` do SVG, os `aria-label` das alças, os nomes dos fios da bancada
+(o helper `connection` já aplica), as peças da ordem de desenho e os rótulos dos controles
+(`Distância do cacto`, `Largura da área do Dino`, `Bater no cacto`). Sem isso a criança de uma
+turma de nave lia "distância do asteroide" na faixa e "Distância do cacto" no controle logo
+abaixo, na mesma tela. ⚠️ Texto novo no player precisa SOBREVIVER à troca: a régua só flexiona o
+que está COLADO ao nome, então "o Dino continua guardado" viraria "a nave continua guardado" —
+foi reescrito para "continua nos bastidores". A varredura que cobra isso é o
+`describe('o elenco veste a cena INTEIRA')` do `community-kids/tests/lesson-scene-design.test.tsx`.
+
+## As cenas do lote 4: desenho e vidas (14/09/2026)
+
+Seis cenas novas, **14 → 24**, em `components/scene-art-stages.tsx` (palco próprio, como as da
+tela): O Jogo do Meu Jeito não tinha UMA cena nativa e o Desafio não tinha a das vidas.
+
+- **`frames`** — os dois quadros, a troca e a velocidade dela. ⚠️ Trocar de quadro NA MÃO só conta
+  como descoberta com a troca PARADA: com ela andando, quem trocou foi o relógio.
+- **`onion-skin`** — o fantasma do quadro anterior. ⚠️ No quadro 1 não há anterior, e a cena DIZ
+  isso (é a frase do roteiro do Pinta); o passo do quadro 2 fica fechado lá, com o motivo escrito.
+- **`symmetry`** — o traço, o espelho e a linha do eixo. O reflexo pode cair FORA do papel: é a
+  resposta à pergunta do "e se", não um erro a esconder.
+- **`pixel-vector`** — as duas pedras lado a lado e a lupa. "De longe parecem iguais" só conta
+  DEPOIS de ver as duas de perto.
+- **`sheet-vs-sprite`** — a folha e o jogo lado a lado. A folha NUNCA muda de tamanho: é a
+  permanência dela que ensina a cena.
+- **`lives`** — as duas contagens. "Os pontos ficaram" exige ponto para perder.
+
+⭐⭐ **A previsão antes de mexer** (`block.prediction`): uma pergunta de duas opções ANTES de o
+palco abrir, o padrão mais forte do Brilliant. ⚠️ Ela NÃO é o `checkpoint`: aquele alimenta o
+`passed`, e um palpite errado reprovaria a criança. Não vale nota, fica no `sessionStorage` por
+bloco e sobe em `answers.prediction` junto da tentativa. ⚠️ O gate trava o PALCO (fieldset de
+dentro), nunca o rodapé: "Ouvir instrução" e "Ligar som" ficam de fora, senão quem ainda não lê
+fica sem saída diante de uma pergunta escrita.
+
+⚠️ **Quem tem relógio é a régua do core, não uma lista aqui.** Os controles de tempo aparecem
+quando `isSceneAction({type:'advance'}, cena)` aceita — a lista à mão anterior já tinha deixado
+`stage-size` com um "Um passo" que não fazia nada, e toda cena nova teria que lembrar de entrar
+nela.
+
+Testes: `core/src/learning/scene/{cast,readout,lesson-one,art-scenes,legacy-checkpoint}.test.ts` e
+`community-kids/tests/lesson-scene-design.test.tsx`.
+
 ## Ajuda e objetivos de seção — 11/09/2026
 
 `section-help` aceita `requestId` UUID: o player mantém a chave ao repetir o mesmo pedido após falha

@@ -10,6 +10,8 @@ import {
 import { useId } from 'react'
 
 const GRUPOS: Record<SceneGroup, string> = {
+  stage: 'A tela e quem a lê',
+  art: 'Desenho e animação',
   world: 'Mundo e desenho',
   motion: 'Movimento',
   events: 'Eventos e estados',

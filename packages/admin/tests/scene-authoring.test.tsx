@@ -14,7 +14,7 @@ const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { SceneAuthoring } = await import('../src/components/editor/scene-authoring')
 
-test('as 14 cenas abrem o roteiro em campos, sem JSON, e uma edição não derruba as outras etapas', async () => {
+test('o roteiro abre em campos, sem JSON, e uma edição não derruba as outras etapas', async () => {
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)

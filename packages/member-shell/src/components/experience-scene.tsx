@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  castText,
   initialScene,
   type SceneActivity,
   type SceneState,
@@ -71,15 +72,12 @@ export function ExperienceScene({
       <rect x="24" y="24" width="592" height="276" fill={`url(#${id}-grid)`} />
       <path className="stroke-scene-ink-soft" d="M24 301H616" strokeWidth="2" />
       <path className="stroke-scene-grid" d="M24 313H616" strokeWidth="9" strokeDasharray="2 9" />
-      <text
-        className="fill-scene-ink-soft"
-        x="32"
-        y="44"
-        fontSize="12"
-        fontWeight="700"
-        letterSpacing="2"
-      >
-        {hitbox ? 'OBSERVATÓRIO DE CONTATO' : 'OBSERVATÓRIO DO SALTO'}
+      {/* ⚠️ Era "OBSERVATÓRIO DE CONTATO" / "OBSERVATÓRIO DO SALTO", em caixa alta e com
+          entreletra — vocabulário de adulto no alto do palco de quem tem 9 anos. O selo diz o
+          que este lugar MOSTRA, na língua da criança, e sem repetir o título do bloco (que o
+          professor escreve e já aparece acima). */}
+      <text className="fill-scene-ink-soft" x="32" y="44" fontSize="13" fontWeight="700">
+        {hitbox ? 'Onde a batida acontece' : 'A altura do salto'}
       </text>
       {!hitbox && (
         <>
@@ -116,7 +114,7 @@ export function ExperienceScene({
             style={{ cursor: onJump ? 'pointer' : undefined }}
             role={onJump ? 'button' : undefined}
             tabIndex={onJump ? 0 : undefined}
-            aria-label={onJump ? 'Pular com o Dino' : undefined}
+            aria-label={onJump ? castText('Pular com o Dino', activity.cast) : undefined}
             onClick={() => onJump?.('tap')}
             onKeyDown={(e) => {
               if (onJump && (e.code === 'Space' || e.code === 'Enter')) {
@@ -287,7 +285,7 @@ export function ExperienceScene({
           <text className="fill-scene-ink-soft" x="320" y="340" textAnchor="middle" fontSize="13">
             {compact || !onDistance
               ? `Distância ${distance} · largura ${state.contact.width}`
-              : 'Arraste o cacto. Ou use o controle de distância abaixo.'}
+              : castText('Arraste o cacto. Ou use o controle de distância abaixo.', activity.cast)}
           </text>
         </>
       )}

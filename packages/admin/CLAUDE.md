@@ -25,7 +25,15 @@ um interruptor de modo escondido dentro dele; agora são irmãs, e trocar entre 
 escolhida. Saíram `simulation`, `prediction`, `comparison`, `sequence` e `experiment` (nenhum
 tinha uso no conteúdo real) e sumiram os seletores de versão e de modo.
 
-- **A cena sai de uma grade de cartões** (`editor/scene-picker.tsx`), agrupada pelas seis famílias,
+- ⭐ **A previsão antes de mexer** (14/09/2026): caixa "Perguntar o que ela acha que vai
+  acontecer, antes de abrir a cena", só nos dois tipos de CENA. Pergunta + alternativas + um
+  gabarito OPCIONAL ("O que acontece de verdade"). ⚠️ Não vale nota e a criança não vê se
+  acertou — quem responde é a cena. Por isso NÃO reusa a pergunta de verificação, que alimenta o
+  `passed`: reprovar um palpite ensinaria a não arriscar. O campo da pergunta mostra o erro NELE
+  quando fica vazio (o recado lá de cima é o genérico "complete os campos da descoberta", a mesma
+  armadilha da caixa de pistas).
+- **A cena sai de uma grade de cartões** (`editor/scene-picker.tsx`), agrupada pelas **oito**
+  famílias (entraram `A tela e quem a lê` e `Desenho e animação`),
   com o que a criança **pode mexer** e o que **fecha** a cena à vista. Esses dados já existiam e só
   apareciam DEPOIS da escolha, num resumo embaixo.
 - **O roteiro da demonstração** (`editor/scene-authoring.tsx`) é lista de etapas com fala, destaque
