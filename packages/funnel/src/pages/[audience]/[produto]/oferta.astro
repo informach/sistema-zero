@@ -9,6 +9,7 @@ import { getActiveOffer, type OfferPlans } from '../../../server/catalog'
 import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
+import { checkOfferContract } from '../../../server/offer-contract'
 
 // SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
 // por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
@@ -23,6 +24,17 @@ const { env, gateway, log } = getDeps()
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
 const offerSlug = resolveOfferSlug(env, f.key)
 const offer = await getActiveOffer(gateway, offerSlug, { log })
+const contractCheck = checkOfferContract(f.offerContract, offer)
+if (!contractCheck.ok) {
+  log('offer.contract_mismatch', {
+    funnel: f.key,
+    offerSlug,
+    reason: contractCheck.reason,
+    expected: contractCheck.expected,
+    actual: contractCheck.actual,
+  })
+  return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+}
 const productName = offer?.productName || f.productName
 // QR/link de evento aceita `?cupom=` e o alias `?coupon=`. O desconto exibido
 // existe somente depois de uma cotação autoritativa no catálogo. A própria

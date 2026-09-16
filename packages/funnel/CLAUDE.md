@@ -620,6 +620,13 @@ real do snapshot. A rota interna `POST /api/internal/challenge-events` exige
 em batch. O Members envia ativação, início, Dia 1 e conclusão; a compra da Comunidade só é atribuída
 quando existe uma jornada anterior do Desafio para o mesmo responsável.
 
+**Trava copy × oferta:** `FunnelDef.offerContract` torna uma promessa rígida da página verificável
+em runtime. O Desafio declara `one_time/fixed/30/days`; `/oferta`, `/checkout` e os quatro caminhos
+de cobrança falham fechados com 503/`OFFER_CONTRACT_MISMATCH` se a env apontar para outra política
+ou se o catálogo não puder comprová-la. A view é conferida para apresentação e a cotação
+autoritativa é conferida novamente antes de criar a cobrança, fechando também a corrida de cache.
+O preço permanece dinâmico no catálogo; só a política prometida pela copy é rígida.
+
 Colunas de controle pós-pagamento no lead (2º full review 06/2026): `welcome_sent_at` (claim
 atômico do welcome — ver "Boas-vindas") e `members_granted_at` (one-shot da concessão);
 `lead_payments.coupon_code` (cupom POR cobrança — fonte do redeem). Índice composto

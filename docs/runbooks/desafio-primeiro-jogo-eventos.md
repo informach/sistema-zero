@@ -4,6 +4,9 @@ Este é o procedimento operacional para palestras em escolas, clínicas e evento
 uma única oferta pública de **R$ 67 com 30 dias de acesso** e um **cupom de R$ 30** para os presentes,
 levando o total a **R$ 37**. A oferta vitalícia histórica permanece cadastrada e não é alterada.
 
+Antes da primeira campanha em um ambiente, execute o runbook de
+[homologação, virada e rollback](desafio-primeiro-jogo-virada.md).
+
 ## Contratos que não podem ser quebrados
 
 | Item | Contrato |

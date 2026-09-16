@@ -19,6 +19,7 @@ import { getActiveOffer } from '../../../server/catalog'
 import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
+import { checkOfferContract } from '../../../server/offer-contract'
 
 export const prerender = false
 
@@ -104,6 +105,17 @@ const initialContact = {
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
 const offerSlug = resolveOfferSlug(env, f.key)
 const offer = await getActiveOffer(gateway, offerSlug, { log })
+const contractCheck = checkOfferContract(f.offerContract, offer)
+if (!contractCheck.ok) {
+  log('checkout.offer_contract_mismatch', {
+    funnel: f.key,
+    offerSlug,
+    reason: contractCheck.reason,
+    expected: contractCheck.expected,
+    actual: contractCheck.actual,
+  })
+  return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+}
 const initialCoupon = await resolveCouponPresentation(gateway, offerSlug, sp)
 // Uma cotação válida é mais nova e mais autoritativa que o cache curto da view.
 const priceCents =

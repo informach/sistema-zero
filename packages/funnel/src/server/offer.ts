@@ -32,6 +32,7 @@ export function makeResolveOffer(env: Env): (funnel: string | null) => ResolvedO
       offerSlug: resolveOfferSlug(env, f.key),
       productName: f.productName,
       productSku: f.productSku,
+      offerContract: f.offerContract,
     }
   }
 }

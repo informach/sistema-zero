@@ -1,4 +1,5 @@
 import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
+import type { FunnelOfferContract } from '../funnels/registry'
 import {
   type AddressFormInput,
   BoletoFormSchema,
@@ -20,6 +21,7 @@ import {
   redeemCouponBestEffort,
   resolveCharge,
 } from './catalog'
+import { checkOfferContract } from './offer-contract'
 import { applyPaymentContextToLead } from './payment-context'
 import {
   createPurchasedOfferSnapshot,
@@ -32,6 +34,7 @@ export interface ResolvedOffer {
   offerSlug: string
   productName: string
   productSku: string
+  offerContract?: FunnelOfferContract
 }
 
 export interface CheckoutDeps {
@@ -219,6 +222,7 @@ type ChosenOffer =
       productSku: string
       /** View do catálogo da oferta ESCOLHIDA (modo/intervalo); null = catálogo fora. */
       offer: CatalogOfferView | null
+      offerContract?: FunnelOfferContract
     }
   | { ok: false; response: Response }
 
@@ -237,6 +241,8 @@ async function resolveChosenOffer(
   const principal = deps.resolveOffer(funnel)
   if (!requestedSlug || requestedSlug === principal.offerSlug) {
     const offer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
+    const contractError = checkoutContractError(principal.offerContract, offer, deps.log)
+    if (contractError) return { ok: false, response: contractError }
     return { ok: true, ...principal, offer }
   }
   const principalOffer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
@@ -253,7 +259,23 @@ async function resolveChosenOffer(
     productName: offer?.productName || principal.productName,
     productSku: principal.productSku,
     offer,
+    offerContract: undefined,
   }
+}
+
+function checkoutContractError(
+  contract: FunnelOfferContract | undefined,
+  offer: Parameters<typeof checkOfferContract>[1],
+  log?: CheckoutDeps['log'],
+): Response | null {
+  const check = checkOfferContract(contract, offer)
+  if (check.ok) return null
+  log?.('checkout.offer_contract_mismatch', {
+    reason: check.reason,
+    expected: check.expected,
+    actual: check.actual,
+  })
+  return jsonError('Esta oferta está temporariamente indisponível.', 503, 'OFFER_CONTRACT_MISMATCH')
 }
 
 /** A oferta escolhida é uma ASSINATURA (recorrente) com intervalo conhecido? */
@@ -314,7 +336,7 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   // Oferta escolhida (principal do funil OU a irmã do alternador, validada).
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
   if (!chosen.ok) return chosen.response
-  const { offerSlug, productName, productSku, offer } = chosen
+  const { offerSlug, productName, productSku, offer, offerContract } = chosen
   if (!offer) return jsonError('Não foi possível validar a oferta.', 502, 'CATALOG_ERROR')
 
   // Assinatura à vista (Pix) SÓ existe no ANUAL: 12 meses de acesso pagos de uma
@@ -333,6 +355,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
   const charge = await resolveCharge(deps.gateway, offerSlug, interval ? undefined : c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const contractError = checkoutContractError(offerContract, charge, deps.log)
+  if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
   if (charge.pricingMode === 'subscription' && !annualUpfront) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
@@ -429,7 +453,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   // Mesmas regras do Pix: alternador validado; assinatura à vista só no ANUAL.
   const chosen = await resolveChosenOffer(deps, lead.funnel, form.offerSlug)
   if (!chosen.ok) return chosen.response
-  const { offerSlug, productName, productSku, offer } = chosen
+  const { offerSlug, productName, productSku, offer, offerContract } = chosen
   if (!offer) return jsonError('Não foi possível validar a oferta.', 502, 'CATALOG_ERROR')
   const interval = subscriptionInterval(offer)
   if (offer.pricingMode === 'subscription' && interval !== 12) {
@@ -445,6 +469,8 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     interval ? undefined : form.couponCode,
   )
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const contractError = checkoutContractError(offerContract, charge, deps.log)
+  if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
   if (charge.pricingMode === 'subscription' && !annualUpfront) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
@@ -525,7 +551,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
   if (!chosen.ok) return chosen.response
-  const { offerSlug, productName, productSku, offer: activeOffer } = chosen
+  const { offerSlug, productName, productSku, offer: activeOffer, offerContract } = chosen
   if (!activeOffer) return jsonError('Não foi possível validar a oferta.', 502, 'CATALOG_ERROR')
   // Cartão em oferta de ASSINATURA é SEMPRE recorrente (um caminho de cartão por
   // oferta): o cliente deve usar POST /api/checkout/subscription.
@@ -535,6 +561,8 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const contractError = checkoutContractError(offerContract, charge, deps.log)
+  if (contractError) return contractError
   if (charge.pricingMode === 'subscription') {
     return jsonError('Esta oferta é uma assinatura recorrente.', 409, 'USE_SUBSCRIPTION')
   }
@@ -636,7 +664,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
   if (!chosen.ok) return chosen.response
-  const { offerSlug, productName, productSku, offer } = chosen
+  const { offerSlug, productName, productSku, offer, offerContract } = chosen
   if (!offer) return jsonError('Não foi possível validar a oferta.', 502, 'CATALOG_ERROR')
   const interval = subscriptionInterval(offer)
   if (!interval) {
@@ -646,6 +674,8 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   // Preço AUTORITATIVO da oferta (SEM cupom — vira o plano de TODOS os ciclos).
   const charge = await resolveCharge(deps.gateway, offerSlug)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const contractError = checkoutContractError(offerContract, charge, deps.log)
+  if (contractError) return contractError
   if (charge.pricingMode !== 'subscription' || charge.billingIntervalMonths === null) {
     return jsonError('Esta oferta não é uma assinatura.', 409, 'NOT_SUBSCRIPTION')
   }

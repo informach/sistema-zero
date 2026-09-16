@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { DESAFIO_PRIMEIRO_JOGO } from '../../src/funnels/desafio-primeiro-jogo'
+import type { GatewayClient } from '../../src/lib/gateway-client'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache, getActiveOffer } from '../../src/server/catalog'
 import {
@@ -84,6 +86,82 @@ async function paidLead() {
 }
 
 describe('POST /api/checkout/pix', () => {
+  test('bloqueia a cobrança se a env do Desafio apontar para a oferta vitalícia', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead('kids/desafio-primeiro-jogo')
+    const checkoutDeps = {
+      ...deps(repo, gw),
+      resolveOffer: () => ({
+        offerSlug: 'desafio-primeiro-jogo',
+        productName: 'Desafio do Primeiro Jogo',
+        productSku: 'desafio-primeiro-jogo',
+        offerContract: DESAFIO_PRIMEIRO_JOGO.offerContract,
+      }),
+    }
+
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), checkoutDeps)
+
+    expect(res.status).toBe(503)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'OFFER_CONTRACT_MISMATCH',
+    )
+    expect(gw.calls.create).toHaveLength(0)
+    expect(gw.calls.quote).toHaveLength(0)
+  })
+
+  test('bloqueia se a cotação mudar para vitalícia depois da view válida em cache', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const slug = 'desafio-primeiro-jogo-30-dias'
+    gw.setOfferConfig(slug, {
+      priceCents: 6700,
+      pricingMode: 'one_time',
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+    const baseGateway = gw.gateway
+    const gateway: GatewayClient = {
+      ...baseGateway,
+      async quoteOffer(offerSlug, couponCode) {
+        const result = await baseGateway.quoteOffer(offerSlug, couponCode)
+        if (!result.body || typeof result.body !== 'object' || Array.isArray(result.body)) {
+          throw new Error('A cotação falsa deveria ser um objeto completo.')
+        }
+        return {
+          ...result,
+          body: {
+            ...result.body,
+            accessMode: 'lifetime',
+            accessDurationValue: null,
+            accessDurationUnit: null,
+          },
+        }
+      },
+    }
+    const { id } = await repo.createLead('kids/desafio-primeiro-jogo')
+    const checkoutDeps = {
+      ...deps(repo, gw),
+      gateway,
+      resolveOffer: () => ({
+        offerSlug: slug,
+        productName: 'Desafio do Primeiro Jogo',
+        productSku: 'desafio-primeiro-jogo',
+        offerContract: DESAFIO_PRIMEIRO_JOGO.offerContract,
+      }),
+    }
+
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), checkoutDeps)
+
+    expect(res.status).toBe(503)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'OFFER_CONTRACT_MISMATCH',
+    )
+    expect(gw.calls.quote).toHaveLength(1)
+    expect(gw.calls.create).toHaveLength(0)
+  })
+
   test('cria cobrança via gateway, grava payment_id e devolve o pix', async () => {
     const { repo, leads, events, payments } = createFakeRepo()
     const gw = createFakeGateway()

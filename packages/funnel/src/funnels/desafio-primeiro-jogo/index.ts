@@ -40,6 +40,12 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     'Trilha guiada de cinco etapas para crianças a partir de 9 anos criarem o primeiro jogo jogável, com 30 dias de acesso. Comunicação dirigida aos pais.',
   theme: 'kids',
   lifetimeAccess: false,
+  offerContract: {
+    pricingMode: 'one_time',
+    accessMode: 'fixed',
+    accessDurationValue: 30,
+    accessDurationUnit: 'days',
+  },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {
     copy: DESAFIO_PRODUTO,
