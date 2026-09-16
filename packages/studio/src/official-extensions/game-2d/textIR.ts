@@ -39,6 +39,7 @@ export type TextSpriteStatement = Id &
       }
     | { type: 'g2d:setSpriteText'; spriteVar: string; text: JSExpr }
     | { type: 'g2d:setTextStyle'; spriteVar: string; size: JSExpr; color: string }
+    | { type: 'g2d:scaleTextSize'; spriteVar: string; factor: JSExpr }
     | {
         type: 'g2d:setTextBox'
         spriteVar: string
@@ -74,6 +75,7 @@ export const TEXT_SPRITE_STATEMENT_TYPES = [
   'g2d:spawnTextInGroup',
   'g2d:setSpriteText',
   'g2d:setTextStyle',
+  'g2d:scaleTextSize',
   'g2d:setTextBox',
   'g2d:setTextImage',
   'g2d:setSpriteData',
@@ -152,6 +154,12 @@ export function textSpriteStatementSchemas(
       spriteVar: irText(),
       size: expr,
       color: irText(),
+      ...id,
+    }),
+    z.object({
+      type: z.literal('g2d:scaleTextSize'),
+      spriteVar: irText(),
+      factor: expr,
       ...id,
     }),
     z.object({

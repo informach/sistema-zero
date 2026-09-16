@@ -330,7 +330,14 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // `setTextImage` (3), `_textBackgroundImage` (1) e `_paintsBackground` (1).
   // +1: `_drawTextBackgroundImage` leva também o tamanho FINAL na tela, que é quem
   // decide nitidez (a medida local mentiria na placa reduzida pela criança).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1236)
+  // 1236 → 1238: +2 do `_applySpriteTextSize` (sprite, style) — o dono único da
+  // regra "o tamanho pedido manda; sem pedido, vale a medida". Ele entrou junto
+  // com a saída da razão recuperada por divisão, que não tinha função própria.
+  // 1238 → 1239: +2 do `scaleTextSize` (sprite, factor) e **−1** do
+  // `_drawTextBackgroundImage`, que perdeu o `telaW`: ele existia só porque o
+  // desenho rodava sob um ctx.scale e a medida local mentia sobre o tamanho na
+  // tela. Sem a escala, as duas são a mesma coisa e o parâmetro perdeu a razão.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1239)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

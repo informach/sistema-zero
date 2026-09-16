@@ -765,7 +765,8 @@ export const gameTwoDFundamentalBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Define a largura e a altura do sprite (a colisão acompanha o novo tamanho).',
+    tooltip:
+      'Define a largura e a altura do sprite (a colisão acompanha o novo tamanho). Vale também para o sprite de texto: é assim que a placa, o botão ou o balão ficam do tamanho que você quer.',
   },
   {
     type: 'sz_g2d_scale_sprite',
@@ -780,7 +781,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Multiplica o tamanho atual a partir do centro: 2 dobra, 0,5 reduz à metade. Repetir a cada quadro multiplica de novo a cada quadro.',
+      'Multiplica o tamanho atual a partir do centro: 2 dobra, 0,5 reduz à metade. No sprite de texto ele muda a CAIXA, e o texto quebra linha dentro dela; para mudar a letra use o “Multiplicar o tamanho do texto do sprite”. Repetir a cada quadro multiplica de novo a cada quadro.',
   },
 
   // ---- Tier 1: Mundo ----

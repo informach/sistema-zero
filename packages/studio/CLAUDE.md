@@ -1575,7 +1575,7 @@ inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão n
 `blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
 com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.1.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.2.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2867,6 +2867,203 @@ vem pré-encaixado; `LEGACY_VALUE_FIELDS` continua `'text'`, porque é ele que c
   travado do `examplesLoading.test.ts`) e o equivalente na gk (que não tem sprite de
   texto). O rótulo do `sz_val_color_alpha` e o degrau dele foram
   corrigidos no full review do mesmo dia (ver a Parte 2).
+
+## Jogo 2D — o TAMANHO do sprite de texto (v1.2.0, 15/09)
+
+Relato dela: *"acrescentamos blocos para criar sprites com texto, mas ficou faltando um
+bloco para alterar o tamanho do sprite em si… para sprite de texto com imagem de fundo,
+parece que não tem como"*. O bloco existia (`sz_g2d_set_size`) e funcionava com fundo de
+COR; com imagem ele era **apagado em silêncio**, e por dois motivos independentes.
+
+### ⭐⭐ A causa: o tamanho era estado DERIVADO
+
+`_layoutSpriteText` recuperava a escala por DIVISÃO (`sprite.w / measuredW`) e, quando a
+medida trocava de dono (o texto media, a imagem chegou e passou a mandar), aquele fator
+virava lixo — ele multiplicaria a imagem pela razão do TEXTO. O lote de 14/09 resolveu
+**reancorando**: jogava a escala fora. Está certo *para uma razão*; o erro é a razão
+existir. A dicotomia ("razão errada" × "jogar fora") é falsa, e a terceira saída é parar
+de derivar. ⚠️ Havia um teste CARIMBANDO o descarte (`a escala REANCORA`), o que o tornava
+permanente.
+
+Medido antes de mexer, na ordem natural dos blocos (criar o texto → pôr a placa → definir
+o tamanho): pedido 300×120, entregue **200×80**. E como num jogo sem laço tudo roda de uma
+vez e a imagem chega 1-2 quadros depois, **essa é a única ordem que a criança escreve**.
+
+**O conserto:** `sizeW`/`sizeH` (0 = automático) guardam o que ela PEDIU, e `laidOutW`/
+`laidOutH` guardam a saída do próprio layout. No topo do layout, `sprite.w !== laidOutW`
+significa "alguém de fora escreveu": vira o tamanho pedido. No fim, `_applySpriteTextSize`
+é o dono único da regra (`sizeW > 0 ? sizeW : measuredW`) e carimba a saída.
+- ⭐ **Ninguém precisa avisar o layout.** `setSize`, `scaleSprite`, os kits e o modo Código
+  continuam escrevendo `sprite.w` como sempre; quem detecta é o layout, comparando com a
+  PRÓPRIA saída — a única régua que não depende de quem escreveu. Derivar mata a classe;
+  uma marca deixada pelo `setSize` deixaria o modo Código de fora.
+- `sizeSource` e a reancoragem SUMIRAM: um campo e um invariante a menos.
+- ⚠️ **A aparência nasce EM DIA com o sprite** (`laidOutW: sprite.w`), que já vem com os
+  32×32 do `createSprite`: com `laidOutW: 0`, a primeira leitura leria esses 32 como um
+  tamanho pedido e **todo sprite de texto nasceria travado em 32**. Tem teste próprio.
+- ⚠️ A saída antecipada do cache (`layoutKey === key`) também aplica o tamanho — senão o
+  `setSize` feito depois da medida ficaria sem carimbo até a próxima remedição.
+- **Compatibilidade**: sem `setSize`, `sizeW` fica 0 e nada muda. O único teste que mudou
+  de veredito é o que carimbava o descarte.
+
+### A semântica: o tamanho pedido MANDA (decisão dela)
+
+"Largura 300" quer dizer 300 e continua 300 quando o texto cresce. Antes, no caminho da
+COR, o tamanho virava um zoom e o sprite crescia junto com o texto — o bloco "a largura do
+sprite" respondia um número que ninguém digitou, que é a mesma coisa que ela recusou no
+soquete "que às vezes redimensiona". Para o texto quebrar linha em vez de espremer, a saída
+é a "Caixa de texto … largura". Com imagem, as duas leituras dão o mesmo (a medida é
+constante), então a mudança de comportamento é só no caminho da cor.
+
+### A segunda causa: o bloco estava um degrau ACIMA
+
+`sz_g2d_set_size` e `sz_g2d_scale_sprite` não estavam no Kit essencial, e o piso de
+`sz_g2d_*` é DERIVADO dele: os dois caíam no Inventor enquanto os blocos de placa são do
+Construtor. **Quem monta a placa não tinha o bloco na paleta.** Kit essencial 58 → **60**,
+pelo precedente já escrito no `blockProfiles.test.ts` para o próprio bloco da imagem.
+
+### Descoberta, sem duplicar na paleta
+
+⚠️ A paleta também define a COR e a ORDEM do bloco (`blocks.ts`), então listar o mesmo tipo
+em duas famílias mudaria a cor dele — e o `docDrift` proíbe bloco em dois lugares. As
+alavancas foram termos de busca ("tamanho da placa", "aumentar/encolher a placa"), os
+tooltips dos dois blocos, o manual e o `ai.ts` (que ainda dizia só "a imagem MANDA no
+tamanho" — o Zappy responderia "não dá" à pergunta dela).
+
+## Full review do lote acima (15/09) — ⭐⭐⭐ o texto era ESTICADO
+
+Rodado logo depois, a pedido dela. O achado central não é regressão minha: é um defeito
+ANTERIOR que eu tinha acabado de promover a Kit essencial, a tooltip e a manual, o que o
+torna responsabilidade deste lote. E foi a pergunta dela no meio da revisão ("se eu definir
+o tamanho da imagem, o texto escala junto?") que fechou o diagnóstico.
+
+**Medido com um pincel que registra o `ctx.scale`** (o dublê da suíte ignorava o scale, e é
+por isso que nada acusava):
+
+| caso | escala aplicada | o que a criança via |
+|---|---|---|
+| cor, "oi" em 300×120 | 10,7× e 2,4× | letra esticada **4,5× mais na horizontal** |
+| imagem 200×80 pedida 300×80 | 1,5× e 1× | moldura E letra esticadas |
+| letra 32 → 64, sprite travado | — | 76,8 px → 83,5 px na tela: **+8,7%** |
+
+Ou seja: com o tamanho travado, o bloco "Texto do sprite … tamanho" ficava praticamente
+**MUDO** — a medida natural crescia junto e a escala desfazia na mesma proporção. É a classe
+"a criança mexe e nada acontece", a mesma do rótulo da opacidade corrigido em 14/09.
+
+⭐⭐ **A raiz: o desenho tinha UM espaço natural para tudo** (`measuredW/H`) e escalava o
+conjunto até o tamanho do sprite. Para a imagem isso é o certo; para o texto não —
+tipografia não se estica, se compõe dentro de uma caixa.
+
+**Decisão dela: uma regra só — a imagem se ESTICA, o texto se COMPÕE.** E o conserto
+SIMPLIFICA o desenho em vez de complicar: **o `ctx.scale` saiu inteiro**.
+- O fundo (cor e imagem) preenche `sprite.w × sprite.h`, como em qualquer sprite de imagem.
+- O texto é composto em coordenadas do sprite, no tamanho de letra escolhido; `align` e
+  `valign` passaram a valer sobre o tamanho final (o valign passou a servir ao botão de cor
+  também, de graça).
+- O tamanho pedido entra na MEDIÇÃO como a caixa: o texto **reflui** na largura pedida.
+  Precedência enunciável: **o tamanho pedido vence a largura do "Caixa de texto", que vence
+  a da imagem** — e os três são números conhecidos antes de medir, então não há laço.
+- ⚠️ `sizeW`/`sizeH` entraram na `layoutKey`: agora eles mudam a quebra de linha, e fora da
+  chave o cache congelaria o texto da medida anterior.
+- ⚠️ **Zero mudança para quem não pede tamanho**: ali medida e tamanho coincidem, a escala
+  era 1 e a aritmética é a mesma. Travado por dois testes de anti-regressão que comparam o
+  `fillText` e o `drawImage` com os valores exatos de antes.
+- ⭐ O `_drawTextBackgroundImage` **perdeu** o `telaW`: ele existia só porque o desenho
+  rodava sob escala e a medida local mentia sobre o tamanho na tela. Sem a escala, as duas
+  são a mesma coisa — a catraca de parâmetros DESCEU 1 por causa disso.
+- O aviso de transbordo passou a medir a **altura final do sprite** (`texto-nao-cabe`), então
+  cobre a placa E a caixa pedida à mão, e agora "deixe o sprite maior" É uma saída válida —
+  com a escala, mandar aumentar seria conselho falso, porque o texto crescia junto.
+
+### ⭐ O bloco 285: "Multiplicar o tamanho do texto" (ideia dela, no meio do review)
+
+Com a letra deixando de acompanhar o sprite, ela perguntou se não caberia um irmão do
+"Multiplicar o tamanho do sprite" para o texto. Cabe, e por um motivo mais forte que
+conveniência: **o "Texto do sprite … tamanho" é ABSOLUTO e nenhum bloco LÊ o tamanho atual
+da letra**, então "dobre a placa e a letra juntas" era inexpressável sem um número mágico.
+- `sz_g2d_scale_text_size` → `scaleTextSize(sprite, fator)`, com o **mesmo teto do
+  setTextStyle** (512) e piso de 1 px: o valor entra pelo mesmo campo e não pode ter duas
+  réguas. NÃO mexe na posição (quem recentraliza é o do sprite).
+- Entrou pelo **codec da extensão** (`textIR.ts`/`textCodec.ts`), não pelas fachadas — que
+  estão no teto de linhas —, e a allowlist de import é DERIVADA do catálogo, então não há
+  ponto manual a esquecer ali. O `blockAudit` varre a toolbox e cobriu o bloco de graça.
+
+### As redes novas (e a sabotagem de cada uma)
+
+- **Nenhuma escala no sprite de texto** e **a letra vai à tela no tamanho escolhido**:
+  reinserir o `ctx.scale` antigo derruba 2 (provado).
+- **Toda tooltip que manda usar outro bloco cita a face REAL dele**, e **o aviso do runtime
+  também** — o runtime é uma STRING, então o nome de bloco ali não era verificado por nada.
+  Renomear o "Definir o tamanho do sprite" derruba as duas (provado).
+- Os dois invariantes do lote anterior seguem provados por sabotagem (7 e 10 falhas).
+
+### ⚠️ Dois limites que este review deixou registrados
+
+1. **O manual do g2d está a ~90 caracteres do teto de 60 000** do `ExtensionManifest`. Quem
+   escrever a próxima frase estoura, e o erro aparece num teste de OUTRO arquivo
+   (`blockContracts.test.ts`, "nomes canônicos das áreas") com a mensagem do zod — foi
+   preciso enxugar duas vezes neste lote. Texto novo ali pede corte em outro lugar.
+2. **Pedir exatamente a medida automática é indistinguível de não pedir nada** (os dois
+   desenham igual naquele instante, e só divergem se o texto mudar depois). Distinguir
+   exigiria que cada escritor avisasse, e o modo Código ficaria de fora. Comentado no código.
+
+⚠️ **Crase crua pela 10ª vez**, escrevendo o comentário sobre o parâmetro que eu estava
+removendo. O `templateGuard` aponta em meio segundo — é o primeiro comando, sempre.
+
+### Verde
+
+studio **8317/0**, typecheck, biome. Contadores: blocos 284 → **285**, API 292 → **293**,
+catraca de parâmetros 1236 → **1239** (+2 do `_applySpriteTextSize`, +2 do `scaleTextSize`,
+−1 do `telaW`), Kit essencial 58 → **61**, manifest 1.1.0 → **1.2.0**.
+
+## SEGUNDO full review, no mesmo dia (15/09) — a doc que eu mesma tinha escrito
+
+Rodado sobre o review anterior, pela regra da casa (correção de review é código novo). O
+achado principal está na RECEITA que a doc nova ensinava, e só apareceu porque desta vez
+eu medi em vez de deduzir.
+
+1. ⭐⭐⭐ **A receita do manual falhava ao ENCOLHER.** Eu tinha escrito "multiplique o
+   tamanho do sprite e o do texto pelo mesmo número". Medido com "Vidas: 3": os dois em
+   0,5 deixam a caixa em 44 e o texto de 16 px precisa de 48 — **a margem não escala
+   junto**, o texto quebra em três linhas e o Console avisa. Ao CRESCER funciona (176×100
+   com letra 64, sem aviso). A receita certa sem imagem é outra e mais simples: **basta
+   multiplicar o texto, que a caixa acompanha sozinha** — ela é derivada da letra. Manual,
+   os dois tooltips e o `ai.ts` reescritos; a receita virou teste.
+2. ⭐⭐ **O aviso "o texto não cabe" citava as saídas erradas.** Ele mandava diminuir a letra
+   pelo bloco de ESTILO (que pede um número absoluto) e não citava o "Multiplicar o tamanho
+   do texto", que é exatamente o que resolve o caso que o próprio aviso descreve. O drift
+   das faces passou a cobrar as DUAS citadas (provado por sabotagem).
+3. ⭐⭐ **O tooltip do "Multiplicar o tamanho do sprite" não dizia nada sobre texto**, enquanto
+   o do "Definir o tamanho" dizia. E o comportamento dele MUDOU neste lote: num sprite de
+   texto ele agora mexe na CAIXA e o texto reflui dentro dela. Travado por teste.
+4. ⭐⭐ **O teste central do lote passava por VÁCUO em potencial.** `expect(scale).toEqual([])`
+   continuaria verde para sempre se alguém quebrasse o espião de `scale` no pincel. Ganhou a
+   metade positiva: o sprite VIRADO (`facing === -1`) é o caminho real do motor que usa
+   `ctx.scale(-1, 1)`, e ele prova que o espião registra.
+5. ⭐ **Centralizar a frase num botão de COR já era possível** e ninguém adivinharia pelo nome
+   do bloco: o "Fundo do sprite … com a imagem" com o seletor VAZIO grava só a altura do
+   texto (medido: y = 60 de 120, o centro exato). Passou a importar quando a caixa deixou de
+   ser justa. Virou uma frase no tooltip e um teste com anti-vácuo.
+6. A **rede de travessão** mordeu uma frase minha de tooltip, e a **catraca de parâmetros**
+   foi MEDIDA (1239 exatos, não estava frouxa).
+
+⚠️⚠️ **Lição de processo, e é a mais importante:** `bun test` verde **não prova typecheck**.
+Os quatro erros de tipo dos testes novos (`Api` sem o helper novo, `textAppearance` sem
+`size`) só apareceram no `tsc`. Pior: `bun run typecheck | tail -4` **mascara o exit code**
+(quem responde é o `tail`), e foi assim que um "TYPECHECK OK" saiu com o typecheck vermelho.
+Redirecione para arquivo e leia o `$?`.
+
+### ⚠️ Terceiro limite apertado (com os outros dois já registrados acima)
+
+O **payload do runtime está a 0,6% do teto de gzip** (146 073 de 147 000; cru 496 534 de
+501 000). O próximo lote que acrescentar runtime encosta na catraca — que tem teto E PISO de
+propósito, então a saída é medir e reancorar os dois, nunca só subir o teto.
+
+### Verde (final)
+
+studio **8323/0**, typecheck **exit 0**, biome **exit 0** (os três conferidos pelo código de
+saída, não pela última linha). **Pende QA dela no editor** — o `bun test` roda com `ctx`
+dublê, que prova geometria e não prova pixel.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 

@@ -55,6 +55,17 @@ export const gameTwoDTextSpritesRuntime = `
   function _layoutSpriteText(sprite) {
     var style = sprite.textAppearance;
     if (!style || !sprite.skin || sprite.skin.kind !== 'text') return;
+    // Alguém escreveu no tamanho desde a última medida? Então foi escolha da
+    // criança (o bloco "Definir o tamanho", o "Multiplicar o tamanho", um kit ou
+    // o modo Código) e ela passa a mandar. O layout guarda a PRÓPRIA saída
+    // justamente para poder perguntar isso sem que ninguém precise avisar: é a
+    // única régua que não depende de quem escreveu.
+    // ⚠️ Limite conhecido e aceito: pedir EXATAMENTE a medida automática é
+    // indistinguível de não pedir nada. Os dois desenham igual naquele instante e
+    // só divergem se o texto mudar depois; distinguir exigiria que cada escritor
+    // avisasse, e aí o modo Código ficaria de fora.
+    if (sprite.w !== style.laidOutW) style.sizeW = Math.max(0, _finiteNumber(sprite.w, 0));
+    if (sprite.h !== style.laidOutH) style.sizeH = Math.max(0, _finiteNumber(sprite.h, 0));
     var family = (window.SZGameUIFont && window.SZGameUIFont.family) || _szGameUIFont;
     // A imagem de fundo, quando carrega, MANDA no tamanho: entra na chave para o
     // cache não congelar a medida do texto e a placa nunca aparecer no tamanho
@@ -63,8 +74,10 @@ export const gameTwoDTextSpritesRuntime = `
     var imgW = fundo ? (fundo.naturalWidth || fundo.width || 0) : 0;
     var imgH = fundo ? (fundo.naturalHeight || fundo.height || 0) : 0;
     var mandaImagem = imgW > 0 && imgH > 0;
-    var key = JSON.stringify([style.text, style.size, style.width, style.padding, family, _textFontRevision, style.image, imgW, imgH, style.valign]);
-    if (style.layoutKey === key) return;
+    // ⚠️ O tamanho pedido entra na chave: ele muda a LARGURA da caixa, logo muda a
+    // quebra de linha. Fora dela, o cache congelaria o texto da medida anterior.
+    var key = JSON.stringify([style.text, style.size, style.width, style.padding, family, _textFontRevision, style.image, imgW, imgH, style.valign, style.sizeW, style.sizeH]);
+    if (style.layoutKey === key) { _applySpriteTextSize(sprite, style); return; }
     var ctx = _textContext();
     // Sem um canvas real ainda, as medidas provisórias serão refeitas ao desenhar.
     var font = '700 ' + style.size + 'px ' + family;
@@ -76,9 +89,11 @@ export const gameTwoDTextSpritesRuntime = `
       var metrics = ctx.measureText(line);
       return Math.max(metrics.width, (metrics.actualBoundingBoxLeft || 0) + (metrics.actualBoundingBoxRight || 0));
     }
-    var available = mandaImagem
-      ? Math.max(1, imgW - 2 * style.padding)
-      : (style.width > 0 ? Math.max(1, style.width - 2 * style.padding) : Infinity);
+    // A caixa onde o texto é escrito é a largura FINAL do sprite: o tamanho pedido
+    // vence a largura do "Caixa de texto", que por sua vez vence a da imagem.
+    // (Sem circularidade: os três são números conhecidos antes de medir o texto.)
+    var larguraDaCaixa = style.sizeW > 0 ? style.sizeW : (mandaImagem ? imgW : style.width);
+    var available = larguraDaCaixa > 0 ? Math.max(1, larguraDaCaixa - 2 * style.padding) : Infinity;
     /** @type {string[]} */
     var lines = [];
     var paragraphs = style.text.replace(/\\r\\n?/g, '\\n').split('\\n');
@@ -95,14 +110,6 @@ export const gameTwoDTextSpritesRuntime = `
       }
       lines.push(line);
     }
-    // ⚠️ A escala guarda um redimensionamento feito à mão pela criança. Quando a
-    // medida troca de dono (o texto media, a imagem chegou e passou a mandar), o
-    // fator antigo vira lixo: ele multiplicaria a imagem pela razão do TEXTO.
-    var fonteDaMedida = /** @type {'text' | 'image'} */ (mandaImagem ? 'image' : 'text');
-    var reancorar = style.sizeSource !== fonteDaMedida;
-    var scaleX = !reancorar && style.measuredW > 0 ? sprite.w / style.measuredW : 1;
-    var scaleY = !reancorar && style.measuredH > 0 ? sprite.h / style.measuredH : 1;
-    style.sizeSource = fonteDaMedida;
     var measuredWidth = 1;
     for (var textLine of lines) measuredWidth = Math.max(measuredWidth, widthOf(textLine));
     var textoH = Math.ceil(lines.length * style.size * 1.3 + 2 * style.padding);
@@ -110,17 +117,32 @@ export const gameTwoDTextSpritesRuntime = `
     style.measuredH = mandaImagem ? imgH : textoH;
     style.imageW = imgW;
     style.imageH = imgH;
-    // O texto pode estourar a placa: ele transborda (visível) em vez de sumir
-    // cortado, e o aviso diz onde mexer. Só com a imagem JÁ CARREGADA — no meio
-    // da carga a medida ainda é a do texto e o aviso acusaria quem está certo.
-    if (mandaImagem && textoH > imgH) {
-      warnOnce('texto-maior-que-a-imagem', 'o texto não cabe na imagem de fundo. Diminua o tamanho da letra no bloco “Texto do sprite … tamanho …” ou use uma imagem maior.');
+    // O texto pode estourar a caixa: ele transborda (visível) em vez de sumir
+    // cortado, e o aviso diz onde mexer. A régua é a altura FINAL do sprite, então
+    // ela cobre a placa E o tamanho pedido à mão. ⚠️ No meio da carga da imagem a
+    // altura ainda é a do texto, então nada dispara e o aviso não acusa quem está
+    // certo — que é a razão de ele nascer preso à medida final, e não à imagem.
+    var alturaFinal = style.sizeH > 0 ? style.sizeH : style.measuredH;
+    if (textoH > alturaFinal) {
+      warnOnce('texto-nao-cabe', 'o texto não cabe no sprite. Diminua a letra no bloco “Multiplicar o tamanho do texto do sprite …” ou deixe o sprite maior no bloco “Definir o tamanho do sprite …”.');
     }
     style.lines = lines;
     style.font = font;
     style.layoutKey = ctx ? key : '';
-    sprite.w = style.measuredW * scaleX;
-    sprite.h = style.measuredH * scaleY;
+    _applySpriteTextSize(sprite, style);
+  }
+  /**
+   * O tamanho PEDIDO manda; sem pedido, vale a medida (o texto, ou a imagem
+   * quando ela chega). Dono único da regra, e ele carimba a própria saída para
+   * a leitura lá de cima continuar valendo.
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite
+   * @param {import('./runtimeContract').GameTwoDTextAppearance} style
+   */
+  function _applySpriteTextSize(sprite, style) {
+    sprite.w = style.sizeW > 0 ? style.sizeW : style.measuredW;
+    sprite.h = style.sizeH > 0 ? style.sizeH : style.measuredH;
+    style.laidOutW = sprite.w;
+    style.laidOutH = sprite.h;
   }
   /**
    * @param {unknown} text
@@ -168,7 +190,11 @@ export const gameTwoDTextSpritesRuntime = `
         measuredW: 0, measuredH: 0, layoutKey: '',
         // 'top' reproduz exatamente o desenho de antes deste campo existir.
         image: '', imageHandle: null, imageW: 0, imageH: 0,
-        valign: 'top', sizeSource: 'text'
+        valign: 'top',
+        // ⚠️ A aparência nasce EM DIA com o sprite (que já vem com os 32x32 do
+        // createSprite): sem isso a primeira leitura leria esses 32 como um
+        // tamanho PEDIDO, e todo sprite de texto nasceria com o tamanho travado.
+        sizeW: 0, sizeH: 0, laidOutW: sprite.w, laidOutH: sprite.h
       };
     }
     sprite.textAppearance.text = _spriteText(text);
@@ -183,6 +209,23 @@ export const gameTwoDTextSpritesRuntime = `
     if (!sprite || _isDestroyedSprite(sprite) || !sprite.textAppearance) return;
     sprite.textAppearance.size = Math.min(512, _positiveFiniteNumber(size, 32));
     sprite.textAppearance.color = color || '#ffffff';
+    _layoutSpriteText(sprite);
+  }
+  /**
+   * Multiplica o TAMANHO DA LETRA. Existe porque o "Texto do sprite … tamanho" é
+   * ABSOLUTO e nenhum bloco lê o tamanho atual: sem ele, "dobre a placa e a letra
+   * junto" não era expressável sem um número mágico. É o irmão do scaleSprite, e
+   * de propósito NÃO mexe na posição — quem recentraliza é o do sprite.
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite
+   * @param {number} factor
+   */
+  function scaleTextSize(sprite, factor) {
+    if (!sprite || _isDestroyedSprite(sprite) || !sprite.textAppearance) return;
+    var f = _positiveFiniteNumber(factor, 1);
+    var style = sprite.textAppearance;
+    // Mesmo teto do setTextStyle: o valor entra pelo mesmo campo e não pode ter
+    // duas réguas. Piso de 1 px para a letra nunca desaparecer de vez.
+    style.size = Math.max(1, Math.min(512, style.size * f));
     _layoutSpriteText(sprite);
   }
   /**
@@ -205,23 +248,21 @@ export const gameTwoDTextSpritesRuntime = `
     _layoutSpriteText(sprite);
   }
   /**
-   * Desenha a placa em 1:1 com a caixa medida (que É a medida natural dela), então
-   * a imagem nunca deforma. Função própria de propósito: dentro de um callback o
-   * TypeScript perde a garantia de que a imagem não é nula.
+   * A imagem PREENCHE o tamanho do sprite, como em qualquer sprite de imagem do
+   * motor: sem tamanho pedido ela sai 1:1 (o sprite é do tamanho dela), e com um
+   * tamanho pedido ela acompanha. Função própria de propósito: dentro de um
+   * callback o TypeScript perde a garantia de que a imagem não é nula.
    *
-   * ⚠️ O telaW é o tamanho FINAL na tela (o desenho roda sob um ctx.scale), e é
-   * ele que decide nitidez. Passar a medida local faria a placa REDUZIDA pela
-   * criança sair serrilhada, porque ali medida local e tamanho natural são iguais
-   * e o motor concluiria que está ampliando.
+   * ⚠️ O w é o tamanho na TELA (o desenho não roda mais sob um ctx.scale), e é ele
+   * que decide nitidez junto com a largura da fonte da imagem.
    * @param {CanvasRenderingContext2D} ctx
    * @param {CanvasImageSource} img
    * @param {number} srcW
-   * @param {number} telaW
    * @param {number} w
    * @param {number} h
    */
-  function _drawTextBackgroundImage(ctx, img, srcW, telaW, w, h) {
-    _crispDraw(ctx, srcW || w, telaW || w, function () { ctx.drawImage(img, 0, 0, w, h); });
+  function _drawTextBackgroundImage(ctx, img, srcW, w, h) {
+    _crispDraw(ctx, srcW || w, w, function () { ctx.drawImage(img, 0, 0, w, h); });
   }
   /**
    * A imagem vira a MOLDURA do sprite de texto: ela manda no tamanho (sem
@@ -265,27 +306,34 @@ export const gameTwoDTextSpritesRuntime = `
     ctx.save();
     try {
       ctx.translate(sprite.x, sprite.y);
-      ctx.scale(sprite.w / style.measuredW, sprite.h / style.measuredH);
+      // ⭐⭐ Não há ctx.scale: o FUNDO preenche o tamanho do sprite (a imagem se
+      // estica, como em qualquer sprite de imagem) e o TEXTO é composto dentro
+      // dele, no tamanho de letra escolhido. Tipografia não se estica — escalar o
+      // conjunto deformava a letra (medido: 10,7x por 2,4x num "oi" de 300 por
+      // 120) e deixava o bloco do tamanho da letra praticamente mudo, porque a
+      // medida natural crescia junto e a escala desfazia na mesma proporção.
+      // Sem tamanho pedido, a medida É o tamanho do sprite e o desenho é o de
+      // sempre, com a mesma aritmética de antes.
       // A cor vem PRIMEIRO: com imagem, ela é a reserva enquanto a carga não chega.
       if (_paintsBackground(style.background)) {
         ctx.fillStyle = style.background;
-        ctx.fillRect(0, 0, style.measuredW, style.measuredH);
+        ctx.fillRect(0, 0, sprite.w, sprite.h);
       }
       var fundo = _textBackgroundImage(style);
       if (fundo) {
-        _drawTextBackgroundImage(ctx, fundo, style.imageW, sprite.w, style.measuredW, style.measuredH);
+        _drawTextBackgroundImage(ctx, fundo, style.imageW, sprite.w, sprite.h);
       }
       ctx.font = style.font;
       ctx.fillStyle = style.color;
       ctx.textAlign = style.align;
       ctx.textBaseline = 'middle';
-      var x = style.align === 'center' ? style.measuredW / 2 : style.align === 'right' ? style.measuredW - style.padding : style.padding;
+      var x = style.align === 'center' ? sprite.w / 2 : style.align === 'right' ? sprite.w - style.padding : style.padding;
       // 'top' é a margem de sempre: sem este campo o desenho é o de antes.
       var blocoH = style.lines.length * style.size * 1.3;
       var topo = style.valign === 'middle'
-        ? (style.measuredH - blocoH) / 2
+        ? (sprite.h - blocoH) / 2
         : style.valign === 'bottom'
-          ? style.measuredH - style.padding - blocoH
+          ? sprite.h - style.padding - blocoH
           : style.padding;
       for (var i = 0; i < style.lines.length; i++) {
         ctx.fillText(style.lines[i], x, topo + (i + 0.5) * style.size * 1.3);

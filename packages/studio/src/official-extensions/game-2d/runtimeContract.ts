@@ -100,8 +100,20 @@ export interface GameTwoDTextAppearance {
   imageW: number
   imageH: number
   valign: 'top' | 'middle' | 'bottom'
-  /** Quem mediu o sprite da última vez; trocar de dono reancora a escala. */
-  sizeSource: 'text' | 'image'
+  /**
+   * O tamanho que a criança PEDIU (0 = automático, medido pelo texto ou pela
+   * imagem). É um número declarado, não uma razão recuperada por divisão: por
+   * isso a imagem chegar depois não tem como corrompê-lo.
+   */
+  sizeW: number
+  sizeH: number
+  /**
+   * O que ESTE layout escreveu por último em `sprite.w`/`sprite.h`. É a régua
+   * para saber se alguém de fora mexeu no tamanho desde a última medida, sem
+   * precisar que esse alguém avise.
+   */
+  laidOutW: number
+  laidOutH: number
 }
 
 export interface GameTwoDSprite {
@@ -331,6 +343,8 @@ export interface GameTwoDSpriteApi {
   setSpriteText(sprite: GameTwoDSprite, text: unknown): void
   spriteText(sprite: GameTwoDSprite): string
   setTextStyle(sprite: GameTwoDSprite, size: number, color: string): void
+  /** Multiplica o tamanho da letra (o irmão do scaleSprite, para o texto). */
+  scaleTextSize(sprite: GameTwoDSprite, factor: number): void
   setTextBox(
     sprite: GameTwoDSprite,
     width: number,
@@ -1001,6 +1015,7 @@ export const GAME_TWO_D_API_KEYS = [
   'setSpriteText',
   'spriteText',
   'setTextStyle',
+  'scaleTextSize',
   'setTextBox',
   'setTextImage',
   'setSpriteData',

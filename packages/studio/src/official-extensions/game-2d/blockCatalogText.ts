@@ -81,6 +81,21 @@ export const gameTwoDTextBlocks: BlockDefinition[] = [
       'Escolhe o tamanho da letra e a cor. Usa a fonte escolhida para o jogo; a caixa acompanha as novas medidas.',
   },
   {
+    type: 'sz_g2d_scale_text_size',
+    placement: 'command',
+    message0: 'Multiplicar o tamanho do texto do sprite %1 por %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'resposta' },
+      { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Multiplica o tamanho da letra: 2 dobra, 0,5 reduz à metade. Sem imagem de fundo, este bloco basta: a caixa do sprite acompanha a letra sozinha. Numa placa com imagem, use também o “Multiplicar o tamanho do sprite” para a moldura crescer junto. Repetir a cada quadro multiplica de novo a cada quadro.',
+  },
+  {
     type: 'sz_g2d_set_text_box',
     placement: 'command',
     message0: 'Caixa de texto do sprite %1 largura %2 alinhamento %3 margem %4 fundo %5',
@@ -132,7 +147,7 @@ export const gameTwoDTextBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Escolha um desenho seu: ele vira a moldura do sprite, que fica do tamanho dele, sem deformar, e o texto é escrito por cima, quebrando linha na margem. Serve para placa, botão e balão de fala. Sem imagem escolhida, vale o fundo de cor.',
+      'Escolha um desenho seu: ele vira a moldura do sprite, que nasce do tamanho dele, e o texto é escrito por cima, quebrando linha na margem. Serve para placa, botão e balão de fala. Com o “Definir o tamanho do sprite” a moldura acompanha o tamanho que você pedir, e a letra fica no tamanho que você escolheu. Sem imagem escolhida, vale o fundo de cor, e a altura do texto continua valendo: é assim que se centraliza a frase num botão colorido.',
   },
   {
     type: 'sz_g2d_set_sprite_data',

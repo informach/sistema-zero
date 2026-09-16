@@ -34,7 +34,11 @@ alinhamento, margem e fundo; largura 0 ajusta ao conteúdo. No fundo, escolha a 
 suba a opacidade para ela aparecer. O fundo também pode ser uma **imagem**: aí é
 ela que manda no tamanho do sprite, sem deformar, e o texto é escrito por cima,
 quebrando linha na margem. É assim que se faz placa, botão e balão de fala com um
-desenho do Pinta. Guarde dados por sprite.
+desenho do Pinta. Para a placa ficar de outro tamanho, use o
+**Definir o tamanho do sprite** (em **Posição e tamanho**): a moldura acompanha e
+a letra fica no tamanho que você escolheu. Sem imagem, quem muda a letra é o
+**Multiplicar o tamanho do texto do sprite**, e a caixa acompanha sozinha.
+Guarde dados por sprite.
 **Controles** oferece clique/toque individual ou em grupo. Textos visíveis entram
 no HUD acessível; **Escrever** também aceita variáveis. Veja **Chuva de números**
 e **Quiz de números**: no quiz, responda com 1, 2 ou 3 e use Enter para avançar ou

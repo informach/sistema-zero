@@ -18,8 +18,15 @@ export const ESSENTIAL_2D_BLOCK_TYPES = [
   'sz_g2d_set_sprite_text',
   'sz_g2d_sprite_text',
   'sz_g2d_set_text_style',
+  'sz_g2d_scale_text_size',
   'sz_g2d_set_text_box',
   'sz_g2d_set_text_image',
+  // O tamanho do sprite acompanha os blocos de placa: quem monta um botão com o
+  // "Fundo do sprite … com a imagem …" precisa poder dizer de que tamanho ele é,
+  // e fora daqui os dois cairiam num degrau ACIMA — sumindo justo para quem
+  // enxerga a "Caixa de texto do sprite" ao lado deles.
+  'sz_g2d_set_size',
+  'sz_g2d_scale_sprite',
   'sz_g2d_set_sprite_data',
   'sz_g2d_sprite_data',
   'sz_g2d_on_sprite_click',

@@ -115,6 +115,13 @@ export function textSpriteBlockToIR(
         color: f('COLOR'),
       }
       break
+    case 'sz_g2d_scale_text_size':
+      statement = {
+        type: 'g2d:scaleTextSize',
+        spriteVar: f('SPRITE'),
+        factor: value('FACTOR', 1.5),
+      }
+      break
     case 'sz_g2d_set_text_box': {
       const align = f('ALIGN')
       statement = {
@@ -191,6 +198,8 @@ export function textSpriteStatementToCode(s: JSStatement, t: CodeTools): string 
       return `${t.pad}SZGame2D.setSpriteText(${id(s.spriteVar)}, ${expr(s.text)});`
     case 'g2d:setTextStyle':
       return `${t.pad}SZGame2D.setTextStyle(${id(s.spriteVar)}, ${expr(s.size)}, ${JSON.stringify(s.color)});`
+    case 'g2d:scaleTextSize':
+      return `${t.pad}SZGame2D.scaleTextSize(${id(s.spriteVar)}, ${expr(s.factor)});`
     case 'g2d:setTextBox':
       return `${t.pad}SZGame2D.setTextBox(${id(s.spriteVar)}, ${expr(s.width)}, ${JSON.stringify(s.align)}, ${expr(s.padding)}, ${expr(s.background)});`
     case 'g2d:setTextImage':
@@ -271,6 +280,8 @@ export function textSpriteStatementToBlock(
         { SPRITE: s.spriteVar, COLOR: s.color },
         { SIZE: s.size },
       )
+    case 'g2d:scaleTextSize':
+      return make('sz_g2d_scale_text_size', { SPRITE: s.spriteVar }, { FACTOR: s.factor })
     case 'g2d:setTextBox':
       return make(
         'sz_g2d_set_text_box',
@@ -428,6 +439,10 @@ export function textSpriteCallToIR(
         ? { type: 'g2d:setTextStyle', spriteVar: target, size: value, color }
         : undefined
     }
+    case 'scaleTextSize':
+      return args.length === 2 && t.simple(value)
+        ? { type: 'g2d:scaleTextSize', spriteVar: target, factor: value }
+        : undefined
     case 'setTextBox': {
       const align = literal(args[2]),
         padding = t.expression(args[3]),

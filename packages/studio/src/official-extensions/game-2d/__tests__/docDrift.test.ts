@@ -130,6 +130,7 @@ const TIPO_POR_ROTULO_DOCUMENTADO = new Map<string, string>([
   ['Impedir de atravessar os sprites de um grupo', 'sz_g2d_collide_group'],
   ['Impedir de atravessar o sprite', 'sz_g2d_collide_sprite'],
   ['Para cada sprite do grupo … que colidir com o sprite …', 'sz_g2d_on_sprite_group_overlap'],
+  ['Definir o tamanho do sprite', 'sz_g2d_set_size'],
 ])
 
 /** Citações `**Nome do bloco** (em **💥 Categoria**)` no manual do aluno. */
@@ -235,7 +236,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(284)
+    expect(gameTwoDBlocks.length).toBe(285)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {
@@ -543,6 +544,44 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
    * bloco faria os três mentirem em silêncio, e é a classe de defeito que esta
    * extensão já colecionou (rótulo que descreve o que o código não faz mais).
    */
+  /**
+   * Generaliza a rede acima: um tooltip que MANDA usar outro bloco só ensina
+   * enquanto o nome citado existir. O caso que originou esta versão é o do
+   * tamanho — o "Fundo do sprite … com a imagem …" manda usar o "Definir o
+   * tamanho do sprite", que mora em OUTRA família da paleta (Movimento), e é
+   * justamente por isso que a criança precisa do nome exato para achá-lo.
+   */
+  it('todo tooltip que manda usar outro bloco cita a face REAL dele', () => {
+    const faceDe = (tipo: string) => {
+      const face = String(gameTwoDBlocks.find((b) => b.type === tipo)?.message0 ?? '')
+      // A face até o primeiro soquete é o nome pelo qual a criança procura.
+      const corte = face.indexOf('%1')
+      return (corte > 0 ? face.slice(0, corte) : face).trim()
+    }
+    const citacoes: Array<[string, string]> = [
+      ['sz_g2d_set_text_image', 'sz_g2d_set_size'],
+      ['sz_g2d_scale_text_size', 'sz_g2d_scale_sprite'],
+    ]
+    expect(citacoes.length, 'anti-vácuo').toBeGreaterThan(0)
+    for (const [quemCita, citado] of citacoes) {
+      const nome = faceDe(citado)
+      expect(nome.length, `anti-vácuo: não achei a face de ${citado}`).toBeGreaterThan(10)
+      const tooltip = String(gameTwoDBlocks.find((b) => b.type === quemCita)?.tooltip ?? '')
+      expect(tooltip, `${quemCita}: cita ${citado} por uma face que mudou`).toContain(nome)
+    }
+  })
+
+  it('o aviso de texto que não cabe manda usar blocos que existem, pela face real', () => {
+    // O runtime é uma STRING: o nome do bloco ali não é verificado por nada. O
+    // aviso cita as DUAS saídas, e cada uma tem que ser um bloco de verdade.
+    for (const tipo of ['sz_g2d_set_size', 'sz_g2d_scale_text_size']) {
+      const face = String(gameTwoDBlocks.find((b) => b.type === tipo)?.message0 ?? '')
+      const nome = face.slice(0, face.indexOf('%1')).trim()
+      expect(nome.length, `anti-vácuo: não achei a face de ${tipo}`).toBeGreaterThan(10)
+      expect(gameTwoDRuntime, `o aviso cita ${tipo} por uma face que mudou`).toContain(nome)
+    }
+  })
+
   it('os tooltips que mandam usar o dano por ataque citam a face real do bloco', () => {
     const dano = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_damage_sprite')
     const face = String(dano?.message0 ?? '')

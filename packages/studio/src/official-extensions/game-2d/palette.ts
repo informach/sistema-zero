@@ -57,6 +57,7 @@ export const GAME_TWO_D_PALETTE = [
           'sz_g2d_set_sprite_text',
           'sz_g2d_sprite_text',
           'sz_g2d_set_text_style',
+          'sz_g2d_scale_text_size',
           'sz_g2d_set_text_box',
           'sz_g2d_set_text_image',
         ],

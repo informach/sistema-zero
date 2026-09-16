@@ -75,6 +75,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_velocity: { VX: numShadow(0), VY: numShadow(0) },
   sz_g2d_set_size: { W: numShadow(40), H: numShadow(40) },
   sz_g2d_scale_sprite: { FACTOR: numShadow(1.5) },
+  sz_g2d_scale_text_size: { FACTOR: numShadow(1.5) },
 
   sz_g2d_game_over: { TEXT: txtShadow('Fim de jogo') },
   sz_g2d_set_health: { AMOUNT: numShadow(3) },
