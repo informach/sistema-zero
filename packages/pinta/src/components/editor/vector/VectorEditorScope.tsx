@@ -187,6 +187,8 @@ export interface VectorEditorContextValue {
   activeChannel: VectorColorChannel
   setActiveChannel: (channel: VectorColorChannel) => void
   applyChannelColor: (hex: string) => void
+  /** Adota uma cor no canal ativo (conta-gotas numa FIGURA): só o estilo vigente. */
+  adoptChannelColor: (hex: string) => void
   swapFillStroke: () => void
   /**
    * O preenchimento que a janela do Degradê inspeciona e edita: o da primeira
@@ -540,8 +542,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const styleSource = single ?? inspectedShape
   useEffect(() => {
     if (!styleSource) return
+    // ⚠️ A FIGURA não tem estilo NENHUM para oferecer (nasce `fill: 'none'` e
+    // `stroke: null`): sincronizar a partir dela apagaria o estilo vigente. Com
+    // o conta-gotas isso era perda real — pegar a cor de um pixel com a figura
+    // selecionada e depois arrastá-la um tiquinho (commit → objeto novo → este
+    // efeito) zerava o contorno recém-pego, sem aviso.
+    if (styleSource.type === 'image') return
     setStyle((current) => ({
-      // Linha e figura não têm preenchimento que valha como inspetor: o estilo
+      // Linha não tem preenchimento que valha como inspetor: o estilo
       // guarda o que já tinha (um degradê recém-montado para a PRÓXIMA forma).
       fill: hasFill(styleSource) ? styleSource.fill : current.fill,
       stroke: styleSource.stroke ? { ...styleSource.stroke } : null,
@@ -755,6 +763,22 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       return
     }
     applyStyle({ fill: hex })
+  }
+
+  /**
+   * ADOTA uma cor no canal ativo (conta-gotas em cima de uma FIGURA, onde não há
+   * estilo para copiar — há UM pixel). Espelho do `applyChannelColor`, mas pela
+   * régua do conta-gotas: muda só o estilo vigente, sem re-estilizar a seleção
+   * e sem commitar, como o `adoptStyle` faz com as outras formas.
+   */
+  function adoptChannelColor(hex: string): void {
+    if (activeChannel === 'stroke') {
+      adoptStyle({
+        stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
+      })
+      return
+    }
+    adoptStyle({ fill: hex })
   }
 
   /**
@@ -1343,6 +1367,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     activeChannel,
     setActiveChannel,
     applyChannelColor,
+    adoptChannelColor,
     swapFillStroke,
     inspectedFill,
     currentGradient,

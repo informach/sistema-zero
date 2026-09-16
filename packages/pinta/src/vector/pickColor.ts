@@ -31,6 +31,41 @@ export function localPoint(shape: VectorShape, bounds: Bounds, point: Vec2): Vec
 }
 
 /**
+ * O ponto em coordenadas 0..1 DENTRO da figura (0,0 = canto de cima à esquerda
+ * da imagem; 1,1 = o de baixo à direita), ou `null` fora dela. É regra de três
+ * pura porque o `<image>` sai com `preserveAspectRatio="none"` (`svg.ts`): a
+ * imagem PREENCHE a caixa, sem tarja e sem corte. `localPoint` desfaz a
+ * rotação, então figura girada também responde certo.
+ *
+ * ⚠️ `slack` (unidades do documento) tem que ser a MESMA folga com que o
+ * `hitShapeAt` escolheu esta figura, e o resultado então é CLAMPADO em [0,1]:
+ * o hit-test acerta um anel de `10/zoom` em volta da caixa, e sem a folga aqui
+ * mirar a beirada do adesivo caía "fora da imagem" — a criança levava um recado
+ * de erro com a figura perfeitamente carregada. Dentro do anel ela pega o pixel
+ * da borda, que é exatamente o que está vendo.
+ *
+ * Quem transforma isto em cor é o `imageSampler.ts` — ler pixel precisa de
+ * canvas, e este módulo é puro.
+ */
+export function imageUvAt(
+  shape: Extract<VectorShape, { type: 'image' }>,
+  point: Vec2,
+  slack = 0,
+): Vec2 | null {
+  const bounds = shapeBounds(shape)
+  // Defensivo: o sanitize recusa figura com `w`/`h` não positivos, então uma
+  // caixa degenerada não chega aqui vinda do disco.
+  if (bounds.width <= 0 || bounds.height <= 0) return null
+  const local = localPoint(shape, bounds, point)
+  const u = (local.x - bounds.x) / bounds.width
+  const v = (local.y - bounds.y) / bounds.height
+  const du = slack / bounds.width
+  const dv = slack / bounds.height
+  if (u < -du || u > 1 + du || v < -dv || v > 1 + dv) return null
+  return { x: Math.min(1, Math.max(0, u)), y: Math.min(1, Math.max(0, v)) }
+}
+
+/**
  * A forma PINTA alguma coisa? Preenchimento ou contorno com cor (a figura de
  * pixel art sempre pinta). "Sem cor" nos DOIS canais é um estado que a paleta
  * produz, e a forma fica invisível: ela não pode roubar o toque da forma que a
@@ -89,8 +124,9 @@ function nearestGradientStop(gradient: VectorGradient, bounds: Bounds, point: Ve
 }
 
 /**
- * UMA cor da forma, ou `null` quando não há uma cor só (figura de pixel art, ou
- * forma sem cor nenhuma). Preenchimento sólido vence; sem preenchimento (traço
+ * UMA cor da forma, ou `null` quando não dá para responder SEM DOM (a figura de
+ * pixel art, cuja cor é o PIXEL sob o toque — quem a lê é o `imageSampler.ts`),
+ * ou quando não há cor nenhuma. Preenchimento sólido vence; sem preenchimento (traço
  * do pincel) e linha valem o contorno; degradê devolve a ponta mais perto do
  * toque. Sempre normalizada (`#rrggbb` minúsculo: desenho antigo pode guardar
  * maiúsculas).
@@ -110,7 +146,8 @@ export function colorAtPoint(shape: VectorShape, point: Vec2): string | null {
 
 /**
  * As duas perguntas de uma vez: a forma tocada e a cor dela. `hex` nulo só
- * acontece com a figura de pixel art (forma sem cor nem entra no hit-test).
+ * acontece com a figura de pixel art (forma sem cor nem entra no hit-test) —
+ * aí quem responde é o `imageSampler.ts`, com o pixel.
  */
 export function pickColorAt(
   shapes: readonly VectorShape[],

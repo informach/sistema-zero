@@ -748,7 +748,38 @@ export const COPY = {
     pickColorTake: 'Pegar esta cor',
     /** "Sem cor" tocado na captura: não é uma cor, e clique mudo não ensina nada. */
     pickColorNone: 'Sem cor não vale aqui! Toque numa cor ou numa forma.',
-    pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
+    /**
+     * Conta-gotas no vazio do palco: antes o clique era mudo. ⚠️ Fala em FORMA,
+     * como os vizinhos: "desenho" é o asset da galeria, não o que está no palco.
+     */
+    pickColorMiss: 'Aqui não tem cor para pegar! Toque em cima de uma forma.',
+    /**
+     * A figura AINDA está abrindo — o toque já mandou abrir, então tocar de novo
+     * de fato funciona. Só este recado promete o retry; o de baixo não.
+     */
+    pickColorFigureLoading: 'Ainda estou abrindo essa figura! Toque de novo daqui a pouquinho.',
+    /** A figura NÃO abre (PNG quebrado, aparelho sem canvas): insistir não adianta. */
+    pickColorFigureFailed: 'Não consegui abrir essa figura! Escolha a cor ali em Cores.',
+    /**
+     * Pixel VAZIO da figura com a ferramenta solta: o quadradinho vira "sem cor"
+     * e isso precisa ser dito — calado, fica igual ao defeito que a figura tinha
+     * (o conta-gotas apagando a cor sozinho).
+     */
+    pickColorFigureHole: 'Aqui a figura é vazia! O quadradinho ficou sem cor.',
+    /** Pixel vazio da figura na CAPTURA: uma ponta de degradê precisa de cor. */
+    pickColorFigureHoleTake:
+      'Aqui a figura é vazia, e o degradê precisa de cor! Toque numa parte colorida dela.',
+    /**
+     * Cor de fora da paleta para quem não enxerga: um hex é lido letra a letra.
+     * Ver `core/colorName.ts`.
+     */
+    colorApprox: (name: string) => `parecido com ${name}`,
+    /**
+     * Leitor de tela: pegar a cor de uma figura só mudava o rótulo de um botão
+     * que ninguém estava focando — o sucesso era MUDO.
+     */
+    pickedColorAnnounce: (channel: string, color: string) =>
+      `Peguei ${color} para o ${channel.toLowerCase()}.`,
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',
     toFront: 'Trazer bem para a frente',

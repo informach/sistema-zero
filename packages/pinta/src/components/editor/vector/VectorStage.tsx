@@ -13,6 +13,7 @@
  */
 import type { JSX, PointerEvent } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { colorNameFor } from '../../../core/colorName'
 import { COPY } from '../../../core/copy'
 import { isInteractiveControlTarget } from '../../../core/dom'
 import { safeSetPointerCapture } from '../../../core/pointer'
@@ -29,6 +30,12 @@ import {
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
 import { hitMovableShapeAt } from '../../../vector/hitTest'
+import {
+  clearImageSampleCache,
+  type ImageSample,
+  primeImageSources,
+  sampleImageColorAt,
+} from '../../../vector/imageSampler'
 import {
   MAX_TEXT_CHARS,
   normalizeTextContent,
@@ -235,6 +242,8 @@ export function VectorStage(): JSX.Element {
     commitShapes,
     rememberColor,
     adoptStyle,
+    adoptChannelColor,
+    activeChannel,
     colorPick,
     endColorPick,
     cancelColorPick,
@@ -253,6 +262,9 @@ export function VectorStage(): JSX.Element {
   // barra flutuante.
   const wide = useMediaQuery('(min-width: 768px)')
   const [preview, setPreview] = useState<VectorShape | null>(null)
+  // Leitor de tela: o que o ultimo toque do conta-gotas pegou (o rotulo do
+  // quadradinho muda, mas ninguem esta focando nele).
+  const [pickAnnounce, setPickAnnounce] = useState('')
   const [marquee, setMarquee] = useState<Bounds | null>(null)
   // Diálogo do texto: criar num ponto OU reeditar um shape existente.
   const [textDialog, setTextDialog] = useState<
@@ -323,6 +335,23 @@ export function VectorStage(): JSX.Element {
     setPenPoints([])
     setPenCursor(null)
   }, [tool])
+
+  // Conta-gotas ligado: abre as figuras deste quadro ANTES do toque. A cor de uma
+  // figura é o pixel sob o dedo, e lê-lo tem que ser síncrono (o `preventDefault`
+  // do pointerdown na captura é o que segura o foco da janelinha do degradê).
+  // A captura também liga o `picker`, então os dois caminhos ficam cobertos.
+  useEffect(() => {
+    if (tool !== 'picker') return
+    const sources = visibleShapes(doc.shapes)
+      .filter((shape) => shape.type === 'image')
+      .map((shape) => (shape.type === 'image' ? shape.src : ''))
+    if (sources.length === 0) return
+    void primeImageSources(sources)
+  }, [tool, doc.shapes])
+
+  // Fechar o desenho larga as figuras abertas: um `ImageBitmap` segurado em JS
+  // não é reclamável, e um cenário de adesivos guarda dezenas de MB de RGBA.
+  useEffect(() => () => clearImageSampleCache(), [])
 
   // Enter fecha a forma da Caneta; Esc descarta os pontos. Registrado só com
   // pontos pendentes; ignora campos de texto E botões (Enter ativa botão).
@@ -529,6 +558,36 @@ export function VectorStage(): JSX.Element {
     setSelectedIds([shape.id])
   }
 
+  /**
+   * Conta ao leitor de tela o que acabou de entrar no quadradinho. O nome vem do
+   * `colorNameFor` porque a cor de uma figura quase nunca está na paleta, e um
+   * hex cru é lido letra a letra.
+   */
+  function announcePicked(hex: string): void {
+    const channel = activeChannel === 'stroke' ? COPY.vector.stroke : COPY.vector.fill
+    // "Sem cor" é rótulo de botão; no meio de uma frase vai em minúscula.
+    const color = hex === 'none' ? COPY.vector.none.toLowerCase() : colorNameFor(hex)
+    setPickAnnounce(COPY.vector.pickedColorAnnounce(channel, color))
+  }
+
+  /**
+   * O recado de um toque que não virou cor. ⚠️ `loading` e `failed` são frases
+   * DIFERENTES de propósito: só a primeira promete que tocar de novo funciona
+   * (o `sampleImageColorAt` de fato manda abrir a figura no miss do cache);
+   * uma figura que não abre nunca vai abrir, e pedir paciência ali é armadilha.
+   */
+  function toolToastFor(sample: ImageSample): string {
+    if (sample.kind === 'loading') return COPY.vector.pickColorFigureLoading
+    if (sample.kind === 'failed') return COPY.vector.pickColorFigureFailed
+    return COPY.vector.pickColorMiss
+  }
+
+  /** O mesmo, na captura: lá o pixel vazio é recusa (a ponta precisa de cor). */
+  function captureToastFor(sample: ImageSample): string {
+    if (sample.kind === 'transparent') return COPY.vector.pickColorFigureHoleTake
+    return toolToastFor(sample)
+  }
+
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
     if (!event.isPrimary || gestureStillActive()) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
@@ -598,39 +657,75 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'picker') {
+      const slack = 10 / zoom
       // CAPTURA da janelinha de cor: o toque devolve UMA cor (fill, ponta do
-      // degradê mais perto, ou o contorno) e sai do modo. Tocar no vazio não
-      // faz nada (ela tenta de novo); figura de pixel art não tem cor única.
+      // degradê mais perto, o contorno, ou o PIXEL da figura) e sai do modo.
       if (colorPick) {
         // Cancelar o pointerdown segura o FOCO: o Degradê reabre e foca o card no
         // microtask, e o mousedown de compatibilidade que viria depois moveria o
-        // foco para o body (o svg não é focável).
+        // foco para o body (o svg não é focável). ⚠️ É por isso que a leitura do
+        // pixel é SÍNCRONA (as figuras já vêm abertas pelo efeito abaixo).
         event.preventDefault()
-        const picked = pickColorAt(visibleShapes(currentShapes()), at, 10 / zoom)
-        if (!picked) return
-        if (!picked.hex) {
-          // Só a figura de pixel art chega aqui: forma sem cor nenhuma nem entra
-          // no hit-test (`paintsSomething`).
-          if (picked.shape.type === 'image') showToast(COPY.vector.pickColorNoColor)
+        const picked = pickColorAt(visibleShapes(currentShapes()), at, slack)
+        // Tocar no vazio não sai do modo — ela tenta de novo, e agora sabe por quê.
+        if (!picked) {
+          showToast(COPY.vector.pickColorMiss)
           return
         }
-        endColorPick(picked.hex)
+        if (picked.hex) {
+          endColorPick(picked.hex)
+          return
+        }
+        // Só a figura chega aqui: forma sem cor nem entra no hit-test.
+        if (picked.shape.type !== 'image') return
+        const sample = sampleImageColorAt(picked.shape, at, slack)
+        if (sample.kind === 'color') {
+          endColorPick(sample.hex)
+          return
+        }
+        showToast(captureToastFor(sample))
         return
       }
       // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox com a
       // folga do toque — o clique de forma borbulha até aqui porque não é a
       // ferramenta de seleção). `adoptStyle` muda SÓ o estilo vigente (não
       // re-estiliza a seleção).
-      const hit = hitShapeAt(visibleShapes(currentShapes()), at, 10 / zoom)
-      if (hit) {
-        adoptStyle({
-          fill: hit.fill,
-          stroke: hit.stroke ? { ...hit.stroke } : null,
-          opacity: hit.opacity,
-        })
-        if (typeof hit.fill === 'string' && hit.fill !== 'none') rememberColor(hit.fill)
-        if (hit.stroke) rememberColor(hit.stroke.color)
+      const hit = hitShapeAt(visibleShapes(currentShapes()), at, slack)
+      if (!hit) {
+        showToast(COPY.vector.pickColorMiss)
+        return
       }
+      // ⭐ FIGURA: não há estilo para copiar (ela nasce `fill: 'none'`, e adotá-lo
+      // APAGAVA a cor da criança em silêncio) — há UM pixel. Ele vai para o canal
+      // ativo, que é o que os dois quadradinhos da caixa já dizem. ⚠️ A `opacity`
+      // da figura NÃO é adotada de propósito: ela é do decalque, não da cor.
+      if (hit.type === 'image') {
+        const sample = sampleImageColorAt(hit, at, slack)
+        if (sample.kind === 'color') {
+          adoptChannelColor(sample.hex)
+          rememberColor(sample.hex)
+          announcePicked(sample.hex)
+          return
+        }
+        // Pixel vazio arma o "sem cor" no quadradinho — só o estilo vigente, ao
+        // contrário do "Sem cor" da paleta, que re-estiliza a seleção. Calado,
+        // seria indistinguível do defeito antigo: por isso o recado.
+        if (sample.kind === 'transparent') {
+          adoptChannelColor('none')
+          announcePicked('none')
+          showToast(COPY.vector.pickColorFigureHole)
+          return
+        }
+        showToast(toolToastFor(sample))
+        return
+      }
+      adoptStyle({
+        fill: hit.fill,
+        stroke: hit.stroke ? { ...hit.stroke } : null,
+        opacity: hit.opacity,
+      })
+      if (typeof hit.fill === 'string' && hit.fill !== 'none') rememberColor(hit.fill)
+      if (hit.stroke) rememberColor(hit.stroke.color)
       return
     }
     if (currentShapes().length >= PINTA_LIMITS.maxShapes) {
@@ -1045,7 +1140,7 @@ export function VectorStage(): JSX.Element {
           tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
           para os dois não se duplicarem na árvore. */}
       <span role="status" className="sr-only">
-        {colorPick ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}` : ''}
+        {colorPick ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}` : pickAnnounce}
       </span>
       {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
           largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o

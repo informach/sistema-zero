@@ -1003,8 +1003,76 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   ponto levado ao espaço LOCAL da forma girada; escondida não conta, trancada conta) e a
   ferramenta mostra o cursor de MIRA (`stageCursor({ pickerTool })`). O mesmo módulo responde
   "QUAL cor sai da forma" para o conta-gotas da janelinha do degradê (ver "Ajustes do VETOR").
-  Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
-  `PaletteBar`.
+  Tocar no VAZIO avisa (`pickColorMiss`) — era um clique mudo.
+- ⭐⭐ **O conta-gotas pega o PIXEL da figura (15/09/2026)**: relato dela, "o conta-gotas do vetor
+  não está funcionando", junto do pedido de capturar a cor de uma imagem. Eram a mesma coisa. A
+  figura ENTRA no hit-test (`paintsSomething` devolve `true` para `image`) e nasce com
+  `fill: 'none'`/`stroke: null` (`insertAsset.ts`), então `adoptStyle` copiava esse "nada" e
+  **apagava a cor da criança em silêncio**. Agora ela é um caso próprio nos DOIS caminhos:
+  - **`vector/imageSampler.ts`** (novo, browser) abre o `src` (PNG assado no desenho) por
+    `dataUrlToBlob` + `createImageBitmap` — ⚠️ nunca `fetch('data:')`, a CSP do kids bloqueia — e
+    lê 1 pixel num canvas 1×1 (`drawImage` de 1×1 para 1×1 com `imageSmoothingEnabled = false`).
+    O mapeamento é a parte PURA, `imageUvAt` no `pickColor.ts`: regra de três direta porque o
+    `<image>` sai com `preserveAspectRatio="none"` (a imagem preenche a caixa), com `shapeBounds`
+    normalizando caixa invertida e `localPoint` desfazendo a rotação.
+  - ⭐ **A leitura é SÍNCRONA, e isso é o que decide o desenho**: na captura da janelinha o
+    `pointerdown` é `preventDefault`-ado para segurar o foco, e um `await` no meio quebraria a
+    coreografia. Por isso o `VectorStage` PRÉ-CARREGA as figuras do quadro num efeito quando
+    `tool === 'picker'` (a captura também liga o picker) e o toque só lê do cache.
+  - ⭐⭐ **O `slack` do toque atravessa o mapeamento.** `imageUvAt` recebe a MESMA folga com que o
+    `hitShapeAt` escolheu a figura e CLAMPA o resultado em [0,1]. Sem isso, o anel de `10/zoom` em
+    que o hit-test acerta a figura caía "fora da imagem" e a criança que mirava a beirada do
+    adesivo levava um recado de erro com a figura carregadíssima (achado do full review).
+  - ⭐⭐ **O cache é orçado em PIXELS, com o quadro atual PROTEGIDO da evicção**
+    (`MAX_CACHED_PIXELS`, `inUse`). Contar ENTRADAS (o teto de 8 da primeira versão) era um
+    defeito medido: num cenário com 9 adesivos a própria pré-carga despejava o que tinha acabado
+    de abrir, e a primeira figura ficava ilegível PARA SEMPRE (o efeito não roda de novo só porque
+    ela tocou). Oito PNGs de 2048² também seriam 128 MB num tablet.
+  - ⭐ **O resultado é DISCRIMINADO** (`ImageSample`: `color`/`transparent`/`outside`/`loading`/
+    `failed`), porque os desfechos pedem recados diferentes — e no miss do cache o próprio toque
+    DISPARA a abertura, senão o "toque de novo daqui a pouquinho" era mentira (nada estava
+    abrindo). Figura que não abre é `failed` e leva um recado que NÃO promete retry.
+  - **Pixel transparente vira "sem cor"** no canal ativo (decisão dela; o vazio da figura não
+    atravessa para a forma de baixo) **e AVISA** (`pickColorFigureHole`): calado, o quadradinho
+    virando "Sem cor" era indistinguível do defeito que o lote veio consertar. Na janelinha, onde
+    "sem cor" não vale para uma ponta de degradê, o recado é o `pickColorFigureHoleTake`. Alfa
+    parcial (≥128, o `ALPHA_THRESHOLD` compartilhado com o export) sai CHAPADO — e "exato" só vale
+    com alfa 255: o canvas guarda a cor pré-multiplicada.
+  - A cor da figura vai para o **canal ativo** (`adoptChannelColor`, irmão do `applyChannelColor`
+    que não escreve na seleção): uma figura não tem estilo para copiar, tem UM pixel. A `opacity`
+    dela NÃO é adotada de propósito (é do decalque, não da cor).
+  - ⭐⭐ **O efeito de sincronização de estilo PULA a figura** (`VectorEditorScope`, o
+    `useEffect([styleSource])`): ela não tem estilo nenhum para oferecer, e com o conta-gotas isso
+    virou perda real — pegar a cor com a figura selecionada e depois arrastá-la um tiquinho
+    (commit → objeto novo → efeito) zerava o contorno recém-pego, sem aviso.
+  - **Leitor de tela**: o sucesso era MUDO (só mudava o rótulo de um botão que ninguém focava).
+    Agora o `role="status"` do palco recebe `pickedColorAnnounce`, e o nome da cor vem do
+    **`core/colorName.ts`** (`colorNameFor`: nome exato da paleta, senão "parecido com <a mais
+    próxima>") — um hex cru é lido letra a letra, e a razão de ser desta feature é justamente
+    pegar cores de FORA da paleta. ⚠️ Os `aria-label` dos quadradinhos seguem com o hex cru: é
+    pré-existente e vale para todo swatch de cor livre, não só para a figura.
+  - **Tocar no VAZIO do palco avisa** (`pickColorMiss`) nos DOIS modos — era um clique mudo.
+  - ⚠️ **happy-dom TEM `createImageBitmap`, e ele LANÇA `TypeError` com um Blob** (medido); o
+    `getContext('2d')` segue `null`, como a regra nº2 sempre disse. Logo a guarda de `typeof` não
+    basta: quem segura é o try/catch do `decodeSource` mais a LÁPIDE. O cache é de MÓDULO (o
+    `VectorStage` o limpa no desmonte, porque `ImageBitmap` não é reclamável), então os testes de
+    UI o limpam no `beforeEach` — sem isso um caso herda a LÁPIDE do anterior, o `prime` nem
+    decodifica e o teste fica vermelho sem motivo aparente (aconteceu em 3).
+  - ⚠️ `decodeSource` grava em `pending` ANTES de rodar o corpo: uma IIFE async roda síncrona até
+    o primeiro `await`, e o caminho sem `await` nenhum (data URL malformada) apagava de `pending`
+    uma chave que só seria escrita depois — deixando a promessa resolvida presa ali.
+  - Testes: `vector/imageSampler.test.ts` (17 casos, dublando as duas primitivas do navegador),
+    `vector/pickColor.test.ts` (`imageUvAt`), `core/colorName.test.ts`, e 8 casos de UI no
+    describe "pegar uma cor do desenho" do `vectorUi.test.tsx`. ⚠️ **A asserção que segura a
+    feature inteira é a FORA DA DIAGONAL** (`u ≠ v`): a primeira rodada de testes caiu toda em
+    `u === v` e uma implementação que trocasse os eixos passava em 13 de 13 (achado por análise
+    de mutantes no full review). QA em navegador (playground :5199) com um PNG 2×2 de cores
+    conhecidas e um quadrante transparente: os quadrantes saem exatos nos dois canais, a beirada
+    (4 px fora, dentro da folga) pega a borda, o vazio vira "sem cor" com recado, a ponta do
+    degradê recebe o pixel e a janela reabre com o foco no card, arrastar a figura depois de pegar
+    NÃO zera o quadradinho, e girar 90° move a resposta para o canto certo.
+  - Ficou por decidir com ela (não é defeito): varrer a figura com o conta-gotas enche as 6 vagas
+    de cores recentes (`MAX_CUSTOM_COLORS`), porque cada toque chama `rememberColor`.
 - **Fora de escopo (futuro)**: degradê multi-stop/ângulo livre,
   importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
   negrito/itálico do texto. ⚠️ **Operações booleanas (pathfinder) SAIU desta lista** (14/08/2026):
@@ -1745,7 +1813,9 @@ já saberemos o que é preenchimento e o que é contorno".
   request + a ferramenta de agora num REF e liga o conta-gotas); o palco resolve UMA cor
   (`pickColorAt`: preenchimento sólido; no degradê a ponta mais PERTO do toque, por projeção na
   bbox em unidades do `objectBoundingBox`, e no radial o meio fica a 0,25 do centro; contorno para
-  `none`/linha/pincel; figura de pixel art não tem cor única e toasta; forma SEM cor nenhuma nem
+  `none`/linha/pincel; ⚠️ **desde 15/09/2026 a figura de pixel art responde com o PIXEL sob o
+  toque** (`imageSampler.ts` — ver "Cores por CANAL"; antes ela toastava "tem muitas cores"), e o
+  pixel transparente cai no `pickColorNone`; forma SEM cor nenhuma nem
   entra no hit-test, `paintsSomething`; a caixa cresce pela folga `10/zoom` + metade do contorno,
   senão linha reta tem altura zero) e `endColorPick` restaura a
   ferramenta e entrega a cor: `rememberColor` + `applyGradient` (UMA entrada de undo, como o
@@ -2891,6 +2961,17 @@ por px reais.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
   na captura; forma sem cor roubando o toque; foco perdido ao reabrir) + baixas. Suíte (1154) +
   typecheck + biome verdes; QA em navegador no playground feito, inclusive dos consertos.
+- **O conta-gotas pega a cor de uma IMAGEM (15/09/2026)**: relato dela ("o conta-gotas do vetor
+  não está funcionando" + "dá para capturar a cor de uma imagem?") — eram o mesmo defeito, a
+  figura. Ver o bullet `imageSampler` em "Cores por CANAL". **Full review no mesmo dia (3
+  revisores: estado/eventos · lógica pura e testes · UX/a11y/copy/docs), 4 ALTOS + 6 MÉDIOS
+  corrigidos:** teto do cache por CONTAGEM deixava figura ilegível para sempre num quadro com 9
+  adesivos; o recado "toque de novo" era mentira (o toque não disparava abertura); a folga do
+  hit-test não existia no mapeamento (mirar a beirada dava erro com a figura pronta); o efeito de
+  sincronização zerava a cor recém-pega ao mover a figura; "sem cor" em silêncio era
+  indistinguível do defeito original; e **nenhum teste distinguia os eixos `u`/`v`** (análise de
+  mutantes: a implementação que os troca passava em 13 de 13 asserções). Suíte (1305) + typecheck
+  + biome verdes; QA em navegador no playground com um PNG 2×2 de cores conhecidas.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

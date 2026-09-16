@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 import { rightColumn, stubColumn } from '../../testing/rightColumnStub'
+import { clearImageSampleCache } from '../../vector/imageSampler'
 import type { VectorShape } from '../../vector/model'
 import { DEFAULT_STYLE, makeRect } from '../../vector/shapes'
 
@@ -12,6 +13,9 @@ const { createGalleryStore } = await import('../../state/galleryStore')
 
 beforeEach(() => {
   clearIdbMock()
+  // O cache de figuras abertas é de MÓDULO: sem limpar, um caso herdaria a
+  // imagem (ou a lápide) do anterior e o `prime` nem decodificaria de novo.
+  clearImageSampleCache()
   setPintaStorageNamespace('')
   // O espelho da área de transferência é o localStorage da página (o teste do
   // personagem pequeno copia): cada teste começa limpo, e nada vaza para o
@@ -1892,7 +1896,11 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
     expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
   })
 
-  it('figura de pixel art avisa que não tem uma cor só e continua na captura', async () => {
+  const FIGURA_SRC =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+
+  /** Abre um cenário com UMA figura (pixel art trazida para dentro do vetor) em 200..300. */
+  async function openComFigura(): Promise<void> {
     await openVectorEditor(
       undefined,
       async (seed) => {
@@ -1909,7 +1917,7 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
                 y: 200,
                 w: 100,
                 h: 100,
-                src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                src: FIGURA_SRC,
                 fill: 'none',
                 stroke: null,
                 opacity: 1,
@@ -1921,6 +1929,83 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       },
       'figura',
     )
+  }
+
+  /**
+   * Dubla `createImageBitmap` e o canvas 2D (happy-dom não tem nenhum dos dois),
+   * então o `imageSampler` de produção roda inteiro. O contexto é um Proxy com
+   * no-op no que não é usado: nada mais do editor pode quebrar por causa daqui.
+   */
+  function installImageStub(pixel: [number, number, number, number]): {
+    decodes: () => number
+    restore: () => void
+  } {
+    const contextDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLCanvasElement.prototype,
+      'getContext',
+    )
+    const bitmapDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
+    let decodes = 0
+    const base: Record<string, unknown> = {
+      imageSmoothingEnabled: true,
+      clearRect: () => {},
+      drawImage: () => {},
+      getImageData: () => ({ data: Uint8ClampedArray.from(pixel) }),
+      createImageData: (w: number, h: number) => ({
+        data: new Uint8ClampedArray(Math.max(0, w) * Math.max(0, h) * 4),
+        width: w,
+        height: h,
+      }),
+    }
+    const context = new Proxy(base, {
+      get: (target, prop: string) => (prop in target ? target[prop] : () => undefined),
+      set: (target, prop: string, value) => {
+        target[prop] = value
+        return true
+      },
+    })
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: () => context,
+    })
+    Object.defineProperty(globalThis, 'createImageBitmap', {
+      configurable: true,
+      value: async () => {
+        decodes += 1
+        return { width: 4, height: 4, close: () => {} } as unknown as ImageBitmap
+      },
+    })
+    return {
+      decodes: () => decodes,
+      restore: () => {
+        if (contextDescriptor) {
+          Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', contextDescriptor)
+        } else Reflect.deleteProperty(HTMLCanvasElement.prototype, 'getContext')
+        if (bitmapDescriptor) {
+          Object.defineProperty(globalThis, 'createImageBitmap', bitmapDescriptor)
+        } else Reflect.deleteProperty(globalThis, 'createImageBitmap')
+      },
+    }
+  }
+
+  function figuraNoPalco(stage: HTMLElement): Element {
+    const el = stage.querySelector('image')
+    if (!el) throw new Error('figura esperada')
+    return el
+  }
+
+  /** O quadradinho do canal na caixa (o `title` o distingue dos swatches da paleta). */
+  function slotName(channel: string, name: string): HTMLElement | undefined {
+    return screen
+      .queryAllByRole('button', { name: `${channel}: ${name}` })
+      .find((button) => button.getAttribute('title') === channel)
+  }
+
+  it('a figura que não abre neste ambiente avisa e CONTINUA na captura', async () => {
+    // ⚠️ O nome NÃO é "sem canvas": em happy-dom o `getContext('2d')` é null, mas
+    // quem barra antes é o `createImageBitmap`, que LANÇA com um Blob. O caminho
+    // exercitado aqui é a LÁPIDE.
+    await openComFigura()
     const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
     drawRect(stage, [16, 16], [64, 64])
@@ -1928,13 +2013,239 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
     })
     await startPicking('from')
-    const figuraEl = stage.querySelector('image')
-    if (!figuraEl) throw new Error('figura esperada')
-    fireEvent.pointerDown(figuraEl, { isPrimary: true, pointerId: 1, clientX: 250, clientY: 250 })
-    expect(await screen.findByText(COPY.vector.pickColorNoColor)).toBeTruthy()
+    fireEvent.pointerDown(figuraNoPalco(stage), {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 250,
+      clientY: 250,
+    })
+    expect(await screen.findByText(COPY.vector.pickColorFigureFailed)).toBeTruthy()
     expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
     expect(pressed(COPY.tools.picker)).toBe('true')
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('a mesma figura com a ferramenta solta também avisa (e não apaga a cor)', async () => {
+    await openComFigura()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+    await waitFor(() => {
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    })
+    fireEvent.pointerDown(figuraNoPalco(stage), {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 250,
+      clientY: 250,
+    })
+    expect(await screen.findByText(COPY.vector.pickColorFigureFailed)).toBeTruthy()
+    // O quadradinho fica como estava: figura que não abre não apaga cor nenhuma.
+    expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeUndefined()
+  })
+
+  it('a captura pega a COR DO PIXEL da figura e monta o degradê com ela', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+      drawRect(stage, [16, 16], [64, 64])
+      await waitFor(() => {
+        expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+      })
+      await startPicking('from')
+      // A pré-carga é do EFEITO do palco, disparada ao ligar o conta-gotas.
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(document.querySelectorAll('stop[stop-color="#ff9221"]').length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(COPY.vector.pickColorFigureLoading)).toBeNull()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('o conta-gotas comum leva a cor do pixel para o CANAL ativo (e não apaga mais a cor)', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      // Antes deste lote a figura adotava o estilo dela (`fill: 'none'`) e o
+      // quadradinho virava "sem cor" em silêncio: era o "não está funcionando".
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      })
+      expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeUndefined()
+      // ⚠️ Anti-vácuo do defeito ORIGINAL: o `adoptStyle` antigo levava junto o
+      // `stroke: null` da figura e zerava o contorno. Ele fica intacto.
+      expect(slotName(COPY.vector.stroke, 'preto')).toBeTruthy()
+      // Leitor de tela: o sucesso era mudo, e o hex seria lido letra a letra.
+      expect(
+        screen.getByText(
+          COPY.vector.pickedColorAnnounce(COPY.vector.fill, COPY.vector.colorApprox('laranja')),
+        ),
+      ).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('⭐ com o CONTORNO ativo, a cor do pixel vai para o contorno', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      // Troca o canal ativo ANTES de pegar (sem isso, uma implementação que
+      // sempre escreve no preenchimento passaria no teste de cima).
+      const contorno = slotName(COPY.vector.stroke, 'preto')
+      if (!contorno) throw new Error('slot de contorno esperado')
+      fireEvent.click(contorno)
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.stroke, '#ff9221')).toBeTruthy()
+      })
+      // O preenchimento não se mexeu.
+      expect(slotName(COPY.vector.fill, 'verde')).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('pixel transparente da figura arma o "sem cor" E avisa (e na captura não vale)', async () => {
+    const stub = installImageStub([10, 20, 30, 0])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeTruthy()
+      })
+      // Calado, "sem cor" seria indistinguível do defeito antigo.
+      expect(screen.getByText(COPY.vector.pickColorFigureHole)).toBeTruthy()
+      // Na captura, uma ponta de degradê precisa de cor: recado PRÓPRIO.
+      await startPicking('from')
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 2,
+        clientX: 250,
+        clientY: 250,
+      })
+      expect(await screen.findByText(COPY.vector.pickColorFigureHoleTake)).toBeTruthy()
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('⭐ mexer na figura DEPOIS de pegar a cor não zera o quadradinho', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      // Seleciona a FIGURA: é ela que vira a fonte do efeito que sincroniza o
+      // estilo — e uma figura não tem estilo nenhum para oferecer.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.pointerUp(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 2,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      })
+      // Arrastar a figura COMMITA: o `styleSource` vira um objeto novo e o efeito
+      // de sincronização rodava, copiando o "nada" da figura por cima da cor.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.pointerMove(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 262,
+        clientY: 262,
+      })
+      fireEvent.pointerUp(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 262,
+        clientY: 262,
+      })
+      await waitFor(() => {
+        expect(stage.querySelector('image')?.getAttribute('x')).not.toBe('200')
+      })
+      expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      expect(slotName(COPY.vector.stroke, 'preto')).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('conta-gotas no VAZIO do palco avisa em vez de ficar mudo (nos dois modos)', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+    await waitFor(() => {
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    })
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 400, clientY: 330 })
+    expect(await screen.findByText(COPY.vector.pickColorMiss)).toBeTruthy()
   })
 
   it('reabrir o Degradê no meio da captura e pedir a OUTRA ponta: a última pedida vence', async () => {
