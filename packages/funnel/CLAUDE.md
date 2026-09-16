@@ -611,6 +611,15 @@ Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).
 
+**Atribuição de eventos (migration `0016`):** `leads.attribution` guarda first-touch versionado com
+UTMs, `eventCode`, cupom inicial e landing path; só aceita identificadores técnicos curtos e nunca
+PII. `funnel_events.event_key` é único e dá idempotência aos marcos enviados por outros serviços.
+O admin filtra Respostas por `event_code` e agrega leads únicos por etapa e pagamentos pelo preço
+real do snapshot. A rota interna `POST /api/internal/challenge-events` exige
+`x-internal-token = FUNNEL_INTERNAL_TOKEN`, aceita no máximo 500 eventos por lote e resolve os leads
+em batch. O Members envia ativação, início, Dia 1 e conclusão; a compra da Comunidade só é atribuída
+quando existe uma jornada anterior do Desafio para o mesmo responsável.
+
 Colunas de controle pós-pagamento no lead (2º full review 06/2026): `welcome_sent_at` (claim
 atômico do welcome — ver "Boas-vindas") e `members_granted_at` (one-shot da concessão);
 `lead_payments.coupon_code` (cupom POR cobrança — fonte do redeem). Índice composto

@@ -40,10 +40,13 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > **Clube dos Criadores** e
 > **Mural dos Criadores** (kids, `kind: 'community'`, entrega `community` courseRef = slug — SEM oferta
 > no seed; o Mural é dado de BÔNUS na oferta do desafio) · **Desafio do Primeiro Jogo** (kids,
-> `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ oferta ativa R$37 com o
-> Mural como item de BÔNUS** (`items`) — é a oferta que o funil `/kids/desafio-primeiro-jogo` vende
-> (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). O **Clube** fica SEM oferta no
-> seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a
+> `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ duas ofertas preservadas**:
+> a histórica `desafio-primeiro-jogo` (R$ 37, vitalícia) e a pública
+> `desafio-primeiro-jogo-30-dias` (R$ 67, `fixed`/30 dias, criada em `draft` para homologação), ambas
+> com o Mural como item de BÔNUS (`items`). Após homologar, o funil `/kids/desafio-primeiro-jogo`
+> deve usar `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo-30-dias`; eventos aplicam
+> cupom fixo de R$ 30 na mesma oferta. Nunca reinterprete nem exclua a oferta vitalícia. O **Clube**
+> fica SEM oferta no seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a
 > chave-mestra kids como produto-FOLHA: `kind:'course'`, **`sellable:false`**, entrega
 > `all_kids_courses` SEM courseRef; só chega ao aluno dentro do combo) · **Comunidade dos
 > Criadores** (`comunidade-dos-criadores`, 07/2026 — o 1º COMBO real do seed: `kind:'bundle'`,

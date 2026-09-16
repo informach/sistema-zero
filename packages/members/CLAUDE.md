@@ -966,6 +966,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   relação ambígua é descartada. Envia: 24h sem ativar, 48h ativado sem começar, Dia 1 concluído e
   curso concluído. Envio e marcação são mark-after-send; o idempotency key do Messaging absorve o
   crash intermediário. O mesmo timer/advisory lock do lembrete anual executa os dois serviços.
+  Quando `FUNNEL_URL` e `FUNNEL_INTERNAL_TOKEN` estão configurados, esses quatro marcos também são
+  enviados em lote para `POST /api/internal/challenge-events`; falha de analytics é best-effort e
+  nunca bloqueia acesso ou mensagem. O token deve ser o mesmo do Funnel e é opcional apenas quando
+  a integração está deliberadamente desligada em desenvolvimento.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
   `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por
