@@ -7,8 +7,20 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
+// `mock.module` vale para o processo inteiro do Bun, inclusive outros arquivos
+// que estejam rodando em paralelo. Preserve o contrato completo de
+// `next/navigation` e substitua somente o roteador usado por este componente.
+const nextNavigation = await import('next/navigation')
 mock.module('next/navigation', () => ({
-  useRouter: () => ({ refresh: () => {} }),
+  ...nextNavigation,
+  useRouter: () => ({
+    back: () => {},
+    forward: () => {},
+    prefetch: () => {},
+    push: () => {},
+    refresh: () => {},
+    replace: () => {},
+  }),
 }))
 
 const { act } = await import('react')
