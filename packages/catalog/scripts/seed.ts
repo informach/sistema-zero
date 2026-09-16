@@ -56,9 +56,9 @@ const MOLDA_OFFER_SLUG = 'molda'
 const CLUBE_SKU = 'clube-dos-criadores'
 const MURAL_SKU = 'mural-dos-criadores'
 
-// Desafio do Primeiro Jogo (kids) — o funil `/kids/desafio-primeiro-jogo` vende ESTA
-// oferta (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). É um
-// CURSO (a criança faz o 1º jogo dentro do curso, autorado no admin com este slug) +
+// Desafio do Primeiro Jogo (kids) — o funil `/kids/desafio-primeiro-jogo` usa a
+// oferta pública de 30 dias abaixo; esta oferta histórica permanece para bolsas e
+// contratos vitalícios. É um CURSO (autorado no admin com este slug) +
 // o **Mural de BÔNUS** (item da oferta). Sem o produto/oferta, o checkout do funil quebra.
 const DESAFIO_SKU = 'desafio-primeiro-jogo'
 const DESAFIO_OFFER_SLUG = 'desafio-primeiro-jogo'

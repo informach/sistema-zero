@@ -182,8 +182,9 @@ cupom de evento):** criança 9+ monta um jogo de nave em 5 etapas, com 30 dias c
 é pagamento único sem renovação. **Comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
 Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
 (`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
-`renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
-(slug `desafio-primeiro-jogo`, âncora R$ 97) é passo da usuária no admin (igual ao NCI).
+`renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. O funil público deve
+apontar para `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua
+reservada aos contratos vitalícios históricos e ao fluxo de bolsas.
 
 No pós-pagamento desse funil, `welcome-email.ts` lê o snapshot congelado da cobrança. Quando a
 política é `fixed`, usa `challenge-access-approved` (e-mail + WhatsApp) e informa a data/hora exata

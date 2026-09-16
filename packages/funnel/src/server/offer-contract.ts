@@ -5,6 +5,7 @@ type OfferAccessPolicy = {
   accessMode: 'lifetime' | 'fixed' | 'billing_cycle'
   accessDurationValue: number | null
   accessDurationUnit: 'days' | 'months' | null
+  guaranteeDays: number | null
 }
 
 export type OfferContractCheck =
@@ -28,7 +29,8 @@ export function checkOfferContract(
     offer.pricingMode === contract.pricingMode &&
     offer.accessMode === contract.accessMode &&
     offer.accessDurationValue === contract.accessDurationValue &&
-    offer.accessDurationUnit === contract.accessDurationUnit
+    offer.accessDurationUnit === contract.accessDurationUnit &&
+    offer.guaranteeDays === contract.guaranteeDays
   return matches
     ? { ok: true }
     : { ok: false, reason: 'policy_mismatch', expected: contract, actual: offer }

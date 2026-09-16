@@ -65,13 +65,17 @@ describe('POST /api/webhooks/payments', () => {
 
     const res = await handlePaymentWebhook(
       req(
-        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        {
+          id: 'd1',
+          event: 'payment.paid',
+          data: { paymentId: 'pay-1', paidAt: '2026-09-16T14:25:30.000Z' },
+        },
         { token: TOKEN, deliveryId: 'd1', event: 'payment.paid' },
       ),
       deps(repo, gw),
     )
     expect(res.status).toBe(200)
-    expect(leads.get(id)?.paidAt).not.toBeNull()
+    expect(leads.get(id)?.paidAt?.toISOString()).toBe('2026-09-16T14:25:30.000Z')
     expect(events.filter((e) => e.eventName === 'pagamento_confirmado')).toHaveLength(1)
 
     // Comprador garantido via gateway → auth (201 default → guarda o user id).

@@ -144,7 +144,7 @@ describe('SendRenewalRemindersService', () => {
     expect(email.variables?.produto).toBe('Clube dos Criadores')
     expect(email.variables?.data).toBe('30/05/2027')
     expect(email.variables?.link).toBe('https://sistemazero.com.br/renovar?oferta=clube-anual')
-    expect(email.idempotencyKey).toBe('renewal-reminder:e1:2027-05-30')
+    expect(email.idempotencyKey).toMatch(/^renewal-reminder:[a-f0-9]{32}$/)
 
     expect(reminded.has('e1|2027-05-30')).toBe(true)
     expect(reminded.has('e2|2027-05-30')).toBe(true)
@@ -201,6 +201,23 @@ describe('SendRenewalRemindersService', () => {
     expect(reminded.has('e1|2027-05-30')).toBe(true)
   })
 
+  test('retry parcial mantém a mesma chave mesmo quando muda a primeira matrícula do grupo', async () => {
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
+    })
+    const firstAttempt = fakeMessaging()
+    const retryAttempt = fakeMessaging()
+
+    await service(
+      fakeRepo([row({ id: 'e1' }), row({ id: 'e2' })]).repo,
+      auth,
+      firstAttempt.gateway,
+    ).runCycle()
+    await service(fakeRepo([row({ id: 'e2' })]).repo, auth, retryAttempt.gateway).runCycle()
+
+    expect(firstAttempt.sent[0]?.idempotencyKey).toBe(retryAttempt.sent[0]?.idempotencyKey)
+  })
+
   test('vencimentos DIFERENTES do mesmo usuário são compras distintas → 2 e-mails', async () => {
     const { repo } = fakeRepo([
       row({ id: 'e1', expiresAt: new Date('2027-05-28T00:00:00Z') }),
@@ -230,7 +247,7 @@ describe('SendRenewalRemindersService', () => {
 
     expect(await reminderService.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
     expect(msg.sent).toHaveLength(1)
-    expect(msg.sent[0]?.idempotencyKey).toBe('renewal-reminder:e1:2027-05-30')
+    expect(msg.sent[0]?.idempotencyKey).toMatch(/^renewal-reminder:[a-f0-9]{32}$/)
     expect(reminded.has('e1|2027-05-30')).toBe(true)
     expect(reminded.has('e2|2027-05-30')).toBe(true)
     expect(reminded.has('e3|2027-05-30')).toBe(true)
@@ -238,7 +255,7 @@ describe('SendRenewalRemindersService', () => {
     // O ciclo seguinte avança para a próxima compra; não reenvia a anterior.
     expect(await reminderService.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
     expect(msg.sent).toHaveLength(2)
-    expect(msg.sent[1]?.idempotencyKey).toBe('renewal-reminder:e4:2027-05-30')
+    expect(msg.sent[1]?.idempotencyKey).toMatch(/^renewal-reminder:[a-f0-9]{32}$/)
   })
 
   test('envia os marcos de 7 dias, 3 dias e expiração uma vez por vencimento', async () => {
@@ -317,6 +334,6 @@ describe('SendRenewalRemindersService', () => {
     expect((await service(repo, auth, msg.gateway).runCycle()).failed).toBe(1)
     expect(lifecycleSent.size).toBe(0)
     expect((await service(repo, auth, msg.gateway).runCycle()).sent).toBe(1)
-    expect(msg.sent[0]?.idempotencyKey).toBe('challenge-expiry-3d:fixed-retry:2027-05-30')
+    expect(msg.sent[0]?.idempotencyKey).toMatch(/^challenge-expiry-3d:[a-f0-9]{32}$/)
   })
 })

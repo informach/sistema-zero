@@ -55,9 +55,13 @@ export class DrizzleRenewalReminderRepository implements RenewalReminderReposito
             eq(entitlements.status, 'active'),
             eq(entitlements.sourceKind, 'payment'),
             isNull(entitlements.subscriptionId),
-            // O lembrete genérico é só do prazo anual/mensal. `fixed/days`
-            // possui a cadência própria do Desafio abaixo.
-            sql`coalesce(${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit', 'months') <> 'days'`,
+            // Somente o Desafio fixed/days possui a cadência própria abaixo.
+            // Outros produtos por dias continuam no lembrete genérico.
+            sql`not coalesce((
+              ${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'
+              and ${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'
+              and ${entitlements.snapshot} ->> 'offerSlug' like 'desafio-primeiro-jogo%'
+            ), false)`,
             gte(entitlements.expiresAt, from),
             lte(entitlements.expiresAt, to),
             isNull(renewalRemindersSent.entitlementId),

@@ -22,6 +22,7 @@ import {
   resolveCharge,
 } from './catalog'
 import { checkOfferContract } from './offer-contract'
+import { paymentApprovedAt } from './payment-approved-at'
 import { applyPaymentContextToLead } from './payment-context'
 import {
   createPurchasedOfferSnapshot,
@@ -621,7 +622,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
 
   if (view.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
+    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt))
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
       // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
@@ -638,7 +639,7 @@ interface SubscriptionCreateView {
   id: string
   status: string
   intervalMonths: number
-  firstPayment?: { id: string; status: string } | null
+  firstPayment?: { id: string; status: string; paidAt?: string | null } | null
 }
 
 /**
@@ -735,7 +736,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_subscription')
 
   if (view.status === 'ACTIVE' && firstPayment?.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
+    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(firstPayment.paidAt))
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_subscription')
     }
@@ -814,7 +815,7 @@ export async function pixStatus(
         throw err
       }
     }
-    const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
+    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt))
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')
       // Registra o uso do cupom só na transição p/ pago (exactly-once via

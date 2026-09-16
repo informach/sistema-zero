@@ -116,6 +116,8 @@ export interface FunnelOfferContract {
   accessMode: 'lifetime' | 'fixed' | 'billing_cycle'
   accessDurationValue: number | null
   accessDurationUnit: 'days' | 'months' | null
+  /** Condição legal repetida pela copy; `null` quando o funil não promete garantia. */
+  guaranteeDays: number | null
 }
 
 export interface FunnelDef {

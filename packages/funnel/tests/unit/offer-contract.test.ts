@@ -7,6 +7,7 @@ const fixedThirtyDays = {
   accessMode: 'fixed' as const,
   accessDurationValue: 30,
   accessDurationUnit: 'days' as const,
+  guaranteeDays: 7,
 }
 
 describe('contrato entre a copy do funil e a oferta configurada', () => {
@@ -23,8 +24,13 @@ describe('contrato entre a copy do funil e a oferta configurada', () => {
         accessMode: 'lifetime',
         accessDurationValue: null,
         accessDurationUnit: null,
+        guaranteeDays: 7,
       }),
     ).toMatchObject({ ok: false, reason: 'policy_mismatch' })
+    expect(checkOfferContract(contract, { ...fixedThirtyDays, guaranteeDays: 14 })).toMatchObject({
+      ok: false,
+      reason: 'policy_mismatch',
+    })
   })
 
   test('falha fechada quando o catálogo não devolve a oferta', () => {

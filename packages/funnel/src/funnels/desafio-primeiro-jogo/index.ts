@@ -45,6 +45,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     accessMode: 'fixed',
     accessDurationValue: 30,
     accessDurationUnit: 'days',
+    guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {

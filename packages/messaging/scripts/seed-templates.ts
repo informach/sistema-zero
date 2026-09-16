@@ -446,7 +446,7 @@ const seeds = [
       content: [
         p('Olá, {{nome}}! O acesso já foi liberado, mas a senha da conta ainda não foi criada.'),
         p(
-          'Como os 30 dias começaram na aprovação do pagamento, vale resolver esse passo agora. Na tela abaixo, escolha <strong>“Esqueci minha senha”</strong> para definir uma senha e entrar.',
+          'Como os 30 dias começaram na aprovação do pagamento, vale resolver esse passo agora. Use o botão abaixo, informe o e-mail da compra e siga as instruções para definir sua senha.',
         ),
         ctaButton('Criar senha e entrar', '{{link}}'),
         fallbackLink('{{link}}'),

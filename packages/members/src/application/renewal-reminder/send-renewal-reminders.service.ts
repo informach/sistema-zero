@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { ChallengeAnalyticsGateway } from '../../domain/ports/challenge-analytics-gateway.port'
@@ -20,6 +21,25 @@ export interface RenewalReminderOptions {
 }
 
 const DEFAULT_BATCH_LIMIT = 200
+
+/**
+ * A chave pertence ao grupo comercial, não à primeira matrícula retornada.
+ * Assim, se o envio ocorrer e o processo cair depois de marcar apenas parte das
+ * matrículas, o retry continua sendo deduplicado pelo Messaging. O hash evita
+ * expor ids internos no header e mantém a chave bem abaixo do limite de 200 chars.
+ */
+function lifecycleIdempotencyKey(
+  templateKey: string,
+  userId: string,
+  offerSlug: string | null,
+  expiresOn: string,
+): string {
+  const groupHash = createHash('sha256')
+    .update(`${userId}\u0000${offerSlug ?? ''}\u0000${expiresOn}`)
+    .digest('hex')
+    .slice(0, 32)
+  return `${templateKey}:${groupHash}`
+}
 
 /** `DD/MM/AAAA` a partir do vencimento (data UTC — a carência absorve o fuso). */
 function ddmmyyyy(expiresAt: Date): string {
@@ -104,7 +124,12 @@ export class SendRenewalRemindersService {
           templateKey: 'renewal-reminder',
           recipient: { name: nome, email: identity.email },
           variables: { nome, produto, data: ddmmyyyy(first.expiresAt), link },
-          idempotencyKey: `renewal-reminder:${first.id}:${expiresOn}`,
+          idempotencyKey: lifecycleIdempotencyKey(
+            'renewal-reminder',
+            first.userId,
+            first.offerSlug,
+            expiresOn,
+          ),
         })
         // Mark-AFTER-send (crash-safety) — todas as matrículas do grupo.
         for (const e of group) await this.reminders.markReminded(e.id, expiresOn, this.clock())
@@ -165,7 +190,12 @@ export class SendRenewalRemindersService {
           templateKey,
           recipient: { name: nome, email: identity.email },
           variables: { nome, data: ddmmyyyySaoPaulo(first.expiresAt), link },
-          idempotencyKey: `${templateKey}:${first.id}:${expiresOn}`,
+          idempotencyKey: lifecycleIdempotencyKey(
+            templateKey,
+            first.userId,
+            first.offerSlug,
+            expiresOn,
+          ),
         })
         for (const entitlement of group) {
           await this.reminders.markLifecycleMessageSent(

@@ -161,6 +161,31 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     ).toHaveLength(0)
   })
 
+  test('produto fixed/days que não é o Desafio continua no lembrete genérico', async () => {
+    const entitlementId = randomUUID()
+    const accountId = randomUUID()
+    const snapshot = JSON.stringify({
+      offerSlug: 'oficina-criativa-15-dias',
+      name: 'Oficina Criativa',
+      accessPolicy: { mode: 'fixed', durationValue: 15, durationUnit: 'days' },
+    })
+    await conn.sql`
+      insert into members.entitlements
+        (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+         access_type, course_ref, granted_at)
+      values (${entitlementId}, ${accountId}, ${snapshot}::jsonb, 'active', 'payment', null,
+        '2027-05-30T00:00:00Z', 'course', 'oficina-criativa', '2027-05-15T00:00:00Z')
+    `
+
+    const rows = await new DrizzleRenewalReminderRepository(conn.db).listExpiringTermEntitlements(
+      new Date('2027-05-25T00:00:00Z'),
+      new Date('2027-05-31T00:00:00Z'),
+      10,
+    )
+
+    expect(rows.map((row) => row.id)).toEqual([entitlementId])
+  })
+
   test('vitalício é ignorado e assinatura ou chave-mestra mais forte bloqueiam aviso', async () => {
     const accountId = randomUUID()
     const fixedId = randomUUID()
