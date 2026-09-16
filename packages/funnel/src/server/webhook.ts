@@ -4,6 +4,7 @@ import { safeEqual } from '../lib/safe-equal'
 import { FulfillmentRetryError } from './fulfillment'
 import { GrantRetryError } from './members-grant'
 import { applyPaymentContextToLead } from './payment-context'
+import { InvalidPurchasedOfferSnapshotError } from './purchased-offer-snapshot'
 
 export interface WebhookDeps {
   repo: FunnelRepo
@@ -136,7 +137,14 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
       lead.paymentId = paymentId
     }
     if (!lead.paidAt) {
-      lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+      try {
+        lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+      } catch (err) {
+        if (err instanceof InvalidPurchasedOfferSnapshotError) {
+          return jsonError('Contrato da compra inválido; reentregar.', 502, 'SNAPSHOT_RETRY')
+        }
+        throw err
+      }
     }
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
     if (newlyPaid) {

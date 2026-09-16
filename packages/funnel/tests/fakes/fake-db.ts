@@ -94,6 +94,7 @@ export function createFakeRepo(): FakeRepoState {
             telefone: snapshot?.telefone ?? null,
             document: snapshot?.document ?? null,
             accessPeriodMonths: snapshot?.accessPeriodMonths ?? null,
+            offerSnapshot: snapshot?.offerSnapshot ?? null,
           })
         }
       }
@@ -123,6 +124,7 @@ export function createFakeRepo(): FakeRepoState {
           telefone: null,
           document: null,
           accessPeriodMonths: null,
+          offerSnapshot: null,
         })
       }
     },
@@ -132,8 +134,8 @@ export function createFakeRepo(): FakeRepoState {
     async paymentContext(paymentId) {
       const mapped = payments.get(paymentId)
       if (!mapped) return null
-      const { couponCode, offerRef, nome, email, telefone, document } = mapped
-      return { couponCode, offerRef, nome, email, telefone, document }
+      const { couponCode, offerRef, nome, email, telefone, document, offerSnapshot } = mapped
+      return { couponCode, offerRef, nome, email, telefone, document, offerSnapshot }
     },
     async markPaid(id, paidAt) {
       const lead = leads.get(id)

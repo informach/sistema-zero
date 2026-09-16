@@ -21,6 +21,11 @@ import {
   resolveCharge,
 } from './catalog'
 import { applyPaymentContextToLead } from './payment-context'
+import {
+  createPurchasedOfferSnapshot,
+  InvalidPurchasedOfferSnapshotError,
+  termsVersionForFunnel,
+} from './purchased-offer-snapshot'
 
 /** Oferta resolvida (slug/nome/sku) que o checkout cobra para um dado funil. */
 export interface ResolvedOffer {
@@ -328,6 +333,17 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
   const charge = await resolveCharge(deps.gateway, offerSlug, interval ? undefined : c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
+  if (charge.pricingMode === 'subscription' && !annualUpfront) {
+    return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
+  }
+  if (charge.pricingMode === 'subscription' && c.couponCode?.trim()) {
+    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
+  }
+  const offerSnapshot = createPurchasedOfferSnapshot(charge, {
+    termsVersion: termsVersionForFunnel(lead.funnel),
+    annualUpfront,
+  })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
@@ -376,7 +392,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
     telefone: lead.telefone,
     document: lead.document,
     // Anual à vista: 12 meses de acesso (o grant concede com validade + carência).
-    ...(interval === 12 ? { accessPeriodMonths: 12 } : {}),
+    ...(annualUpfront ? { accessPeriodMonths: 12 } : {}),
+    offerSnapshot,
   })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout')
 
@@ -428,6 +445,17 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     interval ? undefined : form.couponCode,
   )
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
+  if (charge.pricingMode === 'subscription' && !annualUpfront) {
+    return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
+  }
+  if (charge.pricingMode === 'subscription' && form.couponCode?.trim()) {
+    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
+  }
+  const offerSnapshot = createPurchasedOfferSnapshot(charge, {
+    termsVersion: termsVersionForFunnel(lead.funnel),
+    annualUpfront,
+  })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   const idempotencyKey = `funil-${lead.id}-boleto`
@@ -467,7 +495,8 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     email: lead.email,
     telefone: lead.telefone,
     document: form.cpf.replace(/\D/g, ''),
-    ...(interval === 12 ? { accessPeriodMonths: 12 } : {}),
+    ...(annualUpfront ? { accessPeriodMonths: 12 } : {}),
+    offerSnapshot,
   })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_boleto')
 
@@ -506,6 +535,12 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
 
   const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (charge.pricingMode === 'subscription') {
+    return jsonError('Esta oferta é uma assinatura recorrente.', 409, 'USE_SUBSCRIPTION')
+  }
+  const offerSnapshot = createPurchasedOfferSnapshot(charge, {
+    termsVersion: termsVersionForFunnel(lead.funnel),
+  })
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   // Limite de parcelas é da OFERTA (catálogo) — autoritativo no servidor (o seletor do
@@ -553,6 +588,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     email: lead.email,
     telefone: lead.telefone,
     document: lead.document,
+    offerSnapshot,
   })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
 
@@ -610,13 +646,20 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   // Preço AUTORITATIVO da oferta (SEM cupom — vira o plano de TODOS os ciclos).
   const charge = await resolveCharge(deps.gateway, offerSlug)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  if (charge.pricingMode !== 'subscription' || charge.billingIntervalMonths === null) {
+    return jsonError('Esta oferta não é uma assinatura.', 409, 'NOT_SUBSCRIPTION')
+  }
+  const authoritativeInterval = charge.billingIntervalMonths
+  const offerSnapshot = createPurchasedOfferSnapshot(charge, {
+    termsVersion: termsVersionForFunnel(lead.funnel),
+  })
   await persistCheckoutContext(deps, lead.id, offerSlug, null)
 
   // Nonce por tentativa (como o cartão avulso): recusa pode re-tentar sem replay.
   const idempotencyKey = `funil-${lead.id}-sub-${c.attemptId}`
   const input = {
     amountInCents: charge.amountInCents,
-    intervalMonths: interval,
+    intervalMonths: authoritativeInterval,
     description: productName,
     customer: {
       name: c.contact.nome,
@@ -645,7 +688,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
     )
   }
   const view = body as SubscriptionCreateView
-  await deps.repo.setSubscription(lead.id, view.id, interval)
+  await deps.repo.setSubscription(lead.id, view.id, authoritativeInterval)
   // 1ª cobrança exposta na criação → registra no histórico (o webhook `payment.paid`
   // dela resolve o lead; o grant referencia a cobrança certa).
   const firstPayment = view.firstPayment ?? null
@@ -656,6 +699,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
       email: lead.email,
       telefone: lead.telefone,
       document: lead.document,
+      offerSnapshot,
     })
   }
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_subscription')
@@ -731,7 +775,14 @@ export async function pixStatus(
 
   if (view.status === 'PAID') {
     if (!lead.paidAt) {
-      lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+      try {
+        lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+      } catch (err) {
+        if (err instanceof InvalidPurchasedOfferSnapshotError) {
+          return jsonError('Contrato da compra pendente de validação.', 502, 'SNAPSHOT_RETRY')
+        }
+        throw err
+      }
     }
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
     if (newlyPaid) {

@@ -7,6 +7,7 @@ import { makeSendChargeFailed } from '../../src/server/dunning'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
 import { makeResolveOffer } from '../../src/server/offer'
+import type { PurchasedOfferSnapshotV1 } from '../../src/server/purchased-offer-snapshot'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
@@ -147,6 +148,14 @@ describe('POST /api/checkout/subscription', () => {
     expect(lead?.paymentId).toBe('pay-sub-1')
     expect(lead?.paidAt).not.toBeNull()
     expect(payments.get('pay-sub-1')?.leadId).toBe(id)
+    expect(payments.get('pay-sub-1')?.offerSnapshot).toMatchObject({
+      version: 1,
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      accessMode: 'billing_cycle',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
     expect(events.some((e) => e.step === 'checkout_subscription')).toBe(true)
 
     // Grant ramificado: o members recebe a ASSINATURA (cria/estende com validade).
@@ -298,6 +307,13 @@ describe('métodos por modo de oferta', () => {
     expect(input.method).toBe('PIX')
     expect(input.amountInCents).toBe(47000)
     expect(payments.get('pay-1')?.accessPeriodMonths).toBe(12)
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      pricingMode: 'one_time',
+      billingIntervalMonths: null,
+      accessMode: 'fixed',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
   })
 
   test('cupom em assinatura anual à vista → 422 COUPON_NOT_ALLOWED', async () => {

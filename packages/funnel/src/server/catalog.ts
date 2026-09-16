@@ -53,8 +53,24 @@ export interface OfferPlans {
   alt: OfferPlan | null
 }
 
+export interface ResolvedCharge {
+  amountInCents: number
+  offerId: string
+  offerSlug: string
+  couponCode: string | null
+  listPriceCents: number
+  discountCents: number
+  currency: 'BRL'
+  pricingMode: CatalogPricingMode
+  billingIntervalMonths: number | null
+  guaranteeDays: number | null
+  accessMode: CatalogAccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: CatalogAccessDurationUnit | null
+}
+
 export type ChargeResolution =
-  | { ok: true; amountInCents: number; offerId: string; couponCode: string | null }
+  | ({ ok: true } & ResolvedCharge)
   | { ok: false; status: number; code: string; message: string }
 
 /** Cotação para PREVIEW na UI (cupom): preço cheio, desconto e final. */
@@ -83,10 +99,56 @@ export async function resolveCharge(
   if (status === 200) {
     const q = body as {
       offerId?: unknown
+      offerSlug?: unknown
+      priceCents?: unknown
+      discountCents?: unknown
       finalPriceCents?: unknown
+      currency?: unknown
+      pricingMode?: unknown
+      billingIntervalMonths?: unknown
+      guaranteeDays?: unknown
+      accessMode?: unknown
+      accessDurationValue?: unknown
+      accessDurationUnit?: unknown
       coupon?: { code?: string } | null
     }
-    if (typeof q.offerId !== 'string' || typeof q.finalPriceCents !== 'number') {
+    const pricingMode = parsePricingMode(q.pricingMode)
+    const accessPolicy = parseAccessPolicy(
+      q as unknown as Record<string, unknown>,
+      pricingMode ?? 'one_time',
+    )
+    const coupon = parseQuotedCoupon(q.coupon)
+    const billingIntervalMonths =
+      q.billingIntervalMonths === null ||
+      (Number.isInteger(q.billingIntervalMonths) && (q.billingIntervalMonths as number) > 0)
+        ? (q.billingIntervalMonths as number | null)
+        : undefined
+    const guaranteeDays =
+      q.guaranteeDays === null ||
+      (Number.isInteger(q.guaranteeDays) && (q.guaranteeDays as number) > 0)
+        ? (q.guaranteeDays as number | null)
+        : undefined
+    if (
+      typeof q.offerId !== 'string' ||
+      !q.offerId ||
+      typeof q.offerSlug !== 'string' ||
+      !q.offerSlug ||
+      !positiveInteger(q.priceCents) ||
+      !nonNegativeInteger(q.discountCents) ||
+      !positiveInteger(q.finalPriceCents) ||
+      q.priceCents - q.discountCents !== q.finalPriceCents ||
+      coupon === undefined ||
+      (q.discountCents > 0 && coupon === null) ||
+      Boolean(code) !== Boolean(coupon) ||
+      (code !== undefined && coupon !== null && coupon.toUpperCase() !== code.toUpperCase()) ||
+      q.currency !== 'BRL' ||
+      !pricingMode ||
+      !accessPolicy ||
+      billingIntervalMonths === undefined ||
+      guaranteeDays === undefined ||
+      (pricingMode === 'one_time' && billingIntervalMonths !== null) ||
+      (pricingMode === 'subscription' && billingIntervalMonths === null)
+    ) {
       return {
         ok: false,
         status: 502,
@@ -98,7 +160,15 @@ export async function resolveCharge(
       ok: true,
       amountInCents: q.finalPriceCents,
       offerId: q.offerId,
-      couponCode: q.coupon?.code ?? null,
+      offerSlug: q.offerSlug,
+      couponCode: coupon,
+      listPriceCents: q.priceCents,
+      discountCents: q.discountCents,
+      currency: q.currency,
+      pricingMode,
+      billingIntervalMonths,
+      guaranteeDays,
+      ...accessPolicy,
     }
   }
   const errorCode = readErrorCode(body)
@@ -121,6 +191,21 @@ export async function resolveCharge(
     code: 'CATALOG_ERROR',
     message: 'Não foi possível obter o preço da oferta.',
   }
+}
+
+function parseQuotedCoupon(value: unknown): string | null | undefined {
+  if (value === null) return null
+  if (!value || typeof value !== 'object') return undefined
+  const code = (value as { code?: unknown }).code
+  return typeof code === 'string' && code ? code : undefined
+}
+
+function positiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) > 0
+}
+
+function nonNegativeInteger(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= 0
 }
 
 /** Cotação de PREVIEW (endpoint do cupom na UI). Cupom inválido → ok:false + message. */

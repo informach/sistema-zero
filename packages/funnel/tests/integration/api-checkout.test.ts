@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
+import { clearOfferCache, getActiveOffer } from '../../src/server/catalog'
 import {
   pixContentFingerprint,
   pixStatus,
@@ -9,6 +10,7 @@ import {
 } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeGrantMembers } from '../../src/server/members-grant'
+import type { PurchasedOfferSnapshotV1 } from '../../src/server/purchased-offer-snapshot'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { makeSendWelcome } from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
@@ -83,7 +85,7 @@ async function paidLead() {
 
 describe('POST /api/checkout/pix', () => {
   test('cria cobrança via gateway, grava payment_id e devolve o pix', async () => {
-    const { repo, leads, events } = createFakeRepo()
+    const { repo, leads, events, payments } = createFakeRepo()
     const gw = createFakeGateway()
     const { id } = await repo.createLead()
     await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com', telefone: '11999998888' })
@@ -120,6 +122,63 @@ describe('POST /api/checkout/pix', () => {
     expect(leads.get(id)?.document).toBe(CPF)
     expect(leads.get(id)?.paymentId).toBe('pay-1')
     expect(events.some((e) => e.eventName === 'pagamento_iniciado')).toBe(true)
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      version: 1,
+      offerSlug: 'no-comando-da-ia',
+      pricingMode: 'one_time',
+      accessMode: 'lifetime',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+      chargedPriceCents: 3700,
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
+  })
+
+  test('oferta fixa congela os 30 dias antes de criar a cobrança', async () => {
+    const { repo, payments } = createFakeRepo()
+    const gw = createFakeGateway()
+    gw.setOfferConfig('no-comando-da-ia', {
+      priceCents: 6700,
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+    const { id } = await repo.createLead('kids/desafio-primeiro-jogo')
+
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+
+    expect(res.status).toBe(200)
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      version: 1,
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+      listPriceCents: 6700,
+      discountCents: 0,
+      chargedPriceCents: 6700,
+      termsVersion: 'kids-2026-09-16',
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
+  })
+
+  test('cotação autoritativa impede Pix se o cache ainda disser pagamento único', async () => {
+    clearOfferCache()
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    await getActiveOffer(gw.gateway, 'no-comando-da-ia')
+    gw.setOfferConfig('no-comando-da-ia', {
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      accessMode: 'billing_cycle',
+    })
+    const { id } = await repo.createLead('kids/desafio-primeiro-jogo')
+
+    const res = await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+
+    expect(res.status).toBe(409)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'SUBSCRIPTION_CARD_ONLY',
+    )
+    expect(gw.calls.create).toHaveLength(0)
+    clearOfferCache()
   })
 
   test('401 sem lead na sessão', async () => {
@@ -130,7 +189,7 @@ describe('POST /api/checkout/pix', () => {
   })
 
   test('aplica cupom: cobra o valor final, registra offerId/cupom e persiste no lead', async () => {
-    const { repo, leads } = createFakeRepo()
+    const { repo, leads, payments } = createFakeRepo()
     const gw = createFakeGateway()
     gw.addCoupon('PROMO10', 1000) // R$10 de desconto
     const { id } = await repo.createLead()
@@ -150,6 +209,12 @@ describe('POST /api/checkout/pix', () => {
     expect(leads.get(id)?.couponCode).toBe('PROMO10')
     // O checkout grava a oferta vendida no lead (fundação multi-oferta).
     expect(leads.get(id)?.offerRef).toBe('no-comando-da-ia')
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      listPriceCents: 3700,
+      couponCode: 'PROMO10',
+      discountCents: 1000,
+      chargedPriceCents: 2700,
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
   })
 
   test('cupom inválido → 422 e não cria cobrança', async () => {
@@ -325,7 +390,7 @@ describe('GET /api/checkout/:paymentId', () => {
 
 describe('POST /api/checkout/boleto', () => {
   test('gera boleto via gateway com idempotency por método e devolve a linha digitável', async () => {
-    const { repo, leads, events, id } = await paidLead()
+    const { repo, leads, events, payments, id } = await paidLead()
     const gw = createFakeGateway()
     const res = await startBoleto(
       req('POST', cookieFor(id), { cpf: CPF, address: ADDRESS }),
@@ -343,7 +408,42 @@ describe('POST /api/checkout/boleto', () => {
     expect(input.method).toBe('BOLETO')
     expect(input.customer.document).toBe(CPF)
     expect(leads.get(id)?.paymentId).toBe('pay-1')
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      version: 1,
+      pricingMode: 'one_time',
+      accessMode: 'lifetime',
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
     expect(events.some((e) => e.step === 'checkout_boleto')).toBe(true)
+  })
+
+  test('boleto pendente preserva o contrato mesmo se a oferta mudar depois', async () => {
+    const { repo, payments, id } = await paidLead()
+    const gw = createFakeGateway()
+    gw.setOfferConfig('no-comando-da-ia', {
+      priceCents: 6700,
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+
+    const res = await startBoleto(
+      req('POST', cookieFor(id), { cpf: CPF, address: ADDRESS }),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+
+    gw.setOfferConfig('no-comando-da-ia', {
+      priceCents: 9700,
+      accessMode: 'lifetime',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+    })
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+      chargedPriceCents: 6700,
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
   })
 
   test('400 com CPF inválido (validação no servidor)', async () => {
@@ -407,7 +507,7 @@ describe('POST /api/checkout/card', () => {
   }
 
   test('cartão aprovado (PAID): confirma na hora e registra o comprador', async () => {
-    const { repo, leads, events, id } = await paidLead()
+    const { repo, leads, events, payments, id } = await paidLead()
     const gw = createFakeGateway()
     gw.setStatus('PAID')
     const res = await startCard(req('POST', cookieFor(id), cardBody()), deps(repo, gw))
@@ -432,6 +532,11 @@ describe('POST /api/checkout/card', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull()
     expect(events.some((e) => e.step === 'checkout_card')).toBe(true)
     expect(leads.get(id)?.buyerRegisteredAt).not.toBeNull()
+    expect(payments.get('pay-1')?.offerSnapshot).toMatchObject({
+      version: 1,
+      pricingMode: 'one_time',
+      accessMode: 'lifetime',
+    } satisfies Partial<PurchasedOfferSnapshotV1>)
     // Concede o acesso na área de membros (best-effort) após o registro.
     expect(gw.calls.grant).toHaveLength(1)
     expect(gw.calls.grant[0]?.input).toMatchObject({

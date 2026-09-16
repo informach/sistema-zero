@@ -1,4 +1,8 @@
 import type { FunnelRepo, Lead, LeadUpdate } from '../db/repo'
+import {
+  InvalidPurchasedOfferSnapshotError,
+  parsePurchasedOfferSnapshot,
+} from './purchased-offer-snapshot'
 
 /**
  * Aplica ao lead o contexto congelado da cobrança que confirmou. Isso impede que
@@ -15,7 +19,12 @@ export async function applyPaymentContextToLead(
   if (!ctx) return lead
 
   const set: LeadUpdate = {}
-  if (ctx.offerRef) set.offerRef = ctx.offerRef
+  const purchased = parsePurchasedOfferSnapshot(ctx.offerSnapshot)
+  if (ctx.offerSnapshot !== null && !purchased) {
+    throw new InvalidPurchasedOfferSnapshotError()
+  }
+  if (purchased) set.offerRef = purchased.offerSlug
+  else if (ctx.offerRef) set.offerRef = ctx.offerRef
   // `customer_email` é o marcador de snapshot novo; legado fica tudo null.
   if (ctx.email) {
     set.nome = ctx.nome

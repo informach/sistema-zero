@@ -451,6 +451,9 @@ describe('catalog HTTP', () => {
         priceCents: number
         discountCents: number
         finalPriceCents: number
+        pricingMode: string
+        billingIntervalMonths: number | null
+        guaranteeDays: number | null
         accessMode: string
         accessDurationValue: number | null
         accessDurationUnit: string | null
@@ -460,6 +463,9 @@ describe('catalog HTTP', () => {
         priceCents: 3700,
         discountCents: 0,
         finalPriceCents: 3700,
+        pricingMode: 'one_time',
+        billingIntervalMonths: null,
+        guaranteeDays: null,
         accessMode: 'lifetime',
         accessDurationValue: null,
         accessDurationUnit: null,

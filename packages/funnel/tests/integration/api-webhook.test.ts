@@ -123,6 +123,35 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.offerRef).toBe(OFFER)
   })
 
+  test('snapshot comercial malformado falha de forma retryável e não concede acesso', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, {
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+    })
+    await repo.setPayment(id, 'pay-1', null, {
+      offerRef: OFFER,
+      offerSnapshot: { version: 1 } as never,
+    })
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd-snapshot', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd-snapshot' },
+      ),
+      deps(repo, gw),
+    )
+
+    expect(res.status).toBe(502)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('SNAPSHOT_RETRY')
+    expect(leads.get(id)?.paidAt).toBeNull()
+    expect(gw.calls.grant).toHaveLength(0)
+    expect(await repo.isWebhookProcessed('d-snapshot')).toBe(false)
+  })
+
   test('payment.paid concede acesso na área de membros DEPOIS do registro', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()

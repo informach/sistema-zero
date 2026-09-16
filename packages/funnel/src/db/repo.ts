@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import type { PurchasedOfferSnapshotV1 } from '../server/purchased-offer-snapshot'
 import type { Database } from './client'
 import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
 
@@ -26,6 +27,8 @@ export interface PaymentSnapshot {
   document?: string | null
   /** Meses de acesso desta cobrança (anual à vista = 12); ausente = vitalícia. */
   accessPeriodMonths?: number | null
+  /** Contrato versionado desta cobrança; ausente apenas em escrita legada. */
+  offerSnapshot?: PurchasedOfferSnapshotV1 | null
 }
 
 /** Contexto persistido por `payment_id` em `lead_payments`. */
@@ -36,6 +39,7 @@ export interface PaymentContext {
   email: string | null
   telefone: string | null
   document: string | null
+  offerSnapshot: unknown | null
 }
 
 /** Filtro/ordenação da listagem de leads (busca por nome/e-mail + funil + data). */
@@ -207,6 +211,7 @@ export function createFunnelRepo(db: Database): FunnelRepo {
             customerPhone: snapshot?.telefone ?? null,
             customerDocument: snapshot?.document ?? null,
             accessPeriodMonths: snapshot?.accessPeriodMonths ?? null,
+            offerSnapshot: snapshot?.offerSnapshot ?? null,
           })
           .onConflictDoNothing({ target: leadPayments.paymentId })
       })
@@ -262,6 +267,7 @@ export function createFunnelRepo(db: Database): FunnelRepo {
           email: leadPayments.customerEmail,
           telefone: leadPayments.customerPhone,
           document: leadPayments.customerDocument,
+          offerSnapshot: leadPayments.offerSnapshot,
         })
         .from(leadPayments)
         .where(eq(leadPayments.paymentId, paymentId))

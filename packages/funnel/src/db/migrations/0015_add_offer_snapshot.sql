@@ -1,0 +1,1 @@
+ALTER TABLE "funil"."lead_payments" ADD COLUMN "offer_snapshot" jsonb;

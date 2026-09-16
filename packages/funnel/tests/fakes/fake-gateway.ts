@@ -255,6 +255,9 @@ export function createFakeGateway(): FakeGatewayState {
         offerSlug: slug,
         currency: 'BRL',
         priceCents: price,
+        pricingMode,
+        billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
+        guaranteeDays: 7,
         accessMode:
           cfg?.accessMode ?? (pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime'),
         accessDurationValue: cfg?.accessDurationValue ?? null,

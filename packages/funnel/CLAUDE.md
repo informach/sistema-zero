@@ -384,6 +384,12 @@ pendurado segurava o handler e o SSR do checkout p/ sempre).
   anual como vitalícia seria bug de dinheiro). Preço e política são renovados juntos no cache. Uma
   resposta 200 indisponível/incoerente apaga a cópia antiga; só falha transitória não-200 pode usar
   stale. `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
+- A cotação autoritativa devolve preço, modo de cobrança, intervalo, garantia e política de acesso
+  no MESMO contrato. Antes de chamar o provedor, o funil grava a versão validada em
+  `lead_payments.offer_snapshot` (migration `0015`): boleto/Pix antigos preservam exatamente os
+  termos aceitos mesmo que a oferta mude depois. Snapshot presente e malformado falha fechado com
+  `502 SNAPSHOT_RETRY`; cobrança legada sem snapshot continua pelo caminho compatível. O anual pago
+  à vista é congelado como compra única com 12 meses fixos. A modalidade `lifetime` segue válida.
 
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.
@@ -588,7 +594,8 @@ vez; `funnel_events` NÃO é limpa de propósito: é o analytics histórico) e `
 (histórico payment→lead, ver seção de pagamentos; além do par payment→lead + `coupon_code` +
 `access_period_months`, guarda o SNAPSHOT de payment-context da migration `0013`: `offer_ref` +
 `customer_name`/`customer_email`/`customer_phone`/`customer_document` — os dados da cobrança no
-momento do checkout).
+momento do checkout) e o contrato comercial versionado da migration `0015` em `offer_snapshot`
+(preço cheio/final, cupom, garantia, versão dos termos e política de acesso).
 Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).

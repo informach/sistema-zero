@@ -126,6 +126,9 @@ export const leadPayments = funil.table('lead_payments', {
   // via Pix/boleto = 12). Null = vitalícia (padrão) ou ciclo de assinatura. O
   // grant lê daqui p/ conceder com validade em vez de para sempre.
   accessPeriodMonths: integer('access_period_months'),
+  // Contrato comercial imutável aceito nesta cobrança (versão, preço, cupom,
+  // garantia e política de acesso). Null apenas em cobranças legadas/ciclos.
+  offerSnapshot: jsonb('offer_snapshot'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
