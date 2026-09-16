@@ -29,8 +29,12 @@ interface FakeCard {
 export interface FakeOfferConfig {
   priceCents?: number
   pricingMode?: 'one_time' | 'subscription'
+  accessMode?: 'lifetime' | 'fixed' | 'billing_cycle'
+  accessDurationValue?: number | null
+  accessDurationUnit?: 'days' | 'months' | null
   billingIntervalMonths?: number | null
   altOffer?: { slug: string; label?: string } | null
+  isAvailable?: boolean
 }
 
 export interface FakeGatewayState {
@@ -201,6 +205,9 @@ export function createFakeGateway(): FakeGatewayState {
     },
     async getOffer(slug): Promise<GatewayResult> {
       const cfg = offerConfigs.get(slug)
+      const pricingMode = cfg?.pricingMode ?? 'one_time'
+      const accessMode =
+        cfg?.accessMode ?? (pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime')
       return {
         status: 200,
         body: {
@@ -212,8 +219,12 @@ export function createFakeGateway(): FakeGatewayState {
           currency: 'BRL',
           guaranteeDays: 7,
           installmentsMax: 12,
-          pricingMode: cfg?.pricingMode ?? 'one_time',
+          pricingMode,
+          accessMode,
+          accessDurationValue: cfg?.accessDurationValue ?? null,
+          accessDurationUnit: cfg?.accessDurationUnit ?? null,
           billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
+          isAvailable: cfg?.isAvailable ?? true,
           product: { name: 'No Comando da IA', sku: 'no-comando-da-ia' },
           content: cfg?.altOffer ? { altOffer: cfg.altOffer } : {},
           includes: [{ name: 'No Comando da IA', isPrimary: true }],
@@ -238,11 +249,16 @@ export function createFakeGateway(): FakeGatewayState {
       calls.quote.push({ slug, couponCode })
       const cfg = offerConfigs.get(slug)
       const price = cfg?.priceCents ?? offerPriceCents
+      const pricingMode = cfg?.pricingMode ?? 'one_time'
       const base = {
         offerId: `offer-${slug}`,
         offerSlug: slug,
         currency: 'BRL',
         priceCents: price,
+        accessMode:
+          cfg?.accessMode ?? (pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime'),
+        accessDurationValue: cfg?.accessDurationValue ?? null,
+        accessDurationUnit: cfg?.accessDurationUnit ?? null,
       }
       if (!couponCode) {
         return {

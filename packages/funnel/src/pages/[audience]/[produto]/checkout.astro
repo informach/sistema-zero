@@ -23,7 +23,7 @@ const successPath = f.steps.upsell ? `${f.basePath}/upsell` : `${f.basePath}/obr
 
 Astro.response.headers.set('cache-control', 'no-store')
 
-const { repo, env, gateway } = getDeps()
+const { repo, env, gateway, log } = getDeps()
 
 // Lead da sessão (cookie). Lead já PAGO não é reaproveitado: nova compra = novo
 // lead (sem CPF/dados antigos) — defesa extra à expiração do cookie na /obrigado.
@@ -86,7 +86,7 @@ const initialContact = {
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
 const offerSlug = resolveOfferSlug(env, f.key)
-const offer = await getActiveOffer(gateway, offerSlug)
+const offer = await getActiveOffer(gateway, offerSlug, { log })
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const productName = offer?.productName || f.productName
 
@@ -110,7 +110,7 @@ let altOffer: {
   billingIntervalMonths: number | null
 } | null = null
 if (isSubscription && offer?.altOffer) {
-  const alt = await getActiveOffer(gateway, offer.altOffer.slug)
+  const alt = await getActiveOffer(gateway, offer.altOffer.slug, { log })
   if (alt && alt.pricingMode === 'subscription' && alt.billingIntervalMonths) {
     altOffer = {
       slug: alt.slug,

@@ -18,10 +18,10 @@ export const prerender = false
 const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 
-const { env, gateway } = getDeps()
+const { env, gateway, log } = getDeps()
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
 const offerSlug = resolveOfferSlug(env, f.key)
-const offer = await getActiveOffer(gateway, offerSlug)
+const offer = await getActiveOffer(gateway, offerSlug, { log })
 const productName = offer?.productName || f.productName
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
@@ -42,7 +42,7 @@ let plans: OfferPlans | null = null
 if (offer && offer.pricingMode === 'subscription') {
   let alt: OfferPlans['alt'] = null
   if (offer.altOffer) {
-    const sibling = await getActiveOffer(gateway, offer.altOffer.slug)
+    const sibling = await getActiveOffer(gateway, offer.altOffer.slug, { log })
     if (sibling && sibling.pricingMode === 'subscription' && sibling.billingIntervalMonths) {
       alt = {
         slug: sibling.slug,

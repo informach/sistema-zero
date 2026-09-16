@@ -1,5 +1,10 @@
 import type { GatewayClient } from '../lib/gateway-client'
 
+export type CatalogPricingMode = 'one_time' | 'subscription'
+export type CatalogAccessMode = 'lifetime' | 'fixed' | 'billing_cycle'
+export type CatalogAccessDurationUnit = 'days' | 'months'
+export type CatalogLog = (event: string, meta?: Record<string, unknown>) => void
+
 /**
  * Acesso ao catálogo (@sistemazero/catalog) via gateway. O catálogo é a FONTE DA
  * VERDADE do preço e do que está incluído. O valor cobrado no checkout vem SEMPRE
@@ -20,7 +25,11 @@ export interface CatalogOfferView {
   /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
   allowsCoupon: boolean
   /** `one_time` (pagamento único) ou `subscription` (recorrente). */
-  pricingMode: string
+  pricingMode: CatalogPricingMode
+  /** Regra de validade do acesso, publicada pelo catálogo junto com o preço. */
+  accessMode: CatalogAccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: CatalogAccessDurationUnit | null
   /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
   billingIntervalMonths: number | null
   /** Oferta IRMÃ do alternador mensal↔anual (de `content.altOffer`); null = sem alternador. */
@@ -178,7 +187,7 @@ export function clearOfferCache(): void {
 export async function getActiveOffer(
   gateway: GatewayClient,
   offerSlug: string,
-  opts?: { ttlMs?: number; now?: number },
+  opts?: { ttlMs?: number; now?: number; log?: CatalogLog },
 ): Promise<CatalogOfferView | null> {
   const ttlMs = opts?.ttlMs ?? 60_000
   const now = opts?.now ?? Date.now()
@@ -188,15 +197,30 @@ export async function getActiveOffer(
   }
   const { status, body } = await gateway.getOffer(offerSlug)
   if (status !== 200) return cached?.view ?? null
-  const view = mapOffer(body)
-  if (view) offerCache.set(offerSlug, { view, at: now })
-  return view ?? cached?.view ?? null
+  const view = parseCatalogOffer(body, { log: opts?.log })
+  if (!view) {
+    // Uma resposta autoritativa 200 dizendo que a oferta está indisponível ou
+    // incoerente não pode ressuscitar a cópia antiga. Falha transitória (status
+    // não-200) continua usando stale acima.
+    offerCache.delete(offerSlug)
+    return null
+  }
+  offerCache.set(offerSlug, { view, at: now })
+  return view
 }
 
-function mapOffer(body: unknown): CatalogOfferView | null {
+export function parseCatalogOffer(
+  body: unknown,
+  opts?: { log?: CatalogLog },
+): CatalogOfferView | null {
   if (!body || typeof body !== 'object') return null
   const o = body as Record<string, unknown>
   if (typeof o.id !== 'string' || typeof o.priceCents !== 'number') return null
+  if (o.isAvailable !== true) return null
+  const pricingMode = parsePricingMode(o.pricingMode)
+  if (!pricingMode) return null
+  const accessPolicy = parseAccessPolicy(o, pricingMode, opts?.log)
+  if (!accessPolicy) return null
   const product = (o.product ?? {}) as Record<string, unknown>
   const content = (o.content ?? {}) as Record<string, unknown>
   const includesRaw = Array.isArray(o.includes) ? (o.includes as Record<string, unknown>[]) : []
@@ -216,7 +240,8 @@ function mapOffer(body: unknown): CatalogOfferView | null {
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
     allowsCoupon: content.allowsCoupon === true,
-    pricingMode: typeof o.pricingMode === 'string' ? o.pricingMode : 'one_time',
+    pricingMode,
+    ...accessPolicy,
     billingIntervalMonths:
       typeof o.billingIntervalMonths === 'number' ? o.billingIntervalMonths : null,
     altOffer,
@@ -224,6 +249,66 @@ function mapOffer(body: unknown): CatalogOfferView | null {
       name: typeof i.name === 'string' ? i.name : '',
       isPrimary: i.isPrimary === true,
     })),
+  }
+}
+
+function parsePricingMode(value: unknown): CatalogPricingMode | null {
+  return value === 'one_time' || value === 'subscription' ? value : null
+}
+
+function parseAccessPolicy(
+  offer: Record<string, unknown>,
+  pricingMode: CatalogPricingMode,
+  log?: CatalogLog,
+): Pick<CatalogOfferView, 'accessMode' | 'accessDurationValue' | 'accessDurationUnit'> | null {
+  const hasMode = Object.hasOwn(offer, 'accessMode')
+  const hasDurationValue = Object.hasOwn(offer, 'accessDurationValue')
+  const hasDurationUnit = Object.hasOwn(offer, 'accessDurationUnit')
+
+  if (!hasMode) {
+    // Compatibilidade de deploy: o catálogo antigo não enviava nenhum dos três
+    // campos. Resposta parcial não é legado válido e falha fechada.
+    if (hasDurationValue || hasDurationUnit) return null
+    const fallbackAccessMode: CatalogAccessMode =
+      pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime'
+    const warn =
+      log ??
+      ((event: string, meta?: Record<string, unknown>) => {
+        console.warn(event, meta ?? {})
+      })
+    warn('catalog.offer_access_policy_legacy_fallback', {
+      offerId: offer.id,
+      offerSlug: typeof offer.slug === 'string' ? offer.slug : '',
+      pricingMode,
+      fallbackAccessMode,
+    })
+    return {
+      accessMode: fallbackAccessMode,
+      accessDurationValue: null,
+      accessDurationUnit: null,
+    }
+  }
+
+  const accessMode = offer.accessMode
+  const durationValue = offer.accessDurationValue
+  const durationUnit = offer.accessDurationUnit
+  if (accessMode === 'billing_cycle') {
+    return pricingMode === 'subscription' && durationValue === null && durationUnit === null
+      ? { accessMode, accessDurationValue: null, accessDurationUnit: null }
+      : null
+  }
+  if (accessMode === 'lifetime') {
+    return pricingMode === 'one_time' && durationValue === null && durationUnit === null
+      ? { accessMode, accessDurationValue: null, accessDurationUnit: null }
+      : null
+  }
+  if (accessMode !== 'fixed' || pricingMode !== 'one_time') return null
+  if (!Number.isInteger(durationValue) || (durationValue as number) <= 0) return null
+  if (durationUnit !== 'days' && durationUnit !== 'months') return null
+  return {
+    accessMode,
+    accessDurationValue: durationValue as number,
+    accessDurationUnit: durationUnit,
   }
 }
 

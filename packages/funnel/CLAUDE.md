@@ -95,7 +95,12 @@ o `resolveOffer` é só o fallback quando `offerRef` é nulo, e também resolve 
 slug da env TEM que existir no catálogo (senão **502 CATALOG_ERROR** na cotação). Criar funil novo →
 **criar a env `FUNNEL_OFFER_<KEY>` no Railway (staging+prod)**, senão o funil nem sobe. (`CATALOG_OFFER_SLUG`/
 `CATALOG_OFFER_OVERRIDES` REMOVIDOS.) Promoção só de PREÇO/cupom não precisa de nada disso: edite a oferta no
-admin do catálogo. Teste: `tests/unit/offer.test.ts`.
+admin do catálogo. A view da oferta traz também `accessMode/accessDurationValue/accessDurationUnit`:
+`server/catalog.ts` valida preço e política na mesma resposta/cache, rejeita combinações incoerentes e
+aceita resposta legada sem os três campos apenas durante a implantação (`one_time → lifetime`,
+`subscription → billing_cycle`), sempre emitindo
+`catalog.offer_access_policy_legacy_fallback`. Resposta parcial não usa fallback. Testes:
+`tests/unit/offer.test.ts` e `tests/unit/catalog-cache.test.ts`.
 
 **Quiz por funil (`FunnelQuiz`):** cada funil declara `steps`, `valueSchema` (zod por chave),
 `derive?(answers)` (calculadas, ex.: custo_mensal) e `computePerfil?(answers)` (diagnóstico → string,
@@ -374,9 +379,11 @@ pendurado segurava o handler e o SSR do checkout p/ sempre).
 - **`/renovar?oferta=<slug>`** (destino do lembrete de renovação do members): resolve o funil
   pela oferta (principal por env; irmã via altOffer no catálogo) → 302 p/ o checkout dele
   (com `?oferta=` quando é a irmã). Slug desconhecido → `/`.
-- ⚠️ `getActiveOffer` agora é OBRIGATÓRIO nos handlers (mode/intervalo): catálogo indisponível →
-  **502 `CATALOG_ERROR`** (sem view não dá p/ saber o modo — cobrar anual como vitalícia seria
-  bug de dinheiro). `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
+- ⚠️ `getActiveOffer` agora é OBRIGATÓRIO nos handlers (modo de cobrança, intervalo e política de
+  acesso): catálogo indisponível → **502 `CATALOG_ERROR`** (sem view não dá p/ saber o modo — cobrar
+  anual como vitalícia seria bug de dinheiro). Preço e política são renovados juntos no cache. Uma
+  resposta 200 indisponível/incoerente apaga a cópia antiga; só falha transitória não-200 pode usar
+  stale. `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
 
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.

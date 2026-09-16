@@ -225,23 +225,23 @@ type ChosenOffer =
  * irmã vem do catálogo (a principal usa o nome do funil, como sempre).
  */
 async function resolveChosenOffer(
-  deps: Pick<CheckoutDeps, 'gateway' | 'resolveOffer'>,
+  deps: Pick<CheckoutDeps, 'gateway' | 'resolveOffer' | 'log'>,
   funnel: string | null,
   requestedSlug: string | undefined,
 ): Promise<ChosenOffer> {
   const principal = deps.resolveOffer(funnel)
   if (!requestedSlug || requestedSlug === principal.offerSlug) {
-    const offer = await getActiveOffer(deps.gateway, principal.offerSlug)
+    const offer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
     return { ok: true, ...principal, offer }
   }
-  const principalOffer = await getActiveOffer(deps.gateway, principal.offerSlug)
+  const principalOffer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
   if (principalOffer?.altOffer?.slug !== requestedSlug) {
     return {
       ok: false,
       response: jsonError('Oferta inválida para este checkout.', 400, 'INVALID_OFFER'),
     }
   }
-  const offer = await getActiveOffer(deps.gateway, requestedSlug)
+  const offer = await getActiveOffer(deps.gateway, requestedSlug, { log: deps.log })
   return {
     ok: true,
     offerSlug: requestedSlug,
