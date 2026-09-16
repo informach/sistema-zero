@@ -23,6 +23,7 @@ export type { ErrorEnvelope }
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
   VALIDATION_ERROR: 400,
+  PURCHASE_ACCESS_POLICY_INVALID: 422,
   ACCESS_DENIED: 403,
   COURSE_NOT_FOUND: 404,
   LESSON_NOT_FOUND: 404,

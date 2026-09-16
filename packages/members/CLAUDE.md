@@ -719,7 +719,7 @@ scripts/seed-course.ts   # curso publicado (aula composta + quiz + anexo); --gra
 COMPRA: payments emite payment.paid → gateway → funil /api/webhooks/payments
   funil: markPaid → registra comprador no auth (obtém userId) → DEPOIS chama:
   funil → gateway POST /members/webhooks/grant (HMAC borda 'funnel' + resign 'gateway')
-          { userId, offerRef, paymentId, paidAt, subscription? }
+          { userId, offerRef, paymentId, paidAt, accessPolicy?, subscription? }
   members: resolve snapshot no catálogo (offerRef) → upsert matrícula(s)
 
 ACESSO: browser logado → Bearer JWT → gateway (injeta x-auth-user-id) → members
@@ -762,14 +762,16 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   no parse do gateway do catálogo) → **502 `OFFER_EMPTY`**, mesma régua. `granted:0`
   por idempotência (já concedido) continua sendo **200** (sucesso) — o sinal é
   `offerFound`/`itemsResolved`, não a contagem.
-- **Grant por PERÍODO (`accessPeriodMonths`, 07/2026 — anual à vista Pix/boleto):** o
-  `GrantWebhookBody` aceita `accessPeriodMonths?` (1..120). Presente (e SEM
-  `subscription`) → ramo `grantOneTime` com validade: `expiresAt =
-  computeExpiry(grantedAt, N, graceDays)`, key `payment:<paymentId>:<productId>`,
-  `subscriptionId: null` (NADA de assinatura sintética — a revogação por
-  subscriptionId nunca a alcança; expira sozinha). Renovar = NOVA compra (paymentId
-  novo → linha nova; o acesso efetivo é o mais forte). `subscription` presente VENCE
-  o período (nunca chegam juntos do funil). Ausentes os dois → vitalícia (como sempre).
+- **Política comprada (`accessPolicy`, 09/2026):** o contrato imutável da cobrança tem
+  precedência sobre os campos legados: `lifetime` → validade nula; `fixed/days` → blocos
+  exatos de 24h desde a aprovação; `fixed/months` → mês-calendário UTC; `billing_cycle`
+  → intervalo da assinatura + carência. Compra única fixa NÃO recebe a carência da
+  assinatura. A política fica congelada também no `EntitlementSnapshot` (campo opcional
+  para snapshots antigos). Combinação incoerente responde 422 antes de persistir.
+  `accessPeriodMonths` permanece temporariamente para eventos antigos e vira
+  `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
+  três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
+  sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
 - **`POST /members/webhooks/grant-manual` (08/2026 — bolsa do @sistemazero/referrals):**
   concessão manual S2S SEM pagamento (o catálogo rejeita oferta R$ 0 — grant direto é o
   único caminho da bolsa). `GrantManualWebhookBody` = `{userId, mode: 'offer' (literal —

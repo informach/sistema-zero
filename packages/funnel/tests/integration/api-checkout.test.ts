@@ -157,6 +157,14 @@ describe('POST /api/checkout/pix', () => {
       chargedPriceCents: 6700,
       termsVersion: 'kids-2026-09-16',
     } satisfies Partial<PurchasedOfferSnapshotV1>)
+
+    gw.setStatus('PAID')
+    const paid = await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
+    expect(paid.status).toBe(200)
+    expect(gw.calls.grant[0]?.input).toMatchObject({
+      offerRef: 'no-comando-da-ia',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
   })
 
   test('cotação autoritativa impede Pix se o cache ainda disser pagamento único', async () => {
@@ -376,6 +384,7 @@ describe('GET /api/checkout/:paymentId', () => {
     expect(gw.calls.grant[0]?.input).toMatchObject({
       userId: leads.get(id)?.buyerUserId,
       paymentId: 'pay-1',
+      accessPolicy: { mode: 'lifetime', durationValue: null, durationUnit: null },
     })
   })
 

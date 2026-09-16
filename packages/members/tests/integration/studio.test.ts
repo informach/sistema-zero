@@ -94,6 +94,23 @@ const STUDIO_FUNCTION_PROJECT = {
 }
 
 describe('Bloco Estúdio — gate de conclusão + entrega', () => {
+  test('expirar o acesso não apaga o projeto enviado pela criança', async () => {
+    const { app, courses, entitlements, studioSubmissions, clockRef } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, {
+      userId: USER,
+      courseRef: slug,
+      expiresAt: new Date('2026-06-03T00:00:00.000Z'),
+      key: 'payment:temporary-studio',
+    })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    expect((await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)).status).toBe(200)
+
+    clockRef.now = new Date('2026-06-04T00:00:00.000Z')
+    expect((await getLesson(app, slug, lessonIds[0])).status).toBe(403)
+    expect((await studioSubmissions.getOne(USER, blockId))?.project).toEqual(STUDENT_PROJECT)
+  })
+
   test('a aula NÃO conclui enquanto o projeto não for enviado (409)', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)

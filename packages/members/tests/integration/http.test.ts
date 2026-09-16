@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   buildApp,
+  grantAllKidsCourses,
   grantLifetime,
   offerWithCourse,
   seedSampleCourse,
@@ -116,6 +117,36 @@ describe('Members HTTP — consumo do aluno', () => {
       }),
     )
     expect((await readJson(r2)).completedLessons).toBe(1)
+  })
+
+  test('fim do prazo preserva progresso e a chave-mestra kids mantém o curso acessível', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    const course = seedSampleCourse(courses, 'desafio-temporario', 'published', 'kids')
+    grantLifetime(entitlements, {
+      userId: USER,
+      courseRef: course.slug,
+      expiresAt: new Date('2026-06-03T00:00:00.000Z'),
+      key: 'payment:temporary',
+    })
+    const completed = await app.handle(
+      new Request(`http://localhost/members/lessons/${course.lessonIds[0]}/complete`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }),
+    )
+    expect(completed.status).toBe(200)
+
+    clockRef.now = new Date('2026-06-04T00:00:00.000Z')
+    expect((await get(app, `/members/courses/${course.slug}`, authHeaders())).status).toBe(403)
+
+    grantAllKidsCourses(entitlements, { userId: USER, now: clockRef.now })
+    const detail = await get(app, `/members/courses/${course.slug}`, authHeaders())
+    expect(detail.status).toBe(200)
+    expect((await readJson(detail)).progress).toMatchObject({
+      completedLessons: 1,
+      totalLessons: 2,
+      percent: 50,
+    })
   })
 
   test('curso archived: quem já tem matrícula mantém acesso (draft → 404)', async () => {
@@ -324,6 +355,29 @@ describe('Members HTTP — webhooks', () => {
     expect((await readJson(res)).error).toBe('OFFER_EMPTY')
     // Sem marcar a entrega: a falha repetida na re-entrega é o alarme.
     expect(await processed.isProcessed('d-empty')).toBe(false)
+  })
+
+  test('política de compra incoerente → 422 antes de escrever ou deduplicar', async () => {
+    const { app, catalog, entitlements, processed } = buildApp()
+    catalog.set('offer-x', offerWithCourse('offer-x', 'curso-demo'))
+    const body = JSON.stringify({
+      userId: USER,
+      offerRef: 'offer-x',
+      paymentId: 'pay-policy-invalid',
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null },
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-policy-invalid'),
+        body,
+      }),
+    )
+
+    expect(res.status).toBe(422)
+    expect(entitlements.byId.size).toBe(0)
+    expect(await processed.isProcessed('d-policy-invalid')).toBe(false)
   })
 
   test('grant com assinatura inválida → 401', async () => {

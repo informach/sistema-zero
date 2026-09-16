@@ -114,8 +114,14 @@ export interface GrantMembersInput {
   /** ISO-8601 (opcional; a área de membros usa "agora" se ausente). */
   paidAt?: string
   subscription?: { subscriptionId: string; intervalMonths: number | null }
-  /** Compra por PERÍODO (anual à vista = 12): validade fixa + carência, sem assinatura. */
+  /** Compatibilidade legada: compra por período em meses, sem assinatura. */
   accessPeriodMonths?: number
+  /** Política imutável aceita na compra; ausente apenas em cobranças legadas/ciclos posteriores. */
+  accessPolicy?: {
+    mode: 'lifetime' | 'fixed' | 'billing_cycle'
+    durationValue: number | null
+    durationUnit: 'days' | 'months' | null
+  }
 }
 
 /** Corpo de `POST /subscriptions` (gateway → payments): assinatura de cartão. */

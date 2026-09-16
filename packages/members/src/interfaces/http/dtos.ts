@@ -265,10 +265,28 @@ export const AvatarConfigBody = t.Object({
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; `accessPeriodMonths`
- * presente = compra única POR PERÍODO (anual à vista Pix/boleto: validade fixa +
- * carência, sem assinatura); nenhum dos dois = compra única vitalícia.
+ * presente = compatibilidade com compra única POR PERÍODO em meses; nenhum dos
+ * dois = compra única vitalícia. `accessPolicy` é o contrato novo e tem precedência.
  * `userId` vem do auth (ensure-buyer) e é sempre uuid — formato validado na borda.
  */
+const PurchasedAccessPolicyBody = t.Union([
+  t.Object({
+    mode: t.Literal('lifetime'),
+    durationValue: t.Null(),
+    durationUnit: t.Null(),
+  }),
+  t.Object({
+    mode: t.Literal('fixed'),
+    durationValue: t.Integer({ minimum: 1, maximum: 2_000_000_000 }),
+    durationUnit: t.Union([t.Literal('days'), t.Literal('months')]),
+  }),
+  t.Object({
+    mode: t.Literal('billing_cycle'),
+    durationValue: t.Null(),
+    durationUnit: t.Null(),
+  }),
+])
+
 export const GrantWebhookBody = t.Object({
   userId: UUID,
   offerRef: t.String({ minLength: 1, maxLength: 200 }),
@@ -281,6 +299,7 @@ export const GrantWebhookBody = t.Object({
     }),
   ),
   accessPeriodMonths: t.Optional(t.Integer({ minimum: 1, maximum: 120 })),
+  accessPolicy: t.Optional(PurchasedAccessPolicyBody),
 })
 
 /**

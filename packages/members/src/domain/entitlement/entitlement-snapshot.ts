@@ -1,5 +1,11 @@
 import type { AccessType, FulfillmentSpec } from './fulfillment'
 
+/** Política comercial comprada, congelada junto com a matrícula. */
+export type PurchasedAccessPolicy =
+  | { mode: 'lifetime'; durationValue: null; durationUnit: null }
+  | { mode: 'fixed'; durationValue: number; durationUnit: 'days' | 'months' }
+  | { mode: 'billing_cycle'; durationValue: null; durationUnit: null }
+
 /**
  * Snapshot CONGELADO do que a oferta concedeu no momento do grant (padrão "pedido
  * imutável" do e-commerce + Stripe Entitlements). Mudar a oferta no catálogo
@@ -18,4 +24,6 @@ export interface EntitlementSnapshot {
   fulfillment: FulfillmentSpec | null
   /** ISO-8601 de quando o catálogo foi resolvido. */
   resolvedAt: string
+  /** Ausente somente em snapshots gravados antes do contrato versionado. */
+  accessPolicy?: PurchasedAccessPolicy
 }

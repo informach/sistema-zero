@@ -161,8 +161,14 @@ describe('POST /api/checkout/subscription', () => {
     // Grant ramificado: o members recebe a ASSINATURA (cria/estende com validade).
     const grant = gw.calls.grant[0]?.input as {
       subscription?: { subscriptionId: string; intervalMonths: number | null }
+      accessPolicy?: { mode: string; durationValue: number | null; durationUnit: string | null }
     }
     expect(grant.subscription).toEqual({ subscriptionId: 'sub-1', intervalMonths: 1 })
+    expect(grant.accessPolicy).toEqual({
+      mode: 'billing_cycle',
+      durationValue: null,
+      durationUnit: null,
+    })
   })
 
   test('lead SEM telefone finaliza a assinatura pelo form (telefone vem do checkout, não 409)', async () => {

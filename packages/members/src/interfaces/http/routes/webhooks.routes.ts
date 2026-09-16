@@ -124,6 +124,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           grantedAt,
           subscription: body.subscription ?? null,
           accessPeriodMonths: body.accessPeriodMonths ?? null,
+          accessPolicy: body.accessPolicy ?? null,
         })
 
         // Oferta não resolvida no catálogo (404) → 502 SEM marcar a entrega: o
