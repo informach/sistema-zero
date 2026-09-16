@@ -213,6 +213,49 @@ describe('catalog HTTP', () => {
   })
 
   describe('coerência de oferta ativa', () => {
+    it('mantém o novo Desafio em rascunho com o contrato completo de 30 dias', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'desafio-primeiro-jogo',
+        slug: 'desafio-primeiro-jogo',
+        name: 'Desafio do Primeiro Jogo',
+        kind: 'course',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'desafio-primeiro-jogo' },
+      })
+
+      const offer = await built.createOffer.execute({
+        productId: product.id,
+        code: 'desafio-30-dias',
+        slug: 'desafio-primeiro-jogo-30-dias',
+        name: 'Desafio do Primeiro Jogo — 30 dias',
+        priceCents: 6700,
+        pricingMode: 'one_time',
+        accessMode: 'fixed',
+        accessDurationValue: 30,
+        accessDurationUnit: 'days',
+        guaranteeDays: 7,
+        status: 'draft',
+        content: { allowsCoupon: true },
+      })
+
+      expect(offer).toMatchObject({
+        slug: 'desafio-primeiro-jogo-30-dias',
+        status: 'draft',
+        priceCents: 6700,
+        pricingMode: 'one_time',
+        accessMode: 'fixed',
+        accessDurationValue: 30,
+        accessDurationUnit: 'days',
+        guaranteeDays: 7,
+        content: { allowsCoupon: true },
+      })
+      const publicRead = await built.app.handle(
+        req('GET', '/catalog/offers/desafio-primeiro-jogo-30-dias'),
+      )
+      expect(publicRead.status).toBe(404)
+    })
+
     it('cria prazo fixo e editar só o preço preserva a política', async () => {
       const built = build()
       const product = await built.createProduct.execute({
