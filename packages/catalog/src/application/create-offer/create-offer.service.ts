@@ -1,4 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type { AccessDurationUnit, AccessMode } from '../../domain/offer/access-policy'
 import {
   OfferAggregate,
   type OfferContent,
@@ -34,6 +35,9 @@ export interface CreateOfferCommand {
   compareAtPriceCents?: number | null
   currency?: Currency
   pricingMode?: PricingMode
+  accessMode?: AccessMode
+  accessDurationValue?: number | null
+  accessDurationUnit?: AccessDurationUnit | null
   billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
@@ -75,6 +79,9 @@ export class CreateOfferService {
       compareAtPriceCents: command.compareAtPriceCents,
       currency: command.currency,
       pricingMode: command.pricingMode,
+      accessMode: command.accessMode,
+      accessDurationValue: command.accessDurationValue,
+      accessDurationUnit: command.accessDurationUnit,
       billingIntervalMonths: command.billingIntervalMonths,
       installmentsMax: command.installmentsMax,
       trialDays: command.trialDays,

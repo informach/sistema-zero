@@ -1,5 +1,10 @@
 import { and, count, desc, eq, ilike, inArray, or, type SQL } from 'drizzle-orm'
 import {
+  type AccessDurationUnit,
+  type AccessMode,
+  defaultAccessPolicy,
+} from '../../../domain/offer/access-policy'
+import {
   OfferAggregate,
   type OfferItem,
   type OfferSnapshot,
@@ -120,6 +125,9 @@ export class DrizzleOfferRepository implements OfferRepository {
             compareAtPriceCents: s.compareAtPriceCents,
             currency: s.currency,
             pricingMode: s.pricingMode,
+            accessMode: s.accessMode,
+            accessDurationValue: s.accessDurationValue,
+            accessDurationUnit: s.accessDurationUnit,
             billingIntervalMonths: s.billingIntervalMonths,
             installmentsMax: s.installmentsMax,
             trialDays: s.trialDays,
@@ -174,6 +182,9 @@ function toRow(s: OfferSnapshot) {
     compareAtPriceCents: s.compareAtPriceCents,
     currency: s.currency,
     pricingMode: s.pricingMode,
+    accessMode: s.accessMode,
+    accessDurationValue: s.accessDurationValue,
+    accessDurationUnit: s.accessDurationUnit,
     billingIntervalMonths: s.billingIntervalMonths,
     installmentsMax: s.installmentsMax,
     trialDays: s.trialDays,
@@ -204,6 +215,8 @@ async function insertItems(
 }
 
 function toSnapshot(row: OfferRow, itemRows: ItemRow[]): OfferSnapshot {
+  const pricingMode = row.pricingMode as PricingMode
+  const fallbackPolicy = defaultAccessPolicy(pricingMode)
   return {
     id: row.id,
     version: row.version,
@@ -215,7 +228,10 @@ function toSnapshot(row: OfferRow, itemRows: ItemRow[]): OfferSnapshot {
     priceCents: row.priceCents,
     compareAtPriceCents: row.compareAtPriceCents,
     currency: row.currency as Currency,
-    pricingMode: row.pricingMode as PricingMode,
+    pricingMode,
+    accessMode: (row.accessMode ?? fallbackPolicy.accessMode) as AccessMode,
+    accessDurationValue: row.accessDurationValue,
+    accessDurationUnit: (row.accessDurationUnit ?? null) as AccessDurationUnit | null,
     billingIntervalMonths: row.billingIntervalMonths,
     installmentsMax: row.installmentsMax,
     trialDays: row.trialDays,

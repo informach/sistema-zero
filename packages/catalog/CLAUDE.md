@@ -15,9 +15,10 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 **área de membros** (resolve, no grant, exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
-> escrita admin + resolução de entitlements). Migrations `0000`/`0001`/`0002`/`0003`/`0004` no Postgres
+> escrita admin + resolução de entitlements). Migrations `0000`…`0007` no Postgres
 > compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`; `0004` =
-> `offers.billing_interval_months` — periodicidade da assinatura, ver Invariantes da oferta). Seed
+> `offers.billing_interval_months` — periodicidade da assinatura; `0005`…`0007` = política de acesso
+> da oferta com expand → backfill → constraints, ver Invariantes da oferta). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
 > RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
@@ -142,6 +143,14 @@ do pagamento. BFS pelos componentes armazenados; alcançar o próprio id = 400.
   assinatura **ATIVA exige o intervalo** (invariante na ATIVAÇÃO — create com status active,
   `setStatus('active')` e `updateDetails` consolidado; rascunho segue livre p/ cadastro
   progressivo). DTOs aceitam 1..24. Views pública/admin expõem `billingIntervalMonths`.
+- **Política de acesso é da OFERTA (09/2026, migrations `0005`…`0007`)**:
+  `access_mode ∈ {lifetime,fixed,billing_cycle}` + duração opcional em dias/meses. Compra única
+  aceita `lifetime` ou `fixed`; assinatura exige `billing_cycle`. Oferta `fixed` ativa exige
+  duração inteira positiva e unidade. Rascunho/pausada pode ficar `fixed` sem duração durante o
+  cadastro progressivo. O default retrocompatível de criação é `one_time → lifetime` e
+  `subscription → billing_cycle`; o backfill usa a mesma regra e não toca matrículas existentes.
+  Converter assinatura em compra única exige escolher explicitamente vitalício ou prazo fixo.
+  `Offer.restore()` continua sem validar legado; coerência é cobrada na criação/edição/ativação.
 - **Alternador mensal↔anual (`OfferContent.altOffer`, 07/2026, JSONB sem migração)**:
   `{slug, label?}` aponta a oferta IRMÃ (a mensal aponta a anual e vice-versa — autorado no admin
   nos DOIS sentidos). O funil VALIDA o slug escolhido no checkout contra este link (anti-forja);

@@ -1,4 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type { AccessDurationUnit, AccessMode } from '../../domain/offer/access-policy'
 import type { OfferContent } from '../../domain/offer/offer.aggregate'
 import { OfferNotFoundError } from '../../domain/offer/offer.errors'
 import type { OfferStatus } from '../../domain/offer/offer.status'
@@ -23,6 +24,9 @@ export interface UpdateOfferCommand {
   priceCents?: number
   compareAtPriceCents?: number | null
   pricingMode?: PricingMode
+  accessMode?: AccessMode
+  accessDurationValue?: number | null
+  accessDurationUnit?: AccessDurationUnit | null
   billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
@@ -54,6 +58,9 @@ export class UpdateOfferService {
       command.priceCents !== undefined ||
       command.compareAtPriceCents !== undefined ||
       command.pricingMode !== undefined ||
+      command.accessMode !== undefined ||
+      command.accessDurationValue !== undefined ||
+      command.accessDurationUnit !== undefined ||
       command.billingIntervalMonths !== undefined ||
       command.installmentsMax !== undefined ||
       command.trialDays !== undefined ||
@@ -68,6 +75,9 @@ export class UpdateOfferService {
         priceCents: command.priceCents,
         compareAtPriceCents: command.compareAtPriceCents,
         pricingMode: command.pricingMode,
+        accessMode: command.accessMode,
+        accessDurationValue: command.accessDurationValue,
+        accessDurationUnit: command.accessDurationUnit,
         billingIntervalMonths: command.billingIntervalMonths,
         installmentsMax: command.installmentsMax,
         trialDays: command.trialDays,

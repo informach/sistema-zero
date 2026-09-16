@@ -3,6 +3,14 @@ import { InvalidStateTransitionError, ValidationError } from '../shared/errors'
 import { type Currency, Money } from '../value-objects/money'
 import type { Sku } from '../value-objects/sku'
 import type { Slug } from '../value-objects/slug'
+import {
+  type AccessDurationUnit,
+  type AccessMode,
+  accessPolicyForCreate,
+  accessPolicyForUpdate,
+  assertAccessPolicy,
+  type OfferAccessPolicy,
+} from './access-policy'
 import { OfferCreatedEvent, OfferUpdatedEvent } from './offer.events'
 import { DEFAULT_OFFER_STATUS, type OfferStatus } from './offer.status'
 import { DEFAULT_PRICING_MODE, type PricingMode } from './pricing-mode'
@@ -54,6 +62,9 @@ export interface OfferSnapshot {
   compareAtPriceCents: number | null
   currency: Currency
   pricingMode: PricingMode
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
   /**
    * Periodicidade da ASSINATURA em meses (mensal = 1, anual = 12). Só faz sentido
    * com `pricingMode: 'subscription'` (one_time normaliza p/ null); oferta de
@@ -83,6 +94,9 @@ export interface CreateOfferInput {
   compareAtPriceCents?: number | null
   currency?: Currency
   pricingMode?: PricingMode
+  accessMode?: AccessMode
+  accessDurationValue?: number | null
+  accessDurationUnit?: AccessDurationUnit | null
   billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
@@ -101,6 +115,9 @@ export interface UpdateOfferDetails {
   priceCents?: number
   compareAtPriceCents?: number | null
   pricingMode?: PricingMode
+  accessMode?: AccessMode
+  accessDurationValue?: number | null
+  accessDurationUnit?: AccessDurationUnit | null
   billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
@@ -123,6 +140,9 @@ interface OfferProps {
   compareAtPriceCents: number | null
   currency: Currency
   pricingMode: PricingMode
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
   billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
@@ -167,21 +187,22 @@ export class OfferAggregate extends AggregateRoot<string> {
     assertCompareAt(input.compareAtPriceCents, input.priceCents, currency)
     assertAvailabilityWindow(input.availableFrom ?? null, input.availableUntil ?? null)
 
+    const pricingMode = input.pricingMode ?? DEFAULT_PRICING_MODE
+    const status = input.status ?? DEFAULT_OFFER_STATUS
+    const accessPolicy = accessPolicyForCreate(pricingMode, status, input)
     const offer = new OfferAggregate(input.id, {
       version: 0,
       productId: input.productId,
       code: input.code.value,
       slug: input.slug.value,
       name,
-      status: input.status ?? DEFAULT_OFFER_STATUS,
+      status,
       priceCents: input.priceCents,
       compareAtPriceCents: input.compareAtPriceCents ?? null,
       currency,
-      pricingMode: input.pricingMode ?? DEFAULT_PRICING_MODE,
-      billingIntervalMonths: normalizeBillingInterval(
-        input.pricingMode ?? DEFAULT_PRICING_MODE,
-        input.billingIntervalMonths,
-      ),
+      pricingMode,
+      ...accessPolicy,
+      billingIntervalMonths: normalizeBillingInterval(pricingMode, input.billingIntervalMonths),
       installmentsMax: nullablePositiveInt(input.installmentsMax, 'installmentsMax'),
       trialDays: nullablePositiveInt(input.trialDays, 'trialDays'),
       guaranteeDays: nullablePositiveInt(input.guaranteeDays, 'guaranteeDays'),
@@ -233,20 +254,30 @@ export class OfferAggregate extends AggregateRoot<string> {
       // invertido na página de vendas (precificação enganosa).
       assertCompareAt(this.props.compareAtPriceCents, this.props.priceCents, this.props.currency)
     }
-    if (details.pricingMode !== undefined) this.props.pricingMode = details.pricingMode
-    if (details.billingIntervalMonths !== undefined) {
-      this.props.billingIntervalMonths = nullablePositiveInt(
-        details.billingIntervalMonths,
-        'billingIntervalMonths',
-      )
-    }
+    const nextPricingMode = details.pricingMode ?? this.props.pricingMode
+    const requestedBillingInterval =
+      details.billingIntervalMonths !== undefined
+        ? nullablePositiveInt(details.billingIntervalMonths, 'billingIntervalMonths')
+        : this.props.billingIntervalMonths
     // Estado consolidado: one_time não carrega intervalo (normaliza); assinatura
     // ATIVA exige o intervalo (o funil/payments dependem dele p/ o plano Efí).
-    this.props.billingIntervalMonths = normalizeBillingInterval(
+    const nextBillingInterval = normalizeBillingInterval(nextPricingMode, requestedBillingInterval)
+    const nextAccessPolicy = accessPolicyForUpdate(
       this.props.pricingMode,
-      this.props.billingIntervalMonths,
+      accessPolicyOf(this.props),
+      nextPricingMode,
+      this.props.status,
+      details,
     )
-    assertSubscriptionInterval(this.props)
+    assertSubscriptionInterval({
+      ...this.props,
+      pricingMode: nextPricingMode,
+      billingIntervalMonths: nextBillingInterval,
+      ...nextAccessPolicy,
+    })
+    this.props.pricingMode = nextPricingMode
+    this.props.billingIntervalMonths = nextBillingInterval
+    Object.assign(this.props, nextAccessPolicy)
     if (details.installmentsMax !== undefined)
       this.props.installmentsMax = nullablePositiveInt(details.installmentsMax, 'installmentsMax')
     if (details.trialDays !== undefined)
@@ -279,10 +310,12 @@ export class OfferAggregate extends AggregateRoot<string> {
         `Transição de oferta inválida: ${this.props.status} → ${status}`,
       )
     }
-    this.props.status = status
     // Ativar uma oferta de assinatura sem periodicidade venderia um plano que o
     // payments não sabe cobrar — barra na ATIVAÇÃO (rascunho segue livre).
-    assertSubscriptionInterval(this.props)
+    const next = { ...this.props, status }
+    assertSubscriptionInterval(next)
+    assertAccessPolicy(next.pricingMode, status, accessPolicyOf(next))
+    this.props.status = status
     this.touch(now)
     this.addEvent(new OfferUpdatedEvent(this.id, `status:${status}`))
   }
@@ -328,6 +361,15 @@ export class OfferAggregate extends AggregateRoot<string> {
   }
   get pricingMode(): PricingMode {
     return this.props.pricingMode
+  }
+  get accessMode(): AccessMode {
+    return this.props.accessMode
+  }
+  get accessDurationValue(): number | null {
+    return this.props.accessDurationValue
+  }
+  get accessDurationUnit(): AccessDurationUnit | null {
+    return this.props.accessDurationUnit
   }
   get billingIntervalMonths(): number | null {
     return this.props.billingIntervalMonths
@@ -421,6 +463,14 @@ function assertSubscriptionInterval(props: OfferProps): void {
     throw new ValidationError(
       'Oferta de assinatura ativa exige o intervalo de cobrança (mensal = 1, anual = 12)',
     )
+  }
+}
+
+function accessPolicyOf(props: OfferProps): OfferAccessPolicy {
+  return {
+    accessMode: props.accessMode,
+    accessDurationValue: props.accessDurationValue,
+    accessDurationUnit: props.accessDurationUnit,
   }
 }
 
