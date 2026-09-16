@@ -1,5 +1,95 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Nomes por cena e ações legadas no editor (16/09/2026, consertos da onda A do lote 5)
+
+`editor/scene-action-editor.tsx` tem a tabela `POR_CENA` (chave = `identidade` da ação): na
+`acceleration` "Sortear velocidade" se chama **"Passar 5 segundos"** (o nome da bancada) e o
+"Avançar o relógio" (`clock`, anda a base sem nascer cacto) some da lista; na `restart` somem "Mover o
+obstáculo" e "Provocar colisão" (terminam a partida sem cacto na pista) e o toque se chama "Tocar na
+tela"; na `hitbox` a largura mostra a porcentagem da bancada ("Largura da área (100% do Dino)"). ⚠️ As
+escondidas continuam LEGAIS: um passo antigo que as usa aparece como "<nome> · ação antiga"
+(`rotuloDaAcaoAntiga`), e não como "Ação incompatível". Teste: `tests/scene-action-fields.test.tsx`.
+
+## O núcleo do Iniciante 2D no editor de ações (16/09/2026, Raio-X lote 5, G5)
+
+`editor/scene-action-editor.tsx` ganhou "Andar 1 segundo" (`stride`, só na `diagonal`) e o nome da porta
+nova `copy` ("Copiar a ficha ao nascer", `enemy-type`). "Mudar a distância entre os dois" (`approach`)
+nasce em 0 (encostados): na `contact` o encosto é a distância 0 dos desenhos, e com 20 escolher de novo a
+ação no primeiro passo do roteiro quebrava o `waitFor` (pego pelo `tests/scene-authoring.test.tsx`).
+
+## O ateliê no editor de ações (16/09/2026, Raio-X lote 5, G4)
+
+`editor/scene-action-editor.tsx` fala o vocabulário do Pinta nas sete cenas do ateliê: "Ligar/Parar a
+prévia" e "Mudar a velocidade da prévia" (`frames`), "Mudar o tamanho do fogo 2" (`onion-skin`, campo
+"Tamanho do fogo 2 (4 por quadradinho)"), "Desligar o espelho" / "Ligar o Espelho lado a lado" / "Ligar o
+espelho de cima e de baixo" (`mirror-mode`), "Pintar a asa/a ponta/a cabine" (`trace`), "Pintar um
+quadradinho" (`dot`, campos coluna e linha) e "Apagar o papel" (`symmetry`), "Aproximar as duas pedras"
+(`pixel-vector`, sem escolher a pedra) e "Mostrar a folha inteira no jogo (64)" / "Recortar a folha em
+16/32" (`crop`) e "Levar o recorte a um quadro" (`sheet-vs-sprite`). Saíram "Pintar a coluna", "Mover a
+linha do eixo" e "Olhar a de vetor". `DISTINGUE` separa `mirror-mode`, `trace` e `crop` pelo valor.
+`professor/lesson-learning-panel.tsx` resume as sete cenas com o mesmo vocabulário (o fogo 2 em
+quadradinhos por `onionFireLength`, o espelho e o que foi pintado por `symmetryCounts`).
+
+## O motor e o 3D no editor de ações (16/09/2026, Raio-X lote 5, G6)
+
+`editor/scene-action-editor.tsx` ganhou "Ver os pontos: nada / metade / tudo" (`see-points`, `mesh`) e
+"O estado mora: em cada torre / no jogo" (`brain-scope`, `entity-state`), cada valor como opção própria
+(`DISTINGUE`). O campo z de "Levar o objeto no espaço" (`place3d`) diz "z (negativo é o fundo)", como no
+Jogo 3D do Estúdio, e a ação nasce em z −80. `professor/lesson-learning-panel.tsx` resume as oito cenas com
+o vocabulário novo (a letra da caixa da `pick-ray` por `scenePickLetter`). Os testes do aviso de tempo
+fora do quadro usam a `entity-state` (a `pool` passou a 10 quadros por segundo).
+
+## A tela e o mundo no editor de ações (16/09/2026, Raio-X lote 5, G1)
+
+`editor/scene-action-editor.tsx`: os campos x e y de "Levar o Dino a um endereço" (`place`) usam
+`SCENE_LIMITS.addressX`/`addressY` do core (até 800 × 480), e "Mudar o tamanho da tela" (`stage`)
+aparece também no caso de `coordinates` (a lista vem do `isSceneAction`): é assim que um caso abre a
+tela do tamanho do curso (o Dia 1 do Desafio usa 800 × 480). Os rótulos do `draw-loop` seguem a bancada:
+"Desenhar o Dino a cada quadro" / "Desenhar o Dino só no começo" e "Ligar/Desligar Limpar a tela
+antes". Teste: `tests/learning-builder.test.tsx` (a chave "Desenhar o Dino na tela" do `world` na prévia).
+
+## O elenco da cena no editor (16/09/2026, consertos do review do lote 3)
+
+`editor/scene-cast-editor.tsx`. ⚠️⚠️ **O nome é guardado COMO DIGITADO e só é aparado ao SAIR do
+campo** (`onBlur` → `aparar`, também no plural): aparar a cada tecla comia o espaço antes da letra
+seguinte e "nave espacial" virava "naveespacial", que não diz figura nenhuma (o palco desenhava o
+Dino). Colar funcionava; digitar, não. O `castText` do core também apara, para a prévia não sair com
+espaço dobrado. ⭐ A prévia lista só os papéis que a cena DESENHA (`SCENE_ROLES`) e diz "Esta cena não
+desenha o elenco" nas abstratas. ⭐ **Aviso âmbar** quando o elenco leva a cena ao espaço e um papel
+DESENHADO ficou com figura da terra (sem nome, ou com Dino/cacto/floresta escritos): o palco não
+resolve sozinho, porque o texto segue dizendo "cacto". A nota "de onde a figura sai" é montada de
+`SCENE_FIGURE_NAMES` do core. Teste: `tests/scene-cast-editor.test.tsx` (digitação letra a letra,
+conferida contra o `.trim()` antigo).
+
+## O tempo fora do quadro da cena (16/09/2026, consertos do review do lote 4)
+
+`avisoDoTempo(cena, segundos, noCaso)` (`scene-action-editor.tsx`): o motor conta QUADROS no ritmo de
+cada cena (`sceneFrameRate`, no core), e o campo "Tempo em segundos" aceitava qualquer valor desde
+0,001 s. Menos de um quadro não mostra nada ("Observar a cena 0,5 s" numa etapa da `pool`); fora do
+quadro inteiro, o resto passa para a ação seguinte no roteiro e se perde no CASO (a sobra é zerada ao
+abrir a cena). O editor AVISA embaixo do campo, com os dois tempos certos mais perto, e não recusa: o
+roteiro segue válido. Nenhum roteiro de modelo dispara o aviso (travado em
+`tests/scene-action-fields.test.tsx`); o render está em `tests/scene-authoring.test.tsx`.
+
+## A previsão na troca de cena (16/09/2026, consertos do review do lote 2)
+
+`previsaoNaCena` (`scene-authoring-rules.ts`), aplicada por `trocarCena` e `trocarTipo`: o `revealOn`
+que não é meta da cena de chegada SAI, com aviso. ⚠️⚠️ "Escrever a minha previsão" copia a da cena
+COM o `revealOn`, e o editor não tem campo para ele: trocada a cena, o bloco ficava inválido com o
+recado genérico de "complete os campos" e nada na tela para consertar. ⚠️ `revealOn` e `shows` não têm
+campo no editor: chegam pelo manifesto ou pela previsão herdada da cena. O texto do editor não diz mais
+que "a criança não vê se acertou" (desde o lote 2 ela vê o palpite de volta). As opções da prévia
+(palpite e pergunta) são BOTÕES, e `tests/lesson-rehearsal.test.tsx` passa pelo palpite antes de mexer
+(o `fieldset disabled` nunca travou o clique no happy-dom). Teste: `tests/scene-authoring-rules.test.ts`.
+
+## A prévia do editor corrige de verdade (16/09/2026, Raio-X lote 2)
+
+"Experimentar a prévia" (`learning-builder.tsx`) monta o bloco dentro de um `LessonPreviewProvider`
+mínimo (`ENSAIO_DA_PREVIA`, constante de módulo, sem estado) cujo `onAttempt` é o `evaluateLearning`.
+⚠️ Sem ensaio em volta não havia quem corrigisse: qualquer resposta da pergunta concluía sem recado, e
+o professor nunca lia a explicação que escreveu. O rodapé da cena diz "Prévia: nada é guardado.".
+Teste: `tests/learning-builder.test.tsx` ("CORRIGE de verdade").
+
 ## Autoria de aulas — 12/09/2026
 
 O cadastro prioriza criação do zero. `LessonSectionAuthoring` apresenta seções recolhíveis,

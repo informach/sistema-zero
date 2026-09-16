@@ -146,7 +146,7 @@ test('trocar de cena leva o texto do modelo junto para quem não escreveu o pró
 test('⚠️ a cena ACOMPANHA entre demonstração e experimentação', async () => {
   const b = await montar(EMPTY_LEARNING)
   try {
-    await b.clicar('Cuide dos cactos invisíveis')
+    await b.clicar('Para onde vai o cacto que sai da tela?')
     await b.clicar('Demonstração')
     if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
     expect(b.value.activity.scene).toBe('cleanup')
@@ -190,7 +190,7 @@ test('⚠️ passar por outro tipo e voltar devolve o roteiro escrito à mão', 
 test('⚠️ a cena escolhida sobrevive a uma passagem por Pergunta curta', async () => {
   const b = await montar(EMPTY_LEARNING)
   try {
-    await b.clicar('Cuide dos cactos invisíveis')
+    await b.clicar('Para onde vai o cacto que sai da tela?')
     await b.clicar('Pergunta curta')
     await b.clicar('Experimentação')
     if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
@@ -249,6 +249,56 @@ test('⚠️ o impulso ajustado atravessa uma cena sem salto e volta na cena irm
     await b.clicar('Escolha a altura do salto')
     if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
     expect(b.value.activity.initialImpulse).toBe(15)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe recado, acertar a explicação', async () => {
+  /**
+   * Lote 2 do Raio-X (16/09/2026). A prévia do editor montava o bloco sem ensaio em volta, e sem
+   * ensaio não havia quem corrigisse: QUALQUER resposta da pergunta concluía sem recado. O professor
+   * que testava ali concluía que toda opção passava e nunca lia a explicação que ele mesmo escreveu.
+   */
+  const { SCENE_QUESTIONS } = await import('@sistemazero/core/learning/scene')
+  const b = await montar({
+    kind: 'interactive',
+    title: SCENE_MODELS.world.title,
+    instructions: SCENE_MODELS.world.instruction,
+    hints: [],
+    required: false,
+    activity: { type: 'experimentation', scene: 'world' },
+  })
+  const esperar = () => act(async () => await new Promise((r) => setTimeout(r, 60)))
+  const botao = (raiz: ParentNode, nome: string) =>
+    [...raiz.querySelectorAll('button')].find((x) => x.textContent?.trim() === nome)
+  // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções do palpite e da pergunta são
+  // BOTÕES, não rádios (a seta do teclado escolhia e mandava uma tentativa por seta).
+  const radio = (raiz: ParentNode, rotulo: string) =>
+    [...raiz.querySelectorAll('button')].find((r) => r.textContent?.trim() === rotulo) as
+      | HTMLButtonElement
+      | undefined
+  try {
+    await act(async () => botao(document, 'Experimentar a prévia')?.click())
+    const previa = document.querySelector('.sz-lesson-scene') as HTMLElement
+    expect(previa.textContent).toContain('Prévia: nada é guardado.')
+    const modelo = SCENE_QUESTIONS.world
+    await act(async () => radio(previa, modelo.prediction.choices[0]?.label as string)?.click())
+    await act(async () => botao(previa, '＋ Criar Dino')?.click())
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): o fio do desenho da `world` virou uma chave.
+    await act(async () => botao(previa, 'Desenhar o Dino na tela: desligado')?.click())
+    await esperar()
+    expect(previa.textContent).toContain('Agora explique')
+    const errada = modelo.explain.choices.find((c) => c.id !== modelo.explain.correctChoiceId)
+    const certa = modelo.explain.choices.find((c) => c.id === modelo.explain.correctChoiceId)
+    await act(async () => radio(previa, errada?.label as string)?.click())
+    await esperar()
+    expect(previa.textContent).toContain('Ainda não é essa')
+    expect(previa.textContent).not.toContain(modelo.explain.explanation)
+    await act(async () => radio(previa, certa?.label as string)?.click())
+    await esperar()
+    expect(previa.textContent).toContain('Certo!')
+    expect(previa.textContent).toContain(modelo.explain.explanation)
   } finally {
     await b.fechar()
   }

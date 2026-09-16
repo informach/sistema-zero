@@ -3,6 +3,7 @@
 import {
   blockCheckpoint,
   blockPrediction,
+  evaluateLearning,
   type InteractiveBlock,
   type LearningActivity,
   type LearningChoice,
@@ -15,6 +16,10 @@ import {
   sceneTargets,
 } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import {
+  type LessonPreviewContextValue,
+  LessonPreviewProvider,
+} from '@sistemazero/member-shell/components/lesson-preview-context'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -203,6 +208,25 @@ function ChoiceFields({
       </Button>
     </div>
   )
+}
+
+/**
+ * O ensaio da prévia do editor: o avaliador de VERDADE e nada guardado.
+ *
+ * ⚠️ Constante de módulo de propósito: ele não guarda estado (nem respostas, nem resultados), então
+ * a prévia sempre abre do começo — e um objeto novo a cada render faria o player achar que o ensaio
+ * mudou. O ensaio da aula INTEIRA (`lesson-rehearsal`) é o que guarda o percurso entre seções.
+ */
+const ENSAIO_DA_PREVIA: LessonPreviewContextValue = {
+  answers: {},
+  hintsUsed: {},
+  results: {},
+  workspaces: {},
+  onWorkspaceChange: () => {},
+  onProjectCheck: async () => '',
+  onChange: () => {},
+  onAttempt: async (_blockId, content, answers) => evaluateLearning(content, answers),
+  onQuiz: async () => {},
 }
 
 export function LearningBuilder({
@@ -601,10 +625,14 @@ export function LearningBuilder({
                   ))}
                 </Select>
               </Field>
+              {/* ⚠️ Mudou no review do lote 2 do Raio-X: desde o lote 2 a criança VÊ o palpite de
+                  volta ("Você achou: X. E foi isso mesmo!"), e o texto antigo dizia que não. O
+                  momento da retomada (`revealOn`) e o "para onde olhar" de cada opção (`shows`) não
+                  têm campo aqui: chegam pelo manifesto ou pela previsão herdada da cena. */}
               <p className="text-sm text-muted-foreground">
-                Sem nota: errar aqui não reprova nada, e a criança não vê se acertou. Quem responde
-                a previsão é a cena, quando ela mexer. Marcar a opção certa serve só para o seu
-                acompanhamento.
+                Sem nota: errar aqui não reprova nada. A criança vê o palpite dela de volta quando a
+                cena mostrar a resposta. Sem a opção certa marcada, o palpite volta sem dizer se ela
+                acertou.
               </p>
             </>
           )}
@@ -714,17 +742,23 @@ export function LearningBuilder({
       {preview && (
         // ⚠️ O `sz-lesson-block` é o que dá o cartão à cena: ela não desenha o dela, e sem este
         // embrulho a prévia sai solta na página — diferente do que o ensaio e a aula mostram.
-        <div className="sz-lesson-block">
-          <InteractiveLessonBlock
-            previewContent={value}
-            block={{
-              id: 'author-preview',
-              kind: 'interactive',
-              sortOrder: 0,
-              content: publicInteractiveBlock(value),
-            }}
-          />
-        </div>
+        // ⚠️⚠️ E um ENSAIO mínimo em volta, com o avaliador de verdade (lote 2 do Raio-X). Sem ele
+        // a prévia não tinha quem corrigisse: qualquer resposta da pergunta concluía sem recado, e o
+        // professor que testava ali concluía que toda opção passava, sem nunca ler a explicação que
+        // ele mesmo escreveu.
+        <LessonPreviewProvider value={ENSAIO_DA_PREVIA}>
+          <div className="sz-lesson-block">
+            <InteractiveLessonBlock
+              previewContent={value}
+              block={{
+                id: 'author-preview',
+                kind: 'interactive',
+                sortOrder: 0,
+                content: publicInteractiveBlock(value),
+              }}
+            />
+          </div>
+        </LessonPreviewProvider>
       )}
     </div>
   )

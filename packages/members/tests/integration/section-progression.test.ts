@@ -149,7 +149,13 @@ describe('section gates across HTTP and persistence', () => {
         sessionId: 'sessao-camadas',
         segmentId: 'segmento-1',
         baseSequence: 0,
-        commands: [{ type: 'layer', front: true }],
+        // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `layers` pede DUAS descobertas (o Dino na
+        // frente e, só trocando a ordem, escondido de novo) e a montagem assentada no fim.
+        commands: [
+          { type: 'layer', front: true },
+          { type: 'layer', front: false },
+          { type: 'layer', front: true },
+        ],
       }),
     }
     /**

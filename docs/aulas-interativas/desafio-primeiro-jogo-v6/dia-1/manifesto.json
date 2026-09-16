@@ -49,7 +49,11 @@
         "kind": "interactive",
         "title": "Compare duas alturas",
         "instructions": "A nave começa lá em cima. Mude só o y e veja para que lado ela vai. Depois volte e mude só o x.",
-        "hints": [],
+        "hints": [
+          "Olhe o número do y e onde a nave está.",
+          "Deixe o x parado e aumente só o y. Olhe para onde a nave vai.",
+          "Aperte + no y três vezes, sem tocar no x."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
@@ -63,8 +67,13 @@
           "setup": {
             "actions": [
               {
+                "type": "stage",
+                "width": 800,
+                "height": 480
+              },
+              {
                 "type": "place",
-                "x": 300,
+                "x": 400,
                 "y": 40
               }
             ],
@@ -72,33 +81,35 @@
           }
         },
         "checkpoint": {
-          "prompt": "O y foi de 40 para 210, com o mesmo x. A nave foi…",
+          "prompt": "Você quer a nave mais perto da beirada de baixo da tela. O que faz com o y?",
           "choices": [
             {
-              "id": "a",
-              "label": "Mais para baixo."
+              "id": "diminui",
+              "label": "Diminuo o y."
             },
             {
-              "id": "b",
-              "label": "Mais para a direita."
+              "id": "aumenta",
+              "label": "Aumento o y."
             }
           ],
-          "correctChoiceId": "a",
-          "explanation": "Mudar o y muda a altura. Na tela, os números crescem para BAIXO."
+          "correctChoiceId": "aumenta",
+          "explanation": "Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo a nave fica."
         },
         "prediction": {
-          "prompt": "Antes de mexer: se o y AUMENTAR, para onde a nave vai?",
+          "prompt": "Se o y AUMENTAR, para onde a nave vai?",
           "choices": [
             {
               "id": "cima",
-              "label": "Para cima"
+              "label": "Para cima",
+              "shows": "Aumentando o y, a nave desceu."
             },
             {
               "id": "baixo",
               "label": "Para baixo"
             }
           ],
-          "correctChoiceId": "baixo"
+          "correctChoiceId": "baixo",
+          "revealOn": "down"
         }
       }
     },
@@ -124,7 +135,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Criar não é desenhar",
-        "instructions": "Crie a nave nos bastidores e olhe a tela. Depois ligue o desenho e compare.",
+        "instructions": "Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -155,8 +166,8 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O que acontece sem a borracha?",
-        "instructions": "Avance o relógio com o desenho desligado. Depois ligue o desenho a cada quadro e a limpeza, uma de cada vez, e compare o que fica na tela.",
+        "title": "O que acontece sem limpar a tela?",
+        "instructions": "Aperte Avançar 1 quadro e olhe a tela e o x da nave. Depois desenhe a nave a cada quadro. Por último, ligue Limpar a tela antes.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -169,7 +180,7 @@
           }
         },
         "checkpoint": {
-          "prompt": "Qual par de fios deixa uma nave só na tela, num lugar novo?",
+          "prompt": "Quais escolhas deixam uma nave só na tela, num lugar novo?",
           "choices": [
             {
               "id": "a",
@@ -184,18 +195,20 @@
           "explanation": "A limpeza apaga a imagem anterior. Ela não apaga a nave, que continua guardada no jogo."
         },
         "prediction": {
-          "prompt": "Antes de mexer: sem limpar antes de desenhar, o que fica na tela?",
+          "prompt": "Sem limpar antes de desenhar, o que fica na tela?",
           "choices": [
-            {
-              "id": "uma",
-              "label": "Uma nave só"
-            },
             {
               "id": "rastro",
               "label": "Um rastro de naves"
+            },
+            {
+              "id": "uma",
+              "label": "Uma nave só",
+              "shows": "Sem limpar, as naves de antes continuaram na tela."
             }
           ],
-          "correctChoiceId": "rastro"
+          "correctChoiceId": "rastro",
+          "revealOn": "trail"
         }
       }
     },
@@ -475,7 +488,7 @@
     },
     {
       "key": "limpeza",
-      "title": "O que acontece sem a borracha?",
+      "title": "O que acontece sem limpar a tela?",
       "intent": "exploration",
       "objective": "Relacionar a limpeza com a remoção dos desenhos anteriores.",
       "blockKeys": ["experiencia-limpeza"],

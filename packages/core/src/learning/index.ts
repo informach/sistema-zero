@@ -22,6 +22,7 @@ import {
   SCENE_QUESTIONS,
   type SceneActivity,
   type SceneId,
+  sceneGoalIds,
   sceneModel,
   sceneStart,
   sceneTargets,
@@ -88,9 +89,17 @@ export interface LearningCheckpoint {
  */
 export interface LearningPrediction {
   prompt: string
-  choices: LearningChoice[]
-  /** Opcional, e SEM efeito na conclusão. Serve ao acompanhamento, não à nota. */
+  choices: (LearningChoice & {
+    /** Para onde olhar quando a criança escolheu esta opção errada. Ver `ScenePrediction`. */
+    shows?: string
+  })[]
+  /**
+   * Opcional, e SEM efeito na conclusão. Serve ao acompanhamento e, desde o lote 2 do raio-x
+   * (16/09/2026), a RETOMAR o palpite na tela: por isso ele é público (a previsão não vale nota).
+   */
   correctChoiceId?: string
+  /** A meta cuja queda responde o palpite. Sem ela, o palpite volta quando a cena conclui. */
+  revealOn?: string
 }
 /** Uma experiência autoral em HTML, isolada num iframe. */
 export interface HtmlActivity {
@@ -148,8 +157,14 @@ export interface PublicInteractiveBlock
   extends Omit<InteractiveBlock, 'activity' | 'checkpoint' | 'prediction'> {
   activity: PublicLearningActivity
   checkpoint?: Omit<LearningCheckpoint, 'correctChoiceId' | 'explanation'>
-  /** Sem o gabarito, como no checkpoint: o que a criança prevê é dela. */
-  prediction?: Omit<LearningPrediction, 'correctChoiceId'>
+  /**
+   * ⚠️⚠️ A previsão é PÚBLICA inteira, com o `correctChoiceId`, o `revealOn` e os `shows` (lote 2
+   * do Raio-X, 16/09/2026). Ela não vale nota, então não é gabarito: é o que o player precisa para
+   * RETOMAR o palpite na tela ("Você achou: Nada. E foi isso mesmo!"). Podada como o checkpoint, a
+   * criança apostava antes de mexer e nunca ficava sabendo se acertou, que é metade do ciclo.
+   * ⚠️ O checkpoint continua podado: aquele entra no `passed`.
+   */
+  prediction?: LearningPrediction
 }
 const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
   // ⚠️ `cast` é PÚBLICO de propósito: é texto que a criança lê, não gabarito. Sem ele na
@@ -219,8 +234,15 @@ export function blockPrediction(block: InteractiveBlock): LearningPrediction | u
   if (!modelo) return undefined
   return {
     prompt: castText(modelo.prompt, a.cast),
-    choices: modelo.choices.map((c) => ({ id: c.id, label: castText(c.label, a.cast) })),
+    // ⚠️ O `shows` passa pelo elenco como o rótulo: é a frase que a criança lê logo depois de
+    // ver a cena ("Olhe a tela: ela ficou vazia"), e ela cita o personagem.
+    choices: modelo.choices.map((c) => ({
+      id: c.id,
+      label: castText(c.label, a.cast),
+      ...(c.shows ? { shows: castText(c.shows, a.cast) } : {}),
+    })),
     correctChoiceId: modelo.correctChoiceId,
+    ...(modelo.revealOn ? { revealOn: modelo.revealOn } : {}),
   }
 }
 
@@ -259,10 +281,35 @@ export function publicInteractiveBlock(block: InteractiveBlock): PublicInteracti
     required: block.required,
     activity,
     // ⚠️ Pelos RESOLVEDORES, não pelos campos crus: é aqui que a previsão e a pergunta do
-    // modelo chegam à criança. A poda do gabarito continua a mesma — `correctChoiceId` e
-    // `explanation` não saem daqui em nenhum dos dois caminhos.
-    ...(pergunta ? { checkpoint: { prompt: pergunta.prompt, choices: pergunta.choices } } : {}),
-    ...(palpite ? { prediction: { prompt: palpite.prompt, choices: palpite.choices } } : {}),
+    // modelo chegam à criança. A poda do gabarito da PERGUNTA continua a mesma: o
+    // `correctChoiceId` e a `explanation` dela não saem daqui em nenhum dos dois caminhos.
+    ...(pergunta
+      ? {
+          checkpoint: {
+            prompt: pergunta.prompt,
+            choices: pergunta.choices.map((c) => ({ id: c.id, label: c.label })),
+          },
+        }
+      : {}),
+    // ⚠️⚠️ A previsão sai INTEIRA (ver `PublicInteractiveBlock.prediction`), mas copiada campo a
+    // campo: a projeção roda sobre o conteúdo CRU do banco, e espalhar o objeto levaria junto
+    // qualquer chave que uma linha antiga carregasse.
+    ...(palpite
+      ? {
+          prediction: {
+            prompt: palpite.prompt,
+            choices: palpite.choices.map((c) => ({
+              id: c.id,
+              label: c.label,
+              ...(typeof c.shows === 'string' ? { shows: c.shows } : {}),
+            })),
+            ...(typeof palpite.correctChoiceId === 'string'
+              ? { correctChoiceId: palpite.correctChoiceId }
+              : {}),
+            ...(typeof palpite.revealOn === 'string' ? { revealOn: palpite.revealOn } : {}),
+          },
+        }
+      : {}),
   }
 }
 export function isPublicInteractiveBlock(value: unknown): value is PublicInteractiveBlock {
@@ -277,6 +324,14 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
   return isInteractiveBlock({
     ...value,
     activity: a,
+    // ⚠️⚠️ O `revealOn` é conferido na AUTORIA, nunca aqui (review do lote 2 do Raio-X). Este guarda
+    // roda no NAVEGADOR, contra o catálogo DO NAVEGADOR: com o members um deploy à frente (ou numa
+    // aba aberta antes do deploy), uma previsão apontando para uma meta nova derrubava a atividade
+    // INTEIRA em "precisa de uma configuração válida". Uma meta que o player não conhece só nunca
+    // cai, e o palpite volta na conclusão, que é o comportamento sem `revealOn`.
+    ...(record(prediction) && typeof prediction.revealOn === 'string'
+      ? { prediction: { ...prediction, revealOn: undefined } }
+      : {}),
     ...(record(checkpoint) && choices(checkpoint.choices)
       ? {
           checkpoint: {
@@ -494,6 +549,27 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
       !p.choices.some((choice) => choice.id === p.correctChoiceId)
     )
       return false
+    // O "para onde olhar" de cada opção: texto curto, ou nada.
+    if (
+      !p.choices.every((choice) => {
+        const shows = (choice as { shows?: unknown }).shows
+        return shows === undefined || text(shows, 2000)
+      })
+    )
+      return false
+    // ⚠️ `revealOn` precisa ser uma meta DESTA cena: um id solto é um palpite que só volta na
+    // conclusão, sem aviso nenhum a quem escreveu. Fora de cena ele não tem efeito, e campo sem
+    // efeito é armadilha para quem autora.
+    if (p.revealOn !== undefined) {
+      const a = value.activity
+      const cena =
+        (a.type === 'experimentation' || a.type === 'demonstration') &&
+        SCENE_IDS.some((s) => s === a.scene)
+          ? (a.scene as SceneId)
+          : null
+      if (typeof p.revealOn !== 'string' || !cena || !sceneGoalIds(cena).includes(p.revealOn))
+        return false
+    }
   }
   const a = value.activity
   switch (a.type) {
@@ -562,6 +638,12 @@ export function evaluateLearning(
 }
 
 /**
+ * O recado de uma resposta vinda de uma pergunta que não existe mais. Exportado porque o player
+ * reconhece ESTA frase para oferecer "Abrir de novo" no lugar do "tente outra".
+ */
+export const PERGUNTA_MUDOU = 'Esta pergunta mudou. Abra a aula de novo.'
+
+/**
  * O TERCEIRO tempo do ciclo: mexer, prever, e enunciar a regra.
  *
  * A cena traz a própria evidência e é ela que diz se a criança participou; a pergunta anexa,
@@ -581,6 +663,14 @@ function withAttachedQuestion(
   // mostrou — e a tela e o veredito contariam histórias diferentes.
   const pergunta = blockCheckpoint(block)
   if (!pergunta || !resultado.passed) return resultado
+  // ⚠️ Uma resposta que não é NENHUMA opção da pergunta de agora vem de uma tela velha: o texto da
+  // pergunta mudou (ids novos) enquanto a aba estava aberta. "Ainda não é essa" ali mentiria, e
+  // toda opção daquela tela responderia a mesma coisa até um F5 (review do lote 2 do Raio-X).
+  if (
+    typeof answers.checkpoint === 'string' &&
+    !pergunta.choices.some((c) => c.id === answers.checkpoint)
+  )
+    return { ...resultado, passed: false, verifiedBy: 'server', feedback: PERGUNTA_MUDOU }
   const acertou = answers.checkpoint === pergunta.correctChoiceId
   return {
     ...resultado,
@@ -591,11 +681,13 @@ function withAttachedQuestion(
     // não está — e sem nenhum sinal de que errou, o caminho natural é reler e reescolher a
     // mesma opção. ⚠️ O gabarito continua sem sair do servidor: o recado diz que não é essa,
     // nunca qual é.
+    // ⚠️ Frases de criança (lote 2 do Raio-X): curtas, e sem apontar para um "logo acima" que a
+    // tela pode não ter. O player põe o ícone e a cor em volta; aqui fica só a palavra.
     feedback: acertou
       ? pergunta.explanation
       : answers.checkpoint === undefined
-        ? 'Você fez a descoberta. Agora escolha a frase que explica o que aconteceu.'
-        : 'Essa não é a frase que explica o que aconteceu. Olhe a cena de novo e escolha outra.',
+        ? 'Última parte: escolha a frase que explica o que aconteceu.'
+        : 'Ainda não é essa. Olhe a cena de novo e tente outra.',
   }
 }
 

@@ -24,31 +24,63 @@ import { join } from 'node:path'
  * três e ensinaria a desligar o teste.
  */
 
+// ⚠️ Sem o `exploration-stage.tsx` desde o lote 5 do Raio-X: ele deixou de desenhar (as últimas
+// quatro cenas do palco compartilhado ganharam palco próprio) e só DESPACHA para os palcos.
 const PALCOS = [
-  'exploration-stage.tsx',
   'scene-stages.tsx',
   'scene-art-stages.tsx',
   'scene-core-stages.tsx',
-  'scene-engine-stages.tsx',
+  // Lote 5 do Raio-X (G4): o ateliê de O Jogo do Meu Jeito, as sete cenas de desenho.
+  'scene-atelie-stages.tsx',
   'scene-world-stage.tsx',
   // ⚠️⚠️ O SEXTO cromo, achado no full review: as quatro cenas de salto e colisão desenhavam a
   // própria moldura (na verdade nem isso — um `rounded-2xl` sem borda nenhuma), e são as mais
   // usadas do Corre Dino. Ele não estava nesta lista, então o contrato do palco único não o
   // alcançava — e a galeria das 45 mostrava para elas um palco que a criança nunca vê.
   'experience-scene.tsx',
+  // Lote 5 do Raio-X: o Corre Dino, primeira metade, saiu do palco compartilhado.
+  'scene-dino-stages.tsx',
+  // Lote 5 do Raio-X: o Corre Dino, segunda metade (reiniciar, placar, sorteio e aceleração).
+  'scene-dino-numbers-stages.tsx',
+  // Lote 5 do Raio-X (G6): o motor (reciclagem, estado, tempo, círculos) e a porta do 3D.
+  'scene-motor-stages.tsx',
+  'scene-3d-stages.tsx',
+  // Lote 5 do Raio-X (G5): o núcleo do Iniciante 2D (a tecla, o laço, a ficha, a câmera, o encosto,
+  // os tiros, a mira, a diagonal e o mapa).
+  'scene-nucleo-stages.tsx',
 ] as const
 
 /** As bancadas: os controles de cada cena. */
 const BANCADAS = [
   'scene-lesson-controls.tsx',
   'scene-core-controls.tsx',
-  'scene-engine-controls.tsx',
+  // Lote 5 do Raio-X (G4): o ateliê, com os nomes do Pinta.
+  'scene-atelie-controls.tsx',
+  // Lote 5 do Raio-X: a ordem de desenhar, as marcas do impulso e a peça que muda de caixa.
+  'scene-dino-controls.tsx',
+  // Lote 5 do Raio-X: o toque na tela, a próxima tela, os sorteios e o relógio de 5 segundos.
+  'scene-dino-numbers-controls.tsx',
+  // Lote 5 do Raio-X (G6): o motor e a porta do 3D.
+  'scene-motor-controls.tsx',
+  // Lote 5 do Raio-X (G5): a tecla que se segura, o "Andar", o "Atirar" e o "Andar 1 segundo".
+  'scene-nucleo-controls.tsx',
 ] as const
 
 const CROMO = [
   'scene-activity.tsx',
   'scene-core-controls.tsx',
-  'scene-engine-controls.tsx',
+  'scene-atelie-controls.tsx',
+  // ⚠️ Lote 2 do Raio-X: as peças que saíram do player continuam sendo cromo, e a régua as alcança.
+  'scene-frame.tsx',
+  'scene-prediction.tsx',
+  'scene-conclusion.tsx',
+  'scene-demo-controls.tsx',
+  'scene-sandbox.tsx',
+  'scene-dino-controls.tsx',
+  'scene-dino-numbers-controls.tsx',
+  'scene-motor-controls.tsx',
+  // Lote 5 do Raio-X (G5).
+  'scene-nucleo-controls.tsx',
 ] as const
 
 /**
@@ -57,7 +89,10 @@ const CROMO = [
  * palco, na faixa de estado e no rótulo do controle logo abaixo. Se o cromo os trocasse pelos
  * tokens do app, a leitura da descoberta se desfaria no meio.
  */
-const SENTIDO = /^(a|b|b-ink|a-wash|b-wash|alert|alert-wash)$/
+// ⚠️ `leaf` entrou nos consertos do review da onda B do lote 5 (G6): na `axis-z` o verde é o EIXO y (as
+// cores do AxesHelper do Estúdio), e a faixa e a bancada pintam cada número com a cor do seu eixo. É
+// sentido, não paisagem; o contraste sobre o cartão dos dois apps está em `scene-motor-3d-consertos-5b`.
+const SENTIDO = /^(a|b|b-ink|a-wash|b-wash|alert|alert-wash|leaf)$/
 
 const fonte = (arquivo: string) =>
   readFileSync(join(import.meta.dir, '../src/components', arquivo), 'utf8')
@@ -96,24 +131,38 @@ describe('cromo é do app, mundo é da cena', () => {
     }
   })
 
-  test('⚠️⚠️ o selo do palco compartilhado só nomeia quem CAI nele', () => {
+  test('⚠️⚠️ todo texto de palco passa pela LETRA do palco (`Texto`), e nunca por `fontSize` literal', () => {
     /**
-     * O mapa tinha 30 entradas e 25 estavam MORTAS: cada cena que ganhou palco próprio deixou o
-     * rótulo dela para trás, e quem fosse reescrever "O salto do Dino" mudaria um texto que
-     * ninguém lê. A varredura deriva os dois lados do CÓDIGO (os `if (m === …)` que devolvem
-     * palco próprio e a lista do laboratório), nunca de uma segunda lista escrita aqui.
+     * Conserto "letra no celular" (16/09/2026): os palcos são SVG escalados para a largura da coluna, e
+     * um `fontSize="13"` escrito à mão vira 6,8px num celular de 390px. O `Texto` do `scene-canvas` passa
+     * o tamanho por `palco.letra`, que garante `PISO_DA_LETRA` na tela. A varredura das 45 cenas
+     * (`scene-letra-celular.test.tsx`) mede o que foi desenhado; esta cobra a porta no código, para um
+     * texto novo que só aparece num estado que as varreduras não visitam.
+     */
+    for (const arquivo of PALCOS) {
+      const codigo = fonte(arquivo)
+      expect(codigo, arquivo).not.toMatch(/<text[\s>]/)
+      expect(codigo, arquivo).not.toMatch(/fontSize=/)
+    }
+    // Anti-vácuo: os palcos escrevem, e escrevem pelo `Texto`.
+    expect(PALCOS.map(fonte).join('\n')).toMatch(/<Texto[\s\S]{0,200}tamanho=\{/)
+  })
+
+  test('⚠️⚠️ o palco compartilhado ACABOU: o `ExplorationStage` só despacha', () => {
+    /**
+     * O mapa de selos (`STAGE_LABEL`) tinha 30 entradas e 25 estavam MORTAS: cada cena que ganhou
+     * palco próprio deixava o rótulo para trás. No lote 5 do Raio-X as últimas quatro que caíam no
+     * palco compartilhado (`restart`, `score`, `random`, `acceleration`) ganharam palco próprio, e o
+     * desenho comum saiu inteiro. Um `<svg>`, um `SceneCanvas` ou um selo escrito aqui é um palco
+     * compartilhado nascendo de novo, com a pista que servia para nenhuma das cenas.
      */
     const palco = fonte('exploration-stage.tsx')
-    const proprios = new Set(
-      [...palco.matchAll(/if \(m === '([a-z0-9-]+)'\)/g)].map((m) => m[1] as string),
-    )
-    for (const s of ['gravity', 'impulse', 'hitbox', 'jump-sound']) proprios.add(s)
-    const mapa = palco.slice(palco.indexOf('const STAGE_LABEL'))
-    // ⚠️ O corpo do mapa vai até a primeira chave de fecho: nenhum valor dele tem `}` dentro.
-    const corpo = mapa.slice(0, mapa.indexOf('}'))
-    const rotulos = [...corpo.matchAll(/^ {2}'?([a-z0-9-]+)'?: '/gm)].map((m) => m[1] as string)
-    expect(rotulos.length).toBeGreaterThan(0)
-    expect(rotulos.filter((r) => proprios.has(r))).toEqual([])
+    expect(palco).not.toContain('STAGE_LABEL')
+    expect(palco).not.toContain('<SceneCanvas')
+    expect(palco).not.toMatch(/<svg\b/)
+    // Anti-vácuo: o despacho continua aqui, e chega às quatro da segunda metade do Corre Dino.
+    for (const palcoProprio of ['RestartStage', 'ScoreStage', 'RandomStage', 'AccelerationStage'])
+      expect(palco).toContain(`<${palcoProprio}`)
   })
 
   test('⚠️ o enquadramento é por FAMÍLIA, e quem foge do comum diz o seu', () => {
@@ -149,7 +198,11 @@ describe('cromo é do app, mundo é da cena', () => {
      */
     const pecas = fonte('exploration-pieces.tsx')
     const criar = pecas.slice(pecas.indexOf("dispatch({ type: 'create' })") - 300)
-    expect(criar.slice(0, 400)).toContain(`tom="gesto"`)
+    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): depois de criar, o botão FICA,
+    // fechado e discreto, em vez de virar um `<p>` (o foco caía no `body`). Antes de criar, `gesto`.
+    expect(criar.slice(0, 400)).toMatch(
+      /tom="gesto"|tom=\{state\.world\.created \? 'discreta' : 'gesto'\}/,
+    )
   })
 
   test('⚠️⚠️ os três TONS existem e são usados', () => {

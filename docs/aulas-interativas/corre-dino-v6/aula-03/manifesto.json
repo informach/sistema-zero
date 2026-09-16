@@ -112,38 +112,32 @@
       "content": {
         "kind": "interactive",
         "title": "O que faz o Dino voltar?",
-        "instructions": "Este exemplo já dá um impulso ao Dino. Compare a subida sem gravidade com a volta ao chão quando você liga a gravidade. No seu projeto, ele primeiro precisa cair até o chão.",
+        "instructions": "Aqui a gravidade está desligada. Toque no Dino para pular e veja até onde vai. Depois, com o Dino no ar, ligue a gravidade.",
         "hints": [
-          "O Dino está voltando ou continua subindo?",
-          "Repita o mesmo impulso com a gravidade aplicada.",
-          "Ligue Gravidade ao Dino. Depois toque nele para saltar."
+          "Toque no Dino e olhe o número da altura. O número para de crescer?",
+          "Com o Dino no ar, ligue a gravidade e olhe o que muda.",
+          "Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar."
         ],
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "gravity",
-          "setup": {
-            "actions": [
-              {
-                "type": "jump",
-                "input": "tap"
-              }
-            ]
-          }
+          "scene": "gravity"
         },
         "prediction": {
-          "prompt": "Antes de mexer: sem a gravidade, o que acontece depois do salto?",
+          "prompt": "Sem a gravidade, o que acontece depois do salto?",
           "choices": [
-            {
-              "id": "volta",
-              "label": "O Dino volta ao chão"
-            },
             {
               "id": "sobe",
               "label": "O Dino sobe e não volta"
+            },
+            {
+              "id": "volta",
+              "label": "O Dino volta ao chão",
+              "shows": "Sem gravidade, o Dino continuou subindo e não voltou."
             }
           ],
-          "correctChoiceId": "sobe"
+          "correctChoiceId": "sobe",
+          "revealOn": "floating"
         }
       }
     },
@@ -164,11 +158,11 @@
       "content": {
         "kind": "interactive",
         "title": "O que muda a altura?",
-        "instructions": "Agora a gravidade fica igual. Faça um salto, aumente o impulso e compare as marcas de altura.",
+        "instructions": "Agora a gravidade fica igual. Faça um salto com impulso 9. Depois leve o impulso até 14 e pule de novo. Compare as duas marcas.",
         "hints": [
-          "A marca mostra a altura do salto anterior.",
-          "Mude só a seta. A gravidade continua igual.",
-          "Escolha Baixo ou Alto e toque no Dino para comparar."
+          "A marca azul é o salto de antes.",
+          "Mude só o impulso. A gravidade continua igual.",
+          "Leve o impulso até 14 e toque no Dino para comparar as marcas."
         ],
         "required": false,
         "activity": {

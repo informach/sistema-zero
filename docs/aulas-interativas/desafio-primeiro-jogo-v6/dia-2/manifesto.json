@@ -60,50 +60,49 @@
       "content": {
         "kind": "interactive",
         "title": "Compare o sinal da velocidade",
-        "instructions": "Deixe a velocidade para baixo e avance o relógio. Depois troque o sinal e compare para que lado a nave vai.",
-        "hints": [],
+        "instructions": "Ponha a velocidade para baixo (o vy do seu tiro) em −9 e deixe o tempo passar. Depois troque para 9 e compare: para onde o tiro vai agora?",
+        "hints": [
+          "Olhe o número do y na faixa enquanto o tiro sobe ou desce.",
+          "Mexa só na velocidade para baixo. A velocidade para o lado fica em 0.",
+          "Ponha a velocidade para baixo em −9 e deixe o tempo passar. Depois ponha em 9 e deixe o tempo passar de novo."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "velocity",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            }
-          },
+          "cast": { "hero": { "name": "tiro", "gender": "m" } },
           "setup": {
-            "goals": ["moves", "left"]
+            "actions": [
+              { "type": "velocity", "vx": 10, "vy": 5 },
+              { "type": "advance", "seconds": 3 },
+              { "type": "velocity", "vx": 10, "vy": 0 },
+              { "type": "advance", "seconds": 0.6 },
+              { "type": "velocity", "vx": 0, "vy": 0 }
+            ],
+            "goals": ["down", "up"]
           }
         },
         "checkpoint": {
-          "prompt": "O que o sinal da velocidade decide?",
+          "prompt": "O que o sinal da velocidade para baixo decide?",
           "choices": [
-            {
-              "id": "a",
-              "label": "Para que lado a nave anda."
-            },
-            {
-              "id": "b",
-              "label": "O tamanho da nave."
-            }
+            { "id": "b", "label": "Se o tiro anda mais rápido ou mais devagar." },
+            { "id": "a", "label": "Se o tiro sobe ou desce." }
           ],
           "correctChoiceId": "a",
-          "explanation": "A velocidade é somada na posição a cada quadro; o sinal diz para que lado."
+          "explanation": "A velocidade para baixo é o vy, e ela é somada no y a cada quadro. Com 9, o y cresce e o tiro desce. Com −9, o y diminui e o tiro sobe."
         },
         "prediction": {
-          "prompt": "Antes de mexer: com a velocidade NEGATIVA, para onde a nave vai?",
+          "prompt": "Com a velocidade para baixo em −9, para onde o tiro vai?",
           "choices": [
             {
-              "id": "direita",
-              "label": "Para a direita"
+              "id": "baixo",
+              "label": "Para baixo",
+              "shows": "Com o número negativo, o y diminuiu e o tiro subiu."
             },
-            {
-              "id": "esquerda",
-              "label": "Para a esquerda"
-            }
+            { "id": "cima", "label": "Para cima" }
           ],
-          "correctChoiceId": "esquerda"
+          "correctChoiceId": "cima",
+          "revealOn": "up"
         }
       }
     },

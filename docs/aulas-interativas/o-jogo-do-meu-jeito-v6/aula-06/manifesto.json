@@ -115,29 +115,33 @@
         "kind": "interactive",
         "required": true,
         "title": "Onde cortar a folha?",
-        "instructions": "Você já viu o recorte. Agora mude o tamanho no jogo e olhe a folha: ela mudou junto?",
-        "hints": [],
+        "instructions": "Mude a largura do recorte e olhe a nave no jogo. Qual largura mostra uma nave inteira?",
+        "hints": [
+          "Mude a largura do recorte e olhe o que aparece no jogo.",
+          "Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?",
+          "Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "sheet-vs-sprite",
           "setup": {
-            "goals": ["size-apart"]
+            "goals": ["crop-half", "crop-whole", "size-apart"]
           }
         },
         "checkpoint": {
-          "prompt": "O tamanho no jogo mudou. E a folha?",
+          "prompt": "No bloco Carregar folha de quadros, qual é o tamanho de cada quadro?",
           "choices": [
             {
-              "id": "a",
-              "label": "Continuou do mesmo tamanho."
+              "id": "jogo",
+              "label": "54 x 54, o tamanho da nave no jogo."
             },
             {
-              "id": "b",
-              "label": "Mudou junto com o jogo."
+              "id": "quadro",
+              "label": "32 x 32, o tamanho de um quadro na folha."
             }
           ],
-          "correctChoiceId": "a",
-          "explanation": "A folha é o desenho; o tamanho no jogo é como ele aparece. São dois números diferentes."
+          "correctChoiceId": "quadro",
+          "explanation": "O bloco pergunta o tamanho de um quadro na folha: 32. O 54 é o tamanho em que a nave aparece no jogo."
         }
       }
     },
@@ -288,11 +292,27 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja duas imagens dentro de uma folha só",
-        "instructions": "Acompanhe o recorte de dois pedaços da folha e o tamanho deles dentro do jogo.",
+        "instructions": "Veja o jogo mostrar a folha inteira e depois um quadro de cada vez.",
         "hints": [],
         "activity": {
           "type": "demonstration",
           "scene": "sheet-vs-sprite"
+        },
+        "prediction": {
+          "prompt": "A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?",
+          "choices": [
+            {
+              "id": "espremidas",
+              "label": "Duas naves espremidas"
+            },
+            {
+              "id": "uma",
+              "label": "Uma nave só",
+              "shows": "O jogo mostrou a folha inteira: as duas naves, espremidas."
+            }
+          ],
+          "correctChoiceId": "espremidas",
+          "revealOn": "squeezed"
         }
       }
     }

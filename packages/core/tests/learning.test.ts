@@ -110,7 +110,9 @@ describe('learning contracts', () => {
       checkpoint: 'b',
     }).feedback
     expect(errou).not.toBe(semResposta)
-    expect(errou).toContain('não é a frase')
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X): a frase virou voz de criança ("Ainda não é essa.
+    // Olhe a cena de novo e tente outra."). O que o teste guarda é que ela diz que ERROU.
+    expect(errou).toContain('não é essa')
     // ⚠️ E o gabarito continua sem sair do servidor: o recado diz que não é essa, nunca qual é.
     expect(errou).not.toContain('Uma')
     expect(errou).not.toContain('Porque sim')

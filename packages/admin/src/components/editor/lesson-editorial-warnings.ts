@@ -1,5 +1,5 @@
 import type { LessonDraftDocument } from '@sistemazero/core/learning'
-import { sceneGoalIds, sceneTargets } from '@sistemazero/core/learning/scene'
+import { sceneDefaultGoalIds, sceneTargets } from '@sistemazero/core/learning/scene'
 import type { LessonBlockContent } from '@/lib/types'
 
 /** Advice to the author, separate from publication errors and never a fixed lesson template. */
@@ -55,8 +55,10 @@ export function lessonEditorialWarnings(
       if (
         type === 'experimentation' &&
         !block.content.checkpoint &&
+        // ⚠️ Contra a missão de FÁBRICA, e não contra todas as metas: as metas só de caso
+        // (`soNoCaso`) nunca estiveram na missão que a pergunta de fábrica cobre.
         sceneTargets(block.content.activity).length <
-          sceneGoalIds(block.content.activity.scene).length
+          sceneDefaultGoalIds(block.content.activity.scene).length
       )
         warnings.push(
           `${section.title}: a missão cobra parte das descobertas da cena, e a pergunta do fim é a de fábrica. Confira se ela ainda fala do que a criança vai ver, ou escreva a sua.`,

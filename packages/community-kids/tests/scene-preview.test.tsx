@@ -8,7 +8,11 @@ import {
 import type { Project } from '@sistemazero/studio'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-afterEach(cleanup)
+const matchMediaOriginal = window.matchMedia
+afterEach(() => {
+  cleanup()
+  window.matchMedia = matchMediaOriginal
+})
 
 /** O ensaio do admin, no mínimo: só o que a cena chama. */
 function ensaio(onAttempt: LessonPreviewContextValue['onAttempt']): LessonPreviewContextValue {
@@ -42,6 +46,39 @@ function montar(content: InteractiveBlock, onAttempt: LessonPreviewContextValue[
   )
 }
 
+/** O relógio do navegador na MÃO: cada `tocar(n)` roda `n` quadros a 60 Hz. */
+function relogioManual() {
+  const rafOriginal = window.requestAnimationFrame
+  const cafOriginal = window.cancelAnimationFrame
+  const fila = new Map<number, FrameRequestCallback>()
+  let proximo = 0
+  let agora = 0
+  window.requestAnimationFrame = (cb) => {
+    proximo += 1
+    fila.set(proximo, cb)
+    return proximo
+  }
+  window.cancelAnimationFrame = (id) => {
+    fila.delete(id)
+  }
+  return {
+    async tocar(quadros: number) {
+      for (let i = 0; i < quadros; i++) {
+        agora += 1000 / 60
+        const chamados = [...fila.values()]
+        fila.clear()
+        await act(async () => {
+          for (const cb of chamados) cb(agora)
+        })
+      }
+    },
+    restaurar() {
+      window.requestAnimationFrame = rafOriginal
+      window.cancelAnimationFrame = cafOriginal
+    },
+  }
+}
+
 const experimentacao: InteractiveBlock = {
   kind: 'interactive',
   title: 'Camadas',
@@ -52,20 +89,29 @@ const experimentacao: InteractiveBlock = {
 }
 
 /**
- * ⚠️ A cena é `jump-sound` DE PROPÓSITO, com o roteiro DO MODELO.
+ * ⚠️ A cena é `controls` DE PROPÓSITO, com o roteiro DO MODELO.
  *
  * O defeito que este teste guarda é o registro perguntar ao avaliador da experimentação, que
  * cobra as metas da cena. Medido: em DOZE das catorze cenas o roteiro do modelo fecha as metas
- * por coincidência do último passo, e só `jump-sound` e `controls` não fecham. Um teste numa
+ * por coincidência do último passo, e só `jump-sound` e `controls` não fechavam. Um teste numa
  * das doze passa com o código defeituoso — é o que ele fazia com `layers`.
+ * ⚠️ Mudou de propósito (lote 5 do Raio-X): o roteiro novo da `jump-sound` passa pelas três metas
+ * dela (som sem pulo, pulo sem som e um som em cada pulo) e passou a fechá-las; a `controls` segue
+ * sem o Enter no roteiro.
  */
 const demonstracao: InteractiveBlock = {
   kind: 'interactive',
-  title: 'O som acompanha o salto',
+  title: 'O convite para começar',
   instructions: 'Observe.',
   hints: [],
   required: false,
-  activity: { type: 'demonstration', scene: 'jump-sound' },
+  activity: { type: 'demonstration', scene: 'controls' },
+}
+
+/** A ordem de desenhar da `layers`: o botão da peça de CIMA a leva para baixo (lote 5 do Raio-X). */
+async function trocarOrdem(vezes: number) {
+  for (let i = 0; i < vezes; i++)
+    fireEvent.click(await screen.findByRole('button', { name: /^Descer / }))
 }
 
 describe('a prévia de autoria', () => {
@@ -74,21 +120,40 @@ describe('a prévia de autoria', () => {
     // só assistiu nunca as alcança, então uma seção cujo critério fosse uma demonstração não
     // destravava no ensaio — e o professor publicaria uma aula que trava a criança.
     const tentativas: string[] = []
-    montar(demonstracao, async (blockId) => {
-      tentativas.push(blockId)
-      return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
-    })
-    const passo = await screen.findByRole('button', { name: 'Um passo' })
-    // "Um passo" avança o relógio; entre as etapas é preciso pedir a próxima, como a criança faz.
-    for (let i = 0; i < 200 && tentativas.length === 0; i++) {
-      const proxima = screen.queryByRole('button', { name: 'Próxima etapa' }) as
-        | HTMLButtonElement
-        | undefined
-      await act(async () => {
-        fireEvent.click(proxima && !proxima.disabled ? proxima : passo)
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Um passo" saiu da demonstração. ⚠️ E desde os
+    // consertos do review do lote 2 a parte TOCA em passos de 0,2 s com menos movimento (não salta
+    // para o fim): o relógio do navegador vai na mão.
+    // ⚠️ ANTES de montar: o player lê a preferência ao montar.
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+    const relogio = relogioManual()
+    try {
+      montar(demonstracao, async (blockId) => {
+        tentativas.push(blockId)
+        return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
       })
+      const principal = () =>
+        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+      await screen.findByRole('button', { name: 'Ver a parte 1' })
+      for (let i = 0; i < 60 && tentativas.length === 0; i++) {
+        if (principal().textContent !== 'Pausar')
+          await act(async () => {
+            fireEvent.click(principal())
+          })
+        await relogio.tocar(12)
+      }
+      await waitFor(() => expect(tentativas).toEqual(['preview']))
+    } finally {
+      relogio.restaurar()
     }
-    expect(tentativas).toEqual(['preview'])
   })
 
   test('⚠️ falhar e tentar de novo REGISTRA: o botão não é um clique morto', async () => {
@@ -101,7 +166,8 @@ describe('a prévia de autoria', () => {
       tentativas.push(blockId)
       return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
     })
-    fireEvent.click(await screen.findByRole('button', { name: 'Depois' }))
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir a `layers` são três trocas de ordem.
+    await trocarOrdem(3)
     // A falha do ensaio aparece com as palavras DELE, não como "aguardando conexão".
     expect(await screen.findByText('Falha de salvamento simulada')).toBeTruthy()
     expect(tentativas).toEqual([])
@@ -118,7 +184,7 @@ describe('a prévia de autoria', () => {
       tentativas.push(answers)
       return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
     })
-    fireEvent.click(await screen.findByRole('button', { name: 'Depois' }))
+    await trocarOrdem(3)
     await waitFor(() => expect(tentativas).toHaveLength(1), { timeout: 5000 })
     // O que sobe é o checkpoint confirmado, não um objeto vazio.
     expect(tentativas[0]?.sceneCheckpoint).toBeDefined()

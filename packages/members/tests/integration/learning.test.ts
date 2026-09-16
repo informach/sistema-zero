@@ -116,8 +116,12 @@ describe('learning activities and sections', () => {
       })
     expect((await save([{ type: 'create' }])).status).toBe(400)
     expect((await save([{ type: 'take-control' }])).status).toBe(400)
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G1): o roteiro do `world` ganhou a terceira parte,
+    // "Desligar o desenho tira o Dino da tela, e não dos bastidores.", e assistir é ver as três.
     const response = await save([
       { type: 'start' },
+      { type: 'tick', seconds: 0.5 },
+      { type: 'next' },
       { type: 'tick', seconds: 0.5 },
       { type: 'next' },
       { type: 'tick', seconds: 0.5 },

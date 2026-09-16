@@ -1,11 +1,15 @@
 import type { InteractiveBlock, LearningActivity, LearningChoice } from '@sistemazero/core/learning'
 import {
+  initialScene,
   isSceneScript,
   isSceneSetup,
   SCENE_MODELS,
+  type SceneAction,
   type SceneId,
   type SceneSetup,
   type SceneStep,
+  sceneGoalIds,
+  stepScene,
 } from '@sistemazero/core/learning/scene'
 
 /**
@@ -15,6 +19,25 @@ import {
  * aparecia depois de o trabalho sumir — ou, pior, na parede genérica de "complete os campos"
  * ao tentar publicar, que fala de outra coisa.
  */
+
+/**
+ * O caso termina com um salto que ainda não saiu do chão?
+ *
+ * ⚠️⚠️ O motor abre esse caso SEM o salto (`openScene`, lote 1 do Raio-X): um salto começado e
+ * parado deixava o Dino no chão e o primeiro toque da criança respondia "já está no ar". O caso
+ * continua aceito, então o editor não recusa nada; ele AVISA, porque o professor vê "Pular" na
+ * lista de ações e a prévia não mostra salto nenhum. A conta é a mesma do motor: as ações passam
+ * por ele a partir do mundo de fábrica, e o que decide é o Dino ter subido pelo menos um pixel.
+ */
+export function saltoParadoNoCaso(scene: SceneId, actions: readonly SceneAction[] | undefined) {
+  if (!actions?.some((a) => a.type === 'jump')) return false
+  const start = { scene }
+  const montado = actions.reduce(
+    (estado, acao) => stepScene(start, estado, acao),
+    initialScene(start),
+  )
+  return montado.flight.time !== null && montado.flight.y < 1
+}
 
 /** As duas cenas em que o impulso inicial existe. Fora delas o campo INVALIDA a atividade. */
 const CENAS_COM_IMPULSO: readonly SceneId[] = ['gravity', 'impulse']
@@ -178,6 +201,27 @@ const perguntaEmBranco = (c: InteractiveBlock['checkpoint']) =>
       o.label === '' || o.label === 'Primeira possibilidade' || o.label === 'Segunda possibilidade',
   )
 
+/**
+ * A previsão levada para `scene`, sem o `revealOn` que não é meta dela.
+ *
+ * ⚠️⚠️ A previsão PRÓPRIA nasce copiada da cena (com o `revealOn` dela), e o editor não tem campo
+ * para esse id. Trocada a cena, o `revealOn` antigo ficava lá dentro: o core recusa `revealOn` fora
+ * das metas da cena, e o bloco passava a ser inválido, com o recado genérico de "complete os campos"
+ * e nada na tela para consertar (review do lote 2 do Raio-X). Sem ele, o palpite só é retomado
+ * quando a criança conclui, que é o comportamento de uma previsão sem `revealOn`.
+ */
+export function previsaoNaCena(
+  prediction: InteractiveBlock['prediction'],
+  scene: SceneId,
+): { prediction: InteractiveBlock['prediction']; saiu: boolean } {
+  if (!prediction?.revealOn || sceneGoalIds(scene).includes(prediction.revealOn))
+    return { prediction, saiu: false }
+  const { revealOn: _, ...resto } = prediction
+  return { prediction: resto, saiu: true }
+}
+const AVISO_DA_PREVISAO =
+  'A previsão que você escreveu era de outra cena: o palpite da criança volta a aparecer quando ela concluir esta atividade.'
+
 /** A cena deste bloco, quando ele é de cena. */
 const cenaDe = (a: LearningActivity): SceneId | null =>
   a.type === 'demonstration' || a.type === 'experimentation' ? a.scene : null
@@ -197,6 +241,7 @@ export function trocarCena(
   const a = value.activity
   if (a.type !== 'demonstration' && a.type !== 'experimentation') return { bloco: value, aviso: '' }
   const texto = textoAoTrocarCena(value, a.scene, scene)
+  const previsao = previsaoNaCena(value.prediction, scene)
   const caso = casoAoTrocarCena(a.setup ?? memoria.setup, scene, {
     metas: a.type === 'experimentation',
   })
@@ -212,12 +257,18 @@ export function trocarCena(
     // fábrica, o editor guardava sem aviso um roteiro que a publicação depois recusava.
     const { script, descartado } = roteiroAoTrocarCena(a.script, scene, memoria.script, caso.setup)
     return {
-      bloco: { ...value, ...texto, activity: { ...a, scene, script, setup: caso.setup } },
+      bloco: {
+        ...value,
+        ...texto,
+        ...(value.prediction ? { prediction: previsao.prediction } : {}),
+        activity: { ...a, scene, script, setup: caso.setup },
+      },
       aviso: [
         descartado
           ? 'O roteiro que você escreveu é de outra cena e não vale nesta. A demonstração está com o roteiro que vem com a cena escolhida — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher uma cena em que ele valha.'
           : '',
         avisoDoCaso,
+        previsao.saiu ? AVISO_DA_PREVISAO : '',
       ]
         .filter(Boolean)
         .join(' '),
@@ -228,6 +279,7 @@ export function trocarCena(
     bloco: {
       ...value,
       ...texto,
+      ...(value.prediction ? { prediction: previsao.prediction } : {}),
       activity: {
         ...a,
         scene,
@@ -242,6 +294,7 @@ export function trocarCena(
         ? 'O impulso inicial vale só nas cenas de salto, então saiu junto com a troca de cena.'
         : '',
       avisoDoCaso,
+      previsao.saiu ? AVISO_DA_PREVISAO : '',
     ]
       .filter(Boolean)
       .join(' '),
@@ -344,11 +397,17 @@ export function trocarTipo(
     }
 
   const viraCena = activity.type === 'demonstration' || activity.type === 'experimentation'
+  // ⚠️ A cena de chegada pode não ser a da previsão (quem volta de Pergunta curta cai na cena
+  // lembrada, ou em `world`): o `revealOn` que não é meta dela sai, como na troca de cena.
+  const previsao = viraCena
+    ? previsaoNaCena(value.prediction, cenaDe(activity) as SceneId)
+    : { prediction: undefined, saiu: false }
+  if (previsao.saiu) avisos.push(AVISO_DA_PREVISAO)
   return {
     bloco: {
       ...value,
       activity,
-      prediction: viraCena ? value.prediction : undefined,
+      prediction: previsao.prediction,
       // O texto do modelo só entra onde o professor não escreveu nada.
       ...(viraCena ? textoAoTrocarCena(value, cena, cenaDe(activity) as SceneId) : {}),
       // ⚠️ Saindo da cena, as pistas DELA não seguem: "Olhe os bastidores: o Dino já existe?"

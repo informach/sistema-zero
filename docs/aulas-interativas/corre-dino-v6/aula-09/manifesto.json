@@ -148,17 +148,14 @@
       "content": {
         "kind": "interactive",
         "title": "Recomeçar é só trocar de tela?",
-        "instructions": "Neste exemplo, termine uma partida e ligue o reinício. Compare o estado de fim com a nova partida preparada.",
+        "instructions": "Jogue até bater e toque na tela para voltar. Olhe a pista. Depois troque o que o toque faz e compare.",
         "hints": [
-          "A partida terminou. Como sair dessa tela?",
-          "A ligação de Jogar de novo precisa iniciar outra rodada.",
-          "Ligue Jogar de novo a Início e acione o botão no fim."
+          "Olhe a pista depois de voltar para o início. Quantos cactos ficaram?",
+          "Troque o que o toque faz no fim e compare as duas pistas.",
+          "Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare."
         ],
         "required": false,
-        "activity": {
-          "type": "experimentation",
-          "scene": "restart"
-        }
+        "activity": { "type": "experimentation", "scene": "restart" }
       }
     },
     {

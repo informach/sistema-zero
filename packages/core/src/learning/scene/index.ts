@@ -8,15 +8,26 @@ import {
   SETUP_LIMITS,
 } from './actions'
 import { castText, isSceneCast, type SceneCast } from './cast'
-import { type SceneModel, type SceneStep, sceneGoalIds, sceneModel } from './catalog'
+import {
+  type SceneModel,
+  type SceneStep,
+  sceneDefaultGoalIds,
+  sceneGoalIds,
+  sceneModel,
+} from './catalog'
 import { openScene, stepScene } from './engine'
 import type { SceneStart } from './state'
 
 export * from './actions'
+// O ateliê do lote 5 do Raio-X: as réguas do fogo, do espelho, da lupa e da folha.
+export * from './atelie'
 export * from './cast'
 export * from './catalog'
 export * from './engine'
 export * from './evaluate'
+// O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
+// do encosto, da recarga, da mira, da diagonal e do mapa escrito.
+export * from './nucleo'
 export * from './questions'
 export * from './readout'
 export * from './session'
@@ -237,10 +248,15 @@ export function sceneStart(activity: SceneActivity): SceneStart {
   return { scene: activity.scene, ...impulso, ...(activity.setup ? { setup: activity.setup } : {}) }
 }
 
-/** As metas que ESTA atividade cobra: as do caso, quando há; as do modelo, quando não. */
+/**
+ * As metas que ESTA atividade cobra: as do caso, quando há; as da missão de fábrica, quando não.
+ *
+ * ⚠️ A missão de fábrica deixa de fora as metas `soNoCaso` (ver `SceneGoal`): elas existem para um
+ * caso específico do professor, e somá-las à missão sem caso a tornava maior que a instrução.
+ */
 export function sceneTargets(activity: SceneActivity): readonly string[] {
   const alvo = activity.type === 'experimentation' ? activity.setup?.goals : undefined
-  return alvo?.length ? alvo : sceneGoalIds(activity.scene)
+  return alvo?.length ? alvo : sceneDefaultGoalIds(activity.scene)
 }
 
 /**

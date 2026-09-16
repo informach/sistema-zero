@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { SCENE_IDS } from './actions'
+import { SCENE_IDS, type SceneAction } from './actions'
+import { castText } from './cast'
 import { SCENE_MODELS } from './catalog'
-import { stepScene } from './engine'
+import { openScene, stepScene } from './engine'
 import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './evaluate'
 import { isSceneActivity, isSceneScript } from './index'
-import { initialScene, isSceneState } from './state'
+import { drawLoopOnScreen, sceneReadout, sceneSituation } from './readout'
+import { hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
 
 /**
  * ⚠️ A equivalência com o motor anterior foi PROVADA no commit que criou este módulo
@@ -112,11 +114,131 @@ describe('cena: a avaliação', () => {
     expect(s.world.created).toBe(false)
   })
 
+  test('⚠️⚠️ a frase de sucesso veste o ELENCO, como as metas', () => {
+    // Crua, uma turma de nave lia no cartão "É o mesmo Dino", com a pergunta e a faixa
+    // falando da nave. É o texto que o servidor grava na tentativa e o relatório lê de volta.
+    const nave = { hero: { name: 'nave', gender: 'f' as const } }
+    let s = initialScene({ scene: 'world' })
+    s = stepScene({ scene: 'world' }, s, { type: 'create' })
+    s = stepScene({ scene: 'world' }, s, { type: 'connect', port: 'draw', enabled: true })
+    const vestido = evaluateExperimentation('world', s, true, nave)
+    expect(vestido.passed).toBe(true)
+    expect(vestido.feedback).toBe(castText(SCENE_MODELS.world.success, nave))
+    expect(vestido.feedback).toContain('a mesma nave')
+    expect(vestido.feedback).not.toContain('Dino')
+    // Sem elenco, o texto de fábrica continua como está.
+    expect(evaluateExperimentation('world', s).feedback).toBe(SCENE_MODELS.world.success)
+  })
+
   test('ação que não pertence à cena não muda nada', () => {
     const s = initialScene({ scene: 'world' })
     // `impulse` é de outra cena: no-op silencioso, sem contar como ação.
     const depois = stepScene({ scene: 'world' }, s, { type: 'impulse', force: 9 })
     expect(depois).toBe(s)
+  })
+})
+
+describe('controls: o Enter começa a partida com ou sem o fio do toque', () => {
+  const start = { scene: 'controls' } as const
+  const rodar = (acoes: SceneAction[], de = openScene(start)) =>
+    acoes.reduce((e, a) => stepScene(start, e, a), de)
+
+  test('⚠️⚠️ quem segue a instrução (teclado primeiro, toque depois) fecha as três metas', () => {
+    // "Comece pelo teclado e depois pelo toque": o Enter antes do fio começava a partida sem
+    // registrar a meta, e o "Já descobri" respondia "Ainda falta: Partida iniciada por Enter".
+    const enter = rodar([{ type: 'start', input: 'key' }])
+    expect(enter.match.screen).toBe('playing')
+    expect(enter.evidence.discoveries).toContain('start-key')
+    const tudo = rodar(
+      [
+        { type: 'home' },
+        { type: 'start', input: 'tap' },
+        { type: 'connect', port: 'touch', enabled: true },
+        { type: 'start', input: 'tap' },
+      ],
+      enter,
+    )
+    expect(evaluateExperimentation('controls', tudo).passed).toBe(true)
+  })
+
+  test('⚠️ sem brecha: a meta só cai com a tela SAINDO do Início pelo Enter', () => {
+    // Jogando, o Enter não começa nada, e a meta não cai.
+    const jogando = rodar([
+      { type: 'connect', port: 'touch', enabled: true },
+      { type: 'start', input: 'tap' },
+    ])
+    const deNovo = rodar([{ type: 'start', input: 'key' }], jogando)
+    expect(deNovo.evidence.discoveries).not.toContain('start-key')
+    // E um caso que já abre jogando pelo Enter não traz a descoberta junto.
+    const caso = openScene({
+      scene: 'controls',
+      setup: { actions: [{ type: 'start', input: 'key' }] },
+    })
+    expect(caso.match.screen).toBe('playing')
+    expect(caso.evidence.discoveries).toEqual([])
+  })
+})
+
+describe('draw-loop: limpar sem desenhar deixa a tela VAZIA', () => {
+  const start = { scene: 'draw-loop' } as const
+  const rodar = (acoes: SceneAction[], de = openScene(start)) =>
+    acoes.reduce((e, a) => stepScene(start, e, a), de)
+  const dinosNaFaixa = (s: SceneState) =>
+    sceneReadout('draw-loop', s).find((l) => l.label === 'Dinos na tela')?.value
+  // ⚠️ Mudou de propósito (lote 4 do Raio-X): o relógio anda em QUADROS de 0,25 s nesta cena, e um
+  // `advance` de 0,2 s não fecha quadro nenhum. "O relógio anda" aqui é UM quadro.
+  const umQuadro: SceneAction = { type: 'advance', seconds: 1 / 4 }
+
+  test('⚠️⚠️ o relógio anda com a limpeza e sem o desenho: 0 na tela, e a tela NÃO congela', () => {
+    // A cena mostrava o Dino inteiro, dizia "a tela continua igual" e fechava "a tela congela",
+    // justo no estado que a pergunta do modelo pergunta ("E se limpar sem desenhar?").
+    const vazia = rodar([{ type: 'erase', on: true }, umQuadro])
+    expect(vazia.render.empty).toBe(true)
+    expect(drawLoopOnScreen(vazia)).toBe(0)
+    expect(dinosNaFaixa(vazia)).toBe('0')
+    // ⚠️ Mudou de propósito (consertos do lote 1): a frase diz "vazia" e o número fica na faixa,
+    // sem a mesma coisa três vezes na tela.
+    expect(vazia.caption).toBe('Limpou e não desenhou: a tela ficou vazia.')
+    expect(vazia.caption).not.toContain('continua igual')
+    expect(vazia.evidence.discoveries).not.toContain('frozen')
+    expect(sceneSituation('draw-loop', { ...vazia, caption: '' })).toContain('vazia')
+    expect(isSceneState(vazia)).toBe(true)
+
+    // Desligar a limpeza não traz o Dino de volta: ninguém desenhou. E tela vazia parada também
+    // não é "congelar", porque não há desenho nenhum para ver parado.
+    const semLimpar = rodar([{ type: 'erase', on: false }, umQuadro], vazia)
+    expect(drawLoopOnScreen(semLimpar)).toBe(0)
+    expect(semLimpar.evidence.discoveries).not.toContain('frozen')
+
+    // O primeiro quadro que desenha acaba com o vazio.
+    const desenhou = rodar([{ type: 'loop', on: true }, umQuadro], semLimpar)
+    expect(desenhou.render.empty).toBe(false)
+    expect(drawLoopOnScreen(desenhou)).toBe(1)
+  })
+
+  test('com as duas chaves desligadas a tela congela, como sempre', () => {
+    const congelada = rodar([umQuadro])
+    expect(congelada.evidence.discoveries).toContain('frozen')
+    expect(drawLoopOnScreen(congelada)).toBe(1)
+    expect(dinosNaFaixa(congelada)).toBe('1')
+  })
+
+  test('⚠️ retrato guardado antes do campo `empty` continua valendo', () => {
+    const { empty: _fora, ...antigo } = openScene(start).render
+    const hidratado = hydrateSceneState({ ...openScene(start), render: antigo })
+    expect(isSceneState(hidratado)).toBe(true)
+    expect((hidratado as SceneState).render.empty).toBe(false)
+  })
+})
+
+describe('hitbox: as pistas citam só o que existe na tela', () => {
+  test('⚠️ nada de "marca do meio", "alças" ou "contato indicado"', () => {
+    // A pista literal é a última saída de quem travou, e ela mandava procurar controles que a
+    // bancada nunca teve. Os que existem: a Distância do cacto e a Largura da área do Dino.
+    const textos = [SCENE_MODELS.hitbox.instruction, ...SCENE_MODELS.hitbox.hints]
+    for (const t of textos) expect(t).not.toMatch(/marca do meio|alças?|contato indicado/i)
+    // ⚠️ Mudou de propósito (lote 5): o controle virou "Tamanho da área do Dino", em porcentagem.
+    expect(SCENE_MODELS.hitbox.hints[2]).toContain('Tamanho da área do Dino')
   })
 })
 
@@ -202,5 +324,54 @@ describe('cena: o estado que volta do servidor', () => {
         speed: { ...bom.speed, samples: { ...bom.speed.samples, positions: 'nenhuma' } },
       }),
     ).toBe(false)
+  })
+})
+
+describe('consertos do review do lote 1 (Raio-X)', () => {
+  test('⚠️⚠️ `spawn`: "criação em cada quadro" pede a parede à vista (1 s e 20 cactos)', () => {
+    // Com um "Um passo" (0,2 s) nasciam 6 cactos empilhados num tufo que ninguém conta, e a meta
+    // caía afirmando o que a criança não tinha visto (relatório g2).
+    const start = { scene: 'spawn' } as const
+    const passo = stepScene(start, openScene(start), { type: 'advance', seconds: 0.2 })
+    expect(passo.crowd.born).toBeGreaterThan(1)
+    expect(passo.evidence.discoveries).not.toContain('every-frame')
+    const parede = stepScene(start, openScene(start), { type: 'advance', seconds: 1 })
+    expect(parede.crowd.born).toBeGreaterThanOrEqual(20)
+    expect(parede.evidence.discoveries).toContain('every-frame')
+    // O intervalo continua caindo como antes.
+    const comRelogio = [
+      { type: 'connect' as const, port: 'timer' as const, enabled: true },
+      { type: 'advance' as const, seconds: 2 },
+    ].reduce((e, a) => stepScene(start, e, a), openScene(start))
+    expect(comRelogio.evidence.discoveries).toContain('spaced')
+  })
+
+  test('⚠️ `cooldown`: a etapa da recarga termina ESPERANDO, com vírgula no decimal', () => {
+    // Desde que a etapa dura o `advance` inteiro, o último quadro dela dizia "Pronto para atirar"
+    // enquanto a fala era sobre esperar a vez.
+    const start = { scene: 'cooldown' } as const
+    let s = openScene(start)
+    for (const passo of SCENE_MODELS.cooldown.script)
+      for (const acao of passo.actions) s = stepScene(start, s, acao)
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X): abaixo de 2 segundos, "falta" no singular.
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): quanto falta da recarga é a SITUAÇÃO que diz. A
+    // legenda de cada quadro apagava a frase do tiro 0,1 s depois, com os tiros voando.
+    expect(s.caption).toBe('')
+    expect(sceneSituation('cooldown', s)).toStartWith('Recarregando: falta 0,5 s.')
+    expect(isSceneScript([...SCENE_MODELS.cooldown.script], 'cooldown')).toBe(true)
+  })
+
+  test('⚠️⚠️ `circle-collision`: com o quadro fixo a distância anda INTEIRA e para EXATA em 60', () => {
+    // ⚠️ Mudou de propósito (lote 4 do Raio-X). A ponte do lote 1 guardava a distância crua e
+    // arredondava a COMPARAÇÃO no milionésimo, porque cem fatias de 0,04 s paravam em 60,0000001. O
+    // relógio de quadro fixo anda 2 inteiros por quadro: as mesmas cem fatias dão 60 exato, a
+    // comparação sem arredondar dá a batida, e a faixa (que nunca arredondou) diz o mesmo.
+    const start = { scene: 'circle-collision' } as const
+    let s = openScene(start)
+    for (let i = 0; i < 100; i++) s = stepScene(start, s, { type: 'advance', seconds: 0.04 })
+    expect(s.circles.distance).toBe(60)
+    expect(s.evidence.discoveries).toContain('touch')
+    expect(sceneReadout('circle-collision', s).some((l) => l.value === 'bateu')).toBe(true)
+    expect(isSceneState(s)).toBe(true)
   })
 })

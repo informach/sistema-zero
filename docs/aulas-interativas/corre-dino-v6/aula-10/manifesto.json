@@ -119,17 +119,14 @@
       "content": {
         "kind": "interactive",
         "title": "Ajuste só a área de colisão",
-        "instructions": "Aproxime o cacto até o contato indicado. Depois ajuste apenas a área de colisão e compare. O desenho do Dino continua do mesmo tamanho.",
+        "instructions": "Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.",
         "hints": [
-          "Olhe as bordas das duas áreas.",
-          "Deixe o cacto no mesmo lugar e mude só a área do Dino.",
-          "Aproxime até a marca do meio. Compare as alças Menor e Maior."
+          "Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.",
+          "Deixe o cacto onde bateu. Mude só a área do Dino.",
+          "Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir."
         ],
         "required": false,
-        "activity": {
-          "type": "experimentation",
-          "scene": "hitbox"
-        }
+        "activity": { "type": "experimentation", "scene": "hitbox" }
       }
     },
     {

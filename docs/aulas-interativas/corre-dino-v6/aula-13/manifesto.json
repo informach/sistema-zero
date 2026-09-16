@@ -136,17 +136,14 @@
       "content": {
         "kind": "interactive",
         "title": "Teste a base, o limite e os próximos cactos",
-        "instructions": "Crie um cacto, avance o relógio e acompanhe a base até -9. Compare com um cacto novo. No limite, descontar 1 ainda pode dar -10; o antigo conserva a velocidade que recebeu.",
+        "instructions": "Aperte Passar 5 segundos várias vezes e olhe a velocidade de cada cacto novo. O que acontece quando a base chega em −9?",
         "hints": [
-          "A seta de cada cacto mostra a velocidade que ele recebeu ao nascer.",
-          "Compare a base do próximo cacto com a seta de um antigo.",
-          "Encaixe o limite −9. Avance cinco passos e crie o exemplo com desconto 1."
+          "Olhe o número embaixo de cada cacto da fileira.",
+          "Passe 5 segundos até a conta da base dizer não.",
+          "Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo."
         ],
         "required": false,
-        "activity": {
-          "type": "experimentation",
-          "scene": "acceleration"
-        }
+        "activity": { "type": "experimentation", "scene": "acceleration" }
       }
     },
     {

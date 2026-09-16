@@ -238,7 +238,7 @@ export const earlyRecipes: Record<number, Recipe> = {
       ),
       step(
         'limpeza',
-        'O que acontece sem a borracha?',
+        'O que acontece sem limpar a tela?',
         'Parte 5.',
         'experiment',
         'Relacionar a limpeza com a remoção dos desenhos anteriores.',

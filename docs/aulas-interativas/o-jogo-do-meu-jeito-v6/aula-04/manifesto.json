@@ -73,7 +73,7 @@
       "content": {
         "kind": "interactive",
         "title": "A cor de dentro e a linha de fora",
-        "instructions": "Veja a mesma forma sem a linha de fora e depois sem a cor de dentro. As duas partes existem separadas.",
+        "instructions": "Aperte Ver acontecer e olhe a pedra. Veja o que sobra quando uma parte fica Sem cor.",
         "hints": [],
         "required": false,
         "activity": {
@@ -212,7 +212,7 @@
         "kind": "interactive",
         "required": true,
         "title": "De perto, a borda conta",
-        "instructions": "Escolha uma pedra e aumente a lupa. Depois olhe a outra do mesmo jeito, sem mudar o desenho.",
+        "instructions": "Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -222,30 +222,32 @@
           "prompt": "Com a lupa bem perto, por que a pedra de vetor continua lisa?",
           "choices": [
             {
-              "id": "a",
-              "label": "Ela é redesenhada a partir dos pontos e das curvas."
+              "id": "b",
+              "label": "Ela é feita de quadradinhos bem menores."
             },
             {
-              "id": "b",
-              "label": "Ela tem mais quadros de animação."
+              "id": "a",
+              "label": "Ela é refeita a partir dos pontos e das curvas."
             }
           ],
           "correctChoiceId": "a",
           "explanation": "O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem."
         },
         "prediction": {
-          "prompt": "Antes de mexer: de longe, dá para saber qual pedra é de pixel?",
+          "prompt": "Se você aproximar muito, o que acontece com as bordas?",
           "choices": [
             {
-              "id": "sim",
-              "label": "Sim, dá para ver"
+              "id": "so-pixel",
+              "label": "Só a de pixel vira degraus"
             },
             {
-              "id": "nao",
-              "label": "Não, as duas parecem iguais"
+              "id": "as-duas",
+              "label": "As duas viram degraus",
+              "shows": "De perto, a borda da pedra de vetor continuou lisa."
             }
           ],
-          "correctChoiceId": "nao"
+          "correctChoiceId": "so-pixel",
+          "revealOn": "stairs"
         }
       }
     },

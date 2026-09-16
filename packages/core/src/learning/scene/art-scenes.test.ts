@@ -23,10 +23,10 @@ function rodar(scene: SceneId, acoes: SceneAction[]): SceneState {
 const descobertas = (state: SceneState) => state.evidence.discoveries
 
 describe('frames: dois desenhos viram movimento', () => {
-  test('⚠️ trocar de quadro COM a troca ligada não conta como ver os dois desenhos', () => {
-    // A descoberta é "são dois desenhos parados". Com a troca automática andando, quem trocou
-    // foi o relógio, e a criança não viu cada um sozinho: contar isso seria dar de graça
-    // justamente a ideia que a cena existe para construir.
+  test('⚠️ trocar de quadro COM a prévia tocando não conta como ver os dois desenhos', () => {
+    // A descoberta é "são dois desenhos parados". Com a prévia andando, quem trocou foi o relógio,
+    // e a criança não viu cada um sozinho: contar isso seria dar de graça justamente a ideia que a
+    // cena existe para construir.
     const naMao = rodar('frames', [{ type: 'frame', index: 2 }])
     expect(descobertas(naMao)).toContain('two-drawings')
     const tocando = rodar('frames', [
@@ -79,14 +79,15 @@ describe('frames: dois desenhos viram movimento', () => {
     expect(descobertas(olhando)).toContain('slow-shows-two')
   })
 
-  test('⚠️ ligar a troca sem avançar o relógio não descobre nada', () => {
-    // É o que faz a criança mexer na velocidade em vez de só clicar no interruptor.
+  test('⚠️ ligar a prévia sem o tempo passar não descobre nada', () => {
+    // É o que faz a criança esperar e mexer na velocidade em vez de só clicar no interruptor.
     const parado = rodar('frames', [
       { type: 'play', on: true },
       { type: 'rate', perSecond: 8 },
     ])
     expect(descobertas(parado)).toEqual([])
-    expect(sceneSituation('frames', { ...parado, caption: '' })).toContain('8 por segundo')
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): "quadros por segundo", a Velocidade do Pinta.
+    expect(sceneSituation('frames', { ...parado, caption: '' })).toContain('8 quadros por segundo')
   })
 })
 
@@ -105,8 +106,9 @@ describe('onion-skin: o fantasma do quadro de antes', () => {
     expect(descobertas(noDois)).toContain('ghost-on')
   })
 
-  test('o passo parelho só conta com o fantasma ligado', () => {
-    // Sem a guia, acertar o passo é sorte; com ela, é comparação. A cena mede a comparação.
+  test('o fogo "um pouco maior" só conta com o fantasma ligado', () => {
+    // Sem a guia, acertar o fogo é sorte; com ela, é comparação. A cena mede a comparação.
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): o `shift` é o quanto o FOGO do quadro 2 cresce.
     const chute = rodar('onion-skin', [
       { type: 'frame', index: 2 },
       { type: 'shift', offset: 20 },
@@ -119,7 +121,7 @@ describe('onion-skin: o fantasma do quadro de antes', () => {
       { type: 'shift', offset: 20 },
     ])
     expect(descobertas(comparado)).toContain('even-step')
-    // E um passo grande demais, mesmo com a guia, não é parelho.
+    // E um fogo que passa da borda do quadro, mesmo com a guia, não é "um pouco maior".
     const saltado = rodar('onion-skin', [
       { type: 'frame', index: 2 },
       { type: 'onion', on: true },
@@ -129,109 +131,58 @@ describe('onion-skin: o fantasma do quadro de antes', () => {
   })
 })
 
-describe('symmetry: um traço, dois lados', () => {
-  test('o espelho desligado pinta um lado só; ligado, pinta os dois', () => {
-    const solto = rodar('symmetry', [{ type: 'paint', column: 3 }])
-    expect(solto.mirror.painted).toEqual([3])
-    expect(descobertas(solto)).toContain('one-side')
-    const espelhado = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 6 },
-      { type: 'paint', column: 4 },
-    ])
-    // Espelho entre as colunas 5 e 6: o reflexo de 4 é 7.
-    expect(espelhado.mirror.painted).toEqual([4, 7])
-    expect(descobertas(espelhado)).toContain('two-sides')
-  })
-
-  test('⚠️ o eixo na beirada joga o reflexo para fora do papel, e a cena DIZ isso', () => {
-    // É a pergunta do "e se" do próprio modelo. Mover o eixo sozinha para caber seria esconder
-    // da criança o resultado do que ela escolheu.
-    const fora = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 1 },
-      { type: 'paint', column: 9 },
-    ])
-    expect(fora.mirror.painted).toEqual([9])
-    expect(descobertas(fora)).not.toContain('two-sides')
-    expect(fora.caption).toContain('fora do papel')
-  })
-
-  test('⚠️⚠️ o eixo lembrado é o do último reflexo que APARECEU', () => {
-    // Achado do full review: o eixo era guardado mesmo quando o reflexo caía fora do papel,
-    // então o primeiro reflexo de verdade já chegava marcado como "mudou de lugar" — comparado
-    // com um reflexo que a criança nunca viu.
-    const depoisDeCairFora = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 1 },
-      { type: 'paint', column: 9 },
-      { type: 'mirror', on: true, line: 6 },
-      { type: 'paint', column: 4 },
-    ])
-    expect(descobertas(depoisDeCairFora)).toContain('two-sides')
-    expect(descobertas(depoisDeCairFora)).not.toContain('axis-decides')
-  })
-
-  test('mudar o eixo e pintar de novo é o que mostra que o eixo decide', () => {
-    const umEixoSo = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 6 },
-      { type: 'paint', column: 4 },
-      { type: 'paint', column: 3 },
-    ])
-    expect(descobertas(umEixoSo)).not.toContain('axis-decides')
-    const doisEixos = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 6 },
-      { type: 'paint', column: 4 },
-      { type: 'mirror', on: true, line: 9 },
-      { type: 'paint', column: 7 },
-    ])
-    expect(descobertas(doisEixos)).toContain('axis-decides')
-  })
-})
-
+/*
+ * ⚠️⚠️ `symmetry`, `pixel-vector` e `sheet-vs-sprite` foram REDESENHADAS no lote 5 do Raio-X
+ * (16/09/2026): o espelho do Pinta no meio da grade, uma lupa para as duas pedras e a largura do
+ * recorte na folha da nave. As regras novas estão em `atelie-lote5.test.ts`; aqui ficou o que
+ * continua valendo delas.
+ */
 describe('pixel-vector: de perto, a borda conta', () => {
-  test('⚠️ "de longe parecem iguais" só conta DEPOIS de ver as duas de perto', () => {
+  test('⚠️ "voltou para longe" só conta DEPOIS de ver as bordas de perto', () => {
     // Voltar a lupa para 1 sem nunca ter chegado perto não é uma descoberta: é o estado em que
     // a cena abre.
     const soLonge = rodar('pixel-vector', [{ type: 'inspect', kind: 'vector', zoom: 1 }])
     expect(descobertas(soLonge)).toEqual([])
+    // ⚠️ Mudou de propósito (lote 5): a lupa vale para as DUAS pedras, e o `kind` não decide mais.
     const completo = rodar('pixel-vector', [
       { type: 'inspect', kind: 'pixel', zoom: 6 },
-      { type: 'inspect', kind: 'vector', zoom: 6 },
-      { type: 'inspect', kind: 'vector', zoom: 1 },
+      { type: 'inspect', kind: 'pixel', zoom: 1 },
     ])
     expect(descobertas(completo)).toEqual(['stairs', 'smooth', 'alike'])
   })
 
-  test('a faixa diz o que a borda está fazendo agora', () => {
-    const perto = rodar('pixel-vector', [{ type: 'inspect', kind: 'pixel', zoom: 6 }])
-    const faixa = sceneReadout('pixel-vector', perto)
-    expect(faixa.map((l) => l.value)).toContain('escadinha')
-    const longe = rodar('pixel-vector', [{ type: 'inspect', kind: 'pixel', zoom: 1 }])
-    expect(sceneReadout('pixel-vector', longe).map((l) => l.value)).toContain('de longe, igual')
+  test('⚠️⚠️ a faixa e a frase NÃO escrevem o que a borda virou: quem mostra é a lupa', () => {
+    // Mudou de propósito (lote 2 do Raio-X, 16/09/2026). A faixa dizia "borda: escadinha / lisa /
+    // de longe, igual" — o resultado que a cena existe para a criança ver —, e com a lupa em 4
+    // afirmava "de longe, igual" com a escadinha à vista.
+    for (const kind of ['pixel', 'vector'] as const)
+      for (const zoom of [1, 4, 6]) {
+        const s = rodar('pixel-vector', [{ type: 'inspect', kind, zoom }])
+        const texto = [
+          ...sceneReadout('pixel-vector', s).map((l) => `${l.label} ${l.value}`),
+          sceneSituation('pixel-vector', { ...s, caption: '' }),
+        ].join(' | ')
+        expect(texto).not.toMatch(/escadinha|degrau|lisa|igua|ponto/)
+        expect(texto).toContain(`${zoom}`)
+      }
   })
 })
 
 describe('sheet-vs-sprite: a folha não é o tamanho no jogo', () => {
-  test('⚠️⚠️ mudar o tamanho no jogo NÃO mexe na folha', () => {
+  test('⚠️⚠️ mudar o tamanho no jogo NÃO mexe na folha nem no recorte', () => {
     // É a cena inteira em uma asserção: se o recorte acompanhasse o tamanho, a criança
     // aprenderia o contrário do que a aula quer ensinar.
-    const antes = rodar('sheet-vs-sprite', [{ type: 'cut', cell: 2 }])
+    // ⚠️ Mudou de propósito (lote 5): a meta só vale depois de achar o recorte de uma nave inteira.
+    const antes = rodar('sheet-vs-sprite', [
+      { type: 'crop', width: 32 },
+      { type: 'cut', cell: 2 },
+    ])
     const depois = stepScene({ scene: 'sheet-vs-sprite' }, antes, { type: 'sprite', size: 80 })
     expect(depois.sheet.cell).toBe(antes.sheet.cell)
+    expect(depois.sheet.width).toBe(antes.sheet.width)
     expect(depois.sheet.cuts).toEqual(antes.sheet.cuts)
     expect(depois.sheet.size).toBe(80)
     expect(descobertas(depois)).toContain('size-apart')
-  })
-
-  test('dois pedaços diferentes fecham a segunda descoberta; o mesmo pedaço, não', () => {
-    const repetido = rodar('sheet-vs-sprite', [
-      { type: 'cut', cell: 3 },
-      { type: 'cut', cell: 3 },
-    ])
-    expect(descobertas(repetido)).not.toContain('two-cells')
-    const variado = rodar('sheet-vs-sprite', [
-      { type: 'cut', cell: 3 },
-      { type: 'cut', cell: 4 },
-    ])
-    expect(descobertas(variado)).toContain('two-cells')
   })
 })
 

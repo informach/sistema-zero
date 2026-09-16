@@ -16,7 +16,60 @@ import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/lea
 import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-afterEach(cleanup)
+const matchMediaOriginal = window.matchMedia
+afterEach(() => {
+  cleanup()
+  window.matchMedia = matchMediaOriginal
+})
+/**
+ * Menos movimento. ⚠️ Mudou de propósito (consertos do review do lote 2): a parte não salta mais
+ * para o fim, ela TOCA em passos de 0,2 s. Percorrer uma demonstração num teste pede o relógio na
+ * mão (`relogioManual`).
+ */
+function menosMovimento() {
+  window.matchMedia = ((query: string) => ({
+    matches: query.includes('prefers-reduced-motion'),
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
+}
+/** O relógio do navegador na MÃO: cada `tocar(n)` roda `n` quadros a 60 Hz. */
+function relogioManual() {
+  const rafOriginal = window.requestAnimationFrame
+  const cafOriginal = window.cancelAnimationFrame
+  const fila = new Map<number, FrameRequestCallback>()
+  let proximo = 0
+  let agora = 0
+  window.requestAnimationFrame = (cb) => {
+    proximo += 1
+    fila.set(proximo, cb)
+    return proximo
+  }
+  window.cancelAnimationFrame = (id) => {
+    fila.delete(id)
+  }
+  return {
+    async tocar(quadros: number) {
+      for (let i = 0; i < quadros; i++) {
+        agora += 1000 / 60
+        const chamados = [...fila.values()]
+        fila.clear()
+        await act(async () => {
+          for (const cb of chamados) cb(agora)
+        })
+      }
+    },
+    restaurar() {
+      window.requestAnimationFrame = rafOriginal
+      window.cancelAnimationFrame = cafOriginal
+    },
+  }
+}
 function renderMission(
   scene: SceneId,
   type: 'experimentation' | 'demonstration' = 'experimentation',
@@ -49,7 +102,8 @@ describe('o laboratório da cena', () => {
     fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
       target: { value: '25' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar para comparar' }))
+    // ⚠️ Mudou de propósito (lote 2): "Guardar para comparar" virou "Guardar este jeito".
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar este jeito' }))
     fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
       target: { value: '60' },
     })
@@ -57,11 +111,13 @@ describe('o laboratório da cena', () => {
     expect(
       (screen.getByRole('slider', { name: 'Distância do cacto' }) as HTMLInputElement).value,
     ).toBe('25')
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a área abre em 130% e o gesto é DIMINUIR, em
+    // porcentagem, até 80% (a Aula 10). Em 50 as áreas encostam com um vão de 10 entre os desenhos.
     fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
-      target: { value: '60' },
+      target: { value: '50' },
     })
-    fireEvent.change(screen.getByRole('slider', { name: 'Largura da área do Dino' }), {
-      target: { value: '100' },
+    fireEvent.change(screen.getByRole('slider', { name: 'Tamanho da área do Dino' }), {
+      target: { value: '80' },
     })
     expect(screen.getByText('Experiência guardada')).toBeTruthy()
     expect(screen.getByText(SCENE_MODELS.hitbox.success)).toBeTruthy()
@@ -71,34 +127,53 @@ describe('o laboratório da cena', () => {
     // criança que acertou apertando botão de qualquer jeito precisa poder refazer.
     // ⚠️ `button.disabled` NÃO reflete a herança do `<fieldset disabled>`: quem morde é o
     // fieldset. Os quatro botões são conferidos por ele, um a um.
-    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista', 'Ligar som'])
-      expect(screen.getByRole('button', { name: nome }).closest('fieldset')?.disabled).toBe(false)
+    // ⚠️ Mudou de propósito (lote 2): `hitbox` não faz som, e as ferramentas moram FORA do fieldset
+    // da cena, então a asserção olha se há algum fieldset DESABILITADO acima delas.
+    for (const nome of ['Desfazer', 'Recomeçar'])
+      expect(screen.getByRole('button', { name: nome }).closest('fieldset[disabled]')).toBeNull()
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): "Uma pista" some ao concluir (era um
+    // clique mudo que ainda contava pista para o professor).
+    expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
     // E continuam FUNCIONANDO: o guard dos comandos também olhava o `passed`, então destravar
     // só o fieldset deixaria os botões clicáveis e mudos.
     fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
     expect(
-      (screen.getByRole('slider', { name: 'Largura da área do Dino' }) as HTMLInputElement).value,
-    ).not.toBe('100')
+      (screen.getByRole('slider', { name: 'Tamanho da área do Dino' }) as HTMLInputElement).value,
+    ).not.toBe('80')
     expect(screen.queryByRole('button', { name: 'Ver um exemplo' })).toBeNull()
     expect(screen.queryByText(SCENE_MODELS.hitbox.extra)).toBeNull()
-    await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
-      timeout: 2500,
-    })
+    // ⚠️ Mudou de propósito (lote 2): o cartão "Descoberta registrada." saiu. Sem pergunta anexa no
+    // bloco, a conclusão diz "Você descobriu!" e a regra da cena logo embaixo.
+    expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
+    expect(screen.getByText('Prévia: nada é guardado.')).toBeTruthy()
   })
-  test('a demonstration offers playback only and cannot turn into an experiment', () => {
+  test('a demonstration offers playback only and cannot turn into an experiment', async () => {
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Observar", "Um passo", "Próxima etapa" e "Rever
+    // desde o começo" viraram UM botão principal que muda com o estado.
+    menosMovimento()
+    const relogio = relogioManual()
     renderMission('hitbox', 'demonstration')
     expect(screen.queryByRole('slider')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Eu quero experimentar' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
     expect(screen.queryByText('Arraste o cacto. Ou use o controle de distância abaixo.')).toBeNull()
-    for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: 'Um passo' }))
-    expect(screen.getByRole('button', { name: 'Próxima etapa' }).hasAttribute('disabled')).toBe(
-      false,
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Rever desde o começo' }))
-    expect(screen.getByRole('button', { name: 'Próxima etapa' }).hasAttribute('disabled')).toBe(
-      true,
-    )
+    for (const saiu of ['Um passo', 'Próxima etapa', 'Rever desde o começo', 'Observar'])
+      expect(screen.queryByRole('button', { name: saiu })).toBeNull()
+    try {
+      fireEvent.click(await screen.findByRole('button', { name: 'Ver a parte 1' }))
+      // ⚠️ Mudou de propósito (consertos do review do lote 2): com menos movimento a parte TOCA
+      // (passos de 0,2 s), e o principal pausa enquanto ela toca.
+      expect(await screen.findByRole('button', { name: 'Pausar' })).toBeTruthy()
+      for (let i = 0; i < 40 && screen.queryByRole('button', { name: 'Pausar' }); i++)
+        await relogio.tocar(12)
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Ver a parte 2' })).toBeTruthy(),
+      )
+      // ⚠️ E ainda não é a vez dela: "Agora é sua vez" só existe no fim.
+      expect(screen.queryByRole('button', { name: 'Agora é sua vez' })).toBeNull()
+    } finally {
+      relogio.restaurar()
+    }
   })
   test('connection can be cancelled with Escape and completed with two activations', () => {
     let connected = false
@@ -163,6 +238,11 @@ test('⚠️ a demonstração assistida até o fim REGISTRA a tentativa no servi
       })
     return Response.json(progress)
   }) as unknown as typeof fetch
+  // ⚠️ Mudou de propósito (lote 2): sem "Um passo", o caminho é o botão principal. ⚠️ E desde os
+  // consertos do review do lote 2 a parte TOCA também com menos movimento: o relógio vai na mão.
+  // ANTES de montar: o player lê ao montar.
+  menosMovimento()
+  const relogio = relogioManual()
   try {
     render(
       <LessonPlayerProvider
@@ -192,17 +272,19 @@ test('⚠️ a demonstração assistida até o fim REGISTRA a tentativa no servi
         />
       </LessonPlayerProvider>,
     )
-    const passo = await screen.findByRole('button', { name: 'Um passo' })
-    for (let i = 0; i < 200 && !rotas.some((r) => r === 'learning-attempts'); i++) {
-      const proxima = screen.queryByRole('button', { name: 'Próxima etapa' }) as
-        | HTMLButtonElement
-        | undefined
-      await act(async () => {
-        fireEvent.click(proxima && !proxima.disabled ? proxima : passo)
-      })
+    const principal = () =>
+      screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+    await waitFor(() => expect(principal().getAttribute('aria-disabled')).toBeNull())
+    for (let i = 0; i < 60 && !rotas.some((r) => r === 'learning-attempts'); i++) {
+      if (principal().textContent !== 'Pausar')
+        await act(async () => {
+          fireEvent.click(principal())
+        })
+      await relogio.tocar(12)
     }
-    expect(rotas).toContain('learning-attempts')
+    await waitFor(() => expect(rotas).toContain('learning-attempts'), { timeout: 5000 })
   } finally {
+    relogio.restaurar()
     globalThis.fetch = originalFetch
     localStorage.clear()
   }

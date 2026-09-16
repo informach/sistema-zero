@@ -1,10 +1,15 @@
 import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import {
   MAP_TILES,
+  MESH_LEVELS,
+  MIRROR_MODES,
+  SCENE_FIGURES,
   SCENE_IDS,
   SCENE_LIMITS,
   SCENE_PORTS,
   SETUP_LIMITS,
+  SHEET_CROP_WIDTHS,
+  SYMMETRY_PIECES,
 } from '@sistemazero/core/learning/scene'
 import { t } from 'elysia'
 import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
@@ -76,10 +81,12 @@ const SceneActionSchema = t.Union([
   }),
   // As duas cenas de 14/09/2026. ⚠️ Os limites vêm do core (`SCENE_LIMITS`), nunca reescritos
   // aqui: já houve três cópias desta regra e elas divergiram.
+  // ⚠️ Lote 5 do Raio-X: o endereço vai até a MAIOR tela de um caso (`addressX`/`addressY`, 800 ×
+  // 480); quem prende na tela do caso é o motor. Com `placeX` a borda recusava o Desafio.
   t.Object({
     type: t.Literal('place'),
-    x: t.Integer({ minimum: L.placeX.min, maximum: L.placeX.max }),
-    y: t.Integer({ minimum: L.placeY.min, maximum: L.placeY.max }),
+    x: t.Integer({ minimum: L.addressX.min, maximum: L.addressX.max }),
+    y: t.Integer({ minimum: L.addressY.min, maximum: L.addressY.max }),
   }),
   t.Object({ type: t.Literal('describe'), text: t.String({ maxLength: L.describe.max }) }),
   t.Object({ type: t.Literal('listen') }),
@@ -124,6 +131,26 @@ const SceneActionSchema = t.Union([
   t.Object({
     type: t.Literal('sprite'),
     size: t.Integer({ minimum: L.sprite.min, maximum: L.sprite.max }),
+  }),
+  // O ateliê do lote 5 do Raio-X (G4): os dois espelhos do Pinta, os traços da nave na grade 16 × 16 e
+  // a largura do recorte da folha. Mesma regra: as listas vêm do core, nunca literais aqui.
+  t.Object({
+    type: t.Literal('mirror-mode'),
+    mode: t.Union(MIRROR_MODES.map((m) => t.Literal(m))),
+  }),
+  t.Object({
+    type: t.Literal('trace'),
+    piece: t.Union(SYMMETRY_PIECES.map((p) => t.Literal(p))),
+  }),
+  t.Object({
+    type: t.Literal('dot'),
+    x: t.Integer({ minimum: L.paperCell.min, maximum: L.paperCell.max }),
+    y: t.Integer({ minimum: L.paperCell.min, maximum: L.paperCell.max }),
+  }),
+  t.Object({ type: t.Literal('clear-paper') }),
+  t.Object({
+    type: t.Literal('crop'),
+    width: t.Union(SHEET_CROP_WIDTHS.map((w) => t.Literal(w))),
   }),
   // As onze cenas do núcleo do Iniciante 2D (15/09/2026). Mesma regra: faixa do core.
   t.Object({
@@ -181,6 +208,8 @@ const SceneActionSchema = t.Union([
     x: t.Integer({ minimum: -1, maximum: 1 }),
     y: t.Integer({ minimum: -1, maximum: 1 }),
   }),
+  // Lote 5 do Raio-X (G5): "Andar 1 segundo" na `diagonal`, o gesto que tomou o lugar do relógio.
+  t.Object({ type: t.Literal('stride') }),
   t.Object({
     type: t.Literal('paint-tile'),
     row: t.Integer({ minimum: L.mapRow.min, maximum: L.mapRow.max }),
@@ -221,6 +250,13 @@ const SceneActionSchema = t.Union([
   }),
   t.Object({ type: t.Literal('recenter') }),
   t.Object({ type: t.Literal('wireframe'), on: t.Boolean() }),
+  // Lote 5 do Raio-X (G6): "Ver os pontos" em três degraus (`mesh`) e onde o estado das torres mora
+  // (`entity-state`). Os degraus vêm do core, como as letras do mapa.
+  t.Object({
+    type: t.Literal('see-points'),
+    level: t.Union(MESH_LEVELS.map((nivel) => t.Literal(nivel))),
+  }),
+  t.Object({ type: t.Literal('brain-scope'), shared: t.Boolean() }),
   t.Object({
     type: t.Literal('point'),
     x: t.Integer({ minimum: L.pointX.min, maximum: L.pointX.max }),
@@ -249,6 +285,10 @@ const SceneActorSchema = t.Object({
   name: t.String({ minLength: 1, maxLength: 24 }),
   gender: t.Union([t.Literal('m'), t.Literal('f')]),
   plural: t.Optional(t.String({ maxLength: 28 })),
+  // ⚠️ O que o palco DESENHA (Raio-X, lote 3). Sem ele no schema, o `normalize` do Elysia apagaria
+  // a figura escolhida no admin numa rota de corpo tipado, e a nave voltaria a ser desenhada pelo
+  // nome (ou como o Dino). Ausente = "pelo nome", que é o caso dos manifestos já publicados.
+  figure: t.Optional(t.Union(SCENE_FIGURES.map((f) => t.Literal(f)))),
 })
 const SceneCastSchema = t.Object({
   hero: t.Optional(SceneActorSchema),
@@ -349,8 +389,22 @@ export const InteractiveBlockSchema = t.Object({
   prediction: t.Optional(
     t.Object({
       prompt: t.String({ minLength: 1, maxLength: 5000 }),
-      choices: Choices,
+      /**
+       * ⚠️ As escolhas da previsão têm `shows` (para onde olhar quando a criança escolheu esta e a
+       * cena mostrou outra coisa). Com o `Choices` da pergunta, o `normalize` do Elysia APAGARIA o
+       * campo em silêncio: o bloco salvava e o player nunca mais tinha a frase.
+       */
+      choices: t.Array(
+        t.Object({
+          id: t.String({ minLength: 1, maxLength: 80 }),
+          label: Label,
+          shows: t.Optional(t.String({ minLength: 1, maxLength: 2000 })),
+        }),
+        { minItems: 2, maxItems: 20 },
+      ),
       correctChoiceId: t.Optional(t.String({ maxLength: 80 })),
+      /** A meta cuja queda responde o palpite. Quem confere que ela existe na cena é o core. */
+      revealOn: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
     }),
   ),
 })

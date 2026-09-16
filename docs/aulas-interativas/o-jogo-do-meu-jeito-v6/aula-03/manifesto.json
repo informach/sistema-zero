@@ -250,7 +250,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja dois desenhos virarem movimento",
-        "instructions": "Acompanhe os dois quadros parados e depois a troca entre eles, devagar e rápido.",
+        "instructions": "Veja o quadro 1, o quadro 2 e depois a prévia trocando os dois, devagar e rápido.",
         "hints": [],
         "activity": {
           "type": "demonstration",
@@ -264,7 +264,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja o fantasma do quadro anterior",
-        "instructions": "Acompanhe o passo escolhido no chute e depois com o fantasma do quadro 1 à vista.",
+        "instructions": "Olhe o fogo do quadro 2 sozinho. Depois veja o fantasma ligado e compare os dois fogos.",
         "hints": [],
         "activity": {
           "type": "demonstration",

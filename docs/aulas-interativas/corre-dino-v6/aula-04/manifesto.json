@@ -128,11 +128,11 @@
       "content": {
         "kind": "interactive",
         "title": "O dedo e o Dino fazem a mesma coisa?",
-        "instructions": "Compare o som ligado à tecla com o som ligado ao pulo. Teste o toque e uma tentativa enquanto o Dino já está no ar.",
+        "instructions": "Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar som para Quando o Dino pular e teste de novo.",
         "hints": [
-          "Um comando no ar consegue fazer outro salto?",
-          "Compare ligar o som à tecla e ao acontecimento Pulou.",
-          "Ligue Som a Pulou. Experimente Espaço e tocar no Dino."
+          "Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.",
+          "Agora pule tocando no Dino. Tocou som?",
+          "Leve Tocar som para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino."
         ],
         "required": false,
         "activity": {

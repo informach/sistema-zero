@@ -20,6 +20,8 @@ import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { SceneActivityView } from './scene-activity'
 
+const PREVIA = 'Prévia: nada é guardado.'
+
 function message(error: unknown) {
   return typeof error === 'object' &&
     error !== null &&
@@ -179,7 +181,9 @@ function Activity({
     setAnswers(next)
     setHintsUsed(nextHints)
     setError('')
-    setStatus(base ? 'Salvando…' : 'Prévia de autoria. Nenhum progresso de aluno foi registrado.')
+    // ⚠️ A mesma língua da cena (review do lote 2): "Prévia de autoria. Nenhum progresso de aluno
+    // foi registrado." e "Salvando…" eram as frases antigas que a moldura já tinha trocado.
+    setStatus(base ? 'Guardando…' : PREVIA)
     current.current = { answers: next, hintsUsed: nextHints, dirty: true }
     if (!player) rehearsal?.onChange(block.id, next, nextHints)
     if (key)
@@ -210,7 +214,7 @@ function Activity({
             ? await rehearsal.onAttempt(block.id, previewContent, current.current.answers)
             : evaluateLearning(previewContent, current.current.answers),
         )
-        setStatus('Prévia de autoria. Nenhum progresso de aluno foi registrado.')
+        setStatus(PREVIA)
       } catch (e) {
         setError(message(e))
       } finally {
@@ -336,7 +340,7 @@ function Activity({
             {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
           </Button>
           <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-            {busy ? 'Salvando…' : 'Conferir minha descoberta'}
+            {busy ? 'Guardando…' : 'Conferir minha descoberta'}
           </Button>
         </div>
         {result && (

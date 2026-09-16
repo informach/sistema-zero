@@ -467,9 +467,8 @@ describe('aula por seções', () => {
     }) as HTMLButtonElement
     expect(check.disabled).toBe(false)
     fireEvent.click(check)
-    expect(
-      screen.getByText('Prévia de autoria. Nenhum progresso de aluno foi registrado.'),
-    ).toBeTruthy()
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): a mesma frase da prévia da cena.
+    expect(screen.getByText('Prévia: nada é guardado.')).toBeTruthy()
   })
   test('prévia de autoria permite conferir o resultado sem registrar atividade de aluno', async () => {
     const block = {
@@ -481,9 +480,8 @@ describe('aula por seções', () => {
     render(<InteractiveLessonBlock block={block} previewContent={pergunta} />)
     fireEvent.click(screen.getByRole('radio', { name: 'Sobe' }))
     fireEvent.click(screen.getByRole('button', { name: 'Conferir minha descoberta' }))
-    expect(
-      await screen.findByText('Prévia de autoria. Nenhum progresso de aluno foi registrado.'),
-    ).toBeTruthy()
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): a mesma frase da prévia da cena.
+    expect(await screen.findByText('Prévia: nada é guardado.')).toBeTruthy()
     // ⚠️ Na prévia o gabarito está à mão, então a explicação do acerto tem que aparecer: é ela
     // que o professor confere antes de publicar.
     expect(screen.getAllByText('O impulso empurra para cima.').length).toBeGreaterThan(0)

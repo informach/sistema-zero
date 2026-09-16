@@ -128,11 +128,11 @@
       "content": {
         "kind": "interactive",
         "title": "Sair da tela é ser apagado?",
-        "instructions": "Observe os cactos que saíram. Ligue a limpeza e compare o que continua guardado. O objetivo é cuidar dos que já não são usados.",
+        "instructions": "Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.",
         "hints": [
-          "Compare a pista com os cactos guardados nos bastidores.",
-          "Sair da tela e sair do grupo são coisas diferentes.",
-          "Encaixe Remover na borda de saída. Avance o relógio novamente."
+          "Compare os cactos na tela com a prateleira dos bastidores.",
+          "Conte os cactos da prateleira depois que um cacto sai.",
+          "Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo."
         ],
         "required": false,
         "activity": {
@@ -140,18 +140,20 @@
           "scene": "cleanup"
         },
         "prediction": {
-          "prompt": "Antes de mexer: o cacto que saiu da tela ainda existe no jogo?",
+          "prompt": "O cacto que saiu da tela ainda existe no jogo?",
           "choices": [
             {
               "id": "some",
-              "label": "Não, ele sumiu"
+              "label": "Não, ele sumiu",
+              "shows": "Os cactos que saíram foram para a prateleira dos bastidores."
             },
             {
               "id": "existe",
               "label": "Sim, ele continua guardado"
             }
           ],
-          "correctChoiceId": "existe"
+          "correctChoiceId": "existe",
+          "revealOn": "invisible-stored"
         }
       }
     },

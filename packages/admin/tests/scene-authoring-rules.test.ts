@@ -308,3 +308,45 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
     ])
   })
 })
+
+describe('⚠️⚠️ a previsão própria na troca de cena (review do lote 2 do Raio-X)', () => {
+  const mundo: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'Faça o Dino aparecer',
+    instructions: 'Crie o Dino e ligue o desenho.',
+    hints: [],
+    required: false,
+    activity: { type: 'experimentation', scene: 'world' },
+    // É o que "Escrever a minha previsão" copia da cena: o `revealOn` vem junto, sem campo na tela.
+    prediction: {
+      prompt: 'O que aparece?',
+      choices: [
+        { id: 'dino', label: 'O Dino', shows: 'Olhe a tela.' },
+        { id: 'nada', label: 'Nada' },
+      ],
+      correctChoiceId: 'nada',
+      revealOn: 'hidden',
+    },
+  }
+
+  test('o `revealOn` de outra cena sai, com aviso, e o bloco continua válido', () => {
+    expect(isInteractiveBlock(mundo)).toBe(true)
+    // O defeito: o `revealOn` da `world` ficava na `layers`, o bloco virava inválido e nada na tela
+    // dizia por quê (o editor não tem campo para ele).
+    for (const cena of ['layers', 'gravity', 'coordinates'] as const) {
+      const { bloco, aviso } = trocarCena(mundo, cena)
+      expect(isInteractiveBlock(bloco), cena).toBe(true)
+      expect(bloco.prediction?.revealOn, cena).toBeUndefined()
+      // O que o professor escreveu fica: só a meta que não existe nesta cena sai.
+      expect(bloco.prediction?.prompt).toBe('O que aparece?')
+      expect(bloco.prediction?.choices[0]?.shows).toBe('Olhe a tela.')
+      expect(aviso, cena).toContain('previsão')
+    }
+    // Voltar para a MESMA cena não perde nada, e não avisa nada.
+    const mesma = trocarCena(mundo, 'world')
+    expect(mesma.bloco.prediction?.revealOn).toBe('hidden')
+    expect(mesma.aviso).not.toContain('previsão')
+    // Entre as irmãs (mesma cena) o `revealOn` atravessa.
+    expect(trocarTipo(mundo, 'demonstration').bloco.prediction?.revealOn).toBe('hidden')
+  })
+})

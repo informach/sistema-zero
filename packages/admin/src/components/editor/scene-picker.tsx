@@ -75,7 +75,11 @@ export function ScenePicker({
                     </span>
                     <span className="text-sm text-muted-foreground">
                       <strong className="font-medium text-foreground">Fecha quando:</strong>{' '}
-                      {modelo.goals.map((g) => g.label).join('; ')}
+                      {/* A missão de fábrica: as metas só de caso (`soNoCaso`) não entram. */}
+                      {modelo.goals
+                        .filter((g) => !g.soNoCaso)
+                        .map((g) => g.label)
+                        .join('; ')}
                     </span>
                   </label>
                 )

@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  decimal,
   isSceneAction,
   MAP_TILES,
   SCENE_LIMITS,
@@ -9,6 +10,8 @@ import {
   type SceneAction,
   type SceneId,
   type ScenePort,
+  sceneAreaPercent,
+  sceneFrameRate,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -31,6 +34,8 @@ const PORTAS: Record<ScenePort, string> = {
   aim: 'Mira no alvo',
   even: 'Correção da diagonal',
   recycle: 'Reciclagem do nascedouro',
+  // Lote 5 do Raio-X (G5): o nome da chave da bancada da `enemy-type`.
+  copy: 'Copiar a ficha ao nascer',
 }
 
 const TODAS: { label: string; value: SceneAction }[] = [
@@ -71,13 +76,17 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Mudar a vida da ficha', value: { type: 'define', field: 'life', value: 3 } },
   { label: 'Fazer nascer mais um', value: { type: 'spawnOne' } },
   { label: 'Levar o herói pelo mundo', value: { type: 'walk', x: 700 } },
-  { label: 'Mudar a distância entre os dois', value: { type: 'approach', distance: 20 } },
+  // ⚠️ Lote 5 do Raio-X (G5): o padrão é ENCOSTADOS (0). Na `contact` o encosto é a distância 0 dos
+  // desenhos, e com 20 o primeiro passo do roteiro deixava de mostrar a batida que ele promete.
+  { label: 'Mudar a distância entre os dois', value: { type: 'approach', distance: 0 } },
   { label: 'Perguntar se está encostando', value: { type: 'mode', kind: 'ask' } },
   { label: 'Esperar o acontecimento da batida', value: { type: 'mode', kind: 'event' } },
   { label: 'Atirar', value: { type: 'shoot' } },
   { label: 'Mudar a recarga', value: { type: 'recharge', seconds: 1 } },
   { label: 'Mover o alvo da mira', value: { type: 'target', x: 120, y: 220 } },
   { label: 'Apertar as setas', value: { type: 'direction', x: 1, y: 1 } },
+  // Lote 5 do Raio-X (G5): o gesto da `diagonal`, com o nome do botão da bancada.
+  { label: 'Andar 1 segundo', value: { type: 'stride' } },
   // ⚠️ Uma opção por LETRA: com uma só, o professor conseguia pintar mas nunca apagar nem pôr
   // a moeda, e a cena inteira é sobre a letra decidir o que aparece.
   ...MAP_TILES.map((tile) => ({
@@ -98,10 +107,12 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Mudar o tamanho da tela', value: { type: 'stage', width: 480, height: 270 } },
   { label: 'Mostrar a borda', value: { type: 'border', visible: true } },
   { label: 'Esconder a borda', value: { type: 'border', visible: false } },
-  { label: 'Desenhar a cada quadro', value: { type: 'loop', on: true } },
-  { label: 'Parar de desenhar', value: { type: 'loop', on: false } },
-  { label: 'Ligar a limpeza', value: { type: 'erase', on: true } },
-  { label: 'Desligar a limpeza', value: { type: 'erase', on: false } },
+  // ⚠️ Os nomes da bancada do lote 5 ("Desenhar o Dino: só no começo / a cada quadro", "Limpar a
+  // tela antes"): o professor lê no roteiro o mesmo que a criança lê no botão.
+  { label: 'Desenhar o Dino a cada quadro', value: { type: 'loop', on: true } },
+  { label: 'Desenhar o Dino só no começo', value: { type: 'loop', on: false } },
+  { label: 'Ligar Limpar a tela antes', value: { type: 'erase', on: true } },
+  { label: 'Desligar Limpar a tela antes', value: { type: 'erase', on: false } },
   { label: 'Mudar intervalo', value: { type: 'interval', seconds: 1 } },
   {
     label: 'Sortear posição',
@@ -113,21 +124,33 @@ const TODAS: { label: string; value: SceneAction }[] = [
   },
   // As seis cenas do lote 4. Os valores de fábrica são os do roteiro de cada uma: o passo
   // grande do fantasma, a lupa que revela a borda, o pedaço 1 da folha.
+  // ⚠️ Lote 5 do Raio-X (G4): o ateliê com os nomes do Pinta. O `paint` de colunas e o `mirror` com
+  // linha do eixo continuam legais (roteiros antigos), mas saíram da lista: o Pinta não tem eixo móvel.
   { label: 'Mostrar o quadro 1', value: { type: 'frame', index: 1 } },
   { label: 'Mostrar o quadro 2', value: { type: 'frame', index: 2 } },
-  { label: 'Ligar a troca de quadros', value: { type: 'play', on: true } },
-  { label: 'Parar a troca de quadros', value: { type: 'play', on: false } },
-  { label: 'Mudar as trocas por segundo', value: { type: 'rate', perSecond: 4 } },
+  { label: 'Ligar a prévia', value: { type: 'play', on: true } },
+  { label: 'Parar a prévia', value: { type: 'play', on: false } },
+  { label: 'Mudar a velocidade da prévia', value: { type: 'rate', perSecond: 8 } },
   { label: 'Ligar o fantasma', value: { type: 'onion', on: true } },
   { label: 'Desligar o fantasma', value: { type: 'onion', on: false } },
-  { label: 'Mudar o passo do quadro 2', value: { type: 'shift', offset: 20 } },
-  { label: 'Pintar uma coluna', value: { type: 'paint', column: 4 } },
-  { label: 'Ligar o espelho', value: { type: 'mirror', on: true, line: 6 } },
-  { label: 'Desligar o espelho', value: { type: 'mirror', on: false, line: 6 } },
-  { label: 'Olhar a pedra de pixel', value: { type: 'inspect', kind: 'pixel', zoom: 6 } },
-  { label: 'Olhar a pedra de vetor', value: { type: 'inspect', kind: 'vector', zoom: 6 } },
-  { label: 'Recortar um pedaço da folha', value: { type: 'cut', cell: 1 } },
-  { label: 'Mudar o tamanho no jogo', value: { type: 'sprite', size: 48 } },
+  { label: 'Mudar o tamanho do fogo 2', value: { type: 'shift', offset: 20 } },
+  { label: 'Desligar o espelho', value: { type: 'mirror-mode', mode: 'off' } },
+  { label: 'Ligar o Espelho lado a lado', value: { type: 'mirror-mode', mode: 'x' } },
+  { label: 'Ligar o espelho de cima e de baixo', value: { type: 'mirror-mode', mode: 'y' } },
+  // ⚠️ Os dois espelhos são duas chaves no Pinta (consertos do review da onda B do lote 5): com as duas
+  // ligadas, cada traço deixa três cópias.
+  { label: 'Ligar os dois espelhos', value: { type: 'mirror-mode', mode: 'xy' } },
+  { label: 'Pintar a asa', value: { type: 'trace', piece: 'asa' } },
+  { label: 'Pintar a ponta', value: { type: 'trace', piece: 'ponta' } },
+  { label: 'Pintar a cabine', value: { type: 'trace', piece: 'cabine' } },
+  { label: 'Pintar um quadradinho', value: { type: 'dot', x: 3, y: 10 } },
+  { label: 'Apagar o papel', value: { type: 'clear-paper' } },
+  { label: 'Aproximar as duas pedras', value: { type: 'inspect', kind: 'pixel', zoom: 4 } },
+  { label: 'Mostrar a folha inteira no jogo (64)', value: { type: 'crop', width: 64 } },
+  { label: 'Recortar a folha em 16', value: { type: 'crop', width: 16 } },
+  { label: 'Recortar a folha em 32', value: { type: 'crop', width: 32 } },
+  { label: 'Levar o recorte a um quadro', value: { type: 'cut', cell: 2 } },
+  { label: 'Mudar o tamanho no jogo', value: { type: 'sprite', size: 54 } },
   // O motor, o 3D e o ateliê (15/09/2026). Os valores de fábrica são os do roteiro de cada uma.
   { label: 'Pôr o 1º a mirar', value: { type: 'brain', id: 1, state: 'mirar' } },
   { label: 'Pôr o 1º a atirar', value: { type: 'brain', id: 1, state: 'atirar' } },
@@ -137,11 +160,21 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Contar segundos', value: { type: 'count', kind: 'seconds' } },
   { label: 'Mudar o raio do primeiro', value: { type: 'radius', which: 'a', value: 30 } },
   { label: 'Mudar o raio do segundo', value: { type: 'radius', which: 'b', value: 30 } },
-  { label: 'Levar o objeto no espaço', value: { type: 'place3d', x: 0, y: 0, z: 80 } },
+  // ⚠️ z NEGATIVO é o fundo (lote 5 do Raio-X, como o kit Desvie do Jogo 3D): o valor de fábrica leva o
+  // cubo para o fundo, que é o que o roteiro do modelo mostra primeiro.
+  { label: 'Levar o objeto no espaço', value: { type: 'place3d', x: 0, y: 0, z: -80 } },
   { label: 'Girar a câmera (ou o modelo)', value: { type: 'orbit', yaw: 1, pitch: 1 } },
-  { label: 'Voltar à vista de sempre', value: { type: 'recenter' } },
+  // ⚠️ Os nomes da bancada (consertos do review da onda B do lote 5, G6).
+  { label: 'Voltar para onde a câmera começou', value: { type: 'recenter' } },
   { label: 'Ligar o raio-X do modelo', value: { type: 'wireframe', on: true } },
   { label: 'Desligar o raio-X do modelo', value: { type: 'wireframe', on: false } },
+  // Lote 5 do Raio-X (G6): os nomes da bancada nova ("A pele", "O estado mora"). ⚠️ "A pele" desde os
+  // consertos do review da onda B: "Ver os pontos" respondia a previsão da `mesh`.
+  { label: 'A pele: inteira', value: { type: 'see-points', level: 'nada' } },
+  { label: 'A pele: transparente', value: { type: 'see-points', level: 'metade' } },
+  { label: 'A pele: sem pele', value: { type: 'see-points', level: 'tudo' } },
+  { label: 'O estado mora: em cada torre', value: { type: 'brain-scope', shared: false } },
+  { label: 'O estado mora: no jogo', value: { type: 'brain-scope', shared: true } },
   { label: 'Apontar a mira', value: { type: 'point', x: 300, y: 110 } },
   { label: 'Pintar o miolo', value: { type: 'ink', part: 'fill', on: true } },
   { label: 'Tirar a cor do miolo', value: { type: 'ink', part: 'fill', on: false } },
@@ -164,7 +197,11 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   jump: ['input'],
   start: ['input'],
   sample: ['kind'],
-  inspect: ['kind'],
+  // ⚠️ Sem `inspect: ['kind']` desde o lote 5 (G4): a lupa vale para as DUAS pedras, e um roteiro
+  // antigo com a pedra de vetor ainda precisa casar com a única opção da lista.
+  'mirror-mode': ['mode'],
+  trace: ['piece'],
+  crop: ['width'],
   mode: ['kind'],
   count: ['kind'],
   frame: ['index'],
@@ -182,6 +219,8 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   onion: ['on'],
   mirror: ['on'],
   wireframe: ['on'],
+  'see-points': ['level'],
+  'brain-scope': ['shared'],
   shade: ['on'],
 }
 
@@ -201,9 +240,69 @@ const identidade = (a: SceneAction) =>
     ':',
   )
 
+/** Segundos como o professor lê: vírgula no decimal e no máximo três casas. */
+const segundos = (n: number) => `${decimal(Number(n.toFixed(3)))} s`
+
+/**
+ * O aviso de um tempo que não cai em QUADRO INTEIRO do relógio da cena, ou `null`.
+ *
+ * ⚠️⚠️ Review do lote 4 do Raio-X (16/09/2026): o motor conta QUADROS no ritmo de cada cena
+ * (`sceneFrameRate`), e o editor aceitava qualquer tempo de 0,001 s em diante. "Observar a cena
+ * 0,5 s" numa etapa da `pool` (um quadro por segundo) não mostra nada, e a sobra só aparece na
+ * etapa seguinte; no CASO a sobra é zerada ao abrir a cena, e o tempo some. ⚠️ Avisa e não recusa:
+ * o roteiro continua válido, e só quem escreveu sabe se o resto do quadro na etapa seguinte é o que
+ * queria. Hoje nenhum conteúdo tem isso (o review conferiu os 70 roteiros e os casos).
+ */
+export function avisoDoTempo(scene: SceneId, tempo: number, noCaso: boolean): string | null {
+  const fps = sceneFrameRate(scene)
+  if (fps === null || !Number.isFinite(tempo) || tempo <= 0) return null
+  const quadros = tempo * fps
+  const inteiros = Math.floor(quadros + 1e-6)
+  if (Math.abs(quadros - inteiros) <= 1e-6) return null
+  const umQuadro = segundos(1 / fps)
+  if (inteiros === 0)
+    return noCaso
+      ? `Nesta cena um quadro dura ${umQuadro}: ${segundos(tempo)} não muda nada no caso. Use pelo menos ${umQuadro}.`
+      : `Nesta cena um quadro dura ${umQuadro}: ${segundos(tempo)} não mostra nada nesta etapa. Use pelo menos ${umQuadro}.`
+  const opcoes = `${segundos(inteiros / fps)} ou ${segundos((inteiros + 1) / fps)}`
+  return noCaso
+    ? `Nesta cena um quadro dura ${umQuadro}: ${segundos(tempo)} anda ${inteiros} ${inteiros === 1 ? 'quadro' : 'quadros'} e o resto se perde ao abrir a cena. Use ${opcoes}.`
+    : `Nesta cena um quadro dura ${umQuadro}: ${segundos(tempo)} mostra ${inteiros} ${inteiros === 1 ? 'quadro' : 'quadros'}, e o resto fica para a ação seguinte. Use ${opcoes}.`
+}
+
+/**
+ * ⚠️⚠️ Os nomes POR CENA e as ações LEGADAS que a bancada não oferece (consertos do review da onda A do
+ * lote 5, B7). Os rótulos acima são globais, e três cenas redesenhadas ficaram com nomes de outra coisa:
+ * na `acceleration` o "Sortear velocidade" é o "Passar 5 segundos" da criança, e o "Avançar o relógio"
+ * (`clock`) anda a base SEM nascer cacto (um roteiro com ele nunca mostra `old-speed`); na `restart`,
+ * "Mover o obstáculo" e "Provocar colisão" terminam a partida sem cacto na pista. As escondidas
+ * continuam LEGAIS (conteúdo antigo abre), e um passo que já as usa mostra "· ação antiga".
+ * A chave é a `identidade` da ação.
+ */
+const POR_CENA: Partial<
+  Record<SceneId, { rotulos?: Record<string, string>; esconder?: readonly SceneAction['type'][] }>
+> = {
+  acceleration: { rotulos: { 'sample:velocity': 'Passar 5 segundos' }, esconder: ['clock'] },
+  restart: { rotulos: { 'start:tap': 'Tocar na tela' }, esconder: ['move', 'collide'] },
+  hitbox: { rotulos: { resize: 'Mudar o tamanho da área do Dino' } },
+}
+
 /** As ações que ESTA cena aceita. A legalidade é do domínio, não de uma lista daqui. */
 export function sceneActionChoices(scene: SceneId) {
-  return TODAS.filter((a) => isSceneAction(a.value, scene))
+  const cena = POR_CENA[scene]
+  return TODAS.filter(
+    (a) => isSceneAction(a.value, scene) && !cena?.esconder?.includes(a.value.type),
+  ).map((a) => {
+    const rotulo = cena?.rotulos?.[identidade(a.value)]
+    return rotulo ? { ...a, label: rotulo } : a
+  })
+}
+
+/** O nome de uma ação LEGADA (legal na cena, fora da lista dela), para o passo que já a usa. */
+export function rotuloDaAcaoAntiga(action: SceneAction, scene: SceneId): string {
+  if (!isSceneAction(action, scene)) return 'Ação incompatível · revisar'
+  const antiga = TODAS.find((c) => identidade(c.value) === identidade(action))
+  return antiga ? `${antiga.label} · ação antiga` : 'Ação incompatível · revisar'
 }
 
 /**
@@ -248,7 +347,14 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
   if (action.type === 'move')
     return { label: 'Distância', field: 'distance' as const, ...L.move, value: action.distance }
   if (action.type === 'resize')
-    return { label: 'Largura da área', field: 'width' as const, ...L.resize, value: action.width }
+    return {
+      // ⚠️ A bancada da `hitbox` fala em PORCENTAGEM (consertos do review da onda A do lote 5, B7): o
+      // motor guarda a largura, e o rótulo diz as duas coisas para o professor casar com a criança.
+      label: `Largura da área (${sceneAreaPercent(action.width)}% do Dino)`,
+      field: 'width' as const,
+      ...L.resize,
+      value: action.width,
+    }
   if (action.type === 'sample')
     return {
       label: 'Posição no sorteio (0 a 1)',
@@ -259,14 +365,14 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
     }
   if (action.type === 'rate')
     return {
-      label: 'Trocas por segundo',
+      label: 'Velocidade (quadros por segundo)',
       field: 'perSecond' as const,
       ...L.rate,
       value: action.perSecond,
     }
   if (action.type === 'shift')
     return {
-      label: 'Passo do quadro 2',
+      label: 'Tamanho do fogo 2 (4 por quadradinho)',
       field: 'offset' as const,
       ...L.shift,
       value: action.offset,
@@ -274,7 +380,7 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
   if (action.type === 'paint')
     return { label: 'Coluna do traço', field: 'column' as const, ...L.column, value: action.column }
   if (action.type === 'cut')
-    return { label: 'Pedaço da folha', field: 'cell' as const, ...L.cell, value: action.cell }
+    return { label: 'Quadro do recorte', field: 'cell' as const, ...L.cell, value: action.cell }
   if (action.type === 'sprite')
     return { label: 'Tamanho no jogo', field: 'size' as const, ...L.sprite, value: action.size }
   /* ── O núcleo, o motor e o 3D ─────────────────────────────────────────────────────────────
@@ -344,10 +450,12 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
  * `orbit`, cuja altura só existe em `camera-3d`.
  */
 export function camposDoEndereco(action: SceneAction, scene: SceneId) {
+  // ⚠️ Até a MAIOR tela de um caso (lote 5 do Raio-X): o Desafio abre em 800 × 480, com "Mudar o
+  // tamanho da tela" ANTES. O motor prende o endereço na tela do caso.
   if (action.type === 'place')
     return [
-      { label: 'x', field: 'x' as const, ...SCENE_LIMITS.placeX, value: action.x },
-      { label: 'y', field: 'y' as const, ...SCENE_LIMITS.placeY, value: action.y },
+      { label: 'x', field: 'x' as const, ...SCENE_LIMITS.addressX, value: action.x },
+      { label: 'y', field: 'y' as const, ...SCENE_LIMITS.addressY, value: action.y },
     ]
   // ⚠️ O eixo do espelho e a lupa entram AQUI, e não no campo numérico solto, porque cada um
   // viaja junto de um interruptor (`on`, `kind`): separá-los deixaria a ação meio escolhida.
@@ -361,7 +469,15 @@ export function camposDoEndereco(action: SceneAction, scene: SceneId) {
       },
     ]
   if (action.type === 'inspect')
-    return [{ label: 'lupa', field: 'zoom' as const, ...SCENE_LIMITS.zoom, value: action.zoom }]
+    return [
+      { label: 'aproximar', field: 'zoom' as const, ...SCENE_LIMITS.zoom, value: action.zoom },
+    ]
+  // O quadradinho tocado na grade 16 × 16 do espelho (lote 5, G4).
+  if (action.type === 'dot')
+    return [
+      { label: 'coluna (0 a 15)', field: 'x' as const, ...SCENE_LIMITS.paperCell, value: action.x },
+      { label: 'linha (0 a 15)', field: 'y' as const, ...SCENE_LIMITS.paperCell, value: action.y },
+    ]
   if (action.type === 'stage')
     return [
       {
@@ -420,7 +536,13 @@ export function camposDoEndereco(action: SceneAction, scene: SceneId) {
     return [
       { label: 'x (lados)', field: 'x' as const, ...SCENE_LIMITS.spaceX, value: action.x },
       { label: 'y (para cima)', field: 'y' as const, ...SCENE_LIMITS.spaceY, value: action.y },
-      { label: 'z (fundo)', field: 'z' as const, ...SCENE_LIMITS.spaceZ, value: action.z },
+      // ⚠️ Lote 5 do Raio-X: o fundo é o z NEGATIVO.
+      {
+        label: 'z (negativo é o fundo)',
+        field: 'z' as const,
+        ...SCENE_LIMITS.spaceZ,
+        value: action.z,
+      },
     ]
   if (action.type === 'paint-tile')
     return [
@@ -505,7 +627,7 @@ export function SceneActionEditor({
                 </option>
               ))}
               {!choices.some((c) => identidade(c.value) === identidade(action)) && (
-                <option value={identidade(action)}>Ação incompatível · revisar</option>
+                <option value={identidade(action)}>{rotuloDaAcaoAntiga(action, scene)}</option>
               )}
             </Select>
             {numero && (
@@ -529,6 +651,11 @@ export function SceneActionEditor({
                   }
                 />
               </label>
+            )}
+            {action.type === 'advance' && avisoDoTempo(scene, action.seconds, stepNumber === 0) && (
+              <p className="text-xs text-amber-700" role="status">
+                {avisoDoTempo(scene, action.seconds, stepNumber === 0)}
+              </p>
             )}
             {endereco && (
               <div className="grid grid-cols-2 gap-2">

@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { SCENE_IDS } from './actions'
 import { SCENE_MODELS } from './catalog'
+import { stepScene } from './engine'
 import {
   applyDemonstrationSegment,
   applyExperimentSegment,
@@ -12,9 +14,12 @@ import {
   readDemonstrationSession,
   readExperimentSession,
   readSceneSegment,
+  SCENE_CLOCK_MARK,
   SceneConflictError,
+  sceneEmitsSound,
   sceneFromTrial,
   sceneSegmentAnswers,
+  sceneSegmentHasClock,
   sceneTrial,
   stepDemonstration,
   stepExperiment,
@@ -75,6 +80,34 @@ describe('sessão de experimentação', () => {
     expect(isExperimentCommand({ type: 'capture' }, world)).toBe(true)
     expect(isExperimentCommand({ type: 'capture', extra: 1 }, world)).toBe(false)
   })
+
+  test('⚠️⚠️ "Ligar som" só onde há som: a régua bate com o que o MOTOR emite', () => {
+    // O botão aparecia nas 45 cenas e só uma fazia som. A régua é de legalidade (a porta `sound`);
+    // este teste é o que a amarra ao motor: tocando o roteiro do modelo, a porta ligada e saltos
+    // pelos dois caminhos, cena que diz "não" nunca emite `sound`, e a que diz "sim" emite.
+    let comSom = 0
+    for (const scene of SCENE_IDS) {
+      const start = { scene }
+      let s = initialExperiment(start)
+      let ouviu = false
+      const tentar = (comando: unknown) => {
+        if (!isExperimentCommand(comando, start)) return
+        const passo = stepExperiment(start, s, comando)
+        s = passo.session
+        if (passo.events.some((e) => e.type === 'sound')) ouviu = true
+      }
+      tentar({ type: 'connect', port: 'sound', enabled: true })
+      for (const input of ['key', 'tap', 'key', 'tap']) {
+        tentar({ type: 'jump', input })
+        tentar({ type: 'advance', seconds: 0.2 })
+      }
+      for (const passo of SCENE_MODELS[scene].script) for (const acao of passo.actions) tentar(acao)
+      expect(ouviu, scene).toBe(sceneEmitsSound(scene))
+      if (ouviu) comSom++
+    }
+    // Anti-vácuo: pelo menos uma cena faz som, senão o teste aprovaria a régua "nunca".
+    expect(comSom).toBeGreaterThan(0)
+  })
 })
 
 describe('sessão de demonstração', () => {
@@ -120,6 +153,288 @@ describe('sessão de demonstração', () => {
     expect(houveDescoberta).toBe(false)
     // O mundo mudou de verdade, mas o evento não foi emitido.
     expect(s.state.evidence.discoveries.length).toBeGreaterThan(0)
+  })
+
+  test('⚠️⚠️ a etapa com `waitFor` consome o `advance` INTEIRO, e não só a primeira fatia', () => {
+    // O player toca o roteiro em fatias de ~0,05 s, e a etapa terminava na PRIMEIRA fatia em que
+    // a descoberta acontecia: "avance 1 s" durava 0,05 s, o Dino da `velocity` andava 2,5 px e a
+    // fala dizia "a cada quadro ele anda um pouco para a direita" sobre um movimento invisível.
+    const velocity = { scene: 'velocity' } as const
+    const roteiro = SCENE_MODELS.velocity.script
+    let s = stepDemonstration(velocity, roteiro, initialDemonstration(velocity), {
+      type: 'start',
+    }).session
+    let fatias = 0
+    for (; fatias < 200 && !s.ready; fatias++)
+      s = stepDemonstration(velocity, roteiro, s, { type: 'tick', seconds: 0.05 }).session
+    expect(s.state.evidence.discoveries).toContain('moves')
+    // ⚠️ Mudou de propósito (lote 4 do Raio-X): 1 s inteiro são 5 quadros de `x + 5`, de 60 para 85
+    // (era `vx × 10 × segundos`, 110). O que o teste guarda é o segundo INTEIRO, e não 62,5.
+    expect(s.state.drive.x).toBe(85)
+    expect(s.state.drive.ticks).toBe(5)
+    // O respiro da primeira ação (0,45 s) e o segundo inteiro de relógio.
+    expect(fatias * 0.05).toBeGreaterThanOrEqual(1.45 - 1e-9)
+  })
+
+  test('⚠️⚠️ todo roteiro do catálogo, tocado em fatias como o player, cumpre cada `waitFor`', () => {
+    // A outra metade da mudança acima: sem encerrar cedo, a etapa só termina com o tempo todo, e
+    // a descoberta prometida precisa estar lá quando ela terminar, em qualquer tamanho de fatia
+    // que o relógio do player produz. Foi esta varredura que achou a `circle-collision`: em
+    // fatias de 0,04 s a soma parava em 60,0000001 contra 60, e a batida prometida não vinha.
+    for (const fatia of [0.04, 0.05, 1 / 30, 0.1])
+      for (const scene of SCENE_IDS) {
+        const start = { scene }
+        const roteiro = SCENE_MODELS[scene].script
+        let s = stepDemonstration(start, roteiro, initialDemonstration(start), {
+          type: 'start',
+        }).session
+        for (let i = 0; i < 4000 && !s.viewed; i++) {
+          s = stepDemonstration(start, roteiro, s, { type: 'tick', seconds: fatia }).session
+          if (!s.ready) continue
+          const espera = roteiro[s.step]?.waitFor
+          if (espera)
+            expect(
+              s.state.evidence.discoveries,
+              `${scene}, etapa ${s.step + 1}, fatia ${fatia}`,
+            ).toContain(espera)
+          if (s.step < roteiro.length - 1)
+            s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
+        }
+        expect(s.viewed, `${scene}, fatia ${fatia}`).toBe(true)
+      }
+  })
+
+  /**
+   * O relógio DE VERDADE do player (`scene-activity.tsx`): quadros do `requestAnimationFrame`
+   * acumulados até passar de 0,04 s, e aí um tique com o acumulado.
+   *
+   * ⚠️⚠️ As fatias fixas da varredura acima dividem o segundo EXATAMENTE (a sobra é 0 ou 1e-16), e
+   * foi por isso que ela não pegou a `circle-collision`: com quadros de 60 Hz a soma fica ora um fio
+   * acima, ora um fio abaixo do segundo, e a sobra abaixo de um milésimo era jogada fora (a batida
+   * sumia em ~9 de cada 10 execuções). A tremida é determinística (semente), para o teste não piscar.
+   */
+  function relogioDoPlayer(semente: number, hz: number, velocidade = 1) {
+    let a = semente >>> 0
+    const aleatorio = () => {
+      a = (a + 0x6d2b79f5) >>> 0
+      let t = a
+      t = Math.imul(t ^ (t >>> 15), t | 1)
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+    let acumulado = 0
+    return () => {
+      for (;;) {
+        const quadro = 1 / hz + (aleatorio() - 0.5) * 0.0006
+        acumulado += Math.min(quadro, 0.1) * velocidade
+        if (acumulado >= 0.04) {
+          const tique = acumulado
+          acumulado = 0
+          return tique
+        }
+      }
+    }
+  }
+  function tocarComRelogio(scene: (typeof SCENE_IDS)[number], proximoTique: () => number) {
+    const start = { scene }
+    const roteiro = SCENE_MODELS[scene].script
+    const faltas: string[] = []
+    let s = stepDemonstration(start, roteiro, initialDemonstration(start), {
+      type: 'start',
+    }).session
+    for (let i = 0; i < 4000 && !s.viewed; i++) {
+      s = stepDemonstration(start, roteiro, s, { type: 'tick', seconds: proximoTique() }).session
+      if (!s.ready) continue
+      const espera = roteiro[s.step]?.waitFor
+      if (espera && !s.state.evidence.discoveries.includes(espera))
+        faltas.push(`${scene} etapa ${s.step + 1}: ${espera}`)
+      if (s.step < roteiro.length - 1)
+        s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
+    }
+    if (!s.viewed) faltas.push(`${scene}: não terminou`)
+    return faltas
+  }
+
+  test('⚠️⚠️ com o relógio REAL do player (quadros com tremida), todo `waitFor` chega', () => {
+    const faltas: string[] = []
+    for (const [hz, velocidade] of [
+      [60, 1],
+      [120, 1],
+      [144, 1],
+      [60, 0.5],
+    ] as const)
+      for (const semente of [1, 7, 42])
+        for (const scene of SCENE_IDS)
+          faltas.push(...tocarComRelogio(scene, relogioDoPlayer(semente, hz, velocidade)))
+    expect(faltas).toEqual([])
+  })
+
+  test('⚠️⚠️ `circle-collision`: a batida do roteiro vem em TODA execução, não em 1 de cada 10', () => {
+    // O caso exato do review: 200 execuções a 60 Hz com 0,3 ms de tremida.
+    let semBatida = 0
+    for (let semente = 0; semente < 200; semente++)
+      if (tocarComRelogio('circle-collision', relogioDoPlayer(semente, 60)).length) semBatida++
+    expect(semBatida).toBe(0)
+  })
+
+  /**
+   * ⚠️⚠️ O PLAYER ANTERIOR ao lote 1, copiado daqui como era: a etapa com `waitFor` ficava pronta
+   * na PRIMEIRA fatia em que a descoberta acontecia. É ele que uma aba aberta antes do deploy
+   * continua rodando, e é contra os comandos DELE que o servidor novo precisa registrar a
+   * demonstração assistida.
+   */
+  function passoDoPlayerAnterior(
+    start: { scene: (typeof SCENE_IDS)[number] },
+    roteiro: (typeof SCENE_MODELS)[keyof typeof SCENE_MODELS]['script'],
+    s: ReturnType<typeof initialDemonstration>,
+    command: { type: 'start' } | { type: 'next' } | { type: 'tick'; seconds: number },
+    /**
+     * ⚠️⚠️ O PIOR caso do motor antigo (lote 4 do Raio-X): ele contava um quadro por fatia, então a
+     * descoberta da etapa vinha, no mais cedo, na PRIMEIRA fatia da última ação. O servidor novo conta
+     * no ritmo da cena e só a vê depois (a `pool`, um corpo por segundo). Sem este modo o teste usaria o
+     * motor NOVO para decidir quando o player antigo terminava, e passaria com a tolerância quebrada.
+     */
+    piorCaso = false,
+  ) {
+    if (command.type !== 'tick') return stepDemonstration(start, roteiro, s, command).session
+    if (s.ready) return s
+    const next = { ...s }
+    const passo = roteiro[next.step]
+    const acao = passo?.actions[next.action]
+    if (!passo || !acao) return next
+    next.elapsed += command.seconds
+    if (acao.type === 'advance') {
+      const fatia = Math.min(command.seconds, acao.seconds - (next.elapsed - command.seconds))
+      if (fatia >= 0.001)
+        next.state = stepScene(start, next.state, { type: 'advance', seconds: fatia })
+      const acabou = next.elapsed + 1e-6 >= acao.seconds
+      const alcancou =
+        next.action === passo.actions.length - 1 &&
+        passo.waitFor !== undefined &&
+        (piorCaso || next.state.evidence.discoveries.includes(passo.waitFor))
+      if (acabou || alcancou) {
+        next.action += 1
+        next.elapsed = 0
+      }
+    } else if (next.elapsed >= 0.45) {
+      next.state = stepScene(start, next.state, acao)
+      next.action += 1
+      next.elapsed = 0
+    }
+    if (next.action >= passo.actions.length) {
+      next.ready = true
+      if (next.step === roteiro.length - 1) next.viewed = true
+    }
+    return next
+  }
+  /** Os comandos que o player anterior MANDA, tocando em fatias de 0,05 s. */
+  function comandosDoPlayerAnterior(scene: (typeof SCENE_IDS)[number], piorCaso = false) {
+    const start = { scene }
+    const roteiro = SCENE_MODELS[scene].script
+    const comandos: ({ type: 'start' } | { type: 'next' } | { type: 'tick'; seconds: number })[] = [
+      { type: 'start' },
+    ]
+    let s = passoDoPlayerAnterior(start, roteiro, initialDemonstration(start), { type: 'start' })
+    for (let i = 0; i < 4000 && !s.viewed; i++) {
+      comandos.push({ type: 'tick', seconds: 0.05 })
+      s = passoDoPlayerAnterior(start, roteiro, s, { type: 'tick', seconds: 0.05 }, piorCaso)
+      if (s.ready && s.step < roteiro.length - 1) {
+        comandos.push({ type: 'next' })
+        s = passoDoPlayerAnterior(start, roteiro, s, { type: 'next' }, piorCaso)
+      }
+    }
+    return comandos
+  }
+  const replay = (
+    scene: (typeof SCENE_IDS)[number],
+    commands: unknown[],
+    opcoes?: { tolerarPlayerAnterior?: boolean },
+  ) =>
+    applyDemonstrationSegment(
+      { scene },
+      SCENE_MODELS[scene].script,
+      null,
+      { sessionId: 's', segmentId: 'g', baseSequence: 0, commands },
+      opcoes,
+    ).session.viewed
+
+  test('⚠️⚠️ deploy: o servidor TOLERANTE registra a demonstração vista num player anterior', () => {
+    const naoRegistra: string[] = []
+    const tolerante: string[] = []
+    for (const scene of SCENE_IDS) {
+      const comandos = comandosDoPlayerAnterior(scene)
+      if (!replay(scene, comandos)) naoRegistra.push(scene)
+      if (!replay(scene, comandos, { tolerarPlayerAnterior: true })) tolerante.push(scene)
+    }
+    // Anti-vácuo: sem a tolerância o defeito do review aparece (velocity, gravity, pool…).
+    expect(naoRegistra).toContain('velocity')
+    expect(naoRegistra.length).toBeGreaterThanOrEqual(5)
+    expect(tolerante).toEqual([])
+  })
+
+  test('⚠️⚠️ deploy com o relógio de quadro fixo: o player anterior terminando a etapa na PRIMEIRA fatia', () => {
+    // O motor antigo do navegador descobria quase tudo na primeira fatia; o do servidor, só no quadro
+    // da cena. Medido com o motor de produção: 6 dos 45 modelos (velocity, aim, diagonal, pool,
+    // entity-state, delta-time) voltavam a não registrar com a tolerância olhando só o estado ATUAL.
+    const naoRegistra: string[] = []
+    for (const scene of SCENE_IDS)
+      if (!replay(scene, comandosDoPlayerAnterior(scene, true), { tolerarPlayerAnterior: true }))
+        naoRegistra.push(scene)
+    expect(naoRegistra).toEqual([])
+    // O `next` aceito COMPLETA a ação pulada: a etapa seguinte começa de onde o roteiro a deixa.
+    const pool = { scene: 'pool' } as const
+    const roteiro = SCENE_MODELS.pool.script
+    let s = stepDemonstration(pool, roteiro, initialDemonstration(pool), { type: 'start' }).session
+    for (let i = 0; i < 60 && s.action < roteiro[0]!.actions.length - 1; i++)
+      s = stepDemonstration(pool, roteiro, s, { type: 'tick', seconds: 0.05 }).session
+    s = stepDemonstration(pool, roteiro, s, { type: 'tick', seconds: 0.05 }).session
+    expect(s.state.nursery.created).toBeLessThan(3)
+    const tolerante = stepDemonstration(
+      pool,
+      roteiro,
+      s,
+      { type: 'next' },
+      { tolerarPlayerAnterior: true },
+    )
+    expect(tolerante.session.step).toBe(1)
+    expect(tolerante.session.state.nursery.created).toBe(3)
+    // Sem tolerância (o player novo), o mesmo `next` no meio da ação continua ignorado.
+    expect(stepDemonstration(pool, roteiro, s, { type: 'next' }).session.step).toBe(0)
+  })
+
+  test('⚠️ e a tolerância não muda nada para o player NOVO, nem aceita `next` antes da hora', () => {
+    for (const scene of SCENE_IDS) {
+      const start = { scene }
+      const roteiro = SCENE_MODELS[scene].script
+      const comandos: unknown[] = [{ type: 'start' }]
+      let s = stepDemonstration(start, roteiro, initialDemonstration(start), {
+        type: 'start',
+      }).session
+      for (let i = 0; i < 4000 && !s.viewed; i++) {
+        comandos.push({ type: 'tick', seconds: 0.05 })
+        s = stepDemonstration(start, roteiro, s, { type: 'tick', seconds: 0.05 }).session
+        if (s.ready && s.step < roteiro.length - 1) {
+          comandos.push({ type: 'next' })
+          s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
+        }
+      }
+      expect(replay(scene, comandos), scene).toBe(true)
+      expect(replay(scene, comandos, { tolerarPlayerAnterior: true }), scene).toBe(true)
+    }
+    // Um `next` no meio de uma etapa SEM descoberta continua ignorado, tolerante ou não.
+    const velocity = { scene: 'velocity' } as const
+    const roteiro = SCENE_MODELS.velocity.script
+    let s = stepDemonstration(velocity, roteiro, initialDemonstration(velocity), {
+      type: 'start',
+    }).session
+    s = stepDemonstration(
+      velocity,
+      roteiro,
+      s,
+      { type: 'next' },
+      { tolerarPlayerAnterior: true },
+    ).session
+    expect(s.step).toBe(0)
   })
 
   test('só aceita os três comandos dela, e o tique tem teto', () => {
@@ -201,7 +516,9 @@ describe('o que vai e volta do servidor', () => {
       port: 'timer',
       enabled: true,
     }).session
-    s = stepExperiment({ scene: 'spawn' }, s, { type: 'advance', seconds: 2 }).session
+    // ⚠️ Mudou de propósito (review do lote 4): a criança manda no máximo 1 s por comando.
+    s = stepExperiment({ scene: 'spawn' }, s, { type: 'advance', seconds: 1 }).session
+    s = stepExperiment({ scene: 'spawn' }, s, { type: 'advance', seconds: 1 }).session
     s = stepExperiment({ scene: 'spawn' }, s, { type: 'capture' }).session
     const volta = readExperimentSession('spawn', packExperiment('spawn', s))
     expect(volta).not.toBeNull()
@@ -270,6 +587,36 @@ describe('o que vai e volta do servidor', () => {
     expect(
       readSceneSegment({ ...bom, sceneCommands: Array.from({ length: 101 }, () => '{}') }),
     ).toBeNull()
+  })
+
+  test('⚠️⚠️ o marcador do relógio: o player novo se identifica, e o segmento lido não muda de forma', () => {
+    const answers = sceneSegmentAnswers({
+      sessionId: 'a1',
+      segmentId: 'b2',
+      baseSequence: 0,
+      commands: [{ type: 'advance', seconds: 0.2 }],
+    })
+    expect(answers.sceneClock).toBe(SCENE_CLOCK_MARK)
+    expect(sceneSegmentHasClock(answers)).toBe(true)
+    // O player de antes do lote 4 não manda o marcador (e um valor desconhecido não conta).
+    const { sceneClock: _marca, ...antigo } = answers
+    expect(sceneSegmentHasClock(antigo)).toBe(false)
+    expect(sceneSegmentHasClock({ ...antigo, sceneClock: SCENE_CLOCK_MARK + 1 })).toBe(false)
+    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5, A2): o marcador virou a VERSÃO das
+    // regras, e o player do lote 4 (que mandava 1) passou a ser "anterior" também.
+    expect(SCENE_CLOCK_MARK).toBe(2)
+    expect(sceneSegmentHasClock({ ...antigo, sceneClock: 1 })).toBe(false)
+    expect(sceneSegmentHasClock(null)).toBe(false)
+    // ⚠️⚠️ O segmento lido é IGUAL com e sem o marcador: o members guarda o hash dele para reconhecer
+    // um reenvio, e um segmento gravado antes do deploy e reenviado pelo player novo não pode virar
+    // conflito.
+    expect(JSON.stringify(readSceneSegment(answers))).toBe(JSON.stringify(readSceneSegment(antigo)))
+    expect(Object.keys(readSceneSegment(answers) ?? {})).toEqual([
+      'sessionId',
+      'segmentId',
+      'baseSequence',
+      'commands',
+    ])
   })
 
   test('⚠️ escrever sobre uma base que já mudou é recusado, não sobrescrito', () => {

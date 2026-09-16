@@ -103,7 +103,10 @@ describe('retrato guardado antes dos grupos novos', () => {
     expect(sessao?.state.place.x).toBe(300)
     expect(sessao?.state.stage.tried).toBe(2)
     expect(sessao?.state.mirror.painted).toEqual([])
-    expect(sessao?.state.sheet.size).toBe(48)
+    // ⚠️ Mudou de propósito (lote 5, G4): o jogo da Aula 6 mostra a nave em 54 × 54, e a folha
+    // ganhou a largura do recorte (a folha inteira, 64).
+    expect(sessao?.state.sheet.size).toBe(54)
+    expect(sessao?.state.sheet.width).toBe(64)
     expect(sessao?.state.pixels.zoom).toBe(1)
   })
 

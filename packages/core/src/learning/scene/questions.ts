@@ -27,12 +27,31 @@ import type { SceneId } from './actions'
  *
  * ⚠️ O texto passa pelo ELENCO (`castText`) como todo o resto do que a plataforma gera: quem
  * escrever aqui precisa escrever de um jeito que sobreviva à troca de personagem.
+ *
+ * ⚠️⚠️ Toda previsão do modelo diz QUAL META a responde (`revealOn`) e, em cada opção errada, o
+ * que olhar (`shows`), desde o lote 2 do Raio-X (16/09/2026). O player congela o palpite no
+ * primeiro gesto e o retoma quando essa meta cai. Duas regras que o teste cobra:
+ *  - a meta tem de ser uma que a bancada de HOJE consegue fazer cair, e que de fato mostre a
+ *    resposta (a `pixel-vector` revela em `smooth`, a pedra de vetor lisa, e não em `stairs`);
+ *  - o `shows` conta, no PASSADO, o que a cena mostrou quando a meta caiu, nunca a regra escrita de
+ *    novo. ⚠️ No passado (review do lote 2): a linha do palpite fica na tela depois do gesto, e um
+ *    "Olhe a tela: o Dino saiu da janela" no presente passava a mentir quando a câmera ligava.
+ *
+ * ⚠️⚠️ Id de escolha que MUDA DE SENTIDO ganha id novo (review do lote 2). O palpite guardado e a
+ * tentativa antiga mostram a frase pelo id: com o id velho, o relatório do professor mostraria
+ * uma resposta que a criança nunca escolheu. Frase reescrita com o MESMO sentido fica com o id.
  */
 
 /** Uma alternativa, no formato que o bloco de aula já usa. */
 interface Escolha {
   id: string
   label: string
+  /**
+   * Só nas opções ERRADAS da previsão: o que a cena MOSTROU quando a criança escolheu esta ("Sem
+   * gravidade, o Dino continuou subindo."). No passado, porque a linha fica na tela depois. Não é
+   * bronca, é o caminho de volta.
+   */
+  shows?: string
 }
 
 export interface ScenePrediction {
@@ -40,6 +59,11 @@ export interface ScenePrediction {
   choices: Escolha[]
   /** O que acontece de verdade. Não reprova ninguém: serve ao relatório do professor. */
   correctChoiceId: string
+  /**
+   * A meta cuja queda RESPONDE o palpite. O player retoma o palpite nesse instante ("Você achou:
+   * Nada. E foi isso mesmo!"). Sem ela, o palpite é retomado quando a cena conclui.
+   */
+  revealOn?: string
 }
 
 export interface SceneExplanation {
@@ -55,63 +79,95 @@ export interface SceneQuestions {
   explain: SceneExplanation
 }
 
-/** ⚠️ `Record<SceneId, …>`: o TS reprova a cena nova que chegar sem as duas perguntas. */
+/**
+ * ⚠️ `Record<SceneId, …>`: o TS reprova a cena nova que chegar sem as duas perguntas.
+ *
+ * ⚠️⚠️ A ORDEM das alternativas é conteúdo, e foi alternada à mão (lote 2 do Raio-X, 16/09/2026).
+ * Antes a resposta certa era a PRIMEIRA em 80 das 84 perguntas, e o player não embaralha: a
+ * criança aprendia depressa que "a primeira é a certa", e o palpite deixava de ser palpite. Hoje
+ * a certa vem primeiro em cerca de metade.
+ *
+ * ⚠️⚠️ E sem VAIVÉM (review do lote 2): a primeira alternância trocava a certa de lado em 37 de 44
+ * cenas vizinhas, com trechos de onze em alternância perfeita, que é tão adivinhável quanto "a
+ * primeira é a certa". `questions-order.test.ts` reprova trecho de alternância maior que 4 e de
+ * repetição maior que 3, na ordem do catálogo E na ordem real de cada curso. Mudou uma ordem aqui?
+ * Rode aquele teste: ele diz em que trecho quebrou.
+ */
 export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   /* ── A tela e quem a lê ──────────────────────────────────────────────────────────────────── */
   coordinates: {
     prediction: {
       prompt: 'Se você AUMENTAR o y, para onde o Dino vai?',
       choices: [
-        { id: 'cima', label: 'Para cima' },
+        { id: 'cima', label: 'Para cima', shows: 'Aumentando o y, o Dino desceu.' },
         { id: 'baixo', label: 'Para baixo' },
       ],
       correctChoiceId: 'baixo',
+      revealOn: 'down',
     },
     explain: {
-      prompt: 'O que é o endereço do Dino na tela?',
+      // ⚠️ Aplicar num caso novo, que é o que o pulo da Aula 3 vai pedir. A pergunta antiga ("o
+      // que é o endereço?") tinha como errada "um número só", que ninguém escolhe.
+      prompt: 'Você quer o Dino mais perto da beirada de baixo da tela. O que faz com o y?',
       choices: [
-        { id: 'dois', label: 'Dois números: um para o lado e um para a altura.' },
-        { id: 'um', label: 'Um número só, que vai crescendo.' },
+        { id: 'diminui', label: 'Diminuo o y.' },
+        { id: 'aumenta', label: 'Aumento o y.' },
       ],
-      correctChoiceId: 'dois',
+      correctChoiceId: 'aumenta',
       explanation:
-        'São dois números juntos. O x diz o quanto para o lado e o y diz o quanto para baixo. Trocar um só move o Dino num eixo.',
+        'Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo o Dino fica.',
     },
   },
   'screen-reader': {
     prediction: {
-      prompt: 'Quem não enxerga a tela consegue saber como se joga?',
+      // ⚠️ "Quem não enxerga consegue saber como se joga?" já dizia a resposta na pergunta, e a
+      // errada ("o desenho conta sozinho") era espantalho. A crença de verdade é achar que o
+      // computador descreve o desenho.
+      prompt: 'Você aperta Ouvir a tela sem escrever nada. O que a pessoa ouve?',
       choices: [
-        { id: 'desenho', label: 'Sim, o desenho conta sozinho' },
-        { id: 'frase', label: 'Só se alguém tiver escrito uma frase' },
+        {
+          id: 'dino',
+          label: 'Um Dino correndo e pulando cactos.',
+          // ⚠️ Com aspas: sem elas "Tela do jogo. Imagem." se lia como duas frases soltas.
+          shows: 'O leitor de tela disse só "Tela do jogo. Imagem."',
+        },
+        { id: 'imagem', label: 'Só "Tela do jogo. Imagem."' },
       ],
-      correctChoiceId: 'frase',
+      correctChoiceId: 'imagem',
+      revealOn: 'heard-empty',
     },
     explain: {
-      prompt: 'O que faz o jogo ser jogável por quem não vê a tela?',
+      // ⚠️ A pergunta antiga prometia que a frase torna o jogo "jogável por quem não vê a tela",
+      // o que a própria Aula 1 decidiu não prometer.
+      prompt: 'Por que a pessoa ouviu só "Imagem" da primeira vez?',
       choices: [
-        { id: 'frase', label: 'Uma frase que diz o objetivo e o controle.' },
-        { id: 'cores', label: 'Cores fortes e desenhos grandes.' },
+        { id: 'texto', label: 'O programa lê texto, e ninguém tinha escrito nada.' },
+        { id: 'pequeno', label: 'O desenho era pequeno demais para o programa ver.' },
       ],
-      correctChoiceId: 'frase',
+      correctChoiceId: 'texto',
       explanation:
-        'O leitor de tela lê texto, não desenho. Sem a sua frase ele anuncia "imagem" e mais nada, e o jogo fica fechado.',
+        'O leitor de tela lê o que está escrito. A sua frase conta o que fazer no jogo e qual tecla usar.',
     },
   },
   'stage-size': {
     prediction: {
-      prompt: 'Quem decide onde a tela do jogo acaba?',
+      prompt: 'Sem a borda, dá para ver onde a tela do jogo acaba?',
       choices: [
-        { id: 'voce', label: 'Você, escolhendo os números' },
-        { id: 'jogo', label: 'O jogo, sozinho' },
+        { id: 'nao', label: 'Não dá, a tela some no fundo.' },
+        {
+          id: 'da',
+          label: 'Dá, a tela aparece sozinha.',
+          shows: 'Sem a borda, a tela sumia no fundo, e só apareceu quando a borda ligou.',
+        },
       ],
-      correctChoiceId: 'voce',
+      correctChoiceId: 'nao',
+      revealOn: 'border-on',
     },
     explain: {
-      prompt: 'O limite da tela é o quê?',
+      prompt: 'Quem decide o tamanho da tela do jogo?',
       choices: [
-        { id: 'escolha', label: 'Uma escolha sua: dois números, largura e altura.' },
         { id: 'monitor', label: 'O tamanho do monitor de quem joga.' },
+        { id: 'escolha', label: 'Você, com dois números: largura e altura.' },
       ],
       correctChoiceId: 'escolha',
       explanation:
@@ -122,10 +178,16 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
     prediction: {
       prompt: 'Se o jogo desenhar sem limpar antes, o que aparece?',
       choices: [
-        { id: 'rastro', label: 'Um rastro de vários Dinos' },
-        { id: 'um', label: 'Um Dino só, andando' },
+        {
+          id: 'um',
+          label: 'Um Dino só, andando',
+          shows: 'Sem limpar, os desenhos de antes continuaram na tela.',
+        },
+        // ⚠️ "Um rastro de vários Dinos" saía "Um rastro de vários naves" com o elenco.
+        { id: 'rastro', label: 'Um rastro de Dinos' },
       ],
       correctChoiceId: 'rastro',
+      revealOn: 'trail',
     },
     explain: {
       prompt: 'O que faz o desenho parecer que se mexe?',
@@ -135,22 +197,29 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'repetir',
       explanation:
-        'O jogo apaga e redesenha muitas vezes por segundo. Sem repetir, a tela congela; sem limpar, sobra rastro.',
+        'O jogo apaga e redesenha muitas vezes por segundo. Sem desenhar de novo, a tela não muda; sem limpar, sobra rastro.',
     },
   },
 
   /* ── Desenho e animação ──────────────────────────────────────────────────────────────────── */
   frames: {
     prediction: {
-      prompt: 'Numa animação de dois quadros, o que está na tela em cada instante?',
+      // ⚠️⚠️ Lote 5 do Raio-X: a pergunta é sobre o fogo que PULSA rápido, e a resposta aparece quando
+      // a prévia rápida para. Ids novos: "Com a troca ligada" perguntava outra coisa.
+      prompt: 'Quando o fogo pulsa rápido, o que está na tela?',
       choices: [
-        { id: 'um', label: 'Um desenho parado' },
-        { id: 'meio', label: 'Os dois misturados' },
+        {
+          id: 'misturados',
+          label: 'Os dois quadros misturados',
+          shows: 'Quando a prévia rápida parou, ficou um quadro só na tela.',
+        },
+        { id: 'um-de-cada-vez', label: 'Um quadro de cada vez' },
       ],
-      correctChoiceId: 'um',
+      correctChoiceId: 'um-de-cada-vez',
+      revealOn: 'paused-one',
     },
     explain: {
-      prompt: 'O que cria o movimento?',
+      prompt: 'O que faz o fogo pulsar?',
       choices: [
         { id: 'troca', label: 'A troca rápida entre desenhos parados.' },
         { id: 'desenho', label: 'Um desenho que se mexe sozinho.' },
@@ -162,157 +231,227 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   'onion-skin': {
     prediction: {
-      prompt: 'Dá para acertar o passo do quadro 2 sem ver o quadro 1?',
+      // ⚠️⚠️ Lote 5: o que muda entre os quadros é o FOGO. Ids novos: "o passo" era outra pergunta.
+      prompt:
+        'No quadro 2 só aparece o fogo novo. Dá para saber se ele ficou maior que o do quadro 1?',
       choices: [
-        { id: 'chute', label: 'Dá, mas no chute' },
-        { id: 'facil', label: 'Dá fácil, é só olhar' },
+        { id: 'nao-da', label: 'Não dá, o fogo 1 não está na tela' },
+        {
+          id: 'olhar',
+          label: 'Dá, é só olhar o fogo',
+          // ⚠️ "Tracejado" (consertos do review da onda B do lote 5, A2): o fantasma é o contorno do fogo
+          // 1 por cima do fogo 2, e não um fogo clarinho por baixo.
+          shows:
+            'Com o fantasma ligado, o fogo 1 apareceu tracejado. Sem o fantasma, o fogo 1 não aparecia.',
+        },
       ],
-      correctChoiceId: 'chute',
+      correctChoiceId: 'nao-da',
+      revealOn: 'ghost-on',
     },
     explain: {
       prompt: 'Para que serve o fantasma do quadro anterior?',
       choices: [
-        { id: 'comparar', label: 'Para comparar sem precisar decorar.' },
         { id: 'aparecer', label: 'Para aparecer no jogo junto com o desenho.' },
+        { id: 'comparar', label: 'Para comparar sem precisar decorar.' },
       ],
       correctChoiceId: 'comparar',
       explanation:
-        'O fantasma é uma guia de quem desenha, não parte do jogo. Ele deixa você medir a distância entre um quadro e o outro.',
+        'O fantasma é uma guia de quem desenha, não parte do jogo. Ele deixa você ver o fogo de antes e o de agora juntos.',
     },
   },
   symmetry: {
     prediction: {
-      prompt: 'Com o espelho ligado, um traço seu vira quantos?',
+      // ⚠️⚠️ Lote 5: o espelho do Pinta, no meio. "Um, só que mais grosso" era o que o desenho
+      // mostrava de verdade quando o traço encostava no eixo. Ids novos: a pergunta mudou.
+      prompt:
+        'Você pinta a asa do lado esquerdo com o Espelho lado a lado ligado. Onde aparece a outra asa?',
       choices: [
-        { id: 'dois', label: 'Dois' },
-        { id: 'um', label: 'Um, só que mais grosso' },
+        {
+          id: 'grudada',
+          label: 'Grudada na primeira, deixando a asa mais grossa',
+          shows: 'A outra asa apareceu do outro lado do meio, virada.',
+        },
+        { id: 'outro-lado', label: 'Do outro lado do meio, virada' },
       ],
-      correctChoiceId: 'dois',
+      correctChoiceId: 'outro-lado',
+      revealOn: 'two-sides',
     },
     explain: {
-      prompt: 'O que o eixo do espelho decide?',
+      // ⚠️ Lote 5: não existe mais eixo móvel. A pergunta é o que cada espelho faz com o traço.
+      prompt: 'Com o espelho de cima e de baixo, onde cai a cópia do traço?',
       choices: [
-        { id: 'onde', label: 'Onde o reflexo cai.' },
-        { id: 'quantos', label: 'Quantos traços são criados.' },
+        { id: 'cima-baixo', label: 'Do outro lado do meio, em cima ou embaixo.' },
+        { id: 'do-lado', label: 'Do outro lado do meio, à direita.' },
       ],
-      correctChoiceId: 'onde',
+      correctChoiceId: 'cima-baixo',
       explanation:
-        'O espelho sempre faz um reflexo. O eixo é a linha em volta da qual ele acontece, então mover o eixo move o reflexo.',
+        'Cada espelho do Pinta copia o traço do outro lado do MEIO do desenho: o lado a lado copia para a direita ou a esquerda, e o de cima e de baixo copia para cima ou para baixo.',
     },
   },
   'pixel-vector': {
     prediction: {
-      prompt: 'As duas pedras parecem iguais. E se você chegar bem perto?',
+      // ⚠️ O erro típico é o de quem amplia foto: achar que TODA borda vira degrau de perto.
+      // ⚠️ Lote 5: revela em `stairs`, com as duas pedras na MESMA lupa a partir de 3.
+      prompt: 'Se você aproximar muito, o que acontece com as bordas?',
       choices: [
-        { id: 'iguais', label: 'Continuam iguais' },
-        { id: 'diferentes', label: 'Uma vira escadinha' },
+        { id: 'so-pixel', label: 'Só a de pixel vira degraus' },
+        {
+          id: 'as-duas',
+          label: 'As duas viram degraus',
+          shows: 'De perto, a borda da pedra de vetor continuou lisa.',
+        },
       ],
-      correctChoiceId: 'diferentes',
+      correctChoiceId: 'so-pixel',
+      revealOn: 'stairs',
     },
     explain: {
       prompt: 'Qual é a diferença entre as duas pedras?',
       choices: [
-        { id: 'como', label: 'Como cada uma é guardada: quadradinhos ou instruções de traço.' },
-        { id: 'cor', label: 'A cor e o tamanho de cada uma.' },
+        // ⚠️ "A cor e o tamanho" era espantalho: as duas pedras têm a mesma cor. Id novo: outro sentido.
+        { id: 'menores', label: 'A de vetor é feita de quadradinhos bem menores.' },
+        { id: 'como', label: 'Como cada uma é guardada: quadradinhos ou pontos e curvas.' },
       ],
       correctChoiceId: 'como',
       explanation:
-        'Uma é feita de quadradinhos, e ampliar mostra os quadradinhos. A outra é uma receita de traço, e o traço é refeito do tamanho que precisar.',
+        'Uma é feita de quadradinhos, e aproximar mostra os quadradinhos. A outra guarda os pontos e as curvas, e é refeita do tamanho que precisar.',
     },
   },
   'sheet-vs-sprite': {
     prediction: {
-      prompt: 'Se você aumentar o desenho dentro do jogo, a folha muda?',
+      // ⚠️⚠️ Lote 5: a demonstração da Aula 6 já respondia "a folha muda?" e a experimentação fazia a
+      // mesma pergunta. A do modelo agora é a da largura do recorte. Ids novos.
+      prompt: 'Os quadros da nave têm 32 de largura. Com um recorte de 16, o que aparece no jogo?',
       choices: [
-        { id: 'muda', label: 'Muda, ela cresce junto' },
-        { id: 'fica', label: 'Fica igual' },
+        { id: 'metade', label: 'Metade da nave, esticada' },
+        {
+          id: 'inteira',
+          label: 'A nave inteira, menor',
+          shows: 'Com o recorte de 16, o jogo mostrou só metade da nave, esticada.',
+        },
       ],
-      correctChoiceId: 'fica',
+      correctChoiceId: 'metade',
+      revealOn: 'crop-half',
     },
     explain: {
-      prompt: 'A folha de desenhos e o tamanho no jogo são a mesma coisa?',
+      prompt: 'Por que o recorte da folha da nave precisa ter 32 de largura?',
       choices: [
-        { id: 'duas', label: 'Não: a folha guarda, e o tamanho no jogo é escolhido depois.' },
-        { id: 'uma', label: 'São: o pedaço recortado já vem no tamanho final.' },
+        { id: 'jogo', label: 'Porque a nave aparece com 32 no jogo.' },
+        { id: 'quadro', label: 'Porque cada quadro da folha tem 32 de largura.' },
       ],
-      correctChoiceId: 'duas',
+      correctChoiceId: 'quadro',
       explanation:
-        'A folha é o armário dos desenhos. Recortar diz QUAL desenho usar; o tamanho no jogo é outra escolha, feita na hora de mostrar.',
+        'A folha tem dois quadros de 32 lado a lado. Um recorte de 32 pega um quadro inteiro; o tamanho no jogo é escolhido à parte.',
     },
   },
 
   /* ── O mundo do jogo ─────────────────────────────────────────────────────────────────────── */
   world: {
     prediction: {
-      prompt: 'Você cria o Dino e não liga o desenho. O que aparece na tela?',
+      /**
+       * ⚠️⚠️ A pergunta de antes ("Você cria o Dino e não liga o desenho. O que aparece?") a criança
+       * JÁ VIVEU no Estúdio uma seção antes, onde criou o dino e ele não apareceu: o palpite não tinha
+       * risco nenhum (lote 5 do Raio-X, 16/09/2026). A crença ingênua que sobra é a de que desligar o
+       * desenho APAGA o personagem, ou que sem desenho ele nem existe. Ids novos: o sentido mudou.
+       * ⚠️⚠️ A pergunta fala de um ESTADO (criado, desenho desligado), e não de um gesto ("você desliga
+       * o desenho"): `hidden` cai nos dois caminhos, criando com o desenho desligado ou desligando
+       * depois, e pelo gesto o palpite voltava no "Criar" de quem nunca tinha desligado nada.
+       */
+      prompt: 'O Dino foi criado e o desenho está desligado. Onde está o Dino?',
       choices: [
-        { id: 'nada', label: 'Nada' },
-        { id: 'dino', label: 'O Dino' },
+        { id: 'bastidores', label: 'Nos bastidores, sem aparecer na tela.' },
+        {
+          id: 'nenhum',
+          label: 'Em lugar nenhum. Sem desenho, o Dino não existe.',
+          shows: 'A ficha do Dino ficou nos bastidores, com a tela vazia.',
+        },
       ],
-      correctChoiceId: 'nada',
+      correctChoiceId: 'bastidores',
+      revealOn: 'hidden',
     },
     explain: {
-      prompt: 'Por que o Dino não apareceu na tela logo depois de criar?',
+      prompt: 'Por que a tela ficou sem o Dino, mesmo com o Dino criado?',
       choices: [
-        {
-          id: 'duas',
-          label: 'Existir e aparecer são duas coisas: faltou o comando de desenhar.',
-        },
-        { id: 'lento', label: 'O jogo demora um pouco para carregar o desenho.' },
+        { id: 'duas', label: 'Faltava ligar o desenho.' },
+        { id: 'lento', label: 'O jogo ainda estava carregando o Dino.' },
       ],
       correctChoiceId: 'duas',
       explanation:
-        'Criar põe o Dino nos bastidores do jogo. Desenhar é o que traz o Dino para a tela. São dois comandos porque são duas coisas.',
+        'Criar guarda o Dino nos bastidores. Desenhar mostra o Dino na tela. São dois blocos porque são duas coisas.',
     },
   },
   layers: {
     prediction: {
-      prompt: 'A peça que fica ATRÁS ainda existe no jogo?',
+      // ⚠️ A seção é "Quem fica na frente?", e a previsão antiga perguntava se a peça de trás
+      // EXISTE, com a ponta do Dino à vista embaixo. ⚠️ Sem particípio ("for desenhado"): o elenco
+      // não flexiona o que vem depois de "for".
+      prompt: 'Na ordem de desenhar, o Dino vem DEPOIS da floresta. Onde o Dino aparece?',
       choices: [
-        { id: 'existe', label: 'Existe, só está coberta' },
-        { id: 'some', label: 'Some enquanto está atrás' },
+        {
+          id: 'atras',
+          label: 'Atrás da floresta',
+          shows: 'O Dino ficou na frente da floresta.',
+        },
+        { id: 'frente', label: 'Na frente da floresta' },
       ],
-      correctChoiceId: 'existe',
+      correctChoiceId: 'frente',
+      revealOn: 'front',
     },
     explain: {
-      prompt: 'O que a ordem das peças decide?',
+      prompt: 'Quem aparece por cima?',
       choices: [
-        { id: 'cobre', label: 'Quem cobre quem.' },
-        { id: 'existe', label: 'Quem existe e quem não existe.' },
+        { id: 'primeiro', label: 'A peça desenhada primeiro.' },
+        { id: 'ultimo', label: 'A peça desenhada por último.' },
       ],
-      correctChoiceId: 'cobre',
+      correctChoiceId: 'ultimo',
       explanation:
-        'As duas peças continuam ali o tempo todo. A ordem só diz qual delas é desenhada por cima da outra.',
+        'O jogo pinta uma peça de cada vez. A última pintura fica por cima das outras, como um adesivo colado depois.',
     },
   },
   gravity: {
     prediction: {
-      prompt: 'Sem gravidade, o Dino que pula volta ao chão?',
+      prompt: 'A gravidade está desligada, e o Dino pula. O que acontece?',
       choices: [
-        { id: 'sobe', label: 'Não, o Dino fica subindo' },
-        { id: 'volta', label: 'Volta, sempre' },
+        {
+          id: 'volta',
+          label: 'Sobe e volta ao chão',
+          shows: 'Sem gravidade, o Dino continuou subindo e não voltou.',
+        },
+        { id: 'sobe', label: 'Sobe e não para mais' },
       ],
       correctChoiceId: 'sobe',
+      revealOn: 'floating',
     },
     explain: {
-      prompt: 'O que faz o Dino voltar ao chão?',
+      prompt: 'Por que o Dino voltou ao chão?',
       choices: [
-        { id: 'gravidade', label: 'A gravidade, que puxa o Dino para baixo o tempo todo.' },
-        { id: 'chao', label: 'O chão, que atrai quem está no ar.' },
+        // ⚠️ "O chão atrai quem está no ar" era espantalho. O erro de verdade é achar que o pulo
+        // perde a força sozinho, e a explicação antiga ("um empurrão que acaba") reforçava isso.
+        { id: 'forca', label: 'O pulo perde a força sozinho.' },
+        { id: 'gravidade', label: 'A gravidade puxa para baixo o tempo todo.' },
       ],
       correctChoiceId: 'gravidade',
       explanation:
-        'O pulo é um empurrão para cima que acaba. A gravidade continua puxando, então a subida vira descida.',
+        'O pulo dá ao Dino uma velocidade para cima. Sem gravidade ela nunca acaba, e o Dino sobe para sempre. A gravidade tira um pouco dessa velocidade a cada quadro, até a subida virar descida.',
     },
   },
   impulse: {
     prediction: {
-      prompt: 'Com a MESMA gravidade, um impulso maior leva o Dino mais alto?',
+      // ⚠️ "Um impulso maior leva mais alto?" ninguém erra. O erro típico é achar que a altura
+      // cresce na MESMA proporção do número: com 9 o salto chega a 68, com 14 passa de 160.
+      prompt:
+        'Com impulso 9, o salto chega a 68 de altura. Com impulso 14, até onde o salto chega?',
+      // ⚠️⚠️ Ids NOVOS (review do lote 2): `igual` já foi "Não, a altura é sempre a mesma", e o palpite
+      // antigo apareceria ao professor com a frase de "Uns 100".
       choices: [
-        { id: 'alto', label: 'Sim, mais alto' },
-        { id: 'igual', label: 'Não, a altura é sempre a mesma' },
+        { id: 'mais-150', label: 'Mais de 150, mais que o dobro' },
+        {
+          id: 'uns-100',
+          label: 'Uns 100, um pouco mais alto',
+          shows: 'Com impulso 14, o salto passou de 150 de altura.',
+        },
       ],
-      correctChoiceId: 'alto',
+      correctChoiceId: 'mais-150',
+      revealOn: 'other-height',
     },
     explain: {
       prompt: 'Quem decide a altura do salto?',
@@ -322,60 +461,85 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'impulso',
       explanation:
-        'A gravidade não mudou entre os dois saltos. O que mudou foi o empurrão inicial, e é ele que define a altura do salto.',
+        'A gravidade não mudou. Um empurrão maior faz a subida durar mais, e por isso a altura cresce muito.',
     },
   },
   'jump-sound': {
     prediction: {
-      prompt: 'O som deve tocar quando você aperta a tecla, ou quando o Dino pula?',
+      // ⚠️ "O som DEVE tocar…?" pedia opinião, e o título da Aula 4 respondia.
+      prompt:
+        'O som ainda escuta a tecla Espaço. Com o Dino no ar, você aperta Espaço de novo. O que acontece?',
       choices: [
-        { id: 'pulo', label: 'Quando o Dino pula' },
-        { id: 'tecla', label: 'Quando eu aperto' },
+        {
+          id: 'nada',
+          label: 'Nada: sem pulo novo, sem som',
+          // ⚠️ "pulo", a palavra da cena, e o que OLHAR (a coluna da linha do tempo), sem a conta "os sons
+          // passaram dos saltos" nem a certa repetida (consertos do review da onda A do lote 5).
+          shows: 'A linha do tempo ganhou um som sem pulo.',
+        },
+        { id: 'toca', label: 'Toca o som, e o Dino não pula de novo' },
       ],
-      correctChoiceId: 'pulo',
+      correctChoiceId: 'toca',
+      revealOn: 'false-sound',
     },
     explain: {
-      prompt: 'Por que o som deve escutar o PULO, e não a tecla?',
+      // ⚠️ Com o nome da caixa para onde a PEÇA foi (lote 5 do Raio-X): o fio "Som → Pulou" saiu.
+      prompt: 'Por que Tocar som foi para Quando o Dino pular?',
       choices: [
         {
           id: 'acontece',
-          label: 'Porque nem toda tecla vira pulo, e o som conta o que aconteceu.',
+          label: 'Assim o som toca uma vez por pulo, venha da tecla ou do toque.',
         },
-        { id: 'rapido', label: 'Porque a tecla é mais lenta que o pulo.' },
+        { id: 'igual', label: 'Tanto faz: a tecla e o pulo tocam nas mesmas horas.' },
       ],
       correctChoiceId: 'acontece',
       explanation:
-        'Se o som escutar a tecla, ele toca mesmo quando o pulo não acontece. Ligado ao pulo, ele conta a verdade, venha de tecla ou de toque.',
+        'A tecla é o que você faz. O pulo é o que o Dino faz. Nem toda tecla vira pulo, e tocar na tela também faz pular. O som que escuta o pulo nunca erra.',
     },
   },
   spawn: {
     prediction: {
-      prompt: 'Criando um cacto em CADA quadro, como fica a pista?',
+      // ⚠️ "a tela", e não "a pista": o Desafio e o Meu Jeito usam a cena no espaço.
+      prompt: 'Criando um cacto em CADA quadro, como fica a tela?',
       choices: [
         { id: 'parede', label: 'Uma parede de cactos' },
-        { id: 'espacada', label: 'Cactos bem espaçados' },
+        {
+          id: 'espacada',
+          label: 'Cactos bem espaçados',
+          shows: 'Em um segundo nasceram cactos colados uns nos outros.',
+        },
       ],
       correctChoiceId: 'parede',
+      revealOn: 'every-frame',
     },
     explain: {
       prompt: 'O que abriu espaço entre os cactos?',
       choices: [
-        { id: 'intervalo', label: 'Esperar um tempo entre uma criação e a outra.' },
         { id: 'velocidade', label: 'Deixar os cactos mais rápidos.' },
+        { id: 'intervalo', label: 'Esperar um tempo entre uma criação e a outra.' },
       ],
       correctChoiceId: 'intervalo',
       explanation:
-        'A velocidade deles não mudou. O que mudou foi o tempo entre um nascimento e o seguinte, e é isso que vira espaço.',
+        // ⚠️ "deles" não concorda com um obstáculo feminino.
+        'A velocidade dos cactos não mudou. O que mudou foi o tempo entre um nascimento e o seguinte, e é isso que vira espaço.',
     },
   },
   cleanup: {
     prediction: {
-      prompt: 'O cacto que sai da tela some do jogo?',
+      prompt: 'Um cacto sai pela esquerda da tela. E agora?',
       choices: [
-        { id: 'fica', label: 'Não, o cacto continua guardado' },
-        { id: 'some', label: 'Some sozinho' },
+        { id: 'fica', label: 'Continua no grupo, fora da vista' },
+        {
+          id: 'some',
+          label: 'Some do jogo',
+          // ⚠️ Os NÚMEROS, e não "saiu da tela e continua no grupo", que era a certa repetida.
+          // ⚠️ A PRATELEIRA (consertos do review da onda A do lote 5): desde o redesenho a prova é o
+          // desenho dos bastidores, e não os números da faixa.
+          shows: 'Os cactos que saíram foram para a prateleira dos bastidores.',
+        },
       ],
       correctChoiceId: 'fica',
+      revealOn: 'invisible-stored',
     },
     explain: {
       prompt: 'Por que é preciso uma regra para retirar os cactos que saem?',
@@ -393,18 +557,27 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   'game-state': {
     prediction: {
-      prompt: 'Na tela de INÍCIO, o relógio do jogo já deveria estar contando?',
+      // ⚠️ A pergunta antiga ("já DEVERIA estar contando?") pedia opinião, com a certa ao
+      // contrário do que a cena mostra primeiro. Esta é a do professor da Aula 7: um fato.
+      prompt: 'Na tela de início, antes de começar, nascem cactos?',
+      // ⚠️⚠️ Ids NOVOS (review do lote 2): `espera` já foi a CERTA ("Não, deve esperar"), e hoje é a
+      // errada. Com o id velho, um palpite guardado mudava de lado sem ninguém ver.
       choices: [
-        { id: 'espera', label: 'Não, deve esperar' },
-        { id: 'conta', label: 'Sim, desde o começo' },
+        {
+          id: 'so-depois',
+          label: 'Não, só depois de começar',
+          shows: 'Os cactos nasceram na tela de início, antes de começar.',
+        },
+        { id: 'ja-nascem', label: 'Sim, já nascem' },
       ],
-      correctChoiceId: 'espera',
+      correctChoiceId: 'ja-nascem',
+      revealOn: 'outside',
     },
     explain: {
-      prompt: 'O que faz o relógio esperar na tela de início?',
+      prompt: 'O que faz Criar cacto esperar na tela de início?',
       choices: [
-        { id: 'condicao', label: 'Uma condição: só contar enquanto estiver jogando.' },
         { id: 'botao', label: 'O botão de começar, que liga o relógio.' },
+        { id: 'condicao', label: 'Uma condição: só criar cactos enquanto estiver jogando.' },
       ],
       correctChoiceId: 'condicao',
       explanation:
@@ -413,55 +586,74 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   controls: {
     prediction: {
-      prompt: 'O convite "toque para começar" funciona sozinho?',
+      // ⚠️ A certa antiga ("alguém precisa ligar o toque") já trazia o conserto dentro dela.
+      // ⚠️ "Você toca na tela" (lote 5 do Raio-X): a tela inteira é a área de toque, e o botão
+      // "Toque para começar" deixou de existir.
+      prompt: 'Você toca na tela de início. O que acontece?',
       choices: [
-        { id: 'fio', label: 'Não, alguém precisa ligar o toque' },
-        { id: 'sozinho', label: 'Funciona, é só escrever' },
+        { id: 'comeca', label: 'A partida começa', shows: 'A tela continuou no INÍCIO.' },
+        { id: 'nada', label: 'Nada acontece' },
       ],
-      correctChoiceId: 'fio',
+      correctChoiceId: 'nada',
+      revealOn: 'missing-touch',
     },
     explain: {
-      prompt: 'O que faz o convite virar um começo de verdade?',
+      prompt: 'Por que tocar não começava a partida?',
       choices: [
-        { id: 'ligacao', label: 'A ligação entre o gesto e a ação de começar.' },
-        { id: 'texto', label: 'O texto do convite estar bem escrito.' },
+        { id: 'texto', label: 'O convite estava escrito errado.' },
+        { id: 'ligacao', label: 'Nada no jogo escutava o toque.' },
       ],
       correctChoiceId: 'ligacao',
       explanation:
-        'O texto só conta o que fazer. Quem faz acontecer é o fio entre o toque (ou a tecla) e o comando de iniciar.',
+        'Escrever toque na tela não liga nada. O jogo só faz o que algum evento escuta. Quando o toque passou a chamar Começar, a promessa virou verdade.',
     },
   },
   restart: {
     prediction: {
-      prompt: 'Depois que a partida acaba, ela recomeça sozinha?',
-      choices: [
-        { id: 'nao', label: 'Não, alguém precisa mandar' },
-        { id: 'sim', label: 'Sim, sempre recomeça' },
-      ],
-      correctChoiceId: 'nao',
-    },
-    explain: {
-      prompt: 'O que recomeçar precisa fazer?',
+      // ⚠️⚠️ Lote 5 do Raio-X: "recomeça sozinha?" não era a crença ingênua da aula. O erro típico é
+      // achar que voltar para o início já recomeça, e a pista com os cactos mostra que não.
+      // Ids novos: a pergunta mudou de sentido.
+      prompt:
+        'Se o toque no fim só voltar para a tela de início, o que acontece com os cactos da partida?',
       choices: [
         {
-          id: 'zerar',
-          label: 'Voltar o placar e os obstáculos ao começo, e só então jogar de novo.',
+          id: 'somem',
+          label: 'Somem sozinhos',
+          shows: 'Os cactos da partida anterior continuaram na pista.',
         },
-        { id: 'tela', label: 'Mostrar de novo a tela inicial.' },
+        { id: 'continuam', label: 'Continuam na pista' },
       ],
-      correctChoiceId: 'zerar',
+      correctChoiceId: 'continuam',
+      revealOn: 'screen-only',
+    },
+    explain: {
+      // ⚠️ Sem "placar": a cena não tem placar, e a Aula 9 vem antes de ele existir.
+      prompt: 'O que Reiniciar o jogo faz que Ir para o início não faz?',
+      choices: [
+        { id: 'tela', label: 'Só mostra a tela de início.' },
+        { id: 'reinicia', label: 'Limpa a pista para a partida nova começar do zero.' },
+      ],
+      correctChoiceId: 'reinicia',
       explanation:
-        'Recomeçar não é só trocar de tela. É devolver o jogo ao estado de partida nova, senão a nova rodada herda a anterior.',
+        'Trocar de tela não apaga nada. Se ninguém limpar a pista, a partida nova começa com os cactos da velha.',
     },
   },
   hitbox: {
     prediction: {
-      prompt: 'A batida acontece quando os DESENHOS se encostam?',
+      // ⚠️⚠️ Lote 5 do Raio-X: a cena abre com a área GRANDE, e a pergunta é sobre QUANDO aparece o
+      // BATEU com ela. Ids novos: a pergunta mudou de sentido.
+      prompt: 'Com esta área grande, quando vai aparecer BATEU?',
+      // ⚠️ A certa em PRIMEIRO aqui, pela régua do vaivém (`questions-order.test.ts`).
       choices: [
-        { id: 'area', label: 'Não, quando as áreas se encostam' },
-        { id: 'desenho', label: 'Sim, quando os desenhos se tocam' },
+        { id: 'antes', label: 'Antes de os desenhos se encostarem' },
+        {
+          id: 'desenhos',
+          label: 'Só quando os desenhos se encostarem',
+          shows: 'Apareceu BATEU com um vão entre os dois desenhos.',
+        },
       ],
-      correctChoiceId: 'area',
+      correctChoiceId: 'antes',
+      revealOn: 'contact',
     },
     explain: {
       prompt: 'O que o jogo usa para saber que houve batida?',
@@ -471,37 +663,51 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'area',
       explanation:
-        'O desenho é para os olhos; a área é para a conta. Mudar a área muda o instante da batida sem mudar nada do que se vê.',
+        'O desenho é para os olhos; a área é para a conta. Diminuir só a área deixa a batida justa, sem mudar o tamanho do Dino.',
     },
   },
   score: {
     prediction: {
-      prompt: 'Quando a partida acaba, os pontos somem?',
+      // ⚠️⚠️ Lote 5 do Raio-X: a pergunta é sobre o ERRO que a cena mostra primeiro (a peça solta
+      // soma até no início). Ids novos: a pergunta mudou de sentido.
+      prompt: 'Com Somar ponto solto, o placar cresce na tela de início?',
+      // ⚠️ A certa em PRIMEIRO aqui, pela régua do vaivém (`questions-order.test.ts`).
       choices: [
-        { id: 'ficam', label: 'Ficam parados no valor' },
-        { id: 'zeram', label: 'Voltam para zero na hora' },
+        { id: 'cresce-no-inicio', label: 'Sim, cresce até no início' },
+        {
+          id: 'espera',
+          label: 'Não, espera o jogo começar',
+          shows: 'Com a peça solta, o placar cresceu na tela de início.',
+        },
       ],
-      correctChoiceId: 'ficam',
+      correctChoiceId: 'cresce-no-inicio',
+      revealOn: 'score-idle-wrong',
     },
     explain: {
-      prompt: 'Por que os pontos param de subir fora da partida?',
+      prompt: 'Por que o placar parou no fim?',
       choices: [
-        { id: 'condicao', label: 'Porque a condição só deixa somar enquanto está jogando.' },
-        { id: 'apaga', label: 'Porque o jogo apaga o placar ao terminar.' },
+        { id: 'condicao', label: 'Porque Somar ponto só roda dentro de Se jogando.' },
+        { id: 'apaga', label: 'Porque o jogo apaga os pontos no fim.' },
       ],
       correctChoiceId: 'condicao',
-      explanation:
-        'O valor continua guardado. O que a condição controla é o momento de somar, não o de existir.',
+      explanation: 'O número continua guardado no fim. Se jogando só decide QUANDO somar.',
     },
   },
   lives: {
     prediction: {
-      prompt: 'Quando o Dino perde uma vida, o placar volta a zero?',
+      prompt: 'O Dino tem pontos e bate no cacto, com o fio da vida ligado. O que muda?',
       choices: [
-        { id: 'ficam', label: 'Não, os pontos ficam' },
-        { id: 'zeram', label: 'Sim, perde os dois' },
+        { id: 'vidas', label: 'Só as vidas' },
+        {
+          id: 'as-duas',
+          label: 'As vidas e o placar',
+          // ⚠️ "a batida não tirou ponto", e não "ficou igual": com o relógio andando, o placar pode
+          // subir no mesmo instante da batida.
+          shows: 'A batida não tirou nenhum ponto do placar.',
+        },
       ],
-      correctChoiceId: 'ficam',
+      correctChoiceId: 'vidas',
+      revealOn: 'points-stay',
     },
     explain: {
       prompt: 'Ponto e vida são a mesma contagem?',
@@ -516,18 +722,26 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   random: {
     prediction: {
-      prompt: 'Sorteando o lugar de nascimento, dois cactos podem nascer no mesmo ponto?',
+      // ⚠️⚠️ Lote 5 do Raio-X: a pergunta VOLTOU a ser a da repetição, porque agora o sorteio é de
+      // verdade e a régua mostra a marquinha "2×". Antes os exemplos fixos nunca repetiam, e a
+      // pergunta tinha sido trocada por uma que a tela conseguia responder. Ids novos.
+      prompt: 'Sorteando o lugar, dois cactos podem nascer no mesmo ponto?',
       choices: [
-        { id: 'podem', label: 'Podem sim' },
-        { id: 'nunca', label: 'Nunca, o sorteio evita repetir' },
+        {
+          id: 'nunca-repete',
+          label: 'Nunca, o sorteio evita repetir',
+          shows: 'Um lugar saiu de novo, e a marquinha dele ganhou 2×.',
+        },
+        { id: 'pode-repetir', label: 'Podem sim' },
       ],
-      correctChoiceId: 'podem',
+      correctChoiceId: 'pode-repetir',
+      revealOn: 'repeat',
     },
     explain: {
       prompt: 'O que o sorteio garante?',
       choices: [
-        { id: 'faixa', label: 'Um valor dentro dos limites que você escolheu.' },
         { id: 'diferente', label: 'Um valor diferente do anterior.' },
+        { id: 'faixa', label: 'Um valor dentro dos limites que você escolheu.' },
       ],
       correctChoiceId: 'faixa',
       explanation:
@@ -536,34 +750,50 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   acceleration: {
     prediction: {
-      prompt: 'Com um limite de velocidade, o jogo pode passar dele?',
+      // ⚠️ Sem "A base parou em −9" (review do lote 2): era a meta `base-limit` dita antes do gesto.
+      prompt: 'Com a condição Se velocidade > −9 ligada, um cacto novo ainda pode sair com −10?',
       choices: [
-        { id: 'sorteio', label: 'A base para, mas o sorteio pode passar' },
-        { id: 'nunca', label: 'Nunca passa' },
+        {
+          id: 'nunca',
+          label: 'Não, −9 é o limite',
+          shows: 'Com a base parada em −9, o sorteio tirou mais 1 e nasceu um cacto −10.',
+        },
+        { id: 'sorteio', label: 'Pode, se o sorteio tirar mais 1' },
       ],
       correctChoiceId: 'sorteio',
+      revealOn: 'variation-limit',
     },
     explain: {
-      prompt: 'O limite vale para o quê?',
+      // ⚠️ Lote 5 do Raio-X: a CONDIÇÃO do Estúdio, e não a "placa de limite".
+      prompt: 'A condição Se velocidade > −9 segura o quê?',
       choices: [
-        { id: 'base', label: 'Para a base que cresce, e não para o que é sorteado por cima dela.' },
-        { id: 'tudo', label: 'Para qualquer velocidade que apareça no jogo.' },
+        { id: 'tudo', label: 'Qualquer velocidade que aparece no jogo.' },
+        { id: 'base', label: 'Só a base, antes do sorteio.' },
       ],
       correctChoiceId: 'base',
+      // ⚠️ "A base SOBE até o teto" com um número que desce de −5 para −9.
       explanation:
-        'A base sobe até o teto e para lá. O sorteio acontece depois, somando por cima, então um cacto ainda pode sair mais rápido.',
+        'A base fica mais rápida até −9 e para. O sorteio vem depois e ainda pode tirar mais 1, por isso sai −10 às vezes.',
     },
   },
 
   /* ── O núcleo do Iniciante 2D ────────────────────────────────────────────────────────────── */
   velocity: {
     prediction: {
-      prompt: 'Com a velocidade em ZERO e o relógio andando, o Dino sai do lugar?',
+      // ⚠️ A previsão do zero ficava fora do assunto nas demonstrações do número NEGATIVO (Aulas 5
+      // e 12), e a frase embaixo do palco respondia ("a velocidade é zero").
+      prompt: 'Com a velocidade para o lado em −5, para que lado o Dino vai?',
       choices: [
-        { id: 'fica', label: 'O Dino fica parado' },
-        { id: 'anda', label: 'Anda devagarinho' },
+        { id: 'esquerda', label: 'Para a esquerda' },
+        {
+          id: 'direita',
+          label: 'Para a direita',
+          // ⚠️ "com o número negativo", e não "com −5": a instrução deixa a criança escolher o número.
+          shows: 'Com o número negativo, o x diminuiu e o Dino foi para a esquerda.',
+        },
       ],
-      correctChoiceId: 'fica',
+      correctChoiceId: 'esquerda',
+      revealOn: 'left',
     },
     explain: {
       prompt: 'O que a velocidade faz em cada quadro?',
@@ -578,41 +808,60 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   'hold-vs-press': {
     prediction: {
-      prompt: 'Segurando a tecla, a raquete anda mais do que apertando uma vez?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): sobre COMO a raquete de cima anda com a tecla segurada, e não sobre
+      // quanto anda ("anda mais?" dependia de quantas vezes ela apertava). Ids novos: mudou de sentido.
+      prompt: 'Você vai segurar a tecla e contar até três. O que a raquete de cima faz?',
       choices: [
-        { id: 'mais', label: 'Anda mais' },
-        { id: 'igual', label: 'Anda o mesmo' },
+        { id: 'um-passo', label: 'Dá um passo só' },
+        {
+          id: 'anda-junto',
+          label: 'Anda o tempo todo, igual à de baixo',
+          shows: 'Com a tecla segurada, a de cima deu um passo só e a de baixo continuou andando.',
+        },
       ],
-      correctChoiceId: 'mais',
+      correctChoiceId: 'um-passo',
+      revealOn: 'while-held',
     },
     explain: {
-      prompt: 'Qual é a diferença entre apertar e segurar?',
+      prompt: 'Por que as duas raquetes pararam em lugares diferentes?',
       choices: [
+        { id: 'rapida', label: 'A raquete de baixo é mais rápida.' },
         {
           id: 'tipo',
-          label: 'Apertar é um acontecimento; segurar é uma pergunta feita a cada quadro.',
+          label:
+            'A de cima escuta o momento do aperto. A de baixo pergunta em todo quadro se a tecla está apertada.',
         },
-        { id: 'forca', label: 'Segurar manda um comando mais forte.' },
       ],
       correctChoiceId: 'tipo',
       explanation:
-        'O aperto vale uma vez, no instante. O segurar é respondido de novo em cada quadro, e por isso continua andando.',
+        'O aperto acontece uma vez só. A pergunta "está apertada?" é feita de novo em todo quadro, e por isso a de baixo anda enquanto você segura.',
     },
   },
   variable: {
     prediction: {
-      prompt: 'Mudar o número guardado com a tela desligada muda alguma coisa?',
+      // ⚠️ "com a tela desligada" era a metáfora errada: quem fica desligado é o MOSTRAR.
+      // ⚠️⚠️ Lote 5 do Raio-X: os números do jogo do Desafio (a caixa nasce com 0 e cada acerto soma
+      // 1). Ids novos: a pergunta mudou de números.
+      // ⚠️⚠️ UM acerto, e não três (consertos do review da onda A do lote 5): o `revealOn` é
+      // `changed-hidden`, que cai no PRIMEIRO "somar", e o palpite "três acertos… 3" voltava com a caixa
+      // em 1. A pergunta fica exata no instante da revelação. `zero` é a mesma crença; `um` é id novo.
+      prompt: 'A caixa guarda 0. Um acerto soma 1, sem Mostrar placar. Quanto a caixa guarda?',
       choices: [
-        { id: 'muda', label: 'Muda o valor, mas ninguém vê' },
-        { id: 'nada', label: 'Não muda nada' },
+        {
+          id: 'zero',
+          label: '0, porque ninguém viu',
+          shows: 'O número da caixa mudou, mesmo sem aparecer na tela.',
+        },
+        { id: 'um', label: '1' },
       ],
-      correctChoiceId: 'muda',
+      correctChoiceId: 'um',
+      revealOn: 'changed-hidden',
     },
     explain: {
       prompt: 'Guardar, mudar e mostrar são quantas coisas?',
       choices: [
-        { id: 'tres', label: 'Três coisas diferentes.' },
         { id: 'uma', label: 'Uma só, feita em três passos.' },
+        { id: 'tres', label: 'Três coisas diferentes.' },
       ],
       correctChoiceId: 'tres',
       explanation:
@@ -621,52 +870,87 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   'group-loop': {
     prediction: {
-      prompt: 'Para achar o mais perto, quantos do grupo é preciso olhar?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): as distâncias são parecidas e ficam escondidas até medir, então
+      // "o primeiro já serve" deixa de ser óbvio de descartar.
+      prompt:
+        'Os cactos parecem estar à mesma distância da torre. Dá para achar o mais perto medindo um cacto só?',
       choices: [
-        { id: 'todos', label: 'Todos' },
-        { id: 'primeiro', label: 'O primeiro já serve' },
+        {
+          id: 'primeiro',
+          label: 'Sim, medir um já basta',
+          shows: 'Os três números eram parecidos, e só comparando os três deu para achar o menor.',
+        },
+        { id: 'todos', label: 'Não, é preciso medir o grupo inteiro' },
       ],
       correctChoiceId: 'todos',
+      revealOn: 'nearest',
     },
     explain: {
       prompt: 'O que o laço faz?',
       choices: [
+        // ⚠️ "Sabe de antemão qual é o mais perto" era espantalho; o atalho de verdade é parar no
+        // primeiro.
+        { id: 'primeiro', label: 'Olha só o primeiro cacto do grupo e para.' },
         { id: 'percorre', label: 'Passa por todos do grupo para poder comparar.' },
-        { id: 'sabe', label: 'Sabe de antemão qual é o mais perto.' },
       ],
       correctChoiceId: 'percorre',
       explanation:
-        'Não dá para escolher o menor sem ver todos. O laço é justamente o que percorre o grupo antes de decidir.',
+        'Não dá para escolher o menor sem ver todos. O laço mede o grupo inteiro em todo quadro, e por isso a escolha muda quando outro chega mais perto.',
     },
   },
   'enemy-type': {
     prediction: {
-      prompt: 'Mudando a ficha do tipo, o que acontece com os que já nasceram?',
+      // ⚠️ "cada cacto que já nasceu" (review do lote 2): "os três" e "todos" não passam pelo elenco.
+      prompt:
+        'Três cactos já estão andando. Você muda a velocidade na ficha. O que acontece com cada cacto que já nasceu?',
       choices: [
-        { id: 'todos', label: 'Todos mudam juntos' },
-        { id: 'novos', label: 'Só os próximos mudam' },
+        {
+          id: 'novos',
+          label: 'Só muda quem nascer depois',
+          // ⚠️ "mudou junto com a ficha" (consertos do review da onda B do lote 5): o palpite também volta
+          // quando a criança muda só a VIDA, e "passou a andar com o número novo" era falso ali.
+          shows: 'Cada cacto que já andava mudou junto com a ficha, no mesmo quadro.',
+        },
+        { id: 'todos', label: 'Todo cacto que já nasceu muda junto' },
       ],
       correctChoiceId: 'todos',
+      revealOn: 'all-change',
     },
     explain: {
-      prompt: 'Onde ficam as características dos inimigos?',
+      // ⚠️⚠️ Pergunta pela DIFERENÇA (consertos do review da onda B do lote 5, T3). A chave da cópia só
+      // abre depois de `all-change`, então `copied` é sempre a última meta e a pergunta chega com a cópia
+      // LIGADA: "Por que cada cacto mudou junto com a ficha?" tinha na tela a resposta errada ("guarda a
+      // própria cópia"). Ids novos: a pergunta mudou de sentido.
+      prompt: 'Qual é a diferença entre ler a ficha e copiar a ficha ao nascer?',
       choices: [
-        { id: 'ficha', label: 'Numa ficha só, que todos leem.' },
-        { id: 'cada', label: 'Dentro de cada inimigo, uma cópia por cabeça.' },
+        {
+          id: 'muda-junto',
+          label:
+            'Quem lê a ficha muda junto com ela. Quem copiou ao nascer fica com o número de quando nasceu.',
+        },
+        { id: 'mais-rapido', label: 'Quem copiou ao nascer anda mais rápido que os outros.' },
       ],
-      correctChoiceId: 'ficha',
+      correctChoiceId: 'muda-junto',
+      // ⚠️⚠️ Lote 5 do Raio-X: as DUAS regras, e a ponte com a `acceleration` do Corre Dino, em que os
+      // cactos que já andavam guardam a velocidade que receberam.
       explanation:
-        'Eles não guardam os próprios números: consultam a mesma ficha. Por isso um valor trocado muda o grupo inteiro.',
+        'Os números moram na ficha, e quem lê a ficha em todo quadro vê o número novo. Quem copia ao nascer guarda o número daquele instante, como na aceleração do Corre Dino.',
     },
   },
   camera: {
     prediction: {
-      prompt: 'Quando o Dino anda para longe, a tela fica parada ou vai junto?',
+      prompt:
+        'A câmera está parada. O Dino anda até a bandeira, lá no fim do mundo. Onde o Dino aparece na tela?',
       choices: [
-        { id: 'sai', label: 'A tela fica parada e o Dino some' },
-        { id: 'junto', label: 'A tela vai junto sozinha' },
+        { id: 'fora', label: 'Fora da tela' },
+        {
+          id: 'meio',
+          label: 'No meio da tela',
+          shows: 'Sem a câmera, o Dino saiu da tela, e só a seta mostrou para onde foi.',
+        },
       ],
-      correctChoiceId: 'sai',
+      correctChoiceId: 'fora',
+      revealOn: 'lost',
     },
     explain: {
       prompt: 'O que a câmera é, dentro do jogo?',
@@ -681,177 +965,260 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   contact: {
     prediction: {
-      prompt: 'O Dino encosta no cacto e não sai do lugar. Quantas vidas o Dino perde?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): corações, e a regra de CIMA nomeada ("está encostando?"): as duas
+      // pistas ficam à vista durante o palpite.
+      prompt:
+        'O cacto encosta e fica parado ali. Com a regra "está encostando?", quantos corações o Dino perde?',
       choices: [
-        { id: 'muitas', label: 'Vai perdendo sem parar' },
-        { id: 'uma', label: 'Uma só' },
+        { id: 'muitas', label: 'Um a cada quadro, sem parar' },
+        {
+          id: 'uma',
+          label: 'Um só',
+          shows: 'Na pista de cima, saiu um coração a cada quadro.',
+        },
       ],
       correctChoiceId: 'muitas',
+      revealOn: 'drain',
     },
     explain: {
-      prompt: 'Qual é a diferença entre as duas perguntas do jogo?',
+      prompt: 'Qual é a diferença entre as duas regras do jogo?',
       choices: [
         {
           id: 'quando',
-          label: '"Está encostando?" vale em todo quadro; "acabou de encostar" vale no instante.',
+          label:
+            '"Está encostando?" é respondida em todo quadro. "Começar a encostar" só no instante em que encosta.',
         },
-        { id: 'forte', label: 'Uma delas é mais precisa que a outra.' },
+        // ⚠️ "Uma delas é mais precisa" ninguém escolhe. O erro típico é ligar o acontecimento à
+        // velocidade de quem chega.
+        { id: 'rapido', label: '"Começar a encostar" só funciona se o cacto vier rápido.' },
       ],
       correctChoiceId: 'quando',
       explanation:
-        'A contínua é respondida sempre, então cobra sempre. O acontecimento dispara uma vez, e só volta a valer depois de afastar.',
+        'A pergunta "está encostando?" é feita em todo quadro, então cobra em todo quadro. "Começar a encostar" acontece uma vez, e só volta a valer depois de afastar.',
     },
   },
   cooldown: {
     prediction: {
-      prompt: 'Com recarga ligada, apertar rápido três vezes dá três tiros?',
+      prompt:
+        'A recarga é de 1 segundo. Você aperta Atirar três vezes bem rápido. Quantos tiros saem?',
       choices: [
-        { id: 'nao', label: 'Não, alguns não saem' },
-        { id: 'sim', label: 'Sim, os três saem' },
+        {
+          id: 'tres',
+          label: 'Os três, um atrás do outro',
+          // ⚠️ "o aperto seguinte": o palpite volta na PRIMEIRA recusa, com um aperto só recusado.
+          shows: 'Saiu 1 tiro, e o aperto seguinte não virou tiro.',
+        },
+        { id: 'um', label: 'Só um' },
       ],
-      correctChoiceId: 'nao',
+      correctChoiceId: 'um',
+      revealOn: 'waiting',
     },
     explain: {
       prompt: 'Para que serve a recarga?',
       choices: [
-        { id: 'espera', label: 'Para fazer o jogo ESPERAR entre um tiro e o outro.' },
         { id: 'forca', label: 'Para deixar o tiro mais forte.' },
+        { id: 'espera', label: 'Para fazer o jogo ESPERAR entre um tiro e o outro.' },
       ],
       correctChoiceId: 'espera',
       explanation:
-        'O relógio não serve só para repetir: ele também segura. O pedido feito durante a espera simplesmente não vira tiro.',
+        'Durante a recarga, o aperto não vira tiro e não fica guardado para depois. É assim que o jogo faz o tiro esperar a vez.',
     },
   },
   aim: {
     prediction: {
-      prompt: 'Movendo o alvo, o tiro passa a ir atrás dele sozinho?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): sobre o CAMINHO do tiro com a mira desligada. Ids novos: mudou de
+      // sentido (antes: "o tiro passa a ir atrás do alvo sozinho?").
+      prompt: 'O alvo está lá embaixo e a mira está desligada. Para onde vai o tiro?',
       choices: [
-        { id: 'mira', label: 'Só se a mira estiver ligada' },
-        { id: 'sempre', label: 'Sim, sempre' },
+        {
+          id: 'alvo',
+          label: 'Direto no alvo',
+          shows: 'Sem a mira, o tiro foi reto e passou longe do alvo.',
+        },
+        { id: 'reto', label: 'Reto para a frente' },
       ],
-      correctChoiceId: 'mira',
+      correctChoiceId: 'reto',
+      revealOn: 'straight-miss',
     },
     explain: {
-      prompt: 'O que é apontar, para o jogo?',
+      // ⚠️ A errada antiga ("virar o desenho na direção do alvo") é o que faz o bloco "Apontar o
+      // sprite para…" do Jogo 2D: a pergunta marcava como erro um bloco que a criança vai usar.
+      prompt: 'O que a mira usa para o tiro acertar?',
       choices: [
-        { id: 'seta', label: 'Uma seta que vai de quem atira até o alvo.' },
-        { id: 'olhar', label: 'Virar o desenho na direção do alvo.' },
+        { id: 'seta', label: 'A direção de quem atira até o alvo.' },
+        { id: 'distancia', label: 'A distância até o alvo.' },
       ],
       correctChoiceId: 'seta',
       explanation:
-        'A mira calcula a direção entre dois pontos. É essa seta que o tiro segue, e sem ela ele sai sempre para o mesmo lado.',
+        'A mira acha a seta entre dois pontos, e o tiro anda por ela. O bloco "Apontar o sprite para…" usa essa mesma seta para virar o desenho.',
     },
   },
   diagonal: {
     prediction: {
-      prompt: 'Apertando duas setas juntas, o Dino anda mais do que apertando uma?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): sobre ONDE o Dino para, com o círculo do reto no palco. Ids novos.
+      prompt: 'Com direita e baixo apertadas, onde o Dino para depois de 1 segundo?',
       choices: [
-        { id: 'mais', label: 'Anda mais' },
-        { id: 'igual', label: 'Anda o mesmo' },
+        { id: 'fora', label: 'Fora do círculo' },
+        {
+          id: 'circulo',
+          label: 'Em cima do círculo, igual ao reto',
+          shows: 'Na diagonal, o Dino passou do círculo.',
+        },
       ],
-      correctChoiceId: 'mais',
+      correctChoiceId: 'fora',
+      revealOn: 'faster',
     },
     explain: {
-      prompt: 'Por que a diagonal corre mais?',
+      prompt: 'Por que a diagonal passou do círculo?',
       choices: [
-        { id: 'soma', label: 'Porque os dois passos se somam no mesmo quadro.' },
-        { id: 'curto', label: 'Porque o caminho na diagonal é mais curto.' },
+        { id: 'baixo', label: 'Porque a seta de baixo é mais rápida.' },
+        { id: 'soma', label: 'Porque o Dino andou para o lado e para baixo ao mesmo tempo.' },
       ],
       correctChoiceId: 'soma',
       explanation:
-        'Apertar duas setas manda dois movimentos de uma vez. A correção existe para os dois caminhos andarem igual.',
+        'Os dois movimentos juntos fazem um caminho mais comprido, quase uma vez e meia o reto. A correção encurta cada passo. No Estúdio, o bloco "Mover sprite em 4 direções com setas" já faz essa correção.',
     },
   },
   tilemap: {
     prediction: {
-      prompt: 'Trocando uma letra do mapa escrito, o desenho muda?',
+      // ⚠️⚠️ Lote 5 do Raio-X (G5): um caso NOVO para ler, com a meta que o mostra (`coin-row`). A legenda
+      // do palco diz que "o" é moeda: a pergunta é ONDE as moedas aparecem, no ar ou caídas no chão.
+      // Ids novos: a pergunta mudou de sentido.
+      prompt: 'Se uma linha do meio virar ...ooo...., o que aparece no desenho?',
       choices: [
-        { id: 'muda', label: 'Muda na hora' },
-        { id: 'nao', label: 'Não, o desenho é separado' },
+        { id: 'no-ar', label: 'Três moedas no ar, na mesma linha' },
+        {
+          id: 'no-chao',
+          label: 'Três moedas caídas no chão',
+          shows: 'As moedas ficaram na linha em que foram escritas, no ar.',
+        },
       ],
-      correctChoiceId: 'muda',
+      correctChoiceId: 'no-ar',
+      revealOn: 'coin-row',
     },
     explain: {
       prompt: 'O que o mapa do jogo é, na verdade?',
       choices: [
-        { id: 'dado', label: 'Um dado: letras que o jogo lê e transforma em desenho.' },
         { id: 'imagem', label: 'Uma imagem grande, desenhada de uma vez.' },
+        // ⚠️ "Um dado": para quem tem 9 anos, dado é o de jogar.
+        { id: 'dado', label: 'Um texto: letras que o jogo lê e transforma em peças.' },
       ],
       correctChoiceId: 'dado',
       explanation:
-        'Cada letra vale uma coisa, sempre a mesma. Por isso escrever o mapa é construir a fase, e a mesma letra dá sempre o mesmo bloco.',
+        'Cada letra vale uma peça, sempre a mesma, e fica no lugar em que foi escrita. Por isso escrever o mapa é construir a fase.',
     },
   },
 
   /* ── O motor, o 3D e o ateliê ────────────────────────────────────────────────────────────── */
   pool: {
     prediction: {
-      prompt: 'O contador de "criados desde o começo" pode diminuir?',
+      // ⚠️ "O contador pode diminuir?" repetia o título da cena ("O contador que só sobe").
+      // ⚠️⚠️ 3, e não 5 (review do lote 2): a meta que responde cai com três fabricados, e o palpite
+      // "5, um novo para cada vez" voltava com 3 na tela. Id novo: o número mudou.
+      // ⚠️ "fabricou" (lote 5 do Raio-X), a palavra da faixa ("fabricados desde o começo"). Mesmo
+      // sentido, mesmos ids.
+      prompt:
+        'Na tela só cabe um cacto por vez. Depois de 3 cactos passarem, quantos o jogo fabricou?',
       choices: [
-        { id: 'nunca', label: 'Nunca, ele só sobe' },
-        { id: 'some', label: 'Diminui quando alguém some' },
+        {
+          id: 'um',
+          label: 'Só 1, o que está na tela',
+          shows: 'Cada cacto que entrou chegou com um número novo pintado.',
+        },
+        { id: 'tres', label: '3, um novo para cada vez' },
       ],
-      correctChoiceId: 'nunca',
+      correctChoiceId: 'tres',
+      revealOn: 'grows',
     },
     explain: {
       prompt: 'O que a reciclagem muda?',
       choices: [
-        { id: 'reaproveita', label: 'Reaproveita o mesmo corpo em vez de criar outro.' },
-        { id: 'apaga', label: 'Apaga da conta os que já sumiram.' },
+        { id: 'apaga', label: 'Apaga da conta os que já saíram.' },
+        { id: 'reaproveita', label: 'Usa de novo o cacto que saiu, em vez de fabricar outro.' },
       ],
       correctChoiceId: 'reaproveita',
       explanation:
-        'Um conta quem existe agora, o outro conta quanto já foi feito. Reciclando, o segundo para de crescer porque nada novo é criado.',
+        'Um número conta quem está na tela agora. O outro conta quantos o jogo já fabricou. Reciclando, o jogo não fabrica mais nenhum: usa de novo o que saiu.',
     },
   },
   'entity-state': {
     prediction: {
-      prompt: 'Mudando o estado de um personagem, os outros dois mudam junto?',
+      // ⚠️ Lote 5 do Raio-X: as TORRES, e o ▶ que a bancada tem.
+      prompt:
+        'As três torres são iguais e estão paradas. Você manda SÓ a 1ª atirar e aperta ▶. O que as outras duas fazem?',
       choices: [
-        { id: 'nao', label: 'Não, cada um tem o seu' },
-        { id: 'sim', label: 'Sim, o estado é do jogo' },
+        { id: 'parados', label: 'Continuam paradas' },
+        // ⚠️⚠️ Verdade em QUALQUER caminho (review do lote 2): pela instrução, as torres mudam de estado
+        // antes do relógio, e "só a 1ª mudou de estado" ficava falso.
+        {
+          id: 'atiram',
+          label: 'Atiram também',
+          shows: 'Só a torre que estava atirando soltou tiro.',
+        },
       ],
-      correctChoiceId: 'nao',
+      correctChoiceId: 'parados',
+      revealOn: 'acts',
     },
     explain: {
-      prompt: 'De quem é o estado?',
+      // ⚠️⚠️ Pela DIFERENÇA, e não por onde a chave parou (consertos do review da onda B do lote 5). A
+      // última descoberta é o contraste (`shared`), então a cena conclui com "O estado mora: no jogo" e
+      // as três torres iguais, e "Onde o estado de cada torre mora?" tinha o distrator "No jogo inteiro"
+      // à vista na tela. A pergunta cita o caso de cada torre, e a explicação, os DOIS lados. Mesmo
+      // sentido, mesmos ids.
+      prompt: 'Com o estado em cada torre, mudar só a 2ª não mexeu na 1ª. Por quê?',
       choices: [
-        { id: 'cada', label: 'De cada personagem, um por um.' },
-        { id: 'jogo', label: 'Do jogo inteiro, valendo para todos.' },
+        { id: 'cada', label: 'Cada torre guarda o próprio estado.' },
+        { id: 'jogo', label: 'O jogo guarda um estado só para as três.' },
       ],
       correctChoiceId: 'cada',
       explanation:
-        'Cada um carrega o próprio estado, e é ele que decide o que aquele personagem faz agora. Por isso um pode mirar enquanto o outro recarrega.',
+        'Cada torre guarda o próprio estado, e é esse estado que decide o que a torre faz agora. Com o estado no jogo, mudar uma muda as três.',
     },
   },
   'delta-time': {
     prediction: {
-      prompt: 'O mesmo jogo, num computador rápido e num devagar. Eles andam igual?',
+      // ⚠️ A certa antiga ("depende do que o jogo conta") era o nome do controle, não um palpite.
+      // ⚠️ Lote 5 do Raio-X: uma CORRIDA com chegada, e o passo dito na pergunta.
+      prompt:
+        'O mesmo jogo num computador rápido e num devagar. O Dino dá um passo a cada quadro desenhado. Quem chega primeiro?',
       choices: [
-        { id: 'contando', label: 'Depende do que o jogo conta' },
-        { id: 'sempre', label: 'Sempre igual' },
+        { id: 'rapido', label: 'O do computador rápido' },
+        {
+          id: 'juntos',
+          label: 'Chegam juntos, é o mesmo jogo',
+          shows: 'Andando a cada quadro, o computador rápido foi mais longe.',
+        },
       ],
-      correctChoiceId: 'contando',
+      correctChoiceId: 'rapido',
+      revealOn: 'apart',
     },
     explain: {
-      prompt: 'O que o jogo deve contar para ficar igual em qualquer máquina?',
+      prompt: 'Como o Dino deve andar para o jogo ficar igual em qualquer computador?',
       choices: [
-        { id: 'tempo', label: 'O tempo que passou.' },
-        { id: 'quadros', label: 'Os quadros que desenhou.' },
+        { id: 'tempo', label: 'Um tanto a cada segundo.' },
+        { id: 'quadros', label: 'Um tanto a cada quadro desenhado.' },
       ],
       correctChoiceId: 'tempo',
       explanation:
-        'Quadro não é tempo: a máquina rápida faz mais quadros no mesmo segundo. Medindo em segundos, as duas andam o mesmo.',
+        'O computador rápido desenha mais quadros no mesmo segundo. Andando um tanto por quadro, o Dino do rápido vai mais longe. Andando um tanto por segundo, os dois chegam juntos.',
     },
   },
   'circle-collision': {
     prediction: {
-      prompt: 'Dois círculos se tocam quando os DESENHOS parecem encostar?',
+      // ⚠️ "Os DESENHOS parecem encostar?" era falso neste palco: os desenhos SÃO os círculos da
+      // conta. Um palpite com números sobe um degrau em relação à `hitbox`.
+      prompt:
+        'Os centros estão a 70 de distância, e cada raio mede 30. Os dois círculos já bateram?',
       choices: [
-        { id: 'conta', label: 'Quando a conta diz que encostaram' },
-        { id: 'olho', label: 'Quando parecem encostados' },
+        { id: 'nao', label: 'Ainda não bateram' },
+        {
+          id: 'sim',
+          label: 'Já bateram, estão bem pertinho',
+          shows: 'Com os raios 30 e 30, o "bateu" só apareceu quando a distância chegou em 60.',
+        },
       ],
-      correctChoiceId: 'conta',
+      correctChoiceId: 'nao',
+      revealOn: 'touch',
     },
     explain: {
       prompt: 'Qual é a conta da batida entre dois círculos?',
@@ -861,83 +1228,104 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'soma',
       explanation:
-        'Se a distância entre os centros for menor que a soma dos raios, eles se tocam. Mudar um raio muda o instante, sem mover ninguém.',
+        'Some os dois raios. Se a distância entre os centros for igual ou menor que essa soma, os dois batem. Mudar um raio muda a resposta sem mover ninguém.',
     },
   },
   'axis-z': {
     prediction: {
       prompt: 'No 3D, aumentar o y leva o objeto para onde?',
       choices: [
+        {
+          id: 'baixo',
+          label: 'Para baixo, como no jogo 2D',
+          shows: 'Com o y maior, o cubo subiu.',
+        },
         { id: 'cima', label: 'Para cima' },
-        { id: 'baixo', label: 'Para baixo, como na tela' },
       ],
       correctChoiceId: 'cima',
+      revealOn: 'up',
     },
     explain: {
       prompt: 'O que o terceiro eixo acrescenta?',
       choices: [
-        { id: 'fundo', label: 'A profundidade: perto e longe.' },
         { id: 'altura', label: 'A altura, que a tela não tinha.' },
+        { id: 'fundo', label: 'A frente e o fundo: perto e longe.' },
       ],
       correctChoiceId: 'fundo',
       explanation:
-        'O z é o quanto para o fundo. E atenção: aqui o y cresce para CIMA, ao contrário da tela do jogo 2D.',
+        'O z diz o quanto para a frente ou para o fundo. E atenção: aqui o y cresce para CIMA, ao contrário do jogo 2D.',
     },
   },
   'camera-3d': {
     prediction: {
-      prompt: 'Girando a câmera em volta do cubo, quantas cores dá para ver de uma vez?',
+      prompt: 'Com a câmera bem de frente para o cubo, quantas cores você vê?',
       choices: [
-        { id: 'varia', label: 'Varia conforme a posição' },
-        { id: 'tres', label: 'Sempre as três' },
+        {
+          id: 'tres',
+          label: 'Três, como no desenho de um cubo',
+          shows: 'De frente, apareceu uma cor só.',
+        },
+        { id: 'uma', label: 'Uma' },
       ],
-      correctChoiceId: 'varia',
+      correctChoiceId: 'uma',
+      revealOn: 'one-face',
     },
     explain: {
       prompt: 'O que decide o que aparece na tela do 3D?',
       choices: [
-        { id: 'camera', label: 'De onde a câmera está olhando.' },
         { id: 'objeto', label: 'O tamanho do objeto.' },
+        { id: 'camera', label: 'De onde a câmera está olhando.' },
       ],
       correctChoiceId: 'camera',
       explanation:
-        'O cubo não mudou em nenhum momento. Quem mudou foi o ponto de vista, e é ele que decide quantas faces aparecem.',
+        'O cubo não mudou nenhuma vez. Quem mudou foi o lugar da câmera, e é esse lugar que decide quantos lados aparecem.',
     },
   },
   mesh: {
     prediction: {
-      prompt: 'Por baixo da cor, do que um modelo 3D é feito?',
+      prompt: 'Embaixo da pele colorida, do que um modelo 3D é feito?',
       choices: [
-        { id: 'pontos', label: 'Pontos ligados por linhas' },
-        { id: 'macico', label: 'Um bloco maciço, cheio por dentro' },
+        {
+          id: 'macico',
+          label: 'Um bloco cheio por dentro, como massinha',
+          // ⚠️ Sem "transparente" (consertos do review da onda B do lote 5): a revelação também volta para
+          // quem tirou a pele inteira.
+          shows: 'Embaixo da pele apareceram pontos e linhas, e nada cheio por dentro.',
+        },
+        { id: 'pontos', label: 'Pontos ligados por linhas, formando faces' },
       ],
       correctChoiceId: 'pontos',
+      revealOn: 'points',
     },
     explain: {
-      prompt: 'O que a textura é, num modelo 3D?',
+      prompt: 'O que a pele é, num modelo 3D?',
       choices: [
-        { id: 'roupa', label: 'A roupa que cobre os pontos ligados.' },
+        { id: 'roupa', label: 'A cor pintada por cima das faces.' },
         { id: 'forma', label: 'A forma do modelo.' },
       ],
       correctChoiceId: 'roupa',
       explanation:
-        'A forma vem dos pontos e das linhas, e eles continuam lá o tempo todo. A textura só pinta a superfície por cima.',
+        'A forma vem dos pontos e das linhas. A pele só pinta as faces por cima: dá para trocar a pele sem mudar a forma.',
     },
   },
   'pick-ray': {
     prediction: {
       prompt: 'Mirando onde uma caixa cobre a outra, qual delas acende?',
       choices: [
-        { id: 'frente', label: 'A da frente' },
-        { id: 'duas', label: 'As duas' },
+        { id: 'frente', label: 'A que está mais perto de você' },
+        // ⚠️ Lote 5 do Raio-X: a caixa da frente passou a ser a MENOR, e "a maior" virou um erro que o
+        // palco desmente.
+        { id: 'maior', label: 'A maior das duas', shows: 'Acendeu a caixa menor, a mais perto.' },
+        { id: 'duas', label: 'As duas', shows: 'Só uma caixa acendeu.' },
       ],
       correctChoiceId: 'frente',
+      revealOn: 'first',
     },
     explain: {
       prompt: 'O que acontece com a reta da mira?',
       choices: [
-        { id: 'para', label: 'Ela sai da câmera e para na primeira coisa do caminho.' },
-        { id: 'atravessa', label: 'Ela atravessa tudo e escolhe a maior.' },
+        { id: 'atravessa', label: 'Ela atravessa e acende todas do caminho.' },
+        { id: 'para', label: 'Ela sai do seu olho e para na primeira coisa do caminho.' },
       ],
       correctChoiceId: 'para',
       explanation:
@@ -946,42 +1334,55 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   'fill-stroke': {
     prediction: {
-      prompt: 'Tirando a linha de fora, ainda sobra desenho?',
+      // ⚠️ Lote 5: com as palavras do Pinta (Contorno, Sem cor, Preenchimento). Mesmo sentido, mesmos ids.
+      prompt: 'Com o contorno em Sem cor, ainda sobra desenho?',
       choices: [
-        { id: 'sobra', label: 'Sobra o miolo pintado' },
-        { id: 'some', label: 'Some tudo' },
+        {
+          id: 'some',
+          label: 'Some tudo',
+          shows: 'Com o contorno em Sem cor, o preenchimento continuou pintado.',
+        },
+        { id: 'sobra', label: 'Sobra o preenchimento' },
       ],
       correctChoiceId: 'sobra',
+      revealOn: 'only-fill',
     },
     explain: {
-      prompt: 'Quantos desenhos há na mesma forma?',
+      prompt: 'A pedra de vetor tem quantas partes com cor própria?',
       choices: [
-        { id: 'dois', label: 'Dois: o miolo e o contorno.' },
-        { id: 'um', label: 'Um só, com uma borda.' },
+        { id: 'dois', label: 'Duas: o preenchimento e o contorno.' },
+        { id: 'um', label: 'Uma só, com uma borda.' },
       ],
       correctChoiceId: 'dois',
       explanation:
-        'Preencher e contornar são duas coisas feitas no mesmo traço. Cada uma existe sem a outra, e a forma continua a mesma.',
+        'O preenchimento pinta por dentro e o contorno pinta a borda. Cada um pode ficar em Sem cor, e a forma continua a mesma.',
     },
   },
   shading: {
     prediction: {
-      prompt: 'O que faz uma forma chapada parecer redonda?',
+      // ⚠️ Lote 5: os TRÊS tons da família do azul. Mesmo sentido, mesmos ids.
+      prompt: 'O que faz a bola chapada parecer redonda?',
       choices: [
-        { id: 'sombra', label: 'Uma segunda cor, mais escura de um lado' },
-        { id: 'contorno', label: 'Um contorno mais grosso' },
+        { id: 'sombra', label: 'Um tom mais escuro de um lado e um mais claro do outro' },
+        {
+          id: 'contorno',
+          label: 'Um contorno mais grosso',
+          // ⚠️ Sem "deu volume": é o rótulo da meta, a conclusão.
+          shows: 'Nenhum contorno apareceu. Surgiram um azul mais escuro e um azul mais claro.',
+        },
       ],
       correctChoiceId: 'sombra',
+      revealOn: 'volume',
     },
     explain: {
       prompt: 'De que lado fica a sombra?',
       choices: [
-        { id: 'contrario', label: 'Do lado contrário ao da luz.' },
+        { id: 'contrario', label: 'Do lado contrário ao do sol.' },
         { id: 'baixo', label: 'Sempre embaixo.' },
       ],
       correctChoiceId: 'contrario',
       explanation:
-        'A luz bate de um lado e o outro fica escuro. É esse par de cores que faz o olho ver volume onde só há desenho plano.',
+        'O sol clareia um lado e o outro fica mais escuro. Esses tons da mesma cor fazem o olho ver volume onde só há desenho plano.',
     },
   },
 }

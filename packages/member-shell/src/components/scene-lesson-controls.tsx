@@ -3,11 +3,13 @@
 import type { SceneAction, SceneCast, SceneId, SceneState } from '@sistemazero/core/learning/scene'
 import { castText, SCENE_LIMITS } from '@sistemazero/core/learning/scene'
 import { Ear } from 'lucide-react'
-import { useState } from 'react'
 import { SceneButton } from './exploration-stage'
+import { AtelieSceneControls } from './scene-atelie-controls'
 import { Escolha, Medida } from './scene-bench'
 import { CoreSceneControls } from './scene-core-controls'
-import { EngineSceneControls } from './scene-engine-controls'
+import { DinoNumbersControls } from './scene-dino-numbers-controls'
+import { MotorSceneControls } from './scene-motor-controls'
+import { NucleoSceneControls } from './scene-nucleo-controls'
 
 /**
  * A BANCADA das cenas de aula: os controles de cada cena, fora do player.
@@ -16,8 +18,9 @@ import { EngineSceneControls } from './scene-engine-controls'
  * inteiro — sessão, gravação, previsão, pergunta anexa, rodapé. O arquivo passava de 1.900
  * linhas e ninguém o lia inteiro: foi assim que a caixa de botões vazia sobreviveu a quatro
  * revisões e que `stage-size` ficou com um "Um passo" que não fazia nada. As outras vinte e uma
- * cenas já tinham bancada própria (`scene-core-controls`, `scene-engine-controls`); estas eram
- * as que faltavam.
+ * cenas já tinham bancada própria (`scene-core-controls` e a do motor); estas eram as que
+ * faltavam. ⚠️ Lote 5 do Raio-X: as do ateliê moram no `scene-atelie-controls` (G4), e o
+ * `scene-engine-controls` acabou.
  *
  * ⚠⚠ **A bancada recebe o ELENCO**, pela mesma razão que o palco: os rótulos dos controles são
  * texto que a criança lê, e ela lê os dois na MESMA tela. Sem isto uma turma de nave via
@@ -32,7 +35,9 @@ export function LessonSceneControls({
   dispatch,
   cast,
   goals,
+  tocando,
   onRunning,
+  pontoPorAcerto = false,
 }: {
   scene: SceneId
   state: SceneState
@@ -44,53 +49,61 @@ export function LessonSceneControls({
    * escondido — o controle fica na tela com o motivo escrito.
    */
   goals: readonly { id: string; complete: boolean }[]
-  /** O relógio é do PLAYER: ligar a troca de quadros liga o ▶ dele, e não um segundo relógio. */
+  /** O relógio é do PLAYER: ligar a prévia de quadros liga o relógio dele, e não um segundo. */
   onRunning: (ligado: boolean) => void
+  /**
+   * O relógio do player está andando? Lote 5 do Raio-X (G4): na `frames` a Prévia é o relógio, e a
+   * chave dela diz "tocando" só com ele andando de verdade.
+   */
+  tocando?: boolean
+  /**
+   * As `lives` do Desafio contam ponto pelo acerto do tiro (consertos do review da onda A do lote 5): o
+   * "Agora é sua vez" dá o tiro na bancada. Ver `ExplorationPieces`.
+   */
+  pontoPorAcerto?: boolean
 }) {
   const m = scene
-  /**
-   * A coluna escolhida na cena do espelho. Ela é do CONTROLE, não do mundo: enquanto a criança
-   * arrasta o deslizante nada é pintado, e o motor só recebe o traço no clique.
-   *
-   * ⚠ Mora AQUI desde que a bancada saiu do player: é estado de um controle, e ninguém mais o lê.
-   */
-  const [coluna, setColuna] = useState(3)
   return (
     <>
-      {(m === 'impulse' || m === 'gravity') && (
-        <Medida
-          label="Impulso do salto"
-          value={state.flight.force}
-          min={SCENE_LIMITS.impulse.min}
-          max={SCENE_LIMITS.impulse.max}
-          tom="text-scene-b-ink"
-          disabled={m === 'gravity'}
-          nota={m === 'gravity' ? 'O impulso fica igual para comparar a gravidade.' : undefined}
-          onChange={(force) => dispatch({ type: 'impulse', force })}
-        />
-      )}
-      {/* A bancada das onze cenas do núcleo do Iniciante 2D, em arquivo próprio. */}
-      <CoreSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} />
-      <EngineSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} />
+      {/* ⚠️ O deslizante do impulso SAIU daqui (lote 5 do Raio-X): mora na bancada do Corre Dino
+          (`scene-dino-controls`), com as marcas, e a `gravity` deixou de mostrá-lo travado. */}
+      {/* A `velocity` e a `variable`, que ficaram no arquivo do núcleo. */}
+      <CoreSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} goals={goals} />
+      {/* ⭐⭐ O núcleo do Iniciante 2D (lote 5 do Raio-X, G5): a tecla, o laço, a ficha, a câmera, o
+          encosto, a recarga, a mira e a diagonal, com o gesto que solta o tempo. */}
+      <NucleoSceneControls
+        scene={m}
+        state={state}
+        dispatch={dispatch}
+        cast={cast}
+        onRunning={onRunning}
+      />
+      {/* Lote 5 do Raio-X: a bancada do motor e do 3D, em arquivo próprio. */}
+      <MotorSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} />
       {m === 'coordinates' && (
         /* ⭐ Os dois controles que a Aula 1 pedia e que o vídeo não dava. Cada eixo
          tem deslizante, botões de passo e o valor à vista — os três levam ao MESMO
          lugar, que é a régua desta casa desde a cena da colisão: quem não arrasta
          (teclado, leitor de tela) chega à mesma descoberta. */
         <div className="grid gap-3 sm:grid-cols-2">
+          {/* ⚠️⚠️ Os rótulos são só "x" e "y" (lote 2 do Raio-X, 16/09/2026). "y, de cima a baixo"
+              ficava à vista durante a previsão ("se o y AUMENTAR, para onde o Dino vai?") e era a
+              resposta dela, na cena que a professora abre com "um dos dois pega todo mundo de
+              surpresa". A régua do palco continua mostrando onde está o 0. */}
+          {/* ⚠️ O máximo é a TELA DO CASO (lote 5): 480 × 270 no Corre Dino, 800 × 480 no Desafio. */}
           {[
             {
               eixo: 'x' as const,
-              label: 'x, de esquerda a direita',
+              label: 'x',
               value: state.place.x,
-              max: SCENE_LIMITS.placeX.max,
+              max: state.place.width,
               cor: 'text-scene-a',
             },
             {
               eixo: 'y' as const,
-              label: 'y, de cima a baixo',
+              label: 'y',
               value: state.place.y,
-              max: SCENE_LIMITS.placeY.max,
+              max: state.place.height,
               cor: 'text-scene-b-ink',
             },
           ].map((item) => (
@@ -100,7 +113,10 @@ export function LessonSceneControls({
               value={item.value}
               min={0}
               max={item.max}
-              passo={20}
+              // ⚠️ O passo segue a tela do CASO (consertos do review da onda A do lote 5): no Desafio
+              // (800 × 480) um toque de 20 eram 12px, a nave quase não saía do fantasma e a atividade
+              // obrigatória fechava nesse toque. 40 lá, 20 no Corre Dino.
+              passo={state.place.width > 480 ? 40 : 20}
               tom={item.cor}
               onChange={(valor) =>
                 dispatch({
@@ -117,6 +133,23 @@ export function LessonSceneControls({
       )}
       {m === 'stage-size' && (
         <div className="space-y-3">
+          {/* ⚠️⚠️ A BORDA vem primeiro (lote 5 do Raio-X): é a primeira descoberta, e sem ela os
+              números mudam a tela sem nada na tela mudar. */}
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
+            {/* ⚠️ O ESTADO no rótulo, o mesmo molde da `Chave` das bancadas novas:
+                o rótulo com a AÇÃO ("Mostrar a borda") num botão PINTADO de primário
+                com `aria-pressed="false"` fazia as três camadas contarem histórias
+                diferentes — o desenho dizia ligado, o texto dizia ligar. */}
+            <SceneButton
+              tom={state.stage.border ? 'ligado' : 'ferramenta'}
+              aria-pressed={state.stage.border}
+              onClick={() => dispatch({ type: 'border', visible: !state.stage.border })}
+            >
+              A borda da tela: {state.stage.border ? 'à vista' : 'escondida'}
+            </SceneButton>
+            {/* ⚠️⚠️ O atalho "Usar 480 por 270" SAIU (lote 5): ele fazia pela criança justamente a
+                ligação número × formato, e fechava duas metas num toque. */}
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
@@ -144,6 +177,11 @@ export function LessonSceneControls({
                 max={item.max}
                 step={10}
                 tom={item.cor}
+                // ⚠️ No Estúdio a criança DIGITA o número: de 800 a 480 eram 32 toques no "−".
+                digitavel
+                // ⚠️⚠️ Fechados até a borda aparecer (lote 5): fechado não é escondido.
+                disabled={!state.stage.border}
+                nota={state.stage.border ? undefined : 'Abre quando a borda estiver à vista.'}
                 onChange={(valor) =>
                   dispatch({
                     type: 'stage',
@@ -154,42 +192,33 @@ export function LessonSceneControls({
               />
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-            {/* ⚠️ O ESTADO no rótulo, o mesmo molde da `Chave` das bancadas novas:
-                o rótulo com a AÇÃO ("Mostrar a borda") num botão PINTADO de primário
-                com `aria-pressed="false"` fazia as três camadas contarem histórias
-                diferentes — o desenho dizia ligado, o texto dizia ligar. */}
-            <SceneButton
-              tom={state.stage.border ? 'ligado' : 'ferramenta'}
-              aria-pressed={state.stage.border}
-              onClick={() => dispatch({ type: 'border', visible: !state.stage.border })}
-            >
-              A borda da tela: {state.stage.border ? 'à vista' : 'escondida'}
-            </SceneButton>
-            <SceneButton onClick={() => dispatch({ type: 'stage', width: 480, height: 270 })}>
-              Usar 480 por 270
-            </SceneButton>
-          </div>
         </div>
       )}
       {m === 'draw-loop' && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-          {/* ⚠️ Uma chave de cada vez, e o relógio à parte: é avançando o tempo que a
-            criança vê a diferença entre congelado, rastro e movimento. */}
-          <SceneButton
-            aria-pressed={state.render.loop}
-            tom={state.render.loop ? 'ligado' : 'ferramenta'}
-            onClick={() => dispatch({ type: 'loop', on: !state.render.loop })}
-          >
-            Desenhar a cada quadro: {state.render.loop ? 'ligado' : 'desligado'}
-          </SceneButton>
-          <SceneButton
-            aria-pressed={state.render.erase}
-            tom={state.render.erase ? 'ligado' : 'ferramenta'}
-            onClick={() => dispatch({ type: 'erase', on: !state.render.erase })}
-          >
-            Limpar antes: {state.render.erase ? 'ligado' : 'desligado'}
-          </SceneButton>
+        <div className="w-full space-y-3">
+          {/* ⭐⭐ "Desenhar o Dino: só no começo / a cada quadro" (lote 5 do Raio-X). Com "a cada
+              quadro: desligado" a cena abria com o Dino na tela, e a `world` da mesma aula acabava de
+              mostrar que desenho desligado é tela vazia. O Dino da abertura foi desenhado UMA vez, no
+              começo: a escolha diz isso, e é uma ESCOLHA (os dois valores estão vivos). */}
+          <Escolha
+            label={castText('Desenhar o Dino', cast)}
+            valor={state.render.loop ? 'cada' : 'comeco'}
+            opcoes={[
+              { id: 'comeco' as const, label: 'Só no começo' },
+              { id: 'cada' as const, label: 'A cada quadro' },
+            ]}
+            onChange={(quando) => dispatch({ type: 'loop', on: quando === 'cada' })}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            {/* ⚠️ "Limpar a tela antes", o nome do bloco do Estúdio ("Limpar a tela"). */}
+            <SceneButton
+              aria-pressed={state.render.erase}
+              tom={state.render.erase ? 'ligado' : 'ferramenta'}
+              onClick={() => dispatch({ type: 'erase', on: !state.render.erase })}
+            >
+              Limpar a tela antes: {state.render.erase ? 'ligado' : 'desligado'}
+            </SceneButton>
+          </div>
         </div>
       )}
       {m === 'screen-reader' && (
@@ -201,250 +230,33 @@ export function LessonSceneControls({
             <Ear size={16} />
             Ouvir a tela
           </SceneButton>
-          <span className="text-sm text-muted-foreground">
-            O programa lê o que estiver escrito. Ele não enxerga o desenho.
-          </span>
+          {/* ⚠️ A nota "O programa lê o que estiver escrito. Ele não enxerga o desenho." SAIU (lote 2
+              do Raio-X): era a resposta da previsão da cena, logo abaixo dela. */}
         </div>
       )}
-      {m === 'frames' && (
-        <div className="w-full space-y-3">
-          {/* ⚠ Sem borda na fileira: a `Escolha` traz a caixa dela, e duas caixas aninhadas
-              desenham uma moldura dentro da outra. */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Escolha
-              label="Quadro à vista"
-              valor={state.animation.frame}
-              opcoes={[
-                { id: 1, label: 'Quadro 1' },
-                { id: 2, label: 'Quadro 2' },
-              ]}
-              onChange={(index) => dispatch({ type: 'frame', index })}
-            />
-            {/* ⚠️ Ligar a troca LIGA O RELÓGIO junto (e parar para). Sem isso a
-              criança apertava "Ligar a troca", nada se mexia e a saída era descobrir
-              sozinha que faltava apertar o play ali do lado: dois interruptores para
-              uma coisa só. O passo e a pausa continuam à mão, para ela olhar uma
-              troca de cada vez. */}
-            <SceneButton
-              tom="gesto"
-              aria-pressed={state.animation.playing}
-              onClick={() => {
-                const ligando = !state.animation.playing
-                dispatch({ type: 'play', on: ligando })
-                onRunning(ligando)
-              }}
-            >
-              {state.animation.playing ? 'Parar a troca' : 'Ligar a troca'}
-            </SceneButton>
-          </div>
-          <Medida
-            label="trocas por segundo"
-            value={state.animation.rate}
-            min={SCENE_LIMITS.rate.min}
-            max={SCENE_LIMITS.rate.max}
-            tom="text-scene-b-ink"
-            onChange={(perSecond) => dispatch({ type: 'rate', perSecond })}
-          />
-        </div>
-      )}
-      {m === 'onion-skin' && (
-        <div className="w-full space-y-3">
-          {/* ⚠ Sem borda na fileira: a `Escolha` traz a caixa dela, e duas caixas aninhadas
-              desenham uma moldura dentro da outra. */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Escolha
-              label="Quadro à vista"
-              valor={state.animation.frame}
-              opcoes={[
-                { id: 1, label: 'Quadro 1' },
-                { id: 2, label: 'Quadro 2' },
-              ]}
-              onChange={(index) => dispatch({ type: 'frame', index })}
-            />
-            <SceneButton
-              aria-pressed={state.animation.onion}
-              tom={state.animation.onion ? 'ligado' : 'ferramenta'}
-              onClick={() => dispatch({ type: 'onion', on: !state.animation.onion })}
-            >
-              Fantasma: {state.animation.onion ? 'ligado' : 'desligado'}
-            </SceneButton>
-          </div>
-          {/* ⚠️ Uma variável por vez, como na cena da colisão: o passo é do desenho do
-            quadro 2, então no quadro 1 ele fica fechado COM O MOTIVO escrito. Mexer
-            nele ali mudaria um desenho que não está na tela. */}
-          <Medida
-            label="passo do quadro 2"
-            value={state.animation.shift}
-            min={SCENE_LIMITS.shift.min}
-            max={SCENE_LIMITS.shift.max}
-            step={4}
-            tom="text-scene-b-ink"
-            disabled={state.animation.frame !== 2}
-            nota={
-              state.animation.frame !== 2
-                ? 'Vá para o quadro 2 para mover o desenho dele.'
-                : undefined
-            }
-            onChange={(offset) => dispatch({ type: 'shift', offset })}
-          />
-        </div>
-      )}
-      {m === 'symmetry' && (
-        <div className="w-full space-y-3">
-          <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-border p-4">
-            <div className="min-w-40 flex-1">
-              <Medida
-                label="coluna do traço"
-                value={coluna}
-                min={SCENE_LIMITS.column.min}
-                max={SCENE_LIMITS.column.max}
-                onChange={setColuna}
-              />
-            </div>
-            <SceneButton tom="gesto" onClick={() => dispatch({ type: 'paint', column: coluna })}>
-              Pintar aqui
-            </SceneButton>
-            <SceneButton
-              aria-pressed={state.mirror.on}
-              tom={state.mirror.on ? 'ligado' : 'ferramenta'}
-              onClick={() =>
-                dispatch({
-                  type: 'mirror',
-                  on: !state.mirror.on,
-                  line: state.mirror.line,
-                })
-              }
-            >
-              Espelho: {state.mirror.on ? 'ligado' : 'desligado'}
-            </SceneButton>
-          </div>
-          <Medida
-            label="linha do eixo"
-            value={state.mirror.line}
-            min={SCENE_LIMITS.mirrorLine.min}
-            max={SCENE_LIMITS.mirrorLine.max}
-            tom="text-scene-b-ink"
-            disabled={!state.mirror.on}
-            onChange={(line) =>
-              dispatch({
-                type: 'mirror',
-                on: state.mirror.on,
-                line,
-              })
-            }
-            nota={!state.mirror.on ? 'Ligue o espelho para escolher onde ele fica.' : undefined}
-          />
-        </div>
-      )}
-      {m === 'pixel-vector' && (
-        <div className="w-full space-y-3">
-          <Escolha
-            label="Qual pedra olhar"
-            valor={state.pixels.kind}
-            opcoes={[
-              { id: 'pixel' as const, label: 'Olhar a de pixel' },
-              { id: 'vector' as const, label: 'Olhar a de vetor' },
-            ]}
-            onChange={(kind) => dispatch({ type: 'inspect', kind, zoom: state.pixels.zoom })}
-          />
-          <Medida
-            label="lupa"
-            value={state.pixels.zoom}
-            min={SCENE_LIMITS.zoom.min}
-            max={SCENE_LIMITS.zoom.max}
-            texto={`${state.pixels.zoom} vezes`}
-            tom="text-scene-b-ink"
-            onChange={(zoom) => dispatch({ type: 'inspect', kind: state.pixels.kind, zoom })}
-          />
-        </div>
-      )}
-      {m === 'sheet-vs-sprite' && (
-        <div className="w-full space-y-3">
-          <Escolha
-            label="Pedaço recortado da folha"
-            valor={state.sheet.cell}
-            opcoes={[1, 2, 3, 4].map((cell) => ({ id: cell, label: `Pedaço ${cell}` }))}
-            onChange={(cell) => dispatch({ type: 'cut', cell })}
-          />
-          <Medida
-            label="tamanho no jogo"
-            value={state.sheet.size}
-            min={SCENE_LIMITS.sprite.min}
-            max={SCENE_LIMITS.sprite.max}
-            step={8}
-            tom="text-scene-b-ink"
-            onChange={(size) => dispatch({ type: 'sprite', size })}
-          />
-        </div>
-      )}
-      {m === 'lives' && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-          <SceneButton
-            tom="gesto"
-            disabled={state.lifeline.lives === 0}
-            onClick={() => dispatch({ type: 'collide' })}
-          >
-            {castText('Bater no cacto', cast)}
-          </SceneButton>
-          <span className="text-sm text-muted-foreground">
-            {state.lifeline.lives === 0
-              ? 'Sem vidas. Use Recomeçar para jogar de novo.'
-              : 'Os fios ficam logo abaixo: eles decidem o que a batida faz.'}
-          </span>
-        </div>
-      )}
-      {m === 'hitbox' && (
-        /* ⭐ Uma variável por vez. Os dois controles nasciam abertos, e duas medidas
-         soltas ao mesmo tempo não ensinam qual causou o quê: a criança aproximava
-         o cacto, alargava a área e ficava sem saber qual das duas fez as áreas
-         encostarem. A largura abre depois da PRIMEIRA descoberta sobre distância
-         (`contact` ou `separate`), que é justamente quando a pergunta seguinte
-         ("e se o desenho ficar igual e só a área mudar?") passa a fazer sentido.
-         ⚠️ Fechado NÃO é escondido: o controle continua na tela, com o motivo
-         escrito. Sumir com ele faria a cena parecer outra a cada descoberta. */
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[
-            {
-              // ⚠️ Os rótulos dos controles TAMBÉM passam pelo elenco: sem isto a
-              // criança de uma turma de nave lia "distância do asteroide" na faixa
-              // de estado e "Distância do cacto" no controle logo abaixo, na mesma
-              // tela. Achado do full review de 14/09/2026.
-              label: castText('Distância do cacto', cast),
-              value: state.contact.distance,
-              min: 20,
-              max: 260,
-              field: 'distance',
-              locked: false,
-            },
-            {
-              label: castText('Largura da área do Dino', cast),
-              value: state.contact.width,
-              min: 24,
-              max: 120,
-              field: 'width',
-              locked: !goals.some((g) => (g.id === 'contact' || g.id === 'separate') && g.complete),
-            },
-          ].map((item) => (
-            <Medida
-              key={item.field}
-              label={item.label}
-              value={item.value}
-              min={item.min}
-              max={item.max}
-              tom={item.field === 'width' ? 'text-scene-b-ink' : 'text-scene-a'}
-              disabled={item.locked}
-              nota={item.locked ? 'Abre quando você descobrir o que a distância faz.' : undefined}
-              onChange={(valor) =>
-                dispatch(
-                  item.field === 'width'
-                    ? { type: 'resize', width: valor }
-                    : { type: 'move', distance: valor },
-                )
-              }
-            />
-          ))}
-        </div>
-      )}
+      {/* ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): `frames`, `onion-skin`,
+          `symmetry`, `pixel-vector`, `sheet-vs-sprite`, `fill-stroke` e `shading`, com os nomes do
+          Pinta, em arquivo próprio. */}
+      <AtelieSceneControls
+        scene={m}
+        state={state}
+        dispatch={dispatch}
+        cast={cast}
+        goals={goals}
+        tocando={tocando}
+        onRunning={onRunning}
+      />
+      {/* ⭐ A segunda metade do Corre Dino e os números (lote 5 do Raio-X): `restart`, `score`,
+          `random`, `acceleration`, `hitbox` e `lives` têm bancada própria. */}
+      <DinoNumbersControls
+        scene={m}
+        state={state}
+        dispatch={dispatch}
+        cast={cast}
+        goals={goals}
+        onRunning={onRunning}
+        pontoPorAcerto={pontoPorAcerto}
+      />
     </>
   )
 }

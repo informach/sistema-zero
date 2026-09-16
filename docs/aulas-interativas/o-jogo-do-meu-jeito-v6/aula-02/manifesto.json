@@ -75,27 +75,27 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Um traço, dois lados",
-        "instructions": "Pinte com o espelho desligado. Ligue o espelho, pinte de novo e mude o eixo. Depois vamos usar essa ideia na sua nave.",
+        "title": "O que o espelho faz com o seu traço?",
+        "instructions": "Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "symmetry"
         },
         "checkpoint": {
-          "prompt": "O que o espelho mudou no seu traço?",
+          "prompt": "O que os dois espelhos fazem com o traço que você pinta?",
           "choices": [
             {
               "id": "a",
-              "label": "Fez o traço correspondente do outro lado."
+              "label": "Pintam uma cópia do traço do outro lado do meio."
             },
             {
-              "id": "b",
-              "label": "Virou o desenho inteiro de cabeça para baixo."
+              "id": "grudado",
+              "label": "Deixam o traço mais grosso, grudado no primeiro."
             }
           ],
           "correctChoiceId": "a",
-          "explanation": "O espelho lado a lado repete o traço enquanto você desenha. Quem vira o desenho pronto é outra ferramenta."
+          "explanation": "O espelho lado a lado copia o traço para o outro lado do meio, e o de cima e de baixo copia para cima ou para baixo. A cópia aparece enquanto você pinta."
         }
       }
     },
@@ -190,7 +190,7 @@
       "content": {
         "kind": "interactive",
         "title": "A luz dá volume",
-        "instructions": "Olhe a forma com uma cor só. Depois ligue a sombra e veja de que lado ela fica quando a luz muda de lugar.",
+        "instructions": "Aperte Ver acontecer. Olhe de que lado fica a sombra quando o sol muda de lugar.",
         "hints": [],
         "required": false,
         "activity": {
@@ -336,7 +336,7 @@
     },
     {
       "key": "espelho",
-      "title": "Experimente: um traço, dois lados",
+      "title": "Experimente: o espelho no seu traço",
       "intent": "exploration",
       "objective": "Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado.",
       "blockKeys": ["experimento-espelho"],

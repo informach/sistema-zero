@@ -2,6 +2,7 @@ import { expect, spyOn, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
   blockCheckpoint,
+  blockPrediction,
   defaultLessonSection,
   type InteractiveBlock,
   type LessonDraftDocument,
@@ -26,6 +27,37 @@ const { useLessonPreview } = await import(
   '@sistemazero/member-shell/components/lesson-preview-context'
 )
 const { LessonRehearsal } = await import('../src/components/editor/lesson-rehearsal')
+
+/**
+ * O palpite que abre a cena, quando ela tem previsão.
+ *
+ * ⚠️⚠️ Mudou de propósito (consertos do review do lote 2 do Raio-X): o `<fieldset disabled>` do
+ * palpite nunca travou o clique no happy-dom, e este teste apertava "Depois" com o palpite pendente.
+ * Desde os consertos a trava mora também no ponto único dos gestos (o gesto DIRETO no desenho
+ * passava pelo véu no navegador de verdade), e o ensaio passa pelo palpite como a criança.
+ */
+/**
+ * O gesto da `layers` até a conclusão.
+ *
+ * ⚠️ Mudou de propósito (lote 5 do Raio-X): os cartões Antes/Depois viraram a pilha "A ordem de
+ * desenhar", com Descer e Subir em cada peça. E a cena passou a pedir DUAS descobertas (o Dino na
+ * frente e, só trocando a ordem, escondido de novo) com a montagem assentada no fim: três trocas.
+ */
+async function trocarOrdem(container: HTMLElement, vezes = 3) {
+  for (let i = 0; i < vezes; i++) {
+    const descer = container.querySelector<HTMLButtonElement>('button[aria-label^="Descer "]')
+    if (!descer) throw new Error('Missing Descer')
+    await act(async () => descer.click())
+  }
+}
+
+async function palpitar(container: HTMLElement, content: InteractiveBlock) {
+  const rotulo = blockPrediction(content)?.choices[0]?.label
+  const opcao = [...container.querySelectorAll('button')].find(
+    (b) => b.textContent?.trim() === rotulo,
+  )
+  if (opcao) await act(async () => opcao.click())
+}
 
 test('external confirmations do not bypass discoveries or unfinished section criteria', async () => {
   const content: InteractiveBlock = {
@@ -120,8 +152,9 @@ test('external confirmations do not bypass discoveries or unfinished section cri
     const explicar = async () => {
       const pergunta = blockCheckpoint(content)
       if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
-      const escolha = container.querySelector<HTMLInputElement>(
-        `input[type=radio][id$="-pergunta-${pergunta.correctChoiceId}"]`,
+      // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+      const escolha = container.querySelector<HTMLButtonElement>(
+        `button[id$="-pergunta-${pergunta.correctChoiceId}"]`,
       )
       if (!escolha) throw new Error('a pergunta herdada não está na tela')
       await act(async () => escolha.click())
@@ -129,7 +162,8 @@ test('external confirmations do not bypass discoveries or unfinished section cri
     expect(button('Próxima seção').disabled).toBe(true)
     await act(async () => button('Simular confirmação da ação externa').click())
     expect(button('Próxima seção').disabled).toBe(true)
-    await act(async () => button('Depois').click())
+    await palpitar(container, content)
+    await trocarOrdem(container)
     // A descoberta aconteceu, e o bloco ainda não fechou: falta enunciar a regra.
     expect(button('Próxima seção').disabled).toBe(true)
     await explicar()
@@ -289,8 +323,9 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
   const explicar = async () => {
     const pergunta = blockCheckpoint(content)
     if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
-    const escolha = container.querySelector<HTMLInputElement>(
-      `input[type=radio][id$="-pergunta-${pergunta.correctChoiceId}"]`,
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+    const escolha = container.querySelector<HTMLButtonElement>(
+      `button[id$="-pergunta-${pergunta.correctChoiceId}"]`,
     )
     if (!escolha) throw new Error('a pergunta herdada não está na tela')
     await act(async () => escolha.click())
@@ -315,7 +350,8 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     )
     expect(button('Próxima seção').disabled).toBe(true)
     await click('Falhar na próxima confirmação')
-    await click('Depois')
+    await palpitar(container, content)
+    await trocarOrdem(container)
     // ⚠️⚠️ A descoberta sozinha não manda mais tentativa nenhuma: a experimentação herda a
     // pergunta do modelo da cena, e a tentativa só sai com a frase escolhida. Quem tropeça na
     // falha de gravação é a RESPOSTA, e é depois dela que o "Tentar salvar" tem o que repetir.
@@ -333,7 +369,8 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     const original = identity
     await click('Conferir repetição')
     await click('Próxima seção')
-    await click('Depois')
+    await palpitar(container, content)
+    await trocarOrdem(container)
     await explicar()
     await click('Próxima seção')
     expect(identity).toBe(original)

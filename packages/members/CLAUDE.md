@@ -1992,7 +1992,9 @@ pública do R2 de cada ambiente, ex. prod `https://cdn.sistemazero.com.br/` · s
 pública do bucket `testes`; fora da allowlist → 400 `AVATAR_INVALID`). Opcional:
 `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
 de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
-`ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:
+`ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS) e
+**`SCENE_CLOCK_STRICT`** (default `false`; `true` só DEPOIS de kids e community com o player novo no
+ar — ver §"O player de antes do relógio de quadro fixo"). No GATEWAY:
 `MEMBERS_URL=http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos
 irmãos com `railway variables --kv`.
 
@@ -2106,6 +2108,128 @@ tem uma, e com ela sem chegar ao avaliador NENHUM bloco de cena fecharia. Hoje a
 continua mandando no estado da cena (a tentativa não a atropela, de propósito), e por cima dela
 entram as chaves que são da CRIANÇA — `checkpoint` e `prediction`. ⚠ A lista é explicita: aceitar
 tudo o que vier do corpo devolveria ao cliente o poder de reescrever a sessão.
+
+## A cena abre no CASO do professor, também no servidor (16/09/2026)
+
+⚠️⚠️ `sceneStartOf` (`learning.service.ts`) usa `sceneStart` do core, e não um objeto montado à mão:
+a versão à mão esquecia o `setup`, e o servidor rejogava a experimentação no mundo de fábrica
+enquanto a criança via o caso (Dia 1 do Desafio: concluía na tela, gravava `passed:false`). A
+demonstração é rejogada com `tolerarPlayerAnterior: true` (ver o CLAUDE.md do core): aba aberta
+durante o deploy do lote 1 do Raio-X continua registrando a demonstração assistida. ⚠️ Deploy do
+members ANTES do kids. Testes: `tests/integration/learning-scene-setup.test.ts` (inclui o contrato
+de todo bloco com caso nos manifestos v6 abrindo igual no servidor e no player).
+
+## O player de antes do relógio de quadro fixo (16/09/2026, review do lote 4 do Raio-X)
+
+⚠️⚠️ O player de antes do lote 4 decide a conclusão pelo motor DELE (um quadro por fatia). Numa aba
+aberta durante o deploy, a EXPERIMENTAÇÃO mostrava "concluiu" enquanto este servidor, rejogando os
+mesmos comandos no relógio novo, gravava `passed:false`; com a assinatura das descobertas igual o player
+nem reenviava, e depois do F5 as metas voltavam a faltar (122 de 432 reproduções com o player de
+produção). A tolerância da demonstração não alcançava a experimentação.
+- **O marcador**: o player novo manda `sceneClock: 1` nas respostas do segmento (`sceneSegmentAnswers`
+  do core); `sceneSegmentHasClock(input.answers)` lê. O DTO `Answers` já deixa a chave passar (registro
+  de string para número). ⚠️ O marcador fica FORA do `readSceneSegment`, e é de propósito: o hash
+  guardado (`segmentHash`) é o do segmento LIDO, e um campo novo nele transformaria em conflito o
+  reenvio de um segmento gravado antes do deploy.
+- **`SCENE_CLOCK_STRICT`** (env, `optionalBool(false)`; `LearningService` recebe
+  `{ sceneClockStrict }` como 8º argumento): ligada, segmento SEM marcador (desde a onda A do lote 5, sem
+  o marcador ATUAL, em qualquer cena; ver abaixo), demonstração ou experimentação, é **409 `LEARNING_CONFLICT`**. O player
+  antigo mostra "Esta experiência foi atualizada em outra aba ou mudou de versão... Reabra a aula", e
+  reabrir carrega o player novo com o rascunho local (os comandos antigos rejogam iguais no relógio
+  novo, que é invariante ao fatiamento). Cena sem relógio não entra.
+- **A tolerância da demonstração** (`tolerarPlayerAnterior`) passou a ser `!sceneSegmentHasClock`: só o
+  player antigo ganha a folga. Ligada para todos, ela marcava "assistida" com um tique de 0,04 s na
+  última ação também para o player novo, e para sempre (13 demonstrações).
+- ⚠️⚠️ **ORDEM DE DEPLOY**: (1) **members** com a flag DESLIGADA (o relógio novo + o marcador lido;
+  aba antiga segue aceita e a demonstração dela tolerada); (2) **community-kids E community** (os dois
+  carregam o player do member-shell); (3) quando os dois estiverem no ar, **`SCENE_CLOCK_STRICT=true`**
+  no members (reinício). Ligar antes do passo 2 recusaria TODO player, porque ainda não existe um que
+  mande o marcador. O inverso de (1) e (2) continua sem conserto: servidor velho conta um quadro por
+  chamada. Rollback do kids com a flag ligada = desligar a flag primeiro.
+- Testes: `tests/integration/learning-scene-clock.test.ts` (a flag nos dois sentidos, cena sem relógio,
+  o reenvio com marcador de um segmento gravado sem ele, e a tolerância só sem marcador, conferida por
+  mutação). O teste de deploy do lote 1 (`learning-scene-setup.test.ts`) manda o segmento SEM marcador,
+  como o player antigo de verdade.
+- **O comando `advance` da criança** é recusado acima de 1 s ou de 30 quadros (`isExperimentCommand` do
+  core, 400 aqui): um segmento hostil de 100 × 30 s custava ~0,25 s de CPU por requisição na `spawn`.
+
+### Consertos do review da onda A do lote 5 (16/09/2026)
+
+Relatório: `community-kids/tmp/storyboard/implementacao/consertos-lote5-ondaA.md`. ⚠️ **Revoga**, acima,
+"cena sem relógio não entra" e o `sceneFrameRate !== null` do strict.
+- ⚠️⚠️ **O marcador virou a VERSÃO DAS REGRAS** (`SCENE_CLOCK_MARK = 2`, core): a onda A mudou metas de
+  cenas SEM relógio (`coordinates`, `layers`, `hitbox`) e tirou o relógio de `random`/`acceleration`. O
+  player do lote 4 manda `1`, e `sceneSegmentHasClock` só aceita o número atual.
+- ⚠️⚠️ **Com `SCENE_CLOCK_STRICT`, o segmento sem o marcador ATUAL é 409 em TODA cena** (antes da validação
+  dos comandos): a aba antiga da `random` que apertava ▶ recebia 400 e o player dizia "Sem internet" para
+  sempre. A tolerância da demonstração vale para quem manda `1` também.
+- Ordem de deploy: a mesma (members com a flag desligada → kids e community → flag ligada).
+- Testes: `tests/integration/learning-scene-clock.test.ts` (cena sem relógio recusada, marcador 1
+  recusado, o `advance` da `random` virando 409).
+
+### Consertos do review da onda B do lote 5 (16/09/2026): a tentativa do player de outra versão
+
+Relatório: `community-kids/tmp/storyboard/implementacao/consertos-5b-moldura.md` (MÉDIO-5).
+- ⚠️⚠️ **As demonstrações que CRESCERAM não registravam, sem 409 e sem recado.** Sem roteiro próprio, a
+  demonstração toca o roteiro do MODELO, e o player publicado traz o dele no pacote: na `frames` (4 → 5
+  partes), na `fill-stroke` (2 → 3) e na `sheet-vs-sprite` (parte 3 de 1 para 4 ações), as Aulas 3, 4 e 6
+  de O Jogo do Meu Jeito, ele vê tudo e para de mandar comandos com este servidor no meio do roteiro. A
+  tentativa voltava `passed:false` e o player antigo ficava em "Guardando este resultado…" para sempre.
+- **O checkpoint guarda QUEM o escreveu**: `applySceneSegment` grava `sceneClock: SCENE_CLOCK_MARK` nas
+  respostas quando o segmento trouxe o marcador atual (fora do hash do segmento, como o que chega).
+- **Na tentativa**, sem esse marcador no guardado E com a cena NÃO fechada no servidor
+  (`cenaFechouNoServidor`: a demonstração vista até o fim; a experimentação com as metas da atividade, sem
+  o `settled`), a resposta é **409 `LEARNING_CONFLICT`**, com a flag desligada: o player antigo mostra
+  "Esta experiência foi atualizada… Reabra a aula". Vale para a experimentação também (a `coordinates`
+  trocou `same-x` por `origin`: o player publicado fecha lá e não aqui). O player novo, com as regras
+  deste servidor, segue recebendo o "ainda não" de sempre; a demonstração que não mudou de forma
+  (`onion-skin`) segue registrando pela tolerância. Sem lista de cenas: vale para qualquer roteiro ou meta
+  que mudar depois. SEM migration.
+- ⚠️ **Ordem de deploy (atualizada)**: (1) **members** com `SCENE_CLOCK_STRICT` desligada; (2) **kids e
+  community** LOGO em seguida (entre 1 e 2, quem terminar uma das três demonstrações com a aba antiga lê
+  "Reabra a aula", e reabrir só resolve depois do passo 2); (3) `SCENE_CLOCK_STRICT=true`; (4) reimportar os
+  manifestos listados nos relatórios das ondas. `SCENE_CLOCK_MARK = 2` serve às duas ondas só se subirem
+  juntas; se a onda A for publicada antes, suba o número para a B (a regra da tentativa acompanha sozinha).
+- Testes: `tests/integration/learning-scene-clock.test.ts` (describe "o player publicado numa demonstração
+  que cresceu"): os comandos do player publicado (gerados com o motor e o roteiro de HEAD) nas três cenas
+  viram 409, a `onion-skin` registra, o player novo até o fim registra e no meio recebe `passed:false`, e a
+  experimentação da `coordinates`. Conferido por mutação (sem o 409, sem o marcador guardado).
+
+## A previsão retomável no DTO (16/09/2026, Raio-X lote 2)
+
+`InteractiveBlockSchema.prediction` declara `revealOn` e o `shows` de cada escolha (as escolhas da
+previsão têm schema PRÓPRIO, não o `Choices` da pergunta). ⚠️ Corrigido no review do lote 2: hoje
+NENHUMA rota tipa o corpo com este schema (importação `t.Unknown()`, rascunho com propriedade a mais,
+publicação por `safeParse`), então um DTO sem os dois não os apagaria nas rotas de hoje. A declaração
+guarda o dia em que uma rota passar a tipar o corpo, e é por uma rota tipada de verdade que o teste
+mede (o `Check` aceita propriedade a mais e não prova nada). A ordem "members antes do kids" continua
+valendo pelo lote 1 (demonstrações). Quem confere que `revealOn` é meta
+da cena é o `isInteractiveBlock` do core (a borda aceita, o domínio recusa: listado em
+`tests/unit/learning-dto-conformance.test.ts`).
+
+## O endereço até a tela do caso (16/09/2026, Raio-X lote 5, G1)
+
+A ação `place` (`coordinates`) no DTO usa `SCENE_LIMITS.addressX`/`addressY` do core (0..800 e 0..480):
+o caso do Dia 1 do Desafio abre a tela em 800 × 480, e com os limites antigos (`placeX`/`placeY`) um
+caso com a nave perto da borda direita seria recusado na importação. A ação `stage` passou a ser legal
+também em `coordinates` (quem confere é o `isSceneAction` do core). ⚠️ Deploy do members ANTES do kids
+e antes de reimportar o Dia 1 do Desafio. Teste do caso: `tests/integration/learning-scene-setup.test.ts`
+(a nave em 400, 40).
+
+## A andada de 1 segundo e a cópia da ficha (16/09/2026, Raio-X lote 5, G5)
+
+`learning.dtos.ts` aceita a ação `stride` (sem campos, só na `diagonal`); a porta `copy` (`enemy-type`)
+entra sozinha pelo `SCENE_PORTS` do core, e `shoot` passou a ser legal também na `aim` (quem confere é o
+`isSceneAction`). ⚠️ Deploy do members ANTES do kids: o player novo manda `stride`, `connect copy`,
+`shoot` na `aim` e `advance` na `group-loop`, e o members antigo recusaria
+a gravação. Nenhum manifesto usa as nove cenas do G5, então não há reimportação.
+
+## Duas ações novas de cena (16/09/2026, Raio-X lote 5, G6)
+
+`learning.dtos.ts` aceita `see-points` (`level` em `MESH_LEVELS` do core: `nada`, `metade`, `tudo`) e
+`brain-scope` (`shared` booleano). Quem confere a cena é o `isSceneAction` do core (`mesh` e
+`entity-state`). ⚠️ Deploy do members ANTES do kids: o player novo manda as duas, e o members antigo
+recusaria a gravação. Nenhum manifesto usa as oito cenas do G6, então não há reimportação.
 
 ## Aulas por seções (09/2026)
 

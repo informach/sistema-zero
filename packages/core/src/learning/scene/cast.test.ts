@@ -1,6 +1,18 @@
 import { describe, expect, test } from 'bun:test'
 import { SCENE_IDS } from './actions'
-import { castText, DEFAULT_CAST, isSceneCast, type SceneCast } from './cast'
+import {
+  actorFigure,
+  castText,
+  DEFAULT_CAST,
+  figureFromName,
+  isSceneCast,
+  SCENE_FIGURE_NAMES,
+  SCENE_FIGURES,
+  SCENE_ROLES,
+  type SceneCast,
+  type SceneFigure,
+  sceneWorld,
+} from './cast'
 import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
 import { SCENE_QUESTIONS } from './questions'
@@ -144,6 +156,9 @@ describe('o elenco em português', () => {
         m.extra,
         ...m.hints,
         ...m.goals.map((g) => g.label),
+        // ⚠️ O PEDIDO também (lote 2 do Raio-X): é o que o "Conferir" e as bolinhas mostram antes
+        // de a meta cair, e ele cita o personagem tanto quanto o rótulo.
+        ...m.goals.map((g) => g.pedido),
         ...m.script.map((p) => p.caption),
       ]
       for (const texto of textos) {
@@ -238,13 +253,17 @@ describe('o elenco em português', () => {
         m.extra,
         ...m.hints,
         ...m.goals.map((g) => g.label),
+        ...m.goals.map((g) => g.pedido),
         ...m.script.map((p) => p.caption),
       ])
         olha(`catálogo ${scene}`, t)
       const q = SCENE_QUESTIONS[scene]
       for (const x of [q.prediction, q.explain]) {
         olha(`pergunta ${scene}`, x.prompt)
-        for (const c of x.choices) olha(`pergunta ${scene}`, c.label)
+        for (const c of x.choices) {
+          olha(`pergunta ${scene}`, c.label)
+          olha(`pergunta ${scene}`, c.shows)
+        }
       }
       olha(`pergunta ${scene}`, q.explain.explanation)
       // E o que o MOTOR escreve, pelo roteiro do próprio modelo.
@@ -267,5 +286,230 @@ describe('o elenco em português', () => {
     expect(isSceneCast({ hero: { name: '<img src=x>', gender: 'f' } })).toBe(false)
     expect(isSceneCast({ hero: { name: 'x'.repeat(30), gender: 'm' } })).toBe(false)
     expect(isSceneCast(null)).toBe(false)
+  })
+})
+
+describe('a figura do elenco: o desenho segue o nome', () => {
+  test('⚠️⚠️ os elencos REAIS dos cursos v6 ganham o desenho certo sem declarar `figure`', () => {
+    // São os casos que os manifestos publicados usam hoje (Desafio e O Jogo do Meu Jeito). Nenhum
+    // deles declara a figura: é o nome que a decide, e é isso que dispensa reimportar.
+    expect(actorFigure({ hero: { name: 'nave', gender: 'f' } }, 'hero')).toBe('nave')
+    expect(actorFigure({ hero: { name: 'tiro', gender: 'm' } }, 'hero')).toBe('tiro')
+    expect(actorFigure({ hero: { name: 'pedra', gender: 'f', plural: 'pedras' } }, 'hero')).toBe(
+      'pedra',
+    )
+    const layers: SceneCast = {
+      hero: { name: 'pedra', gender: 'f' },
+      scenery: { name: 'chama', gender: 'f' },
+    }
+    expect(actorFigure(layers, 'hero')).toBe('pedra')
+    expect(actorFigure(layers, 'scenery')).toBe('chama')
+    // Papel não declarado continua o de fábrica.
+    expect(actorFigure(layers, 'obstacle')).toBe('cacto')
+    const spawn: SceneCast = {
+      hero: { name: 'nave', gender: 'f' },
+      obstacle: { name: 'asteroide', gender: 'm' },
+    }
+    expect(actorFigure(spawn, 'obstacle')).toBe('asteroide')
+  })
+
+  test('sem elenco, é o Corre Dino', () => {
+    expect(actorFigure(undefined, 'hero')).toBe('dino')
+    expect(actorFigure(undefined, 'obstacle')).toBe('cacto')
+    expect(actorFigure(undefined, 'scenery')).toBe('floresta')
+    expect(actorFigure({}, 'hero')).toBe('dino')
+    // O elenco de fábrica se desenha pelo nome, como qualquer outro.
+    for (const papel of ['hero', 'obstacle', 'scenery'] as const)
+      expect(actorFigure(DEFAULT_CAST, papel)).toBe(actorFigure(undefined, papel))
+  })
+
+  test('o nome é lido sem maiúscula, sem acento e no singular', () => {
+    expect(figureFromName('NAVE')).toBe('nave')
+    expect(figureFromName('  Naves ')).toBe('nave')
+    expect(figureFromName('Asteróide')).toBe('asteroide')
+    expect(figureFromName('asteroides')).toBe('asteroide')
+    expect(figureFromName('Árvores')).toBe('floresta')
+    expect(figureFromName('Tiros')).toBe('tiro')
+    expect(figureFromName('lasers')).toBe('tiro')
+    expect(figureFromName('Dinos')).toBe('dino')
+  })
+
+  test('os sinônimos curtos chegam à figura', () => {
+    const casos: [string, SceneFigure][] = [
+      ['dinossauro', 'dino'],
+      ['foguete', 'nave'],
+      ['meteoro', 'asteroide'],
+      ['meteorito', 'asteroide'],
+      ['rocha', 'pedra'],
+      ['laser', 'tiro'],
+      ['disparo', 'tiro'],
+      ['fogo', 'chama'],
+      ['árvore', 'floresta'],
+      ['mata', 'floresta'],
+      // Os que faltavam (review do lote 3): "espaçonave" é o jeito mais comum de dizer nave.
+      ['Espaçonave', 'nave'],
+      ['astronave', 'nave'],
+      ['óvni', 'nave'],
+      ['OVNI', 'nave'],
+      ['disco voador', 'nave'],
+      ['cometa', 'asteroide'],
+      ['projétil', 'tiro'],
+      ['míssil', 'tiro'],
+      ['pedrinha', 'pedra'],
+      ['pedregulho', 'pedra'],
+      ['labareda', 'chama'],
+    ]
+    for (const [nome, figura] of casos)
+      expect({ nome, f: figureFromName(nome) }).toEqual({ nome, f: figura })
+  })
+
+  test('⚠️ "bala" não é tiro: no Brasil bala é doce', () => {
+    // Um jogo de pegar balas desenharia tiros no espaço (review do lote 3).
+    expect(figureFromName('bala')).toBeNull()
+    expect(figureFromName('balas')).toBeNull()
+    expect(actorFigure({ obstacle: { name: 'bala', gender: 'f' } }, 'obstacle')).toBe('cacto')
+  })
+
+  test('a lista exportada é a MESMA que a leitura usa, sem nome repetido entre figuras', () => {
+    // O editor do admin monta a nota a partir desta lista: nome que ela mostra e a leitura não
+    // reconhece seria uma promessa falsa ao professor.
+    const vistos = new Set<string>()
+    for (const figura of SCENE_FIGURES)
+      for (const nome of SCENE_FIGURE_NAMES[figura]) {
+        expect({ nome, f: figureFromName(nome) }).toEqual({ nome, f: figura })
+        const chave = nome.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+        expect({ chave, repetido: vistos.has(chave) }).toEqual({ chave, repetido: false })
+        vistos.add(chave)
+      }
+  })
+
+  test('nome composto: o núcleo na frente, e a palavra que diz alguma coisa', () => {
+    expect(figureFromName('nave espacial')).toBe('nave')
+    expect(figureFromName('pedra grande')).toBe('pedra')
+    expect(figureFromName('bola de fogo')).toBe('chama')
+    // ⚠️ Palavra inteira, não pedaço: "Tirolesa" não é tiro e "Navegador" não é nave.
+    expect(figureFromName('Tirolesa')).toBeNull()
+    expect(figureFromName('Navegador')).toBeNull()
+    // ⚠️ E nome que é chave do protótipo de um objeto não devolve uma função no lugar da figura.
+    expect(figureFromName('constructor')).toBeNull()
+    expect(actorFigure({ hero: { name: 'toString', gender: 'm' } }, 'hero')).toBe('dino')
+  })
+
+  test('nome que não diz figura cai no padrão do PAPEL, nunca no Dino por acaso', () => {
+    expect(actorFigure({ hero: { name: 'Zé', gender: 'm' } }, 'hero')).toBe('dino')
+    expect(actorFigure({ obstacle: { name: 'nebulosa', gender: 'f' } }, 'obstacle')).toBe('cacto')
+    expect(actorFigure({ scenery: { name: 'nebulosa', gender: 'f' } }, 'scenery')).toBe('floresta')
+    // O plural declarado também serve, quando só ele diz a figura.
+    expect(actorFigure({ hero: { name: 'Zé', gender: 'm', plural: 'foguetes' } }, 'hero')).toBe(
+      'nave',
+    )
+  })
+
+  test('⚠️ a figura DECLARADA vence o nome', () => {
+    expect(actorFigure({ hero: { name: 'Zé', gender: 'm', figure: 'nave' } }, 'hero')).toBe('nave')
+    expect(actorFigure({ hero: { name: 'nave', gender: 'f', figure: 'pedra' } }, 'hero')).toBe(
+      'pedra',
+    )
+  })
+
+  test('o mundo: espaço quando alguma figura DESENHADA é do espaço', () => {
+    expect(sceneWorld(undefined, 'lives')).toBe('terra')
+    expect(sceneWorld(DEFAULT_CAST, 'lives')).toBe('terra')
+    expect(sceneWorld({ hero: { name: 'Zé', gender: 'm' } }, 'lives')).toBe('terra')
+    for (const nome of ['nave', 'asteroide', 'tiro', 'pedra', 'chama'])
+      expect({
+        nome,
+        mundo: sceneWorld({ obstacle: { name: nome, gender: 'm' } }, 'lives'),
+      }).toEqual({
+        nome,
+        mundo: 'espaco',
+      })
+    // O cenário também leva: a pedra com a chama do Meu Jeito é o espaço.
+    const meuJeito: SceneCast = {
+      hero: { name: 'pedra', gender: 'f' },
+      scenery: { name: 'chama', gender: 'f' },
+    }
+    expect(sceneWorld(meuJeito, 'layers')).toBe('espaco')
+    // E a figura declarada decide, mesmo com um nome de terra.
+    expect(sceneWorld({ hero: { name: 'Dino', gender: 'm', figure: 'nave' } }, 'lives')).toBe(
+      'espaco',
+    )
+    expect(sceneWorld({ hero: { name: 'nave', gender: 'f', figure: 'dino' } }, 'lives')).toBe(
+      'terra',
+    )
+  })
+
+  test('⚠️⚠️ só contam os papéis que o palco da cena DESENHA (review do lote 3)', () => {
+    // Uma chama de cenário numa cena que não desenha cenário levava o Dino e os cactos ao espaço.
+    const soChama: SceneCast = { scenery: { name: 'chama', gender: 'f' } }
+    expect(sceneWorld(soChama, 'spawn')).toBe('terra')
+    expect(sceneWorld(soChama, 'layers')).toBe('espaco')
+    // A nave de herói não muda o mundo de uma cena que só desenha o obstáculo.
+    const soNave: SceneCast = { hero: { name: 'nave', gender: 'f' } }
+    expect(sceneWorld(soNave, 'group-loop')).toBe('terra')
+    expect(sceneWorld(soNave, 'lives')).toBe('espaco')
+    // Cena abstrata não desenha ninguém: fica na terra com qualquer elenco.
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): a `tilemap` ganhou o personagem que cai até o chão.
+    for (const scene of ['symmetry', 'axis-z', 'shading'] as const)
+      expect({ scene, mundo: sceneWorld(NAVE, scene) }).toEqual({ scene, mundo: 'terra' })
+  })
+
+  test('⚠️ pedra e chama seguem o que o professor DECLAROU da terra', () => {
+    // Com o Dino escrito no elenco, a pedra é a pedra do caminho dele, na grama.
+    const dinoEPedra: SceneCast = {
+      hero: { name: 'Dino', gender: 'm' },
+      obstacle: { name: 'pedra', gender: 'f' },
+    }
+    expect(sceneWorld(dinoEPedra, 'lives')).toBe('terra')
+    // ⚠️ Mas só o papel que a cena DESENHA: a `layers` não desenha o obstáculo, então um cacto
+    // declarado ali não tira a pedra e a chama do espaço.
+    const pedraChamaECacto: SceneCast = {
+      hero: { name: 'pedra', gender: 'f' },
+      obstacle: { name: 'cacto', gender: 'm' },
+      scenery: { name: 'chama', gender: 'f' },
+    }
+    expect(sceneWorld(pedraChamaECacto, 'layers')).toBe('espaco')
+    expect(sceneWorld(pedraChamaECacto, 'lives')).toBe('terra')
+    // Nave, asteroide e tiro vencem a terra declarada: o espaço é deles.
+    const dinoEAsteroide: SceneCast = {
+      hero: { name: 'Dino', gender: 'm' },
+      obstacle: { name: 'asteroide', gender: 'm' },
+    }
+    expect(sceneWorld(dinoEAsteroide, 'lives')).toBe('espaco')
+    // O papel de fábrica (não declarado) não puxa para a terra.
+    expect(sceneWorld({ obstacle: { name: 'pedra', gender: 'f' } }, 'lives')).toBe('espaco')
+  })
+
+  test('a tabela de papéis cobre as 45 cenas, na ordem canônica e sem repetir papel', () => {
+    expect(Object.keys(SCENE_ROLES).sort()).toEqual([...SCENE_IDS].sort())
+    const ordem = ['hero', 'obstacle', 'scenery']
+    for (const scene of SCENE_IDS) {
+      const papeis: readonly string[] = SCENE_ROLES[scene]
+      expect({ scene, papeis: [...papeis] }).toEqual({
+        scene,
+        papeis: ordem.filter((p) => papeis.includes(p)),
+      })
+    }
+    // O CONTEÚDO é conferido pelo desenho (a varredura do member-shell); aqui, a contagem.
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `entity-state` desenha TORRES, e não o elenco (G6);
+    // `frames`, `onion-skin` e `sheet-vs-sprite` desenham a nave do ateliê (G4); a `diagonal` e a
+    // `tilemap` ganharam o personagem (G5).
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(31)
+  })
+
+  test('um espaço no fim do nome não entra na frase', () => {
+    // O editor do admin guarda o nome como digitado e só apara ao sair do campo.
+    const digitando: SceneCast = { hero: { name: 'nave ', gender: 'f' } }
+    expect(castText('Faça o Dino aparecer. Os Dinos correm.', digitando)).toBe(
+      'Faça a nave aparecer. As naves correm.',
+    )
+  })
+
+  test('o guard aceita a figura da lista, e só ela', () => {
+    for (const figure of SCENE_FIGURES)
+      expect(isSceneCast({ hero: { name: 'Zé', gender: 'm', figure } })).toBe(true)
+    expect(isSceneCast({ hero: { name: 'Zé', gender: 'm', figure: 'dragao' } })).toBe(false)
+    expect(isSceneCast({ hero: { name: 'Zé', gender: 'm', figure: 3 } })).toBe(false)
+    expect(isSceneCast({ hero: { name: 'Zé', gender: 'm', figure: '' } })).toBe(false)
   })
 })

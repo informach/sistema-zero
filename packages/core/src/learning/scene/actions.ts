@@ -105,6 +105,12 @@ export const SCENE_PORTS = [
   'even',
   /** O nascedouro que reaproveita o corpo de quem morreu. Só `pool`. */
   'recycle',
+  /**
+   * Cada cacto COPIA a ficha ao nascer, em vez de lê-la sempre (lote 5 do Raio-X). Só `enemy-type`.
+   * ⚠️ É uma porta, e não uma ação nova, pela mesma razão do laço e da mira: é uma regra que liga e
+   * desliga, com o estado no rótulo da chave.
+   */
+  'copy',
 ] as const
 export type ScenePort = (typeof SCENE_PORTS)[number]
 
@@ -152,6 +158,20 @@ export type SceneAction =
   /** Onde cortar a folha, e o tamanho que o recorte tem DENTRO do jogo. */
   | { type: 'cut'; cell: number }
   | { type: 'sprite'; size: number }
+  /* ── O ateliê, redesenhado no lote 5 do Raio-X (16/09/2026) ──────────────────────────── */
+  /** O espelho do Pinta, sempre no MEIO do desenho: desligado, lado a lado (`x`), de cima e de
+   *  baixo (`y`) ou os DOIS (`xy`, consertos do review da onda B do lote 5: no Pinta são duas chaves
+   *  independentes). ⚠️ O `mirror` antigo (com a linha do eixo) continua legal, mas o Pinta não tem
+   *  eixo móvel: o player novo manda este. */
+  | { type: 'mirror-mode'; mode: 'off' | 'x' | 'y' | 'xy' }
+  /** Um traço pronto da nave na grade 16 × 16: a asa, a ponta ou a cabine. */
+  | { type: 'trace'; piece: 'asa' | 'ponta' | 'cabine' }
+  /** Um quadradinho tocado direto na grade 16 × 16. */
+  | { type: 'dot'; x: number; y: number }
+  /** Apagar o papel, para refazer a comparação. */
+  | { type: 'clear-paper' }
+  /** A largura do recorte na folha de 64 × 32 da nave: 16, 32 ou 64 (a altura fica 32). */
+  | { type: 'crop'; width: number }
   /* ── O núcleo do Iniciante 2D (15/09/2026) ───────────────────────────────────────────── */
   /** A velocidade do sprite: quanto ele anda em cada quadro, e para que lado. */
   | { type: 'velocity'; vx: number; vy: number }
@@ -180,6 +200,12 @@ export type SceneAction =
   | { type: 'target'; x: number; y: number }
   /** Para que lado a criança empurra o personagem: −1, 0 ou 1 em cada eixo. */
   | { type: 'direction'; x: number; y: number }
+  /**
+   * Andar 1 segundo com as setas apertadas, a partir do começo (lote 5 do Raio-X). Só `diagonal`.
+   * ⚠️ É o gesto que tomou o lugar do relógio nesta cena: "o passo deste quadro" dependia do botão
+   * (3,39 no ▶, 84,85 no roteiro), e andar 1 segundo é sempre o mesmo caminho.
+   */
+  | { type: 'stride' }
   /** A letra de uma casa do mapa escrito em texto. */
   | { type: 'paint-tile'; row: number; col: number; tile: string }
   /* ── O motor, o 3D e o ateliê (15/09/2026) ───────────────────────────────────────────── */
@@ -195,8 +221,22 @@ export type SceneAction =
   | { type: 'orbit'; yaw: number; pitch: number }
   /** A câmera de volta à vista de sempre. */
   | { type: 'recenter' }
-  /** O raio-X do modelo: os pontos ligados, sem a roupa. */
+  /**
+   * O raio-X do modelo: os pontos ligados, sem a pele. ⚠️ Desde o lote 5 do Raio-X a bancada manda
+   * `see-points` (três degraus); este continua legal para roteiros e sessões gravados antes, e vale
+   * o degrau `tudo` (ligado) ou `nada` (desligado).
+   */
   | { type: 'wireframe'; on: boolean }
+  /**
+   * "Ver os pontos" do modelo, em TRÊS degraus (lote 5 do Raio-X): `nada` (só a pele), `metade` (a
+   * pele transparente, com os pontos logo embaixo) e `tudo` (só a malha). Só `mesh`.
+   */
+  | { type: 'see-points'; level: MeshLevel }
+  /**
+   * Onde o estado das torres MORA (lote 5 do Raio-X): em cada uma (`shared: false`) ou um só para o
+   * jogo inteiro (`shared: true`). É a crença errada que a criança testa. Só `entity-state`.
+   */
+  | { type: 'brain-scope'; shared: boolean }
   /** Onde a mira está apontando na tela. */
   | { type: 'point'; x: number; y: number }
   /** O miolo e o contorno da mesma forma. */
@@ -204,6 +244,21 @@ export type SceneAction =
   /** De que lado vem a luz, e se a sombra está pintada. */
   | { type: 'light'; side: 'left' | 'right' }
   | { type: 'shade'; on: boolean }
+
+/** Os três degraus do "Ver os pontos" da cena `mesh`, do que mostra menos ao que mostra mais. */
+export const MESH_LEVELS = ['nada', 'metade', 'tudo'] as const
+export type MeshLevel = (typeof MESH_LEVELS)[number]
+/**
+ * Como a criança lê cada degrau: o que acontece com a PELE (consertos do review da onda B do lote 5).
+ * ⚠️⚠️ "Ver os pontos: metade" no controle e "ver os pontos" na faixa, logo embaixo de "do que um
+ * modelo 3D é feito?", respondiam a previsão antes do palpite. Os ids não mudam (sessões salvas).
+ * Faixa, bancada e editor do admin leem esta tabela.
+ */
+export const MESH_SKIN_LABELS: Record<MeshLevel, string> = {
+  nada: 'inteira',
+  metade: 'transparente',
+  tudo: 'sem pele',
+}
 
 /** Quais portas cada cena oferece. Cena sem porta não tem bancada de fios. */
 const PORTS: Record<SceneId, readonly ScenePort[]> = {
@@ -235,7 +290,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'hold-vs-press': [],
   variable: [],
   'group-loop': ['loop'],
-  'enemy-type': [],
+  'enemy-type': ['copy'],
   camera: ['camera'],
   contact: [],
   cooldown: [],
@@ -272,6 +327,14 @@ export const SCENE_LIMITS = {
   /** A tela do Corre Dino: 480 x 270, a mesma medida que a criança digita no bloco. */
   placeX: { min: 0, max: 480 },
   placeY: { min: 0, max: 270 },
+  /**
+   * ⚠️⚠️ O endereço da cena `coordinates` (lote 5 do Raio-X, 16/09/2026): até a MAIOR tela que um
+   * caso pode escolher (a do Desafio, 800 × 480, com a ação `stage`). Quem prende o endereço na tela
+   * DO CASO é o motor (`place.width`/`place.height`). Não é o `placeX`/`placeY`: esses continuam
+   * medindo a tela do Corre Dino para `velocity` e `hold-vs-press`.
+   */
+  addressX: { min: 0, max: 800 },
+  addressY: { min: 0, max: 480 },
   /** A frase que ela escreve no bloco da descrição. */
   describe: { min: 0, max: 200 },
   /** A tela que a criança prepara. A da Aula 1 (480 por 270) mora dentro desta faixa. */
@@ -291,6 +354,8 @@ export const SCENE_LIMITS = {
   /** As quatro células da folha e o tamanho do recorte dentro do jogo, em pixels. */
   cell: { min: 1, max: 4 },
   sprite: { min: 16, max: 96 },
+  /** A grade 16 × 16 do espelho (lote 5 do Raio-X): cada quadradinho de 0 a 15 nos dois eixos. */
+  paperCell: { min: 0, max: 15 },
   interval: { min: 0.5, max: 2 },
   sample: { min: 0, max: 1 },
   hint: { min: 1, max: 3 },
@@ -338,10 +403,26 @@ export const SCENE_LIMITS = {
   /** Onde a mira aponta, na tela da cena. */
   pointX: { min: 0, max: 480 },
   pointY: { min: 0, max: 270 },
+  /**
+   * Onde o personagem da `velocity` pode estar (lote 5 do Raio-X). A tela é de 480 por 270, e a
+   * cena desenha também a faixa FORA dela: à direita (onde o cacto nasce, depois de 480) e acima
+   * (onde a pedra do Desafio nasce, em y negativo). ⚠️ Não é o `placeX`/`placeY`: esses medem a tela.
+   */
+  driveX: { min: 0, max: 540 },
+  driveY: { min: -60, max: 270 },
 } as const
 
 /** As letras que o mapa de `tilemap` entende. Cada uma vira sempre a mesma coisa. */
 export const MAP_TILES = ['.', '#', 'o'] as const
+
+/**
+ * O vocabulário do ateliê (lote 5 do Raio-X, 16/09/2026). Listas, e não faixas, porque são as
+ * ESCOLHAS que o Pinta oferece: os dois espelhos, os traços prontos da nave e as larguras do recorte
+ * que a folha de dois quadros de 32 × 32 aceita. O DTO do servidor e o editor do admin leem daqui.
+ */
+export const MIRROR_MODES = ['off', 'x', 'y', 'xy'] as const
+export const SYMMETRY_PIECES = ['asa', 'ponta', 'cabine'] as const
+export const SHEET_CROP_WIDTHS = [16, 32, 64] as const
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -351,35 +432,145 @@ function between(n: unknown, min: number, max: number): n is number {
 }
 const oneOf = (scenes: readonly SceneId[], scene: SceneId) => scenes.includes(scene)
 
-const JUMPS: readonly SceneId[] = ['gravity', 'impulse', 'jump-sound']
-const TICKS: readonly SceneId[] = [
-  'draw-loop',
-  'frames',
-  'lives',
-  'gravity',
-  'impulse',
-  'jump-sound',
-  'spawn',
-  'cleanup',
-  'game-state',
-  'score',
-  'random',
-  'acceleration',
-  'restart',
+/**
+ * ⭐⭐ O RELÓGIO de cada cena com tempo, em QUADROS POR SEGUNDO (lote 4 do Raio-X, 16/09/2026).
+ *
+ * ⚠️⚠️ Até o lote 4 o motor contava UM quadro por chamada de `advance`, qualquer que fosse o tempo,
+ * e o player manda tamanhos diferentes: o ▶ ~25 fatias irregulares por segundo, o "Um passo" 0,2 s
+ * e o roteiro 1 s. O mesmo gesto dava números diferentes conforme o botão (a `contact` perdia ~25
+ * de vida por segundo com o ▶ e 1 no roteiro; a `diagonal` marcava 3,39, 16,97 ou 84,85). Hoje o
+ * motor ACUMULA os segundos (`clock.carry`) e roda a lógica uma vez por quadro INTEIRO deste
+ * ritmo: o mesmo tempo dá o mesmo resultado em qualquer fatiamento. É também a régua de
+ * legalidade do `advance`: cena fora desta tabela não tem relógio.
+ *
+ * O ritmo é escolhido pelo que a criança precisa VER, não pelo jogo de verdade (que roda a 60):
+ * - **4**: `draw-loop` (o rastro e o Dino que anda se leem um a um), `contact` (um coração por
+ *   quadro num ritmo que dá para contar) e `hold-vs-press` (cada quadro com a tecla apertada é um
+ *   passo de 30 da raquete de baixo, o mesmo passo que a de cima dá quando a tecla afunda).
+ * - **5**: `velocity`, uma soma `x + vx` por quadro. Cada passo fica à vista, e o Dino ainda anda
+ *   (vx 5 = 25 por segundo).
+ * - **30**: o salto (`gravity`, `impulse`, `jump-sound`: o modelo é de 30 Hz, um quadro é um tique
+ *   dele) e `spawn` ("a cada quadro" são 30 por segundo, a parede).
+ * - **24**: `frames`, para caber a troca mais rápida (12 por segundo) com cada troca num quadro.
+ * - **20**: `cleanup`, `game-state` e `restart` (lote 5: os cactos da partida vêm até o Dino),
+ *   movimento liso com um passo que ainda se vê.
+ * - **10**: `cooldown` (a recarga em décimos), `aim`, `delta-time`, `circle-collision` (2 por
+ *   quadro: a distância fica INTEIRA e bate exata na soma dos raios), `pool` (lote 5: o cacto
+ *   ATRAVESSA a tela em 10 quadros, e o "Um passo" anda um pedaço da travessia), `enemy-type` e
+ *   `group-loop` (lote 5: os cactos andam, e o laço mede de novo em cada quadro).
+ * - **1**: `score` e `lives` (um ponto por segundo: cada passo é um ponto) e `entity-state` (uma
+ *   decisão de cada torre por segundo). ⚠️ A `diagonal` saiu (lote 5): andar 1 segundo é um gesto.
+ *
+ * ⚠️ Mudou um número? A tabela "a meta só cai quando a criança VIU" (`core/CLAUDE.md`) e os
+ * roteiros de demonstração (`playsOut`) precisam continuar valendo: rode `clock.test.ts`.
+ */
+export const SCENE_FRAME_RATE = {
+  'draw-loop': 4,
+  frames: 24,
+  lives: 1,
+  gravity: 30,
+  impulse: 30,
+  'jump-sound': 30,
+  spawn: 30,
+  cleanup: 20,
+  'game-state': 20,
+  score: 1,
+  // ⚠️⚠️ `random` e `acceleration` SAÍRAM desta tabela no lote 5 do Raio-X (16/09/2026): cada uma
+  // tem o SEU relógio no gesto ("Sortear velocidade" corre 1 s só daquela raia; "Passar 5 segundos"
+  // é o relógio do Estúdio), e o ▶ geral movia os cactos sem mexer na base, dois relógios que faziam
+  // coisas diferentes na mesma bancada.
+  // ⚠️ A `restart` subiu de 10 para 20: o tempo passou a mover os cactos até a batida.
+  restart: 20,
   // O núcleo do Iniciante 2D: todas estas mostram o que acontece COM O TEMPO.
+  velocity: 5,
+  'hold-vs-press': 4,
+  // ⚠️ Lote 5 do Raio-X (G5): a `group-loop` ganhou relógio (os cactos vão e voltam, e o laço mede
+  // de novo em todo quadro), a `enemy-type` passou a mover os cactos, e a `diagonal` SAIU: o gesto
+  // dela é "Andar 1 segundo" (`stride`), que é sempre o mesmo caminho em qualquer botão.
+  'group-loop': 10,
+  'enemy-type': 10,
+  contact: 4,
+  cooldown: 10,
+  aim: 10,
+  // O motor: as que mostram o que o TEMPO faz.
+  // ⚠️⚠️ A `pool` subiu de 1 para 10 no lote 5 do Raio-X: o cacto ANDA pela tela (a travessia é de
+  // 1 s, `POOL_CROSSING`), e a um quadro por segundo ele pularia da entrada para a pilha. Continua um
+  // cacto por segundo; ela deixou de ser de quadro longo (o gesto não recomeça mais o quadro).
+  pool: 10,
+  'entity-state': 1,
+  'delta-time': 10,
+  'circle-collision': 10,
+} as const satisfies Partial<Record<SceneId, number>>
+
+/** Quantos quadros por segundo esta cena conta, ou `null` para a cena sem relógio. */
+export function sceneFrameRate(scene: SceneId): number | null {
+  return (SCENE_FRAME_RATE as Partial<Record<SceneId, number>>)[scene] ?? null
+}
+
+/**
+ * As cenas em que o QUADRO é o assunto: o botão de passo diz "Avançar 1 quadro".
+ *
+ * ⚠️ Só onde um quadro da cena é o quadro de que a cena FALA. `frames` e `onion-skin` chamam de
+ * quadro o DESENHO da animação; a `delta-time` compara os quadros de dois computadores (o rápido
+ * faz dois por quadro da cena); nas outras o quadro é só o passo do relógio. Nelas o botão continua
+ * "Um passo", e é o mesmo gesto: um quadro.
+ */
+const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
+  'draw-loop',
+  'spawn',
   'velocity',
   'hold-vs-press',
-  'enemy-type',
   'contact',
-  'cooldown',
-  'aim',
-  'diagonal',
-  // O motor: as três que mostram o que o TEMPO faz.
-  'pool',
-  'entity-state',
-  'delta-time',
-  'circle-collision',
 ]
+
+/**
+ * O nome do botão de passo desta cena, ou `null` para a cena sem relógio. "Avançar 1 quadro" anda UM
+ * quadro; "Um passo" anda os quadros inteiros de ~0,2 s (`sceneStepSeconds`).
+ */
+export function sceneStepLabel(scene: SceneId): 'Avançar 1 quadro' | 'Um passo' | null {
+  if (sceneFrameRate(scene) === null) return null
+  return QUADRO_E_O_ASSUNTO.includes(scene) ? 'Avançar 1 quadro' : 'Um passo'
+}
+
+/** Quanto tempo o "Um passo" mostra: perto disto, sempre em quadros INTEIROS da cena. */
+const PASSO_VISIVEL = 0.2
+
+/**
+ * O tempo que o botão de passo manda, ou `null` para a cena sem relógio.
+ *
+ * ⚠️⚠️ Um quadro só onde o quadro é o ASSUNTO (review do lote 4 do Raio-X, 16/09/2026). Nas outras,
+ * um quadro de 1/30 s é um tique invisível: o pulo pedia 30 cliques, ver os dois desenhos da `frames`
+ * 48 e um cacto sair da tela na `cleanup` 109, e quem mais depende do passo é quem não acompanha o
+ * movimento do ▶. "Um passo" anda os quadros INTEIROS mais perto de 0,2 s (6 no salto, 5 na `frames`,
+ * 4 na `cleanup`, 2 nas de 10 por segundo), e nunca menos de um (1 s nas de 1 por segundo).
+ * ⚠️ Inteiros, e não 0,2 s cravados: o passo continua sem comer nem deixar pedaço de quadro, e a
+ * sobra que o ▶ deixou fica intacta.
+ */
+export function sceneStepSeconds(scene: SceneId): number | null {
+  const fps = sceneFrameRate(scene)
+  if (fps === null) return null
+  if (QUADRO_E_O_ASSUNTO.includes(scene)) return 1 / fps
+  return Math.max(1, Math.round(PASSO_VISIVEL * fps)) / fps
+}
+
+/** Até quantos quadros por segundo o quadro é LONGO: a criança espera por ele. */
+const QUADRO_LONGO = 2
+
+/**
+ * A cena conta o tempo em quadros LONGOS (1 ou 2 por segundo: `score`, `lives`, `entity-state`)?
+ * ⚠️ A `pool` saiu no lote 5 (subiu para 10 por segundo, com o cacto andando), e a `diagonal` também
+ * (perdeu o relógio: andar 1 segundo é o gesto dela).
+ *
+ * ⚠️⚠️ Uma régua só para as duas coisas que o quadro longo pede (review do lote 4): o GESTO recomeça
+ * o quadro no motor (`stepScene`, e o `undo` na sessão), e o player mostra o quadro EM ANDAMENTO
+ * enquanto o ▶ roda (`SceneReadoutBand`). Se o lote 5 subir o ritmo de uma delas, as duas saem juntas.
+ */
+export function sceneLongFrame(scene: SceneId): boolean {
+  const fps = sceneFrameRate(scene)
+  return fps !== null && fps <= QUADRO_LONGO
+}
+
+const JUMPS: readonly SceneId[] = ['gravity', 'impulse', 'jump-sound']
 const MATCHES: readonly SceneId[] = ['controls', 'restart', 'game-state', 'score']
 /** As duas cenas que mostram os mesmos dois quadros: a troca e o fantasma. */
 const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
@@ -403,7 +594,7 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'impulse':
       return scene === 'impulse' && between(value.force, L.impulse.min, L.impulse.max)
     case 'advance':
-      return between(value.seconds, L.advance.min, L.advance.max) && oneOf(TICKS, scene)
+      return between(value.seconds, L.advance.min, L.advance.max) && sceneFrameRate(scene) !== null
     case 'move':
       return (
         (scene === 'hitbox' || scene === 'restart') &&
@@ -424,8 +615,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'interval':
       return scene === 'spawn' && between(value.seconds, L.interval.min, L.interval.max)
     case 'sample':
+      // ⚠️ Na `acceleration` só a VELOCIDADE (lote 5): lá o sorteio é o "Passar 5 segundos", e o
+      // lugar de nascimento não é assunto da cena.
       return (
-        (scene === 'random' || scene === 'acceleration') &&
+        (scene === 'random' || (scene === 'acceleration' && value.kind === 'velocity')) &&
         (value.kind === 'position' || value.kind === 'velocity') &&
         between(value.unit, L.sample.min, L.sample.max) &&
         typeof value.guided === 'boolean'
@@ -435,8 +628,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'place':
       return (
         scene === 'coordinates' &&
-        between(value.x, L.placeX.min, L.placeX.max) &&
-        between(value.y, L.placeY.min, L.placeY.max) &&
+        between(value.x, L.addressX.min, L.addressX.max) &&
+        between(value.y, L.addressY.min, L.addressY.max) &&
         Number.isInteger(value.x) &&
         Number.isInteger(value.y)
       )
@@ -451,8 +644,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'listen':
       return scene === 'screen-reader'
     case 'stage':
+      // ⚠️ Também na `coordinates` (lote 5 do Raio-X): é como um CASO escolhe a tela do endereço (o
+      // Desafio abre em 800 × 480, a tela do jogo da criança). A bancada dela não oferece o gesto.
       return (
-        scene === 'stage-size' &&
+        (scene === 'stage-size' || scene === 'coordinates') &&
         between(value.width, L.stageWidth.min, L.stageWidth.max) &&
         between(value.height, L.stageHeight.min, L.stageHeight.max) &&
         Number.isInteger(value.width) &&
@@ -510,6 +705,23 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
         between(value.size, L.sprite.min, L.sprite.max) &&
         Number.isInteger(value.size)
       )
+    // ── O ateliê do lote 5 do Raio-X ──────────────────────────────────────────────────────
+    case 'mirror-mode':
+      return scene === 'symmetry' && MIRROR_MODES.some((m) => m === value.mode)
+    case 'trace':
+      return scene === 'symmetry' && SYMMETRY_PIECES.some((p) => p === value.piece)
+    case 'dot':
+      return (
+        scene === 'symmetry' &&
+        between(value.x, L.paperCell.min, L.paperCell.max) &&
+        between(value.y, L.paperCell.min, L.paperCell.max) &&
+        Number.isInteger(value.x) &&
+        Number.isInteger(value.y)
+      )
+    case 'clear-paper':
+      return scene === 'symmetry'
+    case 'crop':
+      return scene === 'sheet-vs-sprite' && SHEET_CROP_WIDTHS.some((w) => w === value.width)
     // ── O núcleo do Iniciante 2D ──────────────────────────────────────────────────────────
     case 'velocity':
       return (
@@ -575,7 +787,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'mode':
       return scene === 'contact' && (value.kind === 'ask' || value.kind === 'event')
     case 'shoot':
-      return scene === 'cooldown'
+      // ⚠️ Nas `lives` o tiro é o ACERTO que soma ponto (lote 5): no Desafio o ponto vem do tiro no
+      // asteroide, e não do tempo jogado.
+      // ⚠️ E na `aim` (lote 5, G5): o tiro sai com o GESTO "Atirar" e voa pela seta ou reto.
+      return scene === 'cooldown' || scene === 'lives' || scene === 'aim'
     case 'recharge':
       return scene === 'cooldown' && between(value.seconds, L.recharge.min, L.recharge.max)
     case 'target':
@@ -593,6 +808,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
         [-1, 0, 1].includes(value.x as number) &&
         [-1, 0, 1].includes(value.y as number)
       )
+    case 'stride':
+      return scene === 'diagonal'
     case 'paint-tile':
       return (
         scene === 'tilemap' &&
@@ -643,6 +860,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'camera-3d'
     case 'wireframe':
       return scene === 'mesh' && typeof value.on === 'boolean'
+    case 'see-points':
+      return scene === 'mesh' && MESH_LEVELS.some((n) => n === value.level)
+    case 'brain-scope':
+      return scene === 'entity-state' && typeof value.shared === 'boolean'
     case 'point':
       return (
         scene === 'pick-ray' &&

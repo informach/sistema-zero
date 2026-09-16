@@ -45,7 +45,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Descubra o limite da tela",
-        "instructions": "Mude a largura e a altura e veja a tela mudar. Depois ligue a borda: é ela que mostra onde o jogo acaba.",
+        "instructions": "Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -85,7 +85,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Descubra o endereço na tela",
-        "instructions": "Mude o x e veja para que lado o Dino vai. Depois mude só o y. Um dos dois faz uma coisa que pega todo mundo de surpresa.",
+        "instructions": "Mude o x e veja para que lado o Dino vai. Depois mude só o y e compare. Por último, leve o Dino para x 0 e y 0.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -139,11 +139,11 @@
         "kind": "interactive",
         "required": false,
         "title": "Criar e mostrar são a mesma coisa?",
-        "instructions": "Neste exemplo, crie um Dino nos bastidores. Observe a tela vazia. Depois ligue o desenho e compare.",
+        "instructions": "Neste exemplo, ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.",
         "hints": [
-          "Olhe os bastidores: o Dino já existe?",
-          "Compare o Dino guardado com a tela do jogo.",
-          "Toque em Desenhar e depois na Tela para ligar os dois."
+          "Olhe a ficha dos bastidores e a tela do jogo.",
+          "Toque em Criar Dino e olhe os dois lados.",
+          "Ligue e desligue o desenho e compare os dois lados."
         ],
         "activity": {
           "type": "experimentation",
@@ -156,7 +156,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Esta é uma experiência separada do seu projeto. Vamos descobrir por que criar não basta para aparecer. No seu jogo, o desenho será montado na próxima aula."
+        "text": "Esta é uma experiência separada do seu projeto. No seu jogo, o desenho vem na próxima aula."
       }
     },
     {

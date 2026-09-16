@@ -127,11 +127,11 @@
       "content": {
         "kind": "interactive",
         "title": "O menu funciona com toque?",
-        "instructions": "Neste exemplo, comece pelo teclado e depois pelo toque. Ligue o toque para que os dois caminhos funcionem.",
+        "instructions": "A tela de início promete dois jeitos de começar: tocar na tela ou apertar Enter. Teste os dois, voltando ao início.",
         "hints": [
-          "O convite promete dois caminhos. Os dois funcionam?",
-          "Olhe qual entrada está ligada a Começar.",
-          "Ligue Toque a Começar. Teste os dois caminhos, voltando ao início."
+          "Toque na tela de início e olhe se ela muda.",
+          "Olhe em que caixa está a peça Começar.",
+          "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início."
         ],
         "required": false,
         "activity": {

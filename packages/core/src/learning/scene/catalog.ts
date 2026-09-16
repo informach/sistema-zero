@@ -28,6 +28,33 @@ export interface SceneStep {
 export interface SceneGoal {
   id: string
   label: string
+  /**
+   * ⚠️⚠️ Meta que só existe para um CASO do professor (`setup.goals`), e nunca entra na missão de
+   * fábrica. `down` e `up` da `velocity` nasceram para o Dia 2 do Desafio; somadas às outras três,
+   * a missão de fábrica passou a cobrar cinco metas que a instrução, as pistas e a demonstração
+   * não pediam (a prévia do admin e toda experimentação sem caso). `sceneTargets` e `sceneGoals`
+   * deixam estas de fora quando não há caso; `isSceneSetup` continua aceitando as cinco.
+   */
+  soNoCaso?: true
+  /**
+   * O que FAZER para a meta cair, sem a resposta ("Aumente só o y"). O `label` é a CONCLUSÃO
+   * ("y maior leva para baixo") e só aparece depois que a meta cai.
+   *
+   * ⚠️ O "Ainda falta" do "Já descobri" mostrava o rótulo da meta que faltava, e em `up` o
+   * rótulo é a própria descoberta ("Velocidade negativa levou para cima"): a criança lia o que o
+   * palpite tinha perguntado antes de fazer o gesto. Com `pedido`, o avaliador diz o gesto.
+   *
+   * ⚠️⚠️ OBRIGATÓRIO desde o lote 2 do Raio-X (16/09/2026): meta nova sem pedido reprova no TS.
+   * Três regras para escrever um (cobradas em `cast.test.ts` e `questions.test.ts`):
+   *  - um gesto que a bancada de HOJE oferece, com o nome que o botão tem. ⚠️ O TEMPO é "deixe o
+   *    tempo passar" (ou o ▶): nenhum botão se chama "avançar o relógio", e o botão de passo tem DOIS
+   *    nomes desde o lote 4 ("Avançar 1 quadro" ou "Um passo", `sceneStepLabel`), então pedido nenhum
+   *    o cita. A exceção é a `acceleration`, que tem o botão "Avançar o relógio";
+   *  - nunca o resultado nem o resultado de OUTRA meta ("depois de o Dino sumir" entrega a
+   *    previsão da `camera`): os pedidos podem ficar todos à vista antes de qualquer meta cair;
+   *  - sobrevive ao elenco: sem pronome e sem particípio solto longe do nome.
+   */
+  pedido: string
 }
 
 export interface SceneModel {
@@ -46,6 +73,13 @@ export interface SceneModel {
   hints: readonly [string, string, string]
   /** O roteiro da demonstração desta cena. A demonstração autorada substitui; sem ela, é este. */
   script: readonly SceneStep[]
+  /**
+   * ⚠️⚠️ A frase de sucesso de uma MISSÃO RESTRITA, pela lista de metas dela em ordem alfabética e
+   * juntas por `+` (consertos do review da onda A do lote 5). O Dia 1 do Desafio cobra só `down`, e o
+   * cartão afirmava "x maior vai para a direita… E o 0, 0 fica no canto de cima!", o que a criança não
+   * viu. Sem entrada, vale `success`. Quem lê é `sceneSuccess` (evaluate).
+   */
+  successNoCaso?: Readonly<Record<string, string>>
 }
 
 export const SCENE_MODELS: Record<SceneId, SceneModel> = {
@@ -53,20 +87,31 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'coordinates',
     group: 'stage',
     title: 'O endereço na tela',
-    instruction: 'Mude o x e veja para que lado o Dino vai. Depois mude só o y.',
-    manipulates: 'O x e o y do Dino, na tela de 480 por 270',
-    success:
-      'x maior leva para a direita e y maior leva para baixo. Juntos, os dois são o endereço!',
-    extra: 'E se os dois forem 0? Descubra em que canto da tela isso fica.',
+    instruction:
+      'Mude o x e veja para que lado o Dino vai. Depois mude só o y. Por último, leve o Dino para x 0 e y 0.',
+    // ⚠️ Sem "480 por 270" (lote 5): a tela é a do CASO, e o Desafio abre em 800 × 480.
+    manipulates: 'O x e o y do Dino na tela do jogo',
+    success: 'x maior vai para a direita. y maior vai para baixo. E o 0, 0 fica no canto de cima!',
+    successNoCaso: { down: 'y maior leva o Dino para baixo. O 0 do y fica lá no alto!' },
+    // ⚠️ A pergunta de antes ("E se os dois forem 0?") virou a meta `origin`.
+    extra: 'E se o y for igual à altura da tela? O Dino ainda aparece?',
     goals: [
-      { id: 'right', label: 'x maior leva para a direita' },
-      { id: 'down', label: 'y maior leva para baixo' },
-      { id: 'same-x', label: 'Mesmo x, altura diferente' },
+      { id: 'right', label: 'x maior leva para a direita', pedido: 'Aumente só o x.' },
+      { id: 'down', label: 'y maior leva para baixo', pedido: 'Aumente só o y.' },
+      // ⚠️⚠️ Era `same-x` ("mesmo x, altura diferente"), que caía junto com `down` (lote 5 do Raio-X).
+      // Nenhum manifesto a cobrava em `setup.goals`.
+      {
+        id: 'origin',
+        label: 'O 0, 0 fica no canto de cima, à esquerda',
+        pedido: 'Leve o Dino para x 0 e y 0.',
+      },
     ],
     hints: [
       'Mexa só no x e olhe para que lado o Dino foi.',
-      'Agora deixe o x parado e aumente o y. Repare que ele não sobe.',
-      'Escolha um x e visite duas alturas diferentes com ele.',
+      // ⚠️ Sem "Repare que ele não sobe": era a resposta da previsão escrita na pista, e com um
+      // pronome que o elenco não flexiona.
+      'Agora deixe o x parado e aumente o y. Olhe para onde o Dino vai.',
+      'Diminua o x até 0. Depois diminua o y até 0.',
     ],
     script: [
       {
@@ -82,10 +127,11 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
         actions: [{ type: 'place', x: 300, y: 240 }],
       },
       {
+        // ⚠️ Sem "Aqui ele volta" (lote 5): pronome que o elenco não flexiona.
         id: 'step-3',
-        caption: 'O par x, y é o endereço do sprite. Aqui ele volta para 110 e 150.',
+        caption: 'Em x 0 e y 0, o canto de cima da caixa do Dino encosta no canto da tela.',
         highlight: 'scene',
-        actions: [{ type: 'place', x: 110, y: 150 }],
+        actions: [{ type: 'place', x: 0, y: 0 }],
       },
     ],
   },
@@ -95,17 +141,30 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     title: 'O que o leitor de tela lê',
     instruction: 'Ouça a tela com o campo vazio. Depois escreva a sua descrição e ouça de novo.',
     manipulates: 'A descrição do jogo e o botão de ouvir a tela',
-    success: 'O desenho não informa nada sozinho. A sua frase é que conta o objetivo e o controle!',
+    success: 'O programa não vê o desenho. Quem conta o jogo é a sua frase!',
     extra: 'E se a frase falasse só da tecla? Daria para saber o que fazer no jogo?',
     goals: [
-      { id: 'heard-empty', label: 'Ouviu a tela sem descrição' },
-      { id: 'says-goal', label: 'A frase diz o que fazer no jogo' },
-      { id: 'says-control', label: 'A frase diz como se joga' },
+      {
+        id: 'heard-empty',
+        label: 'Sem frase, a pessoa ouve só Imagem',
+        pedido: 'Aperte Ouvir a tela com o campo vazio.',
+      },
+      {
+        id: 'says-goal',
+        label: 'A frase diz o que fazer',
+        pedido: 'Escreva o que se faz no jogo e aperte Ouvir a tela de novo.',
+      },
+      {
+        id: 'says-control',
+        label: 'A frase diz como jogar',
+        pedido: 'Escreva também qual tecla usar e aperte Ouvir a tela de novo.',
+      },
     ],
     hints: [
       'Aperte Ouvir a tela antes de escrever qualquer coisa.',
-      'O programa não enxerga o desenho: ele lê o que estiver escrito.',
-      'Conte as duas coisas numa frase: o que fazer no jogo e qual tecla usar.',
+      // ⚠️ A pista 2 era "o programa não enxerga o desenho", a resposta da previsão da cena.
+      'Escreva o que se faz no jogo. Por exemplo: pule, corra, desvie.',
+      'Escreva também a tecla. Por exemplo: apertando espaço.',
     ],
     script: [
       {
@@ -129,18 +188,38 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'stage-size',
     group: 'stage',
     title: 'A tela e o limite dela',
-    instruction: 'Mude a largura e a altura. Depois ligue a borda e veja onde a tela acaba.',
-    manipulates: 'Largura e altura da tela, e a moldura que mostra o limite',
+    // ⚠️ A borda PRIMEIRO, e sem "veja onde a tela acaba" (review do lote 2): a previsão pergunta se
+    // dá para ver onde a tela acaba sem a borda, e a instrução fica logo acima dela.
+    instruction:
+      'Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.',
+    // ⚠️ "borda", e não "moldura": é o nome do botão e do bloco do Estúdio (lote 5).
+    manipulates: 'Largura e altura da tela, e a borda que mostra o limite',
     success: 'A tela tem um limite, e o limite é uma escolha sua!',
     extra: 'E se a tela ficar quadrada? O que muda para quem joga?',
     goals: [
-      { id: 'border-on', label: 'A borda mostra onde a tela acaba' },
-      { id: 'resized', label: 'A tela mudou de tamanho junto com os números' },
-      { id: 'target', label: 'Chegou na tela de 480 por 270' },
+      {
+        id: 'border-on',
+        label: 'A borda mostra onde a tela acaba',
+        pedido: 'Ligue a borda da tela.',
+      },
+      {
+        id: 'resized',
+        label: 'A borda acompanha os números',
+        // ⚠️ Com a borda à vista: sem ela a tela não se vê, e o número mudaria sem nada na tela mudar.
+        // ⚠️⚠️ E o MOTOR confere (lote 5): sem a borda a meta não cai, e a bancada deixa os números
+        // fechados até ela aparecer.
+        pedido: 'Com a borda à vista, mude a largura ou a altura.',
+      },
+      {
+        id: 'target',
+        label: 'Chegou na tela de 480 por 270',
+        pedido: 'Deixe a tela em 480 por 270.',
+      },
     ],
     hints: [
-      'Ligue a borda: sem ela a cor do fundo cobre tudo e o limite some.',
-      'Mude a largura e veja a moldura acompanhar.',
+      // ⚠️ A pista 1 dizia "sem ela a cor do fundo cobre tudo", a resposta da previsão da cena.
+      'Aperte o botão da borda.',
+      'Com a borda à vista, diminua a largura e olhe a borda.',
       'Deixe 480 de largura e 270 de altura, o tamanho do Corre Dino.',
     ],
     script: [
@@ -168,26 +247,46 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'draw-loop',
     group: 'stage',
     title: 'Por que o desenho se repete',
+    // ⚠️ Os nomes dos controles do lote 5: "Desenhar o Dino: só no começo / a cada quadro" e "Limpar a
+    // tela antes" (o bloco do Estúdio se chama "Limpar a tela").
     instruction:
-      'Avance o relógio. Depois ligue o desenho a cada quadro e a limpeza, uma de cada vez.',
-    manipulates: 'Desenhar a cada quadro, limpar antes de desenhar e o relógio',
-    success:
-      'Desenhar de novo a cada quadro é o que faz o jogo se mexer, e limpar antes é o que tira o rastro!',
+      'Aperte Avançar 1 quadro e olhe a tela e o x do Dino. Depois desenhe o Dino a cada quadro. Por último, ligue Limpar a tela antes.',
+    manipulates: 'Quando desenhar o Dino, limpar a tela antes e o relógio',
+    success: 'A cada quadro o jogo limpa a tela e desenha de novo. É assim que o Dino anda!',
     extra: 'E se limpar sem desenhar? O que sobra na tela?',
     goals: [
-      { id: 'frozen', label: 'Sem repetir o desenho, a tela congela' },
-      { id: 'trail', label: 'Sem limpar, fica rastro' },
-      { id: 'moving', label: 'Com os dois, o Dino se mexe' },
+      {
+        id: 'frozen',
+        label: 'Sem desenhar de novo, a tela não muda',
+        // ⚠️⚠️ "Com o Dino na tela" (review do lote 2): depois de limpar SEM desenhar a tela fica vazia,
+        // e o pedido antigo ("com o desenho desligado, avance") repetia um gesto que não derrubava a
+        // meta. Não mudar pede alguma coisa desenhada para ficar parada.
+        // ⚠️ "Aperte Avançar 1 quadro", o botão que a instrução nomeia (consertos do review da onda A do
+        // lote 5): nesta cena o passo tem sempre esse nome (`sceneStepLabel`), e "deixe o tempo passar"
+        // mandava procurar outro botão.
+        pedido:
+          'Com o Dino na tela, desenhe só no começo, sem limpar a tela, e aperte Avançar 1 quadro.',
+      },
+      {
+        id: 'trail',
+        label: 'Sem limpar, os desenhos velhos ficam',
+        pedido: 'Desenhe o Dino a cada quadro, sem limpar a tela, e deixe o tempo passar.',
+      },
+      {
+        id: 'moving',
+        label: 'Limpando e desenhando, o Dino anda',
+        pedido: 'Desenhe o Dino a cada quadro, ligue Limpar a tela antes e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'Avance o relógio com tudo desligado e veja se alguma coisa muda.',
-      'Ligue só o desenho a cada quadro. Olhe o que fica para trás.',
-      'Agora ligue também a limpeza e avance de novo.',
+      'Aperte Avançar 1 quadro e compare a tela com o x do Dino na faixa.',
+      'Escolha desenhar a cada quadro e avance dois quadros.',
+      'Ligue Limpar a tela antes e avance de novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Com o desenho desligado, o relógio anda e a tela fica parada.',
+        caption: 'Com o desenho só no começo, o x do Dino anda e a tela fica parada.',
         highlight: 'scene',
         actions: [
           { type: 'loop', on: false },
@@ -196,7 +295,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Desenhando a cada quadro, sem limpar, cada desenho fica na tela.',
+        caption: 'Desenhando a cada quadro, sem limpar, os desenhos de antes ficam na tela.',
         highlight: 'scene',
         actions: [
           { type: 'loop', on: true },
@@ -205,7 +304,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-3',
-        caption: 'Limpando antes de desenhar, sobra um Dino só: o movimento aparece.',
+        caption: 'Limpando antes de desenhar, sobra um Dino só, que anda.',
         highlight: 'scene',
         actions: [
           { type: 'erase', on: true },
@@ -214,56 +313,111 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
     ],
   },
+  /* ── O ateliê de O Jogo do Meu Jeito, redesenhado no lote 5 do Raio-X (16/09/2026) ──────────────
+     ⚠️⚠️ As cinco abaixo e as duas do fim (`fill-stroke`, `shading`) são a PONTE para o Pinta: o nome
+     de cada controle é o do botão da ferramenta (Prévia, Velocidade, Espelho lado a lado,
+     Preenchimento, Contorno, Sem cor) e o desenho é o da aula (a nave 32 × 32 com fogo, a pedra do
+     asteroide, a folha de 64 × 32). Proposta em `analise/g4-atelie.md`. */
   frames: {
     id: 'frames',
     group: 'art',
     title: 'Dois desenhos viram movimento',
+    // ⚠️⚠️ O Dino que ANDAVA entre os quadros saiu (lote 5): a Aula 3 quer o corpo parado e só o
+    // fogo mudando ("se a nave inteira mexeu, desfaça"), e a cena ensinava o contrário.
     instruction:
-      'Veja o quadro 1 e o quadro 2. Depois ligue a troca, deixe o relógio andar e mexa na velocidade.',
-    manipulates: 'Qual quadro aparece, a troca ligada e quantas trocas por segundo',
-    success: 'Cada quadro continua sendo um desenho parado. É a troca rápida que faz o movimento!',
-    extra: 'E se os dois quadros fossem iguais? Ainda pareceria que alguma coisa se mexe?',
+      'Olhe o quadro 1 e o quadro 2. Depois ligue a prévia rápida, pare, e experimente devagar.',
+    manipulates: 'Qual quadro aparece, a prévia tocando e a velocidade dela',
+    success:
+      'Cada quadro continua sendo um desenho parado. É a troca rápida que faz o fogo pulsar!',
+    extra: 'E se os dois quadros fossem iguais? O fogo ainda ia pulsar?',
     goals: [
-      { id: 'two-drawings', label: 'São dois desenhos inteiros, um de cada vez' },
-      { id: 'slow-shows-two', label: 'Devagar, dá para ver os dois desenhos' },
-      { id: 'movement', label: 'Rápido, os dois viram movimento' },
+      {
+        id: 'two-drawings',
+        label: 'Com a prévia parada, olhou o quadro 1 e o quadro 2',
+        pedido: 'Com a prévia parada, passe do quadro 1 para o quadro 2.',
+      },
+      {
+        id: 'movement',
+        label: 'Rápido, viu o fogo pulsar',
+        pedido: 'Ponha a velocidade em 8 e deixe a prévia tocar.',
+      },
+      // ⭐ Lote 5: parar a prévia rápida é ver que na tela há UM quadro de cada vez, a resposta da
+      // previsão. Antes a demonstração acabava com o relógio parado e a faixa dizendo "andando".
+      // ⚠️ Antes do "devagar" de propósito: é a meta que responde a previsão, e em último lugar o
+      // palpite só voltaria junto com a conclusão (a régua do `pedidos-no-motor`).
+      {
+        id: 'paused-one',
+        label: 'Parou a prévia rápida e viu um quadro só',
+        pedido: 'Com a prévia rápida tocando, pare a prévia.',
+      },
+      {
+        id: 'slow-shows-two',
+        label: 'Devagar, viu um quadro e depois o outro',
+        pedido: 'Ponha a velocidade em 2, ligue a prévia e espere.',
+      },
     ],
     hints: [
-      'Aperte quadro 1 e quadro 2 e olhe o que muda de um para o outro.',
-      'Ligue a troca com 1 troca por segundo, deixe o relógio andar e conte os desenhos.',
-      'Agora deixe em 8 trocas por segundo e olhe de novo.',
+      'Com a prévia parada, aperte Quadro 1 e Quadro 2. Olhe o que muda de um para o outro.',
+      'Ponha a velocidade em 8, espere o fogo pulsar e pare a prévia.',
+      'Agora ponha a velocidade em 2 e ligue a prévia. Conte os quadros que aparecem.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Cada quadro guarda um desenho inteiro. Este é o quadro 1.',
+        caption: 'Quadro 1: a nave com o fogo pequeno.',
         highlight: 'scene',
         actions: [{ type: 'frame', index: 1 }],
       },
       {
         id: 'step-2',
-        caption: 'E este é o quadro 2. Dois desenhos parados, não um desenho que se mexe.',
+        caption: 'Quadro 2: a mesma nave, com o fogo maior.',
         highlight: 'scene',
         actions: [{ type: 'frame', index: 2 }],
       },
       {
         id: 'step-3',
-        caption: 'Trocando devagar, dá para ver que são dois.',
+        caption: 'Devagar, 2 por segundo. Um, outro, um, outro.',
         highlight: 'scene',
+        // ⚠️ A prévia PARA no fim da parte: entre uma parte e outra o relógio do player para, e a
+        // faixa não pode dizer "tocando" sobre um fogo congelado.
         actions: [
-          { type: 'rate', perSecond: 1 },
+          { type: 'rate', perSecond: 2 },
           { type: 'play', on: true },
           { type: 'advance', seconds: 1 },
           { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 1 },
+          { type: 'play', on: false },
         ],
       },
       {
         id: 'step-4',
-        caption: 'Rápido, o olho junta os dois e vira movimento.',
+        // ⚠️⚠️ No PASSADO, e a prévia PARA no fim desta parte também (consertos do review da onda B do
+        // lote 5, M1): entre a parte 4 e a 5 a faixa dizia "prévia: tocando" e a frase "troca 8
+        // quadros por segundo" sobre um fogo congelado, até a criança apertar "Ver a parte 5".
+        caption: 'Rápido, 8 por segundo. O fogo pulsou e a nave ficou parada.',
         highlight: 'scene',
         actions: [
           { type: 'rate', perSecond: 8 },
+          { type: 'play', on: true },
           { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 1 },
+          { type: 'play', on: false },
+        ],
+      },
+      {
+        id: 'step-5',
+        // ⚠️ A parte 5 TOCA de novo e para de repente: parada só com `play off`, ela só trocava a faixa
+        // para "parada", sem mudar um pixel. ⚠️ 1,5 s, que cai em quadro inteiro a 24 por segundo (o
+        // editor do admin avisa tempo que não cai, e 0,4 s eram 9,6 quadros).
+        caption: 'De novo rápido, e parou de repente. Na prévia ficou um quadro inteiro.',
+        highlight: 'scene',
+        actions: [
+          { type: 'rate', perSecond: 8 },
+          { type: 'play', on: true },
+          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 0.5 },
+          { type: 'play', on: false },
         ],
       },
     ],
@@ -272,45 +426,66 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'onion-skin',
     group: 'art',
     title: 'O fantasma do quadro de antes',
-    instruction: 'No quadro 2, mova o fogo sem o fantasma. Depois ligue o fantasma e compare.',
-    manipulates: 'O fantasma do quadro anterior e o quanto o desenho do quadro 2 andou',
-    success: 'O fantasma é uma guia, não um desenho: ele deixa você comparar sem decorar!',
+    // ⚠️⚠️ Lote 5: a mesma nave dos quadros, e o que muda é o FOGO. O Dino andava entre os quadros e a
+    // régua "passo 52" dava a medida mesmo sem o fantasma.
+    instruction:
+      'No quadro 2, mude o fogo com o fantasma desligado. Depois ligue o fantasma e compare os dois fogos.',
+    manipulates: 'O fantasma do quadro anterior e o tamanho do fogo do quadro 2',
+    success:
+      'O fantasma é uma guia, não um desenho: ele deixa você comparar os dois fogos sem decorar!',
     extra: 'E no quadro 1? Tente ligar o fantasma lá e veja o que aparece.',
     goals: [
-      { id: 'blind-move', label: 'Mexeu no quadro 2 sem ver o de antes' },
-      { id: 'ghost-on', label: 'O fantasma mostra o quadro anterior por baixo' },
-      { id: 'even-step', label: 'Com o fantasma, o passo entre os dois ficou parelho' },
+      {
+        id: 'blind-move',
+        label: 'Mudou o fogo 2 sem ver o fogo 1',
+        pedido: 'No quadro 2, com o fantasma desligado, mude o tamanho do fogo 2.',
+      },
+      {
+        id: 'ghost-on',
+        // ⚠️⚠️ "Tracejado", e não "clarinho por baixo" (consertos do review da onda B do lote 5, A2): o
+        // fantasma é o contorno do fogo 1 POR CIMA do fogo 2, e a meta afirmava o que ninguém via.
+        label: 'Viu o fogo 1 tracejado no quadro 2',
+        pedido: 'Vá para o quadro 2 e ligue o fantasma.',
+      },
+      {
+        id: 'even-step',
+        label: 'Com o fantasma, deixou o fogo 2 maior e dentro do quadro',
+        pedido:
+          'No quadro 2, com o fantasma ligado, deixe o fogo 2 um pouco maior que o fogo 1, sem passar da borda.',
+      },
     ],
     hints: [
-      'Vá para o quadro 2 e mova o fogo com o fantasma desligado.',
-      'Agora ligue o fantasma. A imagem fraquinha é o quadro 1.',
-      'Deixe o passo entre 12 e 28 para a troca ficar suave.',
+      'Vá para o quadro 2 e mude o tamanho do fogo com o fantasma desligado.',
+      'Agora ligue o fantasma. O fogo tracejado é o do quadro 1.',
+      'Deixe o fogo 2 um pouco maior que o fogo tracejado, sem passar da borda do quadro.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'No quadro 2, sem o fantasma, o tamanho do passo é chute.',
+        caption: 'Quadro 2, fantasma desligado. O fogo cresceu quanto? Não dá para saber.',
         highlight: 'scene',
         actions: [
           { type: 'frame', index: 2 },
-          { type: 'shift', offset: 52 },
+          { type: 'shift', offset: 8 },
         ],
       },
       {
         id: 'step-2',
-        caption: 'Com o fantasma ligado, o quadro 1 aparece fraquinho por baixo.',
+        caption: 'Com o fantasma ligado, o fogo do quadro 1 aparece tracejado por cima.',
         highlight: 'scene',
         actions: [{ type: 'onion', on: true }],
       },
       {
         id: 'step-3',
-        caption: 'Agora dá para escolher o passo olhando os dois juntos.',
+        caption: 'Com os dois à vista, o fogo cresce um pouco e sai do mesmo lugar.',
         highlight: 'scene',
         actions: [{ type: 'shift', offset: 20 }],
       },
       {
         id: 'step-4',
-        caption: 'No quadro 1 não há quadro anterior para mostrar.',
+        // ⚠️ Palavras DIFERENTES da frase embaixo do palco (consertos do review da onda B do lote 5,
+        // B3): as duas diziam "No quadro 1 não há quadro anterior para mostrar.", uma em cima da outra.
+        caption: 'Voltou para o quadro 1. Com o fantasma ligado, nada tracejado aparece.',
         highlight: 'scene',
         actions: [{ type: 'frame', index: 1 }],
       },
@@ -319,47 +494,71 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   symmetry: {
     id: 'symmetry',
     group: 'art',
-    title: 'Um traço, dois lados',
-    instruction: 'Pinte com o espelho desligado. Ligue o espelho, pinte de novo e mude o eixo.',
-    manipulates: 'Onde você pinta, o espelho ligado e a linha do eixo',
-    success: 'Um traço só vira dois quando o espelho está ligado, e o eixo decide onde!',
-    extra: 'E se o eixo ficar bem na beirada? Para onde vai o reflexo?',
+    // ⚠️ O título antigo ("Um traço, dois lados") respondia a previsão logo abaixo dele.
+    title: 'O que o espelho faz com o seu traço?',
+    // ⚠️⚠️ Lote 5: o Espelho lado a lado do Pinta reflete sempre no MEIO do desenho, e existe também o
+    // de cima e de baixo. A cena mandava mover um eixo que a ferramenta não tem.
+    // ⚠️⚠️ Os dois espelhos são DUAS chaves independentes, como no Pinta (consertos do review da onda B
+    // do lote 5): a cena tinha uma escolha de três, e "E se os dois estivessem ligados?" não se tentava.
+    instruction:
+      'Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.',
+    manipulates: 'Os dois espelhos do Pinta e os traços da nave na grade',
+    success:
+      'Com o espelho ligado, cada traço aparece também do outro lado do meio. Desligado, fica só onde você pintou!',
+    extra: 'E se os dois espelhos estivessem ligados? Onde cairiam as cópias da asa?',
     goals: [
-      { id: 'one-side', label: 'Sem espelho, um traço é um traço só' },
-      { id: 'two-sides', label: 'Com o espelho, um traço vira dois' },
-      { id: 'axis-decides', label: 'Mudou o eixo e o reflexo mudou de lugar' },
+      {
+        id: 'one-side',
+        label: 'Pintou com o espelho desligado',
+        pedido: 'Com os dois espelhos desligados, pinte a asa.',
+      },
+      {
+        id: 'two-sides',
+        label: 'Pintou com o Espelho lado a lado',
+        // ⚠️ "Só" o lado a lado e a ASA: com os dois ligados nenhuma meta cai, e a cópia da cabine
+        // encosta no traço (A3).
+        pedido: 'Deixe ligado só o Espelho lado a lado e pinte a asa.',
+      },
+      {
+        // ⚠️ O id ficou (manifestos e sessões): era "mudou o eixo", e virou o segundo espelho do Pinta.
+        id: 'axis-decides',
+        label: 'Pintou com o espelho de cima e de baixo',
+        pedido: 'Deixe ligado só o espelho de cima e de baixo e pinte a asa.',
+      },
     ],
     hints: [
-      'Pinte uma coluna com o espelho desligado e conte os traços.',
-      'Ligue o espelho e pinte de novo na mesma coluna.',
-      'Mude a linha do eixo para outro lugar e pinte mais uma vez.',
+      'Pinte a asa e conte quantas asas apareceram.',
+      'Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.',
+      'Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa de novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Espelho desligado: pintou um traço, apareceu um traço.',
+        caption: 'Espelhos desligados: você pinta a asa, e aparece uma asa.',
         highlight: 'scene',
         actions: [
-          { type: 'mirror', on: false, line: 6 },
-          { type: 'paint', column: 3 },
+          { type: 'mirror-mode', mode: 'off' },
+          { type: 'trace', piece: 'asa' },
         ],
       },
       {
         id: 'step-2',
-        caption: 'Com o espelho, o mesmo traço aparece dos dois lados da linha.',
+        caption: 'Com o Espelho lado a lado, a outra asa aparece do outro lado do meio.',
         highlight: 'scene',
         actions: [
-          { type: 'mirror', on: true, line: 6 },
-          { type: 'paint', column: 4 },
+          { type: 'clear-paper' },
+          { type: 'mirror-mode', mode: 'x' },
+          { type: 'trace', piece: 'asa' },
         ],
       },
       {
         id: 'step-3',
-        caption: 'O eixo mudou de lugar, e o reflexo foi junto.',
+        caption: 'Com o espelho de cima e de baixo, a cópia cai do outro lado do meio, em cima.',
         highlight: 'scene',
         actions: [
-          { type: 'mirror', on: true, line: 9 },
-          { type: 'paint', column: 7 },
+          { type: 'clear-paper' },
+          { type: 'mirror-mode', mode: 'y' },
+          { type: 'trace', piece: 'asa' },
         ],
       },
     ],
@@ -368,83 +567,139 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'pixel-vector',
     group: 'art',
     title: 'De perto, a borda conta',
-    instruction: 'Escolha uma pedra e aumente a lupa. Depois olhe a outra do mesmo jeito.',
-    manipulates: 'Qual pedra a lupa mostra e de quão perto',
-    success: 'De longe as duas parecem a mesma pedra. De perto, a borda conta qual é qual!',
+    // ⚠️⚠️ Lote 5: UMA lupa para as duas pedras, que têm a MESMA silhueta (a de pixel é a curva da de
+    // vetor rasterizada em 16 × 16). A de pixel era um oval de outra forma, e a pedra que não estava
+    // sob a lupa ficava miúda ao lado da outra.
+    instruction: 'Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.',
+    manipulates: 'O quanto a lupa aproxima as duas pedras',
+    success:
+      'De longe as duas parecem a mesma pedra. De perto, a de pixel mostra os quadradinhos e a de vetor continua lisa!',
     extra: 'Qual das duas você usaria numa nave bem pequena? E numa bem grande?',
     goals: [
-      { id: 'stairs', label: 'De perto, o pixel vira escadinha' },
-      { id: 'smooth', label: 'De perto, o vetor continua liso' },
-      { id: 'alike', label: 'De longe, as duas parecem iguais' },
+      {
+        id: 'stairs',
+        label: 'Aproximou até as bordas ficarem diferentes',
+        // ⚠️ 4, e não 3 (consertos do review da onda B do lote 5, M5): em 3 a pedra parecia peneira.
+        pedido: 'Deixe Aproximar em 4 vezes ou mais.',
+      },
+      {
+        // ⚠️ O id ficou: era "de perto, o vetor continua liso", e virou os pontos da Caneta à vista.
+        id: 'smooth',
+        label: 'Aproximou até ver os pontos do vetor',
+        pedido: 'Deixe Aproximar em 6 vezes ou mais.',
+      },
+      {
+        id: 'alike',
+        label: 'Voltou para longe e comparou de novo',
+        pedido: 'Depois de aproximar, volte Aproximar para 1 ou 2 vezes.',
+      },
     ],
     hints: [
-      'Deixe a lupa na pedra de pixel e aumente até 5.',
-      'Agora troque para a pedra de vetor, com a lupa no mesmo lugar.',
-      'Volte a lupa para 1 e compare as duas de longe.',
+      'Aproxime devagar e pare quando uma borda mudar.',
+      'Continue aproximando. Olhe o que aparece na borda da pedra de vetor.',
+      'Volte Aproximar para 1 vez e compare as duas de longe.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'De longe, as duas pedras parecem a mesma coisa.',
+        caption: 'Lupa em 2: as duas pedras quase do tamanho do jogo.',
         highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 1 }],
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 2 }],
       },
       {
         id: 'step-2',
-        caption: 'A pedra de pixel é feita de quadradinhos: de perto a borda vira escadinha.',
+        caption: 'Lupa em 4: a borda de pixel vira degraus, e a de vetor continua lisa.',
         highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 6 }],
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 4 }],
       },
       {
         id: 'step-3',
-        caption: 'A pedra de vetor é feita de curvas: de perto a borda continua lisa.',
+        caption: 'Lupa em 8: de um lado os quadradinhos, do outro os pontos da Caneta.',
         highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'vector', zoom: 6 }],
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 8 }],
       },
       {
         id: 'step-4',
-        caption: 'Nenhuma das duas é a certa. Cada uma serve para um jeito de desenhar.',
+        caption: 'De longe, as duas voltam a parecer a mesma pedra.',
         highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'vector', zoom: 1 }],
+        actions: [{ type: 'inspect', kind: 'pixel', zoom: 1 }],
       },
     ],
   },
   'sheet-vs-sprite': {
     id: 'sheet-vs-sprite',
     group: 'art',
-    title: 'A folha não é o tamanho no jogo',
-    instruction: 'Recorte um pedaço da folha. Depois mude o tamanho no jogo e olhe a folha.',
-    manipulates: 'Qual pedaço da folha está recortado e o tamanho dele dentro do jogo',
-    success: 'A folha guarda os desenhos; o tamanho no jogo é outra escolha, feita depois!',
-    extra: 'E se dois pedaços tivessem tamanhos diferentes na folha? O que aconteceria?',
+    title: 'A folha e o tamanho no jogo',
+    // ⚠️⚠️ Lote 5: a folha é a da nave (64 × 32, dois quadros de 32 × 32) e a escolha é a LARGURA do
+    // recorte, a que a seção da Aula 6 promete. A folha era de 64 × 64 com quatro Dinos, e a única
+    // meta fechava num toque no tamanho do jogo.
+    instruction:
+      'Mude a largura do recorte e olhe a nave no jogo. Depois mude o tamanho no jogo e olhe a folha.',
+    manipulates: 'A largura do recorte na folha da nave, o quadro recortado e o tamanho no jogo',
+    success:
+      'O recorte precisa ter o tamanho de UM quadro da folha. O tamanho no jogo é outra escolha!',
+    extra: 'E se a folha tivesse quatro quadros de 16 por 32? Que largura de recorte você usaria?',
     goals: [
-      { id: 'cut', label: 'Cada pedaço da folha é um desenho inteiro' },
-      { id: 'two-cells', label: 'Dois pedaços diferentes, a mesma folha' },
-      { id: 'size-apart', label: 'O tamanho no jogo mudou e a folha ficou igual' },
+      {
+        id: 'squeezed',
+        label: 'Viu o jogo mostrar a folha inteira',
+        pedido: 'Escolha a largura 64 e olhe o jogo.',
+      },
+      {
+        id: 'crop-half',
+        label: 'Recortou 16 e olhou o jogo',
+        pedido: 'Escolha a largura 16 e olhe o jogo.',
+      },
+      {
+        id: 'crop-whole',
+        label: 'Achou o recorte que mostra uma nave inteira',
+        pedido: 'Escolha a largura 32 e olhe o jogo.',
+      },
+      // ⚠️ O id ficou (a Aula 6 o cobra no caso); só abre DEPOIS do recorte de uma nave inteira.
+      {
+        id: 'size-apart',
+        label: 'Mudou o tamanho no jogo e conferiu a folha',
+        // ⚠️ "Bem maior ou bem menor" (consertos do review da onda B do lote 5, B8): um toque no + só
+        // chegava a 62, quase a nave de fábrica, e a meta caía com a mão ainda no botão.
+        pedido: 'Com o recorte de 32, deixe a nave do jogo bem maior ou bem menor e olhe a folha.',
+      },
     ],
     hints: [
-      'Escolha um dos quatro pedaços da folha.',
-      'Agora escolha outro pedaço e compare o que aparece no jogo.',
-      'Mexa no tamanho no jogo e olhe a folha: ela não muda.',
+      'Mude a largura do recorte e olhe o que aparece no jogo.',
+      'Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?',
+      'Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'A folha tem quatro pedaços, e cada um é um desenho inteiro.',
+        // ⚠️⚠️ O jogo ABRE vazio (consertos do review da onda B do lote 5, A4): a parte 1 é a que carrega
+        // a folha inteira, e a resposta da previsão da Aula 6 não aparece antes do palpite.
+        caption: 'O jogo mostra a folha inteira: duas naves espremidas.',
         highlight: 'scene',
-        actions: [{ type: 'cut', cell: 1 }],
+        actions: [{ type: 'crop', width: 64 }],
       },
       {
         id: 'step-2',
-        caption: 'Outro pedaço, outro desenho. A folha continua a mesma.',
+        caption: 'Recorte de 32 por 32: agora cabe uma nave só.',
         highlight: 'scene',
-        actions: [{ type: 'cut', cell: 2 }],
+        actions: [{ type: 'crop', width: 32 }],
       },
       {
         id: 'step-3',
-        caption: 'O tamanho no jogo é escolha de depois: a folha não muda com ele.',
+        // ⚠️ Oito trocas, e o fogo nomeado (consertos do review da onda B do lote 5, B7): "o fogo pulsa"
+        // com quatro trocas em ~1,8 s chegava com o fogo já parado.
+        caption: 'Trocando de quadro, o fogo muda: pequeno, grande, pequeno, grande.',
         highlight: 'scene',
-        actions: [{ type: 'sprite', size: 80 }],
+        actions: [
+          { type: 'cut', cell: 2 },
+          { type: 'cut', cell: 1 },
+          { type: 'cut', cell: 2 },
+          { type: 'cut', cell: 1 },
+          { type: 'cut', cell: 2 },
+          { type: 'cut', cell: 1 },
+          { type: 'cut', cell: 2 },
+          { type: 'cut', cell: 1 },
+        ],
       },
     ],
   },
@@ -452,18 +707,32 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'world',
     group: 'world',
     title: 'Faça o Dino aparecer',
-    instruction: 'Crie o Dino nos bastidores. Depois ligue seu desenho à tela.',
-    manipulates: 'Dino nos bastidores e ligação de desenho',
-    success: 'É o mesmo Dino: existir e aparecer são coisas diferentes!',
-    extra: 'E se você desligar o desenho? O Dino ainda existe?',
+    // ⚠️⚠️ Criar e desenhar são dois controles INDEPENDENTES desde o lote 5 do Raio-X (16/09/2026): o
+    // fio do desenho só aparecia depois de criar, e a outra metade do contraste (desenhar sem ninguém
+    // criado) não existia. A ordem é dela.
+    instruction:
+      'Crie o Dino e ligue o desenho, na ordem que quiser. Olhe os dois lados a cada toque.',
+    manipulates: 'Criar o Dino nos bastidores e desenhar o Dino na tela',
+    success: 'É o mesmo Dino dos dois lados: criar guarda, desenhar mostra!',
+    // ⚠️ "E se você desligar o desenho?" virou a PREVISÃO (é o que a criança ainda não viveu no
+    // Estúdio); a pergunta do fim passa a ser o caso que só o controle independente permite.
+    extra: 'E se você ligar o desenho antes de criar o Dino? O que aparece na tela?',
     goals: [
-      { id: 'hidden', label: 'Dino existe sem aparecer' },
-      { id: 'visible', label: 'O mesmo Dino aparece' },
+      {
+        id: 'hidden',
+        label: 'O Dino existe sem aparecer',
+        pedido: 'Deixe o Dino criado com o desenho desligado.',
+      },
+      {
+        id: 'visible',
+        label: 'O mesmo Dino aparece na tela',
+        pedido: 'Com o Dino criado, ligue o desenho.',
+      },
     ],
     hints: [
-      'Olhe os bastidores: o Dino já existe?',
-      'Compare o Dino guardado com a tela do jogo.',
-      'Toque em Desenhar e depois na Tela para ligar os dois.',
+      'Olhe a ficha dos bastidores e a tela do jogo.',
+      'Toque em Criar Dino e olhe os dois lados.',
+      'Ligue e desligue o desenho e compare os dois lados.',
     ],
     script: [
       {
@@ -478,37 +747,62 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
         highlight: 'scene',
         actions: [{ type: 'connect', port: 'draw', enabled: true }],
       },
+      {
+        id: 'step-3',
+        caption: 'Desligar o desenho tira o Dino da tela, e não dos bastidores.',
+        highlight: 'scene',
+        actions: [{ type: 'connect', port: 'draw', enabled: false }],
+      },
     ],
   },
   layers: {
     id: 'layers',
     group: 'world',
     title: 'Quem fica na frente?',
-    instruction: 'Troque as peças de lugar. A última desenhada fica na frente!',
-    manipulates: 'Ordem das peças Floresta e Dino',
-    success: 'Agora o Dino aparece na frente da floresta!',
-    extra: 'E se a floresta voltar para o último lugar?',
+    // ⚠️ A instrução terminava com "A última desenhada fica na frente!": a regra que a cena existe
+    // para a criança descobrir, escrita logo acima da previsão.
+    instruction: 'O Dino está escondido. Mude a ordem de desenhar e faça o Dino aparecer.',
+    // ⚠️ É a `<desc>` do palco (lote 5): "Ordem das peças Floresta e Dino" passava por um
+    // `toLowerCase()` e o leitor de tela ouvia "ordem das peças chama e dino" com o elenco.
+    manipulates: 'A ordem de desenhar do Dino e da floresta',
+    success: 'Só a ordem mudou: quem é desenhado por último fica por cima, e ninguém foi apagado!',
+    // ⚠️ "E se a floresta voltar para o último lugar?" virou a MISSÃO 2 (lote 5 do Raio-X).
+    extra: 'E se fossem três peças? Quem ficaria por cima de todas?',
+    // ⚠️⚠️ Duas missões, nesta ordem (lote 5 do Raio-X): o Dino aparecer, e depois esconder de novo
+    // SÓ com a ordem, o que prova que ninguém foi apagado. Um toque fechava as duas metas (a ação
+    // observava os dois lados da troca). O `settled` do avaliador ainda cobra o Dino na frente no
+    // fim, que é o arranjo do jogo: a pista e o "Conferir" pedem trazê-lo de volta.
     goals: [
-      { id: 'covered', label: 'Floresta na frente' },
-      { id: 'front', label: 'Dino na frente' },
+      {
+        id: 'front',
+        label: 'O Dino apareceu na frente',
+        pedido: 'Leve o Dino para o fim da ordem de desenhar.',
+      },
+      {
+        id: 'covered',
+        label: 'Escondeu de novo só trocando a ordem',
+        pedido: 'Com o Dino no fim da ordem de desenhar, leve a floresta para o fim.',
+      },
     ],
     hints: [
-      'O Dino está escondido atrás de quê?',
-      'Olhe a última peça na faixa de desenho.',
-      'Escolha o Dino e toque no espaço Depois.',
+      'Onde está o resto do Dino?',
+      // ⚠️ "Quem está embaixo é desenhado por último" diz como a LISTA se lê (de cima para baixo, como
+      // os blocos do Estúdio), e não quem fica por cima no desenho.
+      'Olhe a lista A ordem de desenhar. Quem está embaixo é desenhado por último.',
+      'Leve o Dino para o fim da lista.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'A floresta cobre o Dino.',
+        caption: 'O Dino foi para o fim da ordem de desenhar e apareceu na frente.',
         highlight: 'scene',
-        actions: [{ type: 'layer', front: false }],
+        actions: [{ type: 'layer', front: true }],
       },
       {
         id: 'step-2',
-        caption: 'Quem é desenhado depois fica na frente.',
+        caption: 'A floresta voltou para o fim e cobriu o Dino de novo. Ninguém foi apagado.',
         highlight: 'scene',
-        actions: [{ type: 'layer', front: true }],
+        actions: [{ type: 'layer', front: false }],
       },
     ],
   },
@@ -516,37 +810,54 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'gravity',
     group: 'motion',
     title: 'Faça o Dino voltar ao chão',
-    instruction: 'Toque no Dino para pular. Observe o que acontece sem aplicar a gravidade.',
-    manipulates: 'Dino e ligação da gravidade ao personagem',
-    success: 'A gravidade fez o Dino mudar de direção e voltar ao chão!',
-    extra: 'E se você desligar a aplicação e repetir o mesmo pulo?',
+    // ⚠️ "No meio do pulo" (lote 5 do Raio-X): ligar a gravidade agora age no voo que já começou.
+    instruction:
+      'Aqui a gravidade está desligada. Faça o Dino pular e veja até onde vai. Depois, com o Dino no ar, ligue a gravidade.',
+    manipulates: 'O Dino e a ligação da gravidade',
+    success: 'A gravidade puxou para baixo, a subida virou descida e o Dino voltou ao chão!',
+    extra: 'E se você desligar a gravidade no meio da queda?',
     goals: [
-      { id: 'floating', label: 'Subida sem aplicar gravidade' },
-      { id: 'landed', label: 'Volta ao chão com gravidade' },
+      {
+        id: 'floating',
+        label: 'Sem gravidade, não parou de subir',
+        pedido: 'Com a gravidade desligada, faça o Dino pular e espere.',
+      },
+      {
+        id: 'landed',
+        label: 'Com gravidade, o pulo voltou ao chão',
+        // ⚠️ "No ar" (lote 5): é o gesto que mostra a gravidade agindo. Ligar e pular de novo continua
+        // valendo (o motor cobra só ter visto o pulo sem gravidade antes).
+        pedido: 'Com o Dino no ar, ligue a gravidade e espere.',
+      },
     ],
     hints: [
-      'O Dino está voltando ou continua subindo?',
-      'Repita o mesmo impulso com a gravidade aplicada.',
-      'Ligue Gravidade ao Dino. Depois toque no Dino para saltar.',
+      // ⚠️ A pista 1 perguntava "voltando ou subindo?" com o Dino parado no chão (a situação vem na
+      // frente dela). O gesto e o número que respondem, sem a resposta.
+      'Toque no Dino e olhe o número da altura. O número para de crescer?',
+      'Com o Dino no ar, ligue a gravidade e olhe o que muda.',
+      // ⚠️ O pulo antes (consertos do review da onda A do lote 5): o fio fica fechado até o Dino passar do
+      // meio da subida sem gravidade, e a pista 3 mandava ligar um fio fechado.
+      'Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Observe o salto sem gravidade.',
+        caption: 'Sem gravidade, o Dino sobe e não para.',
         highlight: 'scene',
         actions: [
           { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 0.6 },
+          { type: 'advance', seconds: 1.5 },
         ],
       },
       {
         id: 'step-2',
-        caption: 'Agora a gravidade traz o mesmo Dino de volta.',
+        // ⚠️ Sem teletransporte (lote 5 do Raio-X): a gravidade é ligada NO AR e age dali.
+        caption:
+          'Com a gravidade ligada no ar, a subida freou, virou queda e o Dino voltou ao chão.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'gravity', enabled: true },
-          { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 2 },
+          { type: 'advance', seconds: 2.5 },
         ],
         waitFor: 'landed',
       },
@@ -556,23 +867,37 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'impulse',
     group: 'motion',
     title: 'Escolha a altura do salto',
-    instruction: 'Toque no Dino. Depois mude a seta do impulso e compare outro salto.',
-    manipulates: 'Seta do impulso inicial e Dino',
-    success: 'Com a mesma gravidade, um impulso maior alcança outra altura!',
-    extra: 'E se você escolher uma altura entre as duas marcas?',
+    // ⚠️ O 14 NA instrução (review do lote 2): a previsão pergunta pelo impulso 14, e a meta que a
+    // responde é a do impulso mais forte. ⚠️ "As duas marcas" (lote 5): elas ficam no palco.
+    instruction:
+      'Faça o Dino pular com impulso 9. Depois leve o impulso até 14 e pule de novo. Compare as duas marcas.',
+    manipulates: 'O impulso do salto e o Dino',
+    success: 'Com a mesma gravidade, um impulso maior fez uma marca muito mais alta!',
+    // ⚠️ O caso novo da proposta do g2, para quem terminar antes: aplicar, e não repetir.
+    extra: 'Agora faça um salto que passe da marca azul e fique abaixo de 150.',
     goals: [
-      { id: 'first-height', label: 'Um salto completo' },
-      { id: 'other-height', label: 'Outra altura com a mesma gravidade' },
+      {
+        id: 'first-height',
+        label: 'Um salto chegou ao chão',
+        pedido: 'Faça o Dino pular e espere o salto terminar.',
+      },
+      {
+        id: 'other-height',
+        label: 'Outro impulso, marca bem diferente',
+        // ⚠️ Os DOIS impulsos no pedido (lote 5): a meta compara a marca de agora com a de antes, e
+        // "leve até 14 e pule de novo" não servia a quem já tinha pulado com 14.
+        pedido: 'Pule com impulso 9 e depois com impulso 14.',
+      },
     ],
     hints: [
-      'A marca mostra a altura do salto anterior.',
-      'Mude só a seta. A gravidade continua igual.',
-      'Escolha Baixo ou Alto e toque no Dino para comparar.',
+      'A marca azul é o salto de antes.',
+      'Mude só o impulso. A gravidade fica igual.',
+      'Leve o impulso até 14 e toque no Dino.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Guarde a altura deste salto.',
+        caption: 'Esta marca fica no palco: é o salto de antes.',
         highlight: 'scene',
         actions: [
           { type: 'jump', input: 'tap' },
@@ -581,7 +906,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Só o impulso mudou. A gravidade continua igual.',
+        caption: 'Só o impulso mudou. Compare as duas marcas.',
         highlight: 'scene',
         actions: [
           { type: 'impulse', force: 14 },
@@ -594,42 +919,81 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   'jump-sound': {
     id: 'jump-sound',
     group: 'events',
-    title: 'O som acompanha o salto',
-    instruction: 'Aperte Espaço para saltar. Aperte de novo no ar e observe o som.',
-    manipulates: 'Fio do som, Dino e comando Espaço',
-    success: 'O som acompanha o salto de verdade, por tecla ou toque!',
-    extra: 'E se você der outro comando enquanto o Dino ainda está no ar?',
+    title: 'O som acompanha o pulo',
+    instruction:
+      'Aperte Espaço duas vezes no mesmo pulo. Depois pule tocando no Dino. Conte os sons.',
+    manipulates: 'A peça Tocar som, o Dino e a tecla Espaço',
+    success: 'Em Quando o Dino pular, o som toca uma vez em cada pulo, por tecla ou por toque!',
+    extra: 'E se você apertar Espaço várias vezes no mesmo pulo, com o som em Quando o Dino pular?',
+    // ⚠️⚠️ A missão de fábrica são TRÊS metas (lote 5 do Raio-X): o som sem pulo, o pulo sem som (o
+    // outro defeito que a aula conserta, e que acontecia calado) e um som em cada pulo pelos dois
+    // jeitos. As três antigas de detalhe (`quiet-air`, `key-sound`, `tap-sound`) ficam para um caso
+    // (`soNoCaso`): ids não mudam, e a `every-jump` cai quando as duas de tecla e toque caíram.
     goals: [
-      { id: 'false-sound', label: 'Som sem novo salto' },
-      { id: 'quiet-air', label: 'Sem salto, o som espera' },
-      { id: 'key-sound', label: 'Som no salto por tecla' },
-      { id: 'tap-sound', label: 'Som no salto por toque' },
+      {
+        id: 'false-sound',
+        label: 'Som sem pulo',
+        pedido: 'Com Tocar som em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.',
+      },
+      {
+        id: 'silent-jump',
+        label: 'Pulo sem som',
+        pedido: 'Com Tocar som em Quando apertar Espaço, pule tocando no Dino.',
+      },
+      {
+        id: 'quiet-air',
+        label: 'Sem pulo novo, o som esperou',
+        pedido: 'Com Tocar som em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.',
+        soNoCaso: true,
+      },
+      {
+        id: 'key-sound',
+        label: 'Com o som no pulo, a tecla fez pulo e som',
+        pedido: 'Com Tocar som em Quando o Dino pular, pule pela tecla Espaço.',
+        soNoCaso: true,
+      },
+      {
+        id: 'tap-sound',
+        label: 'Com o som no pulo, o toque fez pulo e som',
+        pedido: 'Com Tocar som em Quando o Dino pular, pule tocando no Dino.',
+        soNoCaso: true,
+      },
+      {
+        id: 'every-jump',
+        label: 'Um som em cada pulo, por tecla e por toque',
+        pedido:
+          'Leve Tocar som para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.',
+      },
     ],
     hints: [
-      'Um comando no ar consegue fazer outro salto?',
-      'Compare ligar o som à tecla e ao acontecimento Pulou.',
-      'Ligue Som a Pulou. Experimente Espaço e tocar no Dino.',
+      'Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.',
+      'Agora pule tocando no Dino. Tocou som?',
+      'Leve Tocar som para Quando o Dino pular e teste os dois jeitos.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'A tecla pode soar mesmo com o Dino no ar.',
+        caption: 'A tecla tocou o som sem outro pulo, e o toque fez o Dino pular sem som.',
         highlight: 'scene',
         actions: [
           { type: 'jump', input: 'key' },
-          { type: 'advance', seconds: 0.1 },
+          { type: 'advance', seconds: 0.2 },
           { type: 'jump', input: 'key' },
+          { type: 'advance', seconds: 1.6 },
+          { type: 'jump', input: 'tap' },
         ],
       },
       {
         id: 'step-2',
-        caption: 'Ligado ao acontecimento Pulou, o som acompanha o salto.',
+        caption: 'Em Quando o Dino pular, cada pulo toca um som.',
         highlight: 'scene',
         actions: [
+          { type: 'advance', seconds: 1.6 },
           { type: 'connect', port: 'sound', enabled: true },
-          { type: 'advance', seconds: 1 },
+          { type: 'jump', input: 'key' },
+          { type: 'advance', seconds: 1.6 },
           { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 1.6 },
         ],
       },
     ],
@@ -638,30 +1002,46 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'spawn',
     group: 'population',
     title: 'Abra espaço entre os cactos',
-    instruction: 'Avance o relógio. Depois ligue um intervalo ao nascimento dos cactos.',
-    manipulates: 'Relógio, ligação de nascimento e marcas de intervalo',
-    success: 'O intervalo abriu espaço sem mudar a velocidade dos cactos!',
+    // ⚠️ "▶ Tempo" (lote 5 do Raio-X): o relógio da cena é o ▶, e "o relógio" é onde a peça mora.
+    // Eram dois relógios com o mesmo nome na mesma frase.
+    instruction:
+      'Aperte ▶ Tempo e veja os cactos nascerem. Depois leve Criar cacto para dentro do relógio e compare.',
+    manipulates: 'A peça Criar cacto, o relógio e o intervalo',
+    success: 'Com o relógio, nasce um cacto de cada vez e sobra espaço entre um cacto e outro!',
     extra: 'E se o relógio esperar um pouco mais entre dois cactos?',
     goals: [
-      { id: 'every-frame', label: 'Criação em cada quadro' },
-      { id: 'spaced', label: 'Criação com intervalo' },
+      {
+        id: 'every-frame',
+        label: 'Viu a parede de cactos',
+        pedido: 'Com Criar cacto em A cada quadro, deixe o tempo passar um segundo inteiro.',
+      },
+      {
+        id: 'spaced',
+        label: 'Com o relógio, sobrou espaço',
+        // ⚠️ "até nascerem dois", e não "dois segundos": com o intervalo de 2 s, dois segundos
+        // davam UM nascimento, e a meta pede dois.
+        pedido:
+          'Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.',
+      },
     ],
     hints: [
-      'Veja quantos cactos nascem enquanto o relógio anda.',
-      'Compare o mesmo tempo com e sem intervalo.',
-      'Ligue Relógio a Nascer e avance dois segundos.',
+      'Veja quantos cactos nascem enquanto o tempo passa.',
+      'Compare o mesmo tempo com e sem o relógio.',
+      'Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Veja quantos cactos nascem sem intervalo.',
+        caption: 'Sem relógio, nasce um cacto em cada quadro. Olhe a parede.',
         highlight: 'scene',
         actions: [{ type: 'advance', seconds: 2 }],
       },
       {
         id: 'step-2',
-        caption: 'No mesmo tempo, o intervalo reduz os nascimentos.',
-        highlight: 'scene',
+        // ⚠️ `tools` (lote 5 do Raio-X): a demonstração do Meu Jeito ligava o relógio sem a bancada à
+        // vista, e a mudança acontecia invisível.
+        caption: 'Agora Criar cacto mora no relógio: um a cada segundo.',
+        highlight: 'tools',
         actions: [
           { type: 'connect', port: 'timer', enabled: true },
           { type: 'advance', seconds: 2 },
@@ -672,30 +1052,44 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   cleanup: {
     id: 'cleanup',
     group: 'population',
-    title: 'Cuide dos cactos invisíveis',
-    instruction: 'Avance o relógio até um cacto sair. O cacto também saiu dos bastidores?',
-    manipulates: 'Regra de remoção na saída e relógio',
-    success: 'A regra retira do grupo cada cacto que sai da tela!',
+    // ⚠️ O título antigo ("Cuide dos cactos invisíveis") respondia a previsão ("some do jogo?").
+    title: 'Para onde vai o cacto que sai da tela?',
+    instruction:
+      'Aperte ▶ Tempo e veja um cacto sair da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare.',
+    manipulates: 'A regra Remover do grupo quem saiu da tela e o tempo',
+    success: 'Sair da tela não tira ninguém do grupo: quem tira é a regra!',
     extra: 'E se você desligar a regra e deixar outros cactos saírem?',
     goals: [
-      { id: 'invisible-stored', label: 'Fora da tela, ainda no grupo' },
-      { id: 'removed', label: 'Regra retira automaticamente' },
+      {
+        id: 'invisible-stored',
+        label: 'Saiu da tela e ficou no grupo',
+        pedido: 'Deixe o tempo passar até dois cactos saírem da tela.',
+      },
+      {
+        id: 'removed',
+        label: 'A regra tirou do grupo quem saiu',
+        // ⚠️ O nome da CHAVE da bancada (lote 5 do Raio-X), que é o do bloco do Estúdio. Eram cinco
+        // nomes para uma regra: "limpeza", "Remover do grupo → Saída da tela", "Encaixe Remover",
+        // "Retirar regra" e "remoção na saída".
+        pedido: 'Ligue Remover do grupo quem saiu da tela e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'Compare a pista com os cactos guardados nos bastidores.',
-      'Sair da tela e sair do grupo são coisas diferentes.',
-      'Encaixe Remover na borda de saída. Avance o relógio novamente.',
+      'Olhe a prateleira dos bastidores quando um cacto sai.',
+      // ⚠️ "Sair da tela não é sair do grupo" era a conclusão (consertos do review da onda A do lote 5).
+      'Conte os cactos da prateleira depois que um cacto sai.',
+      'Ligue Remover do grupo quem saiu da tela e aperte ▶ Tempo de novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Sair da tela ainda deixa o cacto guardado.',
+        caption: 'Os cactos que saíram da tela continuam na prateleira dos bastidores.',
         highlight: 'scene',
-        actions: [{ type: 'advance', seconds: 6 }],
+        actions: [{ type: 'advance', seconds: 2 }],
       },
       {
         id: 'step-2',
-        caption: 'A regra remove quem saiu.',
+        caption: 'Com a regra ligada, quem sai da tela vai para os removidos.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'cleanup', enabled: true },
@@ -707,35 +1101,55 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   'game-state': {
     id: 'game-state',
     group: 'events',
-    title: 'O relógio espera você começar',
-    instruction: 'Avance o relógio no início. Depois leve-o para dentro de Se jogando.',
-    manipulates: 'Peça do relógio, região Se jogando e início da partida',
-    success: 'O relógio espera no início e funciona na partida!',
+    // ⚠️ O título antigo ("O relógio espera você começar") puxava para a resposta ERRADA da previsão.
+    title: 'O relógio na tela de início',
+    // ⚠️⚠️ A peça é Criar cacto, DENTRO do relógio (lote 5 do Raio-X): na cena o Relógio entrava no
+    // Se, e no Estúdio, logo depois, é o Se que entra no relógio ("mova a criação do cacto para
+    // dentro dele"). E "▶ Tempo" para o relógio da cena não ter o mesmo nome da peça.
+    instruction:
+      'Aperte ▶ Tempo na tela de início. Nascem cactos? Depois leve Criar cacto para dentro de Se jogando e compare.',
+    manipulates: 'A peça Criar cacto, a caixa Se jogando e o começo da partida',
+    success: 'Dentro de Se jogando, Criar cacto espera no início e volta a criar na partida!',
     extra: 'E se você voltar ao início depois de jogar?',
     goals: [
-      { id: 'outside', label: 'Relógio funcionando no início' },
-      { id: 'waiting', label: 'Relógio espera no início' },
-      { id: 'playing', label: 'Relógio funciona jogando' },
+      {
+        id: 'outside',
+        label: 'Nasceram cactos antes de começar',
+        pedido: 'Na tela de início, com Criar cacto fora do Se, deixe o tempo passar.',
+      },
+      {
+        id: 'waiting',
+        label: 'No início, nada nasceu por 2 segundos',
+        pedido:
+          'Leve Criar cacto para dentro de Se jogando e deixe o tempo passar 2 segundos na tela de início.',
+      },
+      {
+        id: 'playing',
+        label: 'Jogando, voltou a nascer',
+        pedido: 'Com Criar cacto dentro de Se jogando, comece a partida e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'Por que há cactos antes de você começar?',
-      'A região Se jogando só deixa agir durante a partida.',
-      'Leve Relógio para Se jogando. Compare o início e a partida.',
+      // ⚠️ "Por que há cactos antes de você começar?" respondia a previsão ("nascem cactos no
+      // início?"), e a pista pode ser lida antes do palpite.
+      'Aperte ▶ Tempo na tela de início e conte os cactos que aparecem.',
+      'O que fica dentro de Se jogando só acontece durante a partida.',
+      'Leve Criar cacto para dentro de Se jogando. Compare o início e a partida.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'O relógio está funcionando antes de jogar.',
+        caption: 'Na tela de início, os cactos nascem.',
         highlight: 'scene',
         actions: [{ type: 'advance', seconds: 1 }],
       },
       {
         id: 'step-2',
-        caption: 'Dentro de Jogando, ele espera o início.',
+        caption: 'Dentro de Se jogando, Criar cacto espera a partida começar.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'condition', enabled: true },
-          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 2 },
           { type: 'start', input: 'tap' },
           { type: 'advance', seconds: 1 },
         ],
@@ -745,31 +1159,51 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   controls: {
     id: 'controls',
     group: 'events',
-    title: 'Faça o convite funcionar',
-    instruction: 'A tela diz Toque ou Enter. Experimente tocar para começar.',
-    manipulates: 'Tela inicial e fio do controle por toque',
-    success: 'Você começou a partida por toque e por Enter!',
-    extra: 'E se você desligar só o toque? O Enter ainda funciona?',
+    title: 'O convite para começar',
+    // ⚠️ O convite diz os DOIS caminhos (lote 5 do Raio-X): a instrução e a pista 1 falavam de dois
+    // caminhos, e o desenho dizia só "Toque para começar".
+    instruction: 'A tela promete dois jeitos de começar. Teste os dois.',
+    manipulates: 'A tela de início e a peça Começar',
+    success: 'Agora os dois jeitos que o convite promete começam a partida!',
+    extra: 'E se você levar Começar de volta para Quando apertar Enter? O Enter ainda funciona?',
+    // ⚠️⚠️ Sem o fio (lote 5 do Raio-X): Começar é uma PEÇA que muda de evento, o gesto do Estúdio da
+    // seção seguinte ("mova o mesmo Se para Quando apertar qualquer tecla ou tocar"). Ela fica à
+    // vista desde a abertura, então nenhum pedido depende de outra meta.
     goals: [
-      { id: 'missing-touch', label: 'Toque ainda não conectado' },
-      { id: 'start-tap', label: 'Partida iniciada por toque' },
-      { id: 'start-key', label: 'Partida iniciada por Enter' },
+      {
+        id: 'missing-touch',
+        label: 'Tocou e nada aconteceu',
+        pedido: 'Com Começar em Quando apertar Enter, toque na tela de início.',
+      },
+      {
+        id: 'start-tap',
+        label: 'Começou tocando',
+        pedido:
+          'Leve Começar para Quando apertar qualquer tecla ou tocar na tela, e toque na tela de início.',
+      },
+      {
+        id: 'start-key',
+        label: 'Começou com Enter',
+        pedido: 'Na tela de início, aperte Enter.',
+      },
     ],
     hints: [
-      'O convite promete dois caminhos. Os dois funcionam?',
-      'Olhe qual entrada está ligada a Começar.',
-      'Ligue Toque a Começar. Teste os dois caminhos, voltando ao início.',
+      // ⚠️ O desenho só mostra o toque, e "Os dois funcionam?" já sugeria que não.
+      'Toque na tela de início e olhe se ela muda.',
+      'Olhe em que caixa está a peça Começar.',
+      'Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Tocar ainda não inicia a partida.',
+        caption: 'Tocar na tela não começou a partida.',
         highlight: 'scene',
         actions: [{ type: 'start', input: 'tap' }],
       },
       {
         id: 'step-2',
-        caption: 'A ligação adiciona o toque ao mesmo início.',
+        caption:
+          'Com Começar em Quando apertar qualquer tecla ou tocar na tela, o toque começa a partida.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'touch', enabled: true },
@@ -782,34 +1216,75 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'restart',
     group: 'events',
     title: 'Jogue outra vez',
-    instruction: 'Comece uma partida e aproxime o cacto para descobrir o que falta no fim.',
-    manipulates: 'Início, cacto e ligação de reinício',
-    success: 'Outra partida começou, com pontos e obstáculos reiniciados!',
-    extra: 'E se você jogar e recomeçar mais uma vez?',
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X (16/09/2026): a pista tem VÁRIOS cactos, e o gesto é o do
+    // jogo (tocar na tela). O que muda é o que o toque faz no FIM, e a pista mostra a diferença. A
+    // cena antiga nunca mostrava o contraste do título ("Recomeçar é só trocar de tela?").
+    instruction:
+      'Jogue até bater. No fim, toque na tela. Depois troque o que o toque faz e jogue de novo.',
+    manipulates: 'O toque na tela, o que o toque faz no fim e os cactos da pista',
+    // ⚠️ Sem "pontos": esta cena não tem placar, e a Aula 9 vem antes de o placar existir.
+    success: 'A pista começou limpa. Isso é jogar de novo de verdade!',
+    extra: 'E se você trocar para Ir para o início de novo? A pista fica como?',
     goals: [
-      { id: 'ended', label: 'Colisão encerrou a partida' },
-      { id: 'restarted', label: 'Outra partida iniciada pela ação de reinício' },
+      {
+        id: 'ended',
+        label: 'A batida levou para o fim',
+        pedido: 'Toque na tela e deixe o tempo passar.',
+      },
+      {
+        id: 'screen-only',
+        label: 'Só trocar de tela deixou os cactos na pista',
+        pedido: 'No fim, com Ir para o início escolhido, toque na tela duas vezes.',
+      },
+      {
+        id: 'restarted',
+        label: 'Reiniciar começou com a pista limpa',
+        // ⚠️ A comparação é obrigatória: o motor só dá esta meta depois de `screen-only`.
+        pedido:
+          'Depois de jogar de novo com Ir para o início, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.',
+      },
     ],
     hints: [
-      'A partida terminou. Como sair dessa tela?',
-      'A ligação de Jogar de novo precisa iniciar outra rodada.',
-      'Ligue Jogar de novo a Início e acione o botão no fim.',
+      'Olhe a pista depois de voltar para o início. Quantos cactos ficaram?',
+      'Troque o que o toque faz no fim e compare as duas pistas.',
+      // ⚠️ A comparação na ordem (consertos do review da onda A do lote 5): a pista 3 mandava direto ao
+      // Reiniciar, o atalho que não conta sem ter visto a pista herdada.
+      'Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'O contato encerra a partida.',
+        caption: 'Toque na tela e o tempo passa: um cacto chega, bate, e a partida acaba.',
         highlight: 'scene',
         actions: [
           { type: 'start', input: 'tap' },
-          { type: 'move', distance: 25 },
+          { type: 'advance', seconds: 3 },
         ],
+        waitFor: 'ended',
       },
       {
         id: 'step-2',
-        caption: 'Jogar de novo prepara uma nova partida.',
+        caption:
+          'O toque no fim só voltou para o início. Tocando de novo, a partida começa com os cactos da anterior.',
         highlight: 'scene',
-        actions: [{ type: 'connect', port: 'restart', enabled: true }, { type: 'restart' }],
+        actions: [
+          { type: 'start', input: 'tap' },
+          { type: 'start', input: 'tap' },
+          { type: 'advance', seconds: 0.5 },
+        ],
+        waitFor: 'screen-only',
+      },
+      {
+        id: 'step-3',
+        caption: 'Com Reiniciar o jogo, o toque no fim limpa a pista. A partida nova começa vazia.',
+        highlight: 'scene',
+        actions: [
+          { type: 'connect', port: 'restart', enabled: true },
+          { type: 'start', input: 'tap' },
+          { type: 'start', input: 'tap' },
+          { type: 'advance', seconds: 0.5 },
+        ],
+        waitFor: 'restarted',
       },
     ],
   },
@@ -817,69 +1292,126 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'hitbox',
     group: 'collision',
     title: 'Onde a batida acontece?',
-    instruction: 'Aproxime o cacto. Depois mude a área do Dino, sem mudar seu desenho.',
-    manipulates: 'Posição do cacto e alça da área de contato',
-    success: 'O desenho ficou igual. A área mudou o momento da batida!',
-    extra: 'E se a área ficar menor? Aproxime o cacto de novo.',
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: a cena abre com a área GRANDE (130%), como o jogo da Aula
+    // 10 antes do conserto, e o gesto é DIMINUIR até 80%. A cena antiga aumentava a área, na direção
+    // contrária à da aula, e em largura absoluta, enquanto o Estúdio fala em porcentagem.
+    // ⚠️⚠️ Sem "olhe o espaço entre os desenhos" (consertos do review da onda A do lote 5): a instrução
+    // fica logo acima da previsão ("antes ou só quando os desenhos se encostarem?") e dizia que haveria
+    // espaço entre eles no BATEU. Olhar o vão fica para a pista, depois do BATEU.
+    instruction:
+      'Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.',
+    manipulates: 'A Distância do cacto e o Tamanho da área do Dino',
+    success: 'O Dino ficou do mesmo tamanho. Só a área mudou, e a batida ficou justa!',
+    extra: 'Com a área em 80%, traga o cacto de novo. Quando aparece BATEU agora?',
     goals: [
-      { id: 'contact', label: 'Áreas em contato' },
-      { id: 'separate', label: 'Áreas separadas' },
-      { id: 'area-contrast', label: 'Mesma posição, áreas diferentes' },
+      {
+        id: 'contact',
+        label: 'BATEU com os desenhos ainda longe',
+        // ⚠️⚠️ Um toque de cada vez (review do lote 2): de 10 em 10 a batida aparece em 50, com um vão
+        // de 10 entre os desenhos. Trazer o cacto até em cima do Dino não mostra vão nenhum.
+        pedido: 'Aproxime o cacto do Dino com a Distância do cacto, um toque de cada vez.',
+      },
+      {
+        id: 'area-contrast',
+        label: 'Área menor, mesmo lugar: a batida sumiu',
+        // ⚠️ "Sem mexer na Distância", e não "parado", que não concorda com a pedra.
+        pedido: 'Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino.',
+      },
     ],
     hints: [
-      'Olhe as bordas das duas áreas.',
-      'Deixe o cacto no mesmo lugar e mude só a área do Dino.',
-      'Aproxime até a marca do meio. Compare as alças Menor e Maior.',
+      // ⚠️ "Olhe os dois desenhos", e não "olhe o espaço entre eles": era o que a criança ia ver.
+      'Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.',
+      'Deixe o cacto onde bateu. Mude só a área do Dino.',
+      'Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'As áreas se tocam antes de os desenhos se misturarem.',
+        caption: 'BATEU! Mas olhe: os desenhos ainda não se tocam.',
         highlight: 'scene',
-        actions: [{ type: 'move', distance: 25 }],
+        // ⚠️ Em 59, e não 50 (consertos do review da onda A do lote 5): o vão de 19 se vê; o de 10 não.
+        actions: [{ type: 'move', distance: 59 }],
       },
       {
         id: 'step-2',
-        caption: 'Mesma posição, outra área. O resultado muda?',
+        caption: 'Mesmo lugar, área em 80%. Agora não bateu.',
         highlight: 'scene',
-        actions: [
-          { type: 'move', distance: 60 },
-          { type: 'resize', width: 100 },
-        ],
+        actions: [{ type: 'resize', width: 51.2 }],
       },
     ],
   },
   score: {
     id: 'score',
     group: 'events',
-    title: 'Pontos só durante a partida',
-    instruction: 'Veja quando o placar cresce. Leve Somar ponto para dentro de Se jogando.',
-    manipulates: 'Peça de pontuação, região Se jogando e relógio',
+    // ⚠️ O título antigo ("Pontos só durante a partida") respondia a previsão.
+    title: 'Quando o placar cresce?',
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: a criança VÊ o erro primeiro (a peça solta soma até no
+    // início) e só depois muda a peça de lugar. Antes dava para pôr a peça certa logo de cara e
+    // conferir três telas já certas.
+    // ⚠️ Sem "em qual o placar não devia crescer?" (consertos do review da onda A do lote 5): a
+    // pergunta pressupunha que o placar cresce onde não devia, logo acima da previsão sobre isso.
+    instruction:
+      'Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.',
+    manipulates: 'Peça de pontuação, região Se jogando e a próxima tela',
     success: 'Os pontos crescem jogando e ficam guardados fora da partida!',
     extra: 'E se você voltar ao início? Veja se o placar continua parado.',
     goals: [
-      { id: 'score-playing', label: 'Pontos aumentam jogando' },
-      { id: 'score-start', label: 'Pontos esperam no início' },
-      { id: 'score-end', label: 'Valor fica parado no fim' },
+      {
+        id: 'score-idle-wrong',
+        label: 'Solto, o placar cresceu no início',
+        pedido: 'Com Somar ponto solto, deixe o tempo passar na tela de início.',
+      },
+      {
+        id: 'score-start',
+        label: 'Dentro de Se jogando, o início esperou',
+        // ⚠️ É COMPARAÇÃO: o motor só dá esta meta depois de a peça solta ter somado no início.
+        // ⚠️ Mais curto (consertos do review da onda A do lote 5): o "Conferir" devolvia 25 palavras.
+        pedido:
+          'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e espere de novo.',
+      },
+      {
+        id: 'score-playing',
+        label: 'Pontos aumentam jogando',
+        pedido:
+          'Com Somar ponto em Se jogando, aperte Próxima tela até Jogando e deixe o tempo passar.',
+      },
+      {
+        id: 'score-end',
+        label: 'No fim, o placar parou no valor',
+        // ⚠️⚠️ É COMPARAÇÃO desde os consertos do review da onda A do lote 5 (A6): dois toques em
+        // "Próxima tela" levavam ao Fim com o placar em 0, e a meta afirmava que ele "parou".
+        pedido:
+          'Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'O placar deve crescer antes de começar?',
-      'Compare o mesmo passo do relógio no início, jogando e no fim.',
-      'Leve Somar ponto para Se jogando. Teste os três momentos.',
+      'Com a peça solta, o placar deve crescer antes de começar?',
+      'Compare o placar das três telas na fileira embaixo do palco.',
+      // ⚠️ O erro primeiro (consertos do review da onda A do lote 5): a pista 3 pulava a peça solta, que
+      // é a meta obrigatória que abre a cena.
+      'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'O placar espera enquanto não estamos jogando.',
+        caption: 'Com a peça solta, o placar cresce até na tela de início.',
+        highlight: 'scene',
+        actions: [{ type: 'advance', seconds: 2 }],
+        waitFor: 'score-idle-wrong',
+      },
+      {
+        id: 'step-2',
+        caption: 'Dentro de Se jogando, o início espera.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'condition', enabled: true },
           { type: 'advance', seconds: 1 },
         ],
+        waitFor: 'score-start',
       },
       {
-        id: 'step-2',
-        caption: 'Jogando, ele cresce. No fim, conserva o valor.',
+        id: 'step-3',
+        caption: 'Jogando, ele cresce. No fim, fica parado no valor.',
         highlight: 'scene',
         actions: [
           { type: 'start', input: 'key' },
@@ -887,31 +1419,53 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
           { type: 'collide' },
           { type: 'advance', seconds: 1 },
         ],
+        waitFor: 'score-end',
       },
     ],
   },
   lives: {
     id: 'lives',
     group: 'events',
-    title: 'Ponto e vida mudam por motivos diferentes',
-    instruction: 'Ligue os dois fios. Depois bata no cacto e avance o relógio.',
+    // ⚠️ O título antigo ("Ponto e vida mudam por motivos diferentes") era a explicação da cena.
+    title: 'O que a batida muda?',
+    // ⚠️⚠️ O PONTO primeiro (review do lote 2): ligando os dois fios e batendo três vezes, a partida
+    // acabava com o placar em 0, e depois do fim o relógio não soma. A meta que responde a previsão
+    // (`points-stay`, os pontos ficam na batida) ficava impossível para quem seguia a instrução.
+    instruction:
+      'Ligue o fio do ponto e deixe o tempo passar. Depois ligue o fio da vida e bata no cacto.',
     manipulates: 'O fio que soma ponto, o fio que tira vida e as batidas',
     success: 'Ponto e vida são duas contagens separadas: cada uma muda pelo seu próprio motivo!',
     extra: 'E se a batida tirasse ponto em vez de vida? O jogo ficaria justo?',
     goals: [
-      { id: 'life-lost', label: 'A batida tirou uma vida' },
-      { id: 'points-stay', label: 'Os pontos ficaram, mesmo perdendo vida' },
-      { id: 'over', label: 'Sem vidas, a partida acabou' },
+      {
+        id: 'life-lost',
+        label: 'A batida tirou uma vida',
+        pedido: 'Ligue Bateu a Perder uma vida e bata no cacto.',
+      },
+      {
+        id: 'points-stay',
+        label: 'Os pontos ficaram, mesmo perdendo vida',
+        pedido:
+          'Ligue Somar ponto a Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com o fio da vida ligado.',
+      },
+      {
+        id: 'over',
+        label: 'Sem vidas, a partida acabou.',
+        pedido: 'Com o fio da vida ligado, bata até não sobrar nenhuma vida.',
+      },
     ],
     hints: [
-      'Ligue o fio que soma ponto e avance o relógio para o placar subir.',
+      'Ligue o fio que soma ponto e deixe o tempo passar para o placar subir.',
       'Agora ligue o fio da vida e bata uma vez. Olhe as duas contagens.',
       'Bata as três vezes e veja o que acontece quando a última vida sai.',
     ],
+    // ⚠️⚠️ Sem "fio" nas falas (lote 5 do Raio-X): na demonstração a bancada não aparece, e as
+    // quatro legendas falavam de fios que a criança nunca via. O Desafio tem roteiro PRÓPRIO, com o
+    // ponto pelo acerto do tiro (dia-4).
     script: [
       {
         id: 'step-1',
-        caption: 'Com o fio do ponto ligado, o placar sobe sozinho enquanto o Dino está vivo.',
+        caption: 'O placar sobe com o tempo, e os corações continuam os mesmos.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'condition', enabled: true },
@@ -920,19 +1474,13 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Sem o fio da vida, bater não custa nada.',
-        highlight: 'scene',
-        actions: [{ type: 'collide' }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Com o fio ligado, a mesma batida tira uma vida. E os pontos ficam.',
+        caption: 'O Dino bateu no cacto: saiu um coração, e o placar continua igual.',
         highlight: 'scene',
         actions: [{ type: 'connect', port: 'life', enabled: true }, { type: 'collide' }],
       },
       {
-        id: 'step-4',
-        caption: 'Na última vida, a partida acaba. O placar guarda o que foi feito.',
+        id: 'step-3',
+        caption: 'Mais duas batidas: acabaram os corações e a partida. O placar guardou os pontos.',
         highlight: 'scene',
         actions: [{ type: 'collide' }, { type: 'collide' }],
       },
@@ -942,36 +1490,57 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'random',
     group: 'speed',
     title: 'Cada cacto pode nascer diferente',
-    instruction: 'Acione os exemplos do sorteador. Compare primeiro onde os cactos nascem.',
-    manipulates: 'Sorteador de posição e velocidade, marcas dos resultados',
-    success: 'O sorteio muda o resultado dentro dos limites escolhidos!',
-    extra: 'Sorteie livremente. Um resultado pode se repetir!',
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: sorteio DE VERDADE, um de cada vez. Eram quatro exemplos
+    // fixos (500 e 560, −5 e −6), e a cena que pergunta se o lugar pode repetir nunca repetia.
+    instruction:
+      'Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.',
+    manipulates: 'Sorteio do lugar e sorteio da velocidade, com as marquinhas e as raias',
+    success: 'Cada sorteio saiu dentro dos limites que você deu, e às vezes repetiu!',
+    extra: 'Sorteie a velocidade mais vezes. Algum cacto passa do de −6?',
     goals: [
-      { id: 'positions', label: 'Posições diferentes, mesma velocidade' },
-      { id: 'velocities', label: 'Velocidades −5 e −6, mesma posição' },
+      {
+        id: 'positions',
+        label: 'Saíram lugares diferentes',
+        // ⚠️ "Até sair um lugar diferente" (consertos do review da onda A do lote 5): "três vezes", com
+        // sete lugares, dava o MESMO lugar três vezes em 1 de cada 49, e a criança lia o pedido de novo.
+        pedido: 'Aperte Sortear lugar até sair um lugar diferente.',
+      },
+      {
+        id: 'repeat',
+        label: 'Um lugar repetiu',
+        // ⚠️ Oito vezes, e não "até repetir": são sete lugares, então oito sorteios repetem com
+        // certeza, e o pedido não conta o resultado.
+        pedido: 'Aperte Sortear lugar mais oito vezes.',
+      },
+      {
+        id: 'velocities',
+        label: 'O cacto −6 chegou mais longe que o −5',
+        pedido: 'Aperte Sortear velocidade até sair um cacto −5 e um −6.',
+      },
     ],
     hints: [
-      'A faixa mostra onde um cacto pode nascer.',
-      'Compare uma coisa por vez: posição ou velocidade.',
-      'Acione os dois exemplos de posição. Depois compare os dois de velocidade.',
+      'A régua mostra onde um cacto pode nascer, depois da borda da tela.',
+      'Sorteie uma coisa por vez: primeiro o lugar, depois a velocidade.',
+      'Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Dois exemplos de lugar, com a mesma velocidade.',
+        caption: 'Sorteando o lugar: 520, 550 e 520 de novo. Cada um dentro da régua.',
         highlight: 'scene',
         actions: [
-          { type: 'sample', kind: 'position', unit: 0, guided: true },
-          { type: 'sample', kind: 'position', unit: 1, guided: true },
+          { type: 'sample', kind: 'position', unit: 0.3, guided: false },
+          { type: 'sample', kind: 'position', unit: 0.75, guided: false },
+          { type: 'sample', kind: 'position', unit: 0.35, guided: false },
         ],
       },
       {
         id: 'step-2',
-        caption: 'Mesmo lugar, duas velocidades possíveis.',
+        caption: 'Sorteando a velocidade: o cacto de −6 anda mais em 1 segundo que o de −5.',
         highlight: 'scene',
         actions: [
-          { type: 'sample', kind: 'velocity', unit: 0, guided: true },
-          { type: 'sample', kind: 'velocity', unit: 1, guided: true },
+          { type: 'sample', kind: 'velocity', unit: 0.2, guided: false },
+          { type: 'sample', kind: 'velocity', unit: 0.8, guided: false },
         ],
       },
     ],
@@ -980,40 +1549,67 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'acceleration',
     group: 'speed',
     title: 'Acelere com um limite',
-    instruction: 'Crie um cacto. Avance o relógio e veja a velocidade dos próximos.',
-    manipulates: 'Relógio, placa de limite e nascimento de cactos',
-    success: 'A base para em −9. O sorteio ainda pode criar um novo cacto a −10!',
-    extra: 'E os cactos antigos? Compare suas setas com a do novo cacto.',
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: UM relógio só, o do Estúdio ("a cada 5 segundos"), e cada
+    // passo faz nascer um cacto numa fileira com o número colado nele. Eram dois relógios (o ▶ movia
+    // os cactos, "Avançar o relógio" mudava a base), e uma placa que PRENDIA a base em −9.
+    instruction:
+      'Aperte Passar 5 segundos várias vezes e olhe a velocidade de cada cacto novo. O que acontece quando a base chega em −9?',
+    manipulates: 'O relógio de 5 segundos, a condição Se velocidade > −9 e a fileira de cactos',
+    success:
+      'A base parou em −9, e mesmo assim um cacto saiu com −10. O sorteio vem depois da base!',
+    extra: 'Desligue a condição de novo. Até onde a base vai?',
     goals: [
-      { id: 'base-limit', label: 'Base chega a −9 e permanece' },
-      { id: 'variation-limit', label: 'No limite, sorteio produz −10' },
-      { id: 'old-speed', label: 'Cacto anterior conserva sua velocidade' },
+      {
+        id: 'base-limit',
+        label: 'A base parou em −9',
+        pedido: 'Com a condição ligada, aperte Passar 5 segundos cinco vezes.',
+      },
+      {
+        id: 'variation-limit',
+        label: 'Mesmo parada em −9, saiu um cacto −10',
+        // ⚠️ "Mais quatro vezes": com três cactos seguidos em −9, o motor garante o sorteio de 1.
+        pedido: 'Com a base em −9 e a condição ligada, aperte Passar 5 segundos mais quatro vezes.',
+      },
+      {
+        id: 'old-speed',
+        label: 'Os cactos velhos não mudaram de número',
+        pedido: 'Aperte Passar 5 segundos três vezes e olhe o número embaixo de cada cacto.',
+      },
+      {
+        id: 'past-limit',
+        label: 'Sem a condição, a base passou de −9',
+        pedido: 'Desligue a condição e aperte Passar 5 segundos cinco vezes.',
+      },
     ],
     hints: [
-      'A seta de cada cacto mostra a velocidade que o cacto recebeu ao nascer.',
-      'Compare a base do próximo cacto com a seta de um antigo.',
-      'Encaixe o limite −9. Avance cinco passos e crie o exemplo com desconto 1.',
+      'Olhe o número embaixo de cada cacto da fileira.',
+      'Passe 5 segundos até a conta da base dizer não.',
+      // ⚠️ Sem "até sair um −10" (consertos do review da onda A do lote 5): é a resposta da previsão.
+      'Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Este cacto guarda a velocidade de nascimento.',
+        caption: 'A cada 5 segundos a base fica 1 mais rápida, e o cacto novo nasce com ela.',
         highlight: 'scene',
-        actions: [{ type: 'sample', kind: 'velocity', unit: 0, guided: true }],
+        actions: [
+          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
+          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
+          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
+          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
+        ],
       },
       {
         id: 'step-2',
-        caption: 'O limite vale para a base dos próximos.',
+        caption: 'Em −9 a conta diz não, e a base fica. Os cactos velhos guardam os seus números.',
         highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'limit', enabled: true },
-          { type: 'clock' },
-          { type: 'clock' },
-          { type: 'clock' },
-          { type: 'clock' },
-          { type: 'clock' },
-          { type: 'sample', kind: 'velocity', unit: 1, guided: true },
-        ],
+        actions: [{ type: 'sample', kind: 'velocity', unit: 0, guided: false }],
+      },
+      {
+        id: 'step-3',
+        caption: 'A base continua −9, e o sorteio tirou mais 1: nasceu um cacto −10.',
+        highlight: 'scene',
+        actions: [{ type: 'sample', kind: 'velocity', unit: 1, guided: false }],
       },
     ],
   },
@@ -1024,25 +1620,66 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     // ⚠️ Sem adjetivo preso ao personagem: "andar" não é verbo de ligação, então a régua do
     // elenco não flexiona o que vem depois dele — uma turma de nave lia "a nave andar sozinho".
     title: 'O que move o Dino a cada quadro',
+    // ⚠️ A missão de FÁBRICA é a do eixo do lado (`down`/`up` são metas só de caso), e a
+    // instrução nomeia a velocidade: "a velocidade" sozinha não diz qual das duas da bancada.
     instruction:
-      'Escolha uma velocidade e avance o relógio. Depois experimente um número negativo.',
+      'Escolha uma velocidade para o lado e deixe o tempo passar. Depois experimente um número negativo.',
     manipulates: 'Velocidade do Dino nos dois eixos, e o relógio',
     success: 'A posição muda sozinha porque a velocidade é somada nela em cada quadro!',
     extra: 'E se a velocidade for zero enquanto o relógio continua andando?',
     goals: [
-      { id: 'moves', label: 'A posição mudou sozinha, com o relógio' },
-      { id: 'left', label: 'Velocidade negativa levou para a esquerda' },
-      { id: 'stopped', label: 'Com velocidade zero, ele fica parado' },
+      {
+        id: 'moves',
+        label: 'A posição mudou sozinha, com o relógio',
+        pedido: 'Escolha uma velocidade diferente de zero e deixe o tempo passar.',
+      },
+      {
+        id: 'left',
+        label: 'Velocidade negativa levou para a esquerda',
+        pedido: 'Ponha um número negativo na velocidade para o lado e deixe o tempo passar.',
+      },
+      {
+        id: 'stopped',
+        label: 'Com velocidade zero, o Dino fica parado',
+        // ⚠️ O pedido não pode contar o resultado: é exatamente o que a previsão antiga perguntava.
+        // ⚠️ "Depois de ver o Dino andar": mexer no número sem o tempo passar não conta, e a meta é
+        // uma comparação com o que andou.
+        pedido:
+          'Depois de ver o Dino andar, ponha as duas velocidades em zero e deixe o tempo passar.',
+      },
+      // ⚠️ As duas do eixo de CIMA E BAIXO nasceram para o Dia 2 do Desafio, onde o tiro sobe: o
+      // caso cobrava `left`, e a instrução mandava mexer na velocidade para baixo. Cada uma só cai
+      // com o personagem andando naquele sentido (ver o relógio da `velocity` no motor), e as
+      // duas são SÓ DE CASO: a missão de fábrica continua sendo a do lado.
+      // ⚠️⚠️ `up` ANTES de `down` (review do lote 2): no Dia 2 a previsão pergunta pelo −9 e é
+      // respondida por `up`. Em último lugar ela só voltava junto com a conclusão. E os dois pedidos
+      // não supõem ordem ("Agora troque… de novo" dizia que o positivo vinha antes).
+      {
+        id: 'up',
+        label: 'Velocidade negativa levou para cima',
+        soNoCaso: true,
+        pedido: 'Ponha a velocidade para baixo num número negativo e deixe o tempo passar.',
+      },
+      {
+        id: 'down',
+        label: 'Velocidade positiva levou para baixo',
+        soNoCaso: true,
+        pedido: 'Ponha a velocidade para baixo num número positivo e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'Você escolheu uma velocidade. Agora avance o relógio e olhe o número do x.',
+      // ⚠️ Os DOIS números: a pista é a do modelo, e um caso que cobra o eixo de cima e baixo sem
+      // escrever pistas próprias mandaria a criança olhar o x com a nave descendo.
+      'Escolha uma velocidade. Depois deixe o tempo passar e olhe o número de x na faixa.',
       'A velocidade não move nada sozinha: quem move é o relógio, um quadro de cada vez.',
-      'Ponha a velocidade em −5 e avance o relógio duas vezes.',
+      'Ponha a velocidade para o lado em −5 e deixe o tempo passar.',
     ],
     script: [
+      // ⚠️ Lote 5 do Raio-X: a fala diz a CONTA de um quadro (o palco a escreve junto do Dino), e
+      // não "anda um pouco", que era o que a criança via com o movimento de 2,5 px de antes.
       {
         id: 'step-1',
-        caption: 'Velocidade 5: a cada quadro ele anda um pouco para a direita.',
+        caption: 'Velocidade 5: a cada quadro o x do Dino soma 5, e o Dino vai para a direita.',
         highlight: 'scene',
         actions: [
           { type: 'velocity', vx: 5, vy: 0 },
@@ -1052,7 +1689,8 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Com o número negativo, o mesmo relógio leva para o outro lado.',
+        caption:
+          'Velocidade −5: a cada quadro o x diminui 5, e o mesmo relógio leva para o outro lado.',
         highlight: 'scene',
         actions: [
           { type: 'velocity', vx: -5, vy: 0 },
@@ -1062,7 +1700,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-3',
-        caption: 'Zero é parado: o relógio anda e ele fica.',
+        caption: 'Velocidade 0: a cada quadro o x soma 0, e o Dino fica no lugar.',
         highlight: 'scene',
         actions: [
           { type: 'velocity', vx: 0, vy: 0 },
@@ -1076,38 +1714,62 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'hold-vs-press',
     group: 'events',
     title: 'Apertar uma vez, ou segurar',
-    instruction: 'Aperte o botão algumas vezes. Depois segure e avance o relógio.',
-    manipulates: 'O aperto, o segurar e o relógio',
-    success:
-      'Um é acontecimento, o outro é pergunta: por isso as duas foram parar em lugares diferentes!',
+    // ⭐⭐ Lote 5 do Raio-X (G5): UMA tecla, ligada às duas raquetes. Eram dois botões ("Apertar uma
+    // vez" e "Segurar a tecla"), e a criança saía achando que eram duas teclas.
+    instruction: 'Toque a tecla bem rápido. Depois segure a tecla e conte até três.',
+    manipulates: 'A tecla, que as duas raquetes escutam',
+    success: 'Apertar acontece uma vez. Estar apertada vale enquanto você segura!',
     extra: 'E se você segurar por mais tempo ainda?',
     goals: [
-      { id: 'one-step', label: 'Apertar uma vez andou um passo' },
-      { id: 'while-held', label: 'Segurando, ela anda enquanto durar' },
-      { id: 'apart', label: 'No mesmo tempo, as duas em lugares diferentes' },
+      {
+        id: 'one-step',
+        label: 'Toque rápido: a de cima deu um passo',
+        pedido: 'Toque a tecla bem rápido e solte.',
+      },
+      {
+        id: 'while-held',
+        label: 'Segurando, a de baixo não parou de andar',
+        // ⚠️ "Conte até três": a meta pede três quadros com a tecla segurada (0,75 s).
+        pedido: 'Segure a tecla e conte até três.',
+      },
+      {
+        id: 'apart',
+        // ⚠️⚠️ Mudou de sentido (lote 5): era "no mesmo tempo, as duas em lugares diferentes", que pedia a
+        // de baixo PASSAR a de cima e não caía com o rótulo verdadeiro na tela. Nenhum manifesto a cita.
+        label: 'Segurando, a de cima deu um passo só',
+        pedido: 'Segure a tecla, conte até três e solte.',
+      },
     ],
     hints: [
-      'Aperte o botão de cima e conte os passos: um aperto, um passo.',
-      'A de baixo pergunta "a tecla está apertada?" a cada quadro — e só anda enquanto a resposta for sim.',
-      'Segure o botão e avance o relógio duas ou três vezes sem soltar.',
+      'Toque a tecla rápido e olhe as duas raquetes.',
+      'Agora segure a tecla. A de cima anda de novo?',
+      'Segure a tecla e conte até três antes de soltar.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Um aperto, um passo. Apertar é um acontecimento.',
+        caption: 'Um toque rápido: a de cima dá um passo, e a de baixo quase não sai do lugar.',
         highlight: 'scene',
-        actions: [{ type: 'press' }, { type: 'press' }, { type: 'advance', seconds: 0.5 }],
+        actions: [
+          { type: 'hold', on: true },
+          { type: 'hold', on: false },
+          { type: 'advance', seconds: 0.5 },
+        ],
+        waitFor: 'one-step',
       },
       {
         id: 'step-2',
-        caption: 'Segurando, a de baixo anda o tempo todo.',
+        caption: 'Segurando a tecla, a de baixo anda em todo quadro. A de cima deu um passo só.',
         highlight: 'scene',
+        // ⚠️ A meta cai ao SOLTAR, e o `waitFor` pede o tempo depois: a etapa termina com a tecla solta.
         actions: [
           { type: 'hold', on: true },
           { type: 'advance', seconds: 1 },
           { type: 'advance', seconds: 1 },
+          { type: 'hold', on: false },
+          { type: 'advance', seconds: 0.5 },
         ],
-        waitFor: 'while-held',
+        waitFor: 'apart',
       },
     ],
   },
@@ -1115,36 +1777,55 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'variable',
     group: 'events',
     title: 'Guardar, mudar e mostrar',
-    instruction: 'Guarde um número na caixa. Mude ele sem mostrar. Só depois ligue o mostrar.',
+    instruction: 'Guarde um número na caixa. Mude o número sem mostrar. Só depois ligue o mostrar.',
     manipulates: 'O número guardado, a soma e o mostrar na tela',
     success: 'São três coisas diferentes: guardar, mudar e mostrar!',
     extra: 'E se você mostrar primeiro e mudar depois?',
     goals: [
-      { id: 'stored', label: 'A caixa guardou um número' },
-      { id: 'changed-hidden', label: 'Mudou o valor sem estar na tela' },
-      { id: 'shown', label: 'Mostrar não mudou o valor guardado' },
+      { id: 'stored', label: 'A caixa guardou um número', pedido: 'Guarde um número na caixa.' },
+      // ⚠️ Os nomes dos BLOCOS do desenho (consertos do review da onda A do lote 5): a bancada dizia
+      // "Somar 1 ponto" e "Mostrar na tela" embaixo de "Somar em pontos" e "Mostrar placar".
+      {
+        id: 'changed-hidden',
+        label: 'Mudou o valor sem estar na tela',
+        pedido: 'Depois de guardar, aperte Somar 1 em pontos com Mostrar placar desligado.',
+      },
+      {
+        id: 'shown',
+        label: 'Mostrar não mudou o valor guardado',
+        pedido: 'Depois de guardar, ligue Mostrar placar.',
+      },
     ],
     hints: [
-      'A caixa está aí com um número. Some alguma coisa nela e olhe: a tela mudou?',
-      'O número existe mesmo sem ninguém ver. Mostrar é só desenhar o que já está guardado.',
-      'Guarde 10, some 5 com o mostrar desligado, e só então ligue o mostrar.',
+      // ⚠️ A pista 1 mandava somar ANTES de guardar, gesto que não conta. A 2 era a explicação.
+      'Guarde um número na caixa. Depois some pontos e olhe: a tela mudou?',
+      'Guarde um número e aperte Somar 1 em pontos. Olhe a caixa e a tela antes de ligar Mostrar placar.',
+      'Guarde 0, some 1 três vezes com o mostrar desligado, e só então ligue o mostrar.',
     ],
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: os números têm a HISTÓRIA do jogo do Desafio ("Criar
+    // variável pontos, valor 0", cada acerto soma 1, "Mostrar placar"), e os três blocos acendem no
+    // palco. Era guardar 10 e somar 5, números sem história, com a caixa "Observe a montagem" vazia.
+    // ⚠️ `scene` nas três partes: o gesto aparece no DESENHO (os blocos e os acertos), não na bancada.
     script: [
       {
         id: 'step-1',
-        caption: 'A caixa guarda um número. Ninguém está vendo ainda.',
-        highlight: 'tools',
-        actions: [{ type: 'store', value: 10 }],
+        caption: 'O jogo cria a caixa pontos e guarda 0.',
+        highlight: 'scene',
+        actions: [{ type: 'store', value: 0 }],
       },
       {
         id: 'step-2',
-        caption: 'Somar muda o que está guardado, mesmo com a tela sem mostrar.',
-        highlight: 'tools',
-        actions: [{ type: 'change', by: 5 }],
+        caption: 'Três acertos: a caixa vai para 3. A tela ainda não mostra nada.',
+        highlight: 'scene',
+        actions: [
+          { type: 'change', by: 1 },
+          { type: 'change', by: 1 },
+          { type: 'change', by: 1 },
+        ],
       },
       {
         id: 'step-3',
-        caption: 'Mostrar desenha o valor. O valor era o mesmo antes.',
+        caption: 'Mostrar placar copia o 3 para a tela. A caixa continua 3.',
         highlight: 'scene',
         actions: [{ type: 'show', on: true }],
       },
@@ -1153,25 +1834,44 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   'group-loop': {
     id: 'group-loop',
     group: 'population',
-    title: 'Qual deles a torre escolhe?',
-    instruction: 'Olhe cada cacto do grupo e escolha o mais perto. Depois ligue o laço.',
-    manipulates: 'Olhar cada um do grupo, escolher um e o fio do laço',
-    success: 'Para escolher um do grupo é preciso olhar todos — é isso que o laço faz!',
-    extra: 'E se outro chegar mais perto depois da escolha?',
+    // ⭐⭐ Lote 5 do Raio-X (G5): as distâncias ficam ESCONDIDAS até medir, e são parecidas (118, 112 e
+    // 125). Antes elas estavam escritas embaixo dos cactos e cada cacto ficava a uma distância da torre
+    // proporcional ao número: dava para escolher o mais perto sem medir nenhum.
+    title: 'Qual deles está mais perto?',
+    instruction:
+      'Meça cada cacto e escolha o mais perto. Depois ligue o laço e deixe o tempo passar.',
+    manipulates: 'Medir cada cacto, escolher um e o laço',
+    success: 'Para achar o mais perto, é preciso medir todos. O laço mede todos, em todo quadro!',
+    extra: 'E se dois cactos ficarem à mesma distância da torre?',
     goals: [
-      { id: 'looked-all', label: 'Olhou todos do grupo antes de escolher' },
-      { id: 'nearest', label: 'Escolheu o mais perto depois de olhar todos' },
-      { id: 'auto', label: 'Com o laço ligado, a escolha acompanha quem está mais perto' },
+      {
+        id: 'looked-all',
+        label: 'Mediu os três antes de escolher',
+        pedido: 'Aperte Medir em cada cacto do grupo.',
+      },
+      {
+        id: 'nearest',
+        label: 'Escolheu o mais perto depois de medir',
+        // ⚠️ "cada cacto" e "o cacto": "os três" e "o de menor" não concordam com a pedra.
+        pedido: 'Depois de medir cada cacto do grupo, escolha o cacto de menor distância.',
+      },
+      {
+        id: 'auto',
+        // ⚠️⚠️ Lote 5: cai quando o laço TROCA a escolha sozinho, e não no ato de ligar.
+        label: 'Com o laço, a escolha mudou sozinha quando outro chegou mais perto',
+        // ⚠️ "Por 3 segundos": o mais perto troca de dono a cada 2,5 s no máximo (`HUNT_SWING`).
+        pedido: 'Ligue o laço e deixe o tempo passar por 3 segundos.',
+      },
     ],
     hints: [
-      'Você tem três cactos e uma torre. Olhe cada um antes de decidir.',
-      'Não dá para saber qual é o mais perto sem comparar os três — e comparar é percorrer.',
-      'Toque em cada um dos três e depois escolha o do meio.',
+      'Nenhum cacto tem número ainda. Meça um.',
+      'Só dá para saber o menor comparando os três números.',
+      'Meça o 1º, o 2º e o 3º. Depois escolha o menor número.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'A torre olha um por um do grupo.',
+        caption: 'A torre mede um por um do grupo.',
         highlight: 'scene',
         actions: [
           { type: 'look', id: 1 },
@@ -1181,61 +1881,136 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Depois de olhar todos, ela fica com o mais perto.',
+        caption: 'Depois de medir todos, fica com o mais perto.',
         highlight: 'scene',
         actions: [{ type: 'choose', id: 2 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Com o laço, a escolha pula sozinha quando outro chega mais perto.',
+        highlight: 'scene',
+        // ⚠️ 2 s (consertos do review da onda B do lote 5): da fase 0 o 2º segue o mais perto por 1,6 s,
+        // e a troca só conta depois de 1 s de laço ligado (`HUNT_LOOP_SEEN_TICKS`).
+        actions: [
+          { type: 'connect', port: 'loop', enabled: true },
+          { type: 'advance', seconds: 2 },
+        ],
+        waitFor: 'auto',
       },
     ],
   },
   'enemy-type': {
     id: 'enemy-type',
     group: 'population',
-    title: 'Uma ficha, muitos cactos',
-    instruction: 'Faça nascer alguns cactos. Depois mude a ficha e olhe os cactos de novo.',
-    manipulates: 'A ficha do tipo (velocidade e vida) e o nascimento de mais um',
-    success: 'Mudar a ficha mudou todos de uma vez: o jogo mora nos dados!',
-    extra: 'E se você mudar a vida com dez cactos na tela?',
+    // ⚠️ "Uma ficha, muitos cactos" soprava a resposta, e com a pedra virava "muitos pedras".
+    title: 'A ficha dos cactos',
+    // ⭐⭐ Lote 5 do Raio-X (G5): os cactos ANDAM com a velocidade da ficha e têm os corações da vida em
+    // cima. E a cópia ao nascer, que liga esta cena à `acceleration` do Corre Dino.
+    instruction:
+      'Faça nascer três cactos e olhe os cactos andarem. Depois mude a velocidade na ficha.',
+    manipulates: 'A ficha (velocidade e vida), o nascimento de mais um e a cópia ao nascer',
+    success: 'Quem lê a ficha muda junto com ela. Quem copiou ao nascer fica como era!',
+    extra: 'E se você mudar a vida com a cópia ligada?',
     goals: [
-      { id: 'many', label: 'Nasceram vários do mesmo molde' },
-      { id: 'all-change', label: 'Mudou a ficha e TODOS mudaram juntos' },
+      {
+        id: 'many',
+        label: 'Nasceram três cactos da mesma ficha',
+        pedido: 'Aperte Fazer nascer mais um três vezes.',
+      },
+      {
+        id: 'all-change',
+        // ⚠️⚠️ Lote 5: cai no quadro DEPOIS da mudança, com dois cactos que já andavam na tela.
+        label: 'Mudou a ficha e os cactos que já andavam mudaram juntos',
+        pedido: 'Faça nascer mais de um cacto, mude a velocidade na ficha e deixe o tempo passar.',
+      },
+      {
+        id: 'copied',
+        label: 'Copiando ao nascer, só os novos mudaram',
+        pedido:
+          'Ligue Copiar a ficha ao nascer, mude a velocidade na ficha, faça nascer mais um cacto e deixe o tempo passar.',
+      },
     ],
     hints: [
       'Você tem uma ficha com dois números. Faça nascer três cactos dela.',
-      'Os que nasceram não guardam cópia: eles LEEM a ficha. Mude um número e olhe todos.',
-      'Toque em nascer três vezes e depois mude a velocidade para 7.',
+      // ⚠️ A pista 2 era a explicação da cena.
+      // ⚠️ "em cima" (consertos do review da onda B do lote 5): o número fica em cima de cada cacto.
+      'Mude a velocidade na ficha e olhe o número em cima de cada cacto.',
+      'Aperte Fazer nascer mais um três vezes e depois mude a velocidade para 7.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Três cactos nascem da mesma ficha.',
+        caption: 'Três cactos nascem da mesma ficha e começam a andar.',
         highlight: 'scene',
-        actions: [{ type: 'spawnOne' }, { type: 'spawnOne' }, { type: 'spawnOne' }],
+        actions: [
+          { type: 'spawnOne' },
+          { type: 'spawnOne' },
+          { type: 'spawnOne' },
+          { type: 'advance', seconds: 1 },
+        ],
       },
       {
         id: 'step-2',
-        caption: 'Um número na ficha muda os três de uma vez.',
-        highlight: 'tools',
-        actions: [{ type: 'define', field: 'speed', value: 7 }],
+        caption: 'Um número na ficha muda os três no mesmo quadro.',
+        highlight: 'scene',
+        actions: [
+          { type: 'define', field: 'speed', value: 7 },
+          { type: 'advance', seconds: 1 },
+        ],
+        waitFor: 'all-change',
+      },
+      {
+        id: 'step-3',
+        caption: 'Copiando a ficha ao nascer, só o cacto novo anda com o número novo.',
+        highlight: 'scene',
+        actions: [
+          { type: 'connect', port: 'copy', enabled: true },
+          { type: 'define', field: 'speed', value: 3 },
+          { type: 'spawnOne' },
+          { type: 'advance', seconds: 1 },
+        ],
+        waitFor: 'copied',
       },
     ],
   },
   camera: {
     id: 'camera',
     group: 'stage',
-    title: 'A tela é uma janela',
-    instruction: 'Ande com o Dino para a direita, bem longe. Depois ligue a câmera e ande de novo.',
-    manipulates: 'A posição do Dino no mundo e o fio da câmera',
-    success: 'O mundo é maior que a tela, e a câmera é a janela que anda junto com você!',
+    // ⚠️ "A tela é uma janela" era a resposta do "Agora explique".
+    title: 'Até onde o Dino pode ir?',
+    // ⭐⭐ Lote 5 do Raio-X (G5): o mundo tem MARCOS (árvores, uma pedra e a bandeira no fim), e o Dino
+    // anda com o gesto "Andar", em vez de teleportar pelo deslizante.
+    instruction: 'Leve o Dino até a bandeira. Depois faça a câmera seguir o Dino e ande de novo.',
+    manipulates: 'Andar com o Dino pelo mundo e a câmera que segue',
+    success: 'A tela é uma janela: a câmera leva a janela junto com o Dino!',
     extra: 'E se o Dino voltar para o começo do mundo?',
     goals: [
-      { id: 'lost', label: 'Sem a câmera, o Dino saiu da tela' },
-      { id: 'follows', label: 'Com a câmera, o Dino voltou a caber na tela' },
-      { id: 'window', label: 'O mundo continua maior que a tela' },
+      {
+        id: 'lost',
+        label: 'Sem a câmera, o Dino saiu da tela',
+        pedido: 'Com a câmera parada, leve o Dino para depois de 480.',
+      },
+      {
+        id: 'follows',
+        label: 'Com a câmera seguindo, o Dino voltou para a tela',
+        // ⚠️ Sem "depois de o Dino sumir": sumir é a resposta da previsão desta cena.
+        pedido:
+          'Leve o Dino para depois de 480 com a câmera parada e então faça a câmera seguir o Dino.',
+      },
+      {
+        id: 'window',
+        // ⚠️⚠️ Lote 5: cai quando a janela MUDA de lugar com a câmera seguindo.
+        label: 'Com a câmera seguindo, o cenário passou e o Dino ficou na tela',
+        pedido:
+          'Com a câmera parada, leve o Dino para depois de 480. Depois faça a câmera seguir o Dino e ande mais um pouco.',
+      },
     ],
     hints: [
-      'O Dino está num mundo maior que a tela, e a tela mostra só um pedaço. Ande bem para a direita.',
-      'Sem a câmera, a janela fica parada: quem anda é só o Dino, até sumir.',
-      'Leve o Dino para depois de 480 e depois ligue a câmera.',
+      // ⚠️ As duas primeiras pistas eram a explicação ("a tela mostra só um pedaço") e a resposta da
+      // previsão ("até sumir"), e podem ser lidas antes do palpite.
+      'Olhe onde o Dino está no mundo e o pedaço que a tela mostra. Ande para a direita.',
+      'Com a câmera parada, leve o Dino bem para a direita e olhe a tela do jogo.',
+      'Leve o Dino para depois de 480 e depois faça a câmera seguir o Dino.',
     ],
     script: [
       {
@@ -1246,90 +2021,143 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Com a câmera, a janela anda junto e ele volta a aparecer.',
+        caption: 'Com a câmera seguindo, a janela anda junto e o Dino volta a aparecer.',
         highlight: 'scene',
         actions: [{ type: 'connect', port: 'camera', enabled: true }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Andando com a câmera, o cenário passa e o Dino fica na tela.',
+        highlight: 'scene',
+        actions: [{ type: 'walk', x: 900 }],
       },
     ],
   },
   contact: {
     id: 'contact',
     group: 'collision',
-    title: 'Encostando, ou acabou de encostar?',
-    instruction: 'Encoste o cacto e avance o relógio. Depois troque a pergunta do jogo e repita.',
-    manipulates: 'A distância do cacto e o tipo da pergunta sobre o contato',
-    success: 'Uma pergunta vale em todo quadro; a outra só no instante da batida!',
-    extra: 'E se ele encostar, afastar e encostar de novo?',
+    // ⭐⭐ Lote 5 do Raio-X (G5): DUAS pistas com as duas regras ao mesmo tempo. Antes a criança trocava
+    // a pergunta numa Escolha, a vida zerava, e o "3 perdidas" sumia no instante de comparar com o "1".
+    title: 'Encostando, ou começou a encostar?',
+    instruction: 'Encoste o cacto no Dino e espere. Depois afaste e encoste de novo.',
+    manipulates: 'A distância dos cactos das duas pistas',
+    success:
+      '"Está encostando?" vale em todo quadro. "Começar a encostar" vale só no instante da batida!',
+    extra: 'E se o cacto ficar encostado até acabarem os corações de cima?',
     goals: [
-      { id: 'drain', label: 'A pergunta contínua tirou vida em todo quadro' },
-      { id: 'once', label: 'O acontecimento tirou vida uma vez só' },
-      { id: 'apart', label: 'Afastar e voltar faz o acontecimento valer de novo' },
+      {
+        id: 'drain',
+        label: '"Está encostando?" tirou um coração em todo quadro',
+        pedido: 'Encoste o cacto no Dino e deixe o tempo passar.',
+      },
+      {
+        id: 'once',
+        label: '"Começar a encostar" tirou um coração só',
+        pedido: 'Encoste o cacto no Dino, deixe o tempo passar e olhe a pista de baixo.',
+      },
+      {
+        id: 'apart',
+        label: 'Afastou, encostou de novo e perdeu mais um coração',
+        // ⚠️⚠️ Termina no TEMPO (review do lote 2): a meta é conferida no passo do relógio.
+        pedido:
+          'Depois de encostar, afaste o cacto e deixe o tempo passar. Depois encoste de novo e deixe o tempo passar.',
+      },
     ],
     hints: [
-      'Encoste os dois e deixe o relógio andar: olhe a vida caindo.',
-      '"Está encostando?" é uma pergunta que o jogo faz SEMPRE; "acabou de encostar" acontece uma vez.',
-      'Com o cacto encostado, troque para o acontecimento e avance o relógio três vezes.',
+      'Encoste o cacto no Dino, deixe o tempo passar e olhe as duas pistas.',
+      'Compare quantos corações saíram em cima e embaixo.',
+      'Afaste o cacto, deixe o tempo passar e encoste de novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Encostado, a pergunta contínua tira vida a cada quadro.',
+        caption:
+          'Encostado, a pista de cima perde um coração em todo quadro. A de baixo perdeu um só.',
         highlight: 'scene',
         actions: [
-          { type: 'approach', distance: 20 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'drain',
-      },
-      {
-        id: 'step-2',
-        caption: 'Com o acontecimento, a batida custa uma vez só.',
-        highlight: 'tools',
-        actions: [
-          { type: 'mode', kind: 'event' },
-          { type: 'advance', seconds: 1 },
+          { type: 'approach', distance: 0 },
           { type: 'advance', seconds: 1 },
         ],
         waitFor: 'once',
+      },
+      {
+        id: 'step-2',
+        caption: 'Afastando e encostando de novo, a pista de baixo perde mais um.',
+        highlight: 'scene',
+        // ⚠️ 1 s encostado (consertos do review da onda B do lote 5): `apart` cai no terceiro quadro da
+        // encostada nova, como `drain` e `once`, para as duas pistas estarem lado a lado quando cai.
+        actions: [
+          { type: 'approach', distance: 100 },
+          { type: 'advance', seconds: 0.5 },
+          { type: 'approach', distance: 0 },
+          { type: 'advance', seconds: 1 },
+        ],
+        waitFor: 'apart',
       },
     ],
   },
   cooldown: {
     id: 'cooldown',
     group: 'events',
-    title: 'O tiro que espera a vez',
-    instruction: 'Atire várias vezes seguidas. Depois ponha uma recarga e tente de novo.',
+    // ⚠️ "O tiro que espera a vez" respondia a previsão.
+    title: 'A arma e a recarga',
+    // ⭐⭐ Lote 5 do Raio-X (G5): os tiros VOAM, e o aperto que não virou tiro pisca e some.
+    instruction:
+      'Aperte Atirar bem rápido, várias vezes. Depois ponha uma recarga e aperte rápido de novo.',
     manipulates: 'O tiro e o tempo de recarga entre dois tiros',
-    success: 'O relógio também serve para ESPERAR, e não só para repetir!',
-    extra: 'E se a recarga for de dois segundos inteiros?',
+    success: 'O relógio também serve para ESPERAR: durante a recarga, apertar não faz nada!',
+    extra: 'E se a recarga for de 2 segundos inteiros?',
     goals: [
-      { id: 'burst', label: 'Sem recarga, os tiros saem todos juntos' },
-      { id: 'spaced', label: 'Com recarga, os tiros saem espaçados' },
-      { id: 'waiting', label: 'Atirar durante a recarga não fez nada' },
+      {
+        id: 'burst',
+        // ⚠️⚠️ Lote 5: cai no TERCEIRO tiro sem recarga dentro de 1 s, e não quando o relógio anda.
+        label: 'Sem recarga, os tiros saíram colados',
+        pedido: 'Tire a recarga e aperte Atirar três vezes bem rápido.',
+      },
+      // ⚠️ `waiting` antes de `spaced` (review do lote 2): é a meta que responde a previsão.
+      {
+        id: 'waiting',
+        label: 'Apertar durante a recarga não fez tiro nenhum',
+        pedido: 'Ponha uma recarga e aperte Atirar duas vezes bem rápido.',
+      },
+      {
+        id: 'spaced',
+        label: 'Com recarga, apareceu um vão entre os tiros',
+        // ⚠️⚠️ "até aparecer Pronto para atirar" (review do lote 2): a frase embaixo do palco é o sinal
+        // que a criança consegue esperar.
+        pedido:
+          'Ponha uma recarga e aperte Atirar. Deixe o tempo passar até aparecer Pronto para atirar e aperte Atirar de novo.',
+      },
     ],
     hints: [
-      'Aperte atirar várias vezes seguidas e conte quantos tiros saíram.',
-      'A recarga é um relógio pequeno dentro da arma: enquanto ele não zera, o pedido não vira tiro.',
-      'Ponha a recarga em 1 segundo e aperte atirar duas vezes seguidas.',
+      'Aperte Atirar várias vezes seguidas e olhe os tiros voando.',
+      // ⚠️ A pista 2 era a explicação ("o pedido não vira tiro"), e pode ser lida antes do palpite.
+      'Ponha uma recarga e aperte Atirar várias vezes. Olhe quantos tiros saem.',
+      'Ponha a recarga em 1 segundo e aperte Atirar duas vezes seguidas.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Sem recarga, um pedido por quadro vira um tiro por quadro.',
+        caption: 'Sem recarga, cada aperto vira um tiro, e os tiros saem colados.',
         highlight: 'scene',
-        actions: [{ type: 'shoot' }, { type: 'shoot' }, { type: 'shoot' }],
+        actions: [
+          { type: 'shoot' },
+          { type: 'shoot' },
+          { type: 'shoot' },
+          { type: 'advance', seconds: 0.5 },
+        ],
+        waitFor: 'burst',
       },
       {
         id: 'step-2',
-        caption: 'Com a recarga, o segundo pedido espera a vez.',
+        caption: 'Com a recarga, o segundo aperto não vira tiro.',
         highlight: 'tools',
+        // ⚠️ Meio segundo, e não a recarga inteira: a etapa termina ESPERANDO, com a barra no meio.
         actions: [
           { type: 'recharge', seconds: 1 },
           { type: 'shoot' },
           { type: 'shoot' },
-          { type: 'advance', seconds: 1 },
+          { type: 'advance', seconds: 0.5 },
         ],
         waitFor: 'waiting',
       },
@@ -1339,18 +2167,37 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'aim',
     group: 'motion',
     title: 'A seta que aponta',
-    instruction: 'Mova o alvo e olhe a seta. Depois ligue a mira e avance o relógio.',
-    manipulates: 'O lugar do alvo e o fio da mira',
-    success: 'Apontar é uma seta do Dino até o alvo!',
-    extra: 'E se o alvo ficar exatamente atrás do Dino?',
+    // ⭐⭐ Lote 5 do Raio-X (G5): o GESTO "Atirar", e o tiro que voa pela seta ou reto.
+    instruction: 'Mude o alvo de lugar e atire. Depois ligue a mira e atire de novo.',
+    manipulates: 'O lugar do alvo, a mira e o tiro',
+    success: 'Apontar é achar a seta do Dino até o alvo. Com a mira, o tiro vai por ela!',
+    extra: 'E se o alvo ficar atrás do Dino?',
     goals: [
-      { id: 'arrow', label: 'A seta virou junto com o alvo' },
-      { id: 'follows', label: 'Com a mira ligada, o tiro foi na direção da seta' },
+      {
+        id: 'arrow',
+        label: 'A seta virou quando o alvo mudou de lugar',
+        pedido: 'Mude o alvo de lugar e olhe a seta.',
+      },
+      {
+        id: 'straight-miss',
+        label: 'Sem a mira, o tiro foi reto e errou',
+        // ⚠️ "acima ou abaixo do Dino": com o alvo na frente, reto e pela seta são o mesmo caminho.
+        pedido:
+          'Com a mira desligada e o alvo acima ou abaixo do Dino, aperte Atirar e olhe o tiro voar.',
+      },
+      {
+        id: 'follows',
+        // ⚠️⚠️ Lote 5: cai no ACERTO de um tiro que saiu com a mira ligada.
+        label: 'Com a mira, o tiro foi pela seta e acertou',
+        // ⚠️ "Olhe o tiro voar": Atirar solta o tempo, e a meta cai quando o tiro CHEGA no alvo.
+        pedido: 'Ligue a mira, aperte Atirar e olhe o tiro voar.',
+      },
     ],
     hints: [
-      'Arraste o alvo para outro canto e olhe a seta que sai do Dino.',
-      'A seta é a direção: ligar a mira faz o tiro seguir por ela em vez de ir sempre reto.',
-      'Ponha o alvo embaixo, ligue a mira e avance o relógio.',
+      'Mude o alvo de lugar e olhe para onde a seta aponta.',
+      // ⚠️ A pista 2 era a resposta da previsão.
+      'Atire com a mira desligada, e depois com a mira ligada. Compare o caminho do tiro.',
+      'Ligue a mira e aperte Atirar.',
     ],
     script: [
       {
@@ -1361,10 +2208,18 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Com a mira ligada, o tiro vai pela seta.',
+        caption: 'Sem a mira, o tiro vai reto e passa longe do alvo.',
+        highlight: 'scene',
+        actions: [{ type: 'shoot' }, { type: 'advance', seconds: 1 }],
+        waitFor: 'straight-miss',
+      },
+      {
+        id: 'step-3',
+        caption: 'Com a mira ligada, o tiro vai pela seta e acerta.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'aim', enabled: true },
+          { type: 'shoot' },
           { type: 'advance', seconds: 1 },
         ],
         waitFor: 'follows',
@@ -1374,40 +2229,57 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   diagonal: {
     id: 'diagonal',
     group: 'motion',
-    title: 'A diagonal corre mais',
-    instruction: 'Ande para um lado só e veja a distância. Depois aperte duas setas juntas.',
-    manipulates: 'As setas apertadas e a correção da diagonal',
-    success: 'Na diagonal os dois passos se somam — a correção deixa os dois caminhos iguais!',
+    // ⭐⭐ Lote 5 do Raio-X (G5): o Dino, o rastro e o círculo de referência. "Andar 1 segundo" é o
+    // gesto (sem relógio): o caminho não depende mais de qual botão do tempo foi apertado.
+    title: 'Duas setas ao mesmo tempo',
+    instruction:
+      'Ande 1 segundo só para a direita. Depois ande 1 segundo com direita e baixo juntas.',
+    manipulates: 'As setas apertadas, andar 1 segundo e a correção da diagonal',
+    success:
+      'Na diagonal o Dino anda para o lado E para baixo, e o caminho fica mais comprido. A correção deixa igual ao reto!',
     extra: 'E se a correção ficar ligada andando reto?',
     goals: [
-      { id: 'faster', label: 'Na diagonal ele andou mais no mesmo tempo' },
-      { id: 'same', label: 'Com a correção, a diagonal anda o mesmo que o reto' },
+      {
+        id: 'straight',
+        label: 'Andando reto, o Dino parou no círculo',
+        pedido: 'Aperte uma seta só e aperte Andar 1 segundo.',
+      },
+      {
+        id: 'faster',
+        // ⚠️⚠️ Lote 5: só cai com o fantasma de uma andada RETA no palco, para comparar.
+        label: 'Na diagonal, o Dino passou do círculo',
+        pedido:
+          'Ande 1 segundo com uma seta só. Depois aperte duas setas juntas e ande 1 segundo de novo.',
+      },
+      {
+        id: 'same',
+        label: 'Com a correção, a diagonal parou no círculo',
+        pedido: 'Ligue a correção da diagonal, aperte duas setas juntas e ande 1 segundo.',
+      },
     ],
     hints: [
-      'Ande só para a direita e olhe a distância do passo. Agora aperte direita e baixo juntas.',
-      'Cada seta dá um passo inteiro; duas setas dão dois passos no mesmo tempo.',
-      'Com as duas setas apertadas, avance o relógio e depois ligue a correção.',
+      'Aperte só a seta para a direita e ande 1 segundo. Olhe onde o Dino para.',
+      'Agora aperte a seta para a direita e a seta para baixo. O Dino para em cima do círculo?',
+      'Ligue a correção e ande de novo na diagonal.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Nas duas setas, ele anda mais do que numa só.',
+        caption: 'Uma seta só: em 1 segundo o Dino chega em cima do círculo.',
         highlight: 'scene',
-        actions: [
-          { type: 'direction', x: 1, y: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'faster',
+        actions: [{ type: 'direction', x: 1, y: 0 }, { type: 'stride' }],
       },
       {
         id: 'step-2',
-        caption: 'Com a correção, a diagonal volta a ter o tamanho certo.',
+        caption: 'Duas setas juntas: no mesmo segundo, o Dino passa do círculo.',
+        highlight: 'scene',
+        actions: [{ type: 'direction', x: 1, y: 1 }, { type: 'stride' }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Com a correção, a diagonal para em cima do círculo.',
         highlight: 'tools',
-        actions: [
-          { type: 'connect', port: 'even', enabled: true },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'same',
+        actions: [{ type: 'connect', port: 'even', enabled: true }, { type: 'stride' }],
       },
     ],
   },
@@ -1415,34 +2287,59 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'tilemap',
     group: 'world',
     title: 'O mapa escrito com letras',
-    instruction: 'Troque uma letra do mapa e olhe o desenho. Depois faça um chão no meio do vazio.',
-    manipulates: 'As letras das casas do mapa',
-    success: 'O mapa é um dado: o desenho nasce das letras!',
-    extra: 'E se você escrever a mesma letra num lugar bem diferente?',
+    // ⭐⭐ Lote 5 do Raio-X (G5): as letras do TEXTO do palco são tocáveis, com uma paleta de três letras,
+    // e o Dino cai até o primeiro bloco da coluna dele.
+    instruction:
+      'Escolha uma letra e toque numa casa do texto. Depois escreva ooo numa linha do meio.',
+    manipulates: 'A letra escolhida e as casas do texto do mapa',
+    // ⚠️ "O mapa é um dado": para quem tem 9 anos, "dado" é o de jogar.
+    success: 'O mapa é um texto que o jogo lê: cada letra vira sempre a mesma peça!',
+    extra: 'E se você apagar o chão embaixo do Dino?',
     goals: [
-      { id: 'text-is-map', label: 'Mudou a letra e o desenho mudou junto' },
-      { id: 'same-letter', label: 'A mesma letra virou sempre a mesma coisa' },
+      {
+        id: 'text-is-map',
+        label: 'Trocou uma letra e o desenho mudou',
+        pedido: 'Escolha uma letra e toque numa casa do texto que tem outra letra.',
+      },
+      {
+        id: 'coin-row',
+        label: 'Três o seguidos numa linha do meio viraram três moedas no ar',
+        pedido: 'Escolha a letra o e escreva três o seguidos numa linha do meio.',
+      },
+      {
+        id: 'same-letter',
+        // ⚠️⚠️ Lote 5: a mesma PEÇA (# ou o) em duas LINHAS. Caía apagando duas casas com ".".
+        label: 'Escreveu a mesma peça em duas linhas, e as duas ficaram iguais',
+        pedido: 'Escreva numa outra linha uma peça que você já escreveu.',
+      },
     ],
     hints: [
-      'Cada casa do mapa é uma letra. Toque numa casa vazia e escolha o bloco.',
-      'Ninguém desenhou o chão um por um: ele nasceu das letras que estão escritas ali.',
-      'Ponha três blocos seguidos numa linha do meio.',
+      'Escolha a letra # e toque numa casa vazia do texto.',
+      'Cada linha do texto é uma linha do desenho. Olhe a mesma casa nos dois.',
+      'Escolha a letra o e toque em três casas seguidas da linha 3.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Uma letra trocada, um bloco novo no desenho.',
+        caption: 'Uma letra trocada, uma peça nova no desenho.',
         highlight: 'scene',
         actions: [{ type: 'paint-tile', row: 3, col: 4, tile: '#' }],
       },
       {
         id: 'step-2',
-        caption: 'A mesma letra em outro lugar vira a mesma coisa.',
+        caption: 'Três o seguidos viram três moedas no ar.',
         highlight: 'scene',
         actions: [
-          { type: 'paint-tile', row: 3, col: 5, tile: '#' },
-          { type: 'paint-tile', row: 3, col: 6, tile: '#' },
+          { type: 'paint-tile', row: 2, col: 3, tile: 'o' },
+          { type: 'paint-tile', row: 2, col: 4, tile: 'o' },
+          { type: 'paint-tile', row: 2, col: 5, tile: 'o' },
         ],
+      },
+      {
+        id: 'step-3',
+        caption: 'A mesma letra em outra linha vira a mesma peça.',
+        highlight: 'scene',
+        actions: [{ type: 'paint-tile', row: 1, col: 7, tile: 'o' }],
       },
     ],
   },
@@ -1450,26 +2347,51 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   pool: {
     id: 'pool',
     group: 'population',
-    title: 'O contador que só sobe',
+    // ⚠️ "O contador que só sobe" respondia a previsão ("quantos o jogo fabricou?").
+    title: 'Quantos cactos o jogo já fabricou?',
+    // ⭐ Lote 5 do Raio-X: o número PINTADO em cada cacto é o que se compara (nº 4, nº 5, nº 6 contra
+    // nº 3, nº 3, nº 3). A chave tem o nome do gesto, e não "o fio": não há fio nenhum na bancada.
     instruction:
-      'Avance o relógio algumas vezes e olhe os dois números. Depois ligue a reciclagem.',
-    manipulates: 'O relógio e o fio da reciclagem',
-    success: 'Reciclar reaproveita o mesmo corpo: o contador de criados para de crescer!',
+      'Aperte ▶ e olhe o número pintado em cada cacto. Depois ligue Reciclar quem saiu e olhe de novo.',
+    manipulates: 'O tempo e a chave Reciclar quem saiu',
+    success: 'Reciclando, o jogo usa de novo o cacto que saiu. O número de fabricados parou!',
     extra: 'E se você desligar a reciclagem depois de um tempo?',
     goals: [
-      { id: 'grows', label: 'O contador de criados só sobe, e nunca desce' },
-      { id: 'recycled', label: 'Com reciclagem, o mesmo corpo volta a ser usado' },
-      { id: 'steady', label: 'O número de criados parou de crescer' },
+      {
+        id: 'grows',
+        label: 'A cada vez, um cacto novo: o número só subiu',
+        pedido: 'Com Reciclar quem saiu desligado, deixe o tempo passar até fabricados chegar a 3.',
+      },
+      {
+        id: 'recycled',
+        label: 'O mesmo cacto saiu e entrou de novo',
+        // ⚠️ Até o cacto da tela SAIR: é na saída que ele volta (o motor só dá a meta a um cacto que
+        // já estava na tela, e não ao primeiro que entra).
+        pedido:
+          'Ligue Reciclar quem saiu e deixe o tempo passar até o cacto da tela chegar na saída.',
+      },
+      {
+        id: 'steady',
+        label: 'O número de fabricados parou',
+        // ⚠️⚠️ "até fabricados chegar a 3" (review do lote 2): com "algumas vezes" a meta anterior
+        // (`grows`) não caía, e mais tempo com a reciclagem ligada nunca a derrubava.
+        // ⚠️ "Por 4 segundos", e não "mais um pouco" (review do lote 4).
+        pedido:
+          'Com Reciclar quem saiu desligado, deixe o tempo passar até fabricados chegar a 3. Depois ligue Reciclar quem saiu e deixe o tempo passar por 4 segundos.',
+      },
     ],
     hints: [
-      'São dois números: quantos estão vivos agora e quantos já foram criados desde o começo.',
-      'Um deles conta o que existe; o outro conta o que já foi feito — e é esse que denuncia o vazamento.',
-      'Ligue a reciclagem e avance o relógio quatro vezes olhando o segundo número.',
+      'São dois números: quantos estão na tela agora e quantos o jogo já fabricou.',
+      // ⚠️ A pista 2 respondia a previsão, e pode ser lida antes do palpite.
+      'Aperte ▶ e olhe o número pintado em cada cacto que entra.',
+      'Deixe o tempo passar até fabricados chegar a 3. Depois ligue Reciclar quem saiu e olhe o número pintado no cacto.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Sem reciclagem, cada passo do relógio cria mais um corpo.',
+        // ⚠️ "entra um cacto novo", e não "cada cacto que entra é novo": o elenco flexiona o que está
+        // colado ao nome, e "é novo" longe dele sairia "cada pedra que entra é novo".
+        caption: 'Sem reciclagem, entra um cacto novo a cada vez.',
         highlight: 'scene',
         actions: [
           { type: 'advance', seconds: 1 },
@@ -1480,7 +2402,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Com a reciclagem, o mesmo corpo volta e o contador para.',
+        caption: 'Com a reciclagem, o mesmo cacto volta e o número para.',
         highlight: 'tools',
         actions: [
           { type: 'connect', port: 'recycle', enabled: true },
@@ -1496,25 +2418,53 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   'entity-state': {
     id: 'entity-state',
     group: 'events',
-    title: 'Cada um com o seu cérebro',
-    instruction: 'Ponha cada um num estado diferente e avance o relógio. Depois mude só um deles.',
-    manipulates: 'O estado de cada um dos três e o relógio',
-    success: 'Cada personagem tem o próprio cérebro, e o estado decide o que ele faz agora!',
-    extra: 'E se os três ficarem no mesmo estado?',
+    // ⚠️ "Cada um com o seu cérebro" respondia a previsão. ⚠️ Lote 5 do Raio-X: são as TORRES do Jogo 3D
+    // Avançado (parado, mirar, atirar, recarregar), com uma pose que se vê de longe para cada estado.
+    title: 'O que cada torre está fazendo?',
+    instruction:
+      'Ponha a 1ª torre para mirar e aperte ▶. Olhe as três. Depois mude só a 2ª. No fim, mude onde o estado mora.',
+    manipulates: 'O estado de cada torre, onde o estado mora e o tempo',
+    success: 'Cada torre guarda o seu estado, e é o estado que decide o que a torre faz agora!',
+    extra: 'E se as três ficarem no mesmo estado?',
     goals: [
-      { id: 'own', label: 'Cada um ficou no seu próprio estado' },
-      { id: 'acts', label: 'O estado de cada um decidiu o que ele fez agora' },
-      { id: 'independent', label: 'Mudar um cérebro não mexeu nos outros' },
+      {
+        id: 'own',
+        label: 'As três ficaram em estados diferentes',
+        pedido: 'Com o estado morando em cada uma, ponha as três torres em estados diferentes.',
+      },
+      {
+        id: 'acts',
+        label: 'Com o relógio andando, cada torre fez o que o seu estado manda',
+        pedido: 'Com pelo menos duas torres em estados diferentes, deixe o tempo passar.',
+      },
+      {
+        id: 'independent',
+        label: 'Mudou uma torre e as outras não mudaram',
+        // ⚠️ DEPOIS do tempo passar: é quando o motor passa a contar a independência (antes dele
+        // ninguém fez nada, e a meta caía no meio da montagem da primeira).
+        pedido:
+          'Com o estado morando em cada uma e duas torres em estados diferentes, deixe o tempo passar. Depois mude o estado de uma só.',
+      },
+      {
+        // ⭐ Lote 5 do Raio-X: a crença errada ("o estado é do jogo"), testada de verdade.
+        id: 'shared',
+        label: 'Com o estado no jogo, as três mudaram juntas',
+        pedido: 'Mude onde o estado mora para no jogo e troque o estado de uma torre.',
+      },
     ],
     hints: [
-      'Os três começam parados. Escolha um estado diferente para cada um.',
-      'O estado não é do jogo: é DE CADA UM. O primeiro pode estar mirando enquanto o segundo recarrega.',
-      'Ponha o 1º em mirar, o 2º em atirar e avance o relógio.',
+      // ⚠️ Sem "As três torres começam paradas" (consertos do review da onda B do lote 5): a pista 1
+      // vem colada na situação, e saía "A 1ª torre está atirando, a 2ª atirando… As três torres
+      // começam paradas."
+      'Escolha um estado para a 1ª torre e aperte ▶.',
+      // ⚠️ A pista 2 era a explicação da cena, e pode ser lida antes do palpite.
+      'Mude o estado de uma só e deixe o tempo passar. Olhe o que as outras duas fizeram.',
+      'Deixe a 1ª mirando e a 2ª atirando, e deixe o tempo passar.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Cada um em um estado; o relógio mostra o que cada um faz.',
+        caption: 'Cada torre num estado: o relógio mostra o que cada uma faz.',
         highlight: 'scene',
         actions: [
           { type: 'brain', id: 1, state: 'mirar' },
@@ -1525,9 +2475,24 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Mudar um não mexe nos outros dois.',
+        caption: 'Mudar uma torre não mexe nas outras duas.',
         highlight: 'tools',
-        actions: [{ type: 'brain', id: 3, state: 'recarregar' }],
+        actions: [
+          { type: 'brain', id: 3, state: 'recarregar' },
+          { type: 'advance', seconds: 1 },
+        ],
+        waitFor: 'independent',
+      },
+      {
+        id: 'step-3',
+        caption: 'Com o estado no jogo, mudar uma torre muda as três.',
+        highlight: 'tools',
+        actions: [
+          { type: 'brain-scope', shared: true },
+          { type: 'brain', id: 1, state: 'atirar' },
+          { type: 'advance', seconds: 1 },
+        ],
+        waitFor: 'shared',
       },
     ],
   },
@@ -1535,23 +2500,39 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'delta-time',
     group: 'motion',
     title: 'O mesmo jogo em dois computadores',
-    instruction: 'Avance o relógio contando quadros. Depois troque para segundos e compare.',
-    manipulates: 'O que o jogo conta para medir o tempo, e o relógio',
-    success: 'Contando tempo, o jogo fica igual em qualquer computador!',
-    extra: 'E se você voltar a contar quadros no meio do caminho?',
+    // ⭐ Lote 5 do Raio-X: a corrida ACABA na chegada, e cada quadro desenhado deixa uma pegada.
+    instruction:
+      'Aperte ▶ e veja a corrida. Depois troque para "a cada segundo" e aperte ▶ de novo.',
+    manipulates: 'Como o Dino anda (a cada quadro ou a cada segundo) e o tempo',
+    success: 'Andando a cada segundo, o jogo fica igual em qualquer computador!',
+    // ⚠️ "marcas", e não "pegadas" (consertos do review da onda B do lote 5): com o elenco de nave, a
+    // pista e o "E se" falavam em pegadas de uma nave.
+    extra: 'Andando a cada segundo, quem deixou mais marcas até a chegada?',
     goals: [
-      { id: 'apart', label: 'Contando quadros, as duas máquinas se afastaram' },
-      { id: 'together', label: 'Contando tempo, as duas chegaram juntas' },
+      {
+        id: 'apart',
+        label: 'A cada quadro, os dois computadores se separaram',
+        // ⚠️ Quanto tempo (review do lote 2): "algumas vezes" com quatro passos não separava os dois.
+        pedido: 'Com o Dino andando a cada quadro, deixe o tempo passar por dois segundos.',
+      },
+      {
+        id: 'together',
+        label: 'A cada segundo, os dois chegaram juntos',
+        // ⚠️ Até a CHEGADA (lote 5): a meta diz "chegaram", e a corrida acaba lá.
+        pedido:
+          'Depois de ver os dois se separarem, troque para "a cada segundo" e deixe o tempo passar até a chegada.',
+      },
     ],
     hints: [
       'São dois computadores com o mesmo jogo: um rápido e um devagar.',
-      'Quadro não é tempo: o rápido faz mais quadros no mesmo segundo, e por isso anda mais.',
-      'Avance o relógio contando quadros e depois troque para segundos.',
+      // ⚠️ A pista 2 era a resposta da previsão, e pode ser lida antes do palpite.
+      'Aperte ▶ e compare as marcas de cada computador.',
+      'Aperte ▶ com "a cada quadro". Depois troque e aperte ▶ de novo.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Contando quadros, o rápido dispara na frente.',
+        caption: 'Andando a cada quadro, o rápido dispara na frente.',
         highlight: 'scene',
         actions: [
           { type: 'advance', seconds: 1 },
@@ -1561,10 +2542,11 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Contando tempo, os dois andam o mesmo.',
+        caption: 'Andando a cada segundo, os dois chegam juntos.',
         highlight: 'tools',
         actions: [
           { type: 'count', kind: 'seconds' },
+          { type: 'advance', seconds: 1 },
           { type: 'advance', seconds: 1 },
           { type: 'advance', seconds: 1 },
         ],
@@ -1575,25 +2557,46 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   'circle-collision': {
     id: 'circle-collision',
     group: 'collision',
-    title: 'A conta que decide a batida',
+    // ⚠️ "A conta que decide a batida" respondia a previsão (lote 5 do Raio-X).
+    title: 'Quando dois círculos batem?',
+    // ⚠️⚠️ "espere", e não "até os dois baterem e pare" (consertos do review da onda B do lote 5): o
+    // pedido exigia reflexo, e quem demorava via a distância chegar a 0 com os dois fundidos num disco.
+    // Hoje o relógio só aproxima ATÉ a batida (`engine.ts`) e o player para o ▶ ali.
     instruction:
-      'Avance o relógio e veja os dois se aproximarem. Depois mude um dos raios, e afaste os dois para comparar de novo.',
+      'Aperte ▶ e espere os dois baterem. Olhe a fila dos raios. Depois diminua um raio sem mexer na distância.',
     manipulates: 'A distância entre os centros, os dois raios e o relógio que aproxima',
-    success: 'A batida é a distância entre os centros contra a soma dos raios!',
+    success: 'Distância contra a soma dos raios: é essa conta que o jogo faz!',
     extra: 'E se os dois raios ficarem bem grandes?',
     goals: [
-      { id: 'touch', label: 'A distância ficou menor que a soma dos raios' },
-      { id: 'formula', label: 'Mudar o raio mudou o instante da batida' },
+      {
+        id: 'touch',
+        // ⚠️ "igual ou menor" (lote 5): a meta cai com a distância IGUAL à soma (60 contra 60), e
+        // "menor" prometia o que a tela não mostrava.
+        label: 'A distância ficou igual ou menor que a soma dos raios',
+        pedido:
+          'Aproxime os dois círculos: deixe o tempo passar ou diminua a distância entre os centros.',
+      },
+      {
+        id: 'formula',
+        // ⚠️ O gesto é sem relógio: mudar o raio troca o resultado NO MESMO LUGAR, e não "o instante".
+        label: 'Com os círculos parados, mudar um raio trocou o resultado',
+        // ⚠️⚠️ "só encostando" (review do lote 2): com os círculos já sobrepostos, diminuir um raio sem
+        // mexer na distância não desfaz a batida, e o pedido proibia a saída.
+        pedido: 'Com os dois só encostando, diminua um dos raios sem mexer na distância.',
+      },
     ],
     hints: [
-      'Olhe os dois números: a distância entre os centros e a soma dos raios.',
-      'A batida não acontece quando os desenhos parecem encostar: acontece quando a conta bate.',
-      'Deixe eles encostarem e então DIMINUA um raio: o mesmo lugar deixa de ser uma batida.',
+      // ⭐ Lote 5: a fila dos raios deitados embaixo da linha da distância é o desenho da conta.
+      'Olhe a fila dos dois raios, embaixo da linha da distância.',
+      // ⚠️ A pista 2 era a frase que saiu do rodapé por ser FALSA neste palco, e pode ser lida antes
+      // do palpite.
+      'Aperte ▶ e espere aparecer "bateu". Olhe onde a fila dos raios termina.',
+      'Deixe os dois só encostarem e então diminua um raio, sem mexer na distância.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'A distância diminui até ficar menor que a soma dos raios.',
+        caption: 'A distância diminui até a fila dos raios alcançar o outro centro.',
         highlight: 'scene',
         actions: [
           { type: 'advance', seconds: 1 },
@@ -1615,53 +2618,99 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'axis-z',
     group: 'stage',
     title: 'O eixo que faltava',
-    instruction: 'Mexa em um eixo de cada vez. Comece pelo z, e depois suba pelo y.',
+    // ⚠️⚠️ Lote 5 do Raio-X: o z primeiro, e depois o y. A sombra passou a pedir o cubo NO AR andando
+    // pelo x ou pelo z, então o y já não fecha duas metas juntas (o motivo da ordem do review do lote 2).
+    instruction: 'Mexa só no z e olhe a sombra. Depois aumente só o y, e mexa no z de novo.',
     manipulates: 'Os três eixos do espaço, um de cada vez',
-    success: 'O z é a profundidade, e aqui o y maior é mais ALTO!',
-    extra: 'E se o objeto voltar para o chão bem longe?',
+    success: 'O z é a frente e o fundo. E no 3D, y maior é mais ALTO!',
+    extra: 'E se o cubo voltar para o chão bem no fundo?',
+    // ⚠️ `up` antes de `depth`: é a meta que responde a previsão, na ordem do "Conferir".
     goals: [
-      { id: 'depth', label: 'O z leva para longe e para perto' },
-      { id: 'up', label: 'No 3D, o y maior é mais ALTO' },
-      { id: 'shadow', label: 'A sombra no chão diz onde ele está' },
+      { id: 'up', label: 'No 3D, o y maior é mais ALTO', pedido: 'Aumente só o y.' },
+      { id: 'depth', label: 'O z leva para a frente e para o fundo', pedido: 'Mexa só no z.' },
+      {
+        id: 'shadow',
+        label: 'No ar, a sombra andou pelo chão junto com o cubo',
+        pedido: 'Levante o cubo com o y. Depois, com o cubo no ar, mexa só no x ou só no z.',
+      },
     ],
     hints: [
-      'Agora são três números. Mexa só no z e olhe a sombra no chão.',
-      'No 2D o y crescia para baixo; aqui ele cresce para cima, e é a mudança mais importante.',
-      'Deixe o x e o z parados e aumente só o y.',
+      'Agora são três números. Mexa só no z e olhe o cubo e a sombra.',
+      // ⚠️ A pista 2 era a resposta da previsão ("aqui ele cresce para cima").
+      'No jogo 2D, aumentar o y descia. Veja o que acontece aqui.',
+      'Aumente só o y. Depois, com o cubo no ar, mexa só no x.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'O z leva o objeto para longe, e a sombra vai junto.',
+        // ⚠️⚠️ Decisão da dona (lote 5): z NEGATIVO é o fundo, como o kit Desvie e os blocos genéricos
+        // do Jogo 3D (o inimigo nasce em z −20 e vem para a câmera) e o three.js.
+        caption: 'O z negativo leva o cubo para o fundo: o cubo fica menor, e a sombra vai junto.',
         highlight: 'scene',
-        actions: [{ type: 'place3d', x: 0, y: 0, z: 80 }],
+        actions: [{ type: 'place3d', x: 0, y: 0, z: -80 }],
       },
       {
         id: 'step-2',
         caption: 'O y levanta: aqui, mais y é mais alto.',
         highlight: 'scene',
-        actions: [{ type: 'place3d', x: 0, y: 70, z: 80 }],
+        actions: [{ type: 'place3d', x: 0, y: 70, z: -80 }],
+      },
+      {
+        id: 'step-3',
+        caption: 'No ar, a sombra anda pelo chão junto com o cubo.',
+        highlight: 'scene',
+        actions: [{ type: 'place3d', x: 60, y: 70, z: -80 }],
       },
     ],
   },
   'camera-3d': {
     id: 'camera-3d',
     group: 'stage',
-    title: 'Gire até ver uma cor só',
+    // ⚠️⚠️ O título e a instrução diziam "até ver uma cor só" logo acima de "de frente, quantas cores
+    // você vê?" (review do lote 2).
+    title: 'Gire a câmera e conte as cores',
     instruction:
-      'Gire o cubo até ver uma cor sozinha. Depois ache uma posição com exatamente duas.',
+      'Mova a câmera em volta do cubo e conte as cores em cada lugar. Ache o lugar com menos cores, um com exatamente duas e um com três.',
     manipulates: 'A volta e a altura de onde a câmera olha',
-    success: 'O que você vê depende de onde a câmera está!',
-    extra: 'E se você girar até ver as três de uma vez?',
+    success: 'O cubo não mudou: o que você vê depende de onde a câmera está!',
+    extra: 'E se a câmera ficar bem por baixo?',
     goals: [
-      { id: 'one-face', label: 'Girou até ver uma cor só' },
-      { id: 'two-faces', label: 'Girou até ver exatamente duas cores' },
-      { id: 'back', label: 'Voltou à vista de sempre com um toque' },
+      {
+        id: 'one-face',
+        label: 'Girou até ver uma cor só',
+        pedido: 'Mova a câmera até ver uma cor só.',
+      },
+      {
+        id: 'two-faces',
+        label: 'Girou até ver exatamente duas cores',
+        // ⚠️ "outro lugar": a cena ABRE mostrando duas cores, e o pedido parecia já cumprido.
+        pedido: 'Leve a câmera para outro lugar com exatamente duas cores.',
+      },
+      {
+        // ⭐ Lote 5 do Raio-X: no lugar de "voltou à vista de sempre", que era apertar um atalho.
+        id: 'three-faces',
+        label: 'Achou um lugar com três cores',
+        pedido: 'Leve a câmera para um canto e mude a altura.',
+      },
+      {
+        // ⚠️ Só num caso (lote 5): o botão continua na bancada como atalho, sem meta de fábrica.
+        id: 'back',
+        // ⚠️ "onde a câmera começou", e não "a vista de sempre" (consertos do review da onda B do lote 5):
+        // a criança não conhece o canto do começo como "de sempre".
+        label: 'Voltou para onde a câmera começou com um toque',
+        soNoCaso: true,
+        // ⚠️ "longe de onde começou": quem volta à mão para a volta 2 já está lá.
+        pedido: 'Com a câmera longe de onde começou, aperte Voltar para onde a câmera começou.',
+      },
     ],
     hints: [
-      'Cada face do cubo tem uma cor. Gire devagar e conte quantas aparecem.',
-      'De frente aparece uma; do canto, duas ou três. É a câmera que decide, não o cubo.',
-      'Baixe a altura da câmera e gire meia volta.',
+      // ⭐ Lote 5: lados opostos têm a mesma cor, então contar as cores é contar os lados.
+      'Lados opostos têm a mesma cor. Mova devagar e conte as cores.',
+      // ⚠️ A pista 2 era a resposta da previsão, e pode ser lida antes do palpite.
+      'Mude a volta de 1 em 1 e conte as cores em cada lugar. Depois mude a altura.',
+      // ⚠️ A pista literal antiga ("baixe a altura e gire meia volta") levava a TRÊS cores. ⚠️ A volta
+      // se conta de 1 a 8 desde o lote 5: a volta 1 é bem de frente.
+      'Deixe a altura no meio e ponha a volta em 1.',
     ],
     script: [
       {
@@ -1672,7 +2721,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-2',
-        caption: 'Do canto, duas — e por cima, três.',
+        caption: 'Do canto, duas. Do canto e por cima, três.',
         highlight: 'scene',
         actions: [
           { type: 'orbit', yaw: 1, pitch: 1 },
@@ -1681,7 +2730,7 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
       },
       {
         id: 'step-3',
-        caption: 'Um toque devolve a vista de sempre.',
+        caption: 'Um toque leva a câmera de volta para onde ela começou.',
         highlight: 'tools',
         actions: [{ type: 'recenter' }],
       },
@@ -1690,66 +2739,105 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
   mesh: {
     id: 'mesh',
     group: 'art',
-    title: 'Por baixo da roupa',
-    instruction: 'Ligue o raio-X e olhe o modelo por dentro. Depois desligue e gire.',
-    manipulates: 'O raio-X do modelo e a volta dele',
-    success: 'O modelo é feito de pontos ligados, e a textura é a roupa!',
-    extra: 'E se você girar com o raio-X ligado?',
+    // ⚠️ "Por baixo da roupa" (lote 5 do Raio-X): o Molda diz PELE ("pinte a pele direto no modelo").
+    title: 'O que tem embaixo da pele?',
+    // ⚠️⚠️ "A pele" (inteira, transparente, sem pele) no lugar de "Ver os pontos" (nada, metade, tudo)
+    // (consertos do review da onda B do lote 5): o nome do controle e a instrução "Ponha Ver os pontos
+    // na metade" respondiam a previsão ("do que um modelo 3D é feito?") antes do palpite. Os ids da ação
+    // (`nada`, `metade`, `tudo`) não mudaram.
+    instruction:
+      'Deixe a pele transparente e olhe o que aparece embaixo. Depois volte a pele inteira e gire o modelo.',
+    manipulates: 'A pele (inteira, transparente ou sem pele) e a volta do modelo',
+    success: 'A forma é feita de pontos ligados. A cor é uma pele pintada por cima!',
+    extra: 'E se você girar com os pontos à vista?',
     goals: [
-      { id: 'points', label: 'Por baixo, o modelo é feito de pontos ligados' },
-      { id: 'skin', label: 'A textura é a roupa que cobre os pontos' },
+      {
+        id: 'points',
+        label: 'Viu os pontos e as linhas que formam o modelo',
+        pedido: 'Deixe a pele transparente.',
+      },
+      {
+        id: 'skin',
+        label: 'Viu a pele por cima dos mesmos pontos',
+        // ⚠️ Dois gestos (lote 5): a pele POR CIMA é uma comparação com os pontos já vistos.
+        pedido: 'Depois de deixar a pele transparente, volte a pele inteira e olhe o modelo.',
+      },
     ],
     hints: [
-      'O bicho parece liso, mas tem alguma coisa por baixo. Ligue o raio-X.',
-      'Os pontos e as linhas existem sempre: a roupa só os cobre.',
-      'Ligue o raio-X, olhe, e desligue de novo.',
+      'O modelo parece liso. Deixe a pele transparente.',
+      // ⚠️ A pista 2 era o rodapé que saiu por responder a previsão.
+      'Compare o modelo com a pele inteira e com a pele transparente.',
+      'Deixe a pele transparente, olhe, e volte a pele inteira.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Com o raio-X, aparecem os pontos e as linhas.',
+        caption: 'Com a pele transparente, aparecem os pontos e as linhas.',
         highlight: 'scene',
-        actions: [{ type: 'wireframe', on: true }],
+        actions: [{ type: 'see-points', level: 'metade' }],
       },
       {
         id: 'step-2',
-        caption: 'Sem ele, a roupa volta — e os pontos continuam lá.',
+        caption: 'Com a pele inteira de novo, os pontos continuam embaixo.',
         highlight: 'scene',
-        actions: [{ type: 'wireframe', on: false }],
+        actions: [{ type: 'see-points', level: 'nada' }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Sem a pele, girar o modelo gira os pontos junto.',
+        highlight: 'tools',
+        actions: [
+          { type: 'see-points', level: 'tudo' },
+          { type: 'orbit', yaw: 3, pitch: 1 },
+        ],
       },
     ],
   },
   'pick-ray': {
     id: 'pick-ray',
     group: 'collision',
-    title: 'A mira que para na primeira',
+    // ⚠️ "A mira que para na primeira" respondia a previsão ("qual acende?").
+    title: 'Qual caixa a mira acende?',
+    // ⭐ Lote 5 do Raio-X: duas vistas da MESMA cena, a do jogador e a de lado.
+    // ⚠️ Onde uma cobre a outra PRIMEIRO (lote 5): é a meta que responde a previsão, e a caixa sozinha
+    // vem depois (a ordem do "Conferir" é a das metas, e o palpite volta antes da conclusão).
     instruction:
-      'Aponte para as caixas. Depois mire no pedaço em que uma caixa cobre a outra e veja qual acende.',
+      'Mire onde uma caixa cobre a outra e olhe a vista de lado. Depois mire na caixa sozinha.',
     manipulates: 'Para onde a mira aponta',
-    success: 'A mira é uma reta que sai da câmera e para na primeira coisa!',
+    success: 'A mira é uma reta que sai do seu olho e para na primeira coisa!',
     extra: 'E se você mirar no vazio?',
     goals: [
-      { id: 'face', label: 'A face mirada acendeu' },
-      { id: 'first', label: 'A reta parou na primeira caixa do caminho' },
+      {
+        id: 'first',
+        label: 'Com duas no caminho, acendeu a mais perto',
+        pedido: 'Aponte a mira onde uma caixa cobre a outra.',
+      },
+      {
+        id: 'face',
+        label: 'A caixa mirada acendeu',
+        // ⚠️ SOZINHA (lote 5): onde uma cobre a outra a meta é a outra, e as duas não caem juntas.
+        pedido: 'Aponte a mira para a caixa sozinha.',
+      },
     ],
     hints: [
       'Aponte para uma caixa e veja qual delas acende.',
-      'A reta não atravessa: ela para na primeira coisa que encontra.',
-      'Aponte no pedaço em que uma caixa cobre a outra: a reta para na da frente.',
+      // ⚠️ As pistas 2 e 3 eram a resposta da previsão, e podem ser lidas antes do palpite.
+      'Use o botão Mirar onde uma cobre a outra e olhe a vista de lado.',
+      'Aperte Mirar onde uma cobre a outra.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Mirar numa caixa acende ela.',
+        caption: 'Mirar numa caixa acende a caixa.',
         highlight: 'scene',
-        actions: [{ type: 'point', x: 110, y: 120 }],
+        actions: [{ type: 'point', x: 100, y: 125 }],
       },
       {
         id: 'step-2',
-        // A faixa em que a caixa 2 cobre a 1 — é a única parte da tela com duas no caminho.
-        caption: 'Onde uma cobre a outra, a reta para na da frente.',
+        // A faixa em que a caixa B cobre a A — é a única parte da tela com duas no caminho.
+        caption: 'Onde uma cobre a outra, a reta para na mais perto.',
         highlight: 'scene',
-        actions: [{ type: 'point', x: 330, y: 145 }],
+        actions: [{ type: 'point', x: 330, y: 155 }],
       },
     ],
   },
@@ -1757,35 +2845,68 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'fill-stroke',
     group: 'art',
     title: 'A cor de dentro e a linha de fora',
-    instruction: 'Tire a linha de fora e olhe a forma. Depois tire a cor de dentro e olhe de novo.',
-    manipulates: 'O miolo e o contorno da mesma forma',
-    success: 'Preencher e contornar são dois desenhos no mesmo traço!',
-    extra: 'E se os dois ficarem sem cor ao mesmo tempo?',
+    // ⚠️⚠️ Lote 5: Preenchimento, Contorno e Sem cor, os nomes do Pinta. A cena dizia "miolo" e
+    // "contorno à vista", e a pedra era um pentágono sobre um fundo liso (Sem cor parecia branco).
+    instruction:
+      'Deixe o contorno em Sem cor e olhe a pedra. Depois deixe o preenchimento em Sem cor e olhe de novo.',
+    manipulates: 'O preenchimento e o contorno da pedra',
+    success:
+      'Preenchimento e contorno são duas partes com cor própria. Cada uma pode ficar em Sem cor!',
+    extra: 'E se as duas partes ficarem em Sem cor ao mesmo tempo?',
     goals: [
-      { id: 'only-fill', label: 'Miolo sem linha continua sendo desenho' },
-      { id: 'only-stroke', label: 'A linha sozinha guarda a forma' },
-      { id: 'both', label: 'Os dois juntos são dois desenhos no mesmo traço' },
+      {
+        id: 'only-fill',
+        label: 'Deixou o contorno em Sem cor',
+        // ⚠️ Sem "e o preenchimento pintado": eram as palavras da resposta certa ("Sobra o preenchimento").
+        pedido: 'Deixe só o contorno em Sem cor.',
+      },
+      {
+        id: 'only-stroke',
+        label: 'Deixou o preenchimento em Sem cor',
+        pedido: 'Deixe só o preenchimento em Sem cor.',
+      },
+      {
+        id: 'both',
+        label: 'Voltou as duas partes com cor',
+        pedido: 'Depois de deixar uma parte em Sem cor, volte as duas com cor.',
+      },
     ],
     hints: [
-      'A forma tem duas partes: o que está dentro e a linha que fecha a borda.',
-      'Cada uma pode existir sem a outra — e a forma continua sendo a mesma.',
-      'Desligue o contorno, olhe, e depois desligue o miolo.',
+      'A pedra tem duas partes: o preenchimento, por dentro, e o contorno, na borda.',
+      // ⚠️ A pista 2 era a explicação da cena.
+      'Deixe uma parte de cada vez em Sem cor e olhe o que sobra.',
+      // ⚠️ Até a volta das duas cores (consertos do review da onda B do lote 5): a escada nunca falava
+      // da última meta, `both`.
+      'Deixe o contorno em Sem cor, depois o preenchimento, e no fim volte as duas com cor.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Sem a linha, sobra o miolo.',
+        caption: 'Contorno em Sem cor: sobra o preenchimento.',
         highlight: 'scene',
         actions: [{ type: 'ink', part: 'stroke', on: false }],
       },
       {
         id: 'step-2',
-        caption: 'Sem o miolo, sobra a linha — e a forma continua legível.',
+        // ⚠️⚠️ O contorno VOLTA antes de o preenchimento sair (lote 5): na ordem de antes a pedra
+        // sumia inteira por um instante, com a legenda dizendo que sobrava a linha. ⚠️ E a volta tem
+        // PARTE própria (consertos do review da onda B do lote 5, B11): dentro da parte seguinte, por
+        // meio segundo a legenda 1 ("sobra o preenchimento") ficava sobre a pedra com as duas cores.
+        caption: 'O contorno voltou.',
         highlight: 'scene',
-        actions: [
-          { type: 'ink', part: 'fill', on: false },
-          { type: 'ink', part: 'stroke', on: true },
-        ],
+        actions: [{ type: 'ink', part: 'stroke', on: true }],
+      },
+      {
+        id: 'step-3',
+        caption: 'Preenchimento em Sem cor: dá para ver o fundo por dentro. Sobra a linha.',
+        highlight: 'scene',
+        actions: [{ type: 'ink', part: 'fill', on: false }],
+      },
+      {
+        id: 'step-4',
+        caption: 'As duas com cor: preenchimento e contorno juntos.',
+        highlight: 'scene',
+        actions: [{ type: 'ink', part: 'fill', on: true }],
       },
     ],
   },
@@ -1793,43 +2914,63 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     id: 'shading',
     group: 'art',
     title: 'A luz dá volume',
+    // ⚠️⚠️ Lote 5: três tons da família do azul em pixels (o tom da bola, um mais escuro e um mais
+    // claro). A "sombra da mesma cor" era um crescente verde-oliva sobre a bola azul.
     instruction:
-      'Ligue a sombra e olhe a forma. Tire ela de novo para comparar, e depois mude o lado da luz.',
-    manipulates: 'A sombra e o lado da luz',
-    success: 'Duas cores da mesma cor fazem a forma deixar de ser chapada!',
-    extra: 'E se você trocar o lado da luz com a sombra desligada?',
+      'Ligue a sombra e a luz e olhe a bola. Desligue para comparar, e depois mude o sol de lado.',
+    manipulates: 'Os tons de sombra e de luz e o lado do sol',
+    success: 'Um azul mais escuro longe do sol e um mais claro perto dele deixam a bola redonda!',
+    extra: 'E se você mudar o sol de lado com a sombra e a luz desligadas?',
     goals: [
-      { id: 'flat', label: 'Sem sombra, a forma parece um adesivo' },
-      { id: 'volume', label: 'Com as duas cores, a forma ganhou volume' },
-      { id: 'side', label: 'Mudou o lado da luz e a sombra mudou de lado' },
+      {
+        id: 'flat',
+        label: 'Tirou os tons e viu a bola chapada de novo',
+        pedido: 'Ligue a sombra e a luz e depois desligue.',
+      },
+      {
+        id: 'volume',
+        label: 'Ligou os tons e viu a bola redonda',
+        pedido: 'Ligue a sombra e a luz.',
+      },
+      {
+        id: 'side',
+        label: 'Mudou o sol de lado e viu a sombra trocar de lado',
+        pedido: 'Com a sombra e a luz ligadas, mude o sol de lado.',
+      },
     ],
     hints: [
-      'A forma está pintada com uma cor só. Ligue a sombra e compare as duas.',
-      'A sombra fica do lado CONTRÁRIO ao da luz — é isso que dá a impressão de volume.',
-      'Com a sombra ligada, troque a luz para o outro lado.',
+      'A bola está pintada com um tom só. Ligue a sombra e a luz e compare.',
+      // ⚠️ A pista 2 era a resposta do "Agora explique".
+      'Com a sombra e a luz ligadas, mude o sol de lado. Olhe onde fica o azul mais escuro.',
+      'Com a sombra e a luz ligadas, leve o sol para o outro lado.',
     ],
     script: [
-      // ⚠️ A cena ABRE chapada, então o primeiro passo é LIGAR a sombra: começar desligando
+      // ⚠️ A cena ABRE chapada, então o primeiro passo é LIGAR os tons: começar desligando
       // seria um passo que não muda um pixel, narrado como se mudasse.
       {
         id: 'step-1',
-        caption: 'Com a segunda cor mais escura, ela ganha volume.',
+        caption:
+          'Um azul mais escuro longe do sol e um mais claro perto dele: a bola ficou redonda.',
         highlight: 'scene',
         actions: [{ type: 'shade', on: true }],
       },
       {
         id: 'step-2',
-        caption: 'Tirando a sombra, ela volta a parecer um adesivo colado na tela.',
+        // ⚠️ "Com um tom só" (consertos do review da onda B do lote 5, B14): "sem os dois tons" vinha
+        // logo depois de "três tons de azul", embaixo do palco.
+        caption: 'Com um tom só, a bola parece um adesivo.',
         highlight: 'scene',
         actions: [{ type: 'shade', on: false }],
       },
       {
         id: 'step-3',
-        caption: 'A sombra acompanha o lado da luz.',
+        // ⚠️⚠️ O SOL muda de lado ANTES de os tons voltarem (lote 5): na ordem de antes a sombra
+        // aparecia por um instante do lado errado, justo na parte que ensina o lado.
+        caption: 'Mudou o sol de lado. Olhe onde ficou o azul mais escuro.',
         highlight: 'scene',
         actions: [
-          { type: 'shade', on: true },
           { type: 'light', side: 'right' },
+          { type: 'shade', on: true },
         ],
       },
     ],
@@ -1843,4 +2984,14 @@ export function sceneModel(scene: SceneId): SceneModel {
 /** Os ids de meta de uma cena — o `waitFor` de um roteiro precisa ser um deles. */
 export function sceneGoalIds(scene: SceneId): string[] {
   return SCENE_MODELS[scene].goals.map((g) => g.id)
+}
+
+/**
+ * As metas da missão de FÁBRICA: todas, menos as que só existem para um caso (`soNoCaso`).
+ *
+ * ⚠️ É o que uma experimentação SEM `setup.goals` cobra. `sceneGoalIds` continua sendo a lista
+ * inteira, porque é contra ela que o caso do professor e o `waitFor` do roteiro são conferidos.
+ */
+export function sceneDefaultGoalIds(scene: SceneId): string[] {
+  return SCENE_MODELS[scene].goals.filter((g) => !g.soNoCaso).map((g) => g.id)
 }

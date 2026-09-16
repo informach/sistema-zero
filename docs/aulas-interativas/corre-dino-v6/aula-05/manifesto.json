@@ -122,11 +122,11 @@
       "content": {
         "kind": "interactive",
         "title": "Dê um intervalo aos nascimentos",
-        "instructions": "Compare os nascimentos a cada quadro. Depois ligue o relógio e observe o espaço entre os cactos.",
+        "instructions": "Aperte ▶ Tempo e veja os cactos nascerem a cada quadro. Depois leve Criar cacto para dentro do relógio e observe o espaço entre os cactos.",
         "hints": [
-          "Veja quantos cactos nascem enquanto o relógio anda.",
-          "Compare o mesmo tempo com e sem intervalo.",
-          "Ligue Relógio a Nascer e avance dois segundos."
+          "Veja quantos cactos nascem enquanto o tempo passa.",
+          "Compare o mesmo tempo com e sem o relógio.",
+          "Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos."
         ],
         "required": false,
         "activity": {
@@ -173,11 +173,66 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja para que lado o número negativo leva",
-        "instructions": "Acompanhe cada etapa. Você pode pausar e rever o exemplo.",
+        "instructions": "Olhe o número da velocidade e para que lado o cacto anda a cada quadro.",
         "hints": [],
         "activity": {
           "type": "demonstration",
-          "scene": "velocity"
+          "scene": "velocity",
+          "cast": { "hero": { "name": "cacto", "gender": "m" } },
+          "setup": {
+            "actions": [
+              { "type": "velocity", "vx": 10, "vy": 5 },
+              { "type": "advance", "seconds": 3.8 },
+              { "type": "velocity", "vx": 10, "vy": 0 },
+              { "type": "advance", "seconds": 3 },
+              { "type": "velocity", "vx": 0, "vy": 0 }
+            ]
+          },
+          "script": [
+            {
+              "id": "passo-1",
+              "caption": "Velocidade −5: a cada quadro o x do cacto diminui 5. O cacto vem para a esquerda.",
+              "highlight": "scene",
+              "actions": [
+                { "type": "velocity", "vx": -5, "vy": 0 },
+                { "type": "advance", "seconds": 2 }
+              ],
+              "waitFor": "left"
+            },
+            {
+              "id": "passo-2",
+              "caption": "Velocidade 5: a cada quadro o x aumenta 5. O cacto iria embora para a direita.",
+              "highlight": "scene",
+              "actions": [
+                { "type": "velocity", "vx": 5, "vy": 0 },
+                { "type": "advance", "seconds": 2 }
+              ],
+              "waitFor": "moves"
+            },
+            {
+              "id": "passo-3",
+              "caption": "Velocidade 0: a cada quadro o x soma 0. O cacto fica no lugar.",
+              "highlight": "scene",
+              "actions": [
+                { "type": "velocity", "vx": 0, "vy": 0 },
+                { "type": "advance", "seconds": 2 }
+              ],
+              "waitFor": "stopped"
+            }
+          ]
+        },
+        "prediction": {
+          "prompt": "O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…",
+          "choices": [
+            {
+              "id": "cinco",
+              "label": "5",
+              "shows": "Com −5, o x diminuiu e o cacto veio para a esquerda."
+            },
+            { "id": "menos-cinco", "label": "−5" }
+          ],
+          "correctChoiceId": "menos-cinco",
+          "revealOn": "left"
         }
       }
     },

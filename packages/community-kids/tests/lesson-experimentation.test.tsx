@@ -1,20 +1,39 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import type { InteractiveBlock, LearningBlockProgress } from '@sistemazero/core/learning'
 import {
+  evaluateLearning,
+  type InteractiveBlock,
+  type LearningBlockProgress,
+  PERGUNTA_MUDOU,
+  publicInteractiveBlock,
+} from '@sistemazero/core/learning'
+import {
+  applyDemonstrationSegment,
   applyExperimentSegment,
+  type DemonstrationSession,
   type ExperimentSession,
   initialScene,
+  openScene,
+  packDemonstration,
   packExperiment,
   readSceneSegment,
+  SCENE_IDS,
   SCENE_MODELS,
+  SCENE_QUESTIONS,
+  type SceneActivity,
   type SceneCheckpoint,
   type SceneId,
+  sceneEmitsSound,
+  sceneGoals,
+  sceneScript,
   sceneStart,
   stepScene,
 } from '@sistemazero/core/learning/scene'
+import { ExperienceConnection } from '@sistemazero/member-shell/components/experience-connection'
 import { ExplorationStage } from '@sistemazero/member-shell/components/exploration-stage'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
+import { guardarPalpite } from '@sistemazero/member-shell/components/scene-prediction'
+import { registerLessonMedia } from '@sistemazero/member-shell/lib/lesson-media-focus'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 // ⚠️ `bun:test` não isola módulos entre arquivos: um `globalThis.fetch` deixado para trás vira
@@ -135,20 +154,18 @@ describe('a criança mexendo na cena', () => {
     expect(progresso.length).toBeGreaterThan(0)
   })
 
-  test('cacto que sai da pista é contado como fora, não pendurado na borda', () => {
+  test('⚠️ o sorteio da `random` pode REPETIR, e a régua mostra a marquinha 2×', () => {
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): o sorteio é de verdade, um lugar de 500 a 560 de
+    // 10 em 10, e os cactos não correm mais pela pista (eram quatro exemplos fixos, e a cena que
+    // pergunta se o lugar pode repetir nunca repetia). O número vem do gesto (`unit`).
     const activity = { type: 'experimentation', scene: 'random' } as const
     const start = sceneStart(activity)
-    const nascido = stepScene(start, initialScene(start), {
-      type: 'sample',
-      kind: 'position',
-      unit: 0,
-      guided: true,
-    })
-    const state = stepScene(start, nascido, { type: 'advance', seconds: 4 })
-    expect(state.crowd.cacti[0]?.x).toBe(-100)
+    let state = initialScene(start)
+    for (const unit of [0.3, 0.75, 0.35])
+      state = stepScene(start, state, { type: 'sample', kind: 'position', unit, guided: false })
     render(<ExplorationStage activity={activity} state={state} dispatch={() => {}} />)
-    expect(screen.getByText('1 cacto fora da pista')).toBeTruthy()
-    expect(screen.queryByLabelText('Cacto 1, velocidade -5')).toBeNull()
+    expect(screen.getByText('2×')).toBeTruthy()
+    expect(document.querySelector('svg desc')?.textContent).toBe('Na régua: 520, 2 vezes; 550.')
   })
 
   test('⚠️ o desfazer volta o mundo mas NÃO apaga a descoberta', async () => {
@@ -156,7 +173,9 @@ describe('a criança mexendo na cena', () => {
     // o medidor andaria para trás e a cena castigaria justamente quem experimenta mais.
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
     expect(screen.queryByRole('button', { name: 'Testar' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Depois' }))
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): as duas metas pedem DUAS trocas de ordem (o Dino
+    // aparece, e depois esconde de novo). Um toque fechava as duas.
+    await trocarOrdem(2)
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
     fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2')
@@ -168,28 +187,61 @@ describe('a criança mexendo na cena', () => {
     // descoberta — senão a cena só é jogável com o mouse.
     render(<InteractiveLessonBlock block={block('hitbox')} previewContent={content('hitbox')} />)
     const distancia = screen.getByRole('slider', { name: 'Distância do cacto' })
-    const largura = screen.getByRole('slider', { name: 'Largura da área do Dino' })
-    fireEvent.change(distancia, { target: { value: '60' } })
-    fireEvent.change(largura, { target: { value: '120' } })
-    fireEvent.change(distancia, { target: { value: '25' } })
+    const largura = screen.getByRole('slider', { name: 'Tamanho da área do Dino' })
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a área abre GRANDE (130%) e diminui até 80%, com o
+    // cacto parado onde bateu com um vão entre os desenhos (em 50, um vão de 10).
+    fireEvent.change(distancia, { target: { value: '50' } })
+    fireEvent.change(largura, { target: { value: '80' } })
     await waitFor(() =>
       expect(Number(screen.getByRole('meter').getAttribute('aria-valuenow'))).toBeGreaterThan(0),
     )
     expect(screen.queryByRole('button', { name: 'Ver movimento' })).toBeNull()
   })
 
-  test('a ligação tem alternativa de dois toques e o mundo guarda o MESMO objeto', async () => {
-    render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+  test('a ligação tem alternativa de dois toques (o fio, fora de cena)', () => {
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): este teste usava o fio da `world`, que virou uma
+    // chave. O fio segue vivo em outras cenas, e a mecânica dele é conferida no próprio componente.
+    const ligados: boolean[] = []
+    render(
+      <ExperienceConnection
+        source="Desenhar"
+        target="Tela do jogo"
+        alternative="Desligar fio"
+        enabled={false}
+        onConnect={(ligado) => ligados.push(ligado)}
+      />,
+    )
     fireEvent.click(screen.getByRole('button', { name: '◉ Desenhar' }))
     expect(screen.getByText('Agora toque em Tela do jogo para ligar.')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '◎ Tela do jogo' }))
-    await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
-    // ⚠️ O MESMO Dino, agora dito pelo DESENHO: desde o lote 5 o palco mostra os bastidores e a
-    // tela lado a lado, e a linha "Bastidores · 1 Dino guardado" saiu do controle porque era a
-    // mesma informação duas vezes na mesma tela.
+    expect(ligados).toEqual([true])
+  })
+
+  test('⭐⭐ criar e desenhar são controles INDEPENDENTES, e o mundo guarda o MESMO objeto', async () => {
+    // Lote 5 do Raio-X: o fio só abria depois de criar, então ligar o desenho sem ninguém criado não
+    // existia. Hoje a chave do desenho está à vista e viva desde a abertura.
+    render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
+    const chave = () => screen.getByRole('button', { name: /Desenhar o Dino na tela/ })
+    expect(chave().textContent).toContain('desligado')
+    expect(chave().getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(chave())
+    expect(chave().getAttribute('aria-pressed')).toBe('true')
+    const descricoes = () => [...document.querySelectorAll('desc')].map((d) => d.textContent ?? '')
+    // Desenho ligado e ninguém criado: a tela continua vazia, e nenhuma meta cai.
+    expect(descricoes()).toContain('A tela do jogo sem nada desenhado.')
+    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('0')
+    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
+    // ⚠️ O MESMO Dino, dito pelo DESENHO: a ficha dos bastidores tem o nome e o lugar, e a tela o
+    // desenha nesse lugar.
     expect(screen.getByTitle('Nos bastidores')).toBeTruthy()
-    expect(screen.getByText(/O mesmo Dino: guardado de um lado, desenhado do outro/)).toBeTruthy()
+    expect(descricoes()).toContain('A tela do jogo com o Dino desenhado.')
+    expect(descricoes()).toContain('Uma ficha guardada, do Dino: nome dino, x 110, y 150.')
+    // Desligar tira o Dino da tela, e não dos bastidores.
+    fireEvent.click(chave())
+    await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
+    expect(descricoes()).toContain('A tela do jogo sem nada desenhado.')
+    expect(descricoes()).toContain('Uma ficha guardada, do Dino: nome dino, x 110, y 150.')
   })
 
   test('⚠️ cumprir o objetivo NÃO encerra a cena, e a descoberta registrada não pisca', async () => {
@@ -213,8 +265,10 @@ describe('a criança mexendo na cena', () => {
         <InteractiveLessonBlock block={block('layers')} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(await screen.findByRole('button', { name: 'Depois' }))
-    await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir a `layers` são três trocas de ordem.
+    await trocarOrdem(3)
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Descoberta registrada." virou "✓ Guardado".
+    await waitFor(() => expect(screen.getByText('✓ Guardado')).toBeTruthy(), {
       timeout: 5000,
     })
     const tentativas = () =>
@@ -225,11 +279,17 @@ describe('a criança mexendo na cena', () => {
     // ⚠️ O `<fieldset disabled>` é quem travava tudo, e ele NÃO marca os botões de dentro:
     // `button.disabled` continua false mesmo desabilitado por herança (e o happy-dom ainda
     // dispara o clique). Quem morde é o fieldset — asserção nos dois níveis.
-    for (const nome of ['Desfazer', 'Recomeçar', 'Uma pista', 'Ligar som']) {
+    // ⚠️ Mudou de propósito (lote 2): "Ligar som" saiu da lista porque `layers` não faz som, e as
+    // ferramentas moram fora do fieldset da cena (o som tem de sobreviver a um conflito).
+    for (const nome of ['Desfazer', 'Recomeçar']) {
       const botao = screen.getByRole('button', { name: nome })
       expect(botao).toHaveProperty('disabled', false)
-      expect(botao.closest('fieldset')?.disabled).toBe(false)
+      expect(botao.closest('fieldset[disabled]')).toBeNull()
     }
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): "Uma pista" SAI depois de concluir. A
+    // caixa da pista já sumia na conclusão, e o botão virava um clique mudo que contava pista no
+    // relatório do professor.
+    expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
     fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
     // Os comandos RODARAM: o guard dos comandos também olhava o `passed`, então destravar só
@@ -238,7 +298,8 @@ describe('a criança mexendo na cena', () => {
     // A descoberta ficou (desfazer volta o MUNDO, não o que ela aprendeu) e o cartão de
     // conclusão continua ali, embora `layers` peça a montagem assentada para "passar".
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2')
-    expect(screen.getByText('Descoberta registrada.')).toBeTruthy()
+    expect(screen.getByText('✓ Guardado')).toBeTruthy()
+    expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
     // E ninguém registra duas vezes: a marcação é primeira-vez-só.
     expect(tentativas()).toBe(registradas)
   })
@@ -265,26 +326,40 @@ describe('a criança mexendo na cena', () => {
         <InteractiveLessonBlock block={block('hold-vs-press')} />
       </LessonPlayerProvider>,
     )
-    const botao = await screen.findByRole('button', { name: 'Segurar a tecla' })
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): UMA tecla, com o ESTADO no rótulo ("A tecla:
+    // solta/segurada"), no lugar de "Apertar uma vez" e "Segurar a tecla".
+    const botao = await screen.findByRole('button', { name: 'A tecla: solta' })
     fireEvent.pointerDown(botao)
+    expect(await screen.findByRole('button', { name: 'A tecla: segurada' })).toBeTruthy()
     fireEvent.pointerUp(botao)
-    // `detail: 1` é o clique de PONTEIRO. O de teclado chega com `detail: 0`.
+    // `detail: 1` é o clique de PONTEIRO, que chega depois do `pointerup`. O de leitor de tela chega
+    // com `detail: 0` e sem tecla antes.
     fireEvent.click(botao, { detail: 1 })
-    expect(screen.getByRole('button', { name: 'Segurar a tecla' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'A tecla: solta' })).toBeTruthy()
 
-    // E o caminho do teclado continua alcançando os dois estados.
-    fireEvent.click(screen.getByRole('button', { name: 'Segurar a tecla' }), { detail: 0 })
-    expect(await screen.findByRole('button', { name: 'Soltar a tecla' })).toBeTruthy()
+    // O leitor de tela ALTERNA, e alcança os dois estados.
+    fireEvent.click(screen.getByRole('button', { name: 'A tecla: solta' }), { detail: 0 })
+    expect(await screen.findByRole('button', { name: 'A tecla: segurada' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'A tecla: segurada' }), { detail: 0 })
+    expect(await screen.findByRole('button', { name: 'A tecla: solta' })).toBeTruthy()
+
+    // ⚠️⚠️ E o teclado SEGURA de verdade: Espaço afunda no `keydown` e solta no `keyup`, e o `click`
+    // que o navegador gera com a tecla não alterna de volta.
+    const tecla = screen.getByRole('button', { name: 'A tecla: solta' })
+    fireEvent.keyDown(tecla, { key: ' ' })
+    expect(await screen.findByRole('button', { name: 'A tecla: segurada' })).toBeTruthy()
+    fireEvent.keyUp(tecla, { key: ' ' })
+    fireEvent.click(tecla, { detail: 0 })
+    expect(await screen.findByRole('button', { name: 'A tecla: solta' })).toBeTruthy()
   })
 
-  test('⚠️⚠️ "Ver de novo" não deixa o cartão afirmar conclusão sobre um palco vazio', async () => {
-    // A ação em DESTAQUE do rodapé faz `reset`, e o cartão de sucesso é um latch (concluir é
-    // acontecimento e não se desfaz). A tela passava a dizer "Você concluiu a investigação
-    // proposta nesta atividade" em cima de um palco que tinha voltado ao começo.
-    // ⚠️⚠️ A cena é `world`, e a escolha É o teste. A primeira versão usou `layers`, uma das
-    // DUAS (de 45) em que o avaliador se auto-reprova depois do reset: ela ficava verde com o
-    // defeito inteiro de pé nas outras 43. O sinal de "está revendo" tem de vir do GESTO, e é
-    // isso que uma cena comum prova.
+  test('⚠️⚠️ depois de concluir há UM botão de voltar ao começo, e nada afirma conclusão sobre o palco', async () => {
+    // ⚠️ Mudou de propósito (lote 2 do Raio-X). "Ver de novo" (o azul do rodapé) e "Recomeçar"
+    // faziam o mesmo `reset`, lado a lado, e o cartão "Você concluiu a investigação" ficava sobre o
+    // palco vazio. O `revendo` que tentava adivinhar o estado do palco morria no primeiro gesto.
+    // Hoje há um "Recomeçar" só, e o que fica é "Você descobriu!", que fala DELA e não do palco.
+    // ⚠️⚠️ A cena é `world`, e a escolha É o teste: `layers` é uma das DUAS (de 45) em que o
+    // avaliador se auto-reprova depois do reset, e uma cena comum é o que prova o caso geral.
     const { fetchFalso } = servidorFalso('world')
     globalThis.fetch = fetchFalso
     render(
@@ -301,21 +376,23 @@ describe('a criança mexendo na cena', () => {
       </LessonPlayerProvider>,
     )
     fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-    fireEvent.click(screen.getByRole('button', { name: '◉ Desenhar' }))
-    fireEvent.click(screen.getByRole('button', { name: '◎ Tela do jogo' }))
-    await waitFor(() => expect(screen.getByText(/Você concluiu a investigação/)).toBeTruthy(), {
-      timeout: 5000,
-    })
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    await waitFor(
+      () => expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy(),
+      { timeout: 5000 },
+    )
+    expect(screen.queryByRole('button', { name: /Ver de novo/ })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Recomeçar' })).toHaveLength(1)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver de novo' }))
-    await waitFor(() => expect(screen.getByText(/está mexendo de novo/)).toBeTruthy())
-    // A frase de sucesso FICA (a descoberta não se desfaz); o que sai é a afirmação de que a
-    // investigação está concluída AGORA, que o palco desmente.
-    expect(screen.queryByText(/Você concluiu a investigação/)).toBeNull()
-
-    // ⚠️ E o primeiro gesto de volta ao mundo desliga o aviso: ela parou de rever, está mexendo.
+    fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
+    await screen.findByRole('button', { name: '＋ Criar Dino' })
+    // A descoberta FICA (ela não se desfaz), e nada diz que o palco vazio está concluído.
+    expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/Você concluiu|investigação|mexendo de novo/)
+    // E voltar a mexer não troca a frase por outra afirmação sobre o palco.
     fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
-    await waitFor(() => expect(screen.queryByText(/está mexendo de novo/)).toBeNull())
+    expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/Você concluiu|investigação/)
   })
 
   test('⚠️ envio em voo não trava a cena, e o que ela fez DEPOIS não se perde', async () => {
@@ -346,10 +423,12 @@ describe('a criança mexendo na cena', () => {
         <InteractiveLessonBlock block={block('layers')} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(await screen.findByRole('button', { name: 'Depois' }))
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir a `layers` são três trocas de ordem, e o
+    // gesto feito com o pedido em voo é uma quarta ("Descer" a peça de cima).
+    await trocarOrdem(3)
     await waitFor(() => expect(liberar).toBeDefined(), { timeout: 5000 })
     // A cena continua viva enquanto o pedido está em voo.
-    const antes = screen.getByRole('button', { name: 'Antes' })
+    const antes = screen.getByRole('button', { name: /^Descer / })
     expect(antes).toHaveProperty('disabled', false)
     fireEvent.click(antes)
     await act(async () => {
@@ -395,26 +474,1365 @@ describe('a previsão sobe junto da tentativa', () => {
       </LessonPlayerProvider>,
     )
     // Antes do palpite a cena está fechada: o botão da montagem é herdeiro do fieldset.
-    const depois = await screen.findByRole('button', { name: 'Depois' })
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a ordem de desenhar é uma pilha com "Descer"/"Subir".
+    const depois = await screen.findByRole('button', { name: /^Descer / })
     expect(depois.closest('fieldset')?.disabled).toBe(true)
-    fireEvent.click(screen.getByRole('radio', { name: 'Quem foi desenhado antes' }))
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+    fireEvent.click(screen.getByRole('button', { name: 'Quem foi desenhado antes' }))
     await waitFor(() => expect(depois.closest('fieldset')?.disabled).toBe(false))
-    fireEvent.click(screen.getByRole('button', { name: 'Depois' }))
-    await waitFor(() => expect(screen.getByText('Descoberta registrada.')).toBeTruthy(), {
+    await trocarOrdem(3)
+    await waitFor(() => expect(screen.getByText('✓ Guardado')).toBeTruthy(), {
       timeout: 5000,
     })
     const tentativa = enviados.find((e) => String(e.url).endsWith('/learning-attempts'))
     const respostas = tentativa?.answers as Record<string, unknown>
     expect(respostas.prediction).toBe('antes')
     // ⚠️ E o palpite errado não muda o veredito: a cena registrou a descoberta do mesmo jeito.
-    expect(screen.getByText('Descoberta registrada.')).toBeTruthy()
+    expect(screen.getByText('✓ Guardado')).toBeTruthy()
     // O segmento que o motor manda continua sem ela (é o que o servidor aplica no checkpoint).
     for (const enviado of enviados.filter((e) => String(e.url).endsWith('/learning-progress')))
       expect((enviado.answers as Record<string, unknown>).prediction).toBeUndefined()
-    // E ela sobrevive ao recarregar a aba: o palpite é da sessão, não do render.
+    // E ela sobrevive ao recarregar: o palpite é do PERFIL, não da aba. ⚠️ Mudou de propósito
+    // (lote 2): no `sessionStorage`, uma sessão nova reabria a atividade concluída trancada.
+    // ⚠️ E guardado junto da IMPRESSÃO da pergunta (consertos do review do lote 2).
     expect(
-      sessionStorage.getItem('sz:scene-prediction:child-previsao:lesson:discovery:revision'),
+      JSON.parse(
+        localStorage.getItem('sz:scene-prediction:child-previsao:lesson:discovery:revision') ??
+          '{}',
+      ).escolha,
     ).toBe('antes')
-    sessionStorage.clear()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// ⭐⭐ A MOLDURA do lote 2 do Raio-X (16/09/2026), pelo caminho do ALUNO.
+//
+// ⚠️⚠️ Tudo aqui monta o bloco pela PROJEÇÃO PÚBLICA (`publicInteractiveBlock`), que é o que a
+// criança recebe, com o `LessonPlayerProvider` e um servidor que corrige com as MESMAS funções do
+// members (`evaluateLearning`). A prévia de autoria desenha outra coisa (o rascunho), e foi assim
+// que o player ficou meses com defeitos que nenhum teste de render via.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+/** O members em miniatura: aplica os segmentos das DUAS sessões e corrige a tentativa de verdade. */
+function servidorQueCorrige(bloco: InteractiveBlock) {
+  const atividade = bloco.activity as SceneActivity
+  const start = sceneStart(atividade)
+  const roteiro = sceneScript(atividade)
+  let checkpoint: SceneCheckpoint<ExperimentSession | DemonstrationSession> | null = null
+  const enviados: { url: string; body: Record<string, unknown> }[] = []
+  const answers = () => ({
+    sceneSequence: checkpoint?.sequence ?? 0,
+    sceneSessionId: checkpoint?.sessionId ?? '',
+    sceneSegmentId: checkpoint?.segmentId ?? '',
+    sceneCheckpoint: !checkpoint
+      ? []
+      : atividade.type === 'demonstration'
+        ? packDemonstration(atividade.scene, checkpoint.session as DemonstrationSession)
+        : packExperiment(atividade.scene, checkpoint.session as ExperimentSession),
+  })
+  const progresso = (result: unknown = null) => ({
+    blockId: 'bloco',
+    revision: 'rev',
+    answers: answers(),
+    hintsUsed: 0,
+    positionSeconds: null,
+    attemptsCount: 0,
+    result,
+    updatedAt: new Date().toISOString(),
+  })
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
+    enviados.push({ url, body })
+    if (url.endsWith('/learning-progress')) {
+      const segment = readSceneSegment(body.answers)
+      if (segment)
+        checkpoint =
+          atividade.type === 'demonstration'
+            ? applyDemonstrationSegment(
+                start,
+                roteiro,
+                checkpoint as SceneCheckpoint<DemonstrationSession> | null,
+                segment,
+              )
+            : applyExperimentSegment(
+                start,
+                checkpoint as SceneCheckpoint<ExperimentSession> | null,
+                segment,
+              )
+      return Response.json(progresso())
+    }
+    const enviadas = body.answers as Record<string, unknown>
+    const result = evaluateLearning(bloco, {
+      ...answers(),
+      ...(typeof enviadas.checkpoint === 'string' ? { checkpoint: enviadas.checkpoint } : {}),
+    })
+    return Response.json({ attempt: { result }, progress: progresso(result) })
+  }) as unknown as typeof fetch
+  return { enviados }
+}
+
+function aluno(
+  bloco: InteractiveBlock,
+  salvo?: Partial<LearningBlockProgress>,
+  viewerId = 'crianca-moldura',
+) {
+  return render(
+    <LessonPlayerProvider
+      value={{
+        lessonId: 'aula',
+        courseSlug: 'curso',
+        viewerId,
+        viewerWatermark: null,
+        initialPositionSeconds: null,
+        ...(salvo
+          ? {
+              learningProgress: {
+                sectionId: null,
+                blocks: [
+                  {
+                    blockId: 'bloco',
+                    revision: 'rev',
+                    positionSeconds: null,
+                    answers: {},
+                    hintsUsed: 0,
+                    attemptsCount: 1,
+                    result: null,
+                    updatedAt: new Date().toISOString(),
+                    ...salvo,
+                  },
+                ],
+              },
+            }
+          : {}),
+      }}
+    >
+      <InteractiveLessonBlock
+        block={{
+          id: 'bloco',
+          blockRevision: 'rev',
+          kind: 'interactive',
+          sortOrder: 0,
+          content: publicInteractiveBlock(bloco),
+        }}
+      />
+    </LessonPlayerProvider>,
+  )
+}
+
+/** O `world` do Corre Dino com um palpite ESCRITO no bloco: o texto do modelo é de outro lote. */
+function mundoComPalpite(revealOn?: string): InteractiveBlock {
+  return {
+    ...content('world'),
+    prediction: {
+      prompt: 'Você cria e não liga o desenho. O que aparece?',
+      choices: [
+        { id: 'aparece', label: 'O Dino aparece', shows: 'Olhe a tela: ela ficou vazia.' },
+        { id: 'vazia', label: 'A tela fica vazia' },
+      ],
+      correctChoiceId: 'vazia',
+      ...(revealOn ? { revealOn } : {}),
+    },
+  }
+}
+const anunciado = () =>
+  [...document.querySelectorAll('p.sr-only[aria-live]')].map((p) => p.textContent).join(' ')
+
+/**
+ * O relógio do navegador na MÃO: cada `tocar(n)` roda `n` quadros a 60 Hz.
+ *
+ * ⚠️ Desde os consertos do review do lote 2 a demonstração com menos movimento TOCA (em passos de
+ * 0,2 s) em vez de saltar para o fim da parte, então percorrer uma demonstração num teste pede
+ * relógio. Com o de verdade o teste dependeria do tempo da máquina.
+ */
+function relogioManual() {
+  const rafOriginal = window.requestAnimationFrame
+  const cafOriginal = window.cancelAnimationFrame
+  const fila = new Map<number, FrameRequestCallback>()
+  let proximo = 0
+  let agora = 0
+  window.requestAnimationFrame = (cb) => {
+    proximo += 1
+    fila.set(proximo, cb)
+    return proximo
+  }
+  window.cancelAnimationFrame = (id) => {
+    fila.delete(id)
+  }
+  return {
+    async tocar(quadros: number) {
+      for (let i = 0; i < quadros; i++) {
+        agora += 1000 / 60
+        const chamados = [...fila.values()]
+        fila.clear()
+        await act(async () => {
+          for (const cb of chamados) cb(agora)
+        })
+      }
+    },
+    restaurar() {
+      window.requestAnimationFrame = rafOriginal
+      window.cancelAnimationFrame = cafOriginal
+    },
+  }
+}
+
+describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
+  test('⚠️⚠️ com `revealOn`: palco coberto, palpite congelado no gesto e retomado quando a meta cai', async () => {
+    servidorQueCorrige(mundoComPalpite('hidden'))
+    aluno(mundoComPalpite('hidden'))
+    // 1. Palco coberto, com o motivo ligado; a pergunta mora DENTRO do `legend`.
+    const legenda = await screen.findByText('Você cria e não liga o desenho. O que aparece?')
+    expect(legenda.closest('legend')?.textContent).toContain('Antes de mexer')
+    const trava = screen
+      .getByRole('button', { name: '＋ Criar Dino' })
+      .closest('fieldset[disabled]')
+    expect(trava).toBeTruthy()
+    const descrito = [...document.querySelectorAll('fieldset[aria-describedby]')].find((f) =>
+      f.contains(trava),
+    )
+    expect(
+      document.getElementById(descrito?.getAttribute('aria-describedby') ?? '')?.textContent,
+    ).toBe('Primeiro, seu palpite ↑')
+    const conferir = screen.getByRole('button', { name: 'Conferir' })
+    await waitFor(() => expect(conferir.getAttribute('aria-disabled')).toBe('true'))
+    // 2. Escolher congela numa linha, e "trocar" existe só até o primeiro gesto.
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+    fireEvent.click(screen.getByRole('button', { name: 'O Dino aparece' }))
+    await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'trocar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy())
+    expect(screen.queryByText(/Você achou/)).toBeNull()
+    // 3 e 4. O gesto que derruba a meta `hidden` retoma o palpite, com o "para onde olhar".
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
+    await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
+    expect(screen.queryByRole('button', { name: 'trocar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'O Dino aparece' })).toBeNull()
+    await waitFor(() => expect(anunciado()).toContain(retomado))
+    // O aviso da descoberta, colado ao palco e depois do gesto.
+    expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy()
+    // ⚠️ E o palpite fica guardado no PERFIL (não na aba), com a impressão da pergunta.
+    expect(
+      JSON.parse(localStorage.getItem('sz:scene-prediction:crianca-moldura:aula:bloco:rev') ?? '{}')
+        .escolha,
+    ).toBe('aparece')
+  })
+
+  test('⚠️ sem `revealOn`, o palpite só volta quando a cena CONCLUI, e o acerto é verde', async () => {
+    servidorQueCorrige(mundoComPalpite())
+    aluno(mundoComPalpite())
+    fireEvent.click(await screen.findByRole('button', { name: 'A tela fica vazia' }))
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    await waitFor(() => expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy())
+    expect(screen.queryByText(/Você achou/)).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!')
+    expect(acerto.closest('p')?.className).toContain('bg-success')
+  })
+
+  test('⚠️⚠️ a previsão do MODELO chega pela projeção pública com o que é preciso para retomar', () => {
+    // O gabarito da PREVISÃO atravessa (não vale nota); o da PERGUNTA, não.
+    const publico = publicInteractiveBlock(content('world'))
+    const modelo = SCENE_QUESTIONS.world
+    expect(publico.prediction?.correctChoiceId).toBe(modelo.prediction.correctChoiceId)
+    expect(publico.prediction?.revealOn).toBe(modelo.prediction.revealOn)
+    expect(JSON.stringify(publico.checkpoint)).not.toContain('correctChoiceId')
+  })
+})
+
+describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => {
+  test('⚠️⚠️ "Conferir" responde com o PEDIDO da meta que falta, nunca com o rótulo', async () => {
+    // "Ainda falta: Dino existe sem aparecer" entregava a descoberta a quem apertava o botão maior
+    // da tela. A varredura é nas 45: é a MOLDURA que escolhe o texto, então vale para todas.
+    const falhas: string[] = []
+    for (const scene of SCENE_IDS) {
+      render(<InteractiveLessonBlock block={block(scene)} previewContent={content(scene)} />)
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferir' }))
+      const falta = sceneGoals(scene, openScene({ scene })).find((g) => !g.complete)
+      const resposta =
+        [...document.querySelectorAll('p[aria-live]')]
+          .map((p) => p.textContent ?? '')
+          .find((t) => t.startsWith('Ainda não')) ?? ''
+      if (!resposta) falhas.push(`${scene}: "Conferir" não respondeu`)
+      else if (falta && falta.label !== falta.pedido && resposta.includes(falta.label))
+        falhas.push(`${scene}: "Conferir" entregou o rótulo "${falta.label}"`)
+      else if (falta?.pedido && !resposta.toLowerCase().includes(falta.pedido.toLowerCase()))
+        falhas.push(`${scene}: "Conferir" não disse o pedido "${falta.pedido}"`)
+      cleanup()
+    }
+    expect(falhas).toEqual([])
+  })
+
+  test('⚠️⚠️ concluir leva o FOCO à pergunta, e a regra da cena só aparece DEPOIS de responder', async () => {
+    const bloco = content('world')
+    const { enviados } = servidorQueCorrige(bloco)
+    aluno(bloco)
+    const modelo = SCENE_QUESTIONS.world
+    const regra = SCENE_MODELS.world.success
+    fireEvent.click(
+      await screen.findByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
+    )
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    await waitFor(() => expect(document.activeElement?.tagName).toBe('LEGEND'))
+    expect(document.activeElement?.textContent).toContain(modelo.explain.prompt)
+    await waitFor(() => expect(anunciado()).toContain('Você descobriu! Agora responda a pergunta.'))
+    // O "Continuar" leva à pergunta; a regra ainda não está em lugar nenhum.
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeTruthy()
+    expect(document.body.textContent).not.toContain(regra)
+    const errada = modelo.explain.choices.find((c) => c.id !== modelo.explain.correctChoiceId)
+    const certa = modelo.explain.choices.find((c) => c.id === modelo.explain.correctChoiceId)
+    fireEvent.click(screen.getByRole('button', { name: errada?.label as string }))
+    await waitFor(() => expect(screen.getByText(/Ainda não é essa/)).toBeTruthy(), {
+      timeout: 5000,
+    })
+    expect(document.body.textContent).not.toContain(regra)
+    fireEvent.click(screen.getByRole('button', { name: certa?.label as string }))
+    await waitFor(() => expect(screen.getByText('Certo!')).toBeTruthy(), { timeout: 5000 })
+    expect(screen.getByText(modelo.explain.explanation)).toBeTruthy()
+    expect(screen.getByText(regra)).toBeTruthy()
+    expect(screen.getByText('✓ Guardado')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Continuar' })).toBeNull()
+    // A resposta certa subiu por último, junto do palpite.
+    const tentativas = enviados.filter((e) => e.url.endsWith('/learning-attempts'))
+    const ultima = tentativas.at(-1)?.body.answers as Record<string, unknown>
+    expect(ultima.checkpoint).toBe(certa?.id)
+    expect(ultima.prediction).toBe(modelo.prediction.choices[0]?.id)
+  })
+
+  test('⚠️⚠️ revisita depois do F5: a faixa fala DELA, a explicação volta, e nada tranca', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco, {
+      result: {
+        participated: true,
+        passed: true,
+        feedback: 'A EXPLICAÇÃO QUE O SERVIDOR GUARDOU.',
+        verifiedBy: 'server',
+        evidence: 'exploration',
+      },
+      hintsUsed: 2,
+    })
+    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    const explicacao = screen.getByText('A EXPLICAÇÃO QUE O SERVIDOR GUARDOU.')
+    expect(explicacao.closest('details')?.open).toBe(false)
+    expect(explicacao.closest('details')?.textContent).toContain('Ver a explicação')
+    // ⚠️ O palpite NÃO tranca a revisita (sem palpite guardado neste perfil) e a pergunta some.
+    const criar = await screen.findByRole('button', { name: '＋ Criar Dino' })
+    await waitFor(() => expect(criar.closest('fieldset[disabled]')).toBeNull())
+    expect(screen.queryByText('Primeiro, seu palpite ↑')).toBeNull()
+    expect(screen.queryByText('Agora explique')).toBeNull()
+    expect(screen.queryByText(/já está resolvida/)).toBeNull()
+    // ⚠️ UM botão de voltar ao começo, e nenhum principal (não há o que conferir).
+    expect(screen.getAllByRole('button', { name: 'Recomeçar' })).toHaveLength(1)
+    for (const saiu of [/Ver de novo/, /Já descobri/, /^Conferir$/, /^Continuar$/])
+      expect(screen.queryByRole('button', { name: saiu })).toBeNull()
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): na revisita não há pista. O botão
+    // continuava ali, mudo (a caixa não volta com a cena concluída), e cada clique somava uma pista
+    // no relatório do professor.
+    expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
+    expect(screen.queryByText(/Pista \d de 3/)).toBeNull()
+    // Mexer e recomeçar não mudam a faixa: ela é verdade com o palco em qualquer estado.
+    fireEvent.click(criar)
+    fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
+    expect(screen.getByText('Você já descobriu isto.')).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/Você concluiu|investigação/)
+  })
+
+  test('⚠️ revisita de bloco concluído ANTES de a pergunta existir: só a faixa, sem pergunta', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco, {
+      result: {
+        participated: true,
+        passed: true,
+        feedback: 'Feito.',
+        verifiedBy: 'client',
+        evidence: 'exploration',
+      },
+    })
+    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    expect(screen.queryByText('Feito.')).toBeNull()
+    expect(screen.queryByText('Agora explique')).toBeNull()
+  })
+
+  test('⚠️ o degrau da pista VOLTA do servidor no F5', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco, { hintsUsed: 2 })
+    expect(await screen.findByText('Pista 2 de 3.')).toBeTruthy()
+  })
+
+  test('a pista desliga no último degrau e a caixa some quando a cena conclui', async () => {
+    render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
+    const pista = await screen.findByRole('button', { name: 'Uma pista' })
+    for (let i = 0; i < 3; i++) fireEvent.click(pista)
+    expect(screen.getByText('Pista 3 de 3.')).toBeTruthy()
+    expect(pista).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    await waitFor(() => expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy())
+    expect(screen.queryByText('Pista 3 de 3.')).toBeNull()
+  })
+})
+
+describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
+  test('⚠️⚠️ "Ligar som" só nas cenas que FAZEM som, e sem `aria-pressed`', async () => {
+    const falhas: string[] = []
+    for (const scene of SCENE_IDS) {
+      render(<InteractiveLessonBlock block={block(scene)} previewContent={content(scene)} />)
+      await screen.findByRole('button', { name: 'Recomeçar' })
+      const ligarSom = screen.queryByRole('button', { name: 'Ligar som' })
+      // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): na EXPERIMENTAÇÃO da cena cujo
+      // assunto é o som, ele é a CHAVE "Som: desligado" da bancada, com o estado no rótulo (e aí o
+      // `aria-pressed` diz a mesma coisa que o texto). O "Ligar som" do rodapé segue sem `aria-pressed`.
+      const som = ligarSom ?? screen.queryByRole('button', { name: /^Som: (ligado|desligado)$/ })
+      if (Boolean(som) !== sceneEmitsSound(scene))
+        falhas.push(`${scene}: som ${som ? 'aparece' : 'falta'}`)
+      if (ligarSom?.hasAttribute('aria-pressed')) falhas.push(`${scene}: som com aria-pressed`)
+      cleanup()
+    }
+    expect(falhas).toEqual([])
+    // Anti-vácuo: a régua disse "sim" em alguma cena, senão a varredura aprovaria "nunca".
+    expect(SCENE_IDS.some((s) => sceneEmitsSound(s))).toBe(true)
+  })
+
+  test('⭐ "Ouvir" lê a instrução e a pista na voz pt-BR do navegador, sem áudio gravado', async () => {
+    const falas: { texto: string; lang: string }[] = []
+    const janela = window as unknown as Record<string, unknown>
+    const vozOriginal = janela.speechSynthesis
+    const falaOriginal = janela.SpeechSynthesisUtterance
+    class Fala {
+      lang = ''
+      voice: unknown = null
+      onend: (() => void) | null = null
+      onerror: (() => void) | null = null
+      constructor(public text: string) {}
+    }
+    janela.speechSynthesis = {
+      getVoices: () => [{ lang: 'pt-BR', name: 'Luciana' }],
+      cancel: () => {},
+      speak: (f: Fala) => falas.push({ texto: f.text, lang: f.lang }),
+    }
+    janela.SpeechSynthesisUtterance = Fala
+    try {
+      render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
+      fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      // ⚠️ Mudou de propósito (consertos do review do lote 2): uma fala por FRASE (o Chrome corta
+      // uma fala longa sem avisar), e a fala sai na hora do clique, sem esperar a pausa das mídias.
+      await waitFor(() => expect(falas.length).toBeGreaterThan(0))
+      expect(falas.every((f) => f.lang === 'pt-BR')).toBe(true)
+      const lido = falas.map((f) => f.texto).join(' ')
+      expect(lido).toContain(SCENE_MODELS.world.instruction.slice(0, 20))
+      expect(lido).toContain(SCENE_MODELS.world.hints[0]?.slice(0, 15) as string)
+    } finally {
+      janela.speechSynthesis = vozOriginal
+      janela.SpeechSynthesisUtterance = falaOriginal
+    }
+  })
+
+  test('⚠️⚠️ demonstração: a legenda entra DEPOIS da parte, e "Agora é sua vez" não grava nada', async () => {
+    const matchMediaOriginal = window.matchMedia
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+    const relogio = relogioManual()
+    try {
+      const bloco: InteractiveBlock = {
+        ...content('velocity'),
+        instructions: 'A INSTRUÇÃO DO PROFESSOR.',
+        activity: { type: 'demonstration', scene: 'velocity' },
+      }
+      const { enviados } = servidorQueCorrige(bloco)
+      aluno(bloco)
+      const roteiro = sceneScript(bloco.activity as SceneActivity)
+      // A previsão da demonstração pede para ASSISTIR, não para mexer.
+      expect(await screen.findByText('Escolha o que você acha. Depois assista.')).toBeTruthy()
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: SCENE_QUESTIONS.velocity.prediction.choices[0]?.label as string,
+        }),
+      )
+      await waitFor(() => expect(screen.getByText('Agora assista e confira.')).toBeTruthy())
+      // Antes de tocar: a instrução do PROFESSOR, e nunca a legenda da parte 1.
+      expect(screen.getByText('A INSTRUÇÃO DO PROFESSOR.')).toBeTruthy()
+      expect(screen.queryByText(roteiro[0]?.caption as string)).toBeNull()
+      // ⚠️ Os DOIS nomes do passo (lote 4 do Raio-X): na `velocity` o quadro é o assunto, e o botão da
+      // experimentação se chama "Avançar 1 quadro". Olhar só "Um passo" deixaria a guarda vazia.
+      for (const saiu of [
+        'Um passo',
+        'Avançar 1 quadro',
+        'Próxima etapa',
+        'Observar',
+        'Rever desde o começo',
+      ])
+        expect(screen.queryByRole('button', { name: saiu })).toBeNull()
+      const principal = () =>
+        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+      await waitFor(() => expect(principal().getAttribute('aria-disabled')).toBeNull())
+      for (let parte = 0; parte < roteiro.length; parte++) {
+        expect(principal().textContent).toBe(`Ver a parte ${parte + 1}`)
+        await act(async () => {
+          fireEvent.click(principal())
+        })
+        // ⚠️ Mudou de propósito (consertos do review do lote 2): com menos movimento a parte TOCA
+        // em passos de 0,2 s, e a legenda só entra quando ela termina (antes, na hora do clique).
+        expect(principal().textContent).toBe('Pausar')
+        expect(screen.queryAllByText(roteiro[parte]?.caption as string)).toHaveLength(0)
+        for (let i = 0; i < 40 && principal().textContent === 'Pausar'; i++) await relogio.tocar(12)
+        await waitFor(() =>
+          expect(
+            screen.getAllByText(roteiro[parte]?.caption as string, { selector: 'p' }).length,
+          ).toBeGreaterThan(0),
+        )
+      }
+      await waitFor(() => expect(principal().textContent).toBe('Ver tudo de novo'))
+      expect(screen.getByText('Você viu tudo!', { selector: 'p' })).toBeTruthy()
+      await waitFor(
+        () => expect(enviados.some((e) => e.url.endsWith('/learning-attempts'))).toBe(true),
+        { timeout: 5000 },
+      )
+      // "Agora é sua vez": a bancada abre a partir do estado final, e NADA sobe.
+      const antes = enviados.length
+      fireEvent.click(screen.getByRole('button', { name: 'Agora é sua vez' }))
+      // ⚠️ Mudou de propósito (consertos do review do lote 2): quem diz "Sua vez!" é a instrução,
+      // e o foco vem para a bancada (o botão clicado some).
+      expect(
+        await screen.findByText('Sua vez! Mexa à vontade. Aqui é só para brincar.'),
+      ).toBeTruthy()
+      await waitFor(() =>
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('Sua vez'),
+      )
+      expect(screen.queryByText('✓ Guardado')).toBeNull()
+      fireEvent.click(screen.getAllByRole('button', { name: /^Aumentar/ })[0] as HTMLElement)
+      // ⚠️ Mudou de propósito (lote 4 do Raio-X): na `velocity` o passo avança UM QUADRO e diz isso.
+      fireEvent.click(screen.getByRole('button', { name: 'Avançar 1 quadro' }))
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 1300))
+      })
+      expect(enviados.length).toBe(antes)
+      // E "Ver tudo de novo" fecha a bancada e volta à demonstração.
+      fireEvent.click(screen.getByRole('button', { name: 'Ver tudo de novo' }))
+      await waitFor(() => expect(screen.queryByText(/Sua vez!/)).toBeNull())
+      // O foco volta ao principal, que agora PAUSA a parte que recomeçou.
+      await waitFor(() => expect(document.activeElement?.textContent).toBe('Pausar'))
+    } finally {
+      relogio.restaurar()
+      window.matchMedia = matchMediaOriginal
+    }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// ⭐⭐ Os consertos do PLAYER depois dos reviews do lote 2 (16/09/2026), pelo caminho do ALUNO.
+// Cada teste aqui reprova sem o conserto que ele guarda (conferido desfazendo o conserto).
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+/** O primeiro palpite do MODELO da cena: escolher abre o palco. */
+async function palpitar(scene: SceneId) {
+  fireEvent.click(
+    await screen.findByRole('button', {
+      name: SCENE_QUESTIONS[scene].prediction.choices[0]?.label as string,
+    }),
+  )
+  await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
+}
+/** A resposta de uma escolha da pergunta final, pelo rótulo. */
+const opcao = (scene: SceneId, certa: boolean) =>
+  screen.getByRole('button', {
+    name: SCENE_QUESTIONS[scene].explain.choices.find(
+      (c) => (c.id === SCENE_QUESTIONS[scene].explain.correctChoiceId) === certa,
+    )?.label as string,
+  })
+/**
+ * Troca a ordem de desenhar da `layers` (lote 5 do Raio-X): o botão da peça de CIMA a leva para
+ * baixo. Três trocas concluem a cena (o Dino aparece, esconde de novo e volta para a frente).
+ */
+async function trocarOrdem(vezes: number) {
+  for (let i = 0; i < vezes; i++)
+    fireEvent.click(await screen.findByRole('button', { name: /^Descer / }))
+}
+/** Conclui o `world` a partir do palco aberto. */
+function concluirMundo() {
+  fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+  fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+}
+const tentativas = (enviados: { url: string; body: Record<string, unknown> }[]) =>
+  enviados.filter((e) => e.url.endsWith('/learning-attempts'))
+
+describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () => {
+  test('⚠️⚠️ `layers`: a resposta certa depois de "Recomeçar" não vira âmbar, e sobe sozinha ao remontar', async () => {
+    // O ALTO do review de correção: a `layers` OBRIGATÓRIA do Meu Jeito aula 5 travava. O servidor
+    // recusava a resposta (a cena saiu do estado descoberto), a tela a pintava de errada, e remontar
+    // não reenviava nada, porque a assinatura não mudava.
+    const bloco = content('layers')
+    const { enviados } = servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('layers')
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir são três trocas; remontar, uma.
+    await trocarOrdem(3)
+    await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
+    fireEvent.click(opcao('layers', true))
+    await waitFor(
+      () =>
+        expect(
+          screen.getByText('Para conferir, deixe a cena como estava quando você descobriu.'),
+        ).toBeTruthy(),
+      { timeout: 5000 },
+    )
+    expect(screen.queryByText(/não é essa|Deixe a montagem/) === null).toBe(true)
+    expect(screen.queryByText('Guardando…') === null).toBe(true)
+    // Remontar e NÃO escolher de novo: a resposta sobe sozinha e é corrigida.
+    await trocarOrdem(1)
+    await waitFor(() => expect(screen.getByText('Certo!')).toBeTruthy(), { timeout: 5000 })
+    expect(screen.getByText('✓ Guardado')).toBeTruthy()
+    const ultima = tentativas(enviados).at(-1)?.body.answers as Record<string, unknown>
+    expect(ultima.checkpoint).toBe(SCENE_QUESTIONS.layers.explain.correctChoiceId)
+  })
+
+  test('⚠️ mexer com a montagem desfeita NÃO repete a tentativa da resposta errada', async () => {
+    const bloco = content('layers')
+    const { enviados } = servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('layers')
+    await trocarOrdem(3)
+    await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
+    fireEvent.click(opcao('layers', false))
+    await waitFor(() => expect(screen.getByText(/não é essa/)).toBeTruthy(), { timeout: 5000 })
+    const antes = tentativas(enviados).length
+    fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
+    await trocarOrdem(1)
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 1300))
+    })
+    expect(tentativas(enviados).length).toBe(antes)
+  })
+
+  test('⚠️⚠️ demonstração que o servidor NÃO registra diz a verdade, e ver de novo reenvia', async () => {
+    // "Guardando…" para sempre, sem reenvio e sem saída (janela de deploy player × servidor).
+    const bloco: InteractiveBlock = {
+      ...content('world'),
+      activity: { type: 'demonstration', scene: 'world' },
+    }
+    servidorQueCorrige(bloco)
+    const real = globalThis.fetch
+    let recusadas = 0
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!String(input).endsWith('/learning-attempts')) return real(input, init)
+      recusadas += 1
+      return Response.json({
+        attempt: {
+          result: { participated: true, passed: false, feedback: 'x', verifiedBy: 'server' },
+        },
+        progress: {},
+      })
+    }) as unknown as typeof fetch
+    const relogio = relogioManual()
+    try {
+      aluno(bloco)
+      await palpitar('world')
+      const principal = () =>
+        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+      const verAteOFim = async () => {
+        for (let i = 0; i < 40 && principal().textContent !== 'Ver tudo de novo'; i++) {
+          if (principal().textContent !== 'Pausar')
+            await act(async () => {
+              fireEvent.click(principal())
+            })
+          await relogio.tocar(12)
+        }
+      }
+      await verAteOFim()
+      await waitFor(
+        () =>
+          expect(
+            screen.getByText('Ainda não ficou guardado. Veja de novo até o fim.'),
+          ).toBeTruthy(),
+        { timeout: 5000 },
+      )
+      expect(screen.queryByText('Guardando…') === null).toBe(true)
+      expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeTruthy()
+      expect(recusadas).toBe(1)
+      // Ver tudo de novo até o fim é uma assinatura nova: o registro sobe outra vez.
+      await act(async () => {
+        fireEvent.click(principal())
+      })
+      await verAteOFim()
+      await waitFor(() => expect(recusadas).toBe(2), { timeout: 5000 })
+    } finally {
+      relogio.restaurar()
+    }
+  })
+
+  test('⚠️ a pergunta que MUDOU oferece "Abrir de novo", e não "tente outra"', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    const real = globalThis.fetch
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
+      const respostas = body.answers as Record<string, unknown> | undefined
+      if (!String(input).endsWith('/learning-attempts') || !respostas?.checkpoint)
+        return real(input, init)
+      return Response.json({
+        attempt: {
+          result: {
+            participated: true,
+            passed: false,
+            feedback: PERGUNTA_MUDOU,
+            verifiedBy: 'server',
+          },
+        },
+        progress: {},
+      })
+    }) as unknown as typeof fetch
+    aluno(bloco)
+    await palpitar('world')
+    concluirMundo()
+    await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
+    fireEvent.click(opcao('world', true))
+    expect(await screen.findByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
+  })
+
+  test('⚠️ uma escolha ANTERIOR que responde depois não pinta a escolha nova de âmbar', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    const real = globalThis.fetch
+    let soltarErrada: (() => void) | undefined
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
+      const respostas = body.answers as Record<string, unknown> | undefined
+      const errada = SCENE_QUESTIONS.world.explain.choices.find(
+        (c) => c.id !== SCENE_QUESTIONS.world.explain.correctChoiceId,
+      )?.id
+      if (
+        String(input).endsWith('/learning-attempts') &&
+        respostas?.checkpoint === errada &&
+        !soltarErrada
+      )
+        await new Promise<void>((resolve) => {
+          soltarErrada = resolve
+        })
+      return real(input, init)
+    }) as unknown as typeof fetch
+    aluno(bloco)
+    await palpitar('world')
+    concluirMundo()
+    await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
+    fireEvent.click(opcao('world', false))
+    await waitFor(() => expect(soltarErrada).toBeDefined(), { timeout: 5000 })
+    // Ela troca de ideia antes de a primeira voltar.
+    fireEvent.click(opcao('world', true))
+    await act(async () => {
+      soltarErrada?.()
+      await new Promise((r) => setTimeout(r, 50))
+    })
+    // A resposta da errada chegou DEPOIS da troca: ela não pinta a certa de âmbar.
+    expect(screen.queryByText(/não é essa/) === null).toBe(true)
+    await waitFor(() => expect(screen.getByText('Certo!')).toBeTruthy(), { timeout: 5000 })
+    expect(screen.queryByText(/não é essa/) === null).toBe(true)
+  })
+})
+
+describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
+  test('⚠️⚠️ o véu trava também o gesto DIRETO no desenho (tocar e apertar Espaço no Dino)', async () => {
+    // Aula 3: "Toque no Dino para pular" deixava a criança ver a resposta antes de palpitar.
+    const bloco = content('gravity')
+    const { enviados } = servidorQueCorrige(bloco)
+    aluno(bloco)
+    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): "Fazer o Dino pular".
+    const dino = await screen.findByRole('button', { name: 'Fazer o Dino pular' })
+    expect(dino.closest('[inert]')).toBeTruthy()
+    const frase = () => document.querySelector('p.min-h-6.text-center')?.textContent
+    const antes = frase()
+    fireEvent.click(dino)
+    fireEvent.keyDown(dino, { code: 'Space' })
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 1300))
+    })
+    expect(frase()).toBe(antes)
+    for (const e of enviados.filter((x) => x.url.endsWith('/learning-progress')))
+      expect(JSON.stringify(e.body)).not.toContain('jump')
+  })
+
+  test('⚠️⚠️ palpite guardado de uma pergunta que NÃO existe mais reabre o véu', async () => {
+    // O lote 2 trocou os ids de 22 previsões do modelo. Com o id morto no `localStorage`, o palco
+    // abria destrancado com as opções à vista, e o id morto subia na tentativa.
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    localStorage.setItem(
+      'sz:scene-prediction:crianca-moldura:aula:bloco:rev',
+      JSON.stringify({ escolha: 'id-velho', pergunta: 'outra pergunta' }),
+    )
+    aluno(bloco)
+    expect(await screen.findByText(/Primeiro, seu palpite/)).toBeTruthy()
+    cleanup()
+    // O mesmo id de hoje, mas guardado para OUTRA pergunta (a `game-state` manteve os ids e mudou o
+    // sentido): também reabre.
+    localStorage.setItem(
+      'sz:scene-prediction:crianca-moldura:aula:bloco:rev',
+      JSON.stringify({
+        escolha: SCENE_QUESTIONS.world.prediction.choices[0]?.id,
+        pergunta: 'outra pergunta',
+      }),
+    )
+    aluno(bloco)
+    expect(await screen.findByText(/Primeiro, seu palpite/)).toBeTruthy()
+    cleanup()
+    localStorage.clear()
+    // E o id cru antigo do `sessionStorage` vale se ainda for uma opção.
+    sessionStorage.setItem(
+      'sz:scene-prediction:crianca-moldura:aula:bloco:rev',
+      SCENE_QUESTIONS.world.prediction.choices[0]?.id as string,
+    )
+    try {
+      aluno(bloco)
+      expect(await screen.findByText('Seu palpite:')).toBeTruthy()
+    } finally {
+      sessionStorage.clear()
+    }
+  })
+
+  test('⚠️⚠️ as opções são BOTÕES e o foco vai para a linha do palpite', async () => {
+    // Num grupo de rádios a seta do teclado já escolhia: uma seta fechava o cartão e o foco caía no
+    // nada, sem a criança ouvir a segunda opção.
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await screen.findByText(SCENE_QUESTIONS.world.prediction.prompt)
+    expect(screen.queryAllByRole('radio')).toHaveLength(0)
+    await palpitar('world')
+    await waitFor(() =>
+      expect(document.activeElement?.closest('p')?.textContent).toContain('Seu palpite:'),
+    )
+    await waitFor(() => expect(anunciado()).toContain('A cena abriu.'))
+  })
+
+  test('⚠️⚠️ o palpite retomado fica no PASSADO: a frase "olhe…" some no gesto seguinte', async () => {
+    // "Olhe os dois lados: o Dino está só nos bastidores" ficava na tela com o Dino desenhado.
+    servidorQueCorrige(mundoComPalpite('hidden'))
+    aluno(mundoComPalpite('hidden'))
+    fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
+    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
+    expect(await screen.findByText(retomado)).toBeTruthy()
+    // Colado ao aviso da descoberta, embaixo do palco (e não lá em cima, fora da janela).
+    const aviso = screen.getByText('Descoberta 1 de 2')
+    expect(aviso.nextElementSibling?.textContent).toBe(retomado)
+    // O gesto seguinte (ligar o desenho, que também conclui a cena) tira a frase do instante.
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    await waitFor(() => expect(screen.queryByText(retomado) === null).toBe(true))
+    // Lá em cima, a linha no passado, sem mandar olhar nada.
+    expect(screen.getByText('Não era isso.')).toBeTruthy()
+    expect(screen.getByText('Seu palpite:').parentElement?.parentElement?.textContent).not.toMatch(
+      /Olhe/,
+    )
+  })
+
+  test('⚠️⚠️ na revisita de OUTRO aparelho (sem palpite guardado) não há "Antes de mexer"', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    const aprovado = {
+      result: {
+        participated: true,
+        passed: true,
+        feedback: 'x',
+        verifiedBy: 'server' as const,
+        evidence: 'exploration' as const,
+      },
+    }
+    aluno(bloco, aprovado)
+    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    expect(screen.queryByText('Antes de mexer') === null).toBe(true)
+    expect(screen.queryByText(SCENE_QUESTIONS.world.prediction.prompt) === null).toBe(true)
+    cleanup()
+    // Com o palpite guardado neste aparelho, a linha curta no passado.
+    const previsao = publicInteractiveBlock(bloco).prediction
+    if (!previsao) throw new Error('sem previsão')
+    guardarPalpite('crianca-moldura:aula:bloco:rev', previsao, previsao.correctChoiceId as string)
+    aluno(bloco, aprovado)
+    expect(await screen.findByText('Acertou!')).toBeTruthy()
+    expect(screen.queryByText('Antes de mexer') === null).toBe(true)
+  })
+
+  test('⚠️ pedir pista depois do palpite NÃO apaga o "trocar", e "Recomeçar" antes dele não conta', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await screen.findByText(/Primeiro, seu palpite/)
+    // Antes do palpite, "Recomeçar", "Desfazer" e "Uma pista" ficam FECHADOS com o motivo.
+    for (const nome of ['Recomeçar', 'Uma pista']) {
+      const botao = screen.getByRole('button', { name: nome })
+      expect(botao.getAttribute('aria-disabled')).toBe('true')
+      fireEvent.click(botao)
+    }
+    await palpitar('world')
+    expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
+    expect(await screen.findByText('Pista 1 de 3.')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy()
+  })
+
+  test('⚠️ a demonstração inline com previsão escrita pelo professor não toca antes do palpite', async () => {
+    const bloco: InteractiveBlock = {
+      ...mundoComPalpite(),
+      activity: { type: 'demonstration', scene: 'world', presentation: 'inline' },
+    }
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    const ver = await screen.findByRole('button', { name: /Ver acontecer/ })
+    expect(ver.getAttribute('aria-disabled')).toBe('true')
+    expect(
+      document.getElementById(ver.getAttribute('aria-describedby') ?? '')?.textContent,
+    ).toMatch(/Primeiro, seu palpite/)
+  })
+})
+
+describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', () => {
+  test('⚠️⚠️ "Conferir" e depois o gesto que conclui: a REGRA nunca passa por uma região viva', async () => {
+    // O leitor de tela ouvia "Ainda não." + a frase de sucesso da cena no instante da conclusão,
+    // antes de "Você descobriu!": a resposta da pergunta, e um "Ainda não" que contradizia tudo.
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('world')
+    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Conferir' }))
+    // ⚠️ O texto errado vivia UM render e sumia no seguinte, dentro do mesmo `act`: ler a região na
+    // hora do aviso já a encontraria vazia. Os registros guardam o valor ANTIGO e os nós que saíram.
+    const falado: string[] = []
+    const naRegiao = (n: Node | null) =>
+      Boolean((n instanceof Element ? n : n?.parentElement)?.closest('[aria-live]'))
+    const observador = new MutationObserver((registros) => {
+      for (const r of registros) {
+        if (
+          !naRegiao(r.target) &&
+          !(r.target instanceof Element && r.target.closest('[aria-live]'))
+        )
+          continue
+        falado.push(r.target.textContent ?? '', r.oldValue ?? '')
+        for (const n of [...r.addedNodes, ...r.removedNodes]) falado.push(n.textContent ?? '')
+      }
+    })
+    observador.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      characterDataOldValue: true,
+    })
+    try {
+      fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+      await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), {
+        timeout: 5000,
+      })
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 50))
+      })
+    } finally {
+      observador.disconnect()
+    }
+    expect(falado.length).toBeGreaterThan(0)
+    const regra = SCENE_MODELS.world.success
+    expect(falado.filter((t) => t.includes(regra))).toEqual([])
+  })
+
+  test('⚠️⚠️ a pergunta ignora o TOQUE dos primeiros instantes, e a tela não rola quando ela já está à vista', async () => {
+    // O toque em série no gesto que conclui caía numa opção da pergunta que tinha acabado de correr
+    // para baixo do dedo, e mandava uma tentativa que a criança nem leu.
+    const rolagens: unknown[] = []
+    const rolarOriginal = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = (arg?: boolean | ScrollIntoViewOptions) => {
+      rolagens.push(arg)
+    }
+    try {
+      const bloco = content('world')
+      const { enviados } = servidorQueCorrige(bloco)
+      aluno(bloco)
+      await palpitar('world')
+      concluirMundo()
+      await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), {
+        timeout: 5000,
+      })
+      const antes = tentativas(enviados).length
+      // `detail: 1` é o toque de ponteiro.
+      fireEvent.click(opcao('world', false), { detail: 1 })
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 1200))
+      })
+      expect(tentativas(enviados).length).toBe(antes)
+      expect(screen.queryByText(/não é essa/) === null).toBe(true)
+      // O teclado (`detail: 0`) responde na hora: o foco já está na pergunta.
+      fireEvent.click(opcao('world', false), { detail: 0 })
+      await waitFor(() => expect(screen.getByText(/não é essa/)).toBeTruthy(), { timeout: 5000 })
+      expect(rolagens).toEqual([])
+    } finally {
+      Element.prototype.scrollIntoView = rolarOriginal
+    }
+  })
+
+  test('⚠️ a resposta certa deixa o botão FOCÁVEL (`aria-disabled`, e não `disabled`)', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('world')
+    concluirMundo()
+    await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
+    const certa = opcao('world', true)
+    certa.focus()
+    fireEvent.click(certa)
+    await waitFor(() => expect(screen.getByText('Certo!')).toBeTruthy(), { timeout: 5000 })
+    expect(opcao('world', true).getAttribute('aria-disabled')).toBe('true')
+    expect(opcao('world', true)).toHaveProperty('disabled', false)
+    expect(document.activeElement).toBe(opcao('world', true))
+  })
+
+  test('⚠️⚠️ "Ouvir" lê a pergunta do PALPITE e as opções, e fala na hora do clique', async () => {
+    // Para quem ainda não lê, o véu só abria chutando. E a fala esperava a pausa das outras mídias:
+    // com uma que não responde (o Safari só aceita `speak()` dentro do gesto), ficava muda.
+    const falas: string[] = []
+    const janela = window as unknown as Record<string, unknown>
+    const vozOriginal = janela.speechSynthesis
+    const falaOriginal = janela.SpeechSynthesisUtterance
+    class Fala {
+      lang = ''
+      voice: unknown = null
+      onend: (() => void) | null = null
+      onerror: (() => void) | null = null
+      constructor(public text: string) {}
+    }
+    janela.speechSynthesis = {
+      getVoices: () => [{ lang: 'pt-BR', name: 'Luciana' }],
+      cancel: () => {},
+      speak: (f: Fala) => falas.push(f.text),
+    }
+    janela.SpeechSynthesisUtterance = Fala
+    // Uma outra mídia da aula que nunca termina de pausar.
+    const sair = registerLessonMedia(Symbol('video'), () => new Promise(() => {}))
+    try {
+      servidorQueCorrige(mundoComPalpite())
+      aluno(mundoComPalpite())
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      await waitFor(() => expect(falas.length).toBeGreaterThan(0))
+      const lido = falas.join(' ')
+      expect(lido).toContain('Você cria e não liga o desenho. O que aparece?')
+      expect(lido).toContain('O Dino aparece')
+      expect(lido).toContain('A tela fica vazia')
+    } finally {
+      sair()
+      janela.speechSynthesis = vozOriginal
+      janela.SpeechSynthesisUtterance = falaOriginal
+    }
+  })
+
+  test('⚠️ com o relógio andando a frase da situação NÃO é região viva, e a final é dita ao parar', async () => {
+    const relogio = relogioManual()
+    try {
+      servidorQueCorrige(content('gravity'))
+      aluno(content('gravity'))
+      await palpitar('gravity')
+      const frase = () => document.querySelector('p.min-h-6.text-center') as HTMLElement
+      expect(frase().getAttribute('role')).toBe('status')
+      // ⚠️ Mudou de propósito (lote 5 do Raio-X): "↑ Pular", sem "com toque".
+      fireEvent.click(screen.getByRole('button', { name: '↑ Pular' }))
+      await relogio.tocar(24)
+      expect(frase().getAttribute('role')).toBeNull()
+      expect(frase().getAttribute('aria-live')).toBe('off')
+      fireEvent.click(screen.getByRole('button', { name: 'Parar o tempo' }))
+      await waitFor(() => expect(frase().getAttribute('role')).toBe('status'))
+      await waitFor(() => expect(anunciado()).toContain(frase().textContent ?? '?'))
+    } finally {
+      relogio.restaurar()
+    }
+  })
+
+  test('⚠️ a caixa da pista não é região viva, e a pista é dita UMA vez no clique', async () => {
+    const bloco = content('world')
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('world')
+    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
+    expect(await screen.findByText(/^Ainda não\. Tente:/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
+    const caixa = (await screen.findByText('Pista 1 de 3.')).closest('div') as HTMLElement
+    expect(caixa.getAttribute('role')).toBeNull()
+    await waitFor(() => expect(anunciado()).toContain('Pista 1 de 3.'))
+    // ⚠️ Uma caixa de ajuda por vez: a pista toma o lugar da resposta do Conferir.
+    expect(screen.queryByText(/^Ainda não\. Tente:/) === null).toBe(true)
+  })
+
+  test('⚠️ "Continuar ↓" só aparece com a pergunta FORA da janela', async () => {
+    const original = globalThis.IntersectionObserver
+    let visivel = true
+    globalThis.IntersectionObserver = class {
+      constructor(private readonly avisar: IntersectionObserverCallback) {}
+      observe() {
+        this.avisar(
+          [{ isIntersecting: visivel } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        )
+      }
+      disconnect() {}
+      unobserve() {}
+      takeRecords() {
+        return []
+      }
+    } as unknown as typeof IntersectionObserver
+    try {
+      const bloco = content('world')
+      servidorQueCorrige(bloco)
+      aluno(bloco)
+      await palpitar('world')
+      concluirMundo()
+      await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), {
+        timeout: 5000,
+      })
+      expect(screen.queryByRole('button', { name: 'Continuar' }) === null).toBe(true)
+      cleanup()
+      localStorage.clear()
+      visivel = false
+      servidorQueCorrige(bloco)
+      aluno(bloco)
+      await palpitar('world')
+      concluirMundo()
+      expect(
+        await screen.findByRole('button', { name: 'Continuar' }, { timeout: 5000 }),
+      ).toBeTruthy()
+    } finally {
+      globalThis.IntersectionObserver = original
+    }
+  })
+
+  test('⚠️⚠️ missão restrita sem pistas do professor: a pista fala da meta que a AULA cobra', async () => {
+    // Dia 1 do Desafio: a aula cobra só "y maior leva para baixo", e a pista do modelo mandava
+    // "Mexa só no x", o eixo errado.
+    const bloco: InteractiveBlock = {
+      ...content('coordinates'),
+      activity: { type: 'experimentation', scene: 'coordinates', setup: { goals: ['down'] } },
+    }
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+    await palpitar('coordinates')
+    fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
+    const caixa = (await screen.findByText('Pista 1 de 1.')).closest('div') as HTMLElement
+    const pedido = SCENE_MODELS.coordinates.goals.find((g) => g.id === 'down')?.pedido as string
+    expect(caixa.textContent?.toLowerCase()).toContain(`tente: ${pedido.toLowerCase()}`)
+    for (const dica of SCENE_MODELS.coordinates.hints) expect(caixa.textContent).not.toContain(dica)
+    expect(screen.getByRole('button', { name: 'Uma pista' })).toHaveProperty('disabled', true)
+  })
+
+  test('⚠️ "Agora é sua vez" da `jump-sound` tem o "Ligar som" (a única cena cujo assunto é o som)', async () => {
+    const matchMediaOriginal = window.matchMedia
+    const relogio = relogioManual()
+    try {
+      const bloco: InteractiveBlock = {
+        ...content('jump-sound'),
+        activity: { type: 'demonstration', scene: 'jump-sound' },
+      }
+      servidorQueCorrige(bloco)
+      aluno(bloco)
+      await palpitar('jump-sound')
+      const principal = () =>
+        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+      for (let i = 0; i < 60 && principal().textContent !== 'Ver tudo de novo'; i++) {
+        if (principal().textContent !== 'Pausar')
+          await act(async () => {
+            fireEvent.click(principal())
+          })
+        await relogio.tocar(12)
+      }
+      fireEvent.click(await screen.findByRole('button', { name: 'Agora é sua vez' }))
+      const vez = await screen.findByRole('region', { name: 'Sua vez' })
+      expect(vez.querySelector('button')).toBeTruthy()
+      expect(
+        [...vez.querySelectorAll('button')].some((b) => b.textContent?.includes('Ligar som')),
+      ).toBe(true)
+    } finally {
+      relogio.restaurar()
+      window.matchMedia = matchMediaOriginal
+    }
+  })
+})
+
+describe('restart: o toque que começa a partida solta o tempo (lote 5 do Raio-X, G3)', () => {
+  test('⚠️⚠️ pelo PALCO e pela bancada: sem isso o toque só trocava o selo para JOGANDO', async () => {
+    // A tela inteira é o botão no palco, e ele não conhece o ▶ do player: quem solta o tempo é o
+    // `dispatch` do player, ao ver a partida começar. Achado na banca: o cacto nunca chegava.
+    for (const qual of [0, 1]) {
+      render(
+        <InteractiveLessonBlock block={block('restart')} previewContent={content('restart')} />,
+      )
+      const toques = await screen.findAllByRole('button', { name: /Tocar na tela/ })
+      expect(toques.length).toBe(2)
+      expect(screen.queryByRole('button', { name: 'Parar o tempo' })).toBeNull()
+      fireEvent.click(toques[qual] as HTMLElement)
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Parar o tempo' })).toBeTruthy(),
+      )
+      cleanup()
+    }
+  })
+})
+
+describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
+  /**
+   * Relatório: `tmp/storyboard/implementacao/consertos-lote5-ondaA.md`. Os palcos e as bancadas estão em
+   * `member-shell/tests/consertos-onda-a.test.tsx`; aqui fica o que só o PLAYER faz.
+   */
+  test('⚠️⚠️ layers (ALTO): com as duas descobertas e o Dino escondido de novo, "Conferir" diz o que falta', async () => {
+    render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
+    // Frente (1ª troca) e escondido de novo (2ª): as duas metas, e a montagem fora do arranjo do jogo.
+    await trocarOrdem(1)
+    await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
+    fireEvent.click(await screen.findByRole('button', { name: /^Subir / }))
+    await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
+    fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
+    await waitFor(() => {
+      const resposta = [...document.querySelectorAll('p[aria-live]')]
+        .map((p) => p.textContent ?? '')
+        .find((t) => t.startsWith('Ainda não'))
+      expect(resposta).toContain('leve o Dino de volta para o fim da ordem de desenhar')
+    })
+  })
+
+  test('⚠️ layers (MÉDIO): com o palpite pendente, a faixa não mostra a ordem (a regra se deduzia)', async () => {
+    aluno(content('layers'))
+    await screen.findByRole('button', {
+      name: SCENE_QUESTIONS.layers.prediction.choices[0]?.label as string,
+    })
+    const faixa = document.querySelector('dl') as HTMLElement
+    expect(faixa.textContent).toContain('?')
+    expect(faixa.textContent).not.toMatch(/floresta/i)
+  })
+
+  test('⚠️⚠️ T3: começar a partida pelo palco leva o foco à bancada, e não ao body', async () => {
+    render(<InteractiveLessonBlock block={block('restart')} previewContent={content('restart')} />)
+    const palco = await screen.findByRole('button', { name: 'Tocar na tela do jogo' })
+    palco.focus()
+    fireEvent.click(palco)
+    await waitFor(() =>
+      expect(document.activeElement?.hasAttribute('data-foco-depois-de-comecar')).toBe(true),
+    )
+    expect(document.activeElement?.textContent).toContain('Tocar na tela')
+  })
+
+  test('⚠️ screen-reader: o campo fechado diz o motivo DENTRO dele e avisa quem tenta digitar', async () => {
+    render(
+      <InteractiveLessonBlock
+        block={block('screen-reader')}
+        previewContent={content('screen-reader')}
+      />,
+    )
+    const campo = (await screen.findByLabelText('Descrição do jogo')) as HTMLTextAreaElement
+    expect(campo.getAttribute('placeholder')).toBe('🔒 Primeiro aperte Ouvir a tela.')
+    expect(campo.className).toContain('bg-muted')
+    fireEvent.keyDown(campo, { key: 'p' })
+    expect(
+      await screen.findByText('O campo ainda está fechado. Abre depois de ouvir a tela vazia.'),
+    ).toBeTruthy()
+  })
+
+  test('⚠️ B4: com vozes carregadas e nenhuma em português, sem "Voz: ligada" e com o aviso escrito', async () => {
+    const antes = {
+      synth: (window as { speechSynthesis?: unknown }).speechSynthesis,
+      utt: (window as { SpeechSynthesisUtterance?: unknown }).SpeechSynthesisUtterance,
+    }
+    class Fala {
+      lang = ''
+      constructor(readonly text: string) {}
+    }
+    Object.assign(window, {
+      SpeechSynthesisUtterance: Fala,
+      speechSynthesis: { getVoices: () => [{ lang: 'en-US' }], cancel: () => {}, speak: () => {} },
+    })
+    try {
+      render(
+        <InteractiveLessonBlock
+          block={block('screen-reader')}
+          previewContent={content('screen-reader')}
+        />,
+      )
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir a tela' }))
+      expect(
+        await screen.findByText('Este navegador não tem voz. A leitura fica escrita aqui.'),
+      ).toBeTruthy()
+      expect(screen.queryByRole('button', { name: /^Voz:/ })).toBeNull()
+    } finally {
+      Object.assign(window, { speechSynthesis: antes.synth, SpeechSynthesisUtterance: antes.utt })
+    }
+  })
+
+  test('⚠️⚠️ lives do Dia 4 (ALTO): "Agora é sua vez" tem o TIRO, abre com vidas e sem o relógio', async () => {
+    const relogio = relogioManual()
+    try {
+      const bloco: InteractiveBlock = {
+        ...content('lives'),
+        activity: {
+          type: 'demonstration',
+          scene: 'lives',
+          cast: {
+            hero: { name: 'nave', gender: 'f' },
+            obstacle: { name: 'asteroide', gender: 'm' },
+          },
+          script: [
+            {
+              id: 'passo-1',
+              caption: 'O tiro acertou.',
+              highlight: 'scene',
+              actions: [{ type: 'shoot' }],
+            },
+            {
+              id: 'passo-2',
+              caption: 'Uma batida.',
+              highlight: 'scene',
+              actions: [{ type: 'connect', port: 'life', enabled: true }, { type: 'collide' }],
+            },
+            {
+              id: 'passo-3',
+              caption: 'Mais duas.',
+              highlight: 'scene',
+              actions: [{ type: 'collide' }, { type: 'collide' }],
+            },
+          ],
+        },
+      }
+      servidorQueCorrige(bloco)
+      aluno(bloco)
+      await palpitar('lives')
+      const principal = () =>
+        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
+      for (let i = 0; i < 60 && principal().textContent !== 'Ver tudo de novo'; i++) {
+        if (principal().textContent !== 'Pausar')
+          await act(async () => {
+            fireEvent.click(principal())
+          })
+        await relogio.tocar(12)
+      }
+      fireEvent.click(await screen.findByRole('button', { name: 'Agora é sua vez' }))
+      const vez = await screen.findByRole('region', { name: 'Sua vez' })
+      const botoes = [...vez.querySelectorAll('button')]
+      const atirar = botoes.find((b) => b.textContent?.includes('Atirar no asteroide'))
+      const bater = botoes.find((b) => b.textContent?.includes('Bater no asteroide'))
+      expect(atirar).toBeTruthy()
+      // A partida NOVA: com vidas, o "Bater" abre.
+      expect(bater?.getAttribute('aria-disabled')).toBeNull()
+      // Sem o relógio (o ponto é do acerto, e não do tempo).
+      expect(
+        botoes.some((b) =>
+          /Soltar o tempo|Um passo/.test(b.getAttribute('aria-label') ?? b.textContent ?? ''),
+        ),
+      ).toBe(false)
+    } finally {
+      relogio.restaurar()
+    }
   })
 })

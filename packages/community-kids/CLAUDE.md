@@ -1193,8 +1193,10 @@ member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que m
 vê: seção com cena + conteúdo abre lado a lado numa coluna ≥1080px; seção cujo ÚNICO bloco é a
 cena (ou o Estúdio) ocupa a largura toda em vez de deixar meia tela vazia; e coluna estreita com
 cena EMPILHA, sem as abas "Ver exemplo"/"Criar". Cumprir o objetivo também deixou de travar os
-controles da experimentação (Desfazer, Recomeçar, Uma pista e Ligar som seguem vivos, inclusive ao
-reabrir a aula) — a marcação da seção continua sendo de primeira vez e não se desfaz.
+controles da experimentação (Desfazer, Recomeçar e Ligar som seguem vivos, inclusive ao reabrir a
+aula) — a marcação da seção continua sendo de primeira vez e não se desfaz. ⚠️ "Uma pista" SOME ao
+concluir desde os consertos do review do lote 2 (a caixa já sumia, e o clique mudo contava pista para
+o professor); ver o CLAUDE.md do member-shell.
 
 ⭐⭐ **A barra do topo NUNCA some (09/2026), e a régua tem três degraus** — pura em
 `lib/lesson-progress.ts` (`vistaProgressoAula`), pintada pelo `KidsLessonProgress`:

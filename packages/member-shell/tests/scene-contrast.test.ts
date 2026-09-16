@@ -12,16 +12,29 @@ import { join } from 'node:path'
  * pequeno exige. Nada quebrou, nada ficou vermelho: só ficou mais difícil de ler, que é o tipo
  * de estrago que passa por revisão de olho.
  *
- * A conta refaz o `color-mix(in oklab, …)` do CSS e vale para os três temas que existem hoje.
- * Mexeu na paleta? Este teste diz se ainda dá para ler.
+ * A conta refaz o `color-mix(in oklab, …)` do CSS e vale para os temas que leem esta folha (kids,
+ * adulto e admin). Mexeu na paleta? Este teste diz se ainda dá para ler.
  */
 
-/** A cor de ação de cada tema, que é o que entra na mistura como `--primary`. */
+/**
+ * A cor de ação de cada tema, que é o que entra na mistura como `--primary`.
+ *
+ * ⚠️ Não são só os dois temas do kids (review do lote 3): a folha `scene.css` também é lida pela
+ * comunidade ADULTA e pelo ADMIN (a prévia e o ensaio do professor), e cada um declara o próprio
+ * `--primary`. A reserva não os representava: no admin escuro, o vermelho do encosto caía para
+ * 4,18:1 sobre o painel do espaço.
+ */
 const TEMAS = {
   Padrão: '#1b5cf3',
   Pink: '#c8246f',
-  /** O fallback do `var(--primary, …)`: ensaio de autoria e qualquer superfície sem tema. */
+  /** O fallback do `var(--primary, …)`: qualquer superfície sem tema. */
   reserva: '#315f92',
+  /** A comunidade adulta (`--pen-acao` do globals.css dela). */
+  adulto: '#0b7a54',
+  /** O admin claro: `oklch(0.52 0.14 200)`. */
+  'admin claro': '#007f88',
+  /** O admin escuro: a lima `oklch(0.875 0.215 122)`, presa ao sRGB. */
+  'admin escuro': '#bfea00',
 } as const
 
 /** O que se escreve por cima do papel da cena. */
@@ -98,7 +111,7 @@ function receitasDoCss(): { nome: string; pct: number; base: string }[] {
   })
 }
 
-describe('o papel da cena continua legível nos três temas', () => {
+describe('o papel da cena continua legível em todos os temas', () => {
   const receitas = receitasDoCss()
 
   test('a conta confere com o que o navegador faz', () => {
@@ -125,8 +138,8 @@ describe('o papel da cena continua legível nos três temas', () => {
         }
       }
     expect(falhas).toEqual([])
-    // Guarda de que a varredura mediu alguma coisa: 3 papéis × 3 temas × 5 tintas.
-    expect(medidos).toBe(45)
+    // Guarda de que a varredura mediu alguma coisa: 3 papéis × 6 temas × 5 tintas.
+    expect(medidos).toBe(90)
   })
 
   test('a mistura é PERCEPTÍVEL: o papel muda de verdade entre os dois temas', () => {
@@ -187,6 +200,123 @@ describe('o papel da cena continua legível nos três temas', () => {
       '--color-scene-alert:',
     ]) {
       const linha = css.split('\n').find((l) => l.trim().startsWith(token))
+      expect(linha).toBeDefined()
+      expect(linha).not.toContain('color-mix')
+      expect(linha).not.toContain('var(--primary')
+    }
+  })
+})
+
+/**
+ * O MUNDO ESPAÇO (Raio-X, lote 3, 16/09/2026): a mesma conta, sobre o papel escuro.
+ *
+ * ⚠️⚠️ No espaço a paleta inteira é redeclarada num bloco (`.sz-scene-espaco`), e o par de
+ * comparação CLAREIA para continuar legível — o azul de sempre dá ≈2,7:1 no céu de estrelas. As
+ * receitas saem do bloco de VERDADE, como lá em cima.
+ */
+describe('o mundo espaço continua legível em todos os temas', () => {
+  const css = readFileSync(join(import.meta.dir, '../src/styles/scene.css'), 'utf8')
+  const inicio = css.indexOf('.sz-scene-espaco {')
+  const bloco = css.slice(inicio, css.indexOf('}', inicio))
+  const receita = (nome: string) => {
+    const achado = bloco.match(
+      new RegExp(
+        `--color-scene-${nome}:\\s*color-mix\\(in oklab,\\s*var\\(--primary[^)]*\\)\\s*(\\d+)%,\\s*(#[0-9a-f]{6})\\s*\\)`,
+        'i',
+      ),
+    )
+    if (!achado?.[1] || !achado[2]) throw new Error(`Receita de ${nome} não encontrada no espaço`)
+    return { nome, pct: Number(achado[1]) / 100, base: achado[2] }
+  }
+  const literal = (fonte: string, nome: string) => {
+    const achado = fonte.match(new RegExp(`--color-scene-${nome}:\\s*(#[0-9a-f]{6})\\s*;`, 'i'))
+    if (!achado?.[1]) throw new Error(`--color-scene-${nome} não encontrado`)
+    return achado[1]
+  }
+  const PAPEIS = ['ground', 'sky', 'grass', 'card'].map(receita)
+
+  test('o bloco existe e o papel é ESCURO de verdade', () => {
+    expect(inicio).toBeGreaterThan(-1)
+    // Anti-vácuo: "fundo escuro de estrelas" é o pedido. Um espaço claro passaria no contraste
+    // com tinta escura e desmancharia o mundo.
+    // ⚠️ 0,07 e não 0,06: a lima do admin escuro clareia o painel até 0,063, que continua escuro
+    // (um cinza médio é 0,2). O teto existe para pegar um espaço CLARO, não para medir a lima.
+    for (const { nome, pct, base } of PAPEIS)
+      for (const primary of Object.values(TEMAS))
+        expect({ nome, claro: luminancia(misturar(primary, base, pct)) > 0.07 }).toEqual({
+          nome,
+          claro: false,
+        })
+  })
+
+  test('⚠️⚠️ a tinta, o par e o encosto passam de AA sobre todo papel do espaço', () => {
+    const tintas = ['ink', 'ink-soft', 'a', 'b-ink', 'alert'].map(
+      (t) => [t, literal(bloco, t)] as const,
+    )
+    const falhas: string[] = []
+    let medidos = 0
+    for (const { nome, pct, base } of PAPEIS)
+      for (const [tema, primary] of Object.entries(TEMAS)) {
+        const papel = misturar(primary, base, pct)
+        for (const [tinta, cor] of tintas) {
+          const r = contraste(hex(cor), papel)
+          medidos++
+          if (r < AA)
+            falhas.push(`${tinta} sobre ${nome} (espaço) no tema ${tema}: ${r.toFixed(2)}`)
+        }
+      }
+    expect(falhas).toEqual([])
+    // 4 papéis × 6 temas × 5 tintas.
+    expect(medidos).toBe(120)
+  })
+
+  test('⚠️ as figuras e as linhas se veem no céu de estrelas (3:1, que é o de gráfico)', () => {
+    const graficos: [string, string][] = [
+      ...['rock', 'stone', 'flame', 'flame-core', 'fin', 'window', 'star'].map(
+        (t) => [t, literal(css, t)] as [string, string],
+      ),
+      ...['rule', 'line', 'b'].map((t) => [`${t} (espaço)`, literal(bloco, t)] as [string, string]),
+    ]
+    const clareado = css.match(
+      /\.sz-scene-espaco svg \.text-primary \{\s*color:\s*color-mix\(in oklab,\s*var\(--primary[^)]*\)\s*(\d+)%,\s*(#[0-9a-f]{6})\s*\)/i,
+    )
+    if (!clareado?.[1] || !clareado[2]) throw new Error('O personagem clareado não foi encontrado')
+    const falhas: string[] = []
+    const ceu = receita('sky')
+    for (const [tema, primary] of Object.entries(TEMAS)) {
+      const papel = misturar(primary, ceu.base, ceu.pct)
+      for (const [nome, cor] of graficos) {
+        const r = contraste(hex(cor), papel)
+        if (r < 3) falhas.push(`${nome} no céu (tema ${tema}): ${r.toFixed(2)}`)
+      }
+      // O casco da nave e o Dino vestem o `text-primary`: no espaço, o clareado.
+      const personagem = misturar(primary, clareado[2], Number(clareado[1]) / 100)
+      const r = contraste(personagem, papel)
+      if (r < 3) falhas.push(`o personagem no céu (tema ${tema}): ${r.toFixed(2)}`)
+    }
+    expect(falhas).toEqual([])
+  })
+
+  test('⚠️ e as figuras também se veem no BRANCO da bancada', () => {
+    // As peças da bancada (a ordem de desenhar do `layers`) mostram a mesma figura sobre o cartão
+    // do app. O contorno escuro de cada uma é o que a segura ali.
+    const falhas: string[] = []
+    for (const t of ['rock-dark', 'stone-dark', 'flame-deep', 'fin']) {
+      const r = contraste(hex(literal(css, t)), hex('#ffffff'))
+      if (r < 3) falhas.push(`${t} no branco: ${r.toFixed(2)}`)
+    }
+    expect(falhas).toEqual([])
+  })
+
+  test('o papel do espaço SEGUE o tema, e o par NÃO', () => {
+    for (const { nome, pct, base } of PAPEIS) {
+      const padrao = misturar(TEMAS.Padrão, base, pct)
+      const pink = misturar(TEMAS.Pink, base, pct)
+      const distancia = Math.max(...padrao.map((c, i) => Math.abs(c - (pink[i] ?? 0)) * 255))
+      if (distancia < 8) throw new Error(`${nome}: os dois temas dão quase o mesmo espaço`)
+    }
+    for (const token of ['a', 'b', 'b-ink', 'alert']) {
+      const linha = bloco.split('\n').find((l) => l.trim().startsWith(`--color-scene-${token}:`))
       expect(linha).toBeDefined()
       expect(linha).not.toContain('color-mix')
       expect(linha).not.toContain('var(--primary')

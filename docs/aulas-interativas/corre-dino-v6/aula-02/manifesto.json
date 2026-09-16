@@ -103,7 +103,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Descubra por que o desenho se repete",
-        "instructions": "Avance o relógio com tudo desligado. Depois ligue o desenho a cada quadro e, por último, a limpeza.",
+        "instructions": "Aperte Avançar 1 quadro e olhe a tela e o x do Dino. Depois desenhe o Dino a cada quadro. Por último, ligue Limpar a tela antes.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -156,11 +156,11 @@
       "content": {
         "kind": "interactive",
         "title": "Quem fica na frente?",
-        "instructions": "Neste exemplo, compare Floresta depois do Dino e Dino depois da Floresta. Só a ordem muda.",
+        "instructions": "Neste exemplo, o Dino está escondido atrás da floresta. Mude a ordem de desenhar e descubra quem fica na frente. Só a ordem muda.",
         "hints": [
-          "O Dino está escondido atrás de quê?",
-          "Olhe a última peça na faixa de desenho.",
-          "Escolha o Dino e toque no espaço Depois."
+          "O Dino está atrás da floresta. Onde fica a floresta na lista?",
+          "Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.",
+          "No fim, deixe o Dino no fim da lista, como fica no jogo."
         ],
         "required": false,
         "activity": {

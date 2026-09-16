@@ -33,7 +33,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Abra espaço entre os asteroides",
-        "instructions": "Avance o relógio e veja quantos asteroides nascem. Depois ligue um intervalo ao nascimento e compare.",
+        "instructions": "Aperte ▶ Tempo e veja quantos asteroides nascem. Depois leve Criar asteroide para dentro do relógio e compare.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -50,19 +50,19 @@
           }
         },
         "checkpoint": {
-          "prompt": "Sem nenhum intervalo, de quanto em quanto tempo nasce um asteroide?",
+          "prompt": "Por que virou uma parede de asteroides sem o relógio?",
           "choices": [
             {
-              "id": "a",
-              "label": "Um em cada quadro do jogo."
+              "id": "lentos",
+              "label": "Porque os asteroides ficaram lentos e se amontoaram."
             },
             {
-              "id": "b",
-              "label": "Um por segundo."
+              "id": "todo-quadro",
+              "label": "Porque o pedido de criar acontece em todo quadro."
             }
           ],
-          "correctChoiceId": "a",
-          "explanation": "Sem um relógio para segurar, o pedido de criar acontece em todo quadro — e a tela enche."
+          "correctChoiceId": "todo-quadro",
+          "explanation": "Sem um relógio para segurar, o pedido de criar acontece em todo quadro, e os asteroides nascem colados."
         }
       }
     },
@@ -87,59 +87,63 @@
       "content": {
         "kind": "interactive",
         "title": "O lugar onde ela nasce e a velocidade que a faz descer",
-        "instructions": "São dois números diferentes: um diz ONDE a pedra está agora, o outro diz quanto ela anda em cada quadro.",
+        "instructions": "São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.",
         "hints": [],
         "required": false,
         "activity": {
           "type": "demonstration",
           "scene": "velocity",
-          "cast": {
-            "hero": {
-              "name": "pedra",
-              "gender": "f",
-              "plural": "pedras"
-            }
+          "cast": { "hero": { "name": "pedra", "gender": "f", "plural": "pedras" } },
+          "setup": {
+            "actions": [
+              { "type": "velocity", "vx": 10, "vy": -5 },
+              { "type": "advance", "seconds": 3.6 },
+              { "type": "velocity", "vx": 0, "vy": -5 },
+              { "type": "advance", "seconds": 3.4 },
+              { "type": "velocity", "vx": 0, "vy": 0 }
+            ]
           },
           "script": [
             {
               "id": "passo-1",
-              "caption": "A velocidade para baixo é o quanto ela desce em CADA quadro do relógio.",
-              "highlight": "tools",
-              "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 3
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                }
-              ],
-              "waitFor": "moves"
+              "caption": "A pedra nasce em y −40, na faixa fora da tela. Quem joga ainda não vê a pedra.",
+              "highlight": "scene",
+              "actions": [{ "type": "velocity", "vx": 0, "vy": 0 }]
             },
             {
               "id": "passo-2",
-              "caption": "Com a velocidade em zero ela para — e continua exatamente onde chegou.",
+              "caption": "Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.",
               "highlight": "scene",
               "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 0
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                }
+                { "type": "velocity", "vx": 0, "vy": 3 },
+                { "type": "advance", "seconds": 3 }
+              ],
+              "waitFor": "down"
+            },
+            {
+              "id": "passo-3",
+              "caption": "Velocidade 0: a pedra para onde chegou.",
+              "highlight": "scene",
+              "actions": [
+                { "type": "velocity", "vx": 0, "vy": 0 },
+                { "type": "advance", "seconds": 1 }
               ],
               "waitFor": "stopped"
             }
           ]
+        },
+        "prediction": {
+          "prompt": "Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?",
+          "choices": [
+            { "id": "aumenta", "label": "O y aumenta" },
+            {
+              "id": "diminui",
+              "label": "O y diminui",
+              "shows": "Com a velocidade para baixo em 3, o número do y ficou maior."
+            }
+          ],
+          "correctChoiceId": "aumenta",
+          "revealOn": "down"
         }
       }
     },

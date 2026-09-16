@@ -113,6 +113,12 @@ const EnvSchema = z
     AI_LIMIT_DAILY: z.coerce.number().int().positive().default(50),
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
 
+    // Recusar (409) o player de cena de ANTES do relógio de quadro fixo (review do lote 4 do
+    // Raio-X): segmento sem o marcador `sceneClock` numa cena com relógio. ⚠️ Desligada por
+    // padrão, e só liga DEPOIS de o kids e o community com o player novo estarem no ar (antes
+    // disso não existe player que mande o marcador). Ordem de deploy neste CLAUDE.md.
+    SCENE_CLOCK_STRICT: optionalBool(false),
+
     // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
     // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;
     // advisory lock garante 1 réplica por ciclo). Reprocessar entrega antiga é

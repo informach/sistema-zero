@@ -31,7 +31,7 @@
         "kind": "interactive",
         "required": true,
         "title": "A pedra sumiu ou foi coberta?",
-        "instructions": "Troque as peças de lugar. As duas continuam no desenho: descubra quando dá para ver a pedra inteira.",
+        "instructions": "A chama está cobrindo a pedra. Troque a ordem de desenhar e descubra quando a pedra aparece inteira.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -51,12 +51,12 @@
           "prompt": "A pedra reapareceu quando a chama foi para trás. O que mudou?",
           "choices": [
             {
-              "id": "a",
-              "label": "A ordem das formas."
-            },
-            {
               "id": "b",
               "label": "A pedra foi desenhada de novo."
+            },
+            {
+              "id": "a",
+              "label": "A ordem das formas."
             }
           ],
           "correctChoiceId": "a",

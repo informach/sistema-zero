@@ -25,16 +25,14 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja o número e o placar",
-        "instructions": "Acompanhe cada etapa. Você pode pausar e rever o exemplo.",
+        "instructions": "Veja o número mudar dentro da caixa antes de aparecer na tela.",
         "hints": [],
         "activity": {
           "type": "demonstration",
           "scene": "variable",
           "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            }
+            "hero": { "name": "nave", "gender": "f" },
+            "obstacle": { "name": "asteroide", "gender": "m" }
           }
         }
       }
@@ -202,21 +200,51 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja ponto e vida mudarem por motivos diferentes",
-        "instructions": "Acompanhe o placar subindo com o relógio e a vida saindo na batida.",
+        "instructions": "Veja o que o acerto muda e o que a batida muda.",
         "hints": [],
         "activity": {
           "type": "demonstration",
           "scene": "lives",
           "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
+            "hero": { "name": "nave", "gender": "f" },
+            "obstacle": { "name": "asteroide", "gender": "m" }
+          },
+          "script": [
+            {
+              "id": "passo-1",
+              "caption": "O tiro acertou um asteroide: o placar ganhou 1. Os corações não mudaram.",
+              "highlight": "scene",
+              "actions": [{ "type": "shoot" }]
             },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
+            {
+              "id": "passo-2",
+              "caption": "Um asteroide bateu na nave: saiu um coração. O placar continua 1.",
+              "highlight": "scene",
+              "actions": [
+                { "type": "connect", "port": "life", "enabled": true },
+                { "type": "collide" }
+              ]
+            },
+            {
+              "id": "passo-3",
+              "caption": "Mais duas batidas: acabaram os corações e a partida. O placar guardou o 1.",
+              "highlight": "scene",
+              "actions": [{ "type": "collide" }, { "type": "collide" }]
             }
-          }
+          ]
+        },
+        "prediction": {
+          "prompt": "A nave tem 1 ponto e bate num asteroide. O que muda?",
+          "choices": [
+            { "id": "so-coracao", "label": "Só o coração" },
+            {
+              "id": "placar-e-coracao",
+              "label": "O placar e o coração",
+              "shows": "A batida não tirou nenhum ponto do placar."
+            }
+          ],
+          "correctChoiceId": "so-coracao",
+          "revealOn": "points-stay"
         }
       }
     }

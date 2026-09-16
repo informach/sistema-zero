@@ -97,3 +97,82 @@ test('⚠️ editar o roteiro que vem com a cena cria um roteiro AUTORAL, e dá 
     container.remove()
   }
 })
+
+test('⚠️ o editor do caso AVISA quando um salto não sai do chão (o motor o abre sem salto)', async () => {
+  // Review do lote 1: o admin oferece "Pular" no caso, e desde o conserto da Aula 3 o motor desfaz
+  // em silêncio o salto que não subiu nem um pixel. O caso segue aceito; o professor é avisado.
+  const { saltoParadoNoCaso } = await import('../src/lib/scene-authoring-rules')
+  expect(saltoParadoNoCaso('gravity', [{ type: 'jump', input: 'tap' }])).toBe(true)
+  expect(
+    saltoParadoNoCaso('gravity', [
+      { type: 'jump', input: 'tap' },
+      { type: 'advance', seconds: 0.3 },
+    ]),
+  ).toBe(false)
+  expect(saltoParadoNoCaso('gravity', [{ type: 'impulse', force: 12 }])).toBe(false)
+  expect(saltoParadoNoCaso('gravity', undefined)).toBe(false)
+
+  const { SceneSetupEditor } = await import('../src/components/editor/scene-setup-editor')
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  await act(async () =>
+    root.render(
+      <SceneSetupEditor
+        activity={{
+          type: 'experimentation',
+          scene: 'gravity',
+          setup: { actions: [{ type: 'jump', input: 'tap' }] },
+        }}
+        onChange={() => {}}
+      />,
+    ),
+  )
+  expect(container.textContent).toContain('Um salto no caso só aparece com o relógio depois dele.')
+  await act(async () =>
+    root.render(
+      <SceneSetupEditor
+        activity={{ type: 'experimentation', scene: 'velocity' }}
+        onChange={() => {}}
+      />,
+    ),
+  )
+  // A missão de fábrica da `velocity` é a do lado: as metas só de caso ficam fora da contagem.
+  expect(container.textContent).toContain('cobra as 3 descobertas do modelo')
+  expect(container.textContent).toContain('só vale marcada')
+  await act(async () => root.unmount())
+  container.remove()
+})
+
+test('⚠️ o tempo que não cai em quadro inteiro aparece como aviso na etapa (review do lote 4)', async () => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const aviso =
+    'Nesta cena um quadro dura 1 s: 0,5 s não mostra nada nesta etapa. Use pelo menos 1 s.'
+  try {
+    const comAviso: DemonstrationActivity = {
+      type: 'demonstration',
+      // ⚠️ Mudou de propósito (lote 5 do Raio-X, G6): era a `pool`, que passou a 10 quadros por segundo.
+      scene: 'entity-state',
+      script: [
+        { id: 'step-1', caption: 'O relógio anda.', actions: [{ type: 'advance', seconds: 0.5 }] },
+      ],
+    }
+    await act(async () => root.render(<SceneAuthoring activity={comAviso} onChange={() => {}} />))
+    expect(container.textContent).toContain(aviso)
+    // O roteiro de fábrica da mesma cena não avisa nada.
+    await act(async () =>
+      root.render(
+        <SceneAuthoring
+          activity={{ type: 'demonstration', scene: 'entity-state' }}
+          onChange={() => {}}
+        />,
+      ),
+    )
+    expect(container.textContent).not.toContain('Nesta cena um quadro dura')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})

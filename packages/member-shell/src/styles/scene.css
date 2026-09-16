@@ -83,4 +83,96 @@
   /* Os cartõezinhos de medida dentro da cena (placar, cronômetro, altura). */
   --color-scene-card: #fffdf7;
   --color-scene-card-line: #d9dfd1;
+
+  /* As FIGURAS do elenco que não são o Corre Dino (Raio-X, lote 3, 16/09/2026): a nave, o
+   * asteroide, a pedra, o tiro e a chama. Desenho em `components/scene-figures.tsx`.
+   *
+   * ⚠️⚠️ Tokens PRÓPRIOS, e nunca `sky`, `ground`, `grass`, `card`, `ink` ou o par: esses são
+   * remapeados no mundo espaço (abaixo), e uma figura pintada com eles mudaria de cor quando o
+   * palco vai para o espaço — a janela da nave feita de `card` virava um buraco escuro.
+   * ⚠️ Eles não seguem o tema, como a folha e o tronco: a pedra é cinza em qualquer tema. Cada um
+   * foi medido contra o céu do espaço E contra o branco da bancada, onde as peças também
+   * aparecem (`tests/scene-contrast.test.ts`). */
+  --color-scene-rock: #a39cb3;
+  --color-scene-rock-dark: #5d566e;
+  --color-scene-rock-light: #d2cde0;
+  --color-scene-stone: #ad957d;
+  --color-scene-stone-dark: #6b5645;
+  --color-scene-stone-light: #dcc9b4;
+  --color-scene-flame: #f58a2f;
+  --color-scene-flame-deep: #e0452f;
+  --color-scene-flame-core: #ffd65c;
+  --color-scene-fin: #e24b3b;
+  --color-scene-window: #e3f1ff;
+  --color-scene-star: #fff4cf;
+}
+
+/* O MUNDO ESPAÇO (Raio-X, lote 3, 16/09/2026).
+ *
+ * ⭐⭐ Com uma nave, um asteroide, uma pedra, um tiro ou uma chama no elenco (`sceneWorld` do
+ * core), o palco sai da grama e vai para um fundo escuro de estrelas. O `SceneCanvas` põe esta
+ * classe na moldura, e a paleta INTEIRA da cena é redeclarada aqui dentro: o papel vira noite, a
+ * tinta clareia e o chão vira uma linha discreta. É por isso que os palcos quase não precisam
+ * saber do mundo — eles continuam pintando `fill-scene-ink`, e é a variável que muda.
+ *
+ * ⚠️⚠️ Fora do `@theme` de propósito. O Tailwind só emite a variável de tema que alguma
+ * utilitária USA; uma receita do espaço declarada no `@theme` e lida só por este bloco poderia
+ * sumir do CSS final. Aqui ela é CSS comum e sempre existe.
+ *
+ * ⚠️⚠️ O papel SEGUE o tema (`color-mix` com o `--primary`, sempre `in oklab`: no espaço
+ * cilíndrico um azul-noite puxado para o rosa vira ROXO VIVO): no Pink o espaço é ameixa. O par
+ * de comparação e o vermelho do encosto NÃO seguem o tema, como lá em cima — eles só CLAREIAM
+ * para o escuro, com o mesmo matiz. Azul continua dizendo A e âmbar continua dizendo B; no cromo
+ * (a faixa de estado, fora da moldura) eles seguem os de sempre.
+ *
+ * Mexeu aqui? Refaça a conta: `tests/scene-contrast.test.ts` lê ESTE bloco. */
+.sz-scene-espaco {
+  /* O papel: a moldura (o mais escuro), o céu de estrelas e os painéis por cima dele. */
+  --color-scene-ground: color-mix(in oklab, var(--primary, #315f92) 12%, #080c1e);
+  --color-scene-sky: color-mix(in oklab, var(--primary, #315f92) 14%, #101734);
+  --color-scene-grass: color-mix(in oklab, var(--primary, #315f92) 18%, #1f2850);
+  --color-scene-card: color-mix(in oklab, var(--primary, #315f92) 18%, #1f2850);
+  --color-scene-card-line: #4a5690;
+  /* O chão vira REFERÊNCIA: uma linha que se vê sem virar grama. ⚠️ Clareada no review do lote 3:
+   * a #65719f dava 2,77:1 no céu do ADMIN escuro (a lima do tema clareia o papel). */
+  --color-scene-line: #7482b0;
+  --color-scene-grid: #34406e;
+  --color-scene-rule: #8390bd;
+  /* A tinta. */
+  --color-scene-ink: #f1f4ff;
+  --color-scene-ink-soft: #b7c1e3;
+  /* O par e o encosto, clareados sem trocar de matiz. */
+  --color-scene-a: #8ebcf2;
+  --color-scene-b: #f0a256;
+  --color-scene-b-ink: #f2c27b;
+  --color-scene-a-wash: #8ebcf233;
+  --color-scene-b-wash: #f0a25640;
+  /* ⚠️ Clareado no review do lote 3: a #ff8f7d dava 4,19:1 sobre o painel do espaço no admin
+   * escuro, onde o professor ensaia a cena. */
+  --color-scene-alert: #ff9a8a;
+  --color-scene-alert-wash: #ff9a8a33;
+}
+
+/* ⚠️⚠️ O personagem veste o tema pela tinta do APP (`text-primary`, o `currentColor` do Dino e do
+ * casco da nave), e o azul de ação some no céu escuro (≈2,7:1). Dentro do desenho do espaço ele
+ * clareia, com o mesmo matiz do tema. Só no `svg`: os controles HTML por cima do palco (as alças,
+ * o "Toque para começar") usam o `text-primary` sobre fundo claro e continuam como estão. */
+.sz-scene-espaco svg .text-primary {
+  color: color-mix(in oklab, var(--primary, #315f92) 45%, #ffffff);
+}
+
+/* ⚠️ Estrela atrás de texto vira PONTUAÇÃO (review do lote 3): as estrelinhas são sorteadas no
+ * retângulo inteiro, e uma delas caía como ponto final em "restam." e colada no "15" do placar. Um
+ * halo da cor do céu apaga a estrela que ENCOSTA na letra, em qualquer palco, sem mexer no sorteio
+ * (que tem semente fixa e é o que impede o céu de piscar a cada gesto). `paint-order` pinta o
+ * contorno POR BAIXO do preenchimento, então a letra não engorda.
+ * ⚠️ 3px e não mais: o halo também contorna o texto que mora num PAINEL (os cérebros da
+ * `entity-state`, a pílula "As áreas se tocam" da `hitbox`), e com 4px ou 5px ele já virava uma
+ * borda escura visível. A estrela a dois ou três pixels da letra o halo não alcança: onde isso
+ * acontece num placar, o palco tira as estrelas da zona (`semEstrelas` do `FundoEspaco`). */
+.sz-scene-espaco svg text {
+  paint-order: stroke fill;
+  stroke: var(--color-scene-sky);
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }

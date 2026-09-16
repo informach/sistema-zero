@@ -1,125 +1,251 @@
 'use client'
 
-import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { DinoFigure, TreeFigure } from './exploration-stage'
-import { SceneCanvas } from './scene-canvas'
+import {
+  actorFigure,
+  castText,
+  type SceneCast,
+  type SceneState,
+  sceneWorld,
+} from '@sistemazero/core/learning/scene'
+import { SceneCanvas, Texto } from './scene-canvas'
+import { ActorFigure, FundoEspaco } from './scene-figures'
 
 /**
  * `world` — criar e mostrar são a mesma coisa?
  *
- * ⭐⭐ **A comparação virou ESTRUTURA (lote 5).** Esta é a primeira experimentação da primeira
- * aula do curso carro-chefe, e o assunto dela é *bastidores × tela*. Até 15/09/2026 os dois
- * NUNCA apareciam juntos: o palco desenhava só a tela do jogo, "bastidores" era um controle lá
- * embaixo, e a criança LIA que o Dino existia sem aparecer. Foi o item 2 do diagnóstico do print
- * que a dona mandou.
+ * ⭐⭐ **A comparação virou ESTRUTURA (lote 5 do redesenho de 15/09).** Esta é a primeira
+ * experimentação da primeira aula do curso carro-chefe, e o assunto dela é *bastidores × tela*.
+ * São dois painéis lado a lado, com nome, e a criança vê o Dino aparecer num lado só.
  *
- * Agora são dois painéis lado a lado, com nome. A criança cria o Dino e o vê aparecer **num
- * lado só** — a descoberta acontece na imagem, não na frase abaixo dela.
+ * ⭐⭐ **Lote 5 do Raio-X (16/09/2026): os bastidores são uma FICHA, não outra tela.** O lado dos
+ * bastidores tinha céu, grama e linha do horizonte, com a caixa pousada na grama: eram dois lugares
+ * desenhados como duas telas de jogo, e a diferença que a cena ensina (guardado × mostrado) não
+ * aparecia na forma. Hoje ele é papel liso com a ficha do personagem (a figura pequena, o nome e o
+ * lugar), e a tela do jogo desenha ESSE personagem NESSE lugar, com a mesma cor. A ficha acende na
+ * cor do desenho enquanto ele está ligado: "o mesmo" fica visível, e não só escrito na meta.
  *
  * ⚠️ O enquadramento é METADE do palco compartilhado (300 × 310 contra 600 × 310): cada lado é
- * uma coluna, e o desenho de dentro é feito nessas unidades. O chão, a linha e o Dino ficam nos
- * mesmos lugares relativos dos outros palcos para a cena não parecer de outro jogo.
+ * uma coluna, e o desenho de dentro é feito nessas unidades.
  */
 const LADO = { w: 300, h: 310 } as const
+/**
+ * Os recortes de cada lado quando os dois ficam EMPILHADOS (celular, consertos do lote "letra no
+ * celular"): de pé, cada lado ocupa a largura inteira, e as duas vistas com a margem vazia em volta
+ * passavam de ~700px, mais que uma tela de celular. A ficha vai de 70 a 250 e a tela do jogo, com o
+ * rótulo do aro, de ~75 a ~235.
+ */
+const FICHA_EMPILHADA = { x: 0, y: 52, w: LADO.w, h: 216 } as const
+const TELA_EMPILHADA = { x: 0, y: 58, w: LADO.w, h: 194 } as const
 
-/** O papel de um lado: céu, chão e a linha. O mesmo do palco compartilhado, em meia largura. */
-function Papel({ children }: { children?: React.ReactNode }) {
-  return (
-    <>
-      <rect className="fill-scene-sky" width={LADO.w} height={LADO.h} />
-      <path className="fill-scene-grass" d={`M0 238H${LADO.w}V${LADO.h}H0Z`} />
-      <path className="stroke-scene-line" d={`M0 238H${LADO.w}`} strokeWidth="2" />
-      {children}
-    </>
-  )
-}
+/**
+ * O personagem no JOGO de cada mundo: a tela e o endereço que a criança digitou no Estúdio uma seção
+ * antes. ⚠️ São os números dos cursos, e não enfeite: o Dino da Aula 1 é "x 110, y 150, tamanho 64"
+ * numa tela de 480 × 270; a nave do Dia 1 é "x 400, y 410, largura 54 e altura 62" numa de 800 × 480.
+ */
+const NO_JOGO = {
+  terra: { tela: { w: 480, h: 270 }, x: 110, y: 150, caixa: { w: 64, h: 64, centro: 9.5 } },
+  espaco: { tela: { w: 800, h: 480 }, x: 400, y: 410, caixa: { w: 54, h: 62, centro: 0 } },
+} as const
 
 export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { created, drawn } = state.world
+  /**
+   * ⚠️ A tela mostra o Dino só quando ele EXISTE e o desenho está ligado. Olhando só `drawn`, um
+   * caso de professor com o desenho ligado abria a cena com os bastidores vazios e o Dino na tela
+   * — o contrário exato do que a aula ensina. Desde o lote 5 a chave do desenho fica à vista antes
+   * de criar, então "desenho ligado, ninguém criado" é um estado que a criança alcança sozinha.
+   */
+  const naTela = created && drawn
+  const heroi = actorFigure(cast, 'hero')
+  const mundo = sceneWorld(cast, 'world')
+  const espaco = mundo === 'espaco'
+  const jogo = NO_JOGO[mundo]
+  // ⚠️ O nome da ficha é o do BLOCO do Estúdio, em minúsculas ("dino", "nave").
+  const nome = castText('Dino', cast).toLowerCase()
+  const escala = (LADO.w - 40) / jogo.tela.w
+  const tela = {
+    x: 20,
+    y: (LADO.h - jogo.tela.h * escala) / 2,
+    w: jogo.tela.w * escala,
+    h: jogo.tela.h * escala,
+  }
+  const ficha = { x: 50, y: 70, w: 200, h: 180 }
   return (
     <SceneCanvas
       view={LADO}
       cast={cast}
+      mundo={mundo}
       titulo="Os bastidores e a tela do jogo, lado a lado"
       descricao={
+        // ⚠️ Sem "guardado… E desenhado": o elenco flexiona o particípio COLADO ao verbo e deixa o
+        // segundo para trás, e uma turma de nave ouvia "a nave está guardada nos bastidores E
+        // desenhado na tela" (relatório g1).
         created
           ? drawn
-            ? 'O Dino está guardado nos bastidores E desenhado na tela.'
-            : 'O Dino está guardado nos bastidores, e a tela do jogo continua vazia.'
+            ? 'O Dino está nos bastidores e também na tela do jogo.'
+            : 'O Dino está nos bastidores, e a tela do jogo continua vazia.'
           : 'Os bastidores estão vazios e a tela do jogo também.'
       }
-      rodape={
-        created
-          ? drawn
-            ? 'O mesmo Dino: guardado de um lado, desenhado do outro.'
-            : 'Ele existe de um lado e não aparece do outro. Criar e mostrar são duas coisas.'
-          : 'Os dois lados esperam alguém criar o Dino.'
-      }
+      // ⚠️⚠️ SEM rodapé e SEM texto por cima do desenho, em estado nenhum (lote 1 do Raio-X e o review
+      // dele): "Quem vai morar aqui?", "Existe. E aqui?", "Os dois lados esperam alguém criar o Dino"
+      // e "Ele existe de um lado e não aparece do outro" diziam a resposta, ou mentiam, ou tinham
+      // pronome que não concorda com a nave. Os nomes dos dois painéis dizem o que cada lado é.
       comparacao={[
         {
           titulo: 'Nos bastidores',
+          viewEmpilhado: FICHA_EMPILHADA,
           descricao: created
-            ? 'Uma caixa com o Dino guardado dentro.'
-            : 'Uma caixa vazia, esperando.',
+            ? // ⚠️ "guardada" longe do nome: colado, o elenco o flexionaria pelo personagem.
+              `Uma ficha guardada, do Dino: nome ${nome}, x ${jogo.x}, y ${jogo.y}.`
+            : 'Nenhuma ficha guardada ainda.',
           desenho: (
             <>
-              <Papel />
-              {/* A caixa dos bastidores: o Dino existe AQUI antes de existir na tela. */}
+              {/* Papel LISO: os bastidores não são uma tela de jogo. */}
+              <rect className="fill-scene-card" width={LADO.w} height={LADO.h} />
               <rect
-                className="fill-scene-card stroke-scene-card-line"
-                x="40"
-                y="96"
-                width="220"
-                height="150"
+                data-ficha=""
+                data-acesa={naTela ? '' : undefined}
+                className={
+                  created
+                    ? naTela
+                      ? 'fill-scene-card stroke-primary'
+                      : 'fill-scene-card stroke-scene-card-line'
+                    : 'fill-transparent stroke-scene-card-line'
+                }
+                x={ficha.x}
+                y={ficha.y}
+                width={ficha.w}
+                height={ficha.h}
                 rx="16"
-                strokeWidth="2"
+                strokeWidth={naTela ? 4 : 2}
                 strokeDasharray={created ? undefined : '8 8'}
               />
               {created ? (
-                <g className="text-primary">
-                  <DinoFigure x={150} y={228} />
-                </g>
+                <>
+                  <Texto
+                    className="fill-scene-ink"
+                    x={LADO.w / 2}
+                    y={ficha.y + 32}
+                    textAnchor="middle"
+                    tamanho={16}
+                    fontWeight="700"
+                  >
+                    nome: {nome}
+                  </Texto>
+                  <g className="text-primary">
+                    <ActorFigure
+                      figure={heroi}
+                      x={LADO.w / 2 + jogo.caixa.centro * 0.9}
+                      y={ficha.y + 120}
+                      escala={0.9}
+                    />
+                  </g>
+                  <Texto
+                    className="fill-scene-ink-soft"
+                    x={LADO.w / 2}
+                    y={ficha.y + 158}
+                    textAnchor="middle"
+                    tamanho={15}
+                    fontWeight="600"
+                  >
+                    {`x ${jogo.x} · y ${jogo.y}`}
+                  </Texto>
+                </>
               ) : (
-                <text
+                <Texto
                   className="fill-scene-ink-soft"
-                  x="150"
-                  y="176"
+                  x={LADO.w / 2}
+                  y={ficha.y + ficha.h / 2 + 5}
                   textAnchor="middle"
-                  fontSize="15"
+                  tamanho={15}
                 >
                   ainda vazio
-                </text>
+                </Texto>
               )}
             </>
           ),
         },
         {
           titulo: 'Na tela do jogo',
-          descricao: drawn
-            ? 'A tela do jogo com o Dino desenhado entre as árvores.'
-            : 'A tela do jogo com as árvores, e ninguém desenhado.',
+          viewEmpilhado: TELA_EMPILHADA,
+          // ⚠️ O que quem não enxerga recebe no lugar do desenho: a tela VAZIA é vazia mesmo (lote 5).
+          descricao: naTela
+            ? espaco
+              ? 'A tela do jogo com o Dino desenhado entre as estrelas.'
+              : 'A tela do jogo com o Dino desenhado.'
+            : espaco
+              ? 'A tela do jogo só com as estrelas do fundo, sem nada desenhado.'
+              : 'A tela do jogo sem nada desenhado.',
           desenho: (
             <>
-              <Papel>
-                {[70, 150, 230].map((x, i) => (
-                  <TreeFigure key={x} x={x} y={i === 1 ? 238 : 253} dark={i === 1} />
-                ))}
-              </Papel>
-              {drawn ? (
-                <g className="text-primary">
-                  <DinoFigure x={150} y={238} />
-                </g>
+              <rect className="fill-scene-card" width={LADO.w} height={LADO.h} />
+              {/* ⚠️⚠️ A tela do jogo com moldura, do tamanho da do curso, e SÓ com o fundo (lote 5). As
+                  três árvores continuavam lá com o desenho desligado, e a tela ensinava que
+                  "desligado" apaga só o Dino; e a resposta certa da previsão antiga ("Nada") era
+                  desmentida pelo próprio desenho. */}
+              {espaco ? (
+                <FundoEspaco x={tela.x} y={tela.y} w={tela.w} h={tela.h} />
               ) : (
-                <text
-                  className="fill-scene-ink-soft"
-                  x="150"
-                  y="150"
-                  textAnchor="middle"
-                  fontSize="15"
-                >
-                  {created ? 'Existe. E aqui?' : 'Quem vai morar aqui?'}
-                </text>
+                <rect
+                  className="fill-scene-sky"
+                  x={tela.x}
+                  y={tela.y}
+                  width={tela.w}
+                  height={tela.h}
+                />
               )}
+              <rect
+                className="stroke-scene-line"
+                x={tela.x}
+                y={tela.y}
+                width={tela.w}
+                height={tela.h}
+                fill="none"
+                strokeWidth="2"
+              />
+              {naTela && (
+                <g className="text-primary">
+                  {/* O MESMO lugar da ficha: o canto de cima da caixa em (x, y) do jogo. */}
+                  <ActorFigure
+                    figure={heroi}
+                    x={tela.x + (jogo.x + jogo.caixa.w / 2 + jogo.caixa.centro) * escala}
+                    y={tela.y + (jogo.y + jogo.caixa.h - 2) * escala}
+                    escala={escala}
+                  />
+                </g>
+              )}
+              {/* ⚠️⚠️ O aro na cor da ficha e a etiqueta com o MESMO lugar dela (consertos do review da
+                  onda A do lote 5): no Desafio a tela de 800 × 480 cabe em 260 unidades, e a nave virava
+                  um pontinho no pé da tela, enquanto a ficha mostrava a nave grande. "O mesmo" dependia
+                  de achar o pontinho. */}
+              {naTela &&
+                (() => {
+                  const cx = tela.x + (jogo.x + jogo.caixa.w / 2) * escala
+                  const cy = tela.y + (jogo.y + jogo.caixa.h / 2) * escala
+                  const r = (Math.max(jogo.caixa.w, jogo.caixa.h) * escala) / 2 + 8
+                  return (
+                    <g data-aro-do-desenho="">
+                      <circle
+                        className="stroke-primary"
+                        cx={cx}
+                        cy={cy}
+                        r={r}
+                        fill="none"
+                        strokeWidth="3"
+                      />
+                      <Texto
+                        className="fill-scene-ink"
+                        x={cx}
+                        y={cy - r - 6}
+                        textAnchor="middle"
+                        tamanho={13}
+                        fontWeight="700"
+                      >
+                        {`x ${jogo.x} · y ${jogo.y}`}
+                      </Texto>
+                    </g>
+                  )
+                })()}
             </>
           ),
         },

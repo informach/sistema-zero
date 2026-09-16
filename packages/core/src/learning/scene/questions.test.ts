@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import type { InteractiveBlock } from '../index'
-import { blockCheckpoint, blockPrediction, publicInteractiveBlock } from '../index'
+import {
+  blockCheckpoint,
+  blockPrediction,
+  isInteractiveBlock,
+  publicInteractiveBlock,
+} from '../index'
 import { SCENE_IDS, type SceneId } from './actions'
 import type { SceneCast } from './cast'
 import { SCENE_QUESTIONS } from './questions'
@@ -174,11 +179,78 @@ describe('os resolvedores', () => {
     // TODA experimentação: um vazamento aqui entregaria a resposta das 45 cenas de uma vez.
     for (const scene of SCENE_IDS) {
       const publico = publicInteractiveBlock(bloco(scene, 'experimentation'))
-      const serializado = JSON.stringify(publico)
-      expect(serializado, scene).not.toContain('correctChoiceId')
-      expect(serializado, scene).not.toContain('explanation')
+      // ⚠️ Mudou de propósito (lote 2 do Raio-X): a PREVISÃO saiu pública inteira, porque ela
+      // não vale nota e o player precisa do gabarito dela para retomar o palpite. O que não pode
+      // atravessar continua sendo o da PERGUNTA, que decide o `passed`.
+      const pergunta = JSON.stringify(publico.checkpoint)
+      expect(pergunta, scene).not.toContain('correctChoiceId')
+      expect(pergunta, scene).not.toContain('explanation')
+      expect(JSON.stringify(publico), scene).not.toContain(
+        SCENE_QUESTIONS[scene].explain.explanation,
+      )
       expect(publico.checkpoint?.choices.length, scene).toBeGreaterThanOrEqual(2)
       expect(publico.prediction?.choices.length, scene).toBeGreaterThanOrEqual(2)
     }
+  })
+
+  test('⭐ a previsão chega ao navegador com o que o player precisa para retomá-la', () => {
+    for (const scene of SCENE_IDS) {
+      const modelo = SCENE_QUESTIONS[scene].prediction
+      const publico = publicInteractiveBlock({
+        ...bloco(scene, 'experimentation'),
+        activity: { type: 'experimentation', scene, cast: NAVE },
+      }).prediction
+      expect(publico?.correctChoiceId, scene).toBe(modelo.correctChoiceId)
+      expect(publico?.revealOn, scene).toBe(modelo.revealOn)
+      // O "para onde olhar" de cada opção viaja junto, vestido pelo elenco.
+      for (const escolha of modelo.choices) {
+        const chegou = publico?.choices.find((c) => c.id === escolha.id)
+        expect(Boolean(chegou?.shows), `${scene} · ${escolha.id}`).toBe(Boolean(escolha.shows))
+      }
+    }
+    // E o bloco que escreve a sua leva a dele, podada campo a campo (sem chave estranha).
+    const escrita = publicInteractiveBlock({
+      ...bloco('world', 'experimentation'),
+      prediction: {
+        prompt: 'Vai aparecer?',
+        choices: [
+          { id: 'sim', label: 'Sim' },
+          { id: 'nao', label: 'Não', shows: 'Olhe a tela: ela ficou vazia.' },
+        ],
+        correctChoiceId: 'nao',
+        revealOn: 'hidden',
+        ...{ solucao: 'vazou' },
+      } as InteractiveBlock['prediction'],
+    }).prediction
+    expect(escrita).toEqual({
+      prompt: 'Vai aparecer?',
+      choices: [
+        { id: 'sim', label: 'Sim' },
+        { id: 'nao', label: 'Não', shows: 'Olhe a tela: ela ficou vazia.' },
+      ],
+      correctChoiceId: 'nao',
+      revealOn: 'hidden',
+    })
+  })
+
+  test('⚠️ `revealOn` precisa ser meta DA CENA, e `shows` precisa ser texto', () => {
+    const previsao = (extra: Record<string, unknown>, escolha: Record<string, unknown> = {}) =>
+      ({
+        ...bloco('world', 'experimentation'),
+        prediction: {
+          prompt: 'Vai aparecer?',
+          choices: [
+            { id: 'sim', label: 'Sim' },
+            { id: 'nao', label: 'Não', ...escolha },
+          ],
+          ...extra,
+        },
+      }) as unknown
+    expect(isInteractiveBlock(previsao({ revealOn: 'hidden' }))).toBe(true)
+    // Um id solto é um palpite que só volta na conclusão, sem ninguém avisar quem escreveu.
+    expect(isInteractiveBlock(previsao({ revealOn: 'meta-que-nao-existe' }))).toBe(false)
+    expect(isInteractiveBlock(previsao({}, { shows: 'Olhe a tela.' }))).toBe(true)
+    expect(isInteractiveBlock(previsao({}, { shows: '' }))).toBe(false)
+    expect(isInteractiveBlock(previsao({}, { shows: 3 }))).toBe(false)
   })
 })

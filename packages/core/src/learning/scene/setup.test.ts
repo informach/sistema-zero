@@ -99,7 +99,12 @@ describe('o caso da atividade', () => {
       setup: { goals: ['covered'] },
     }
     const start = sceneStart(activity)
-    const estado = stepScene(start, openScene(start), { type: 'layer', front: false })
+    // ⚠️ Mudou de propósito (lote 5 do Raio-X): "escondeu de novo" pede ter visto o Dino na frente
+    // antes. A missão continua sem cobrar o arranjo final: a floresta por último fecha.
+    const estado = [
+      { type: 'layer' as const, front: true },
+      { type: 'layer' as const, front: false },
+    ].reduce((e, a) => stepScene(start, e, a), openScene(start))
     expect(
       evaluateExperimentation('layers', estado, true, undefined, sceneTargets(activity)).passed,
     ).toBe(true)
@@ -160,5 +165,61 @@ describe('o caso da atividade', () => {
     expect(
       isSceneSetup({ actions: [{ type: 'layer', front: true }] }, 'layers', { goals: false }),
     ).toBe(true)
+  })
+
+  test('⚠️⚠️ um caso não abre com um salto que ainda não saiu do chão', () => {
+    // A Aula 3 do Corre Dino abria com `setup: [jump]`: o salto ficava iniciado e parado, com o
+    // Dino no chão, e o primeiro toque da criança respondia "O Dino já está no ar". O caso
+    // continua ACEITO (há conteúdo publicado com ele), e o motor o abre coerente.
+    const activity: ExperimentationActivity = {
+      type: 'experimentation',
+      scene: 'gravity',
+      setup: { actions: [{ type: 'jump', input: 'tap' }] },
+    }
+    expect(isExperimentationActivity(activity)).toBe(true)
+    const start = sceneStart(activity)
+    const aberto = openScene(start)
+    expect(aberto.flight.time).toBeNull()
+    expect(aberto.flight.y).toBe(0)
+    const tocou = stepScene(start, aberto, { type: 'jump', input: 'tap' })
+    expect(tocou.caption).not.toContain('já está no ar')
+    expect(tocou.flight.time).toBe(0)
+    // Sem gravidade, o pulo da criança sobe de verdade e a meta dela cai. ⚠️ Mudou de propósito
+    // (lote 5 do Raio-X): a meta pede o Dino acima de 360 (1,4 s), e não mais de 120.
+    const voou = [1, 0.5].reduce(
+      (e, seconds) => stepScene(start, e, { type: 'advance', seconds }),
+      tocou,
+    )
+    expect(voou.evidence.discoveries).toContain('floating')
+    // Recomeçar volta ao mesmo caso coerente.
+    expect(stepScene(start, voou, { type: 'reset' }).flight.time).toBeNull()
+
+    // Um caso que já deixa o Dino NO AR continua valendo: ali o voo está à vista.
+    const noAr = openScene({
+      scene: 'gravity',
+      setup: {
+        actions: [
+          { type: 'jump', input: 'tap' },
+          { type: 'advance', seconds: 0.3 },
+        ],
+      },
+    })
+    expect(noAr.flight.time).not.toBeNull()
+    expect(noAr.flight.y).toBeGreaterThan(1)
+  })
+
+  test('⚠️⚠️ o segundo toque com o salto COMEÇADO e parado diz o que falta, e não "já está no ar"', () => {
+    // Review do lote 1: sem o relógio andar (o toque não liga o ▶ para quem pediu menos
+    // movimento), o segundo toque respondia "O Dino já está no ar" com o Dino no chão e "altura
+    // do salto 0" na faixa — a mesma contradição do caso `[jump]`, agora pelo caminho do player.
+    const start = { scene: 'gravity' } as const
+    const tocou = stepScene(start, openScene(start), { type: 'jump', input: 'tap' })
+    const deNovo = stepScene(start, tocou, { type: 'jump', input: 'tap' })
+    // ⚠️ Mudou de propósito (review do lote 2): nenhum botão se chama "avançar o relógio".
+    expect(deNovo.caption).toBe('O salto já começou. Deixe o tempo passar para ver o Dino subir.')
+    const noAr = stepScene(start, tocou, { type: 'advance', seconds: 0.2 })
+    expect(stepScene(start, noAr, { type: 'jump', input: 'tap' }).caption).toContain(
+      'já está no ar',
+    )
   })
 })

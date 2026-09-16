@@ -1,11 +1,9 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { STAGE_TARGET } from '@sistemazero/core/learning/scene'
-import { CactusFigure, DinoFigure, TreeFigure } from './exploration-stage'
-// ⚠️ O `VIEW` vem do canvas: os desenhos leem o enquadramento (`VIEW.w`, `VIEW.h`) para
-// encostar no chão e na borda, então ele e o `viewBox` do SVG têm de ser o MESMO número.
-import { SceneCanvas, SCENE_VIEW as VIEW } from './scene-canvas'
+import { actorFigure, numero, quantos, sceneWorld } from '@sistemazero/core/learning/scene'
+import { SceneCanvas, Texto } from './scene-canvas'
+import { ActorFigure, FundoEspaco } from './scene-figures'
 
 /**
  * Os palcos das onze cenas do núcleo do Iniciante 2D (15/09/2026).
@@ -17,643 +15,712 @@ import { SceneCanvas, SCENE_VIEW as VIEW } from './scene-canvas'
  *
  * ⚠️ O par de comparação continua FIXO nas duas cores de sempre (A azul `scene-a`, B laranja
  * `scene-b`): elas dizem QUAL medida é qual, e não são decoração.
+ *
+ * ⚠️ Lote 5 do Raio-X (G5): nove palcos saíram para `scene-nucleo-stages.tsx`. Aqui ficaram a
+ * `velocity` e a `variable`.
  */
 
-/** A velocidade: o quanto ele anda em CADA quadro, com o fantasma de onde estava. */
+/**
+ * O recorte do estreito: a tela, a faixa de fora, as réguas e a régua de passos, sem a coluna "Cada
+ * quadro" (que vai para a legenda). Com ele o desenho cresce de 0,56 para 0,75 num celular de 390px.
+ */
+const VEL_ESTREITO = { w: 420, h: 300 } as const
+/** Quantos quadros a lista mostra no celular: os últimos, numa linha só por fila. */
+const VEL_NO_CELULAR = 4
+/** A tela da `velocity` no desenho: 0,6 unidade por unidade do jogo, com a faixa FORA da tela. */
+const VEL = { escala: 0.6, x0: 60, y0: 64 } as const
+const velX = (x: number) => VEL.x0 + x * VEL.escala
+const velY = (y: number) => VEL.y0 + y * VEL.escala
+
+/** A conta de UM quadro num eixo: "400 − 5 = 395", ou "fica 540" quando a borda segurou. */
+function contaDoQuadro(antes: number, velocidade: number, agora: number): string {
+  const n = (v: number) => numero(Math.round(v))
+  if (agora !== antes + velocidade) return `fica ${n(agora)}`
+  return `${n(antes)} ${velocidade < 0 ? '−' : '+'} ${Math.abs(velocidade)} = ${n(agora)}`
+}
+
+/**
+ * A velocidade: UM quadro é UMA soma, e o desenho escreve a conta.
+ *
+ * ⭐⭐ Redesenho do lote 5 do Raio-X (16/09/2026). O Dino flutuava no céu com a régua só do x e um
+ * fantasma do quadro anterior quase todo escondido atrás dele (com vy 3 o passo era 3 px). Agora:
+ * - a TELA do jogo (480 por 270) tem régua nos DOIS eixos e a faixa "fora da tela" em cima e à
+ *   direita: o cacto nasce depois de 480 e a pedra do Desafio nasce em y negativo;
+ * - o rastro são PONTINHOS, um por quadro (`drive.trailX/Y`), e o da velocidade anterior fica em
+ *   cinza ao lado (−5 contra −6 na Aula 12);
+ * - a CONTA do último quadro fica colada no personagem ("400 − 5 = 395");
+ * - à direita, "cada quadro" lista os números do rastro, porque um passo de 5 são 3 pixels no
+ *   desenho e os números iguais é que mostram "passos iguais".
+ * ⚠️ Sem pronome em nada que o elenco veste: "a pedra", nunca "ela".
+ */
 export function VelocityStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { x, y, fromX, fromY, vx, vy } = state.drive
-  const px = 40 + x
-  const py = 30 + y * 0.8
-  const fx = 40 + fromX
-  const fy = 30 + fromY * 0.8
+  const { x, y, fromX, fromY, vx, vy, trailX, trailY, prevX, prevY, steps } = state.drive
+  const heroi = actorFigure(cast, 'hero')
+  const mundo = sceneWorld(cast, 'velocity')
+  const px = velX(x)
+  const py = velY(y)
+  const andouX = x !== fromX
+  const andouY = y !== fromY
+  const variou = (fila: readonly number[]) => fila.some((v) => v !== fila[0])
+  /**
+   * ⚠️ O eixo é o do ÚLTIMO movimento, contando o rastro de antes (consertos do review da onda A do lote
+   * 5): parada depois de descer, a pedra do Dia 3 trocava a lista para "x 240" e o y sumia. Sem movimento
+   * nenhum (a abertura), os dois.
+   */
+  const moveuY = variou(trailY) || vy !== 0 || variou(prevY)
+  const moveuX = variou(trailX) || vx !== 0 || variou(prevX)
+  const eixoY = moveuY || !moveuX
+  const eixoX = moveuX || !moveuY
+  /**
+   * A conta só depois de um quadro (sem quadro, não houve soma). ⚠️ Com a velocidade em ZERO o quadro
+   * também soma (consertos do review da onda A do lote 5): "x: 400 + 0 = 400" é a resposta da parte 3,
+   * e o palco parado não mostrava soma nenhuma.
+   */
+  const parado = vx === 0 && vy === 0
+  const contas = [
+    steps > 0 && eixoX && (andouX || vx !== 0 || parado)
+      ? `x: ${contaDoQuadro(fromX, vx, x)}`
+      : null,
+    steps > 0 && eixoY && (andouY || vy !== 0 || parado)
+      ? `y: ${contaDoQuadro(fromY, vy, y)}`
+      : null,
+  ].filter((c): c is string => c !== null)
+  const valor = (fila: readonly number[], i: number, eixo: 'x' | 'y') =>
+    `${eixo} ${numero(Math.round(fila[i] ?? (eixo === 'x' ? x : y)))}`
+  const linha = (i: number) =>
+    [eixoX ? valor(trailX, i, 'x') : null, eixoY ? valor(trailY, i, 'y') : null]
+      .filter(Boolean)
+      .join(' · ')
+  /** Um eixo só na lista e na régua de passos (com os dois, a lista segue numa coluna). */
+  const umEixo: 'x' | 'y' | null = eixoX && !eixoY ? 'x' : eixoY && !eixoX ? 'y' : null
+  const antes = umEixo === 'x' ? prevX : umEixo === 'y' ? prevY : []
+  const agora = umEixo === 'x' ? trailX : umEixo === 'y' ? trailY : []
+  /**
+   * ⭐⭐ A RÉGUA DE PASSOS, embaixo da tela (consertos do review da onda A do lote 5, ALTO). Na escala da
+   * tela, um passo de 5 são 3 pixels: quatro quadros andavam 12 pixels, com os pontinhos atrás do cacto,
+   * e o −5 contra o −6 da Aula 12 só se lia na lista. Aqui o trecho do rastro é AMPLIADO (até 14 pixels
+   * por unidade), uma marquinha por quadro, com a fileira de antes em cima da de agora e a seta do
+   * sentido. ⚠️ Só no x: no y o rastro já é uma coluna à vista (o tiro sobe, a pedra desce), e deitar o
+   * y numa régua de lado trocaria "para cima" por "para a esquerda".
+   */
+  const fileiras =
+    umEixo === 'x' && steps > 0
+      ? [
+          ...(antes.length > 1 ? [{ nome: 'antes', valores: antes, cor: 'rule' as const }] : []),
+          { nome: antes.length > 1 ? 'agora' : 'passos', valores: agora, cor: 'a' as const },
+        ]
+      : []
+  const todosOsValores = fileiras.flatMap((f) => f.valores)
+  const menor = Math.min(...todosOsValores)
+  const faixa = Math.max(...todosOsValores) - menor
+  const REGUA = { de: 150, largura: 214 } as const
+  const unidade = faixa > 0 ? Math.min(14, REGUA.largura / faixa) : 0
+  const naRegua = (v: number) =>
+    faixa > 0
+      ? REGUA.de + (REGUA.largura - faixa * unidade) / 2 + (v - menor) * unidade
+      : REGUA.de + REGUA.largura / 2
+  /**
+   * Os valores da lista "Cada quadro" em linhas: antes e agora de um eixo, ou x e y. ⚠️ No estreito ela
+   * mora FORA do desenho (conserto "letra no celular"), com os últimos `NO_CELULAR` quadros de cada linha.
+   */
+  const linhasDaLista = (ultimos?: number) => {
+    const corte = (fila: readonly number[]) =>
+      (ultimos ? fila.slice(-ultimos) : fila).map((v) => numero(Math.round(v)))
+    if (umEixo && antes.length > 1)
+      return [
+        { nome: `antes ${umEixo}`, valores: corte(antes), agora: false },
+        { nome: `agora ${umEixo}`, valores: corte(agora), agora: true },
+      ]
+    if (umEixo) return [{ nome: umEixo, valores: corte(agora), agora: true }]
+    return [
+      { nome: 'x', valores: corte(trailX), agora: true },
+      { nome: 'y', valores: corte(trailY), agora: true },
+    ]
+  }
   return (
     <SceneCanvas
       cast={cast}
-      titulo="A pista, com o Dino e o rastro do último quadro"
-      descricao={`Velocidade ${vx} para o lado e ${vy} para baixo. O Dino está em x ${Math.round(x)}, y ${Math.round(y)}, e no quadro anterior estava em ${Math.round(fromX)}, ${Math.round(fromY)}.`}
-      rodape="A linha mostra o quanto ele andou no último passo do relógio."
-    >
-      <path className="fill-scene-grass" d={`M0 250H${VIEW.w}V${VIEW.h}H0Z`} />
-      <path className="stroke-scene-line" d={`M0 250H${VIEW.w}`} strokeWidth="2" />
-      {[0, 120, 240, 360, 480].map((v) => (
-        <g key={v}>
-          <path className="stroke-scene-rule" d={`M${40 + v} 250v8`} strokeWidth="1.5" />
-          <text
-            className="fill-scene-ink-soft"
-            x={40 + v}
-            y={274}
-            textAnchor="middle"
-            fontSize="11"
+      mundo={mundo}
+      titulo="A tela do jogo, com o Dino e um pontinho por quadro"
+      // ⚠️ "para o lado" e "para baixo", como o deslizante (consertos do review da onda A do lote 5):
+      // o leitor ouvia "vx 0, vy 0", um terceiro nome para o mesmo número.
+      descricao={`Velocidade para o lado ${numero(vx)} e para baixo ${numero(vy)}. O Dino está em x ${numero(Math.round(x))}, y ${numero(Math.round(y))}.${
+        steps > 0 ? ` No último quadro: ${contas.join('; ')}.` : ''
+      }`}
+      // ⚠️ O rodapé só DÁ NOME ao que está desenhado (lote 2 do Raio-X).
+      rodape="Cada pontinho é um quadro."
+      // ⭐⭐ No estreito a lista "Cada quadro" sai do desenho e vem para cá, e o desenho mostra só a tela
+      // com as réguas (conserto "letra no celular"): no canto de um palco de 314px as linhas de 13
+      // unidades viravam 7px, e com a letra de 12px elas se encavalavam umas nas outras.
+      viewEstreito={VEL_ESTREITO}
+      legenda={(palco) =>
+        palco.estreito ? (
+          <div
+            aria-hidden
+            data-cada-quadro=""
+            // ⚠️ A altura de DUAS linhas fica reservada: a lista não pode empurrar a bancada no meio do
+            // gesto (a de um eixo só vira antes e agora quando a velocidade muda).
+            className="min-h-[4.25rem] px-3 pb-1 text-sm text-scene-ink"
           >
-            {v}
-          </text>
-        </g>
-      ))}
-      {(fromX !== x || fromY !== y) && (
-        <>
-          <g className="text-scene-ink-soft">
-            <DinoFigure x={fx} y={fy + 26} ghost />
-          </g>
-          {/* ⚠️ A linha do passo vai do fantasma até ele, nos DOIS eixos: só horizontal, um
-              movimento vertical não deixava rastro nenhum e a cena parecia travada. */}
-          <path
-            className="stroke-scene-a"
-            d={`M${fx} ${fy}L${px} ${py}`}
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-        </>
-      )}
-      <g className="text-primary">
-        <DinoFigure x={px} y={py + 26} />
-      </g>
-    </SceneCanvas>
-  )
-}
-
-/** As duas raquetes: a do acontecimento e a da pergunta contínua. */
-export function HoldVsPressStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { pressX, holdX, holding, presses } = state.input
-  const faixa = (y: number, x: number, rotulo: string, cor: string) => (
-    <g>
-      <path className="stroke-scene-line" d={`M30 ${y + 30}H530`} strokeWidth="2" />
-      <text className="fill-scene-ink-soft" x={30} y={y - 6} fontSize="12" fontWeight="600">
-        {rotulo}
-      </text>
-      <rect className={cor} x={30 + x} y={y} width="18" height="30" rx="4" />
-    </g>
-  )
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="Duas raquetes, dois jeitos de ligar a tecla"
-      descricao={`A de cima andou ${presses} passo(s) por aperto; a de baixo está em ${Math.round(holdX)} e a tecla está ${holding ? 'segurada' : 'solta'}.`}
-      rodape="Em cima, o acontecimento. Embaixo, a pergunta que vale enquanto a tecla estiver apertada."
-    >
-      {faixa(60, pressX, 'Quando apertar a tecla', 'fill-scene-a')}
-      {faixa(180, holdX, 'Enquanto a tecla estiver apertada', 'fill-scene-b')}
-      {holding && (
-        <text
-          className="fill-scene-alert"
-          x={530}
-          y={174}
-          textAnchor="end"
-          fontSize="12"
-          fontWeight="700"
-        >
-          segurando
-        </text>
-      )}
-    </SceneCanvas>
-  )
-}
-
-/** A caixa com um número dentro, e a tela do jogo ao lado. */
-export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { value, shown, changes } = state.box
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="A caixa do placar e a tela do jogo"
-      descricao={`A caixa guarda ${value}. A tela ${shown ? `mostra ${value}` : 'não mostra nada'}.`}
-      rodape="A caixa é o que o jogo GUARDA. A tela é o que ele MOSTRA."
-    >
-      <g>
-        <rect
-          className="fill-scene-grass stroke-scene-a"
-          x={40}
-          y={70}
-          width="180"
-          height="140"
-          rx="16"
-          strokeWidth="3"
-        />
-        <text className="fill-scene-ink-soft" x={130} y={100} textAnchor="middle" fontSize="13">
-          pontos
-        </text>
-        <text
-          className="fill-scene-ink"
-          x={130}
-          y={165}
-          textAnchor="middle"
-          fontSize="58"
-          fontWeight="700"
-        >
-          {value}
-        </text>
-        <text className="fill-scene-ink-soft" x={130} y={196} textAnchor="middle" fontSize="11">
-          {changes} mudança(s)
-        </text>
-      </g>
-      <path className="stroke-scene-rule" d="M250 140h50" strokeWidth="2" strokeDasharray="5 4" />
-      <g>
-        <rect
-          className="fill-scene-sky stroke-scene-line"
-          x={320}
-          y={70}
-          width="200"
-          height="140"
-          rx="10"
-          strokeWidth="2"
-        />
-        <text className="fill-scene-ink-soft" x={420} y={60} textAnchor="middle" fontSize="12">
-          a tela do jogo
-        </text>
-        {shown ? (
-          <text className="fill-scene-b" x={340} y={105} fontSize="24" fontWeight="700">
-            {value}
-          </text>
-        ) : (
-          <text className="fill-scene-ink-soft" x={420} y={145} textAnchor="middle" fontSize="13">
-            nada na tela
-          </text>
-        )}
-        <g className="text-primary">
-          <DinoFigure x={420} y={195} />
-        </g>
-      </g>
-    </SceneCanvas>
-  )
-}
-
-/** A torre e os três invasores: quem já foi olhado, e quem foi escolhido. */
-export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { distances, looked, chosen, auto } = state.hunt
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="A torre e os três invasores do grupo"
-      descricao={`Distâncias ${distances.join(', ')}. Olhados: ${looked.length} de 3. Escolhido: ${chosen || 'nenhum'}.`}
-      rodape="A torre só sabe quem está mais perto depois de olhar todos."
-    >
-      <path className="fill-scene-grass" d={`M0 240H${VIEW.w}V${VIEW.h}H0Z`} />
-      <g>
-        <path className="fill-scene-bark" d="M50 240V150h40v90Z" />
-        <path className="fill-scene-leaf-dark" d="M40 150h60l-30-30Z" />
-      </g>
-      {distances.map((d, i) => {
-        const id = i + 1
-        const x = 110 + d * 1.6
-        return (
-          <g key={id}>
-            {(looked.includes(id) || auto) && (
-              <path
-                className="stroke-scene-a"
-                d={`M90 200H${x}`}
-                strokeWidth="2"
-                strokeDasharray="4 4"
-              />
-            )}
-            <CactusFigure x={x} y={240} />
-            <text
-              className={chosen === id ? 'fill-scene-alert' : 'fill-scene-ink-soft'}
-              x={x}
-              y={262}
-              textAnchor="middle"
-              fontSize="12"
-              fontWeight={chosen === id ? 700 : 400}
-            >
-              {d}
-            </text>
-            {chosen === id && (
-              <circle
-                className="stroke-scene-alert"
-                cx={x}
-                cy={215}
-                r="26"
-                fill="none"
-                strokeWidth="3"
-              />
-            )}
-          </g>
-        )
-      })}
-    </SceneCanvas>
-  )
-}
-
-/** A ficha do tipo, e a fila que nasceu dela. */
-export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { speed, life, born } = state.blueprint
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="A ficha do inimigo e os que nasceram dela"
-      descricao={`Ficha com velocidade ${speed} e vida ${life}; ${born} inimigo(s) nascido(s).`}
-      rodape="Todos leem a MESMA ficha: mudar um número muda todos."
-    >
-      <g>
-        <rect
-          className="fill-scene-grass stroke-scene-a"
-          x={30}
-          y={60}
-          width="170"
-          height="130"
-          rx="14"
-          strokeWidth="3"
-        />
-        <text
-          className="fill-scene-ink-soft"
-          x={115}
-          y={86}
-          textAnchor="middle"
-          fontSize="12"
-          fontWeight="600"
-        >
-          a ficha do inimigo
-        </text>
-        <text className="fill-scene-ink" x={50} y={125} fontSize="15">
-          velocidade
-        </text>
-        <text
-          className="fill-scene-a"
-          x={180}
-          y={125}
-          textAnchor="end"
-          fontSize="20"
-          fontWeight="700"
-        >
-          {speed}
-        </text>
-        <text className="fill-scene-ink" x={50} y={165} fontSize="15">
-          vida
-        </text>
-        <text
-          className="fill-scene-b"
-          x={180}
-          y={165}
-          textAnchor="end"
-          fontSize="20"
-          fontWeight="700"
-        >
-          {life}
-        </text>
-      </g>
-      <path className="fill-scene-grass" d={`M0 240H${VIEW.w}V${VIEW.h}H0Z`} />
-      {Array.from({ length: Math.min(born, 6) }, (_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: são N iguais em fila, sem identidade.
-        <g key={`inimigo-${i + 1}`}>
-          <CactusFigure x={250 + i * 52} y={240} />
-          <text className="fill-scene-a" x={250 + i * 52} y={262} textAnchor="middle" fontSize="11">
-            {speed}
-          </text>
-        </g>
-      ))}
-      {born === 0 && (
-        <text className="fill-scene-ink-soft" x={380} y={160} textAnchor="middle" fontSize="13">
-          ninguém nasceu ainda
-        </text>
-      )}
-    </SceneCanvas>
-  )
-}
-
-/** O mundo inteiro em miniatura, com a janela da tela andando por cima. */
-export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { heroX, follow } = state.view
-  const escala = 500 / 1200
-  const janelaX = follow ? Math.max(0, Math.min(1200 - STAGE_TARGET.width, heroX - 240)) : 0
-  const dentro = heroX >= janelaX && heroX <= janelaX + STAGE_TARGET.width
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="O mundo do jogo e a janela da tela"
-      descricao={`O herói está em ${heroX} de um mundo de 1200. A janela mostra de ${Math.round(janelaX)} a ${Math.round(janelaX + STAGE_TARGET.width)}.`}
-      rodape="A faixa de baixo é o mundo inteiro. O retângulo é o pedaço que cabe na tela."
-    >
-      <text className="fill-scene-ink-soft" x={30} y={40} fontSize="12" fontWeight="600">
-        o que a criança vê na tela
-      </text>
-      <rect
-        className="fill-scene-sky stroke-scene-line"
-        x={30}
-        y={50}
-        width="500"
-        height="110"
-        rx="10"
-        strokeWidth="2"
-      />
-      {dentro ? (
-        <g className="text-primary">
-          <DinoFigure x={30 + (heroX - janelaX) * (500 / STAGE_TARGET.width)} y={150} />
-        </g>
-      ) : (
-        <text
-          className="fill-scene-alert"
-          x={280}
-          y={110}
-          textAnchor="middle"
-          fontSize="15"
-          fontWeight="700"
-        >
-          o herói não está na tela
-        </text>
-      )}
-      <text className="fill-scene-ink-soft" x={30} y={205} fontSize="12" fontWeight="600">
-        o mundo inteiro
-      </text>
-      <rect
-        className="fill-scene-grass stroke-scene-line"
-        x={30}
-        y={215}
-        width="500"
-        height="50"
-        rx="8"
-        strokeWidth="2"
-      />
-      <rect
-        className="stroke-scene-b"
-        x={30 + janelaX * escala}
-        y={215}
-        width={STAGE_TARGET.width * escala}
-        height="50"
-        fill="none"
-        strokeWidth="3"
-        strokeDasharray="6 4"
-      />
-      <circle className="fill-scene-a" cx={30 + heroX * escala} cy={240} r="7" />
-    </SceneCanvas>
-  )
-}
-
-/** As duas perguntas sobre o contato, com a vida caindo de um jeito ou de outro. */
-export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { distance, mode, damage } = state.hit
-  const encostando = distance <= 40
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="O Dino, o cacto e a vida"
-      descricao={`Distância ${distance}. A pergunta é ${mode === 'ask' ? 'contínua' : 'por acontecimento'}. Vida perdida: ${damage}.`}
-      rodape={
-        mode === 'ask'
-          ? 'Está encostando? — o jogo pergunta em todo quadro.'
-          : 'Acabou de encostar — o jogo espera o instante da batida.'
+            <p className="font-bold">Cada quadro</p>
+            {linhasDaLista(VEL_NO_CELULAR).map((linha) => (
+              <p key={linha.nome} className="flex flex-wrap items-baseline gap-x-2">
+                <span
+                  className={`min-w-[4.5rem] font-semibold ${linha.agora ? 'text-scene-a' : 'text-scene-ink-soft'}`}
+                >
+                  {linha.nome}
+                </span>
+                {linha.valores.map((valor, i) => (
+                  <span
+                    // biome-ignore lint/suspicious/noArrayIndexKey: um valor por quadro, na ordem
+                    key={i}
+                    className={`tabular-nums ${
+                      linha.agora
+                        ? `text-scene-a ${i === linha.valores.length - 1 ? 'font-bold' : ''}`
+                        : 'text-scene-ink-soft'
+                    }`}
+                  >
+                    {valor}
+                  </span>
+                ))}
+              </p>
+            ))}
+          </div>
+        ) : null
       }
     >
-      <path className="fill-scene-grass" d={`M0 220H${VIEW.w}V${VIEW.h}H0Z`} />
-      <g className="text-primary">
-        <DinoFigure x={150} y={220} />
-      </g>
-      <CactusFigure x={190 + distance} y={220} />
-      {encostando && (
-        <circle
-          className="fill-scene-alert-wash stroke-scene-alert"
-          cx={175}
-          cy={190}
-          r="30"
-          strokeWidth="3"
-        />
-      )}
-      <g>
-        <text className="fill-scene-ink-soft" x={30} y={50} fontSize="12" fontWeight="600">
-          vida
-        </text>
-        {Array.from({ length: 6 }, (_, i) => (
-          <rect
-            // biome-ignore lint/suspicious/noArrayIndexKey: são seis quadradinhos fixos de vida.
-            key={`vida-${i + 1}`}
-            className={i < 6 - damage ? 'fill-scene-a' : 'fill-scene-grid'}
-            x={30 + i * 26}
-            y={60}
-            width="20"
-            height="20"
-            rx="4"
-          />
-        ))}
-      </g>
-      <text
-        className="fill-scene-ink"
-        x={530}
-        y={74}
-        textAnchor="end"
-        fontSize="13"
-        fontWeight="600"
-      >
-        {mode === 'ask' ? 'está encostando?' : 'acabou de encostar'}
-      </text>
-    </SceneCanvas>
-  )
-}
-
-/** A arma, a recarga e os tiros que saíram. */
-export function CooldownStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { seconds, ready, shots, refused } = state.weapon
-  const cheio = seconds > 0 ? 1 - ready / seconds : 1
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="A arma, a barra de recarga e os tiros"
-      descricao={`Recarga de ${seconds}s. ${shots} tiro(s) e ${refused} pedido(s) recusado(s).`}
-      rodape="A barra é o relógio de dentro da arma: enquanto ela não enche, o pedido não vira tiro."
-    >
-      <g className="text-primary">
-        <DinoFigure x={70} y={180} />
-      </g>
-      {Array.from({ length: Math.min(shots, 8) }, (_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: são N tiros iguais em fila.
-        <circle key={`tiro-${i + 1}`} className="fill-scene-b" cx={130 + i * 50} cy={150} r="9" />
-      ))}
-      <g>
-        <text className="fill-scene-ink-soft" x={30} y={230} fontSize="12" fontWeight="600">
-          recarga
-        </text>
-        <rect className="fill-scene-grid" x={30} y={240} width="500" height="18" rx="9" />
-        <rect className="fill-scene-a" x={30} y={240} width={500 * cheio} height="18" rx="9" />
-      </g>
-      {refused > 0 && (
-        <text
-          className="fill-scene-alert"
-          x={530}
-          y={230}
-          textAnchor="end"
-          fontSize="12"
-          fontWeight="700"
-        >
-          {refused} pedido(s) na espera
-        </text>
-      )}
-    </SceneCanvas>
-  )
-}
-
-/** A seta do atirador até o alvo, e o tiro. */
-export function AimStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { targetX, targetY, chasing, shotX, shotY } = state.sight
-  const ox = 60
-  const oy = 150
-  const tx = 40 + targetX
-  const ty = 30 + targetY * 0.8
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="O atirador, a seta e o alvo"
-      descricao={`O alvo está em ${targetX}, ${targetY}. A mira está ${chasing ? 'ligada' : 'desligada'}.`}
-      rodape="A seta é a direção: ela sai do atirador e termina no alvo."
-    >
-      <defs>
-        <marker id="ponta" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-          <path className="fill-scene-a" d="M0 0L8 4L0 8Z" />
-        </marker>
-      </defs>
-      <path
-        className="stroke-scene-a"
-        d={`M${ox} ${oy}L${tx} ${ty}`}
-        strokeWidth="3"
-        markerEnd="url(#ponta)"
-      />
-      {!chasing && (
-        <path
-          className="stroke-scene-ink-soft"
-          d={`M${ox} ${oy}H${VIEW.w - 30}`}
-          strokeWidth="2"
-          strokeDasharray="6 5"
-        />
-      )}
-      <g className="text-primary">
-        <DinoFigure x={ox} y={oy + 26} />
-      </g>
-      <circle className="fill-scene-b" cx={tx} cy={ty} r="14" />
-      <circle className="fill-scene-ground" cx={tx} cy={ty} r="6" />
-      {chasing && (shotX !== 0 || shotY !== 0) && (
-        <circle className="fill-scene-alert" cx={40 + shotX} cy={30 + shotY * 0.8} r="7" />
-      )}
-    </SceneCanvas>
-  )
-}
-
-/** Os dois caminhos lado a lado: o reto e a diagonal. */
-export function DiagonalStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { dx, dy, even, distance, best } = state.walkPad
-  const seta = (x: number, y: number, ligada: boolean, rotacao: number) => (
-    <g transform={`translate(${x} ${y}) rotate(${rotacao})`}>
-      <rect
-        className={ligada ? 'fill-scene-a' : 'fill-scene-grid'}
-        x={-16}
-        y={-16}
-        width="32"
-        height="32"
-        rx="6"
-      />
-      <path className="fill-scene-ground" d="M0 -8L7 4H-7Z" />
-    </g>
-  )
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="As setas e o quanto ele andou"
-      descricao={`Setas ${dx}, ${dy}. Andou ${distance} no último passo; o maior passo foi ${best}.`}
-      rodape="Cada seta dá um passo. Duas setas ao mesmo tempo dão dois — e é isso que a correção acerta."
-    >
-      {seta(120, 90, dy === -1, 0)}
-      {seta(120, 170, dy === 1, 180)}
-      {seta(70, 130, dx === -1, 270)}
-      {seta(170, 130, dx === 1, 90)}
-      <text className="fill-scene-ink-soft" x={120} y={225} textAnchor="middle" fontSize="12">
-        as setas
-      </text>
-      <g>
-        <text className="fill-scene-ink-soft" x={280} y={70} fontSize="12" fontWeight="600">
-          o passo deste quadro
-        </text>
-        <rect className="fill-scene-grid" x={280} y={82} width="240" height="22" rx="11" />
-        <rect
-          className="fill-scene-b"
-          x={280}
-          y={82}
-          width={Math.min(240, distance * 2.4)}
-          height="22"
-          rx="11"
-        />
-        <text className="fill-scene-ink" x={280} y={130} fontSize="20" fontWeight="700">
-          {distance}
-        </text>
-        <text className="fill-scene-ink-soft" x={280} y={165} fontSize="13">
-          maior passo até agora: {best}
-        </text>
-        <text
-          className={even ? 'fill-scene-a' : 'fill-scene-alert'}
-          x={280}
-          y={200}
-          fontSize="13"
-          fontWeight="600"
-        >
-          {even ? 'correção ligada' : 'sem correção'}
-        </text>
-      </g>
-    </SceneCanvas>
-  )
-}
-
-/** O mapa escrito em letras, e o desenho que nasce dele. */
-export function TilemapStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { rows } = state.grid
-  const casa = 34
-  return (
-    <SceneCanvas
-      cast={cast}
-      titulo="O mapa escrito com letras e o desenho que nasce dele"
-      descricao={`Seis linhas de dez casas. A linha do meio está escrita ${rows[3] ?? ''}.`}
-      rodape='"." é vazio, "#" é bloco e "o" é moeda. O desenho vem das letras.'
-    >
-      <text className="fill-scene-ink-soft" x={30} y={30} fontSize="12" fontWeight="600">
-        o texto
-      </text>
-      {rows.map((linha, i) => (
-        <text
-          // A linha é identificada pela POSIÇÃO no mapa, que é o que ela é.
-          // biome-ignore lint/suspicious/noArrayIndexKey: o mapa tem seis linhas fixas.
-          key={`linha-${i}`}
-          className="fill-scene-ink"
-          x={30}
-          y={60 + i * 26}
-          fontSize="19"
-          fontFamily="ui-monospace, monospace"
-          letterSpacing="4"
-        >
-          {linha}
-        </text>
-      ))}
-      <text className="fill-scene-ink-soft" x={230} y={30} fontSize="12" fontWeight="600">
-        o desenho
-      </text>
-      {rows.map((linha, i) =>
-        [...linha].map((tile, j) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: a grade é fixa, 6 por 10.
-          <g key={`casa-${i}-${j}`}>
-            {tile === '#' && (
-              <rect
-                className="fill-scene-bark"
-                x={230 + j * casa}
-                y={40 + i * casa}
-                width={casa - 2}
-                height={casa - 2}
-                rx="3"
+      {(palco) => {
+        /**
+         * ⚠️ No estreito a caixa da conta tem a largura do texto na letra em uso e fica dentro do recorte, e
+         * a régua de passos parada encosta no começo (a frase "N quadros no mesmo lugar" cabe depois dela).
+         */
+        const alturaDaLinha = palco.estreito ? palco.letra(13) + 4 : 18
+        const larguraDaConta = palco.estreito
+          ? Math.max(118, ...contas.map((c) => palco.larguraDoTexto(c, 13) + 16))
+          : 118
+        const contaX = palco.estreito
+          ? Math.max(64, Math.min(palco.view.w - 6 - larguraDaConta, px + 14))
+          : Math.max(64, Math.min(262, px + 14))
+        const contaY = Math.max(6, py - (palco.estreito ? 26 + contas.length * alturaDaLinha : 58))
+        const naReguaAqui = (v: number) =>
+          faixa === 0 && palco.estreito ? REGUA.de + 4 : naRegua(v)
+        return (
+          <>
+            {/* O fora da tela: em cima (y negativo) e à direita (depois de 480). */}
+            <rect
+              className="fill-scene-b-wash"
+              x={velX(0)}
+              y={velY(-60)}
+              width={velX(540) - velX(0)}
+              height={velY(0) - velY(-60)}
+            />
+            <rect
+              className="fill-scene-b-wash"
+              x={velX(480)}
+              y={velY(0)}
+              width={velX(540) - velX(480)}
+              height={velY(270) - velY(0)}
+            />
+            {/* ⚠️ O nome da faixa fica no canto ESQUERDO: no meio (x 240) é onde o tiro e a pedra do
+          Desafio nascem, e a conta do quadro encostava nele. */}
+            <Texto
+              className="fill-scene-b-ink"
+              x={velX(8)}
+              y={velY(-30) + 4}
+              tamanho={12}
+              fontWeight="600"
+            >
+              fora da tela
+            </Texto>
+            {/* A tela do jogo: céu e chão na terra, estrelas no espaço. */}
+            {mundo === 'espaco' ? (
+              <FundoEspaco
+                x={velX(0)}
+                y={velY(0)}
+                w={velX(480) - velX(0)}
+                h={velY(270) - velY(0)}
               />
+            ) : (
+              <>
+                <rect
+                  className="fill-scene-sky"
+                  x={velX(0)}
+                  y={velY(0)}
+                  width={velX(480) - velX(0)}
+                  height={velY(270) - velY(0)}
+                />
+                <rect
+                  className="fill-scene-grass"
+                  x={velX(0)}
+                  y={velY(240)}
+                  width={velX(480) - velX(0)}
+                  height={velY(270) - velY(240)}
+                />
+              </>
             )}
-            {tile === 'o' && (
+            <rect
+              className="stroke-scene-ink"
+              x={velX(0)}
+              y={velY(0)}
+              width={velX(480) - velX(0)}
+              height={velY(270) - velY(0)}
+              fill="none"
+              strokeWidth="2"
+            />
+            {/* As réguas: x embaixo, y à esquerda (o 0 do y fica no ALTO da tela). */}
+            {[0, 120, 240, 360, 480].map((v) => (
+              <g key={`x${v}`}>
+                <path
+                  className="stroke-scene-rule"
+                  d={`M${velX(v)} ${velY(270)}v6`}
+                  strokeWidth="1.5"
+                />
+                <Texto
+                  className="fill-scene-ink-soft"
+                  x={velX(v)}
+                  y={velY(270) + 18}
+                  textAnchor="middle"
+                  tamanho={11}
+                >
+                  {v}
+                </Texto>
+              </g>
+            ))}
+            <Texto
+              className="fill-scene-ink-soft"
+              // ⚠️ No estreito, depois da faixa de fora: em 510, na letra de 12px, o "x" encostava no 480.
+              x={palco.estreito ? velX(540) + 10 : velX(510)}
+              y={velY(270) + 18}
+              textAnchor={palco.estreito ? 'start' : 'middle'}
+              tamanho={11}
+              fontWeight="600"
+            >
+              x
+            </Texto>
+            {[-60, 0, 90, 180, 270].map((v) => (
+              <g key={`y${v}`}>
+                <path
+                  className="stroke-scene-rule"
+                  d={`M${velX(0) - 6} ${velY(v)}h6`}
+                  strokeWidth="1.5"
+                />
+                <Texto
+                  className="fill-scene-ink-soft"
+                  x={velX(0) - 9}
+                  y={velY(v) + 4}
+                  textAnchor="end"
+                  tamanho={11}
+                >
+                  {numero(v)}
+                </Texto>
+              </g>
+            ))}
+            <Texto
+              className="fill-scene-ink-soft"
+              x={velX(0) - 22}
+              y={velY(135) + 4}
+              textAnchor="middle"
+              tamanho={11}
+              fontWeight="600"
+            >
+              y
+            </Texto>
+            <g className="text-primary">
+              <ActorFigure figure={heroi} x={px} y={py + 16} escala={0.55} />
+            </g>
+            {/* O rastro de antes, em cinza; o de agora, na cor do par. ⚠️ DEPOIS do personagem, com o
+          contorno do papel (consertos do review da onda A do lote 5): desenhado antes, o cacto cobria
+          os pontinhos e sobrava um pingo azul na borda dele. */}
+            {prevX.map((v, i) => (
               <circle
-                className="fill-scene-b"
-                cx={230 + j * casa + casa / 2 - 1}
-                cy={40 + i * casa + casa / 2 - 1}
-                r={casa / 4}
+                // biome-ignore lint/suspicious/noArrayIndexKey: o rastro é uma fila de quadros, na ordem
+                key={`p${i}`}
+                className="fill-scene-rule stroke-scene-card"
+                cx={velX(v)}
+                cy={velY(prevY[i] ?? y)}
+                r="3"
+                strokeWidth="1"
               />
+            ))}
+            {trailX.map((v, i) => (
+              <circle
+                // biome-ignore lint/suspicious/noArrayIndexKey: o rastro é uma fila de quadros, na ordem
+                key={`t${i}`}
+                className="fill-scene-a stroke-scene-card"
+                cx={velX(v)}
+                cy={velY(trailY[i] ?? y)}
+                r="3.5"
+                strokeWidth="1"
+              />
+            ))}
+            {fileiras.map((fileira, f) => {
+              const ry = 266 + (fileiras.length === 1 ? 10 : f * 22)
+              const valores = fileira.valores
+              const primeiro = valores[0] ?? 0
+              const ultimo = valores[valores.length - 1] ?? primeiro
+              const sentido = Math.sign(ultimo - primeiro)
+              const ponta = naReguaAqui(ultimo) + sentido * 12
+              return (
+                <g key={fileira.nome} data-regua-de-passos={fileira.nome}>
+                  <Texto
+                    className={fileira.cor === 'a' ? 'fill-scene-a' : 'fill-scene-ink-soft'}
+                    x={velX(0)}
+                    y={ry + 4}
+                    tamanho={12}
+                    fontWeight="600"
+                  >
+                    {fileira.nome}
+                  </Texto>
+                  <path
+                    className="stroke-scene-rule"
+                    d={`M${naReguaAqui(Math.min(...valores))} ${ry}H${naReguaAqui(Math.max(...valores))}`}
+                    strokeWidth="1.5"
+                  />
+                  {valores.map((v, i) => (
+                    <circle
+                      // biome-ignore lint/suspicious/noArrayIndexKey: uma marquinha por quadro, na ordem
+                      key={i}
+                      className={fileira.cor === 'a' ? 'fill-scene-a' : 'fill-scene-rule'}
+                      cx={naReguaAqui(v)}
+                      cy={ry}
+                      r={i === valores.length - 1 ? 4.5 : 3.5}
+                    />
+                  ))}
+                  {sentido !== 0 ? (
+                    <path
+                      className={fileira.cor === 'a' ? 'stroke-scene-a' : 'stroke-scene-rule'}
+                      d={`M${ponta - sentido * 6} ${ry - 5}L${ponta} ${ry}L${ponta - sentido * 6} ${ry + 5}`}
+                      strokeWidth="2"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  ) : (
+                    valores.length > 1 &&
+                    (() => {
+                      /**
+                       * ⚠️ No estreito a frase encurta ("5 quadros no lugar") e fica DENTRO do recorte:
+                       * depois do ponto se couber, antes dele se não couber (conserto "letra no celular").
+                       */
+                      const texto = palco.estreito
+                        ? `${quantos(valores.length, 'quadro', 'quadros')} no lugar`
+                        : `${quantos(valores.length, 'quadro', 'quadros')} no mesmo lugar`
+                      const ponto = naReguaAqui(primeiro)
+                      const largura = palco.larguraDoTexto(texto, 12)
+                      const direita = palco.view.w - 4
+                      const depois = !palco.estreito || ponto + 12 + largura <= direita
+                      return (
+                        <Texto
+                          className="fill-scene-ink-soft"
+                          x={depois ? ponto + 12 : Math.max(ponto - 12, velX(0) + 60 + largura)}
+                          y={ry + 4}
+                          textAnchor={depois ? 'start' : 'end'}
+                          tamanho={12}
+                        >
+                          {texto}
+                        </Texto>
+                      )
+                    })()
+                  )}
+                </g>
+              )
+            })}
+            {contas.length > 0 && (
+              <g transform={`translate(${contaX} ${contaY})`}>
+                <rect
+                  className="fill-scene-card stroke-scene-a"
+                  width={larguraDaConta}
+                  height={10 + contas.length * alturaDaLinha}
+                  rx="8"
+                  strokeWidth="1.5"
+                />
+                {contas.map((c, i) => (
+                  <Texto
+                    key={c}
+                    className="fill-scene-a"
+                    x="8"
+                    y={1 + alturaDaLinha * (i + 1)}
+                    tamanho={13}
+                    fontWeight="700"
+                  >
+                    {c}
+                  </Texto>
+                ))}
+              </g>
             )}
-            {tile === '.' && (
-              <rect
-                className="fill-scene-grid"
-                x={230 + j * casa + casa / 2 - 2}
-                y={40 + i * casa + casa / 2 - 2}
-                width="3"
-                height="3"
-              />
+            {/* "Cada quadro": os números do rastro, um embaixo do outro. ⚠️ Com o rastro de antes, DUAS
+          colunas, antes (cinza) e agora (azul) (consertos do review da onda A do lote 5): a lista do −5
+          sumia quando o −6 começava, e a comparação da Aula 12 ficava na memória. */}
+            {!palco.estreito && (
+              <g transform="translate(404 24)">
+                <Texto className="fill-scene-ink" x="0" y="12" tamanho={13} fontWeight="700">
+                  Cada quadro
+                </Texto>
+                {umEixo && antes.length > 1
+                  ? [
+                      { nome: 'antes', fila: antes, dx: 0 },
+                      { nome: 'agora', fila: agora, dx: 76 },
+                    ].map((coluna) => (
+                      <g key={coluna.nome} data-coluna={coluna.nome}>
+                        <Texto
+                          className={
+                            coluna.nome === 'agora' ? 'fill-scene-a' : 'fill-scene-ink-soft'
+                          }
+                          x={coluna.dx}
+                          y="34"
+                          tamanho={12}
+                          fontWeight="600"
+                        >
+                          {coluna.nome}
+                        </Texto>
+                        {coluna.fila.map((_, i) => (
+                          <Texto
+                            // biome-ignore lint/suspicious/noArrayIndexKey: o rastro é uma fila de quadros, na ordem
+                            key={i}
+                            className={
+                              coluna.nome === 'agora' ? 'fill-scene-a' : 'fill-scene-ink-soft'
+                            }
+                            x={coluna.dx}
+                            y={54 + i * 18}
+                            tamanho={13}
+                            fontWeight={
+                              coluna.nome === 'agora' && i === coluna.fila.length - 1 ? 700 : 400
+                            }
+                          >
+                            {valor(coluna.fila, i, umEixo)}
+                          </Texto>
+                        ))}
+                      </g>
+                    ))
+                  : trailX.map((_, i) => (
+                      <Texto
+                        // biome-ignore lint/suspicious/noArrayIndexKey: o rastro é uma fila de quadros, na ordem
+                        key={i}
+                        className={i === trailX.length - 1 ? 'fill-scene-a' : 'fill-scene-ink-soft'}
+                        x="0"
+                        y={36 + i * 20}
+                        tamanho={13}
+                        fontWeight={i === trailX.length - 1 ? 700 : 400}
+                      >
+                        {linha(i)}
+                      </Texto>
+                    ))}
+              </g>
+            )}
+          </>
+        )
+      }}
+    </SceneCanvas>
+  )
+}
+/** Os três blocos do Estúdio que a `variable` acende, na ordem do jogo do Desafio. */
+const BLOCOS_DA_CAIXA = ['Criar variável pontos', 'Somar em pontos', 'Mostrar placar'] as const
+/** O recorte do estreito da `variable`: sem a fileira dos blocos (que vai para baixo do desenho). */
+const VARIAVEL_ESTREITA = { x: 0, y: 44, w: 560, h: 196 } as const
+
+/**
+ * A caixa com um número dentro, e a tela do jogo ao lado.
+ *
+ * ⭐⭐ Redesenho do lote 5 do Raio-X (16/09/2026). Na demonstração do Dia 4 o gesto não aparecia (a
+ * caixa "Observe a montagem" saía vazia) e os números não tinham história (guardar 10, somar 5).
+ * Agora:
+ * - os TRÊS BLOCOS do Estúdio ficam em fila no alto e acendem conforme acontecem (criar a caixa,
+ *   somar, mostrar), então o gesto está no desenho;
+ * - cada soma é um ACERTO: os alvos da tela do jogo vão sendo atingidos, e a caixa conta, com a tela
+ *   ainda sem placar;
+ * - a ligação caixa → tela fica SÓLIDA quando o placar é mostrado ("Pontos: 3", como no Estúdio).
+ * ⚠️ Antes de criar, a caixa é um contorno tracejado: "ainda não existe" é diferente de "guarda 0".
+ */
+export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+  const { value, shown, changes, created } = state.box
+  const mundo = sceneWorld(cast, 'variable')
+  const obstaculo = actorFigure(cast, 'obstacle')
+  const acesos = [created, changes > 0, shown]
+  const acertos = Math.min(changes, 3)
+  return (
+    <SceneCanvas
+      cast={cast}
+      mundo={mundo}
+      titulo="Os blocos, a caixa pontos e a tela do jogo"
+      descricao={`${created ? `A caixa pontos guarda ${value}.` : 'A caixa pontos ainda não existe.'} A tela ${shown ? `mostra Pontos: ${value}` : 'não mostra placar'}.`}
+      // ⚠️ SEM rodapé (lote 2 do Raio-X): "A caixa é o que o jogo GUARDA. A tela é o que ele
+      // MOSTRA." era a conclusão da cena desde a abertura, com um pronome que o elenco não veste.
+      // ⭐ No estreito os três blocos saem do desenho e vêm para baixo dele, acendendo do mesmo jeito
+      // (conserto "letra no celular"): numa caixa de 166 unidades, "Criar variável pontos" na letra de
+      // 12px passava das bordas e cobria o bloco do lado. O desenho perde a fileira de cima.
+      viewEstreito={VARIAVEL_ESTREITA}
+      legenda={(palco) =>
+        palco.estreito ? (
+          <ul aria-hidden data-blocos-da-caixa="" className="flex flex-wrap gap-2 px-3 pb-3">
+            {BLOCOS_DA_CAIXA.map((bloco, i) => (
+              <li
+                key={bloco}
+                data-aceso={acesos[i] ? '' : undefined}
+                className={`rounded-xl px-3 py-1 text-sm font-bold ${
+                  acesos[i]
+                    ? 'border-[3px] border-scene-a bg-scene-a-wash text-scene-a'
+                    : 'border-2 border-scene-card-line bg-scene-card text-scene-ink-soft'
+                }`}
+              >
+                {bloco}
+              </li>
+            ))}
+          </ul>
+        ) : null
+      }
+    >
+      {(palco) => (
+        <>
+          {/* ⚠️ No estreito a fileira dos blocos mora embaixo do desenho (a legenda). */}
+          {!palco.estreito &&
+            BLOCOS_DA_CAIXA.map((bloco, i) => (
+              <g key={bloco} transform={`translate(${20 + i * 178} 14)`}>
+                <rect
+                  className={
+                    acesos[i]
+                      ? 'fill-scene-a-wash stroke-scene-a'
+                      : 'fill-scene-card stroke-scene-card-line'
+                  }
+                  width="166"
+                  height="38"
+                  rx="12"
+                  strokeWidth={acesos[i] ? 3 : 2}
+                />
+                <Texto
+                  className={acesos[i] ? 'fill-scene-a' : 'fill-scene-ink-soft'}
+                  x="83"
+                  y="24"
+                  textAnchor="middle"
+                  tamanho={13}
+                  fontWeight="700"
+                >
+                  {bloco}
+                </Texto>
+              </g>
+            ))}
+          <g>
+            <rect
+              className={
+                created ? 'fill-scene-grass stroke-scene-a' : 'fill-none stroke-scene-rule'
+              }
+              x={40}
+              y={80}
+              width="180"
+              height="150"
+              rx="16"
+              strokeWidth="3"
+              strokeDasharray={created ? undefined : '8 6'}
+            />
+            <Texto className="fill-scene-ink-soft" x={130} y={110} textAnchor="middle" tamanho={13}>
+              pontos
+            </Texto>
+            {created ? (
+              <>
+                <Texto
+                  className="fill-scene-ink"
+                  x={130}
+                  y={178}
+                  textAnchor="middle"
+                  tamanho={58}
+                  fontWeight="700"
+                >
+                  {value}
+                </Texto>
+                <Texto
+                  className="fill-scene-ink-soft"
+                  x={130}
+                  y={212}
+                  textAnchor="middle"
+                  tamanho={12}
+                >
+                  mudou {quantos(changes, 'vez', 'vezes')}
+                </Texto>
+              </>
+            ) : (
+              // ⚠️ Em duas linhas no estreito: numa só, na letra de 12px, passava das bordas da caixa.
+              <Texto
+                className="fill-scene-ink-soft"
+                x={130}
+                y={165}
+                textAnchor="middle"
+                tamanho={13}
+              >
+                {palco.estreito ? (
+                  <>
+                    <tspan x={130} dy={-palco.letra(13) / 2}>
+                      ainda não
+                    </tspan>
+                    <tspan x={130} dy={palco.letra(13) + 2}>
+                      existe
+                    </tspan>
+                  </>
+                ) : (
+                  'ainda não existe'
+                )}
+              </Texto>
             )}
           </g>
-        )),
+          {/* A ligação da caixa com a tela: tracejada enquanto ninguém mostra, sólida com o placar. */}
+          <path
+            className={shown ? 'stroke-scene-a' : 'stroke-scene-rule'}
+            d="M226 155H310"
+            strokeWidth={shown ? 4 : 2}
+            strokeDasharray={shown ? undefined : '5 4'}
+          />
+          {shown && <path className="fill-scene-a" d="M314 155l-10 -7v14Z" />}
+          <g>
+            {/* No espaço, a tela do jogo é o céu de estrelas; a caixa do placar continua caixa. */}
+            {/* Sem estrelinhas atrás do placar da tela: uma delas virava parte do número. */}
+            {mundo === 'espaco' && (
+              <FundoEspaco
+                x={320}
+                y={80}
+                w={210}
+                h={150}
+                semEstrelas={[{ x: 326, y: 84, w: 110, h: 34 }]}
+              />
+            )}
+            <rect
+              className={`${mundo === 'espaco' ? 'fill-none' : 'fill-scene-sky'} stroke-scene-line`}
+              x={320}
+              y={80}
+              width="210"
+              height="150"
+              rx="10"
+              strokeWidth="2"
+            />
+            <Texto className="fill-scene-ink-soft" x={425} y={72} textAnchor="middle" tamanho={12}>
+              a tela do jogo
+            </Texto>
+            {shown && (
+              <Texto className="fill-scene-b-ink" x={332} y={108} tamanho={20} fontWeight="700">
+                Pontos: {value}
+              </Texto>
+            )}
+            {/* Os alvos: cada soma é um acerto, e o alvo acertado ganha a explosão. */}
+            {[0, 1, 2].map((i) => {
+              const x = 368 + i * 58
+              const acertado = i < acertos
+              return (
+                <g key={i}>
+                  <g opacity={acertado ? 0.35 : 1}>
+                    <ActorFigure figure={obstaculo} x={x} y={168} escala={0.55} />
+                  </g>
+                  {acertado && (
+                    <path
+                      className="fill-scene-flame"
+                      transform={`translate(${x} 152)`}
+                      d="M0 -14L4 -4L14 -6L7 1L13 10L2 6L0 16L-3 6L-13 10L-7 1L-14 -6L-4 -4Z"
+                    />
+                  )}
+                </g>
+              )
+            })}
+            <g className="text-primary">
+              <ActorFigure figure={actorFigure(cast, 'hero')} x={425} y={224} escala={0.8} />
+            </g>
+          </g>
+        </>
       )}
     </SceneCanvas>
   )
 }
-
-/** Uma árvore para o palco não ficar vazio quando a cena pede um mundo. */
-export const CenarioSimples = TreeFigure

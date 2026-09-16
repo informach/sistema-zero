@@ -6,9 +6,11 @@ import {
   type SceneActivity,
   type SceneSetup,
   SETUP_LIMITS,
+  sceneDefaultGoalIds,
   sceneModel,
 } from '@sistemazero/core/learning/scene'
 import { useId } from 'react'
+import { saltoParadoNoCaso } from '../../lib/scene-authoring-rules'
 import { SceneActionEditor } from './scene-action-editor'
 
 /**
@@ -71,14 +73,21 @@ export function SceneSetupEditor({
           semReset
           onChange={(actions: SceneAction[]) => aplicar({ ...setup, actions })}
         />
+        {saltoParadoNoCaso(activity.scene, setup?.actions) && (
+          <p className="text-xs text-amber-700" role="status">
+            Um salto no caso só aparece com o relógio depois dele. Acrescente Avançar o relógio, ou
+            tire o salto.
+          </p>
+        )}
       </div>
 
       {activity.type === 'experimentation' && (
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">O que esta atividade cobra</legend>
           <p className="text-xs text-muted-foreground">
-            Sem nenhuma marcada, a atividade cobra as {modelo.goals.length} descobertas do modelo.
-            Marcando, ela fecha só com as escolhidas — é assim que a mesma cena vira duas missões.
+            Sem nenhuma marcada, a atividade cobra as {sceneDefaultGoalIds(activity.scene).length}{' '}
+            descobertas do modelo. Marcando, ela fecha só com as escolhidas — é assim que a mesma
+            cena vira duas missões.
           </p>
           {modelo.goals.map((meta) => (
             <label
@@ -100,6 +109,11 @@ export function SceneSetupEditor({
                 }
               />
               {meta.label}
+              {meta.soNoCaso && (
+                <span className="text-xs text-muted-foreground">
+                  (só vale marcada: fica fora da missão sem caso)
+                </span>
+              )}
             </label>
           ))}
         </fieldset>

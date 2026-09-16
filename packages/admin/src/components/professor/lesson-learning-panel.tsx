@@ -8,12 +8,17 @@ import type {
 import {
   castText,
   evaluateExperimentation,
+  MESH_SKIN_LABELS,
+  NAVE_FOGO,
+  onionFireLength,
   readDemonstrationSession,
   readExperimentSession,
   type SceneId,
   type SceneState,
+  sceneBrainLabel,
   sceneGoals,
   sceneModelFor,
+  scenePickLetter,
   sceneTargets,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
@@ -54,24 +59,34 @@ function montagem(scene: SceneId, state: SceneState): string {
       return `tela de ${state.stage.width} por ${state.stage.height}; borda ${state.stage.border ? 'à vista' : 'escondida'}`
     case 'draw-loop':
       return `desenho a cada quadro ${state.render.loop ? 'ligado' : 'desligado'}; limpeza ${state.render.erase ? 'ligada' : 'desligada'}`
+    // ⚠️ O ateliê com as palavras do Pinta (lote 5 do Raio-X, G4): o professor lê o mesmo que a
+    // criança leu na faixa (prévia, velocidade, fogo, os dois espelhos, aproximar, recorte).
     case 'frames':
-      return `quadro ${state.animation.frame} de 2; troca ${
-        state.animation.playing ? `andando a ${state.animation.rate} por segundo` : 'parada'
+      return `quadro ${state.animation.frame} de 2; prévia ${
+        state.animation.playing ? `tocando a ${state.animation.rate} quadros por segundo` : 'parada'
       }; ${state.animation.swaps} trocas até agora`
     case 'onion-skin':
       return `quadro ${state.animation.frame} de 2; fantasma ${
         state.animation.onion ? 'ligado' : 'desligado'
-      }; passo do quadro 2 em ${state.animation.shift}`
-    case 'symmetry':
-      return `espelho ${state.mirror.on ? `ligado na linha ${state.mirror.line}` : 'desligado'}; ${
-        state.mirror.painted.length
-      } traços no papel`
+      }; fogo 2 com ${onionFireLength(state.animation.shift)} quadradinhos (o fogo 1 tem ${NAVE_FOGO.pequeno})`
+    case 'symmetry': {
+      // ⚠️ Os dois espelhos são duas chaves, e a faixa conta os GESTOS (consertos do review da onda B do
+      // lote 5): o professor lê o mesmo que a criança leu.
+      const { strokes, copies } = state.mirror
+      const espelho = !state.mirror.on
+        ? 'desligado'
+        : state.mirror.axis === 'xy'
+          ? 'os dois ligados'
+          : state.mirror.axis === 'y'
+            ? 'de cima e de baixo'
+            : 'lado a lado'
+      return `espelho ${espelho}; ${strokes} ${strokes === 1 ? 'traço' : 'traços'} da criança e ${copies} ${copies === 1 ? 'cópia' : 'cópias'} do espelho`
+    }
     case 'pixel-vector':
-      return `lupa de ${state.pixels.zoom} sobre a pedra de ${
-        state.pixels.kind === 'pixel' ? 'pixel' : 'vetor'
-      }`
+      return `aproximar em ${state.pixels.zoom}, nas duas pedras`
     case 'sheet-vs-sprite':
-      return `pedaço ${state.sheet.cell} de 4 recortado; ${state.sheet.size} de tamanho no jogo`
+      // ⚠️ O jogo abre VAZIO (consertos do review da onda B do lote 5): sem recorte escolhido ainda.
+      return `${state.sheet.loaded ? `recorte de ${state.sheet.width} por 32` : 'nenhum recorte ainda'}; ${state.sheet.size} por ${state.sheet.size} no jogo`
     case 'lives':
       return `${state.lifeline.lives} vidas e ${state.lifeline.points} pontos; ${
         state.lifeline.hits
@@ -129,34 +144,40 @@ function montagem(scene: SceneId, state: SceneState): string {
     case 'tilemap':
       return `${state.grid.edits} casa(s) trocada(s); linha do meio "${state.grid.rows[3] ?? ''}"`
     /* ── O motor, o 3D e o ateliê ─────────────────────────────────────────────────────────── */
+    // ⚠️ Lote 5 do Raio-X (G6): as palavras da cena nova (fabricados, torres, a corrida, ver os pontos,
+    // as letras das caixas).
     case 'pool':
-      return `${state.nursery.alive} vivo(s) e ${state.nursery.created} criado(s) desde o começo; reciclagem ${
-        state.nursery.recycling ? 'ligada' : 'desligada'
-      }`
+      return `${state.nursery.alive} na tela e ${state.nursery.created} fabricado(s) desde o começo; cacto nº ${
+        state.nursery.onScreen
+      } na tela; reciclar quem saiu ${state.nursery.recycling ? 'ligado' : 'desligado'}`
     case 'entity-state':
-      return `1º ${state.brains.states[0]}, 2º ${state.brains.states[1]}, 3º ${state.brains.states[2]}`
+      return `torres: 1ª ${sceneBrainLabel(state.brains.states[0] ?? 'parado')}, 2ª ${sceneBrainLabel(
+        state.brains.states[1] ?? 'parado',
+      )}, 3ª ${sceneBrainLabel(state.brains.states[2] ?? 'parado')}; o estado mora ${
+        state.brains.shared ? 'no jogo' : 'em cada uma'
+      }`
     case 'delta-time':
-      return `contando ${state.machines.mode === 'frames' ? 'quadros' : 'segundos'}; a rápida em ${Math.round(
-        state.machines.fastX,
-      )} e a devagar em ${Math.round(state.machines.slowX)}`
+      return `o Dino anda a cada ${state.machines.mode === 'frames' ? 'quadro' : 'segundo'}; o rápido em ${
+        state.machines.fastX
+      } (${state.machines.fastFrames} quadros) e o devagar em ${state.machines.slowX} (${state.machines.slowFrames} quadros)`
     case 'circle-collision':
       return `distância ${Math.round(state.circles.distance)} contra ${state.circles.a + state.circles.b} de soma dos raios`
     case 'axis-z':
-      return `x ${state.space.x}, y ${state.space.y}, z ${state.space.z}; eixos mexidos sozinhos: ${
+      return `x ${state.space.x}, y ${state.space.y}, z ${state.space.z} (negativo é o fundo); eixos mexidos sozinhos: ${
         state.space.moved.join(', ') || 'nenhum'
       }`
     case 'camera-3d':
-      return `câmera na volta ${state.orbit.yaw} de 8, altura ${state.orbit.pitch}; menos cores já vistas de uma vez: ${state.orbit.fewest}`
+      return `câmera na volta ${state.orbit.yaw + 1} de 8, altura ${state.orbit.pitch}; menos cores já vistas de uma vez: ${state.orbit.fewest}`
     case 'mesh':
-      return `raio-X ${state.model.wire ? 'ligado' : 'desligado'}; modelo na volta ${state.model.yaw}`
+      return `a pele: ${MESH_SKIN_LABELS[state.model.see]}; modelo na volta ${state.model.yaw + 1} de 8`
     case 'pick-ray':
       return `mira em ${state.ray.x}, ${state.ray.y}; ${
-        state.ray.hit ? `parou na caixa ${state.ray.hit}` : 'no vazio'
+        state.ray.hit ? `acendeu a caixa ${scenePickLetter(state.ray.hit)}` : 'nada no caminho'
       }; ${state.ray.hits.length} caixa(s) já acertada(s)`
     case 'fill-stroke':
-      return `miolo ${state.ink.fill ? 'pintado' : 'vazio'}; contorno ${state.ink.stroke ? 'à vista' : 'sem cor'}`
+      return `preenchimento ${state.ink.fill ? 'com cor' : 'em Sem cor'}; contorno ${state.ink.stroke ? 'com cor' : 'em Sem cor'}`
     case 'shading':
-      return `sombra ${state.light.shade ? 'ligada' : 'desligada'}; luz vindo da ${
+      return `sombra e luz ${state.light.shade ? 'ligadas' : 'desligadas'}; sol na ${
         state.light.side === 'left' ? 'esquerda' : 'direita'
       }`
   }

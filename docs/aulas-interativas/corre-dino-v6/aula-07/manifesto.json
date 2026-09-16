@@ -127,11 +127,11 @@
       "content": {
         "kind": "interactive",
         "title": "Quem ainda está trabalhando no início?",
-        "instructions": "Compare o início com a partida. Ligue a condição e observe quando as ações do jogo podem acontecer. Volte ao início para conferir a espera.",
+        "instructions": "Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.",
         "hints": [
-          "Por que há cactos antes de você começar?",
-          "A região Se jogando só deixa agir durante a partida.",
-          "Leve Relógio para Se jogando. Compare o início e a partida."
+          "Aperte ▶ na tela de início e conte os cactos que aparecem.",
+          "O que fica dentro de Se jogando só acontece durante a partida.",
+          "Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida."
         ],
         "required": false,
         "activity": {
@@ -139,18 +139,20 @@
           "scene": "game-state"
         },
         "prediction": {
-          "prompt": "Antes de mexer: na tela de início, o relógio dos cactos já está trabalhando?",
+          "prompt": "Na tela de início, antes de começar, nascem cactos?",
           "choices": [
             {
-              "id": "espera",
-              "label": "Não, ele espera a partida começar"
+              "id": "ja-nascem",
+              "label": "Sim, já nascem"
             },
             {
-              "id": "trabalha",
-              "label": "Sim, ele já está correndo"
+              "id": "so-depois",
+              "label": "Não, só depois de começar",
+              "shows": "Os cactos nasceram na tela de início, antes de começar."
             }
           ],
-          "correctChoiceId": "trabalha"
+          "correctChoiceId": "ja-nascem",
+          "revealOn": "outside"
         }
       }
     },

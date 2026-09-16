@@ -135,17 +135,14 @@
       "content": {
         "kind": "interactive",
         "title": "Em quais momentos os pontos crescem?",
-        "instructions": "Compare início, jogando e fim. Coloque Somar ponto dentro de Se jogando e confira os três momentos. O resultado precisa ficar guardado no fim.",
+        "instructions": "Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.",
         "hints": [
-          "O placar deve crescer antes de começar?",
-          "Compare o mesmo passo do relógio no início, jogando e no fim.",
-          "Leve Somar ponto para Se jogando. Teste os três momentos."
+          "Com a peça solta, o placar deve crescer antes de começar?",
+          "Compare o placar das três telas na fileira embaixo do palco.",
+          "Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas."
         ],
         "required": false,
-        "activity": {
-          "type": "experimentation",
-          "scene": "score"
-        }
+        "activity": { "type": "experimentation", "scene": "score" }
       }
     },
     {

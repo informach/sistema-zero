@@ -427,6 +427,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     teacherThreads,
     sectionProgression,
+    { sceneClockStrict: env.SCENE_CLOCK_STRICT },
   )
   const getLesson = new GetLessonService(
     checkAccess,

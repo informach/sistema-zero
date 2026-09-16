@@ -1,4 +1,4 @@
-import { isRecord } from './actions'
+import { isRecord, type SceneId } from './actions'
 
 /**
  * "1 cacto" e "3 cactos": o número e o nome concordando.
@@ -19,6 +19,17 @@ import { isRecord } from './actions'
 export const quantos = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 
 /**
+ * Um número como a criança escreve: vírgula no decimal ("0,5 s") e o sinal de menos do conteúdo
+ * (U+2212) no negativo ("−9").
+ *
+ * ⚠️ Mora aqui pelo mesmo motivo do `quantos`: quem escreve número na tela são o MOTOR (a frase
+ * da recarga), o LEITOR (a faixa) e a BANCADA do member-shell (o valor ao lado do deslizante). A
+ * instrução do Dia 2 escreve "−9" e a faixa escrevia "-9" com o hífen do teclado, na mesma tela.
+ */
+export const decimal = (n: number) => String(Math.abs(n)).replace('.', ',')
+export const numero = (n: number) => (n < 0 ? `−${decimal(n)}` : decimal(n))
+
+/**
  * O ELENCO da cena: quem está no palco.
  *
  * As cenas ensinam conceitos que os três cursos repetem — criar não é desenhar, a área
@@ -36,6 +47,29 @@ export const quantos = (n: number, um: string, varios: string) => `${n} ${n === 
  * aquilo para ela.
  */
 
+/**
+ * As FIGURAS que o palco sabe desenhar. Lista fechada: é o que o member-shell tem desenhado à mão.
+ *
+ * ⚠️⚠️ O elenco trocava só os NOMES (Raio-X, lote 3, 16/09/2026): a criança do Desafio lia
+ * "nave" e via um dinossauro azul na grama, e a de O Jogo do Meu Jeito lia "pedra" e "chama" em
+ * cima de um Dino e três árvores. A figura é o que faz o DESENHO seguir o texto.
+ *
+ * ⚠️ Figura nova entra aqui E ganha um desenho no `scene-figures.tsx` do member-shell no mesmo
+ * lote (o `Record<SceneFigure, …>` de lá reprova a falta). Se ela for do espaço, entra também em
+ * `FIGURAS_DO_ESPACO`.
+ */
+export const SCENE_FIGURES = [
+  'dino',
+  'cacto',
+  'floresta',
+  'nave',
+  'asteroide',
+  'pedra',
+  'tiro',
+  'chama',
+] as const
+export type SceneFigure = (typeof SCENE_FIGURES)[number]
+
 /** Um papel do elenco. O gênero não é enfeite: sem ele o artigo sai errado em metade das frases. */
 export interface SceneActor {
   /** Como a criança chama: "nave", "asteroide", "Dino". Sem artigo. */
@@ -43,6 +77,14 @@ export interface SceneActor {
   gender: 'm' | 'f'
   /** Só quando o plural não é `name` + "s" (o caso de "pedra" é regular; "canhão" não é). */
   plural?: string
+  /**
+   * O que o palco DESENHA para este papel. Sem ela, a figura sai do nome (`actorFigure`).
+   *
+   * ⚠️ Opcional de propósito: os manifestos já publicados não têm o campo e ganham o desenho
+   * certo pelo nome, sem reimportação. Declarar só é preciso quando o nome não diz a figura
+   * ("Zé" desenhado como nave).
+   */
+  figure?: SceneFigure
 }
 
 /**
@@ -74,6 +116,8 @@ export function isSceneActor(value: unknown): value is SceneActor {
   if (value.gender !== 'm' && value.gender !== 'f') return false
   if (value.plural !== undefined && (typeof value.plural !== 'string' || value.plural.length > 28))
     return false
+  if (value.figure !== undefined && !(SCENE_FIGURES as readonly unknown[]).includes(value.figure))
+    return false
   // ⚠️ O nome entra em TEXTO exibido à criança, nunca em HTML nem em id: recusar o que não é
   // palavra evita que um manifesto adulterado escreva qualquer coisa dentro da frase da cena.
   return (
@@ -89,7 +133,210 @@ export function isSceneCast(value: unknown): value is SceneCast {
   return true
 }
 
-const plural = (a: SceneActor) => a.plural ?? `${a.name}s`
+/** O papel de um ator no elenco. */
+export type SceneRole = keyof SceneCast
+
+/** A figura de cada papel quando nem o campo nem o nome dizem outra coisa: o Corre Dino. */
+const FIGURA_DO_PAPEL: Record<SceneRole, SceneFigure> = {
+  hero: 'dino',
+  obstacle: 'cacto',
+  scenery: 'floresta',
+}
+
+/**
+ * Os nomes que a criança e o professor usam para cada figura, escritos como se escreve (com
+ * acento). Curto de propósito: sinônimo que não está aqui cai no padrão do papel, que é o desenho
+ * de sempre, e isso é melhor que adivinhar.
+ *
+ * ⚠️ Exportado porque o editor do admin monta a nota "de onde a figura sai" A PARTIR DAQUI (review
+ * do lote 3): a nota escrita à mão listava seis nomes e esquecia meteoro, rocha, laser, fogo,
+ * dinossauro, árvore e mata.
+ * ⚠️⚠️ "bala" SAIU (review do lote 3): no Brasil bala é DOCE, e um jogo de pegar balas desenharia
+ * tiros no espaço. Quem quer o tiro com outro nome escolhe a figura.
+ */
+export const SCENE_FIGURE_NAMES: Readonly<Record<SceneFigure, readonly string[]>> = {
+  dino: ['Dino', 'dinossauro'],
+  cacto: ['cacto'],
+  floresta: ['floresta', 'árvore', 'mata'],
+  nave: ['nave', 'espaçonave', 'astronave', 'foguete', 'óvni', 'disco voador'],
+  asteroide: ['asteroide', 'meteoro', 'meteorito', 'cometa'],
+  pedra: ['pedra', 'pedrinha', 'pedregulho', 'rocha'],
+  tiro: ['tiro', 'laser', 'disparo', 'projétil', 'míssil'],
+  chama: ['chama', 'fogo', 'labareda'],
+}
+
+const semAcento = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '')
+
+/** Os mesmos nomes, normalizados (minúsculas, sem acento), apontando para a figura. */
+const NOMES_DA_FIGURA = new Map<string, SceneFigure>(
+  (Object.entries(SCENE_FIGURE_NAMES) as [SceneFigure, readonly string[]][]).flatMap(
+    ([figura, nomes]) => nomes.map((nome) => [semAcento(nome.toLowerCase()), figura] as const),
+  ),
+)
+
+/** Uma palavra casada com a lista: como está, e sem o "s" (ou o "es") do plural. */
+function figuraDaPalavra(palavra: string): SceneFigure | null {
+  for (const forma of [palavra, palavra.replace(/s$/, ''), palavra.replace(/es$/, '')]) {
+    // ⚠️ `Map`, e não objeto: "constructor" é um nome válido de elenco e um objeto literal o
+    // devolveria (é do protótipo), com uma função no lugar da figura.
+    const achada = NOMES_DA_FIGURA.get(forma)
+    if (achada) return achada
+  }
+  return null
+}
+
+/**
+ * A figura que um NOME pede, ou `null` quando ele não pede nenhuma.
+ *
+ * O nome inteiro primeiro; depois cada palavra, na ordem — em português o núcleo vem na frente
+ * ("nave espacial", "pedra grande"), e é por isso que "bola de fogo" ainda chega à chama pela
+ * última palavra quando a primeira não diz nada.
+ */
+export function figureFromName(name: string): SceneFigure | null {
+  const limpo = semAcento(name.trim().toLowerCase()).replace(/\s+/g, ' ')
+  if (!limpo) return null
+  const inteiro = figuraDaPalavra(limpo)
+  if (inteiro) return inteiro
+  for (const palavra of limpo.split(/[\s'-]+/)) {
+    const achada = figuraDaPalavra(palavra)
+    if (achada) return achada
+  }
+  return null
+}
+
+/**
+ * O que o palco desenha para um papel: a figura declarada; senão a que o NOME pede; senão a de
+ * fábrica do papel (hero Dino, obstacle cacto, scenery floresta).
+ *
+ * ⚠️⚠️ Derivar do nome é o que faz os manifestos JÁ publicados (que não têm `figure`) ganharem o
+ * desenho certo sem reimportação: "nave", "tiro", "pedra", "asteroide" e "chama" são os nomes
+ * que os cursos v6 já usam.
+ */
+export function actorFigure(cast: SceneCast | undefined, papel: SceneRole): SceneFigure {
+  const ator = cast?.[papel]
+  if (ator?.figure && (SCENE_FIGURES as readonly string[]).includes(ator.figure)) return ator.figure
+  if (ator) {
+    const peloNome = figureFromName(ator.name) ?? (ator.plural ? figureFromName(ator.plural) : null)
+    if (peloNome) return peloNome
+  }
+  return FIGURA_DO_PAPEL[papel]
+}
+
+/**
+ * O mundo em que o palco acontece: a paisagem do Corre Dino ou o espaço dos jogos de nave.
+ * ⚠️ `Kind`: `SceneWorld` já é o grupo do estado da cena `world` (criado/desenhado), em `state.ts`.
+ */
+export type SceneWorldKind = 'terra' | 'espaco'
+
+/**
+ * Os papéis que o PALCO de cada cena desenha (consertos do review do lote 3, 16/09/2026).
+ *
+ * ⚠️⚠️ O mundo olhava os três papéis, com ou sem desenho: um elenco `{obstacle: asteroide}` levava
+ * a `spawn` para o espaço COM O DINO no céu de estrelas, e uma chama declarada como cenário numa
+ * cena que nem desenha cenário mudava o mundo do Dino e dos cactos. A prévia do admin também
+ * prometia "Nave, Cacto e Floresta" para cenas abstratas, que não desenham ninguém.
+ *
+ * ⚠️ É uma tabela LITERAL de propósito, e não algo descoberto: `tests/scene-figures.test.tsx` do
+ * member-shell renderiza as 45 cenas e reprova se o palco desenhar papel a mais ou a menos que
+ * isto. Uma descoberta sozinha não pegava o palco que desenhasse o obstáculo com o traço CRU do
+ * cacto: o papel simplesmente sumia da lista e a cena passava por "abstrata".
+ * ⚠️ Cena nova entra aqui no mesmo lote do palco dela (o `Record<SceneId, …>` reprova a falta).
+ */
+export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
+  coordinates: ['hero'],
+  'screen-reader': ['hero', 'obstacle'],
+  'stage-size': ['hero'],
+  'draw-loop': ['hero'],
+  // ⚠️⚠️ Sem papel desde o lote 5 do Raio-X: `frames`, `onion-skin` e `sheet-vs-sprite` desenham a
+  // NAVE 32 × 32 da aula (o desenho que a criança fez no Pinta), e não uma figura do elenco. Com o
+  // Dino do papel, a animação ensinava o personagem ANDANDO entre os quadros.
+  frames: [],
+  'onion-skin': [],
+  symmetry: [],
+  'pixel-vector': [],
+  'sheet-vs-sprite': [],
+  world: ['hero'],
+  layers: ['hero', 'scenery'],
+  gravity: ['hero'],
+  impulse: ['hero'],
+  'jump-sound': ['hero'],
+  spawn: ['hero', 'obstacle'],
+  // ⚠️ Sem o Dino desde o lote 5 do Raio-X: o palco é a tela e os bastidores do GRUPO de cactos.
+  cleanup: ['obstacle'],
+  'game-state': ['hero', 'obstacle'],
+  controls: ['hero'],
+  restart: ['hero', 'obstacle'],
+  hitbox: ['hero', 'obstacle'],
+  // ⚠️ Lote 5 do Raio-X: a `score` ganhou o cacto que vem na partida; `random` e `acceleration`
+  // perderam o Dino (a régua, as raias e a fileira são só dos cactos).
+  score: ['hero', 'obstacle'],
+  lives: ['hero', 'obstacle'],
+  random: ['obstacle'],
+  acceleration: ['obstacle'],
+  velocity: ['hero'],
+  'hold-vs-press': [],
+  // ⚠️ Lote 5: a `variable` desenha os alvos que o tiro acerta (cada acerto soma 1).
+  variable: ['hero', 'obstacle'],
+  'group-loop': ['obstacle'],
+  'enemy-type': ['obstacle'],
+  camera: ['hero'],
+  contact: ['hero', 'obstacle'],
+  cooldown: ['hero'],
+  aim: ['hero'],
+  // ⚠️ Lote 5 do Raio-X (G5): a `diagonal` e a `tilemap` ganharam o personagem (o Dino que anda 1
+  // segundo com o rastro, e o que cai até o primeiro bloco da coluna dele).
+  diagonal: ['hero'],
+  tilemap: ['hero'],
+  pool: ['obstacle'],
+  // ⚠️ Lote 5 do Raio-X: as TORRES do Jogo 3D Avançado, com a pose de cada estado. Não é papel do elenco.
+  'entity-state': [],
+  'delta-time': ['hero'],
+  'circle-collision': [],
+  'axis-z': [],
+  'camera-3d': [],
+  mesh: [],
+  'pick-ray': [],
+  'fill-stroke': [],
+  shading: [],
+}
+
+/** As figuras que só existem no espaço. Uma delas desenhada leva o palco inteiro para lá. */
+const FIGURAS_DO_ESPACO: readonly SceneFigure[] = ['nave', 'asteroide', 'tiro']
+/** As do Corre Dino. */
+const FIGURAS_DA_TERRA: readonly SceneFigure[] = ['dino', 'cacto', 'floresta']
+
+/**
+ * O mundo de UMA CENA com este elenco: `espaco` ou `terra`. Só contam os papéis que o palco dela
+ * desenha (`SCENE_ROLES`); cena que não desenha ninguém fica sempre na terra.
+ *
+ * A régua, na ordem:
+ * 1. Nave, asteroide ou tiro desenhado → espaço.
+ * 2. Senão, algum papel desenhado DECLARADO no elenco com figura da terra (o professor escreveu um
+ *    Dino, um cacto ou uma floresta) → terra. É o caso da pedra no caminho do Dino.
+ * 3. Senão, pedra ou chama desenhada → espaço.
+ *
+ * ⚠️ A pedra e a chama vão para o espaço quando estão SÓ, porque nos cursos elas SÃO o asteroide
+ * (O Jogo do Meu Jeito desenha a pedra com crateras e a chama atrás dela). Com um Dino declarado
+ * elas voltam para a terra: antes, `{hero: Dino, obstacle: pedra}` punha o Dino no céu de estrelas.
+ * ⚠️ O papel NÃO declarado não puxa para a terra: é ele que sobra de fábrica quando o curso só
+ * troca um nome, e é justamente o caso que o aviso do editor do admin aponta.
+ */
+export function sceneWorld(cast: SceneCast | undefined, scene: SceneId): SceneWorldKind {
+  const papeis = SCENE_ROLES[scene] ?? []
+  const figuras = papeis.map((p) => actorFigure(cast, p))
+  if (figuras.some((f) => FIGURAS_DO_ESPACO.includes(f))) return 'espaco'
+  if (papeis.some((p) => cast?.[p] && FIGURAS_DA_TERRA.includes(actorFigure(cast, p))))
+    return 'terra'
+  return figuras.some((f) => f === 'pedra' || f === 'chama') ? 'espaco' : 'terra'
+}
+
+/**
+ * ⚠️ Aparado aqui também: o editor do admin guarda o nome como digitado e só apara ao sair do
+ * campo (senão "nave espacial", digitado letra a letra, virava "naveespacial"), então um espaço
+ * no fim pode chegar até a prévia.
+ */
+const nomeDe = (a: SceneActor) => a.name.trim()
+const plural = (a: SceneActor) => a.plural?.trim() || `${nomeDe(a)}s`
 
 /**
  * Os determinantes que aparecem antes dos termos no catálogo, e a preposição de cada um.
@@ -209,9 +456,6 @@ const PREDICATIVOS: readonly Formas[] = [
   // ⚠️ `encostado` entrou com a pista 3 do `contact` ("Com o cacto encostado, troque para o
   // acontecimento"): sem ele uma turma de pedra lia "Com a pedra encostado".
   ['encostado', 'encostada', 'encostados', 'encostadas'],
-  // ⚠️ `encostado` entrou com a pista 3 do `contact` ("Com o cacto encostado, troque para o
-  // acontecimento"): sem ele uma turma de pedra lia "Com a pedra encostado".
-  ['encostado', 'encostada', 'encostados', 'encostadas'],
   ['escondido', 'escondida', 'escondidos', 'escondidas'],
   ['criado', 'criada', 'criados', 'criadas'],
   ['guardado', 'guardada', 'guardados', 'guardadas'],
@@ -318,7 +562,7 @@ export function castText(text: string, cast?: SceneCast): string {
       if (!achado || !ator) return inteiro
       const chave = det?.toLowerCase()
       const muitos = chave ? (DETERMINANTES[chave]?.plural ?? achado.muitos) : achado.muitos
-      const nome = muitos ? plural(ator) : ator.name
+      const nome = muitos ? plural(ator) : nomeDe(ator)
       const g = ator.gender
 
       /** Reescreve uma palavra que concorda, preservando a caixa que ela tinha. */

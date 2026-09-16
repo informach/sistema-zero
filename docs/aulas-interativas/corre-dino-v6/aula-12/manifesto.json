@@ -109,17 +109,14 @@
       "content": {
         "kind": "interactive",
         "title": "O que o sorteio pode mudar?",
-        "instructions": "Primeiro compare os dois exemplos de posição, com a mesma velocidade. Depois compare os dois de velocidade, com a mesma posição. São exemplos escolhidos para enxergar a diferença; um sorteio real também pode repetir.",
+        "instructions": "Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.",
         "hints": [
-          "A faixa mostra onde um cacto pode nascer.",
-          "Compare uma coisa por vez: posição ou velocidade.",
-          "Acione os dois exemplos de posição. Depois compare os dois de velocidade."
+          "A régua mostra onde um cacto pode nascer, depois da borda da tela.",
+          "Sorteie uma coisa por vez: primeiro o lugar, depois a velocidade.",
+          "Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias."
         ],
         "required": false,
-        "activity": {
-          "type": "experimentation",
-          "scene": "random"
-        }
+        "activity": { "type": "experimentation", "scene": "random" }
       }
     },
     {
@@ -142,47 +139,55 @@
       "key": "demonstracao-conta-velocidade",
       "content": {
         "kind": "interactive",
-        "title": "O sinal decide o lado",
-        "instructions": "Olhe o sinal do número e para que lado ele anda. Depois compare com a velocidade em zero.",
+        "title": "O sinal e o tamanho do passo",
+        "instructions": "Olhe o sinal e o tamanho de cada passo.",
         "hints": [],
         "required": false,
+        "prediction": {
+          "prompt": "Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…",
+          "choices": [
+            {
+              "id": "direita",
+              "label": "Vai para a direita",
+              "shows": "Com −6, o x continuou diminuindo, e o cacto seguiu para a esquerda."
+            },
+            { "id": "esquerda-mais", "label": "Vai para a esquerda, 1 a mais a cada quadro" }
+          ],
+          "correctChoiceId": "esquerda-mais"
+        },
         "activity": {
           "type": "demonstration",
           "scene": "velocity",
+          "cast": { "hero": { "name": "cacto", "gender": "m" } },
+          "setup": {
+            "actions": [
+              { "type": "velocity", "vx": 10, "vy": 5 },
+              { "type": "advance", "seconds": 3.8 },
+              { "type": "velocity", "vx": 10, "vy": 0 },
+              { "type": "advance", "seconds": 3 },
+              { "type": "velocity", "vx": 0, "vy": 0 }
+            ]
+          },
           "script": [
             {
               "id": "passo-1",
-              "caption": "Com o vx em menos 5, ele anda para a ESQUERDA a cada quadro.",
-              "highlight": "tools",
+              "caption": "Velocidade −5: a cada quadro o x do cacto diminui 5, para a esquerda.",
+              "highlight": "scene",
               "actions": [
-                {
-                  "type": "velocity",
-                  "vx": -5,
-                  "vy": 0
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                }
+                { "type": "velocity", "vx": -5, "vy": 0 },
+                { "type": "advance", "seconds": 1.2 }
               ],
               "waitFor": "left"
             },
             {
               "id": "passo-2",
-              "caption": "Em zero ele fica parado: o relógio anda, e ele não sai do lugar.",
-              "highlight": "tools",
+              "caption": "Velocidade −6: ainda para a esquerda, e cada quadro tira 6. Embaixo da tela, compare os passos de antes com os de agora.",
+              "highlight": "scene",
               "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 0
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                }
+                { "type": "velocity", "vx": -6, "vy": 0 },
+                { "type": "advance", "seconds": 1.2 }
               ],
-              "waitFor": "stopped"
+              "waitFor": "left"
             }
           ]
         }
