@@ -3,6 +3,7 @@ import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { MyCourseView } from '@/lib/types'
+import { CourseAccessExpiry } from './course-access-expiry'
 import { CourseBadgeChip } from './course-badge-chip'
 
 interface CourseCardProps {
@@ -82,6 +83,7 @@ export function CourseCard({ course }: CourseCardProps) {
         {/* O resto do cartão desce para o pé: numa fileira de quatro, as barras e os
             botões alinham mesmo com títulos de tamanhos diferentes. */}
         <div className="mt-auto pt-4">
+          <CourseAccessExpiry expiresAt={course.access.expiresAt} className="mb-3" />
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
               {progress.completedLessons} de {progress.totalLessons} aulas

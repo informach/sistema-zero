@@ -96,7 +96,7 @@ export interface UserView {
 // ── Members (área do aluno) ─────────────────────────────────────────────────
 export interface AccessView {
   accessType: string
-  /** ISO-8601 ou null (vitalício). */
+  /** ISO-8601 ou null quando não há uma data de término exibível. */
   expiresAt: string | null
 }
 

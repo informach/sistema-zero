@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import type { CatalogCourseView, MyCourseView } from '@/lib/types'
+import { CourseAccessExpiry } from './course-access-expiry'
 import { CourseBadgeChip } from './course-badge-chip'
 
 interface CatalogCourseCardProps {
@@ -242,6 +243,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
   const primary = state === 'publish' || (started && state !== 'review')
   return (
     <div>
+      <CourseAccessExpiry expiresAt={mine.access.expiresAt} className="mb-3" />
       {/* Curso ainda sem aula publicada (a autora está montando): "0 de 0 aulas" com uma barra
           vazia não diz nada, então fica só o botão (full review de 11/09/2026). */}
       {progress.totalLessons > 0 ? (

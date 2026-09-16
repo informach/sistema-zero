@@ -212,6 +212,40 @@ describe('Chave-mestra KIDS (all_kids_courses) — acesso por audiência', () =>
     expect(mine.courses.map((c: any) => c.courseSlug)).toEqual(['curso-kids'])
   })
 
+  test('"meus cursos" kids expõe só o prazo do acesso efetivo mais forte', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, {
+      userId: USER,
+      courseRef: 'curso-kids',
+      expiresAt: new Date('2026-07-01T00:00:00.000Z'),
+      subscriptionId: randomUUID(),
+      key: 'specific-temporary',
+    })
+    grantAllKidsCourses(entitlements, {
+      userId: USER,
+      expiresAt: new Date('2026-08-01T00:00:00.000Z'),
+      subscriptionId: randomUUID(),
+    })
+
+    const temporary = await readJson(
+      await get(app, '/members/courses?audience=kids', authHeaders()),
+    )
+    expect(temporary.courses[0].access).toMatchObject({
+      accessType: 'all_kids_courses',
+      expiresAt: '2026-08-01T00:00:00.000Z',
+    })
+
+    // A chave vitalícia passa a ser o acesso efetivo; o prazo da compra avulsa
+    // deixa de chegar à UI e, portanto, não produz uma urgência enganosa.
+    grantAllKidsCourses(entitlements, { userId: USER })
+    const lifetime = await readJson(await get(app, '/members/courses?audience=kids', authHeaders()))
+    expect(lifetime.courses[0].access).toMatchObject({
+      accessType: 'all_kids_courses',
+      expiresAt: null,
+    })
+  })
+
   test('manual (admin): mode all_kids_courses concede a chave kids', async () => {
     const { app, courses } = buildApp()
     seedSampleCourse(courses, 'curso-kids', 'published', 'kids')

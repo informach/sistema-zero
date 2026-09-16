@@ -2,6 +2,7 @@ import { BookOpen, Play } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
+import { CourseAccessExpiry } from '@/components/kids/course-access-expiry'
 import { CourseTrail } from '@/components/kids/course-trail'
 import { KidsBand } from '@/components/kids/kids-band'
 import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
@@ -97,6 +98,10 @@ export default async function CoursePage({
                 {course.description}
               </p>
             ) : null}
+            <CourseAccessExpiry
+              expiresAt={course.access.expiresAt}
+              className="mt-4 w-fit max-w-full"
+            />
             <div className="mt-5 max-w-md">
               <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
                 <span>
