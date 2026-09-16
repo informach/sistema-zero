@@ -167,14 +167,19 @@ se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `d
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
 **`data-checkout-oferta="<slug>"`** (o modal anexa `?oferta=` ao redirect e o checkout PRÉ-SELECIONA
 o plano — validado no servidor contra `{principal, altOffer}`, slug forjado → 400 INVALID_OFFER).
+Links/QRs promocionais aceitam `?cupom=` e o alias `?coupon=`. A rota normaliza um único código,
+faz a cotação autoritativa e repassa o código pelo `PreCheckoutModal`; a UI só exibe desconto
+confirmado pelo servidor. Cupom inválido/esgotado ou falha técnica bloqueia os componentes de
+pagamento até o adulto aplicar outro código ou clicar explicitamente em “Continuar sem cupom”.
 Para ASSINATURA, a rota da oferta também resolve a IRMÃ do alternador (`offer.altOffer` →
 `getActiveOffer`) e passa `plans {main, alt}` ao body próprio (o Comunidade normaliza mensal/anual
 por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O fallback de preço da rota
 (`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
-**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
-jogo de nave em 5 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
+**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 67 público / R$ 37 com
+cupom de evento):** criança 9+ monta um jogo de nave em 5 etapas, com 30 dias contados da aprovação;
+é pagamento único sem renovação. **Comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
 Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
 (`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
 `renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
@@ -475,11 +480,11 @@ histórico (conflito preserva o original — re-aponte do webhook passa sem cupo
   stale-while-revalidate=300`), `resultado`, `checkout`, `obrigado`, `admin`, `admin/login`,
   **todas** `/api/*`, `health`. Páginas com dados do lead setam `cache-control: no-store` e
   redirecionam se faltar cookie/contato.
-  - ⚠️ **`obrigado` é SSR só para EXPIRAR o cookie do lead** (`clearLeadCookie`, `Max-Age=0`):
-    após a compra, o próximo checkout começa do zero. Combina com dois pontos no `checkout.astro`:
-    o **CPF NUNCA é pré-preenchido** (`initialContact.cpf = ''` — dado sensível, digitado a cada
-    compra) e o **lead já PAGO não é reaproveitado** (`if (lead?.paidAt) → novo lead`). Nome/e-mail/
-    telefone repopulam pela URL do pré-checkout. (Decisão do usuário, 06/2026.)
+  - ⚠️ **`obrigado` lê o lead e o snapshot da cobrança:** só afirma aprovação se `paid_at` existe e,
+    em prazo fixo, calcula a data final a partir desse instante com o mesmo algoritmo do members.
+    Pagamento pendente nunca inicia a contagem. O cookie é mantido para que a confirmação sobreviva
+    a um reload; uma nova jornada continua segura porque `POST /api/leads` e `checkout.astro` nunca
+    reaproveitam lead pago. O **CPF NUNCA é pré-preenchido** (`initialContact.cpf = ''`).
 
 ## Segurança
 

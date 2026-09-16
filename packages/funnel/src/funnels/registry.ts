@@ -32,6 +32,8 @@ export interface FunnelCopy {
   artigo?: 'o' | 'a'
 }
 export interface FunnelLanding {
+  /** Selo acima do título; ausente preserva o rótulo genérico. */
+  badge?: string
   h1: string
   subtitulo: string
   tempo: string

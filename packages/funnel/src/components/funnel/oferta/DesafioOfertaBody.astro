@@ -11,6 +11,8 @@ import '@fontsource/material-symbols-rounded/400.css'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import type { CouponPresentation } from '../../../lib/coupon-query'
+import { formatBRLFromCents } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
@@ -30,11 +32,19 @@ interface Props {
   /** Repassado pela rota (?quer= do quiz); a oferta padrão não o renderiza. */
   quer?: string | null
   ofertaUrl: string
+  coupon: CouponPresentation
 }
-const { f, productName, priceLabelShort, priceReais, imagesBase, ofertaUrl } = Astro.props
+const { f, productName, priceLabel, priceLabelShort, priceReais, imagesBase, ofertaUrl, coupon } =
+  Astro.props
 
 const description = f.seoDescription
 const img = (file: string) => `${imagesBase}/${file}`
+const validCoupon = coupon.status === 'valid' ? coupon : null
+const checkoutCouponCode = coupon.status === 'none' ? null : coupon.code
+const displayedTotal = validCoupon
+  ? formatBRLFromCents(validCoupon.finalPriceCents)
+  : priceLabelShort
+const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents) : null
 ---
 
 <BaseLayout
@@ -61,7 +71,9 @@ const img = (file: string) => `${imagesBase}/${file}`
           <span class="badge"><span class="material-symbols-rounded">rocket_launch</span></span>
           Desafio do Primeiro Jogo
         </div>
-        <div class="price-mini"><s>R$ 97</s> {priceLabelShort}</div>
+        <div class="price-mini">
+          {validCoupon ? <><s>{priceLabelShort}</s> {displayedTotal}</> : priceLabelShort}
+        </div>
         <a href="#oferta" class="btn header-cta">
           <span class="material-symbols-rounded">bolt</span><span class="lbl">Quero começar</span>
         </a>
@@ -89,41 +101,38 @@ const img = (file: string) => `${imagesBase}/${file}`
       <div class="wrap">
         <div class="grid">
           <div class="hero-copy">
-            <span class="eyebrow"
-              >Para crianças a partir de 9 anos<br />que vivem em jogos e tecnologia</span
-            >
+            <span class="eyebrow">Para crianças a partir de 9 anos que gostam de jogos e tecnologia</span>
             <h1>
-              As horas que ele coloca no jogo <span class="hl">dos outros</span> podem virar o primeiro
-              jogo <span class="hl">dele</span>, em 5 dias
+              Seu filho não precisa de mais tempo de tela. Precisa descobrir o que consegue
+              <span class="hl">criar com uma parte dele.</span>
             </h1>
             <p class="lead">
-              Uma trilha guiada, uma vitória por dia, dentro de um estúdio que abre na própria aula.
-              No primeiro dia a nave dele já voa na tela. No quinto, ele te chama pra ver o jogo
-              pronto, manda o link pros amigos, e nem percebe que passou a semana aprendendo de
-              verdade. Achou que estava brincando.
+              Em cinco dias guiados, ele transforma comandos visuais em um jogo de nave feito por
+              ele — com tiros, asteroides, pontos, vidas, vitória, derrota e um link para
+              compartilhar.
             </p>
             <div class="chips">
               <span class="chip"
-                ><span class="material-symbols-rounded">bolt</span>Resultado no 1º dia</span
+                ><span class="material-symbols-rounded">bolt</span>Uma parte funcionando por dia</span
               >
               <span class="chip"
                 ><span class="material-symbols-rounded">child_care</span>A partir dos 9 anos</span
               >
               <span class="chip"
-                ><span class="material-symbols-rounded">favorite</span>Você não precisa saber nada</span
+                ><span class="material-symbols-rounded">favorite</span>Você não precisa programar</span
               >
               <span class="chip"
-                ><span class="material-symbols-rounded">schedule</span>40 min por dia</span
+                ><span class="material-symbols-rounded">schedule</span>30 dias de acesso</span
               >
             </div>
             <div class="hero-cta">
               <a href="#oferta" class="btn big">
-                <span class="material-symbols-rounded">sports_esports</span>Quero ver o primeiro
-                jogo do meu filho
+                <span class="material-symbols-rounded">sports_esports</span>Quero transformar parte
+                desse tempo em criação
               </a>
             </div>
             <div class="seals">
-              <span><span class="material-symbols-rounded">check_circle</span>Acesso na hora</span>
+              <span><span class="material-symbols-rounded">check_circle</span>Sem instalar programas</span>
               <span
                 ><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span
               >
@@ -131,6 +140,21 @@ const img = (file: string) => `${imagesBase}/${file}`
                 ><span class="material-symbols-rounded">check_circle</span>Pagamento único</span
               >
             </div>
+            <p class="scope-note">
+              {
+                validCoupon
+                  ? `De ${priceLabelShort} por ${displayedTotal}, pagamento único · cupom ${validCoupon.code} aplicado · 30 dias de acesso · garantia de 7 dias`
+                  : `${priceLabel}, pagamento único · 30 dias de acesso · garantia de 7 dias`
+              }
+            </p>
+            {
+              (coupon.status === 'invalid' || coupon.status === 'error') && (
+                <p class="coupon-alert" role="alert">
+                  <strong>Cupom {coupon.code || 'informado'}:</strong> {coupon.message} O checkout não
+                  fará cobrança sem você confirmar o valor.
+                </p>
+              )
+            }
           </div>
           <figure class="art hero-art">
             <div class="glow"></div>
@@ -143,7 +167,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             />
           </figure>
         </div>
-        <!-- fala do Zappy pra criança -->
+        <!-- personagem como apoio visual; a comunicação comercial segue dirigida aos pais -->
         <div class="kid reveal">
           <div class="char">
             <figure class="art">
@@ -158,8 +182,9 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Zappy</span>
           </div>
           <div class="bubble">
-            Oi, sou o Zappy. Se você curte jogo, chama seu pai ou sua mãe e senta aqui do lado. Em 5
-            dias a gente faz uma nave voar de verdade na tela, e o jogo é todo seu. Bora criar?
+            Seu papel é reservar o momento e celebrar as pequenas entregas. O caminho técnico
+            aparece passo a passo para a criança, e você não precisa entender de programação para
+            acompanhar.
           </div>
         </div>
       </div>
@@ -169,19 +194,17 @@ const img = (file: string) => `${imagesBase}/${file}`
     <section class="stats-band">
       <div class="wrap">
         <div class="stats">
-          <div class="stat"><div class="n">5 dias</div><div class="l">até o jogo pronto</div></div>
+          <div class="stat"><div class="n">5 etapas</div><div class="l">uma parte nova por encontro</div></div>
           <div class="stat">
-            <div class="n">40 min</div><div class="l">por dia, no ritmo dele</div>
+            <div class="n">30 dias</div><div class="l">para organizar a trilha</div>
           </div>
           <div class="stat">
             <div class="n">{priceLabelShort}</div><div class="l">uma vez, sem mensalidade</div>
           </div>
         </div>
         <div class="market">
-          Em 2024, 79,5 milhões de crianças de 8 a 12 anos entraram no Roblox. Quase todas só jogam
-          o que outra pessoa criou. Este desafio aponta o interesse do seu filho pro outro lado: o
-          de quem cria.
-          <small>Fonte: Brasil de Fato, 2024</small>
+          A proposta não é acrescentar horas à rotina. É trocar uma pequena parte do consumo que já
+          existe por um projeto curto, com decisões e um resultado criado pela criança.
         </div>
       </div>
     </section>
@@ -189,16 +212,16 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== DUAS TELAS ===== -->
     <section class="sec">
       <div class="wrap center">
-        <span class="eyebrow">As mesmas horas, duas direções</span>
-        <h2 class="reveal">
-          Tem o filho que gasta as horas na tela,<br />e o filho que cria com elas
-        </h2>
-        <p class="sub">A mesma criança, o mesmo computador, duas tardes que terminam muito diferentes.</p>
+        <span class="eyebrow">Tela demais preocupa. Você tem razão em se preocupar.</span>
+        <h2 class="reveal">O mesmo computador.<br />Uma postura diferente diante dele.</h2>
+        <p class="sub">
+          A proposta não é aumentar o tempo nem chamar qualquer tela de aprendizado. É fazer uma
+          troca pequena e concreta dentro do tempo que já existe.
+        </p>
         <div class="two">
           <div class="screen neg reveal">
             <h3>
-              <span class="material-symbols-rounded">sentiment_dissatisfied</span>A tela que só
-              passa o tempo
+              <span class="material-symbols-rounded">sentiment_dissatisfied</span>Antes
             </h3>
             <figure class="art">
               <img
@@ -210,23 +233,21 @@ const img = (file: string) => `${imagesBase}/${file}`
               />
             </figure>
             <p>
-              Ele rola vídeo atrás de vídeo, joga o jogo que outra pessoa montou e levanta do
-              computador com as mãos vazias. No domingo à noite bate aquela sensação de tempo que
-              escorreu pelo ralo, e nada pra mostrar.
+              O jogo chega pronto. Seu filho segue as regras, vence fases criadas por outra pessoa e
+              fecha a tela sem algo próprio para mostrar.
             </p>
             <div class="tags">
               <div class="tag">
-                <span class="material-symbols-rounded">timer_off</span>3 horas de tela, zero coisa
-                criada
+                <span class="material-symbols-rounded">timer_off</span>Regras definidas por outra pessoa
               </div>
               <div class="tag">
-                <span class="material-symbols-rounded">block</span>Nada pra contar no dia seguinte
+                <span class="material-symbols-rounded">block</span>Sem um projeto próprio no final
               </div>
             </div>
           </div>
           <div class="screen pos reveal">
             <h3>
-              <span class="material-symbols-rounded">celebration</span>A tela que vira criação
+              <span class="material-symbols-rounded">celebration</span>Durante o Desafio
             </h3>
             <figure class="art">
               <img
@@ -238,18 +259,15 @@ const img = (file: string) => `${imagesBase}/${file}`
               />
             </figure>
             <p>
-              Ele senta quarenta minutos, segue o passo a passo e vê o personagem ganhar vida por
-              causa do que ele mesmo montou. No último dia, é ele quem chama você na sala pra ver o
-              jogo rodando.
+              Ele escolhe, monta, testa, encontra um erro, ajusta e vê o jogo responder ao que fez.
+              No fim, chama alguém para jogar uma criação que antes existia apenas como ideia.
             </p>
             <div class="tags">
               <div class="tag">
-                <span class="material-symbols-rounded">stadia_controller</span>5 dias, 1 jogo
-                jogável no fim
+                <span class="material-symbols-rounded">stadia_controller</span>Comandos e regras que ele montou
               </div>
               <div class="tag">
-                <span class="material-symbols-rounded">emoji_events</span>Algo concreto pra mostrar
-                e contar
+                <span class="material-symbols-rounded">emoji_events</span>Uma versão jogável para compartilhar
               </div>
             </div>
           </div>
@@ -260,13 +278,11 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== A ATENÇÃO DELE (coração) ===== -->
     <section class="sec culpa">
       <div class="wrap center">
-        <span class="eyebrow">Sobre aquele jogo que ele não larga</span>
-        <h2 class="reveal">
-          A atenção que ele dá pro jogo<br />é a coisa mais rara que ele tem
-        </h2>
+        <span class="eyebrow">Não é mais tela. É outra direção para uma parte dela.</span>
+        <h2 class="reveal">Uma troca pequena, concreta<br />e possível de acompanhar.</h2>
         <p class="sub">
-          Você já viu ele ficar horas mergulhado num jogo ou num assunto de tecnologia, enquanto
-          em outras coisas a atenção simplesmente não vem. Isso é melhor do que parece.
+          Jogos, vídeos e tecnologia já aparecem em casa, na escola e nas conversas das crianças.
+          Durante cinco etapas, uma parte desse tempo passa a ter um projeto, decisões e um resultado.
         </p>
         <div class="box reveal">
           <div class="box-grid">
@@ -280,58 +296,48 @@ const img = (file: string) => `${imagesBase}/${file}`
               />
             </figure>
             <p>
-              Mergulhar fundo assim, numa coisa só, é uma capacidade que a maioria dos adultos
-              queria ter e não tem. Muita gente trata isso como algo pra controlar, um problema a
-              resolver. E o que decide se essa capacidade vira força na vida dele ou fica sendo
-              tempo jogado fora é a direção em que ela aponta, não o tamanho dela.
+              O Desafio começa no interesse que a criança já demonstra e oferece uma sequência
+              curta: montar uma parte, testar o que aconteceu e avançar para a próxima decisão.
             </p>
           </div>
         </div>
         <div class="thesis reveal">
-          Hoje ele aponta esse interesse pra <b>consumir</b>: jogar o jogo que outra pessoa criou,
-          assistir o vídeo que outro gravou. No dia em que esse interesse aponta pra <b>criar</b>,
-          tudo muda de lugar. A tarde que ia embora jogando vira uma tarde construindo. E como ele
-          ama o assunto, ele nem sente que está aprendendo. Ele acha que está brincando. É
-          exatamente brincando que uma criança aprende de verdade, e é assim que ela desenvolve
-          raciocínio, lógica e persistência, sem peso nenhum.
+          Enquanto cria, seu filho pratica ações que não aparecem quando ele só joga: dividir um
+          projeto, relacionar comando e efeito, testar, observar, ajustar e decidir como o jogo funciona.
         </div>
         <div class="shift">
           <div class="card reveal">
-            <div class="from">Esse interesse é um problema</div>
+            <div class="from">Só seguir regras prontas</div>
             <div class="to">
               <span class="material-symbols-rounded">arrow_circle_right</span>Esse interesse é o
-              talento dele
+              Definir regras e efeitos
             </div>
             <p>
-              O que parecia a fraqueza é onde ele tem facilidade natural. Falta só apontar pra
-              direção certa.
+              A criança escolhe movimento, dificuldade e consequência dentro do projeto.
             </p>
           </div>
           <div class="card reveal">
             <div class="from">Horas que só consomem</div>
             <div class="to">
-              <span class="material-symbols-rounded">arrow_circle_right</span>Horas que criam
+              <span class="material-symbols-rounded">arrow_circle_right</span>Uma parte do tempo que cria
             </div>
             <p>
-              Mesmo tempo de tela, resultado diferente. No lugar de mais um jogo jogado, um jogo
-              feito por ele.
+              A família mantém seus limites e troca apenas uma parte do consumo por uma criação.
             </p>
           </div>
           <div class="card reveal">
-            <div class="from">Aprender é chato</div>
+            <div class="from">Parar no primeiro erro</div>
             <div class="to">
-              <span class="material-symbols-rounded">arrow_circle_right</span>Aprender achando que
-              brinca
+              <span class="material-symbols-rounded">arrow_circle_right</span>Testar, observar e ajustar
             </div>
             <p>
-              Como ele ama jogo e tecnologia, ele desenvolve habilidade de verdade sem sentir que
-              está estudando.
+              O erro vira informação sobre qual bloco ou regra precisa mudar.
             </p>
           </div>
         </div>
         <div class="thesis verde reveal">
-          Essa é uma daquelas habilidades que só valem mais com o tempo. Apontar esse interesse pra
-          criar agora, brincando, é uma das coisas mais baratas que você pode fazer pelo futuro dele.
+          Cada criança vive a experiência de um jeito. O Desafio oferece prática guiada; não promete
+          resultado escolar, clínico ou comportamental específico.
         </div>
       </div>
     </section>
@@ -339,11 +345,11 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== COMO FUNCIONA ===== -->
     <section class="sec">
       <div class="wrap center">
-        <span class="eyebrow">Do acesso ao jogo pronto</span>
-        <h2 class="reveal">É mais simples do que parece.<br />Olha o caminho inteiro:</h2>
+        <span class="eyebrow">O projeto dos cinco dias</span>
+        <h2 class="reveal">Cinco dias. Uma parte nova do jogo<br />funcionando a cada dia.</h2>
         <p class="sub">
-          Cinco dias, uma vitória por dia, tudo dentro do mesmo estúdio, sem instalar nada no
-          computador.
+          A sequência é recomendada; cada família pode organizar os encontros dentro dos 30 dias
+          de acesso.
         </p>
       </div>
       <div class="wrap">
@@ -353,10 +359,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             <div>
               <h3>A nave ganha vida</h3>
               <p>
-                Seguindo o passo a passo, ele monta os primeiros blocos com a própria mão, sente que
-                a ordem dos passos importa, e faz a nave aparecer no espaço e voar com as setas. Os
-                blocos já vêm com a parte difícil encaixada, então ele cria com lógica de verdade,
-                sem escrever uma linha de código.
+                Seu filho conhece o estúdio, monta a base e vê o primeiro comando aparecer na tela.
               </p>
             </div>
             <figure class="art day-art print-frame">
@@ -372,11 +375,9 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">2</div>
             <div>
-              <h3>A nave atira</h3>
+              <h3>A nave responde</h3>
               <p>
-                Ele monta o grupo dos tiros e a área que escuta o teclado. Aperta a tecla, o tiro
-                sai da nave com som e tudo. É aqui que ele descobre duas ideias que todo criador de
-                jogos usa: guardar muitas coisas do mesmo tipo e fazer o jogo responder na hora.
+                Ele cria movimento e tiro e percebe que cada bloco muda o comportamento do jogo.
               </p>
             </div>
             <figure class="art day-art print-frame">
@@ -392,11 +393,9 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">3</div>
             <div>
-              <h3>Os asteroides chegam</h3>
+              <h3>O desafio aparece</h3>
               <p>
-                Uma chuva de pedras espaciais começa a cair, cada uma num lugar sorteado, e os tiros
-                dele explodem as pedras com fogo e som. O que era uma tela bonita vira um jogo com
-                graça de jogar.
+                Asteroides entram em cena, se movem e transformam a criação em algo jogável.
               </p>
             </div>
             <figure class="art day-art print-frame">
@@ -412,11 +411,9 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">4</div>
             <div>
-              <h3>Pontos e vidas</h3>
+              <h3>O jogo passa a lembrar</h3>
               <p>
-                Cada acerto passa a valer ponto no placar, e a nave ganha vidas em coraçõezinhos na
-                tela. É o dia em que entram os blocos de Programação, com a primeira variável dele
-                guardando a pontuação.
+                Pontos, vidas, colisões e feedback dão consequência às escolhas.
               </p>
             </div>
             <figure class="art day-art print-frame">
@@ -432,11 +429,9 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">5</div>
             <div>
-              <h3>Virou jogo de verdade</h3>
+              <h3>Começo, vitória e derrota</h3>
               <p>
-                Ele cria a regra da vitória ao destruir 26 asteroides, monta as telas de início,
-                vitória e derrota, testa o jogo inteiro do começo ao fim e gera um link pra família
-                e os amigos jogarem. Sai dali com o primeiro joguinho jogável dele.
+                Ele fecha o ciclo, testa e publica um link para outras pessoas jogarem.
               </p>
             </div>
             <figure class="art day-art print-frame">
@@ -450,7 +445,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             </figure>
           </div>
         </div>
-        <!-- fala do Dedé pra criança -->
+        <!-- personagem como apoio visual; copy dirigida aos pais -->
         <div class="kid verde reveal">
           <div class="char">
             <figure class="art">
@@ -465,19 +460,17 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Dedé</span>
           </div>
           <div class="bubble">
-            No Dia 2 você faz a nave atirar. Sério. Você aperta e o tiro sai. No dia seguinte os
-            asteroides começam a cair, e cada pedra que você acerta explode na tela. É aí que fica
-            divertido de verdade.
+            Os “cinco dias” são a sequência recomendada. Se a rotina apertar, vocês podem pausar e
+            retomar o progresso durante os 30 dias de acesso.
           </div>
         </div>
         <div class="thesis compacta reveal">
-          <b>Por que uma vitória por dia:</b> a atenção de uma criança vai naturalmente pra onde a
-          recompensa chega rápido. Por isso o resultado aparece já no primeiro dia, pra prender o
-          interesse dele desde o começo, no ritmo que ele curte.
+          <b>Uma entrega por etapa:</b> cada encontro termina com uma parte observável do jogo
+          funcionando, para que a criança entenda o que o comando que montou mudou na tela.
         </div>
         <div class="center como-cta">
           <a href="#oferta" class="btn">
-            <span class="material-symbols-rounded">rocket_launch</span>Quero começar o desafio hoje
+            <span class="material-symbols-rounded">rocket_launch</span>Quero transformar parte desse tempo em criação
           </a>
         </div>
       </div>
@@ -513,11 +506,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== ENTREGÁVEIS ===== -->
     <section class="sec gifts">
       <div class="wrap center">
-        <span class="eyebrow">O que seu filho leva nesses 5 dias</span>
-        <h2 class="reveal">Tudo que vem junto pra ele<br />chegar no jogo pronto</h2>
+        <span class="eyebrow">O que está incluído</span>
+        <h2 class="reveal">Tudo o que ele precisa para chegar<br />ao primeiro jogo pronto</h2>
         <p class="sub">
-          Além do desafio guiado, vem tudo que ajuda a criança a chegar no jogo pronto, e um guia
-          simples pra você acompanhar sem entender nada de tecnologia.
+          A trilha, as instruções e o ambiente de criação ficam reunidos no mesmo acesso.
         </p>
         <div class="gift-grid">
           <div class="gift reveal">
@@ -545,8 +537,8 @@ const img = (file: string) => `${imagesBase}/${file}`
             </figure>
             <h4>Estúdio e blocos feitos pra criança</h4>
             <p>
-              Abre dentro da própria aula, sem instalar nada. A parte chata já vem resolvida. Ela
-              monta o jogo peça por peça, com lógica de verdade e sem escrever código.
+              Abre dentro da própria aula, sem instalar programas. A criança monta o projeto com
+              comandos visuais em blocos.
             </p>
           </div>
           <div class="gift reveal">
@@ -576,7 +568,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               />
             </figure>
             <h4>Passo a passo em vídeo</h4>
-            <p>Curto, direto e no jeito que uma criança consegue acompanhar sozinha.</p>
+            <p>Aulas em vídeo e instruções dentro da própria atividade.</p>
           </div>
           <div class="gift reveal">
             <figure class="art">
@@ -608,7 +600,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             <p>Em PDF ou imagem, gerado ao terminar o desafio.</p>
           </div>
         </div>
-        <!-- fala da Debinha pra criança -->
+        <!-- personagem como apoio visual; copy dirigida aos pais -->
         <div class="kid rosa reveal">
           <div class="char">
             <figure class="art">
@@ -623,13 +615,13 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Debinha</span>
           </div>
           <div class="bubble">
-            Quando o seu jogo fica pronto, aparece um link. Você manda esse link pro seu melhor
-            amigo e ele joga o SEU jogo no celular dele. Imagina a cara que ele vai fazer.
+            Ao terminar, seu filho pode publicar o jogo e compartilhar o link com a família. A
+            criação acontece no computador; o jogo publicado pode ser aberto em outros dispositivos.
           </div>
         </div>
         <p class="scope-note">
-          Este produto não inclui acompanhamento individual. Se ele travar num passo, é só voltar
-          nas orientações da própria trilha e repetir quantas vezes quiser.
+          Inclui 30 dias de acesso contados da aprovação do pagamento. Este produto não inclui
+          acompanhamento individual; as orientações ficam disponíveis durante esse período.
         </p>
       </div>
     </section>
@@ -637,60 +629,42 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== O QUE ELE DESENVOLVE ===== -->
     <section class="sec menta">
       <div class="wrap center">
-        <span class="eyebrow">Vai muito além do jogo</span>
-        <h2 class="reveal">O que ele desenvolve<br />criando o primeiro jogo</h2>
+        <span class="eyebrow">O que a experiência exercita</span>
+        <h2 class="reveal">Ações que não aparecem<br />quando ele só joga.</h2>
         <p class="sub">
-          O jogo é o que ele mostra pra todo mundo. Por baixo dele, cresce um monte de coisa que
-          fica pra vida.
+          A proposta é oferecer prática guiada dentro de um projeto concreto, sem prometer um
+          resultado escolar ou comportamental.
         </p>
         <div class="gift-grid">
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">psychology</span></div>
-            <h4>Raciocínio e lógica</h4>
-            <p>
-              Montando o jogo, ele sente na prática que a ordem dos passos muda o resultado. É
-              pensamento lógico de verdade, brincando.
-            </p>
+            <h4>Dividir um projeto</h4>
+            <p>Organizar a criação em etapas curtas, com uma entrega observável por encontro.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">flag</span></div>
-            <h4>Persistência</h4>
-            <p>
-              Levar uma trilha do começo ao fim, dividida em pequenas vitórias, treina o terminar o
-              que começou. Serve pra escola e pra vida.
-            </p>
+            <h4>Relacionar comando e efeito</h4>
+            <p>Perceber como cada bloco altera movimento, colisão, pontos ou vidas na tela.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">emoji_events</span></div>
-            <h4>Confiança de "eu consigo"</h4>
-            <p>
-              Ver o jogo funcionar muda a ideia de "isso é difícil demais" pra "eu fiz isso". Ele
-              passa a se apresentar como quem criou um jogo.
-            </p>
+            <h4>Testar e ajustar</h4>
+            <p>Observar o que aconteceu e mudar uma regra quando o resultado não era o esperado.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">swap_horiz</span></div>
-            <h4>De jogador pra criador</h4>
-            <p>
-              Ele para de só consumir o jogo dos outros e vira quem faz. Isso muda como ele olha pra
-              toda tecnologia à volta.
-            </p>
+            <h4>Tomar decisões</h4>
+            <p>Escolher regras, movimento e dificuldade dentro do primeiro projeto.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">explore</span></div>
-            <h4>Autonomia</h4>
-            <p>
-              Ele aprende a seguir um caminho e resolver sozinho, sem depender de alguém traduzindo
-              cada passo pra ele.
-            </p>
+            <h4>Fechar uma versão jogável</h4>
+            <p>Levar a criação até um estado que possa ser aberto, jogado e compartilhado.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">rocket</span></div>
-            <h4>Uma base pro futuro</h4>
-            <p>
-              Criar com tecnologia é uma habilidade que só vale mais com o tempo. Ele começa cedo,
-              do jeito mais divertido, com a primeira peça de um portfólio que pode crescer.
-            </p>
+            <h4>Explicar o que criou</h4>
+            <p>Mostrar o jogo e contar quais escolhas fazem a nave, os pontos e as vidas funcionarem.</p>
           </div>
         </div>
       </div>
@@ -699,40 +673,37 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== FAÇA AS CONTAS ===== -->
     <section class="sec contas">
       <div class="wrap center">
-        <span class="eyebrow">O melhor jeito de gastar {priceLabelShort}</span>
-        <h2 class="reveal">Faz a conta do que já se gasta<br />pra desenvolver uma criança</h2>
+        <span class="eyebrow">O papel dos pais</span>
+        <h2 class="reveal">Você não precisa saber programar.</h2>
         <p class="sub">
-          Todo pai quer ficar tranquilo sabendo que o interesse do filho vai virar algo produtivo, que
-          faz diferença na vida dele e abre possibilidades melhores lá na frente. Veja onde
-          {priceLabelShort} se encaixa nisso.
+          Seu papel é ajudar a reservar o momento, garantir um computador compatível e celebrar as
+          pequenas entregas. O caminho técnico aparece passo a passo para a criança.
         </p>
         <div class="anchor-list">
           <div class="arow reveal">
             <div class="al-name">
-              Mensalidade de atividade extracurricular <small>esporte, música, reforço</small>
+              Reserve um encontro curto <small>escolha um momento possível na rotina</small>
             </div>
-            <div class="al-val">R$ 150 a 400 <span>por mês</span></div>
+            <div class="al-val"><span class="material-symbols-rounded">event</span></div>
           </div>
           <div class="arow reveal">
-            <div class="al-name">Sessão de acompanhamento ou terapia</div>
-            <div class="al-val">R$ 150 a 300 <span>cada uma</span></div>
+            <div class="al-name">Garanta um computador compatível</div>
+            <div class="al-val"><span class="material-symbols-rounded">computer</span></div>
           </div>
           <div class="arow reveal">
-            <div class="al-name">Brinquedo novo ou lanche de shopping</div>
-            <div class="al-val">R$ 50 a 150 <span>some numa tarde</span></div>
+            <div class="al-name">Acompanhe o primeiro acesso</div>
+            <div class="al-val"><span class="material-symbols-rounded">family_restroom</span></div>
           </div>
           <div class="arow hi reveal">
             <div class="al-name">
-              Desafio do Primeiro Jogo <small>e no domingo já tem um jogo feito por ele</small>
+              Celebre cada parte funcionando <small>o progresso fica salvo durante o acesso</small>
             </div>
-            <div class="al-val">{priceLabelShort} <span>uma vez</span></div>
+            <div class="al-val"><span class="material-symbols-rounded">celebration</span></div>
           </div>
         </div>
         <div class="ponto reveal">
-          <b>O ponto:</b> por menos que qualquer uma dessas coisas, você faz duas ao mesmo tempo.
-          Aponta o interesse dele pra criar e descobre, com o jogo na mão, se esse é o talento que
-          vale a pena desenvolver de verdade. No lugar de mais um gasto que some numa tarde, fica
-          uma habilidade que começa a crescer e uma resposta clara sobre o próximo passo.
+          Se a criança precisar retomar, o progresso fica salvo durante o período de acesso. Os
+          cinco dias são uma sequência recomendada, não uma obrigação de calendário.
         </div>
       </div>
     </section>
@@ -741,8 +712,8 @@ const img = (file: string) => `${imagesBase}/${file}`
     <section class="sec auth">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Quem está do outro lado da trilha</span>
-          <h2 class="reveal">Por trás do desafio tem<br />uma família como a sua</h2>
+        <span class="eyebrow">Quem criou</span>
+          <h2 class="reveal">Feito por uma família de desenvolvedores<br />para crianças que querem experimentar o criar.</h2>
         </div>
         <div class="grid">
           <figure class="art reveal">
@@ -788,9 +759,9 @@ const img = (file: string) => `${imagesBase}/${file}`
             </p>
             <!-- historia-andre:fim -->
             <p>
-              Foi por viver isso dentro de casa que a gente montou este desafio: pra outros pais
-              apontarem o interesse do filho pra criação e verem o primeiro joguinho jogável feito
-              pela própria criança em 5 dias.
+              Criamos o Sistema Zero para encurtar a distância entre o interesse por jogos e a
+              primeira criação funcionando. O Desafio organiza essa experiência em etapas pequenas,
+              visuais e possíveis de acompanhar em família.
             </p>
           </div>
         </div>
@@ -800,10 +771,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== DEPOIMENTOS ===== -->
     <section class="sec">
       <div class="wrap center">
-        <span class="eyebrow">Quem já criou o primeiro jogo</span>
-        <h2 class="reveal">As primeiras crianças<br />que fizeram o desafio</h2>
+        <span class="eyebrow">Prova social</span>
+        <h2 class="reveal">O que as primeiras famílias perceberam</h2>
         <p class="sub">
-          Elas entraram como quem só jogava e saíram com o primeiro jogo criado por elas.
+          Relatos sobre fatos observáveis: começar, terminar, mostrar o jogo e querer modificar uma regra.
         </p>
         <div class="depo-grid">
           <div class="depo reveal">
@@ -870,9 +841,9 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== OFERTA ===== -->
     <section class="sec oferta" id="oferta">
       <div class="wrap center">
-        <span class="eyebrow">O resumo de tudo</span>
+        <span class="eyebrow">A oferta</span>
         <h2 class="reveal">
-          Um pagamento, acesso pra sempre, e o<br />jogo dele funcionando em 5 dias
+          Um primeiro projeto com começo, meio e fim<br />e 30 dias para concluir com tranquilidade.
         </h2>
         <div class="offer-card reveal">
           <div class="offer-top">
@@ -899,36 +870,52 @@ const img = (file: string) => `${imagesBase}/${file}`
               <li>
                 <span class="material-symbols-rounded">check_circle</span>Certificado de conclusão
               </li>
+              <li>
+                <span class="material-symbols-rounded">check_circle</span>30 dias de acesso a partir
+                da aprovação
+              </li>
             </ul>
             <div class="price-row">
-              <div class="from">De <s>R$ 97</s> por</div>
-              <div class="now">{priceLabelShort}<small> à vista</small></div>
-              <div class="cond">Pagamento único · Acesso vitalício</div>
+              {
+                validCoupon ? (
+                  <>
+                    <div class="from">Preço público: {priceLabelShort}</div>
+                    <div class="from">Desconto do evento: − {discountLabel}</div>
+                    <div class="now">{displayedTotal}<small> total hoje</small></div>
+                    <div class="cond">Cupom {validCoupon.code} aplicado</div>
+                  </>
+                ) : (
+                  <>
+                    <div class="now">{priceLabelShort}<small> à vista</small></div>
+                    <div class="cond">Pagamento único · Não é assinatura</div>
+                  </>
+                )
+              }
             </div>
             <p class="anchor">
-              Menos que uma mensalidade de atividade extracurricular ou uma única sessão de
-              acompanhamento. Menos que aquele lanche de shopping que some numa tarde, só que este
-              deixa um jogo feito pelo seu filho.
+              Trilha de cinco etapas, estúdio infantil de programação em blocos, vídeos, mapa dos
+              pais, publicação e certificado.
             </p>
             <div class="warranty">
               <div class="seal"><span class="material-symbols-rounded">verified_user</span></div>
               <p>
-                Se em 7 dias você sentir que não foi pra vocês, escreve pra gente e a gente devolve
-                os <b>{priceLabelShort}, sem perguntar nada.</b> O risco fica do nosso lado, não do seu.
+                Você tem <b>7 dias para conhecer por dentro.</b> Se perceber que o Desafio não faz
+                sentido para sua família, peça o reembolso pelos canais informados no checkout. A
+                garantia não aumenta nem reinicia os 30 dias de acesso.
               </p>
             </div>
             <div class="offer-cta">
               <button type="button" class="btn big btn-oferta" data-checkout-cta>
-                <span class="material-symbols-rounded">sports_esports</span>Quero o primeiro jogo do
-                meu filho em 5 dias
+                <span class="material-symbols-rounded">sports_esports</span>Quero dar esse primeiro
+                passo ao meu filho
               </button>
               <p class="mini">
-                Acesso imediato · Pagamento único · Acesso vitalício · Garantia de 7 dias
+                30 dias a partir da aprovação · Pagamento único · Sem renovação · Garantia de 7 dias
               </p>
             </div>
           </div>
         </div>
-        <!-- fala do Zappy pra criança -->
+        <!-- personagem como apoio visual; copy dirigida aos pais -->
         <div class="kid fecho reveal">
           <div class="char">
             <figure class="art">
@@ -943,8 +930,8 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Zappy</span>
           </div>
           <div class="bubble">
-            Tá esperando o quê? Do outro lado desse botão tem uma nave, uns asteroides e um jogo que
-            ainda não existe, porque quem vai fazer é você. Chama seu pai e bora começar o Dia 1.
+            Depois da aprovação, vocês têm 30 dias para abrir a trilha, organizar os encontros e
+            chegar ao primeiro jogo sem transformar os cinco dias em uma corrida.
           </div>
         </div>
       </div>
@@ -957,157 +944,82 @@ const img = (file: string) => `${imagesBase}/${file}`
         <h2 class="reveal">Vê se a sua dúvida está aqui</h2>
         <div class="faq-wrap">
           <details class="faq">
-            <summary
-              >Como eu acesso o desafio depois de comprar?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
+            <summary>Isso significa mais tempo de tela?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Assim que o pagamento é confirmado, o acesso cai na hora, direto no seu e-mail. É só
-              abrir no computador, entrar no ambiente e a criança já começa o Dia 1.
+              A proposta é substituir uma pequena parte do tempo de consumo que já existe, não
+              acrescentar horas à rotina. Cada família continua decidindo seus limites e horários.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Recebo tudo de uma vez ou é liberado aos poucos?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
+            <summary>Para qual idade foi criado?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Tudo de uma vez. Os 5 dias e os materiais ficam no mesmo acesso, então a criança segue
-              no ritmo dela, um dia por vez ou tudo num fim de semana.
+              Para crianças a partir de 9 anos que já leem e usam o computador com alguma autonomia.
+              Um responsável pode ajudar na organização e no primeiro acesso.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Por quanto tempo eu tenho acesso?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>Precisa saber programar?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Você paga uma vez, sem mensalidade e sem renovação, e volta quando quiser. A criança
-              pode refazer o desafio e abrir o jogo dela sempre que der vontade. E, sendo
-              transparente: acesso vitalício vale enquanto a Informach (Núcleo de Aprendizagem), a
-              empresa por trás do desafio, existir e a plataforma estiver no ar, como em qualquer
-              produto digital.
+              Não. A criança começa com blocos visuais e segue um caminho guiado. Os pais também não
+              precisam entender de programação.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >E se a criança travar num passo?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>Funciona no celular ou tablet?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              A trilha é dividida em pequenas vitórias justamente pra reduzir a chance de travar no
-              meio. Se ela parar num passo, é só voltar nas orientações da própria trilha e repetir
-              quantas vezes quiser, no ritmo dela, até a parte ficar pronta.
+              As aulas e o jogo publicado podem ser vistos em outros dispositivos, mas a criação no
+              Estúdio deve ser feita em um computador compatível.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Meu filho já larga tudo. Vai largar este também?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>São cinco dias corridos?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Criança que mergulha fundo num assunto larga o que está fora dele. A diferença aqui é
-              que o desafio entra bem dentro do que ele ama, jogo e tecnologia. Some a isso o resultado
-              que aparece já no primeiro dia e cada sessão fechando com algo pronto, e você tira os
-              dois motivos que fazem uma criança largar.
+              Cinco dias é a sequência recomendada, com uma etapa por encontro. O acesso completo
+              fica disponível por 30 dias a partir da aprovação do pagamento.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Serve pra qualquer criança?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>O que acontece depois dos 30 dias?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Serve pra qualquer criança a partir de 9 anos que passa horas em jogo e tecnologia. É
-              esse interesse que o desafio usa a favor dela.
+              O acesso às aulas do Desafio termina. O progresso e os projetos permanecem salvos. Se
+              a família entrar na Comunidade dos Criadores, o Desafio volta a ficar disponível
+              enquanto a assinatura estiver ativa.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Será que meu filho tem perfil pra isso?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
+            <summary>É assinatura?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              A pergunta certa não é se ele tem perfil, é se o caminho foi feito pra ele conseguir.
-              Os blocos foram desenhados pra criança, com a parte difícil já encaixada, e cada passo
-              vem isolado. Se ele lê e mexe no computador, ele monta o jogo até o fim, com
-              experiência prévia ou não.
+              Não. O Desafio é um pagamento único de {priceLabelShort}, ou {displayedTotal} quando
+              um cupom de evento válido estiver aplicado. Não há renovação automática.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Eu não entendo nada de programação. Vou conseguir ajudar?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>Quem comprou o acesso vitalício perde alguma coisa?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Você não precisa entender de programação. A criança avança sozinha, uma sessão por
-              dia, num ambiente já preparado. Seu papel é garantir o computador e o tempo. O resto é
-              com ela.
+              Não. Compras vitalícias anteriores continuam vitalícias. A condição de 30 dias vale
+              somente para a nova oferta e para quem a comprar depois da mudança.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Tem Scratch e tutorial de graça. Por que pagar por isso?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>A Comunidade dos Criadores inclui o Desafio?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              O que é grátis é a ferramenta, não o caminho. Scratch e vídeo de YouTube existem de
-              graça, e mesmo assim a maioria das crianças larga no meio, porque se perde. Aqui você
-              paga por uma trilha curta e testada, que leva do zero a um jogo pronto sem a criança
-              travar no caminho.
+              Sim. Assinantes têm acesso ao Desafio enquanto a assinatura estiver ativa, além das
+              outras experiências incluídas no plano contratado.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >Meu filho tem dificuldade de manter o foco em outras coisas. Esse formato funciona
-              pra ele?<span class="material-symbols-rounded">add</span></summary
-            >
+            <summary>Tem garantia?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Funciona justamente porque entra dentro do que já prende a atenção dele, e entrega
-              resultado no primeiro dia, dividindo o caminho em cinco vitórias curtas, sem etapa
-              longa entre uma vitória e outra. Vale pra qualquer criança a partir de 9 anos: vitória
-              rápida prende a atenção de todas.
+              Sim. Você pode conhecer a plataforma e pedir reembolso em até 7 dias após a compra,
+              conforme as instruções do checkout. A garantia não estende o acesso.
             </div>
           </details>
           <details class="faq">
-            <summary
-              >O jogo fica pronto de verdade ou é só uma demonstração?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
+            <summary>Meu filho vai melhorar foco ou desempenho escolar?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Fica pronto de verdade. No fim dos 5 dias o jogo abre, responde aos comandos da
-              criança e pode ser jogado e mostrado pra família. É o primeiro joguinho jogável dela,
-              rodando no computador de casa.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Que idade é a certa pra fazer o desafio?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Foi pensado pra crianças a partir de 9 anos, que já leem e mexem no computador com
-              tranquilidade. As mais velhas também aproveitam, e costumam terminar mais rápido e
-              querer expandir o jogo depois.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >E se for dinheiro jogado fora?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              São {priceLabelShort}, uma vez, com garantia de 7 dias. Em 5 dias você descobre, com o
-              jogo na mão, se esse é o talento que vale a pena desenvolver, antes de investir num
-              caminho mais caro. Se não for pra vocês, a gente devolve.
+              O Desafio oferece uma prática curta de criação, teste e conclusão de projeto. Cada
+              criança responde de um jeito, por isso não prometemos resultado escolar, clínico ou
+              comportamental específico.
             </div>
           </details>
         </div>
@@ -1136,31 +1048,45 @@ const img = (file: string) => `${imagesBase}/${file}`
             loading="lazy"
           />
         </figure>
-        <h2 class="reveal">Aponte o interesse dele pra criação<br />já neste fim de semana</h2>
+        <h2 class="reveal">O primeiro jogo não precisa ficar para “um dia”.<br />Pode começar com uma pequena parte do tempo que já existe.</h2>
         <p class="sub">
-          Em 5 dias, seguindo a trilha, aquele interesse todo vira o primeiro jogo jogável dele. Ele
-          acha que passou a tarde brincando. Você sabe que ele passou a tarde criando.
+          Em cinco etapas, seu filho deixa de apenas seguir as regras de um jogo e experimenta criar
+          as próprias. Você acompanha sem precisar programar, e os dois terminam com algo concreto
+          para abrir, jogar e compartilhar.
         </p>
         <div class="final-cta">
           <button type="button" class="btn big" data-checkout-cta>
-            <span class="material-symbols-rounded">sports_esports</span>Quero o primeiro jogo do meu
-            filho em 5 dias
+            <span class="material-symbols-rounded">sports_esports</span>Quero transformar parte desse
+            tempo em criação
           </button>
         </div>
         <p class="price-line">
-          De <s>R$ 97</s> por <span class="now">{priceLabelShort}</span> · Pagamento único · Acesso vitalício
-          · Garantia de 7 dias
+          {
+            validCoupon ? (
+              <>
+                De <s>{priceLabelShort}</s> por <span class="now">{displayedTotal}</span> · Cupom
+                {' '}{validCoupon.code} aplicado · 30 dias de acesso · Garantia de 7 dias
+              </>
+            ) : (
+              <>
+                <span class="now">{priceLabelShort}</span> · Pagamento único · 30 dias de acesso ·
+                Garantia de 7 dias
+              </>
+            )
+          }
         </p>
         <p class="anchor">
-          Menos que uma mensalidade de atividade extracurricular, e o que some numa tarde é só o
-          lanche, não o que ele criou.
+          Não é assinatura. Não há renovação automática.
         </p>
       </div>
     </section>
 
     <!-- ===== BARRA FIXA MOBILE ===== -->
     <div class="mobar">
-      <div class="p"><s>R$ 97</s> {priceLabelShort} <span class="dias">· 5 dias</span></div>
+      <div class="p">
+        {validCoupon ? <><s>{priceLabelShort}</s> {displayedTotal}</> : priceLabelShort}
+        <span class="dias">· 30 dias</span>
+      </div>
       <a href="#oferta" class="btn mobar-btn">
         <span class="material-symbols-rounded">bolt</span>Começar
       </a>
@@ -1168,9 +1094,14 @@ const img = (file: string) => `${imagesBase}/${file}`
   </div>
 
   <!-- Rodapé institucional único dos funis kids (o mesmo do checkout/obrigado). -->
-  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} />
 
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+  <PreCheckoutModal
+    client:idle
+    basePath={f.basePath}
+    funnel={f.key}
+    couponCode={checkoutCouponCode}
+  />
 </BaseLayout>
 
 <script>
@@ -1687,8 +1618,10 @@ const img = (file: string) => `${imagesBase}/${file}`
       margin-right: auto;
     }
     .dpj .hero-art {
-      order: -1;
-      max-width: 460px;
+      /* Em telas estreitas a promessa e as condições comerciais vêm antes da
+         ilustração; a primeira dobra não pode ser ocupada só pela imagem. */
+      order: initial;
+      max-width: 380px;
       margin: 0 auto;
     }
   }
@@ -2171,6 +2104,16 @@ const img = (file: string) => `${imagesBase}/${file}`
     font-size: 0.88rem;
     margin: 22px auto 0;
     max-width: 640px;
+  }
+  .dpj .coupon-alert {
+    margin-top: 14px;
+    border: 2px solid #f2b84b;
+    border-radius: 14px;
+    background: #fff8dd;
+    padding: 12px 14px;
+    color: #5d4210;
+    font-size: 0.9rem;
+    line-height: 1.45;
   }
   @media (max-width: 760px) {
     .dpj .gift-grid {

@@ -12,9 +12,11 @@ export interface PreCheckoutModalProps {
   basePath: string
   /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
   funnel: string
+  /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
+  couponCode?: string | null
 }
 
-export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalProps) {
+export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
   // opcional — usado pelos funis de assinatura pra pré-selecionar o plano no
@@ -113,6 +115,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
       // Plano escolhido no CTA → o checkout pré-seleciona (validado no servidor
       // contra {principal, altOffer} — slug forjado dá 400 INVALID_OFFER).
       if (oferta) q.set('oferta', oferta)
+      if (couponCode) q.set('cupom', couponCode)
       // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
       await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
       window.location.href = `${basePath}/checkout?${q.toString()}`

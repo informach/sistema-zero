@@ -4,11 +4,18 @@ import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
 import { getFunnel } from '../../../funnels/registry'
 import CheckoutForm from '../../../islands/CheckoutForm'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import {
+  computeFixedAccessExpiry,
+  fixedAccessFromOffer,
+  fixedAccessLabel,
+  formatSaoPauloDateTime,
+} from '../../../lib/access-period'
 import { ContactSchema } from '../../../lib/contact-schema'
 import { getLeadId, leadCookie } from '../../../lib/lead-session'
 import { formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import { getActiveOffer } from '../../../server/catalog'
+import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
 
@@ -87,8 +94,19 @@ const initialContact = {
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
 const offerSlug = resolveOfferSlug(env, f.key)
 const offer = await getActiveOffer(gateway, offerSlug, { log })
-const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+const initialCoupon = await resolveCouponPresentation(gateway, offerSlug, sp)
+// Uma cotação válida é mais nova e mais autoritativa que o cache curto da view.
+const priceCents =
+  initialCoupon.status === 'valid'
+    ? initialCoupon.listPriceCents
+    : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const productName = offer?.productName || f.productName
+const fixedAccess = fixedAccessFromOffer(offer)
+const accessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
+const estimatedAccessEnd = fixedAccess
+  ? formatSaoPauloDateTime(computeFixedAccessExpiry(new Date(), fixedAccess))
+  : null
+const guaranteeDays = offer?.guaranteeDays ?? 7
 
 // Assinatura: sufixo /mês|/ano no preço + oferta IRMÃ do alternador (catálogo).
 const isSubscription = offer?.pricingMode === 'subscription'
@@ -99,7 +117,9 @@ const priceNote = isSubscription
   ? interval === 12
     ? 'Assinatura anual · acesso imediato'
     : 'Assinatura mensal · acesso imediato'
-  : 'Pagamento único · acesso imediato'
+  : fixedAccess
+    ? `Pagamento único · ${accessLabel} a partir da aprovação`
+    : 'Pagamento único · acesso imediato'
 
 // Oferta irmã (alternador mensal↔anual): busca a view p/ preço/intervalo. Falha
 // do catálogo degrada SEM alternador (o checkout da principal segue funcionando).
@@ -136,6 +156,16 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
 >
   <!-- Sem header: o checkout abre direto no card do produto (estilo Hotmart). -->
   <main class="mx-auto max-w-xl px-4 py-10 sm:py-12">
+    {
+      f.key === 'kids/desafio-primeiro-jogo' && (
+        <div class="mb-6 text-center">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
+          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
+            Falta um passo para começar o primeiro jogo.
+          </h1>
+        </div>
+      )
+    }
     <!-- ── Produto ─────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
@@ -168,11 +198,17 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
         offerSlug={offerSlug}
         altOffer={altOffer}
         initialChoice={initialChoice}
+        initialCoupon={initialCoupon}
+        accessLabel={accessLabel}
+        estimatedAccessEnd={estimatedAccessEnd}
+        guaranteeDays={guaranteeDays}
+        termsHref={`/${f.audience}/termos`}
+        privacyHref={`/${f.audience}/privacidade`}
       />
     </div>
 
     <p class="mt-6 text-center text-xs text-muted">
-      Pagamento processado com segurança. Garantia de 7 dias.
+      Pagamento processado com segurança. Garantia de {guaranteeDays} dias.
     </p>
   </main>
 

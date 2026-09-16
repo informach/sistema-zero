@@ -71,26 +71,24 @@ const P3_LABELS: Record<string, string> = {
   videos_tutoriais: 'vídeos e tutoriais',
 }
 const P5_LABELS: Record<string, string> = {
-  consome_nao_cria:
-    'ele consome muito sobre o que ama, mas quase nada disso vira algo criado por ele',
-  copia_e_trava: 'ele copia coisas de tutorial, mas trava quando precisa mudar algo',
-  tela_e_tensao: 'esse interesse às vezes vira só mais tempo de tela e tensão em casa',
-  interesse_sem_resultado:
-    'o interesse forte por jogos ou tecnologia ainda não virou uma habilidade concreta',
+  consome_nao_cria: 'ele consome muito, mas quase nada vira uma criação própria',
+  copia_e_trava: 'ele acompanha tutoriais, mas trava quando precisa mudar alguma coisa',
+  tela_e_tensao: 'o assunto às vezes vira só mais tempo de tela e tensão em casa',
+  interesse_sem_resultado: 'existe muito interesse, mas ainda falta um projeto concreto',
 }
 // P8 (o que o pai mais gostaria de ver primeiro) → encaixa em "sonha ver {resposta_p8}".
 const P8_LABELS: Record<string, string> = {
-  mostrar_familia: 'ele chamando a família pra mostrar o que criou',
-  escola_colegas: 'ele levando pra escola e os colegas querendo ver',
-  abrir_para_criar: 'ele abrindo o computador com vontade de criar',
-  terminar_e_continuar: 'ele terminando algo do começo ao fim e já querendo o próximo',
+  mostrar_familia: 'ele chamando a família para mostrar algo que criou',
+  escola_colegas: 'ele compartilhando um projeto com colegas',
+  abrir_para_criar: 'ele abrindo o computador também para criar',
+  terminar_e_continuar: 'ele concluindo um projeto curto e querendo experimentar o próximo',
 }
 // P10 (o que o pai sonha que ele se torne) → encaixa em "quer ver {resposta_p10}".
 const P10_LABELS: Record<string, string> = {
-  criar_proprio: 'ele criando as próprias coisas, e não só consumindo as dos outros',
-  desenvolver_habilidade: 'ele com um talento de verdade no que ama',
-  terminar_e_mostrar: 'ele se orgulhando do que faz',
-  virar_aprendizado: 'essa paixão virando aprendizado pra vida',
+  criar_proprio: 'autoria, criando coisas próprias além de consumir as dos outros',
+  desenvolver_habilidade: 'uma habilidade que ele tenha prazer em desenvolver',
+  terminar_e_mostrar: 'orgulho de terminar e compartilhar o que fez',
+  virar_aprendizado: 'aprendizado que continue para além de um passatempo',
 }
 
 /** Resolve {resposta_p3}/{resposta_p5}/{resposta_p8}/{resposta_p10}/{resultado} no diagnóstico. */

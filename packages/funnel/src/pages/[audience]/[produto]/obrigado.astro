@@ -4,21 +4,43 @@ import Header from '../../../components/Header.astro'
 import { EMPRESA } from '../../../content/legal'
 import { getFunnel } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { clearLeadCookie } from '../../../lib/lead-session'
+import {
+  computeFixedAccessExpiry,
+  fixedAccessFromSnapshot,
+  fixedAccessLabel,
+  formatSaoPauloDate,
+  formatSaoPauloDateTime,
+} from '../../../lib/access-period'
+import { getLeadId } from '../../../lib/lead-session'
 import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
+import { parsePurchasedOfferSnapshot } from '../../../server/purchased-offer-snapshot'
 
-// SSR (não estática) só para EXPIRAR o cookie do lead após a compra: assim um novo
-// checkout começa limpo (sem CPF/dados antigos; nome/e-mail/telefone voltam da URL).
+// SSR (não estática): lê a aprovação e o snapshot congelado para mostrar a data
+// contratual exata. O checkout já rejeita/recria leads pagos em uma nova compra;
+// manter a sessão aqui permite recarregar a confirmação sem perder o comprovante.
 export const prerender = false
 
 // Funil resolvido pela URL. Inexistente → 404.
 const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 
-const { env } = getDeps()
+const { env, repo } = getDeps()
 Astro.response.headers.set('cache-control', 'no-store')
-Astro.response.headers.append('set-cookie', clearLeadCookie(env.NODE_ENV === 'production'))
+
+const leadId = getLeadId(Astro.request)
+const lead = leadId ? await repo.getLead(leadId) : null
+const paymentContext = lead?.paymentId ? await repo.paymentContext(lead.paymentId) : null
+const purchased = parsePurchasedOfferSnapshot(paymentContext?.offerSnapshot ?? null)
+const fixedAccess = fixedAccessFromSnapshot(purchased)
+const approved = Boolean(lead?.paidAt)
+const accessEnd =
+  approved && lead?.paidAt && fixedAccess
+    ? computeFixedAccessExpiry(lead.paidAt, fixedAccess)
+    : null
+const buyerEmail = paymentContext?.email ?? lead?.email ?? null
+const isTimedChallenge = f.key === 'kids/desafio-primeiro-jogo' && fixedAccess !== null
+const timedAccessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
 
 // CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
 // audiência: o funil kids leva ao app KIDS, não ao community adulto.
@@ -31,10 +53,18 @@ const introObrigado = f.content.obrigado.intro ?? 'Obrigado por assumir o comand
 const productName = f.productName
 // Artigo do produto ("acesso AO Desafio" × "acesso À Comunidade") — do FunnelCopy.
 const acessoArtigo = f.content.copy.artigo === 'a' ? 'à' : 'ao'
+const pageTitle = approved
+  ? `Compra confirmada | ${productName}`
+  : `Pagamento em análise | ${productName}`
+const confirmationTitle = approved
+  ? isTimedChallenge
+    ? `Pagamento aprovado. Os ${timedAccessLabel} do Desafio começam agora.`
+    : 'Pagamento confirmado!'
+  : 'Pagamento ainda aguardando confirmação.'
 ---
 
 <BaseLayout
-  title={`Compra confirmada | ${productName}`}
+  title={pageTitle}
   description={f.seoDescription}
   ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   noindex={true}
@@ -44,20 +74,42 @@ const acessoArtigo = f.content.copy.artigo === 'a' ? 'à' : 'ao'
   <main class="mx-auto max-w-2xl px-4 py-14 sm:py-20">
     <!-- ── Confirmação ──────────────────────────────────────────────────── -->
     <section class="reveal-up text-center">
-      <div class="check-badge mx-auto" aria-hidden="true">
+      <div class:list={['check-badge mx-auto', { pending: !approved }]} aria-hidden="true">
         <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M5 12.5l4.5 4.5L19 7.5"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"></path>
+          {
+            approved ? (
+              <path
+                d="M5 12.5l4.5 4.5L19 7.5"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            ) : (
+              <>
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" />
+                <path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </>
+            )
+          }
         </svg>
       </div>
-      <h1 class="mt-6 text-3xl font-extrabold sm:text-4xl">Pagamento confirmado!</h1>
+      <h1 class="mt-6 text-3xl font-extrabold sm:text-4xl">{confirmationTitle}</h1>
       <p class="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted">
-        {introObrigado} O seu acesso {acessoArtigo}
-        <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.
+        {
+          approved ? (
+            isTimedChallenge && accessEnd ? (
+              <>
+                Seu acesso vai até <strong class="text-ink">{formatSaoPauloDateTime(accessEnd)}</strong>.
+                {buyerEmail ? <> Enviamos para <strong class="text-ink">{buyerEmail}</strong> o link para criar sua senha e entrar na área da família.</> : ' O link de acesso foi enviado ao e-mail da compra.'}
+              </>
+            ) : (
+              <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
+            )
+          ) : (
+            <>Os 30 dias ainda não começaram. Assim que o pagamento for aprovado, enviaremos o acesso e a data final para o e-mail da compra.</>
+          )
+        }
       </p>
     </section>
 
@@ -119,14 +171,25 @@ const acessoArtigo = f.content.copy.artigo === 'a' ? 'à' : 'ao'
               </span>
               <div class="min-w-0">
                 <p class="font-bold">{passo.titulo}</p>
-                <p class="mt-1 text-sm leading-relaxed text-muted">{passo.texto}</p>
+                <p class="mt-1 text-sm leading-relaxed text-muted">
+                  {passo.texto}
+                  {isTimedChallenge && accessEnd && i === passos.length - 1
+                    ? ` Data final: ${formatSaoPauloDate(accessEnd)}.`
+                    : ''}
+                </p>
               </div>
             </li>
           ))
         }
       </ol>
 
-      <a href={communityUrl} class="btn btn-primary mt-8 w-full">Ir para a área de membros →</a>
+      {
+        approved && (
+          <a href={communityUrl} class="btn btn-primary mt-8 w-full">
+            {isTimedChallenge ? 'Criar acesso e começar →' : 'Ir para a área de membros →'}
+          </a>
+        )
+      }
 
       <p class="mt-5 text-center text-sm text-muted">
         Não recebeu o e-mail? Fale com a gente em
@@ -157,6 +220,12 @@ const acessoArtigo = f.content.copy.artigo === 'a' ? 'à' : 'ao'
     color: var(--color-lime);
     box-shadow: 0 0 40px color-mix(in srgb, var(--color-lime) 30%, transparent);
     animation: check-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .check-badge.pending {
+    border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent);
+    background-color: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+    color: var(--color-cyan);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--color-cyan) 24%, transparent);
   }
 
   @keyframes check-pop {

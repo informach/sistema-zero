@@ -218,23 +218,37 @@ export async function quotePreview(
   const { status, body } = await gateway.quoteOffer(offerSlug, code)
   if (status === 200) {
     const q = body as {
-      priceCents?: number
-      discountCents?: number
-      finalPriceCents?: number
+      priceCents?: unknown
+      discountCents?: unknown
+      finalPriceCents?: unknown
       coupon?: { code?: string } | null
+    }
+    const coupon = parseQuotedCoupon(q.coupon)
+    if (
+      !positiveInteger(q.priceCents) ||
+      !nonNegativeInteger(q.discountCents) ||
+      !positiveInteger(q.finalPriceCents) ||
+      q.priceCents - q.discountCents !== q.finalPriceCents ||
+      coupon === undefined ||
+      (q.discountCents > 0 && coupon === null) ||
+      Boolean(code) !== Boolean(coupon) ||
+      (code !== undefined && coupon !== null && coupon.toUpperCase() !== code.toUpperCase())
+    ) {
+      return { status: 502, error: 'Não foi possível cotar a oferta.' }
     }
     return {
       status: 200,
       preview: {
         ok: true,
-        priceCents: q.priceCents ?? 0,
-        discountCents: q.discountCents ?? 0,
-        finalPriceCents: q.finalPriceCents ?? q.priceCents ?? 0,
-        couponCode: q.coupon?.code ?? null,
+        priceCents: q.priceCents,
+        discountCents: q.discountCents,
+        finalPriceCents: q.finalPriceCents,
+        couponCode: coupon,
       },
     }
   }
   const errorCode = readErrorCode(body)
+  const errorMessage = readErrorMessage(body)
   if (errorCode === 'OFFER_NOT_AVAILABLE') {
     return { status: 409, error: 'Esta oferta não está disponível no momento.' }
   }
@@ -248,7 +262,7 @@ export async function quotePreview(
         finalPriceCents: 0,
         couponCode: null,
         code: errorCode ?? 'INVALID_COUPON',
-        message: couponMessage(errorCode),
+        message: couponMessage(errorCode, errorMessage),
       },
     }
   }
@@ -397,14 +411,16 @@ function parseAccessPolicy(
   }
 }
 
-function couponMessage(code: string | null): string {
+function couponMessage(code: string | null, detail?: string | null): string {
   switch (code) {
     case 'COUPON_EXHAUSTED':
-      return 'Cupom esgotado.'
+      return 'Os resgates disponíveis para este evento terminaram.'
     case 'COUPON_NOT_APPLICABLE':
-      return 'Cupom não aplicável a esta oferta.'
+      return detail?.toLowerCase().includes('expir')
+        ? 'A validade deste cupom terminou.'
+        : 'Não encontramos esse cupom para esta oferta. Confira o código.'
     default:
-      return 'Cupom inválido.'
+      return 'Não encontramos esse cupom para esta oferta. Confira o código.'
   }
 }
 
@@ -414,6 +430,17 @@ function readErrorCode(body: unknown): string | null {
     if (err && typeof err === 'object' && 'code' in err) {
       const code = (err as { code?: unknown }).code
       if (typeof code === 'string') return code
+    }
+  }
+  return null
+}
+
+function readErrorMessage(body: unknown): string | null {
+  if (body && typeof body === 'object' && 'error' in body) {
+    const err = (body as { error?: unknown }).error
+    if (err && typeof err === 'object' && 'message' in err) {
+      const message = (err as { message?: unknown }).message
+      if (typeof message === 'string') return message
     }
   }
   return null

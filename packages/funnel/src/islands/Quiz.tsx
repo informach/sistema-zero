@@ -24,7 +24,7 @@ export interface QuizProps {
   steps: QuizStep[]
   /** Total de perguntas (para a barra de progresso). */
   total: number
-  landing: { h1: string; subtitulo: string; tempo: string }
+  landing: { badge?: string; h1: string; subtitulo: string; tempo: string }
   /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
   funnel: string
   /** Para onde ir ao concluir o quiz (resultado do funil, ou direto à oferta). */
@@ -162,7 +162,7 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
               <div className="text-center">
                 <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan">
                   <span className="h-1.5 w-1.5 rounded-full bg-cyan" />
-                  Diagnóstico gratuito
+                  {landing.badge ?? 'Diagnóstico gratuito'}
                 </p>
                 <h1 className="mx-auto mt-5 max-w-2xl text-3xl font-extrabold leading-[1.08] text-ink sm:text-[2.6rem]">
                   {landing.h1}

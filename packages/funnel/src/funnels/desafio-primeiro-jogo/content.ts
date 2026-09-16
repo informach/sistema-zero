@@ -13,14 +13,15 @@ import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
 
 export const DESAFIO_PRODUTO: FunnelCopy = {
   nome: 'Desafio do Primeiro Jogo',
-  precoLabel: 'R$ 37',
+  precoLabel: 'R$ 67',
 }
 
 export const DESAFIO_LANDING: FunnelLanding = {
-  h1: 'Seu filho vive em jogo, computador e tecnologia. Descubra o perfil de criador dele',
+  badge: 'Quiz rápido para mães, pais e responsáveis',
+  h1: 'Seu filho já vive entre jogos e telas. Descubra como transformar uma parte desse tempo em criação.',
   subtitulo:
-    'Cada criança mergulha nesse mundo do jeito dela. Responda 10 perguntas rápidas e veja o que esse interesse revela, e o que ele pode virar.',
-  tempo: 'Menos de 3 minutos, e no final o perfil que é só dele.',
+    'Responda 10 perguntas sobre o jeito como ele explora jogos e tecnologia. Em menos de 3 minutos, você recebe um perfil com um primeiro caminho possível — sem diagnóstico e sem promessas mágicas.',
+  tempo: 'Gratuito · menos de 3 minutos · resultado na hora',
 }
 
 // As 10 perguntas, na ordem SPIN (Situação → Problema → Implicação → Necessidade →
@@ -37,35 +38,31 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     tipo: 'multipla_escolha',
     comImagem: true,
     imagemLayout: 'topo',
-    titulo: 'Quando seu filho se interessa muito por alguma coisa, o que mais parece acontecer aí?',
+    titulo: 'Quando seu filho se interessa muito por alguma coisa, o que mais parece acontecer?',
     opcoes: [
       {
         value: 'explorador',
         badge: '🧭',
         image: '/img/desafio-primeiro-jogo/p1-explorador.webp',
-        label:
-          'Ele quer explorar tudo na hora: testa, pergunta, clica, mexe e já quer descobrir a próxima novidade',
+        label: 'Quer explorar tudo: testa, pergunta, clica e logo procura outra novidade.',
       },
       {
         value: 'especialista',
         badge: '📚',
         image: '/img/desafio-primeiro-jogo/p1-especialista.webp',
-        label:
-          'Ele entra fundo em um tema e sabe detalhes que muita gente nem imagina, seja sobre jogos, dinossauros, espaço, personagens, tecnologia ou outro assunto',
+        label: 'Mergulha em um tema e aprende detalhes que pouca gente percebe.',
       },
       {
         value: 'foguete',
         badge: '🔥',
         image: '/img/desafio-primeiro-jogo/p1-foguete.webp',
-        label:
-          'Ele começa com uma energia enorme, mas se demora para ver resultado, a empolgação esfria antes de terminar',
+        label: 'Começa com muita energia, mas pode perder o interesse se o resultado demora.',
       },
       {
         value: 'investigador',
         badge: '🧩',
         image: '/img/desafio-primeiro-jogo/p1-investigador.webp',
-        label:
-          'Ele quer entender como as coisas funcionam por dentro: regras, peças, comandos, fases, mecanismos e por que isso acontece',
+        label: 'Quer entender regras, peças, comandos e como tudo funciona por dentro.',
       },
     ],
   },
@@ -76,7 +73,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     eventName: 'respondeu_pergunta_2',
     tipo: 'input_numero',
     titulo:
-      'Em média, quantas horas por dia seu filho passa em tela só consumindo (jogando, vendo vídeos, tutoriais ou pesquisando)? Não precisa ser exato, é só uma estimativa.',
+      'Em média, quantas horas por dia ele passa em telas só consumindo — jogando, assistindo ou pesquisando?',
     label: 'Horas por dia em tela só consumindo',
     unidade: 'horas',
     min: 0,
@@ -93,25 +90,22 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
       {
         value: 'jogos',
         badge: '🎮',
-        label: 'Em jogos: ele joga, observa fases, personagens, regras e estratégias',
+        label: 'Jogos e suas fases, personagens, regras e estratégias.',
       },
       {
         value: 'tecnologia',
         badge: '🤖',
-        label:
-          'Em tecnologia: ele gosta de mexer, configurar, testar, desmontar ou entender como funciona',
+        label: 'Tecnologia: testar, configurar, montar ou entender como funciona.',
       },
       {
         value: 'temas_especificos',
         badge: '🦖',
-        label:
-          'Em temas específicos: dinossauros, espaço, animais, personagens, histórias, mapas ou coleções',
+        label: 'Temas específicos, como espaço, animais, dinossauros, mapas ou histórias.',
       },
       {
         value: 'videos_tutoriais',
         badge: '📺',
-        label:
-          'Em vídeos e tutoriais: ele assiste muito sobre o mesmo assunto, mas quase nunca transforma isso em algo próprio',
+        label: 'Vídeos e tutoriais que raramente viram algo criado por ele.',
       },
     ],
   },
@@ -121,8 +115,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_4',
     eventName: 'respondeu_pergunta_4',
     tipo: 'sim_nao',
-    titulo:
-      'Já aconteceu de ele começar algo muito animado e a empolgação esfriar no meio do caminho?',
+    titulo: 'Já aconteceu de ele começar algo animado e perder o interesse antes de terminar?',
     opcaoSim: 'Sim, isso acontece por aqui',
     opcaoNao: 'Não, ele costuma terminar o que começa',
   },
@@ -132,28 +125,27 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_5',
     eventName: 'respondeu_pergunta_5',
     tipo: 'multipla_escolha',
-    titulo: 'Pensando nesse interesse do seu filho, o que mais te incomoda hoje?',
+    titulo: 'O que mais incomoda você nessa relação com jogos e tecnologia?',
     opcoes: [
       {
         value: 'consome_nao_cria',
         badge: '🧩',
-        label: 'Ele consome muito sobre o que ama, mas quase nada disso vira algo criado por ele',
+        label: 'Ele consome muito, mas quase nada vira uma criação própria.',
       },
       {
         value: 'copia_e_trava',
         badge: '📝',
-        label: 'Ele copia coisas de tutorial, mas trava quando precisa mudar algo',
+        label: 'Ele acompanha tutoriais, mas trava quando precisa mudar alguma coisa.',
       },
       {
         value: 'tela_e_tensao',
         badge: '⏳',
-        label: 'Esse interesse às vezes vira só mais tempo de tela e tensão em casa',
+        label: 'O assunto às vezes vira só mais tempo de tela e tensão em casa.',
       },
       {
         value: 'interesse_sem_resultado',
         badge: '🎮',
-        label:
-          'Ele tem um interesse forte por jogos, tecnologia ou algum tema específico, mas isso ainda não virou uma habilidade concreta',
+        label: 'Existe muito interesse, mas ainda falta um projeto concreto para canalizá-lo.',
       },
     ],
   },
@@ -163,8 +155,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_6',
     eventName: 'respondeu_pergunta_6',
     tipo: 'calculadora_prefilled',
-    titulo:
-      'Vamos colocar na ponta do lápis. Quantas horas de tela só consumindo o seu filho acumula ao longo de um ano?',
+    titulo: 'Vamos colocar na ponta do lápis: quanto tempo de consumo isso representa em um ano?',
     campo1: {
       key: 'horas_tela_passiva_dia',
       label: 'Horas por dia em tela só consumindo',
@@ -179,7 +170,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     resultadoKey: 'horas_ano_calculadas',
     multiplicador: 52,
     textoResultado:
-      'São cerca de {resultado} horas por ano em que esse interesse aparece na tela, em jogos, vídeos, tutoriais ou pesquisas. É muito tempo do seu filho parado no mesmo lugar, só recebendo o que já vem pronto, ano após ano.',
+      'São cerca de {resultado} horas por ano. A meta não é transformar tudo. É começar com uma pequena parte.',
   },
   {
     id: 7,
@@ -188,7 +179,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     eventName: 'respondeu_pergunta_7',
     tipo: 'slider',
     titulo:
-      'Vendo esse número, o quanto você sente vontade de transformar uma pequena parte desse tempo em algo mais criativo para o seu filho?',
+      'O quanto você gostaria de direcionar uma pequena parte desse tempo para uma criação própria?',
     min: 1,
     max: 10,
     minLabel: 'Por enquanto não é prioridade',
@@ -200,28 +191,27 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_8',
     eventName: 'respondeu_pergunta_8',
     tipo: 'multipla_escolha',
-    titulo:
-      'Agora imagine esse mesmo interesse virando algo que o seu filho cria com as próprias mãos. O que você mais gostaria de ver primeiro?',
+    titulo: 'O que você mais gostaria de ver primeiro?',
     opcoes: [
       {
         value: 'mostrar_familia',
         badge: '👨‍👩‍👧',
-        label: 'Ele chamando a família para mostrar o que ele mesmo criou',
+        label: 'Ele chamando a família para mostrar algo que criou.',
       },
       {
         value: 'escola_colegas',
         badge: '🏫',
-        label: 'Ele levando para a escola e os colegas querendo ver de perto',
+        label: 'Ele compartilhando um projeto com colegas.',
       },
       {
         value: 'abrir_para_criar',
         badge: '😊',
-        label: 'Ele abrindo o computador com vontade de criar, não só de consumir',
+        label: 'Ele abrindo o computador também para criar, não só para consumir.',
       },
       {
         value: 'terminar_e_continuar',
         badge: '🔁',
-        label: 'Ele terminando algo do começo ao fim e já querendo fazer o próximo',
+        label: 'Ele concluindo um projeto curto e querendo experimentar o próximo.',
       },
     ],
   },
@@ -231,28 +221,27 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_9',
     eventName: 'respondeu_pergunta_9',
     tipo: 'multipla_escolha',
-    titulo:
-      'Na hora de escolher um caminho para esse interesse do seu filho, o que mais pesaria para você?',
+    titulo: 'O que mais pesa ao escolher uma atividade assim?',
     opcoes: [
       {
         value: 'terminar',
         badge: '🎯',
-        label: 'Ter certeza de que ele vai até o fim, sem desistir no meio do caminho',
+        label: 'Um caminho curto, com começo, meio e fim visíveis.',
       },
       {
         value: 'baixo_custo',
         badge: '💰',
-        label: 'Poder começar pequeno e sem gastar muito, antes de qualquer passo maior',
+        label: 'Um investimento pequeno antes de um compromisso maior.',
       },
       {
         value: 'autonomia',
         badge: '🧭',
-        label: 'Conseguir acompanhar de perto, mesmo sem entender nada de tecnologia',
+        label: 'Conseguir acompanhar mesmo sem entender de tecnologia.',
       },
       {
         value: 'rapido_divertido',
         badge: '⚡',
-        label: 'Algo rápido e divertido, com resultado que ele veja logo nos primeiros dias',
+        label: 'Ver um resultado funcionando logo nos primeiros dias.',
       },
     ],
   },
@@ -262,28 +251,27 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_10',
     eventName: 'respondeu_pergunta_10',
     tipo: 'multipla_escolha',
-    titulo:
-      'Pensando lá na frente, o que você mais sonha que esse interesse do seu filho venha a se tornar?',
+    titulo: 'O que você gostaria que esse interesse pudesse se tornar com o tempo?',
     opcoes: [
       {
         value: 'criar_proprio',
         badge: '🚀',
-        label: 'Que ele vire alguém que cria as próprias coisas, e não só consome as dos outros',
+        label: 'Autoria: criar coisas próprias, além de consumir as dos outros.',
       },
       {
         value: 'desenvolver_habilidade',
         badge: '🙂',
-        label: 'Que ele desenvolva um talento de verdade no assunto que ama',
+        label: 'Uma habilidade que ele tenha prazer em desenvolver.',
       },
       {
         value: 'terminar_e_mostrar',
         badge: '🤔',
-        label: 'Que ele se orgulhe do que faz e queira mostrar pra todo mundo',
+        label: 'Orgulho de terminar e compartilhar o que fez.',
       },
       {
         value: 'virar_aprendizado',
         badge: '🧐',
-        label: 'Que essa paixão vire aprendizado para a vida, e não só um passatempo',
+        label: 'Aprendizado que continue para além de um passatempo.',
       },
     ],
   },
@@ -298,93 +286,76 @@ export const DESAFIO_TOTAL = DESAFIO_QUIZ_STEPS.length
 // {resposta_p3}/{resposta_p5}/{resposta_p8}/{resposta_p10}/{resultado} são resolvidos
 // por `desafioRenderCorpo`.
 export const DESAFIO_FECHO =
-  'Esse interesse pela tela é o combustível. Em 5 dias, vira o primeiro jogo criado pelo seu filho, do começo ao fim.'
+  'No Desafio do Primeiro Jogo, seu filho usa esse interesse para criar, em cinco dias, um jogo com começo, desafio, pontos, vidas, vitória e derrota.'
 
 // Bloco em realce acima do fecho: espelha o que o pai declarou na P8 (o que sonha ver)
 // e na P10 (o que sonha que ele se torne). Resolvido por `desafioRenderCorpo`.
 export const DESAFIO_DESTAQUE =
-  'Você disse que sonha ver {resposta_p8}. E que, mais pra frente, quer ver {resposta_p10}.'
+  'Você disse que gostaria de ver {resposta_p8}. E que, com o tempo, quer ver {resposta_p10}.'
 
-const RESULT_CTA = 'Ver como ele cria o primeiro jogo'
+const RESULT_CTA = 'Ver como funciona o Desafio'
 
-// Blocos iguais nos 4 perfis (ponto de atenção puxa a P5; oportunidade puxa horas + P3).
-const SECAO_PONTO = { rotulo: 'O ponto de atenção', texto: 'Hoje, {resposta_p5}.' }
-const SECAO_OPORTUNIDADE = {
-  rotulo: 'A oportunidade',
+// Blocos iguais nos 4 perfis: espelham a resposta sem transformar o quiz em diagnóstico.
+const SECAO_PRIMEIRO_PASSO = {
+  rotulo: 'O primeiro passo possível',
   texto:
-    'As mesmas horas por ano que você calculou podem começar a virar algo dele. Como esse interesse aparece mais em {resposta_p3}, dá pra começar criando algo nesse universo.',
+    'Hoje, {resposta_p5}. Pelas suas respostas, o melhor primeiro passo não é uma jornada longa. É um projeto curto, guiado e com resultado visível.',
+}
+const SECAO_DIRECAO = {
+  rotulo: 'Uma nova direção',
+  texto: 'Não é mais tela. É outra direção para uma parte dela.',
 }
 
 export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
   explorador: {
-    titulo: 'Seu filho é O Explorador',
+    titulo: 'Seu filho tem perfil Explorador',
     secoes: [
       {
         rotulo: 'O que isso mostra',
         texto:
-          'Ele testa de tudo um pouco e abre muitas frentes, mas raramente fecha alguma antes de partir pra próxima.',
+          'Ele aprende testando, abre caminhos rápido e se anima com novidade. Para transformar curiosidade em autoria, o primeiro projeto precisa ser curto e mostrar uma vitória por etapa antes que outra ideia chame a atenção.',
       },
-      SECAO_PONTO,
-      SECAO_OPORTUNIDADE,
-      {
-        rotulo: 'O caminho',
-        texto:
-          'Uma frente única e curta pra fechar, em que cada dia entrega uma vitória visível antes que a curiosidade migre pra outra coisa.',
-      },
+      SECAO_PRIMEIRO_PASSO,
+      SECAO_DIRECAO,
     ],
     cta: RESULT_CTA,
   },
   especialista: {
-    titulo: 'Seu filho é O Especialista',
+    titulo: 'Seu filho tem perfil Especialista',
     secoes: [
       {
         rotulo: 'O que isso mostra',
         texto:
-          'Ele acumula um conhecimento profundo sobre o que ama, mas esse repertório fica guardado, sem virar algo que ele construa.',
+          'Ele mergulha nos assuntos que ama e constrói um repertório rico. O próximo passo é usar esse conhecimento como matéria-prima para algo que tenha as escolhas dele.',
       },
-      SECAO_PONTO,
-      SECAO_OPORTUNIDADE,
-      {
-        rotulo: 'O caminho',
-        texto:
-          'Usar o tema que ele domina como matéria-prima de uma criação, transformando o que ele já sabe em algo feito pelas mãos dele.',
-      },
+      SECAO_PRIMEIRO_PASSO,
+      SECAO_DIRECAO,
     ],
     cta: RESULT_CTA,
   },
   foguete: {
-    titulo: 'Seu filho é O Foguete',
+    titulo: 'Seu filho tem perfil Foguete',
     secoes: [
       {
         rotulo: 'O que isso mostra',
         texto:
-          'Ele dispara com energia total no começo, mas perde tração quando o resultado fica longe, e a empolgação esfria antes do fim.',
+          'Ele começa com energia e quer ver a ideia ganhar vida. Um caminho com resultados rápidos ajuda a manter a conexão entre esforço e conquista até o final.',
       },
-      SECAO_PONTO,
-      SECAO_OPORTUNIDADE,
-      {
-        rotulo: 'O caminho',
-        texto:
-          'Encurtar a distância entre começar e ver algo funcionando, com etapas tão rápidas que o resultado chega antes de a energia cair.',
-      },
+      SECAO_PRIMEIRO_PASSO,
+      SECAO_DIRECAO,
     ],
     cta: RESULT_CTA,
   },
   investigador: {
-    titulo: 'Seu filho é O Investigador',
+    titulo: 'Seu filho tem perfil Investigador',
     secoes: [
       {
         rotulo: 'O que isso mostra',
         texto:
-          'Ele quer abrir, desmontar e entender o mecanismo por dentro, mas para nas regras prontas dos outros, sem montar as próprias.',
+          'Ele quer entender o mecanismo por trás das coisas. Uma base guiada, mas aberta para testar regras e comandos, permite que ele deixe de apenas seguir o jogo e passe a decidir como o jogo funciona.',
       },
-      SECAO_PONTO,
-      SECAO_OPORTUNIDADE,
-      {
-        rotulo: 'O caminho',
-        texto:
-          'Uma base pronta o bastante pra começar e aberta o bastante pra ele mexer por dentro, virando quem define as regras em vez de só seguir as dos outros.',
-      },
+      SECAO_PRIMEIRO_PASSO,
+      SECAO_DIRECAO,
     ],
     cta: RESULT_CTA,
   },
@@ -393,8 +364,9 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
 // Hero da /oferta por perfil. HOJE o DesafioOfertaBody NÃO lê `content.hero`
 // (nem a `abertura`) — quem consome hero é o NoComandoOfertaBody. O bloco fica
 // pelo tipo FunnelContent e como reserva; é copy morta na página do Desafio.
-const HERO_H1 = 'Use o interesse do seu filho a favor dele: em 5 dias, ele monta o primeiro jogo'
-const HERO_BOTAO = 'Quero o primeiro jogo do meu filho em 5 dias'
+const HERO_H1 =
+  'Seu filho não precisa de mais tempo de tela. Precisa descobrir o que consegue criar com uma parte dele.'
+const HERO_BOTAO = 'Quero transformar parte desse tempo em criação'
 
 export const DESAFIO_HERO_PADRAO: HeroVariacao = {
   titulo: HERO_H1,
@@ -431,7 +403,7 @@ export const DESAFIO_HERO_POR_PERFIL: Record<string, HeroVariacao> = {
 
 // Conteúdo da /obrigado (entrega + primeiros passos), em linguagem para os pais.
 export const DESAFIO_OBRIGADO: FunnelObrigado = {
-  intro: 'Obrigado por investir no potencial do seu filho.',
+  intro: 'Os 30 dias do Desafio começam com a aprovação do pagamento.',
   entrega: [
     'Trilha guiada de 5 dias (uma vitória por dia)',
     'Estúdio e blocos feitos pra criança, sem instalar nada',
@@ -439,27 +411,26 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
     'Passo a passo em vídeo (aula guiada)',
     'Mapa dos pais, em linguagem para quem não é de tecnologia',
     'Certificado de conclusão',
+    '30 dias de acesso contados da aprovação do pagamento',
   ],
   passos: [
     {
-      titulo: 'Confirme seu acesso no e-mail',
+      titulo: 'Abra o e-mail de acesso e crie sua senha',
       texto:
         'Enviamos o link de primeiro acesso para o e-mail da compra. É com ele que você cria a sua senha. Se não chegar em alguns minutos, dê uma olhada no spam ou nas promoções.',
     },
     {
-      titulo: 'Faça o cadastro do seu filho',
+      titulo: 'Cadastre o perfil do seu filho',
       texto:
         'Já dentro da plataforma, faça o cadastro do seu filho. É rapidinho, e pronto: o espaço de aprender já fica liberado para ele.',
     },
     {
-      titulo: 'Cada um tem o seu acesso',
-      texto:
-        'Tem a área do aluno, onde seu filho entra pelo perfil dele, e a área dos pais, que você acessa com a senha que criou no passo 1.',
+      titulo: 'Separe o primeiro encontro e abra o Dia 1',
+      texto: 'A trilha recomenda cinco encontros, mas vocês podem organizá-los dentro dos 30 dias.',
     },
     {
-      titulo: 'É só começar',
-      texto:
-        'Abra o curso junto com o seu filho. A primeira aula traz as orientações para os pais, e dali em diante ele já começa a criar o primeiro jogo.',
+      titulo: 'Anote a data final do acesso',
+      texto: 'Ela aparece nesta página e na área de membros para vocês planejarem a conclusão.',
     },
   ],
 }

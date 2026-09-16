@@ -63,10 +63,9 @@ describe('desafioRenderCorpo', () => {
       ' ',
     )
     const out = desafioRenderCorpo(bruto, FULL_ANSWERS)
-    expect(out).toContain('jogos') // P3
-    expect(out).toContain('quase nada disso vira algo criado por ele') // P5
+    expect(out).toContain('quase nada vira uma criação própria') // P5
     expect(out).toContain('chamando a família') // P8
-    expect(out).toContain('criando as próprias coisas') // P10
+    expect(out).toContain('autoria') // P10
     expect(out).not.toMatch(/\{resposta_p\d+\}|\{resultado\}/)
   })
   test('resolve {resultado} (horas/ano formatado) quando presente', () => {

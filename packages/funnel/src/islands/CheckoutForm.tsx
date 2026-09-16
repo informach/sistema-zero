@@ -4,6 +4,7 @@ import { apiPost } from '../lib/api-fetch'
 import { maskCpf } from '../lib/card-utils'
 import { type CheckoutContactInput, CheckoutContactSchema } from '../lib/checkout-schema'
 import { fieldErrors } from '../lib/contact-schema'
+import type { CouponPresentation } from '../lib/coupon-query'
 import { formatBRLFromCents2 } from '../lib/money'
 import CardCheckout from './CardCheckout'
 import { Field, inputClass } from './checkout-fields'
@@ -65,6 +66,12 @@ export default function CheckoutForm({
   offerSlug,
   altOffer = null,
   initialChoice = 'main',
+  initialCoupon = { status: 'none' },
+  accessLabel = null,
+  estimatedAccessEnd = null,
+  guaranteeDays = 7,
+  termsHref,
+  privacyHref,
 }: {
   /** Chave do funil (`audience/produto`) — garante o lead de quem cai DIRETO no checkout. */
   funnel: string
@@ -89,6 +96,15 @@ export default function CheckoutForm({
   altOffer?: AltOfferInfo | null
   /** Plano pré-selecionado no alternador (`?oferta=` do link /renovar). */
   initialChoice?: 'main' | 'alt'
+  /** Estado vindo da cotação SSR do cupom presente na URL. */
+  initialCoupon?: CouponPresentation
+  /** Duração publicada pela oferta (`30 dias`, por exemplo). */
+  accessLabel?: string | null
+  /** Estimativa se o pagamento for aprovado agora; a confirmação usa a data real. */
+  estimatedAccessEnd?: string | null
+  guaranteeDays?: number
+  termsHref: string
+  privacyHref: string
 }) {
   // Garante o lead da sessão para quem cai DIRETO no checkout (sem passar pela
   // oferta/pré-checkout): a cobrança exige lead no cookie. Idempotente: quem já
@@ -133,11 +149,25 @@ export default function CheckoutForm({
   // Trocar p/ uma escolha sem Pix (mensal) precisa mover a seleção p/ o cartão.
   const effectiveMethod: Method = pixAvailable ? method : 'cartao'
 
-  const [couponInput, setCouponInput] = useState('')
-  const [appliedCode, setAppliedCode] = useState<string | null>(null)
-  const [discountCents, setDiscountCents] = useState(0)
-  const [couponMsg, setCouponMsg] = useState<string | null>(null)
+  const initialCouponCode = initialCoupon.status === 'none' ? '' : initialCoupon.code
+  const initialAppliedCode = initialCoupon.status === 'valid' ? initialCoupon.code : null
+  const initialDiscount = initialCoupon.status === 'valid' ? initialCoupon.discountCents : 0
+  const initialCouponMessage =
+    initialCoupon.status === 'valid'
+      ? `Cupom ${initialCoupon.code} aplicado. Você economizou ${formatBRLFromCents2(initialCoupon.discountCents)}.`
+      : initialCoupon.status === 'invalid' || initialCoupon.status === 'error'
+        ? initialCoupon.message
+        : null
+
+  const [couponInput, setCouponInput] = useState(initialCouponCode)
+  const [appliedCode, setAppliedCode] = useState<string | null>(initialAppliedCode)
+  const [discountCents, setDiscountCents] = useState(initialDiscount)
+  const [couponMsg, setCouponMsg] = useState<string | null>(initialCouponMessage)
+  const [couponDecisionRequired, setCouponDecisionRequired] = useState(
+    initialCoupon.status === 'invalid' || initialCoupon.status === 'error',
+  )
   const [applying, setApplying] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   const finalCents = Math.max(0, chosen.priceCents - (couponAllowed ? discountCents : 0))
   const couponCode = couponAllowed ? (appliedCode ?? undefined) : undefined
@@ -175,14 +205,22 @@ export default function CheckoutForm({
       if (r.ok && r.couponCode) {
         setAppliedCode(r.couponCode)
         setDiscountCents(r.discountCents)
-        setCouponMsg(`Cupom ${r.couponCode} aplicado: -${formatBRLFromCents2(r.discountCents)}.`)
+        setCouponDecisionRequired(false)
+        setCouponMsg(
+          `Cupom ${r.couponCode} aplicado. Você economizou ${formatBRLFromCents2(r.discountCents)}.`,
+        )
+        syncCouponInUrl(r.couponCode)
       } else {
         setAppliedCode(null)
         setDiscountCents(0)
-        setCouponMsg(r.message ?? 'Cupom inválido.')
+        setCouponDecisionRequired(true)
+        setCouponMsg(r.message ?? 'Não encontramos esse cupom para esta oferta. Confira o código.')
       }
     } catch {
-      setCouponMsg('Não foi possível validar o cupom. Tente novamente.')
+      setAppliedCode(null)
+      setDiscountCents(0)
+      setCouponDecisionRequired(true)
+      setCouponMsg('Não foi possível validar o cupom agora. Nenhuma cobrança foi feita.')
     } finally {
       setApplying(false)
     }
@@ -193,7 +231,28 @@ export default function CheckoutForm({
     setDiscountCents(0)
     setCouponInput('')
     setCouponMsg(null)
+    setCouponDecisionRequired(false)
+    syncCouponInUrl(null)
   }
+
+  function continueWithoutCoupon() {
+    removeCoupon()
+  }
+
+  function syncCouponInUrl(code: string | null) {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('coupon')
+    if (code) url.searchParams.set('cupom', code)
+    else url.searchParams.delete('cupom')
+    window.history.replaceState({}, '', url)
+  }
+
+  const couponBlocksPayment = couponAllowed && couponDecisionRequired
+  const purchaseGate = couponBlocksPayment
+    ? 'Resolva o cupom acima antes de escolher o pagamento.'
+    : !termsAccepted
+      ? 'Confirme os Termos e a Política de Privacidade para liberar o pagamento.'
+      : null
 
   return (
     <div className="flex flex-col gap-7">
@@ -224,17 +283,20 @@ export default function CheckoutForm({
       {/* Cupom de desconto — só nas ofertas que o habilitam (catálogo); nunca em assinatura. */}
       {couponAllowed && (
         <div>
-          <label htmlFor="coupon" className="mb-1 block text-sm text-muted">
-            Cupom de desconto
+          <label htmlFor="coupon" className="mb-1 block text-sm font-semibold text-ink">
+            Código de palestra, escola ou clínica
           </label>
           <div className="flex gap-2">
             <input
               id="coupon"
               className={`${inputClass} uppercase`}
-              placeholder="Ex.: PROMO10"
+              placeholder="Digite o código"
               value={couponInput}
               disabled={appliedCode !== null}
-              onChange={(e) => setCouponInput(e.target.value)}
+              onChange={(e) => {
+                setCouponInput(e.target.value.toUpperCase())
+                if (couponDecisionRequired) setCouponMsg(null)
+              }}
             />
             {appliedCode ? (
               <button
@@ -260,6 +322,15 @@ export default function CheckoutForm({
               {couponMsg}
             </p>
           )}
+          {couponDecisionRequired && (
+            <button
+              type="button"
+              onClick={continueWithoutCoupon}
+              className="mt-3 w-full rounded-xl border border-line px-4 py-2.5 text-sm font-bold text-ink transition hover:border-lime/60"
+            >
+              Continuar por {formatBRLFromCents2(chosen.priceCents)} sem cupom
+            </button>
+          )}
           {appliedCode && (
             <p className="mt-2 text-sm text-muted">
               Total: <span className="font-bold text-lime">{formatBRLFromCents2(finalCents)}</span>{' '}
@@ -267,6 +338,37 @@ export default function CheckoutForm({
             </p>
           )}
         </div>
+      )}
+
+      {!chosen.isSubscription && (
+        <section
+          aria-label="Resumo da compra"
+          className="rounded-2xl border border-line/70 bg-card/40 p-4 sm:p-5"
+        >
+          <h2 className="text-lg font-bold text-ink">Resumo da compra</h2>
+          <dl className="mt-3 space-y-2 text-sm">
+            <SummaryRow label="Preço" value={formatBRLFromCents2(chosen.priceCents)} />
+            {appliedCode && discountCents > 0 && (
+              <SummaryRow
+                label={`Cupom ${appliedCode}`}
+                value={`− ${formatBRLFromCents2(discountCents)}`}
+                accent
+              />
+            )}
+            <SummaryRow label="Total" value={formatBRLFromCents2(finalCents)} strong />
+            {accessLabel && (
+              <SummaryRow label="Acesso" value={`${accessLabel} a partir da aprovação`} />
+            )}
+            <SummaryRow label="Garantia" value={`${guaranteeDays} dias`} />
+            <SummaryRow label="Renovação automática" value="Não" />
+          </dl>
+          {estimatedAccessEnd && (
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              Se o pagamento for aprovado agora, a data estimada de término é {estimatedAccessEnd}.
+              A confirmação mostrará a data exata.
+            </p>
+          )}
+        </section>
       )}
 
       {/* ── Dados pessoais ─────────────────────────────────────────────── */}
@@ -337,6 +439,41 @@ export default function CheckoutForm({
         </div>
       </section>
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line/70 bg-card/30 p-4 text-sm leading-relaxed text-muted">
+        <input
+          type="checkbox"
+          checked={termsAccepted}
+          onChange={(event) => setTermsAccepted(event.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-lime"
+        />
+        <span>
+          Li e concordo com os{' '}
+          <a
+            className="font-semibold text-ink underline"
+            href={termsHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Termos
+          </a>{' '}
+          e com a{' '}
+          <a
+            className="font-semibold text-ink underline"
+            href={privacyHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Política de Privacidade
+          </a>
+          .{' '}
+          {accessLabel && !chosen.isSubscription
+            ? `Entendo que esta compra libera ${accessLabel} de acesso e não cria uma assinatura.`
+            : chosen.isSubscription
+              ? 'Entendo que esta compra cria uma assinatura com renovação conforme o plano escolhido.'
+              : 'Entendo as condições desta compra.'}
+        </span>
+      </label>
+
       {/* ── Forma de pagamento ─────────────────────────────────────────── */}
       <fieldset>
         <legend className="text-lg font-bold text-ink">Escolha a forma de pagamento</legend>
@@ -365,12 +502,16 @@ export default function CheckoutForm({
                   acesso. Perto do fim, a gente te avisa por e-mail para renovar.
                 </p>
               )}
-              <PixCheckout
-                contact={contact}
-                couponCode={couponCode}
-                successPath={successPath}
-                offerSlug={chosen.slug}
-              />
+              {purchaseGate ? (
+                <PaymentGate message={purchaseGate} />
+              ) : (
+                <PixCheckout
+                  contact={contact}
+                  couponCode={couponCode}
+                  successPath={successPath}
+                  offerSlug={chosen.slug}
+                />
+              )}
             </MethodCard>
           )}
 
@@ -404,20 +545,58 @@ export default function CheckoutForm({
               </svg>
             }
           >
-            <CardCheckout
-              contact={contact}
-              priceCents={chosen.isSubscription ? chosen.priceCents : finalCents}
-              couponCode={couponCode}
-              successPath={successPath}
-              installmentsMax={installmentsMax}
-              mode={chosen.isSubscription ? 'subscription' : 'payment'}
-              offerSlug={chosen.slug}
-              intervalMonths={chosen.interval}
-            />
+            {purchaseGate ? (
+              <PaymentGate message={purchaseGate} />
+            ) : (
+              <CardCheckout
+                contact={contact}
+                priceCents={chosen.isSubscription ? chosen.priceCents : finalCents}
+                couponCode={couponCode}
+                successPath={successPath}
+                installmentsMax={installmentsMax}
+                mode={chosen.isSubscription ? 'subscription' : 'payment'}
+                offerSlug={chosen.slug}
+                intervalMonths={chosen.interval}
+              />
+            )}
           </MethodCard>
         </div>
       </fieldset>
     </div>
+  )
+}
+
+function SummaryRow({
+  label,
+  value,
+  strong = false,
+  accent = false,
+}: {
+  label: string
+  value: string
+  strong?: boolean
+  accent?: boolean
+}) {
+  return (
+    <div className={`flex justify-between gap-4 ${strong ? 'border-t border-line pt-2' : ''}`}>
+      <dt className={strong ? 'font-bold text-ink' : 'text-muted'}>{label}</dt>
+      <dd
+        className={`${strong ? 'font-extrabold text-lime' : 'font-semibold text-ink'} ${accent ? 'text-lime' : ''}`}
+      >
+        {value}
+      </dd>
+    </div>
+  )
+}
+
+function PaymentGate({ message }: { message: string }) {
+  return (
+    <p
+      role="alert"
+      className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-ink"
+    >
+      {message}
+    </p>
   )
 }
 

@@ -6,6 +6,7 @@ import { COMUNIDADE_DOS_CRIADORES } from '../../../funnels/comunidade-dos-criado
 import { getFunnel } from '../../../funnels/registry'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { getActiveOffer, type OfferPlans } from '../../../server/catalog'
+import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
 
@@ -23,7 +24,12 @@ const { env, gateway, log } = getDeps()
 const offerSlug = resolveOfferSlug(env, f.key)
 const offer = await getActiveOffer(gateway, offerSlug, { log })
 const productName = offer?.productName || f.productName
-const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+// QR/link de evento aceita `?cupom=` e o alias `?coupon=`. O desconto exibido
+// existe somente depois de uma cotação autoritativa no catálogo. A própria
+// cotação também atualiza o preço cheio caso o cache visual esteja defasado.
+const coupon = await resolveCouponPresentation(gateway, offerSlug, Astro.url.searchParams)
+const priceCents =
+  coupon.status === 'valid' ? coupon.listPriceCents : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
 const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e copy)
 const priceReais = (priceCents / 100).toFixed(2)
@@ -81,6 +87,7 @@ const bodyProps = {
   perfil,
   quer,
   ofertaUrl,
+  coupon,
 }
 ---
 

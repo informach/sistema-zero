@@ -66,8 +66,9 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
   const existing = getLeadId(request)
   if (existing) {
     const lead = await deps.repo.getLead(existing)
-    // Lead já PAGO não é reaproveitado: nova compra = novo lead (a /obrigado
-    // expira o cookie, mas quem não passou por ela ainda o carrega).
+    // Lead já PAGO não é reaproveitado: nova compra = novo lead. A /obrigado
+    // mantém o cookie para permitir recarregar o comprovante, então este gate é
+    // também a fronteira que inicia uma nova jornada com segurança.
     if (lead && !lead.paidAt && (!funnel || leadBelongsToFunnel(lead.funnel, funnel))) {
       return json({ id: lead.id, answers: leadAnswers(lead), lastStep: lead.lastStep }, 200)
     }
