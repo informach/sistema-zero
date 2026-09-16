@@ -707,18 +707,18 @@ terminou, mostrou o jogo ou quis modificar uma regra.
 
 > Desafio do Primeiro Jogo
 >
-> Trilha guiada de cinco dias  
-> Estúdio infantil de programação em blocos  
-> Vídeos, mapa dos pais, publicação e certificado  
+> Trilha guiada de cinco dias<br>
+> Estúdio infantil de programação em blocos<br>
+> Vídeos, mapa dos pais, publicação e certificado<br>
 > 30 dias de acesso a partir da aprovação
 >
-> **R$ 67 à vista**  
+> **R$ 67 à vista**<br>
 > Pagamento único. Não é assinatura.
 
 **Cartão com evento**
 
-> Preço público: R$ 67  
-> Desconto do evento: R$ 30  
+> Preço público: R$ 67<br>
+> Desconto do evento: R$ 30<br>
 > **Total hoje: R$ 37**
 >
 > Cupom {codigo} válido até {data_hora} ou enquanto houver resgates disponíveis.
@@ -829,17 +829,17 @@ terminou, mostrou o jogo ou quis modificar uma regra.
 
 **Resumo público**
 
-> Desafio do Primeiro Jogo  
-> Pagamento único: R$ 67  
-> Acesso: 30 dias a partir da aprovação  
-> Garantia: 7 dias  
+> Desafio do Primeiro Jogo<br>
+> Pagamento único: R$ 67<br>
+> Acesso: 30 dias a partir da aprovação<br>
+> Garantia: 7 dias<br>
 > Renovação automática: não
 
 **Resumo com cupom**
 
-> Preço: R$ 67  
-> Cupom {codigo}: − R$ 30  
-> Total: R$ 37  
+> Preço: R$ 67<br>
+> Cupom {codigo}: − R$ 30<br>
+> Total: R$ 37<br>
 > Acesso: 30 dias a partir da aprovação
 
 **Campo de cupom**
@@ -894,9 +894,9 @@ terminou, mostrou o jogo ou quis modificar uma regra.
 
 **Cartão do curso**
 
-> Desafio do Primeiro Jogo  
-> {progresso}% concluído  
-> Acesso até {data}  
+> Desafio do Primeiro Jogo<br>
+> {progresso}% concluído<br>
+> Acesso até {data}<br>
 > Continuar do Dia {n}
 
 Não usar contagem regressiva agressiva durante todo o curso. Mostrar “faltam 7 dias” e
