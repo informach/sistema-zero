@@ -183,7 +183,15 @@ export class DrizzleRenewalReminderRepository implements RenewalReminderReposito
                )
                and (
                  stronger.expires_at is null
-                 or stronger.expires_at >= ${entitlements.expiresAt}
+                 or stronger.expires_at > ${entitlements.expiresAt}
+                 or (
+                   stronger.expires_at = ${entitlements.expiresAt}
+                   and (
+                     stronger.source_kind = 'subscription'
+                     or stronger.access_type = 'all_kids_courses'
+                     or stronger.id < ${entitlements.id}
+                   )
+                 )
                )
           )`,
         ),

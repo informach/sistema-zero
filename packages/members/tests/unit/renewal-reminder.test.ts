@@ -119,7 +119,7 @@ describe('SendRenewalRemindersService', () => {
     // Oferta com bônus: 2 matrículas do MESMO pagamento/vencimento.
     const { repo, reminded } = fakeRepo([row({ id: 'e1' }), row({ id: 'e2' })])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging()
 
@@ -148,7 +148,7 @@ describe('SendRenewalRemindersService', () => {
   test('fora da janela de 7 dias → nada; dentro → envia', async () => {
     const { repo } = fakeRepo([row({ id: 'e-longe', expiresAt: new Date('2027-07-01T00:00:00Z') })])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging()
     expect(await service(repo, auth, msg.gateway).runCycle()).toEqual({
@@ -175,8 +175,8 @@ describe('SendRenewalRemindersService', () => {
       row({ id: 'e9', userId: 'user-2', offerSlug: 'outro-anual' }),
     ])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
-      'user-2': { id: 'user-2', email: 'bia@example.com', firstName: 'Bia' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
+      'user-2': { id: 'user-2', email: 'bia@example.com', firstName: 'Bia', activated: true },
     })
     const msg = fakeMessaging(1) // 1ª chamada falha
 
@@ -197,7 +197,7 @@ describe('SendRenewalRemindersService', () => {
       row({ id: 'e2', offerSlug: 'outro-anual', expiresAt: new Date('2027-05-30T00:00:00Z') }),
     ])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging()
     const result = await service(repo, auth, msg.gateway).runCycle()
@@ -212,8 +212,8 @@ describe('SendRenewalRemindersService', () => {
       row({ id: 'e4', userId: 'user-2', offerSlug: 'outro-anual' }),
     ])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
-      'user-2': { id: 'user-2', email: 'bia@example.com', firstName: 'Bia' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
+      'user-2': { id: 'user-2', email: 'bia@example.com', firstName: 'Bia', activated: true },
     })
     const msg = fakeMessaging()
     const reminderService = service(repo, auth, msg.gateway, 1)
@@ -246,7 +246,7 @@ describe('SendRenewalRemindersService', () => {
       [fixed('expiry_7d'), fixed('expiry_3d'), fixed('expired')],
     )
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging()
 
@@ -289,7 +289,7 @@ describe('SendRenewalRemindersService', () => {
     }
     const { repo, lifecycleSent } = fakeRepo([], [fixed])
     const auth = fakeAuth({
-      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging(1)
 

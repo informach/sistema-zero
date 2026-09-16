@@ -956,6 +956,16 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   dedupe do messaging por `renewal-reminder:<entitlementId>:<expiresOn>` absorve o
   retry). Keyar na DATA faz um EXTEND admin gerar lembrete novo (desejado). O
   anti-join do "ainda sem lembrete" é no SQL (`DrizzleRenewalReminderRepository`).
+- **Ciclo do Desafio de 30 dias (09/2026, migration `0087`):**
+  `entitlement_lifecycle_messages_sent(entitlement_id, expires_on, message_kind)` permite avisos
+  independentes de 7 dias, 3 dias, expiração, ativação e progresso. `fixed/days` usa templates
+  `challenge-*`; `fixed/months` continua no lembrete anual e vitalício é ignorado. Outra matrícula
+  específica ou `all_kids_courses` que cubra o mesmo curso até pelo menos o fim do Desafio suprime
+  os avisos de prazo. O serviço comportamental usa `AccountIdentity.activated` (booleano do Auth) e
+  só atribui progresso a perfis ligados à conta por colunas `account_id` do próprio Members; uma
+  relação ambígua é descartada. Envia: 24h sem ativar, 48h ativado sem começar, Dia 1 concluído e
+  curso concluído. Envio e marcação são mark-after-send; o idempotency key do Messaging absorve o
+  crash intermediário. O mesmo timer/advisory lock do lembrete anual executa os dois serviços.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
   `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por

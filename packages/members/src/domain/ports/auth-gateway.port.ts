@@ -3,6 +3,8 @@ export interface AccountIdentity {
   id: string
   email: string
   firstName: string
+  /** O responsável já definiu a própria senha; `null` durante skew com Auth antigo. */
+  activated: boolean | null
 }
 
 /** Identidade PÚBLICA mínima de um perfil de criança (rosto/nome da liga kids). */

@@ -71,7 +71,7 @@ function buildSender(now: Date) {
   const reports = new InMemoryParentReportRepository()
 
   const identities: AccountIdentity[] = [
-    { id: ACCOUNT, email: 'pai@example.com', firstName: 'Marcos' },
+    { id: ACCOUNT, email: 'pai@example.com', firstName: 'Marcos', activated: true },
   ]
   const authCalls = { failAlways: false }
   const auth: AuthGateway = {

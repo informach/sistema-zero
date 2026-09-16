@@ -13,6 +13,7 @@ import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
+import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
   CourseAdminService,
@@ -120,6 +121,7 @@ import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
+import { DrizzleChallengeLifecycleRepository } from './infrastructure/persistence/drizzle/challenge-lifecycle.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -329,6 +331,29 @@ export async function createApplication(env: Env): Promise<Application> {
           logger,
           {
             daysBefore: env.RENEWAL_REMINDER_DAYS_BEFORE,
+            batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
+            funnelUrl: env.FUNNEL_URL,
+            kidsUrl: env.KIDS_COMMUNITY_URL,
+          },
+        )
+      : null
+  const challengeLifecycleSender =
+    authGateway &&
+    env.GATEWAY_URL &&
+    env.MEMBERS_HMAC_SECRET &&
+    env.FUNNEL_URL &&
+    env.KIDS_COMMUNITY_URL
+      ? new SendChallengeLifecycleService(
+          new DrizzleChallengeLifecycleRepository(db),
+          authGateway,
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          {
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
             funnelUrl: env.FUNNEL_URL,
             kidsUrl: env.KIDS_COMMUNITY_URL,
@@ -849,16 +874,16 @@ export async function createApplication(env: Env): Promise<Application> {
     })
   }
 
-  // Lembrete de renovação (anual à vista): ciclo periódico sob advisory lock
-  // PRÓPRIO (1 réplica) — mesmo desenho do report dos pais.
+  // Renovação anual + ciclo do Desafio: um advisory lock cobre os dois envios.
   const runRenewalReminderCycle = async () => {
-    if (!renewalReminderSender) return
+    if (!renewalReminderSender && !challengeLifecycleSender) return
     await connection.sql.begin(async (gate) => {
       const [row] = await gate`
         select pg_try_advisory_xact_lock(${RENEWAL_REMINDER_ADVISORY_LOCK_KEY}::bigint) as locked
       `
       if (!row?.locked) return // outra réplica está enviando neste ciclo
-      await renewalReminderSender.runCycle()
+      await renewalReminderSender?.runCycle()
+      await challengeLifecycleSender?.runCycle()
     })
   }
 
@@ -894,10 +919,10 @@ export async function createApplication(env: Env): Promise<Application> {
           )
         }, env.PARENT_REPORT_INTERVAL_MS)
       }
-      if (renewalReminderSender) {
+      if (renewalReminderSender || challengeLifecycleSender) {
         renewalReminderTimer = setInterval(() => {
           void runRenewalReminderCycle().catch((error) =>
-            logger.error('renewal_reminder.cycle_failed', {
+            logger.error('entitlement_lifecycle.cycle_failed', {
               error: error instanceof Error ? error.message : String(error),
             }),
           )

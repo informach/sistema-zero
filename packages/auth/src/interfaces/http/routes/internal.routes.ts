@@ -143,7 +143,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           requireInternalToken(headers, deps.internalToken)
           const found = await deps.users.listByIds([...new Set(body.ids)])
           return {
-            users: found.map((u) => ({ id: u.id, email: u.email, firstName: u.firstName })),
+            users: found.map((u) => ({
+              id: u.id,
+              email: u.email,
+              firstName: u.firstName,
+              activated: u.isPasswordSet(),
+            })),
           }
         },
         { body: BatchGetUsersBody },

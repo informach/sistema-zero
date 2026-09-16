@@ -193,4 +193,29 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     ).listFixedAccessLifecycleEntitlements(new Date('2027-05-25T00:00:00Z'), 10)
     expect(rows).toHaveLength(0)
   })
+
+  test('duas compras com o mesmo vencimento elegem uma representante em vez de se anularem', async () => {
+    const accountId = randomUUID()
+    const ids = [randomUUID(), randomUUID()]
+    const snapshot = JSON.stringify({
+      offerSlug: 'desafio-primeiro-jogo-30-dias',
+      name: 'Desafio do Primeiro Jogo',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
+    for (const id of ids) {
+      await conn.sql`
+        insert into members.entitlements
+          (id, user_id, snapshot, status, source_kind, subscription_id, expires_at,
+           access_type, course_ref, granted_at)
+        values (${id}, ${accountId}, ${snapshot}::jsonb, 'active', 'payment', null,
+          '2027-05-30T00:00:00Z', 'course', 'desafio-primeiro-jogo', '2027-04-30T00:00:00Z')
+      `
+    }
+
+    const rows = await new DrizzleRenewalReminderRepository(
+      conn.db,
+    ).listFixedAccessLifecycleEntitlements(new Date('2027-05-25T00:00:00Z'), 10)
+    expect(rows).toHaveLength(1)
+    expect(ids.some((id) => id === rows[0]!.id)).toBe(true)
+  })
 })
