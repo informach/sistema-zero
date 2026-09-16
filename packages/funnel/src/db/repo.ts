@@ -1,4 +1,5 @@
-import { and, asc, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
+import type { LeadAttributionV1 } from '../lib/lead-attribution'
 import type { PurchasedOfferSnapshotV1 } from '../server/purchased-offer-snapshot'
 import type { Database } from './client'
 import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
@@ -9,6 +10,11 @@ export type LeadUpdate = Partial<typeof leads.$inferInsert>
 
 export interface EventCount {
   eventName: string
+  leads: number
+}
+
+export interface PriceCount {
+  chargedPriceCents: number
   leads: number
 }
 
@@ -50,6 +56,8 @@ export interface LeadFilter {
   sort?: 'asc' | 'desc'
   /** Filtra por funil de origem (`${audience}/${produto}`). */
   funnel?: string
+  /** Código técnico imutável do evento/QR (first-touch). */
+  eventCode?: string
 }
 
 /**
@@ -62,7 +70,7 @@ function escapeLike(term: string): string {
 }
 
 /** WHERE compartilhado por `listLeads`/`countLeads` (busca nome/e-mail + funil). */
-function leadWhere(filter?: Pick<LeadFilter, 'q' | 'funnel'>): SQL | undefined {
+function leadWhere(filter?: Pick<LeadFilter, 'q' | 'funnel' | 'eventCode'>): SQL | undefined {
   const conds: SQL[] = []
   const term = filter?.q?.trim()
   if (term) {
@@ -71,6 +79,9 @@ function leadWhere(filter?: Pick<LeadFilter, 'q' | 'funnel'>): SQL | undefined {
     if (search) conds.push(search)
   }
   if (filter?.funnel) conds.push(eq(leads.funnel, filter.funnel))
+  if (filter?.eventCode) {
+    conds.push(sql`${leads.attribution} ->> 'eventCode' = ${filter.eventCode}`)
+  }
   return conds.length ? and(...conds) : undefined
 }
 
@@ -80,9 +91,14 @@ function leadWhere(filter?: Pick<LeadFilter, 'q' | 'funnel'>): SQL | undefined {
  */
 export interface FunnelRepo {
   /** Cria um lead. `funnel` (`${audience}/${produto}`) registra a origem na criação. */
-  createLead(funnel?: string | null): Promise<{ id: string }>
+  createLead(
+    funnel?: string | null,
+    attribution?: LeadAttributionV1 | null,
+  ): Promise<{ id: string }>
   getLead(id: string): Promise<Lead | null>
   updateLead(id: string, set: LeadUpdate): Promise<void>
+  /** Preenche first-touch somente quando o lead ainda não possui atribuição. */
+  claimAttribution(id: string, attribution: LeadAttributionV1): Promise<void>
   /** Mescla respostas no JSON `quiz_answers` (genérico — chaves do quiz de qualquer funil). */
   mergeQuizAnswers(id: string, patch: Record<string, string | number>): Promise<void>
   /**
@@ -145,11 +161,23 @@ export interface FunnelRepo {
     eventName: string,
     step?: string | null,
     metadata?: Record<string, unknown> | null,
+    eventKey?: string | null,
+    occurredAt?: Date,
   ): Promise<void>
   listLeads(limit: number, offset: number, filter?: LeadFilter): Promise<Lead[]>
-  countLeads(filter?: Pick<LeadFilter, 'q' | 'funnel'>): Promise<number>
+  countLeads(filter?: Pick<LeadFilter, 'q' | 'funnel' | 'eventCode'>): Promise<number>
   /** Conversão por evento; `funnel` opcional restringe aos leads daquele funil. */
   eventCounts(funnel?: string): Promise<EventCount[]>
+  /** Conversão por evento first-touch, sempre em leads únicos. */
+  attributedEventCounts(eventCode: string, funnel?: string): Promise<EventCount[]>
+  /** Distribuição do valor efetivamente cobrado, pelo snapshot da cobrança paga. */
+  attributedPriceCounts(eventCode: string, funnel?: string): Promise<PriceCount[]>
+  /** Recebe marco do Members usando somente o id técnico da conta. */
+  insertBuyerLifecycleEvents(
+    events: Array<{ buyerUserId: string; eventName: string; occurredAt: Date }>,
+  ): Promise<number>
+  /** Atribui uma assinatura da Comunidade à jornada anterior do Desafio. */
+  recordCommunitySubscription(sourceLeadId: string, buyerUserId: string): Promise<void>
   /** Contagem de leads por `perfil_resultado` (ignora nulos); `funnel` opcional filtra. */
   perfilCounts(funnel?: string): Promise<PerfilCount[]>
   /** True se o delivery id já foi processado (dedupe de webhook). */
@@ -160,10 +188,10 @@ export interface FunnelRepo {
 
 export function createFunnelRepo(db: Database): FunnelRepo {
   return {
-    async createLead(funnel = null) {
+    async createLead(funnel = null, attribution = null) {
       const [row] = await db
         .insert(leads)
-        .values({ funnel: funnel ?? null })
+        .values({ funnel: funnel ?? null, attribution })
         .returning({ id: leads.id })
       return { id: row!.id }
     },
@@ -178,6 +206,13 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .update(leads)
         .set({ ...set, updatedAt: new Date() })
         .where(eq(leads.id, id))
+    },
+
+    async claimAttribution(id, attribution) {
+      await db
+        .update(leads)
+        .set({ attribution, updatedAt: new Date() })
+        .where(sql`${leads.id} = ${id} and ${leads.attribution} is null`)
     },
 
     async mergeQuizAnswers(id, patch) {
@@ -329,8 +364,61 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return lead ?? null
     },
 
-    async insertEvent(leadId, eventName, step = null, metadata = null) {
-      await db.insert(funnelEvents).values({ leadId, eventName, step, metadata })
+    async insertEvent(
+      leadId,
+      eventName,
+      step = null,
+      metadata = null,
+      eventKey = null,
+      occurredAt,
+    ) {
+      const [context] = await db
+        .select({
+          funnel: leads.funnel,
+          offerRef: leads.offerRef,
+          couponCode: leads.couponCode,
+          attribution: leads.attribution,
+          paymentOffer: leadPayments.offerRef,
+          paymentCoupon: leadPayments.couponCode,
+          offerSnapshot: leadPayments.offerSnapshot,
+        })
+        .from(leads)
+        .leftJoin(leadPayments, eq(leadPayments.paymentId, leads.paymentId))
+        .where(eq(leads.id, leadId))
+        .limit(1)
+      if (!context) return
+      const purchased = context.offerSnapshot as Partial<PurchasedOfferSnapshotV1> | null
+      const trusted = compactMetadata({
+        funnel: context.funnel,
+        offer_slug: purchased?.offerSlug ?? context.paymentOffer ?? context.offerRef,
+        coupon_code: purchased?.couponCode ?? context.paymentCoupon ?? context.couponCode,
+        event_code: context.attribution?.eventCode,
+        utm_source: context.attribution?.utmSource,
+        utm_medium: context.attribution?.utmMedium,
+        utm_campaign: context.attribution?.utmCampaign,
+      })
+      const values = {
+        leadId,
+        eventName,
+        step,
+        metadata: { ...(metadata ?? {}), ...trusted },
+        eventKey,
+        ...(occurredAt ? { timestamp: occurredAt } : {}),
+      }
+      await db.insert(funnelEvents).values(values).onConflictDoNothing()
+
+      const canonical = canonicalEventName(eventName)
+      if (canonical && canonical !== eventName) {
+        await db
+          .insert(funnelEvents)
+          .values({
+            ...values,
+            eventName: canonical,
+            eventKey: eventKey ? `${eventKey}:canonical` : null,
+            metadata: { ...values.metadata, source_event: eventName },
+          })
+          .onConflictDoNothing()
+      }
     },
 
     async listLeads(limit, offset, filter) {
@@ -370,6 +458,157 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return db.select(cols).from(funnelEvents).groupBy(funnelEvents.eventName)
     },
 
+    async attributedEventCounts(eventCode, funnel) {
+      const conditions = [sql`${leads.attribution} ->> 'eventCode' = ${eventCode}`]
+      if (funnel) conditions.push(eq(leads.funnel, funnel))
+      return db
+        .select({
+          eventName: funnelEvents.eventName,
+          leads: sql<number>`count(distinct ${funnelEvents.leadId})::int`,
+        })
+        .from(funnelEvents)
+        .innerJoin(leads, eq(funnelEvents.leadId, leads.id))
+        .where(and(...conditions))
+        .groupBy(funnelEvents.eventName)
+    },
+
+    async attributedPriceCounts(eventCode, funnel) {
+      const chargedPrice = sql<number>`(${leadPayments.offerSnapshot} ->> 'chargedPriceCents')::int`
+      const conditions = [
+        sql`${leads.attribution} ->> 'eventCode' = ${eventCode}`,
+        sql`${leads.paidAt} is not null`,
+        sql`${leadPayments.offerSnapshot} ->> 'chargedPriceCents' ~ '^[0-9]+$'`,
+      ]
+      if (funnel) conditions.push(eq(leads.funnel, funnel))
+      return db
+        .select({
+          chargedPriceCents: chargedPrice,
+          leads: sql<number>`count(distinct ${leads.id})::int`,
+        })
+        .from(leads)
+        .innerJoin(leadPayments, eq(leadPayments.paymentId, leads.paymentId))
+        .where(and(...conditions))
+        .groupBy(chargedPrice)
+        .orderBy(asc(chargedPrice))
+    },
+
+    async insertBuyerLifecycleEvents(events) {
+      if (events.length === 0) return 0
+      const buyerUserIds = [...new Set(events.map((event) => event.buyerUserId))]
+      const targets = await db
+        .select({
+          id: leads.id,
+          buyerUserId: leads.buyerUserId,
+          funnel: leads.funnel,
+          offerRef: leads.offerRef,
+          couponCode: leads.couponCode,
+          attribution: leads.attribution,
+          paymentOffer: leadPayments.offerRef,
+          paymentCoupon: leadPayments.couponCode,
+          offerSnapshot: leadPayments.offerSnapshot,
+        })
+        .from(leads)
+        .leftJoin(leadPayments, eq(leadPayments.paymentId, leads.paymentId))
+        .where(
+          and(
+            inArray(leads.buyerUserId, buyerUserIds),
+            sql`${leads.paidAt} is not null`,
+            sql`${leads.offerRef} like 'desafio-primeiro-jogo%'`,
+          ),
+        )
+        .orderBy(desc(leads.paidAt), desc(leads.createdAt))
+      const targetByBuyer = new Map<string, (typeof targets)[number]>()
+      for (const target of targets) {
+        if (target.buyerUserId && !targetByBuyer.has(target.buyerUserId)) {
+          targetByBuyer.set(target.buyerUserId, target)
+        }
+      }
+      const uniqueValues = new Map<string, typeof funnelEvents.$inferInsert>()
+      for (const event of events) {
+        const target = targetByBuyer.get(event.buyerUserId)
+        if (!target) continue
+        const purchased = target.offerSnapshot as Partial<PurchasedOfferSnapshotV1> | null
+        const eventKey = `${target.id}:${event.eventName}`
+        uniqueValues.set(eventKey, {
+          leadId: target.id,
+          eventName: event.eventName,
+          step: 'members',
+          eventKey,
+          metadata: compactMetadata({
+            source: 'members',
+            funnel: target.funnel,
+            offer_slug: purchased?.offerSlug ?? target.paymentOffer ?? target.offerRef,
+            coupon_code: purchased?.couponCode ?? target.paymentCoupon ?? target.couponCode,
+            event_code: target.attribution?.eventCode,
+            utm_source: target.attribution?.utmSource,
+            utm_medium: target.attribution?.utmMedium,
+            utm_campaign: target.attribution?.utmCampaign,
+          }),
+          timestamp: event.occurredAt,
+        })
+      }
+      if (uniqueValues.size === 0) return 0
+      const rows = await db
+        .insert(funnelEvents)
+        .values([...uniqueValues.values()])
+        .onConflictDoNothing()
+        .returning({ id: funnelEvents.id })
+      return rows.length
+    },
+
+    async recordCommunitySubscription(sourceLeadId, buyerUserId) {
+      const [source] = await db
+        .select({ offerRef: leads.offerRef, paidAt: leads.paidAt })
+        .from(leads)
+        .where(eq(leads.id, sourceLeadId))
+        .limit(1)
+      if (!source?.offerRef?.includes('comunidade') || !source.paidAt) return
+      const [target] = await db
+        .select({
+          id: leads.id,
+          funnel: leads.funnel,
+          offerRef: leads.offerRef,
+          couponCode: leads.couponCode,
+          attribution: leads.attribution,
+          paymentOffer: leadPayments.offerRef,
+          paymentCoupon: leadPayments.couponCode,
+          offerSnapshot: leadPayments.offerSnapshot,
+        })
+        .from(leads)
+        .leftJoin(leadPayments, eq(leadPayments.paymentId, leads.paymentId))
+        .where(
+          and(
+            eq(leads.buyerUserId, buyerUserId),
+            sql`${leads.paidAt} is not null`,
+            sql`${leads.paidAt} <= ${source.paidAt}`,
+            sql`${leads.offerRef} like 'desafio-primeiro-jogo%'`,
+          ),
+        )
+        .orderBy(desc(leads.paidAt), desc(leads.createdAt))
+        .limit(1)
+      if (!target) return
+      const purchased = target.offerSnapshot as Partial<PurchasedOfferSnapshotV1> | null
+      await db
+        .insert(funnelEvents)
+        .values({
+          leadId: target.id,
+          eventName: 'community_subscription_approved',
+          step: 'continuity',
+          eventKey: `${target.id}:community_subscription_approved`,
+          metadata: compactMetadata({
+            source: 'funnel',
+            funnel: target.funnel,
+            offer_slug: purchased?.offerSlug ?? target.paymentOffer ?? target.offerRef,
+            coupon_code: purchased?.couponCode ?? target.paymentCoupon ?? target.couponCode,
+            event_code: target.attribution?.eventCode,
+            utm_source: target.attribution?.utmSource,
+            utm_medium: target.attribution?.utmMedium,
+            utm_campaign: target.attribution?.utmCampaign,
+          }),
+        })
+        .onConflictDoNothing()
+    },
+
     async perfilCounts(funnel) {
       const notNull = sql`${leads.perfilResultado} is not null`
       const where = funnel ? and(notNull, eq(leads.funnel, funnel)) : notNull
@@ -403,4 +642,26 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return rows.length > 0
     },
   }
+}
+
+const CANONICAL_EVENTS: Record<string, string> = {
+  entrou_landing: 'view_landing',
+  viu_resultado: 'complete_quiz',
+  viu_pagina_vendas: 'view_offer',
+  abriu_checkout: 'start_checkout',
+  enviou_precheckout: 'start_checkout',
+  redirecionou_checkout: 'start_checkout',
+  pagamento_iniciado: 'payment_method_selected',
+  pagamento_confirmado: 'payment_approved',
+}
+
+export function canonicalEventName(eventName: string): string | null {
+  if (/^respondeu_pergunta_\d+$/.test(eventName)) return 'answer_quiz'
+  return CANONICAL_EVENTS[eventName] ?? null
+}
+
+function compactMetadata(input: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(input).filter(([, value]) => value != null && value !== ''),
+  )
 }

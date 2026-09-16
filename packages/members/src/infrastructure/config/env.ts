@@ -176,6 +176,12 @@ const EnvSchema = z
     RENEWAL_REMINDER_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
     // URL pública do FUNIL (base do link /renovar?oferta=<slug> do e-mail).
     FUNNEL_URL: z.string().url().optional(),
+    // Token S2S do funil para publicar marcos do Desafio sem PII. Se ausente,
+    // e-mails seguem funcionando e apenas a telemetria cross-service fica desligada.
+    FUNNEL_INTERNAL_TOKEN: z
+      .string()
+      .min(16, 'FUNNEL_INTERNAL_TOKEN deve ter ao menos 16 caracteres')
+      .optional(),
 
     // ── Foto do avatar (snapshot 3D) ─────────────────────────────────────────
     // Allowlist de PREFIXOS aceitos no `PUT /members/avatar/photo` (csv). A URL

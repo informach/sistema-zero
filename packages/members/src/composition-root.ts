@@ -112,6 +112,7 @@ import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.servi
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funnel-challenge-analytics.gateway'
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
@@ -311,6 +312,15 @@ export async function createApplication(env: Env): Promise<Application> {
         )
       : null
 
+  const challengeAnalytics =
+    env.FUNNEL_URL && env.FUNNEL_INTERNAL_TOKEN
+      ? new FunnelChallengeAnalyticsGateway(
+          env.FUNNEL_URL,
+          env.FUNNEL_INTERNAL_TOKEN,
+          env.AUTH_REQUEST_TIMEOUT_MS,
+        )
+      : undefined
+
   // Lembrete de RENOVAÇÃO (anual à vista): mesmo quarteto do report dos pais +
   // FUNNEL_URL (o link /renovar vive no funil). Sem as envs = no-op (dev).
   const renewalReminderSender =
@@ -335,6 +345,7 @@ export async function createApplication(env: Env): Promise<Application> {
             funnelUrl: env.FUNNEL_URL,
             kidsUrl: env.KIDS_COMMUNITY_URL,
           },
+          challengeAnalytics,
         )
       : null
   const challengeLifecycleSender =
@@ -358,6 +369,7 @@ export async function createApplication(env: Env): Promise<Application> {
             funnelUrl: env.FUNNEL_URL,
             kidsUrl: env.KIDS_COMMUNITY_URL,
           },
+          challengeAnalytics,
         )
       : null
   const listMyCourses = new ListMyCoursesService(

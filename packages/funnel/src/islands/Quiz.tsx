@@ -10,6 +10,7 @@ import type {
   SliderStep,
 } from '../content/quiz-config'
 import { apiPatch, apiPost } from '../lib/api-fetch'
+import { leadAttributionFromLocation } from '../lib/lead-attribution'
 import Calculadora from './questions/Calculadora'
 import CalculadoraPrefilled from './questions/CalculadoraPrefilled'
 import InputNumero from './questions/InputNumero'
@@ -60,7 +61,10 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
     ;(async () => {
       let data: { answers?: Answers } | null = null
       try {
-        data = await apiPost<{ answers?: Answers }>('/api/leads', { funnel })
+        data = await apiPost<{ answers?: Answers }>('/api/leads', {
+          funnel,
+          attribution: leadAttributionFromLocation(window.location),
+        })
       } catch {
         /* sem lead: o PATCH falharia, mas seguimos exibindo a P1 */
         data = { answers: {} }

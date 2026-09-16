@@ -189,6 +189,73 @@ describe('adminLeads', () => {
     }
     expect(body.limit).toBe(100)
   })
+
+  test('relatório por evento deduplica leads e separa R$ 67 de R$ 37 sem CPF', async () => {
+    const { repo, fg, deps } = setup()
+    const attribution = {
+      version: 1 as const,
+      utmSource: 'escola-centro',
+      utmMedium: 'qr',
+      utmCampaign: 'setembro',
+      utmContent: null,
+      eventCode: 'ESCOLA_2026_09',
+      initialCouponCode: 'EVENTO37',
+      landingPath: '/kids/desafio-primeiro-jogo/oferta',
+    }
+    const full = await repo.createLead('kids/desafio-primeiro-jogo', attribution)
+    const event = await repo.createLead('kids/desafio-primeiro-jogo', attribution)
+    for (const [leadId, paymentId, price, coupon] of [
+      [full.id, 'pay-full', 6700, null],
+      [event.id, 'pay-event', 3700, 'EVENTO37'],
+    ] as const) {
+      await repo.updateLead(leadId, {
+        offerRef: 'desafio-primeiro-jogo-30-dias',
+        document: '12345678900',
+      })
+      await repo.setPayment(leadId, paymentId, coupon, {
+        offerRef: 'desafio-primeiro-jogo-30-dias',
+        offerSnapshot: {
+          version: 1,
+          offerId: 'offer-id',
+          offerSlug: 'desafio-primeiro-jogo-30-dias',
+          pricingMode: 'one_time',
+          billingIntervalMonths: null,
+          accessMode: 'fixed',
+          accessDurationValue: 30,
+          accessDurationUnit: 'days',
+          listPriceCents: 6700,
+          couponCode: coupon,
+          discountCents: 6700 - price,
+          chargedPriceCents: price,
+          currency: 'BRL',
+          guaranteeDays: 7,
+          termsVersion: 'kids-2026-09-16',
+        },
+      })
+      await repo.markPaid(leadId, new Date())
+      await repo.insertEvent(leadId, 'pagamento_confirmado')
+      await repo.insertEvent(leadId, 'pagamento_confirmado')
+    }
+
+    const res = await adminLeads(
+      leadsReq(fg, '?event_code=ESCOLA_2026_09&funnel=kids%2Fdesafio-primeiro-jogo'),
+      deps,
+    )
+    const body = (await res.json()) as {
+      total: number
+      eventReport: {
+        steps: Array<{ name: string; leads: number }>
+        prices: Array<{ chargedPriceCents: number; leads: number }>
+      }
+    }
+    expect(body.total).toBe(2)
+    expect(body.eventReport.steps.find((step) => step.name === 'payment_approved')?.leads).toBe(2)
+    expect(body.eventReport.prices).toEqual([
+      { chargedPriceCents: 3700, leads: 1 },
+      { chargedPriceCents: 6700, leads: 1 },
+    ])
+    expect(JSON.stringify(body.eventReport)).not.toContain('12345678900')
+  })
 })
 
 describe('adminPerfis', () => {

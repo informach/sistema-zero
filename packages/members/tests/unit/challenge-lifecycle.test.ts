@@ -5,6 +5,10 @@ import {
 } from '../../src/application/challenge-lifecycle/send-challenge-lifecycle.service'
 import type { AccountIdentity, AuthGateway } from '../../src/domain/ports/auth-gateway.port'
 import type {
+  ChallengeAnalyticsEvent,
+  ChallengeAnalyticsGateway,
+} from '../../src/domain/ports/challenge-analytics-gateway.port'
+import type {
   ChallengeBehaviorMessageKind,
   ChallengeLifecycleCandidate,
   ChallengeLifecycleRepository,
@@ -90,11 +94,20 @@ function service(
   repo: ChallengeLifecycleRepository,
   auth: AuthGateway,
   messaging: { sendEmail(input: SendEmailInput): Promise<void> },
+  analytics?: ChallengeAnalyticsGateway,
 ) {
-  return new SendChallengeLifecycleService(repo, auth, messaging, () => NOW, silentLogger, {
-    kidsUrl: 'https://kids.sistemazero.com.br',
-    funnelUrl: 'https://sistemazero.com.br',
-  })
+  return new SendChallengeLifecycleService(
+    repo,
+    auth,
+    messaging,
+    () => NOW,
+    silentLogger,
+    {
+      kidsUrl: 'https://kids.sistemazero.com.br',
+      funnelUrl: 'https://sistemazero.com.br',
+    },
+    analytics,
+  )
 }
 
 describe('SendChallengeLifecycleService', () => {
@@ -174,6 +187,41 @@ describe('SendChallengeLifecycleService', () => {
       skipped: 1,
       failed: 0,
     })
+  })
+
+  test('publica marcos cumulativos sem PII e deduplica duas matrículas da conta', async () => {
+    const { repo } = fakeRepo([
+      candidate({ started: true, dayOneComplete: true, completed: true }),
+      candidate({ entitlementId: 'ent-2', started: true, dayOneComplete: true, completed: true }),
+    ])
+    const published: ChallengeAnalyticsEvent[] = []
+    const analytics: ChallengeAnalyticsGateway = {
+      async publish(events) {
+        published.push(...events)
+      },
+    }
+    await service(repo, fakeAuth([identity(true)]), fakeMessaging().gateway, analytics).runCycle()
+
+    expect(published.map((event) => event.eventName)).toEqual([
+      'account_activated',
+      'challenge_started',
+      'challenge_day_completed',
+      'challenge_completed',
+    ])
+    expect(published.every((event) => event.buyerUserId === 'account-1')).toBe(true)
+  })
+
+  test('falha da telemetria não impede o e-mail comportamental', async () => {
+    const { repo } = fakeRepo([candidate({ started: true, dayOneComplete: true })])
+    const messaging = fakeMessaging()
+    const analytics: ChallengeAnalyticsGateway = {
+      async publish() {
+        throw new Error('funil fora')
+      },
+    }
+    expect(
+      await service(repo, fakeAuth([identity(true)]), messaging.gateway, analytics).runCycle(),
+    ).toEqual({ sent: 1, skipped: 0, failed: 0 })
   })
 })
 

@@ -1,5 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
+import type { ChallengeAnalyticsGateway } from '../../domain/ports/challenge-analytics-gateway.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import {
   type ExpiringTermEntitlement,
@@ -54,6 +55,7 @@ export class SendRenewalRemindersService {
     private readonly clock: () => Date,
     private readonly logger: Logger,
     private readonly opts: RenewalReminderOptions,
+    private readonly analytics?: ChallengeAnalyticsGateway,
   ) {}
 
   async runCycle(): Promise<{ sent: number; skipped: number; failed: number }> {
@@ -172,6 +174,23 @@ export class SendRenewalRemindersService {
             entitlement.messageKind,
             this.clock(),
           )
+        }
+        if (this.analytics) {
+          try {
+            await this.analytics.publish([
+              {
+                buyerUserId: first.userId,
+                eventName: expired ? 'challenge_expired' : 'expiry_reminder_sent',
+                occurredAt: this.clock(),
+              },
+            ])
+          } catch (error) {
+            this.logger.warn('fixed_access_lifecycle.analytics_failed', {
+              entitlementId: first.id,
+              messageKind: first.messageKind,
+              error: error instanceof Error ? error.message : String(error),
+            })
+          }
         }
         sent++
       } catch (error) {

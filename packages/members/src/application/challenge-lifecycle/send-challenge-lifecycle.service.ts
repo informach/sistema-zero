@@ -1,6 +1,11 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type {
+  ChallengeAnalyticsEvent,
+  ChallengeAnalyticsEventName,
+  ChallengeAnalyticsGateway,
+} from '../../domain/ports/challenge-analytics-gateway.port'
+import type {
   ChallengeBehaviorMessageKind,
   ChallengeLifecycleCandidate,
   ChallengeLifecycleRepository,
@@ -34,6 +39,7 @@ export class SendChallengeLifecycleService {
     private readonly clock: () => Date,
     private readonly logger: Logger,
     private readonly opts: ChallengeLifecycleOptions,
+    private readonly analytics?: ChallengeAnalyticsGateway,
   ) {}
 
   async runCycle(): Promise<{ sent: number; skipped: number; failed: number }> {
@@ -55,6 +61,8 @@ export class SendChallengeLifecycleService {
       )
       for (const identity of batch) identities.set(identity.id, identity)
     }
+
+    await this.publishAnalytics(candidates, identities, now)
 
     let sent = 0
     let skipped = 0
@@ -95,6 +103,35 @@ export class SendChallengeLifecycleService {
       this.logger.info('challenge_lifecycle.cycle', { sent, skipped, failed })
     }
     return { sent, skipped, failed }
+  }
+
+  private async publishAnalytics(
+    candidates: ChallengeLifecycleCandidate[],
+    identities: Map<string, { activated: boolean | null }>,
+    now: Date,
+  ): Promise<void> {
+    if (!this.analytics) return
+    const events = new Map<string, ChallengeAnalyticsEvent>()
+    const add = (buyerUserId: string, eventName: ChallengeAnalyticsEventName) => {
+      events.set(`${buyerUserId}:${eventName}`, { buyerUserId, eventName, occurredAt: now })
+    }
+    for (const candidate of candidates) {
+      if (identities.get(candidate.accountId)?.activated === true) {
+        add(candidate.accountId, 'account_activated')
+      }
+      if (candidate.started) add(candidate.accountId, 'challenge_started')
+      if (candidate.dayOneComplete) add(candidate.accountId, 'challenge_day_completed')
+      if (candidate.completed) add(candidate.accountId, 'challenge_completed')
+    }
+    if (events.size === 0) return
+    try {
+      await this.analytics.publish([...events.values()])
+    } catch (error) {
+      this.logger.warn('challenge_lifecycle.analytics_failed', {
+        events: events.size,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 }
 

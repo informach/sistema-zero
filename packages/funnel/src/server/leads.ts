@@ -1,9 +1,10 @@
 import { z } from 'zod'
 import type { FunnelRepo, Lead } from '../db/repo'
 import { leadBelongsToFunnel } from '../funnels/lead-scope'
-import { getFunnelByKey, isFunnelKey } from '../funnels/registry'
+import { getFunnelByKey, isFunnelKey, isQuizComplete } from '../funnels/registry'
 import { ContactSchema } from '../lib/contact-schema'
 import { json, jsonError, safeJson } from '../lib/http'
+import { sanitizeLeadAttribution } from '../lib/lead-attribution'
 import { getLeadId, leadCookie } from '../lib/lead-session'
 
 export interface LeadDeps {
@@ -51,7 +52,7 @@ export function leadAnswers(lead: Lead): Record<string, string | number> {
 }
 
 /** Corpo opcional do POST /api/leads: o funil de origem (`${audience}/${produto}`). */
-const CreateLeadBody = z.object({ funnel: z.string() }).partial()
+const CreateLeadBody = z.object({ funnel: z.string(), attribution: z.unknown() }).partial()
 
 /**
  * POST /api/leads — inicia o lead (idempotente se o cookie já aponta p/ um lead).
@@ -63,6 +64,7 @@ const CreateLeadBody = z.object({ funnel: z.string() }).partial()
 export async function createLead(request: Request, deps: LeadDeps): Promise<Response> {
   const parsed = CreateLeadBody.safeParse(await safeJson(request))
   const funnel = parsed.success && isFunnelKey(parsed.data.funnel) ? parsed.data.funnel : null
+  const attribution = parsed.success ? sanitizeLeadAttribution(parsed.data.attribution) : null
   const existing = getLeadId(request)
   if (existing) {
     const lead = await deps.repo.getLead(existing)
@@ -70,10 +72,11 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
     // mantém o cookie para permitir recarregar o comprovante, então este gate é
     // também a fronteira que inicia uma nova jornada com segurança.
     if (lead && !lead.paidAt && (!funnel || leadBelongsToFunnel(lead.funnel, funnel))) {
+      if (!lead.attribution && attribution) await deps.repo.claimAttribution(lead.id, attribution)
       return json({ id: lead.id, answers: leadAnswers(lead), lastStep: lead.lastStep }, 200)
     }
   }
-  const { id } = await deps.repo.createLead(funnel)
+  const { id } = await deps.repo.createLead(funnel, attribution)
   await deps.repo.insertEvent(id, 'entrou_landing', 'landing')
   return json({ id, answers: {}, lastStep: 'entrou_landing' }, 201, {
     'set-cookie': leadCookie(id, deps.secureCookie),
@@ -143,8 +146,14 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   await deps.repo.mergeQuizAnswers(id, { [key]: answer, ...derived })
 
   if (lastStep) await deps.repo.updateLead(id, { lastStep })
+  if (Object.keys(lead.quizAnswers ?? {}).length === 0) {
+    await deps.repo.insertEvent(id, 'start_quiz', lastStep ?? null, null, `${id}:start_quiz`)
+  }
   // Só o evento do passo desta resposta é aceito (não dá p/ forjar marco server-side).
   if (eventName) await deps.repo.insertEvent(id, eventName, lastStep ?? null)
+  if (isQuizComplete(quiz, { ...merged, ...derived })) {
+    await deps.repo.insertEvent(id, 'complete_quiz', lastStep ?? null, null, `${id}:complete_quiz`)
+  }
 
   return json({ ok: true })
 }

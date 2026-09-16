@@ -11,6 +11,7 @@ import {
   formatSaoPauloDateTime,
 } from '../../../lib/access-period'
 import { ContactSchema } from '../../../lib/contact-schema'
+import { sanitizeLeadAttribution } from '../../../lib/lead-attribution'
 import { getLeadId, leadCookie } from '../../../lib/lead-session'
 import { formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
@@ -51,6 +52,15 @@ const fromQuery = {
   telefone: sp.get('telefone')?.trim() ?? '',
 }
 const queryContact = ContactSchema.safeParse(fromQuery)
+const queryAttribution = sanitizeLeadAttribution({
+  utmSource: sp.get('utm_source'),
+  utmMedium: sp.get('utm_medium'),
+  utmCampaign: sp.get('utm_campaign'),
+  utmContent: sp.get('utm_content'),
+  eventCode: sp.get('event_code') ?? sp.get('event'),
+  initialCouponCode: sp.get('coupon') ?? sp.get('cupom'),
+  landingPath: Astro.url.pathname,
+})
 
 // O checkout SEMPRE abre (o pré-checkout é só um facilitador): sem lead e sem
 // contato, o formulário abre vazio e a pessoa preenche tudo aqui, sem perder a
@@ -60,7 +70,7 @@ if (!lead && queryContact.success) {
   // Contato válido na URL (veio do pré-checkout): cria o lead já com ele
   // persistido (recupera o telefone p/ cartão/boleto, por exemplo) e a origem
   // do funil.
-  const created = await repo.createLead(f.key)
+  const created = await repo.createLead(f.key, queryAttribution)
   leadId = created.id
   Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
   await repo.updateLead(leadId, queryContact.data)

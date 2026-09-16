@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { SendRenewalRemindersService } from '../../src/application/renewal-reminder/send-renewal-reminders.service'
 import type { AccountIdentity, AuthGateway } from '../../src/domain/ports/auth-gateway.port'
+import type { ChallengeAnalyticsGateway } from '../../src/domain/ports/challenge-analytics-gateway.port'
 import type { SendEmailInput } from '../../src/domain/ports/messaging-gateway.port'
 import {
   type ExpiringTermEntitlement,
@@ -105,13 +106,22 @@ function service(
   auth: AuthGateway,
   messaging: { sendEmail(input: SendEmailInput): Promise<void> },
   batchLimit?: number,
+  analytics?: ChallengeAnalyticsGateway,
 ) {
-  return new SendRenewalRemindersService(repo, auth, messaging, () => NOW, silentLogger, {
-    daysBefore: 7,
-    batchLimit,
-    funnelUrl: 'https://sistemazero.com.br',
-    kidsUrl: 'https://kids.sistemazero.com.br',
-  })
+  return new SendRenewalRemindersService(
+    repo,
+    auth,
+    messaging,
+    () => NOW,
+    silentLogger,
+    {
+      daysBefore: 7,
+      batchLimit,
+      funnelUrl: 'https://sistemazero.com.br',
+      kidsUrl: 'https://kids.sistemazero.com.br',
+    },
+    analytics,
+  )
 }
 
 describe('SendRenewalRemindersService', () => {
@@ -249,8 +259,14 @@ describe('SendRenewalRemindersService', () => {
       'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana', activated: true },
     })
     const msg = fakeMessaging()
+    const analyticsEvents: string[] = []
+    const analytics: ChallengeAnalyticsGateway = {
+      async publish(events) {
+        analyticsEvents.push(...events.map((event) => event.eventName))
+      },
+    }
 
-    expect(await service(repo, auth, msg.gateway).runCycle()).toEqual({
+    expect(await service(repo, auth, msg.gateway, undefined, analytics).runCycle()).toEqual({
       sent: 3,
       skipped: 0,
       failed: 0,
@@ -269,6 +285,11 @@ describe('SendRenewalRemindersService', () => {
       'https://sistemazero.com.br/kids/comunidade-do-criador/oferta',
     )
     expect(lifecycleSent.size).toBe(3)
+    expect(analyticsEvents).toEqual([
+      'expiry_reminder_sent',
+      'expiry_reminder_sent',
+      'challenge_expired',
+    ])
 
     expect(await service(repo, auth, msg.gateway).runCycle()).toEqual({
       sent: 0,

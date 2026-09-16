@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { ContactSchema, fieldErrors } from '../lib/contact-schema'
+import { leadAttributionFromLocation } from '../lib/lead-attribution'
 
 type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
 
@@ -43,7 +44,10 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
   useEffect(() => {
     ;(async () => {
       try {
-        await apiPost('/api/leads', { funnel })
+        await apiPost('/api/leads', {
+          funnel,
+          attribution: leadAttributionFromLocation(window.location),
+        })
         // Perfil é POR FUNIL (string livre) — repassa o que veio na URL; o servidor
         // valida `perfil_resultado` (max 32). Antes usava o enum do NCI e descartava
         // os perfis dos outros funis (ex.: kids).
@@ -116,6 +120,18 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
       // contra {principal, altOffer} — slug forjado dá 400 INVALID_OFFER).
       if (oferta) q.set('oferta', oferta)
       if (couponCode) q.set('cupom', couponCode)
+      const current = new URLSearchParams(window.location.search)
+      for (const key of [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'event_code',
+        'event',
+      ]) {
+        const value = current.get(key)
+        if (value) q.set(key, value)
+      }
       // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
       await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
       window.location.href = `${basePath}/checkout?${q.toString()}`

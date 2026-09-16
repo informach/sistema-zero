@@ -44,6 +44,11 @@ interface LeadsResponse {
   total: number
   limit: number
   offset: number
+  eventReport: {
+    eventCode: string
+    steps: Array<{ name: string; label: string; leads: number }>
+    prices: Array<{ chargedPriceCents: number; leads: number }>
+  } | null
 }
 
 // Paginação no SERVIDOR: a UI nunca carrega todos os leads de uma vez. Busca,
@@ -151,6 +156,7 @@ export default function RespostasTable({
   const [erro, setErro] = useState(false)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
+  const [eventCode, setEventCode] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [sortDesc, setSortDesc] = useState(true)
   const [offset, setOffset] = useState(0)
@@ -189,6 +195,7 @@ export default function RespostasTable({
     })
     if (debouncedQuery) params.set('q', debouncedQuery)
     if (funnel) params.set('funnel', funnel)
+    if (eventCode.trim()) params.set('event_code', eventCode.trim())
     setLoading(true)
     apiGet<LeadsResponse>(`/api/admin/leads?${params}`)
       .then((d) => {
@@ -203,12 +210,12 @@ export default function RespostasTable({
         setErro(true)
       })
       .finally(() => setLoading(false))
-  }, [offset, debouncedQuery, sortDesc, funnel])
+  }, [offset, debouncedQuery, sortDesc, funnel, eventCode])
 
   if (erro) return <p className="text-destructive">Falha ao carregar os leads.</p>
   if (!data) return <p className="text-muted-foreground">Carregando…</p>
 
-  const { leads, total } = data
+  const { leads, total, eventReport } = data
   const searching = debouncedQuery.length > 0
   const selectedAnswers = selected?.quizAnswers ?? {}
   const selectedAnswerLabels = selected
@@ -223,7 +230,17 @@ export default function RespostasTable({
           {total === 1 ? 'lead' : 'leads'}
           {searching ? ' encontrado(s)' : ''}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            aria-label="Código do evento"
+            placeholder="Código do evento…"
+            value={eventCode}
+            onChange={(e) => {
+              setEventCode(e.target.value)
+              setOffset(0)
+            }}
+            className="sm:w-48"
+          />
           <Input
             type="search"
             placeholder="Buscar por nome ou e-mail…"
@@ -245,6 +262,34 @@ export default function RespostasTable({
           </Button>
         </div>
       </div>
+
+      {eventReport && (
+        <Card className="mb-5 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Relatório do evento
+              </p>
+              <p className="font-semibold text-foreground">{eventReport.eventCode}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {eventReport.prices.map((price) => (
+                <Badge key={price.chargedPriceCents} variant="outline">
+                  {formatBRLFromCents(price.chargedPriceCents)}: {price.leads}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            {eventReport.steps.map((step) => (
+              <div key={step.name} className="rounded-lg border border-border bg-card/40 p-3">
+                <p className="text-2xl font-bold text-foreground">{step.leads}</p>
+                <p className="text-xs text-muted-foreground">{step.label}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {total === 0 ? (
         <Card className="p-10 text-center text-muted-foreground">

@@ -8,6 +8,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core'
+import type { LeadAttributionV1 } from '../lib/lead-attribution'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -41,6 +42,10 @@ export const leads = funil.table(
     // gravado na CRIAÇÃO. Resolve a oferta/conteúdo certos quando há mais de um produto;
     // nullable → leads legados (pré-multifunil) caem no funil default (ver src/funnels).
     funnel: text('funnel'),
+
+    // First-touch versionado. Só aceita identificadores técnicos curtos e nunca
+    // é sobrescrito depois de preenchido (QR/evento continuam atribuíveis).
+    attribution: jsonb('attribution').$type<LeadAttributionV1>(),
 
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),
@@ -144,6 +149,9 @@ export const funnelEvents = funil.table(
     step: text('step'),
     // Contexto opcional do evento (ex.: { perfil_resultado } no viu_pagina_vendas).
     metadata: jsonb('metadata'),
+    // Idempotência de marcos server-side/cross-service. Null mantém os eventos
+    // navegacionais repetíveis; valores não-nulos são únicos por jornada.
+    eventKey: text('event_key').unique(),
     timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

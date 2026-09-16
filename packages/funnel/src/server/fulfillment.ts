@@ -60,6 +60,7 @@ export async function fulfillPaidLead(lead: Lead, deps: FulfillmentDeps): Promis
   if ((status === 200 || status === 201) && userId) {
     const created = readCreated(body)
     await deps.repo.setBuyerRegistration(lead.id, userId, created, deps.now())
+    await deps.repo.recordCommunitySubscription(lead.id, userId)
     deps.log?.('fulfill.ensured', { leadId: lead.id, userId, created })
     return
   }

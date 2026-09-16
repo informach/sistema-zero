@@ -5,6 +5,7 @@ import { maskCpf } from '../lib/card-utils'
 import { type CheckoutContactInput, CheckoutContactSchema } from '../lib/checkout-schema'
 import { fieldErrors } from '../lib/contact-schema'
 import type { CouponPresentation } from '../lib/coupon-query'
+import { leadAttributionFromLocation } from '../lib/lead-attribution'
 import { formatBRLFromCents2 } from '../lib/money'
 import CardCheckout from './CardCheckout'
 import { Field, inputClass } from './checkout-fields'
@@ -110,7 +111,10 @@ export default function CheckoutForm({
   // oferta/pré-checkout): a cobrança exige lead no cookie. Idempotente: quem já
   // tem lead válido só o reaproveita; bot sem JS não insere linha no banco.
   useEffect(() => {
-    apiPost('/api/leads', { funnel }).catch(() => {})
+    apiPost('/api/leads', {
+      funnel,
+      attribution: leadAttributionFromLocation(window.location),
+    }).catch(() => {})
   }, [funnel])
 
   const [nome, setNome] = useState(initialContact.nome)
