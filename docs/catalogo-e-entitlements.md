@@ -14,7 +14,7 @@
 | Conceito | O que é | O que carrega |
 |---|---|---|
 | **Produto** | O *entregável* — o curso, o e-book, o combo. **Não tem preço.** | O conteúdo e **a entrega** (o que a compra libera) |
-| **Oferta** | A *unidade de venda* — um link de checkout | O **preço**, parcelas, garantia, janela, bônus de campanha |
+| **Oferta** | A *unidade de venda* — um link de checkout | O **preço**, prazo de acesso, parcelas, garantia, janela, bônus de campanha |
 | **Matrícula** (entitlement) | O *acesso de UM aluno* a UM produto, gravado na compra | Status, validade, snapshot congelado do que foi vendido |
 
 A regra de bolso para operar:
@@ -108,7 +108,9 @@ compra confirmada (Pix/cartão/boleto)
   → o aluno acessa: checagem local "tem chave do curso OU chave-mestra ativa?"
 ```
 
-- Compra única → matrícula **vitalícia** (sem validade).
+- Compra única vitalícia → matrícula **sem validade**.
+- Compra única com prazo fixo → matrícula válida pela duração da oferta (dias ou meses), contada
+  a partir da aprovação do pagamento.
 - Assinatura → matrícula com validade = ciclo + carência, **estendida a cada ciclo
   pago**; cancelou/expirou → todas as matrículas daquela assinatura caem juntas.
 
@@ -127,18 +129,26 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
 - Oferta de **assinatura** ativa → além do acima, exige o **intervalo de cobrança**
   (mensal ou anual). Sem ele a ativação é bloqueada (o checkout não teria como montar o
   plano recorrente no provedor).
+- Oferta de compra única com **prazo fixo** ativa → exige duração inteira positiva e unidade
+  (dias ou meses). Rascunhos e ofertas pausadas podem ficar incompletos durante o cadastro.
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
-## Assinaturas (mensal e anual)
+## Cobrança e prazo de acesso
 
 Toda oferta tem um **modo de cobrança**, escolhido no cadastro da oferta:
 
-- **Compra única** — o cliente paga uma vez e a matrícula é **vitalícia** (sem validade).
-  É o padrão.
+- **Compra única vitalícia** — o cliente paga uma vez e o acesso não vence. Essa opção continua
+  disponível para ofertas atuais e futuras.
+- **Compra única com prazo fixo** — o cliente paga uma vez e acessa pelo número de dias ou meses
+  definido na oferta. O prazo começa na aprovação do pagamento, não no primeiro login.
 - **Assinatura** — cobrança **recorrente**; a matrícula vale por um ciclo e **renova a cada
   pagamento**. Cancelou, ou a cobrança falhou até o fim da carência → as matrículas daquela
   assinatura caem juntas (ver "O que acontece na compra").
+
+Preço e acesso são decisões separadas. Alterar apenas o preço não transforma uma oferta vitalícia
+em temporária (nem o contrário). A mudança vale para novas compras; acessos já concedidos conservam
+o snapshot da compra.
 
 Na oferta de assinatura você ainda escolhe a **periodicidade**:
 
@@ -165,13 +175,15 @@ o funil vende só a oferta-base. Três camadas:
 
 | Quero mudar… | Onde | Precisa deploy? |
 |---|---|---|
-| Preço, preço "de", parcelas, garantia, janela, cupom on/off, bônus, cupons | **Painel → Catálogo** (Ofertas/Cupons) | Não — reflete em ~1 min |
+| Preço, prazo de acesso, preço "de", parcelas, garantia, janela, cupom on/off, bônus, cupons | **Painel → Catálogo** (Ofertas/Cupons) | Não — reflete em ~1 min |
 | **Parar a venda** (emergência) | Oferta → status `paused` (checkout passa a responder "oferta não disponível") | Não |
 | QUAL oferta o funil vende | env `CATALOG_OFFER_SLUG` no host do funil | Restart |
 | Copy/layout/imagens da página de vendas | Código do funil (`src/content/`) | Sim |
 
 Promoção do dia a dia = editar o preço da oferta ou criar **cupom** (quem já comprou mantém o
-acesso — snapshot congelado). Trocar a env é só quando o funil muda de **produto**.
+acesso — snapshot congelado). Para uma campanha com prazo diferente, prefira outra oferta do mesmo
+produto; assim preço, copy, métricas e promessa não se misturam. Trocar a env é só quando o funil
+muda de **oferta/produto**.
 
 > ⚠️ **Plataforma Kids não tem funil (hoje).** Produtos kids — como o **Estúdio Completo** — são
 > cadastrados normalmente no catálogo (produto + oferta), mas o acesso é liberado por **concessão

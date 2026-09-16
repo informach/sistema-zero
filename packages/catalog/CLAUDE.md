@@ -151,6 +151,8 @@ do pagamento. BFS pelos componentes armazenados; alcançar o próprio id = 400.
   `subscription → billing_cycle`; o backfill usa a mesma regra e não toca matrículas existentes.
   Converter assinatura em compra única exige escolher explicitamente vitalício ou prazo fixo.
   `Offer.restore()` continua sem validar legado; coerência é cobrada na criação/edição/ativação.
+  As views pública e admin, a cotação e o endpoint interno de entitlements expõem os três campos;
+  consumidores não devem inferir prazo pelo preço ou pelo `pricingMode`.
 - **Alternador mensal↔anual (`OfferContent.altOffer`, 07/2026, JSONB sem migração)**:
   `{slug, label?}` aponta a oferta IRMÃ (a mensal aponta a anual e vice-versa — autorado no admin
   nos DOIS sentidos). O funil VALIDA o slug escolhido no checkout contra este link (anti-forja);

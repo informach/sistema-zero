@@ -1,3 +1,8 @@
+import type {
+  AccessDurationUnit,
+  AccessMode,
+  OfferAccessPolicy,
+} from '../../domain/offer/access-policy'
 import type { OfferAggregate, OfferContent } from '../../domain/offer/offer.aggregate'
 import type { EntitlementItemView } from './entitlement-view'
 import type { ProductSummaryView } from './product-view'
@@ -6,7 +11,13 @@ import type { ProductSummaryView } from './product-view'
  * View da oferta — o CONTRATO que o funil consome (fonte da verdade comercial):
  * preço, condições e os itens inclusos resolvidos (combo + extras), com o principal.
  */
-export interface OfferView {
+export interface OfferAccessPolicyView extends OfferAccessPolicy {
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
+}
+
+export interface OfferView extends OfferAccessPolicyView {
   id: string
   code: string
   slug: string
@@ -38,7 +49,7 @@ export interface OfferView {
  * oferta) vêm CRUS do agregado — o painel precisa deles p/ editar sem apagar
  * (o PATCH substitui a coleção inteira).
  */
-export interface OfferListItemView {
+export interface OfferListItemView extends OfferAccessPolicyView {
   id: string
   code: string
   slug: string
@@ -80,6 +91,7 @@ export function toOfferListItem(
     compareAtPriceCents: offer.compareAtPriceCents,
     currency: offer.currency,
     pricingMode: offer.pricingMode,
+    ...toOfferAccessPolicyView(offer),
     billingIntervalMonths: offer.billingIntervalMonths,
     installmentsMax: offer.installmentsMax,
     trialDays: offer.trialDays,
@@ -112,6 +124,7 @@ export function toOfferView(
     compareAtPriceCents: offer.compareAtPriceCents,
     currency: offer.currency,
     pricingMode: offer.pricingMode,
+    ...toOfferAccessPolicyView(offer),
     billingIntervalMonths: offer.billingIntervalMonths,
     installmentsMax: offer.installmentsMax,
     trialDays: offer.trialDays,
@@ -124,5 +137,13 @@ export function toOfferView(
     includes,
     createdAt: offer.createdAt.toISOString(),
     updatedAt: offer.updatedAt.toISOString(),
+  }
+}
+
+export function toOfferAccessPolicyView(offer: OfferAggregate): OfferAccessPolicyView {
+  return {
+    accessMode: offer.accessMode,
+    accessDurationValue: offer.accessDurationValue,
+    accessDurationUnit: offer.accessDurationUnit,
   }
 }

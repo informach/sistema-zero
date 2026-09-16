@@ -142,12 +142,18 @@ describe('catalog HTTP', () => {
         priceCents: number
         compareAtPriceCents: number
         guaranteeDays: number
+        accessMode: string
+        accessDurationValue: number | null
+        accessDurationUnit: string | null
         isAvailable: boolean
         includes: { productId: string; isPrimary: boolean }[]
       }
       expect(view.priceCents).toBe(3700)
       expect(view.compareAtPriceCents).toBe(9700)
       expect(view.guaranteeDays).toBe(7)
+      expect(view.accessMode).toBe('lifetime')
+      expect(view.accessDurationValue).toBeNull()
+      expect(view.accessDurationUnit).toBeNull()
       expect(view.isAvailable).toBe(true)
       expect(view.includes.length).toBe(2)
       expect(view.includes.filter((i) => i.isPrimary)).toHaveLength(1)
@@ -207,6 +213,89 @@ describe('catalog HTTP', () => {
   })
 
   describe('coerência de oferta ativa', () => {
+    it('cria prazo fixo e editar só o preço preserva a política', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'fixed-p',
+        slug: 'fixed-p',
+        name: 'Fixed',
+        kind: 'course',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'fixed-p' },
+      })
+      const created = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'fixed-of',
+            slug: 'fixed-of',
+            name: 'Oferta por 30 dias',
+            priceCents: 6700,
+            pricingMode: 'one_time',
+            accessMode: 'fixed',
+            accessDurationValue: 30,
+            accessDurationUnit: 'days',
+            status: 'active',
+          },
+        }),
+      )
+      expect(created.status).toBe(201)
+      const offer = (await created.json()) as {
+        id: string
+        accessMode: string
+        accessDurationValue: number | null
+        accessDurationUnit: string | null
+      }
+      expect(offer).toMatchObject({
+        accessMode: 'fixed',
+        accessDurationValue: 30,
+        accessDurationUnit: 'days',
+      })
+
+      const updated = await built.app.handle(
+        req('PATCH', `/catalog/offers/${offer.id}`, {
+          headers: ADMIN,
+          body: { priceCents: 9700 },
+        }),
+      )
+      expect(updated.status).toBe(200)
+      expect(await updated.json()).toMatchObject({
+        priceCents: 9700,
+        accessMode: 'fixed',
+        accessDurationValue: 30,
+        accessDurationUnit: 'days',
+      })
+    })
+
+    it('recusa ativar prazo fixo sem duração', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'fixed-invalid-p',
+        slug: 'fixed-invalid-p',
+        name: 'Fixed invalid',
+        kind: 'course',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'fixed-invalid-p' },
+      })
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers', {
+          headers: ADMIN,
+          body: {
+            productId: product.id,
+            code: 'fixed-invalid-of',
+            slug: 'fixed-invalid-of',
+            name: 'Oferta incompleta',
+            priceCents: 6700,
+            accessMode: 'fixed',
+            status: 'active',
+          },
+        }),
+      )
+      expect(res.status).toBe(400)
+      expect(await res.json()).toMatchObject({ error: { code: 'VALIDATION_ERROR' } })
+    })
+
     it('POST /catalog/offers ativo com produto principal em draft → 400', async () => {
       const built = build()
       const product = await built.createProduct.execute({
@@ -362,12 +451,18 @@ describe('catalog HTTP', () => {
         priceCents: number
         discountCents: number
         finalPriceCents: number
+        accessMode: string
+        accessDurationValue: number | null
+        accessDurationUnit: string | null
         coupon: unknown
       }
       expect(q).toMatchObject({
         priceCents: 3700,
         discountCents: 0,
         finalPriceCents: 3700,
+        accessMode: 'lifetime',
+        accessDurationValue: null,
+        accessDurationUnit: null,
         coupon: null,
       })
     })
@@ -1000,6 +1095,9 @@ describe('catalog HTTP', () => {
       const res = await built.app.handle(req('GET', '/catalog/offers/kids-of/entitlements'))
       expect(res.status).toBe(200)
       return (await res.json()) as {
+        accessMode: string
+        accessDurationValue: number | null
+        accessDurationUnit: string | null
         items: {
           isPrimary: boolean
           fulfillment: { accessType: string; maxProfiles?: number } | null
@@ -1009,7 +1107,13 @@ describe('catalog HTTP', () => {
 
     it('injeta o maxProfiles da OFERTA no fulfillment do item primário', async () => {
       const built = await seedKidsOffer({ offerMaxProfiles: 4 })
-      const { items } = await entitlementsOf(built)
+      const result = await entitlementsOf(built)
+      expect(result).toMatchObject({
+        accessMode: 'lifetime',
+        accessDurationValue: null,
+        accessDurationUnit: null,
+      })
+      const { items } = result
       expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBe(4)
     })
 

@@ -8,11 +8,16 @@ import {
   toEntitlementItemView,
   toEntitlementView,
 } from '../mappers/entitlement-view'
-import { type OfferView, toOfferView } from '../mappers/offer-view'
+import {
+  type OfferAccessPolicyView,
+  type OfferView,
+  toOfferAccessPolicyView,
+  toOfferView,
+} from '../mappers/offer-view'
 import { toProductSummary } from '../mappers/product-view'
 import type { ResolveOfferEntitlementsService } from '../resolve-offer-entitlements/resolve-offer-entitlements.service'
 
-export interface OfferEntitlementsResult {
+export interface OfferEntitlementsResult extends OfferAccessPolicyView {
   offerId: string
   offerSlug: string
   items: EntitlementView[]
@@ -83,7 +88,12 @@ export class GetOfferService {
         maxProfiles: offerMaxProfiles,
       })
     }
-    return { offerId: offer.id, offerSlug: offer.slug, items }
+    return {
+      offerId: offer.id,
+      offerSlug: offer.slug,
+      ...toOfferAccessPolicyView(offer),
+      items,
+    }
   }
 
   private async toView(offer: OfferAggregate): Promise<OfferView> {

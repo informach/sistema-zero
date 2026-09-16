@@ -6,6 +6,7 @@ import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import { assertActiveOfferDeliverable } from '../create-offer/create-offer.service'
+import { toOfferAccessPolicyView } from '../mappers/offer-view'
 import type { OfferQuoteView } from '../mappers/quote-view'
 import type { ResolveOfferEntitlementsService } from '../resolve-offer-entitlements/resolve-offer-entitlements.service'
 
@@ -41,6 +42,7 @@ export class QuoteOfferService {
       offerId: offer.id,
       offerSlug: offer.slug,
       currency: offer.currency,
+      ...toOfferAccessPolicyView(offer),
       priceCents,
       discountCents: 0,
       finalPriceCents: priceCents,

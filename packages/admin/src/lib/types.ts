@@ -851,6 +851,8 @@ export type ProductKind =
   | 'bundle'
   | 'other'
 export type PricingMode = 'one_time' | 'subscription'
+export type AccessMode = 'lifetime' | 'fixed' | 'billing_cycle'
+export type AccessDurationUnit = 'days' | 'months'
 export type CouponType = 'percent' | 'fixed'
 
 // Fulfillment (entrega/acesso): espelha `domain/product/fulfillment.ts` do catalog.
@@ -931,7 +933,10 @@ export interface OfferListItem {
   priceCents: number
   compareAtPriceCents: number | null
   currency: string
-  pricingMode: string
+  pricingMode: PricingMode
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
   /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
   billingIntervalMonths: number | null
   installmentsMax: number | null
