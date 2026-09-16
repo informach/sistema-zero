@@ -1,6 +1,12 @@
 import type { FunnelRepo, Lead } from '../db/repo'
+import {
+  computeFixedAccessExpiry,
+  fixedAccessFromSnapshot,
+  formatSaoPauloDateTime,
+} from '../lib/access-period'
 import type { GatewayClient, SendMessageInput } from '../lib/gateway-client'
 import { splitName } from './fulfillment'
+import { parsePurchasedOfferSnapshot } from './purchased-offer-snapshot'
 
 export interface WelcomeEmailDeps {
   gateway: GatewayClient
@@ -9,7 +15,7 @@ export interface WelcomeEmailDeps {
   /** Base do app KIDS — funil `kids/*`. Ausente → cai no `communityUrl` (compat). */
   kidsCommunityUrl?: string
   /** One-shot atômico do welcome (claim) + liberação quando NADA foi emitido. */
-  repo: Pick<FunnelRepo, 'claimWelcome' | 'releaseWelcome'>
+  repo: Pick<FunnelRepo, 'claimWelcome' | 'releaseWelcome' | 'paymentContext'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -56,12 +62,25 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
       const baseUrl = lead.funnel?.startsWith('kids/')
         ? (deps.kidsCommunityUrl ?? deps.communityUrl)
         : deps.communityUrl
+      let challengeAccess: { expiresAtLabel: string } | null = null
+      try {
+        challengeAccess = await resolveChallengeAccess(deps.repo, lead)
+      } catch (error) {
+        // O snapshot especializa a copy, mas não pode impedir a mensagem
+        // genérica nem prender o claim se a leitura do histórico oscilar.
+        deps.log?.('welcome.access_snapshot_failed', {
+          leadId: lead.id,
+          message: error instanceof Error ? error.message : String(error),
+        })
+      }
 
       // Resolve o conteúdo por tipo de comprador. No NOVO, emite o token de senha
       // (e libera o claim se falhar — nada saiu). No RECORRENTE, não há token.
       let templateKey: string
       let link: string
       let keyPrefix: string
+      let action: string
+      let guidance: string
       if (lead.buyerIsNew) {
         const tokenRes = await deps.gateway.createPasswordToken(lead.email)
         const token = readToken(tokenRes.body)
@@ -74,13 +93,24 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
         templateKey = 'welcome'
         link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
         keyPrefix = 'welcome'
+        action = 'Definir senha e começar'
+        guidance = 'Crie sua senha pelo botão abaixo e escolha o perfil da criança para começar.'
       } else {
         templateKey = 'new-access'
         link = `${baseUrl}/cursos`
         keyPrefix = 'new-access'
+        action = 'Começar o desafio'
+        guidance = 'Entre com seu e-mail e sua senha de sempre para começar.'
       }
 
-      const variables = { nome: firstName, link }
+      const variables: Record<string, string> = { nome: firstName, link }
+      if (challengeAccess) {
+        templateKey = 'challenge-access-approved'
+        keyPrefix = 'challenge-access-approved'
+        variables.expira_em = challengeAccess.expiresAtLabel
+        variables.acao = action
+        variables.orientacao = guidance
+      }
 
       await sendOne(
         deps,
@@ -114,6 +144,24 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
         message: err instanceof Error ? err.message : String(err),
       })
     }
+  }
+}
+
+async function resolveChallengeAccess(
+  repo: Pick<FunnelRepo, 'paymentContext'>,
+  lead: Lead,
+): Promise<{ expiresAtLabel: string } | null> {
+  if (lead.funnel !== 'kids/desafio-primeiro-jogo' || !lead.paymentId || !lead.paidAt) {
+    return null
+  }
+  const context = await repo.paymentContext(lead.paymentId)
+  const snapshot = parsePurchasedOfferSnapshot(context?.offerSnapshot)
+  const access = fixedAccessFromSnapshot(snapshot)
+  if (!access) return null
+
+  const expiresAt = computeFixedAccessExpiry(lead.paidAt, access)
+  return {
+    expiresAtLabel: formatSaoPauloDateTime(expiresAt),
   }
 }
 

@@ -1,10 +1,14 @@
 import { and, asc, eq, gte, isNull, lte, sql } from 'drizzle-orm'
 import type {
   ExpiringTermEntitlement,
+  FixedAccessLifecycleEntitlement,
+  FixedAccessLifecycleKind,
   RenewalReminderRepository,
 } from '../../../domain/ports/renewal-reminder-repository.port'
 import type { Database } from './db'
-import { entitlements, renewalRemindersSent } from './schema'
+import { entitlementLifecycleMessagesSent, entitlements, renewalRemindersSent } from './schema'
+
+const CHALLENGE_COURSE_REF = 'desafio-primeiro-jogo'
 
 /**
  * Repositório do lembrete de renovação (Drizzle/Postgres). O filtro "ainda sem
@@ -51,6 +55,9 @@ export class DrizzleRenewalReminderRepository implements RenewalReminderReposito
             eq(entitlements.status, 'active'),
             eq(entitlements.sourceKind, 'payment'),
             isNull(entitlements.subscriptionId),
+            // O lembrete genérico é só do prazo anual/mensal. `fixed/days`
+            // possui a cadência própria do Desafio abaixo.
+            sql`coalesce(${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit', 'months') <> 'days'`,
             gte(entitlements.expiresAt, from),
             lte(entitlements.expiresAt, to),
             isNull(renewalRemindersSent.entitlementId),
@@ -114,6 +121,111 @@ export class DrizzleRenewalReminderRepository implements RenewalReminderReposito
     await this.db
       .insert(renewalRemindersSent)
       .values({ entitlementId, expiresOn, sentAt: now })
+      .onConflictDoNothing()
+  }
+
+  async listFixedAccessLifecycleEntitlements(
+    now: Date,
+    limit: number,
+  ): Promise<FixedAccessLifecycleEntitlement[]> {
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 86_400_000)
+    const expiresOnExpression = sql<string>`(${entitlements.expiresAt} at time zone 'UTC')::date`
+    const messageKindExpression = sql<FixedAccessLifecycleKind>`case
+      when ${entitlements.expiresAt} <= ${now.toISOString()}::timestamptz then 'expired'
+      when ${entitlements.expiresAt} <= ${new Date(now.getTime() + 3 * 86_400_000).toISOString()}::timestamptz then 'expiry_3d'
+      else 'expiry_7d'
+    end`
+    const offerSlug = sql<string | null>`${entitlements.snapshot} ->> 'offerSlug'`.as('offer_slug')
+    const productName = sql<string | null>`${entitlements.snapshot} ->> 'name'`.as('product_name')
+
+    const rows = await this.db
+      .select({
+        id: entitlements.id,
+        userId: entitlements.userId,
+        expiresAt: entitlements.expiresAt,
+        offerSlug,
+        productName,
+        courseRef: entitlements.courseRef,
+        messageKind: messageKindExpression.as('message_kind'),
+      })
+      .from(entitlements)
+      .where(
+        and(
+          sql`${entitlements.status}::text in ('active', 'expired')`,
+          eq(entitlements.sourceKind, 'payment'),
+          isNull(entitlements.subscriptionId),
+          eq(entitlements.accessType, 'course'),
+          eq(entitlements.courseRef, CHALLENGE_COURSE_REF),
+          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
+          sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
+          lte(entitlements.expiresAt, sevenDaysFromNow),
+          // Só a mensagem da faixa ATUAL participa do anti-join. Quem entrou
+          // direto na faixa de 3 dias não recebe o aviso atrasado de 7 dias.
+          sql`not exists (
+            select 1
+              from members.entitlement_lifecycle_messages_sent sent
+             where sent.entitlement_id = ${entitlements.id}
+               and sent.expires_on = ${expiresOnExpression}
+               and sent.message_kind = ${messageKindExpression}
+          )`,
+          // Outra matrícula ativa que cobre o mesmo curso e termina depois (ou
+          // nunca termina) torna este prazo irrelevante para o comprador.
+          sql`not exists (
+            select 1
+              from members.entitlements stronger
+             where stronger.id <> ${entitlements.id}
+               and stronger.user_id = ${entitlements.userId}
+               and stronger.status = 'active'
+               and (stronger.expires_at is null or stronger.expires_at > ${now.toISOString()}::timestamptz)
+               and (
+                 (stronger.access_type = 'course' and stronger.course_ref = ${entitlements.courseRef})
+                 or stronger.access_type = 'all_kids_courses'
+               )
+               and (
+                 stronger.expires_at is null
+                 or stronger.expires_at >= ${entitlements.expiresAt}
+               )
+          )`,
+        ),
+      )
+      .orderBy(asc(entitlements.expiresAt), asc(entitlements.id))
+      .limit(limit)
+
+    return rows
+      .filter(
+        (
+          row,
+        ): row is typeof row & {
+          expiresAt: Date
+          courseRef: string
+          messageKind: FixedAccessLifecycleKind
+        } =>
+          row.expiresAt != null &&
+          row.courseRef != null &&
+          (row.messageKind === 'expiry_7d' ||
+            row.messageKind === 'expiry_3d' ||
+            row.messageKind === 'expired'),
+      )
+      .map((row) => ({
+        id: row.id,
+        userId: row.userId,
+        expiresAt: row.expiresAt,
+        offerSlug: row.offerSlug,
+        productName: row.productName,
+        courseRef: row.courseRef,
+        messageKind: row.messageKind,
+      }))
+  }
+
+  async markLifecycleMessageSent(
+    entitlementId: string,
+    expiresOn: string,
+    messageKind: FixedAccessLifecycleKind,
+    now: Date,
+  ): Promise<void> {
+    await this.db
+      .insert(entitlementLifecycleMessagesSent)
+      .values({ entitlementId, expiresOn, messageKind, sentAt: now })
       .onConflictDoNothing()
   }
 }

@@ -9,7 +9,12 @@ const COMMUNITY_URL = 'http://localhost:3007'
 /** Lead pago + registrado (comprador NOVO por padrão) pronto p/ receber o welcome. */
 async function registeredLead(
   repo: ReturnType<typeof createFakeRepo>['repo'],
-  over: { isNew?: boolean; userId?: string; telefone?: string | null } = {},
+  over: {
+    isNew?: boolean
+    userId?: string
+    telefone?: string | null
+    challengeFixedDays?: number
+  } = {},
 ): Promise<Lead> {
   const { id } = await repo.createLead()
   await repo.updateLead(id, {
@@ -17,8 +22,33 @@ async function registeredLead(
     email: 'ana@example.com',
     telefone: over.telefone === undefined ? '11999998888' : over.telefone,
   })
-  await repo.setPayment(id, 'pay-1')
-  await repo.markPaid(id, new Date())
+  await repo.setPayment(
+    id,
+    'pay-1',
+    null,
+    over.challengeFixedDays
+      ? {
+          offerSnapshot: {
+            version: 1,
+            offerId: 'offer-1',
+            offerSlug: 'desafio-primeiro-jogo-30-dias',
+            pricingMode: 'one_time',
+            billingIntervalMonths: null,
+            accessMode: 'fixed',
+            accessDurationValue: over.challengeFixedDays,
+            accessDurationUnit: 'days',
+            listPriceCents: 6700,
+            couponCode: null,
+            discountCents: 0,
+            chargedPriceCents: 6700,
+            currency: 'BRL',
+            guaranteeDays: 7,
+            termsVersion: 'kids-2026-09-16',
+          },
+        }
+      : undefined,
+  )
+  await repo.markPaid(id, new Date('2026-09-16T15:30:00.000Z'))
   await repo.setBuyerRegistration(id, over.userId ?? 'user-1', over.isNew ?? true, new Date())
   const lead = await repo.getLead(id)
   if (!lead) throw new Error('lead não encontrado')
@@ -72,6 +102,50 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     const link = 'http://localhost:3008/redefinir-senha?token=fake-pw-token'
     expect(gw.calls.messages[0]?.input.variables?.link).toBe(link)
     expect(gw.calls.messages[1]?.input.variables?.link).toBe(link)
+  })
+
+  test('Desafio fixed/days usa confirmação própria e informa o vencimento exato', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo, { challengeFixedDays: 30 })
+    const lead = { ...base, funnel: 'kids/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({
+      gateway: gw.gateway,
+      communityUrl: COMMUNITY_URL,
+      kidsCommunityUrl: 'http://localhost:3008',
+      repo,
+    })(lead)
+
+    expect(gw.calls.messages).toHaveLength(2)
+    for (const message of gw.calls.messages) {
+      expect(message.input.templateKey).toBe('challenge-access-approved')
+      expect(message.input.variables?.expira_em).toBe('16/10/2026, 12:30')
+      expect(message.input.variables?.acao).toBe('Definir senha e começar')
+      expect(message.idempotencyKey).toStartWith('challenge-access-approved')
+    }
+  })
+
+  test('falha ao ler o snapshot não prende o claim: envia o welcome genérico', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo)
+    const lead = { ...base, funnel: 'kids/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({
+      gateway: gw.gateway,
+      communityUrl: COMMUNITY_URL,
+      kidsCommunityUrl: 'http://localhost:3008',
+      repo: {
+        ...repo,
+        async paymentContext() {
+          throw new Error('banco indisponível')
+        },
+      },
+    })(lead)
+
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(gw.calls.messages[0]?.input.templateKey).toBe('welcome')
   })
 
   test('lead sem telefone → só o e-mail sai (WhatsApp é pulado)', async () => {

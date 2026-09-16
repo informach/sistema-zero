@@ -14,6 +14,8 @@ export interface RenewalReminderOptions {
   batchLimit?: number
   /** URL pública do FUNIL (base do link `/renovar?oferta=<slug>`). */
   funnelUrl: string
+  /** URL pública do app Kids (retomada direta do Desafio). */
+  kidsUrl: string
 }
 
 const DEFAULT_BATCH_LIMIT = 200
@@ -22,6 +24,15 @@ const DEFAULT_BATCH_LIMIT = 200
 function ddmmyyyy(expiresAt: Date): string {
   const key = expiresOnKey(expiresAt)
   return `${key.slice(8, 10)}/${key.slice(5, 7)}/${key.slice(0, 4)}`
+}
+
+function ddmmyyyySaoPaulo(expiresAt: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(expiresAt)
 }
 
 /**
@@ -53,7 +64,6 @@ export class SendRenewalRemindersService {
       to,
       this.opts.batchLimit ?? DEFAULT_BATCH_LIMIT,
     )
-    if (rows.length === 0) return { sent: 0, skipped: 0, failed: 0 }
 
     // Agrupa por (usuário, oferta, vencimento): 1 e-mail por COMPRA, não por item.
     const groups = new Map<string, ExpiringTermEntitlement[]>()
@@ -107,8 +117,76 @@ export class SendRenewalRemindersService {
       }
     }
 
+    const fixedRows = await this.reminders.listFixedAccessLifecycleEntitlements(
+      now,
+      this.opts.batchLimit ?? DEFAULT_BATCH_LIMIT,
+    )
+    const fixedGroups = new Map<string, typeof fixedRows>()
+    for (const row of fixedRows) {
+      const key = `${row.userId}|${row.offerSlug ?? ''}|${expiresOnKey(row.expiresAt)}|${row.messageKind}`
+      const list = fixedGroups.get(key)
+      if (list) list.push(row)
+      else fixedGroups.set(key, [row])
+    }
+
+    for (const group of fixedGroups.values()) {
+      const first = group[0]
+      if (!first) continue
+      const expiresOn = expiresOnKey(first.expiresAt)
+      try {
+        const [identity] = await this.auth.getAccountIdentities([first.userId])
+        if (!identity) {
+          for (const entitlement of group) {
+            await this.reminders.markLifecycleMessageSent(
+              entitlement.id,
+              expiresOn,
+              entitlement.messageKind,
+              this.clock(),
+            )
+          }
+          skipped++
+          continue
+        }
+
+        const nome = identity.firstName || 'Responsável'
+        const expired = first.messageKind === 'expired'
+        const templateKey = expired
+          ? 'challenge-expired'
+          : first.messageKind === 'expiry_3d'
+            ? 'challenge-expiry-3d'
+            : 'challenge-expiry-7d'
+        const link = expired
+          ? `${this.opts.funnelUrl}/kids/comunidade-do-criador/oferta`
+          : `${this.opts.kidsUrl}/cursos/${encodeURIComponent(first.courseRef)}`
+
+        await this.messaging.sendEmail({
+          templateKey,
+          recipient: { name: nome, email: identity.email },
+          variables: { nome, data: ddmmyyyySaoPaulo(first.expiresAt), link },
+          idempotencyKey: `${templateKey}:${first.id}:${expiresOn}`,
+        })
+        for (const entitlement of group) {
+          await this.reminders.markLifecycleMessageSent(
+            entitlement.id,
+            expiresOn,
+            entitlement.messageKind,
+            this.clock(),
+          )
+        }
+        sent++
+      } catch (error) {
+        failed++
+        this.logger.warn('fixed_access_lifecycle.group_failed', {
+          entitlementId: first.id,
+          expiresOn,
+          messageKind: first.messageKind,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+
     if (sent > 0 || failed > 0) {
-      this.logger.info('renewal_reminder.cycle', { sent, skipped, failed })
+      this.logger.info('entitlement_lifecycle.cycle', { sent, skipped, failed })
     }
     return { sent, skipped, failed }
   }

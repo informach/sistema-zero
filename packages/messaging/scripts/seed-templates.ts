@@ -389,6 +389,201 @@ const seeds = [
         'Você recebeu este e-mail porque há um perfil de criança ativo na sua conta do Sistema Zero.',
     }),
   },
+  // Ciclo do Desafio do Primeiro Jogo (acesso fixo de 30 dias). O funil envia
+  // `challenge-access-approved` nos dois canais; o MEMBERS envia os demais por
+  // e-mail, com dedupe por matrícula + vencimento + marco.
+  {
+    key: 'challenge-access-approved',
+    channel: 'email' as const,
+    name: 'Desafio — acesso aprovado (e-mail)',
+    subject: 'O Desafio do Primeiro Jogo já está liberado, {{nome}} 🎮',
+    variables: ['nome', 'link', 'expira_em', 'acao', 'orientacao'],
+    body: emailLayout({
+      preheader: 'Os 30 dias começaram com a aprovação do pagamento. Veja a data final do acesso.',
+      title: 'O Desafio já está liberado 🎮',
+      content: [
+        p(
+          'Olá, {{nome}}! O pagamento foi aprovado e o acesso ao <strong>Desafio do Primeiro Jogo</strong> já começou.',
+        ),
+        p('O acesso fica disponível até <strong>{{expira_em}}</strong>, sem renovação automática.'),
+        p('{{orientacao}}'),
+        ctaButton('{{acao}}', '{{link}}'),
+        divider,
+        small(
+          'Uma boa primeira meta é entrar hoje, escolher o perfil da criança e abrir o Dia 1. O desafio pode ser feito no ritmo da família dentro do período de acesso.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-access-approved',
+    channel: 'whatsapp' as const,
+    name: 'Desafio — acesso aprovado (WhatsApp)',
+    variables: ['nome', 'link', 'expira_em', 'acao', 'orientacao'],
+    body: [
+      'Olá, {{nome}}! 🎮',
+      '',
+      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* já está liberado.',
+      'Seu acesso vai até *{{expira_em}}*, sem renovação automática.',
+      '',
+      '{{orientacao}}',
+      '{{link}}',
+      '',
+      'Primeira meta: entrar hoje e abrir o Dia 1. 🚀',
+    ].join('\n'),
+  },
+  {
+    key: 'challenge-not-activated',
+    channel: 'email' as const,
+    name: 'Desafio — conta ainda não ativada (e-mail)',
+    subject: '{{nome}}, falta só criar sua senha para começar o Desafio',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Seu acesso está contando; crie a senha para aproveitar o período do desafio.',
+      title: 'Seu Desafio está esperando por vocês',
+      content: [
+        p('Olá, {{nome}}! O acesso já foi liberado, mas a senha da conta ainda não foi criada.'),
+        p(
+          'Como os 30 dias começaram na aprovação do pagamento, vale resolver esse passo agora. Na tela abaixo, escolha <strong>“Esqueci minha senha”</strong> para definir uma senha e entrar.',
+        ),
+        ctaButton('Criar senha e entrar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-not-started',
+    channel: 'email' as const,
+    name: 'Desafio — Dia 1 ainda não iniciado (e-mail)',
+    subject: 'Que tal abrir o Dia 1 hoje, {{nome}}?',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'A conta está pronta; o próximo passo leva poucos minutos.',
+      title: 'Hoje pode ser o começo do primeiro jogo',
+      content: [
+        p('Olá, {{nome}}! A conta já está pronta, mas o Dia 1 ainda não foi iniciado.'),
+        p(
+          'Não precisa separar uma tarde inteira. Entre com a criança, escolha o perfil e dê apenas o primeiro passo. Quando quiserem, vocês continuam de onde pararam.',
+        ),
+        ctaButton('Abrir o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem acesso ativo ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-day-one-complete',
+    channel: 'email' as const,
+    name: 'Desafio — Dia 1 concluído (e-mail)',
+    subject: 'Dia 1 concluído: o jogo já começou a ganhar forma 🎉',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Celebre o primeiro passo e continue do ponto em que a criança parou.',
+      title: 'Primeira fase concluída 🎉',
+      content: [
+        p(
+          'Olá, {{nome}}! O Dia 1 foi concluído. Esse primeiro passo é importante: a criança já saiu da ideia e começou a construir o próprio jogo.',
+        ),
+        p('Quando estiverem prontos, retomem do mesmo ponto. Uma etapa de cada vez é suficiente.'),
+        ctaButton('Continuar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque há progresso no Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-7d',
+    channel: 'email' as const,
+    name: 'Desafio — faltam 7 dias (e-mail)',
+    subject: 'Falta uma semana para o acesso ao Desafio terminar',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O acesso vai até {{data}}. Retome do ponto em que a criança parou.',
+      title: 'Ainda dá tempo de avançar com calma',
+      content: [
+        p(
+          'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Falta uma semana. Entre para ver onde a criança parou e escolha a próxima etapa possível — sem precisar recomeçar.',
+        ),
+        ctaButton('Retomar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-3d',
+    channel: 'email' as const,
+    name: 'Desafio — faltam 3 dias (e-mail)',
+    subject: 'Últimos 3 dias do acesso ao Desafio do Primeiro Jogo',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader:
+        'O acesso termina em {{data}}. Abra a plataforma e conclua o próximo passo possível.',
+      title: 'Últimos dias para continuar o projeto',
+      content: [
+        p('Olá, {{nome}}! O período do Desafio termina em <strong>{{data}}</strong>.'),
+        p(
+          'Se o jogo ainda não ficou pronto, tudo bem: retomem agora e avancem até o próximo marco possível. O projeto e o progresso continuam guardados na conta.',
+        ),
+        ctaButton('Continuar agora', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-completed',
+    channel: 'email' as const,
+    name: 'Desafio — concluído (e-mail)',
+    subject: 'O primeiro jogo ficou pronto! E agora?',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Celebre a conquista e conheça o próximo caminho de criação.',
+      title: 'Primeiro jogo concluído! 🏆',
+      content: [
+        p(
+          'Olá, {{nome}}! A criança concluiu o Desafio do Primeiro Jogo. Vale celebrar: ela transformou uma ideia em um projeto próprio, etapa por etapa.',
+        ),
+        p(
+          'Se quiser continuar criando com novos projetos, ferramentas e acompanhamento, conheça a Comunidade do Criador.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque o Desafio do Primeiro Jogo foi concluído na sua conta.',
+    }),
+  },
+  {
+    key: 'challenge-expired',
+    channel: 'email' as const,
+    name: 'Desafio — acesso encerrado (e-mail)',
+    subject: 'O período do Desafio terminou, {{nome}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O período terminou, mas o progresso e os projetos continuam guardados.',
+      title: 'O período do Desafio terminou',
+      content: [
+        p(
+          'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo terminou em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'O progresso e os projetos continuam guardados na conta. Para seguir criando e voltar a acessar esse conteúdo, conheça a Comunidade do Criador.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
+    }),
+  },
   // Lembrete de RENOVAÇÃO do plano anual à vista (assinaturas, 07/2026) — enviado
   // pelo MEMBERS (consumer HMAC `members` via gateway) ~7 dias antes da validade
   // da matrícula vencer. CONTRATO de variáveis com o members

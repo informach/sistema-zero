@@ -1460,6 +1460,28 @@ export const renewalRemindersSent = members.table(
   ],
 )
 
+// ── Ciclo de vida de acessos fixos ──────────────────────────────────────────
+// Diferente do lembrete anual, um mesmo vencimento pode gerar mais de uma
+// mensagem (7 dias, 3 dias, expirou e marcos comportamentais). A terceira parte
+// da chave preserva cada envio sem sobrecarregar `renewal_reminders_sent`.
+export const entitlementLifecycleMessagesSent = members.table(
+  'entitlement_lifecycle_messages_sent',
+  {
+    entitlementId: uuid('entitlement_id')
+      .notNull()
+      .references(() => entitlements.id, { onDelete: 'cascade' }),
+    expiresOn: date('expires_on', { mode: 'string' }).notNull(),
+    messageKind: text('message_kind').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      name: 'entitlement_lifecycle_messages_sent_pk',
+      columns: [t.entitlementId, t.expiresOn, t.messageKind],
+    }),
+  ],
+)
+
 // ── Desafio do mês — tema gerenciável pelo admin (07/2026) ──────────────────
 // Biblioteca de temas CUSTOM criados pelo professor + override do tema por mês.
 // Sem override, o tema vem do sorteio determinístico em código (fallback,
@@ -1677,6 +1699,7 @@ export const schema = {
   zappyKnowledgeChunks,
   aiUsageDaily,
   renewalRemindersSent,
+  entitlementLifecycleMessagesSent,
   challengeCustomThemes,
   challengeMonthOverrides,
   creations,

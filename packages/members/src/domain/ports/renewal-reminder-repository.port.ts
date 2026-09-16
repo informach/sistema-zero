@@ -11,6 +11,18 @@ export interface ExpiringTermEntitlement {
   productName: string | null
 }
 
+export const FIXED_ACCESS_LIFECYCLE_KINDS = ['expiry_7d', 'expiry_3d', 'expired'] as const
+export type FixedAccessLifecycleKind = (typeof FIXED_ACCESS_LIFECYCLE_KINDS)[number]
+
+/**
+ * Compra única do Desafio com prazo em DIAS. O `messageKind` já vem resolvido
+ * pelo repositório para a faixa vigente e ainda não enviada.
+ */
+export interface FixedAccessLifecycleEntitlement extends ExpiringTermEntitlement {
+  courseRef: string
+  messageKind: FixedAccessLifecycleKind
+}
+
 /**
  * Porta do LEMBRETE de renovação (anual à vista). Assinaturas recorrentes ficam
  * FORA (a Efí renova sozinha; falha de ciclo tem o dunning do funil).
@@ -30,6 +42,22 @@ export interface RenewalReminderRepository {
   ): Promise<ExpiringTermEntitlement[]>
   /** Marca o lembrete enviado (dedupe por matrícula + data de vencimento). */
   markReminded(entitlementId: string, expiresOn: string, now: Date): Promise<void>
+
+  /**
+   * Acessos `fixed/days` do Desafio que entraram na faixa de 7 dias, 3 dias ou
+   * expiração. Exclui quem possui outra matrícula mais forte para o curso.
+   */
+  listFixedAccessLifecycleEntitlements(
+    now: Date,
+    limit: number,
+  ): Promise<FixedAccessLifecycleEntitlement[]>
+  /** Dedupe por matrícula + vencimento + tipo de mensagem. */
+  markLifecycleMessageSent(
+    entitlementId: string,
+    expiresOn: string,
+    messageKind: FixedAccessLifecycleKind,
+    now: Date,
+  ): Promise<void>
 }
 
 /** Data (UTC `YYYY-MM-DD`) usada como chave de dedupe do lembrete. */

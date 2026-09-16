@@ -312,7 +312,11 @@ export async function createApplication(env: Env): Promise<Application> {
   // Lembrete de RENOVAÇÃO (anual à vista): mesmo quarteto do report dos pais +
   // FUNNEL_URL (o link /renovar vive no funil). Sem as envs = no-op (dev).
   const renewalReminderSender =
-    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET && env.FUNNEL_URL
+    authGateway &&
+    env.GATEWAY_URL &&
+    env.MEMBERS_HMAC_SECRET &&
+    env.FUNNEL_URL &&
+    env.KIDS_COMMUNITY_URL
       ? new SendRenewalRemindersService(
           new DrizzleRenewalReminderRepository(db),
           authGateway,
@@ -327,6 +331,7 @@ export async function createApplication(env: Env): Promise<Application> {
             daysBefore: env.RENEWAL_REMINDER_DAYS_BEFORE,
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
             funnelUrl: env.FUNNEL_URL,
+            kidsUrl: env.KIDS_COMMUNITY_URL,
           },
         )
       : null

@@ -5,6 +5,7 @@ import type { SendEmailInput } from '../../src/domain/ports/messaging-gateway.po
 import {
   type ExpiringTermEntitlement,
   expiresOnKey,
+  type FixedAccessLifecycleEntitlement,
   type RenewalReminderRepository,
 } from '../../src/domain/ports/renewal-reminder-repository.port'
 
@@ -17,8 +18,12 @@ const silentLogger = {
 }
 
 /** Fake do repo: janela + dedupe em memória (espelha a semântica do SQL). */
-function fakeRepo(rows: ExpiringTermEntitlement[]) {
+function fakeRepo(
+  rows: ExpiringTermEntitlement[],
+  fixedRows: FixedAccessLifecycleEntitlement[] = [],
+) {
   const reminded = new Set<string>()
+  const lifecycleSent = new Set<string>()
   const repo: RenewalReminderRepository = {
     async listExpiringTermEntitlements(from, to, limit) {
       const eligible = rows
@@ -39,8 +44,19 @@ function fakeRepo(rows: ExpiringTermEntitlement[]) {
     async markReminded(entitlementId, expiresOn) {
       reminded.add(`${entitlementId}|${expiresOn}`)
     },
+    async listFixedAccessLifecycleEntitlements(_now, limit) {
+      return fixedRows
+        .filter(
+          (row) =>
+            !lifecycleSent.has(`${row.id}|${expiresOnKey(row.expiresAt)}|${row.messageKind}`),
+        )
+        .slice(0, limit)
+    },
+    async markLifecycleMessageSent(entitlementId, expiresOn, messageKind) {
+      lifecycleSent.add(`${entitlementId}|${expiresOn}|${messageKind}`)
+    },
   }
-  return { repo, reminded }
+  return { repo, reminded, lifecycleSent }
 }
 
 function fakeAuth(identities: Record<string, AccountIdentity>): AuthGateway {
@@ -94,6 +110,7 @@ function service(
     daysBefore: 7,
     batchLimit,
     funnelUrl: 'https://sistemazero.com.br',
+    kidsUrl: 'https://kids.sistemazero.com.br',
   })
 }
 
@@ -212,5 +229,73 @@ describe('SendRenewalRemindersService', () => {
     expect(await reminderService.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
     expect(msg.sent).toHaveLength(2)
     expect(msg.sent[1]?.idempotencyKey).toBe('renewal-reminder:e4:2027-05-30')
+  })
+
+  test('envia os marcos de 7 dias, 3 dias e expiração uma vez por vencimento', async () => {
+    const fixed = (messageKind: FixedAccessLifecycleEntitlement['messageKind']) => ({
+      ...row({
+        id: `fixed-${messageKind}`,
+        offerSlug: 'desafio-primeiro-jogo-30-dias',
+        expiresAt: new Date('2027-05-30T12:00:00Z'),
+      }),
+      courseRef: 'desafio-primeiro-jogo',
+      messageKind,
+    })
+    const { repo, lifecycleSent } = fakeRepo(
+      [],
+      [fixed('expiry_7d'), fixed('expiry_3d'), fixed('expired')],
+    )
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+    })
+    const msg = fakeMessaging()
+
+    expect(await service(repo, auth, msg.gateway).runCycle()).toEqual({
+      sent: 3,
+      skipped: 0,
+      failed: 0,
+    })
+    expect(msg.sent.map((email) => email.templateKey)).toEqual([
+      'challenge-expiry-7d',
+      'challenge-expiry-3d',
+      'challenge-expired',
+    ])
+    expect(msg.sent[0]?.variables).toEqual({
+      nome: 'Ana',
+      data: '30/05/2027',
+      link: 'https://kids.sistemazero.com.br/cursos/desafio-primeiro-jogo',
+    })
+    expect(msg.sent[2]?.variables?.link).toBe(
+      'https://sistemazero.com.br/kids/comunidade-do-criador/oferta',
+    )
+    expect(lifecycleSent.size).toBe(3)
+
+    expect(await service(repo, auth, msg.gateway).runCycle()).toEqual({
+      sent: 0,
+      skipped: 0,
+      failed: 0,
+    })
+  })
+
+  test('falha no aviso fixo não marca e permite retry; dedupe do messaging mantém a chave', async () => {
+    const fixed: FixedAccessLifecycleEntitlement = {
+      ...row({
+        id: 'fixed-retry',
+        offerSlug: 'desafio-primeiro-jogo-30-dias',
+        expiresAt: new Date('2027-05-30T12:00:00Z'),
+      }),
+      courseRef: 'desafio-primeiro-jogo',
+      messageKind: 'expiry_3d',
+    }
+    const { repo, lifecycleSent } = fakeRepo([], [fixed])
+    const auth = fakeAuth({
+      'user-1': { id: 'user-1', email: 'ana@example.com', firstName: 'Ana' },
+    })
+    const msg = fakeMessaging(1)
+
+    expect((await service(repo, auth, msg.gateway).runCycle()).failed).toBe(1)
+    expect(lifecycleSent.size).toBe(0)
+    expect((await service(repo, auth, msg.gateway).runCycle()).sent).toBe(1)
+    expect(msg.sent[0]?.idempotencyKey).toBe('challenge-expiry-3d:fixed-retry:2027-05-30')
   })
 })
