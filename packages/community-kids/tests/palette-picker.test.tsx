@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { PALETTE_LABELS } from '@sistemazero/core/palette'
+import { PALETTE_LABELS, PALETTES } from '@sistemazero/core/palette'
 import { PalettePicker } from '@sistemazero/member-shell/components/palette-picker'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
@@ -250,13 +250,17 @@ describe('o seletor de cor', () => {
     expect(screen.getByRole('radiogroup', { name: 'Cor do tema' })).toBeTruthy()
   })
 
-  it('o nome acessível é o rótulo em português, nunca o hexadecimal', () => {
+  it('o nome acessível e a ordem vêm do catálogo compartilhado', () => {
     montar(null)
-    for (const [id, rotulo] of Object.entries(PALETTE_LABELS)) {
-      const radio = screen.getByRole('radio', { name: rotulo })
-      expect(radio.getAttribute('value')).toBe(id)
+    expect(screen.getAllByRole('radio').map((radio) => radio.getAttribute('value'))).toEqual([
+      ...PALETTES,
+    ])
+    for (const palette of PALETTES) {
+      const radio = screen.getByRole('radio', { name: PALETTE_LABELS[palette] })
+      expect(radio.getAttribute('value')).toBe(palette)
     }
   })
+
   it('⚠️⚠️ um clique feito DURANTE um envio que falha não pode sumir', async () => {
     // Medido no review: a pessoa clica Laranja, a rede cai, e ela clica Verde enquanto isso.
     // Desfazer sem olhar o que está na fila jogava o Verde fora sem nunca enviá-lo — o clique

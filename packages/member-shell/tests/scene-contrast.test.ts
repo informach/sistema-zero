@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { DEFAULT_PALETTE, PALETTE_LABELS, PALETTES } from '@sistemazero/core/palette'
+import { derive } from '@sistemazero/ui/tokens'
 import { cssHexValuesForCustomProperty } from './css-custom-properties'
 
 /**
@@ -13,30 +15,26 @@ import { cssHexValuesForCustomProperty } from './css-custom-properties'
  * pequeno exige. Nada quebrou, nada ficou vermelho: só ficou mais difícil de ler, que é o tipo
  * de estrago que passa por revisão de olho.
  *
- * A conta refaz o `color-mix(in oklab, …)` do CSS e vale para os temas que leem esta folha (kids,
- * adulto e admin). Mexeu na paleta? Este teste diz se ainda dá para ler.
+ * A conta refaz o `color-mix(in oklab, …)` do CSS e vale para os temas de perfil que leem esta
+ * folha. Mexeu na paleta? Este teste diz se ainda dá para ler.
  */
 
 /**
- * A cor de ação de cada tema, que é o que entra na mistura como `--primary`.
+ * A cor de ação de CADA paleta de perfil, que é o que entra na mistura como `--primary`.
  *
- * ⚠️ Não são só os dois temas do kids (review do lote 3): a folha `scene.css` também é lida pela
- * comunidade ADULTA e pelo ADMIN (a prévia e o ensaio do professor), e cada um declara o próprio
- * `--primary`. A reserva não os representava: no admin escuro, o vermelho do encosto caía para
- * 4,18:1 sobre o painel do espaço.
+ * ⚠️ A lista não pode ter hexadecimal manual: o mesmo vocabulário chega ao banco, ao cookie, ao
+ * seletor e ao CSS gerado. Acrescentar uma cor em `PALETTES` a põe automaticamente nesta conta.
+ * `reserva` é o ÚNICO literal deliberado, o fallback de `var(--primary, …)` para quem renderiza
+ * a cena fora de um host que já tenha emitido `data-sz-palette`.
  */
+const TEMAS_DO_PERFIL = Object.fromEntries(
+  PALETTES.map((palette) => [PALETTE_LABELS[palette], derive(palette).action]),
+) as Record<string, string>
 const TEMAS = {
-  Padrão: '#1b5cf3',
-  Pink: '#c8246f',
+  ...TEMAS_DO_PERFIL,
   /** O fallback do `var(--primary, …)`: qualquer superfície sem tema. */
   reserva: '#315f92',
-  /** A comunidade adulta (`--pen-acao` do globals.css dela). */
-  adulto: '#0b7a54',
-  /** O admin claro: `oklch(0.52 0.14 200)`. */
-  'admin claro': '#007f88',
-  /** O admin escuro: a lima `oklch(0.875 0.215 122)`, presa ao sRGB. */
-  'admin escuro': '#bfea00',
-} as const
+}
 
 /** O que se escreve por cima do papel da cena. */
 const TINTAS = {
@@ -139,19 +137,47 @@ describe('o papel da cena continua legível em todos os temas', () => {
         }
       }
     expect(falhas).toEqual([])
-    // Guarda de que a varredura mediu alguma coisa: 3 papéis × 6 temas × 5 tintas.
-    expect(medidos).toBe(90)
+    // Guarda de que a varredura mediu alguma coisa: todas as paletas + fallback, em cada papel.
+    expect(medidos).toBe(receitas.length * Object.keys(TEMAS).length * Object.keys(TINTAS).length)
   })
 
-  test('a mistura é PERCEPTÍVEL: o papel muda de verdade entre os dois temas', () => {
+  test('a mistura segue TODAS as cores do perfil', () => {
     // O contraste sozinho tem uma saída fácil e errada: zerar a mistura passa em tudo e mata a
-    // promessa de a cena seguir o tema. Aqui se cobra que Padrão e Pink deem papéis distintos.
+    // promessa de a cena seguir o tema. O papel muda para cada paleta, mesmo nas matizes vizinhas.
     for (const { nome, pct, base } of receitas) {
-      const padrao = misturar(TEMAS.Padrão, base, pct)
-      const pink = misturar(TEMAS.Pink, base, pct)
-      const distancia = Math.max(...padrao.map((c, i) => Math.abs(c - (pink[i] ?? 0)) * 255))
-      expect({ nome, distancia }).toMatchObject({ distancia: expect.any(Number) })
-      if (distancia < 8) throw new Error(`${nome}: os dois temas dão quase o mesmo papel`)
+      const padrao = misturar(derive(DEFAULT_PALETTE).action, base, pct)
+      for (const palette of PALETTES) {
+        if (palette === DEFAULT_PALETTE) continue
+        const tema = misturar(derive(palette).action, base, pct)
+        const distancia = Math.max(...padrao.map((c, i) => Math.abs(c - (tema[i] ?? 0)) * 255))
+        expect({ nome, palette, distancia }).toMatchObject({ distancia: expect.any(Number) })
+        if (distancia <= 0)
+          throw new Error(`${nome}: ${PALETTE_LABELS[palette]} não muda o papel da cena`)
+      }
+    }
+  })
+
+  test('a mistura continua PERCEPTÍVEL entre Azul e Rosa', () => {
+    // Azul e Rosa são as duas paletas cromáticas aprovadas à mão. Nas paletas vizinhas o papel
+    // recebe apenas 5% de cor, então a diferença pode ser menor que um degrau grande de RGB;
+    // exigir 8 de todas elas seria medir uma preferência visual que o produto não prometeu.
+    for (const { nome, pct, base } of receitas) {
+      const azul = misturar(derive('blue').action, base, pct)
+      const rosa = misturar(derive('pink').action, base, pct)
+      const distancia = Math.max(...azul.map((c, i) => Math.abs(c - (rosa[i] ?? 0)) * 255))
+      if (distancia < 8) throw new Error(`${nome}: Azul e Rosa dão quase o mesmo papel`)
+    }
+  })
+
+  test('a ação de cada paleta chega a --primary nos dois apps de aluno', () => {
+    const acoesCanonicas = PALETTES.map((palette) => derive(palette).action).sort()
+    const hosts = [
+      ['kids', '../../community-kids/src/app/globals.css'],
+      ['adulto', '../../community/src/app/globals.css'],
+    ] as const
+    for (const [app, caminho] of hosts) {
+      const acoesDoHost = cssHexValuesForCustomProperty(join(import.meta.dir, caminho), '--primary')
+      expect({ app, acoesDoHost: acoesDoHost.sort() }).toEqual({ app, acoesDoHost: acoesCanonicas })
     }
   })
 
@@ -267,8 +293,8 @@ describe('o mundo espaço continua legível em todos os temas', () => {
         }
       }
     expect(falhas).toEqual([])
-    // 4 papéis × 6 temas × 5 tintas.
-    expect(medidos).toBe(120)
+    // Todos os papéis × todas as paletas e fallback × todas as tintas.
+    expect(medidos).toBe(PAPEIS.length * Object.keys(TEMAS).length * tintas.length)
   })
 
   test('⚠️ as figuras e as linhas se veem no céu de estrelas (3:1, que é o de gráfico)', () => {
@@ -309,12 +335,22 @@ describe('o mundo espaço continua legível em todos os temas', () => {
     expect(falhas).toEqual([])
   })
 
-  test('o papel do espaço SEGUE o tema, e o par NÃO', () => {
+  test('o papel do espaço SEGUE cada cor do perfil, e o par NÃO', () => {
     for (const { nome, pct, base } of PAPEIS) {
-      const padrao = misturar(TEMAS.Padrão, base, pct)
-      const pink = misturar(TEMAS.Pink, base, pct)
-      const distancia = Math.max(...padrao.map((c, i) => Math.abs(c - (pink[i] ?? 0)) * 255))
-      if (distancia < 8) throw new Error(`${nome}: os dois temas dão quase o mesmo espaço`)
+      const padrao = misturar(derive(DEFAULT_PALETTE).action, base, pct)
+      for (const palette of PALETTES) {
+        if (palette === DEFAULT_PALETTE) continue
+        const tema = misturar(derive(palette).action, base, pct)
+        const distancia = Math.max(...padrao.map((c, i) => Math.abs(c - (tema[i] ?? 0)) * 255))
+        if (distancia <= 0) throw new Error(`${nome}: ${PALETTE_LABELS[palette]} não muda o espaço`)
+      }
+    }
+    // A régua visual forte também vale no mundo escuro para as duas paletas aprovadas à mão.
+    for (const { nome, pct, base } of PAPEIS) {
+      const azul = misturar(derive('blue').action, base, pct)
+      const rosa = misturar(derive('pink').action, base, pct)
+      const distancia = Math.max(...azul.map((c, i) => Math.abs(c - (rosa[i] ?? 0)) * 255))
+      if (distancia < 8) throw new Error(`${nome}: Azul e Rosa dão quase o mesmo espaço`)
     }
     for (const token of ['a', 'b', 'b-ink', 'alert']) {
       const linha = bloco.split('\n').find((l) => l.trim().startsWith(`--color-scene-${token}:`))
