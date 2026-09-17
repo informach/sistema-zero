@@ -11,6 +11,7 @@
  */
 import { PALETTES, type Palette as PaletteId } from '@sistemazero/core/palette'
 import { contrast } from './color'
+import { deriveConsole } from './console'
 import { derive } from './derive'
 import type { TokenName } from './recipe'
 
@@ -257,4 +258,48 @@ export function knownContrastGaps(): {
 
 export function describeFailure({ palette, fg, bg, role, min, ratio }: ContrastFailure): string {
   return `${palette}: ${fg} sobre ${bg} (${role}) = ${ratio.toFixed(2)}, mínimo ${min}`
+}
+
+/**
+ * As duplas do chassi CONSOLE. Ele tem um tema só e nenhuma cor por pessoa, então a auditoria é
+ * uma varredura só — mas ela existe pelo MESMO motivo: o console passou a vestir a paleta do Pen,
+ * e um token que fica ilegível no caminho não avisa ninguém.
+ */
+export const CONSOLE_PAIRS: readonly { fg: string; bg: string; min: number; role: string }[] = [
+  { fg: 'foreground', bg: 'background', min: 4.5, role: 'texto no chão' },
+  { fg: 'foreground', bg: 'card', min: 4.5, role: 'texto no cartão' },
+  { fg: 'muted-foreground', bg: 'background', min: 4.5, role: 'texto suave no chão' },
+  { fg: 'muted-foreground', bg: 'muted', min: 4.5, role: 'texto suave na superfície' },
+  { fg: 'primary-foreground', bg: 'primary', min: 4.5, role: 'texto do botão' },
+  { fg: 'primary', bg: 'card', min: 4.5, role: 'link no cartão' },
+  { fg: 'primary', bg: 'background', min: 4.5, role: 'link no chão' },
+  { fg: 'link-hover', bg: 'card', min: 4.5, role: 'link em hover' },
+  { fg: 'accent-foreground', bg: 'accent', min: 4.5, role: 'texto sobre o sucesso sólido' },
+  { fg: 'success-foreground', bg: 'card', min: 4.5, role: 'selo de sucesso (texto)' },
+  { fg: 'destructive-foreground', bg: 'destructive', min: 4.5, role: 'texto do botão de apagar' },
+  { fg: 'destructive', bg: 'card', min: 4.5, role: 'erro em texto no cartão' },
+  { fg: 'input', bg: 'card', min: 3, role: 'borda de campo no cartão' },
+  { fg: 'input', bg: 'background', min: 3, role: 'borda de campo no chão' },
+  { fg: 'chart-2', bg: 'card', min: 3, role: 'série 2 do gráfico no cartão' },
+  { fg: 'chart-3', bg: 'card', min: 3, role: 'série 3 do gráfico no cartão' },
+  { fg: 'chart-5', bg: 'card', min: 3, role: 'série 5 do gráfico no cartão' },
+]
+
+/** Mede o chassi console. Devolve só o que reprovou. */
+export function auditConsole(): ContrastFailure[] {
+  const t = deriveConsole()
+  const falhas: ContrastFailure[] = []
+  for (const { fg, bg, min, role } of CONSOLE_PAIRS) {
+    const ratio = contrast(t[fg] as string, t[bg] as string)
+    if (ratio < min)
+      falhas.push({
+        palette: 'console' as PaletteId,
+        fg,
+        bg: bg as ColorToken,
+        role,
+        min,
+        ratio,
+      })
+  }
+  return falhas
 }

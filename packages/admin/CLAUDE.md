@@ -244,10 +244,20 @@ Guia operacional do **painel administrativo** (full-stack). Leia antes de editar
 Painel para o dono operar a plataforma: **usuários, pagamentos, produtos, ofertas, cupons e membros**.
 Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF agregador** que
 **chama o API Gateway** (NUNCA os serviços direto). Espelha o design do projeto de referência
-`comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner; **logo
-dual-theme** `public/logo_dark.svg`⇄`logo_white.svg` na sidebar/login — `dark:block`/`dark:hidden` —
-e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch via
-`metadata.icons`, mesmos assets do community). Porta **3005**.
+`comunidade-sistema-zero` (Base UI-like + lucide + sonner; **logo**
+`public/logo_dark.svg` na sidebar/login e **favicon** completo: `src/app/favicon.ico` + PNGs
+16/32/192/512 + apple-touch via `metadata.icons`, mesmos assets do community). Porta **3005**.
+
+⭐ **Os tokens de cor NÃO moram mais aqui (17/09/2026).** O `globals.css` não tem bloco
+`:root`/`.dark` próprio: ele importa **`@sistemazero/ui/console.css`**, o chassi das ferramentas
+internas (admin, helpdesk-app e marketing-app carregavam as MESMAS ~330 linhas copiadas). Essa
+folha é GERADA de `packages/ui/src/tokens/console.ts` a partir da paleta do Pen — token de console
+novo nasce LÁ, e `bun run tokens:gen` no `packages/ui` reescreve o arquivo.
+⚠️ **UM tema só: sem cor por pessoa** (o público é o time interno, não há seletor de paleta) **e
+sem claro/escuro** — o modo escuro saiu junto com o das comunidades, e o `next-themes` foi
+removido dos três apps. O `@custom-variant dark` FICA no `globals.css`: sem ele os `dark:` que o
+`@sistemazero/ui` e o `member-shell` ainda trazem passariam a seguir o sistema operacional; com
+ele, e sem `.dark` em lugar nenhum, eles não fazem nada.
 
 **Navegação (reorganização 07/2026 — SIDEBAR em 3 áreas por natureza do trabalho):** a topbar
 plana virou sidebar com grupos — **Sala do Professor** (dia a dia: Entregas `/admin/professor/
@@ -474,7 +484,8 @@ themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` g
 > `BlockForm.provider` interno preserva blocos legados youtube/file na edição), áudio via
 > `AudioUploader` (bucket público + duração auto), interativo = **só HTML** (CodeMirror 6 —
 > `components/editor/html-code-editor{,.impl}.tsx`, `@uiw/react-codemirror`+`@codemirror/lang-html`,
-> dynamic ssr:false, tema via next-themes; renderiza iframe sandbox 16:9 no aluno) e **ebook** =
+> dynamic ssr:false, `theme="light"` fixo desde a saída do modo escuro; renderiza iframe sandbox
+> 16:9 no aluno) e **ebook** =
 > PDF via `FileUploader` (bucket privado, `r2priv:`, ≤200MB) + título → livro 3D no community;
 > o upload do PDF do e-book também cria AUTOMATICAMENTE o anexo da aula (material p/ download,
 > `addEbookAttachment` com dedupe por URL; trocar o PDF deixa o material antigo — excluir manual); bloco

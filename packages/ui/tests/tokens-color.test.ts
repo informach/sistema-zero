@@ -60,6 +60,45 @@ describe('gamute', () => {
     expect(c).toBeLessThan(0.5)
     expect(inSrgb(oklchToOklab([0.5, c, 200]))).toBe(true)
   })
+
+  /**
+   * ⚠️ Regressão. Meio passo de 8 bits é invisível no meio da escala e ENORME perto do preto:
+   * a régua antiga aprovava croma 0,0597 em `L = 0` porque a cor arredondava para `#000003` —
+   * um hexadecimal válido, com OUTRA luminosidade (0,044). Nenhum token da casa chega lá hoje;
+   * o seletor livre, em que a luminosidade vem de quem mexe no controle, chega.
+   */
+  test('⚠️ perto do preto a croma que "cabe" não pode mudar a luminosidade', () => {
+    for (const hue of [30, 120, 200, 263, 359]) {
+      const pedido = 0
+      const c = fitChroma(pedido, 0.22, hue)
+      const saiu = hexToOklch(oklchToHex([pedido, c, hue]))[0]
+      expect({ hue, desvio: saiu - pedido <= 0.01 }).toEqual({ hue, desvio: true })
+    }
+  })
+
+  /**
+   * ⚠️⚠️ O outro lado da mesma moeda: a régua estrita RECUSA até o cinza quando a luminosidade
+   * pedida não existe na grade de 8 bits, e uma bisseção sobre ela desabaria em zero — devolvendo
+   * PRETO no lugar do azul-marinho mais fundo que cabe. Trocar um defeito de luminosidade por um
+   * apagão de cor seria pior do que não ter mexido.
+   */
+  test('⚠️ num azul-marinho bem fundo ainda sai COR, não preto', () => {
+    for (const l of [0.04, 0.05, 0.06, 0.08, 0.1]) {
+      const c = fitChroma(l, 0.22, 263.2)
+      expect({ l, temCor: c > 0.02 }).toEqual({ l, temCor: true })
+    }
+  })
+
+  test('⚠️ o que sai de `fitChroma` cabe MESMO no monitor, em toda a escala', () => {
+    const fora: string[] = []
+    for (let li = 1; li <= 99; li++)
+      for (let h = 0; h < 360; h += 15) {
+        const l = li / 100
+        const c = fitChroma(l, 0.22, h)
+        if (c > 0 && !inSrgb(oklchToOklab([l, c, h]))) fora.push(`L ${l} H ${h}`)
+      }
+    expect(fora).toEqual([])
+  })
 })
 
 describe('o âncora da cor de ação', () => {

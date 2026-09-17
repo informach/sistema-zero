@@ -9,7 +9,9 @@ import { getUserDisplayName } from '@/lib/user-display'
 
 /**
  * Menu do avatar (espelha o projeto de referência): cabeçalho com foto + nome +
- * e-mail, itens Meu perfil/Compras/Mudar tema e Sair. Dropdown custom (sem lib).
+ * e-mail, itens Meu perfil/Compras e Sair. Dropdown custom (sem lib). ⚠️ O item "Mudar tema"
+ * SAIU (17/09/2026): a cor virou escolha do perfil, e o único lugar que a grava é a página de
+ * perfil — dois lugares escrevendo o mesmo estado foi como o alternador antigo divergiu.
  */
 export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
   const [open, setOpen] = useState(false)

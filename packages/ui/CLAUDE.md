@@ -100,13 +100,20 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    SEMPRE `in oklab` (o branco `oklch(1 0 0)` tem matiz explícito; em oklch a mistura gira e dá
    rosa). Contrato em `tests/tool-chrome.test.ts` (lê a folha e os `@import` dos hosts como texto;
    `bun test tests`). Nenhum componente deste pacote referencia `--sz-kids-*`/`--sz-tool-*`.
-   (c) **`src/styles/console.css`** (export `@sistemazero/ui/console.css`, 17/09/2026) — os
-   tokens do chassi das FERRAMENTAS INTERNAS (admin, helpdesk-app, marketing-app), claro e
-   escuro. Os três carregavam este mesmo bloco COPIADO: o `:root` diferia por uma palavra de
-   comentário e o `.dark` era byte a byte igual, ~330 linhas. ⚠️ Token de console novo nasce
-   AQUI, não nos `globals.css` — eles não têm mais bloco `:root`/`.dark`. Contrato em
-   `tests/console-theme.test.ts` (importam a folha, não redeclaram, o `@import` vem antes de
-   qualquer regra, e todo token que o `@theme inline` deles consome existe na folha).
+   (c) **`src/styles/console.css`** (export `@sistemazero/ui/console.css`, 17/09/2026) — o chassi
+   das FERRAMENTAS INTERNAS (admin, helpdesk-app, marketing-app). Os três carregavam este mesmo
+   bloco COPIADO: o `:root` diferia por uma palavra de comentário e o `.dark` era byte a byte
+   igual, ~330 linhas. ⭐ Ele também é **GERADO** — de `src/tokens/console.ts`, que veste os
+   tokens do shadcn com a paleta do Pen (`deriveConsole` deriva de `derive(DEFAULT_PALETTE)`; o
+   `bun run tokens:gen` escreve os dois arquivos e AUDITA o contraste dos dois chassis antes de
+   gravar). ⚠️⚠️ **UM tema só:** sem cor por pessoa (o público é o time interno, não há
+   `[data-sz-palette]` aqui) e **sem claro/escuro** — o `.dark` saiu junto com o das comunidades,
+   e o `next-themes` foi removido dos três apps. O `@custom-variant dark` FICA nos `globals.css`
+   deles: sem ele os `dark:` que este pacote e o `member-shell` ainda trazem passariam a seguir o
+   sistema operacional. ⚠️ Token de console novo nasce em `console.ts`, não nos `globals.css` —
+   eles não têm mais bloco `:root`/`.dark`. Contrato em `tests/console-theme.test.ts` (importam a
+   folha, não redeclaram, o `@import` vem antes de qualquer regra, e todo token que o
+   `@theme inline` deles consome existe na folha).
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 

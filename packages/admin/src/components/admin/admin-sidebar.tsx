@@ -15,7 +15,6 @@ import {
   type ProfessorCounts,
   useProfessorOverview,
 } from './professor-counts-store'
-import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
 /** Chave do chip → número (moderação soma fila de aprovação + denúncias abertas). */
@@ -65,7 +64,6 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
         <PlatformSwitcher />
         <NavGroups pathname={pathname} role={user.role} counts={overview?.counts} />
         <div className="flex shrink-0 items-center justify-between border-t border-border px-4 py-3">
-          <ThemeToggle />
           <UserMenu user={user} dropdownSide="up" />
         </div>
       </aside>
@@ -81,7 +79,6 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
         </button>
         <Logo />
         <div className="ml-auto flex items-center gap-1">
-          <ThemeToggle />
           <UserMenu user={user} />
         </div>
       </header>

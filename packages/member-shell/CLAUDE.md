@@ -839,16 +839,32 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
   auto-cura na navegação seguinte, sem redirect e sem bloquear.
 - **`routes/profile-preferences.ts`** fala `/members/preferences` com `{palette}` (zod derivado de
   `PALETTES`) e **grava o cookie em todo 2xx** — inclusive no GET, que é o auto-conserto de um
-  espelho atrasado. Layout não pode gravar cookie; route handler pode. A rota legada
-  `/members/preferences/kids` segue no members por uma release (deploy de members e apps é
-  separado); esta aqui já é a nova.
+  espelho atrasado. Layout não pode gravar cookie; route handler pode. ⚠️ A rota legada
+  `/members/preferences/kids` foi REMOVIDA do members e do gateway em 17/09/2026, uma release
+  depois dos apps; **ordem de deploy: members → gateway → apps**. Cobertura em
+  `tests/profile-preferences-route.test.ts` (sessão, viewer, catálogo, espelho só em 2xx).
 - **`components/palette-picker.tsx`**: as caixinhas de cor. Radios NATIVOS (setas, Home/End e
   `aria-checked` de graça), nome acessível = rótulo em português, marca de seleção não-cromática,
   alvo ≥44px. ⭐ ZERO hexadecimal no componente: cada caixinha leva `data-sz-palette` e lê
   `--sz-action` de dentro de si — custom property herda e o seletor de atributo pinta a subárvore,
-  então a amostra é a cor real da folha gerada. Recebe o valor inicial do SERVIDOR (sem GET na
-  montagem), pinta otimista, agrupa cliques (o teto do gateway é 60/min e é circuito de segurança)
-  e, em falha, volta para a última cor CONFIRMADA — nunca para a cor da casa.
+  então a amostra é a cor real da folha gerada. Recebe o valor inicial do SERVIDOR (pintura no
+  primeiro quadro, sem esperar rede), pinta otimista, agrupa cliques (o teto do gateway é 60/min e
+  é circuito de segurança) e, em falha, volta para a última cor CONFIRMADA — nunca para a cor da
+  casa. ⭐ **Uma leitura ao montar, e só aqui:** o espelho vale seis horas e é POR APARELHO, então
+  quem trocou a cor no celular via a caixinha antiga marcada no computador — justo na tela que diz
+  qual é a sua cor. O GET reconcilia a tela E, no BFF, regrava o cookie do aparelho. ⚠️⚠️ Um
+  clique VENCE a resposta, e em DOIS níveis: o guarda `mexeu` protege a TELA, e **escolher ABORTA a
+  conferência em voo** — porque a resposta do GET também grava o espelho, e uma leitura lenta que
+  saiu ANTES do clique carrega o valor de antes dele: chegando depois do PUT, ela carimbaria a cor
+  velha por seis horas, e o proxy, vendo dono e cookie casados, nunca mais perguntaria. Abortada, a
+  resposta não é recebida e o `Set-Cookie` dela não vale (é para isso que o `apiGet` aceita
+  `signal`). ⚠️ E o efeito NÃO tem marca de "já rodei": no StrictMode do desenvolvimento ela
+  sobrevive à remontagem e a segunda montagem desistiria com a resposta da primeira já descartada —
+  a conferência ficava morta no `bun dev`.
+- **Logout apaga o espelho** (`clearSessionCookies`, que por isso recebe o nome do cookie da cor),
+  e o proxy o expira junto quando o refresh é recusado. Ele é do DONO da sessão; fora da área
+  logada quem o lê é o layout, sem sessão para conferir contra — deixá-lo vivo deixava a tela de
+  login de um aparelho de família vestida com a cor de quem acabou de sair.
 - ⚠️ Mora AQUI e não no `@sistemazero/ui`: aquele pacote não tem dep de framework nem CSS próprio
   de componente, e este fala com o BFF e carrega o contrato do `x-sz-viewer`.
 

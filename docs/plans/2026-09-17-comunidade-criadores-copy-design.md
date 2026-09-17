@@ -1,6 +1,7 @@
 # Comunidade dos Criadores: copy alinhada ao direcionamento do áudio
 
-Status: aprovado e implementado em 17/09/2026.
+Status: superado para orientação de copy em 17/09/2026. As decisões comerciais continuam como
+referência; a fonte editorial atual é `2026-09-17-copy-infantil-tecnologia-criacao-design.md`.
 
 ## Decisão central
 

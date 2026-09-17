@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { SessionUser } from '@/lib/types'
-import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
 export function Topbar({ user }: { user: SessionUser }) {
@@ -34,7 +33,6 @@ export function Topbar({ user }: { user: SessionUser }) {
         </Link>
 
         <div className="ml-auto flex items-center gap-1">
-          <ThemeToggle />
           <UserMenu user={user} />
         </div>
       </div>

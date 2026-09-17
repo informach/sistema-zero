@@ -10,6 +10,12 @@ import { ProfileClient } from './profile-client'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * O cartão já escreve o título; o seletor o empresta em vez de escrever a própria legenda. Dois
+ * títulos empilhados dizendo a mesma coisa é ruído na tela e anúncio repetido no leitor.
+ */
+const TITULO_DA_COR = 'perfil-cor-do-tema'
+
 export default async function ProfilePage() {
   // Dados frescos do banco (trazem `phone`); fallback nas claims da sessão.
   // SOMENTE-LEITURA: página é Server Component (refresh/escrita de cookie aqui
@@ -21,7 +27,8 @@ export default async function ProfilePage() {
 
   if (!user) return null
 
-  // A cor vem do MESMO espelho que o layout raiz leu — sem GET na montagem do seletor.
+  // A cor vem do MESMO espelho que o layout raiz leu: é o que pinta a tela no primeiro quadro.
+  // O seletor confere com o servidor depois de montar (espelho de seis horas é POR APARELHO).
   const paletteEscolhida = paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value)
 
   return (
@@ -36,7 +43,7 @@ export default async function ProfilePage() {
           de cadastro e não deve engordar o `profile-client`. */}
       <Card>
         <CardHeader>
-          <CardTitle>Cor do tema</CardTitle>
+          <CardTitle id={TITULO_DA_COR}>Cor do tema</CardTitle>
         </CardHeader>
         <CardContent>
           {/* ⚠️ `session.id` (o `sub` do JWT), NUNCA o `user.id` do /auth/me: é contra o `sub` que o
@@ -46,6 +53,7 @@ export default async function ProfilePage() {
             viewerId={session?.id ?? user.id}
             initial={paletteEscolhida}
             readOnly={Boolean(session && isReadonlyImpersonation(session))}
+            labelledBy={TITULO_DA_COR}
           />
         </CardContent>
       </Card>

@@ -20,6 +20,11 @@ export interface PaletteRecipe {
    * ⚠️ Cada override é travado por teste a ΔE ≤ 0,04 do que a fórmula geraria: ele existe para
    * preservar um valor aprovado ao pixel, NUNCA para abrigar uma cor que saiu da família. Cor
    * nova nasce sem override nenhum.
+   *
+   * ⭐ O de `action` é especial: ele entra ANTES da derivação (ver `derivePaletteTokens`), então
+   * fixar a ação já reposiciona os neutros e a família inteira em volta dela. Os `action-hover`
+   * abaixo NÃO são compensação disso — são os hovers aprovados em produção, preservados ao
+   * hexadecimal.
    */
   readonly overrides?: Partial<Record<PaletteToken, string>>
 }

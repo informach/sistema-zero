@@ -13,9 +13,9 @@ export const DESAFIO_PRODUTO: FunnelCopy = {
 
 export const DESAFIO_LANDING: FunnelLanding = {
   badge: 'Quiz rápido para mães, pais e responsáveis',
-  h1: 'Seu filho gosta de jogos. Descubra como uma parte desse interesse pode virar criação.',
+  h1: 'Seu filho gosta de jogos. Descubra como esse interesse pode virar o primeiro jogo criado por ele.',
   subtitulo:
-    'Responda 7 perguntas sobre o jeito como ele joga, enfrenta desafios e usa a tecnologia. No final, você recebe um mapa rápido com uma sugestão de primeiro projeto para ele.',
+    'Responda 7 perguntas sobre o jeito como ele joga, enfrenta desafios e imagina novas ideias. No final, você recebe um mapa rápido com uma sugestão de primeiro projeto para ele.',
   tempo: 'Gratuito. Menos de 3 minutos. Resultado na hora.',
 }
 
@@ -146,7 +146,7 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
     lastStep: 'quiz_pergunta_6',
     eventName: 'respondeu_pergunta_6',
     tipo: 'multipla_escolha',
-    titulo: 'O que faria você sentir que parte desse tempo digital valeu a pena?',
+    titulo: 'O que você gostaria de ver seu filho fazer com esse interesse por jogos?',
     opcoes: [
       {
         value: 'mostrar_criacao',
@@ -201,17 +201,17 @@ export const DESAFIO_QUIZ_STEPS: QuizStep[] = [
 export const DESAFIO_TOTAL = DESAFIO_QUIZ_STEPS.length
 
 export const DESAFIO_FECHO =
-  'No Desafio do Primeiro Jogo, seu filho usa uma parte do tempo digital que já existe para montar, testar e publicar um jogo de nave em cinco etapas.'
+  'No Desafio do Primeiro Jogo, seu filho monta, testa e publica um jogo de nave em cinco etapas guiadas.'
 
 export const DESAFIO_DESTAQUE =
-  'O interesse já existe. Agora ele pode ganhar uma direção: criar algo que seu filho consiga abrir, jogar e mostrar.'
+  'O interesse por jogos já existe. Agora ele pode virar algo que seu filho consegue abrir, jogar e mostrar.'
 
 const RESULT_CTA = 'Ver como ele pode criar o primeiro jogo'
 
 const SECAO_HOJE = {
-  rotulo: 'O que acontece hoje',
+  rotulo: 'O interesse que ele já tem',
   texto:
-    'Hoje, {resposta_uso}. O interesse já existe. A oportunidade é mostrar que jogos também podem ser imaginados, construídos, testados e melhorados.',
+    'Hoje, {resposta_uso}. Esse interesse pode ser o começo de uma experiência em que ele imagina, constrói, testa e melhora um jogo próprio.',
 }
 
 const SECAO_PRIMEIRO_PASSO = {
@@ -228,13 +228,13 @@ const SECAO_APOIO = {
 
 export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
   explorador: {
-    titulo: 'Seu filho parece aprender melhor quando pode explorar',
+    titulo: 'Pelas respostas, ele parece gostar de explorar antes de criar',
     secoes: [
       SECAO_HOJE,
       {
         rotulo: 'O jeito dele criar',
         texto:
-          'Ele tende a aprender testando caminhos e descobrindo possibilidades. Um primeiro jogo funciona melhor quando oferece pequenas etapas, liberdade para experimentar e uma conquista visível antes da próxima ideia aparecer.',
+          'Ele parece se envolver quando pode testar caminhos e descobrir possibilidades. Um primeiro jogo funciona bem com pequenas etapas, liberdade para experimentar e uma conquista visível antes da próxima ideia aparecer.',
       },
       SECAO_PRIMEIRO_PASSO,
       SECAO_APOIO,
@@ -242,7 +242,7 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
     cta: RESULT_CTA,
   },
   especialista: {
-    titulo: 'Seu filho parece gostar de colocar as próprias ideias nas coisas',
+    titulo: 'Pelas respostas, ele parece gostar de colocar as próprias ideias no projeto',
     secoes: [
       SECAO_HOJE,
       {
@@ -256,7 +256,7 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
     cta: RESULT_CTA,
   },
   foguete: {
-    titulo: 'Seu filho parece se motivar com metas e conquistas visíveis',
+    titulo: 'Pelas respostas, ele parece se envolver com metas e conquistas visíveis',
     secoes: [
       SECAO_HOJE,
       {
@@ -270,7 +270,7 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
     cta: RESULT_CTA,
   },
   investigador: {
-    titulo: 'Seu filho parece gostar de entender como as coisas funcionam',
+    titulo: 'Pelas respostas, ele parece gostar de entender como as coisas funcionam',
     secoes: [
       SECAO_HOJE,
       {
@@ -286,7 +286,7 @@ export const DESAFIO_RESULT_PROFILES: Record<string, ResultProfile> = {
 }
 
 const HERO_H1 =
-  'Seu filho passa horas envolvido com jogos. E se uma parte desse tempo terminasse em um jogo criado por ele?'
+  'Seu filho já usa a tecnologia para jogar. Agora ele pode descobrir que também consegue criar um jogo que é dele.'
 const HERO_BOTAO = 'Quero ver meu filho criar o primeiro jogo'
 
 export const DESAFIO_HERO_PADRAO: HeroVariacao = {

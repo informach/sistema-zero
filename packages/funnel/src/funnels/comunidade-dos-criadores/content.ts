@@ -16,9 +16,9 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'Seu filho já passa horas envolvido com jogos. Na Comunidade, ele pode usar uma parte desse tempo para criar os próprios jogos.',
+  h1: 'Seu filho está crescendo em um mundo tecnológico. Na Comunidade, ele aprende a transformar ideias em jogos e projetos próprios.',
   subtitulo:
-    'Uma jornada online com projetos guiados, ferramentas próprias, acompanhamento de professor e uma Carreira do Criador que mostra qual é o próximo passo.',
+    'Uma jornada online com projetos guiados, ferramentas próprias, acompanhamento de professor e uma Carreira do Criador que mostra o próximo passo.',
   tempo: '',
 }
 
@@ -32,7 +32,7 @@ export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_70
 // Diferença pro Desafio: é ASSINATURA — o texto avisa do aviso prévio de renovação
 // e aponta o cancelamento na área do responsável.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
-  intro: 'Obrigado por escolher um caminho de criação para o seu filho.',
+  intro: 'A Comunidade já está pronta para receber o primeiro perfil da sua família.',
   entrega: [
     'Desafio do Primeiro Jogo e todos os cursos da plataforma',
     'Estúdio, Pinta, Pensa e Molda, liberados conforme a Carreira do Criador',

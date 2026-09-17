@@ -19,18 +19,17 @@ if (!f.steps.resultado || !result || !quiz?.computePerfil) {
   return new Response(null, { status: 404 })
 }
 
-const quizPath = `${f.basePath}/quiz`
 const leadId = getLeadId(Astro.request)
-if (!leadId) return Astro.redirect(quizPath)
+if (!leadId) return Astro.redirect(`${f.basePath}/quiz`)
 
 const { repo } = getDeps()
 const lead = await repo.getLead(leadId)
-if (!lead) return Astro.redirect(quizPath)
-if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(quizPath)
+if (!lead) return Astro.redirect(`${f.basePath}/quiz`)
+if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(`${f.basePath}/quiz`)
 
 // Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio).
 const answers = lead.quizAnswers ?? {}
-if (!isQuizComplete(quiz, answers)) return Astro.redirect(quizPath)
+if (!isQuizComplete(quiz, answers)) return Astro.redirect(`${f.basePath}/quiz`)
 
 await repo.insertEvent(lead.id, 'viu_resultado', 'resultado')
 
@@ -42,7 +41,7 @@ const perfil = stored ?? quiz.computePerfil(answers)
 if (!stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
 
 const bloco = result.profiles[perfil]
-if (!bloco) return Astro.redirect(quizPath)
+if (!bloco) return Astro.redirect(`${f.basePath}/quiz`)
 const rc = (s: string) => (result.renderCorpo ? result.renderCorpo(s, answers) : s)
 // Resultado em blocos (`secoes`) quando o funil os define; senão, corpo corrido (fallback).
 // Seção que resolve vazia (ex.: bloco de custo condicional omitido) é descartada.

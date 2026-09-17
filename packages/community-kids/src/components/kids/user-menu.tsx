@@ -22,7 +22,8 @@ const AVATAR_SOBRE_O_ESCURO = '[&>span]:bg-primary [&>span]:text-primary-foregro
 
 /**
  * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
- * e-mail dos pais — decisão 06/2026), itens Meu perfil/Mudar tema e Sair. SEM
+ * e-mail dos pais — decisão 06/2026), itens Meu perfil e Sair (o "Mudar tema" saiu em
+ * 17/09/2026: a cor é escolhida no perfil, num lugar só). SEM
  * "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL — histórico financeiro
  * não aparece na área da criança). Dropdown custom.
  *

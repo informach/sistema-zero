@@ -17,9 +17,9 @@ const Body = z.object({
   events: z
     .array(
       z.object({
-        buyerUserId: z.string().uuid(),
+        buyerUserId: z.uuid(),
         eventName: ChallengeEventName,
-        occurredAt: z.string().datetime({ offset: true }),
+        occurredAt: z.iso.datetime({ offset: true }),
       }),
     )
     .min(1)

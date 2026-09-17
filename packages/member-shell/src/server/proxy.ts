@@ -94,6 +94,8 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
         const res = redirectToLogin(req)
         res.cookies.set(accessCookie, '', expireCookieOptions(isProd()))
         res.cookies.set(refreshCookie, '', expireCookieOptions(isProd()))
+        // O espelho da cor é do dono da sessão morta — sai junto, como no logout.
+        if (cfg.paletteCookie) res.cookies.set(cfg.paletteCookie, '', expireCookieOptions(isProd()))
         return res
       }
       // Gateway/rede fora: degrada (páginas usam fallbacks) em vez de deslogar.

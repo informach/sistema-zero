@@ -58,6 +58,16 @@ describe('desafioComputePerfil', () => {
 })
 
 describe('desafioRenderCorpo', () => {
+  test('apresenta o perfil como uma leitura das respostas, não como diagnóstico', () => {
+    const titles = Object.values(DESAFIO_PRIMEIRO_JOGO.content.result?.profiles ?? {}).map(
+      (profile) => profile.titulo,
+    )
+
+    expect(titles).toHaveLength(4)
+    for (const title of titles) expect(title).toStartWith('Pelas respostas,')
+    expect(titles.join(' ')).not.toContain('aprender melhor')
+  })
+
   test('interpola uso, desejo e apoio sem deixar marcadores', () => {
     const result = DESAFIO_PRIMEIRO_JOGO.content.result
     const secoes = result?.profiles.foguete?.secoes ?? []
@@ -66,7 +76,7 @@ describe('desafioRenderCorpo', () => {
     )
     const out = desafioRenderCorpo(bruto, FULL_ANSWERS)
 
-    expect(out).toContain('jogos que já estão prontos')
+    expect(out).toContain('jogar experiências que já estão prontas')
     expect(out).toContain('chamando a família para mostrar algo que criou')
     expect(out).toContain('um projeto curto, com uma chegada clara')
     expect(out).not.toMatch(/\{resposta_[^}]+\}/)

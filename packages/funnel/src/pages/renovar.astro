@@ -15,27 +15,23 @@ Astro.response.headers.set('cache-control', 'no-store')
 const slug = (Astro.url.searchParams.get('oferta') ?? '').trim().toLowerCase()
 const { env, gateway, log } = getDeps()
 
-let dest = '/'
 if (slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   const direct = FUNNEL_KEYS.find((key) => env.offerByFunnel[key] === slug)
   if (direct) {
     const f = getFunnelByKey(direct)
-    if (f) dest = `${f.basePath}/checkout`
-  } else {
-    for (const key of FUNNEL_KEYS) {
-      const principal = env.offerByFunnel[key]
-      if (!principal) continue
-      const offer = await getActiveOffer(gateway, principal, { log })
-      if (offer?.altOffer?.slug === slug) {
-        const f = getFunnelByKey(key)
-        if (f) {
-          dest = `${f.basePath}/checkout?oferta=${encodeURIComponent(slug)}`
-          break
-        }
-      }
+    if (f) return Astro.redirect(`${f.basePath}/checkout`, 302)
+  }
+
+  for (const key of FUNNEL_KEYS) {
+    const principal = env.offerByFunnel[key]
+    if (!principal) continue
+    const offer = await getActiveOffer(gateway, principal, { log })
+    if (offer?.altOffer?.slug === slug) {
+      const f = getFunnelByKey(key)
+      if (f) return Astro.redirect(`${f.basePath}/checkout?oferta=${encodeURIComponent(slug)}`, 302)
     }
   }
 }
 
-return Astro.redirect(dest, 302)
+return Astro.redirect('/', 302)
 ---

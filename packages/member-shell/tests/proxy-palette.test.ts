@@ -79,4 +79,39 @@ describe('proxy: renovação de sessão e hidratação da paleta', () => {
     expect(response.cookies.get(refreshCookie)?.value).toBe(newRefresh)
     expect(response.cookies.get(paletteCookie)?.value).toBe(`${userId}.pink`)
   })
+
+  /**
+   * ⚠️ O espelho da cor é do DONO da sessão. Sessão morta sem apagá-lo deixava a tela de login de
+   * um aparelho de família vestida com a cor de quem acabou de ser desligado.
+   */
+  test('sessão recusada apaga o espelho da cor junto com os cookies de sessão', async () => {
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = new URL(input instanceof Request ? input.url : input)
+      if (url.pathname === '/auth/refresh') return new Response('', { status: 401 })
+      return new Response('', { status: 404 })
+    }) as unknown as typeof fetch
+
+    // ⚠️ Refresh PRÓPRIO: o single-flight do `refreshTokens` guarda o resultado por token, e
+    // reusar o do teste acima entregaria a rotação bem-sucedida dele.
+    const refreshMorto = `refresh-morto-${crypto.randomUUID()}`
+    const req = new NextRequest('http://localhost:3008/', {
+      headers: {
+        cookie: `${accessCookie}=${jwt({ sub: userId, exp: 0 })}; ${refreshCookie}=${refreshMorto}; ${paletteCookie}=${userId}.pink`,
+      },
+    })
+    const proxy = createMemberProxy({
+      cookies: { accessCookie, refreshCookie },
+      paletteCookie,
+      protectedPrefixes: ['/cursos'],
+      isRootProtected: true,
+    })
+
+    const response = await proxy(req)
+
+    expect(response.status).toBe(307)
+    for (const nome of [accessCookie, refreshCookie, paletteCookie]) {
+      expect({ nome, valor: response.cookies.get(nome)?.value }).toEqual({ nome, valor: '' })
+      expect({ nome, maxAge: response.cookies.get(nome)?.maxAge }).toEqual({ nome, maxAge: 0 })
+    }
+  })
 })

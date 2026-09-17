@@ -11,7 +11,7 @@ export const AdminLoginSchema = z.object({
     .toLowerCase()
     .min(3, 'Informe o e-mail.')
     .max(320, 'E-mail muito longo.')
-    .email('E-mail inválido.'),
+    .pipe(z.email('E-mail inválido.')),
   password: z.string().min(1, 'Informe a senha.').max(200, 'Senha muito longa.'),
 })
 

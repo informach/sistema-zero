@@ -1,6 +1,8 @@
 # Desafio do Primeiro Jogo: oferta de 30 dias e funil reposicionado
 
-Status: aprovado em 16/09/2026.
+Status: decisões comerciais aprovadas em 16/09/2026. A direção de copy deste documento foi
+superada em 17/09/2026 por `2026-09-17-copy-infantil-tecnologia-criacao-design.md`; não reutilizar
+as frases de tela registradas abaixo como copy pública.
 
 Este documento registra a decisão comercial, a jornada, a arquitetura de acesso e a
 copy aprovada para o Desafio do Primeiro Jogo. A implementação deve preservar todas

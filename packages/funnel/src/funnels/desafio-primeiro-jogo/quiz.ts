@@ -64,8 +64,8 @@ export function desafioComputePerfil(a: QuizAnswers): string {
 }
 
 const USO_LABELS: Record<string, string> = {
-  joga_pronto: 'o tempo digital dele fica principalmente em jogos que já estão prontos',
-  assiste: 'boa parte desse tempo vai para vídeos sobre jogos e personagens',
+  joga_pronto: 'ele costuma jogar experiências que já estão prontas',
+  assiste: 'ele costuma assistir a vídeos sobre jogos e personagens',
   tutoriais: 'ele acompanha tutoriais, mas nem sempre chega a um projeto terminado',
   ja_cria: 'ele já tenta modificar ou criar alguma coisa no computador',
 }

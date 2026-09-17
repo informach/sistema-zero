@@ -9,11 +9,12 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { PALETTES } from '@sistemazero/core/palette'
-import { auditPalette, describeFailure } from '../src/tokens/contrast'
-import { toCss } from '../src/tokens/emit'
+import { auditConsole, auditPalette, describeFailure } from '../src/tokens/contrast'
+import { toConsoleCss, toCss } from '../src/tokens/emit'
 import { PALETTE_RECIPES } from '../src/tokens/palettes'
 
 const DESTINO = join(import.meta.dir, '../src/styles/palettes/community.css')
+const DESTINO_CONSOLE = join(import.meta.dir, '../src/styles/console.css')
 
 const semReceita = PALETTES.filter((id) => !PALETTE_RECIPES.some((r) => r.id === id))
 const semVocabulario = PALETTE_RECIPES.filter(
@@ -33,6 +34,14 @@ if (falhas.length) {
   process.exit(1)
 }
 
+const falhasConsole = auditConsole()
+if (falhasConsole.length) {
+  console.error('✗ Contraste do CONSOLE reprovado — nada foi gerado:')
+  for (const falha of falhasConsole) console.error(`  ${describeFailure(falha)}`)
+  process.exit(1)
+}
+
 await mkdir(dirname(DESTINO), { recursive: true })
 await Bun.write(DESTINO, toCss())
-console.log(`✓ ${PALETTES.length} paletas geradas em ${DESTINO}`)
+await Bun.write(DESTINO_CONSOLE, toConsoleCss())
+console.log(`✓ ${PALETTES.length} paletas + o chassi console gerados`)

@@ -1,9 +1,9 @@
 'use client'
 
-import { PALETTE_LABELS, PALETTES, type Palette } from '@sistemazero/core/palette'
+import { PALETTE_LABELS, PALETTES, type Palette, readPalette } from '@sistemazero/core/palette'
 import { Check } from 'lucide-react'
-import { useCallback, useId, useRef, useState } from 'react'
-import { apiSend } from '../lib/api'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { apiGet, apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 
 /**
@@ -33,14 +33,27 @@ export function PalettePicker({
   viewerId,
   initial,
   readOnly = false,
+  labelledBy,
   className,
 }: {
   /** O perfil dono da escolha — vira o `x-sz-viewer`, que o BFF confere. */
   viewerId: string
-  /** Vem do SERVIDOR (o mesmo cookie que o layout leu). Sem GET na montagem. */
+  /**
+   * Vem do SERVIDOR (o mesmo cookie que o layout leu) — é o que pinta a tela no primeiro quadro,
+   * sem esperar rede. A conferência com o banco vem logo depois (ver a reconciliação abaixo).
+   */
   initial: Palette | null
   /** Impersonação somente-leitura: mostra o estado, não deixa salvar. */
   readOnly?: boolean
+  /**
+   * O id de um título que a PÁGINA já escreveu (o do cartão, por exemplo). Com ele o seletor não
+   * escreve legenda própria e as caixinhas passam a ser nomeadas por esse título.
+   *
+   * ⚠️ Sem isso o perfil adulto mostrava dois títulos empilhados dizendo a mesma coisa com
+   * palavras diferentes ("Cor do tema" no cartão, "Cor do seu perfil" na legenda) — e o leitor de
+   * tela anunciava os dois.
+   */
+  labelledBy?: string
   className?: string
 }) {
   const grupo = useId()
@@ -60,6 +73,23 @@ export function PalettePicker({
    * `desejada === confirmada` e o `enviar()` saía na primeira linha, sem pedido nenhum.
    */
   const alvoRecusado = useRef<Palette | null | undefined>(undefined)
+  /** A pessoa já mexeu nesta tela? Se sim, nenhuma resposta de rede pode desfazer a escolha. */
+  const mexeu = useRef(false)
+  /**
+   * A conferência em voo, para DESISTIR dela antes de gravar.
+   *
+   * ⚠️⚠️ O `mexeu` protege a TELA; o cookie ele não protege. A resposta do GET também grava o
+   * espelho (é o auto-conserto), e uma leitura lenta que tenha saído ANTES do clique carrega o
+   * valor de antes dele: chegando depois do PUT, ela carimbaria a cor velha por seis horas — e o
+   * proxy, vendo dono e cookie casados, nunca mais perguntaria. Abortar antes de gravar fecha a
+   * única ordem que faz mal.
+   */
+  const conferencia = useRef<AbortController | null>(null)
+
+  const desistirDaConferencia = () => {
+    conferencia.current?.abort()
+    conferencia.current = null
+  }
 
   const enviar = useCallback(async () => {
     if (emVoo.current) return
@@ -110,6 +140,8 @@ export function PalettePicker({
 
   const escolher = (palette: Palette) => {
     if (readOnly) return
+    mexeu.current = true
+    desistirDaConferencia()
     alvoRecusado.current = undefined
     setErro(null)
     setEscolhida(palette)
@@ -122,6 +154,8 @@ export function PalettePicker({
   const tentarDeNovo = () => {
     const alvo = alvoRecusado.current
     if (alvo === undefined || readOnly) return
+    mexeu.current = true
+    desistirDaConferencia()
     setErro(null)
     setEscolhida(alvo)
     desejada.current = alvo
@@ -129,16 +163,62 @@ export function PalettePicker({
     void enviar()
   }
 
+  /**
+   * ⭐ A reconciliação entre APARELHOS — e a única leitura que este componente faz.
+   *
+   * ⚠️ O espelho em cookie vale seis horas e é POR APARELHO: quem trocou a cor no celular abre o
+   * computador e, até o espelho vencer, vê a caixinha antiga marcada. Nas páginas comuns isso é
+   * só uma cor velha; AQUI é a tela que diz qual é a sua cor — e onde a pessoa vai agir sobre
+   * essa informação. Uma ida ao servidor, na página de perfil (que se abre de vez em quando), é
+   * barata; a mesma resposta ainda REGRAVA o cookie no BFF, então o aparelho inteiro se cura.
+   *
+   * ⚠️⚠️ Um clique vence a resposta, sempre: quem mexeu nesta tela não pode ver a própria
+   * escolha ser desfeita por um pedido que já estava no ar.
+   */
+  useEffect(() => {
+    // ⚠️ Sem um "já rodei" de módulo: no StrictMode do desenvolvimento o React monta, desmonta e
+    // monta de novo, e uma marca que sobrevive à remontagem faria a segunda montagem desistir
+    // com a resposta da primeira já descartada — a conferência ficava MORTA no `bun dev`. Quem
+    // cancela a leitura obsoleta é o `abort` da limpeza; a segunda montagem faz a dela.
+    const controlador = new AbortController()
+    conferencia.current = controlador
+    apiGet<{ palette?: unknown }>(
+      '/api/members/preferences',
+      { 'x-sz-viewer': viewerId },
+      { signal: controlador.signal },
+    )
+      .then((body) => {
+        const doServidor = readPalette(body?.palette)
+        if (controlador.signal.aborted || mexeu.current) return
+        confirmada.current = doServidor
+        desejada.current = doServidor
+        setEscolhida(doServidor)
+        paintPalette(doServidor)
+      })
+      // Rede fora (ou desistência): a tela fica com o que o servidor pintou. Nada a dizer.
+      .catch(() => {})
+    return () => {
+      controlador.abort()
+      if (conferencia.current === controlador) conferencia.current = null
+    }
+  }, [viewerId])
+
   return (
     <fieldset className={cn('min-w-0', className)} disabled={readOnly}>
-      <legend className="font-semibold text-sm">Cor do seu perfil</legend>
-      <p className="mt-1 text-muted-foreground text-sm">
+      {labelledBy ? null : <legend className="font-semibold text-sm">Cor do seu perfil</legend>}
+      <p className={cn('text-muted-foreground text-sm', labelledBy ? null : 'mt-1')}>
         Escolha uma cor e a plataforma inteira muda com ela.
       </p>
-      <div role="radiogroup" aria-labelledby={grupo} className="mt-3 flex flex-wrap gap-3">
-        <span id={grupo} className="sr-only">
-          Cor do seu perfil
-        </span>
+      <div
+        role="radiogroup"
+        aria-labelledby={labelledBy || grupo}
+        className="mt-3 flex flex-wrap gap-3"
+      >
+        {labelledBy ? null : (
+          <span id={grupo} className="sr-only">
+            Cor do seu perfil
+          </span>
+        )}
         {PALETTES.map((palette) => {
           const ativa = escolhida === palette
           return (

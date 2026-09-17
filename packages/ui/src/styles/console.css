@@ -1,62 +1,58 @@
 /*
- * CHASSI "CONSOLE" — os tokens das ferramentas internas: admin, helpdesk-app e marketing-app.
+ * CHASSI CONSOLE — ARQUIVO GERADO. NÃO EDITE À MÃO.
  *
- * Os três carregavam ESTE MESMO bloco copiado: o `:root` diferia por UMA palavra de comentário
- * e o `.dark` era byte a byte igual — 330 linhas de duplicação, do tipo que diverge em silêncio
- * quando alguém ajusta uma cor num app só.
+ * Os tokens das ferramentas internas (admin, helpdesk-app, marketing-app), vestidos com a paleta
+ * do Pen. Fonte: `packages/ui/src/tokens/console.ts`; para mudar, mexa lá e rode
+ * `bun run tokens:gen`.
  *
- * ⚠️ Diferente do chassi da comunidade, aqui NÃO há paleta por pessoa: o público é o time
- * interno e a decisão foi unificar os tokens sem dar seletor de cor (17/09/2026). O que existe
- * é o eixo claro/escuro, pela classe `.dark`, intocado.
+ * ⚠️ UM tema só: sem cor por pessoa (o público é o time interno) e sem claro/escuro — o modo
+ * escuro saiu em 17/09/2026, como já tinha saído das comunidades. Por isso não há `.dark` aqui.
+ * O `@custom-variant dark` FICA nos globals.css dos três: sem ele os `dark:` que o ui e o
+ * member-shell ainda trazem passariam a seguir o modo escuro do sistema operacional.
  *
- * ⚠️ `--brand-lime` e `--brand-cyan` são IDENTIDADE fixa (o contrato do `.brand-gradient-text`),
- * não cor de ação — não os ligue a uma paleta.
+ * ⚠️ `--brand-lime`/`--brand-cyan` são IDENTIDADE fixa (o degradê da wordmark), não cor de ação.
  */
 
 :root {
+  /* Identidade da marca — não segue paleta. */
   --brand-lime: oklch(0.875 0.215 122);
   --brand-cyan: oklch(0.84 0.13 192);
 
-  --background: oklch(0.985 0.004 100);
-  --foreground: oklch(0.105 0.01 265);
-
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.105 0.01 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.105 0.01 265);
-
-  --primary: oklch(0.52 0.14 200);
-  --primary-foreground: oklch(1 0 0);
-
-  --link: oklch(0.44 0.14 210);
-  --link-hover: oklch(0.38 0.15 210);
-
-  --secondary: oklch(0.955 0.004 255);
-  --secondary-foreground: oklch(0.145 0.01 265);
-
-  --muted: oklch(0.955 0.004 255);
-  --muted-foreground: oklch(0.5 0.01 255);
-
-  --accent: oklch(0.62 0.18 135);
-  --accent-foreground: oklch(1 0 0);
-
-  /* Badges de status positivo (Ativo/Pago, Publicado/Aprovado): texto verde ESCURO sobre tint
-     `bg-success/15` — `--accent-foreground` (branco) era ilegível no light. */
-  --success: oklch(0.45 0.13 150);
-  --success-foreground: oklch(0.4 0.13 150);
-
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(1 0 0);
-
-  --border: oklch(0.9 0.005 255);
-  --input: oklch(0.92 0.005 255);
-  --ring: oklch(0.52 0.14 200);
-
-  --chart-1: oklch(0.52 0.14 200);
-  --chart-2: oklch(0.62 0.18 135);
-  --chart-3: oklch(0.58 0.16 170);
-  --chart-4: oklch(0.55 0.22 27);
-  --chart-5: oklch(0.5 0.01 255);
+  /* A paleta do Pen, na cor da casa. */
+  --background: #e9eef6;
+  --foreground: #0f1a33;
+  --card: #ffffff;
+  --card-foreground: #0f1a33;
+  --popover: #ffffff;
+  --popover-foreground: #0f1a33;
+  --primary: #1b5cf3;
+  --primary-foreground: #ffffff;
+  --link: #1b5cf3;
+  --link-hover: #164cca;
+  --secondary: #eff3f9;
+  --secondary-foreground: #0f1a33;
+  --muted: #eff3f9;
+  --muted-foreground: #46536e;
+  --accent: #0b7a54;
+  --accent-foreground: #ffffff;
+  --success: #00724d;
+  --success-foreground: #00724d;
+  --destructive: #cf3f36;
+  --destructive-foreground: #ffffff;
+  --border: #d6deea;
+  --input: #74829f;
+  --ring: #1b5cf3;
+  --chart-1: #1b5cf3;
+  --chart-2: #6d3bf5;
+  --chart-3: #0b7a54;
+  --chart-4: #cf3f36;
+  --chart-5: #46536e;
+  --sz-primary: #1b5cf3;
+  --sz-primary-fg: #ffffff;
+  --sz-accent: #0b7a54;
+  --sz-hot: #cf3f36;
+  --sz-hot-tint: rgb(207 63 54 / 0.1);
+  --sz-gradient: linear-gradient(90deg, #6e9bff, #1b5cf3);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -64,63 +60,5 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
-
   --radius: 0.5rem;
-
-  /* Signature meta-tokens (gradiente CTA, hot badge). */
-  --sz-primary: oklch(0.52 0.14 200);
-  --sz-primary-fg: oklch(1 0 0);
-  --sz-accent: oklch(0.62 0.18 135);
-  --sz-hot: oklch(0.55 0.22 27);
-  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
-  --sz-gradient: linear-gradient(90deg, oklch(0.42 0.22 140), oklch(0.44 0.14 210));
-}
-
-.dark {
-  --background: oklch(0.103 0.01 265);
-  --foreground: oklch(0.975 0.003 255);
-
-  --card: oklch(0.14 0.01 265);
-  --card-foreground: oklch(0.975 0.003 255);
-  --popover: oklch(0.17 0.01 265);
-  --popover-foreground: oklch(0.975 0.003 255);
-
-  --primary: var(--brand-lime);
-  --primary-foreground: oklch(0.103 0.01 265);
-
-  --link: oklch(0.875 0.215 122);
-  --link-hover: oklch(0.92 0.2 125);
-
-  --secondary: oklch(0.185 0.01 265);
-  --secondary-foreground: oklch(0.975 0.003 255);
-
-  --muted: oklch(0.185 0.01 265);
-  --muted-foreground: oklch(0.6 0.012 235);
-
-  --accent: oklch(0.21 0.01 265);
-  --accent-foreground: oklch(0.84 0.13 192);
-
-  /* Replica o visual antigo do badge success no dark (bg-accent/15 + fg ciano). */
-  --success: oklch(0.21 0.01 265);
-  --success-foreground: oklch(0.84 0.13 192);
-
-  --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.975 0.003 255);
-
-  --border: oklch(0.21 0.01 265);
-  --input: oklch(0.23 0.01 265);
-  --ring: oklch(0.875 0.215 122);
-
-  --chart-1: oklch(0.875 0.215 122);
-  --chart-2: oklch(0.84 0.13 192);
-  --chart-3: oklch(0.858 0.172 157);
-  --chart-4: oklch(0.64 0.215 27);
-  --chart-5: oklch(0.6 0.012 235);
-
-  --sz-primary: oklch(0.875 0.215 122);
-  --sz-primary-fg: oklch(0.103 0.01 265);
-  --sz-accent: oklch(0.84 0.13 192);
-  --sz-hot: oklch(0.704 0.191 22);
-  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
-  --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
 }

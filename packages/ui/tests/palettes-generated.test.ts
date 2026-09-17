@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
 import { DEFAULT_PALETTE, PALETTES } from '@sistemazero/core/palette'
 import { deltaE } from '../src/tokens/color'
-import { derive, deriveWithoutOverrides } from '../src/tokens/derive'
+import { derive, derivePaletteTokens, deriveWithoutOverrides } from '../src/tokens/derive'
 import { toCss } from '../src/tokens/emit'
 import { PALETTE_RECIPES } from '../src/tokens/palettes'
 import { FIXED_TOKENS, PALETTE_TOKENS } from '../src/tokens/recipe'
@@ -97,6 +97,27 @@ describe('o registro e o vocabulário andam juntos', () => {
     expect(rosa.action).toBe('#c8246f')
     expect(rosa.menu).toBe('#25132b')
     expect(rosa['action-step']).toBe('#8e1650')
+  })
+
+  /**
+   * ⚠️ Regressão. Os overrides eram aplicados DEPOIS da derivação, então fixar a ação não movia
+   * nada em volta dela: os neutros seguiam tingidos pela ação da fórmula e cada relativo pedia o
+   * seu próprio override para não destoar do que a pessoa vê.
+   */
+  test('⭐ fixar a ação reposiciona a família e os neutros em volta DELA', () => {
+    const verde = derive('green')
+    const daFormula = deriveWithoutOverrides('green')
+    // A ação fixada é a do registro, não a da fórmula — a premissa do teste.
+    expect(verde.action).toBe('#0b7a54')
+    expect(daFormula.action).not.toBe(verde.action)
+    // E os derivados que NÃO estão fixados saíram da ação fixada, não da ação da fórmula.
+    const daAcaoFixada = derivePaletteTokens('green')
+    for (const token of ['action-light', 'logo-zero', 'menu'] as const) {
+      expect({ token, igual: daAcaoFixada[token] === daFormula[token] }).toEqual({
+        token,
+        igual: false,
+      })
+    }
   })
 
   test('uma cor nova precisa de UMA linha — matiz e nada mais', () => {

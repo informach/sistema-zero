@@ -1,5 +1,31 @@
 # CLAUDE.md — @sistemazero/members
 
+## A cor do perfil — 17/09/2026
+
+O alternador de dois temas (`padrao` ⇄ `pink`) virou um CATÁLOGO de cores escolhido pela pessoa.
+O vocabulário (ids, rótulos em português, cor da casa) mora em **`@sistemazero/core/palette`**; o
+Members guarda a escolha e serve a rota.
+
+- **Migração `0088_profile_palette`** (escrita À MÃO — `db:generate` proporia DROP + ADD no lugar
+  do rename, e o RENAME pede prompt interativo): dropa o CHECK antigo, `RENAME COLUMN kids_theme →
+  palette`, `varchar(32)` ANULÁVEL sem default, `UPDATE … SET palette = NULL WHERE palette =
+  'padrao'` e só ENTÃO um CHECK **de forma** (`palette is null or palette ~ '^[a-z0-9-]{1,32}$'`).
+  ⚠️⚠️ O CHECK vem DEPOIS do UPDATE de propósito: todas as migrações pendentes correm numa
+  transação só, e um `ADD CONSTRAINT CHECK` valida as linhas existentes.
+- ⚠️ **A régua de quais cores existem NÃO está no banco.** Ela é de forma, então uma cor nova é
+  uma linha no core — nunca uma migração — e um seletor livre um dia só afrouxa o que já existe.
+- ⚠️⚠️ **`'padrao'` é ANULADO, nunca apagado.** Ele era o "desligado", não uma escolha; a LINHA
+  guarda a relação perfil↔conta, lida em SQL cru pelo `challenge-lifecycle.repository`. Pelo mesmo
+  motivo a tabela `profile_preferences` NÃO pode ser renomeada. Coberto em
+  `tests/db/profile-palette-migration.test.ts`, que roda o DDL de verdade sobre dados de verdade.
+- **Rota `GET|PUT /members/preferences`** (`learning.routes.ts`), união derivada de `PALETTES`.
+  ⚠️ A rota LEGADA `/members/preferences/kids` — que mapeava `padrao ↔ null` — foi REMOVIDA em
+  17/09/2026, uma release depois dos apps. **Ordem de deploy: members → gateway → apps**; uma
+  versão antiga de app apontando para a rota morta recebe 404 no alternador de tema.
+- **Critério de aula:** a ação de plataforma `change-theme` passou a valer por `palette !== null`
+  ("escolheu uma cor"). ⚠️ O ID `change-theme` NÃO muda — ele viaja dentro de conteúdo de aula
+  publicado; o que mudou foi o rótulo ("Escolher a minha cor").
+
 ## Recados e evidências Kids — 11/09/2026
 
 Migrações `0084_kids_recados_evidence` e `0085_explicit_section_criteria`: envios com destinatários

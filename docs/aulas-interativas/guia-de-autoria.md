@@ -63,11 +63,13 @@ O vídeo explicativo do caderno não acrescenta trava de 90%. Para tour ou orien
 
 ## Verificar ações da plataforma
 
-Escolha **Realizar uma ação na plataforma** no critério. O catálogo atual oferece personalizar avatar, personalizar quarto e mudar tema. A ação substitui os outros critérios da seção; não acrescente 90% nem projeto incorporado.
+Escolha **Realizar uma ação na plataforma** no critério. O catálogo atual oferece personalizar avatar, personalizar quarto e **escolher a minha cor**. A ação substitui os outros critérios da seção; não acrescente 90% nem projeto incorporado.
 
 O aluno abre a tela, personaliza, salva e volta para **Verificar minha ação**. O servidor compara o estado salvo com o padrão. Uma personalização anterior também vale; abrir a tela ou salvar o padrão não vale. A verificação do avatar mostra o avatar salvo quando a prévia 3D estiver disponível. Seções concluídas mantêm o marco mesmo se o aluno voltar ao padrão depois.
 
-Hoje o Kids oferece Padrão e Pink. A preferência passa a ser salva por perfil no servidor. Não existe seletor independente de cor de destaque; por isso “trocar a cor do tema” não aparece como ação separada fictícia.
+A cor do tema deixou de ser um alternador de dois temas (17/09/2026): o perfil tem um catálogo de cores — Azul, Turquesa, Verde, Laranja, Rosa e Roxo — e a plataforma inteira se recombina em volta da escolhida. A preferência é do perfil e vive no servidor; a ação conta quando o aluno **escolheu alguma cor**, e não quando escolheu uma cor específica.
+
+⚠️ No conteúdo já publicado o identificador da ação continua `change-theme` — ele viaja dentro da aula e não pode mudar. O que mudou foi o rótulo, que hoje é “Escolher a minha cor”.
 
 ## Legadas durante a migração
 

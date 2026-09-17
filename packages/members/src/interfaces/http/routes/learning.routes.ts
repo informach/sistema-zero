@@ -63,24 +63,6 @@ export function learningRoutes(deps: LearningRoutesDeps) {
           }),
         },
       )
-      // ⚠️ LEGADO, com data de morte (etapa de limpeza do plano das paletas): o alternador de dois
-      // estados do kids. Existe só para a janela em que o members já subiu e os apps ainda não —
-      // members e apps são deployados em separado, e sem isto a troca de tema quebraria no meio.
-      // `padrao` era o "desligado" do interruptor, não uma escolha: ele vira `null`.
-      .get('/preferences/kids', async ({ headers }) => {
-        const { palette } = await deps.preferences.read(resolveUserId(headers))
-        return { theme: palette === 'pink' ? 'pink' : 'padrao' }
-      })
-      .put(
-        '/preferences/kids',
-        async ({ headers, body }) => {
-          await deps.preferences.save(actor(headers), body.theme === 'pink' ? 'pink' : null)
-          return { theme: body.theme }
-        },
-        {
-          body: t.Object({ theme: t.Union([t.Literal('padrao'), t.Literal('pink')]) }),
-        },
-      )
       .post(
         '/lessons/:lessonId/sections/:sectionId/action-check',
         ({ headers, params, body }) =>

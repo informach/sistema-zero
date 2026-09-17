@@ -37,20 +37,42 @@ describe('copy comercial do Desafio de 30 dias', () => {
     expect(thanks).toContain('computeFixedAccessExpiry')
   })
 
-  test('segue a tese do tempo digital existente e mostra habilidades concretas', () => {
+  test('fala de tecnologia, equilíbrio e criação sem transformar horas de tela na tese', () => {
     const offer = source('components/funnel/oferta/DesafioOfertaBody.astro')
-    const visibleCopy = offer.slice(0, offer.indexOf('<style'))
+    const visibleCopy = offer.slice(0, offer.lastIndexOf('<style'))
 
-    expect(offer).toContain('E se uma parte desse tempo terminasse em')
-    expect(offer).toContain('A proposta não é aumentar o tempo de tela')
-    expect(offer).toContain('Mais tempo de tela não é a resposta')
-    expect(offer).toContain('O jogo diverte a criança')
+    expect(offer).toContain('Seu filho já usa tecnologia todos os dias')
+    expect(offer).toContain('A tecnologia já faz parte da infância')
+    expect(offer).toContain('Além dos horários, vale olhar para o que seu filho aprende')
+    expect(offer).toContain('Crianças precisam dormir bem, brincar, se')
+    expect(offer).toContain('movimentar e conviver')
+    expect(offer).toContain('Academia Americana de Pediatria')
+    expect(offer).toContain('UNICEF')
+    expect(offer).toContain('Sociedade Brasileira de Pediatria')
+    expect(offer).toContain('Essas referências não avaliam nem recomendam o Sistema Zero')
+    expect(offer).toContain('Criar também é brincar')
     expect(offer).toContain('Quando a nave sai da tela')
+    expect(offer).toContain('respeitar os limites do jogo')
     expect(offer).toContain('Quando o ponto não aparece')
     expect(offer).toContain('No quiz, você disse que gostaria de ver seu filho')
+    expect(offer).toContain('Hoje ele joga mundos criados por outras pessoas')
+    expect(offer).not.toContain('Hoje, você chama seu filho para sair do jogo')
+    expect(offer).not.toContain('O jogo diverte a criança.')
+    expect(offer).not.toContain('A proposta não é aumentar o tempo de tela')
+    expect(offer).not.toContain('Mais tempo de tela não é a resposta')
+    expect(offer).not.toContain('Isso significa mais tempo de tela?')
     expect(offer).not.toContain('Seu filho não precisa de mais tempo de tela')
     expect(offer).not.toContain('tira notas excelentes')
     expect(visibleCopy).not.toContain('—')
+  })
+
+  test('termina no orgulho de mostrar uma criação, sem voltar ao conflito com o jogo', () => {
+    const offer = source('components/funnel/oferta/DesafioOfertaBody.astro')
+    const visibleCopy = offer.slice(0, offer.lastIndexOf('<style'))
+
+    expect(visibleCopy).toContain('Ele se diverte criando.')
+    expect(visibleCopy).toContain('Tudo o que vocês recebem para começar')
+    expect(visibleCopy).not.toContain('sair do jogo')
   })
 
   test('explica o papel dos pais sem exigir vocabulário técnico', () => {

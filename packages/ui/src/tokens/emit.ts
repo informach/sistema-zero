@@ -9,6 +9,7 @@
  * um com o outro para sempre.
  */
 import { DEFAULT_PALETTE } from '@sistemazero/core/palette'
+import { CONSOLE_BRAND, CONSOLE_STATIC, deriveConsole } from './console'
 import { derivePaletteTokens } from './derive'
 import { PALETTE_RECIPES } from './palettes'
 import { FIXED_TOKENS, PALETTE_TOKENS } from './recipe'
@@ -24,7 +25,7 @@ const AVISO = `/*
  */`
 
 const bloco = (seletores: readonly string[], linhas: readonly string[]) =>
-  `${seletores.join(',\n')} {\n${linhas.map((l) => `  ${l}`).join('\n')}\n}`
+  `${seletores.join(',\n')} {\n${linhas.map((l) => (l ? `  ${l}` : '')).join('\n')}\n}`
 
 /** A folha do chassi `community`: kids, adultos e funil. Só claro — não há tema escuro aqui. */
 export function toCss(): string {
@@ -62,4 +63,37 @@ export function toCss(): string {
 function linhasDaPaleta(id: Parameters<typeof derivePaletteTokens>[0]): string[] {
   const tokens = derivePaletteTokens(id)
   return PALETTE_TOKENS.map((token) => `--sz-${token}: ${tokens[token]};`)
+}
+
+const AVISO_CONSOLE = `/*
+ * CHASSI CONSOLE — ARQUIVO GERADO. NÃO EDITE À MÃO.
+ *
+ * Os tokens das ferramentas internas (admin, helpdesk-app, marketing-app), vestidos com a paleta
+ * do Pen. Fonte: \`packages/ui/src/tokens/console.ts\`; para mudar, mexa lá e rode
+ * \`bun run tokens:gen\`.
+ *
+ * ⚠️ UM tema só: sem cor por pessoa (o público é o time interno) e sem claro/escuro — o modo
+ * escuro saiu em 17/09/2026, como já tinha saído das comunidades. Por isso não há \`.dark\` aqui.
+ * O \`@custom-variant dark\` FICA nos globals.css dos três: sem ele os \`dark:\` que o ui e o
+ * member-shell ainda trazem passariam a seguir o modo escuro do sistema operacional.
+ *
+ * ⚠️ \`--brand-lime\`/\`--brand-cyan\` são IDENTIDADE fixa (o degradê da wordmark), não cor de ação.
+ */`
+
+/** A folha do chassi `console`. */
+export function toConsoleCss(): string {
+  const linhas = [
+    '/* Identidade da marca — não segue paleta. */',
+    ...Object.entries(CONSOLE_BRAND).map(([t, v]) => `--${t}: ${v};`),
+    '',
+    '/* A paleta do Pen, na cor da casa. */',
+    ...Object.entries(deriveConsole()).map(([t, v]) => `--${t}: ${v};`),
+    '',
+    // ⚠️ Valor multilinha (as pilhas de fonte) vai SEM o espaço depois dos dois-pontos: ele
+    // viraria espaço no fim da linha, que o Biome remove.
+    ...Object.entries(CONSOLE_STATIC).map(([t, v]) =>
+      v.startsWith('\n') ? `--${t}:${v};` : `--${t}: ${v};`,
+    ),
+  ]
+  return `${AVISO_CONSOLE}\n\n${bloco([':root'], linhas)}\n`
 }

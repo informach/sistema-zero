@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
+import { DEFAULT_PALETTE } from '@sistemazero/core/palette'
+import { derive } from '../src/tokens/derive'
+import { toConsoleCss } from '../src/tokens/emit'
 
 const ROOT = join(import.meta.dir, '../../..')
 const CONSOLES = ['admin', 'helpdesk-app', 'marketing-app'] as const
@@ -18,10 +21,36 @@ const semComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
  * trás, em silêncio, até alguém reparar meses depois).
  */
 describe('chassi console: uma fonte só para admin, helpdesk e marketing', () => {
-  it('a folha declara os dois modos', () => {
+  it('⚠️ UM tema só: um `:root`, nenhum `.dark`, nenhum bloco por paleta', () => {
+    // O console não tem cor por pessoa nem claro/escuro (17/09/2026). Um `.dark` reaparecendo
+    // aqui é sinal de que alguém recolou o modo escuro num app só.
     expect(folha).toContain(':root {')
-    expect(folha).toContain('.dark {')
+    expect(semComentarios(folha)).not.toContain('.dark')
+    expect(semComentarios(folha)).not.toContain('data-sz-palette')
     expect(folha).toContain('--brand-lime:')
+  })
+
+  it('⭐ a folha está em dia com o registro — rodou `bun run tokens:gen`?', () => {
+    // O mesmo portão da folha da comunidade: o teste É a conferência de build.
+    expect(folha).toBe(toConsoleCss())
+  })
+
+  it('veste a paleta do Pen, não a paleta antiga do admin', () => {
+    const pen = derive(DEFAULT_PALETTE)
+    expect(folha).toContain(`--primary: ${pen.action};`)
+    expect(folha).toContain(`--background: ${pen.ground};`)
+    expect(folha).toContain(`--border: ${pen.line};`)
+  })
+
+  it('⚠️ os `dark:` do ui e do member-shell continuam INERTES nos três', () => {
+    // Sem a variante declarada, o Tailwind v4 volta ao `prefers-color-scheme` e os `dark:` que os
+    // pacotes compartilhados ainda trazem passariam a seguir o sistema operacional — o app
+    // inteiro mudaria de cara na máquina de quem usa tema escuro no SO.
+    for (const [i, css] of globals.entries())
+      expect({ app: CONSOLES[i], tem: css.includes('@custom-variant dark') }).toEqual({
+        app: CONSOLES[i],
+        tem: true,
+      })
   })
 
   it('os três importam a folha, e nenhum redeclara os blocos', () => {

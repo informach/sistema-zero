@@ -96,15 +96,48 @@ export function inSrgb(lab: Lab): boolean {
  * tem esse verde, e sem o corte a cor sairia presa na borda, com o matiz torto.
  */
 export function fitChroma(l: number, chroma: number, h: number): number {
-  if (inSrgb(oklchToOklab([l, chroma, h]))) return chroma
+  // ⚠️⚠️ A bisseção exige uma régua MONOTÔNICA em croma, e a régua estrita não é uma perto do
+  // preto: lá o cinza da luminosidade pedida simplesmente não existe na grade de 8 bits (ele
+  // arredonda para `#000000`), enquanto cromas maiores existem. Com a régua estrita a busca
+  // desabaria em zero e devolveria PRETO no lugar do azul-marinho mais fundo que cabe — que é
+  // pior do que o defeito que ela veio consertar. Quando nem o cinza sobrevive, a pergunta
+  // "que luminosidade é essa?" não tem resposta no monitor, e a régua volta a ser só o gamute.
+  //
+  // ⚠️ Resta uma faixa estreita (L de 0,04 a 0,11, 57 pares de 3 564 medidos) em que a grade de
+  // 8 bits é tão grossa que NENHUMA das duas réguas é monotônica, e ali a bisseção devolve a
+  // primeira fronteira em vez da maior croma. O valor segue dentro do gamute — é conservador,
+  // não errado —, e varrer para achar a maior custaria uma passada linear numa função chamada
+  // aos milhares por paleta. Nenhum token da casa vive abaixo de L 0,15.
+  const cabe = sobreviveAoHexadecimal(oklchToOklab([l, 0, h]))
+    ? (c: number) => sobreviveAoHexadecimal(oklchToOklab([l, c, h]))
+    : (c: number) => inSrgb(oklchToOklab([l, c, h]))
+  if (cabe(chroma)) return chroma
   let baixo = 0
   let alto = chroma
   for (let i = 0; i < 24; i++) {
     const meio = (baixo + alto) / 2
-    if (inSrgb(oklchToOklab([l, meio, h]))) baixo = meio
+    if (cabe(meio)) baixo = meio
     else alto = meio
   }
   return baixo
+}
+
+/** O quanto a cor pode andar ao virar hexadecimal e ainda ser a cor que foi pedida. */
+const FOLGA_PERCEPTUAL = 0.005
+
+/**
+ * Cabe no monitor **e continua a mesma cor depois de arredondada**.
+ *
+ * ⚠️ `inSrgb` sozinho tolera meio passo de 8 bits de estouro — o que é invisível no meio da
+ * escala e ENORME perto do preto. Em `L = 0` ele aprovava croma até ~0,06, porque a cor inteira
+ * arredondava para `#000003`: um hexadecimal válido, sim, mas com OUTRA luminosidade (0,044).
+ * Hoje nenhum token da casa chega perto disso; o dia do seletor livre, em que a luminosidade
+ * passa a vir de quem mexe no controle, chega. Confira o que sai de verdade.
+ */
+function sobreviveAoHexadecimal(lab: Lab): boolean {
+  if (!inSrgb(lab)) return false
+  const saida = hexToOklab(rgbToHex(oklabToRgb(lab)))
+  return Math.hypot(saida[0] - lab[0], saida[1] - lab[1], saida[2] - lab[2]) <= FOLGA_PERCEPTUAL
 }
 
 /** O mesmo que `color-mix(in oklab, a <pct>%, b)` faz. */

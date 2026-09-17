@@ -639,7 +639,7 @@ export default function CardCheckout({
       </button>
       {isSubscription && (
         <p className="text-center text-xs text-muted">
-          Renovação automática no cartão. Cancele quando quiser — o acesso continua até o fim do
+          Renovação automática no cartão. Cancele quando quiser. O acesso continua até o fim do
           período já pago.
         </p>
       )}

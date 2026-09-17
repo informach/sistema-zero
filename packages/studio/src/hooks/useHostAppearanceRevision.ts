@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 
 /**
  * Revisão da APARÊNCIA DO HOST: sobe a cada mudança de atributo no `<html>` da página que
- * embarca o Estúdio (o `data-tema` do community-kids e da comunidade adulta, a `class` de um
- * next-themes).
+ * embarca o Estúdio — hoje o **`data-sz-palette`** do community-kids e da comunidade adulta (o
+ * `data-tema` de antes morreu em 17/09/2026), e a `class` de um host com tema por classe.
  *
  * Existe por causa do Blockly, que pinta com cores LIDAS do CSS em tempo de execução
- * (`blockly/themeColors.ts`): o tema do Estúdio só sabe "claro" e "escuro", e os temas Padrão e
- * Pink do host são os dois "claro", então trocar um pelo outro não passava por nada que mandasse
- * reler a paleta e o canvas ficava com as cores do tema anterior.
+ * (`blockly/themeColors.ts`): o tema do Estúdio só sabe "claro" e "escuro", e TODAS as cores do
+ * catálogo do host são "claro", então trocar uma pela outra não passava por nada que mandasse
+ * reler a paleta e o canvas ficava com as cores da cor anterior.
  *
  * Observa só os atributos do `<html>`, sem a subárvore: é onde os hosts marcam o tema, e mudança
  * ali é rara (a troca de tema, o `lang`). Quem usa a revisão deve reler e só aplicar se a

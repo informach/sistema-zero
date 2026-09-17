@@ -127,7 +127,7 @@ export async function verifyAccessToken(token: string): Promise<AccessVerdict> {
  * com a MESMA config estática; o estado compartilhado real (JWKS) vive em
  * `globalThis` dentro deste módulo.
  */
-export function createSessionModule(cookieNames: SessionCookieNames) {
+export function createSessionModule(cookieNames: SessionCookieNames, paletteCookie: string) {
   const { accessCookie, refreshCookie } = cookieNames
 
   /**
@@ -190,6 +190,11 @@ export function createSessionModule(cookieNames: SessionCookieNames) {
     // (o cookie sobrevivia: logout não deslogava). Ver `expireCookieOptions`.
     store.set(accessCookie, '', expireCookieOptions(isProd()))
     store.set(refreshCookie, '', expireCookieOptions(isProd()))
+    // ⚠️ O espelho da cor sai JUNTO. Ele é do DONO da sessão (o valor carrega o id), e o que o
+    // proxy reconcilia é a área logada; fora dela quem lê o cookie é o layout, sem sessão para
+    // conferir contra. Deixá-lo vivo faria a tela de login de um aparelho de família continuar
+    // vestida com a cor de quem acabou de sair.
+    store.set(paletteCookie, '', expireCookieOptions(isProd()))
   }
 
   return {

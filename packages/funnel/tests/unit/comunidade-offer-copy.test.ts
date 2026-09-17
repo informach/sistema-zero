@@ -11,11 +11,23 @@ const offer = readFileSync(
 ).replace(/\s+/g, ' ')
 
 describe('copy comercial da Comunidade dos Criadores', () => {
-  test('começa pela preocupação dos pais e apresenta uma mudança concreta de papel', () => {
-    expect(offer).toContain('Seu filho já passa horas envolvido com jogos')
-    expect(offer).toContain('Mais tempo de tela não é a solução')
-    expect(offer).toContain('uma alternativa concreta para uma parte desse tempo')
-    expect(offer).toContain('criar os próprios jogos')
+  test('explica a realidade tecnológica da infância antes de apresentar a criação', () => {
+    expect(offer).toContain('Seu filho está crescendo em um mundo tecnológico')
+    expect(offer).toContain('A tecnologia já faz parte da infância')
+    expect(offer).toContain(
+      'Além de acompanhar os horários, vale olhar para o que seu filho aprende',
+    )
+    expect(offer).toContain('Tecnologia não ocupa o lugar dessas experiências')
+    expect(offer).toContain('A pergunta deixa de ser apenas quanto tempo ele fica conectado')
+    expect(offer).toContain('Academia Americana de Pediatria')
+    expect(offer).toContain('UNICEF')
+    expect(offer).toContain('Sociedade Brasileira de Pediatria')
+    expect(offer).toContain('Essas referências não avaliam nem recomendam o Sistema Zero')
+    expect(offer).toContain('Criar um jogo muda o lugar que ele ocupa')
+    expect(offer).toContain('pediatrics.2025075320.pdf')
+    expect(offer).not.toContain('Mais tempo de tela não é a solução')
+    expect(offer).not.toContain('Vamos começar pelo que preocupa você')
+    expect(offer).not.toContain('uma alternativa concreta para uma parte desse tempo')
   })
 
   test('vende continuidade depois do primeiro jogo', () => {
@@ -53,9 +65,22 @@ describe('copy comercial da Comunidade dos Criadores', () => {
       'Sessão de terapia',
       'Adiar tem um custo',
       'todo mundo vai querer jogar',
+      '<h4>Resiliência</h4>',
+      '<h4>Autoria e autoestima</h4>',
+      '<h4>Persistência</h4>',
+      'em vez de mais um recorde que some',
     ]) {
       expect(offer).not.toContain(trecho)
     }
+  })
+
+  test('descreve ações observáveis durante o projeto, sem prometer traços pessoais', () => {
+    expect(offer).toContain('Entender o que cada escolha muda')
+    expect(offer).toContain('Testar e ajustar')
+    expect(offer).toContain('Fazer escolhas próprias')
+    expect(offer).toContain('Levar a ideia até uma versão jogável')
+    expect(offer).toContain('Usar ferramentas para criar')
+    expect(offer).toContain('além das partidas de que já gosta')
   })
 
   test('usa capturas atuais para todos os pilares da experiência', () => {
@@ -81,8 +106,8 @@ describe('copy comercial da Comunidade dos Criadores', () => {
 
     expect(precheckout).toContain('A Comunidade está a um passo de começar')
     expect(precheckout).toContain('você escolhe o plano e revisa o valor e a renovação')
-    expect(checkout).toContain('Escolha como sua família quer começar')
-    expect(checkout).toContain('O perfil da criança será criado depois')
+    expect(checkout).toContain('Escolha como a criação vai começar na sua família')
+    expect(checkout).toContain('Depois, você cria o perfil da criança dentro da plataforma')
     expect(thanks).toContain('Assinatura confirmada. Agora vamos preparar o primeiro acesso.')
     expect(thanks).toContain('Criar perfil e abrir a Comunidade')
   })

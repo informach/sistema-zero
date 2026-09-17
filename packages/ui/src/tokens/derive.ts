@@ -7,7 +7,7 @@
  * espelho manual de divergir quando entra uma cor nova.
  */
 import type { Palette as PaletteId } from '@sistemazero/core/palette'
-import { oklchToHex, oklchToOklab } from './color'
+import { hexToOklch, oklchToHex, oklchToOklab } from './color'
 import { paletteRecipe } from './palettes'
 import {
   ACTION_FAMILY,
@@ -25,7 +25,17 @@ import {
 /** Só os 19 que seguem a cor — é o que cada bloco `[data-sz-palette="…"]` declara. */
 export function derivePaletteTokens(id: PaletteId): Record<PaletteToken, string> {
   const recipe = paletteRecipe(id)
-  const action = actionFor(recipe.hue, recipe.chromaCap)
+  const overrides = recipe.overrides ?? {}
+  // ⭐ Um override da AÇÃO entra ANTES dos derivados, não depois.
+  //
+  // ⚠️ A ação é a raiz da paleta: os neutros são tingidos com ela e a família (hover, degrau,
+  // clara, zero do logo) é ela deslocada. Aplicar o override só no fim — como era — pendurava a
+  // paleta inteira numa ação que ninguém enxerga, e cada relativo precisava do SEU próprio
+  // override para não destoar do que a pessoa vê. Era essa a origem da lista crescente de
+  // fixações; agora fixar a ação basta.
+  const action = overrides.action
+    ? hexToOklch(overrides.action)
+    : actionFor(recipe.hue, recipe.chromaCap)
   const actionLab = oklchToOklab(action)
 
   const tokens = { action: oklchToHex(action) } as Record<PaletteToken, string>
@@ -34,8 +44,7 @@ export function derivePaletteTokens(id: PaletteId): Record<PaletteToken, string>
   for (const token of Object.keys(ACTION_FAMILY) as ActionFamilyToken[])
     tokens[token] = actionRelativeFor(token, action)
 
-  for (const [token, value] of Object.entries(recipe.overrides ?? {}))
-    tokens[token as PaletteToken] = value
+  for (const [token, value] of Object.entries(overrides)) tokens[token as PaletteToken] = value
 
   return tokens
 }

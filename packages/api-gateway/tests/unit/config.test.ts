@@ -388,6 +388,35 @@ describe('gateway.config.ts (configuração real)', () => {
       rateLimit: { by: 'principal' },
     })
   })
+  /**
+   * A cor do perfil. O teto de 60/min por principal é CIRCUITO DE SEGURANÇA — foi ele que pegou o
+   * laço de `setTheme` martelando a rota antiga. Quem junta os cliques é o cliente.
+   */
+  test('a cor do perfil atende GET e PUT em /members/preferences, com token interno', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const metodo of ['GET', 'PUT'] as const) {
+      const casado = registry.resolve(metodo, '/members/preferences', 'v1')
+      expect({ metodo, id: casado?.route.id }).toEqual({ metodo, id: 'members-profile-palette' })
+      expect(casado?.route).toMatchObject({
+        service: 'members',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      })
+    }
+    // Sem o `x-internal-token` o members recusa — e os `x-auth-user-*` seriam forjáveis. A lista
+    // é condicional à env (vazia em dev), então o que se cobra é ser a MESMA das outras rotas de
+    // aluno, não o conteúdo dela.
+    const paleta = realConfig.routes.find((r) => r.id === 'members-profile-palette')
+    const vizinha = realConfig.routes.find((r) => r.id === 'members-section-help')
+    expect(paleta?.transforms).toBe(vizinha?.transforms)
+    // ⚠️ A rota LEGADA morreu na etapa 7. Se ela voltar, volta junto o mapeamento `padrao ↔ null`
+    // que o catálogo de cores aposentou.
+    expect(registry.resolve('PUT', '/members/preferences/kids', 'v1')).toBeUndefined()
+  })
+
   test('seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas', () => {
     const routes = realConfig.routes.filter(
       (route) => route.id.startsWith('members-learning-') || route.id === 'members-section-help',

@@ -43,7 +43,7 @@
   --sz-card-step: #b9c6d9;
   --sz-action: #1b5cf3;
   --sz-action-step: #1343b8;
-  --sz-action-hover: #1c4fc4;
+  --sz-action-hover: #164cca;
   --sz-action-light: #6e9bff;
   --sz-over-action: #e2ebff;
   --sz-white-step: #0f3fb0;
@@ -65,7 +65,7 @@
   --sz-card-step: #b9c6d9;
   --sz-action: #1b5cf3;
   --sz-action-step: #1343b8;
-  --sz-action-hover: #1c4fc4;
+  --sz-action-hover: #164cca;
   --sz-action-light: #6e9bff;
   --sz-over-action: #e2ebff;
   --sz-white-step: #0f3fb0;
@@ -104,20 +104,20 @@
   --sz-surface-2: #f1f4f4;
   --sz-line: #d8ddde;
   --sz-ink: #101a25;
-  --sz-ink-muted: #48525d;
+  --sz-ink-muted: #48525e;
   --sz-field: #7b858a;
-  --sz-card-step: #bbc4c4;
+  --sz-card-step: #bcc4c4;
   --sz-action: #0b7a54;
   --sz-action-step: #005639;
   --sz-action-hover: #086446;
-  --sz-action-light: #6bad8b;
+  --sz-action-light: #6dad8b;
   --sz-over-action: #e8f2f1;
   --sz-white-step: #004e34;
-  --sz-menu: #151b27;
-  --sz-menu-2: #1f2734;
-  --sz-menu-text: #d0d8db;
+  --sz-menu: #161b27;
+  --sz-menu-2: #202734;
+  --sz-menu-text: #d1d8db;
   --sz-menu-icon: #939da4;
-  --sz-logo-zero: #3a8e60;
+  --sz-logo-zero: #3d8e61;
 }
 
 [data-sz-palette="orange"] {

@@ -2111,19 +2111,6 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
-    // ⚠️ LEGADO, morre na etapa de limpeza do plano das paletas: o alternador de dois estados do
-    // kids. Fica de pé só enquanto os apps ainda não emitem a cor nova.
-    {
-      id: 'members-profile-preferences',
-      methods: ['GET', 'PUT'],
-      pathPattern: '/members/preferences/kids',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: SMALL_JSON_BODY_BYTES,
-    },
     {
       id: 'members-section-help',
       methods: ['POST'],

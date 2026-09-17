@@ -43,7 +43,8 @@ export default async function ProfilePage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  // A cor vem do MESMO espelho que o layout raiz leu — sem GET na montagem do seletor.
+  // A cor vem do MESMO espelho que o layout raiz leu: é o que pinta a tela no primeiro quadro.
+  // O seletor confere com o servidor depois de montar (espelho de seis horas é POR APARELHO).
   const paletteEscolhida = paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value)
   // Sessão de suporte somente-leitura: o BFF já recusa o PUT, então o seletor abre desabilitado
   // com o motivo, em vez de deixar a pessoa clicar num 403.

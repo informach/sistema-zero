@@ -55,7 +55,7 @@ export function createShell(cfg: ShellConfig) {
   const prod = process.env.NODE_ENV === 'production'
   const cookies = sessionCookieNames(cfg.cookieBase, prod)
   const paletteCookie = paletteCookieName(cfg.cookieBase, prod)
-  const session = createSessionModule(cookies)
+  const session = createSessionModule(cookies, paletteCookie)
   const gateway = createGatewayModule(session)
   const auth = createAuthClient(gateway)
   const members = createMembersClient(gateway, { audience: cfg.audience })
