@@ -92,6 +92,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
   atual,
   aninhada = false,
   travada = false,
+  emDestaque = true,
   onMover,
 }: {
   /** O nome do grupo inteiro, como a criança lê ("Onde está Tocar som"). */
@@ -110,6 +111,12 @@ export function PecaQueMudaDeCaixa<K extends string>({
    * que não funciona ali (consertos do review da onda A do lote 5), e passa a dizer como mexer.
    */
   travada?: boolean
+  /**
+   * A peça é o azul cheio da bancada? ⚠️ Na `jump-sound` não (full review de experiência, B18): o gesto
+   * "Tocar para pular" já é o azul cheio, e dois azuis cheios lado a lado não diziam qual era o gesto.
+   * Ali a peça fica em contorno, e volta ao azul cheio quando escolhida.
+   */
+  emDestaque?: boolean
   onMover: (caixa: K) => void
 }) {
   const ajuda = useId()
@@ -171,7 +178,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
     <SceneButton
       key="peca"
       ref={pecaRef}
-      tom="gesto"
+      tom={emDestaque || escolhida ? 'gesto' : 'ferramenta'}
       aria-pressed={escolhida}
       aria-describedby={ajuda}
       className={cn('touch-none', escolhida && 'ring-4 ring-primary/30')}
@@ -567,6 +574,7 @@ export function DinoSceneControls({
           ]}
           atual={state.sound.onJump ? 'pulo' : 'tecla'}
           travada={travada}
+          emDestaque={false}
           onMover={(caixa) =>
             dispatch({ type: 'connect', port: 'sound', enabled: caixa === 'pulo' })
           }

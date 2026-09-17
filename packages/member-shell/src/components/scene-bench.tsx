@@ -163,8 +163,13 @@ export function Medida({
       ) : (
         <label className="flex justify-between gap-2" htmlFor={id}>
           {label}
-          {/* O negativo com o sinal de menos do conteúdo ("−9"), como a instrução escreve. */}
-          <output className={`text-lg tabular-nums ${tom}`}>{escrito ?? numero(mostrado)}</output>
+          {/* O negativo com o sinal de menos do conteúdo ("−9"), como a instrução escreve.
+              ⚠️ `aria-live="off"` (full review de experiência, B7): o `<output>` é região viva por padrão,
+              e cada toque gerava DOIS anúncios (o número e a frase da situação). O número segue no
+              `aria-valuetext` do deslizante; o acontecimento, na frase. */}
+          <output aria-live="off" className={`text-lg tabular-nums ${tom}`}>
+            {escrito ?? numero(mostrado)}
+          </output>
         </label>
       )}
       <div className="mt-2 flex items-center gap-2">

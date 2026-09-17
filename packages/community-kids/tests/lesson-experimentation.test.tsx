@@ -311,8 +311,10 @@ describe('a criança mexendo na cena', () => {
     // o fieldset deixaria os botões clicáveis e mudos — e o servidor não veria gesto nenhum.
     await waitFor(() => expect(gestos()).toBeGreaterThan(antes), { timeout: 5000 })
     // A descoberta ficou (desfazer volta o MUNDO, não o que ela aprendeu) e o cartão de
-    // conclusão continua ali, embora `layers` peça a montagem assentada para "passar".
-    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2')
+    // conclusão continua ali.
+    // ⚠️ Mudou de propósito (full review de experiência, M4): a volta ao arranjo do jogo é a terceira
+    // META da `layers`, e as três descobertas ficam.
+    expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('3')
     expect(screen.getByText('✓ Guardado')).toBeTruthy()
     expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
     // E ninguém registra duas vezes: a marcação é primeira-vez-só.
@@ -748,7 +750,9 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     expect(screen.queryByText(/Você achou/)).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
     const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!')
-    expect(acerto.closest('p')?.className).toContain('bg-success')
+    // ⚠️ Mudou de propósito (full review de experiência, M2): o aviso é SOBREPOSTO ao palco, num cartão
+    // opaco com a tinta e o contorno verdes (o fundo verde translúcido não se lia sobre o desenho).
+    expect(acerto.parentElement?.className).toContain('text-success-foreground')
   })
 
   test('⚠️⚠️ a previsão do MODELO chega pela projeção pública com o que é preciso para retomar', () => {
@@ -1091,31 +1095,26 @@ const tentativas = (enviados: { url: string; body: Record<string, unknown> }[]) 
   enviados.filter((e) => e.url.endsWith('/learning-attempts'))
 
 describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () => {
-  test('⚠️⚠️ `layers`: a resposta certa depois de "Recomeçar" não vira âmbar, e sobe sozinha ao remontar', async () => {
+  test('⚠️⚠️ `layers`: a resposta certa depois de "Recomeçar" é corrigida na hora, sem pedir a montagem de volta', async () => {
     // O ALTO do review de correção: a `layers` OBRIGATÓRIA do Meu Jeito aula 5 travava. O servidor
     // recusava a resposta (a cena saiu do estado descoberto), a tela a pintava de errada, e remontar
     // não reenviava nada, porque a assinatura não mudava.
+    // ⚠️ Mudou de propósito (full review de experiência, M4): a volta ao arranjo do jogo virou a META
+    // `back-in-front`, e descoberta não se desfaz. Depois de "Recomeçar" a `layers` continua concluída
+    // para o servidor, e a resposta é corrigida sem a caixa "deixe a cena como estava" (que segue só na
+    // `jump-sound`, a única cena que ainda pede a montagem ASSENTADA).
     const bloco = content('layers')
     const { enviados } = servidorQueCorrige(bloco)
     aluno(bloco)
     await palpitar('layers')
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir são três trocas; remontar, uma.
     await trocarOrdem(3)
     await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
     fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
     fireEvent.click(opcao('layers', true))
-    await waitFor(
-      () =>
-        expect(
-          screen.getByText('Para conferir, deixe a cena como estava quando você descobriu.'),
-        ).toBeTruthy(),
-      { timeout: 5000 },
-    )
-    expect(screen.queryByText(/não é essa|Deixe a montagem/) === null).toBe(true)
-    expect(screen.queryByText('Guardando…') === null).toBe(true)
-    // Remontar e NÃO escolher de novo: a resposta sobe sozinha e é corrigida.
-    await trocarOrdem(1)
     await waitFor(() => expect(screen.getByText('Certo!')).toBeTruthy(), { timeout: 5000 })
+    expect(
+      screen.queryByText('Para conferir, deixe a cena como estava quando você descobriu.'),
+    ).toBeNull()
     expect(screen.getByText('✓ Guardado')).toBeTruthy()
     const ultima = tentativas(enviados).at(-1)?.body.answers as Record<string, unknown>
     expect(ultima.checkpoint).toBe(SCENE_QUESTIONS.layers.explain.correctChoiceId)
@@ -1350,9 +1349,10 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
     const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
     expect(await screen.findByText(retomado)).toBeTruthy()
-    // Colado ao aviso da descoberta, embaixo do palco (e não lá em cima, fora da janela).
+    // Colado ao aviso da descoberta, SOBRE o pé do palco (e não lá em cima, fora da janela).
+    // ⚠️ Mudou de propósito (full review de experiência, M2): o cartão da frase tem o ✕ ao lado.
     const aviso = screen.getByText('Descoberta 1 de 2')
-    expect(aviso.nextElementSibling?.textContent).toBe(retomado)
+    expect(aviso.nextElementSibling?.querySelector('p')?.textContent).toBe(retomado)
     // O gesto seguinte (ligar o desenho, que também conclui a cena) tira a frase do instante.
     fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
     await waitFor(() => expect(screen.queryByText(retomado) === null).toBe(true))
@@ -1731,7 +1731,9 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
       const resposta = [...document.querySelectorAll('p[aria-live]')]
         .map((p) => p.textContent ?? '')
         .find((t) => t.startsWith('Ainda não'))
-      expect(resposta).toContain('leve o Dino de volta para o fim da ordem de desenhar')
+      // ⚠️ Mudou de propósito (full review de experiência, M4): a volta é a terceira META, e o
+      // "Conferir" diz o pedido dela.
+      expect(resposta).toContain('leve o Dino de novo para o fim da ordem de desenhar')
     })
   })
 

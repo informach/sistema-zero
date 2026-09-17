@@ -3,11 +3,11 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import {
+  isSceneAction,
   SCENE_IDS,
   SCENE_PORTS,
   type SceneAction,
   type SceneId,
-  isSceneAction,
   sceneScript,
 } from '@sistemazero/core/learning/scene'
 import { Elysia, getSchemaValidator, t } from 'elysia'
@@ -69,16 +69,23 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
         continue
       }
       const visitar = (valor: unknown): void => {
-        if (Array.isArray(valor)) return valor.forEach(visitar)
+        if (Array.isArray(valor)) {
+          for (const item of valor) visitar(item)
+          return
+        }
         if (typeof valor !== 'object' || valor === null) return
         const registro = valor as Record<string, unknown>
         const atividade = registro.activity as Record<string, unknown> | undefined
-        if (typeof atividade?.scene === 'string' && (SCENE_IDS as readonly string[]).includes(atividade.scene)) {
+        if (
+          typeof atividade?.scene === 'string' &&
+          (SCENE_IDS as readonly string[]).includes(atividade.scene)
+        ) {
           const scene = atividade.scene as SceneId
           const setup = atividade.setup as { actions?: unknown[] } | undefined
           for (const acao of setup?.actions ?? []) somar(scene, acao)
           const roteiro = atividade.script as { actions?: unknown[] }[] | undefined
-          for (const passo of roteiro ?? []) for (const acao of passo.actions ?? []) somar(scene, acao)
+          for (const passo of roteiro ?? [])
+            for (const acao of passo.actions ?? []) somar(scene, acao)
         }
         for (const filho of Object.values(registro)) visitar(filho)
       }
@@ -103,7 +110,9 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
       // Uma etapa tem no máximo 16 ações: em lotes, cada bloco válido também no domínio.
       for (let i = 0; i < acoes.length; i += 16) {
         const bloco = blocoCom(scene, acoes.slice(i, i + 16))
-        expect(validador.Check(bloco), `${scene}: ${JSON.stringify(acoes.slice(i, i + 16))}`).toBe(true)
+        expect(validador.Check(bloco), `${scene}: ${JSON.stringify(acoes.slice(i, i + 16))}`).toBe(
+          true,
+        )
         const resposta = await app.handle(
           new Request('http://members.test/', {
             method: 'POST',
@@ -118,7 +127,9 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
     })
 
   test('⚠️ anti-vácuo: ação desconhecida é recusada e campo a mais é podado pela rota', async () => {
-    expect(validador.Check(blocoCom('world', [{ type: 'voar' } as unknown as SceneAction]))).toBe(false)
+    expect(validador.Check(blocoCom('world', [{ type: 'voar' } as unknown as SceneAction]))).toBe(
+      false,
+    )
     const comExtra = blocoCom('world', [
       { type: 'create', campoQueNaoExiste: 1 } as unknown as SceneAction,
     ])
@@ -133,8 +144,8 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
     const devolvido = (await resposta.json()) as { content: InteractiveBlock }
     expect(JSON.stringify(devolvido.content)).not.toContain('campoQueNaoExiste')
     // Sem relação com a borda: o domínio também recusa a ação desconhecida.
-    expect(isInteractiveBlock(blocoCom('world', [{ type: 'voar' } as unknown as SceneAction]))).toBe(
-      false,
-    )
+    expect(
+      isInteractiveBlock(blocoCom('world', [{ type: 'voar' } as unknown as SceneAction])),
+    ).toBe(false)
   })
 })

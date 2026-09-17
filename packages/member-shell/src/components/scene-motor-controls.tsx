@@ -27,7 +27,6 @@ import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene
  * livre: a câmera decide o que se vê, e isso pede voltas contáveis, não gesto contínuo.
  */
 
-
 /**
  * A grade das TRÊS medidas: no máximo duas lado a lado, e a terceira embaixo.
  * ⚠️ Com três colunas, a coluna da cena (até 680px) deixava o deslizante de cada medida com uns 20px

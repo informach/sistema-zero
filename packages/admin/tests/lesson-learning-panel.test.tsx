@@ -117,7 +117,7 @@ test('⚠️⚠️ a montagem é a FAIXA da criança, sem "(s)", sem hífen de m
     const s = initialExperiment(start)
     const { texto, fechar } = await abrir(relatorio(packExperiment(cena, s), cena))
     try {
-      const linha = /Montagem atual: ([^]*?)Pistas utilizadas/.exec(texto)?.[1] ?? ''
+      const linha = /Montagem atual: ([\s\S]*?)Pistas utilizadas/.exec(texto)?.[1] ?? ''
       const faixa = sceneReadout(cena, s.state).map((r) => `${r.label} ${r.value}`)
       expect(linha.startsWith(faixa.join('; '))).toBe(true)
       expect(linha).not.toMatch(/\(s\)|contínua|acontecimento|-\d|\d\.\d/)

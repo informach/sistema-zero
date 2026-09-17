@@ -93,7 +93,10 @@ describe('score', () => {
     const solto = mundo('score', ...tempo(2.1))
     const desenho = html(<ScoreStage state={solto} />)
     expect(desenho).toMatch(/Início (<!-- -->)?2/)
-    expect(desenho).toMatch(/Jogando (<!-- -->)?–/)
+    // ⚠️ Mudou de propósito (full review de experiência, B3): o placar ainda não visto é "?", como no
+    // resto da casa, e não a meia-risca (que lia como sinal de menos).
+    expect(desenho).toMatch(/Jogando (<!-- -->)?\?/)
+    expect(desenho).toContain('jogando: ainda não visto')
   })
 })
 

@@ -96,7 +96,7 @@ describe('camera', () => {
     // O Dino abre em 200: oito passos de 40 passam da borda de 480.
     for (let i = 0; i < 8; i++) fireEvent.click(direita, { detail: 0 })
     await waitFor(() => expect(container.querySelector('[data-seta-da-borda]')).not.toBeNull())
-    fireEvent.click(screen.getByRole('button', { name: 'A câmera segue o Dino: não' }))
+    fireEvent.click(screen.getByRole('button', { name: 'A câmera segue o Dino: desligada' }))
     await waitFor(() => expect(container.querySelector('[data-seta-da-borda]')).toBeNull())
     const janela = () => container.querySelector('[data-janela]')?.getAttribute('data-janela')
     const antes = janela()

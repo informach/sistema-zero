@@ -246,8 +246,9 @@ export const CENARIO_UNICO = { dx: 22, escala: 1.3 } as const
 /**
  * Quanto as figuras SOBEM no espaço, onde não há chão para pisar (review do lote 3).
  *
- * ⚠️⚠️ A linha do chão só fica onde ela MEDE alguma coisa (a régua da `velocity`, a altura da
- * `gravity`/`impulse`, a batida da `hitbox` e da `restart`). Nos outros palcos a nave, o asteroide
+ * ⚠️⚠️ A linha do chão só fica onde ela MEDE alguma coisa: hoje o laboratório (`gravity`, `impulse`,
+ * `hitbox`, `experience-scene`) e a `jump-sound` (`scene-dino-stages`), os únicos que passam `chao` ao
+ * `FundoEspaco`. Nos outros palcos a nave, o asteroide
  * e a chama ficavam "estacionados" numa linha pontilhada, e na mesma aula a `world` já dizia "no
  * espaço não há chão". Sem a linha, elas flutuam um pouco acima de onde pisariam.
  * ⚠️ Na terra `pisoDoMundo` devolve o MESMO número: o Corre Dino não muda um pixel.

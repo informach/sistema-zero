@@ -22,8 +22,8 @@ import {
   sceneClockShouldStop,
   sceneDefaultGoalIds,
   sceneEmitsSound,
-  sceneGoals,
   sceneGestureRunsClock,
+  sceneGoals,
   sceneHint,
   sceneHintDone,
   type SceneHintStep,
@@ -970,24 +970,24 @@ export function SceneActivityView({
       dispatch,
       gestoEmDestaque: !(conclusao && temPergunta && !registered && !revisita),
     }),
-    ...(reference
-      ? [
-          <SceneButton
-            key="guardar"
-            // ⚠️ Peso de ferramenta discreta (consertos do review da onda A do lote 5): na `hitbox` ele é
-            // o único botão da fileira e parecia o gesto da tarefa, que é a Distância e a área.
-            tom="discreta"
-            onClick={() => {
-              dispatch({ type: 'capture' })
-              setCompared(true)
-            }}
-          >
-            <Camera size={16} aria-hidden />
-            Guardar este jeito
-          </SceneButton>,
-        ]
-      : []),
   ]
+  /**
+   * "Guardar este jeito" DEPOIS das medidas (full review de experiência, B14): na `hitbox` ele era o
+   * primeiro controle da bancada, e o Tab e o olho chegavam nele antes da Distância e da área, que são a
+   * tarefa. Peso de ferramenta discreta (consertos do review da onda A do lote 5).
+   */
+  const guardarEsteJeito = reference ? (
+    <SceneButton
+      tom="discreta"
+      onClick={() => {
+        dispatch({ type: 'capture' })
+        setCompared(true)
+      }}
+    >
+      <Camera size={16} aria-hidden />
+      Guardar este jeito
+    </SceneButton>
+  ) : null
 
   useEffect(() => {
     if (!ready) return
@@ -1428,25 +1428,7 @@ export function SceneActivityView({
                         {botoesDaCena}
                       </div>
                     )}
-                    {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão. */}
-                    {reference && (lab?.trials ?? []).length > 0 && (
-                      <details
-                        open={compared}
-                        onToggle={(e) => setCompared(e.currentTarget.open)}
-                        className="rounded-2xl bg-background p-4"
-                      >
-                        <summary className="min-h-11 cursor-pointer text-sm font-semibold">
-                          Compare: o que você guardou × agora
-                        </summary>
-                        <div className="mt-4">
-                          <ExperienceComparison
-                            activity={activity}
-                            trials={lab?.trials ?? []}
-                            current={state}
-                          />
-                        </div>
-                      </details>
-                    )}
+
                     {/* ⚠️⚠️ A CORTINA da previsão cobre a BANCADA (review do lote 1): com ela à
                         vista, os motivos dos controles fechados sopravam a resposta. */}
                     <div
@@ -1477,7 +1459,29 @@ export function SceneActivityView({
                         more={false}
                         escondida={previsaoPendente}
                       />
+                      {guardarEsteJeito && (
+                        <div className="flex justify-start">{guardarEsteJeito}</div>
+                      )}
                     </div>
+                    {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão. */}
+                    {reference && (lab?.trials ?? []).length > 0 && (
+                      <details
+                        open={compared}
+                        onToggle={(e) => setCompared(e.currentTarget.open)}
+                        className="rounded-2xl bg-background p-4"
+                      >
+                        <summary className="min-h-11 cursor-pointer text-sm font-semibold">
+                          Compare: o que você guardou × agora
+                        </summary>
+                        <div className="mt-4">
+                          <ExperienceComparison
+                            activity={activity}
+                            trials={lab?.trials ?? []}
+                            current={state}
+                          />
+                        </div>
+                      </details>
+                    )}
                   </>
                 )}
               </fieldset>

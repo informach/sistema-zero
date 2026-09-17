@@ -187,7 +187,8 @@ describe('⚠️⚠️ todo campo que nasceu DEPOIS do retrato antigo hidrata so
         for (const chave of caminho.slice(0, -1)) grupo = grupo[chave] as Record<string, unknown>
         delete grupo[caminho.at(-1) as string]
         apagados++
-        if (!isSceneState(hydrateSceneState(retrato))) recusados.push(`${scene} · ${caminho.join('.')}`)
+        if (!isSceneState(hydrateSceneState(retrato)))
+          recusados.push(`${scene} · ${caminho.join('.')}`)
       }
     }
     // A guarda de que a varredura andou: são milhares de campos novos.

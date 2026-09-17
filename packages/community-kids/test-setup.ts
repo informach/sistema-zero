@@ -35,7 +35,11 @@ const originaisDaJanela = GLOBAIS_DA_JANELA.map(
 const originaisDaMedida = MEDIDAS.map(
   (proto) => [proto, Object.getOwnPropertyDescriptor(proto, 'getBoundingClientRect')] as const,
 )
-function restaurar(alvo: object, nome: PropertyKey, original: PropertyDescriptor | undefined): void {
+function restaurar(
+  alvo: object,
+  nome: PropertyKey,
+  original: PropertyDescriptor | undefined,
+): void {
   const atual = Object.getOwnPropertyDescriptor(alvo, nome)
   if (original) {
     if (atual?.value !== original.value || atual?.get !== original.get)

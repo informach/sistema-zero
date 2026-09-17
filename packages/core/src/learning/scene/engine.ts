@@ -50,6 +50,8 @@ import {
   tilemapMark,
   tilemapMarkedRows,
 } from './nucleo'
+// ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
+import type { SceneCommand } from './session'
 import {
   cloneScene,
   DELTA_RACE,
@@ -73,8 +75,6 @@ import {
   sceneDrawingsGap,
   VELOCITY_TRAIL_MAX,
 } from './state'
-// ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
-import type { SceneCommand } from './session'
 
 /**
  * A transição da cena: `(início, estado, ação) → estado novo`. Pura e imutável.

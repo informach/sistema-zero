@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { isSceneAction, SCENE_FRAME_RATE, SCENE_IDS, type SceneAction, type SceneId } from './actions'
+import {
+  isSceneAction,
+  SCENE_FRAME_RATE,
+  SCENE_IDS,
+  type SceneAction,
+  type SceneId,
+} from './actions'
 import {
   openScene,
   sceneClockReachedStop,
@@ -46,32 +52,31 @@ describe('o ▶ para sozinho (`sceneClockShouldStop`)', () => {
     expect(parou).toBe(SALTOS.includes(cena))
   })
 
-  test.each(SALTOS.map((cena) => [cena]))(
-    '%s: no ar o ▶ segue, e para no tique em que o salto termina (nem antes, nem depois)',
-    (cena) => {
-      let estado = stepScene({ scene: cena }, openScene({ scene: cena }), {
-        type: 'jump',
-        input: 'tap',
+  test.each(
+    SALTOS.map((cena) => [cena]),
+  )('%s: no ar o ▶ segue, e para no tique em que o salto termina (nem antes, nem depois)', (cena) => {
+    let estado = stepScene({ scene: cena }, openScene({ scene: cena }), {
+      type: 'jump',
+      input: 'tap',
+    })
+    // A gravidade ligada: o Dino sobe e volta ao chão (na `gravity` ela nasce desligada).
+    if (cena === 'gravity')
+      estado = stepScene({ scene: cena }, estado, {
+        type: 'connect',
+        port: 'gravity',
+        enabled: true,
       })
-      // A gravidade ligada: o Dino sobe e volta ao chão (na `gravity` ela nasce desligada).
-      if (cena === 'gravity')
-        estado = stepScene({ scene: cena }, estado, {
-          type: 'connect',
-          port: 'gravity',
-          enabled: true,
-        })
-      let tiques = 0
-      for (; tiques < 400; tiques++) {
-        const { depois, parou } = tique(cena, estado)
-        estado = depois
-        if (parou) break
-        expect(depois.flight.time).not.toBeNull()
-      }
-      expect(tiques).toBeGreaterThan(5)
-      expect(tiques).toBeLessThan(400)
-      expect(estado.flight.time).toBeNull()
-    },
-  )
+    let tiques = 0
+    for (; tiques < 400; tiques++) {
+      const { depois, parou } = tique(cena, estado)
+      estado = depois
+      if (parou) break
+      expect(depois.flight.time).not.toBeNull()
+    }
+    expect(tiques).toBeGreaterThan(5)
+    expect(tiques).toBeLessThan(400)
+    expect(estado.flight.time).toBeNull()
+  })
 
   test('gravity sem gravidade: para no tique em que o Dino passa do alto do palco', () => {
     let estado = stepScene({ scene: 'gravity' }, openScene({ scene: 'gravity' }), {
@@ -136,17 +141,17 @@ describe('o gesto solta ou para o ▶ (`sceneGestureRunsClock`)', () => {
     ).toBeNull()
   })
 
-  test.each([['restart'], ['score']] as const)(
-    '%s: o toque que COMEÇA a partida solta o tempo; na tela de início sem começar, nada',
-    (cena) => {
-      const aberto = openScene({ scene: cena })
-      const tocar: SceneAction = { type: 'start', input: 'tap' }
-      const depois = stepScene({ scene: cena }, aberto, tocar)
-      expect(depois.match.screen).toBe('playing')
-      expect(sceneGestureRunsClock(cena, tocar, depois)).toBe(true)
-      expect(sceneGestureRunsClock(cena, tocar, aberto)).toBeNull()
-    },
-  )
+  test.each([
+    ['restart'],
+    ['score'],
+  ] as const)('%s: o toque que COMEÇA a partida solta o tempo; na tela de início sem começar, nada', (cena) => {
+    const aberto = openScene({ scene: cena })
+    const tocar: SceneAction = { type: 'start', input: 'tap' }
+    const depois = stepScene({ scene: cena }, aberto, tocar)
+    expect(depois.match.screen).toBe('playing')
+    expect(sceneGestureRunsClock(cena, tocar, depois)).toBe(true)
+    expect(sceneGestureRunsClock(cena, tocar, aberto)).toBeNull()
+  })
 
   test('⚠️ nenhum outro gesto dos roteiros de fábrica mexe no ▶', () => {
     const mexem = new Set(['jump', 'connect', 'start'])

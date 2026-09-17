@@ -35,7 +35,9 @@ describe('o despacho da cena chega a um palco e a uma bancada de verdade', () =>
     expect(html).toMatch(/<svg\b/)
   })
 
-  test.each(SCENE_IDS.map((scene) => [scene]))('%s: a bancada (ou o palco) tem onde mexer', (scene) => {
+  test.each(
+    SCENE_IDS.map((scene) => [scene]),
+  )('%s: a bancada (ou o palco) tem onde mexer', (scene) => {
     const state = openScene({ scene })
     const activity = { type: 'experimentation', scene } as const
     const bancada = renderToStaticMarkup(

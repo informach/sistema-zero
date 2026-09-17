@@ -150,7 +150,11 @@ describe('⚠️⚠️ os nomes por cena e as ações legadas (consertos do revi
     // ainda legal; o `mode` (sem efeito nenhum) e o `wireframe` (repete "A pele") seguiam oferecidos.
     const legadas: [SceneId, SceneAction, string][] = [
       ['symmetry', { type: 'paint', column: 4 }, 'Pintar uma coluna · ação antiga'],
-      ['symmetry', { type: 'mirror', on: true, line: 6 }, 'Ligar o espelho de eixo móvel · ação antiga'],
+      [
+        'symmetry',
+        { type: 'mirror', on: true, line: 6 },
+        'Ligar o espelho de eixo móvel · ação antiga',
+      ],
       ['mesh', { type: 'wireframe', on: true }, 'Ligar o raio-X do modelo · ação antiga'],
       ['contact', { type: 'mode', kind: 'ask' }, 'Perguntar se está encostando · ação antiga'],
     ]

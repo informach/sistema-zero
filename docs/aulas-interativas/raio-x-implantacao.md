@@ -84,6 +84,14 @@ Blocos criados ou editados à mão no admin não passam pela validação dos man
 projeção pública pelo validador inteiro do core, e um bloco que cita o que saiu vira INVÁLIDO: a atividade
 não aparece e, se for obrigatória, a seção não fecha ("precisa de uma configuração válida").
 
+⚠️ **Desde os consertos do full review de dados e deploy, as METAS que saíram são toleradas na leitura**
+(`sceneActivityForReading`/`sceneSetupGoals` do core): `cut` vira `crop-whole`, as outras três saem do
+`setup.goals` (sem nenhuma que valha, a missão volta a ser a do modelo) e o `waitFor` que cita uma delas sai do
+roteiro. O bloco aparece e a seção fecha; o editor do admin avisa e oferece "Tirar do caso". Continuam
+recusados na leitura, e é para eles que a consulta abaixo segue valendo: a ação que deixou de ser legal
+(`advance` na `random`/`acceleration`/`diagonal`, `sample` de lugar na `acceleration`) e o roteiro cujo
+`waitFor` (de meta que existe) não acontece mais pelas regras novas.
+
 O que saiu nos lotes: as metas `same-x` (`coordinates`), `separate` (`hitbox`), `cut` e `two-cells`
 (`sheet-vs-sprite`); a ação `advance` na `random`, na `acceleration` e na `diagonal`; o `sample` de lugar na
 `acceleration`.

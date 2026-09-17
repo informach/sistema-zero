@@ -103,15 +103,20 @@ describe('cromo é do app, mundo é da cena', () => {
     // bancada que ninguém lembrasse de acrescentar ficava FORA de todas as varreduras deste arquivo
     // (moldura única, `Texto` do palco, tokens do cromo), em silêncio.
     const pasta = readdirSync(join(import.meta.dir, '../src/components'))
-    const palcos = pasta.filter((f) => /^scene-.+-stages?\.tsx$/.test(f) || f === 'scene-stages.tsx')
-    expect([...PALCOS].filter((f) => f !== 'experience-scene.tsx').sort()).toEqual(palcos.sort())
+    const palcos = pasta.filter(
+      (f) => /^scene-.+-stages?\.tsx$/.test(f) || f === 'scene-stages.tsx',
+    )
+    const palcosListados: readonly string[] = PALCOS
+    expect(palcosListados.filter((f) => f !== 'experience-scene.tsx').sort()).toEqual(palcos.sort())
     const bancadas = pasta.filter(
       (f) => /^scene-.+-controls\.tsx$/.test(f) && f !== 'scene-demo-controls.tsx',
     )
-    expect([...BANCADAS].sort()).toEqual(bancadas.sort())
+    const bancadasListadas: readonly string[] = BANCADAS
+    expect([...bancadasListadas].sort()).toEqual(bancadas.sort())
     // O cromo alcança toda bancada.
+    const cromo: readonly string[] = CROMO
     for (const bancada of bancadas.filter((f) => f !== 'scene-lesson-controls.tsx'))
-      expect(CROMO as readonly string[], bancada).toContain(bancada)
+      expect(cromo, bancada).toContain(bancada)
   })
 
   test('⚠️⚠️ nenhum arquivo de cromo veste o papel nem a tinta da cena', () => {

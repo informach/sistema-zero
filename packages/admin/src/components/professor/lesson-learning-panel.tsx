@@ -36,7 +36,16 @@ import { LessonEvidenceHistory } from './lesson-evidence-history'
 function conclusaoLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   if (typeof answers.checkpoint !== 'string') return []
   const escolha = content?.checkpoint?.choices.find((c) => c.id === answers.checkpoint)
-  return [`Conclusão: ${escolha?.label ?? answers.checkpoint}`]
+  return [`Conclusão: ${escolha?.label ?? opcaoQueSaiu(answers.checkpoint, content?.checkpoint)}`]
+}
+
+/**
+ * ⚠️ O id cru de uma escolha que a pergunta de HOJE não tem mais (full review final de dados e deploy,
+ * BAIXO-5): 32 previsões e 15 explicações do modelo trocaram de ids nos lotes do Raio-X, e o professor lia
+ * "fica" ou "podem" sem saber o que era. A resposta guardada não é reinterpretada: só dita como antiga.
+ */
+function opcaoQueSaiu(id: string, pergunta?: { choices: { id: string }[] }): string {
+  return pergunta ? `${id} (opção que não existe mais)` : id
 }
 
 /**
@@ -107,10 +116,17 @@ function complementoDaMontagem(scene: SceneId, state: SceneState): string[] {
 function predictionLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
   if (typeof answers.prediction !== 'string') return []
   const escolha = content?.prediction?.choices.find((c) => c.id === answers.prediction)
-  return [`Palpite antes de mexer: ${escolha?.label ?? answers.prediction}`]
+  return [
+    `Palpite antes de mexer: ${escolha?.label ?? opcaoQueSaiu(answers.prediction, content?.prediction)}`,
+  ]
 }
 
-function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock): string[] {
+function answerLines(
+  answers: LearningAnswers,
+  content?: PublicInteractiveBlock,
+  /** O resultado GRAVADO já aprovou: metas pendentes ao lado dele são de uma versão mais nova da cena. */
+  aprovada = false,
+): string[] {
   const activity = content?.activity
   const previsao = [...predictionLines(answers, content), ...conclusaoLines(answers, content)]
 
@@ -141,14 +157,19 @@ function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock)
           : 'Registro guardado não confere com esta cena. Não foi reinterpretado.',
       ]
     const state = session.state
+    const metas = sceneGoals(activity.scene, state, activity.cast, sceneTargets(activity))
     return [
       ...previsao,
       // O acompanhamento do professor lê a cena com o ELENCO da atividade: ele precisa ver
       // os mesmos nomes que a criança viu, senão o relatório fala de outro personagem.
       `Cena: ${sceneModelFor(activity).title}`,
-      ...sceneGoals(activity.scene, state, activity.cast, sceneTargets(activity)).map(
-        (g) => `${g.complete ? 'Descobriu' : 'Pendente'}: ${g.label}`,
-      ),
+      // ⚠️ BAIXO-5 do full review final de dados e deploy: o members não reavalia tentativa, e 188 de 3.440
+      // retratos aprovados antes dos lotes do Raio-X abrem com uma meta nova "Pendente" ao lado. Nada é
+      // rebaixado; o professor só precisa saber de onde vem a diferença.
+      aprovada && metas.some((g) => !g.complete)
+        ? 'Aprovada numa versão anterior da cena: as descobertas pendentes abaixo entraram depois.'
+        : '',
+      ...metas.map((g) => `${g.complete ? 'Descobriu' : 'Pendente'}: ${g.label}`),
       ...state.evidence.observations
         .filter((o) => state.evidence.discoveries.includes(o.id))
         .map((o) => `Observou: ${o.label}`),
@@ -348,7 +369,11 @@ export function LessonLearningPanel({
                                 {saved.hintsUsed} pistas consultadas · {saved.attemptsCount}{' '}
                                 respostas conferidas
                               </p>
-                              {answerLines(saved.answers, activity.content).map((line) => (
+                              {answerLines(
+                                saved.answers,
+                                activity.content,
+                                saved.result?.passed === true,
+                              ).map((line) => (
                                 <p key={line}>{line}</p>
                               ))}
                             </>
@@ -363,7 +388,11 @@ export function LessonLearningPanel({
                                       {new Date(attempt.createdAt).toLocaleString('pt-BR')} ·{' '}
                                       {attempt.hintsUsed} pistas
                                     </p>
-                                    {answerLines(attempt.answers, activity.content).map((line) => (
+                                    {answerLines(
+                                      attempt.answers,
+                                      activity.content,
+                                      attempt.result.passed,
+                                    ).map((line) => (
                                       <p key={line}>{line}</p>
                                     ))}
                                     <p className="text-muted-foreground">

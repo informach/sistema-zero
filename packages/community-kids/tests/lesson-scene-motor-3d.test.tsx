@@ -134,7 +134,8 @@ describe('⚠️⚠️ soltar é regra da PEÇA, em toda cena (full review de 16
     await waitFor(() => expect(distancia.value).toBe('149'))
     expect(desfazer).toHaveProperty('disabled', true)
     fireEvent.pointerDown(distancia)
-    for (const valor of ['120', '80', '40']) fireEvent.change(distancia, { target: { value: valor } })
+    for (const valor of ['120', '80', '40'])
+      fireEvent.change(distancia, { target: { value: valor } })
     // Com o dedo apertado, o número acompanha e o motor espera.
     expect(desfazer).toHaveProperty('disabled', true)
     fireEvent.pointerUp(distancia)

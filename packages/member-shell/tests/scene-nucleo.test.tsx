@@ -203,7 +203,7 @@ describe('camera', () => {
   test('"Andar" nos dois sentidos, e a chave com o estado', () => {
     const b = bancada('camera', mundo('camera'))
     expect(b).toContain('aria-label="Andar com o Dino para a direita"')
-    expect(b).toContain('A câmera segue o Dino: não')
+    expect(b).toContain('A câmera segue o Dino: desligada')
   })
 })
 

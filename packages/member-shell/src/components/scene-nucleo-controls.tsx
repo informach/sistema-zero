@@ -411,8 +411,10 @@ function BancadaDaCamera({ state, dispatch, cast }: Bancada) {
       <Chave
         label={nome('A câmera segue o Dino')}
         ligado={state.view.follow}
-        ligadoTexto="sim"
-        desligadoTexto="não"
+        // ⚠️ "ligada/desligada", como as outras chaves (full review de experiência, B9): "sim/não" era o
+        // único liga e desliga com outras palavras.
+        ligadoTexto="ligada"
+        desligadoTexto="desligada"
         onToggle={(enabled) => dispatch({ type: 'connect', port: 'camera', enabled })}
       />
     </div>

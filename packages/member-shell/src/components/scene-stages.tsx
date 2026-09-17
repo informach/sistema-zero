@@ -487,7 +487,7 @@ export function ScreenReaderStage({
         </p>
         <div className="min-h-[9rem] rounded-2xl border border-[#2c4657] bg-[#12202b] p-4 text-[#cfe3f0]">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="flex items-center gap-2 whitespace-nowrap text-[11px] uppercase tracking-[.14em] text-[#6f8ea3]">
+            <p className="flex items-center gap-2 whitespace-nowrap text-xs uppercase tracking-[.14em] text-[#6f8ea3]">
               {/* ⚠️ O ícone mexe só enquanto a voz FALA, e para com menos movimento. */}
               <Ear
                 size={14}
@@ -524,7 +524,7 @@ export function ScreenReaderStage({
             {nada && <p className="italic text-[#9fb4c2]">Ainda em silêncio.</p>}
             {heardEmpty && (
               <div data-escuta="sem-frase">
-                <p className="text-[11px] font-semibold uppercase tracking-[.1em] text-[#6f8ea3]">
+                <p className="text-xs font-semibold uppercase tracking-[.1em] text-[#6f8ea3]">
                   Sem frase
                 </p>
                 <p>{SCREEN_READER_EMPTY}</p>
@@ -532,7 +532,7 @@ export function ScreenReaderStage({
             )}
             {said && (
               <div data-escuta="com-frase">
-                <p className="text-[11px] font-semibold uppercase tracking-[.1em] text-[#6f8ea3]">
+                <p className="text-xs font-semibold uppercase tracking-[.1em] text-[#6f8ea3]">
                   Com a sua frase
                 </p>
                 <p className="break-words">{said}</p>
@@ -841,7 +841,9 @@ export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: Scene
             tamanho={13}
             fontWeight="700"
           >
-            {`x ${bastidor}`}
+            {/* ⚠️ Com o nome da `world` (full review de experiência, B12): três "fantasmas" com três
+                sentidos nas primeiras aulas; este é o Dino que está NOS BASTIDORES. */}
+            {`nos bastidores · x ${bastidor}`}
           </Texto>
         </g>
       )}

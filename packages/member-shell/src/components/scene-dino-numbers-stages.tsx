@@ -244,6 +244,9 @@ export function RestartStage({
             // ⚠️ "do jogo" (consertos do review da onda A do lote 5): o da bancada também se chama "Tocar
             // na tela", e o Tab passava por dois botões com o mesmo nome em seguida.
             aria-label="Tocar na tela do jogo"
+            // ⚠️ Fora do Tab (full review de experiência, B16): o "Tocar na tela" da bancada é o mesmo gesto,
+            // e o Tab parava duas vezes nele. O toque e a ativação pelo leitor de tela continuam.
+            tabIndex={-1}
             className="absolute inset-0 cursor-pointer rounded-2xl focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-primary"
             onClick={(e) => {
               // ⚠️ Ao COMEÇAR, este botão some: o foco vai para a bancada (consertos da onda A, T3).
@@ -340,9 +343,15 @@ export function ScoreStage({
   const tela = state.match.screen
   /** O placar parado na tela de início com a peça dentro de Se jogando (consertos da onda A). */
   const esperando = tela === 'start' && state.match.guarded
+  // ⚠️ "?" e não a meia-risca (full review de experiência, B3): a casa já usa "?" para número ainda não
+  // visto, e a meia-risca lia como sinal de menos. Quem ouve recebe "ainda não visto".
   const visto = (i: number) => {
     const v = state.match.seen[i] ?? -1
-    return v < 0 ? '–' : String(v)
+    return v < 0 ? '?' : String(v)
+  }
+  const vistoDito = (i: number) => {
+    const v = state.match.seen[i] ?? -1
+    return v < 0 ? 'ainda não visto' : String(v)
   }
   const telas = [
     { id: 'start', nome: 'Início' },
@@ -356,7 +365,7 @@ export function ScoreStage({
       cast={cast}
       mundo={mundo}
       titulo="A tela do jogo, o placar e o placar de cada tela"
-      descricao={`Tela: ${TELA[tela]?.toLowerCase()}. O placar mostra ${state.match.points}${esperando ? ', esperando a partida' : ''}. Visto em cada tela: início ${visto(0)}, jogando ${visto(1)}, fim ${visto(2)}.`}
+      descricao={`Tela: ${TELA[tela]?.toLowerCase()}. O placar mostra ${state.match.points}${esperando ? ', esperando a partida' : ''}. Visto em cada tela: início: ${vistoDito(0)}, jogando: ${vistoDito(1)}, fim: ${vistoDito(2)}.`}
       overlay={
         // ⚠️⚠️ O convite "Toque para começar" era um desenho MORTO (consertos do review da onda A do lote
         // 5): grande na tela de início, e tocar nele não fazia nada, duas aulas depois de a `restart`
