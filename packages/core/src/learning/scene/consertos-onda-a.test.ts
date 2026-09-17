@@ -409,11 +409,14 @@ describe('a experiência: o que a criança vê no motor', () => {
     const cast = { hero: { name: 'pedra', gender: 'f' as const } }
     const l = crianca('layers').faz({ type: 'layer', front: true }, { type: 'layer', front: false })
     expect(evaluateExperimentation('layers', l.estado).passed).toBe(false)
+    // ⚠️ Mudou de propósito (full review de experiência, M4): a arrumação final virou a meta
+    // `back-in-front`. A frase só diz o que se vê, e quem diz o gesto é a pista (e o "Conferir").
     expect(sceneSituation('layers', l.estado, cast)).toBe(
-      'Só um pedacinho da pedra aparece no desenho. Leve a pedra de volta para o fim da ordem de desenhar, como fica no jogo.',
+      'Só um pedacinho da pedra aparece no desenho.',
     )
-    // A pista 1 não repete a frase.
-    expect(sceneHint('layers', l.estado, 1, cast)).toBe(sceneSituation('layers', l.estado, cast))
+    expect(sceneHint('layers', l.estado, 1, cast)).toBe(
+      'Só um pedacinho da pedra aparece no desenho. Leve a pedra de novo para o fim da ordem de desenhar.',
+    )
 
     const j = crianca('jump-sound').faz(
       { type: 'jump', input: 'key' },

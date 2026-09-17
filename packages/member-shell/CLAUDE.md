@@ -1,1220 +1,5 @@
 # CLAUDE.md — @sistemazero/member-shell
 
-## A letra dos desenhos no celular: o palco sabe a própria escala (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/conserto-letra-celular.md` (medidas e imagens em
-`tmp/storyboard/letra-celular/`). Vale para as 45 cenas. Era o achado ALTO T2 do review da onda A do lote 5.
-⚠️ Revoga, em "A comparação virou ESTRUTURA", o "lado a lado só a partir de `sm`" (e o mesmo `sm:` na
-`screen-reader` e na comparação guardada da `hitbox`).
-- ⚠️⚠️ **Os palcos são SVG escalados para a largura da coluna** (~0,87 no computador, coluna de 600px; ~0,52
-  num celular de 390px, palco de 314px), e um `fontSize` de 10 a 15 virava 5 a 8px no celular, justo onde
-  mora a descoberta em várias cenas. **Todo texto de palco é `<Texto tamanho={N}>`** (`scene-canvas.tsx`),
-  nunca `<text fontSize>`: o tamanho passa por `palco.letra(N) = max(N, PISO_DA_LETRA / escala)`, com
-  **`PISO_DA_LETRA` = 12px NA TELA**. `tests/scene-identity.test.ts` reprova `<text` e `fontSize=` nos
-  arquivos de palco.
-- ⭐⭐ **O `SceneCanvas` MEDE a moldura** (`useLarguraMedida`: `ResizeObserver` + medida síncrona no
-  `useLayoutEffect`, largura do conteúdo sem a borda) e dá a cada `<svg>` um **`Palco`** `{largura,
-  escala, view, letra, estreito, larguraDoTexto}`: pela função `children={(palco) => …}` (e
-  `desenho: (palco) => …` na comparação) ou por `usePalco()` numa peça de dentro. `estreito` = escala abaixo
-  de `ESCALA_ESTREITA` (0,75) no enquadramento de fábrica: todo palco de 480 a 640 unidades num celular, e
-  nenhum na coluna do computador.
-- ⚠️⚠️ **O que muda no estreito tem de ser decidido por `palco.estreito`**, e não pela estimativa
-  `larguraDoTexto` (0,56 por letra, para CABER): a estimativa é folgada e, usada sozinha, mudava o desenho do
-  computador (o "SEU PLACAR · esperando" partia em duas linhas na coluna de 600px). Regra: no computador
-  tudo sai como antes; a estimativa só posiciona dentro do ramo estreito.
-- **Três ferramentas para o texto maior caber, nesta ordem:** (1) **menos rótulos** (o "0" das réguas da
-  `coordinates`, a régua da `gravity` de 200 em 200, só 500/530/560 na `random`, só o número no cacto da
-  `enemy-type`); (2) **levar para fora do desenho** com a prop **`legenda`** (HTML logo abaixo do `<svg>`,
-  dentro da moldura): os selos da `controls`, a lista "Cada quadro" da `velocity`, os blocos da `variable`,
-  os fantasmas da `diagonal`; (3) **recortar** com **`viewEstreito`** (`{x?, y?, w, h}`: as coordenadas do
-  desenho não mudam, só a janela): `velocity` sem a coluna da lista, `variable` sem a fileira de blocos,
-  `layers` e `hitbox` DE PERTO. Na comparação empilhada, `viewEmpilhado` por lado (`world`).
-- ⚠️⚠️ **HTML da legenda não pode empurrar a bancada no meio do gesto**: a lista que cresce reserva a altura
-  (`min-h-*` da `velocity` e da `diagonal`); a que tem conteúdo fixo (os blocos da `variable`) já nasce com
-  a altura final.
-- ⚠️⚠️ **Lado a lado pela largura MEDIDA, não pelo `sm:`**: a comparação só fica lado a lado quando nenhum
-  lado fica estreito (`ladosCabemLadoALado`), a `screen-reader` põe miniatura e painel em duas colunas a
-  partir de 500px de palco e a comparação guardada da `hitbox` (`ExperienceComparison`) empilha quando cada
-  laboratório cairia abaixo de 0,75. O `sm:` olha a JANELA, e num computador com a cena numa coluna estreita
-  os lados caíam para metade. ⚠️ Sem `container-type`: contenção na aula já quebrou o "Expandir" e a bancada.
-- **`LarguraConhecidaDaCena`** (contexto): a largura antes de medir. Sem ela, `LARGURA_NOMINAL_DA_CENA`
-  (524, a coluna de 600px: sem medida a cena sai como sempre). Um palco que parte a própria área dá a largura
-  da parte à moldura de dentro e a declara em `data-parte-da-cena` (a miniatura da `screen-reader`, a caixa
-  fixa de 464 do `tilemap`, cada cena da comparação guardada).
-- Contratos: `data-largura-do-palco` na moldura, `data-largura-do-desenho` e `data-escala-do-desenho` em
-  cada `<svg>` (⚠️ não `data-escala`: a `axis-z` já usa esse nome no cubo), `data-selos-das-tentativas`,
-  `data-cada-quadro`, `data-blocos-da-caixa`, `data-fantasmas-da-andada`.
-- Testes: **`tests/scene-letra-celular.test.tsx`** (novo: para as 45 cenas, nos estados do roteiro do modelo
-  nos dois tipos e de todo bloco dos manifestos v6, CALCULA a menor letra de cada `<svg>` a 314 e a 524px a
-  partir do `viewBox`, da largura e do `font-size` com os `transform`, confere a largura de cada desenho
-  contra o modelo da moldura e reprova abaixo de 12px; também a comparação guardada da `hitbox`) e
-  `scene-identity.test.ts`. O que encosta ou corta só se mede com layout: `tmp/storyboard/letra-celular/
-  auditar.mjs` (storyboard, 45 cenas, 390 e 600px).
-
-## Consertos do review da onda B do lote 5: a MOLDURA (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-5b-moldura.md` (medidas no Chromium em
-`tmp/storyboard/consertos-5b-moldura/`). Vale para as 45 cenas. ⚠️ Revoga, no lote 2, "o relógio para na
-conclusão" (era implícito no `setRunning(false)` do efeito da conclusão).
-- ⚠️⚠️ **Concluir NÃO para o relógio** (T1). O `setRunning(false)` era da época em que concluir ENCERRAVA a
-  experimentação; com a cena viva ele congelava o mundo no primeiro quadro do que a criança devia olhar (o
-  anel da `group-loop`, a `contact`, os tiros da `cooldown`). O ▶ só para pelo que já o parava (o botão
-  dela, o salto que pousa, a batida da `circle-collision`, a aba escondida, outra mídia, o conflito). Sem
-  lista de cenas.
-- ⭐⭐ **`scene-lugar-reservado.tsx` (`LugarReservado`): nada acima da bancada entra ou sai do fluxo no meio
-  do gesto** (T2). Duas regras: a altura só CRESCE (a maior já vista nesta largura; mudou a largura,
-  recomeça) e o `molde` reserva o que ainda vai aparecer (desenhado invisível, medido e TIRADO na mesma
-  passada de layout). Envolve três coisas: a linha do palpite (`scene-prediction`, o "trocar" de 44px
-  sumia no primeiro gesto), a frase da situação (player e bancada da vez) e o lugar dos avisos embaixo do
-  palco (`AvisosDaCena`: o selo "Descoberta N de M" e o "Você achou…"), que nasce quando o palco ABRE e
-  não sai mais. Medido: arrastar "Aproximar" de 1 a 8 na `pixel-vector` com o mouse deixa o deslizante
-  parado (0px; antes 726/702/798/702/746) e a tecla da `hold-vs-press` a 390px não pula (0px; antes 36).
-  ⚠️⚠️ O molde NÃO fica no DOM: o "Você achou: … Olhe a tela…" é a resposta do palpite, e escondido com
-  `invisible` a busca por texto (e qualquer leitura que ignore o CSS) o acharia. ⚠️ O `ResizeObserver`
-  olha o `div` de DENTRO e a altura mínima vai no de fora (sem laço de observação). ⚠️ Custo aceito: um
-  espaço vazio do tamanho do próximo aviso embaixo do palco enquanto a cena não o mostrou (é a proposta do
-  review). Contratos: `data-lugar-reservado="palpite|situacao|avisos"`.
-- **O anel de foco do "Agora explique" tem respiro** (T4, `scene-conclusion.tsx`): `-mx-2 px-2 py-1` com a
-  largura + 1rem no `legend` (e `-mx-2 px-2` na faixa "Você descobriu!"), marcados `data-anel-com-respiro`.
-  Medido: 8px à esquerda, 4px em cima e embaixo da pergunta, com o texto no mesmo alinhamento.
-- Testes: `community-kids/tests/lesson-scene-moldura.test.tsx` (o relógio depois de concluir, o lugar que só
-  cresce com o `ResizeObserver` falso, o lugar dos avisos no player e o anel), cada um conferido desfazendo
-  o conserto.
-
-## Raio-X das 45 cenas, lote 5 (G1): a tela e o mundo (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g1.md` (imagens em
-`tmp/storyboard/lote5-g1/`). Palcos em `scene-stages.tsx` e `scene-world-stage.tsx`; o motor está no
-CLAUDE.md do core.
-- **`coordinates`**: a escala vem da tela DO CASO (`state.place.width/height`), com réguas em quartos e
-  terços; o endereço é a marca no CANTO DE CIMA da caixa do sprite (`data-caixa-do-sprite`,
-  `data-marca-do-endereco`), e o "0, 0" fica na margem, fora da tela. A `Medida` de x e y vai até a tela
-  do caso.
-- **`stage-size`**: ESCALA FIXA sobre 800 × 480 (antes diminuir os números fazia o desenho crescer). A
-  bancada tem a borda PRIMEIRO; largura e altura ficam FECHADAS (com o motivo) até a borda aparecer. O
-  atalho "Usar 480 por 270" saiu. ⭐ A `Medida` ganhou **`digitavel`**: o valor vira um campo de texto
-  (`aria-label` "Digitar …", confirma no Enter ou ao sair, arredonda no passo e prende na faixa).
-- **`draw-loop`**: o palco desenha `state.render.drawn` (um `data-desenho` por cópia, o mais novo cheio);
-  a bancada é uma `Escolha` "Desenhar o Dino: Só no começo / A cada quadro" + a chave "Limpar a tela
-  antes". O x do Dino está na faixa.
-- **`screen-reader`**: FALA de verdade (`useSceneVoice`) quando `description.listens` SOBE (nunca na
-  montagem, no desfazer nem ao reabrir); a chave "Voz: ligada/desligada" (`aria-pressed`) existe só com
-  voz no navegador, e sem voz o painel avisa que a leitura fica escrita. O painel guarda as duas escutas
-  (`data-escuta`) com os selos do que a frase diz (`data-selo`, `data-aceso`). O campo da descrição nasce
-  FECHADO (`readOnly` + `aria-disabled`, no Tab, com o motivo) até a tela vazia ser ouvida. ⚠️ O palco
-  tem `p-3` e a miniatura leva a borda num embrulho próprio: no player ele mora dentro da moldura da
-  faixa, que tira a borda de todo `sz-scene-frame` de dentro.
-- **`world`**: bastidores viram uma FICHA (`data-ficha`: nome, figura, "x 110 · y 150", ou "ainda
-  vazio"), que acende (`data-acesa`) com o personagem criado E desenhado; a tela do jogo é só o fundo do
-  elenco e o personagem no mesmo lugar. Na bancada (`exploration-pieces.tsx`), "Criar" e a chave
-  "Desenhar o Dino na tela: ligado/desligado" ficam lado a lado desde a abertura; o fio saiu.
-- Testes: `community-kids/tests/lesson-scene-design.test.tsx`, `lesson-experimentation.test.tsx` e
-  `lesson-scene-compare.test.tsx` (os `describe` do lote 5 de cada cena).
-
-## Raio-X das 45 cenas, lote 5 (G2): o Corre Dino, primeira metade (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g2.md` (imagens em
-`tmp/storyboard/lote5-g2/`, storyboard por cena e o percurso do aluno em `banca/`). O motor está no
-CLAUDE.md do core.
-- ⭐⭐ **`components/scene-dino-controls.tsx`, a bancada das oito cenas** (`DinoSceneControls`, montada
-  pelo `ExplorationPieces` para `CENAS_DO_CORRE_DINO`). Nela mora a **`PecaQueMudaDeCaixa`**: o gesto
-  do Estúdio de MOVER um bloco para outro evento, no lugar do fio em `jump-sound` ("♪ Tocar som"),
-  `spawn` ("Criar cacto" e o intervalo por `Escolha` dentro do relógio), `game-state` (a caixa "Se
-  jogando" ANINHADA no relógio) e `controls` ("▷ Começar"). À vista desde a abertura. Cada caixa sem
-  a peça tem "Colocar aqui" (`aria-label` "Colocar <peça> em <caixa>"), o caminho do teclado. Um toque
-  sem arrasto ESCOLHE a peça (`aria-pressed`) e acende a caixa livre e o "Colocar aqui" dela; o arrasto
-  (folga de 10px, captura do ponteiro, fantasma em portal) solta onde o dedo parou, a caixa de DENTRO
-  primeiro. As caixas são `role="group"` com `data-caixa` (contrato dos testes).
-- **`layers`: a pilha "A ordem de desenhar"** (`OrdemDeDesenhar`), numerada (1º em cima), com
-  "Descer"/"Subir" em cada peça (`aria-label` "Descer Dino para o 2º lugar") e arrasto vertical. Os
-  cartões Antes/Depois e a seleção invisível saíram. `gravity` segue com o fio ("Gravidade" → Dino) e o
-  motivo; `impulse` ganhou a `Escolha` "Marcas do impulso" (5, 9, 14); `cleanup` é a `Chave` "Remover
-  do grupo quem saiu da tela", fechada com o motivo até dois cactos saírem. `game-state` e `controls`
-  têm "Voltar ao início" (e "⌨ Apertar Enter") na bancada, fechados quando não servem.
-- ⭐⭐ **`components/scene-dino-stages.tsx`, os palcos**: `LayersStage` (o Dino ATRÁS de uma árvore da
-  floresta, só a cauda à vista), `JumpSoundStage` (a linha do tempo ↑ pulos / ♪ sons: cada aperto é uma
-  coluna, com o aro âmbar no que veio SOZINHO; o toque no Dino é Espaço=tecla, Enter/clique=toque),
-  `SpawnStage` (a parede é UMA fileira contínua, um de cada tantos quando não cabem), `CleanupStage`
-  (`comparacao`: a tela do jogo | os bastidores, com a prateleira que enche e a lixeira da regra),
-  `GameStateStage` (INÍCIO/JOGANDO, o contador grande que diz "esperando") e `ControlsStage` (a área
-  inteira do palco é o toque, `aria-label` "Tocar na tela de início", e cada tentativa deixa um selo).
-- ⭐ **O laboratório do salto (`experience-scene.tsx`) mostra o voo inteiro**: a régua até 600 na
-  `gravity`, o caminho pontilhado do pulo sem gravidade, a seta da gravidade sobre o Dino, a linha do
-  ponto mais alto (só com gravidade, e com folga acima da régua) e "↑ N" ao lado do Dino que passou do
-  alto; na `impulse`, as marcas "antes" (azul, com o fantasma) e "este" (laranja). O deslizante de
-  replay da comparação saiu, e `LABORATORIO` virou `gravity`, `impulse` e `hitbox` (o "Guardar este
-  jeito" ficou só na `hitbox`).
-- ⚠️⚠️ **O ▶ para quando o Dino sem gravidade passa do alto** (`sceneJumpLeftView`, no player e na
-  bancada da vez), e **ligar o fio com o Dino ainda no ar solta o ▶ de novo**: o pedido da cena é
-  "ligue a gravidade e espere", e parado esperar não mostrava nada.
-- Rótulos: o botão de pulo é "↑ Pular" ("✋ Tocar para pular" na `jump-sound`), a tecla é "⌨ Apertar
-  Espaço" e o ▶ ganhou a palavra "Tempo" (`aria-hidden`: o nome acessível segue "Soltar/Parar o tempo").
-- Testes: `community-kids/tests/lesson-scene-design.test.tsx` (o `describe` "a PEÇA QUE MUDA DE
-  CAIXA", a pilha, a parede, a prateleira), `lesson-experimentation.test.tsx` e `scene-preview.test.tsx`
-  (a `layers` pela pilha), `tests/scene-identity.test.ts` (os arquivos novos no PALCO, na BANCADA e no
-  CROMO).
-
-## Raio-X das 45 cenas, lote 5 (G3): o Corre Dino, segunda metade, e os números (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g3.md` (imagens em
-`tmp/storyboard/lote5-g3/`, o storyboard por cena e o percurso do aluno em `banca/`). O motor está no
-CLAUDE.md do core. ⚠️ **Revoga** o `STAGE_LABEL` (o selo do palco compartilhado) da seção de 14/09.
-- ⭐⭐ **O palco compartilhado ACABOU.** As últimas quatro cenas que caíam nele ganharam
-  `components/scene-dino-numbers-stages.tsx`: `RestartStage` (a pista com vários cactos, o cartão
-  "cactos na pista" que acende quando a partida volta ao início com cactos, e a tela inteira como
-  botão "Tocar na tela" fora do JOGANDO e fora da demonstração), `ScoreStage` (o cartão "SEU PLACAR" e a
-  fileira "Início N · Jogando N · Fim N" do placar visto em cada tela), `RandomStage` (a régua 500..560
-  além da borda 480, com a marquinha e o "2×" de quem repetiu, e as raias da corrida de 1 s) e
-  `AccelerationStage` (a caixa "velocidade dos novos" com a conta "−9 > −9? não → fica" e a fileira de
-  cactos com o número colado). O `ExplorationStage` só DESPACHA (`scene-identity` cobra: sem `<svg>`,
-  `SceneCanvas` nem selo).
-- **`components/scene-dino-numbers-controls.tsx`** (`DinoNumbersControls`, montada pelo
-  `LessonSceneControls`): `restart` "Tocar na tela" (fechado JOGANDO, com a nota) + a `Escolha` "No fim, o
-  toque faz" (Ir para o início | Reiniciar o jogo); `score` UM gesto "Próxima tela: …"; `random` "Sortear
-  lugar" e "Sortear velocidade" (fechado até o lugar repetir) com `Math.random()` no gesto;
-  `acceleration` "Passar 5 segundos" + a `Chave` "A condição Se velocidade > −9"; `hitbox` a "Distância
-  do cacto" e o "Tamanho da área do Dino" em PORCENTAGEM (fechado até o BATEU, a nota diz o gesto);
-  `lives` "Bater no cacto".
-- ⚠️⚠️ **O toque que COMEÇA a partida da `restart` solta o ▶** (`dispatch` do `scene-activity` e o
-  `mexer` do `scene-sandbox`), venha do palco ou da bancada. O botão do palco não conhece o relógio do
-  player, e na banca o cacto nunca chegava. `score` liga o ▶ pelo `onRunning` da bancada.
-- **Palcos redesenhados em outros arquivos**: `VelocityStage` (a tela 480 × 270 com réguas nos dois eixos,
-  a faixa "fora da tela" em cima e à direita, um pontinho por quadro, o rastro anterior em cinza, a conta
-  do último quadro colada no personagem e a lista "Cada quadro"), `VariableStage` (os três blocos do
-  Estúdio acendendo, a caixa tracejada "ainda não existe", os alvos atingidos por acerto e a ligação que
-  fica sólida com "Pontos: N"), `LivesStage` (o acerto leva "+1" até o placar, a batida leva a seta até o
-  coração apagado, com a tremida DESENHADA, não animada; o tiro é bolinha, não papel do elenco) e o
-  laboratório da `hitbox` (`experience-scene.tsx`: "vão N" entre os desenhos, "onde bateu", área em %).
-- `CoreSceneControls` recebe `goals`: na `velocity`, uma missão que só cobra subir e descer (o Dia 2)
-  fecha a "velocidade para o lado" com "Hoje só para cima e para baixo.".
-- Testes: `tests/scene-dino-numbers.test.tsx` (novo: os palcos e a bancada), `scene-identity.test.ts` (os
-  arquivos novos no PALCO, na BANCADA e no CROMO, e o palco compartilhado que acabou),
-  `scene-figures.test.tsx` (o cacto na terra da `velocity` das Aulas 5 e 12) e, no kids,
-  `lesson-experimentation.test.tsx` (o toque solta o tempo; o sorteio repete), `lesson-scene.test.tsx` e
-  `lesson-scene-design.test.tsx` (a área em %).
-
-## Raio-X das 45 cenas, lote 5 (G6): o motor e a porta do 3D (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g6.md` (imagens em
-`tmp/storyboard/lote5-g6/`, o storyboard por cena e o percurso do aluno em `banca/`). O motor está no
-CLAUDE.md do core. ⚠️ **Revoga**, em "As dez cenas do motor, do 3D e do ateliê", os arquivos
-`scene-engine-stages.tsx`/`scene-engine-controls.tsx` (não existem mais), a "projeção isométrica à mão"
-e o `Medida` exportado do `scene-core-controls` (a peça mora no `scene-bench`).
-
-- ⭐⭐ **`components/scene-3d.tsx`, a RÉGUA do 3D**, a mesma nos quatro palcos: `projetorPerspectiva`
-  (câmera com olho, alvo, foco e centro; devolve `px`, `py` e a `escala`), `girar` + `naTelaSemPerspectiva`
-  (volta e inclinação, sem perspectiva), `cuboComPerspectiva` e `cuboGirado` (um cubo CONVEXO: cada face
-  só aparece com a normal virada para a câmera, e as faces saem de trás para a frente), `caminhoDe`,
-  `TomDaFace` (o tom de luz por eixo), `SombraNoChao` (`data-sombra`) e `COR_DO_EIXO` (as cores do
-  AxesHelper do Estúdio: x no vermelho, y no verde, z no azul). ⚠️ Nada de biblioteca 3D: SVG à mão.
-- **`components/scene-motor-stages.tsx`**: `PoolStage` (a pista com o cacto que atravessa, o NÚMERO
-  pintado num selo claro, a pilha "já saíram" até 7 com "+N" e o arco da volta só no instante da volta),
-  `EntityStateStage` (três torres em POSES de silhueta diferente: parada, mirando com a linha até o alvo,
-  atirando com o clarão e o tiro andando, recarregando com a barra; com o estado no jogo, um balão só
-  ligado às três), `DeltaTimeStage` (as duas pistas até a bandeira, uma PEGADA por quadro desenhado e
-  "chegou!") e `CircleCollisionStage` (os raios desenhados do centro à borda e DEITADOS em fila embaixo
-  da distância; a batida é a ponta da fila chegar ao outro centro). Contratos: `data-cacto-da-tela`,
-  `data-saiu`, `data-torre`, `data-alvo`, `data-estado-do-jogo`, `data-pegadas`, `data-fila`, `data-raio`.
-- **`components/scene-3d-stages.tsx`**: `AxisZStage` (a câmera à direita e acima, o chão em ladrilhos,
-  o cubo que ENCOLHE no fundo, a sombra SEMPRE no chão com o fio até o cubo no ar, e "fundo (z negativo)"
-  só depois de mexer no z; ⚠️ a ordem de desenho é a da profundidade: com o cubo em z negativo os eixos
-  passam na frente dele), `Camera3dStage` (UM cubo de verdade com LADOS OPOSTOS DA MESMA COR, o mapa
-  "vista de cima" com a câmera na volta e as três alturas), `MeshStage` (um cristal de `MESH_POINTS`
-  pontos: pele, pele transparente com os pontos e as linhas embaixo, ou só os pontos; ⚠️ a mancha da
-  pele é um triangulinho, nunca bolinha, que leria como ponto) e `PickRayStage` (`comparacao`: o que você
-  vê, com a caixa da frente MENOR e a letra no canto da face, e a mesma cena DE LADO, com o olho e a reta
-  que para na primeira caixa). Contratos: `data-cubo`, `data-escala`, `data-eixo`, `data-sentido-do-z`,
-  `data-lados`, `data-mapa`, `data-volta`, `data-altura`, `data-malha`, `data-ponto`, `data-pele`,
-  `data-mancha`, `data-vista-do-jogador`, `data-vista-de-lado`, `data-reta`, `data-caixa`, `data-acesa`.
-- **`components/scene-motor-controls.tsx`** (`MotorSceneControls`, montada pelo `LessonSceneControls`):
-  `pool` a `Chave` "Reciclar quem saiu"; `entity-state` o seletor "O estado mora: em cada torre / no jogo"
-  e uma `Escolha` por torre ("A 1ª está"); `delta-time` o seletor "O Dino anda" com a nota "Trocar
-  recomeça a corrida."; `circle-collision` e `axis-z` três `Medida`s; `camera-3d` a volta "N de 8" e a
-  altura em palavra; `mesh` a `Escolha` "Ver os pontos" (nada, metade, tudo) e "girar o modelo"; `pick-ray`
-  os deslizantes e os atalhos de mira. ⚠️ As três `Medida`s ficam no máximo DUAS lado a lado
-  (`TresMedidas`, `sm:grid-cols-2`): em três colunas a coluna da cena espremia o deslizante em ~20px.
-  ⚠️⚠️ Consulta de contêiner (`@container`) foi tentada e reprovada: no Chromium a grade colapsava para
-  largura zero no primeiro gesto que trocava um rótulo, e a bancada sumia da tela e do leitor de tela.
-- Testes: `tests/scene-motor-3d.test.tsx` (novo: os palcos e a bancada), `tests/scene-camera-3d.test.tsx`
-  (o cubo de verdade, o mapa e as alturas), `tests/scene-identity.test.ts` (os três arquivos no PALCO, na
-  BANCADA e no CROMO) e, no kids, a barra do quadro em andamento passou da `pool` para a `entity-state`.
-
-### Consertos dos reviews da onda B do lote 5 (G6, 16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-5b-g6.md` (imagens em
-`tmp/storyboard/consertos-5b-g6/`). ⚠️ Revoga, acima, "fundo (z negativo)" no desenho da `axis-z`
-(`data-sentido-do-z` saiu), "Ver os pontos" na `mesh` e a `comparacao` lado a lado da `pick-ray`.
-- ⚠️⚠️ **`soltar`** nas medidas da `camera-3d`, da `pick-ray`, da `circle-collision` e da `axis-z`: um arrasto
-  passava por lugares que derrubavam metas e revelavam o palpite.
-- ⚠️⚠️ **`pick-ray`: de lado só as caixas que a linha da mira cruza**, e nada da reta depois da parada (a vista
-  desenhava a reta atravessando uma caixa, a resposta errada). **`SceneCanvas` `empilhar`**: os dois lados
-  sempre um embaixo do outro (o `sm:` olha a janela, e no computador as vistas caíam para escala 0,54).
-- **O ▶ para na batida da `circle-collision`** (`sceneClockReachedStop`, no `scene-activity` e no `scene-sandbox`).
-- `axis-z`: chão de −160 a 160, sombra 1,8 × o meio, cubo de papelão, cores dos eixos na faixa e na bancada (tom
-  `leaf` no `SceneReadoutBand`, e `leaf` no SENTIDO do cromo do `scene-identity`). `camera-3d`: `cuboGirado(…,
-  foco?)` com perspectiva leve, sombra achatada (`data-sombra-do-cubo`), a câmera como corpo e lente com a legenda
-  "câmera" (`data-legenda-da-camera`). `pool`: a chave fechada até `grows`, "entrada" acima do arco. `delta-time`:
-  a nave deitada. `circle-collision`: "· bateu" colado à distância (`data-bateu`), raios de 10 em 10.
-- Testes: `tests/scene-motor-3d-consertos-5b.test.tsx` (novo) e, no kids, `tests/lesson-scene-motor-3d.test.tsx`.
-
-## Raio-X das 45 cenas, lote 5 (G4): o ateliê de O Jogo do Meu Jeito (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g4.md` (imagens em
-`tmp/storyboard/lote5-g4/`, o storyboard por cena e o percurso do aluno em `banca/`). O motor está no
-CLAUDE.md do core. ⚠️ **Revoga**, em "As cenas do lote 4: desenho e vidas", o que é dito de `frames`,
-`onion-skin`, `symmetry`, `pixel-vector` e `sheet-vs-sprite`, e o `scene-art-stages.tsx` como casa delas
-(ele ficou só com a `LivesStage`).
-- ⭐⭐ **`components/scene-atelie-stages.tsx`**, os sete palcos, no `SCENE_VIEW` comum: a NAVE 32 × 32 em
-  pixel (`CorpoDaNave` pintado uma vez, `FogoDaNave` com o tamanho do quadro, `data-corpo-da-nave` e
-  `data-fogo`); `FramesStage` (a faixa "Quadros" com as duas miniaturas e a "Prévia" grande,
-  `data-miniatura`/`data-atual`/`data-previa`); `OnionSkinStage` (a borda do quadro, o fogo cortado nela
-  com "cortado na borda", e só com o fantasma as pontas "fogo 1"/"fogo 2", `data-pontas`);
-  `SymmetryStage` (a grade 16 × 16 com a nave de guia, o MEIO fixo tracejado, a cópia do último traço
-  com borda, `data-casa`/`data-copia`/`data-meio`, e o toque num quadradinho só quando recebe
-  `dispatch`); `PixelVectorStage` (as duas pedras numa lupa só: `rasterizarPedra()` é a curva da de vetor
-  rasterizada, grade a partir de `LUPA.perto` e os pontos da Caneta a partir de `LUPA.pontos`);
-  `SheetStage` (a folha 64 × 32 com a régua 16/32/64, o recorte tracejado e o jogo, onde um `<svg>`
-  aninhado ESTICA o recorte no quadrado do tamanho no jogo); `FillStrokeStage` (a pedra sobre o xadrez
-  do "Sem cor", com as amostras) e `ShadingStage` (a bola 12 × 12 em três tons do `scene-a` por
-  `color-mix in oklab`, o sol com a seta).
-- ⚠️⚠️ **O fantasma é desenhado CLARINHO e tracejado POR CIMA do fogo 2.** No Pinta ele fica por baixo,
-  mas aqui o fogo 2 é sempre maior que o 1 e o cobria inteiro: o fantasma ligado não mostrava nada.
-- ⚠️ Nenhum dos sete desenha papel do ELENCO (`SCENE_ROLES` vazio no core): a nave é o desenho da
-  criança no Pinta. Rótulos do SVG com 18 unidades ou mais.
-- **`components/scene-atelie-controls.tsx`** (`AtelieSceneControls`, montada pelo
-  `LessonSceneControls`), com o vocabulário do Pinta: `frames` "Quadro na prévia", a `Chave` "Prévia:
-  tocando/parada" e "Velocidade, em quadros por segundo" (2, 4, 8, 12); `onion-skin` "Quadro à vista",
-  "Fantasma" e a `Medida` "tamanho do fogo 2" em quadradinhos, fechada fora do quadro 2; `symmetry` a
-  `Escolha` "Espelho" (Desligado, Lado a lado, Cima e baixo fechado até pintar com o lado a lado) e
-  "Pintar a asa/a ponta/a cabine" + "Apagar o papel"; `pixel-vector` a `Medida` "Aproximar";
-  `sheet-vs-sprite` "Largura do recorte", "Quadro do recorte" (aberto só com 32) e "tamanho no jogo"
-  (aberto depois do recorte da nave inteira); `fill-stroke` "Preenchimento"/"Contorno" com cor/Sem cor;
-  `shading` "A sombra e a luz" e o seletor "O sol: na esquerda/na direita". O que abre depois lê as
-  metas da atividade (`goals`) e, sem elas, as descobertas.
-- ⚠️⚠️ **Na `frames` a Prévia É o relógio**: `botoesDoMundo` (`scene-frame.tsx`) não oferece ▶, passo
-  nem "Mais devagar" nessa cena, e a chave diz "tocando" só com o relógio do player andando de verdade
-  (prop `tocando` do `LessonSceneControls`, vinda do `scene-activity` e do `scene-sandbox`).
-- **`scene-bench.tsx`**: a `Medida` ganhou `soltar` (o motor recebe o valor quando a mão SOLTA: arrastar
-  passava pelo "um pouco maior" e fechava a meta no caminho) e `texto` como função do valor; a `Escolha`
-  ganhou `fechado` por opção e `nota`.
-- **`tempoDeLeitura`** (`use-scene-clock.ts`) segura cada legenda da demonstração inline entre 2,5 s e 5 s
-  (0,35 s por palavra): a `fill-stroke` passava inteira em ~1,4 s.
-- `scene-engine-stages.tsx`/`scene-engine-controls.tsx` foram APAGADOS (as duas últimas cenas deles,
-  `fill-stroke` e `shading`, vieram para cá).
-- Testes: `tests/scene-atelie.test.tsx` (novo: o corpo idêntico nos dois quadros, as pontas só com o
-  fantasma, a pedra rasterizada com a mesma caixa, o recorte esticado, a cópia no meio, o xadrez, a sombra
-  do lado contrário ao sol e o tempo de leitura), `scene-identity.test.ts` (os arquivos novos no PALCO,
-  na BANCADA e no CROMO) e, no kids, `lesson-scene-design.test.tsx` ("as cinco cenas de desenho e a das
-  vidas").
-
-### Consertos dos reviews da onda B do lote 5 (G4, 16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-5b-g4.md` (imagens em
-`tmp/storyboard/consertos-5b-g4/`). ⚠️ Revoga, acima, o fantasma "clarinho e tracejado", a `Escolha`
-"Espelho" de três e a grade de pixel a partir de `LUPA.perto`.
-- ⭐⭐ **`relogioDaCena(scene, state, menosMovimento)`** (`use-scene-clock.ts`), no player e na bancada da
-  vez: a ÚNICA exceção ao limiar comum é a `frames` com menos movimento, com a fatia de um quadro da
-  prévia (`framesPreviewSlice`) mandada EXATA (`useSceneClock` ganhou `exato`: manda o limiar e guarda a
-  sobra). Com 0,2 s a 8 por segundo a prévia trocava ~2 vezes por segundo, igual ao "devagar".
-- ⭐⭐ **`estadoVistoDaCena(scene, state, relogioAndando)`**: na `frames`, a prévia do motor só "toca" com o
-  relógio do player andando. A faixa, o palco, a frase, a pista e a bancada leem esse estado; os comandos
-  vão ao motor de verdade. ⚠️ Não mande `play off` quando o relógio para por fora: derrubaria `paused-one`
-  sem a criança ter parado nada.
-- **Bancada do ateliê**: "Quadro na prévia" FECHADO e sem destaque com a prévia tocando ("Pare a prévia para
-  escolher um quadro."); na `symmetry` as duas `Chave`s "Espelho lado a lado" e "Espelho de cima e de baixo"
-  (uma embaixo da outra; a segunda fechada até `two-sides`, nunca fechada ligada); na `sheet-vs-sprite`
-  nenhuma largura em destaque com o jogo vazio. **`Escolha`** (`scene-bench.tsx`): `min-w-11` em cada opção.
-- ⚠️⚠️ **A grade do espelho só é papel de desenho com casa de DEDO** (`useCasaDeDedo`,
-  `CASA_PARA_O_DEDO` 16 px, medido no navegador com `ResizeObserver`): aí o dedo ARRASTA e pinta uma marca
-  por casa nova (`touch-action: none`); menor, o toque não pinta e a página rola (`auto`), e o convite "Ou
-  toque num quadradinho da grade." some. Mouse e caneta pintam sempre. Sem medida (happy-dom), "não".
-- **Palcos**: o fantasma da `onion-skin` é só o contorno tracejado (sem o claro a 55%, que fazia o fogo 2
-  parecer "o 1 que desceu") e a marca "fogo 2" sai de cima do risco do corte; a `symmetry` desenha as duas
-  linhas do meio com `xy`; a pedra de pixel sem fresta e com a grade fina escura POR CIMA a partir de
-  `LUPA.grade` (`data-grade-da-pedra`), o painel com as alças da Caneta dentro na lupa 8; a folha com o jogo
-  vazio (`data-jogo-vazio`, "sem recorte"); a pedra do asteroide com amassado; a bola com brilho REDONDO e
-  sombra em crescente.
-- Testes: `tests/scene-atelie.test.tsx` (o `describe` dos consertos) e, no kids, `lesson-scene-design.test.tsx`
-  (o `describe` "consertos do review da onda B do lote 5 (G4)": a prévia com menos movimento a 8 e 12 por
-  segundo, a aba escondida, a escolha fechada, o convite e a largura de 44 px).
-
-## Raio-X das 45 cenas, lote 5 (G5): o núcleo do Iniciante 2D (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote5-g5.md` (imagens em `tmp/storyboard/lote5-g5/`,
-o storyboard por cena e o percurso do aluno em `banca/`). O motor está no CLAUDE.md do core. ⚠️ **Revoga**, em
-"As onze cenas do núcleo" abaixo, os dois botões da `hold-vs-press` e o `detail === 0` que alternava.
-- ⭐⭐ **`components/scene-nucleo-stages.tsx` e `scene-nucleo-controls.tsx`** (`NucleoSceneControls`, montada
-  pelo `LessonSceneControls` com `onRunning`): nove cenas saíram do `scene-core-*`, que ficou com a
-  `velocity` e a `variable`. Cada bancada é um componente próprio (a tecla e o "Andar" guardam o gesto em
-  `useRef`, e hook dentro de `switch` muda de ordem).
-- ⚠️⚠️ **O gesto que só se vê com o tempo passando SOLTA o ▶** pela bancada (`onRunning(true)`): segurar a
-  tecla, ligar o laço, fazer nascer, mexer na distância do encosto, atirar (recarga e mira).
-- **`hold-vs-press`: UMA tecla**, "A tecla: solta/segurada" com `aria-pressed`. Segurar é gesto de verdade
-  nos três caminhos: `pointerdown`/`pointerup` com captura; Espaço/Enter seguram no `keydown` (sem
-  repetição) e soltam no `keyup`; o `click` sem tecla e sem ponteiro (leitor de tela) ALTERNA. ⚠️ O `click`
-  que o navegador gera junto da tecla é descartado por um ref que zera numa tarefa depois do `keyup`. O
-  palco: a tecla que AFUNDA, os dois fios (o de baixo tracejado com a tecla solta), os fantasmas de onde
-  cada raquete estava e "N passos" desde o aperto.
-- **`group-loop`:** "Medir o Nº" (o nome não muda depois) + "Escolher o Nº" + a `Chave` do laço fechada até
-  o mais perto. Palco: três cactos ESPALHADOS a partir da torre, a nuvem "?" até medir, a régua de cada um
-  e o anel azul (medido) ou âmbar tracejado (às cegas). A geometria cabe no quadro com o vaivém inteiro
-  (`scene-nucleo.test.tsx` varre 60 s).
-- **`enemy-type`:** a ficha virou faixa no alto e os cactos ANDAM em duas raias (par/ímpar); cada um com o
-  número e os corações em cima, e o que alcança outro na raia SOBE um degrau. A `Chave` "Copiar a ficha
-  ao nascer" fica fechada até a primeira descoberta.
-- **`camera`:** "← Andar"/"Andar →" (segurar repete; o teclado anda um passo) no lugar do deslizante que
-  teletransportava. Palco: os MARCOS (árvores, pedra, bandeira) passando pela tela recortada, a seta na
-  borda quando o Dino sai, o mapa com a janela tracejada. No espaço a árvore vira pedra.
-- **`contact`:** as duas pistas ao mesmo tempo, com as palavras dos blocos do Estúdio, dez corações cada e
-  "fim de jogo"; o brilho do encosto fica ACIMA do ponto de contato. Bancada: a distância e os atalhos
-  "Encostar"/"Afastar"; a `Escolha` da pergunta saiu.
-- **`cooldown`:** os tiros no ar, "✕ não saiu" por meio segundo na boca da arma, a recarga em palavras e em
-  quadros (o bloco do Estúdio conta quadros).
-- **`aim`:** o Dino no MEIO da tela, a seta até a borda do alvo (marcador em `userSpaceOnUse`), o caminho
-  reto, o tiro e o traço dele, o estouro no acerto. ⚠️ O alvo SE ARRASTA no palco (só na experimentação,
-  `getScreenCTM`, de 10 em 10) com `touch-action: none` SÓ no alvo: no SVG inteiro a página não rolava.
-- **`diagonal`:** setas com nome e `aria-pressed` + "Andar 1 segundo" + a correção fechada até a diagonal
-  passar do círculo. Palco: o círculo de 1 segundo, o rastro e o fantasma do último de cada tipo.
-- **`tilemap`:** SEM bancada. As letras do texto são botões (um grupo por linha, setas do teclado, um só no
-  Tab) sobre o desenho, posicionados em PORCENTAGEM (no player a moldura perde a borda), com a paleta
-  `Escolha` de três letras no palco. Largura fixa de 464 (casas de 44 px) com rolagem de lado. ⚠️⚠️ A caixa
-  da rolagem é `w-0 min-w-full`: o palco mora num `<fieldset>` do player, que cresce até o conteúdo mais
-  largo, e sem isso a cena inteira passava da moldura num celular, cortada e sem rolagem.
-- `exploration-stage.tsx` passa `dispatch` à `aim` e à `tilemap` só na experimentação.
-- Testes: `tests/scene-nucleo.test.tsx` (novo: os nove palcos e as bancadas), `scene-identity.test.ts` (os
-  arquivos novos no PALCO, na BANCADA e no CROMO) e, no kids, `lesson-scene-nucleo.test.tsx` (novo: o gesto
-  que solta o tempo, o "Andar", as setas e a paleta) e `lesson-experimentation.test.tsx` (a tecla única).
-
-### Consertos dos reviews da onda B do lote 5, núcleo (G5) — 16/09/2026
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-5b-g5.md`. ⚠️ Revoga, acima, o
-`touch-action: none` no `<g>` do alvo da `aim` e o `onBlur` que soltava qualquer tecla.
-- ⚠️⚠️ **`aim`: a alça do alvo é HTML no `overlay`** (`data-alca-do-alvo`, 52 px, `touch-action: none`), numa
-  caixa com a proporção do desenho (`aspect-ratio`: a moldura é mais alta por causa do rodapé). O Chromium
-  só respeita `touch-action` na caixa CSS do `<svg>`, e o dedo era cancelado no primeiro movimento. Solta
-  no `pointerup`/`pointercancel`/perda da captura; um toque parado (até 4 px) não leva o alvo.
-- ⚠️⚠️ **`hold-vs-press` pelo leitor de tela**: o clique sem tecla e sem ponteiro segura SEM soltar o ▶ (e
-  anuncia como soltar), e perder o foco só solta a tecla do dedo ou do teclado. A tecla e o "Andar" têm
-  `touch-none select-none [-webkit-touch-callout:none]` e cancelam o `contextmenu` (`SEGURAVEL`).
-- `group-loop`: a régua é a FOTO medida (`hunt.measured`, "medido antes" desbotado sem o laço), o número do
-  cacto embaixo dele, "Escolher" fechado com o laço ligado e "medido: N" no `aria-describedby` do "Medir".
-- `cooldown`: "Não saiu: recarregando" ao lado do botão (1 s) e a barra diz o estado. `enemy-type`: a
-  descrição diz a velocidade de cada cacto e o rótulo desliza para dentro da tela. `contact`: a descrição
-  conta os corações perdidos. `diagonal`: o fim da andada é pintado depois do Dino, que olha para onde
-  andou. `tilemap`: `grid`/`row`/`gridcell` com Home/End, a casa apagada tracejada e rocha no espaço.
-- Testes: `tests/consertos-onda-b-nucleo.test.tsx` (novo) e, no kids, `tests/lesson-scene-nucleo.test.tsx`
-  (o leitor de tela na tecla e o arrasto com dedo e mouse, conferidos por mutação).
-
-### Consertos dos reviews da onda A do lote 5 (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-lote5-ondaA.md`. ⚠️ Revoga, acima, a
-`score` "em `exploration-pieces.tsx`", o "Pular com o Dino" e o `aria-label` "Colocar <peça> em <caixa>".
-- ⚠️⚠️ **O arrasto com MOUSE devolvia a peça** (T1): o `click` que o navegador dispara depois do
-  `pointerup` caía no nó que o React reaproveitou para o "Colocar aqui" da origem. Duas travas na
-  `PecaQueMudaDeCaixa`: `key` distintas (`peca`/`colocar`) e o `onClickCapture` do grupo que engole o
-  clique logo depois de um arrasto. O teste do kids dispara esse `click` à mão (o happy-dom não dispara).
-- **A peça**: o símbolo do começo fica FORA do nome acessível (`separarSimbolo`), o botão da caixa é
-  "Colocar aqui" com ": <peça> em <caixa>" em `sr-only` (WCAG 2.5.3), o foco segue a peça até a caixa
-  nova, e `travada` (a montagem da demonstração) troca a ajuda por "Toque em Agora é sua vez para mexer.".
-  A `score` passou para ela (a `ConditionPiece` e o `usePieceDrag` saíram de `exploration-pieces.tsx`).
-- ⚠️ **Começar pelo palco leva o foco à bancada** (T3): `focarNaBancadaDepoisDeComecar` procura, na mesma
-  `section`, o controle marcado com `data-foco-depois-de-comecar` (`restart`, `score`, `game-state`,
-  `controls`). O palco da `restart` se chama "Tocar na tela do jogo".
-- **Palcos**: `velocity` com a RÉGUA DE PASSOS ampliada embaixo da tela (`data-regua-de-passos`), o rastro
-  pintado DEPOIS do personagem, a lista "Cada quadro" em duas colunas (`data-coluna`), a conta com
-  velocidade 0 e o eixo do último movimento; `random` só com a última raia de cada velocidade;
-  `acceleration` destacando o −10 só com a base JÁ parada, "base −9, sorteio −1" uma vez com seta e o cartão
-  "base: velocidade dos novos"; `score` com o convite como BOTÃO e "SEU PLACAR · esperando"; `restart` com
-  o convite na pista vazia; `game-state` com "esperando" só depois de o tempo passar; `world` com o aro e
-  a etiqueta no desenho (`data-aro-do-desenho`); `draw-loop` com a silhueta tracejada em `render.x`
-  (`data-bastidor`); `gravity` com a seta de "segue subindo" (`data-segue-subindo`) e o Dino tocável de
-  100 × 100 chamado "Fazer o Dino pular"; `layers` com a frase que concorda com o elenco.
-- **Bancadas**: `acceleration` com a chave FECHADA ligada até `base-limit` e `variation-limit` (exceção
-  consciente ao "nunca fechada ligada": é o mundo de fábrica, e só as metas que a atividade cobra seguram);
-  `hitbox` com a área aberta quando a de agora não mostra vão (sessão do lote 4); `lives` com o TIRO
-  (`pontoPorAcerto`) e "Bater" `fechado`; `spawn` com o intervalo fechado fora do relógio; `variable` com
-  "Somar 1 em pontos" e a chave "Mostrar placar"; `coordinates` com passo 40 na tela de 800.
-- **Player**: "Conferir" responde o ARRANJO desfeito (`layers`/`jump-sound`); a faixa da `layers` mostra
-  "?" com o palpite pendente (`valoresEscondidos`); na experimentação da `jump-sound` o som é a
-  `SomDaBancada` da bancada (o player não escreve peça: `scene-identity`); `sceneConnectRunsClock` decide o ▶
-  no fio; `sceneSuccess` dá a frase da missão restrita; Espaço no "Apertar Espaço" não dispara dois pulos.
-- **"Agora é sua vez" das `lives` com tiro**: abre numa partida NOVA (com vidas e os fios do roteiro), sem
-  ▶ nem "Um passo" (`semRelogio` no `botoesDoMundo`).
-- **`screen-reader`**: o campo fechado tem o motivo no `placeholder`, fundo apagado, e a primeira tecla vira
-  aviso falado; **`useSceneVoice` ganhou `temVoz`** (recalculado no `voiceschanged`): com vozes e nenhuma
-  pt, a chave "Voz" some e o painel avisa.
-- Testes: `tests/consertos-onda-a.test.tsx` (novo), `scene-dino-numbers.test.tsx`, `scene-identity.test.ts`;
-  no kids, `lesson-scene-design.test.tsx` (a peça, o MOUSE) e `lesson-experimentation.test.tsx` (o
-  `describe` "consertos do review da onda A do lote 5: o player").
-
-## Raio-X das 45 cenas, lote 4: o relógio de quadro fixo, lado do PLAYER (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote4.md`. O motor (core) passou a contar
-QUADROS no ritmo de cada cena (`SCENE_FRAME_RATE`), com a sobra guardada no estado; ver o CLAUDE.md
-do core. ⚠️ **Revoga**, no lote 1, "o `draw-loop` anda um quadro a cada 0,25 s" (a ponte no player).
-- **O botão de passo avança UM quadro** (`botoesDoMundo`, `scene-frame.tsx`): `advance` de
-  `1 / sceneFrameRate(cena)` e o nome vem de `sceneStepLabel` ("Avançar 1 quadro" onde o quadro é o
-  assunto, "Um passo" nas outras). ⚠️ Teste que procura o botão pelo nome precisa do nome DA CENA.
-- ⚠️⚠️ **O limiar do ▶ é UM só** (`limiarDoRelogio`, `use-scene-clock.ts`: 0,04 s, ou 0,2 s com menos
-  movimento), no player e na bancada da vez. Não volte a escolher limiar por cena: quem sabe o ritmo é
-  o motor, e o tamanho da fatia não muda o mundo. Fatia pequena só deixa o quadro aparecer perto da
-  hora dele (com fatias de 0,25 s num ritmo de 4 por segundo, a sobra acumulada soltava dois quadros
-  de uma vez).
-- Os palcos não mudaram: eles leem o estado, e o estado agora é por quadro (o fantasma da `velocity`
-  é o quadro anterior, o `quadro N` do `draw-loop` anda 4 por segundo, a barra da `diagonal` é o passo
-  de um quadro de 1 s).
-
-### Consertos do review do lote 4 (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-lote4.md`. ⚠️ Revoga, acima, "o
-botão de passo avança UM quadro" e o `1 / sceneFrameRate(cena)`.
-- **O passo manda `sceneStepSeconds(cena)`** (core): "Avançar 1 quadro" segue 1 quadro; "Um passo"
-  anda os quadros INTEIROS de ~0,2 s (6 no salto, 5 na `frames`, 4 nas de 20 por segundo, 2 nas de
-  10, 1 s nas de 1 por segundo). Um quadro de 1/30 s era um tique invisível: o pulo pedia 30 cliques.
-  ⚠️ Teste que conta cliques de "Um passo" conta em passos de ~0,2 s (a `frames` pede 10, não 48).
-- ⭐ **A faixa mostra o quadro EM ANDAMENTO** nas cenas de quadro longo (`sceneLongFrame`: `score`,
-  `lives`, `pool`, `entity-state`, `diagonal`) enquanto o ▶ roda (`SceneReadoutBand relogioAndando`):
-  uma barra de 4px na borda de baixo da faixa, com a largura da sobra do motor (`clock.carry`, que é
-  fração de quadro). A primeira mudança dessas cenas vinha 1,1 s depois do ▶, e a `diagonal` nunca
-  mais mudava. ⚠️ `aria-hidden`, SEM transição e absoluta (não empurra o palco): muda a cada fatia, e
-  anunciada ou animada viraria ruído. Some com o ▶ parado. O gesto a zera, porque recomeça o quadro no
-  motor. Marcada com `data-quadro-em-andamento` (contrato dos testes do kids).
-- **O segmento leva o marcador `sceneClock: 1`** (`sceneSegmentAnswers`, no core): é por ele que o
-  members recusa a aba de antes do relógio (`SCENE_CLOCK_STRICT`), e ela cai no recado de conflito que
-  já existe. Nada a fazer no player além de usar `sceneSegmentAnswers`.
-
-## Raio-X das 45 cenas, lote 3: o DESENHO veste o elenco (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote3.md` (imagens em `tmp/storyboard/lote3/`).
-⚠️⚠️ **Revoga** o que as seções mais abaixo dizem sobre "o elenco troca os NOMES, nunca o desenho":
-o Desafio mostrava "nave" num dinossauro azul na grama, e O Jogo do Meu Jeito, "pedra" e "chama"
-sobre um Dino e três árvores.
-
-- ⭐⭐ **`components/scene-figures.tsx`** é a ÚNICA porta de desenho de um papel:
-  `ActorFigure({ figure, x, y, ghost, escala, escuro })` com `figure = actorFigure(cast, papel)` do
-  core. O Dino, o cacto e a árvore SAÍRAM do `exploration-stage` e deixaram de ser exportados: um
-  palco que chamasse o Dino direto voltaria a mentir para uma turma de nave. Toda figura leva
-  `data-figure` (contrato dos testes) e usa o enquadramento do Dino (`(x, y)` = o chão sob ela,
-  ~60 × 60 subindo); a floresta é uma árvore de 138 (cenário). A nave é `currentColor` no casco,
-  como o Dino (quem pinta é o palco: `text-primary`, o fantasma em `text-scene-ink-soft`).
-  `ArvoreDoMundo` é a árvore de PAISAGEM (a tela do `world`), sem `data-figure`: não é papel.
-  `escalaDoCenario` faz a chama crescer até cobrir o personagem no `layers`.
-- ⭐⭐ **O mundo espaço**: `SceneCanvas` recebe `mundo` (`sceneWorld(cast)`) e põe
-  `sz-scene-espaco` + `data-mundo` na MOLDURA. `styles/scene.css` redeclara a paleta INTEIRA da cena
-  nesse bloco (papel escuro seguindo o tema por `color-mix in oklab`, tinta clara, o chão vira linha
-  discreta, o par A/B e o encosto CLAREIAM sem trocar de matiz), então os palcos quase não precisam
-  saber do mundo. O que cada palco faz: `{mundo === 'espaco' ? <FundoEspaco … chao? /> : <o fundo de
-  sempre>}`. ⚠️⚠️ A TERRA continua desenhada por cada palco como era (o Corre Dino não muda); só o
-  espaço é comum. ⚠️ O bloco é CSS comum, fora do `@theme`: o Tailwind só emite variável de tema
-  que alguma utilitária usa. ⚠️ `.sz-scene-espaco svg .text-primary` clareia o personagem só DENTRO
-  do desenho (as alças e o "Toque para começar" por cima do palco seguem o `text-primary` do app).
-- ⚠️ **Só palco que desenha PAPEL passa `mundo`** (33 cenas). Os abstratos (espelho, lupa, mapa de
-  letras, os do 3D) ficam no papel de sempre com qualquer elenco.
-- ⚠️ As cores das figuras são tokens PRÓPRIOS (`scene-rock`, `scene-stone`, `scene-flame*`,
-  `scene-fin`, `scene-window`, `scene-star`): nunca `sky`/`card`/`ink`/o par, que mudam no espaço.
-- ⚠️ As estrelas são sorteadas com SEMENTE fixa pelo tamanho do retângulo (`Math.random` piscaria o
-  céu a cada gesto) e as de quatro pontas ficam no alto do meio e na beirada direita, longe dos HUDs.
-- Testes: `tests/scene-figures.test.tsx` (descobre pelo elenco de fábrica quais papéis cada uma das
-  45 cenas desenha e cobra, com os elencos lidos dos manifestos v6, a figura de `actorFigure` em
-  cada papel, nunca o traço do Dino por engano e a moldura no mundo certo) e
-  `tests/scene-contrast.test.ts` (o bloco do espaço: tinta, par e encosto ≥ 4,5 nos 3 temas e 4
-  papéis; figuras e linhas ≥ 3 no céu e no branco da bancada; papel escuro e seguindo o tema).
-
-### Consertos do review do lote 3 (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/consertos-lote3.md` (imagens em
-`tmp/storyboard/lote3-consertos/`). ⚠️ Revoga, acima, `sceneWorld(cast)`, `escalaDoCenario`, "a
-varredura DESCOBRE os papéis" e os "3 temas" do contraste.
-- ⭐⭐ **O palco pergunta o mundo DA CENA**: `sceneWorld(cast, cena)` (o core olha só os papéis de
-  `SCENE_ROLES`). Os palcos específicos passam a cena como literal; o `exploration-stage` e o
-  `experience-scene` passam a da atividade.
-- ⭐⭐ **O chão só onde MEDE** (`velocity`, `gravity`/`impulse`/`jump-sound`/`hitbox`, `restart`). Nos
-  outros palcos o espaço não tem linha e as figuras FLUTUAM: `pisoDoMundo(mundo, chao)` sobe 20
-  unidades no espaço e devolve o MESMO número na terra (o Corre Dino não muda um pixel). ⚠️ Tudo que
-  se apoia no chão sobe junto (a régua do passo da `frames`, o arco da `pool`, a torre, os números
-  e o círculo da `group-loop`, a saída da `cleanup`), senão a cena desmonta.
-- ⭐ **O tiro é uma BOLINHA** (raio 9, centrada em y −26): a bala com bico apontava para cima com o
-  tiro DESCENDO, e era cinco vezes maior que o do jogo. **A pedra tem oito quinas** (a cúpula de base
-  reta lia biscoito), com a cratera maior à esquerda.
-- ⭐ **O cenário do `layers` que não é floresta é UMA figura** (`CENARIO_UNICO`: 1,3× e 22 à direita):
-  três chamas viravam fogueira e escondiam a pedra. A floresta segue as três árvores de sempre.
-- **`FundoEspaco`** marca `data-fundo="espaco"` (a moldura segue com `data-mundo`) e aceita
-  `semEstrelas` (zonas sem estrelinha atrás de placar: `lives`, `variable`, `frames`/`onion-skin`,
-  `contact`, `pool`, o selo do palco compartilhado). ⚠️ O texto no espaço ganhou halo de 3px da cor
-  do céu (`scene.css`): apaga a estrela que ENCOSTA na letra; mais largo, contornava o texto dos
-  painéis. A torre da `group-loop` é de metal no espaço, a fila da `enemy-type` tem passo 58 para
-  figura que não é cacto e a faixa "nascer" da `acceleration` clareia em vez de apagar.
-- A paleta do espaço clareou o encosto (`#ff9a8a`) e a linha (`#7482b0`): a lima do ADMIN escuro
-  derrubava os dois. `tests/scene-contrast.test.ts` mede agora os seis `--primary` que leem a folha
-  (Padrão, Pink, reserva, comunidade adulta, admin claro e escuro).
-- **`tests/scene-figures.test.tsx`**: a descoberta pelo elenco de fábrica é comparada com
-  `SCENE_ROLES` (papel a mais ou a menos reprova), os traços CRUS do cacto e da árvore são
-  procurados como o do Dino, e no espaço reprovam a falta do `data-fundo` e a folhagem da terra. Os
-  elencos são os dos manifestos MAIS as bordas (um papel só, a pedra com o Dino declarado). O último
-  `describe` roda o conferente contra HTML adulterado; conferido também com mutação de verdade nos
-  palcos (o traço cru do cacto nas vidas, o fundo esquecido, a torre verde, o mundo da cena errada).
-
-## Raio-X das 45 cenas, lote 2: a MOLDURA do player (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote2-player.md` (fonte: `analise/g7-moldura-player.md`).
-⚠️⚠️ **Revoga** o que as seções mais abaixo dizem sobre "Já descobri", "Ver de novo", o `revendo`/
-`recomeçou`, o cartão "Você concluiu a investigação", "Esta pergunta já está resolvida", o palpite no
-`sessionStorage`, "Observar/Um passo/Próxima etapa/Rever desde o começo" e o "Ligar som" em toda cena.
-Elas ficam como HISTÓRICO do porquê.
-
-⭐⭐ **O percurso da experimentação tem SETE estados, cada um no seu lugar** (`scene-activity.tsx`):
-palpite com o palco coberto → palpite congelado numa linha → "✓ Descoberta N de M" colado ao palco →
-palpite retomado → "✓ Você descobriu!" + "Agora explique" (foco na pergunta) → certo/errado com
-ícone, cor e palavra (a REGRA da cena só depois de responder) → "✓ Guardado". O player foi partido:
-- **`scene-prediction.tsx`**: o palpite. Mora no `localStorage` com o `scope` (perfil+aula+bloco+
-  revisão; lê o `sessionStorage` antigo). Congela no primeiro gesto; volta quando a meta `revealOn`
-  cai (sem ela, na conclusão). ⚠️ O rádio tem `onClick` além do `onChange`: depois de "trocar",
-  tocar na MESMA opção não gera `change`.
-- **`scene-conclusion.tsx`**: a faixa da REVISITA ("✓ Você já descobriu isto.", que fala DELA e nunca
-  do palco, com "Ver a explicação" fechado: a regra + `saved.result.feedback` quando
-  `verifiedBy === 'server'`) e a superfície da conclusão com a pergunta no `legend`.
-- ⚠️⚠️ **Revisita = `saved.result.passed` (ou `rehearsal.results`) CONGELADO no primeiro render**
-  (`guardado`). Na revisita: o palpite não tranca, a pergunta some (bloco concluído antes de a pergunta
-  existir também), não há principal nem "Conferir". Concluir AGORA não vira revisita no meio do gesto.
-- **"Conferir"** (era "Já descobri") responde com o `pedido` da meta que falta ("Ainda não. Tente: …"),
-  NUNCA com o `label` (que é a conclusão). Meta sem `pedido` cai na pista de nível 1. Antes do palpite
-  fica `fechado` com o véu no `aria-describedby`. Depois de concluir vira **"Continuar ↓"** (leva à
-  pergunta) e some quando ela responde. **Um "Recomeçar" só**; "Ver de novo" saiu.
-- ⚠️ **Um azul cheio por vez**: "Conferir" é contorno; o gesto da cena (`botoesDoMundo`,
-  `gestoEmDestaque`) apaga quando o "Continuar" acende.
-- **`scene-frame.tsx`**: a faixa de estado (14px, separador `after:content`, medidor NA linha dela,
-  bolinhas sem `title`) e `botoesDoMundo` (salto, ▶ "Soltar/Parar o tempo" com `min-w-11`, "Um passo",
-  "🐢 Mais devagar"). **`use-scene-clock.ts`**: o laço do `requestAnimationFrame` com `onTick` num ref.
-- **Som**: "Ligar som" só onde `sceneEmitsSound(scene)` (core), SEM `aria-pressed`, fora de qualquer
-  `fieldset` (sobrevive ao conflito). **"🔊 Ouvir"** (`use-scene-voice.ts`): `speechSynthesis` pt-BR com a
-  instrução e a pista quando não há `instructionAudioUrl`; ⚠️ cai em silêncio se as vozes carregadas não
-  têm pt; só cancela a fila se for DONO da fala (outra cena da página não cala).
-- **Anúncios**: região `aria-live` da moldura, sempre montada, com uma `key` por anúncio; dois no mesmo
-  gesto saem numa fala só (`queueMicrotask`). ⚠️ Foco, anúncio e "✓ Descoberta" só depois de GESTO
-  (`gesto` ref): num F5 o checkpoint volta concluído e ninguém fez nada agora.
-- **Pistas**: o degrau VOLTA do servidor (`saved.hintsUsed`), o botão desliga no último e a caixa some ao
-  concluir. **Comparação** abre logo abaixo dos botões do mundo ("Guardar este jeito").
-- **Gravação**: rodapé só com problema ou "✓ Guardado" / "Guardando…" (depois de concluir). Conflito =
-  "Esta atividade está aberta em outro lugar." + "Abrir de novo" (recarrega). Sem internet = uma frase +
-  "Tentar salvar". Cópia local que falha e rascunho atrás da conta ("Continuamos de onde você parou.",
-  sem tom de erro) não assustam a criança.
-- ⚠️⚠️ **Sem ensaio em volta, o avaliador de VERDADE** (`evaluateLearning(previewContent, …)`): a prévia
-  sem provedor dava `registered = true` a qualquer resposta. O admin também monta um ensaio mínimo.
-
-⭐⭐ **Demonstração guiada** (`scene-demo-controls.tsx`): UM botão principal ("Ver a parte N" / "Pausar" /
-"Ver tudo de novo"), "🐢 Mais devagar", "Parte ● ○ ○". ⚠️ "Um passo" SAIU da demonstração (0,2 s mudos
-num respiro de 0,45 s). A legenda da parte entra DEPOIS de ela tocar (antes: a instrução do professor
-na parte 1, um convite neutro nas outras). Com menos movimento a parte toca INTEIRA num clique
-(`tocarParteInteira`). Anel de destaque só enquanto toca. `highlight: 'tools'` mostra os controles
-REAIS numa área `inert` (`MontagemTravada`), ou nada. Fim: "✓ Você viu tudo!" + **"Agora é sua vez"**
-(`scene-sandbox.tsx`): a bancada a partir do estado final, em MEMÓRIA — ⚠️ sem controlador, sem batida
-e sem avaliador (a sessão guardada é a do roteiro, e um comando de experimentação ali travaria a
-gravação). A inline segura cada legenda pelo `tempoDeLeitura` antes de emendar a próxima parte e
-termina com um ✓ pequeno ao lado de "Ver de novo".
-
-- `experience-connection.tsx`: ajuda em 14px com os NOMES das pontas ("Puxe o fio até X. Ou toque em
-  Y e depois em X.", "Ligado: Y → X"); destino com `disabled:` visível. `scene-bench.tsx`: a `Chave`
-  perdeu a caixa própria. `scene-canvas.tsx`: rodapé e títulos da comparação em 14px.
-- Testes: `community-kids/tests/lesson-experimentation.test.tsx` (describes "a moldura do lote 2",
-  pelo caminho do ALUNO) e `member-shell/tests/scene-identity.test.ts` (as peças novas entram no CROMO).
-
-### Consertos do review do lote 2, lado do PLAYER (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote2-consertos-player.md`. ⚠️ Revoga, na seção
-acima, o rádio do palpite, o `tocarParteInteira` e "o botão da pista desliga no último degrau" (ele
-também SOME ao concluir).
-- ⚠️⚠️ **Opções de palpite e de pergunta são BOTÕES** (`aria-current` na escolhida, `aria-disabled` e
-  nunca `disabled`). Num grupo de rádios a SETA escolhia: congelava o palpite e mandava uma tentativa
-  por seta. O foco vai para a linha "Seu palpite" ao escolher e fica no botão ao responder.
-- ⚠️⚠️ **A pergunta ignora o TOQUE (`detail > 0`) nos primeiros `TEMPO_PARA_LER_A_PERGUNTA_MS`** e a tela
-  só rola se ela está fora da janela (`block: 'nearest'`): o toque em série no gesto que conclui caía
-  numa opção. O teclado responde na hora (o foco já está na pergunta).
-- ⚠️⚠️ **O palpite trava o PONTO ÚNICO dos gestos** (`dispatch` e `action.current` recusam com o palpite
-  pendente) e o palco fica `inert`: o `fieldset disabled` não alcança o Dino (`<g role="button">`) nem o
-  arrasto. Desfazer, Recomeçar, "Uma pista" e o "Ver acontecer" da inline ficam `fechado` com o véu no
-  `aria-describedby` (a seta do véu é `aria-hidden`).
-- ⚠️⚠️ **O palpite retomado tem dois tempos**: a frase com `shows` ("Você achou: X. Olhe…") mora JUNTO do
-  aviso da descoberta e some no gesto seguinte (`palpiteNaHora`); lá em cima fica a linha no PASSADO
-  ("Seu palpite: X. Não era isso." / "Acertou!"). Na revisita sem palpite guardado, nada.
-- ⚠️⚠️ **O palpite guardado leva a IMPRESSÃO da pergunta** (`{escolha, pergunta}`): id que não existe mais,
-  ou pergunta que mudou de sentido, reabre o véu. O id cru do `sessionStorage` antigo vale se ainda for
-  opção.
-- ⚠️⚠️ **A resposta com a cena DESFEITA** (`layers`/`jump-sound`): a assinatura do envio leva o estado da
-  montagem (`|1`/`|0`), com a montagem desfeita só uma RESPOSTA nova sobe, e a recusa vira a caixa
-  neutra "Para conferir, deixe a cena como estava quando você descobriu." (`aguardaCena`), nunca âmbar.
-  Remontar reenvia sozinho. Resposta de uma escolha ANTERIOR que chega depois não pinta a nova.
-- **Recusa sem pergunta** (demonstração): rodapé "Ainda não ficou guardado. Veja de novo até o fim." +
-  "Tentar de novo"; cada volta até o fim é assinatura nova (`vezesAteOFim`).
-- ⚠️⚠️ **"Conferir" é congelado no clique** (texto em estado) e sai no gesto seguinte: calculado ao vivo,
-  a região dizia "Ainda não." + a REGRA no render do gesto que concluía.
-- **Regiões vivas**: a frase da situação não é viva com o relógio andando (e a final é dita ao parar,
-  no player e na bancada da vez dela); a caixa da pista não é viva, e a pista é anunciada no clique.
-- **"Ouvir"** lê o que pede resposta (a instrução, a pergunta do palpite com as opções, a pergunta final,
-  o retorno, a pista), fala DENTRO do gesto (sem `await` da pausa das mídias, por causa do Safari) e uma
-  fala por frase (o Chrome corta falas longas).
-- ⚠️⚠️ **Menos movimento TOCA a demonstração em passos de 0,2 s** (guiada e inline), em vez de aplicar a
-  parte de uma vez: a `frames` dizia "trocando devagar, dá para ver que são dois" sobre um quadro parado.
-  O principal pausada no meio diz "Continuar a parte N"; a inline vira Pausar/Continuar (nunca
-  `disabled`). Nos testes, o relógio vai na mão (`relogioManual`).
-- **Missão restrita sem pistas do professor**: a escada é UM degrau, da meta que falta ("Tente: …"). ⚠️
-  Só o player encolhe (o members confere `hintsUsed` contra os três do modelo).
-- "Uma pista" some ao concluir; "Continuar ↓" só com a pergunta fora da janela (`IntersectionObserver`);
-  "Agora é sua vez" diz "Sua vez!" na instrução, leva o foco à bancada (`region` "Sua vez"), esconde o
-  rodapé e tem o "Ligar som"; sair dela devolve o foco ao principal. A faixa de estado é a tira de cima
-  da MESMA moldura do palco (`colada` + o gancho `sz-scene-frame` do `SceneCanvas`).
-- Testes: o `describe` "consertos do review do lote 2" de
-  `community-kids/tests/lesson-experimentation.test.tsx` (cada um conferido desfazendo o conserto).
-
-## Raio-X das 45 cenas, lote 2: o CONTEÚDO dos palcos e das bancadas (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote2-conteudo.md`. Só texto, nenhum
-redesenho (esse é o lote 5). A régua é "um narrador por coisa":
-- ⚠️⚠️ **O rodapé do palco só DÁ NOME ao que está desenhado, ou não existe.** Dezenas deles
-  enunciavam a regra da cena desde a abertura, embaixo da previsão ("A cor do fundo cobriu tudo:
-  onde começa a tela?", "De longe, as duas parecem a mesma pedra", "O fio da vida está solto: bater
-  não muda nenhuma das duas contagens"). Saíram de
-  `coordinates`, `stage-size`, `draw-loop`, `symmetry`, `pixel-vector`, `sheet-vs-sprite`, `lives`,
-  `hold-vs-press`, `variable`, `contact`, `diagonal` e de quase todo o motor/3D; os que ficaram
-  nomeiam (a torre e os três cactos, a barra da recarga, o tracejado da câmera, a legenda do mapa).
-  Cena nova: se o rodapé explica, ele é da `success`, não do desenho.
-- ⚠️⚠️ **O `<desc>` do SVG é a frase de quem não enxerga, e tem as MESMAS proibições**: diz o
-  estado, nunca a conta pronta. E precisa de palavras DIFERENTES da frase embaixo do palco
-  (`stage-size`), senão o leitor de tela lê a mesma coisa duas vezes e a busca por texto dos
-  testes acha dois elementos.
-- ⚠️ **Rótulo de controle não carrega a resposta**: `coordinates` é "x"/"y" (o botão diz "Aumentar x
-  em 20"), o eixo do 3D só ganha "(para cima)"/"(para o fundo)" DEPOIS da descoberta, o
-  "Escolher (90)" da `group-loop` virou "Escolher o 2º", e as notas que respondiam a previsão
-  saíram ("O programa lê o que estiver escrito", "eles decidem o que a batida faz", "O Dino
-  continua nos bastidores…"). Nota de controle FECHADO diz o GESTO que abre, nunca o resultado
-  ("Abre depois que você fizer o Dino pular e esperar", e não "subir sem gravidade").
-- ⚠️ Plural por `quantos` e decimal por `decimal` também dentro do desenho (o `experience-scene`
-  escrevia "1 saltos"; a `cooldown` e a `diagonal` escreviam ponto decimal).
-- O alvo da `stage-size` (o tracejado de 480 por 270) só aparece com a BORDA à vista, e a frase "o
-  jogo pede 480 por 270" saiu do desenho (consertos do review): ela mora na frase de situação.
-- ⚠️⚠️ **Com a conta fora da faixa, da frase e do rodapé, o DESENHO do cubo da `camera-3d` é a única
-  fonte**: o topo é sempre a terceira cor (no canto e por cima ele saía da cor da frente, e a
-  criança contava duas onde o motor diz três). `tests/scene-camera-3d.test.tsx` confere as 24
-  posições contra `facesAVista`.
-
-### Consertos do review do lote 2, conteúdo (16/09/2026)
-
-Relatório: `community-kids/tmp/storyboard/implementacao/lote2-consertos-conteudo.md`.
-- **A terceira cor do cubo da `camera-3d` é `fill-scene-leaf`**: a de antes quase sumia no fundo, e
-  contar as cores é a tarefa da cena.
-- **Número que o desenho escreve e a criança ainda não viu fica `?`**: as distâncias da
-  `group-loop` só aparecem depois do "Olhar" (e os cactos ganharam "1º/2º/3º"); as letras y e z do
-  `axis-z` só depois do gesto de altura e de fundo; a régua do fantasma da `onion-skin` só com o
-  fantasma ligado.
-- **Saíram do desenho os textos que repetiam a faixa ou cobriam a cena**: o arco da `pool`, o rodapé
-  "N na tela · N no grupo" do `spawn`/`cleanup` (o teste do kids confere o desenho contra
-  `sceneCactiOnScreen`), o chão da `acceleration`, os textos de baixo da `fill-stroke`; os rótulos da
-  `delta-time` subiram para não encostar na pista.
-- O estado do `entity-state` é lido por `sceneBrainLabel` (core), no gerúndio, no palco e na bancada.
-- A lupa da `pixel-vector` escreve "1 vez"/"2 vezes" (`quantos`); as setas de velocidade do
-  `exploration-stage` usam `numero` (sinal de menos do conteúdo).
-
-## Raio-X das 45 cenas, lote 1: o que travava ou mentia na bancada e no palco (16/09/2026)
-
-Plano em `community-kids/tmp/storyboard/implementacao/PLANO.md`; relatório deste lote em
-`lote1-interface.md` (mesma pasta). O motor (core) foi consertado em paralelo.
-
-- ⭐⭐ **Toda porta do motor tem controle na BANCADA.** `group-loop`, `camera`, `aim` e `diagonal`
-  declaravam porta em `PORTS` e a instrução mandava ligá-la, mas nenhuma bancada desenhava o
-  controle: as metas travavam para sempre (os testes do core chamam `connect` direto, um caminho
-  que a criança não tem). Hoje são `Chave`s em `scene-core-controls.tsx`, com o ESTADO no rótulo
-  ("O laço: desligado", "A câmera segue o Dino: não"). Contrato em
-  `community-kids/tests/lesson-scene-design.test.tsx` ("toda porta da cena tem controle na
-  BANCADA"), derivado de `scenePorts` nas 45 cenas: cena nova com porta e sem controle reprova.
-- ⚠️⚠️ **Fechado não é escondido, também nos FIOS.** Seis `ExperienceConnection` só apareciam
-  depois da primeira descoberta (`gravity`, `jump-sound`, `spawn`, `cleanup`, `controls`,
-  `restart`) e o de `world` só depois de criar. Agora o fio fica à vista desde a abertura com a
-  prop **`motivo`**: as duas pontas desligadas e a ajuda (que é o `aria-describedby` do destino)
-  diz o que abre. A `Chave` ganhou o mesmo par da `Medida`: **`disabled` + `nota`** (a nota vira
-  `aria-describedby`). ⚠️ Uma chave nunca fica fechada LIGADA: a criança precisa conseguir desligar
-  o que um caso de professor deixou ligado.
-- ⚠️⚠️ **Toque sem arrasto SELECIONA a peça** (`usePieceDrag.arrastou`, folga de 10px). O
-  `pointerup` de um toque caía dentro das caixas e "soltava" a peça no próprio lugar, desmarcando-a
-  — em `score` e `game-state` o "Colocar aqui" nunca ligava por toque. O mesmo gancho serve à ordem
-  de desenhar (`layers`), onde o toque registrava uma troca que não trocava nada.
-- **Palcos:** o `draw-loop` não para mais em 7 casas (volta ao começo) e fica VAZIO quando limpa sem
-  desenhar (lê `drawLoopOnScreen` do core); o `world` não escreve texto por cima da árvore, não tem
-  rodapé antes de criar e só mostra o Dino que EXISTE (`created && drawn`); o palco de
-  `spawn`/`cleanup` desenha TODOS os cactos da tela (a parede escalona em até cinco fileiras pelo
-  `id`) e o número escrito é o tamanho da mesma lista.
-- ⚠️ **A frase de sucesso é UMA constante vestida** (`fraseDeSucesso`, `scene-activity.tsx`): o
-  latch e o efeito da conclusão leem a mesma. O efeito escrevia o `result.feedback` cru e trocava a
-  frase vestida pela do catálogo, ao vivo e no F5.
-
-### Consertos do review do lote 1 (16/09/2026)
-
-- ⚠️⚠️ **Fechado é `SceneButton fechado`, NUNCA `disabled`.** O `disabled` nativo tirava o controle
-  do Tab e o motivo não era ouvido por quem navega por teclado. `fechado` põe `aria-disabled`, não
-  liga `onClick`/`onPointerDown`/`onPointerUp`/`onPointerMove`, e tira o relevo (tom discreto,
-  borda tracejada cinza). Vale para as duas pontas do fio (as duas com o motivo no
-  `aria-describedby`), a `Chave` e a `Medida` (cujo deslizante é `aria-disabled` e ignora o
-  `onChange`; a nota virou `aria-describedby` dos três controles). O contrato das portas
-  (`lesson-scene-design.test.tsx`) reprova controle fechado FORA do Tab.
-- O fio que FECHA (ex.: depois de "Recomeçar") desmarca a origem escolhida.
-- ⚠️⚠️ **A cortina da previsão cobre a BANCADA** (`inert` + véu) enquanto o palpite não vem: os
-  motivos dos controles fechados sopravam a resposta da pergunta.
-- ⚠️⚠️ **Menos movimento não é relógio parado**: o pulo liga o ▶ para todo mundo, e com
-  `prefers-reduced-motion` o laço de tempo anda em PASSOS de 0,2 s (`limiarDoTique`). O `draw-loop`
-  anda um quadro a cada 0,25 s (era uma ponte no player; desde o lote 4 é o ritmo da cena no motor). O ▶ da demonstração
-  inline com menos movimento toca o roteiro inteiro com um teto DERIVADO dele (`voltasDoRoteiro`),
-  e não 400 voltas fixas.
-- A peça da `ConditionPiece` muda de tom quando escolhida e o toque (ou o teclado) ALTERNA a escolha.
-- `world`: sem rodapé em estado nenhum, e o lugar do "Criar" fica com "✓ O Dino foi criado".
-- `spawn`/`cleanup`: o personagem é desenhado DEPOIS dos cactos.
-
-## A comparação virou ESTRUTURA — 15/09/2026 (lote 5)
-
-⭐⭐ **O `SceneCanvas` ganhou o modo ANTES | DEPOIS**: dois desenhos lado a lado, nomeados, dentro
-da mesma moldura. É o padrão número um do estudo do Brilliant, e nenhum dos 45 palcos o tinha
-como ESTRUTURA — cada um desenhava um estado e a comparação vivia no texto.
-
-⭐⭐ **`world` saiu do palco compartilhado** (`scene-world-stage.tsx`): **bastidores | tela do
-jogo**. É a PRIMEIRA experimentação da PRIMEIRA aula do curso carro-chefe, o assunto dela é
-exatamente esse contraste, e os dois nunca apareciam juntos — a tela era desenhada e "bastidores"
-era um controle lá embaixo. A criança LIA que o Dino existia sem aparecer. Foi o item 2 do
-diagnóstico do print. ⚠ De quebra, a linha "Bastidores · ainda vazio" saiu do controle: com o
-palco mostrando os dois lugares, ela era a mesma informação escrita duas vezes na mesma tela.
-
-⚠⚠⚠ **QUANDO usar, e quando NÃO** — a galeria das 45 mostrou que a proposta tinha
-superestimado o buraco. A maioria das cenas de contraste JÁ compara estruturalmente, cada uma
-dentro do próprio desenho (`hold-vs-press` tem duas pistas, `delta-time` tem dois computadores,
-`pixel-vector` tem as duas pedras, `sheet-vs-sprite` tem a folha e o jogo, `tilemap` tem o texto e
-o desenho). A régua que separa os casos não é "a cena fala de contraste":
-- **Os dois estados COEXISTEM no mundo** (o Dino guardado E desenhado) → lado a lado.
-- **A criança ALTERNA entre dois estados** (`layers` troca a ordem, `fill-stroke` liga e desliga o
-  miolo) → **um estado só, e o gesto é a descoberta.** Mostrar os dois ao mesmo tempo ali não
-  melhora nada: TIRA o experimento, porque não sobra o que descobrir. A comparação com o que ela
-  viu ANTES é outra coisa, e já existe (o "Guardar para comparar").
-
-⚠⚠ **Lado a lado só a partir de `sm`.** Num celular de 360px dois painéis dariam 170px cada, e a
-comparação que existe para ser VISTA ficaria ilegível — empilhado, os nomes de cada lado seguram a
-leitura na vertical. ⚠ As cores do PAR marcam os dois nomes (azul e âmbar), e a divisória usa a
-régua da CENA (`scene-rule`): ela fica sobre o papel ilustrado, onde a linha do Pen sumiria.
-
-## A bancada tem um vocabulário só — 15/09/2026 (lote 2)
-
-⭐⭐ **As QUATORZE bancadas que moravam dentro do player saíram** (`scene-lesson-controls.tsx`).
-O `scene-activity` já carrega o player inteiro — sessão, gravação, previsão, pergunta anexa,
-rodapé — e com elas passava de **1.900 linhas**: ninguém o lia inteiro, e foi assim que a caixa
-de botões vazia sobreviveu a quatro revisões e que `stage-size` ficou com um "Um passo" que não
-fazia nada. Hoje o player tem **1.345** e a bancada, 458.
-
-⭐⭐ **O vocabulário virou um só** (`scene-bench.tsx`): **Medida**, **Chave** e **Escolha**. Antes
-`Medida` vivia na bancada do núcleo e era importada pela do motor, `Chave` era privada da do
-motor, e as quatorze de dentro do player escreviam `<label><input type="range">` à mão — **sem os
-botões de passo que as outras vinte e uma tinham**. A régua desta casa é que toque, teclado e
-leitor de tela levem ao MESMO lugar, e ela se perde exatamente assim: numa cópia que ninguém
-comparou. Dez deslizantes ganharam os botões −/+ nesta passada.
-- **MEDIDA**: deslizante, valor à vista e dois botões de passo. ⚠ Ela ganhou `disabled` + `nota`
-  porque "uma variável por vez" é régua de várias cenas — **fechado não é escondido**, o controle
-  fica na tela com o motivo escrito. ⚠⚠ E o botão DIZ o quanto anda quando anda mais que o
-  deslizante ("Aumentar x, de esquerda a direita **em 20**"): na cena do endereço o dedo arrasta
-  de 1 em 1 e o botão pula de 20 em 20, e quem ouve não tinha como saber disso.
-- **CHAVE**: liga/desliga com o ESTADO no rótulo, nunca a ação do clique.
-- **ESCOLHA**: dois ou três valores, um em vigor. ⚠⚠ **Sem `aria-pressed`**, e é a razão de ela
-  existir separada da Chave: numa escolha nenhum valor é "desligado", e o leitor de tela
-  anunciava "não pressionado" para a alternativa não escolhida, como se ela estivesse apagada.
-  O estado vem do `aria-current`. Cinco grupos migraram (quadro 1/2 nas duas cenas de animação,
-  pixel×vetor, o pedaço da folha, o modo da batida e os três estados do motor).
-- ⚠ A quarta peça, o **GESTO**, não mora lá: é um `SceneButton` com `tom="gesto"`, porque é um
-  botão do aplicativo como qualquer outro — o que muda é o peso.
-- ⚠ A bancada recebe o ELENCO pela mesma razão que o palco: os rótulos dos controles são texto
-  que a criança lê na MESMA tela da faixa de estado.
-- Contrato em `tests/scene-identity.test.ts`: nenhuma bancada escreve deslizante à mão, as peças
-  moram num lugar só, e o PLAYER não tem bancada.
-
-## Cromo é do APP, mundo é da CENA — 15/09/2026 (lote 3)
-
-⭐⭐ **A cena entrou na identidade do kids sem achatar a ilustração.** A paleta `--color-scene-*`
-foi desenhada para ser um mundo ilustrado autônomo (papel creme, tinta oliva) e tinha vazado para
-o CROMO — a faixa de estado usava o cartão creme com a linha oliva, encostada num aplicativo que é
-branco com linha azulada. A decisão, e agora a regra:
-
-- **O CROMO veste o APP** (`card`, `border`, `foreground`, `muted-foreground`, `primary`): a
-  moldura, a faixa, a bancada, a frase, o rodapé e o cartão de conclusão. No kids isso é o Pen; no
-  adulto, o tema dele. Nenhum dos dois precisa de regra própria.
-- **O MUNDO continua ilustrado**: dentro do palco, `--color-scene-*` manda. A cena é o retrato de
-  um JOGO — pintá-la de branco e azul a transformaria num formulário.
-- ⚠⚠ **O par de comparação SOBREVIVE no cromo** (`scene-a`, `scene-b-ink`, `scene-alert`): azul e
-  âmbar dizem QUAL medida é qual, no palco, na faixa E no rótulo do controle logo abaixo. Trocar
-  isso pelos tokens do app desfaria a leitura no meio da descoberta.
-- A regra tem UMA direção e é deliberado (`tests/scene-identity.test.ts`): o cromo não veste a
-  cena. O contrário não se enforça porque os arquivos de palco carregam pedaços de cromo
-  legítimos — a alça de arraste POR CIMA do SVG, a frase embaixo do desenho, o campo de texto do
-  leitor de tela. Uma regra bidirecional reprovaria os três e ensinaria a desligar o teste.
-
-⭐⭐ **O controle da cena é o `Button` do app** (`SceneButton`, em `exploration-stage.tsx`), e o
-motivo é medido: o kids dá a TODO botão o relevo 3D do Brilliant por um seletor que casa
-`button[data-slot="button"]` com a classe da variante (`.bg-primary.text-primary-foreground`,
-`.bg-background`, `.bg-secondary`). O botão da cena era um `<button>` cru com classes próprias —
-não tinha nem o `data-slot` nem as classes de variante, então era o ÚNICO controle CHAPADO da tela.
-Isso lê como "outro aplicativo" mais do que qualquer cor.
-- ⚠⚠ **O TOM entra por `tom`, nunca por `!bg-primary` no `className`**: o `cn` é tailwind-merge,
-  então uma classe de fundo escrita no call site APAGA a da variante — e com ela some o seletor que
-  o app usa para dar o relevo. Um botão plano no meio de três em relevo é a deriva voltando pela
-  porta dos fundos. Os três tons: `ferramenta` (contorno), `ligado` (secundário com a tinta da
-  ação) e **`gesto`** — a ação que MOVE a cena, em destaque.
-- ⚠ `min-h-11` sobrepõe a altura da variante (`min-height` vence `height` quando é maior): 44px é
-  requisito do público infantil, não detalhe de estilo.
-
-⭐⭐ **O PALCO virou um só** (`scene-canvas.tsx`, lote 1). Havia CINCO cromos de palco, e três
-chamavam a própria cópia de `Moldura`: a caixa com borda e recorte, o `<svg role="img">`, o
-`<title>`/`<desc>` ligados por `aria-labelledby` e o rodapé de legenda — tudo repetido. Enquanto
-foi assim, ajustar o desenho custava cinco edições: é por isso que a faixa cortada só foi
-consertada numa família e a caixa vazia sobreviveu a quatro revisões. Hoje as 45 cenas são
-DESENHOS dentro do `SceneCanvas`.
-- ⚠⚠ **O ENQUADRAMENTO continua por FAMÍLIA, e é deliberado.** Três das cinco já usavam 560×300
-  (`SCENE_VIEW`, agora o padrão), mas o palco do Corre Dino é 600×310, os do ateliê são 560×260 e
-  o da tela é derivado do tamanho do jogo — e as centenas de coordenadas dos `d="…"` de cada
-  desenho estão NESSAS unidades. Unificar o `viewBox` não é mudar um número: é redesenhar 45
-  cenas. O que o componente garante é que a cena NOVA nasce no enquadramento comum, então a
-  deriva para de crescer. ⚠ Quem foge do comum PASSA o `view` — esquecer isso emoldura o desenho
-  numa caixa de outro tamanho, e foi o que quase aconteceu com os cinco palcos do ateliê
-  (`tests/scene-identity.test.ts` cobra).
-- ⚠ O `overlay` existe só para o palco compartilhado: ele põe controles HTML POR CIMA do SVG (as
-  alças de arraste, o "Toque para começar"), e eles precisam ser irmãos do `<svg>` dentro da
-  moldura posicionada. Quem não tem overlay não paga nada por ele.
-- ⚠️ O ELENCO é aplicado pelo canvas no `titulo` e na `descricao`. Texto solto DENTRO do desenho
-  continua precisando do `castText` à mão — o componente não alcança o que o desenho escreve.
-- ⚠️⚠️ **Eram SEIS cromos, e não cinco** (achado do full review): o `experience-scene.tsx` — o
-  laboratório de saltos e a área de colisão, usado por `gravity`, `impulse`, `jump-sound` e
-  `hitbox`, ou seja as cenas mais usadas do Corre Dino — desenhava a própria moldura. Na verdade
-  nem isso: um `rounded-2xl` sem borda nenhuma, com `<title>`/`<desc>` próprios. E a ESCOLHA de
-  usá-lo vivia no PLAYER, que era o único lugar do sistema que sabia disso — então qualquer outra
-  superfície que desenhasse uma cena (a galeria das 45) mostrava para essas quatro um palco que a
-  criança nunca vê. Hoje a escolha mora no `ExplorationStage` (`LABORATORIO`, a mesma lista que o
-  player usa para oferecer o "Guardar para comparar") e o palco passa pelo `SceneCanvas`.
-- ⭐⭐ **E a lista virou GUARDA DE TIPO** (`ehLaboratorio`), que foi o que fez o compilador mostrar
-  **~120 linhas MORTAS** dentro do palco compartilhado: o toque para pular, a guia de altura, a
-  seta do impulso, o contador de sons, a alça da área do Dino e a fileira de botões do salto.
-  Todas eram `{m === 'gravity' | 'impulse' | 'jump-sound' | 'hitbox' && …}` — e o player já mandava
-  essas quatro para o laboratório **desde sempre**, então nada daquilo jamais desenhou. Com a lista
-  como `string[]`, o `if` não NARROWAVA o `m` e o TypeScript não tinha como dizer isso; com a guarda,
-  cada ramo morto virou erro de compilação. Sobreviveram quatro variáveis que os ramos sustentavam
-  (`motion`, `canJump`, `dinoY` e a prop `paused`, que o `ExplorationStage` recebia dos três call
-  sites e não usava mais), e `collision` voltou a ser só `m === 'restart'`.
-  ⚠️ A lição é sobre a FERRAMENTA, não sobre esse arquivo: lista de cenas escrita como `string[]`
-  guarda código morto em silêncio para sempre. Cena que ganha palco próprio sai do palco compartilhado
-  por uma guarda, nunca por um `includes`.
-- ⚠️ O canvas ganhou `interativo` por causa deles: o desenho que recebe gesto DIRETO (arrastar o
-  cacto, tocar no Dino) é `role="group"`, não `role="img"` — uma imagem é uma coisa só e o leitor
-  de tela não entra nela. ⚠️ O caminho de teclado continua sendo a BANCADA: o arrasto nunca é a
-  única saída.
-
-⭐ **O medidor de descobertas DIZ o que mede.** As bolinhas sozinhas não diziam nada a quem
-enxerga (quem usa leitor de tela já ouvia "2 de 3 descobertas" pelo `role="meter"`). A conta agora
-está escrita ao lado, `aria-hidden` — a mesma regra da faixa de estado.
-
-⚠⚠ **A conta de contraste foi REFEITA, não estimada** (`tests/scene-contrast.test.ts`): além dos
-três papéis da cena nos três temas, o par de comparação agora é medido também contra o CARTÃO dos
-dois apps de aluno, lido do `globals.css` de VERDADE de cada um. É aí que ele passou a ser lido
-desde que a faixa virou branca.
-
-⭐ **A GALERIA das 45 cenas** vive no kids (`tests/visual/build-galeria-cenas.tsx`, `bun run
-galeria:cenas`): um HTML com todos os palcos, cada um no estado em que o ROTEIRO do próprio modelo
-o deixa, montado com os componentes de PRODUÇÃO e o CSS do app. Ela existe porque não dá para
-autorizar redesenho do que nunca se viu — 21 das 45 nunca tinham aparecido numa aula.
-
-## A tela da cena para de se contradizer — 15/09/2026 (lotes 6 e 4)
-
-⭐⭐ **"Ver de novo" deixou de afirmar conclusão sobre um palco vazio** (`revendo`, em
-`scene-activity.tsx`). "Ver de novo" é a ação em DESTAQUE do rodapé e faz `reset`, que volta ao
-caso; o cartão de sucesso é um latch (concluir é acontecimento e não se desfaz), então a tela
-passava a dizer "Você concluiu a investigação proposta nesta atividade" com o palco no começo — o
-prêmio por terminar era uma tela que afirma o que ela não mostra.
-
-⚠⚠ **O sinal vem do GESTO (`recomeçou`), NUNCA do `result.passed`.** A primeira versão usou o
-avaliador como atalho e funcionava em DUAS cenas de 45: `reset` preserva as descobertas de
-propósito (recomeçar volta o mundo, não a história), então `passed` continua verdadeiro em todas
-menos `layers` e `jump-sound`, as únicas que exigem a montagem ASSENTADA. O teste que devia ter
-pego isso usava justamente `layers`. ⚠ `recomeçou` nasce FALSO num F5: quem reabre a aula não
-"está revendo", está chegando. ⚠ `hint` não desliga o aviso — pedir uma pista não é voltar a mexer.
-
-⭐ **A caixa dos botões da cena pergunta aos FILHOS** (`botoesDaCena`, uma LISTA filtrada). Em
-`world`, `layers` e nas outras sem salto, relógio ou comparação sobrava uma caixa com borda e
-padding e NADA dentro. ⚠⚠ A primeira correção repetia as condições num booleano à parte, e a
-falha silenciosa disso é pior que o defeito consertado: botão acrescentado aqui e esquecido lá
-simplesmente NÃO renderiza — sem erro, sem caixa vazia, sem teste vermelho. Caixa vazia se vê;
-botão que nunca apareceu, não.
-
-⭐ **Um Zappy por tela, um título por tela** (`lesson-section-context.tsx`). O bloco pergunta o que
-a SEÇÃO já disse: o título do cabeçalho e se já existe um balão de fala num bloco próprio. A Aula 1
-do Corre Dino mostrava "Criar e mostrar são a mesma coisa?" no cabeçalho E de novo no cartão, com
-um Zappy na coluna da esquerda e um segundo dentro do cartão — quatro elementos para dizer duas
-coisas. ⚠ É CONTEXTO e não prop: entre a seção e o bloco há o `renderBlocks` de cada app, e uma
-prop atravessaria os dois por um detalhe de apresentação. ⚠⚠ O que NÃO pertence à seção entra com
-o contexto VAZIO: os editores (que são da AULA, montados atravessando as seções) e os "Materiais
-de apoio" (que o core guarda em `supportBlockIds`, fora das seções). ⚠ O parágrafo que substitui
-o balão mantém a FORMA dele (`whitespace-pre-line`, `text-base`): o que sai é o mensageiro, não o
-recado.
-
-⚠⚠ **E quase toda a suíte de cena desenha o conteúdo de AUTORIA, não o que a criança recebe**
-(achado do full review). Os testes montam `<InteractiveLessonBlock>` com o rascunho, que é o
-caminho da PRÉVIA — e desde o lote 4 esse caminho não tem previsão nem pergunta, porque as duas
-chegam pelos RESOLVEDORES. Resultado: a mudança mais visível do lote inteiro (as 45 cenas ganharam
-uma pergunta ANTES do palco) não era exercida por teste de render nenhum, e um deles ainda afirmava
-que "sem previsão declarada, a cena abre como sempre abriu" — verdade só no caminho que a criança
-não usa. Hoje ele monta por `publicInteractiveBlock` e cobra o portão, o palpite abrindo a cena e a
-explicação NÃO atravessando (`community-kids/tests/lesson-scene-design.test.tsx`).
-
-⚠⚠ **A PRÉVIA de autoria monta o bloco interativo pela PROJEÇÃO PÚBLICA** (`lesson-sections.tsx`).
-O rascunho é o conteúdo de AUTORIA, e desde o lote 4 ele não é mais o que a criança recebe — a
-previsão e a pergunta chegam pelos RESOLVEDORES do core. Desenhando o rascunho, a prévia mostrava
-ao professor uma tela sem as duas E o ensaio ficava INTRANSPONÍVEL: o avaliador é o de produção e
-cobrava a resposta de uma pergunta que a tela não tinha desenhado. O rascunho segue junto por
-`previewContent`, que é o que liga o avaliador local.
-
-## As onze cenas do núcleo do Iniciante 2D — 15/09/2026
-
-`components/scene-core-stages.tsx` (os palcos) e `components/scene-core-controls.tsx` (a
-bancada). Palco próprio pela razão de sempre: nenhuma delas cabe na pista do Corre Dino — são a
-régua do quanto se andou num quadro, duas raquetes lado a lado, uma caixa com um número dentro,
-o mundo maior que a tela, o mapa escrito com letras.
-
-⚠️ A bancada fica em arquivo PRÓPRIO porque o `scene-activity` já carrega o player inteiro
-(sessão, gravação, previsão, rodapé): onze conjuntos de controle ali dentro fariam dele um
-arquivo que ninguém lê. O despacho dos dois é por `if (m === …)` no `exploration-stage` e um
-`<CoreSceneControls>` único no `scene-activity`.
-
-⚠️⚠️ `hold-vs-press` tem o único controle de SEGURAR do sistema: `onPointerDown`/`onPointerUp`
-para quem aponta, e um `onClick` que ALTERNA para quem usa teclado ou leitor de tela — sem ele,
-metade da cena ficaria fora do alcance deles. **O `e.detail === 0` no `onClick` é obrigatório**:
-um toque de mouse dispara os três eventos em fila (down segura, up solta, e o click alternava o
-já-falso de volta para VERDADEIRO), então um clique simples terminava com a tecla presa e o
-rótulo dizendo "Soltar a tecla" — o contrário do que tinha acontecido, justo na cena que existe
-para separar acontecimento de estado. Travado em
-`community-kids/tests/lesson-experimentation.test.tsx`.
-
-## As dez cenas do motor, do 3D e do ateliê — 15/09/2026
-
-`components/scene-engine-stages.tsx` (os palcos) e `components/scene-engine-controls.tsx` (a
-bancada), montados pelo mesmo despacho `if (m === …)` do `exploration-stage` e por um
-`<EngineSceneControls>` ao lado do `<CoreSceneControls>` no `scene-activity`.
-
-⚠️⚠️ **O 3D é DESENHADO em SVG, não renderizado.** Uma projeção isométrica à mão: a matriz do
-chão, `projetar(x, y, z)` e um cubo de três cores. Puxar three.js para dentro do player de aula
-custaria o peso dele em TODA cena (o player é compartilhado), e o que estas quatro cenas precisam
-mostrar — o eixo que falta, a câmera que decide o que se vê, os pontos por baixo da roupa, a reta
-que para na primeira caixa — cabe inteiro num cubo e numa sombra. ⚠️ No `AxisZStage` a conta é
-`-y`: no 3D o y cresce para CIMA, e é a cena inteira.
-
-⚠️ **Nenhum controle do 3D é de ARRASTO livre.** Girar a câmera com o dedo seria mais bonito e
-deixaria de fora quem usa teclado — e "a câmera decide o que se vê" não precisa de gesto
-contínuo: precisa de voltas contáveis. O `Medida` (o deslizante com valor à vista e dois botões
-de passo) é EXPORTADO do `scene-core-controls` justamente para não virar duas cópias com réguas
-de acessibilidade diferentes.
-
-⚠️ O `pick-ray` tem atalhos de mira ("mirar onde uma cobre a outra") porque a descoberta da cena
-é o alinhamento, e caçá-lo no deslizante deixaria de fora quem depende do teclado. ⚠️⚠️ Os
-retângulos dele vêm do MOTOR (`PICK_BOXES`) e a ordem de desenho é a de PROFUNDIDADE: a reta
-primeiro, a caixa de trás, e a da frente por último. É isso que faz a reta SUMIR atrás da caixa
-da frente em vez de atravessá-la — o palco estava demonstrando o contrário exato do próprio
-rodapé.
-
-⚠️ **O `aria-pressed` é para liga/desliga, não para seletor de dois valores** (`seletor` na
-`Chave`): "a luz vem da esquerda" não é um estado desligado, e o leitor de tela anunciava "não
-pressionado" para um valor tão ligado quanto o outro.
-
-⚠️⚠️ **A `Chave` diz o ESTADO, nunca a ação do clique.** "Desligar a reciclagem" num botão
-pintado de primário (o visual de "ativo" desta casa) com `aria-pressed="true"` fazia as três
-camadas contarem histórias diferentes. O molde é o do resto do player: `A sombra da forma:
-ligada`.
-
-⚠️ **Deslizante cujo número não é um número para a criança leva `texto`** (`aria-valuetext` +
-o valor à vista): a altura da câmera do 3D anunciava "altura da câmera, 2" no leitor de tela,
-porque a tradução para "por cima" só existe na faixa de estado, que é `aria-hidden`.
-
-## O rodapé da cena, o caso e a animação curta — 15/09/2026
-
-⭐⭐ **A ação PRINCIPAL do rodapé deixou de ser "Uma pista".** O ajuste de 14/09 acertou em tirar os
-quatro botões cinzentos iguais, mas o único que sobrou em destaque convidava a PEDIR AJUDA. No
-Brilliant aquele canto é sempre o caminho para a frente. Hoje ali fica **"Já descobri"** (roda a
-avaliação e responde o que ainda falta, nomeado como ação) e, depois de concluída, **"Ver de
-novo"** — o prêmio: a cena recomeça com as descobertas guardadas. "Uma pista" voltou ao peso das
-ferramentas, à esquerda. ⚠️ Os nomes acessíveis das ferramentas não mudaram.
-
-⭐⭐ **As metas exibidas são as que ESTA atividade cobra** (`sceneTargets(activity)` → `sceneGoals`
-e `evaluateExperimentation`). Sem isso, uma missão que pede uma descoberta mostraria as três do
-modelo, a barra nunca fecharia e o servidor daria a atividade por concluída — duas telas contando
-histórias diferentes.
-
-⭐ **A demonstração `inline`** (`activity.presentation === 'inline'`): um ▶ e nada mais, sem etapas
-nem passo a passo. O laço de tempo emenda a próxima etapa sozinho e só o FIM do roteiro para o
-relógio. É o formato para ficar no meio de uma explicação.
-
-⚠️⚠️ **O carimbo do envio da tentativa é gravado DEPOIS da resposta, nunca antes.** Ele existe
-para impedir que a batida de um segundo reenvie a mesma tentativa; carimbado antes do `await`,
-uma falha de rede o deixava igual à assinatura para SEMPRE — e como a assinatura só muda com
-resposta ou descoberta nova (e descoberta não se desfaz), a criança ficava presa em "Aguardando
-conexão" sem nenhuma nova tentativa de envio. O POST é idempotente pelo `attemptId`.
-
-⚠️⚠️ **O latch (`conclusao`) manda na renderização E no ENVIO.** O conserto da primeira rodada
-mexeu só na renderização, e a criança que respondesse a pergunta depois de apertar "Ver de novo"
-(o botão em DESTAQUE, que faz `reset`) não conseguia mandar a resposta: nenhuma requisição saía,
-sem erro na tela e sem o "Tentar salvar". Quem decide o envio é o `descobriu`, não o
-`result.passed` vivo.
-
-⚠️⚠️ **O latch (`conclusao`) manda na renderização E no ENVIO.** O conserto da primeira rodada
-mexeu só na renderização, e a criança que respondesse a pergunta depois de apertar "Ver de novo"
-(o botão em DESTAQUE, que faz `reset`) não conseguia mandar a resposta: nenhuma requisição saía,
-sem erro na tela e sem o "Tentar salvar". Quem decide o envio é o `descobriu`, não o
-`result.passed` vivo.
-
-⚠️⚠️ **A pergunta anexa é renderizada contra o LATCH (`conclusao`), não contra o `result.passed`
-vivo.** Em `layers` e `jump-sound` o avaliador local volta a reprovar quando a criança mexe depois
-de concluir (a montagem precisa ficar ASSENTADA), e a pergunta SUMIA da tela — enquanto o cartão
-logo abaixo, que já usava o latch, seguia dizendo "a explicação fica logo acima". O bloco ficava
-intransponível até ela adivinhar que precisava recompor o arranjo.
-
-⚠️⚠️ **Acertar a pergunta anexa MOSTRA a explicação do professor.** O `feedback` que volta do
-servidor É o `explanation` quando a resposta está certa, e um guard de `!registered` o escondia:
-quem errava recebia recado e quem acertava não recebia nada — o terceiro tempo do ciclo morria
-calado, com o incentivo invertido. ⚠️ As duas regiões `aria-live` do player (esta e o "Ainda
-falta") existem SEMPRE, com o texto por dentro: região montada junto do conteúdo não é anunciada.
-
-⚠️ **Com pergunta anexa, o cartão de sucesso NÃO diz "concluiu"** (`pendente`): a descoberta está
-feita, mas quem dá a palavra final é o servidor (`withAttachedQuestion`). Ele aponta para a
-pergunta logo acima. ⚠️ E depois de um F5 a escolha não volta (a sessão da cena mora em
-`answers.sceneCheckpoint`, e a resposta viaja na TENTATIVA, que o members de propósito não deixa
-atropelar a sessão): nesse caso a pergunta aparece como JÁ RESOLVIDA (⚠️ "resolvida", e não
-"você já respondeu": desde 15/09/2026 a pergunta é HERDADA do modelo, então todo bloco de cena
-concluído ANTES disso cai neste ramo — e quem nunca viu pergunta nenhuma leria uma frase sobre um
-gesto que não fez), em vez dos rádios vazios e
-desabilitados que pareciam ter perdido a resposta.
-
-⚠️ **O `flush` recebe a escolha da pergunta por PARÂMETRO.** Ele é reatribuído a cada render,
-então o `flush.current` que o `onChange` do rádio alcança é o do render ANTERIOR, com a resposta
-ainda vazia — sem o parâmetro, o envio imediato caía no guard e só a batida de um segundo salvava.
-
-⭐ **O alvo fica na tela enquanto ela não chega nele** (`StageSizeStage`): a moldura tracejada de
-480 × 270 e a frase que diz quanto falta em cada lado. Errar vira medir, não "tente de novo".
-
-## As cenas depois do estudo do Brilliant — 14/09/2026
-
-Sete ajustes de desenho nas cenas, mais duas cenas novas e o elenco por curso. O levantamento
-que motivou tudo (282 seções dos três cursos v6, 25 com algo para mexer, 47 demonstrações sem
-demonstração) e o estudo do Brilliant estão em `docs/aulas-interativas/proposta-experiencias.md`.
-
-⭐⭐ **A faixa de estado** (`sceneReadout`, no core) fica acima do palco com os valores vivos e
-nomeados: `x 110 · y 150`, `distância do cacto 140`, `pontos 3`. Era o elo que faltava entre o
-número que a criança digita no bloco do Estúdio e o desenho que ela vê mudar. ⚠️ Ela é
-`aria-hidden`: a mesma informação está na frase abaixo do palco, e sem isso o leitor de tela
-anunciaria os três pares a cada ponto do controle deslizante.
-
-⭐⭐ **A pista parou de apagar a instrução.** As duas dividiam o mesmo balão, então pedir ajuda
-tirava da tela o enunciado — e quem pede ajuda é justamente quem vai relê-lo. Hoje a instrução
-fica e a pista entra abaixo, com o degrau à vista (`Pista 1 de 3`).
-
-⭐ **"Siga a missão e observe o resultado" MORREU.** Era a mesma frase nas catorze cenas e em
-todo estado, e aparecia sempre que o motor não tivesse escrito um `caption` para aquela ação —
-o caso comum. `sceneSituation` (core) mantém o acontecimento do motor na frente e, sem ele,
-descreve o que está na tela agora. ⚠️ Cena nova precisa de um caso lá, ou volta o genérico.
-
-- **Rodapé com UMA ação principal:** Desfazer, Recomeçar, Ligar som e Ouvir instrução viraram
-  ferramentas discretas à esquerda. ⚠️ Os NOMES acessíveis não mudaram (são o contrato dos testes e
-  de quem usa leitor de tela) — mudou o peso. ⚠️ O botão em DESTAQUE era "Uma pista"; desde
-  15/09/2026 é "Já descobri" / "Ver de novo" (ver a seção acima).
-- **Uma variável por vez:** na `hitbox` a largura da área nasce fechada e abre com a primeira
-  descoberta sobre distância. Fechado NÃO é escondido: o controle fica na tela com o motivo.
-- **Selo do palco em língua de criança:** "OBSERVATÓRIO DE CONTATO" e "SEU LABORATÓRIO DINO"
-  viraram "Onde a batida acontece" e irmãos (`STAGE_LABEL` no `exploration-stage.tsx`). As telas
-  do jogo (INÍCIO/JOGANDO/FIM) seguem em caixa alta: são o rótulo do jogo, não jargão nosso.
-- **A cena segue o tema** (`styles/scene.css`): céu, chão, grade e linha derivam do `--primary`
-  por `color-mix` (⚠️ `in oklab`, nunca `oklch`). O par de comparação (A azul, B laranja) e o
-  vermelho do encosto ficam FIXOS: eles dizem QUAL medida é qual, não são decoração.
-
-⭐⭐ **Duas cenas novas, as que a Aula 1 do Corre Dino pedia** (`components/scene-stages.tsx`,
-palco próprio porque nenhuma delas é sobre o mundo do jogo):
-- **`coordinates`** — x e y com deslizante, passo de 20 e teclado, sobre a tela de 480 × 270 com
-  régua nos dois eixos, origem marcada no canto de cima, guias até cada eixo e o fantasma da
-  posição anterior. ⚠️ A descoberta é por EIXO: mexer nos dois ao mesmo tempo não registra nada.
-- **`screen-reader`** — o que aparece contra o que a pessoa ouve, com o campo da descrição. O
-  reconhecimento de objetivo e controle é por palavra e serve para orientar; quem confere é o
-  servidor, como nas outras cenas.
-
-⭐ **Elenco por curso** (`cast` na atividade; régua em `core/learning/scene/cast.ts`): as seis
-cenas que ensinam conceito repetido passam a servir o Desafio e o Meu Jeito trocando só os NOMES.
-⚠️ Em português isso exige artigo, contração e plural — "Faça o Dino aparecer" vira "Faça a nave
-aparecer", e `do cacto` vira `da pedra`. Título e instrução são do PROFESSOR e não são vestidos;
-o elenco veste o que a plataforma gera (metas, pistas, faixa, frase, roteiro e sucesso).
-
-⚠️⚠️ **E a BANCADA também** (`cast` em `CoreSceneControls`/`EngineSceneControls`): os rótulos
-dos controles são texto que a criança lê na MESMA tela que a faixa de estado, e é onde a
-regressão voltou quando a bancada saiu para arquivo próprio.
-
-⚠️⚠️ **E veste também o que o PALCO escreve à mão**: desde 15/09/2026 o `cast` chega a TODOS os
-palcos (`scene-stages`, `scene-art-stages`, `scene-core-stages`, `scene-engine-stages`) e as
-molduras aplicam o `castText` no `<title>`, na `<desc>` e no rodapé sozinhas. Os palcos novos
-tinham reintroduzido o defeito: em `coordinates`, `draw-loop`, `velocity` e `variable` — as
-quatro com elenco em conteúdo REAL — a criança de uma turma de nave lia "nave" na faixa e o
-leitor de tela anunciava "o Dino" no mesmo desenho.
-
-⚠️⚠️ **E veste também o que o PLAYER escreve à mão** (achado do full review): o selo do palco
-(`STAGE_LABEL`), a `<desc>` do SVG, os `aria-label` das alças, os nomes dos fios da bancada
-(o helper `connection` já aplica), as peças da ordem de desenho e os rótulos dos controles
-(`Distância do cacto`, `Largura da área do Dino`, `Bater no cacto`). Sem isso a criança de uma
-turma de nave lia "distância do asteroide" na faixa e "Distância do cacto" no controle logo
-abaixo, na mesma tela. ⚠️ Texto novo no player precisa SOBREVIVER à troca: a régua só flexiona o
-que está COLADO ao nome, então "o Dino continua guardado" viraria "a nave continua guardado" —
-foi reescrito para "continua nos bastidores". ⚠️⚠️ A varredura que cobra isso é o `describe('o elenco veste a cena INTEIRA')` do
-`community-kids/tests/lesson-scene-design.test.tsx`, e desde o full review de 15/09/2026 ela varre
-as **45**, não mais a lista curada `REAPROVEITAVEIS` — que já tinha ficado verde enquanto as
-bancadas extraídas (`scene-core-controls`, `scene-engine-controls`) voltavam a escrever "cacto" e
-"Dino" crus nos rótulos, porque os arquivos novos não estavam nela. Lista curada de cenas é a
-segunda lista que o lote 3 inteiro existe para matar, e varrer todas custa 800ms. Ela olha TRÊS
-superfícies: o texto visível, os `aria-label` e o `<title>`/`<desc>` do SVG — este último entrou
-porque é o que o leitor de tela anuncia NO LUGAR do desenho e não aparece nos outros dois. Foi ele
-que pegou a `screen-reader` descrevendo o desenho como "Um dinossauro correndo diante de cactos":
-**"dinossauro" não é termo do elenco** (a régua casa "Dino", de propósito — senão "Dinossauro"
-casaria pela metade), então numa turma de nave a frase saía com meio elenco trocado, justo na cena
-que ENSINA a descrever a tela para quem não a vê.
-
-## As cenas do lote 4: desenho e vidas (14/09/2026)
-
-Seis cenas novas, **14 → 24**, em `components/scene-art-stages.tsx` (palco próprio, como as da
-tela): O Jogo do Meu Jeito não tinha UMA cena nativa e o Desafio não tinha a das vidas.
-
-- **`frames`** — os dois quadros, a troca e a velocidade dela. ⚠️ Trocar de quadro NA MÃO só conta
-  como descoberta com a troca PARADA: com ela andando, quem trocou foi o relógio.
-- **`onion-skin`** — o fantasma do quadro anterior. ⚠️ No quadro 1 não há anterior, e a cena DIZ
-  isso (é a frase do roteiro do Pinta); o passo do quadro 2 fica fechado lá, com o motivo escrito.
-- **`symmetry`** — o traço, o espelho e a linha do eixo. O reflexo pode cair FORA do papel: é a
-  resposta à pergunta do "e se", não um erro a esconder.
-- **`pixel-vector`** — as duas pedras lado a lado e a lupa. "De longe parecem iguais" só conta
-  DEPOIS de ver as duas de perto.
-- **`sheet-vs-sprite`** — a folha e o jogo lado a lado. A folha NUNCA muda de tamanho: é a
-  permanência dela que ensina a cena.
-- **`lives`** — as duas contagens. "Os pontos ficaram" exige ponto para perder.
-
-⭐⭐ **A previsão antes de mexer** (`block.prediction`): uma pergunta de duas opções ANTES de o
-palco abrir, o padrão mais forte do Brilliant. ⚠️ Ela NÃO é o `checkpoint`: aquele alimenta o
-`passed`, e um palpite errado reprovaria a criança. Não vale nota, fica no `sessionStorage` por
-bloco e sobe em `answers.prediction` junto da tentativa. ⚠️ O gate trava o PALCO (fieldset de
-dentro), nunca o rodapé: "Ouvir instrução" e "Ligar som" ficam de fora, senão quem ainda não lê
-fica sem saída diante de uma pergunta escrita.
-
-⚠️ **Quem tem relógio é a régua do core, não uma lista aqui.** Os controles de tempo aparecem
-quando `isSceneAction({type:'advance'}, cena)` aceita — a lista à mão anterior já tinha deixado
-`stage-size` com um "Um passo" que não fazia nada, e toda cena nova teria que lembrar de entrar
-nela.
-
-Testes: `core/src/learning/scene/{cast,readout,lesson-one,art-scenes,legacy-checkpoint}.test.ts` e
-`community-kids/tests/lesson-scene-design.test.tsx`.
-
-## Ajuda e objetivos de seção — 11/09/2026
-
-`section-help` aceita `requestId` UUID: o player mantém a chave ao repetir o mesmo pedido após falha
-de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permite retornar ao hash
-`#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
-`useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
-em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
-`SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
-Não confundir estrutura verificada no servidor com execução comprovada do jogo.
-
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, jose, Zod,
 > sharp, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender
@@ -1272,6 +57,16 @@ do effect de carga dos TRÊS editores com IndexedDB de criança: `studio-block.t
 `@sistemazero/member-shell/lib/persistent-storage` — o exports map `./lib/*` cobre). Sem isso o
 Safari apaga TODO storage de origem não visitada por ~7 dias, e qualquer navegador despeja sob
 pressão de disco — o rascunho da criança sumia sem culpado.
+
+## Ajuda e objetivos de seção — 11/09/2026
+
+`section-help` aceita `requestId` UUID: o player mantém a chave ao repetir o mesmo pedido após falha
+de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permite retornar ao hash
+`#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
+`useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
+em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
+`SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
+Não confundir estrutura verificada no servidor com execução comprovada do jogo.
 
 ## O que vive aqui vs no app
 
@@ -2109,69 +904,603 @@ na hora, mas voltaria). O que mudou, e é contrato:
    de ser irmão logo depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num
    cartão só pelo seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
 
-## A cena de aula: viva depois do objetivo, e na coluna da direita (14/09/2026)
+## Cenas de aula: experimentação e demonstração
 
-Quatro pedidos dela num lote só. Os dois blocos de CENA (`activity.type` `experimentation` e
-`demonstration`, ambos no `scene-activity.tsx`) passaram a se comportar como o Estúdio.
+As 45 cenas manipuláveis das aulas (`activity.type` `experimentation` e `demonstration`). O MOTOR (estado,
+ações, metas, relógio de quadro fixo, frases, elenco, protocolo com o members) mora em
+`@sistemazero/core/learning/scene`, com o CLAUDE.md dele; aqui mora o que a criança vê e toca. A régua desta
+casa vale em tudo abaixo: **toque, teclado e leitor de tela levam ao MESMO lugar.**
 
-⭐⭐ **Cumprir o objetivo NÃO encerra a experimentação.** O `<fieldset disabled>` que embrulha a
-atividade inteira olhava `result.passed` — e `<fieldset disabled>` desabilita TODO `<button>`
-descendente por HTML nativo, então morriam junto Desfazer, Recomeçar, Uma pista e o **Ligar
-som**, que nem é exclusivo da experimentação. Pior: ao reabrir a aula o estado vem do checkpoint
-salvo, então `passed` já nascia `true` e a cena abria morta. Regras que ficaram:
-- ⚠️ O `passed` saiu de TRÊS lugares, e os três são necessários: o `fieldset` mestre, o guard do
-  `action.current` (sem ele os botões ficariam clicáveis e MUDOS, com os comandos morrendo num
-  `return` silencioso) e o `fieldset` do palco + os gestos diretos (`onJump`/`onDistance`). O
-  `!demoMode` FICA em todos: é ele que separa os dois tipos de bloco.
-- ⚠️⚠️ **A frase de sucesso virou LATCH (`conclusao`), não espelho de `result.passed`.** Duas das
-  catorze cenas (`layers` e `jump-sound`) exigem a montagem ASSENTADA no estado descoberto
-  (`settled`, no core), então com a cena viva mexer depois de concluir faz `passed` voltar a
-  false — e o cartão "Descoberta registrada" piscava e sumia na cara de quem tinha acabado de
-  acertar. Concluir é um acontecimento e não se desfaz (o servidor também nunca rebaixa um
-  `passed:true`, pelo `case when` do `recordAttempt`).
-- ⚠️ **`attemptId` novo quando o servidor recusa.** Ele é um por MONTAGEM e o members reavalia a
-  tentativa pelo checkpoint DELE. Nas duas cenas acima existe uma janela estreita (mexer antes de
-  o registro subir) em que a tentativa grava `passed:false` — e, com o id fixo, `findAttempt`
-  devolveria essa mesma tentativa para sempre. Sortear um id novo só DEPOIS da resposta preserva
-  o motivo de ele existir: repetir um pedido perdido não pode criar tentativa nova.
-- A condição do POST segue `!registered && result.passed`: só se registra o que passa AGORA.
+O player manda em todo segmento o marcador da versão das regras (`SCENE_CLOCK_MARK`, que o `sceneSegmentAnswers`
+do core põe, pelo `SceneController`); nada a fazer aqui além de usá-lo. ⚠️ Mudou uma regra de meta que o player
+decide sozinho? O número sobe no core, no mesmo commit. Ordem de deploy, `SCENE_CLOCK_STRICT`, manifestos a
+reimportar e pontes de compatibilidade: [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+Conferência visual das 45 com os componentes de produção: `bun run galeria:cenas` no community-kids.
 
-⭐ **Quem mora em cada coluna virou régua PURA** (`lib/lesson-split.ts`: `ehEditorDeSecao`,
-`ehCenaDeSecao`, `ehLadoFerramenta`, `partirSecao`), testada em `tests/lesson-split.test.ts`.
-- A **cena** vai para a coluna da direita junto do Estúdio e do Pinta. ⚠️ Classificar por `kind`
-  não serve: pergunta curta e experiência em HTML também são `interactive` e ficam à ESQUERDA —
-  elas são de ler e responder no meio da aula, a cena é bancada. Quem decide é a ATIVIDADE.
-- ⚠️⚠️ **Dividir exige conteúdo dos DOIS lados** (`podeDividir`), que é o pedido dela: "se forem
-  o único bloco da seção, têm que ocupar a largura toda". De quebra fecha um buraco antigo — uma
-  seção com `workspaceBlockId` e `blockIds: []` abria ao meio com o painel esquerdo VAZIO,
-  reservando 320px de piso para quem não renderiza nada. A ação da plataforma e o atalho da
-  ferramenta contam como conteúdo (moram naquele painel).
-- ⚠️ A visibilidade do painel da direita é `toolIds.length > 0`, **não** `podeDividir`: não
-  dividir não pode virar sumiço, senão a seção cujo único bloco é a ferramenta fica vazia.
-- ⚠️ As abas **"Ver exemplo"/"Criar"** só aparecem quando a direita tem um EDITOR (`temEditor`).
-  Elas são o par de um editor — o exemplo contra a minha criação; a cena É a aula, e numa coluna
-  estreita ela simplesmente empilha.
-- ⚠️⚠️ **O editor fica montado entre seções; a cena, não.** O `display:none` do painel da direita
-  existe porque remontar o Blockly é caro e re-semeia o rascunho. Cada cena tem controlador
-  próprio, rascunho em IndexedDB e uma batida de gravação de 1s: mantê-las vivas fora da seção
-  pagaria esse custo pela aula inteira. Por isso `editores` é da AULA e `cenasAtivas` é da SEÇÃO.
+### Mapa dos arquivos (`src/components/`)
 
-Os números da régua de largura (1080 / 320 / 380 / 50) e o `autoSaveId` **não mudaram** — o
-layout guardado por perfil continua valendo, então a versão `v4` não subiu.
+| Arquivo | O que faz |
+|---|---|
+| `scene-activity.tsx` | O player (`SceneActivityView`): sessão, gravação, palpite, pergunta, rodapé e relógio. Não escreve palco nem peça de bancada. |
+| `scene-prediction.tsx` | O palpite antes de mexer. |
+| `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e a faixa da revisita. |
+| `scene-demo-controls.tsx` | A demonstração guiada e a `MontagemTravada`. |
+| `scene-sandbox.tsx` | "Agora é sua vez". |
+| `scene-frame.tsx` | A faixa de estado (`SceneReadoutBand`) e os botões do mundo (`botoesDoMundo`), iguais no player e na vez. |
+| `use-scene-clock.ts` | `useSceneClock`, `limiarDoRelogio`, `relogioDaCena`, `estadoVistoDaCena`, `tempoDeLeitura`. |
+| `use-scene-voice.ts` | `useSceneVoice`: a voz do navegador. |
+| `scene-lugar-reservado.tsx` | `LugarReservado`: o espaço acima da bancada que não encolhe. |
+| `scene-bench.tsx` | O vocabulário da bancada: `Medida`, `Chave`, `Escolha`. |
+| `exploration-stage.tsx` | `SceneButton` e o despacho do palco (`ExplorationStage`). |
+| `scene-lesson-controls.tsx` | O despacho da bancada (`LessonSceneControls`) e as bancadas de `coordinates`, `stage-size`, `draw-loop` e `screen-reader`. |
+| `exploration-pieces.tsx` | Fios e peças (`ExplorationPieces`): `world`, `lives` e a bancada do Corre Dino. |
+| `experience-connection.tsx` | O fio (`ExperienceConnection`). |
+| `scene-canvas.tsx` | O palco único (`SceneCanvas`, `Texto`, `usePalco`). |
+| `scene-figures.tsx` | As figuras do elenco (`ActorFigure`) e o fundo do espaço (`FundoEspaco`). |
+| `scene-3d.tsx` | A régua do 3D. |
+| `scene-*-stages.tsx`, `scene-*-controls.tsx`, `experience-scene.tsx` | Palcos e bancadas por família (tabela "Cena → palco e bancada"). |
+| `lib/scene-controller.ts` | `SceneController`: sessão local, segmentos e rascunho no IndexedDB. |
+| `styles/scene.css` | A paleta `--color-scene-*`, o teto `max-w-scene` e o mundo espaço (cada app `@import`a). |
 
-⚠️ **Empilhado, a bancada cai para o FIM da seção** (como sempre foi com o Estúdio). Trocar a
-cena de painel conforme a largura a REMONTARIA, e como a medição começa em ZERO isso aconteceria
-na abertura de toda aula larga. O que torna aceitável é o padrão de autoria: os templates de
-exploração e demonstração já pedem a cena como último bloco ("vídeo curto, missão do Zappy e cena
-manipulável", em `core/learning/section-templates`).
+### O player (`scene-activity.tsx`)
 
-⭐ **Achado do full review: o bloco de ENTREGA por galeria sumia da aula.** O painel do conteúdo
-filtrava por KIND (`!== 'studio' && !== 'pinta'`) e a lista da ferramenta descartava a galeria —
-então um bloco de entrega colocado numa SEÇÃO não era renderizado em lugar nenhum. O admin só o
-proíbe como espaço de trabalho, e o `validateLessonSections` do core exige que todo bloco esteja
-numa seção ou nos materiais de apoio: ele sumia para a criança em silêncio, e o `render` daqui já
-tinha o ramo `isGalleryBlock` pronto (só era alcançável pelo material de apoio). Classificar por
-PAPEL, e não por kind, fechou o buraco — travado em `community-kids/tests/lesson-sections.test.tsx`.
+**O percurso da experimentação tem sete estados, sempre na mesma ordem e cada um no seu lugar:** (1) palpite
+com o palco coberto; (2) palpite congelado numa linha encostada no palco; (3) "✓ Descoberta N de M" logo
+abaixo do palco, na hora do gesto; (4) palpite retomado quando a meta que o responde cai; (5) "✓ Você
+descobriu!" + "Agora explique", com o foco na pergunta; (6) certo ou errado com ícone, cor e palavra, e a
+regra da cena só depois de responder; (7) "✓ Guardado". Dar a cada tempo o seu lugar é o que impede a tela de
+contar a atividade em relógios que não conversam (o palco no presente, um cartão no passado).
+
+- ⚠️⚠️ **Cumprir o objetivo não encerra a cena.** Nada que trava olha `result.passed`: nem o `fieldset` (um
+  `<fieldset disabled>` desliga todo `<button>` de dentro, e a cena concluída abria morta ao reabrir a aula),
+  nem o guarda do `action.current` (os botões ficariam clicáveis e mudos), nem os gestos diretos no desenho.
+  Trava só `!ready || conflict` (gravação abrindo ou aberta em outro lugar) e o palpite pendente; o
+  `demoMode` separa os dois tipos de bloco.
+- ⚠️⚠️ **A conclusão é um LATCH (`conclusao`), não um espelho de `result.passed`.** Em `layers` e
+  `jump-sound` a montagem precisa ficar ASSENTADA, e mexer depois de concluir faz `passed` voltar a falso. O
+  latch manda na renderização (a pergunta não some) e no ENVIO (`descobriu = conclusao || result.passed`).
+  O servidor também nunca rebaixa um `passed:true`.
+- **A frase de sucesso é uma só, vestida** (`fraseDeSucesso` = `sceneSuccess(cena, cast, sceneTargets(activity))`,
+  que dá à missão restrita a frase dela): o efeito da conclusão nunca escreve o `result.feedback` cru.
+- **As metas exibidas são as que ESTA atividade cobra** (`sceneTargets(activity)` em `sceneGoals` e
+  `evaluateExperimentation`): sem isso uma missão de uma meta mostraria as três do modelo e a barra não fecharia.
+- ⚠️⚠️ **Concluir NÃO para o relógio**: nas cenas em que o mundo anda sozinho a última meta cai no primeiro
+  quadro do que a criança devia olhar (o anel da `group-loop`, os tiros da `cooldown`). O que para o ▶ está em
+  "O relógio".
+
+**O palpite (`scene-prediction.tsx`).** `content.prediction` chega resolvido pelo core (do modelo da cena ou do
+professor).
+- ⚠️ Não é o `checkpoint`: não vale nota, não entra na sessão da cena e sobe em `answers.prediction` junto da
+  tentativa, para o relatório do professor. "Não era isso." é âmbar e sem punição.
+- ⚠️⚠️ **Opções são BOTÕES** (`aria-current` na escolhida, `aria-disabled`), nunca rádios: num grupo de
+  rádios a SETA escolhia, congelava o palpite e mandava uma tentativa por seta. A pergunta mora no `legend`.
+- ⚠️⚠️ **O palpite pendente trava a cena pelo ponto único dos gestos**: `dispatch` e `action.current` recusam;
+  o palco fica `inert` sob o véu "Primeiro, seu palpite ↑" (seta fora da fala; o `fieldset` não alcança o
+  Dino `<g role="button">` nem o arrasto); a bancada fica sob a cortina (`inert` + desfoque: os motivos dos
+  controles fechados sopravam a resposta); e o rodapé fecha **Desfazer, Recomeçar, Uma pista e Conferir**
+  (`fechado`, com o véu no `aria-describedby`), como o principal da demonstração guiada e o "Ver acontecer" da
+  inline. **"Ouvir" fica aberto** (fora de todo `fieldset`: quem ainda não lê não pode ficar sem saída diante
+  de uma pergunta escrita), e o "Ligar som" da demonstração também. Na `layers` o véu é quase opaco e a faixa
+  mostra "?" (`valoresEscondidos`): a floresta por cima somada à ordem deduzia a regra.
+  Substituído (16/09/2026): "o palpite trava o PALCO, nunca o rodapé" → fecha também as ferramentas do rodapé,
+  porque "Recomeçar" antes do palpite contava como gesto e apagava o "trocar".
+- **Guardado no `localStorage`** (`sz:scene-prediction:<scope>`, scope = perfil, aula, bloco e revisão) com a
+  IMPRESSÃO da pergunta (enunciado e opções): pergunta diferente descarta o palpite, porque o deploy troca a
+  previsão do modelo sem mudar o `scope`. O id cru do `sessionStorage` antigo ainda é lido se for opção válida
+  (ponte; ver o raio-x).
+- Congela no primeiro gesto: o "trocar" (44px) só existe sem gesto, sem ação além de pistas e sem meta caída
+  (`trocavel`). É revelado quando a meta `revealOn` cai (sem ela, na conclusão). Não tranca a REVISITA.
+- ⚠️⚠️ **O retomado tem dois tempos:** a frase "Você achou: X. Olhe…" (`fraseDoPalpite`) aparece junto do
+  aviso da descoberta e some no gesto seguinte (`palpiteNaHora`); lá em cima fica a linha no PASSADO ("Seu
+  palpite: X. Acertou!" / "Não era isso."), verdadeira com o palco em qualquer estado. Na revisita sem palpite
+  guardado, nada.
+
+**Conferir, pista e missão restrita.**
+- **"Conferir"** (contorno: enquanto a cena espera um gesto, o azul cheio é o do gesto) responde com o `pedido`
+  da meta que falta ("Ainda não. Tente: …"), **nunca com o `label`**, que é a conclusão. Meta sem `pedido` cai
+  na pista de nível 1; metas feitas com o arranjo desfeito (`layers`, `jump-sound`) respondem o gesto que o
+  avaliador devolve. A resposta é CONGELADA no clique e sai no gesto seguinte: calculada ao vivo numa região
+  viva, ela dizia "Ainda não." e a regra no render do gesto que concluía.
+- Depois de concluir ele dá lugar a **"Continuar ↓"** (`tom="gesto"`), que leva o foco à pergunta e só aparece
+  com ela fora da janela (`IntersectionObserver`). Na revisita, nenhum dos dois. Há UM "Recomeçar".
+  Substituído (16/09/2026): "Já descobri" + "Ver de novo" → "Conferir"/"Continuar ↓", porque a cena se avalia
+  sozinha (o botão nunca concluía nada) e "Ver de novo" deixava "você concluiu" sobre um palco vazio.
+- **Um azul cheio por vez:** o gesto da cena (`gestoEmDestaque` do `botoesDoMundo`) apaga quando o "Continuar"
+  acende.
+- **"Uma pista"** entra ABAIXO da instrução, que nunca some (quem pede ajuda é quem vai relê-la), com o degrau à
+  vista ("Pista 1 de 3"). O degrau volta do servidor (`saved.hintsUsed`); o botão desliga no último degrau e
+  SOME ao concluir (o clique mudo contava pista para o professor). Pedir pista não é gesto: não apaga o aviso
+  da descoberta nem congela o palpite. A caixa não é região viva; a pista é anunciada no clique. ⚠️ A ação tem
+  três degraus (`SCENE_LIMITS.hint`) e o editor aceita dez pistas: a tela mostra todas, a evidência satura em
+  três.
+- ⚠️ **Missão restrita sem pistas do professor** (`setup.goals` diferente das metas de fábrica, lidas por
+  `sceneSetupGoals`, que ignora meta que saiu do catálogo): a escada é UM degrau, tirado da meta que falta
+  ("Tente: …"), porque a escada do modelo mandava mexer no eixo que a aula não cobra. Só o player encolhe: o
+  members confere `hintsUsed` contra os três do modelo.
+- Rodapé: ferramentas à esquerda, o caminho para a frente à direita (`ml-auto`). ⚠️ Os NOMES acessíveis das
+  ferramentas são o contrato dos testes; abaixo de 480px elas ficam só com o ícone (`min-w-11`).
+
+**Conclusão e revisita (`scene-conclusion.tsx`).**
+- **Revisita = o resultado guardado CONGELADO no primeiro render** (`guardado`: `saved.result`, ou
+  `rehearsal.results` no ensaio do admin): concluir agora não vira revisita no meio do gesto. Na revisita o
+  palpite não tranca, a pergunta não aparece e não há Conferir; a faixa "✓ Você já descobriu isto." fala DELA,
+  nunca do palco (é verdade com o palco vazio, pela metade ou montado), com "Ver a explicação" fechado (a regra
+  e, quando `verifiedBy === 'server'`, o `feedback` guardado).
+- **Ao concluir**, na primeira vez e só depois de GESTO: "✓ Você descobriu!", foco na pergunta (sem pergunta,
+  na faixa), anúncio e gravação na hora. A pergunta fica no `legend` focável, com anel de respiro
+  (`data-anel-com-respiro`).
+- ⚠️⚠️ **A regra da cena só aparece DEPOIS de responder** (sem pergunta, na hora): nascendo junto da pergunta,
+  ela era a resposta com quase as mesmas palavras.
+- ⚠️⚠️ **Opções da pergunta são botões** (`aria-current`, `aria-disabled`; o `disabled` tirava o foco de quem
+  acabou de acertar) e **ignoram o TOQUE (`detail > 0`) nos primeiros `TEMPO_PARA_LER_A_PERGUNTA_MS`**: o toque
+  em série no gesto que conclui caía numa opção. O teclado responde na hora. A tela só rola se a pergunta está
+  fora da janela (`block: 'nearest'`).
+- **Certo** mostra o `feedback` do servidor (a explicação do professor) e a regra; **errado** é âmbar com a
+  palavra do servidor (o gabarito não sai de lá); `PERGUNTA_MUDOU` oferece "Abrir de novo". Resposta enviada
+  com a cena DESFEITA vira a caixa neutra "Para conferir, deixe a cena como estava quando você descobriu."
+  (`aguardaCena`), nunca âmbar. ⚠️ Toda região viva (esta, a do Conferir, a de anúncios) existe SEMPRE, com o
+  texto por dentro: montada junto do conteúdo, não é anunciada.
+
+**Gravação.**
+- Batida de 1 s, mais `online`, `pagehide`, aba escondida e desmontagem; concluir grava na hora. Segmentos em
+  `…/learning-progress` e tentativa em `…/learning-attempts`, sempre com `x-sz-viewer`. A sessão da cena
+  sobe em `sceneCheckpoint`, a resposta da pergunta em `checkpoint`, o palpite em `prediction`. Rascunho local
+  por `scope` e aba (`sz:experience-tab:<scope>`).
+- ⚠️⚠️ **Reenvio só com algo novo:** a assinatura é escolha, descobertas e montagem assentada (na
+  demonstração, cada volta até o fim). Com a montagem desfeita só uma RESPOSTA nova sobe; remontar reenvia
+  sozinho. Sem isso subia uma tentativa por segundo enquanto a criança lia a pergunta.
+- ⚠️⚠️ **O carimbo do envio é gravado DEPOIS da resposta:** carimbado antes do `await`, uma falha de rede o
+  deixava igual à assinatura para sempre e nada mais saía. O POST é idempotente pelo `attemptId`.
+- ⚠️ **`attemptId` novo a cada resposta nova e quando o servidor recusa:** o members reavalia pelo checkpoint
+  dele, e com o id fixo `findAttempt` devolveria a tentativa reprovada para sempre. Repetir um pedido perdido
+  nunca cria tentativa.
+- ⚠️ **O `flush` recebe a escolha da pergunta por PARÂMETRO:** reatribuído a cada render, o que o clique
+  alcança é o do render anterior, com a resposta vazia.
+- O rodapé só fala de gravação: "✓ Guardado" / "Guardando…" depois de concluir; "Ainda não ficou guardado."
+  quando o servidor recusa (na demonstração, "Veja de novo até o fim." + "Tentar de novo"); 409 = "Esta
+  atividade mudou ou está aberta em outro lugar." + "Abrir de novo" (depois de um deploy o 409 é quase sempre
+  revisão nova do bloco ou regra nova); falha de rede = uma frase + "Tentar salvar". Cópia local que falha e
+  rascunho recusado ("Continuamos de onde você parou.", sem tom de erro) não assustam. Na vez, nada.
+- ⚠️⚠️ **Servidor de OUTRA versão das regras não é recusa da criança:** o progresso que volta do segmento diz se o
+  members conhece o marcador deste player (`sceneSegmentHasClock`). Tentativa reprovada por um servidor sem ele,
+  ou 400/422 no envio, param a cena, tiram da tela a conclusão que o servidor não aceitou e mostram "Esta
+  atividade mudou." + "Abrir de novo" (sem "versão" no texto). Sem isso a resposta certa virava "Ainda não é
+  essa" e o 400 prometia "a gente guarda quando voltar" para sempre. A ordem de deploy que evita a janela está no
+  raio-x.
+- ⚠️⚠️ **Sem ensaio em volta, o avaliador de VERDADE** (`evaluateLearning(previewContent, …)`): a prévia sem
+  provedor aprovava qualquer resposta, e o professor nunca lia a explicação que escreveu.
+
+**Voz, som e anúncios.**
+- **"🔊 Ouvir"** (`useSceneVoice`, `speechSynthesis` em pt-BR) aparece sem `instructionAudioUrl` e só com
+  `temVoz` (a API existe E há voz em português, ou a lista ainda está vazia; recalculado no `voiceschanged`). O
+  hook devolve `{ temVoz, falando, falar, parar }`. Ele lê o que PEDE resposta agora (instrução, pergunta do
+  palpite com as opções, pergunta final, retorno, pista), fala DENTRO do gesto (o Safari do iOS só aceita o
+  `speak()` na ativação; o pedido de foco das mídias vai sem `await`), uma fala por frase (o Chrome corta fala
+  longa) e só cancela a fila se for o dono. ⚠️ Com vozes e nenhuma pt, cala: sotaque inglês lendo português é
+  pior que nada. Substituído (16/09/2026): `disponivel` → `temVoz`, porque com vozes sem português a tela dizia
+  "Voz: ligada" e nada falava.
+- **Som só onde `sceneEmitsSound(cena)`** (régua de legalidade do core; hoje só a `jump-sound`). Na
+  experimentação dela o som é a chave "Som" da bancada (`SomDaBancada`: uma `Chave` com `aria-pressed`, dentro
+  do `fieldset` e da cortina do palpite), acima da peça, porque a cena é SOBRE som. Na demonstração e na vez é
+  o botão "Ligar som"/"Silenciar" das ferramentas, sem `aria-pressed` (o rótulo já diz a próxima ação), fora de
+  `fieldset`. Substituído (16/09/2026): "Ligar som" em toda cena, sempre no rodapé e sem `aria-pressed` → a
+  régua acima, porque nas outras 44 era um botão mudo e na `jump-sound` nascia desligado num canto enquanto a
+  instrução mandava contar os sons.
+- **Anúncios:** região `aria-live` da moldura com uma `key` por anúncio; dois no mesmo gesto saem numa fala só
+  (`queueMicrotask`). ⚠️ Foco, anúncio e "✓ Descoberta" só depois de GESTO (ref `gesto`; soltar o tempo conta):
+  num F5 o checkpoint volta concluído e ninguém fez nada agora.
+- **A frase da situação** (`sceneSituation` do core; cena nova precisa de um caso lá, senão volta o genérico)
+  é o narrador do mundo: `role="status"`, e com o relógio andando `aria-live="off"` (seriam vinte frases por
+  segundo); a final é dita uma vez quando ele para. As legendas da demonstração passam pela caixa da instrução
+  (`aria-live`), não pela região de anúncios.
+- **Um Zappy e um título por tela** (`lesson-section-context.tsx`): com o título já dito no cabeçalho da seção o
+  `<h3>` vira `sr-only` (`tituloJaDito`), e com um balão de fala na seção a instrução vira parágrafo com a MESMA
+  forma do balão (`temDialogo`). ⚠️ É contexto e não prop (o `renderBlocks` de cada app fica no meio); editores
+  e "Materiais de apoio" recebem o contexto vazio.
+
+### Demonstração e "Agora é sua vez"
+
+- **Guiada** (`SceneDemoControls`): UM botão principal cujo rótulo diz o que o clique faz agora ("Ver a parte N",
+  "Continuar a parte N", "Pausar", "Ver tudo de novo"), "🐢 Mais devagar" (`aria-pressed`) e "Parte ● ○ ○"
+  (`role="img"`). ⚠️ Não há "Um passo" na demonstração: 0,2 s mudos num respiro de 0,45 s ensinavam que o
+  botão estava quebrado.
+- ⚠️⚠️ **A legenda da parte entra DEPOIS de ela tocar**, porque descreve o resultado. Antes, a parte 1 mostra a
+  instrução do professor e as outras um convite com o NOME do botão. O anel de destaque só enquanto a parte TOCA.
+- `highlight: 'tools'` mostra a bancada REAL numa área `inert` e plana (`MontagemTravada`, com
+  `ExplorationPieces travada`), ou nada onde a cena não tem controle; `highlight: 'compare'` mostra a comparação
+  guardada só onde `sceneShowsComparison`.
+- **Inline** (`presentation: 'inline'`): um botão só ("Ver acontecer", "Pausar", "Continuar", "Ver de novo"),
+  nunca `disabled` enquanto toca (tirava o foco); o ▶ emenda as partes e segura cada legenda por
+  `tempoDeLeitura` (0,35 s por palavra, entre 2,5 e 5 s); o fim é um ✓ pequeno ("Você viu tudo." para o leitor).
+- ⚠️⚠️ **Menos movimento TOCA a demonstração em passos de 0,2 s** (guiada e inline), em vez de aplicar a parte
+  de uma vez: na `frames` a legenda "trocando devagar, dá para ver que são dois" ficava sobre um quadro parado.
+- **O fim da guiada** é "✓ Você viu tudo!" + **"Agora é sua vez"** (`scene-sandbox.tsx`): a bancada da
+  experimentação a partir do estado final, em MEMÓRIA. ⚠️⚠️ Sem controlador, sem batida, sem avaliador e sem
+  medidor: a demonstração já foi registrada e a sessão guardada é a do ROTEIRO (o members rejoga os comandos
+  dela); um comando de experimentação ali seria recusado e travaria a gravação. Tudo aberto (não há meta a
+  esperar). Usa o MESMO `botoesDoMundo`, `LessonSceneControls`, `ExplorationPieces`, `useSceneClock` e as
+  mesmas réguas de parar e soltar o ▶ do player. A instrução vira "Sua vez! …", o foco vai à `section` "Sua
+  vez", há som onde a cena faz som, e "Ver tudo de novo" recomeça a demonstração com o foco no principal.
+- ⚠️ **As `lives` do Desafio** (o roteiro atira: `pontoPorAcerto`): a vez abre numa partida NOVA (a
+  demonstração termina sem vidas), com os fios do roteiro, o botão de tiro e sem o fio do ponto por tempo nem
+  ▶/passo (`semRelogio`).
+
+### O relógio (`use-scene-clock.ts`)
+
+- `useSceneClock` soma os quadros do `requestAnimationFrame` até o limiar e chama `onTick(segundos)` (num ref:
+  nas dependências, reiniciaria o laço a cada render), que devolve `false` para PARAR. Aba escondida não conta
+  tempo; teto de 0,1 s por quadro; "🐢 Mais devagar" anda pela metade.
+- ⚠️⚠️ **O limiar é UM só** (`limiarDoRelogio`: 0,04 s, ou 0,2 s com menos movimento), no player e na vez. Quem
+  sabe o ritmo é o motor (`SCENE_FRAME_RATE`, com a sobra guardada no estado), então o tamanho da fatia não muda
+  o mundo. Não volte a escolher limiar por cena. Única exceção, em `relogioDaCena`: a `frames` com menos
+  movimento usa a fatia de UM quadro da prévia (`framesPreviewSlice`), mandada `exato`.
+- ⚠️⚠️ **Na `frames` a Prévia É o relógio:** `botoesDoMundo` não oferece ▶, passo nem "Mais devagar"; a chave
+  "Prévia" liga o relógio do player (`onRunning`) e diz "tocando" só com ele andando (`tocando`).
+  `estadoVistoDaCena` mostra a prévia parada quando o relógio para por fora (aba, F5, vídeo, Recomeçar): faixa,
+  palco, frase e bancada leem esse estado, e os comandos vão ao motor de verdade. ⚠️ Não mande `play off`
+  nessas horas: derrubaria `paused-one` sem a criança ter parado nada.
+- **O botão de passo** manda `sceneStepSeconds(cena)` com o nome de `sceneStepLabel(cena)`: "Avançar 1 quadro"
+  onde o quadro é o assunto, "Um passo" (quadros inteiros de ~0,2 s) nas outras. ⚠️ Teste que procura o botão ou
+  conta cliques usa o nome e o passo DA CENA.
+- **Quem tem relógio e salto é a régua de legalidade do core** (`isSceneAction` com `advance` e `jump`), nunca
+  uma lista aqui: a lista à mão deu à `stage-size` um "Um passo" que não fazia nada.
+- **O ▶ para** pelo botão; por `sceneClockShouldStop(cena, antes, depois)` do core (o salto que pousa nas três
+  cenas de salto, o Dino sem gravidade que passa do alto, a batida da `circle-collision`); com a aba escondida;
+  quando outra mídia da aula toma o foco (`registerLessonMedia`); no conflito de gravação; no fim de uma parte
+  da demonstração. ⚠️ Concluir NÃO para.
+- **O que um gesto faz com o ▶** (soltar, parar ou nada) é `sceneGestureRunsClock(cena, ação, depois)` do core:
+  o pulo solta, também com menos movimento (sem isso a Aula 3 deixava o Dino parado no chão); o `connect` segue
+  a `sceneConnectRunsClock` (ligar um fio com o Dino no ar solta; desligar a gravidade com ele acima do topo para); o
+  `start` que começa a partida da `restart` e da `score` solta. A bancada ainda solta com `onRunning(true)` o gesto
+  que só se vê com o tempo passando (segurar a tecla, ligar o laço, fazer nascer, mexer no encosto, atirar,
+  "Tocar na tela", "Próxima tela"). Player e vez usam só as duas réguas do core. Substituído (16/09/2026): as
+  condições copiadas no player e na vez → `sceneClockShouldStop` e `sceneGestureRunsClock`, porque a cópia da vez
+  não parava o ▶ com o Dino no chão.
+- ⚠️⚠️ **Menos movimento não é relógio parado:** o laço anda em passos de 0,2 s e a cena continua acontecendo.
+- ⭐ **Quadro em andamento:** nas cenas de quadro longo (`sceneLongFrame` do core) a faixa ganha, enquanto o ▶
+  roda, uma barra de 4px na borda de baixo com a sobra do motor (`clock.carry`; `data-quadro-em-andamento`),
+  porque a primeira mudança vinha mais de um segundo depois do clique. ⚠️ `aria-hidden`, sem transição e
+  absoluta (não empurra o palco); o gesto a zera.
+
+### A moldura: faixa, botões do mundo e lugar reservado
+
+- **A faixa de estado** (`SceneReadoutBand`, `scene-frame.tsx`: os valores de `sceneReadout` do core numa `<dl>`)
+  é a tira de CIMA da mesma moldura do palco (`colada`; o player tira a borda do `sz-scene-frame` de dentro).
+  Ela liga o número que a criança digita no bloco do Estúdio ao desenho que muda. ⚠️⚠️ **Ela NÃO é
+  `aria-hidden`:** é conteúdo estático lido pelo leitor, e quem ANUNCIA a mudança é o `role="status"` da frase
+  embaixo do palco. Substituído (16/09/2026): faixa `aria-hidden` → faixa lida, porque escondida tirava de quem
+  não enxerga os números que a cena existe para mostrar. 14px, separador por CSS (`after:content`), valores nas
+  cores do par (`scene-a`, `scene-b-ink`, `scene-alert`, `scene-leaf`).
+- **O medidor de descobertas mora NA LINHA da faixa**, perto de onde o dedo está: `role="meter"` com o nome "N de
+  M descobertas", o texto "Descobertas N de M" à vista e `aria-hidden` (o medidor já diz), bolinhas sem `title`
+  (o tooltip mostrava o rótulo da meta, que é a conclusão).
+- ⭐ **`botoesDoMundo` devolve uma LISTA** e a caixa pergunta `.length > 0`: um booleano à parte esconderia um
+  botão acrescentado e esquecido nele, sem erro nem teste vermelho. Rótulos: "↑ Pular"; na `jump-sound`, onde o
+  jeito é o assunto, "✋ Tocar para pular" e "⌨ Apertar Espaço" (o Espaço pula no `keydown` e a marca do botão
+  impede o segundo pulo no `keyup`); o ▶ com nome "Soltar o tempo"/"Parar o tempo" e a palavra "Tempo" à vista
+  (`aria-hidden`), `min-w-11`.
+- ⭐⭐ **Nada acima da bancada entra ou sai do fluxo no meio do gesto** (`LugarReservado`): a altura só CRESCE
+  (a maior já vista nesta largura; mudou a largura, recomeça) e o `molde` reserva o que ainda vai aparecer
+  (desenhado invisível, medido e TIRADO na mesma passada de layout). Envolve a linha do palpite, a frase da
+  situação e os avisos embaixo do palco (o selo "Descoberta N de M" e o "Você achou…"), que nascem quando o palco
+  abre. ⚠️⚠️ O molde não fica no DOM: o "Você achou…" é a resposta do palpite, e escondido por CSS a busca por
+  texto o acharia. ⚠️ O `ResizeObserver` olha o `div` de dentro e a altura mínima vai no de fora (sem laço).
+  Custo aceito: um espaço vazio do tamanho do próximo aviso. Contrato `data-lugar-reservado`
+  (`community-kids/tests/lesson-scene-moldura.test.tsx`).
+
+### A comparação guardada
+
+`SCENE_COMPARISONS` (core `catalog.ts`, hoje só `hitbox`) com `sceneShowsComparison(cena)` é a lista ÚNICA: o
+"Guardar este jeito" (`tom="discreta"`) e o destaque `compare` da demonstração no player, e a opção "Comparação" do
+destaque de etapa no admin. A comparação abre logo abaixo dos botões ("Compare: o que você guardou × agora",
+`ExperienceComparison`). ⚠️ O `isSceneScript` aceita `compare` em qualquer cena (roteiro antigo abre); na cena sem
+comparação o destaque não desenha nada. Substituído (16/09/2026): a lista do laboratório repetida no player → a
+lista do core, porque as cópias já tinham divergido. Não confundir com o modo `comparacao` do palco, que mostra dois
+lugares do MESMO mundo.
+
+### A bancada
+
+**O vocabulário é um só** (`scene-bench.tsx`), e é ele que mantém toque, teclado e leitor no mesmo lugar (as
+cópias escritas à mão eram onde a régua se perdia):
+- **`Medida`**: deslizante, valor à vista e botões −/+ de 44px. O botão DIZ o quanto anda quando anda mais que o
+  deslizante ("Aumentar x em 20"). `texto` (string ou função do valor) vira `aria-valuetext` e o valor à vista:
+  sem ele o leitor anuncia "altura da câmera, 2". `digitavel` troca o valor à vista por um campo que confirma no
+  Enter ou ao sair, arredonda no passo e prende na faixa (digitar "480" mandaria 4 e 48). ⚠️⚠️ **O valor só vai
+  ao motor quando o GESTO termina, em toda cena e sem exceção**: no `pointerup`, `pointercancel`,
+  `lostpointercapture`, `keyup` ou `blur`; e na hora quando o `change` chega sem dedo nem tecla apertados (o
+  ajuste do VoiceOver no iOS não dispara `keyup` nem `pointerup`, e cada ajuste já é um gesto inteiro). Arrastar
+  passava por valores que derrubavam metas e revelavam o palpite ("um pouco maior" na `onion-skin`, "de frente"
+  na `camera-3d`), e cada valor do caminho era um passo do Desfazer. Enquanto o gesto dura, o valor à vista
+  acompanha; os −/+ mandam na hora. Substituído (16/09/2026): a prop `soltar` por chamada (e a constante
+  `SOLTAR` do motor) → regra do componente, porque seis medidas tinham ficado sem ela.
+- **`Chave`**: liga/desliga com o ESTADO no rótulo ("Reciclar quem saiu: ligado"), nunca a ação do clique, com
+  `aria-pressed` e sem caixa própria. `seletor` é para dois VALORES ("O Dino anda: a cada quadro / a cada
+  segundo"): sem `aria-pressed`, que diria "não pressionado" para um valor tão vivo quanto o outro.
+- **`Escolha`**: vários valores num `fieldset`, o que vale com `aria-current` (sem `aria-pressed`, pelo mesmo
+  motivo), `min-w-11` por opção, `fechado` por opção + `nota`.
+- **O GESTO** (a ação que move a cena) não mora lá: é um `SceneButton tom="gesto"`.
+- Contrato em `tests/scene-identity.test.ts`: nenhuma bancada escreve deslizante à mão, as peças moram num lugar
+  só, e o PLAYER não escreve peça de bancada.
+
+**`SceneButton` é o `Button` do app** (`exploration-stage.tsx`): o kids dá o relevo 3D a todo botão por um seletor
+que casa `button[data-slot="button"]` com a classe da variante, e o `<button>` cru de antes era o único controle
+chapado da tela. ⚠️⚠️ O tom entra por `tom` (`ferramenta` contorno, `discreta` fantasma, `ligado` secundário,
+`gesto` primário), **nunca por `!bg-*` no `className`**: o `cn` é tailwind-merge, apagaria a classe da variante e
+com ela o relevo. `min-h-11` é requisito do público.
+
+**Fechado não é escondido.** O controle que só faz sentido depois de uma descoberta fica na tela, sem responder,
+com o motivo escrito:
+- ⚠️⚠️ **Fechado é `fechado` (`SceneButton`) ou `disabled` + `nota` (`Medida`, `Chave`, `Escolha`), nunca o
+  `disabled` nativo**, que tirava o controle do Tab e calava o motivo. Fechado põe `aria-disabled`, não liga
+  `onClick`/`onPointer*`, perde o relevo (tom discreto, borda tracejada) e leva a nota no `aria-describedby`; a
+  `Medida` fechada ignora o `onChange`. O fio fechado tem as duas pontas assim.
+- ⚠️ **A nota diz o GESTO que abre, nunca o resultado** ("Abre depois que você fizer o Dino pular e esperar", e
+  não "subir sem gravidade"): o resultado é a resposta da previsão.
+- ⚠️ **Uma chave nunca fica fechada LIGADA**: um caso do professor que a liga precisa poder desligá-la. Exceção
+  consciente: a condição da `acceleration`, ligada no mundo de fábrica e fechada até as metas `base-limit` e
+  `variation-limit` que a atividade COBRA.
+- **Uma variável por vez** é régua de várias cenas (a área da `hitbox` depois da batida, largura e altura da
+  `stage-size` depois da borda, o fogo 2 da `onion-skin` fora do quadro 2, o lado da `velocity` numa missão só
+  vertical). Na demonstração e na vez (`more`) tudo abre.
+- **Toda porta do motor tem controle na bancada**: sem ele a meta travava para sempre (os testes do core chamam
+  `connect` direto, caminho que a criança não tem). Contrato derivado de `scenePorts` nas 45, que também reprova
+  controle fechado fora do Tab: `describe('toda porta da cena tem controle na BANCADA')` em
+  `community-kids/tests/lesson-scene-design.test.tsx`.
+
+**A peça que muda de caixa** (`PecaQueMudaDeCaixa`, `scene-dino-controls.tsx`) é o gesto do Estúdio de MOVER um
+bloco para outro evento: `jump-sound` ("♪ Tocar som"), `spawn` ("Criar cacto", com o intervalo dentro do relógio e
+fechado fora dele), `game-state` (o "Se jogando" aninhado no relógio), `controls` ("▷ Começar") e `score` ("＋ Somar
+ponto"). À vista desde a abertura.
+- Toque sem arrasto ESCOLHE a peça (`aria-pressed`) e acende as caixas livres; o arrasto (`LIMIAR_DO_ARRASTE` de
+  10px, captura do ponteiro, fantasma em portal) solta onde o dedo parou, a caixa de DENTRO primeiro; cada caixa
+  sem a peça tem "Colocar aqui" (o caminho do teclado). Escape cancela; o foco segue a peça até a caixa nova.
+- ⚠️ O nome acessível COMEÇA pelo texto à vista ("Colocar aqui" + ": <peça> em <caixa>" em `sr-only`, WCAG 2.5.3) e
+  o símbolo do começo fica fora da fala (`separarSimbolo`).
+- ⚠️⚠️ **O arrasto com MOUSE devolvia a peça**: o `click` depois do `pointerup` caía no nó que o React reaproveitou
+  para o "Colocar aqui" da origem. Duas travas: `key` distintas (`peca`/`colocar`) e o `onClickCapture` do grupo
+  que engole o clique logo depois de um arrasto. O happy-dom não dispara esse `click`; o teste do kids o dispara à
+  mão.
+- `travada` (na `MontagemTravada`) troca a ajuda por "Toque em Agora é sua vez para mexer.". Caixas são
+  `role="group"` com `data-caixa`.
+- Substituído (16/09/2026): o fio e a `ConditionPiece` (com `usePieceDrag`) nessas cinco cenas → a peça, porque
+  eram três metáforas para o mesmo gesto e o fio nascia escondido até a primeira meta.
+
+**O fio** (`ExperienceConnection`) ficou na `gravity` ("Gravidade → Dino") e nas `lives` (os dois fios juntos,
+nenhum atrás de descoberta). Puxar até o destino, ou tocar a origem e depois o destino; a ajuda (14px, no
+`aria-describedby` das duas pontas) diz os NOMES ("Puxe o fio até X. Ou toque em Y e depois em X.", "Ligado: Y →
+X"). `motivo` fecha as duas pontas e vira a ajuda; o fio que fecha (depois de "Recomeçar") desmarca a origem
+escolhida; o destino tem `disabled:` visível (o `fieldset` do palpite o desliga).
+
+**A ordem de desenhar** (`layers`) é uma pilha vertical numerada, 1º em cima, como a do Estúdio, com "Descer"/"Subir"
+em cada peça ("Descer Dino para o 2º lugar") e arrasto vertical; o foco segue a peça.
+
+**Começar pelo palco leva o foco à bancada**: `focarNaBancadaDepoisDeComecar` procura, na mesma `section`, o
+controle com `data-foco-depois-de-comecar` (`restart`, `score`, `game-state`, `controls`).
+
+**Segurar** (`scene-nucleo-controls.tsx`): na `hold-vs-press` a tecla é UMA ("A tecla: solta/segurada",
+`aria-pressed`). Dedo e mouse seguram no `pointerdown` e soltam no `pointerup`; o teclado segura no `keydown` de
+Espaço ou Enter (sem repetição) e solta no `keyup`, e o `click` que o navegador gera junto é descartado; o `click`
+sem tecla nem ponteiro (leitor de tela) ALTERNA. ⚠️⚠️ Pelo leitor, segurar NÃO solta o ▶ (a segunda ativação é o
+toque rápido) e perder o foco só solta a tecla segurada pelo dedo ou pelo teclado (o NVDA leva o foco junto). A
+tecla e o "Andar" da `camera` são `SEGURAVEL` (sem seleção nem menu do toque longo). Substituído (16/09/2026): dois
+botões e o `e.detail === 0` que alternava → a tecla única, porque a cena ensinava duas teclas onde o jogo tem uma.
+
+**O elenco veste a bancada** (`castText` em todo rótulo, e no helper dos fios da `ExplorationPieces`): a criança lê
+a faixa e o controle na MESMA tela.
+
+### O palco
+
+**Um palco só** (`SceneCanvas`, `scene-canvas.tsx`): a moldura (`sz-scene-frame`), o `<svg role="img">` com
+`<title>`/`<desc>` por `aria-labelledby`, o rodapé e o `overlay` (controles HTML por cima do desenho, irmãos do
+`<svg>`). `interativo` faz do desenho `role="group"` quando ele recebe gesto direto; ⚠️ o caminho de teclado
+continua sendo a bancada. `ExplorationStage` só DESPACHA para o palco de cada cena e é exaustivo: cena nova sem palco
+é erro de tipo. Substituído (16/09/2026): o palco compartilhado (com o selo `STAGE_LABEL`) → um palco por família,
+porque ele desenhava a mesma pista para cenas que precisavam ver coisas diferentes.
+- ⚠️⚠️ **O enquadramento é por família, e é deliberado:** `SCENE_VIEW` (560 × 300) é o padrão e cena nova herda;
+  o Corre Dino é 600 × 310, e o laboratório, as vidas, os lados da `world` e o `tilemap` têm o seu. As coordenadas
+  dos desenhos estão nessas unidades: unificar é redesenhar. Quem foge do comum PASSA `view` (`scene-identity`
+  cobra).
+- ⚠️ **Lista de cenas como `string[]` guarda código morto em silêncio**: cena que sai de um ramo sai por guarda de
+  TIPO (`ehLaboratorio`), nunca por `includes`. Foi assim que ~120 linhas mortas apareceram.
+
+**Cromo é do APP, mundo é da CENA.**
+- O CROMO (moldura, faixa, bancada, frase, rodapé, conclusão) veste o app (`card`, `border`, `foreground`,
+  `primary`): no kids é o Pen, no adulto o tema dele. Dentro do palco manda a paleta ilustrada `--color-scene-*`
+  (`styles/scene.css`): a cena é o retrato de um JOGO, e de branco e azul viraria formulário.
+- ⚠️⚠️ **O par sobrevive no cromo** (`scene-a` azul, `scene-b-ink` âmbar, `scene-alert`): diz QUAL medida é qual,
+  no palco, na faixa e no controle.
+- A regra tem uma direção (`scene-identity`): o cromo não veste a cena. O contrário não se cobra, porque palcos
+  carregam cromo legítimo (a alça por cima do SVG, o campo da `screen-reader`).
+- **A cena segue o tema:** céu, chão, grade e linha derivam do `--primary` por `color-mix` ⚠️ `in oklab`, nunca
+  `oklch`. O par e o encosto não trocam de matiz. Contraste medido em `tests/scene-contrast.test.ts` (o par contra
+  o cartão dos dois apps, lido do `globals.css` de cada um; o espaço com os `--primary` que leem a folha).
+
+**O texto do palco.**
+- ⚠️⚠️ **O rodapé só DÁ NOME ao que está desenhado, ou não existe.** Se ele explica, é da `success`, não do
+  desenho. O desenho também não repete a faixa nem escreve por cima da cena.
+- ⚠️⚠️ **A `<desc>` diz o estado, nunca a conta pronta**, com palavras DIFERENTES da frase embaixo do palco (senão o
+  leitor ouve duas vezes e a busca dos testes acha dois elementos).
+- ⚠️ **Rótulo de controle não carrega a resposta:** `coordinates` é "x"/"y"; o sentido do eixo do 3D só aparece
+  DEPOIS da descoberta ("y (altura)", "z (negativo é o fundo)").
+- **Número que a criança ainda não viu fica `?`** (as distâncias da `group-loop` antes de medir, a régua do
+  fantasma sem o fantasma). Plural por `quantos`, decimal por `decimal`, negativo por `numero`, também dentro do
+  desenho.
+- Com a conta fora da faixa, da frase e do rodapé, o DESENHO é a fonte: o cubo da `camera-3d` tem lados opostos da
+  mesma cor e o topo na terceira (`fill-scene-leaf`), conferido nas 24 posições contra `facesAVista`
+  (`tests/scene-camera-3d.test.tsx`).
+
+**A letra no celular.** Os palcos são SVG escalados para a coluna (~0,87 no computador, ~0,52 num celular de
+390px), e um `fontSize` de 10 a 15 virava 5 a 8px justo onde mora a descoberta.
+- ⚠️⚠️ **Todo texto de palco é `<Texto tamanho={N}>`, nunca `<text fontSize>`**: passa por `palco.letra(N)`, com
+  piso `PISO_DA_LETRA` (12px NA TELA). `tests/scene-identity.test.ts` reprova `<text` e `fontSize=` nos palcos;
+  `tests/scene-letra-celular.test.tsx` calcula a menor letra de cada `<svg>` das 45 cenas a 314 e a 524px.
+- ⭐⭐ **O `SceneCanvas` MEDE a moldura** (`useLarguraMedida`: `ResizeObserver` + medida síncrona no
+  `useLayoutEffect`) e entrega um `Palco` `{largura, escala, view, letra, estreito, larguraDoTexto}` pela função
+  `children={(palco) => …}` (`desenho: (palco) => …` na comparação) ou por `usePalco()`. Antes de medir vale
+  `LarguraConhecidaDaCena` (galeria, testes, um palco que parte a própria área e a declara em `data-parte-da-cena`)
+  e, sem ela, `LARGURA_NOMINAL_DA_CENA` (a coluna de 600px: sem medida a cena sai como sempre).
+- ⚠️⚠️ **O que muda no estreito é decidido por `palco.estreito`** (escala abaixo de `ESCALA_ESTREITA` no
+  enquadramento de fábrica: todo palco num celular, nenhum na coluna do computador), nunca pela estimativa
+  `larguraDoTexto`, que é folgada (serve para CABER) e mudava o desenho do computador.
+- **Para o texto maior caber, nesta ordem:** menos rótulos; levar para fora do desenho com `legenda` (HTML logo
+  abaixo do `<svg>`, dentro da moldura); recortar com `viewEstreito` (`{x?, y?, w, h}`; as coordenadas não mudam)
+  ou com `viewEmpilhado` num lado da comparação. ⚠️⚠️ A legenda que cresce RESERVA a altura final (`min-h-*`):
+  HTML não empurra a bancada no meio do gesto.
+- ⚠️⚠️ **Lado a lado pela largura MEDIDA, nunca pelo `sm:`** (que olha a JANELA): a comparação só fica lado a lado
+  quando nenhum lado fica estreito (`ladosCabemLadoALado`), a `screen-reader` só abre duas colunas a partir de
+  500px de palco, a `ExperienceComparison` empilha abaixo da escala estreita e `empilhar` força um embaixo do outro
+  (os dois lados deitados da `pick-ray`). Substituído (16/09/2026): "lado a lado só a partir de `sm`" → a largura
+  medida, porque num computador com a cena numa coluna estreita os dois lados caíam para metade.
+- ⚠️ **Sem `container-type` nem `@container`**: contenção na aula já prendeu o "Expandir" do Estúdio e, no Chromium,
+  colapsou a grade da bancada para largura zero no primeiro gesto que trocou um rótulo (por isso as três `Medida`s
+  do motor ficam no máximo duas lado a lado, `TresMedidas`).
+- O que encosta ou corta só se mede com layout, no navegador. Contratos: `data-largura-do-palco` na moldura,
+  `data-largura-do-desenho` e `data-escala-do-desenho` em cada `<svg>` (⚠️ não `data-escala`, que a `axis-z` usa
+  no cubo).
+
+**O modo `comparacao`**: dois desenhos nomeados na mesma moldura, com os títulos nas cores do par e a divisória na
+régua da CENA (`scene-rule`; a linha do Pen sumiria no papel). Usam: `world` (bastidores | tela do jogo),
+`cleanup` e `pick-ray` (o que você vê | de lado). ⚠️⚠️ **Quando usar:** os dois estados COEXISTEM no mundo → lado a
+lado; a criança ALTERNA entre dois estados (`layers`, `fill-stroke`) → um estado só, porque o gesto é a descoberta e
+mostrar os dois tira o experimento. A maioria das cenas de contraste já compara dentro do próprio desenho
+(`hold-vs-press`, `delta-time`, `pixel-vector`, `sheet-vs-sprite`, `tilemap`).
+
+**O elenco e as figuras** (`scene-figures.tsx`).
+- ⭐⭐ **O elenco troca o DESENHO, não só os nomes**: `ActorFigure({ figure, x, y, ghost, escala, escuro })` com
+  `figure = actorFigure(cast, papel)` do core é a ÚNICA porta. O Dino, o cacto e a árvore não são exportados: um
+  palco que chamasse o Dino direto mentiria para uma turma de nave. Toda figura leva `data-figure` e usa o
+  enquadramento do Dino (`(x, y)` = o chão sob ela, ~60 × 60 subindo; a floresta é uma árvore de 138). O corpo do
+  Dino e da nave é `currentColor` (quem pinta é o palco). `ArvoreDoMundo` é paisagem, sem `data-figure`;
+  `CENARIO_UNICO` põe UMA figura de cenário na `layers` que não é floresta. Substituído (16/09/2026): "o elenco troca
+  os NOMES, nunca o desenho" → troca o desenho, porque a criança do Desafio lia "nave" sobre um dinossauro na grama.
+- **O mundo espaço:** o palco passa `mundo={sceneWorld(cast, cena)}` (o core olha só os papéis de `SCENE_ROLES`
+  daquela cena) e o `SceneCanvas` põe `sz-scene-espaco` + `data-mundo` na MOLDURA; `styles/scene.css` redeclara a
+  paleta inteira ali (CSS comum, fora do `@theme`: o Tailwind só emite variável que alguma utilitária usa). ⚠️ Só o
+  palco que desenha um PAPEL passa `mundo`; os abstratos (espelho, lupa, mapa de letras, 3D, ateliê) ficam no papel
+  de sempre.
+- **`FundoEspaco`** (`data-fundo="espaco"`) desenha a linha do chão (`chao`) só onde ela MEDE alguma coisa
+  (hoje o laboratório e a `jump-sound`); nos outros as figuras flutuam por `pisoDoMundo(mundo, chao)`, que sobe no
+  espaço e devolve o MESMO número na terra (o Corre Dino não muda um pixel). ⚠️ Tudo que se apoia no chão sobe
+  junto, senão a cena desmonta. A TERRA segue desenhada por cada palco como sempre.
+- ⚠️ As cores das figuras são tokens PRÓPRIOS (`scene-rock`, `scene-stone`, `scene-flame*`, `scene-fin`,
+  `scene-window`, `scene-star`), nunca os que mudam no espaço. As estrelas têm SEMENTE fixa (`Math.random`
+  piscaria o céu a cada gesto) e somem atrás de placar (`semEstrelas`); o texto no espaço tem halo de 3px
+  (`paint-order`) que apaga a estrela encostada na letra. `.sz-scene-espaco svg .text-primary` clareia o
+  personagem só DENTRO do desenho.
+- **O elenco no texto:** o `SceneCanvas` aplica `castText` no título e na descrição; texto DENTRO do desenho
+  precisa de `castText` à mão. Título e instrução são do PROFESSOR e não se vestem. ⚠️ Texto novo precisa
+  sobreviver à troca: a régua só flexiona o que está colado ao nome ("o Dino continua guardado" viraria "a nave
+  continua guardado"). ⚠️⚠️ A varredura `describe('o elenco veste a cena INTEIRA…')` de
+  `community-kids/tests/lesson-scene-design.test.tsx` passa pelas 45 cenas (nunca por lista curada) e olha o texto
+  visível, os `aria-label` e o `<title>`/`<desc>`. "dinossauro" não é termo do elenco (a régua casa "Dino").
+  Figuras por cena: `tests/scene-figures.test.tsx`, que compara a descoberta pelo elenco com `SCENE_ROLES`.
+
+**O 3D é DESENHADO em SVG, não renderizado** (`scene-3d.tsx`): uma biblioteca 3D no player custaria o peso dela em
+toda cena. É geometria de verdade, a mesma régua nos quatro palcos (`projetorPerspectiva`, `girar` e
+`naTelaSemPerspectiva`, `cuboComPerspectiva` e `cuboGirado` com as faces viradas para quem olha, `caminhoDe`,
+`TomDaFace`, `SombraNoChao`, `COR_DO_EIXO`), nas convenções do Jogo 3D do Estúdio: y para CIMA, z negativo é o
+FUNDO, eixos x vermelho, y verde e z azul. Substituído (16/09/2026): a projeção isométrica à mão de cada palco → a
+régua com perspectiva, porque cada palco inventava a própria ilusão e as quatro mentiam do mesmo jeito.
+- ⚠️ Nenhum controle do 3D é arrasto livre: "a câmera decide o que se vê" pede voltas contáveis, que o teclado
+  alcança.
+- ⚠️⚠️ A ordem de desenho é a da PROFUNDIDADE: na `axis-z`, com o cubo no fundo os eixos passam na frente dele; na
+  `pick-ray` a reta para na primeira caixa (`PICK_BOXES` vêm do motor), a vista de lado mostra só as caixas que a
+  linha cruza e nada da reta depois da parada, e há atalhos de mira para quem não acha o alinhamento no deslizante.
+  A sombra fica sempre no chão. Na `mesh` a mancha da pele é um triangulinho (bolinha leria como ponto).
+
+### Cena → palco e bancada
+
+| Cenas | Palco | Bancada |
+|---|---|---|
+| `coordinates`, `stage-size`, `draw-loop`, `screen-reader` | `scene-stages.tsx` | `LessonSceneControls` |
+| `world` | `scene-world-stage.tsx` | `ExplorationPieces` |
+| `gravity`, `impulse`, `hitbox` | `experience-scene.tsx` (`ExperienceScene`, o laboratório) | `DinoSceneControls`; a `hitbox` em `DinoNumbersControls` |
+| `layers`, `jump-sound`, `spawn`, `cleanup`, `game-state`, `controls` | `scene-dino-stages.tsx` | `DinoSceneControls` (`scene-dino-controls.tsx`) |
+| `restart`, `score`, `random`, `acceleration` | `scene-dino-numbers-stages.tsx` | `DinoNumbersControls` (`scene-dino-numbers-controls.tsx`); a peça da `score` em `DinoSceneControls` |
+| `lives` | `scene-art-stages.tsx` | `DinoNumbersControls` + os dois fios da `ExplorationPieces` |
+| `velocity`, `variable` | `scene-core-stages.tsx` | `CoreSceneControls` (`scene-core-controls.tsx`) |
+| `hold-vs-press`, `group-loop`, `enemy-type`, `camera`, `contact`, `cooldown`, `aim`, `diagonal` | `scene-nucleo-stages.tsx` | `NucleoSceneControls` (`scene-nucleo-controls.tsx`) |
+| `tilemap` | `scene-nucleo-stages.tsx` | sem bancada: as letras do texto são os controles |
+| `pool`, `entity-state`, `delta-time`, `circle-collision` | `scene-motor-stages.tsx` | `MotorSceneControls` (`scene-motor-controls.tsx`) |
+| `axis-z`, `camera-3d`, `mesh`, `pick-ray` | `scene-3d-stages.tsx` | `MotorSceneControls` |
+| `frames`, `onion-skin`, `symmetry`, `pixel-vector`, `sheet-vs-sprite`, `fill-stroke`, `shading` | `scene-atelie-stages.tsx` | `AtelieSceneControls` (`scene-atelie-controls.tsx`) |
+
+`LessonSceneControls` monta todas as bancadas (cada uma devolve `null` fora das suas cenas) e `ExplorationPieces`
+monta fios e peças (a `DinoSceneControls` vai por ela, para o player, a vez e a `MontagemTravada` a alcançarem igual).
+Recebem gesto DIRETO no desenho (na demonstração o despacho ou o `fieldset` do palco o desliga): o laboratório,
+`jump-sound`, `game-state`, `controls`, `restart`, `score`, `screen-reader`, `symmetry`, `aim` e `tilemap`.
+Testes por família em `tests/` (`scene-dino-numbers`, `scene-nucleo`, `consertos-onda-b-nucleo`, `scene-motor-3d`,
+`scene-atelie`, `consertos-onda-a`) e, no kids, `lesson-scene-design`, `lesson-experimentation`,
+`lesson-scene-nucleo` e `lesson-scene-motor-3d`.
+
+**Armadilhas por cena** (o motor de cada uma está no CLAUDE.md do core):
+- `coordinates`: escala e máximo das `Medida`s vêm da tela DO CASO (`state.place`), com passo 40 na tela de 800 e
+  20 na de 480; o endereço é a marca no CANTO DE CIMA da caixa do sprite e o "0, 0" fica na margem.
+- `stage-size`: escala FIXA sobre 800 × 480 (diminuir os números não pode crescer o desenho); a borda vem PRIMEIRO e
+  largura e altura (`digitavel`) ficam fechadas até ela; o alvo tracejado de 480 × 270 só com a borda à vista, e o
+  quanto falta mora na frase. Sem atalho "Usar 480 por 270": fazia pela criança a ligação número × formato.
+- `screen-reader`: FALA quando `description.listens` sobe (nunca na montagem, no desfazer nem ao reabrir); a chave
+  "Voz" só existe com `temVoz`, e sem voz o painel avisa que a leitura fica escrita; o campo da descrição nasce
+  fechado (`readOnly` + `aria-disabled`, motivo no `placeholder`, a primeira tecla vira aviso falado) até a tela
+  vazia ser ouvida.
+- `world`: criar e desenhar são dois controles independentes, lado a lado desde a abertura; depois de criar o botão
+  FICA focável ("✓ O Dino foi criado", `fechado`), senão o foco caía no `body`.
+- `draw-loop`: a `Escolha` "Desenhar o Dino: Só no começo / A cada quadro" (os dois valores são vivos) + a chave
+  "Limpar a tela antes"; o palco desenha `state.render.drawn` e fica vazio quando limpa sem desenhar.
+- `layers` e `jump-sound`: a meta exige a montagem ASSENTADA (ver o latch, a assinatura do envio e `aguardaCena`).
+- `gravity`: o ▶ para quando o Dino sem gravidade passa do alto, e ligar a gravidade com ele no ar solta de novo (o
+  pedido da cena é "ligue e espere").
+- `restart`: fora do JOGANDO e fora da demonstração o palco inteiro é o botão "Tocar na tela do jogo"; o da bancada
+  fica fechado JOGANDO, com a nota.
+- `frames`: a Prévia é o relógio (ver "O relógio"); "Quadro na prévia" fecha com a prévia tocando, e no motor a
+  troca de quadro na mão só conta como descoberta com a prévia PARADA (tocando, quem trocou foi o relógio).
+- `onion-skin`: o fantasma é o contorno tracejado do fogo 1 POR CIMA do fogo 2 (o fogo 2 é sempre maior e cobria um
+  fantasma desenhado embaixo); as pontas "fogo 1"/"fogo 2" só com o fantasma.
+- `symmetry`: duas `Chave`s ("Espelho lado a lado"; "Espelho de cima e de baixo", fechada até `two-sides`). ⚠️⚠️ A
+  grade só é papel de desenho com casa de DEDO (`useCasaDeDedo`, `CASA_PARA_O_DEDO` medido no navegador): aí o dedo
+  arrasta e pinta (`touch-action: none`); menor, o toque não pinta e a página rola. Mouse e caneta pintam sempre;
+  sem medida (happy-dom), não.
+- `pixel-vector`: as duas pedras numa lupa só (`rasterizarPedra` é a curva da de vetor rasterizada); a grade fina POR
+  CIMA a partir de `LUPA.grade` e os pontos da Caneta a partir de `LUPA.pontos` (core `atelie.ts`).
+- `sheet-vs-sprite`: a folha nunca muda de tamanho; um `<svg>` aninhado ESTICA o recorte no quadrado do jogo.
+- ⚠️ Os sete do ateliê não desenham papel do elenco: a nave é o desenho da criança no Pinta.
+- `aim`: ⚠️⚠️ a alça do alvo é HTML no `overlay` (`data-alca-do-alvo`, 52px, `touch-action: none`), numa caixa com a
+  proporção do desenho: o Chromium só respeita `touch-action` na caixa CSS, e no `<g>` do SVG o dedo era cancelado no
+  primeiro movimento. Um toque parado (até 4px) não leva o alvo.
+- `tilemap`: ⚠️⚠️ a caixa da rolagem é `w-0 min-w-full`: o palco mora num `<fieldset>` do player, que cresce até o
+  conteúdo mais largo, e a cena passava da moldura no celular, cortada e sem rolagem. As letras são
+  `grid`/`row`/`gridcell` com setas, Home/End e uma só no Tab.
+- `group-loop`: a geometria cabe no quadro com o vaivém inteiro (`tests/scene-nucleo.test.tsx` varre 60 s).
+- `velocity`: numa missão que só cobra subir e descer (`goals`), "velocidade para o lado" fecha com "Hoje só para
+  cima e para baixo."
+- `mesh`: `Escolha` "A pele" (`MESH_SKIN_LABELS`: inteira, transparente, sem pele), porque "Ver os pontos: nada,
+  metade, tudo" respondia a previsão.
+- `pool`: "Reciclar quem saiu" fechada até 3 cactos passarem (ligada antes, confirmava o palpite ingênuo);
+  `delta-time`: a nota "Trocar recomeça a corrida." vem ANTES do gesto.
+- `random` e `acceleration`: sem ▶ (o relógio delas é o gesto); o sorteio é do navegador (`Math.random()` viaja no
+  gesto e o servidor refaz o mesmo mundo).
+
+### Onde a cena mora na aula (`lesson-sections.tsx`, `lib/lesson-split.ts`)
+
+- **A cena vai para a coluna da DIREITA** junto do Estúdio e do Pinta (`ehCenaDeSecao` olha a ATIVIDADE: pergunta
+  curta e experiência em HTML também são `interactive` e ficam à esquerda, de ler e responder). A leitura é
+  tolerante (`sceneActivityForReading`): cena que cita meta que saiu do catálogo continua sendo cena.
+- ⚠️⚠️ **Dividir exige conteúdo dos DOIS lados** (`podeDividir`): a seção cujo único bloco é a cena ocupa a largura
+  toda. A visibilidade do painel da direita é `toolIds.length > 0`, nunca `podeDividir` (não dividir não pode virar
+  sumiço). As abas "Ver exemplo"/"Criar" só com EDITOR (`temEditor`).
+- ⚠️ **Empilhado, a bancada cai para o FIM da seção**: trocar a cena de painel pela largura a remontaria na abertura
+  de toda aula larga (a medição começa em zero). Os templates já pedem a cena como último bloco.
+- ⚠️⚠️ **O editor fica montado entre seções; a cena, não** (`editores` é da AULA, `cenasAtivas` da SEÇÃO): cada cena
+  tem controlador, rascunho no IndexedDB e batida de 1 s, e mantê-las vivas custaria isso pela aula inteira.
+- ⚠️ **A cena não desenha cartão**: quem desenha é o app, pelo gancho `sz-lesson-scene` (invariante 8), com o teto
+  `max-w-scene`.
+- ⚠️⚠️ **A PRÉVIA de autoria monta o bloco pela PROJEÇÃO PÚBLICA** (`publicInteractiveBlock`), com o rascunho em
+  `previewContent` (que liga o avaliador local): a previsão e a pergunta chegam pelos resolvedores do core, e
+  desenhando o rascunho a prévia não as mostrava e ficava intransponível. Pelo mesmo motivo os testes de render
+  montam por `publicInteractiveBlock` (`community-kids/tests/lesson-scene-design.test.tsx`), e não pelo rascunho.
+- ⭐ O bloco de ENTREGA por galeria colocado numa seção sumia (o painel filtrava por kind e a lista da ferramenta
+  descartava a galeria): a classificação é por PAPEL (`community-kids/tests/lesson-sections.test.tsx`).
+- Os números da divisória (pisos, limiar, padrão) e o `autoSaveId` versionado estão na seção seguinte.
 
 ## A divisória e a barra do topo da aula (09/2026)
 

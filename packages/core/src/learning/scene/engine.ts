@@ -45,6 +45,7 @@ import {
   holdLaneNext,
   holdLaneSnap,
   huntDistances,
+  isTilemapCoinRow,
   TILEMAP_MARKS_MAX,
   tilemapMark,
   tilemapMarkedRows,
@@ -72,6 +73,8 @@ import {
   sceneDrawingsGap,
   VELOCITY_TRAIL_MAX,
 } from './state'
+// ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
+import type { SceneCommand } from './session'
 
 /**
  * A transição da cena: `(início, estado, ação) → estado novo`. Pura e imutável.
@@ -127,7 +130,8 @@ export function openScene(start: SceneStart): SceneState {
  * e esses campos ALIMENTAM metas e desenhos. Um caso que leva a nave para (300, 40) deixava o
  * fantasma em (110, 150), o mundo de fábrica: a cena ABRIA com o rastro de um lugar onde a
  * criança nunca esteve, e a primeira vez que ela passasse pelo x de fábrica disparava "mesmo x,
- * altura diferente" comparando com uma posição que o caso tinha substituído.
+ * altura diferente" comparando com uma posição que o caso tinha substituído. ⚠️ Essa meta (`same-x`)
+ * saiu no lote 5 e `place.visitedX` não alimenta mais nada: segue zerado aqui por ser retrato gravado.
  *
  * O mundo é do professor; a história é da criança, e ela começa vazia.
  */
@@ -517,7 +521,11 @@ export function stepScene(
       const antes = s.world.front
       s.world.front = action.front
       if (antes === action.front) break
-      if (action.front) observe(s, 'front', 'O Dino apareceu na frente.')
+      // ⚠️ A terceira missão (full review de experiência, M4): o Dino de volta à frente DEPOIS de ter
+      // escondido de novo. Era a condição escondida `settled` do avaliador.
+      if (action.front && s.evidence.discoveries.includes('covered'))
+        observe(s, 'back-in-front', 'O Dino voltou para a frente, como fica no jogo.')
+      else if (action.front) observe(s, 'front', 'O Dino apareceu na frente.')
       else if (s.evidence.discoveries.includes('front'))
         observe(s, 'covered', 'Escondeu de novo só trocando a ordem.')
       break
@@ -992,8 +1000,10 @@ export function stepScene(
         observe(s, 'blind-move', 'Mudou o fogo 2 sem ver o fogo 1', true)
       else if (noDois && zona === 'pouco')
         observe(s, 'even-step', 'Com o fantasma, deixou o fogo 2 maior e dentro do quadro', true)
+      // ⚠️ Sem "mudou de tamanho" (full review de experiência, M7): sem o fantasma a criança vê UM fogo,
+      // e é justamente essa a descoberta da parte 1 ("não dá para saber"). A frase não afirma mudança.
       s.caption = !s.animation.onion
-        ? 'O fogo 2 mudou de tamanho. O fogo 1 não está na tela.'
+        ? 'Sem o fantasma, só o fogo 2 está na tela.'
         : zona === 'quase'
           ? 'Com o fantasma: o fogo 2 está quase igual ao fogo 1.'
           : zona === 'pouco'
@@ -2201,6 +2211,53 @@ export function sceneConnectRunsClock(
   return null
 }
 
+/**
+ * O que um GESTO da criança faz com o ▶: `true` solta o tempo, `false` para, `null` deixa como está.
+ *
+ * ⚠️⚠️ Uma régua só para o player e para o "Agora é sua vez" (full review de 16/09/2026): as duas
+ * superfícies copiavam as mesmas três regras com o comentário "como no player", e cópia de regra
+ * diverge. `jump` solta o tempo também para quem pediu menos movimento (sem isso "Toque no Dino para
+ * pular" deixava o Dino parado no chão); `connect` segue a `sceneConnectRunsClock`; e o toque que
+ * COMEÇA a partida da `restart` e da `score` solta o tempo, porque a partida é os cactos chegando.
+ * `after` é o estado DEPOIS do gesto. Aceita qualquer comando do player (o `undo`, a pista), que não
+ * mexe no ▶.
+ */
+export function sceneGestureRunsClock(
+  scene: SceneId,
+  command: SceneCommand,
+  after: SceneState,
+): boolean | null {
+  if (command.type === 'jump') return true
+  if (command.type === 'connect') return sceneConnectRunsClock(scene, command, after)
+  if (
+    (scene === 'restart' || scene === 'score') &&
+    command.type === 'start' &&
+    after.match.screen === 'playing'
+  )
+    return true
+  return null
+}
+
+/**
+ * O ▶ para depois DESTE tique? `before` e `after` são o estado de antes e de depois do `advance`.
+ *
+ * ⚠️⚠️ A régua única do player e do "Agora é sua vez" (full review de 16/09/2026). Elas tinham duas
+ * cópias e já divergiam: na `gravity`, na `impulse` e na `jump-sound` com o Dino no CHÃO, o player
+ * parava no primeiro tique e a bancada da vez nunca parava (o botão seguia "Parar o tempo" e a bancada
+ * redesenhava 25 vezes por segundo sem mudança). Para quando: numa cena de salto não há voo depois do
+ * tique (o salto acabou, ou nem começou); o Dino sem gravidade passou do alto do palco
+ * (`sceneJumpLeftView`); ou a cena chegou ao fim do que o relógio mostra (`sceneClockReachedStop`).
+ */
+export function sceneClockShouldStop(
+  scene: SceneId,
+  before: SceneState,
+  after: SceneState,
+): boolean {
+  const salta = isSceneAction({ type: 'jump', input: 'tap' }, scene)
+  if (salta && (after.flight.time === null || sceneJumpLeftView(scene, before, after))) return true
+  return sceneClockReachedStop(scene, after)
+}
+
 /** Onde o trecho atual do voo está, no tique `t`: a altura e a velocidade. */
 function noTrecho(s: SceneState, t: number): { y: number; v: number } {
   const g = s.flight.atGravity ? GRAVIDADE_POR_TIQUE : 0
@@ -3332,7 +3389,7 @@ function escreverNoMapa(s: SceneState, row: number, col: number, tile: string): 
   }
   // ⚠️ Só a LINHA ESCRITA (consertos do review da onda B do lote 5): olhando o mapa inteiro, um caso com
   // "ooo" numa linha fechava a meta no primeiro `o` que a criança escrevia em qualquer outra.
-  if (tile === 'o' && row < g.rows.length - 1 && g.rows[row]?.includes('ooo'))
+  if (tile === 'o' && isTilemapCoinRow(g.rows, row))
     observe(s, 'coin-row', 'Três o seguidos numa linha do meio viraram três moedas no ar', true)
   s.caption = `Linha ${row + 1}, casa ${col + 1}: agora é ${nome}.`
 }

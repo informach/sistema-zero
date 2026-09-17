@@ -17,6 +17,7 @@ import {
   TOPO_DO_SALTO,
 } from './engine'
 import { CONTACT_HEARTS, cameraWindow, contactTouching, rechargeWords } from './nucleo'
+import { emCamadas, type ScenePilha } from './pilha'
 import {
   DELTA_RACE,
   HITBOX_DINO_SIZE,
@@ -90,8 +91,8 @@ function faltaDaRecarga(segundos: number): string {
  * desenhou (`render.empty`).
  *
  * ⚠️ EXPORTADA porque o palco precisa do MESMO número que a faixa escreve: foi a divergência
- * entre os dois (o palco desenhava o Dino, a tela estava vazia) que motivou o campo. Com a tela
- * não vazia, o número é o rastro, e nunca menos de um: o Dino da abertura foi desenhado uma vez.
+ * entre os dois (o palco desenhava o Dino, a tela estava vazia) que motivou o campo. O número é o
+ * tamanho de `render.drawn` (onde cada desenho está), a mesma lista que o palco desenha.
  */
 export function drawLoopOnScreen(state: SceneState): number {
   // ⚠️ Desde o lote 5 a tela guarda ONDE cada desenho está (`render.drawn`), e o número é o tamanho
@@ -150,18 +151,24 @@ const ONDE: Record<string, string> = {
  * com os olhos antes de voltar ao palco, não um painel de instrumentos. Quando havia um quarto
  * candidato, ele já estava dito no próprio desenho (a altura tem régua, os cactos se contam).
  */
-export function sceneReadout(scene: SceneId, state: SceneState, cast?: SceneCast): SceneReading[] {
+export function sceneReadout(
+  scene: SceneId,
+  state: SceneState,
+  cast?: SceneCast,
+  /** Como a pilha da `layers` se apresenta (`pilha.ts`). Sem ela, a lista de blocos do Estúdio. */
+  pilha?: ScenePilha,
+): SceneReading[] {
   // ⚠️ O VALOR também passa pelo elenco, não só o rótulo: em `layers` o valor É o nome do
   // personagem ("o Dino", "a floresta"), e vesti-lo pela metade deixava a faixa falando de
   // dois elencos ao mesmo tempo. Achado do full review de 14/09/2026.
-  return leituras(scene, state).map((l) => ({
+  return leituras(scene, state, pilha).map((l) => ({
     ...l,
     label: castText(l.label, cast),
     value: castText(l.value, cast),
   }))
 }
 
-function leituras(scene: SceneId, state: SceneState): SceneReading[] {
+function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneReading[] {
   switch (scene) {
     case 'coordinates':
       // A faixa que a cena inteira existe para criar: o par que ela vai digitar no bloco.
@@ -312,6 +319,14 @@ function leituras(scene: SceneId, state: SceneState): SceneReading[] {
       // ⚠️⚠️ A ORDEM, e não o efeito dela (lote 2 do Raio-X). A faixa punha lado a lado "quem é
       // desenhado por último" e "quem aparece na frente", dois valores SEMPRE iguais: a faixa era
       // a própria regra que a cena existe para a criança descobrir. O efeito fica no desenho.
+      // ⚠️⚠️ Com `pilha: 'camadas'` (full review de experiência, A1) a faixa fala como o painel Camadas
+      // do Pinta, que lista a da FRENTE em cima: "na frente: a chama · atrás: a pedra". No Pinta a
+      // camada É a posição no desenho; a ordem de desenhar é vocabulário do Estúdio.
+      if (emCamadas(scene, pilha))
+        return [
+          { label: 'na frente', value: state.world.front ? 'o Dino' : 'a floresta', tone: 'a' },
+          { label: 'atrás', value: state.world.front ? 'a floresta' : 'o Dino', tone: 'b' },
+        ]
       return [
         {
           label: '1º a desenhar',
@@ -410,7 +425,9 @@ function leituras(scene: SceneId, state: SceneState): SceneReading[] {
         // previsão é "continua guardado", e a faixa a escrevia embaixo da pergunta.
         { label: 'no grupo', value: String(state.crowd.born - state.crowd.removed), tone: 'b' },
         // O nome curto da CHAVE da bancada (lote 5), e não "remoção na saída: desligada".
-        { label: 'remover quem sai', value: state.crowd.cleanup ? 'sim' : 'não', tone: 'a' },
+        // ⚠️ "desligado", e não "não" (full review de experiência, B9): a chave logo abaixo diz
+        // "desligado", e o mesmo estado com duas palavras na mesma tela lia como duas coisas.
+        { label: 'remover quem sai', value: liga(state.crowd.cleanup, 'm'), tone: 'a' },
       ]
     case 'game-state':
       return [
@@ -719,11 +736,17 @@ function leituras(scene: SceneId, state: SceneState): SceneReading[] {
           tone: 'a',
         },
         { label: 'soma dos raios', value: String(soma), tone: 'b' },
-        {
-          label: 'a conta diz',
-          value: state.circles.distance <= soma ? 'bateu' : 'ainda não',
-          tone: state.circles.distance <= soma ? 'alert' : 'plain',
-        },
+        // ⚠️⚠️ O veredito da conta só DEPOIS da primeira meta (full review de experiência, M6): "a conta
+        // diz: ainda não" ficava legível embaixo do véu de "Os dois círculos já bateram?".
+        ...(state.evidence.discoveries.includes('touch')
+          ? [
+              {
+                label: 'a conta diz',
+                value: state.circles.distance <= soma ? 'bateu' : 'ainda não',
+                tone: state.circles.distance <= soma ? ('alert' as const) : ('plain' as const),
+              },
+            ]
+          : []),
       ]
     }
     case 'axis-z': {
@@ -912,11 +935,9 @@ function situacao(scene: SceneId, state: SceneState): string {
       // ⚠️⚠️ E sem dizer QUEM COBRE QUEM (review do lote 2): "A floresta está na frente do Dino" ao
       // lado de "2º a desenhar: a floresta" na faixa era a regra montada pela criança antes do
       // palpite ("o Dino vem depois da floresta: onde o Dino aparece?").
-      // ⚠️⚠️ Com as duas descobertas feitas e o Dino escondido, a frase diz o que falta (consertos do
-      // review da onda A do lote 5): a cena não concluía, o "Conferir" não respondia nada e nenhuma
-      // frase dizia que o jogo pede o Dino na frente. É a MESMA frase do avaliador e da pista.
-      if (!state.world.front && state.evidence.discoveries.includes('covered'))
-        return 'Só um pedacinho do Dino aparece no desenho. Leve o Dino de volta para o fim da ordem de desenhar, como fica no jogo.'
+      // ⚠️ Sem o "Leve o Dino de volta…" colado (full review de experiência, M4): a arrumação final
+      // virou a meta `back-in-front`, com pedido e pista próprios, e a frase voltou a só dizer o que se
+      // vê. Ela também não sabe para que lado a lista se lê (`pilha`).
       return state.world.front
         ? 'O Dino aparece sem nada na frente.'
         : 'Só um pedacinho do Dino aparece no desenho.'

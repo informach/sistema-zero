@@ -527,7 +527,8 @@ export const middleRecipes: Record<number, Recipe> = {
       },
       {
         key: 'reset-modelo',
-        title: 'Recomeçar é só trocar de tela?',
+        // "Jogar de novo" (full review de experiência, B11): o "Recomeçar" da moldura faz outra coisa.
+        title: 'Jogar de novo é só trocar de tela?',
         kind: 'experiment',
         mission: 'restart',
         focus: 'Distinguir a cena de fim de uma nova partida preparada.',

@@ -74,7 +74,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Veja uma nave e muitos nascimentos",
-        "instructions": "Acompanhe cada parte. Você pode pausar e rever o exemplo.",
+        "instructions": "Veja o que acontece com e sem o relógio. Você pode pausar e ver de novo.",
         "hints": [],
         "activity": {
           "type": "demonstration",

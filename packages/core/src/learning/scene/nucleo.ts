@@ -251,11 +251,19 @@ export function tilemapLanding(rows: readonly string[]): number | null {
 }
 
 /**
- * Uma linha do MEIO com três moedas seguidas: o "...ooo...." da previsão. ⚠️ A última linha é o
- * chão, e moeda no chão não é a pergunta ("três moedas no ar" contra "no chão").
+ * A linha `row` é do MEIO e tem três moedas seguidas: o "...ooo...." da previsão. ⚠️ A última linha é
+ * o chão, e moeda no chão não é a pergunta ("três moedas no ar" contra "no chão").
+ *
+ * ⚠️⚠️ O motor lê ESTA régua (`escreverNoMapa`, a meta `coin-row`), e não uma cópia em linha (full review
+ * de 16/09/2026): a régua exportada era usada só pelos testes, e mudar a régua movia o teste e não o motor.
  */
+export function isTilemapCoinRow(rows: readonly string[], row: number): boolean {
+  return row >= 0 && row < rows.length - 1 && (rows[row]?.includes('ooo') ?? false)
+}
+
+/** A primeira linha do meio com três moedas seguidas, ou `null` (ver `isTilemapCoinRow`). */
 export function tilemapCoinRow(rows: readonly string[]): number | null {
-  const linha = rows.findIndex((r, i) => i < rows.length - 1 && r.includes('ooo'))
+  const linha = rows.findIndex((_, i) => isTilemapCoinRow(rows, i))
   return linha < 0 ? null : linha
 }
 

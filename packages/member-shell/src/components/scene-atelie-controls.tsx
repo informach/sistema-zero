@@ -13,7 +13,7 @@ import {
 import { useRef } from 'react'
 import { SceneButton } from './exploration-stage'
 import { useCasaDeDedo } from './scene-atelie-stages'
-import { Chave, Escolha, Medida } from './scene-bench'
+import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene-bench'
 
 /**
  * A BANCADA do ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, 16/09/2026, G4): `frames`,
@@ -42,14 +42,13 @@ export function AtelieSceneControls({
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
-  goals: readonly { id: string; complete: boolean }[]
+  goals: MetasDaBancada
   /** O relógio do player está andando? Sem ele, vale o estado da prévia no motor. */
   tocando?: boolean
   onRunning: (ligado: boolean) => void
 }) {
   const nome = (texto: string) => castText(texto, cast)
-  const viu = (meta: string) =>
-    goals.find((g) => g.id === meta)?.complete ?? state.evidence.discoveries.includes(meta)
+  const viu = metaAberta(goals, state)
   switch (scene) {
     case 'frames': {
       /**
@@ -123,7 +122,7 @@ export function AtelieSceneControls({
             </div>
           </div>
           {/* ⚠️⚠️ Uma variável por vez: o fogo 2 é do quadro 2, então no quadro 1 ele fica fechado COM O
-              MOTIVO. ⚠️ `soltar`: o motor recebe o tamanho quando a mão solta o deslizante, senão
+              MOTIVO. O motor recebe o tamanho quando o gesto termina (regra da `Medida`), senão
               arrastar passava pelo "um pouco maior" e fechava a meta no caminho. */}
           <Medida
             label={nome('tamanho do fogo 2')}
@@ -133,7 +132,6 @@ export function AtelieSceneControls({
             step={4}
             texto={(v) => quantos(onionFireLength(v), 'quadradinho', 'quadradinhos')}
             tom="text-scene-b-ink"
-            soltar
             disabled={state.animation.frame !== 2}
             nota={
               state.animation.frame !== 2 ? 'Vá para o quadro 2 para mudar o fogo dele.' : undefined

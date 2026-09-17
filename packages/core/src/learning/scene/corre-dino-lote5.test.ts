@@ -80,11 +80,9 @@ describe('layers: o Dino aparece, e depois esconde de novo só com a ordem', () 
     c.faz({ type: 'layer', front: true }, { type: 'layer', front: false })
     const r = c.avalia()
     expect(r.passed).toBe(false)
-    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): "Leve… de volta", a frase que o
-    // "Conferir" do player passou a responder.
-    expect(r.feedback).toBe(
-      'Leve a pedra de volta para o fim da ordem de desenhar, como fica no jogo.',
-    )
+    // ⚠️ Mudou de propósito (full review de experiência, M4): a arrumação final é a meta
+    // `back-in-front`, e o "Ainda falta" é o pedido dela.
+    expect(r.feedback).toBe('Leve a pedra de novo para o fim da ordem de desenhar.')
     c.faz({ type: 'layer', front: true })
     expect(c.avalia().passed).toBe(true)
   })

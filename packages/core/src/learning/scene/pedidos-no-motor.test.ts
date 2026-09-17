@@ -427,6 +427,16 @@ const CENAS: Record<SceneId, Cena> = {
           m.faz({ type: 'layer', front: false })
         },
       },
+      // ⚠️ A terceira missão (full review de experiência, M4): "de novo" é o Dino ter ido, a floresta ter
+      // voltado e o Dino ir outra vez.
+      'back-in-front': {
+        texto: 'Leve o Dino de novo para o fim da ordem de desenhar.',
+        faz: (m) => {
+          m.faz({ type: 'layer', front: true })
+          m.faz({ type: 'layer', front: false })
+          m.faz({ type: 'layer', front: true })
+        },
+      },
     },
     mostra: (s) => s.world.front,
   },
@@ -756,7 +766,8 @@ const CENAS: Record<SceneId, Cena> = {
   lives: {
     pedidos: {
       'life-lost': {
-        texto: 'Ligue Bateu a Perder uma vida e bata no cacto.',
+        // ⚠️ Mudou de propósito (full review de experiência, M8): a peça que muda de caixa, e não o fio.
+        texto: 'Leve Perder uma vida para Quando bater e bata no cacto.',
         faz: (m) => {
           ligado(m, 'life', true)
           m.faz({ type: 'collide' })
@@ -764,7 +775,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       'points-stay': {
         texto:
-          'Ligue Somar ponto a Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com o fio da vida ligado.',
+          'Leve Somar ponto para Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com Perder uma vida em Quando bater.',
         faz: (m) => {
           ligado(m, 'condition', true)
           m.tempo(1.2)
@@ -773,7 +784,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       over: {
-        texto: 'Com o fio da vida ligado, bata até não sobrar nenhuma vida.',
+        texto: 'Com Perder uma vida em Quando bater, bata até não sobrar nenhuma vida.',
         faz: (m) => {
           ligado(m, 'life', true)
           for (let t = 0; t < 5 && m.estado.lifeline.lives > 0; t++) m.faz({ type: 'collide' })
@@ -1748,5 +1759,77 @@ describe('as previsões das aulas v6, no motor', () => {
       conferidas++
     }
     expect(conferidas).toBeGreaterThanOrEqual(6)
+  })
+})
+
+describe('⚠️⚠️ meio gesto NÃO derruba a meta (varredura gerada dos pedidos, full review de 16/09/2026)', () => {
+  /**
+   * A régua "a meta só cai quando a criança VIU o que a meta afirma" era cobrada por listas à mão (sete
+   * cenas aqui e casos soltos por arquivo). Esta varredura GRAVA os gestos de cada pedido seguido ao pé
+   * da letra desde a abertura e exige que a meta NÃO caia antes do ÚLTIMO gesto do pedido: o tempo
+   * passando depois dele pode mostrá-la (é o ▶ da criança), um gesto a menos não. Pedido de um gesto só
+   * passa por construção. Exceção nova precisa de motivo aqui.
+   */
+  const EXCECOES: Record<string, string> = {
+    // Todas as cinco são o mesmo caso: o pedido pede FOLGA (um gesto a mais, ou um fim de gesto que a
+    // meta não afirma), e a meta cai quando o que ela diz já está na tela.
+    'acceleration · old-speed':
+      'dois cactos na pista já mostram o velho com o número dele; o terceiro aperto é folga para quem olha devagar',
+    'acceleration · variation-limit':
+      '"mais quatro vezes" é o teto: o −10 sai em algum dos quatro apertos, e a meta cai no aperto em que ele aparece',
+    'hold-vs-press · while-held':
+      'a meta é do tempo COM a tecla segurada ("conte até três"); soltar a tecla é o fim do gesto, não o que a meta afirma',
+    'entity-state · own':
+      '`parado` também é estado: com duas torres mudadas as três já ficam diferentes na tela, e a terceira ordem é folga',
+    'fill-stroke · both':
+      'o miolo nunca perdeu a cor: ligar o contorno de volta já deixa as duas partes com cor, e o último gesto não muda nada',
+  }
+
+  class Gravador extends Maos {
+    readonly gestos: SceneAction[] = []
+    override faz(acao: SceneAction) {
+      this.gestos.push(acao)
+      super.faz(acao)
+    }
+  }
+
+  test('em toda cena, cada meta cai só depois do último gesto do seu pedido', () => {
+    const cedo: string[] = []
+    let conferidos = 0
+    for (const scene of SCENE_IDS)
+      for (const [meta, pedido] of Object.entries(CENAS[scene].pedidos)) {
+        if (pedido.abreDepois) continue
+        const start = { scene }
+        const m = new Gravador(start, openScene(start))
+        pedido.faz(m)
+        if (!m.viu(meta)) continue
+        const caiu = m.historico.findIndex((s) => s.evidence.discoveries.includes(meta))
+        const ultimoGesto = m.gestos.findLastIndex((a) => a.type !== 'advance')
+        conferidos++
+        if (caiu < ultimoGesto && !EXCECOES[`${scene} · ${meta}`])
+          cedo.push(
+            `${scene} · ${meta}: caiu no gesto ${caiu + 1} de ${ultimoGesto + 1} (${JSON.stringify(m.gestos[caiu])})`,
+          )
+      }
+    expect(conferidos).toBeGreaterThan(90)
+    expect(cedo).toEqual([])
+  })
+
+  test('⚠️ a lista de exceções não guarda meta que já não cai cedo (exceção velha esconde regressão)', () => {
+    const velhas: string[] = []
+    for (const chave of Object.keys(EXCECOES)) {
+      const [scene, meta] = chave.split(' · ') as [SceneId, string]
+      const pedido = CENAS[scene]?.pedidos[meta]
+      if (!pedido) {
+        velhas.push(`${chave}: sem pedido`)
+        continue
+      }
+      const m = new Gravador({ scene }, openScene({ scene }))
+      pedido.faz(m)
+      const caiu = m.historico.findIndex((s) => s.evidence.discoveries.includes(meta))
+      const ultimoGesto = m.gestos.findLastIndex((a) => a.type !== 'advance')
+      if (!(caiu >= 0 && caiu < ultimoGesto)) velhas.push(chave)
+    }
+    expect(velhas).toEqual([])
   })
 })

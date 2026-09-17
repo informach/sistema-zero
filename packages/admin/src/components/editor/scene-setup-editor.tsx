@@ -8,7 +8,10 @@ import {
   SETUP_LIMITS,
   sceneDefaultGoalIds,
   sceneModel,
+  sceneSetupGoals,
+  sceneUnknownSetupGoals,
 } from '@sistemazero/core/learning/scene'
+import { Button } from '@sistemazero/ui/button'
 import { useId } from 'react'
 import { saltoParadoNoCaso } from '../../lib/scene-authoring-rules'
 import { SceneActionEditor } from './scene-action-editor'
@@ -38,21 +41,30 @@ export function SceneSetupEditor({
 
   /** Grava o caso, e o REMOVE quando ele fica vazio — caso vazio não é caso. */
   function aplicar(proximo: SceneSetup) {
-    const limpo: SceneSetup = {
-      ...(proximo.actions?.length ? { actions: proximo.actions } : {}),
-      ...(proximo.goals?.length ? { goals: proximo.goals } : {}),
-    }
+    const limpo = casoLimpo(proximo)
     const { setup: _, ...resto } = activity
-    if (!limpo.actions && !limpo.goals) {
-      onChange(resto as SceneActivity)
-      return
-    }
-    onChange({ ...activity, setup: limpo } as SceneActivity)
+    onChange((limpo ? { ...activity, setup: limpo } : resto) as SceneActivity)
   }
 
+  /**
+   * ⚠️⚠️ As descobertas que a cena NÃO tem mais (full review final de dados e deploy, MÉDIO-3). O bloco
+   * criado antes de uma meta sair do catálogo guarda o id velho, que nenhuma caixa abaixo desenha: sem
+   * este aviso a professora lia "desmarque as descobertas" sem ter o que desmarcar, e não conseguia
+   * salvar. Para a criança elas já não contam (a leitura tolerante do core as tira).
+   */
+  const desconhecidas =
+    activity.type === 'experimentation' ? sceneUnknownSetupGoals(activity.scene, setup?.goals) : []
+  const semAsQueSairam: SceneSetup = {
+    ...setup,
+    goals: sceneSetupGoals(activity.scene, setup?.goals),
+  }
+  const nomeDaMeta = (meta: string) => modelo.goals.find((g) => g.id === meta)?.label ?? meta
+
+  // O aviso genérico olha o caso SEM as descobertas que saíram: elas têm o aviso próprio acima.
+  const casoConferido = desconhecidas.length ? casoLimpo(semAsQueSairam) : setup
   const invalido =
-    setup !== undefined &&
-    !isSceneSetup(setup, activity.scene, { goals: activity.type === 'experimentation' })
+    casoConferido !== undefined &&
+    !isSceneSetup(casoConferido, activity.scene, { goals: activity.type === 'experimentation' })
 
   return (
     <div className="space-y-4">
@@ -119,6 +131,31 @@ export function SceneSetupEditor({
         </fieldset>
       )}
 
+      {desconhecidas.length > 0 && (
+        <div
+          role="alert"
+          className="space-y-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200"
+        >
+          <p>
+            Este caso cita descobertas que a cena não tem mais. Para as crianças elas já não contam,
+            e a atividade continua aparecendo. Para salvar, tire do caso:
+          </p>
+          <ul className="list-disc pl-5">
+            {desconhecidas.map((meta) => (
+              <li key={meta.id}>
+                <code>{meta.id}</code>
+                {meta.successor
+                  ? ` virou "${nomeDaMeta(meta.successor)}", que fica marcada no lugar.`
+                  : ' saiu da cena, sem outra no lugar.'}
+              </li>
+            ))}
+          </ul>
+          <Button type="button" variant="outline" size="sm" onClick={() => aplicar(semAsQueSairam)}>
+            Tirar do caso
+          </Button>
+        </div>
+      )}
+
       {invalido && (
         <p className="text-sm text-destructive">
           Este caso não vale para a cena escolhida. Refaça as ações ou desmarque as descobertas.
@@ -126,4 +163,13 @@ export function SceneSetupEditor({
       )}
     </div>
   )
+}
+
+/** O caso sem listas vazias; `undefined` quando não sobra nada (caso vazio não é caso). */
+function casoLimpo(proximo: SceneSetup): SceneSetup | undefined {
+  const limpo: SceneSetup = {
+    ...(proximo.actions?.length ? { actions: proximo.actions } : {}),
+    ...(proximo.goals?.length ? { goals: proximo.goals } : {}),
+  }
+  return limpo.actions || limpo.goals ? limpo : undefined
 }

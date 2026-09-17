@@ -145,7 +145,7 @@ function applySceneSegment(
   cena: Cena,
   guardado: CenaGuardada | null,
   segment: SceneSegment,
-  /** O segmento veio do player que conhece o relógio de quadro fixo (`sceneSegmentHasClock`). */
+  /** O segmento veio de um player com as regras deste servidor (`sceneSegmentHasClock`: a versão das regras). */
   playerComRelogio: boolean,
 ): LearningAnswers {
   const c =
@@ -393,8 +393,15 @@ export class LearningService {
       // formado (400), não falha do servidor.
       const aceita = cena.kind === 'demonstration' ? isDemonstrationCommand : undefined
       for (const comando of segment.commands)
-        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start))
+        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start)) {
+          // ⚠️⚠️ Sem o marcador ATUAL, o comando que este core recusa é quase sempre de um player de
+          // OUTRA versão das regras (full review final de dados e deploy, BAIXO-1): o `advance` saiu da
+          // `random`, da `acceleration` e da `diagonal`. Com a flag desligada ele recebia 400, que o
+          // player lê como "Aguardando conexão" para sempre; com 409 ele cai no "Reabra a aula". O
+          // player com as regras deste servidor segue recebendo 400 (é pedido mal formado de verdade).
+          if (!playerComRelogio) throw new LearningConflictError()
           throw new ValidationError('Comando de experiência inválido para esta atividade.')
+        }
       const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
         (p) => p.blockId === blockId && p.revision === input.revision,
       )

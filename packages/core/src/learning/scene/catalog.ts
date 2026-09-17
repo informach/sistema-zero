@@ -16,11 +16,31 @@ export interface SceneStep {
   id: string
   /** O que a criança LÊ enquanto o passo acontece. */
   caption: string
-  /** Que parte da tela merece atenção neste passo. */
+  /**
+   * Que parte da tela merece atenção neste passo. ⚠️ `compare` só desenha nas cenas de
+   * `SCENE_COMPARISONS`; nas outras continua VÁLIDO (roteiro antigo abre) e não mostra nada.
+   */
   highlight?: 'scene' | 'tools' | 'compare'
   actions: SceneAction[]
   /** Só avança quando esta descoberta acontecer de verdade. */
   waitFor?: string
+}
+
+/**
+ * As cenas que mostram a COMPARAÇÃO guardada ("Guardar este jeito" e o destaque `compare` da etapa).
+ *
+ * ⚠️⚠️ A lista ÚNICA (full review de 16/09/2026). Player e admin tinham cada um a sua: o admin oferecia
+ * "Comparação" em `gravity`, `impulse`, `hitbox` e `jump-sound`, e o player, desde o lote 5 do Raio-X, só
+ * desenhava na `hitbox` (a `impulse` guarda as duas marcas no próprio palco, a `gravity` compara com o
+ * pulo pontilhado, e a `jump-sound` ganhou palco próprio). O professor escolhia "Comparação" numa etapa da
+ * `gravity` e a criança não via nada, sem aviso. ⚠️ O `isSceneScript` NÃO recusa `compare` fora daqui: um
+ * bloco já gravado com ele viraria inválido e trancaria a seção por um destaque que não desenha nada.
+ */
+export const SCENE_COMPARISONS = ['hitbox'] as const satisfies readonly SceneId[]
+
+/** A cena desenha a comparação guardada? Ver `SCENE_COMPARISONS`. */
+export function sceneShowsComparison(scene: SceneId): boolean {
+  return (SCENE_COMPARISONS as readonly SceneId[]).includes(scene)
 }
 
 /** Uma coisa que a criança precisa PERCEBER. O motor emite o id no instante em que acontece;
@@ -49,7 +69,7 @@ export interface SceneGoal {
    *  - um gesto que a bancada de HOJE oferece, com o nome que o botão tem. ⚠️ O TEMPO é "deixe o
    *    tempo passar" (ou o ▶): nenhum botão se chama "avançar o relógio", e o botão de passo tem DOIS
    *    nomes desde o lote 4 ("Avançar 1 quadro" ou "Um passo", `sceneStepLabel`), então pedido nenhum
-   *    o cita. A exceção é a `acceleration`, que tem o botão "Avançar o relógio";
+   *    o cita. Na `acceleration` o tempo é o botão "Passar 5 segundos", e o pedido usa esse nome;
    *  - nunca o resultado nem o resultado de OUTRA meta ("depois de o Dino sumir" entrega a
    *    previsão da `camera`): os pedidos podem ficar todos à vista antes de qualquer meta cair;
    *  - sobrevive ao elenco: sem pronome e sem particípio solto longe do nome.
@@ -768,10 +788,15 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     success: 'Só a ordem mudou: quem é desenhado por último fica por cima, e ninguém foi apagado!',
     // ⚠️ "E se a floresta voltar para o último lugar?" virou a MISSÃO 2 (lote 5 do Raio-X).
     extra: 'E se fossem três peças? Quem ficaria por cima de todas?',
-    // ⚠️⚠️ Duas missões, nesta ordem (lote 5 do Raio-X): o Dino aparecer, e depois esconder de novo
-    // SÓ com a ordem, o que prova que ninguém foi apagado. Um toque fechava as duas metas (a ação
-    // observava os dois lados da troca). O `settled` do avaliador ainda cobra o Dino na frente no
-    // fim, que é o arranjo do jogo: a pista e o "Conferir" pedem trazê-lo de volta.
+    // ⚠️⚠️ Três missões, nesta ordem (lote 5 do Raio-X): o Dino aparecer, esconder de novo SÓ com a
+    // ordem (o que prova que ninguém foi apagado) e voltar o Dino para a frente, que é o arranjo do
+    // jogo. Um toque fechava as duas primeiras (a ação observava os dois lados da troca).
+    // ⚠️⚠️ `back-in-front` é META desde o full review de experiência (16/09/2026, M4): a arrumação final
+    // era uma condição ESCONDIDA do avaliador (`settled`), e a faixa dizia "Descobertas 2 de 2 ✓✓" sobre
+    // uma cena que não concluía, com uma frase explicando por que 2 de 2 não bastava. Acrescentada no
+    // FIM, sem renomear nada (nenhum manifesto cita as metas da `layers` em `setup.goals`).
+    // ⚠️ Com `pilha: 'camadas'` os pedidos são os de `LAYERS_CAMADAS` (pilha.ts): a lista do Pinta se lê
+    // ao contrário.
     goals: [
       {
         id: 'front',
@@ -782,6 +807,11 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
         id: 'covered',
         label: 'Escondeu de novo só trocando a ordem',
         pedido: 'Com o Dino no fim da ordem de desenhar, leve a floresta para o fim.',
+      },
+      {
+        id: 'back-in-front',
+        label: 'No jogo, quem é desenhado por último fica na frente',
+        pedido: 'Leve o Dino de novo para o fim da ordem de desenhar.',
       },
     ],
     hints: [
@@ -803,6 +833,13 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
         caption: 'A floresta voltou para o fim e cobriu o Dino de novo. Ninguém foi apagado.',
         highlight: 'scene',
         actions: [{ type: 'layer', front: false }],
+      },
+      {
+        // ⚠️ A terceira missão (full review de experiência, M4): o arranjo do jogo volta no fim.
+        id: 'step-3',
+        caption: 'O Dino voltou para o fim da ordem de desenhar e ficou na frente, como no jogo.',
+        highlight: 'scene',
+        actions: [{ type: 'layer', front: true }],
       },
     ],
   },
@@ -1431,32 +1468,34 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     // ⚠️⚠️ O PONTO primeiro (review do lote 2): ligando os dois fios e batendo três vezes, a partida
     // acabava com o placar em 0, e depois do fim o relógio não soma. A meta que responde a previsão
     // (`points-stay`, os pontos ficam na batida) ficava impossível para quem seguia a instrução.
+    // ⚠️⚠️ Sem "fio" (full review de experiência, M8): a bancada virou a PEÇA QUE MUDA DE CAIXA, o gesto do
+    // Estúdio que o Desafio usa um dia antes. Os pedidos dizem para que caixa levar cada peça.
     instruction:
-      'Ligue o fio do ponto e deixe o tempo passar. Depois ligue o fio da vida e bata no cacto.',
-    manipulates: 'O fio que soma ponto, o fio que tira vida e as batidas',
+      'Leve Somar ponto para Enquanto tem vida e deixe o tempo passar. Depois leve Perder uma vida para Quando bater e bata no cacto.',
+    manipulates: 'A peça Somar ponto, a peça Perder uma vida e as batidas',
     success: 'Ponto e vida são duas contagens separadas: cada uma muda pelo seu próprio motivo!',
     extra: 'E se a batida tirasse ponto em vez de vida? O jogo ficaria justo?',
     goals: [
       {
         id: 'life-lost',
         label: 'A batida tirou uma vida',
-        pedido: 'Ligue Bateu a Perder uma vida e bata no cacto.',
+        pedido: 'Leve Perder uma vida para Quando bater e bata no cacto.',
       },
       {
         id: 'points-stay',
         label: 'Os pontos ficaram, mesmo perdendo vida',
         pedido:
-          'Ligue Somar ponto a Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com o fio da vida ligado.',
+          'Leve Somar ponto para Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com Perder uma vida em Quando bater.',
       },
       {
         id: 'over',
         label: 'Sem vidas, a partida acabou.',
-        pedido: 'Com o fio da vida ligado, bata até não sobrar nenhuma vida.',
+        pedido: 'Com Perder uma vida em Quando bater, bata até não sobrar nenhuma vida.',
       },
     ],
     hints: [
-      'Ligue o fio que soma ponto e deixe o tempo passar para o placar subir.',
-      'Agora ligue o fio da vida e bata uma vez. Olhe as duas contagens.',
+      'Leve Somar ponto para Enquanto tem vida e deixe o tempo passar para o placar subir.',
+      'Agora leve Perder uma vida para Quando bater e bata uma vez. Olhe as duas contagens.',
       'Bata as três vezes e veja o que acontece quando a última vida sai.',
     ],
     // ⚠️⚠️ Sem "fio" nas falas (lote 5 do Raio-X): na demonstração a bancada não aparece, e as

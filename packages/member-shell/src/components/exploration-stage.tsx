@@ -80,6 +80,28 @@ const TOM: Record<
 }
 
 /**
+ * As cenas do LABORATÓRIO: salto, impulso e área de colisão.
+ *
+ * ⚠⚠ Elas compartilham um palco próprio (`ExperienceScene`) porque têm a régua de altura e o
+ * cacto que se arrasta. ⚠️ Quem decide onde a COMPARAÇÃO guardada aparece não é esta lista, e sim a
+ * `SCENE_COMPARISONS` do core (hoje só a `hitbox`), que o player e o admin leem.
+ * ⚠️ Sem a `jump-sound` desde o lote 5 do Raio-X: ela tem palco próprio (a linha do tempo dos pulos e
+ * dos sons, `scene-dino-stages`), e a régua de altura não tinha nada com som.
+ */
+export const LABORATORIO = ['gravity', 'impulse', 'hitbox'] as const
+
+/**
+ * ⚠⚠ Guarda de TIPO, e não `includes` solto: depois dela o TypeScript sabe que `m` não é
+ * nenhuma das três, e passa a reprovar todo ramo do palco compartilhado escrito para elas. Foi
+ * assim que apareceram ~120 linhas MORTAS aqui (o toque para pular, a guia de altura, a fileira
+ * de botões do salto): o player já mandava essas cenas para o laboratório desde sempre, e nada
+ * dizia isso ao compilador.
+ */
+export function ehLaboratorio(cena: string): cena is (typeof LABORATORIO)[number] {
+  return (LABORATORIO as readonly string[]).includes(cena)
+}
+
+/**
  * Um controle da cena, VESTIDO PELO APP.
  *
  * ⭐⭐ Ele é o `Button` compartilhado (15/09/2026, lote 3), e não um `<button>` com classes
@@ -96,30 +118,7 @@ const TOM: Record<
  *
  * ⚠ `min-h-11` sobrepõe a altura da variante (`min-height` vence `height` quando é maior): o
  * alvo de toque de 44px é requisito do público infantil, e não um detalhe de estilo.
- */
-/**
- * As cenas do LABORATÓRIO: salto, impulso, som do pulo e área de colisão.
  *
- * ⚠⚠ Elas compartilham um palco próprio (`ExperienceScene`) porque têm a régua de altura e o
- * cacto que se arrasta, e porque é delas que sai a comparação guardada. A lista é a MESMA que o
- * player usa para oferecer o "Guardar para comparar" — mexeu numa, mexa na outra.
- */
-// ⚠️ Sem a `jump-sound` desde o lote 5 do Raio-X: ela tem palco próprio (a linha do tempo dos pulos e
-// dos sons, `scene-dino-stages`), e a régua de altura não tinha nada com som.
-export const LABORATORIO = ['gravity', 'impulse', 'hitbox'] as const
-
-/**
- * ⚠⚠ Guarda de TIPO, e não `includes` solto: depois dela o TypeScript sabe que `m` não é
- * nenhuma das quatro, e passa a reprovar todo ramo do palco compartilhado escrito para elas. Foi
- * assim que apareceram ~120 linhas MORTAS aqui (o toque para pular, a guia de altura, a fileira
- * de botões do salto): o player já mandava essas cenas para o laboratório desde sempre, e nada
- * dizia isso ao compilador.
- */
-export function ehLaboratorio(cena: string): cena is (typeof LABORATORIO)[number] {
-  return (LABORATORIO as readonly string[]).includes(cena)
-}
-
-/**
  * ⚠️⚠️ `fechado` NÃO é `disabled` (review do lote 1 do Raio-X). O `disabled` nativo tira o botão
  * da ordem do Tab, e o motivo ("Abre depois que…") ficava num `aria-describedby` que o teclado
  * nunca alcançava: quem navega por Tab pulava de "Enter: começar" direto para "Recomeçar", sem
@@ -167,10 +166,16 @@ export function ExplorationStage({
   activity,
   state,
   dispatch,
+  escondida = false,
 }: {
   activity: SceneActivity
   state: SceneState
   dispatch: (action: SceneAction) => void
+  /**
+   * O palpite ainda não veio (full review de experiência, M6): o desenho que escreve a resposta para quem
+   * não enxerga (a descrição da `layers`) segue o `valoresEscondidos` da faixa.
+   */
+  escondida?: boolean
 }) {
   const m = activity.scene
   const cast = activity.cast
@@ -222,7 +227,10 @@ export function ExplorationStage({
   // ⭐⭐ O Corre Dino, primeira metade (lote 5 do Raio-X): palcos próprios em `scene-dino-stages`. O
   // palco compartilhado desenhava a mesma pista para as seis (o triângulo sem função, "removidos"
   // desde a abertura, a floresta escondendo o Dino inteiro), e cada uma precisa ver outra coisa.
-  if (m === 'layers') return <LayersStage state={state} cast={cast} />
+  if (m === 'layers')
+    return (
+      <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={escondida} />
+    )
   if (m === 'jump-sound')
     return (
       <JumpSoundStage
@@ -295,7 +303,7 @@ export function ExplorationStage({
   if (m === 'delta-time') return <DeltaTimeStage state={state} cast={cast} />
   if (m === 'circle-collision') return <CircleCollisionStage state={state} cast={cast} />
   if (m === 'axis-z') return <AxisZStage state={state} cast={cast} />
-  if (m === 'camera-3d') return <Camera3dStage state={state} cast={cast} />
+  if (m === 'camera-3d') return <Camera3dStage state={state} cast={cast} escondida={escondida} />
   if (m === 'mesh') return <MeshStage state={state} cast={cast} />
   if (m === 'pick-ray') return <PickRayStage state={state} cast={cast} />
   if (m === 'fill-stroke') return <FillStrokeStage state={state} cast={cast} />
@@ -322,5 +330,15 @@ export function ExplorationStage({
       />
     )
   if (m === 'random') return <RandomStage state={state} cast={cast} />
-  return <AccelerationStage state={state} cast={cast} />
+  if (m === 'acceleration') return <AccelerationStage state={state} cast={cast} />
+  return semPalco(m)
+}
+
+/**
+ * ⚠️⚠️ O despacho é EXAUSTIVO (full review de 16/09/2026): a última linha era `return <AccelerationStage/>`,
+ * e uma cena acrescentada a `SCENE_IDS` sem palco renderizava a da aceleração, sem erro nenhum. Agora ela
+ * não compila na chamada acima ("não é atribuível a never"); em execução, nada é desenhado.
+ */
+function semPalco(_cena: never): null {
+  return null
 }

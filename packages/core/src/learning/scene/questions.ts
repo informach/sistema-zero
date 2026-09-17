@@ -139,7 +139,9 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
     explain: {
       // ⚠️ A pergunta antiga prometia que a frase torna o jogo "jogável por quem não vê a tela",
       // o que a própria Aula 1 decidiu não prometer.
-      prompt: 'Por que a pessoa ouviu só "Imagem" da primeira vez?',
+      // ⚠️ A frase INTEIRA que a tela mostrou (full review de experiência, B11): "só Imagem" não batia com
+      // o painel, que diz "Tela do jogo. Imagem.".
+      prompt: 'Por que a pessoa ouviu só "Tela do jogo. Imagem." da primeira vez?',
       choices: [
         { id: 'texto', label: 'O programa lê texto, e ninguém tinha escrito nada.' },
         { id: 'pequeno', label: 'O desenho era pequeno demais para o programa ver.' },
@@ -171,7 +173,7 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'escolha',
       explanation:
-        'A tela do jogo é uma medida que você escolhe. A borda só torna esse limite visível, ela não o cria.',
+        'A tela do jogo é uma medida que você escolhe. A borda só mostra esse limite. Ela não cria o limite.',
     },
   },
   'draw-loop': {
@@ -235,10 +237,12 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       prompt:
         'No quadro 2 só aparece o fogo novo. Dá para saber se ele ficou maior que o do quadro 1?',
       choices: [
-        { id: 'nao-da', label: 'Não dá, o fogo 1 não está na tela' },
+        // ⚠️ Sem a justificativa (full review de experiência, B8): "o fogo 1 não está na tela" entregava a
+        // certa pelo jeito de escrever. Mesmo sentido, mesmos ids.
+        { id: 'nao-da', label: 'Não dá para saber' },
         {
           id: 'olhar',
-          label: 'Dá, é só olhar o fogo',
+          label: 'Dá, é só olhar o fogo 2',
           // ⚠️ "Tracejado" (consertos do review da onda B do lote 5, A2): o fantasma é o contorno do fogo
           // 1 por cima do fogo 2, e não um fogo clarinho por baixo.
           shows:
@@ -356,7 +360,10 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
        * o desenho"): `hidden` cai nos dois caminhos, criando com o desenho desligado ou desligando
        * depois, e pelo gesto o palpite voltava no "Criar" de quem nunca tinha desligado nada.
        */
-      prompt: 'O Dino foi criado e o desenho está desligado. Onde está o Dino?',
+      // ⚠️⚠️ "Imagine:" (full review de experiência, M5): a frase no presente afirmava um Dino criado com a
+      // faixa logo abaixo dizendo "bastidores: vazio", e a criança de 8 anos lê as duas coisas como fatos.
+      // Previsão sobre um estado que a tela ainda não mostra começa com "Imagine:".
+      prompt: 'Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?',
       choices: [
         { id: 'bastidores', label: 'Nos bastidores, sem aparecer na tela.' },
         {
@@ -605,7 +612,8 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       ],
       correctChoiceId: 'ligacao',
       explanation:
-        'Escrever toque na tela não liga nada. O jogo só faz o que algum evento escuta. Quando o toque passou a chamar Começar, a promessa virou verdade.',
+        // ⚠️ Sem "o evento escuta" e "a promessa virou verdade" (full review de experiência, B11).
+        'Escrever toque na tela não liga nada. O jogo só começa quando o toque está na caixa que chama Começar. Agora o convite e o jogo dizem a mesma coisa.',
     },
   },
   restart: {
@@ -695,7 +703,9 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   },
   lives: {
     prediction: {
-      prompt: 'O Dino tem pontos e bate no cacto, com o fio da vida ligado. O que muda?',
+      // ⚠️ "Imagine:" (full review de experiência, M5): a faixa de abertura diz "pontos: 0".
+      prompt:
+        'Imagine: o Dino já tem pontos e bate no cacto, com Perder uma vida em Quando bater. O que muda?',
       choices: [
         { id: 'vidas', label: 'Só as vidas' },
         {
@@ -845,7 +855,9 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       // ⚠️⚠️ UM acerto, e não três (consertos do review da onda A do lote 5): o `revealOn` é
       // `changed-hidden`, que cai no PRIMEIRO "somar", e o palpite "três acertos… 3" voltava com a caixa
       // em 1. A pergunta fica exata no instante da revelação. `zero` é a mesma crença; `um` é id novo.
-      prompt: 'A caixa guarda 0. Um acerto soma 1, sem Mostrar placar. Quanto a caixa guarda?',
+      // ⚠️ "Imagine:" (full review de experiência, M5): na abertura a caixa pontos ainda não existe.
+      prompt:
+        'Imagine: a caixa pontos guarda 0. Um acerto soma 1, com Mostrar placar desligado. Quanto a caixa guarda?',
       choices: [
         {
           id: 'zero',
@@ -1000,7 +1012,8 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
   cooldown: {
     prediction: {
       prompt:
-        'A recarga é de 1 segundo. Você aperta Atirar três vezes bem rápido. Quantos tiros saem?',
+        // ⚠️ "Imagine" (full review de experiência, M5): a faixa de abertura diz "recarga: nenhuma".
+        'Imagine a recarga em 1 segundo. Você aperta Atirar três vezes bem rápido. Quantos tiros saem?',
       choices: [
         {
           id: 'tres',
@@ -1208,7 +1221,9 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       // ⚠️ "Os DESENHOS parecem encostar?" era falso neste palco: os desenhos SÃO os círculos da
       // conta. Um palpite com números sobe um degrau em relação à `hitbox`.
       prompt:
-        'Os centros estão a 70 de distância, e cada raio mede 30. Os dois círculos já bateram?',
+        // ⚠️ "Imagine" (full review de experiência, M5): a faixa de abertura diz "distância entre os
+        // centros: 140".
+        'Imagine os centros a 70 de distância, com cada raio medindo 30. Os dois círculos já bateram?',
       choices: [
         { id: 'nao', label: 'Ainda não bateram' },
         {

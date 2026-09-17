@@ -8,6 +8,7 @@ import {
   type SceneAction,
   type SceneActivity,
   type SceneCast,
+  type ScenePilha,
   type SceneState,
 } from '@sistemazero/core/learning/scene'
 import { type PointerEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react'
@@ -314,20 +315,31 @@ export function PecaQueMudaDeCaixa<K extends string>({
 }
 
 /**
- * `layers` — a ORDEM DE DESENHAR, como a pilha de blocos do Estúdio.
+ * `layers` — a ORDEM DE DESENHAR, como a pilha de blocos do Estúdio ou o painel Camadas do Pinta.
  *
  * ⚠️⚠️ Vertical e numerada (lote 5 do Raio-X), 1º em cima: logo depois, a fala da aula pede "Coloque
  * a floresta entre Limpar a tela e Desenhar o sprite", numa pilha VERTICAL, e os cartões Antes/Depois
  * lado a lado não se transferiam para esse gesto. Cada peça tem o botão do lugar que falta (Descer ou
  * Subir), sem a seleção invisível de antes, e as duas se arrastam uma para o lugar da outra.
+ *
+ * ⚠️⚠️ Com `pilha: 'camadas'` (full review de experiência, A1) a lista é a do painel Camadas do Pinta: a
+ * da FRENTE em cima, sem números, e os botões com os nomes do Pinta ("Uma camada para a frente" e "Uma
+ * camada para trás"). A mesma pilha servia às duas ferramentas, e no Meu Jeito Aula 5 ensinava "suba a
+ * chama para a chama ir para trás", o contrário do que o Pinta faz dois minutos depois.
+ * ⚠️ `escondida` (M6): com o palpite pendente, quem usa leitor de tela ouvia "1º a desenhar: Dino" antes
+ * de apostar. Segue o `valoresEscondidos` da faixa: "?" no lugar de quem está em cada lugar.
  */
 function OrdemDeDesenhar({
   front,
   cast,
+  pilha,
+  escondida = false,
   onTrocar,
 }: {
   front: boolean
   cast?: SceneCast
+  pilha?: ScenePilha
+  escondida?: boolean
   onTrocar: () => void
 }) {
   const titulo = useId()
@@ -350,17 +362,40 @@ function OrdemDeDesenhar({
     botoes.current.get(focar.current)?.focus()
     focar.current = null
   }, [front])
+  const camadas = pilha === 'camadas'
   const nome = (peca: 'dino' | 'floresta') => castText(peca === 'dino' ? 'Dino' : 'Floresta', cast)
-  const ordem: ('dino' | 'floresta')[] = front ? ['floresta', 'dino'] : ['dino', 'floresta']
+  /** A ordem de DESENHAR: a primeira é desenhada antes (fica atrás no desenho). */
+  const desenho: ('dino' | 'floresta')[] = front ? ['floresta', 'dino'] : ['dino', 'floresta']
+  // ⚠️ No Pinta a lista se lê AO CONTRÁRIO: a de cima é a da frente, a desenhada por último.
+  const ordem = camadas ? [...desenho].reverse() : desenho
+  /** O lugar da linha, para quem usa leitor de tela ("1º a desenhar", ou "Na frente" no Pinta). */
+  const lugar = (i: number) => (camadas ? (i === 0 ? 'Na frente' : 'Atrás') : `${i + 1}º a desenhar`)
+  /** Quem está na linha, para quem OUVE: "?" enquanto o palpite não veio. */
+  const ouvido = (peca: 'dino' | 'floresta') => (escondida ? '?' : nome(peca))
+  /** O botão de cada linha: o que se LÊ e o nome acessível (que começa pelo que se lê, WCAG 2.5.3). */
+  const botao = (i: number, peca: 'dino' | 'floresta') =>
+    camadas
+      ? i === 0
+        ? { texto: 'Uma camada para trás', nome: `Uma camada para trás: ${ouvido(peca)}` }
+        : { texto: 'Uma camada para a frente', nome: `Uma camada para a frente: ${ouvido(peca)}` }
+      : i === 0
+        ? { texto: '↓ Descer', nome: `Descer ${ouvido(peca)} para o 2º lugar` }
+        : { texto: '↑ Subir', nome: `Subir ${ouvido(peca)} para o 1º lugar` }
   return (
     <div className="space-y-2 rounded-2xl border border-border p-3">
       <p id={titulo} className="text-sm font-semibold">
-        A ordem de desenhar
+        {camadas ? 'Camadas' : 'A ordem de desenhar'}
       </p>
-      <ol ref={lista} aria-labelledby={titulo} className="space-y-2">
+      <ol
+        ref={lista}
+        aria-labelledby={titulo}
+        data-pilha={camadas ? 'camadas' : 'blocos'}
+        className="space-y-2"
+      >
         {ordem.map((peca, i) => (
           <li
             key={peca}
+            data-peca={peca}
             className={cn(
               'flex touch-none items-center gap-3 rounded-xl border-2 bg-background p-2',
               // ⚠️ Só a peça ARRASTADA fica tracejada (consertos do review da onda A do lote 5): as duas
@@ -391,9 +426,12 @@ function OrdemDeDesenhar({
             onPointerCancel={() => setArrasto(null)}
             onLostPointerCapture={() => setArrasto(null)}
           >
-            <span aria-hidden className="w-8 text-center text-lg font-bold tabular-nums">
-              {i + 1}º
-            </span>
+            {/* ⚠️ Sem número no Pinta: o painel Camadas não numera as formas. */}
+            {!camadas && (
+              <span aria-hidden className="w-8 text-center text-lg font-bold tabular-nums">
+                {i + 1}º
+              </span>
+            )}
             <svg viewBox="0 0 70 64" className="h-12 w-14 shrink-0 text-primary" aria-hidden="true">
               {/* ⚠️ A peça mostra a MESMA figura do palco (lote 3 do Raio-X). */}
               {peca === 'dino' ? (
@@ -408,31 +446,32 @@ function OrdemDeDesenhar({
               )}
             </svg>
             <span className="min-w-0 flex-1 text-sm font-semibold">
-              <span className="sr-only">{i + 1}º a desenhar: </span>
-              {nome(peca)}
+              <span className="sr-only">
+                {lugar(i)}: {escondida ? '?' : ''}
+              </span>
+              {/* ⚠️ Escondido do leitor só com o palpite pendente: à vista, a bancada está borrada. */}
+              <span aria-hidden={escondida || undefined}>{nome(peca)}</span>
             </span>
             <SceneButton
               ref={(el) => {
                 if (el) botoes.current.set(peca, el)
                 else botoes.current.delete(peca)
               }}
-              aria-label={
-                i === 0
-                  ? `Descer ${nome(peca)} para o 2º lugar`
-                  : `Subir ${nome(peca)} para o 1º lugar`
-              }
+              aria-label={botao(i, peca).nome}
               onClick={() => {
                 focar.current = peca
                 onTrocar()
               }}
             >
-              <span aria-hidden>{i === 0 ? '↓ Descer' : '↑ Subir'}</span>
+              <span aria-hidden>{botao(i, peca).texto}</span>
             </SceneButton>
           </li>
         ))}
       </ol>
       <p className="text-sm text-muted-foreground">
-        O jogo desenha a lista de cima para baixo. Arraste uma peça, ou use Descer e Subir.
+        {camadas
+          ? 'A de cima fica na frente. Arraste uma forma ou use Uma camada para a frente e Uma camada para trás.'
+          : 'O jogo desenha a lista de cima para baixo. Arraste uma peça, ou use Descer e Subir.'}
       </p>
     </div>
   )
@@ -449,6 +488,7 @@ export function DinoSceneControls({
   dispatch,
   more,
   travada = false,
+  escondida = false,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -457,6 +497,11 @@ export function DinoSceneControls({
   more: boolean
   /** A montagem travada da demonstração: a ajuda da peça diz como mexer, e não "arraste". */
   travada?: boolean
+  /**
+   * O palpite ainda não veio (full review de experiência, M6): o que a bancada diz ao leitor de tela
+   * segue o `valoresEscondidos` da faixa. Hoje só a pilha da `layers` escreve a resposta assim.
+   */
+  escondida?: boolean
 }) {
   const m = activity.scene
   const cast = activity.cast
@@ -468,6 +513,8 @@ export function DinoSceneControls({
         <OrdemDeDesenhar
           front={state.world.front}
           cast={cast}
+          pilha={activity.pilha}
+          escondida={escondida}
           onTrocar={() => dispatch({ type: 'layer', front: !state.world.front })}
         />
       )

@@ -15,7 +15,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import type { ReactNode } from 'react'
 import { SceneButton } from './exploration-stage'
-import { Chave, Escolha, Medida } from './scene-bench'
+import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene-bench'
 
 /**
  * A bancada do MOTOR e da PORTA DO 3D (lote 5 do Raio-X, 16/09/2026): `pool`, `entity-state`,
@@ -27,17 +27,6 @@ import { Chave, Escolha, Medida } from './scene-bench'
  * livre: a câmera decide o que se vê, e isso pede voltas contáveis, não gesto contínuo.
  */
 
-/** As cenas desta bancada. */
-export const CENAS_DO_MOTOR = [
-  'pool',
-  'entity-state',
-  'delta-time',
-  'circle-collision',
-  'axis-z',
-  'camera-3d',
-  'mesh',
-  'pick-ray',
-] as const satisfies readonly SceneId[]
 
 /**
  * A grade das TRÊS medidas: no máximo duas lado a lado, e a terceira embaixo.
@@ -74,14 +63,10 @@ const NIVEIS_DA_PELE: readonly { id: MeshLevel; label: string }[] = MESH_LEVELS.
   label: MESH_SKIN_LABELS[id],
 }))
 
-/**
- * ⚠️⚠️ SOLTAR nos deslizantes que decidem uma meta pelo LUGAR (consertos do review da onda B do lote 5,
- * MÉDIO-3 e BAIXO-8). Sem ele cada valor do arrasto é um comando: na `camera-3d` arrastar a volta de 2
- * a 6 passava por "de frente" e derrubava `one-face`, que é o `revealOn` da previsão, e o palpite
- * voltava com duas cores na tela; na `pick-ray` arrastar o x passava por "onde uma cobre a outra" e o
- * palpite voltava com a mira no vazio. Os botões −/+ e as setas do teclado continuam passo a passo.
- */
-const SOLTAR = true
+// ⚠️⚠️ Os deslizantes daqui decidem metas pelo LUGAR: na `camera-3d` arrastar a volta de 2 a 6 passava por
+// "de frente" e derrubava `one-face` (o `revealOn` da previsão); na `pick-ray` arrastar o x passava por
+// "onde uma cobre a outra". Quem segura isso é a própria `Medida` (o valor vai ao motor quando o gesto
+// termina), e não uma constante daqui: ver `scene-bench.tsx`.
 
 /** Os atalhos da mira, nas coordenadas das caixas do motor (`PICK_BOXES`). */
 const MIRAS = {
@@ -95,13 +80,17 @@ export function MotorSceneControls({
   state,
   dispatch,
   cast,
+  goals = [],
 }: {
   scene: SceneId
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
+  /** As metas da atividade: quem abre os controles fechados é `metaAberta` (ver `scene-bench`). */
+  goals?: MetasDaBancada
 }) {
   const L = SCENE_LIMITS
+  const aberta = metaAberta(goals, state)
   // ⚠️ TODO rótulo passa pelo elenco, inclusive os que hoje não têm personagem.
   const nome = (texto: string) => castText(texto, cast)
   switch (scene) {
@@ -117,9 +106,9 @@ export function MotorSceneControls({
           // da `enemy-type`: ligada antes de tudo, o nº 1 passava de novo e de novo com "fabricados: 1",
           // que é o palpite ingênuo ("Só 1, o que está na tela") confirmado pela tela. ⚠️ Nunca fechada
           // LIGADA: um caso que abre reciclando precisa conseguir desligar.
-          disabled={!state.evidence.discoveries.includes('grows') && !state.nursery.recycling}
+          disabled={!aberta('grows') && !state.nursery.recycling}
           nota={
-            !state.evidence.discoveries.includes('grows') && !state.nursery.recycling
+            !aberta('grows') && !state.nursery.recycling
               ? nome('Abre depois que 3 cactos passarem.')
               : undefined
           }
@@ -180,7 +169,6 @@ export function MotorSceneControls({
             max={L.centers.max}
             passo={10}
             tom="text-muted-foreground"
-            soltar={SOLTAR}
             onChange={(distance) => dispatch({ type: 'approach', distance })}
           />
           {/* ⚠️ O passo do raio é 10 (consertos do review da onda B do lote 5): com 5, diminuir um raio
@@ -191,7 +179,6 @@ export function MotorSceneControls({
             min={L.radius.min}
             max={L.radius.max}
             passo={10}
-            soltar={SOLTAR}
             onChange={(value) => dispatch({ type: 'radius', which: 'a', value })}
           />
           <Medida
@@ -201,7 +188,6 @@ export function MotorSceneControls({
             max={L.radius.max}
             passo={10}
             tom="text-scene-b-ink"
-            soltar={SOLTAR}
             onChange={(value) => dispatch({ type: 'radius', which: 'b', value })}
           />
         </TresMedidas>
@@ -222,7 +208,7 @@ export function MotorSceneControls({
        * e a sombra, e mora aqui e na faixa. ⚠️ Cada número na cor do SEU eixo, as do Estúdio (x vermelho,
        * y verde, z azul): o y era cinza.
        */
-      const viu = (meta: string) => state.evidence.discoveries.includes(meta)
+      const viu = aberta
       return (
         <TresMedidas>
           <Medida
@@ -232,7 +218,6 @@ export function MotorSceneControls({
             max={L.spaceX.max}
             passo={20}
             tom="text-scene-alert"
-            soltar={SOLTAR}
             onChange={(v) => dispatch(lugar('x', v))}
           />
           <Medida
@@ -242,7 +227,6 @@ export function MotorSceneControls({
             max={L.spaceY.max}
             passo={20}
             tom="text-scene-leaf"
-            soltar={SOLTAR}
             onChange={(v) => dispatch(lugar('y', v))}
           />
           <Medida
@@ -252,7 +236,6 @@ export function MotorSceneControls({
             max={L.spaceZ.max}
             passo={20}
             tom="text-scene-a"
-            soltar={SOLTAR}
             onChange={(v) => dispatch(lugar('z', v))}
           />
         </TresMedidas>
@@ -268,9 +251,8 @@ export function MotorSceneControls({
               min={L.yaw.min}
               max={L.yaw.max}
               // ⚠️ De 1 a 8 (lote 5): "volta 0" não é uma volta para a criança, e o mapa conta assim.
-              // ⚠️ Função do valor: com `soltar`, o texto acompanha o dedo antes de o motor receber.
+              // ⚠️ Função do valor: o texto acompanha o dedo antes de o motor receber.
               texto={(v) => `${v + 1} de 8`}
-              soltar={SOLTAR}
               onChange={(yaw) => dispatch({ type: 'orbit', yaw, pitch: state.orbit.pitch })}
             />
             <Medida
@@ -281,7 +263,6 @@ export function MotorSceneControls({
               // ⚠️ Sem isto o leitor de tela anuncia "altura da câmera, 2".
               texto={(v) => ALTURA[v] ?? 'no meio'}
               tom="text-scene-b-ink"
-              soltar={SOLTAR}
               onChange={(pitch) => dispatch({ type: 'orbit', yaw: state.orbit.yaw, pitch })}
             />
           </div>
@@ -322,7 +303,6 @@ export function MotorSceneControls({
               min={L.pointX.min}
               max={L.pointX.max}
               passo={20}
-              soltar={SOLTAR}
               onChange={(x) => dispatch({ type: 'point', x, y: state.ray.y })}
             />
             <Medida
@@ -332,7 +312,6 @@ export function MotorSceneControls({
               max={L.pointY.max}
               passo={20}
               tom="text-scene-b-ink"
-              soltar={SOLTAR}
               onChange={(y) => dispatch({ type: 'point', x: state.ray.x, y })}
             />
           </div>

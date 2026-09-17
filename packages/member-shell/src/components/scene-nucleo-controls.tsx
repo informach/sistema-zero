@@ -13,7 +13,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { type KeyboardEvent, type PointerEvent, useEffect, useId, useRef, useState } from 'react'
 import { SceneButton } from './exploration-stage'
-import { Chave, Medida } from './scene-bench'
+import { Chave, Medida, type MetasDaBancada, metaAberta } from './scene-bench'
 
 /**
  * A bancada do NÚCLEO do Iniciante 2D, redesenhada no lote 5 do Raio-X (G5, 16/09/2026): `hold-vs-press`,
@@ -34,16 +34,19 @@ export function NucleoSceneControls({
   state,
   dispatch,
   cast,
+  goals = [],
   onRunning,
 }: {
   scene: SceneId
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
+  /** As metas da atividade: quem abre os controles fechados é `metaAberta` (ver `scene-bench`). */
+  goals?: MetasDaBancada
   /** O relógio é do PLAYER: o gesto que só se vê com o tempo passando liga o dele. */
   onRunning: (ligado: boolean) => void
 }) {
-  const props = { state, dispatch, cast, onRunning }
+  const props = { state, dispatch, cast, onRunning, aberta: metaAberta(goals, state) }
   switch (scene) {
     case 'hold-vs-press':
       return <BancadaDaTecla {...props} />
@@ -71,6 +74,8 @@ interface Bancada {
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
   onRunning: (ligado: boolean) => void
+  /** A meta que abre um controle já aconteceu? (`metaAberta`) */
+  aberta: (meta: string) => boolean
 }
 
 /**
@@ -215,10 +220,10 @@ function BancadaDaTecla({ state, dispatch, onRunning }: Bancada) {
  * Medir cada cacto, escolher um, e o laço (lote 5 do Raio-X). ⚠️ "Olhar" virou "Medir": o palco traça
  * a régua da torre até aquele cacto, e o número só aparece depois dela.
  */
-function BancadaDoLaco({ state, dispatch, cast, onRunning }: Bancada) {
+function BancadaDoLaco({ state, dispatch, cast, onRunning, aberta }: Bancada) {
   const nome = (texto: string) => castText(texto, cast)
   const { distances, looked, chosen, auto, measured } = state.hunt
-  const descobriu = state.evidence.discoveries.includes('nearest')
+  const descobriu = aberta('nearest')
   const base = useId()
   return (
     <div className="space-y-3">
@@ -284,11 +289,11 @@ function BancadaDoLaco({ state, dispatch, cast, onRunning }: Bancada) {
 }
 
 /** A ficha, o nascimento e a chave da cópia (lote 5 do Raio-X). */
-function BancadaDaFicha({ state, dispatch, cast, onRunning }: Bancada) {
+function BancadaDaFicha({ state, dispatch, cast, onRunning, aberta }: Bancada) {
   const nome = (texto: string) => castText(texto, cast)
   const L = SCENE_LIMITS
   const { speed, life, copy } = state.blueprint
-  const descobriu = state.evidence.discoveries.includes('all-change')
+  const descobriu = aberta('all-change')
   return (
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
@@ -558,10 +563,10 @@ function BancadaDaMira({ state, dispatch, cast, onRunning }: Bancada) {
  * As setas, "Andar 1 segundo" e a correção (lote 5 do Raio-X). ⚠️ O relógio saiu da cena: cada andada é
  * UM segundo a partir do começo, e o palco guarda o lugar de cada tipo para comparar.
  */
-function BancadaDaDiagonal({ state, dispatch, cast }: Bancada) {
+function BancadaDaDiagonal({ state, dispatch, cast, aberta }: Bancada) {
   const nome = (texto: string) => castText(texto, cast)
   const { dx, dy, even } = state.walkPad
-  const descobriu = state.evidence.discoveries.includes('faster')
+  const descobriu = aberta('faster')
   const seta = (x: -1 | 0 | 1, y: -1 | 0 | 1, rotulo: string, desenho: string) => {
     const apertada = (x !== 0 && dx === x) || (y !== 0 && dy === y)
     return (

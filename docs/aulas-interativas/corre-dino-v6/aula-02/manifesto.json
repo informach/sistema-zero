@@ -156,7 +156,7 @@
       "content": {
         "kind": "interactive",
         "title": "Quem fica na frente?",
-        "instructions": "Neste exemplo, o Dino está escondido atrás da floresta. Mude a ordem de desenhar e descubra quem fica na frente. Só a ordem muda.",
+        "instructions": "O Dino está escondido atrás da floresta. Mude a ordem de desenhar e descubra quem fica na frente. Só a ordem muda.",
         "hints": [
           "O Dino está atrás da floresta. Onde fica a floresta na lista?",
           "Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.",

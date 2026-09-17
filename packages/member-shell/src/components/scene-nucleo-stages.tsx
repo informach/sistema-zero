@@ -7,6 +7,7 @@ import {
   actorFigure,
   CAMERA_LANDMARKS,
   CAMERA_WORLD,
+  CONTACT_DRAWINGS,
   CONTACT_HEARTS,
   COOLDOWN_REFUSED_SECONDS,
   COOLDOWN_SHOT,
@@ -861,7 +862,7 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
         <g className="text-primary">
           <ActorFigure figure={heroi} x={DINO} y={piso} />
         </g>
-        <ActorFigure figure={obstaculo} x={DINO + 40 + distance} y={piso} />
+        <ActorFigure figure={obstaculo} x={DINO + CONTACT_DRAWINGS + distance} y={piso} />
         {encostando && (
           <path
             data-encosto
@@ -1201,16 +1202,21 @@ export function AimStage({
               strokeWidth="2"
               strokeDasharray="6 5"
             />
-            <Texto
-              className="fill-scene-ink-soft"
-              x={512}
-              y={origem.y - 8}
-              textAnchor="end"
-              tamanho={12}
-              fontWeight="600"
-            >
-              caminho reto
-            </Texto>
+            {/* ⚠️⚠️ O NOME só depois do primeiro tiro (full review de experiência, M6): a previsão pergunta
+                "Para onde vai o tiro?" (Direto no alvo / Reto para a frente), e "caminho reto" escrito no
+                desenho, legível embaixo do véu, era a resposta. */}
+            {(flying || result !== 'nada') && (
+              <Texto
+                className="fill-scene-ink-soft"
+                x={512}
+                y={origem.y - 8}
+                textAnchor="end"
+                tamanho={12}
+                fontWeight="600"
+              >
+                caminho reto
+              </Texto>
+            )}
           </g>
           {!perto && (
             <g data-seta-da-mira>

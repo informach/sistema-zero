@@ -261,8 +261,20 @@ export const pisoDoMundo = (mundo: SceneWorldKind, chao: number) =>
  *
  * ⚠️ Sorteio com semente fixa, e não `Math.random`: o palco renderiza a cada gesto, e estrelas
  * novas a cada toque piscariam a tela inteira — o contrário do "fundo" que elas são.
+ * ⚠️ Guardadas por tamanho (full review de 16/09/2026): o relógio redesenha o palco 25 vezes por
+ * segundo, e sortear ~80 estrelas a cada quadro era trabalho jogado fora. Os tamanhos são poucos (os
+ * enquadramentos das famílias), então o mapa não cresce.
  */
+const ESTRELAS_POR_TAMANHO = new Map<string, ReturnType<typeof sortearEstrelas>>()
 function estrelas(w: number, h: number) {
+  const chave = `${w}x${h}`
+  const guardadas = ESTRELAS_POR_TAMANHO.get(chave)
+  if (guardadas) return guardadas
+  const novas = sortearEstrelas(w, h)
+  ESTRELAS_POR_TAMANHO.set(chave, novas)
+  return novas
+}
+function sortearEstrelas(w: number, h: number) {
   let semente = 9173 + Math.round(w) * 31 + Math.round(h)
   const sorteio = () => {
     semente = (semente * 16807) % 2147483647

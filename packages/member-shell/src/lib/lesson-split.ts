@@ -1,5 +1,5 @@
 import { isPublicInteractiveBlock } from '@sistemazero/core/learning'
-import { isSceneActivity } from '@sistemazero/core/learning/scene'
+import { isSceneActivity, sceneActivityForReading } from '@sistemazero/core/learning/scene'
 
 /**
  * A régua do lado a lado da aula (o conteúdo à esquerda, a ferramenta à direita).
@@ -107,7 +107,9 @@ function ehCenaDeSecao(block: SplitBlock): boolean {
   return (
     block.kind === 'interactive' &&
     isPublicInteractiveBlock(block.content) &&
-    isSceneActivity(block.content.activity)
+    // ⚠️ Pela leitura tolerante, como o guarda de cima: uma cena citando meta que saiu do catálogo
+    // continua sendo cena, e não cai na coluna do conteúdo.
+    isSceneActivity(sceneActivityForReading(block.content.activity))
   )
 }
 

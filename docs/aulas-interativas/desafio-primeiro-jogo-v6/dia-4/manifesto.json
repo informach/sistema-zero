@@ -234,7 +234,7 @@
           ]
         },
         "prediction": {
-          "prompt": "A nave tem 1 ponto e bate num asteroide. O que muda?",
+          "prompt": "Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?",
           "choices": [
             { "id": "so-coracao", "label": "Só o coração" },
             {

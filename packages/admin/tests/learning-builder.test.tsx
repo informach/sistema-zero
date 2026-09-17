@@ -303,3 +303,29 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
     await b.fechar()
   }
 })
+
+test('⚠️⚠️ a pilha de camadas: só na layers, acompanha a cena irmã e sai ao trocar de cena', async () => {
+  // Full review de experiência do conjunto (A1): a `layers` do Meu Jeito fala com o painel Camadas do
+  // Pinta. Levada para outra cena, a pilha invalidaria o bloco sem nada na tela para consertar.
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    await b.clicar('Quem fica na frente?')
+    await b.clicar('Painel Camadas do Pinta')
+    const atividade = () => b.value.activity as { type: string; pilha?: string; scene?: string }
+    expect(atividade().pilha).toBe('camadas')
+    expect(isInteractiveBlock(b.value)).toBe(true)
+    await b.clicar('Demonstração')
+    expect(atividade().type).toBe('demonstration')
+    expect(atividade().pilha).toBe('camadas')
+    expect(isInteractiveBlock(b.value)).toBe(true)
+    await b.clicar('Para onde vai o cacto que sai da tela?')
+    expect(atividade().scene).toBe('cleanup')
+    expect(atividade().pilha).toBeUndefined()
+    expect(isInteractiveBlock(b.value)).toBe(true)
+    await b.clicar('Quem fica na frente?')
+    await b.clicar('Lista de blocos do Estúdio')
+    expect(atividade().pilha).toBeUndefined()
+  } finally {
+    await b.fechar()
+  }
+})

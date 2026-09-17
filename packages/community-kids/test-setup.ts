@@ -8,6 +8,50 @@ const { afterEach } = await import('bun:test')
 afterEach(cleanup)
 
 /**
+ * ⚠️⚠️ Os globais do NAVEGADOR voltam ao original depois de cada teste (full review de 16/09/2026).
+ *
+ * O bun roda todos os arquivos no mesmo processo e não isola `window`: um falso esquecido vaza para o
+ * resto da suíte, e o defeito aparece em outro arquivo, conforme a ORDEM (que muda entre Windows, Linux e
+ * `--randomize`). Aconteceu duas vezes: o `matchMedia` do `focus-mode.test.tsx` respondia `true` a
+ * `prefers-reduced-motion` e o player de cena de todo arquivo seguinte rodava com "menos movimento"; e o
+ * `requestAnimationFrame` falso de um `describe` do `lesson-scene-design` virava o "original" guardado pelo
+ * arquivo seguinte. Quem troca um destes globais continua restaurando no próprio arquivo (é o que deixa o
+ * arquivo certo sozinho); esta rede pega o que escapar. Os originais são lidos AQUI, no preload, antes de
+ * qualquer arquivo de teste. ⚠️ Global que não existia (a voz do navegador, a medida própria do
+ * `HTMLElement`) é APAGADO, e não posto em `undefined`: `'speechSynthesis' in window` continuaria `true`.
+ */
+const GLOBAIS_DA_JANELA = [
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'matchMedia',
+  'speechSynthesis',
+  'SpeechSynthesisUtterance',
+  'IntersectionObserver',
+] as const
+const MEDIDAS = [HTMLElement.prototype, Element.prototype] as const
+const originaisDaJanela = GLOBAIS_DA_JANELA.map(
+  (nome) => [nome, Object.getOwnPropertyDescriptor(window, nome)] as const,
+)
+const originaisDaMedida = MEDIDAS.map(
+  (proto) => [proto, Object.getOwnPropertyDescriptor(proto, 'getBoundingClientRect')] as const,
+)
+function restaurar(alvo: object, nome: PropertyKey, original: PropertyDescriptor | undefined): void {
+  const atual = Object.getOwnPropertyDescriptor(alvo, nome)
+  if (original) {
+    if (atual?.value !== original.value || atual?.get !== original.get)
+      Object.defineProperty(alvo, nome, original)
+  } else if (atual) Reflect.deleteProperty(alvo, nome)
+}
+afterEach(() => {
+  for (const [nome, original] of originaisDaJanela) restaurar(window, nome, original)
+  for (const [proto, original] of originaisDaMedida)
+    restaurar(proto, 'getBoundingClientRect', original)
+  // O palpite e o rascunho de uma cena guardados por um teste não podem abrir a cena do seguinte.
+  localStorage.clear()
+  sessionStorage.clear()
+})
+
+/**
  * O mascote Zappy animado (Rive) fora dos testes: o `dynamic(ssr:false)` resolve
  * mesmo no happy-dom, o runtime tenta buscar `/rive/rive.wasm` — que nenhum servidor
  * serve aqui — e cada suíte que monta uma celebração cospe

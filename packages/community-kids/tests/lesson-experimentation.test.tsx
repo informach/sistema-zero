@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 import {
   evaluateLearning,
   type InteractiveBlock,
@@ -16,6 +16,7 @@ import {
   packDemonstration,
   packExperiment,
   readSceneSegment,
+  SCENE_CLOCK_MARK,
   SCENE_IDS,
   SCENE_MODELS,
   SCENE_QUESTIONS,
@@ -110,6 +111,20 @@ function servidorFalso(scene: SceneId) {
   }) as unknown as typeof fetch
   return { fetchFalso, enviados }
 }
+
+/**
+ * Força a gravação que a batida de 1 s do player faria (o `pagehide` chama o mesmo `flush`) e dá uma volta
+ * de tarefas para o envio sair. ⚠️ Esperar a batida em tempo REAL (1,3 s contra 1 s) passava sem conferir
+ * nada com a máquina carregada (full review de 16/09/2026).
+ */
+async function forcarAGravacao() {
+  await act(async () => {
+    window.dispatchEvent(new Event('pagehide'))
+    await new Promise((r) => setTimeout(r, 50))
+  })
+}
+const progressos = (enviados: { url: string }[]) =>
+  enviados.filter((e) => e.url.endsWith('/learning-progress')).length
 
 describe('a criança mexendo na cena', () => {
   test('a pista do MODELO conta como pista usada, mesmo sem o professor ter escrito uma', async () => {
@@ -529,6 +544,10 @@ function servidorQueCorrige(bloco: InteractiveBlock) {
       : atividade.type === 'demonstration'
         ? packDemonstration(atividade.scene, checkpoint.session as DemonstrationSession)
         : packExperiment(atividade.scene, checkpoint.session as ExperimentSession),
+    // ⚠️ Mudou de propósito (full review final de dados e deploy, MÉDIO-1): o members com as regras
+    // deste player devolve o marcador no progresso gravado, e é por ele que o player separa a recusa
+    // da criança ("Ainda não é essa") da recusa de um servidor de outra versão ("Esta atividade mudou.").
+    sceneClock: SCENE_CLOCK_MARK,
   })
   const progresso = (result: unknown = null) => ({
     blockId: 'bloco',
@@ -1017,9 +1036,10 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
       fireEvent.click(screen.getAllByRole('button', { name: /^Aumentar/ })[0] as HTMLElement)
       // ⚠️ Mudou de propósito (lote 4 do Raio-X): na `velocity` o passo avança UM QUADRO e diz isso.
       fireEvent.click(screen.getByRole('button', { name: 'Avançar 1 quadro' }))
-      await act(async () => {
-        await new Promise((r) => setTimeout(r, 1300))
-      })
+      // ⚠️ Mudou de propósito (full review de 16/09/2026): esperava 1,3 s REAIS contra a batida de 1 s do
+      // player (300 ms de folga), e com a máquina carregada passava sem a batida ter rodado. O `pagehide`
+      // força a MESMA gravação na hora.
+      await forcarAGravacao()
       expect(enviados.length).toBe(antes)
       // E "Ver tudo de novo" fecha a bancada e volta à demonstração.
       fireEvent.click(screen.getByRole('button', { name: 'Ver tudo de novo' }))
@@ -1111,10 +1131,15 @@ describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () =
     fireEvent.click(opcao('layers', false))
     await waitFor(() => expect(screen.getByText(/não é essa/)).toBeTruthy(), { timeout: 5000 })
     const antes = tentativas(enviados).length
+    const progressoAntes = progressos(enviados)
     fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
     await trocarOrdem(1)
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 1300))
+    // ⚠️ Mudou de propósito (full review de 16/09/2026): em vez de 1,3 s reais contra a batida de 1 s, a
+    // gravação é forçada, e o segmento dos gestos SUBINDO prova que ela rodou (senão "nenhuma tentativa"
+    // passava sem conferir nada).
+    await forcarAGravacao()
+    await waitFor(() => expect(progressos(enviados)).toBeGreaterThan(progressoAntes), {
+      timeout: 5000,
     })
     expect(tentativas(enviados).length).toBe(antes)
   })
@@ -1257,9 +1282,8 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     const antes = frase()
     fireEvent.click(dino)
     fireEvent.keyDown(dino, { code: 'Space' })
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 1300))
-    })
+    // ⚠️ Mudou de propósito (full review de 16/09/2026): a gravação é forçada em vez de 1,3 s reais.
+    await forcarAGravacao()
     expect(frase()).toBe(antes)
     for (const e of enviados.filter((x) => x.url.endsWith('/learning-progress')))
       expect(JSON.stringify(e.body)).not.toContain('jump')
@@ -1465,10 +1489,17 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
       })
       const antes = tentativas(enviados).length
       // `detail: 1` é o toque de ponteiro.
-      fireEvent.click(opcao('world', false), { detail: 1 })
-      await act(async () => {
-        await new Promise((r) => setTimeout(r, 1200))
-      })
+      // ⚠️ Mudou de propósito (full review de 16/09/2026): o clique dependia de cair nos 800 ms REAIS
+      // desde que a pergunta abriu (`TEMPO_PARA_LER_A_PERGUNTA_MS`), e com a máquina carregada a espera
+      // pela pergunta passava disso. O relógio fica PARADO no instante em que a pergunta abriu.
+      const agora = performance.now()
+      const relogioParado = spyOn(performance, 'now').mockImplementation(() => agora)
+      try {
+        fireEvent.click(opcao('world', false), { detail: 1 })
+        await forcarAGravacao()
+      } finally {
+        relogioParado.mockRestore()
+      }
       expect(tentativas(enviados).length).toBe(antes)
       expect(screen.queryByText(/não é essa/) === null).toBe(true)
       // O teclado (`detail: 0`) responde na hora: o foco já está na pergunta.
@@ -1766,6 +1797,9 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
         await screen.findByText('Este navegador não tem voz. A leitura fica escrita aqui.'),
       ).toBeTruthy()
       expect(screen.queryByRole('button', { name: /^Voz:/ })).toBeNull()
+      // ⚠️⚠️ E o "🔊 Ouvir" do PLAYER também não aparece (full review de 16/09/2026): ele olhava só se a
+      // API existia, e o clique ficava mudo. Com voz pt-BR ele aparece (o teste "Ouvir lê a instrução").
+      expect(screen.queryByRole('button', { name: 'Ouvir' })).toBeNull()
     } finally {
       Object.assign(window, { speechSynthesis: antes.synth, SpeechSynthesisUtterance: antes.utt })
     }

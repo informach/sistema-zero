@@ -11,7 +11,6 @@ import {
   onionFireZone,
   symmetryCells,
   symmetryCopySeparated,
-  symmetryCounts,
   symmetryMarkCells,
 } from './atelie'
 import { SCENE_MODELS } from './catalog'
@@ -195,7 +194,6 @@ describe('symmetry: os dois espelhos do Pinta, no meio da grade', () => {
     )
     const cimaBaixo = symmetryMarkCells('asa|y')
     expect(cimaBaixo.map(([, y]) => y)).toEqual(symmetryMarkCells('asa').map(([, y]) => 15 - y))
-    expect(symmetryCounts(lado.mirror.marks)).toEqual({ voce: 1, papel: 2 })
   })
 
   test('⚠️⚠️ o espelho de cima e de baixo só conta DEPOIS do lado a lado', () => {
@@ -480,7 +478,10 @@ describe('⚠️⚠️ consertos do review da onda B do lote 5 (G4)', () => {
     ])
     // Antes: "você pintou 3 · no papel 4" depois do quarto toque (a asa repetida não entrava).
     expect(faixa('symmetry', s)).toBe('espelho lado a lado · seus traços 4 · cópias do espelho 1')
-    expect(symmetryCounts(s.mirror.marks)).toEqual({ voce: 3, papel: 4 })
+    // As MARCAS no papel não repetem o traço (3 da criança, 4 com a cópia); a faixa conta o gesto.
+    // ⚠️ `symmetryCounts` saiu (full review de 16/09/2026): só este teste a usava.
+    expect(s.mirror.marks.filter((m) => !m.includes('|'))).toHaveLength(3)
+    expect(s.mirror.marks).toHaveLength(4)
     const limpo = stepScene({ scene: 'symmetry' }, s, { type: 'clear-paper' })
     expect([limpo.mirror.strokes, limpo.mirror.copies]).toEqual([0, 0])
     const torto = { ...s, mirror: { ...s.mirror, strokes: -1 } }

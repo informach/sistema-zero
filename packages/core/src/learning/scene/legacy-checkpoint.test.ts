@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
+import { SCENE_IDS, sceneFrameRate } from './actions'
+import { openScene, stepScene } from './engine'
+import { sceneScript } from './index'
 import { packExperiment, readDemonstrationSession, readExperimentSession } from './session'
-import { initialScene, isSceneState } from './state'
+import { hydrateSceneState, initialScene, isSceneState } from './state'
 
 /**
  * ⚠️⚠️ O que já está gravado no banco continua sendo lido (14/09/2026).
@@ -143,5 +146,60 @@ describe('retrato guardado antes dos grupos novos', () => {
         JSON.stringify({ scene: 'world', state: quebrado, past: [], trials: [] }),
       ]),
     ).toBeNull()
+  })
+})
+
+describe('⚠️⚠️ todo campo que nasceu DEPOIS do retrato antigo hidrata sozinho (varredura gerada)', () => {
+  /**
+   * Full review de 16/09/2026 (M10): a hidratação era cobrada por três retratos escritos à mão e por
+   * remoções soltas em seis arquivos. Aqui a lista é GERADA: em cada uma das 45 cenas, com os grupos
+   * cheios (o roteiro de fábrica e 2 s de relógio), cada campo de objeto é apagado UM de cada vez do
+   * retrato gravado, e o `hydrateSceneState` precisa devolvê-lo válido. Os únicos campos que podem
+   * ser exigidos são os que o retrato mais antigo JÁ tinha (`retratoAntigo`, acima): campo novo num
+   * grupo novo ou velho que o validador cobra sem hidratação faria o leitor recusar o retrato, e o
+   * player apagaria o trabalho da criança. ⚠️ Isto prova só a RECUSA; meta falsa por campo derivado
+   * que abre no padrão de fábrica é o `completar*` do `state.ts` (ver o CLAUDE.md do core).
+   */
+  const caminhos = (valor: unknown, prefixo: string[] = []): string[][] => {
+    if (typeof valor !== 'object' || valor === null || Array.isArray(valor)) return []
+    return Object.entries(valor).flatMap(([chave, filho]) => [
+      [...prefixo, chave],
+      ...caminhos(filho, [...prefixo, chave]),
+    ])
+  }
+  const doRetratoAntigo = new Set(caminhos(retratoAntigo()).map((c) => c.join('.')))
+
+  test('nas 45 cenas, apagar qualquer campo novo do retrato não o faz ser recusado', () => {
+    const recusados: string[] = []
+    let apagados = 0
+    for (const scene of SCENE_IDS) {
+      let estado = openScene({ scene })
+      for (const passo of sceneScript({ type: 'demonstration', scene }))
+        for (const acao of passo.actions) estado = stepScene({ scene }, estado, acao)
+      if (sceneFrameRate(scene) !== null)
+        for (let i = 0; i < 50; i++)
+          estado = stepScene({ scene }, estado, { type: 'advance', seconds: 0.04 })
+      const gravado = JSON.stringify(estado)
+      for (const caminho of caminhos(JSON.parse(gravado))) {
+        if (doRetratoAntigo.has(caminho.join('.'))) continue
+        const retrato = JSON.parse(gravado) as Record<string, unknown>
+        let grupo: Record<string, unknown> = retrato
+        for (const chave of caminho.slice(0, -1)) grupo = grupo[chave] as Record<string, unknown>
+        delete grupo[caminho.at(-1) as string]
+        apagados++
+        if (!isSceneState(hydrateSceneState(retrato))) recusados.push(`${scene} · ${caminho.join('.')}`)
+      }
+    }
+    // A guarda de que a varredura andou: são milhares de campos novos.
+    expect(apagados).toBeGreaterThan(5000)
+    expect(recusados).toEqual([])
+  })
+
+  test('⚠️ a varredura morde: o mesmo retrato sem um campo ANTIGO é recusado', () => {
+    const retrato = JSON.parse(JSON.stringify(openScene({ scene: 'world' }))) as {
+      world: Record<string, unknown>
+    }
+    delete retrato.world.created
+    expect(isSceneState(hydrateSceneState(retrato))).toBe(false)
   })
 })

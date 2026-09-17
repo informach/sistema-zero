@@ -45,6 +45,11 @@ const validos: Array<[string, InteractiveBlock]> = [
     },
   ],
   ['demonstração do modelo', { ...base, activity: { type: 'demonstration', scene: 'layers' } }],
+  // ⚠️ Full review de experiência do conjunto (A1): a `layers` apresentada como o painel Camadas do Pinta.
+  [
+    'experimentação da layers com a pilha de camadas',
+    { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'camadas' } },
+  ],
   [
     'demonstração com roteiro autoral',
     {
@@ -217,6 +222,12 @@ const validos: Array<[string, InteractiveBlock]> = [
  *  saber QUAIS — uma divergência nova aqui precisa ser uma decisão, não um acidente. */
 const invalidos: Array<[string, unknown]> = [
   ['pistas repetidas', { ...base, hints: ['igual', 'igual'] }],
+  // A pilha só existe na `layers`: só o core sabe qual cena tem ordem de desenhar.
+  [
+    'pilha fora da layers',
+    { ...base, activity: { type: 'experimentation', scene: 'world', pilha: 'camadas' } },
+  ],
+  ['pilha que não existe', { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'lista' } }],
   // ⚠️⚠️ A demonstração não cobra meta nenhuma. Enquanto o schema dela declarava só `actions`,
   // o `normalize` do Elysia APAGAVA o `goals` em vez de deixá-lo chegar — o payload passava com
   // o campo sumido e o guard do domínio, que é quem tem a régua e a mensagem certa, nunca o via.
@@ -322,6 +333,7 @@ describe('o DTO da borda e o guarda do domínio', () => {
         'roteiro que promete uma descoberta que não acontece',
         'título só com espaço',
         'áudio sem https',
+        'pilha fora da layers',
         // A meta é do CATÁLOGO da cena: só o core sabe quais existem.
         'previsão que se revela numa meta de outra cena',
       ].sort(),
@@ -418,5 +430,28 @@ describe('⚠️⚠️ a previsão retomável ATRAVESSA uma rota com o corpo tip
     expect(
       ((await comExtra.json()) as { content: Record<string, unknown> }).content,
     ).not.toHaveProperty('campoQueNaoExiste')
+  })
+})
+
+describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado', () => {
+  test('o `normalize` do Elysia não apaga `pilha` (full review de experiência do conjunto, A1)', async () => {
+    const app = new Elysia().post('/', ({ body }) => body, {
+      body: t.Object({ content: InteractiveBlockSchema }),
+    })
+    const bloco: InteractiveBlock = {
+      ...base,
+      activity: { type: 'experimentation', scene: 'layers', pilha: 'camadas' },
+    }
+    const resposta = await app.handle(
+      new Request('http://members.test/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content: bloco }),
+      }),
+    )
+    expect(resposta.status).toBe(200)
+    const devolvido = (await resposta.json()) as { content: InteractiveBlock }
+    const atividade = devolvido.content.activity
+    expect(atividade.type === 'experimentation' ? atividade.pilha : null).toBe('camadas')
   })
 })

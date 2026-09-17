@@ -48,7 +48,7 @@
       "content": {
         "kind": "interactive",
         "title": "Compare duas alturas",
-        "instructions": "A nave começa lá em cima. Mude só o y e veja para que lado ela vai. Depois volte e mude só o x.",
+        "instructions": "A nave começa lá em cima. Mude só o y e veja para que lado ela vai.",
         "hints": [
           "Olhe o número do y e onde a nave está.",
           "Deixe o x parado e aumente só o y. Olhe para onde a nave vai.",

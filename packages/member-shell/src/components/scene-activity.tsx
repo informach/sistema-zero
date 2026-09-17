@@ -13,21 +13,25 @@ import {
   type ExperimentSession,
   evaluateDemonstration,
   evaluateExperimentation,
-  isSceneAction,
   SCENE_LIMITS,
   type SceneActivity,
   type SceneCast,
   type SceneCommand,
   type SceneEvent,
   type SceneState,
-  sceneClockReachedStop,
-  sceneConnectRunsClock,
+  sceneClockShouldStop,
   sceneDefaultGoalIds,
   sceneEmitsSound,
   sceneGoals,
+  sceneGestureRunsClock,
   sceneHint,
-  sceneJumpLeftView,
+  sceneHintDone,
+  type SceneHintStep,
+  sceneHintStep,
   sceneScript,
+  sceneSegmentHasClock,
+  sceneSetupGoals,
+  sceneShowsComparison,
   sceneSituation,
   sceneSuccess,
   sceneTargets,
@@ -50,7 +54,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { apiSend } from '../lib/api'
 import {
   hasLessonMediaFocus,
@@ -66,14 +70,14 @@ import {
 import type { LessonBlockView } from '../lib/types'
 import { ExperienceComparison } from './experience-scene'
 import { ExplorationPieces } from './exploration-pieces'
-import { ExplorationStage, ehLaboratorio, SceneButton } from './exploration-stage'
+import { ExplorationStage, SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
 import { SceneConclusion, SceneRevisitBanner } from './scene-conclusion'
 import { MontagemTravada, rotuloDaDemonstracao, SceneDemoControls } from './scene-demo-controls'
 import { SomDaBancada } from './scene-dino-controls'
-import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
+import { botoesDoMundo, estadosDaCena, SceneReadoutBand } from './scene-frame'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
 import {
@@ -133,7 +137,11 @@ export function SceneActivityView({
    * aula não cobra aparece. ⚠️ Só o player encolhe a escada: o members confere `hintsUsed` contra
    * os três degraus do modelo, e um a menos aqui nunca passa desse teto.
    */
-  const alvosDoProfessor = activity.type === 'experimentation' ? activity.setup?.goals : undefined
+  // ⚠️ Pela leitura tolerante (`sceneSetupGoals`): a meta que saiu do catálogo não conta como missão.
+  const alvosDoProfessor =
+    activity.type === 'experimentation'
+      ? sceneSetupGoals(activity.scene, activity.setup?.goals)
+      : undefined
   const missaoRestrita =
     content.hints.length === 0 &&
     Boolean(alvosDoProfessor?.length) &&
@@ -184,6 +192,19 @@ export function SceneActivityView({
   const [hint, setHint] = useState(() =>
     Math.min(hints.length, saved?.hintsUsed ?? rehearsal?.hintsUsed[block.id] ?? 0),
   )
+  /**
+   * A pista CONGELADA no clique, com as metas a que ela serve (full review de experiência, M1).
+   *
+   * ⚠️⚠️ A caixa era recalculada a cada gesto: a frase da situação na frente mudava, e o degrau de trás
+   * continuava mandando fazer o que a criança tinha acabado de fazer ("Tela de 800 por 480, com a borda à
+   * vista. … Aperte o botão da borda."). Congelada como o "Conferir", ela só muda no clique; quando o
+   * degrau fica cumprido, vira "✓ Feito! Se precisar, peça outra pista.". Num F5 (o degrau volta do
+   * servidor) não há clique: a caixa segue calculada com a cena de agora.
+   */
+  const [pistaCongelada, setPistaCongelada] = useState<{
+    nivel: number
+    passo: SceneHintStep
+  } | null>(null)
   /**
    * O que o "Conferir" respondeu, CONGELADO no clique.
    *
@@ -276,6 +297,14 @@ export function SceneActivityView({
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
   /**
+   * ⚠️⚠️ O servidor desta aba conhece as MESMAS regras deste player? (full review final de dados e
+   * deploy, MÉDIO-1). O segmento sobe com o marcador (`sceneSegmentAnswers`) e o members com as mesmas
+   * regras o devolve no progresso gravado; o de outra versão, não. `null` enquanto nenhum segmento
+   * desta tela voltou. É a resposta ao MEU segmento, e não o que já estava guardado: uma aba antiga
+   * que gravou por último não conta.
+   */
+  const regrasDoServidor = useRef<boolean | null>(null)
+  /**
    * ⚠️⚠️ O que a última tentativa já levou.
    *
    * A gravação roda numa batida de 1 s, e a condição de envio era só `!registered &&
@@ -316,20 +345,21 @@ export function SceneActivityView({
   const m = activity.scene
   /** O que a criança VÊ (`estadoVistoDaCena`): a prévia da `frames` parada com o relógio parado. */
   const visto = estadoVistoDaCena(m, state, running && ready && !conflict)
-  // ⚠️ A MESMA lista do palco: são as cenas do laboratório, e são elas que rendem a comparação
-  // guardada. Duas cópias da lista já divergiram uma vez.
-  // ⚠️ Menos as de SALTO (lote 5 do Raio-X): a `impulse` guarda as duas marcas no próprio palco, e na
-  // `gravity` a comparação é o pulo pontilhado. O "Guardar este jeito" ficou só onde nada guarda.
-  const reference = ehLaboratorio(m) && m === 'hitbox'
+  // ⚠️⚠️ A lista ÚNICA do core (`SCENE_COMPARISONS`), a mesma que o admin lê para oferecer "Comparação"
+  // (full review de 16/09/2026): duas cópias já tinham divergido DUAS vezes. Hoje só a `hitbox`: a
+  // `impulse` guarda as duas marcas no próprio palco, e na `gravity` a comparação é o pulo pontilhado.
+  const reference = sceneShowsComparison(m)
   const roteiro = sceneScript(activity)
   const demoStep = demo ? roteiro[demo.step] : null
   // ⚠️ As metas que ESTA atividade cobra: o `setup.goals` do professor, quando há. Sem isto o
   // player mostraria as três descobertas do modelo numa missão que só pede uma.
   const targets = sceneTargets(activity)
+  // ⚠️ Com a `pilha` (full review de experiência, A1): na `layers` do Meu Jeito os pedidos falam do
+  // painel Camadas do Pinta, e o "Conferir" repete o pedido.
   const result = demo
     ? evaluateDemonstration(demo.viewed)
-    : evaluateExperimentation(activity.scene, state, true, activity.cast, targets)
-  const goals = sceneGoals(activity.scene, state, activity.cast, targets)
+    : evaluateExperimentation(activity.scene, state, true, activity.cast, targets, activity.pilha)
+  const goals = sceneGoals(activity.scene, state, activity.cast, targets, activity.pilha)
   const feitas = goals.filter((g) => g.complete).length
   const temPergunta = Boolean(content.checkpoint)
   /** "Ligar som" só onde há som: a régua é do core (ver `sceneEmitsSound`). */
@@ -357,21 +387,17 @@ export function SceneActivityView({
     state.evidence.actions - state.evidence.hints <= 0 &&
     feitas === 0
   /**
-   * O que AINDA pode aparecer no lugar dos avisos, embaixo do palco (consertos do review da onda B do
-   * lote 5, T2): o próximo "Descoberta N de M" (a última meta não tem selo: é a conclusão que fala) e a
-   * frase do palpite escolhido enquanto a cena não o respondeu. É o molde do `LugarReservado`.
+   * ⚠️⚠️ Os avisos da descoberta NÃO reservam lugar no fluxo (full review de experiência, M2). O lugar
+   * reservado dos consertos da onda B (T2) trocou um defeito que se via (a bancada pulava) por um vão
+   * vazio de 36 a 140 px entre o palco e os botões, que parecia página quebrada: no celular o primeiro
+   * controle da `world` ia para y 1129 numa janela de 900. Hoje os avisos são SOBREPOSTOS ao pé do palco
+   * (`AvisosDaCena`), e a frase da situação continua sendo o único texto entre o palco e a bancada.
    */
-  const proximoSelo =
-    !demoMode && feitas + 1 < goals.length ? `Descoberta ${feitas + 1} de ${goals.length}` : ''
-  const fraseReservada =
-    palpite && prediction && !revelado ? fraseDoPalpite(palpite, prediction) : ''
-  /**
-   * ⚠️ O lugar existe desde que o palco ABRE (o palpite escolhido) e não sai mais: ele nasce junto da
-   * troca do cartão do palpite pela linha, que já mexe na tela inteira, e nunca no meio de um gesto. Na
-   * revisita sem nada por aparecer, ele não nasce (não há espaço vazio à toa).
-   */
-  const reservarAvisos = useRef(false)
-  if (!previsaoPendente && (proximoSelo || fraseReservada)) reservarAvisos.current = true
+  /** As frases de situação que a cena costuma atingir: o molde do lugar da frase (M3). */
+  const situacoesDaCena = useMemo(
+    () => estadosDaCena(activity).map((e) => sceneSituation(activity.scene, e, activity.cast)),
+    [activity],
+  )
 
   /**
    * A legenda da demonstração DEPOIS de ver, nunca antes (lote 2).
@@ -403,20 +429,34 @@ export function SceneActivityView({
     : demoMode
       ? legendaDaDemonstracao()
       : content.instructions
-  /** O texto do degrau `nivel` da escada, com a cena de AGORA. */
-  const textoDaPista = (nivel: number) => {
-    if (!nivel) return ''
-    if (content.hints.length) return hints[nivel - 1] ?? ''
+  /**
+   * O degrau `nivel` da escada, com a cena de AGORA: o texto e as metas a que ele serve (M1). A pista do
+   * professor não sabe a que meta serve (`metas` vazio): ela nunca vira "Feito".
+   */
+  const passoDaPista = (nivel: number): SceneHintStep => {
+    if (!nivel) return { texto: '', metas: [] }
+    if (content.hints.length) return { texto: hints[nivel - 1] ?? '', metas: [] }
     if (missaoRestrita) {
       const falta = goals.find((g) => !g.complete)
       const situacao = sceneSituation(activity.scene, visto, activity.cast).trim()
       if (falta?.pedido)
-        return `${situacao ? `${situacao} ` : ''}Tente: ${minusculaInicial(falta.pedido, activity.cast)}`
+        return {
+          texto: `${situacao ? `${situacao} ` : ''}Tente: ${minusculaInicial(falta.pedido, activity.cast)}`,
+          metas: [falta.id],
+        }
     }
-    return sceneHint(activity.scene, visto, nivel, activity.cast)
+    return sceneHintStep(activity.scene, visto, nivel, activity.cast, activity.pilha)
   }
   // ⚠️ A instrução NÃO é substituída pela pista (14/09/2026): quem pede ajuda é quem vai relê-la.
-  const hintText = textoDaPista(hint)
+  // ⚠️ A caixa mostra a pista CONGELADA no clique (M1), e "✓ Feito!" quando o degrau dela foi cumprido.
+  const pistaDaCaixa =
+    pistaCongelada && pistaCongelada.nivel === hint ? pistaCongelada.passo : passoDaPista(hint)
+  const pistaFeita = Boolean(hint) && sceneHintDone(pistaDaCaixa, state)
+  const hintText = pistaFeita
+    ? hint >= hints.length
+      ? '✓ Feito!'
+      : PISTA_FEITA
+    : pistaDaCaixa.texto
 
   /**
    * ⚠️ Anúncios da MOLDURA numa região própria, sempre montada: só acontecimentos ("Descoberta 1
@@ -543,29 +583,12 @@ export function SceneActivityView({
       setConferiu('')
       setAviso('')
     }
-    // ⚠️⚠️ O pulo liga o relógio TAMBÉM para quem pediu menos movimento (review do lote 1). Sem
-    // isto a Aula 3 travava: "Toque no Dino para pular" deixava o Dino parado no chão.
-    if (command.type === 'jump') setRunning(true)
-    // ⚠️ E ligar a gravidade com o Dino AINDA NO AR também solta o tempo (lote 5 do Raio-X): o ▶ para
-    // quando o Dino passa do alto do palco, e o pedido da cena é "ligue a gravidade e espere".
-    // Parado, esperar não mostrava nada.
-    // ⚠️⚠️ Só LIGAR solta (consertos do review da onda A do lote 5, B1): desligar a gravidade com o Dino
-    // subindo acima do topo soltava o ▶, que nunca mais parava. A régua é do core (`sceneConnectRunsClock`).
-    if (command.type === 'connect') {
-      const relogio = sceneConnectRunsClock(m, command, controller.getSnapshot().state)
-      if (relogio !== null) setRunning(relogio)
-    }
-    // ⚠️ Na `restart` o toque que COMEÇA a partida solta o tempo (lote 5 do Raio-X, G3), venha ele
-    // do palco (a tela inteira é o botão) ou da bancada: a partida é os cactos chegando, e com o
-    // relógio parado o toque só trocava o selo para JOGANDO.
-    // ⚠️ E na `score` (consertos do review da onda A do lote 5): o convite do palco virou o botão que
-    // começa a partida, como na `restart`.
-    if (
-      (m === 'restart' || m === 'score') &&
-      command.type === 'start' &&
-      controller.getSnapshot().state.match.screen === 'playing'
-    )
-      setRunning(true)
+    // ⚠️⚠️ O que o gesto faz com o ▶ é régua do CORE, a mesma do "Agora é sua vez"
+    // (`sceneGestureRunsClock`): pular solta o tempo também com menos movimento (sem isso a Aula 3
+    // deixava o Dino parado no chão), ligar um fio com o Dino no ar solta, desligar a gravidade acima
+    // do topo para, e o toque que começa a partida da `restart` e da `score` solta.
+    const relogio = sceneGestureRunsClock(m, command, controller.getSnapshot().state)
+    if (relogio !== null) setRunning(relogio)
   }
   // Soltar o tempo também é gesto: a descoberta que o relógio traz é dela.
   useEffect(() => {
@@ -603,8 +626,24 @@ export function SceneActivityView({
     // A resposta do "Conferir" era sobre a meta que ACABOU de cair: ela sai, e o aviso entra.
     setConferiu('')
     setAvisoDescoberta(texto)
-    anunciar(`${texto}.`)
+    // ⚠️ Com o relógio andando a frase da situação não é região viva (ela mudaria a cada fatia), e o
+    // anúncio dizia "Descoberta 2 de 4." sem dizer o quê (full review de experiência, B7): ele leva a frase.
+    anunciar(
+      running ? `${texto}: ${sceneSituation(activity.scene, visto, activity.cast)}` : `${texto}.`,
+    )
   })
+  // ⚠️ Os avisos sobre o palco SAEM sozinhos (full review de experiência, M2): parados ali, cobririam um
+  // pedaço do desenho até o próximo gesto.
+  useEffect(() => {
+    if (!avisoDescoberta) return
+    const t = setTimeout(() => setAvisoDescoberta(''), SELO_MS)
+    return () => clearTimeout(t)
+  }, [avisoDescoberta])
+  useEffect(() => {
+    if (!palpiteNaHora) return
+    const t = setTimeout(() => setPalpiteNaHora(''), tempoDoPalpite(palpiteNaHora))
+    return () => clearTimeout(t)
+  }, [palpiteNaHora])
   /**
    * ⚠️ Enquanto o relógio anda, a frase da situação NÃO é região viva (review do lote 2): ela muda a
    * cada tique, e quem usa leitor de tela recebia vinte frases por segundo ("o Dino foi de 60 para
@@ -689,6 +728,21 @@ export function SceneActivityView({
     focarPrincipal.current = false
     principalRef.current.focus({ preventScroll: true })
   })
+
+  /**
+   * ⚠️⚠️ O servidor é de OUTRA versão das regras (full review final de dados e deploy, MÉDIO-1).
+   *
+   * O deploy não garante o members antes do kids. Com este player contra o members de antes, 32 de 142
+   * blocos concluíam AQUI e o servidor gravava `passed:false`, e 10 caíam em 400 ("Sem internet" para
+   * sempre). Nos dois casos a cena para, a conclusão que o servidor recusou sai da tela e a saída é o
+   * "Abrir de novo". Sem "versão" no texto (lote 2): para a criança, a atividade mudou.
+   */
+  const servidorDeOutraVersao = () => {
+    setConflict(true)
+    setRunning(false)
+    if (!demoMode) setConclusao('')
+    setError(ATIVIDADE_MUDOU)
+  }
 
   /** O que volta da correção (servidor ou ensaio), pintado na tela. */
   const aplicarResultado = (
@@ -784,6 +838,7 @@ export function SceneActivityView({
           { keepalive: true },
         )
         controller.acknowledge(progress.answers)
+        regrasDoServidor.current = sceneSegmentHasClock(progress.answers)
         player.onLearningProgress?.(progress)
       }
       // ⚠️ Quem decide é o avaliador DO TIPO (`result`), não o da experimentação: em `jump-sound` e
@@ -833,6 +888,13 @@ export function SceneActivityView({
         // nenhuma nova tentativa de envio. O POST é idempotente pelo `attemptId`.
         enviado.current = assinatura
         enviadoChave.current = chave
+        // ⚠️⚠️ Recusada por um servidor de OUTRA versão, a recusa não é da criança: a resposta certa
+        // viraria "Ainda não é essa", e a demonstração vista, "veja de novo até o fim" (MÉDIO-1).
+        if (!response.attempt.result.passed && regrasDoServidor.current === false) {
+          player.onLearningProgress?.(response.progress)
+          servidorDeOutraVersao()
+          return
+        }
         // Com pergunta anexa, é o servidor quem diz se a frase escolhida explica o que aconteceu.
         aplicarResultado(response.attempt.result, escolhida, assentada)
         // ⚠️ Nas duas cenas que pedem montagem ASSENTADA, a criança pode mexer antes de o registro
@@ -846,12 +908,18 @@ export function SceneActivityView({
       if (cacheKey) await writeSceneDraft(cacheKey, controller.draft()).catch(() => {})
       setError('')
     } catch (e) {
-      const stale = typeof e === 'object' && e !== null && 'status' in e && e.status === 409
-      if (stale) {
+      const status = typeof e === 'object' && e !== null && 'status' in e ? e.status : undefined
+      if (status === 409) {
         setConflict(true)
         setRunning(false)
         // ⚠️ Curto e sem "aba", "versão" ou "cópia deste navegador" (lote 2): a saída é um botão.
-        setError('Esta atividade está aberta em outro lugar.')
+        // ⚠️ "mudou ou" (full review final de dados e deploy, BAIXO-6): depois de um deploy o 409 é
+        // quase sempre revisão nova do bloco (reimportação) ou regra nova, e não outra aba.
+        setError('Esta atividade mudou ou está aberta em outro lugar.')
+      } else if (player && (status === 400 || status === 422)) {
+        // ⚠️⚠️ O servidor recusou o que este player produz (MÉDIO-1): tentar de novo não resolve, e
+        // "Sem internet… a gente guarda quando voltar" prometia o que nunca acontece.
+        servidorDeOutraVersao()
       } else if (!player) {
         // ⚠️ No ensaio de autoria não existe conexão a aguardar: a falha veio do próprio ensaio (o
         // professor pediu "falhar na próxima confirmação") ou do avaliador.
@@ -892,7 +960,6 @@ export function SceneActivityView({
     espera.current = 0
     setRunning(true)
   }
-  const salta = isSceneAction({ type: 'jump', input: 'tap' }, m)
   const botoesDaCena = [
     ...botoesDoMundo({
       scene: m,
@@ -983,21 +1050,10 @@ export function SceneActivityView({
       action.current(
         demoMode ? { type: 'tick', seconds: elapsed } : { type: 'advance', seconds: elapsed },
       )
-      // Acabou o salto: parar o relógio em vez de rodar à toa. ⚠️ E o Dino sem gravidade que PASSA
-      // do alto do palco também para o ▶ (lote 5 do Raio-X): o voo não acaba, e o número passava de
-      // 1350 com o Dino fora da tela. Parado ali, a criança liga a gravidade e vê o Dino voltar.
-      const depoisDoTique = controller.getSnapshot().state
-      if (
-        !demoMode &&
-        salta &&
-        (depoisDoTique.flight.time === null || sceneJumpLeftView(m, antesDoTique, depoisDoTique))
-      ) {
-        setRunning(false)
-        return false
-      }
-      // ⚠️ A batida da `circle-collision` também para o ▶ (consertos do review da onda B do lote 5): o
-      // relógio só aproxima até ali, e o botão seguia "Parar o tempo" sobre dois círculos parados.
-      if (!demoMode && sceneClockReachedStop(m, depoisDoTique)) {
+      // ⚠️⚠️ Parar o ▶ em vez de rodar à toa é régua do CORE, a mesma do "Agora é sua vez"
+      // (`sceneClockShouldStop`): o salto acabou (ou nem começou), o Dino sem gravidade passou do alto do
+      // palco (parado ali, a criança liga a gravidade e vê o Dino voltar), ou a `circle-collision` bateu.
+      if (!demoMode && sceneClockShouldStop(m, antesDoTique, controller.getSnapshot().state)) {
         setRunning(false)
         return false
       }
@@ -1019,7 +1075,7 @@ export function SceneActivityView({
     // aparecer" entregava a descoberta a quem apertava o botão maior da tela. Meta sem pedido cai
     // na primeira pista, que diz onde ela está e o que tentar.
     if (falta.pedido) return `Ainda não. Tente: ${minusculaInicial(falta.pedido, activity.cast)}`
-    return `Ainda não. ${sceneHint(m, state, 1, activity.cast)}`
+    return `Ainda não. ${sceneHint(m, state, 1, activity.cast, activity.pilha)}`
   }
   const podeContinuar = Boolean(conclusao) && !revisita && temPergunta && !registered
   const fimDaDemonstracao = Boolean(demo?.ready && demo.step >= roteiro.length - 1)
@@ -1166,7 +1222,7 @@ export function SceneActivityView({
                 Ouvir instrução
               </SceneButton>
             </>
-          ) : voz.disponivel ? (
+          ) : voz.temVoz ? (
             <SceneButton
               tom="discreta"
               // ⚠️ Abaixo de 480px só o ícone: o rótulo espremia a instrução numa coluna de 200px.
@@ -1268,13 +1324,16 @@ export function SceneActivityView({
                         <span aria-hidden className="text-sm font-semibold text-muted-foreground">
                           Descobertas {feitas} de {goals.length}
                         </span>
-                        {goals.map((g) => (
+                        {/* ⚠️ A N-ésima bolinha acende com a N-ésima descoberta (full review de
+                            experiência, B6): "Descobertas 1 de 2" com a SEGUNDA acesa lia como erro.
+                            Qual meta caiu não é assunto do medidor. */}
+                        {goals.map((g, i) => (
                           <span
                             key={g.id}
                             aria-hidden
-                            className={`grid size-6 place-items-center rounded-full border ${g.complete ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-muted'}`}
+                            className={`grid size-6 place-items-center rounded-full border ${i < feitas ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-muted'}`}
                           >
-                            {g.complete ? <Check size={14} /> : null}
+                            {i < feitas ? <Check size={14} /> : null}
                           </span>
                         ))}
                       </div>
@@ -1289,7 +1348,12 @@ export function SceneActivityView({
                     {/* ⚠️ `inert` com o palpite pendente: tira do Tab e do ponteiro o gesto DIRETO no
                         desenho (o Dino que pula, o cacto que se arrasta), sem esconder o palco. */}
                     <fieldset disabled={demoMode} inert={previsaoPendente || undefined}>
-                      <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                      <ExplorationStage
+                        activity={activity}
+                        state={visto}
+                        dispatch={dispatch}
+                        escondida={previsaoPendente}
+                      />
                     </fieldset>
                     {previsaoPendente && (
                       /* ⚠️ Fechado não é escondido: o palco fica à vista sob o véu, porque é ele que
@@ -1310,45 +1374,49 @@ export function SceneActivityView({
                         </p>
                       </div>
                     )}
+                    {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
+                        lugar reservado no fluxo: ver `AvisosDaCena`. */}
+                    {!previsaoPendente && (avisoDescoberta || palpiteNaHora) && (
+                      <AvisosDaCena
+                        selo={avisoDescoberta}
+                        achou={palpite ? palpiteNaHora : ''}
+                        veredito={palpite ? vereditoDoPalpite(palpite, prediction) : null}
+                        onFechar={() => {
+                          setAvisoDescoberta('')
+                          setPalpiteNaHora('')
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
                 {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
                     ⚠️ Num lugar que só cresce (consertos do review da onda B do lote 5, T2): ela passa
                     de uma para duas linhas e volta no meio dos gestos, e a bancada ia junto. */}
-                <LugarReservado marca="situacao">
+                {/* ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
+                    só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
+                    bancada descia 16 px no toque (o "Avançar 1 quadro" da `draw-loop` no celular). */}
+                <LugarReservado
+                  marca="situacao"
+                  molde={
+                    <div className="grid" aria-hidden>
+                      {situacoesDaCena.map((frase, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
+                        <p key={i} className={`${CLASSE_DA_SITUACAO} [grid-area:1/1]`}>
+                          {frase}
+                        </p>
+                      ))}
+                    </div>
+                  }
+                  chave={situacoesDaCena.join('|')}
+                >
                   <p
                     role={running ? undefined : 'status'}
                     aria-live={running ? 'off' : undefined}
-                    className="min-h-6 text-center text-sm font-medium text-muted-foreground"
+                    className={CLASSE_DA_SITUACAO}
                   >
                     {sceneSituation(activity.scene, visto, activity.cast)}
                   </p>
                 </LugarReservado>
-                {(reservarAvisos.current || avisoDescoberta || palpiteNaHora) && (
-                  /* ⚠️⚠️ O aviso da descoberta e o palpite retomado, num lugar RESERVADO desde que o
-                     palco abre (consertos do review da onda B do lote 5, T2): eles entram quando a meta
-                     cai e saem no gesto seguinte, e empurravam a bancada no meio do gesto. O molde é o
-                     que ainda pode aparecer (o próximo selo e a frase do palpite escolhido). */
-                  <LugarReservado
-                    marca="avisos"
-                    molde={
-                      proximoSelo || fraseReservada ? (
-                        <AvisosDaCena
-                          selo={proximoSelo}
-                          achou={fraseReservada}
-                          veredito={palpite ? vereditoDoPalpite(palpite, prediction) : null}
-                        />
-                      ) : null
-                    }
-                    chave={`${proximoSelo}|${fraseReservada}`}
-                  >
-                    <AvisosDaCena
-                      selo={avisoDescoberta}
-                      achou={palpite ? palpiteNaHora : ''}
-                      veredito={palpite ? vereditoDoPalpite(palpite, prediction) : null}
-                    />
-                  </LugarReservado>
-                )}
                 {!demoMode && (
                   <>
                     {/* ⚠️⚠️ A caixa pergunta aos FILHOS se há o que mostrar (`botoesDaCena` é uma
@@ -1407,6 +1475,7 @@ export function SceneActivityView({
                         state={state}
                         dispatch={dispatch}
                         more={false}
+                        escondida={previsaoPendente}
                       />
                     </div>
                   </>
@@ -1472,9 +1541,11 @@ export function SceneActivityView({
                         // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas o editor aceita dez
                         // pistas: a tela mostra todas, e a evidência satura em três.
                         dispatch({ type: 'hint', level: Math.min(level, SCENE_LIMITS.hint.max) })
-                        // ⚠️ A pista é dita UMA vez, no clique, pela região da moldura: a caixa não
-                        // é região viva (ela é recalculada com a cena e repetia a situação).
-                        anunciar(`Pista ${level} de ${hints.length}. ${textoDaPista(level)}`)
+                        // ⚠️ A pista é CONGELADA no clique (full review de experiência, M1) e dita
+                        // UMA vez, pela região da moldura: a caixa não é região viva.
+                        const passo = passoDaPista(level)
+                        setPistaCongelada({ nivel: level, passo })
+                        anunciar(`Pista ${level} de ${hints.length}. ${passo.texto}`)
                       }}
                     >
                       <Lightbulb size={16} aria-hidden />
@@ -1538,12 +1609,23 @@ export function SceneActivityView({
                    sem empurrar o palco. A caixa some quando a cena conclui. ⚠️ Sem `role="status"`:
                    o texto é recalculado com a cena (o nível 1 cita a situação), e a cada "+100" o
                    leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
-              <div className="flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3">
-                <Lightbulb size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden />
+              <div
+                data-pista={pistaFeita ? 'feita' : 'aberta'}
+                className="flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+              >
+                {pistaFeita ? (
+                  <Check size={18} className="mt-0.5 shrink-0 text-success-foreground" aria-hidden />
+                ) : (
+                  <Lightbulb size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden />
+                )}
                 <p className="text-sm leading-relaxed">
-                  <span className="font-semibold">
-                    Pista {Math.min(hint, hints.length)} de {hints.length}.
-                  </span>{' '}
+                  {!pistaFeita && (
+                    <>
+                      <span className="font-semibold">
+                        Pista {Math.min(hint, hints.length)} de {hints.length}.
+                      </span>{' '}
+                    </>
+                  )}
                   {hintText}
                 </p>
               </div>
@@ -1710,42 +1792,58 @@ export function SceneActivityView({
   )
 }
 
+/** As classes da frase da situação: a de verdade e as do molde do lugar dela (M3) são as MESMAS. */
+const CLASSE_DA_SITUACAO = 'min-h-6 text-center text-sm font-medium text-muted-foreground'
+
 /**
- * Os avisos que entram embaixo do palco no instante do gesto: o selo da descoberta e o palpite retomado.
- * ⚠️ Um componente só para o que aparece E para o molde do lugar reservado: duas cópias do desenho
- * reservariam uma altura e mostrariam outra.
- * ⚠️ O selo é visual só: quem ouve recebe o mesmo acontecimento pela região de anúncios, e duas regiões
- * falando a mesma frase a diriam duas vezes.
- * ⚠️⚠️ O palpite retomado mora AQUI, junto do aviso e do gesto que o respondeu (review do lote 2): lá em
- * cima ele ficava fora da janela nas bancadas longas e no celular, e a criança via "Descoberta 1 de 2"
- * sem saber se tinha acertado.
+ * Os avisos que entram no instante do gesto: o selo da descoberta e o palpite retomado.
+ *
+ * ⭐⭐ SOBREPOSTOS ao pé do palco, dentro da moldura (full review de experiência, M2). Eles moravam num lugar
+ * reservado no fluxo, embaixo do palco, e o lugar ficava VAZIO em 88 de 88 medidas logo depois do palpite
+ * (36 a 140 px de buraco branco entre o desenho e os botões). Agora não ocupam lugar nenhum:
+ * - **não escondem o que a criança está olhando**: são `pointer-events-none` (o toque no Dino, o arrasto
+ *   do cacto e da alça atravessam), ficam numa faixa estreita da borda de baixo, e o selo SAI sozinho em
+ *   `SELO_MS`; a frase do palpite sai no tempo de leitura dela (`tempoDoPalpite`), no gesto seguinte ou
+ *   no ✕. A linha "Seu palpite: X. Não era isso." lá em cima continua dizendo o veredito;
+ * - ⚠️ o selo é visual só: quem ouve recebe o mesmo acontecimento pela região de anúncios, e duas regiões
+ *   falando a mesma frase a diriam duas vezes. O conjunto é `aria-hidden`, menos o ✕ (que tem nome).
+ * ⚠️⚠️ O palpite retomado mora AQUI, junto do gesto que o respondeu (review do lote 2): lá em cima ele
+ * ficava fora da janela nas bancadas longas e no celular.
  */
 function AvisosDaCena({
   selo,
   achou,
   veredito,
+  onFechar,
 }: {
   selo: string
   achou: string
   veredito: 'acertou' | 'errou' | null
+  onFechar: () => void
 }) {
   if (!selo && !achou) return null
   return (
-    <div className="space-y-4">
+    <div
+      data-avisos-sobre-o-palco=""
+      className="pointer-events-none absolute inset-x-2 bottom-2 flex flex-col items-end gap-2"
+    >
       {selo && (
-        <p className="mx-auto flex w-fit items-center gap-2 rounded-full bg-success/10 px-4 py-1 text-sm font-semibold text-success-foreground">
+        <p
+          aria-hidden
+          className="flex w-fit items-center gap-2 rounded-full bg-card/95 px-3 py-1 text-sm font-semibold text-success-foreground shadow-sm ring-1 ring-success/40"
+        >
           <Check size={16} aria-hidden />
           {selo}
         </p>
       )}
       {achou && (
-        <p
-          className={`mx-auto flex w-fit max-w-full items-start gap-2 rounded-2xl px-4 py-2 text-sm font-semibold ${
+        <div
+          className={`flex w-fit max-w-full items-start gap-2 rounded-2xl px-3 py-2 text-sm font-semibold shadow-sm ${
             veredito === 'errou'
-              ? 'bg-amber-500/15 text-amber-950'
+              ? 'bg-amber-100/95 text-amber-950'
               : veredito === 'acertou'
-                ? 'bg-success/10 text-success-foreground'
-                : 'bg-primary/5'
+                ? 'bg-card/95 text-success-foreground ring-1 ring-success/40'
+                : 'bg-card/95'
           }`}
         >
           {veredito === 'acertou' ? (
@@ -1753,12 +1851,40 @@ function AvisosDaCena({
           ) : (
             <Eye size={16} className="mt-0.5 shrink-0" aria-hidden />
           )}
-          {achou}
-        </p>
+          <p aria-hidden className="min-w-0">
+            {achou}
+          </p>
+          {/* ✕ para quem quer ver o desenho embaixo agora, sem esperar o tempo de leitura. */}
+          <button
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar o aviso"
+            className="pointer-events-auto -my-1 -mr-1 grid min-h-9 min-w-9 shrink-0 place-items-center rounded-full text-base leading-none hover:bg-foreground/10"
+          >
+            <span aria-hidden>✕</span>
+          </button>
+        </div>
       )}
     </div>
   )
 }
+
+/** Quanto o selo "✓ Descoberta N de M" fica sobre o palco (M2). */
+const SELO_MS = 2000
+
+/**
+ * Quanto a frase do palpite retomado fica sobre o palco: o dobro do tempo de leitura da demonstração
+ * inline, entre 5 e 10 s (é a criança de 8 anos lendo "Você achou: … Olhe a tela: …" e olhando o desenho).
+ */
+function tempoDoPalpite(frase: string): number {
+  return Math.min(10000, Math.max(5000, tempoDeLeitura(frase) * 2000))
+}
+
+/**
+ * O que a caixa da pista diz quando o degrau dela foi cumprido (full review de experiência, M1): a pista
+ * mandava fazer o que a criança tinha acabado de fazer. ⚠️ Sem ponto de exclamação duplo nem jargão.
+ */
+const PISTA_FEITA = '✓ Feito! Se precisar, peça outra pista.'
 
 /** Os dois conjuntos de metas são o MESMO (a ordem não importa). */
 function mesmoConjunto(a: readonly string[], b: readonly string[]): boolean {

@@ -147,11 +147,11 @@
           "prompt": "Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…",
           "choices": [
             {
-              "id": "direita",
-              "label": "Vai para a direita",
-              "shows": "Com −6, o x continuou diminuindo, e o cacto seguiu para a esquerda."
+              "id": "iguais",
+              "label": "Anda para a esquerda com passos iguais aos do −5",
+              "shows": "Com −6, o x diminuiu 6 a cada quadro, 1 a mais que com −5."
             },
-            { "id": "esquerda-mais", "label": "Vai para a esquerda, 1 a mais a cada quadro" }
+            { "id": "esquerda-mais", "label": "Anda para a esquerda com passos maiores" }
           ],
           "correctChoiceId": "esquerda-mais"
         },

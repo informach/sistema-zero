@@ -17,7 +17,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 | 3. Faça a batida encerrar a partida | application | Verificar a colisão a cada quadro durante a partida para mudar o estado. |
 | 4. Mostre que a partida acabou | application | Acrescentar o terceiro ramo exclusivo de tela. |
 | 5. Mostre e sinalize a batida | application | Encadear efeitos no fazer da colisão antes da mudança de cena. |
-| 6. Recomeçar é só trocar de tela? | exploration | Distinguir a cena de fim de uma nova partida preparada. |
+| 6. Jogar de novo é só trocar de tela? | exploration | Distinguir a cena de fim de uma nova partida preparada. |
 | 7. Monte o caminho de volta | application | Usar a mesma entrada com ação diferente conforme o estado. |
 | 8. Teste e entregue sua construção | delivery | Colisão com cactos dispara efeitos uma vez, muda para fim e permite reiniciar pelo mesmo evento de entrada. |
 | 9. Veja o que você aprendeu | closing | Colisão com cactos dispara efeitos uma vez, muda para fim e permite reiniciar pelo mesmo evento de entrada. |
@@ -117,7 +117,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
 
-### Recomeçar é só trocar de tela?
+### Jogar de novo é só trocar de tela?
 
 **Por que aqui:** Entender o reset antes de montar o segundo ramo do evento de entrada.
 

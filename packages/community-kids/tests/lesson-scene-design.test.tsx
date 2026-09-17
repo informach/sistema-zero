@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { type InteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   castText,
@@ -817,6 +817,17 @@ describe('as cinco cenas de desenho e a das vidas', () => {
    * do Dino que andava, o passo do quadro 2, a coluna e a linha do eixo, a pedra escolhida e o pedaço
    * de uma folha de 64 × 64: controles que não existem mais.
    */
+  /**
+   * ⚠️⚠️ O relógio falso sai depois de cada teste (full review de 16/09/2026): sem o `afterEach`, o
+   * `requestAnimationFrame` deste `describe` sobrevivia ao arquivo, e o arquivo seguinte o guardava como
+   * "original" no carregamento (`lesson-scene-motor-3d`) e o "restaurava" para sempre.
+   */
+  const rafOriginal = window.requestAnimationFrame
+  const cafOriginal = window.cancelAnimationFrame
+  afterEach(() => {
+    window.requestAnimationFrame = rafOriginal
+    window.cancelAnimationFrame = cafOriginal
+  })
   const relogio = () => {
     let fila: FrameRequestCallback[] = []
     window.requestAnimationFrame = (cb) => {
@@ -882,6 +893,9 @@ describe('as cinco cenas de desenho e a das vidas', () => {
     expect(document.querySelector('[data-fantasma]')).toBeTruthy()
     expect(document.querySelector('[data-pontas]')).toBeTruthy()
     // ⚠️ Arrastar de 40 até 0 passa pelo "um pouco maior" (20) SEM soltar: não é gesto terminado.
+    // ⚠️ Mudou de propósito (full review de 16/09/2026): o dedo APERTA antes (`pointerdown`), como no
+    // navegador; um `change` sem dedo nem tecla é o ajuste do leitor de tela e vai na hora.
+    fireEvent.pointerDown(fogo)
     fireEvent.change(fogo, { target: { value: '20' } })
     fireEvent.change(fogo, { target: { value: '0' } })
     expect(medidor()).toBe('1')
@@ -890,6 +904,7 @@ describe('as cinco cenas de desenho e a das vidas', () => {
     await waitFor(() => expect(fogo.value).toBe('0'))
     expect(medidor()).toBe('1')
     // A seta do teclado é um gesto inteiro: o valor vai ao soltar a tecla.
+    fireEvent.keyDown(fogo, { key: 'ArrowRight' })
     fireEvent.change(fogo, { target: { value: '20' } })
     fireEvent.keyUp(fogo, { key: 'ArrowRight' })
     await waitFor(() => expect(medidor()).toBe('2'))
@@ -1892,11 +1907,15 @@ describe('⚠️⚠️ o palco não mente', () => {
         dispatch={() => {}}
       />,
     )
-  /** Onde o Dino do `draw-loop` está desenhado (o `translate` do grupo dele), ou nada. */
-  const DINO = 'path[d^="M-22 -8"]'
+  /**
+   * Onde o Dino do `draw-loop` está desenhado (o `translate` do grupo dele), ou nada.
+   * ⚠️ Pelo `data-figure`, o contrato das figuras (full review de 16/09/2026): o seletor pelo TRAÇO
+   * (`path[d^="M-22 -8"]`) quebrava no primeiro retoque do desenho do Dino, sem ser defeito nenhum.
+   */
+  const DINO = '[data-figure="dino"]'
   const xDosDinos = () =>
-    [...document.querySelectorAll(DINO)].map((d) =>
-      Number(/translate\(([-\d.]+)/.exec(d.parentElement?.getAttribute('transform') ?? '')?.[1]),
+    [...document.querySelectorAll(DINO)].map((g) =>
+      Number(/translate\(([-\d.]+)/.exec(g.getAttribute('transform') ?? '')?.[1]),
     )
 
   test('⚠️⚠️ draw-loop: com as duas chaves, o Dino NUNCA para de andar', () => {
@@ -2222,9 +2241,26 @@ describe('⚠️⚠️ consertos do review do lote 4 (Raio-X): as cenas de quadr
       }
     }
   }
+  /**
+   * ⚠️⚠️ "Menos movimento" DESLIGADO de propósito (full review de 16/09/2026): com ele o relógio anda em
+   * passos de 0,2 s e a barra não recomeça nos 33 quadros abaixo. A suíte inteira reprovava aqui quando
+   * um arquivo anterior deixava um `matchMedia` falso respondendo `true` a toda consulta.
+   */
+  const matchMediaOriginal = window.matchMedia
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+    })) as unknown as typeof window.matchMedia
+  })
   afterEach(() => {
     window.requestAnimationFrame = rafOriginal
     window.cancelAnimationFrame = cafOriginal
+    window.matchMedia = matchMediaOriginal
   })
   const barra = () => document.querySelector<HTMLElement>('[data-quadro-em-andamento]')
   const largura = () => Number.parseFloat(barra()?.querySelector('div')?.style.width ?? 'NaN')
@@ -2252,16 +2288,9 @@ describe('⚠️⚠️ consertos do review do lote 4 (Raio-X): as cenas de quadr
     const meio = largura()
     expect(meio).toBeGreaterThan(30)
     expect(meio).toBeLessThan(70)
-    // O próximo quadro é o evento que prova o reset. O harness pode atravessar uma iteração sem
-    // callback registrado enquanto o React fecha um efeito; contar iterações como callbacks tornava
-    // esta prova dependente da carga da suíte inteira. Ainda há um teto rígido de mais um segundo:
-    // se o relógio realmente travar, a expectativa continua falhando.
-    let reiniciou = false
-    for (let i = 0; i < 60 && !reiniciou; i++) {
-      await tocar(1)
-      reiniciou = largura() < meio
-    }
-    expect(reiniciou).toBe(true)
+    // Passou do segundo: o quadro fechou e a barra recomeçou.
+    await tocar(33)
+    await waitFor(() => expect(largura()).toBeLessThan(meio))
     // Pausado, ela sai.
     fireEvent.click(screen.getByRole('button', { name: 'Parar o tempo' }))
     await waitFor(() => expect(barra()).toBeNull())

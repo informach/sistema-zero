@@ -2,6 +2,8 @@ import type { LearningResult } from '../index'
 import type { SceneId } from './actions'
 import { castText, type SceneCast } from './cast'
 import { sceneModel } from './catalog'
+import { emCamadas, LAYERS_CAMADAS, type ScenePilha } from './pilha'
+import { PISTA_DA_META, type PistaMeta, pistaCumprida } from './pistas'
 import { sceneSituation } from './readout'
 import { type SceneState, sceneAreaPercent } from './state'
 
@@ -27,26 +29,42 @@ export function sceneGoals(
   cast?: SceneCast,
   /** As metas que ESTA atividade cobra (o `setup.goals`). Sem lista, todas as do modelo. */
   targets?: readonly string[],
+  /** Como a pilha da `layers` se apresenta (`pilha.ts`): os pedidos falam da lista que a criança vê. */
+  pilha?: ScenePilha,
 ): SceneGoalProgress[] {
   return sceneModel(scene)
     .goals.filter((g) => (targets?.length ? targets.includes(g.id) : !g.soNoCaso))
-    .map((g) => ({
-      id: g.id,
-      label: castText(g.label, cast),
-      ...(g.pedido ? { pedido: castText(g.pedido, cast) } : {}),
-      complete: state.evidence.discoveries.includes(g.id),
-    }))
+    .map((g) => {
+      const pedido = pedidoDaMeta(scene, g.id, pilha) || g.pedido
+      return {
+        id: g.id,
+        label: castText(g.label, cast),
+        ...(pedido ? { pedido: castText(pedido, cast) } : {}),
+        complete: state.evidence.discoveries.includes(g.id),
+      }
+    })
 }
 
 /**
- * Duas cenas pedem que a montagem FIQUE no estado descoberto, não só que ele tenha passado:
- * em `layers`, o Dino na frente; em `jump-sound`, o fio do som no acontecimento. Descobrir e
- * depois desfazer não fecha essas duas — nas outras doze, descobrir basta.
+ * O pedido de uma meta (cru, sem o elenco): o do catálogo, ou o do painel Camadas quando a `layers`
+ * se apresenta assim (full review de experiência, A1). Meta desconhecida devolve `''`.
+ */
+function pedidoDaMeta(scene: SceneId, meta: string, pilha?: ScenePilha): string {
+  if (emCamadas(scene, pilha) && LAYERS_CAMADAS.pedidos[meta]) return LAYERS_CAMADAS.pedidos[meta]
+  return sceneModel(scene).goals.find((g) => g.id === meta)?.pedido ?? ''
+}
+
+/**
+ * A cena que pede que a montagem FIQUE no estado descoberto, não só que ele tenha passado: em
+ * `jump-sound`, o fio do som no acontecimento. Descobrir e depois desfazer não fecha essa.
+ *
+ * ⚠️ A `layers` saiu daqui (full review de experiência, M4): a arrumação final virou a meta
+ * `back-in-front`, que aparece na faixa e tem pedido e pista. Condição escondida fazia a faixa dizer
+ * "Descobertas 2 de 2" sobre uma cena que não concluía.
  */
 function settled(scene: SceneId, state: SceneState, targets?: readonly string[]): boolean {
   // ⚠️ A exigência de FICAR no estado descoberto acompanha a meta: uma atividade que não cobra
-  // "Dino na frente" não pode travar a criança porque a montagem ficou no outro arranjo.
-  if (scene === 'layers') return !cobra(targets, 'front') || state.world.front
+  // o som no pulo não pode travar a criança porque a montagem ficou no outro arranjo.
   if (scene === 'jump-sound')
     return !cobra(targets, 'key-sound', 'tap-sound', 'every-jump') || state.sound.onJump
   return true
@@ -55,18 +73,12 @@ function settled(scene: SceneId, state: SceneState, targets?: readonly string[])
 /**
  * O que falta quando as metas caíram e a montagem NÃO ficou no arranjo do jogo (lote 5 do Raio-X).
  *
- * ⚠️ Era "Deixe a montagem com a descoberta que você fez.", que não diz qual: na `layers` a segunda
- * descoberta é justamente esconder o Dino de novo, e a frase apontava para as duas ao mesmo tempo.
+ * ⚠️ Era "Deixe a montagem com a descoberta que você fez.", que não diz qual.
  */
 function pedidoDoArranjo(scene: SceneId, cast?: SceneCast): string {
   // ⚠️ "Leve… de volta" (consertos do review da onda A do lote 5): o "Conferir" do player responde com
-  // esta frase ("Ainda não. Tente: leve o Dino de volta…"), e antes ele não dizia nada com as metas
+  // esta frase ("Ainda não. Tente: leve Tocar som de volta…"), e antes ele não dizia nada com as metas
   // feitas e a montagem desfeita.
-  if (scene === 'layers')
-    return castText(
-      'Leve o Dino de volta para o fim da ordem de desenhar, como fica no jogo.',
-      cast,
-    )
   if (scene === 'jump-sound')
     return castText('Leve Tocar som de volta para Quando o Dino pular, como fica no jogo.', cast)
   return 'Deixe a montagem com a descoberta que você fez.'
@@ -97,8 +109,10 @@ export function evaluateExperimentation(
   cast?: SceneCast,
   /** As metas desta atividade. Sem lista, as do modelo. */
   targets?: readonly string[],
+  /** Como a pilha da `layers` se apresenta: o "Ainda falta" diz o gesto da lista que ela vê. */
+  pilha?: ScenePilha,
 ): LearningResult {
-  const cobradas = sceneGoals(scene, state, cast, targets)
+  const cobradas = sceneGoals(scene, state, cast, targets, pilha)
   const missing = cobradas.find((g) => !g.complete)
   const ready = settled(scene, state, targets)
   // ⚠️⚠️ Missão VAZIA reprova. O filtro por `targets` cruza a lista do caso com as metas do
@@ -151,33 +165,74 @@ export function evaluateDemonstration(
 }
 
 /**
- * A dica do momento. Os três degraus do modelo valem quase sempre, mas três cenas ganham um
- * atalho quando o estado já diz em que ponto a criança travou — mandá-la reler a mesma frase
- * genérica ali seria não responder.
+ * Um degrau da escada: o texto e as metas a que ele serve (`PISTA_DA_META`). O player CONGELA o degrau
+ * no clique e, quando ele fica cumprido, troca a caixa por "✓ Feito!" (full review de experiência, M1).
+ * `metas` vazio = o degrau não sabe a que meta serve, e nunca vira "Feito".
+ */
+export interface SceneHintStep {
+  texto: string
+  metas: PistaMeta
+}
+
+/**
+ * A dica do momento, só o texto. Ver `sceneHintStep`.
  */
 export function sceneHint(
   scene: SceneId,
   state: SceneState,
   level: number,
   cast?: SceneCast,
+  /** Como a pilha da `layers` se apresenta (`pilha.ts`). */
+  pilha?: ScenePilha,
 ): string {
-  const escada = degrau(scene, state, level, cast)
+  return sceneHintStep(scene, state, level, cast, pilha).texto
+}
+
+/**
+ * A dica do momento, com as metas a que ela serve. A escada do modelo PULA o degrau cuja meta já caiu
+ * (`PISTA_DA_META`), e algumas cenas ganham um atalho quando o estado já diz em que ponto a criança
+ * travou: mandá-la reler a mesma frase genérica ali seria não responder.
+ */
+export function sceneHintStep(
+  scene: SceneId,
+  state: SceneState,
+  level: number,
+  cast?: SceneCast,
+  pilha?: ScenePilha,
+): SceneHintStep {
+  const escada = degrau(scene, state, level, cast, pilha)
   // ⭐ O primeiro degrau diz ONDE a criança está antes de dizer o que fazer — é o padrão da
   // ajuda do Brilliant ("seu primeiro ponto foi parar em (−2, 2), mas onde o alvo precisa
   // estar?"). A situação já é escrita em língua de criança e já passa pelo elenco; repetir a
   // frase genérica para quem travou é não responder.
   if (level > 1) return escada
   const situacao = sceneSituation(scene, state, cast).trim()
-  // ⚠️ A situação que JÁ termina com o degrau (a `layers` e a `jump-sound` com a montagem desfeita,
-  // consertos do review da onda A do lote 5) não repete a frase.
-  if (situacao.endsWith(escada)) return situacao
-  return situacao && !escada.startsWith(situacao) ? `${situacao} ${escada}` : escada
+  // ⚠️ A situação que JÁ termina com o degrau não repete a frase.
+  if (situacao.endsWith(escada.texto)) return { ...escada, texto: situacao }
+  return situacao && !escada.texto.startsWith(situacao)
+    ? { ...escada, texto: `${situacao} ${escada.texto}` }
+    : escada
 }
 
-function degrau(scene: SceneId, state: SceneState, level: number, cast?: SceneCast): string {
+/** O degrau foi cumprido com as descobertas de agora? Sem meta nenhuma, nunca. */
+export function sceneHintDone(step: SceneHintStep, state: SceneState): boolean {
+  return pistaCumprida(step.metas, state.evidence.discoveries)
+}
+
+function degrau(
+  scene: SceneId,
+  state: SceneState,
+  level: number,
+  cast?: SceneCast,
+  pilha?: ScenePilha,
+): SceneHintStep {
   const d = state.evidence.discoveries
   // ⚠️ Os atalhos também passam pelo elenco: eles citam o cacto e o Dino pelo nome, e uma
   // pista que fala de outro personagem é pior que pista nenhuma.
+  const t = (texto: string, metas: PistaMeta): SceneHintStep => ({
+    texto: castText(texto, cast),
+    metas,
+  })
   /**
    * ⚠️⚠️ Os ESTADOS SEM SAÍDA vêm antes da escada, em todo degrau (consertos do review da onda A do
    * lote 5). Neles a pista de sempre manda fazer o que já não funciona:
@@ -187,9 +242,9 @@ function degrau(scene: SceneId, state: SceneState, level: number, cast?: SceneCa
    *   volta, e `base-limit` e `variation-limit` pedem a base CHEGANDO em −9.
    */
   if (scene === 'hitbox' && !d.includes('contact') && sceneAreaPercent(state.contact.width) < 100)
-    return castText(
+    return t(
       'Aumente o Tamanho da área do Dino e aproxime o cacto de novo, um toque de cada vez.',
-      cast,
+      ['contact'],
     )
   if (
     scene === 'acceleration' &&
@@ -197,56 +252,74 @@ function degrau(scene: SceneId, state: SceneState, level: number, cast?: SceneCa
     state.speed.base < -9 &&
     !(d.includes('base-limit') && d.includes('variation-limit'))
   )
-    return 'A base já passou de −9. Recomece para ver a base parar em −9.'
+    return t('A base já passou de −9. Recomece para ver a base parar em −9.', [
+      'base-limit',
+      'variation-limit',
+    ])
   /**
    * ⚠️ As pistas que não seguiam a meta que falta (consertos do review da onda A do lote 5): mandavam
    * fazer o que já tinha sido feito, ou usar um controle ainda fechado.
    */
   if (scene === 'coordinates' && level >= 3 && !d.includes('right'))
-    return 'Aperte + no x três vezes, sem tocar no y.'
+    return t('Aperte + no x três vezes, sem tocar no y.', ['right'])
   if (scene === 'coordinates' && level >= 3 && !d.includes('down'))
-    return 'Aperte + no y três vezes, sem tocar no x.'
-  if (scene === 'screen-reader' && level <= 1 && d.includes('heard-empty'))
-    return 'Escreva o que se faz no jogo. Por exemplo: pule, corra, desvie.'
+    return t('Aperte + no y três vezes, sem tocar no x.', ['down'])
+  // ⚠️ Com x e y descobertos, faltando o 0, 0, a pista 1 mandava "Mexa só no x" (full review de
+  // experiência, M1). O passo literal ("Diminua o x até 0…") fica para o degrau 3.
+  if (
+    scene === 'coordinates' &&
+    level < 3 &&
+    d.includes('right') &&
+    d.includes('down') &&
+    !d.includes('origin')
+  )
+    return t('Agora leve o Dino para x 0 e y 0.', ['origin'])
   if (scene === 'stage-size' && level >= 3 && !d.includes('border-on'))
-    return 'Aperte A borda da tela: escondida, logo abaixo do desenho.'
+    return t('Aperte A borda da tela: escondida, logo abaixo do desenho.', ['border-on'])
   if (scene === 'draw-loop' && d.includes('frozen') && !d.includes('trail'))
-    return castText('Escolha A cada quadro e aperte Avançar 1 quadro duas vezes.', cast)
+    return t('Escolha A cada quadro e aperte Avançar 1 quadro duas vezes.', ['trail'])
   if (scene === 'draw-loop' && d.includes('trail') && !d.includes('moving'))
-    return 'Ligue Limpar a tela antes e aperte Avançar 1 quadro de novo.'
+    return t('Ligue Limpar a tela antes e aperte Avançar 1 quadro de novo.', ['moving'])
   if (scene === 'hitbox' && level < 3)
-    return castText(
-      d.includes('contact')
-        ? // ⚠️ Lote 5 do Raio-X: o controle chama Tamanho da área do Dino (em %), e não largura.
-          'Deixe o cacto onde bateu. Mude só o Tamanho da área do Dino e compare.'
-        : 'Aproxime o cacto devagar. Observe a borda da área do Dino.',
-      cast,
-    )
+    return d.includes('contact')
+      ? // ⚠️ Lote 5 do Raio-X: o controle chama Tamanho da área do Dino (em %), e não largura.
+        t('Deixe o cacto onde bateu. Mude só o Tamanho da área do Dino e compare.', [
+          'area-contrast',
+        ])
+      : t('Aproxime o cacto devagar. Observe a borda da área do Dino.', ['contact'])
   // ⚠️ Nas cenas de mais de uma missão, a escada fala da missão que FALTA (lote 5 do Raio-X): na
   // `layers` depois de o Dino aparecer a pista 3 continuava mandando levar o Dino para o fim.
-  if (scene === 'layers' && d.includes('front') && !d.includes('covered'))
-    return castText(
-      level < 3
-        ? 'Agora esconda o Dino de novo, só mudando a ordem.'
-        : 'Com o Dino no fim da lista, leve a floresta para o fim.',
-      cast,
-    )
-  if (scene === 'layers' && d.includes('covered') && !state.world.front)
-    return pedidoDoArranjo(scene, cast)
+  // ⚠️⚠️ Com `pilha: 'camadas'` os textos são os do painel Camadas do Pinta (full review de
+  // experiência, A1): o "fim da lista" do Estúdio é o FUNDO do desenho no Pinta.
+  if (scene === 'layers' && d.includes('front') && !d.includes('covered')) {
+    const camadas = emCamadas(scene, pilha)
+    const agora = camadas
+      ? LAYERS_CAMADAS.depoisDaFrente[0]
+      : 'Agora esconda o Dino de novo, só mudando a ordem.'
+    const literal = camadas
+      ? LAYERS_CAMADAS.depoisDaFrente[1]
+      : 'Com o Dino no fim da lista, leve a floresta para o fim.'
+    return t(level < 3 ? agora : literal, ['covered'])
+  }
+  // ⚠️ A terceira missão (full review de experiência, M4): era a frase do arranjo desfeito.
+  if (scene === 'layers' && d.includes('covered') && !d.includes('back-in-front'))
+    return t(pedidoDaMeta(scene, 'back-in-front', pilha), ['back-in-front'])
   if (
     scene === 'jump-sound' &&
     d.includes('false-sound') &&
     !d.includes('silent-jump') &&
     level < 3
   )
-    return castText('Agora pule tocando no Dino. Olhe se aparece um ♪.', cast)
+    return t('Agora pule tocando no Dino. Olhe se aparece um ♪.', ['silent-jump'])
   if (scene === 'jump-sound' && d.includes('silent-jump') && !d.includes('every-jump') && level < 3)
-    return castText(
+    return t(
       'Leve Tocar som para Quando o Dino pular. Depois pule pela tecla e tocando no Dino.',
-      cast,
+      ['every-jump'],
     )
   if (scene === 'impulse' && d.includes('first-height') && level < 3)
-    return 'A marca deste salto fica no palco. Mude só o impulso e pule de novo.'
+    return t('A marca deste salto fica no palco. Mude só o impulso e pule de novo.', [
+      'other-height',
+    ])
   /**
    * ⚠️ Consertos do review da onda B do lote 5 (G6, BAIXO-9 e BAIXO-10).
    * - `circle-collision`: com os dois SOBREPOSTOS (a medida da distância, ou um caso), diminuir um raio
@@ -259,46 +332,79 @@ function degrau(scene: SceneId, state: SceneState, level: number, cast?: SceneCa
     !d.includes('formula') &&
     state.circles.distance <= state.circles.a + state.circles.b - 10
   )
-    return 'Afaste os centros até os dois só encostarem. Depois diminua um raio sem mexer na distância.'
+    return t(
+      'Afaste os centros até os dois só encostarem. Depois diminua um raio sem mexer na distância.',
+      ['formula'],
+    )
   if (
     scene === 'entity-state' &&
     state.brains.shared &&
     !(d.includes('own') && d.includes('independent'))
   )
-    return 'Aperte O estado mora até ficar em cada torre. Depois mude o estado de uma torre só.'
+    return t(
+      'Aperte O estado mora até ficar em cada torre. Depois mude o estado de uma torre só.',
+      ['own', 'independent'],
+    )
   if (scene === 'entity-state' && d.includes('acts') && !d.includes('own'))
-    return 'Deixe cada torre num estado diferente das outras duas.'
+    return t('Deixe cada torre num estado diferente das outras duas.', ['own'])
   if (scene === 'entity-state' && d.includes('independent') && !d.includes('shared'))
-    return level < 3
-      ? 'Agora mude onde o estado mora para no jogo.'
-      : 'Aperte O estado mora até ficar no jogo. Depois troque o estado de uma torre.'
+    return t(
+      level < 3
+        ? 'Agora mude onde o estado mora para no jogo.'
+        : 'Aperte O estado mora até ficar no jogo. Depois troque o estado de uma torre.',
+      ['shared'],
+    )
   /**
    * ⚠️ O núcleo do Iniciante 2D (consertos do review da onda B do lote 5, BAIXO-10): a escada fixa nunca
    * chegava à ÚLTIMA meta de quatro cenas, e quem travou ali lia de novo "meça um cacto" ou "faça nascer
    * três". Cada degrau diz o gesto da meta que falta, nunca o resultado.
    */
   if (scene === 'group-loop' && d.includes('nearest') && !d.includes('auto'))
-    return castText(
+    return t(
       level < 3
         ? 'Agora ligue o laço e deixe o tempo passar. Olhe o anel enquanto os cactos andam.'
         : 'Ligue o laço e deixe o tempo passar por 3 segundos, sem tocar em Escolher.',
-      cast,
+      ['auto'],
     )
   if (scene === 'enemy-type' && d.includes('all-change') && !d.includes('copied'))
-    return castText(
+    return t(
       level < 3
         ? 'Agora ligue Copiar a ficha ao nascer, mude a velocidade e faça nascer mais um cacto.'
         : 'Com a cópia ligada, mude a velocidade, faça nascer mais um cacto e deixe o tempo passar. Olhe o número em cima de cada cacto.',
-      cast,
+      ['copied'],
     )
   if (scene === 'cooldown' && d.includes('waiting') && !d.includes('spaced'))
-    return level < 3
-      ? 'Com a recarga, aperte Atirar e espere aparecer Pronto para atirar. Depois aperte Atirar de novo.'
-      : 'Ponha a recarga em 1 segundo, aperte Atirar, espere Pronto para atirar e aperte Atirar de novo.'
+    return t(
+      level < 3
+        ? 'Com a recarga, aperte Atirar e espere aparecer Pronto para atirar. Depois aperte Atirar de novo.'
+        : 'Ponha a recarga em 1 segundo, aperte Atirar, espere Pronto para atirar e aperte Atirar de novo.',
+      ['spaced'],
+    )
   if (scene === 'tilemap' && d.includes('coin-row') && !d.includes('same-letter'))
-    return level < 3
-      ? 'Escreva uma peça numa linha. Depois escreva a mesma peça numa outra linha.'
-      : 'Escolha a letra # e escreva na linha 2. Depois escreva # na linha 4.'
-  const hints = sceneModel(scene).hints
-  return castText(hints[level <= 1 ? 0 : level === 2 ? 1 : 2] ?? '', cast)
+    return t(
+      level < 3
+        ? 'Escreva uma peça numa linha. Depois escreva a mesma peça numa outra linha.'
+        : 'Escolha a letra # e escreva na linha 2. Depois escreva # na linha 4.',
+      ['same-letter'],
+    )
+  /**
+   * ⭐⭐ A escada PULA o degrau cuja meta já caiu (full review de experiência, M1). O nível N é o degrau N
+   * quando ele ainda serve; cumprido, o PRÓXIMO que serve (e, sem nenhum depois, o último que serve antes).
+   * Acabou a escada, vem o pedido da meta que falta (o gesto do "Conferir"). Antes os degraus eram fixos:
+   * "Aperte o botão da borda." seguia na caixa com a borda à vista, e "Mexa só no x" com x e y descobertos.
+   * ⚠️ "O próximo", e não "o N-ésimo que sobra": quem pediu a pista 1, fez o gesto e pede a 2 recebe o
+   * degrau seguinte ("diminua a largura"), e não o passo literal do fim, pulando o que nunca leu.
+   */
+  const pistas = emCamadas(scene, pilha) ? LAYERS_CAMADAS.hints : sceneModel(scene).hints
+  const metas = PISTA_DA_META[scene]
+  const escada = pistas.map((texto, i) => ({ texto, metas: metas[i] ?? ([] as const) }))
+  const serve = (p: { metas: PistaMeta } | undefined) => Boolean(p) && !pistaCumprida(p?.metas ?? [], d)
+  const n = Math.min(Math.max(level, 1), escada.length) - 1
+  const escolhida = serve(escada[n])
+    ? escada[n]
+    : (escada.slice(n + 1).find(serve) ?? escada.slice(0, n).reverse().find(serve))
+  if (escolhida) return t(escolhida.texto, escolhida.metas)
+  const falta = sceneModel(scene).goals.find((g) => !g.soNoCaso && !d.includes(g.id))
+  if (falta) return t(pedidoDaMeta(scene, falta.id, pilha), [falta.id])
+  return t(pistas[2] ?? '', [])
 }

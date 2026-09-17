@@ -139,7 +139,7 @@
         "kind": "interactive",
         "required": false,
         "title": "Criar e mostrar são a mesma coisa?",
-        "instructions": "Neste exemplo, ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.",
+        "instructions": "Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.",
         "hints": [
           "Olhe a ficha dos bastidores e a tela do jogo.",
           "Toque em Criar Dino e olhe os dois lados.",

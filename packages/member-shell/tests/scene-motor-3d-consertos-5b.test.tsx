@@ -78,6 +78,9 @@ describe('pick-ray: a vista de lado nunca desenha a reta atravessando uma caixa 
     for (let x = 0; x <= 480; x += 20)
       for (let y = 0; y <= 270; y += 10) {
         const { caixas, fim } = vistaDeLado(x, y)
+        // ⚠️ Anti-vácuo (full review de 16/09/2026): a regex do `d=` falhando dava `NaN`, e `NaN > x` é
+        // falso, então "a reta não entra na caixa" passava sem ter lido reta nenhuma.
+        expect(Number.isFinite(fim), `reta lida em ${x}, ${y}`).toBe(true)
         for (const c of caixas) {
           const naAlturaDaReta = y > c.y && y < c.y + c.h
           if (naAlturaDaReta) {

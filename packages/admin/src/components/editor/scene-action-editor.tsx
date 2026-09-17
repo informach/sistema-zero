@@ -125,7 +125,11 @@ const TODAS: { label: string; value: SceneAction }[] = [
   // As seis cenas do lote 4. Os valores de fábrica são os do roteiro de cada uma: o passo
   // grande do fantasma, a lupa que revela a borda, o pedaço 1 da folha.
   // ⚠️ Lote 5 do Raio-X (G4): o ateliê com os nomes do Pinta. O `paint` de colunas e o `mirror` com
-  // linha do eixo continuam legais (roteiros antigos), mas saíram da lista: o Pinta não tem eixo móvel.
+  // linha do eixo continuam legais (roteiros antigos), e a `symmetry` os esconde em `POR_CENA`: o Pinta
+  // não tem eixo móvel. Ficam AQUI para o passo antigo que os usa ter nome ("· ação antiga").
+  { label: 'Pintar uma coluna', value: { type: 'paint', column: 4 } },
+  { label: 'Ligar o espelho de eixo móvel', value: { type: 'mirror', on: true, line: 6 } },
+  { label: 'Desligar o espelho de eixo móvel', value: { type: 'mirror', on: false, line: 6 } },
   { label: 'Mostrar o quadro 1', value: { type: 'frame', index: 1 } },
   { label: 'Mostrar o quadro 2', value: { type: 'frame', index: 2 } },
   { label: 'Ligar a prévia', value: { type: 'play', on: true } },
@@ -278,6 +282,12 @@ export function avisoDoTempo(scene: SceneId, tempo: number, noCaso: boolean): st
  * "Mover o obstáculo" e "Provocar colisão" terminam a partida sem cacto na pista. As escondidas
  * continuam LEGAIS (conteúdo antigo abre), e um passo que já as usa mostra "· ação antiga".
  * A chave é a `identidade` da ação.
+ *
+ * ⚠️⚠️ É o ÚNICO mecanismo de ação legada (full review de 16/09/2026). O `paint` e o `mirror` tinham
+ * saído da lista `TODAS` em vez de entrar aqui, e o passo antigo que os usava aparecia como "Ação
+ * incompatível · revisar" numa ação ainda legal; e o `mode` da `contact` e o `wireframe` da `mesh`
+ * seguiam oferecidos: o primeiro não tem efeito nenhum (nada lê `hit.mode`), o segundo repete "A pele"
+ * com outro nome. Ação que a bancada não oferece mais: fica em `TODAS` e é escondida aqui, por cena.
  */
 const POR_CENA: Partial<
   Record<SceneId, { rotulos?: Record<string, string>; esconder?: readonly SceneAction['type'][] }>
@@ -285,6 +295,9 @@ const POR_CENA: Partial<
   acceleration: { rotulos: { 'sample:velocity': 'Passar 5 segundos' }, esconder: ['clock'] },
   restart: { rotulos: { 'start:tap': 'Tocar na tela' }, esconder: ['move', 'collide'] },
   hitbox: { rotulos: { resize: 'Mudar o tamanho da área do Dino' } },
+  symmetry: { esconder: ['paint', 'mirror'] },
+  mesh: { esconder: ['wireframe'] },
+  contact: { esconder: ['mode'] },
 }
 
 /** As ações que ESTA cena aceita. A legalidade é do domínio, não de uma lista daqui. */

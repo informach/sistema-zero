@@ -1,15 +1,9 @@
 'use client'
 
-import type {
-  SceneAction,
-  SceneActivity,
-  ScenePort,
-  SceneState,
-} from '@sistemazero/core/learning/scene'
+import type { SceneAction, SceneActivity, SceneState } from '@sistemazero/core/learning/scene'
 import { castText } from '@sistemazero/core/learning/scene'
-import { ExperienceConnection as Connection } from './experience-connection'
 import { SceneButton } from './exploration-stage'
-import { CENAS_DO_CORRE_DINO, DinoSceneControls } from './scene-dino-controls'
+import { CENAS_DO_CORRE_DINO, DinoSceneControls, PecaQueMudaDeCaixa } from './scene-dino-controls'
 
 /**
  * ⚠️ A `ConditionPiece` e o `usePieceDrag` SAÍRAM (consertos do review da onda A do lote 5): a `score`
@@ -24,6 +18,7 @@ export function ExplorationPieces({
   more,
   travada = false,
   pontoPorAcerto = false,
+  escondida = false,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -37,28 +32,12 @@ export function ExplorationPieces({
    * causa do Corre Dino, logo depois de a criança ver a do jogo dela. Com o roteiro atirando, ele sai.
    */
   pontoPorAcerto?: boolean
+  /** O palpite ainda não veio: o que a bancada diria ao leitor de tela fica "?" (ver `DinoSceneControls`). */
+  escondida?: boolean
 }) {
   const m = activity.scene
-  // ⚠️ O elenco entra AQUI, no helper, e não em cada chamada: os nomes dos fios citam o
-  // personagem e o obstáculo ("Dino", "Nascer cacto"), e uma chamada esquecida deixaria um fio
-  // falando do Corre Dino no meio de um curso de nave.
-  const connection = (
-    port: ScenePort,
-    source: string,
-    target: string,
-    enabled: boolean,
-    alternative = 'Desligar fio',
-    motivo?: string,
-  ) => (
-    <Connection
-      source={castText(source, activity.cast)}
-      target={castText(target, activity.cast)}
-      alternative={castText(alternative, activity.cast)}
-      enabled={enabled}
-      motivo={motivo ? castText(motivo, activity.cast) : undefined}
-      onConnect={(enabled) => dispatch({ type: 'connect', port, enabled })}
-    />
-  )
+  // ⚠️ O helper `connection` (o fio) SAIU (full review de experiência, M8): as `lives` eram as últimas
+  // cenas com fio aqui, e viraram a peça que muda de caixa. O fio vive na `gravity` (`scene-dino-controls`).
   // ⚠️ O `fechadoAte` e o `descobriu` saíram no lote 5 do Raio-X: os fios que abriam por descoberta
   // (os do Corre Dino) foram para bancadas próprias (`scene-dino-controls` e
   // `scene-dino-numbers-controls`), onde fechado continua não sendo escondido.
@@ -110,22 +89,59 @@ export function ExplorationPieces({
           dispatch={dispatch}
           more={more}
           travada={travada}
+          escondida={escondida}
         />
       )}
       {m === 'lives' && (
         <div className="space-y-3">
-          {/* ⚠️ Os DOIS fios juntos, e nenhum deles escondido atrás de descoberta: a cena é
-            sobre as duas contagens serem independentes, e isso só aparece quando dá para
-            ligar e desligar cada uma delas com a outra à vista. */}
-          {!pontoPorAcerto &&
-            connection(
-              'condition',
-              '＋ Somar ponto',
-              'Enquanto tem vida',
-              state.lifeline.scoring,
-              'Desligar fio',
-            )}
-          {connection('life', 'Bateu', '− Perder uma vida', state.lifeline.onHit, 'Desligar fio')}
+          {/* ⚠️ As DUAS peças juntas, e nenhuma delas escondida atrás de descoberta: a cena é sobre as
+              duas contagens serem independentes, e isso só aparece quando dá para mexer em cada uma com a
+              outra à vista.
+              ⭐⭐ A PEÇA QUE MUDA DE CAIXA, e não o fio (full review de experiência, M8): no Dia 3 do Desafio
+              a criança move "Criar asteroide" para dentro do relógio, o gesto do Estúdio, e no dia seguinte
+              o "Agora é sua vez" das vidas voltava ao fio ("● Bateu ─── ● − Perder uma vida", "Desligar
+              fio"). No Estúdio os dois são blocos dentro de eventos. ⚠️ As ações são as MESMAS
+              (`connect life` e `connect condition`): roteiro, metas e manifesto não mudam. */}
+          {pontoPorAcerto ? (
+            /* No Desafio o ponto vem do acerto do tiro, que não é gesto da bancada: a caixa fica à vista,
+               com a peça dentro, para a criança ver as duas regras lado a lado. */
+            <div
+              role="group"
+              aria-label="Quando o tiro acertar"
+              data-caixa="acerto"
+              className="space-y-2 rounded-2xl border-2 border-primary/60 bg-primary/5 p-3"
+            >
+              <p className="text-sm font-semibold">Quando o tiro acertar</p>
+              <p className="w-fit rounded-xl border-2 border-primary/40 bg-background px-4 py-2 text-sm font-semibold">
+                <span aria-hidden>＋</span> Somar ponto
+              </p>
+            </div>
+          ) : (
+            <PecaQueMudaDeCaixa
+              legenda="Onde está Somar ponto"
+              peca="＋ Somar ponto"
+              caixas={[
+                { id: 'fora', titulo: 'Fora dos eventos' },
+                { id: 'vida', titulo: 'Enquanto tem vida' },
+              ]}
+              atual={state.lifeline.scoring ? 'vida' : 'fora'}
+              travada={travada}
+              onMover={(caixa) =>
+                dispatch({ type: 'connect', port: 'condition', enabled: caixa === 'vida' })
+              }
+            />
+          )}
+          <PecaQueMudaDeCaixa
+            legenda="Onde está Perder uma vida"
+            peca="− Perder uma vida"
+            caixas={[
+              { id: 'fora', titulo: 'Fora dos eventos' },
+              { id: 'bater', titulo: 'Quando bater' },
+            ]}
+            atual={state.lifeline.onHit ? 'bater' : 'fora'}
+            travada={travada}
+            onMover={(caixa) => dispatch({ type: 'connect', port: 'life', enabled: caixa === 'bater' })}
+          />
         </div>
       )}
       {/* ⚠️ `restart`, `random` e `acceleration` saíram daqui no lote 5 do Raio-X: a bancada delas

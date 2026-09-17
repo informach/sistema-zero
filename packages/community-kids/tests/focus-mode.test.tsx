@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 /**
@@ -28,21 +28,34 @@ mock.module('next/navigation', () => ({
 const { FocusModeProvider } = await import('../src/components/kids/focus-mode')
 const { FocusModeToggle } = await import('../src/components/kids/focus-mode-toggle')
 
-/** happy-dom não implementa `matchMedia`; o `useMinWidth` depende dele. */
+/**
+ * A largura da janela na mão: o `useMinWidth` lê `matchMedia`.
+ *
+ * ⚠️⚠️ Só responde às consultas de `min-width`; qualquer outra (`prefers-reduced-motion`, por exemplo) é
+ * `false`, e o original volta no `afterAll` (full review de 16/09/2026). O falso respondia `true` a
+ * toda consulta sem `min-width` e nunca era desfeito: como o bun roda os arquivos no mesmo processo,
+ * o player de cena de TODO arquivo seguinte rodava com "menos movimento" ligado sem saber, e o teste
+ * da barra do quadro em andamento (`lesson-scene-design`) reprovava conforme a ordem dos arquivos.
+ */
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
 function setViewportWidth(width: number): void {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
     value: (query: string) => {
-      const min = Number(/\(min-width:\s*(\d+)px\)/.exec(query)?.[1] ?? '0')
+      const min = /\(min-width:\s*(\d+)px\)/.exec(query)?.[1]
       return {
-        matches: width >= min,
+        matches: min !== undefined && width >= Number(min),
         addEventListener: () => {},
         removeEventListener: () => {},
       }
     },
   })
 }
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
+})
 
 function renderNav(viewerId = 'perfil-1') {
   return render(

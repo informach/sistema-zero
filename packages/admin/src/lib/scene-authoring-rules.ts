@@ -6,6 +6,7 @@ import {
   SCENE_MODELS,
   type SceneAction,
   type SceneId,
+  type ScenePilha,
   type SceneSetup,
   type SceneStep,
   sceneGoalIds,
@@ -222,6 +223,14 @@ export function previsaoNaCena(
 const AVISO_DA_PREVISAO =
   'A previsão que você escreveu era de outra cena: o palpite da criança volta a aparecer quando ela concluir esta atividade.'
 
+/**
+ * A pilha levada para `scene`: só a `layers` tem ordem de desenhar (full review de experiência, A1).
+ * Em outra cena ela sai, sem aviso: o controle dela só existe na `layers`, e voltar para lá a pede de novo.
+ */
+export function pilhaNaCena(pilha: ScenePilha | undefined, scene: SceneId): ScenePilha | undefined {
+  return scene === 'layers' ? pilha : undefined
+}
+
 /** A cena deste bloco, quando ele é de cena. */
 const cenaDe = (a: LearningActivity): SceneId | null =>
   a.type === 'demonstration' || a.type === 'experimentation' ? a.scene : null
@@ -261,7 +270,9 @@ export function trocarCena(
         ...value,
         ...texto,
         ...(value.prediction ? { prediction: previsao.prediction } : {}),
-        activity: { ...a, scene, script, setup: caso.setup },
+        // ⚠️ A pilha só existe na `layers` (full review de experiência, A1): levada para outra cena, o
+        // core recusaria o bloco na publicação sem nada na tela para consertar.
+        activity: { ...a, scene, script, setup: caso.setup, pilha: pilhaNaCena(a.pilha, scene) },
       },
       aviso: [
         descartado
@@ -284,6 +295,7 @@ export function trocarCena(
         ...a,
         scene,
         setup: caso.setup,
+        pilha: pilhaNaCena(a.pilha, scene),
         // ⚠️ Mesma história do roteiro: atravessar uma cena sem salto zerava o impulso, e
         // chegar na outra cena de salto dava 9 em vez do que a professora tinha ajustado.
         initialImpulse: mantemImpulso ? (a.initialImpulse ?? memoria.initialImpulse) : undefined,
@@ -367,6 +379,9 @@ export function trocarTipo(
     a.type === 'demonstration' || a.type === 'experimentation'
       ? (a.setup ?? memoria.setup)
       : memoria.setup
+  // A pilha acompanha as duas irmãs, como o caso (só vale na `layers`).
+  const pilhaLembrada =
+    a.type === 'demonstration' || a.type === 'experimentation' ? a.pilha : undefined
   let activity: LearningActivity
   if (tipo === 'demonstration')
     activity = {
@@ -375,6 +390,7 @@ export function trocarTipo(
       instructionAudioUrl: audio,
       setup: casoAoTrocarCena(casoLembrado, cena ?? 'world', { metas: false }).setup,
       script: a.type === 'demonstration' ? a.script : memoria.script?.map((p) => ({ ...p })),
+      pilha: pilhaNaCena(pilhaLembrada, cena ?? 'world'),
     }
   else if (tipo === 'experimentation') {
     const destino = cena ?? 'world'
@@ -383,6 +399,7 @@ export function trocarTipo(
       scene: destino,
       instructionAudioUrl: audio,
       setup: casoAoTrocarCena(casoLembrado, destino, { metas: true }).setup,
+      pilha: pilhaNaCena(pilhaLembrada, destino),
       initialImpulse: CENAS_COM_IMPULSO.includes(destino)
         ? a.type === 'experimentation'
           ? a.initialImpulse

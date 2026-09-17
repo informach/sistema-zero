@@ -86,8 +86,8 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     discovery.content.title = 'Criar e mostrar são a mesma coisa?'
     discovery.content.instructions =
       // Lote 5 do Raio-X: criar e desenhar são controles independentes, e a instrução não diz o que a
-      // tela mostra.
-      'Neste exemplo, ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.'
+      // tela mostra. Sem "Neste exemplo," (full review de experiência, B11).
+      'Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.'
   }
   quiz.content.questions = quiz.content.questions.filter(
     (question) => question.id !== 'q3-coordenadas',

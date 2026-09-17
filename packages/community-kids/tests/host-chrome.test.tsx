@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import type { CloudSyncState, CreationsCloud } from '../src/lib/creations-cloud'
@@ -39,16 +39,29 @@ const { HostChromeAnnouncer, useHostChrome } = await import(
 )
 const { EMPTY_HOST_CHROME } = await import('../src/lib/host-chrome')
 
+/**
+ * ⚠️⚠️ Só responde a `min-width` (o resto é `false`) e o original volta no `afterAll`: a receita do
+ * `focus-mode.test.tsx`, onde o falso sem restaurar ligou "menos movimento" para os arquivos seguintes.
+ */
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
 function setViewportWidth(width: number): void {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
     value: (query: string) => {
-      const min = Number(/\(min-width:\s*(\d+)px\)/.exec(query)?.[1] ?? '0')
-      return { matches: width >= min, addEventListener: () => {}, removeEventListener: () => {} }
+      const min = /\(min-width:\s*(\d+)px\)/.exec(query)?.[1]
+      return {
+        matches: min !== undefined && width >= Number(min),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }
     },
   })
 }
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
+})
 
 function fakeCloud(initial: Partial<CloudSyncState> = {}) {
   let state: CloudSyncState = {

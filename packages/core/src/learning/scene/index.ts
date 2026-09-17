@@ -16,6 +16,7 @@ import {
   sceneModel,
 } from './catalog'
 import { openScene, stepScene } from './engine'
+import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
 import type { SceneStart } from './state'
 
 export * from './actions'
@@ -28,6 +29,10 @@ export * from './evaluate'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
 // do encosto, da recarga, da mira, da diagonal e do mapa escrito.
 export * from './nucleo'
+// A pilha da `layers` como o painel Camadas do Pinta e a meta de cada degrau de pista (full review de
+// experiência do conjunto, 16/09/2026).
+export * from './pilha'
+export * from './pistas'
 export * from './questions'
 export * from './readout'
 export * from './session'
@@ -65,6 +70,8 @@ export interface DemonstrationActivity {
    * criança repete quantas vezes quiser. O motor é o mesmo; muda só a apresentação.
    */
   presentation?: 'guided' | 'inline'
+  /** Só `layers`: a pilha como a lista de blocos do Estúdio (padrão) ou o painel Camadas do Pinta. */
+  pilha?: ScenePilha
 }
 export interface ExperimentationActivity {
   type: 'experimentation'
@@ -76,8 +83,19 @@ export interface ExperimentationActivity {
   cast?: SceneCast
   /** De onde a cena parte e o que ela cobra. Ver `SceneSetup`. */
   setup?: SceneSetup
+  /**
+   * Só `layers`: como a pilha se apresenta (`pilha.ts`). ⚠️ É APRESENTAÇÃO: ações e metas não mudam.
+   * `camadas` fala com os botões do Pinta ("Uma camada para a frente/para trás") e lista a da frente
+   * em cima (full review de experiência, A1).
+   */
+  pilha?: ScenePilha
 }
 export type SceneActivity = DemonstrationActivity | ExperimentationActivity
+
+/** A pilha declarada é legal: um dos valores, e só na cena que tem pilha. */
+const pilhaValida = (value: Record<string, unknown>) =>
+  value.pilha === undefined ||
+  (SCENE_PILHAS.some((p) => p === value.pilha) && scenePilhaAceita(value.scene as SceneId))
 
 const isScene = (v: unknown): v is SceneId => SCENE_IDS.some((s) => s === v)
 // ⚠️ O `[^/]` não é enfeite: sem ele, `//host-qualquer/audio.mp3` passa como se fosse
@@ -100,6 +118,7 @@ const validAudio = isSceneAudioUrl
 export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (!pilhaValida(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   // ⚠️ Meta é assunto de quem experimenta. Numa demonstração a lista não teria efeito nenhum,
   // e campo sem efeito é armadilha para quem autora: aqui ele é recusado.
@@ -127,6 +146,7 @@ export function isDemonstrationActivity(value: unknown): value is DemonstrationA
 export function isExperimentationActivity(value: unknown): value is ExperimentationActivity {
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (!pilhaValida(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene)) return false
   const { initialImpulse: impulse } = value
@@ -255,8 +275,111 @@ export function sceneStart(activity: SceneActivity): SceneStart {
  * caso específico do professor, e somá-las à missão sem caso a tornava maior que a instrução.
  */
 export function sceneTargets(activity: SceneActivity): readonly string[] {
-  const alvo = activity.type === 'experimentation' ? activity.setup?.goals : undefined
-  return alvo?.length ? alvo : sceneDefaultGoalIds(activity.scene)
+  // ⚠️⚠️ Pela LEITURA TOLERANTE (`sceneSetupGoals`): a meta que saiu do catálogo não esvazia a missão
+  // (vazia, ela reprovaria para sempre) e a sucessora entra no lugar. Player e members leem daqui.
+  const alvo =
+    activity.type === 'experimentation' ? sceneSetupGoals(activity.scene, activity.setup?.goals) : []
+  return alvo.length ? alvo : sceneDefaultGoalIds(activity.scene)
+}
+
+/**
+ * ⚠️⚠️ As metas que SAÍRAM do catálogo, com a sucessora quando existe uma que afirma a mesma coisa
+ * (full review final de dados e deploy, MÉDIO-3). `null` = saiu sem equivalente.
+ *
+ * Os manifestos não citavam nenhuma delas, mas um bloco criado ou editado no admin (a staging tem
+ * blocos assim) guarda o id velho em `setup.goals`. O validador da autoria recusa, e é certo: quem
+ * salva precisa ver. Na LEITURA, recusar escondia a atividade da criança ("precisa de uma
+ * configuração válida") e, obrigatória, travava a seção. Só entra aqui a sucessora que cobra o MESMO
+ * gesto: `cut` ("cada pedaço da folha é um desenho inteiro") virou `crop-whole` ("achou o recorte que
+ * mostra uma nave inteira"). `same-x` e `origin` NÃO são a mesma meta (o 0, 0 não é "mesmo x"), e a
+ * `two-cells` e a `separate` não têm par.
+ * ⚠️ Meta que sair do catálogo entra nesta tabela no mesmo commit.
+ */
+export const SCENE_RETIRED_GOALS: ReadonlyMap<SceneId, ReadonlyMap<string, string | null>> =
+  new Map<SceneId, ReadonlyMap<string, string | null>>([
+    ['coordinates', new Map([['same-x', null]])],
+    ['hitbox', new Map([['separate', null]])],
+    [
+      'sheet-vs-sprite',
+      new Map<string, string | null>([
+        ['cut', 'crop-whole'],
+        ['two-cells', null],
+      ]),
+    ],
+  ])
+
+/**
+ * As metas do caso que ESTA cena conhece, na ordem do professor: a sucessora no lugar da que saiu, e
+ * o id desconhecido fora. ⚠️ É LEITURA: quem publica continua passando pelo `isSceneSetup`, estrito.
+ * ⚠️ `Map`, e não objeto literal: "constructor" num objeto devolveria uma função do protótipo.
+ */
+export function sceneSetupGoals(scene: SceneId, goals: unknown): string[] {
+  if (!Array.isArray(goals)) return []
+  const conhecidas = sceneGoalIds(scene)
+  const saidas = SCENE_RETIRED_GOALS.get(scene)
+  const alvo: string[] = []
+  for (const meta of goals) {
+    if (typeof meta !== 'string') continue
+    const id = conhecidas.includes(meta) ? meta : saidas?.get(meta)
+    if (id && !alvo.includes(id)) alvo.push(id)
+  }
+  return alvo.slice(0, SETUP_LIMITS.goals)
+}
+
+/**
+ * O aviso do ADMIN: cada meta do caso que a cena não conhece mais, com a sucessora (ou `null`).
+ * Vazio quando o caso só cita metas vivas.
+ */
+export function sceneUnknownSetupGoals(
+  scene: SceneId,
+  goals: unknown,
+): Array<{ id: string; successor: string | null }> {
+  if (!Array.isArray(goals)) return []
+  const conhecidas = sceneGoalIds(scene)
+  const saidas = SCENE_RETIRED_GOALS.get(scene)
+  return goals
+    .filter((meta): meta is string => typeof meta === 'string' && !conhecidas.includes(meta))
+    .map((id) => ({ id, successor: saidas?.get(id) ?? null }))
+}
+
+/**
+ * ⚠️⚠️ A atividade de cena como o PLAYER a lê (full review final de dados e deploy, MÉDIO-3).
+ *
+ * Roda sobre o conteúdo CRU (a projeção do members e o guarda do navegador) e devolve a mesma
+ * atividade com a meta desconhecida tratada: no `setup.goals`, pela `sceneSetupGoals` (sem nenhuma
+ * que valha, a lista sai e a missão volta a ser a do modelo, como no `sceneTargets`; o caso vazio sai
+ * junto); no `waitFor` de um passo do roteiro, a espera sai (ela é a promessa conferida pela autoria,
+ * e o player toca a etapa inteira do mesmo jeito). O que NÃO é meta desconhecida continua passando
+ * pelo validador inteiro: uma ação que deixou de ser legal, ou um roteiro que não toca mais, seguem
+ * recusados na leitura e aparecem na varredura do banco.
+ */
+export function sceneActivityForReading(value: unknown): unknown {
+  if (!isRecord(value) || !isScene(value.scene)) return value
+  const scene = value.scene
+  let atividade: Record<string, unknown> = value
+  const setup = value.setup
+  if (value.type === 'experimentation' && isRecord(setup) && setup.goals !== undefined) {
+    const goals = sceneSetupGoals(scene, setup.goals)
+    const { goals: _metas, ...semMetas } = setup
+    const caso = goals.length ? { ...semMetas, goals } : semMetas
+    const { setup: _caso, ...semCaso } = value
+    atividade = Object.keys(caso).length ? { ...value, setup: caso } : semCaso
+  }
+  if (value.type === 'demonstration' && Array.isArray(value.script)) {
+    const conhecidas = sceneGoalIds(scene)
+    const desconhecida = (passo: unknown) =>
+      isRecord(passo) && typeof passo.waitFor === 'string' && !conhecidas.includes(passo.waitFor)
+    if (value.script.some(desconhecida))
+      atividade = {
+        ...atividade,
+        script: value.script.map((passo) => {
+          if (!desconhecida(passo)) return passo
+          const { waitFor: _espera, ...semEspera } = passo as Record<string, unknown>
+          return semEspera
+        }),
+      }
+  }
+  return atividade
 }
 
 /**
@@ -284,7 +407,10 @@ export function sceneScript(activity: SceneActivity): readonly SceneStep[] {
  */
 export function sceneModelFor(activity: SceneActivity) {
   const m = sceneModel(activity.scene)
-  if (!activity.cast) return m
+  if (!activity.cast)
+    return activity.pilha === 'camadas'
+      ? { ...m, hints: sceneHintsFor(activity) as unknown as SceneModel['hints'] }
+      : m
   const c = activity.cast
   return {
     ...m,
@@ -294,7 +420,17 @@ export function sceneModelFor(activity: SceneActivity) {
     success: castText(m.success, c),
     extra: castText(m.extra, c),
     goals: m.goals.map((g) => ({ ...g, label: castText(g.label, c) })),
-    hints: m.hints.map((h) => castText(h, c)) as unknown as SceneModel['hints'],
+    hints: sceneHintsFor(activity).map((h) => castText(h, c)) as unknown as SceneModel['hints'],
     script: sceneScript(activity),
   }
+}
+
+/**
+ * A escada de pistas do MODELO para esta atividade, sem o elenco: a de sempre, ou a do painel Camadas
+ * quando a `layers` se apresenta assim (full review de experiência, A1). ⚠️ `learningHints` (a escada
+ * que o player mostra quando o professor não escreveu pistas) lê daqui.
+ */
+export function sceneHintsFor(activity: SceneActivity): readonly string[] {
+  if (activity.scene === 'layers' && activity.pilha === 'camadas') return LAYERS_CAMADAS.hints
+  return sceneModel(activity.scene).hints
 }

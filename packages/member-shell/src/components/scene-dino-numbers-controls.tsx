@@ -8,7 +8,7 @@ import {
   sceneAreaWidth,
 } from '@sistemazero/core/learning/scene'
 import { SceneButton } from './exploration-stage'
-import { Chave, Escolha, Medida } from './scene-bench'
+import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene-bench'
 
 /**
  * A bancada do Corre Dino, segunda metade, e dos números (lote 5 do Raio-X, 16/09/2026): `restart`,
@@ -34,14 +34,13 @@ export function DinoNumbersControls({
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
-  goals: readonly { id: string; complete: boolean }[]
+  goals: MetasDaBancada
   onRunning: (ligado: boolean) => void
   /** As `lives` do Desafio: o ponto vem do ACERTO do tiro (ver `ExplorationPieces`). */
   pontoPorAcerto?: boolean
 }) {
   const nome = (texto: string) => castText(texto, cast)
-  const descobriu = (meta: string) =>
-    state.evidence.discoveries.includes(meta) || goals.some((g) => g.id === meta && g.complete)
+  const descobriu = metaAberta(goals, state)
   switch (scene) {
     case 'restart': {
       const tela = state.match.screen

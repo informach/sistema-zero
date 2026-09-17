@@ -144,4 +144,35 @@ describe('⚠️⚠️ os nomes por cena e as ações legadas (consertos do revi
     expect(campo?.label).toBe('Largura da área (100% do Dino)')
     expect(rotuloDaAcaoAntiga({ type: 'shoot' }, 'hitbox')).toBe('Ação incompatível · revisar')
   })
+
+  test('⚠️⚠️ UM mecanismo de ação legada: escondida por cena, com nome e "· ação antiga" (full review)', () => {
+    // O `paint` e o `mirror` tinham saído da lista inteira e viravam "Ação incompatível" numa ação
+    // ainda legal; o `mode` (sem efeito nenhum) e o `wireframe` (repete "A pele") seguiam oferecidos.
+    const legadas: [SceneId, SceneAction, string][] = [
+      ['symmetry', { type: 'paint', column: 4 }, 'Pintar uma coluna · ação antiga'],
+      ['symmetry', { type: 'mirror', on: true, line: 6 }, 'Ligar o espelho de eixo móvel · ação antiga'],
+      ['mesh', { type: 'wireframe', on: true }, 'Ligar o raio-X do modelo · ação antiga'],
+      ['contact', { type: 'mode', kind: 'ask' }, 'Perguntar se está encostando · ação antiga'],
+    ]
+    for (const [scene, acao, rotulo] of legadas) {
+      expect(isSceneAction(acao, scene)).toBe(true)
+      expect(sceneActionChoices(scene).some((c) => c.value.type === acao.type)).toBe(false)
+      expect(rotuloDaAcaoAntiga(acao, scene)).toBe(rotulo)
+    }
+    // Nenhuma ação LEGAL de cena nenhuma cai em "Ação incompatível": toda uma tem nome na lista.
+    for (const scene of SCENE_IDS)
+      for (const passo of SCENE_MODELS[scene].script)
+        for (const acao of passo.actions)
+          expect(rotuloDaAcaoAntiga(acao, scene)).not.toBe('Ação incompatível · revisar')
+  })
+
+  test('⚠️ todo tipo de ação dos roteiros de fábrica é oferecido na lista da cena', () => {
+    const faltando: string[] = []
+    for (const scene of SCENE_IDS)
+      for (const passo of SCENE_MODELS[scene].script)
+        for (const acao of passo.actions)
+          if (!sceneActionChoices(scene).some((c) => c.value.type === acao.type))
+            faltando.push(`${scene} · ${acao.type}`)
+    expect(faltando).toEqual([])
+  })
 })

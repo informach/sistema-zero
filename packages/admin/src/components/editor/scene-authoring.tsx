@@ -7,15 +7,13 @@ import {
   SCRIPT_LIMITS,
   type SceneStep,
   sceneScript,
+  sceneShowsComparison,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId } from 'react'
 import { SceneActionEditor, sceneActionChoices } from './scene-action-editor'
-
-/** As quatro cenas que mostram dois retratos lado a lado. */
-const COMPARAM = ['gravity', 'impulse', 'hitbox', 'jump-sound']
 
 /**
  * O roteiro da demonstração: o que a cena faz sozinha, passo a passo, enquanto a criança olha.
@@ -34,7 +32,9 @@ export function SceneAuthoring({
   const id = useId()
   const script = sceneScript(activity)
   const modelo = SCENE_MODELS[activity.scene]
-  const compara = COMPARAM.includes(activity.scene)
+  // ⚠️⚠️ A lista ÚNICA do core, a mesma do player (full review de 16/09/2026): a daqui oferecia
+  // "Comparação" em quatro cenas e o player só desenha na `hitbox`.
+  const compara = sceneShowsComparison(activity.scene)
   const autoral = activity.script !== undefined
   const escrever = (steps: readonly SceneStep[]) => onChange({ ...activity, script: [...steps] })
   const trocar = (index: number, mudanca: Partial<SceneStep>) =>

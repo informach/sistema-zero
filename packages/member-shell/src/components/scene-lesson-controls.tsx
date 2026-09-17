@@ -76,10 +76,11 @@ export function LessonSceneControls({
         state={state}
         dispatch={dispatch}
         cast={cast}
+        goals={goals}
         onRunning={onRunning}
       />
       {/* Lote 5 do Raio-X: a bancada do motor e do 3D, em arquivo próprio. */}
-      <MotorSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} />
+      <MotorSceneControls scene={m} state={state} dispatch={dispatch} cast={cast} goals={goals} />
       {m === 'coordinates' && (
         /* ⭐ Os dois controles que a Aula 1 pedia e que o vídeo não dava. Cada eixo
          tem deslizante, botões de passo e o valor à vista — os três levam ao MESMO

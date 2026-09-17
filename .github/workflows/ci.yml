@@ -275,7 +275,9 @@ jobs:
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 50min: o members espera ficar pronto ANTES de disparar community-kids e community (ver
+    # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
+    timeout-minutes: 50
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2
@@ -401,7 +403,8 @@ jobs:
           gql() { curl -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
 
           declare -A DEP=()
-          for s in "${!WANT[@]}"; do
+          disparar() {
+            local s="$1"
             BODY=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$STAGING_ENV_ID" --arg sha "$GITHUB_SHA" \
               '{query:"mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}",variables:{s:$sid,e:$eid,c:$sha}}')
             RESP=$(gql "$BODY")
@@ -409,42 +412,79 @@ jobs:
             if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; exit 1; fi
             DEP[$s]="$ID"
             echo "  $s → deployment $ID"
-          done
+          }
 
-          # espera todos chegarem a estado terminal (healthcheck gateia o SUCCESS)
+          # espera os serviços pedidos chegarem a estado terminal (healthcheck gateia o SUCCESS)
           # a API às vezes devolve corpo não-JSON transitório num poll — conta como
           # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
-          FAIL=0; BADPOLLS=0
-          for i in $(seq 1 60); do
-            sleep 20
-            PENDING=0; LINE=""; ROUND_OK=1
-            for s in "${!DEP[@]}"; do
-              Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-              RESP=$(gql "$Q") || RESP=""
-              if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
-                echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
-                ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
-                continue
+          esperar() {
+            FAIL=0; PENDING=1; BADPOLLS=0
+            for i in $(seq 1 60); do
+              sleep 20
+              PENDING=0; LINE=""; ROUND_OK=1
+              for s in "$@"; do
+                Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
+                RESP=$(gql "$Q") || RESP=""
+                if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
+                  echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
+                  ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
+                  continue
+                fi
+                ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
+                LINE="$LINE $s=$ST"
+                case "$ST" in
+                  SUCCESS) ;;
+                  FAILED|CRASHED|REMOVED) FAIL=1 ;;
+                  *) PENDING=1 ;;
+                esac
+              done
+              if [ "$ROUND_OK" -eq 1 ]; then
+                BADPOLLS=0
+              else
+                BADPOLLS=$((BADPOLLS+1))
+                if [ "$BADPOLLS" -ge 5 ]; then
+                  echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
+                  exit 1
+                fi
               fi
-              ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
-              LINE="$LINE $s=$ST"
-              case "$ST" in
-                SUCCESS) ;;
-                FAILED|CRASHED|REMOVED) FAIL=1 ;;
-                *) PENDING=1 ;;
-              esac
+              echo "[$i]$LINE"
+              [ "$PENDING" -eq 0 ] && break
             done
-            if [ "$ROUND_OK" -eq 1 ]; then
-              BADPOLLS=0
-            else
-              BADPOLLS=$((BADPOLLS+1))
-              if [ "$BADPOLLS" -ge 5 ]; then
-                echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
-                exit 1
-              fi
-            fi
-            echo "[$i]$LINE"
-            [ "$PENDING" -eq 0 ] && break
+          }
+
+          # ⚠️⚠️ ORDEM: o members sobe ANTES dos apps que carregam o player de cena (full review final de
+          # dados e deploy, 16/09/2026, MÉDIO-1). O player novo contra o members antigo conclui na tela e o
+          # servidor grava `passed:false` (32 de 142 blocos) ou recusa com 400 (10 de 142); o inverso (player
+          # antigo × members novo) o members já sabe tolerar. Só a ORDEM muda: quem dispara é o mesmo mapa
+          # acima. Os outros serviços sobem junto com o members. Se o members não ficar pronto, os apps NÃO
+          # sobem (ficam na versão anterior, que conversa com o members anterior) e o job fica vermelho.
+          # ⚠️ Um push novo CANCELA este run (concurrency): cancelado entre as duas fases, os apps ficam sem
+          # deploy e o run seguinte só olha o diff DELE. Remédio: gh workflow run ci.yml --ref staging
+          # -f services=community-kids,community
+          DEPOIS_DO_MEMBERS=(community-kids community)
+          ESPERA_MEMBERS=0
+          if [ -n "${WANT[members]:-}" ]; then
+            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
+              if [ -n "${WANT[$s]:-}" ]; then ESPERA_MEMBERS=1; fi
+            done
+          fi
+          for s in "${!WANT[@]}"; do
+            if [ "$ESPERA_MEMBERS" -eq 1 ] && [[ " ${DEPOIS_DO_MEMBERS[*]} " == *" $s "* ]]; then continue; fi
+            disparar "$s"
           done
+          if [ "$ESPERA_MEMBERS" -eq 1 ]; then
+            echo "esperando o members antes de: ${DEPOIS_DO_MEMBERS[*]}"
+            esperar members
+            if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then
+              echo "::error::o members não ficou pronto: ${DEPOIS_DO_MEMBERS[*]} NÃO foram disparados (o player novo contra o members antigo grava passed:false)"
+              esperar "${!DEP[@]}"
+              exit 1
+            fi
+            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
+              if [ -n "${WANT[$s]:-}" ]; then disparar "$s"; fi
+            done
+          fi
+
+          esperar "${!DEP[@]}"
           if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy do staging não convergiu"; exit 1; fi
           echo "staging atualizado ✅"

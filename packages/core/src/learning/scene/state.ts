@@ -496,9 +496,9 @@ export interface SceneHit {
   /**
    * Já houve um passo do relógio com os dois LONGE, depois da primeira batida?
    *
-   * ⚠️ É o que separa "afastar e voltar" de "trocar a pergunta". O `mode` zera o `touching` de
-   * propósito (senão o acontecimento nunca dispararia no modo novo), e sem este campo alternar
-   * os dois botões com o cacto parado em cima do Dino fechava a meta do afastamento.
+   * ⚠️ É o que separa "afastar e voltar" de "ficar encostado": só liga num quadro com os dois LONGE
+   * depois de `once`, e sem ele a encostada seguinte fechava `apart` sem o cacto ter se afastado.
+   * O `mode` (ação legada) só grava `mode`: não zera nada, e nada lê o campo.
    */
   away: boolean
   /**
@@ -590,11 +590,10 @@ export interface SceneGrid {
   /** Casas que a criança trocou. */
   edits: number
   /**
-   * As letras DISTINTAS que ela já escreveu.
-   * ⚠️ "A MESMA letra virou sempre a mesma coisa" precisa da mesma letra em lugares
-   * diferentes; contando só as trocas, escrever três letras DIFERENTES fechava a meta.
-   * ⚠️⚠️ Distintas, e não uma por troca: o mapa tem 60 casas e a lista não pode crescer com
-   * elas — passar do teto que o validador aceita faz o retrato ser recusado pelo leitor.
+   * As letras DISTINTAS que ela já escreveu. ⚠️ Só gravado: a meta `same-letter` lê `marks` (abaixo)
+   * desde o lote 5, e nada mais lê este campo. Fica no retrato por compatibilidade (sessões gravadas o
+   * trazem, e o validador o confere). ⚠️⚠️ Distintas, e não uma por troca: o mapa tem 60 casas e a
+   * lista não pode passar do teto que o validador aceita, senão o retrato é recusado.
    */
   written: string[]
   /**
@@ -1391,13 +1390,19 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
   }
 }
 
-/** Cópia rasa por grupo — o motor é imutável e devolve um estado novo a cada ação. */
+/**
+ * Cópia de cada grupo e de cada lista: o motor é imutável e devolve um estado novo a cada ação.
+ * ⚠️⚠️ Nada pode ficar COMPARTILHADO com o original: `stepScene` muta a cópia, e o Desfazer guarda o
+ * original. Grupo ou lista novos entram aqui no mesmo commit (`copia-do-estado.test.ts` reprova).
+ */
 export function cloneScene(state: SceneState): SceneState {
   return {
     evidence: {
       ...state.evidence,
       discoveries: [...state.evidence.discoveries],
-      observations: [...state.evidence.observations],
+      // ⚠️ Cada observação também: a cópia não compartilha objeto nenhum com o estado que o Desfazer
+      // guarda (`copia-do-estado.test.ts`, full review de 16/09/2026).
+      observations: state.evidence.observations.map((o) => ({ ...o })),
     },
     world: { ...state.world },
     flight: { ...state.flight },

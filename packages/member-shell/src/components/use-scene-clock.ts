@@ -1,7 +1,7 @@
 'use client'
 
 import { framesPreviewSlice, type SceneId, type SceneState } from '@sistemazero/core/learning/scene'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 /**
  * O relógio do navegador que move a cena: soma os quadros do `requestAnimationFrame` até o
@@ -35,7 +35,12 @@ export function useSceneClock({
   onTick: (segundos: number) => boolean
 }) {
   const tique = useRef(onTick)
-  tique.current = onTick
+  // ⚠️ Escrito num efeito de layout, e não no render (full review de 16/09/2026): o React 19 pode
+  // descartar um render (transição), e o ref apontaria para o `onTick` de um render que nunca aconteceu.
+  // O layout roda antes do próximo quadro do navegador, então nenhum tique lê o `onTick` velho.
+  useLayoutEffect(() => {
+    tique.current = onTick
+  })
   useEffect(() => {
     if (!ativo) return
     let frame = 0

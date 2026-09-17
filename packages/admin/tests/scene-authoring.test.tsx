@@ -3,9 +3,11 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
   type DemonstrationActivity,
   isSceneScript,
+  SCENE_COMPARISONS,
   SCENE_IDS,
   SCENE_MODELS,
   sceneScript,
+  sceneShowsComparison,
 } from '@sistemazero/core/learning/scene'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
@@ -171,6 +173,47 @@ test('⚠️ o tempo que não cai em quadro inteiro aparece como aviso na etapa 
       ),
     )
     expect(container.textContent).not.toContain('Nesta cena um quadro dura')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
+test('⚠️⚠️ "Comparação" só aparece onde o player desenha a comparação (`SCENE_COMPARISONS`)', async () => {
+  // Full review de 16/09/2026: a lista daqui oferecia "Comparação" em quatro cenas e o player só
+  // desenhava na `hitbox`. O professor escolhia o destaque na `gravity` e a criança não via nada.
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const opcaoComparar = (etapa: number) =>
+    container.querySelector<HTMLOptionElement>(
+      `select[aria-label="Destaque da etapa ${etapa}"] option[value="compare"]`,
+    )
+  try {
+    for (const scene of SCENE_IDS) {
+      await act(async () =>
+        root.render(
+          <SceneAuthoring activity={{ type: 'demonstration', scene }} onChange={() => {}} />,
+        ),
+      )
+      expect(opcaoComparar(1) !== null).toBe(sceneShowsComparison(scene))
+    }
+    expect([...SCENE_COMPARISONS]).toEqual(['hitbox'])
+    // Um roteiro antigo com `compare` numa cena sem comparação continua VÁLIDO (abre), e o editor
+    // mostra a opção fechada com o aviso para trocar.
+    const antigo: DemonstrationActivity = {
+      type: 'demonstration',
+      scene: 'gravity',
+      script: sceneScript({ type: 'demonstration', scene: 'gravity' }).map((passo, i) =>
+        i === 0 ? { ...passo, highlight: 'compare' as const } : passo,
+      ),
+    }
+    expect(isSceneScript(antigo.script, 'gravity')).toBe(true)
+    await act(async () => root.render(<SceneAuthoring activity={antigo} onChange={() => {}} />))
+    expect(opcaoComparar(1)?.disabled).toBe(true)
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'Esta cena não mostra comparação lado a lado',
+    )
   } finally {
     await act(async () => root.unmount())
     container.remove()

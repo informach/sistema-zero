@@ -16,17 +16,17 @@ const SIMBOLOS = /[←-⇿─-➿⬀-⯿\u{1F300}-\u{1FAFF}]/gu
  * fala sairia num sotaque inglês lendo português, pior que nada. Com a lista ainda vazia (o Chrome
  * carrega as vozes depois), o pedido vai com `lang = 'pt-BR'` e o navegador escolhe.
  *
- * ⚠️ `disponivel` nasce FALSO também no cliente e só liga depois de montar: ler `speechSynthesis`
- * no render daria um botão no cliente que o servidor não desenhou (erro de hidratação).
+ * ⚠️ `temVoz` nasce FALSO também no cliente e só liga depois de montar: ler `speechSynthesis` no
+ * render daria um botão no cliente que o servidor não desenhou (erro de hidratação).
  */
 export function useSceneVoice() {
-  const [disponivel, setDisponivel] = useState(false)
   /**
-   * ⚠️⚠️ `temVoz`: a API existe E a lista de vozes não diz que falta o português (consertos do review da
-   * onda A do lote 5, B4). `disponivel` é só "existe a API", e com vozes carregadas sem nenhuma pt o
-   * `falar` desiste em silêncio: a `screen-reader` mostrava "Voz: ligada" e nada falava. Recalculado no
-   * `voiceschanged`, porque o Chrome carrega a lista depois. Lista ainda vazia conta como voz (o pedido
-   * sai com `lang` pt-BR e o navegador escolhe).
+   * ⚠️⚠️ `temVoz`: a API existe E a lista de vozes não diz que falta o português. É a ÚNICA pergunta que
+   * o hook responde (full review de 16/09/2026): havia também `disponivel` ("existe a API"), e com vozes
+   * carregadas sem nenhuma pt o `falar` desiste em silêncio. A `screen-reader` passou a `temVoz` e o
+   * "🔊 Ouvir" do player ficou no `disponivel`: o botão aparecia e o clique não fazia nada. Recalculado
+   * no `voiceschanged`, porque o Chrome carrega a lista depois. Lista ainda vazia conta como voz (o
+   * pedido sai com `lang` pt-BR e o navegador escolhe).
    */
   const [temVoz, setTemVoz] = useState(false)
   const [falando, setFalando] = useState(false)
@@ -43,7 +43,6 @@ export function useSceneVoice() {
       typeof window !== 'undefined' &&
       'speechSynthesis' in window &&
       typeof window.SpeechSynthesisUtterance === 'function'
-    setDisponivel(existe)
     if (!existe) return
     const synth = window.speechSynthesis
     const conferir = () => {
@@ -114,5 +113,5 @@ export function useSceneVoice() {
     }
   }, [])
   useEffect(() => parar, [parar])
-  return { disponivel, temVoz, falando, falar, parar }
+  return { temVoz, falando, falar, parar }
 }

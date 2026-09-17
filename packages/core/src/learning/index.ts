@@ -22,7 +22,9 @@ import {
   SCENE_QUESTIONS,
   type SceneActivity,
   type SceneId,
+  sceneActivityForReading,
   sceneGoalIds,
+  sceneHintsFor,
   sceneModel,
   sceneStart,
   sceneTargets,
@@ -147,7 +149,9 @@ export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'
   // estreitamento de `block.activity`, e `cast` deixa de existir para ele.
   const atividade = block.activity
   if (atividade.type === 'experimentation' && block.hints.length === 0)
-    return sceneModel(atividade.scene).hints.map((h) => castText(h, atividade.cast))
+    // ⚠️ Pela `sceneHintsFor` (full review de experiência, A1): com `pilha: 'camadas'` a escada fala do
+    // painel Camadas do Pinta, que se lê ao contrário da lista de blocos do Estúdio.
+    return sceneHintsFor(atividade).map((h) => castText(h, atividade.cast))
   return block.hints
 }
 /** Nenhuma das quatro atividades carrega gabarito: o que precisa ficar no servidor é o
@@ -180,8 +184,19 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     'cast',
     'setup',
     'presentation',
+    'pilha',
   ],
-  experimentation: ['type', 'scene', 'initialImpulse', 'instructionAudioUrl', 'cast', 'setup'],
+  // ⚠️ `pilha` é PÚBLICA (full review de experiência, A1): é como a bancada se apresenta. Sem ela no
+  // navegador, a Aula 5 do Meu Jeito voltaria a mostrar a lista do Estúdio ao contrário do Pinta.
+  experimentation: [
+    'type',
+    'scene',
+    'initialImpulse',
+    'instructionAudioUrl',
+    'cast',
+    'setup',
+    'pilha',
+  ],
   question: ['type'],
   html: ['type', 'html'],
 }
@@ -191,7 +206,9 @@ function publicActivity(activity: LearningActivity): LearningActivity {
   const cru = activity as unknown as Record<string, unknown>
   const saida: Record<string, unknown> = {}
   for (const campo of permitidos) if (cru[campo] !== undefined) saida[campo] = cru[campo]
-  return saida as unknown as LearningActivity
+  // ⚠️⚠️ A meta que saiu do catálogo não chega ao navegador (full review final de dados e deploy,
+  // MÉDIO-3): um bloco do banco citando `same-x` sumia da aula e travava a seção obrigatória.
+  return sceneActivityForReading(saida) as unknown as LearningActivity
 }
 
 /** Answer keys stay on the server, including for custom HTML activities. */
@@ -323,7 +340,10 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
     return false
   return isInteractiveBlock({
     ...value,
-    activity: a,
+    // ⚠️⚠️ A LEITURA é tolerante com a meta desconhecida (`sceneActivityForReading`), pelos dois lados
+    // de um deploy: o members atrás (bloco citando uma meta que saiu) ou à frente (uma que o navegador
+    // ainda não conhece). Quem consome a atividade lê as metas pelo `sceneTargets`/`sceneSetupGoals`.
+    activity: sceneActivityForReading(a),
     // ⚠️⚠️ O `revealOn` é conferido na AUTORIA, nunca aqui (review do lote 2 do Raio-X). Este guarda
     // roda no NAVEGADOR, contra o catálogo DO NAVEGADOR: com o members um deploy à frente (ou numa
     // aba aberta antes do deploy), uma previsão apontando para uma meta nova derrubava a atividade
@@ -713,8 +733,9 @@ function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): Learnin
       parts === undefined,
       a.cast,
       alvo,
+      a.pilha,
     )
-  return evaluateExperimentation(a.scene, session.state, true, a.cast, alvo)
+  return evaluateExperimentation(a.scene, session.state, true, a.cast, alvo, a.pilha)
 }
 
 export function isLearningFrameMessage(

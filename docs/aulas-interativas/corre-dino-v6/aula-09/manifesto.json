@@ -147,7 +147,7 @@
       "key": "experiencia-reset-modelo",
       "content": {
         "kind": "interactive",
-        "title": "Recomeçar é só trocar de tela?",
+        "title": "Jogar de novo é só trocar de tela?",
         "instructions": "Jogue até bater e toque na tela para voltar. Olhe a pista. Depois troque o que o toque faz e compare.",
         "hints": [
           "Olhe a pista depois de voltar para o início. Quantos cactos ficaram?",
@@ -360,7 +360,7 @@
     },
     {
       "key": "reset-modelo",
-      "title": "Recomeçar é só trocar de tela?",
+      "title": "Jogar de novo é só trocar de tela?",
       "intent": "exploration",
       "objective": "Distinguir a cena de fim de uma nova partida preparada.",
       "blockKeys": ["experiencia-reset-modelo"],

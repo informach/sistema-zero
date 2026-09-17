@@ -2,18 +2,24 @@
 
 import {
   isSceneAction,
+  openScene,
   type SceneActivity,
   type SceneCommand,
   type SceneId,
+  type SceneReading,
   type SceneState,
   sceneLongFrame,
   sceneReadout,
+  sceneScript,
+  sceneStart,
   sceneStepLabel,
   sceneStepSeconds,
+  stepScene,
 } from '@sistemazero/core/learning/scene'
 import { Pause, Play, StepForward } from 'lucide-react'
-import type { ReactElement, ReactNode } from 'react'
+import { type ReactElement, type ReactNode, useMemo } from 'react'
 import { SceneButton } from './exploration-stage'
+import { LugarReservado } from './scene-lugar-reservado'
 
 /**
  * As peças da moldura que o player E a bancada do "Agora é sua vez" desenham iguais: a faixa de
@@ -62,62 +68,142 @@ export function SceneReadoutBand({
   valoresEscondidos?: boolean
 }) {
   const quadroEmAndamento = relogioAndando && sceneLongFrame(activity.scene)
-  return (
-    <div
-      className={`relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-card px-3 py-2 ${
-        colada ? 'border-b border-border' : 'mb-2 rounded-2xl border border-border'
-      }`}
-    >
-      {/* ⚠️⚠️ O quadro EM ANDAMENTO nas cenas de 1 ou 2 quadros por segundo (review do lote 4). Com o
-          ▶, a primeira mudança da `pool`, da `score` e da `diagonal` vinha 1,1 s depois do clique, e na
-          `diagonal` o passo de cada segundo é igual ao anterior: nada na tela dizia que o tempo estava
-          correndo. A barra enche até o próximo quadro e zera nele (e a cada gesto, que recomeça o
-          quadro no motor). A largura é a própria sobra do motor, que é fração de quadro.
-          ⚠️ `aria-hidden` e SEM transição: ela muda a cada fatia do ▶ (0,04 s, ou 0,2 s com menos
-          movimento), e anunciada ou animada viraria ruído; quem diz o que mudou é a frase da cena.
-          ⚠️ Absoluta, na borda de baixo da faixa: não empurra o palco quando aparece. */}
-      {quadroEmAndamento && (
-        <div
-          aria-hidden
-          data-quadro-em-andamento=""
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-1 overflow-hidden"
-        >
-          <div
-            className="h-full bg-primary transition-none"
-            style={{ width: `${Math.min(100, Math.max(0, state.clock.carry * 100))}%` }}
-          />
-        </div>
-      )}
-      {/* ⚠️ 14px, e não 12 (lote 2): é texto que a criança LÊ. O separador vem do CSS
-          (`after:content`), e não de um caractere no `dt`: sem ele, a leitura corrida dizia "o
-          Dino nos bastidores ainda não desenho desligado", e com um caractere no texto o `dt`
-          deixaria de ser o nome da medida. */}
-      <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground">
-        {sceneReadout(activity.scene, state, activity.cast).map((r) => (
-          <div key={r.label} className="flex items-baseline gap-1.5">
-            <dt className="text-muted-foreground after:content-[':']">{r.label}</dt>
-            <dd
-              className={`font-semibold tabular-nums ${
-                r.tone === 'a'
-                  ? 'text-scene-a'
-                  : r.tone === 'b'
-                    ? 'text-scene-b-ink'
-                    : r.tone === 'alert'
-                      ? 'text-scene-alert'
-                      : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
-                        r.tone === 'leaf'
-                        ? 'text-scene-leaf'
-                        : ''
-              }`}
-            >
-              {valoresEscondidos ? '?' : r.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {children}
-    </div>
+  const leituras = (estado: SceneState) =>
+    sceneReadout(activity.scene, estado, activity.cast, activity.pilha)
+  /**
+   * ⚠️⚠️ A faixa NÃO muda de altura no meio do gesto (full review de experiência, M3). Os valores mudam de
+   * tamanho ("escondida" é mais longo que "à vista", "vazio" que "o Dino"), a faixa passava de duas linhas
+   * para uma, e o palco e a bancada pulavam 28 px embaixo do dedo: o botão da borda da `stage-size` subia
+   * no próprio toque. Hoje ela mora num `LugarReservado` cujo MOLDE são as leituras que a cena atinge (a
+   * abertura, cada parte do roteiro do modelo e a de agora) empilhadas numa célula só, mais uma leitura
+   * com o rótulo e o valor MAIS LONGOS de cada posição: a altura reservada é a maior delas.
+   */
+  const moldes = useMemo(
+    () =>
+      estadosDaCena(activity).map((e) =>
+        sceneReadout(activity.scene, e, activity.cast, activity.pilha),
+      ),
+    [activity],
   )
+  const atual = leituras(state)
+  const pior = maisLongas([...moldes, atual])
+  const candidatos = [...moldes, pior]
+  // ⚠️ A chave é só o PIOR caso: com o ▶ andando o valor de agora muda a cada fatia, e uma chave com ele
+  // pediria uma medida nova 25 vezes por segundo. O pior caso só muda quando aparece um valor mais longo.
+  const chave = pior.map((r) => `${r.label}:${r.value}`).join('|')
+  const lista = (rows: readonly SceneReading[], escondidos: boolean) => (
+    /* ⚠️ 14px, e não 12 (lote 2): é texto que a criança LÊ. O separador vem do CSS (`after:content`), e
+       não de um caractere no `dt`: sem ele, a leitura corrida dizia "o Dino nos bastidores ainda não
+       desenho desligado", e com um caractere no texto o `dt` deixaria de ser o nome da medida. */
+    <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground">
+      {rows.map((r, i) => (
+        <div key={`${i}:${r.label}`} className="flex items-baseline gap-1.5">
+          <dt className="text-muted-foreground after:content-[':']">{r.label}</dt>
+          <dd
+            className={`font-semibold tabular-nums ${
+              r.tone === 'a'
+                ? 'text-scene-a'
+                : r.tone === 'b'
+                  ? 'text-scene-b-ink'
+                  : r.tone === 'alert'
+                    ? 'text-scene-alert'
+                    : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
+                      r.tone === 'leaf'
+                      ? 'text-scene-leaf'
+                      : ''
+            }`}
+          >
+            {escondidos ? '?' : r.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
+  const linha = 'flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-2'
+  return (
+    <LugarReservado
+      marca="faixa"
+      // ⚠️ O fundo e a borda moram no lugar de FORA: a altura reservada é dele, e a tira continua inteira.
+      className={`bg-card ${colada ? 'border-b border-border' : 'mb-2 rounded-2xl border border-border'}`}
+      molde={
+        <div className="grid" aria-hidden>
+          {candidatos.map((rows, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: cada candidato é um lugar fixo do molde
+            <div key={i} className={`${linha} [grid-area:1/1]`}>
+              {lista(rows, false)}
+              {children}
+            </div>
+          ))}
+        </div>
+      }
+      chave={chave}
+    >
+      <div className={linha}>
+        {/* ⚠️⚠️ O quadro EM ANDAMENTO nas cenas de 1 ou 2 quadros por segundo (review do lote 4). Com o
+            ▶, a primeira mudança da `pool`, da `score` e da `diagonal` vinha 1,1 s depois do clique, e na
+            `diagonal` o passo de cada segundo é igual ao anterior: nada na tela dizia que o tempo estava
+            correndo. A barra enche até o próximo quadro e zera nele (e a cada gesto, que recomeça o
+            quadro no motor). A largura é a própria sobra do motor, que é fração de quadro.
+            ⚠️ `aria-hidden` e SEM transição: ela muda a cada fatia do ▶ (0,04 s, ou 0,2 s com menos
+            movimento), e anunciada ou animada viraria ruído; quem diz o que mudou é a frase da cena.
+            ⚠️ Absoluta, na borda de baixo do LUGAR da faixa (o `relative` é o de fora): não empurra o
+            palco quando aparece, e fica na borda mesmo com a altura reservada maior que a linha. */}
+        {quadroEmAndamento && (
+          <div
+            aria-hidden
+            data-quadro-em-andamento=""
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-1 overflow-hidden"
+          >
+            <div
+              className="h-full bg-primary transition-none"
+              style={{ width: `${Math.min(100, Math.max(0, state.clock.carry * 100))}%` }}
+            />
+          </div>
+        )}
+        {lista(atual, valoresEscondidos)}
+        {children}
+      </div>
+    </LugarReservado>
+  )
+}
+
+/**
+ * Os estados que a cena desta atividade costuma atingir: a abertura e o fim de cada parte do roteiro
+ * (o do modelo, ou o da demonstração). É o molde da altura da faixa e da frase da situação (M3).
+ * ⚠️ Barato de propósito: o roteiro tem até 12 partes, e quem chama memoriza pela atividade.
+ * ⚠️ Um roteiro que não toca a partir do caso não derruba a moldura: sem ele, só a abertura.
+ */
+export function estadosDaCena(activity: SceneActivity): SceneState[] {
+  const start = sceneStart(activity)
+  let estado = openScene(start)
+  const lista = [estado]
+  try {
+    for (const passo of sceneScript(activity)) {
+      for (const acao of passo.actions) estado = stepScene(start, estado, acao)
+      lista.push(estado)
+    }
+  } catch {
+    return lista
+  }
+  return lista
+}
+
+/** A leitura com o rótulo e o valor MAIS LONGOS de cada posição (o pior caso da quebra de linha). */
+function maisLongas(candidatos: readonly (readonly SceneReading[])[]): SceneReading[] {
+  const tamanho = Math.max(0, ...candidatos.map((c) => c.length))
+  const longa = (a: string, b: string) => ([...b].length > [...a].length ? b : a)
+  return Array.from({ length: tamanho }, (_, i) => {
+    const naPosicao = candidatos.map((c) => c[i]).filter((r): r is SceneReading => Boolean(r))
+    const primeira = naPosicao[0] as SceneReading
+    return naPosicao.reduce(
+      (maior, r) => ({
+        ...maior,
+        label: longa(maior.label, r.label),
+        value: longa(maior.value, r.value),
+      }),
+      primeira,
+    )
+  })
 }
 
 /**

@@ -388,6 +388,50 @@ export function LearningBuilder({
             </summary>
             <div className="mt-3 space-y-3">
               <SceneCastEditor activity={cena} onChange={activity} />
+              {cena.scene === 'layers' && (
+                /* ⚠️⚠️ A pilha da `layers` com a ferramenta da aula (full review de experiência, A1): a
+                   lista de blocos do Estúdio desenha a de cima PRIMEIRO, e o painel Camadas do Pinta
+                   lista a da FRENTE em cima. Com a lista errada a cena ensina o gesto ao contrário do que
+                   a criança faz logo depois na ferramenta. */
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-medium">Como a ordem de desenhar aparece</legend>
+                  {(
+                    [
+                      [
+                        'blocos',
+                        'Lista de blocos do Estúdio',
+                        'O 1º a desenhar fica em cima, como os blocos do Estúdio. Botões Descer e Subir.',
+                      ],
+                      [
+                        'camadas',
+                        'Painel Camadas do Pinta',
+                        'A da frente fica em cima, como no Pinta. Botões Uma camada para a frente e Uma camada para trás.',
+                      ],
+                    ] as const
+                  ).map(([valor, titulo, ajuda]) => (
+                    <label
+                      key={valor}
+                      htmlFor={`${id}-pilha-${valor}`}
+                      className="flex min-h-11 cursor-pointer items-start gap-2 text-sm"
+                    >
+                      <input
+                        id={`${id}-pilha-${valor}`}
+                        type="radio"
+                        name={`${id}-pilha`}
+                        className="mt-1"
+                        checked={(cena.pilha ?? 'blocos') === valor}
+                        onChange={() =>
+                          activity({ ...cena, pilha: valor === 'blocos' ? undefined : valor })
+                        }
+                      />
+                      <span>
+                        <span className="font-medium">{titulo}</span>
+                        <span className="block text-xs text-muted-foreground">{ajuda}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
               {cena.type === 'demonstration' && (
                 <fieldset className="space-y-2">
                   <legend className="text-sm font-medium">Como a demonstração aparece</legend>

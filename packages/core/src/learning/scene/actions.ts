@@ -331,7 +331,8 @@ export const SCENE_LIMITS = {
    * ⚠️⚠️ O endereço da cena `coordinates` (lote 5 do Raio-X, 16/09/2026): até a MAIOR tela que um
    * caso pode escolher (a do Desafio, 800 × 480, com a ação `stage`). Quem prende o endereço na tela
    * DO CASO é o motor (`place.width`/`place.height`). Não é o `placeX`/`placeY`: esses continuam
-   * medindo a tela do Corre Dino para `velocity` e `hold-vs-press`.
+   * medindo a tela do Corre Dino para o `draw-loop` (`render.x`) e a `hold-vs-press`. A `velocity` usa
+   * `driveX`/`driveY`.
    */
   addressX: { min: 0, max: 800 },
   addressY: { min: 0, max: 480 },

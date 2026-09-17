@@ -217,15 +217,6 @@ export function symmetryCells(marcas: readonly string[]): SymmetryCell[] {
   return [...porCasa.values()]
 }
 
-/**
- * Quantos traços DIFERENTES estão no papel, e quantas marcas há nele (os da criança mais as cópias).
- * ⚠️ Não conta GESTOS: pintar a asa de novo não é marca nova. A faixa conta os gestos
- * (`mirror.strokes` e `mirror.copies`, consertos do review da onda B do lote 5).
- */
-export function symmetryCounts(marcas: readonly string[]): { voce: number; papel: number } {
-  return { voce: marcas.filter((m) => !m.includes('|')).length, papel: marcas.length }
-}
-
 /** O teto dos dois contadores de gesto do espelho: o motor corta aqui, e o validador também. */
 export const GESTOS_NO_PAPEL = 999
 

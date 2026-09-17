@@ -6,6 +6,7 @@ import {
   SCENE_FIGURES,
   SCENE_IDS,
   SCENE_LIMITS,
+  SCENE_PILHAS,
   SCENE_PORTS,
   SETUP_LIMITS,
   SHEET_CROP_WIDTHS,
@@ -290,6 +291,12 @@ const SceneActorSchema = t.Object({
   // nome (ou como o Dino). Ausente = "pelo nome", que é o caso dos manifestos já publicados.
   figure: t.Optional(t.Union(SCENE_FIGURES.map((f) => t.Literal(f)))),
 })
+/**
+ * Como a pilha da `layers` se apresenta (full review de experiência do conjunto, A1): a lista de blocos
+ * do Estúdio (padrão) ou o painel Camadas do Pinta. Derivado de `SCENE_PILHAS`; quem recusa a pilha
+ * fora da `layers` é o `isSceneActivity` do core, na publicação.
+ */
+const ScenePilhaSchema = t.Union(SCENE_PILHAS.map((p) => t.Literal(p)))
 const SceneCastSchema = t.Object({
   hero: t.Optional(SceneActorSchema),
   obstacle: t.Optional(SceneActorSchema),
@@ -362,6 +369,7 @@ export const InteractiveBlockSchema = t.Object({
        */
       setup: t.Optional(SceneSetupSchema),
       presentation: t.Optional(t.Union([t.Literal('guided'), t.Literal('inline')])),
+      pilha: t.Optional(ScenePilhaSchema),
     }),
     t.Object({
       type: t.Literal('experimentation'),
@@ -370,6 +378,7 @@ export const InteractiveBlockSchema = t.Object({
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
       cast: t.Optional(SceneCastSchema),
       setup: t.Optional(SceneSetupSchema),
+      pilha: t.Optional(ScenePilhaSchema),
     }),
     t.Object({ type: t.Literal('question') }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),

@@ -5,6 +5,8 @@ import {
   initialExperiment,
   packExperiment,
   SCENE_MODELS,
+  type SceneId,
+  sceneReadout,
   sceneStart,
   stepExperiment,
 } from '@sistemazero/core/learning/scene'
@@ -17,7 +19,10 @@ const { LessonLearningPanel } = await import('../src/components/professor/lesson
 
 const atividade = { type: 'experimentation', scene: 'world' } as const
 
-function relatorio(sceneCheckpoint: string[] | undefined): LessonLearningReport {
+function relatorio(
+  sceneCheckpoint: string[] | undefined,
+  cena: SceneId = atividade.scene,
+): LessonLearningReport {
   return {
     lessonId: 'lesson',
     lessonTitle: 'Meu jogo',
@@ -45,7 +50,7 @@ function relatorio(sceneCheckpoint: string[] | undefined): LessonLearningReport 
           instructions: '',
           required: false,
           hints: [],
-          activity: atividade,
+          activity: { type: 'experimentation', scene: cena },
         },
       },
     ],
@@ -96,9 +101,29 @@ test('o professor vê o que a criança descobriu e como a cena ficou montada', a
     // As metas alcançadas e as pendentes aparecem pelo NOME, não por um contador.
     for (const g of SCENE_MODELS.world.goals) expect(texto).toContain(g.label)
     expect(texto).toContain('Descobriu:')
-    expect(texto).toContain('Montagem atual: Dino criado; desenho ligado')
+    // ⚠️ Mudou de propósito (full review de 16/09/2026): a montagem é a FAIXA que a criança leu
+    // (`sceneReadout`), e não uma terceira descrição do estado com outras palavras.
+    expect(texto).toContain('Montagem atual: bastidores com o Dino; desenho na tela ligado')
   } finally {
     await fechar()
+  }
+})
+
+test('⚠️⚠️ a montagem é a FAIXA da criança, sem "(s)", sem hífen de menos e sem regra que saiu', async () => {
+  // Full review de 16/09/2026: a terceira descrição do estado dizia "pergunta contínua" (a `contact` não
+  // tem mais a pergunta), "área do Dino 51.2" (a bancada diz 80%), "-9" e "quadro(s)".
+  for (const cena of ['contact', 'hitbox', 'acceleration', 'velocity', 'cooldown'] as const) {
+    const start = sceneStart({ type: 'experimentation', scene: cena })
+    const s = initialExperiment(start)
+    const { texto, fechar } = await abrir(relatorio(packExperiment(cena, s), cena))
+    try {
+      const linha = /Montagem atual: ([^]*?)Pistas utilizadas/.exec(texto)?.[1] ?? ''
+      const faixa = sceneReadout(cena, s.state).map((r) => `${r.label} ${r.value}`)
+      expect(linha.startsWith(faixa.join('; '))).toBe(true)
+      expect(linha).not.toMatch(/\(s\)|contínua|acontecimento|-\d|\d\.\d/)
+    } finally {
+      await fechar()
+    }
   }
 })
 

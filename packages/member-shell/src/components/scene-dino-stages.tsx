@@ -7,6 +7,7 @@ import {
   quantos,
   type SceneAction,
   type SceneCast,
+  type ScenePilha,
   type SceneState,
   type SceneWorldKind,
   sceneCactiOnScreen,
@@ -126,7 +127,23 @@ const LAYERS_DE_PERTO = { x: 130, y: 44, w: 290, h: 236 } as const
  * ⚠️ O cenário que não é floresta é UMA figura só (`CENARIO_UNICO`, a chama do Meu Jeito), um pouco
  * à direita, e deixa à vista o lado esquerdo da pedra com a cratera.
  */
-export function LayersStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function LayersStage({
+  state,
+  cast,
+  pilha,
+  escondida = false,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  /** Como a pilha se apresenta (full review de experiência, A1): só o nome do desenho muda. */
+  pilha?: ScenePilha
+  /**
+   * O palpite ainda não veio (full review de experiência, M6): a descrição para quem não enxerga dizia
+   * "A floresta fica na frente, e só um pedaço do Dino aparece." embaixo da pergunta, enquanto a faixa
+   * mostrava "?". Segue o `valoresEscondidos` da faixa.
+   */
+  escondida?: boolean
+}) {
   const heroi = actorFigure(cast, 'hero')
   const cenario = actorFigure(cast, 'scenery')
   const mundo = sceneWorld(cast, 'layers')
@@ -163,15 +180,17 @@ export function LayersStage({ state, cast }: { state: SceneState; cast?: SceneCa
       viewEstreito={LAYERS_DE_PERTO}
       cast={cast}
       mundo={mundo}
-      titulo="A ordem de desenhar, no desenho"
+      titulo={pilha === 'camadas' ? 'As camadas, no desenho' : 'A ordem de desenhar, no desenho'}
       // ⚠️ O que o desenho MOSTRA (é o que quem não enxerga recebe no lugar dele), sem a regra.
       // ⚠️ Sem adjetivo solto depois do nome (consertos do review da onda A do lote 5): "O Dino aparece
       // inteiro" virava "A pedra aparece inteiro" no Meu Jeito, porque o elenco não flexiona o que vem
       // longe do nome.
       descricao={
-        frente
-          ? 'Nada fica na frente do Dino, e a floresta fica atrás.'
-          : 'A floresta fica na frente, e só um pedaço do Dino aparece.'
+        escondida
+          ? 'A ordem de desenhar, ainda escondida.'
+          : frente
+            ? 'Nada fica na frente do Dino, e a floresta fica atrás.'
+            : 'A floresta fica na frente, e só um pedaço do Dino aparece.'
       }
     >
       <Pista mundo={mundo} semEstrelas={[{ x: 14, y: 8, w: 240, h: 30 }]} />
@@ -265,10 +284,16 @@ export function JumpSoundStage({
       <g
         // ⚠️ O contorno de foco só pelo teclado (consertos do review da onda A do lote 5): um quadrado
         // ficava em volta do Dino depois do clique com o mouse.
-        className="text-primary outline-none focus-visible:outline-2 focus-visible:outline-primary"
+        // ⚠️⚠️ `outline-hidden` + `focus-visible:outline-solid`, e NUNCA `outline-none` (full review de
+        // experiência, M9): no Tailwind v4 o `outline-none` zera o ESTILO do contorno e o `outline-2` só
+        // muda a largura, então o computado ficava `none 3px` e o foco era invisível.
+        className="text-primary outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-primary"
         style={{ cursor: onJump ? 'pointer' : undefined }}
         role={onJump ? 'button' : undefined}
-        tabIndex={onJump ? 0 : undefined}
+        // ⚠️ Fora do Tab (full review de experiência, B16): a bancada logo abaixo tem os MESMOS dois gestos
+        // ("Tocar para pular" e "Apertar Espaço"), e o Dino era uma segunda parada para o mesmo gesto. O
+        // toque e a ativação pelo leitor de tela continuam.
+        tabIndex={onJump ? -1 : undefined}
         aria-label={onJump ? castText('Tocar no Dino para pular', cast) : undefined}
         onClick={() => {
           if (!onJump) return
@@ -281,12 +306,16 @@ export function JumpSoundStage({
         onKeyDown={tecla}
       >
         <ActorFigure figure={heroi} x={80} y={chaoDoDino - subida} />
+        {/* ⚠️ A área de toque tem 100 × 100, a mesma da `gravity` (full review de experiência, M9): com 80
+            × 72 ela dava 42 × 38 px num celular de 390px, abaixo dos 44 do público infantil, e a aula
+            manda "pule tocando no Dino". */}
         {onJump && (
           <rect
-            x="40"
-            y={chaoDoDino - subida - 64}
-            width="80"
-            height="72"
+            data-area-do-toque=""
+            x="30"
+            y={chaoDoDino - subida - 75}
+            width="100"
+            height="100"
             rx="12"
             fill="transparent"
           />
@@ -601,6 +630,8 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
   const removidos = state.crowd.removed
   const regra = state.crowd.cleanup
   const mostraRemovidos = regra || removidos > 0
+  /** Algum cacto já saiu da tela (e está na prateleira, ou foi removido). */
+  const jaSaiu = fora > 0 || removidos > 0
   const escala = LADO.w / 480
   const chao = 200
   return (
@@ -648,10 +679,15 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
           ),
         },
         {
-          titulo: 'Bastidores: o grupo',
-          descricao: `${quantos(fora, 'cacto', 'cactos')} na prateleira, fora da tela.${
-            mostraRemovidos ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.` : ''
-          }`,
+          // ⚠️⚠️ "o grupo" e "Fora da tela, no grupo" só com o primeiro cacto na prateleira (full review de
+          // experiência, M6): a pergunta é "o cacto que saiu da tela ainda existe no jogo?", e o nome da
+          // prateleira vazia, legível embaixo do véu, era a resposta.
+          titulo: jaSaiu ? 'Bastidores: o grupo' : 'Bastidores',
+          descricao: jaSaiu
+            ? `${quantos(fora, 'cacto', 'cactos')} na prateleira, fora da tela.${
+                mostraRemovidos ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.` : ''
+              }`
+            : 'Uma prateleira vazia.',
           desenho: (
             <>
               {mundo === 'espaco' ? (
@@ -660,9 +696,11 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
                 <rect className="fill-scene-sky" width={LADO.w} height={LADO.h} />
               )}
               {/* A prateleira: quem saiu da tela e continua no grupo. */}
-              <Texto className="fill-scene-ink" x="18" y="30" tamanho={14} fontWeight="600">
-                {castText('Fora da tela, no grupo', cast)}
-              </Texto>
+              {jaSaiu && (
+                <Texto className="fill-scene-ink" x="18" y="30" tamanho={14} fontWeight="600">
+                  {castText('Fora da tela, no grupo', cast)}
+                </Texto>
+              )}
               <rect
                 className="fill-scene-card stroke-scene-card-line"
                 x="14"

@@ -93,11 +93,13 @@ describe('cena: a avaliação', () => {
   })
 
   test('descobrir e desfazer não fecha as duas cenas que pedem montagem final', () => {
-    // ⚠️ `layers` e `jump-sound` exigem que a montagem FIQUE no estado descoberto.
+    // ⚠️ Mudou de propósito (full review de experiência, M4): na `layers` a volta ao arranjo do jogo é a
+    // META `back-in-front`, e não uma condição escondida. Com duas trocas, a faixa diz "2 de 3".
     let s = initialScene({ scene: 'layers' })
     s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
     s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: false })
-    expect(sceneGoals('layers', s).every((g) => g.complete)).toBe(true)
+    expect(sceneGoals('layers', s).filter((g) => g.complete).length).toBe(2)
+    expect(sceneGoals('layers', s).length).toBe(3)
     expect(evaluateExperimentation('layers', s).passed).toBe(false)
 
     s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })

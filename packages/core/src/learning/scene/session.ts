@@ -294,17 +294,22 @@ function fimDaEspera(
   start: SceneStart,
   sessao: DemonstrationSession,
   script: readonly SceneStep[],
+  semFim?: Set<string>,
 ): SceneState | null {
   const passo = script[sessao.step]
   const acao = passo?.actions[sessao.action]
   if (!passo?.waitFor || sessao.action !== passo.actions.length - 1) return null
   if (acao?.type !== 'advance' || sessao.elapsed <= 0) return null
+  const chave = `${sessao.step}:${sessao.action}`
+  if (semFim?.has(chave)) return null
   const resto = acao.seconds - sessao.elapsed
   const fim =
     resto >= 0.001
       ? stepScene(start, sessao.state, { type: 'advance', seconds: resto })
       : cloneScene(sessao.state)
-  return fim.evidence.discoveries.includes(passo.waitFor) ? fim : null
+  if (fim.evidence.discoveries.includes(passo.waitFor)) return fim
+  semFim?.add(chave)
+  return null
 }
 
 export function stepDemonstration(
@@ -312,7 +317,32 @@ export function stepDemonstration(
   script: readonly SceneStep[],
   previous: DemonstrationSession,
   command: DemonstrationCommand,
-  { tolerarPlayerAnterior = false }: DemonstrationReplayOptions = {},
+  opcoes: DemonstrationReplayOptions = {},
+): { session: DemonstrationSession; events: SceneEvent[] } {
+  return passoDaDemonstracao(start, script, previous, command, opcoes)
+}
+
+/**
+ * ⚠️⚠️ O CUSTO da tolerância por requisição (full review final de dados e deploy, MÉDIO-2).
+ *
+ * `fimDaEspera` toca o RESTO do `advance` numa cópia (até os 10 s do `scriptAdvance`). Chamado a cada
+ * comando, um segmento de 100 comandos rodava o resto 100 vezes: 185 ms de CPU do members por
+ * requisição num roteiro autorável da `spawn`, com 300 requisições por minuto por conta e uma réplica.
+ * Duas travas, nenhuma muda o que o player anterior registra:
+ * - o `next` na ÚLTIMA etapa não toca nada (não há etapa seguinte para onde a cópia iria; aplicá-la
+ *   só adiantava o mundo, e o tique seguinte tocava o mesmo resto de novo por cima dele);
+ * - `semFim`, por segmento: a (etapa, ação) cuja espera já se provou impossível não é tocada de novo.
+ *   O relógio de quadro fixo toca o mesmo mundo em qualquer fatiamento (`clock.test.ts`), então o fim
+ *   do `advance` visto de um ponto mais adiante da MESMA ação é o mesmo: a resposta continua `null`.
+ * O custo fica em no máximo um resto por (etapa, ação) por requisição.
+ */
+function passoDaDemonstracao(
+  start: SceneStart,
+  script: readonly SceneStep[],
+  previous: DemonstrationSession,
+  command: DemonstrationCommand,
+  { tolerarPlayerAnterior = false }: DemonstrationReplayOptions,
+  semFim?: Set<string>,
 ): { session: DemonstrationSession; events: SceneEvent[] } {
   if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
   const before = previous.state
@@ -368,7 +398,10 @@ export function stepDemonstration(
   }
 
   if (command.type === 'next') {
-    const fim = !next.ready && tolerarPlayerAnterior ? fimDaEspera(start, next, script) : null
+    const fim =
+      !next.ready && tolerarPlayerAnterior && next.step < script.length - 1
+        ? fimDaEspera(start, next, script, semFim)
+        : null
     // ⚠️ Aceito, o `next` do player anterior completa a ação que ele pulou: a etapa seguinte começa
     // do estado em que o roteiro deixa esta, e não do meio do `advance`.
     if (fim) next.state = fim
@@ -431,7 +464,7 @@ export function stepDemonstration(
     !next.viewed &&
     !next.ready &&
     next.step === script.length - 1 &&
-    fimDaEspera(start, next, script)
+    fimDaEspera(start, next, script, semFim)
   )
     next.viewed = true
 
@@ -678,7 +711,10 @@ export function sceneSegmentAnswers(segment: {
   }
 }
 
-/** O segmento veio de um player que conhece o relógio de quadro fixo? Ver `SCENE_CLOCK_MARK`. */
+/**
+ * O segmento veio de um player com as regras DESTE core? ⚠️ O nome é do relógio de quadro fixo, mas a
+ * pergunta é a versão das regras (`SCENE_CLOCK_MARK`), em qualquer cena.
+ */
 export function sceneSegmentHasClock(answers: unknown): boolean {
   return isRecord(answers) && answers.sceneClock === SCENE_CLOCK_MARK
 }
@@ -731,9 +767,12 @@ export function applyDemonstrationSegment(
 ): SceneCheckpoint<DemonstrationSession> {
   if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new SceneConflictError()
   let session = checkpoint?.session ?? initialDemonstration(start)
+  // ⚠️ Um por SEGMENTO (ver `passoDaDemonstracao`): é o que limita a tolerância a um resto por
+  // (etapa, ação) em cada requisição.
+  const semFim = opcoes.tolerarPlayerAnterior ? new Set<string>() : undefined
   for (const command of segment.commands) {
     if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
-    session = stepDemonstration(start, script, session, command, opcoes).session
+    session = passoDaDemonstracao(start, script, session, command, opcoes, semFim).session
   }
   return {
     sequence: segment.baseSequence + segment.commands.length,

@@ -10,10 +10,9 @@ import {
   type SceneCommand,
   type SceneEvent,
   type SceneState,
-  sceneClockReachedStop,
-  sceneConnectRunsClock,
+  sceneClockShouldStop,
+  sceneGestureRunsClock,
   sceneGoalIds,
-  sceneJumpLeftView,
   sceneScript,
   sceneSituation,
   sceneStart,
@@ -74,6 +73,8 @@ export function SceneSandbox({
       scene: activity.scene,
       ...(activity.cast ? { cast: activity.cast } : {}),
       ...(activity.setup?.actions ? { setup: { actions: activity.setup.actions } } : {}),
+      // ⚠️ A pilha vem junto (full review de experiência, A1): a bancada da vez fala com a mesma lista.
+      ...(activity.pilha ? { pilha: activity.pilha } : {}),
     }),
     [activity],
   )
@@ -127,21 +128,9 @@ export function SceneSandbox({
       // Um comando que o motor recusa (o gesto de uma cena vizinha) não derruba a bancada.
       return
     }
-    if (command.type === 'jump') setTocando(true)
-    // ⚠️ Ligar a gravidade com o Dino ainda no ar solta o tempo, como no player (lote 5 do Raio-X).
-    // ⚠️⚠️ Só LIGAR (consertos do review da onda A do lote 5): a régua é do core, a mesma do player.
-    if (command.type === 'connect') {
-      const relogio = sceneConnectRunsClock(m, command, sessaoRef.current.state)
-      if (relogio !== null) setTocando(relogio)
-    }
-    // O toque que começa a partida da `restart` solta o tempo, como no player (lote 5, G3).
-    // ⚠️ E o da `score` (consertos do review da onda A do lote 5): o convite do palco virou botão.
-    if (
-      (m === 'restart' || m === 'score') &&
-      command.type === 'start' &&
-      sessaoRef.current.state.match.screen === 'playing'
-    )
-      setTocando(true)
+    // ⚠️⚠️ O que o gesto faz com o ▶ é a régua do core, a MESMA do player (`sceneGestureRunsClock`).
+    const relogio = sceneGestureRunsClock(m, command, sessaoRef.current.state)
+    if (relogio !== null) setTocando(relogio)
   }
   // Tudo aberto: esta bancada não conta descoberta, então nada pode ficar fechado esperando uma.
   const metas = useMemo(() => sceneGoalIds(m).map((id) => ({ id, complete: true })), [m])
@@ -159,14 +148,10 @@ export function SceneSandbox({
       const passo = stepExperiment(start, antes, { type: 'advance', seconds: segundos })
       aplicar(passo.session)
       onEventos?.(passo.events)
-      // Acabou o salto: o relógio para em vez de rodar à toa (como no player).
-      // ⚠️ E o Dino sem gravidade que passa do alto do palco (lote 5 do Raio-X), como no player.
-      // ⚠️ E a batida da `circle-collision` (consertos do review da onda B do lote 5), como no player.
-      if (
-        (antes.state.flight.time !== null && sessaoRef.current.state.flight.time === null) ||
-        sceneJumpLeftView(m, antes.state, sessaoRef.current.state) ||
-        sceneClockReachedStop(m, sessaoRef.current.state)
-      ) {
+      // ⚠️⚠️ Parar o ▶ é a régua do core, a MESMA do player (`sceneClockShouldStop`). Esta bancada tinha
+      // a própria cópia (full review de 16/09/2026) e, com o Dino no chão, nunca parava o ▶ da `gravity`,
+      // da `impulse` e da `jump-sound`: o botão seguia "Parar o tempo" e redesenhava 25 vezes por segundo.
+      if (sceneClockShouldStop(m, antes.state, sessaoRef.current.state)) {
         setTocando(false)
         return false
       }

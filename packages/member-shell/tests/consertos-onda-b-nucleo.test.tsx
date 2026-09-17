@@ -252,3 +252,30 @@ describe('tilemap', () => {
     expect(espaco).not.toContain('fill-scene-bark')
   })
 })
+
+describe('⚠️⚠️ a meta que abre o controle vem da lista da atividade TAMBÉM (`metaAberta`, full review)', () => {
+  // O "Agora é sua vez" passa todas as metas completas para nada ficar esperando, e as bancadas do
+  // núcleo e do motor liam só `discoveries`: com um roteiro do professor mais curto, a chave ficava
+  // fechada na bancada que prometia estar aberta.
+  const chaveDaCopia = (markup: string) =>
+    /<button[^>]*>Copiar a ficha ao nascer: [^<]*<\/button>/.exec(markup)?.[0] ?? ''
+
+  test('enemy-type: sem a meta vista, a cópia fica fechada; com a meta completa na lista, abre', () => {
+    const aberto = mundo('enemy-type')
+    const fechada = chaveDaCopia(bancada('enemy-type', aberto))
+    expect(fechada).toContain('aria-disabled="true"')
+    const tudoAberto = chaveDaCopia(
+      html(
+        <NucleoSceneControls
+          scene="enemy-type"
+          state={aberto}
+          dispatch={nada}
+          goals={[{ id: 'all-change', complete: true }]}
+          onRunning={nada}
+        />,
+      ),
+    )
+    expect(tudoAberto).not.toBe('')
+    expect(tudoAberto).not.toContain('aria-disabled')
+  })
+})

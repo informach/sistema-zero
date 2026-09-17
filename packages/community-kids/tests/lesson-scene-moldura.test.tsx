@@ -221,17 +221,17 @@ describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio d
     revealOn: 'hidden',
   }
 
-  test('⚠️⚠️ o lugar dos avisos existe desde que o palco abre, recebe o selo e o palpite, e não sai quando eles saem', async () => {
+  test('⚠️⚠️ os avisos NÃO reservam lugar: entram SOBRE o palco e saem no gesto seguinte; o palpite e a frase seguem nos lugares que só crescem', async () => {
+    // ⚠️ Mudou de propósito (full review de experiência, M2): o lugar reservado dos avisos ficava VAZIO
+    // logo depois do palpite (36 a 140 px de buraco entre o palco e a bancada). Os avisos passaram a ser
+    // sobrepostos ao pé do palco, e nada entra ou sai do fluxo por causa deles.
     const { container } = abrir(bloco({ type: 'experimentation', scene: 'world' }, PALPITE), true)
     const lugar = () => container.querySelector('[data-lugar-reservado="avisos"]')
-    // Antes do palpite a cena está coberta: nada reservado ainda.
-    expect(lugar()).toBeNull()
+    const sobre = () => container.querySelector('[data-avisos-sobre-o-palco]')
     fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
     await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
-    // O palco abriu: o lugar já está lá, vazio (e sem a resposta escondida dentro).
-    const reservado = lugar()
-    expect(reservado).not.toBeNull()
-    expect(reservado?.textContent).toBe('')
+    expect(lugar()).toBeNull()
+    expect(sobre()).toBeNull()
     expect(screen.queryByText(/Você achou/)).toBeNull()
     // A linha do palpite e a frase da situação moram nos lugares que só crescem.
     const linha = screen.getByText('Seu palpite:').closest('[data-lugar-reservado="palpite"]')
@@ -240,19 +240,20 @@ describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio d
       container.querySelector('[data-lugar-reservado="situacao"] p[role="status"]'),
     ).not.toBeNull()
 
-    // O gesto que responde o palpite: o selo e a frase entram NO lugar reservado.
+    // O gesto que responde o palpite: o selo e a frase entram SOBRE o palco.
     fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
     const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
     await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
-    expect(lugar()).toBe(reservado)
-    expect(reservado?.contains(screen.getByText('Descoberta 1 de 2'))).toBe(true)
+    expect(lugar()).toBeNull()
+    expect(sobre()?.contains(screen.getByText('Descoberta 1 de 2'))).toBe(true)
+    expect(sobre()?.className.split(/\s+/)).toContain('absolute')
     // O mesmo lugar da linha do palpite (agora no passado, sem o "trocar").
     expect(screen.getByText('Seu palpite:').closest('[data-lugar-reservado="palpite"]')).toBe(linha)
 
-    // O gesto seguinte tira os avisos, e o LUGAR fica.
+    // O gesto seguinte tira os avisos.
     fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
     await waitFor(() => expect(screen.queryByText(retomado)).toBeNull())
-    expect(lugar()).toBe(reservado)
+    expect(sobre()).toBeNull()
   })
 })
 

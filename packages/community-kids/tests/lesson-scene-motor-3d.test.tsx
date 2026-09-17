@@ -72,6 +72,7 @@ describe('⚠️⚠️ o deslizante só conta quando a mão SOLTA (MÉDIO-3 do r
     })) as HTMLInputElement
     await waitFor(() => expect(medidor()).toBe('0'))
     // A volta 1 é de frente (uma cor, o `revealOn` da previsão); a 6 é um canto (duas cores).
+    fireEvent.pointerDown(volta)
     fireEvent.change(volta, { target: { value: '0' } })
     fireEvent.change(volta, { target: { value: '5' } })
     // O número à vista acompanha o dedo, e o motor ainda não recebeu nada.
@@ -82,6 +83,7 @@ describe('⚠️⚠️ o deslizante só conta quando a mão SOLTA (MÉDIO-3 do r
     await waitFor(() => expect(medidor()).toBe('1'))
     expect(screen.queryByText(/A câmera está bem de frente/)).toBeNull()
     // A seta do teclado é um gesto inteiro: o valor vai ao soltar a tecla.
+    fireEvent.keyDown(volta, { key: 'ArrowLeft' })
     fireEvent.change(volta, { target: { value: '0' } })
     fireEvent.keyUp(volta, { key: 'ArrowLeft' })
     await waitFor(() => expect(medidor()).toBe('2'))
@@ -95,14 +97,17 @@ describe('⚠️⚠️ o deslizante só conta quando a mão SOLTA (MÉDIO-3 do r
     const altura = screen.getByRole('slider', { name: 'a mira, para cima e para baixo' })
     await waitFor(() => expect(medidor()).toBe('0'))
     // A mira abre embaixo de tudo (240, 235): primeiro para a direita, longe das caixas, e depois sobe.
+    fireEvent.pointerDown(lados)
     fireEvent.change(lados, { target: { value: '460' } })
     fireEvent.pointerUp(lados)
     await waitFor(() => expect(lados.value).toBe('460'))
+    fireEvent.pointerDown(altura)
     fireEvent.change(altura, { target: { value: '155' } })
     fireEvent.pointerUp(altura)
     await waitFor(() => expect((altura as HTMLInputElement).value).toBe('155'))
     expect(medidor()).toBe('0')
     // Em x 330, y 155 a caixa B cobre a A (a meta que responde a previsão); em 460 não há caixa.
+    fireEvent.pointerDown(lados)
     fireEvent.change(lados, { target: { value: '330' } })
     fireEvent.change(lados, { target: { value: '460' } })
     fireEvent.pointerUp(lados)
@@ -110,8 +115,44 @@ describe('⚠️⚠️ o deslizante só conta quando a mão SOLTA (MÉDIO-3 do r
     expect(medidor()).toBe('0')
     expect(await screen.findByText('Nada no caminho: a reta foi até o fim.')).toBeTruthy()
     // Soltando ONDE uma cobre a outra, aí sim.
+    fireEvent.pointerDown(lados)
     fireEvent.change(lados, { target: { value: '330' } })
     fireEvent.pointerUp(lados)
+    await waitFor(() => expect(medidor()).toBe('1'))
+  })
+})
+
+describe('⚠️⚠️ soltar é regra da PEÇA, em toda cena (full review de 16/09/2026)', () => {
+  test('hitbox: arrastar a distância manda UM comando ao soltar, e é um passo só do Desfazer', async () => {
+    // A `Distância do cacto` mandava cada valor do caminho: três comandos, três passos do Desfazer, e a
+    // batida podia cair num valor em que a criança nunca parou.
+    abrir('hitbox')
+    const distancia = (await screen.findByRole('slider', {
+      name: 'Distância do cacto',
+    })) as HTMLInputElement
+    const desfazer = screen.getByRole('button', { name: 'Desfazer' })
+    await waitFor(() => expect(distancia.value).toBe('149'))
+    expect(desfazer).toHaveProperty('disabled', true)
+    fireEvent.pointerDown(distancia)
+    for (const valor of ['120', '80', '40']) fireEvent.change(distancia, { target: { value: valor } })
+    // Com o dedo apertado, o número acompanha e o motor espera.
+    expect(desfazer).toHaveProperty('disabled', true)
+    fireEvent.pointerUp(distancia)
+    await waitFor(() => expect(desfazer).toHaveProperty('disabled', false))
+    fireEvent.click(desfazer)
+    await waitFor(() => expect(distancia.value).toBe('149'))
+    expect(desfazer).toHaveProperty('disabled', true)
+  })
+
+  test('⚠️ sem dedo nem tecla apertados (o ajuste do leitor de tela), o valor vai na hora', async () => {
+    // No VoiceOver do iOS deslizar para cima ou para baixo muda o valor sem `pointerup` nem `keyup`: se a
+    // peça esperasse a soltura, a cena só mudaria quando o foco saísse do deslizante.
+    abrir('camera-3d')
+    const volta = (await screen.findByRole('slider', {
+      name: 'volta da câmera',
+    })) as HTMLInputElement
+    await waitFor(() => expect(medidor()).toBe('0'))
+    fireEvent.change(volta, { target: { value: '5' } })
     await waitFor(() => expect(medidor()).toBe('1'))
   })
 })

@@ -86,7 +86,7 @@
       "key": "demonstracao-nascer-fora",
       "content": {
         "kind": "interactive",
-        "title": "O lugar onde ela nasce e a velocidade que a faz descer",
+        "title": "Onde a pedra nasce e o que faz a pedra descer",
         "instructions": "São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.",
         "hints": [],
         "required": false,

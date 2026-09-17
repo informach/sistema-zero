@@ -1,7 +1,7 @@
 'use client'
 
-import { numero } from '@sistemazero/core/learning/scene'
-import { type ReactNode, useEffect, useId, useState } from 'react'
+import { numero, type SceneState } from '@sistemazero/core/learning/scene'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { SceneButton } from './exploration-stage'
 
 /**
@@ -17,12 +17,42 @@ import { SceneButton } from './exploration-stage'
  * `tom="gesto"`, porque é um botão do aplicativo como qualquer outro — o que muda é o peso.
  */
 
+/** As metas desta atividade, já avaliadas, como a bancada as recebe. */
+export type MetasDaBancada = readonly { id: string; complete: boolean }[]
+
+/**
+ * A meta que ABRE um controle ("fechado não é escondido") já aconteceu?
+ *
+ * ⚠️⚠️ UMA régua para toda bancada (full review de 16/09/2026). Havia três grafias (a lista de metas com o
+ * estado de reserva, o estado com a lista de reserva, e só o estado), e as bancadas do núcleo e do motor
+ * liam só `discoveries`: o "Agora é sua vez", que passa TODAS as metas completas para nada ficar
+ * esperando, deixava a chave fechada nelas quando o roteiro do professor era mais curto que o do modelo.
+ * Aberta = completa na lista da atividade OU já vista pelo motor (meta fora do caso do professor ainda
+ * abre o controle pelo que a criança viu).
+ */
+export function metaAberta(goals: MetasDaBancada, state: SceneState) {
+  return (meta: string) =>
+    goals.some((g) => g.id === meta && g.complete) || state.evidence.discoveries.includes(meta)
+}
+
 /**
  * MEDIDA — um deslizante com o valor à vista e dois botões de passo.
  *
  * ⚠️ Os botões existem para quem não arrasta. Um `<input type="range">` sozinho é alcançável
  * pelo teclado, mas exige saber que a seta funciona; o par −/+ diz isso na tela, e num celular
  * dá um alvo de 44px para a mão pequena que erra o cursor do deslizante.
+ *
+ * ⚠️⚠️ O deslizante só manda o valor ao motor quando o GESTO termina, em TODA cena. É regra da peça, e
+ * não opção de quem a usa (full review de 16/09/2026): nasceu como `soltar` numa cena (`onion-skin`,
+ * lote 5 do Raio-X), a bancada do motor precisou de uma constante `SOLTAR = true` para não esquecer em
+ * dez lugares, e seis medidas continuavam mandando cada valor do caminho. Cada `onChange` é um comando:
+ * arrastar de 40 até 0 passava por todos os valores do meio, e uma meta ("deixou o fogo um pouco maior")
+ * caía ou um palpite se revelava num valor em que a criança nunca parou; e cada valor do caminho era um
+ * passo do Desfazer. Enquanto o dedo ou a tecla estão apertados, o número à vista acompanha e o motor
+ * espera; ele recebe o valor no `pointerup`, `pointercancel`, `lostpointercapture`, `keyup` ou ao sair do
+ * controle. ⚠️ Um `change` que chega SEM dedo nem tecla apertados vai na hora: é o ajuste do leitor de
+ * tela (no VoiceOver do iOS, deslizar para cima ou para baixo muda o valor sem `keyup` nem `pointerup`),
+ * e cada ajuste ali já é um gesto inteiro. Os botões −/+ mandam na hora.
  */
 export function Medida({
   label,
@@ -36,7 +66,6 @@ export function Medida({
   disabled = false,
   nota,
   digitavel = false,
-  soltar = false,
   onChange,
 }: {
   label: string
@@ -47,7 +76,7 @@ export function Medida({
   passo?: number
   /**
    * O valor em PALAVRA, para quem ouve: sem ele o leitor anuncia só o número cru. Pode ser uma função
-   * do valor, para acompanhar o deslizante enquanto ele ainda não foi SOLTO (`soltar`).
+   * do valor, para acompanhar o deslizante enquanto o gesto ainda não terminou.
    */
   texto?: string | ((valor: number) => string)
   tom?: string
@@ -65,22 +94,17 @@ export function Medida({
    * comando, e digitar "480" mandaria 4, 48 e 480 (o 4 e o 48 presos no mínimo da faixa).
    */
   digitavel?: boolean
-  /**
-   * ⚠️⚠️ O deslizante só manda o valor quando a mão SOLTA (lote 5 do Raio-X, `onion-skin`). Cada
-   * `onChange` é um comando, e arrastar de 40 até 0 passava por todos os valores do meio: a meta
-   * "deixou o fogo um pouco maior" caía no caminho, sem a criança ter parado ali. Enquanto arrasta,
-   * o valor à vista acompanha o dedo; o motor recebe o valor no `pointerup`, no `keyup` (a seta do
-   * teclado é um gesto inteiro) ou ao sair do controle. Os botões −/+ continuam mandando na hora.
-   */
-  soltar?: boolean
   onChange: (valor: number) => void
 }) {
   const id = useId()
   const salto = passo ?? step
   const [arrastando, setArrastando] = useState<number | null>(null)
+  /** Um dedo ou uma tecla apertados sobre o deslizante: o gesto ainda não terminou. */
+  const segurando = useRef(false)
   const mostrado = arrastando ?? value
   const escrito = typeof texto === 'function' ? texto(mostrado) : texto
   const soltou = () => {
+    segurando.current = false
     if (arrastando === null) return
     setArrastando(null)
     if (!disabled && arrastando !== value) onChange(arrastando)
@@ -168,14 +192,28 @@ export function Medida({
           max={max}
           step={step}
           value={mostrado}
+          onPointerDown={() => {
+            segurando.current = true
+          }}
+          onKeyDown={() => {
+            segurando.current = true
+          }}
           onChange={(e) => {
             if (disabled) return
-            if (soltar) setArrastando(Number(e.target.value))
-            else onChange(Number(e.target.value))
+            const valor = Number(e.target.value)
+            if (segurando.current) {
+              setArrastando(valor)
+              return
+            }
+            // Sem dedo nem tecla: o ajuste do leitor de tela, um gesto inteiro.
+            setArrastando(null)
+            if (valor !== value) onChange(valor)
           }}
-          onPointerUp={soltar ? soltou : undefined}
-          onKeyUp={soltar ? soltou : undefined}
-          onBlur={soltar ? soltou : undefined}
+          onPointerUp={soltou}
+          onPointerCancel={soltou}
+          onLostPointerCapture={soltou}
+          onKeyUp={soltou}
+          onBlur={soltou}
         />
         <SceneButton
           className="min-w-11 px-2"

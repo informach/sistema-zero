@@ -121,7 +121,7 @@ export function VelocityStage({ state, cast }: { state: SceneState; cast?: Scene
       : REGUA.de + REGUA.largura / 2
   /**
    * Os valores da lista "Cada quadro" em linhas: antes e agora de um eixo, ou x e y. ⚠️ No estreito ela
-   * mora FORA do desenho (conserto "letra no celular"), com os últimos `NO_CELULAR` quadros de cada linha.
+   * mora FORA do desenho (conserto "letra no celular"), com os últimos `VEL_NO_CELULAR` quadros de cada linha.
    */
   const linhasDaLista = (ultimos?: number) => {
     const corte = (fila: readonly number[]) =>

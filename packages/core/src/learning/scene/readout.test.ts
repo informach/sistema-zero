@@ -189,6 +189,9 @@ describe('a faixa de estado', () => {
       // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `pool` diz o nome da chave ("reciclar quem saiu") e a
       // `mesh` saiu da tabela (a faixa diz o degrau de "ver os pontos", que não é ligado/desligado).
       'reciclar quem saiu': 'm',
+      // ⚠️ Mudou de propósito (full review de experiência, B9): "remover quem sai: desligado", a palavra
+      // da chave logo abaixo, e não "não".
+      'remover quem sai': 'm',
       // ⚠️ Mudou de propósito (lote 5, G4): a `shading` diz "o sol está na" e "tons de azul".
     }
     const SO_DESLIGADO = new Set(['espelho'])
