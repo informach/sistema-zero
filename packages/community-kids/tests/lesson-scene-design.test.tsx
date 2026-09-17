@@ -1700,10 +1700,10 @@ describe('⚠️⚠️ toda porta da cena tem controle na BANCADA', () => {
         previewContent={c}
       />,
     )
-    const chave = await screen.findByRole('button', { name: 'A câmera segue a nave: não' })
+    const chave = await screen.findByRole('button', { name: 'A câmera segue a nave: desligada' })
     expect(chave.getAttribute('aria-pressed')).toBe('false')
     fireEvent.click(chave)
-    const ligada = await screen.findByRole('button', { name: 'A câmera segue a nave: sim' })
+    const ligada = await screen.findByRole('button', { name: 'A câmera segue a nave: ligada' })
     expect(ligada.getAttribute('aria-pressed')).toBe('true')
     cleanup()
 
