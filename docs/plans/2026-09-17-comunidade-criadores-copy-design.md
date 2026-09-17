@@ -68,4 +68,3 @@ Foram retiradas afirmações de talento escondido, motivação automática, reto
 mudança garantida na escola, redução de conflito em casa, suporte instantâneo e transformação de
 todo o tempo de tela. Também foram removidas a comparação com terapia, a ancoragem sem comprovação
 das ferramentas vendidas separadamente e a urgência baseada em culpa.
-
