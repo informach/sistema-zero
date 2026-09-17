@@ -26,6 +26,7 @@ import {
   DeltaTimeStage,
   PoolStage,
 } from '../src/components/scene-motor-stages'
+import { cssHexValuesForCustomProperty } from './css-custom-properties'
 
 /**
  * Os consertos dos dois reviews da onda B do lote 5 do Raio-X nos palcos e na bancada do motor e do 3D
@@ -187,13 +188,7 @@ describe('axis-z: o chão, o cubo e as cores (MÉDIOS)', () => {
     const cartoes = [
       '../../community-kids/src/app/globals.css',
       '../../community/src/app/globals.css',
-    ]
-      .flatMap((c) => [
-        ...readFileSync(join(import.meta.dir, c), 'utf8').matchAll(
-          /--pen-cartao:\s*(#[0-9a-f]{6})/gi,
-        ),
-      ])
-      .map((m) => m[1] ?? '')
+    ].flatMap((c) => cssHexValuesForCustomProperty(join(import.meta.dir, c), '--pen-cartao'))
     expect(cartoes.length).toBeGreaterThanOrEqual(2)
     const lum = (hex: string) => {
       const [r, g, b] = [1, 3, 5]

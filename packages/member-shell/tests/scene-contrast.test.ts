@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { cssHexValuesForCustomProperty } from './css-custom-properties'
 
 /**
  * O contraste da cena, medido — não estimado.
@@ -170,9 +171,9 @@ describe('o papel da cena continua legível em todos os temas', () => {
     const falhas: string[] = []
     let medidos = 0
     for (const [app, caminho] of cartoes) {
-      const css = readFileSync(join(import.meta.dir, caminho), 'utf8')
-      // Todas as declarações do cartão: a do tema padrão e a de qualquer tema que a redefina.
-      const fundos = [...css.matchAll(/--pen-cartao:\s*(#[0-9a-f]{6})/gi)].map((m) => m[1] ?? '')
+      // Todas as declarações finais do cartão: segue aliases/imports até os
+      // literais do tema padrão e de qualquer tema que os redefina.
+      const fundos = cssHexValuesForCustomProperty(join(import.meta.dir, caminho), '--pen-cartao')
       if (!fundos.length) throw new Error(`--pen-cartao não encontrado no globals.css do ${app}`)
       for (const fundo of fundos)
         for (const [tinta, cor] of Object.entries(TINTAS)) {
