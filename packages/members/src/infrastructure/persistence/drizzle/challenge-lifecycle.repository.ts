@@ -10,7 +10,6 @@ import {
   courses,
   entitlementLifecycleMessagesSent,
   entitlements,
-  gamificationProfiles,
   learningAttempts,
   lessonBlockProgress,
   lessonCompletions,
@@ -19,7 +18,6 @@ import {
   lessonSectionProgress,
   lessons,
   modules,
-  profilePreferences,
   studioSubmissions,
 } from './schema'
 
@@ -107,77 +105,58 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
     if (lessonIds.length === 0) return []
 
     const accountIds = [...new Set(candidates.map((candidate) => candidate.accountId))]
-    const [
-      profileRows,
-      preferenceRows,
-      navigationRows,
-      sectionRows,
-      blockRows,
-      attemptRows,
-      submissionRows,
-    ] = await Promise.all([
-      this.db
-        .select({ userId: gamificationProfiles.userId, accountId: gamificationProfiles.accountId })
-        .from(gamificationProfiles)
-        .where(
-          and(
-            inArray(gamificationProfiles.accountId, accountIds),
-            eq(gamificationProfiles.audience, 'kids'),
+    const [ownerRows, navigationRows, sectionRows, blockRows, attemptRows, submissionRows] =
+      await Promise.all([
+        loadOwnerClaims(this.db, accountIds),
+        this.db
+          .select({ userId: lessonNavigation.userId, accountId: lessonNavigation.accountId })
+          .from(lessonNavigation)
+          .where(
+            and(
+              inArray(lessonNavigation.accountId, accountIds),
+              inArray(lessonNavigation.lessonId, lessonIds),
+            ),
           ),
-        ),
-      this.db
-        .select({ userId: profilePreferences.userId, accountId: profilePreferences.accountId })
-        .from(profilePreferences)
-        .where(inArray(profilePreferences.accountId, accountIds)),
-      this.db
-        .select({ userId: lessonNavigation.userId, accountId: lessonNavigation.accountId })
-        .from(lessonNavigation)
-        .where(
-          and(
-            inArray(lessonNavigation.accountId, accountIds),
-            inArray(lessonNavigation.lessonId, lessonIds),
+        this.db
+          .select({
+            userId: lessonSectionProgress.userId,
+            accountId: lessonSectionProgress.accountId,
+          })
+          .from(lessonSectionProgress)
+          .where(
+            and(
+              inArray(lessonSectionProgress.accountId, accountIds),
+              inArray(lessonSectionProgress.lessonId, lessonIds),
+            ),
           ),
-        ),
-      this.db
-        .select({
-          userId: lessonSectionProgress.userId,
-          accountId: lessonSectionProgress.accountId,
-        })
-        .from(lessonSectionProgress)
-        .where(
-          and(
-            inArray(lessonSectionProgress.accountId, accountIds),
-            inArray(lessonSectionProgress.lessonId, lessonIds),
+        this.db
+          .select({ userId: lessonBlockProgress.userId, accountId: lessonBlockProgress.accountId })
+          .from(lessonBlockProgress)
+          .where(
+            and(
+              inArray(lessonBlockProgress.accountId, accountIds),
+              inArray(lessonBlockProgress.lessonId, lessonIds),
+            ),
           ),
-        ),
-      this.db
-        .select({ userId: lessonBlockProgress.userId, accountId: lessonBlockProgress.accountId })
-        .from(lessonBlockProgress)
-        .where(
-          and(
-            inArray(lessonBlockProgress.accountId, accountIds),
-            inArray(lessonBlockProgress.lessonId, lessonIds),
+        this.db
+          .select({ userId: learningAttempts.userId, accountId: learningAttempts.accountId })
+          .from(learningAttempts)
+          .where(
+            and(
+              inArray(learningAttempts.accountId, accountIds),
+              inArray(learningAttempts.lessonId, lessonIds),
+            ),
           ),
-        ),
-      this.db
-        .select({ userId: learningAttempts.userId, accountId: learningAttempts.accountId })
-        .from(learningAttempts)
-        .where(
-          and(
-            inArray(learningAttempts.accountId, accountIds),
-            inArray(learningAttempts.lessonId, lessonIds),
+        this.db
+          .select({ userId: studioSubmissions.userId, accountId: studioSubmissions.accountId })
+          .from(studioSubmissions)
+          .where(
+            and(
+              inArray(studioSubmissions.accountId, accountIds),
+              eq(studioSubmissions.courseId, course.id),
+            ),
           ),
-        ),
-      this.db
-        .select({ userId: studioSubmissions.userId, accountId: studioSubmissions.accountId })
-        .from(studioSubmissions)
-        .where(
-          and(
-            inArray(studioSubmissions.accountId, accountIds),
-            eq(studioSubmissions.courseId, course.id),
-          ),
-        ),
-    ])
+      ])
 
     const ownerClaims = new Map<string, Set<string>>()
     const claim = (row: OwnerRow) => {
@@ -186,17 +165,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
       ownerClaims.set(row.userId, claims)
     }
     for (const accountId of accountIds) claim({ userId: accountId, accountId })
-    for (const row of [
-      ...profileRows,
-      ...preferenceRows,
-      ...navigationRows,
-      ...sectionRows,
-      ...blockRows,
-      ...attemptRows,
-      ...submissionRows.filter((row): row is OwnerRow => row.accountId != null),
-    ]) {
-      claim(row)
-    }
+    for (const row of ownerRows) claim(row)
 
     // Uma identidade ligada a duas contas é ambígua e fica de fora. Nunca
     // escolhemos “a mais recente” nem inferimos pelo e-mail.
@@ -311,6 +280,61 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
       .values({ entitlementId, expiresOn, messageKind, sentAt: now })
       .onConflictDoNothing()
   }
+}
+
+/**
+ * Descobre os perfis ligados às contas candidatas e, em uma segunda consulta,
+ * carrega TODAS as alegações de posse desses perfis. Filtrar a segunda etapa
+ * pelas contas candidatas esconderia justamente uma relação conflitante.
+ */
+async function loadOwnerClaims(db: Database, accountIds: string[]): Promise<OwnerRow[]> {
+  const discovered = await db.execute<{ userId: string }>(sql`
+    select user_id as "userId" from members.gamification_profiles
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.profile_preferences
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.lesson_navigation
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.lesson_section_progress
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.lesson_block_progress
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.learning_attempts
+      where account_id = any(${accountIds}::uuid[])
+    union
+    select user_id as "userId" from members.studio_submissions
+      where account_id = any(${accountIds}::uuid[])
+  `)
+  if (discovered.length === 0) return []
+
+  const profileIds = discovered.map(({ userId }) => userId)
+  return db.execute<OwnerRow>(sql`
+    select user_id as "userId", account_id as "accountId" from members.gamification_profiles
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.profile_preferences
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.lesson_navigation
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.lesson_section_progress
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.lesson_block_progress
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.learning_attempts
+      where user_id = any(${profileIds}::uuid[])
+    union
+    select user_id as "userId", account_id as "accountId" from members.studio_submissions
+      where user_id = any(${profileIds}::uuid[]) and account_id is not null
+  `)
 }
 
 function isBehaviorKind(value: string): value is ChallengeBehaviorMessageKind {
