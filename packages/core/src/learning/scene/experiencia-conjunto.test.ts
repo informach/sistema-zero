@@ -19,8 +19,8 @@ import {
   sceneHintStep,
 } from './evaluate'
 import {
-  isExperimentationActivity,
   isDemonstrationActivity,
+  isExperimentationActivity,
   type SceneActivity,
   sceneModelFor,
   sceneStart,
@@ -51,7 +51,8 @@ describe('M1 · a pista pula o degrau cuja meta já caiu', () => {
       expect(metas.length, scene).toBe(3)
       const doModelo = sceneModel(scene).goals.map((g) => g.id)
       for (const degrau of metas)
-        for (const meta of metasDaPista(degrau)) expect(doModelo, `${scene}: ${meta}`).toContain(meta)
+        for (const meta of metasDaPista(degrau))
+          expect(doModelo, `${scene}: ${meta}`).toContain(meta)
     }
   })
 
@@ -65,7 +66,10 @@ describe('M1 · a pista pula o degrau cuja meta já caiu', () => {
         const estado = comDescobertas(scene, feitas)
         for (const nivel of [1, 2, 3]) {
           const passo = sceneHintStep(scene, estado, nivel)
-          expect(passo.texto.length, `${scene} · ${feitas.join('+')} · nível ${nivel}`).toBeGreaterThan(0)
+          expect(
+            passo.texto.length,
+            `${scene} · ${feitas.join('+')} · nível ${nivel}`,
+          ).toBeGreaterThan(0)
           // O degrau mostrado ainda serve a alguma coisa que falta.
           expect(
             pistaCumprida(passo.metas, feitas),
@@ -82,9 +86,9 @@ describe('M1 · a pista pula o degrau cuja meta já caiu', () => {
     expect(texto).toContain('Com a borda à vista, diminua a largura e olhe a borda.')
     expect(texto).not.toContain('Aperte o botão da borda.')
     // Com 2 de 3, o degrau do alvo.
-    expect(sceneHint('stage-size', comDescobertas('stage-size', ['border-on', 'resized']), 1)).toContain(
-      'Deixe 480 de largura e 270 de altura',
-    )
+    expect(
+      sceneHint('stage-size', comDescobertas('stage-size', ['border-on', 'resized']), 1),
+    ).toContain('Deixe 480 de largura e 270 de altura')
   })
 
   test('⚠️ coordinates com x e y feitos: "Agora leve o Dino para x 0 e y 0.", com o elenco', () => {
@@ -109,7 +113,9 @@ describe('M1 · a pista pula o degrau cuja meta já caiu', () => {
     // As três pistas da `velocity` servem a `moves` e `left`: com as duas feitas, falta `stopped`.
     const s = comDescobertas('velocity', ['moves', 'left'])
     const passo = sceneHintStep('velocity', s, 2)
-    expect(passo.texto).toBe(sceneModel('velocity').goals.find((g) => g.id === 'stopped')?.pedido ?? '')
+    expect(passo.texto).toBe(
+      sceneModel('velocity').goals.find((g) => g.id === 'stopped')?.pedido ?? '',
+    )
     expect(metasDaPista(passo.metas)).toEqual(['stopped'])
   })
 })
@@ -166,12 +172,12 @@ describe('A1 · pilha: camadas, a layers com o painel Camadas do Pinta', () => {
     expect(isExperimentationActivity(camadas)).toBe(true)
     expect(isExperimentationActivity({ ...camadas, pilha: 'blocos' })).toBe(true)
     expect(isExperimentationActivity({ ...camadas, pilha: 'lista' })).toBe(false)
-    expect(isExperimentationActivity({ type: 'experimentation', scene: 'world', pilha: 'camadas' })).toBe(
-      false,
-    )
-    expect(isDemonstrationActivity({ type: 'demonstration', scene: 'layers', pilha: 'camadas' })).toBe(
-      true,
-    )
+    expect(
+      isExperimentationActivity({ type: 'experimentation', scene: 'world', pilha: 'camadas' }),
+    ).toBe(false)
+    expect(
+      isDemonstrationActivity({ type: 'demonstration', scene: 'layers', pilha: 'camadas' }),
+    ).toBe(true)
   })
 
   test('⚠️⚠️ a pilha atravessa a projeção pública (senão a bancada voltaria à lista do Estúdio)', () => {
@@ -190,10 +196,9 @@ describe('A1 · pilha: camadas, a layers com o painel Camadas do Pinta', () => {
 
   test('a faixa diz quem está na frente e quem está atrás, vestida pelo elenco', () => {
     const s = openScene(sceneStart(camadas))
-    expect(sceneReadout('layers', s, pedraEChama, 'camadas').map((r) => `${r.label}: ${r.value}`)).toEqual([
-      'na frente: a chama',
-      'atrás: a pedra',
-    ])
+    expect(
+      sceneReadout('layers', s, pedraEChama, 'camadas').map((r) => `${r.label}: ${r.value}`),
+    ).toEqual(['na frente: a chama', 'atrás: a pedra'])
     // Sem a pilha, a ordem de desenhar do Estúdio, como sempre.
     expect(sceneReadout('layers', s, pedraEChama).map((r) => r.label)).toEqual([
       '1º a desenhar',
@@ -208,9 +213,13 @@ describe('A1 · pilha: camadas, a layers com o painel Camadas do Pinta', () => {
     let s = openScene(sceneStart(camadas))
     const todos: string[] = [...hints]
     for (const front of [true, false, true]) {
-      for (const g of sceneGoals('layers', s, pedraEChama, undefined, 'camadas')) todos.push(g.pedido ?? '')
-      for (const nivel of [1, 2, 3]) todos.push(sceneHint('layers', s, nivel, pedraEChama, 'camadas'))
-      todos.push(evaluateExperimentation('layers', s, true, pedraEChama, undefined, 'camadas').feedback)
+      for (const g of sceneGoals('layers', s, pedraEChama, undefined, 'camadas'))
+        todos.push(g.pedido ?? '')
+      for (const nivel of [1, 2, 3])
+        todos.push(sceneHint('layers', s, nivel, pedraEChama, 'camadas'))
+      todos.push(
+        evaluateExperimentation('layers', s, true, pedraEChama, undefined, 'camadas').feedback,
+      )
       s = stepScene(sceneStart(camadas), s, { type: 'layer', front })
     }
     for (const texto of todos) {
@@ -230,7 +239,9 @@ describe('A1 · pilha: camadas, a layers com o painel Camadas do Pinta', () => {
     expect(s.evidence.discoveries).toEqual(['front', 'covered'])
     // "Mande a floresta uma camada para trás de novo."
     s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
-    expect(evaluateExperimentation('layers', s, true, undefined, undefined, 'camadas').passed).toBe(true)
+    expect(evaluateExperimentation('layers', s, true, undefined, undefined, 'camadas').passed).toBe(
+      true,
+    )
   })
 })
 
@@ -303,7 +314,9 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       if (b.kind === 'interactive' && a?.scene && p) {
         vistas += 1
         const fora = premissaSemTela(p.prompt, abertura(a))
-        expect(fora.length === 0 || /^Imagine\b/.test(p.prompt), `${a.scene}: ${p.prompt}`).toBe(true)
+        expect(fora.length === 0 || /^Imagine\b/.test(p.prompt), `${a.scene}: ${p.prompt}`).toBe(
+          true,
+        )
       }
       Object.values(b).forEach(visitar)
     }
@@ -336,7 +349,9 @@ describe('M7 e textos · o que a tela diz', () => {
 
   test('B9 · cleanup: "remover quem sai: desligado", a palavra da chave', () => {
     const s = openScene({ scene: 'cleanup' })
-    expect(sceneReadout('cleanup', s).find((r) => r.label === 'remover quem sai')?.value).toBe('desligado')
+    expect(sceneReadout('cleanup', s).find((r) => r.label === 'remover quem sai')?.value).toBe(
+      'desligado',
+    )
   })
 
   test('B8 e B11 · as opções e as frases do review', () => {

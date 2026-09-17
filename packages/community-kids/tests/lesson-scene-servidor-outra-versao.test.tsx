@@ -148,9 +148,12 @@ describe('⚠️⚠️ MÉDIO-1: o player não afirma a conclusão que um servid
     try {
       aluno('crianca-1')
       await concluirEResponder(true)
-      await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'), {
-        timeout: 5000,
-      })
+      await waitFor(
+        () => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'),
+        {
+          timeout: 5000,
+        },
+      )
       expect(tentativas).toHaveLength(1)
       expect(screen.getByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
       // A conclusão que o servidor recusou não fica afirmada, e a recusa não vira "resposta errada".
@@ -193,9 +196,12 @@ describe('⚠️⚠️ MÉDIO-1: o player não afirma a conclusão que um servid
         }),
       )
       fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-      await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'), {
-        timeout: 5000,
-      })
+      await waitFor(
+        () => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'),
+        {
+          timeout: 5000,
+        },
+      )
       expect(screen.getByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
       expect(screen.queryByText(/Sem internet/)).toBeNull()
     } finally {

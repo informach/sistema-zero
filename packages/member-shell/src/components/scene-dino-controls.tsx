@@ -376,7 +376,8 @@ function OrdemDeDesenhar({
   // ⚠️ No Pinta a lista se lê AO CONTRÁRIO: a de cima é a da frente, a desenhada por último.
   const ordem = camadas ? [...desenho].reverse() : desenho
   /** O lugar da linha, para quem usa leitor de tela ("1º a desenhar", ou "Na frente" no Pinta). */
-  const lugar = (i: number) => (camadas ? (i === 0 ? 'Na frente' : 'Atrás') : `${i + 1}º a desenhar`)
+  const lugar = (i: number) =>
+    camadas ? (i === 0 ? 'Na frente' : 'Atrás') : `${i + 1}º a desenhar`
   /** Quem está na linha, para quem OUVE: "?" enquanto o palpite não veio. */
   const ouvido = (peca: 'dino' | 'floresta') => (escondida ? '?' : nome(peca))
   /** O botão de cada linha: o que se LÊ e o nome acessível (que começa pelo que se lê, WCAG 2.5.3). */

@@ -227,7 +227,10 @@ const invalidos: Array<[string, unknown]> = [
     'pilha fora da layers',
     { ...base, activity: { type: 'experimentation', scene: 'world', pilha: 'camadas' } },
   ],
-  ['pilha que não existe', { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'lista' } }],
+  [
+    'pilha que não existe',
+    { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'lista' } },
+  ],
   // ⚠️⚠️ A demonstração não cobra meta nenhuma. Enquanto o schema dela declarava só `actions`,
   // o `normalize` do Elysia APAGAVA o `goals` em vez de deixá-lo chegar — o payload passava com
   // o campo sumido e o guard do domínio, que é quem tem a régua e a mensagem certa, nunca o via.

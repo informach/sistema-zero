@@ -685,7 +685,9 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
           titulo: jaSaiu ? 'Bastidores: o grupo' : 'Bastidores',
           descricao: jaSaiu
             ? `${quantos(fora, 'cacto', 'cactos')} na prateleira, fora da tela.${
-                mostraRemovidos ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.` : ''
+                mostraRemovidos
+                  ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.`
+                  : ''
               }`
             : 'Uma prateleira vazia.',
           desenho: (

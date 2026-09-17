@@ -55,7 +55,11 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
   acceleration: [['old-speed'], ['base-limit'], ['variation-limit']],
   velocity: [['moves'], ['moves'], ['left']],
   'hold-vs-press': [['one-step'], ['while-held'], ['apart']],
-  variable: [['stored', 'changed-hidden'], ['changed-hidden', 'shown'], ['changed-hidden', 'shown']],
+  variable: [
+    ['stored', 'changed-hidden'],
+    ['changed-hidden', 'shown'],
+    ['changed-hidden', 'shown'],
+  ],
   'group-loop': [['looked-all'], ['nearest'], ['looked-all', 'nearest']],
   'enemy-type': [['many'], ['all-change'], ['many', 'all-change']],
   camera: [['lost'], ['lost'], ['follows']],
@@ -69,10 +73,18 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
   'delta-time': [['apart'], ['apart'], ['apart', 'together']],
   'circle-collision': [['touch'], ['touch'], ['formula']],
   'axis-z': [['depth'], ['up'], ['up', 'shadow']],
-  'camera-3d': [['one-face', 'two-faces', 'three-faces'], ['two-faces', 'three-faces'], ['one-face']],
+  'camera-3d': [
+    ['one-face', 'two-faces', 'three-faces'],
+    ['two-faces', 'three-faces'],
+    ['one-face'],
+  ],
   mesh: [['points'], ['points', 'skin'], ['points', 'skin']],
   'pick-ray': [['first', 'face'], ['first'], ['first']],
-  'fill-stroke': [['only-fill', 'only-stroke'], ['only-fill', 'only-stroke'], ['only-fill', 'only-stroke', 'both']],
+  'fill-stroke': [
+    ['only-fill', 'only-stroke'],
+    ['only-fill', 'only-stroke'],
+    ['only-fill', 'only-stroke', 'both'],
+  ],
   shading: [['volume'], ['side'], ['side']],
 }
 

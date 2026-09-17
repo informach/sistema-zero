@@ -96,8 +96,8 @@ export function SceneReadoutBand({
        não de um caractere no `dt`: sem ele, a leitura corrida dizia "o Dino nos bastidores ainda não
        desenho desligado", e com um caractere no texto o `dt` deixaria de ser o nome da medida. */
     <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground">
-      {rows.map((r, i) => (
-        <div key={`${i}:${r.label}`} className="flex items-baseline gap-1.5">
+      {rows.map((r) => (
+        <div key={r.label} className="flex items-baseline gap-1.5">
           <dt className="text-muted-foreground after:content-[':']">{r.label}</dt>
           <dd
             className={`font-semibold tabular-nums ${
@@ -123,8 +123,14 @@ export function SceneReadoutBand({
   return (
     <LugarReservado
       marca="faixa"
-      // ⚠️ O fundo e a borda moram no lugar de FORA: a altura reservada é dele, e a tira continua inteira.
-      className={`bg-card ${colada ? 'border-b border-border' : 'mb-2 rounded-2xl border border-border'}`}
+      // ⚠️ O fundo e a linha moram no lugar de FORA: a altura reservada é dele, e a tira continua inteira.
+      // ⚠️⚠️ A linha é SOMBRA por dentro, e não `border`: a altura mínima que o lugar reserva é a do
+      // conteúdo, e com `border-box` a borda de 1px saía dela (medido: a faixa ia de 69 para 68 no toque).
+      className={`bg-card ${
+        colada
+          ? 'shadow-[inset_0_-1px_0_var(--color-border)]'
+          : 'mb-2 rounded-2xl ring-1 ring-border ring-inset'
+      }`}
       molde={
         <div className="grid" aria-hidden>
           {candidatos.map((rows, i) => (

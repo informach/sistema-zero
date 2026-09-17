@@ -140,7 +140,9 @@ export function ExplorationPieces({
             ]}
             atual={state.lifeline.onHit ? 'bater' : 'fora'}
             travada={travada}
-            onMover={(caixa) => dispatch({ type: 'connect', port: 'life', enabled: caixa === 'bater' })}
+            onMover={(caixa) =>
+              dispatch({ type: 'connect', port: 'life', enabled: caixa === 'bater' })
+            }
           />
         </div>
       )}

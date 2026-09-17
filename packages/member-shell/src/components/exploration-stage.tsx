@@ -228,9 +228,7 @@ export function ExplorationStage({
   // palco compartilhado desenhava a mesma pista para as seis (o triângulo sem função, "removidos"
   // desde a abertura, a floresta escondendo o Dino inteiro), e cada uma precisa ver outra coisa.
   if (m === 'layers')
-    return (
-      <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={escondida} />
-    )
+    return <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={escondida} />
   if (m === 'jump-sound')
     return (
       <JumpSoundStage

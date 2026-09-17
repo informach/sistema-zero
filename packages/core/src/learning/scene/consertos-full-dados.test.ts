@@ -167,9 +167,9 @@ describe('MÉDIO-3: a meta que saiu do catálogo não esconde o bloco nem trava 
   test('⚠️⚠️ só metas que saíram: a missão volta a ser a do modelo, e não uma missão VAZIA', () => {
     const atividade = coordenadas(['same-x']).activity as ExperimentationActivity
     expect(sceneTargets(atividade)).toEqual(sceneDefaultGoalIds('coordinates'))
-    expect(sceneTargets(coordenadas(['same-x', 'down']).activity as ExperimentationActivity)).toEqual(
-      ['down'],
-    )
+    expect(
+      sceneTargets(coordenadas(['same-x', 'down']).activity as ExperimentationActivity),
+    ).toEqual(['down'])
   })
 
   test('⚠️⚠️ a AUTORIA segue recusando; a LEITURA aceita, pelos dois lados do deploy', () => {

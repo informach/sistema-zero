@@ -127,7 +127,9 @@ describe('M1 · a pista congela no clique e vira "Feito" quando a meta dela cai'
     expect(caixa()?.textContent).not.toContain('Aperte o botão da borda.')
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
     await waitFor(() =>
-      expect(caixa()?.textContent).toContain('Com a borda à vista, diminua a largura e olhe a borda.'),
+      expect(caixa()?.textContent).toContain(
+        'Com a borda à vista, diminua a largura e olhe a borda.',
+      ),
     )
   })
 })
@@ -180,7 +182,17 @@ function medidasFalsas(alturaPeloTexto: (texto: string) => number) {
   } as unknown as typeof ResizeObserver
   HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
     const altura = alturaPeloTexto(this.textContent ?? '')
-    return { x: 0, y: 0, top: 0, left: 0, width: 600, height: altura, right: 600, bottom: altura, toJSON: () => ({}) }
+    return {
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      width: 600,
+      height: altura,
+      right: 600,
+      bottom: altura,
+      toJSON: () => ({}),
+    }
   }
   return () => {
     globalThis.ResizeObserver = roOriginal
@@ -228,7 +240,9 @@ describe('M4 · layers: "Descobertas 2 de 3" até a terceira troca, sem "2 de 2"
     expect(screen.queryByText('Descobertas 2 de 2')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
     expect(
-      await screen.findByText('Ainda não. Tente: leve o Dino de novo para o fim da ordem de desenhar.'),
+      await screen.findByText(
+        'Ainda não. Tente: leve o Dino de novo para o fim da ordem de desenhar.',
+      ),
     ).toBeTruthy()
     fireEvent.click(await screen.findByRole('button', { name: /^Descer / }))
     expect((await screen.findAllByText('Você descobriu!')).length).toBeGreaterThan(0)
@@ -243,10 +257,18 @@ describe('M6 · o que o desenho diz a quem não enxerga segue o véu do palpite'
     const { container } = render(
       <>
         <ExplorationStage activity={activity} state={estado} dispatch={noop} escondida />
-        <ExplorationPieces activity={activity} state={estado} dispatch={noop} more={false} escondida />
+        <ExplorationPieces
+          activity={activity}
+          state={estado}
+          dispatch={noop}
+          more={false}
+          escondida
+        />
       </>,
     )
-    expect(container.querySelector('desc')?.textContent).toBe('A ordem de desenhar, ainda escondida.')
+    expect(container.querySelector('desc')?.textContent).toBe(
+      'A ordem de desenhar, ainda escondida.',
+    )
     expect(container.textContent).not.toContain('A floresta fica na frente')
     expect(screen.getByRole('button', { name: 'Descer ? para o 2º lugar' })).toBeTruthy()
     const pilha = container.querySelector('ol[data-pilha]')

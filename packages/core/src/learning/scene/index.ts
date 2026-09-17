@@ -278,7 +278,9 @@ export function sceneTargets(activity: SceneActivity): readonly string[] {
   // ⚠️⚠️ Pela LEITURA TOLERANTE (`sceneSetupGoals`): a meta que saiu do catálogo não esvazia a missão
   // (vazia, ela reprovaria para sempre) e a sucessora entra no lugar. Player e members leem daqui.
   const alvo =
-    activity.type === 'experimentation' ? sceneSetupGoals(activity.scene, activity.setup?.goals) : []
+    activity.type === 'experimentation'
+      ? sceneSetupGoals(activity.scene, activity.setup?.goals)
+      : []
   return alvo.length ? alvo : sceneDefaultGoalIds(activity.scene)
 }
 
@@ -295,18 +297,20 @@ export function sceneTargets(activity: SceneActivity): readonly string[] {
  * `two-cells` e a `separate` não têm par.
  * ⚠️ Meta que sair do catálogo entra nesta tabela no mesmo commit.
  */
-export const SCENE_RETIRED_GOALS: ReadonlyMap<SceneId, ReadonlyMap<string, string | null>> =
-  new Map<SceneId, ReadonlyMap<string, string | null>>([
-    ['coordinates', new Map([['same-x', null]])],
-    ['hitbox', new Map([['separate', null]])],
-    [
-      'sheet-vs-sprite',
-      new Map<string, string | null>([
-        ['cut', 'crop-whole'],
-        ['two-cells', null],
-      ]),
-    ],
-  ])
+export const SCENE_RETIRED_GOALS: ReadonlyMap<
+  SceneId,
+  ReadonlyMap<string, string | null>
+> = new Map<SceneId, ReadonlyMap<string, string | null>>([
+  ['coordinates', new Map([['same-x', null]])],
+  ['hitbox', new Map([['separate', null]])],
+  [
+    'sheet-vs-sprite',
+    new Map<string, string | null>([
+      ['cut', 'crop-whole'],
+      ['two-cells', null],
+    ]),
+  ],
+])
 
 /**
  * As metas do caso que ESTA cena conhece, na ordem do professor: a sucessora no lugar da que saiu, e

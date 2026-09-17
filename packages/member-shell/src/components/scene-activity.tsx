@@ -18,6 +18,7 @@ import {
   type SceneCast,
   type SceneCommand,
   type SceneEvent,
+  type SceneHintStep,
   type SceneState,
   sceneClockShouldStop,
   sceneDefaultGoalIds,
@@ -26,7 +27,6 @@ import {
   sceneGoals,
   sceneHint,
   sceneHintDone,
-  type SceneHintStep,
   sceneHintStep,
   sceneScript,
   sceneSegmentHasClock,
@@ -1618,7 +1618,11 @@ export function SceneActivityView({
                 className="flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
               >
                 {pistaFeita ? (
-                  <Check size={18} className="mt-0.5 shrink-0 text-success-foreground" aria-hidden />
+                  <Check
+                    size={18}
+                    className="mt-0.5 shrink-0 text-success-foreground"
+                    aria-hidden
+                  />
                 ) : (
                   <Lightbulb size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden />
                 )}
@@ -1889,6 +1893,9 @@ function tempoDoPalpite(frase: string): number {
  * mandava fazer o que a criança tinha acabado de fazer. ⚠️ Sem ponto de exclamação duplo nem jargão.
  */
 const PISTA_FEITA = '✓ Feito! Se precisar, peça outra pista.'
+
+/** O recado do servidor de outra versão das regras (ver `servidorDeOutraVersao`). */
+const ATIVIDADE_MUDOU = 'Esta atividade mudou.'
 
 /** Os dois conjuntos de metas são o MESMO (a ordem não importa). */
 function mesmoConjunto(a: readonly string[], b: readonly string[]): boolean {

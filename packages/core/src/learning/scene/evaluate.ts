@@ -312,10 +312,9 @@ function degrau(
   )
     return t('Agora pule tocando no Dino. Olhe se aparece um ♪.', ['silent-jump'])
   if (scene === 'jump-sound' && d.includes('silent-jump') && !d.includes('every-jump') && level < 3)
-    return t(
-      'Leve Tocar som para Quando o Dino pular. Depois pule pela tecla e tocando no Dino.',
-      ['every-jump'],
-    )
+    return t('Leve Tocar som para Quando o Dino pular. Depois pule pela tecla e tocando no Dino.', [
+      'every-jump',
+    ])
   if (scene === 'impulse' && d.includes('first-height') && level < 3)
     return t('A marca deste salto fica no palco. Mude só o impulso e pule de novo.', [
       'other-height',
@@ -398,7 +397,8 @@ function degrau(
   const pistas = emCamadas(scene, pilha) ? LAYERS_CAMADAS.hints : sceneModel(scene).hints
   const metas = PISTA_DA_META[scene]
   const escada = pistas.map((texto, i) => ({ texto, metas: metas[i] ?? ([] as const) }))
-  const serve = (p: { metas: PistaMeta } | undefined) => Boolean(p) && !pistaCumprida(p?.metas ?? [], d)
+  const serve = (p: { metas: PistaMeta } | undefined) =>
+    Boolean(p) && !pistaCumprida(p?.metas ?? [], d)
   const n = Math.min(Math.max(level, 1), escada.length) - 1
   const escolhida = serve(escada[n])
     ? escada[n]
