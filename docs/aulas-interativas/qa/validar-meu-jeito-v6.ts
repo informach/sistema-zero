@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
+  blockCheckpoint,
   evaluateLearning,
   isLearningAnswers,
   isLearningManifest,
   sectionCompletionIssues,
 } from '../../../packages/core/src/learning'
 import { packAnimationsGeometry } from '../../../packages/pinta/src/export/spritesheet'
+import { conferirCenasNoRoteiro, eCena } from './cenas-editorial'
+import { gravarGeracao } from './gravar-geracao'
 import { earlyRecipes } from './meu-jeito-aulas-01-04'
 import { lateRecipes } from './meu-jeito-aulas-05-08'
 import { buildLesson, originalOf, plain, scriptMarkdown } from './meu-jeito-editorial'
@@ -82,17 +85,47 @@ for (let lesson = 1; lesson <= 8; lesson++) {
   for (const section of sections) {
     assert.equal(section.workspaceBlockId, null)
     assert(script.includes(section.title))
+    // ⚠️ A demonstração começa pelo clipe e pode terminar numa cena que toca sozinha (desde 15/09/2026).
+    // A regra antiga, de um bloco só por seção de observar, foi revogada pelo redesenho das 45 cenas.
     if (section.intent === 'demonstration' || section.intent === 'presentation') {
-      assert.equal(section.blockIds.length, 1)
+      assert(section.blockIds.length === 1 || section.blockIds.length === 2)
       assert.equal(section.externalTool, null)
       assert(manifest.blocks.some((b) => b.key === section.blockIds[0] && 'plannedVideo' in b))
+      if (section.blockIds.length === 2) {
+        const chave = section.blockIds[1]
+        const cena = manifest.blocks.find((b) => b.key === chave)
+        assert(cena && eCena(cena) && cena.content.activity.type === 'demonstration')
+        assert.deepEqual(section.completion?.blockIds, [chave])
+      }
     }
     if (section.intent === 'exploration') assert.equal(section.externalTool, null)
   }
   let interactions = 0
+  let cenas = 0
   for (const b of manifest.blocks) {
     if (!('content' in b) || b.content.kind !== 'interactive') continue
     const block = b.content
+    // ⚠️ Quatro experimentações e seis demonstrações viraram cenas nativas (15/09/2026). A cena traz a
+    // própria evidência: responder certo sem ter mexido nela não conclui, e a demonstração não tem
+    // pergunta. A regra antiga, de que todo bloco interativo tinha `checkpoint`, foi revogada.
+    if (eCena(b)) {
+      cenas++
+      const pergunta = blockCheckpoint(block)
+      assert.equal(
+        evaluateLearning(block, {}).passed,
+        false,
+        `${slug}/${b.key}: sem cena não conclui`,
+      )
+      if (block.activity.type === 'experimentation') {
+        assert(pergunta, `${slug}/${b.key}: a experimentação termina numa pergunta`)
+        assert.equal(
+          evaluateLearning(block, { checkpoint: pergunta.correctChoiceId }).passed,
+          false,
+          `${slug}/${b.key}: a resposta certa sem a cena não conclui`,
+        )
+      } else assert(!pergunta, `${slug}/${b.key}: a demonstração não cobra pergunta`)
+      continue
+    }
     assert(block.checkpoint)
     assert.equal(evaluateLearning(block, {}).passed, false)
     const wrong = block.checkpoint.choices.find(
@@ -117,6 +150,11 @@ for (let lesson = 1; lesson <= 8; lesson++) {
   assert(quiz && 'content' in quiz && quiz.content.kind === 'quiz')
   assert.equal(quiz.content.questions.length, 2)
   if (lesson === 8) assert.equal(recipe.steps[0]?.key, 'publicar')
+  assert.deepEqual(
+    conferirCenasNoRoteiro(slug, manifest, montage, script, recipe.cenasAnteriores),
+    [],
+    `${slug}: cenas e marcas no roteiro`,
+  )
   results.push({
     lesson: slug,
     sourceHash: original.hash,
@@ -124,6 +162,7 @@ for (let lesson = 1; lesson <= 8; lesson++) {
     clips: montage.clips.length,
     demonstrations: sections.filter((s) => s.intent === 'demonstration').length,
     experiments: interactions,
+    cenas,
     gallery: recipe.tool,
     quizQuestions: quiz.content.questions.length,
   })
@@ -158,19 +197,17 @@ for (const [size, name] of [
 const report = {
   status: 'passed',
   scope:
-    'Oito fontes e hashes, todas as Partes, 55 recortes por âncoras, geração reproduzível, manifestos, critérios de progressão com galeria previamente configurada, respostas corretas/incorretas e geometria real de exportação. Não comprova importação em conta real, mídia editada, qualidade artística, jogabilidade das criações dos alunos ou publicação.',
+    'Oito fontes e hashes, todas as Partes, 55 recortes por âncoras, geração reproduzível, manifestos, critérios de progressão com galeria previamente configurada, cenas descritas no roteiro com os textos de hoje, respostas corretas/incorretas e geometria real de exportação. Não comprova importação em conta real, mídia editada, qualidade artística, jogabilidade das criações dos alunos ou publicação.',
   totals: {
     lessons: results.length,
     sections: results.reduce((n, r) => n + r.sections, 0),
     clips: results.reduce((n, r) => n + r.clips, 0),
     demonstrations: results.reduce((n, r) => n + r.demonstrations, 0),
     experiments: results.reduce((n, r) => n + r.experiments, 0),
+    cenas: results.reduce((n, r) => n + r.cenas, 0),
     quizQuestions: results.reduce((n, r) => n + r.quizQuestions, 0),
   },
   results,
 }
-writeFileSync(
-  resolve(import.meta.dir, 'meu-jeito-v6-verificacao.json'),
-  `${JSON.stringify(report, null, 2)}\n`,
-)
+gravarGeracao([[resolve(import.meta.dir, 'meu-jeito-v6-verificacao.json'), report]])
 console.log(JSON.stringify(report.totals))

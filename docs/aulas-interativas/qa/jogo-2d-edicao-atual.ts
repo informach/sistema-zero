@@ -42,13 +42,14 @@ export function currentStudioDirections(source: string): string {
 }
 
 export function currentStudioRecipe<
-  T extends { steps: { say: string; visual?: string; edit?: string }[] },
+  T extends { steps: { say?: string; visual?: string; edit?: string }[] },
 >(recipe: T): T {
   return {
     ...recipe,
     steps: recipe.steps.map((step) => ({
       ...step,
-      say: currentStudioDirections(step.say),
+      // ⚠️ A cena não tem fala: a instrução dela mora no bloco e não passa por esta tradução.
+      ...(step.say !== undefined ? { say: currentStudioDirections(step.say) } : {}),
       ...(step.visual ? { visual: currentStudioDirections(step.visual) } : {}),
       ...(step.edit ? { edit: currentStudioDirections(step.edit) } : {}),
     })),

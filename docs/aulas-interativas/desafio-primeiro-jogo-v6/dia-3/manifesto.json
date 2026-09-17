@@ -93,30 +93,67 @@
         "activity": {
           "type": "demonstration",
           "scene": "velocity",
-          "cast": { "hero": { "name": "pedra", "gender": "f", "plural": "pedras" } },
+          "cast": {
+            "hero": {
+              "name": "pedra",
+              "gender": "f",
+              "plural": "pedras"
+            }
+          },
           "setup": {
             "actions": [
-              { "type": "velocity", "vx": 10, "vy": -5 },
-              { "type": "advance", "seconds": 3.6 },
-              { "type": "velocity", "vx": 0, "vy": -5 },
-              { "type": "advance", "seconds": 3.4 },
-              { "type": "velocity", "vx": 0, "vy": 0 }
+              {
+                "type": "velocity",
+                "vx": 10,
+                "vy": -5
+              },
+              {
+                "type": "advance",
+                "seconds": 3.6
+              },
+              {
+                "type": "velocity",
+                "vx": 0,
+                "vy": -5
+              },
+              {
+                "type": "advance",
+                "seconds": 3
+              },
+              {
+                "type": "velocity",
+                "vx": 0,
+                "vy": 0
+              }
             ]
           },
           "script": [
             {
               "id": "passo-1",
-              "caption": "A pedra nasce em y −40, na faixa fora da tela. Quem joga ainda não vê a pedra.",
+              "caption": "A pedra nasce em y −30, na faixa fora da tela. Quem joga ainda não vê a pedra.",
               "highlight": "scene",
-              "actions": [{ "type": "velocity", "vx": 0, "vy": 0 }]
+              "actions": [
+                {
+                  "type": "velocity",
+                  "vx": 0,
+                  "vy": 0
+                }
+              ]
             },
             {
               "id": "passo-2",
               "caption": "Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.",
               "highlight": "scene",
               "actions": [
-                { "type": "velocity", "vx": 0, "vy": 3 },
-                { "type": "advance", "seconds": 3 }
+                {
+                  "type": "velocity",
+                  "vx": 0,
+                  "vy": 3
+                },
+                {
+                  "type": "advance",
+                  "seconds": 3
+                }
               ],
               "waitFor": "down"
             },
@@ -125,8 +162,15 @@
               "caption": "Velocidade 0: a pedra para onde chegou.",
               "highlight": "scene",
               "actions": [
-                { "type": "velocity", "vx": 0, "vy": 0 },
-                { "type": "advance", "seconds": 1 }
+                {
+                  "type": "velocity",
+                  "vx": 0,
+                  "vy": 0
+                },
+                {
+                  "type": "advance",
+                  "seconds": 1
+                }
               ],
               "waitFor": "stopped"
             }
@@ -135,7 +179,10 @@
         "prediction": {
           "prompt": "Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?",
           "choices": [
-            { "id": "aumenta", "label": "O y aumenta" },
+            {
+              "id": "aumenta",
+              "label": "O y aumenta"
+            },
             {
               "id": "diminui",
               "label": "O y diminui",
@@ -210,7 +257,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "O que muda quando o intervalo cai de 40 para 20 quadros?",
+            "prompt": "Na cena, o relógio esperava 2 segundos entre um asteroide e outro. Você troca para meio segundo. O que muda?",
             "choices": [
               {
                 "id": "a",
@@ -218,11 +265,11 @@
               },
               {
                 "id": "b",
-                "label": "Cada asteroide passa a cair duas vezes mais rápido."
+                "label": "Cada asteroide passa a cair mais rápido."
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "Intervalo controla nascimento; vy controla a queda."
+            "explanation": "O relógio só decide de quanto em quanto tempo nasce um asteroide: esperando menos, nascem mais no mesmo tempo. Quem faz cada um descer é o vy."
           },
           {
             "id": "q2",

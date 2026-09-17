@@ -7,7 +7,17 @@ import type {
   SectionProjectCheck,
   SectionStructureRule,
 } from '../../../packages/core/src/learning'
-import { SCENE_MODELS, type SceneId } from '../../../packages/core/src/learning/scene'
+import {
+  blocoDaCena,
+  type CenaAnterior,
+  type CenaDaAula,
+  cenaAnteriorMarkdown,
+  cenaMarkdown,
+  cenasDaMontagem,
+  eCena,
+  intencaoDaCena,
+  marcarCenasAnteriores,
+} from './cenas-editorial'
 import {
   annotateStudioRecording,
   currentStudioRecipe,
@@ -43,13 +53,18 @@ export interface Step {
   kind: 'build' | 'observe' | 'experiment'
   focus: string
   reason: string
-  say: string
+  /** A fala do clipe e da orientação. A experimentação não tem: a instrução mora na cena. */
+  say?: string
   part?: number
   from?: string
   to?: string
   edit?: string
   visual?: string
-  mission?: SceneId
+  /**
+   * A cena da seção. Na experimentação é a atividade inteira; na observação vem logo depois do clipe e
+   * é ela que conclui a seção.
+   */
+  cena?: CenaDaAula
   checks?: Check[]
 }
 export interface Recipe {
@@ -61,6 +76,8 @@ export interface Recipe {
   test: string
   corrections: string[]
   quiz: [string, string, string, string][] // question, correct, distractor, explanation
+  /** Clipes que mostram ou descrevem a experiência num estado que não existe mais, pela chave do clipe. */
+  cenasAnteriores?: Record<string, CenaAnterior>
 }
 export type SourcePart = { heading: string; narration: string; stage: string }
 export function readOriginal(directory: string, lesson: number) {
@@ -171,6 +188,7 @@ export function buildEditorial(
     objective: string,
     keys: string[],
     checks?: Check[],
+    concluiCom?: string[],
   ) {
     sections.push({
       key,
@@ -183,7 +201,7 @@ export function buildEditorial(
       pendingMedia: [],
       completion: {
         version: 1,
-        blockIds: checks ? [] : keys.filter((k) => !k.startsWith('fala-')),
+        blockIds: concluiCom ?? (checks ? [] : keys.filter((k) => !k.startsWith('fala-'))),
         ...(checks ? { projectChecks: checks } : {}),
       },
     })
@@ -198,26 +216,20 @@ export function buildEditorial(
       recipe.entry,
     ),
   ])
+  const noFim: LearningManifest['blocks'] = []
+  const cena = (dado: CenaDaAula) => {
+    ;(dado.noFimDaLista ? noFim : blocks).push(blocoDaCena(dado))
+    return dado.chave
+  }
   for (const step of recipe.steps) {
     if (step.kind === 'experiment') {
-      if (!step.mission) throw new Error(`Missão ausente: ${step.key}`)
-      const definition = SCENE_MODELS[step.mission]
-      const key = `experiencia-${step.key}`
-      blocks.push({
-        key,
-        content: {
-          kind: 'interactive',
-          title: step.title,
-          instructions: step.say,
-          hints: [...definition.hints],
-          required: false,
-          activity: { type: 'experimentation', scene: step.mission },
-        },
-      })
-      section(step.key, step.title, 'exploration', step.focus, [key])
+      if (step.cena?.bloco.activity.type !== 'experimentation')
+        throw new Error(`Experimentação sem cena: ${step.key}`)
+      section(step.key, step.title, 'exploration', step.focus, [cena(step.cena)])
     } else {
       const part = original.parts.find((part) => part.heading.startsWith(`Parte ${step.part}.`))
       if (!part) throw new Error(`Parte ausente: ${step.key}`)
+      if (step.say === undefined) throw new Error(`Fala ausente: ${step.key}`)
       const key = video(
         `video-${step.key}`,
         part,
@@ -227,8 +239,21 @@ export function buildEditorial(
         step.from,
         step.to,
       )
-      if (step.kind === 'observe') section(step.key, step.title, 'demonstration', step.focus, [key])
+      if (step.kind === 'observe' && step.cena) {
+        const chave = cena(step.cena)
+        section(
+          step.key,
+          step.title,
+          intencaoDaCena(step.cena),
+          step.focus,
+          [key, chave],
+          undefined,
+          [chave],
+        )
+      } else if (step.kind === 'observe')
+        section(step.key, step.title, 'demonstration', step.focus, [key])
       else {
+        if (step.cena) throw new Error(`Construção com cena ainda não prevista: ${step.key}`)
         blocks.push({
           key: `fala-${step.key}`,
           content: { kind: 'dialogue', pose: 'speaking', text: step.say },
@@ -276,6 +301,7 @@ export function buildEditorial(
     'Explicar as relações que acabamos de construir.',
     ['quiz-final'],
   )
+  blocks.push(...noFim)
   manifest.title = recipe.title
   manifest.blocks = blocks
   manifest.sections = sections
@@ -289,7 +315,8 @@ export function buildEditorial(
       sourceFile: original.file,
       sourceHash: original.hash,
       status: 'Âncoras do roteiro conferidas. Timecodes e edição dependem dos vídeos gravados.',
-      clips,
+      clips: marcarCenasAnteriores(manifest.lessonSlug, clips, recipe.cenasAnteriores),
+      cenas: cenasDaMontagem(manifest),
       studio: lessonStudioEdition(manifest),
     },
     recipe,
@@ -298,10 +325,22 @@ export function buildEditorial(
 
 export function editorialMarkdown(result: ReturnType<typeof buildEditorial>) {
   const { manifest, recipe, montage } = result
+  const blocoDaSecao = (chave: string) => {
+    const block = manifest.blocks.find((b) => b.key === chave)
+    if (!block || !eCena(block)) throw new Error(`Cena ausente do manifesto: ${chave}`)
+    return block.content
+  }
+  const clipeMarkdown = (clip: (typeof montage.clips)[number]) => [
+    `**Fonte:** ${clip.sourceFile} → ${clip.sourceSection}.`,
+    '',
+    `**Montagem:** ${clip.edit}`,
+    '',
+    ...(clip.cenaAnterior ? [cenaAnteriorMarkdown(clip.cenaAnterior), ''] : []),
+  ]
   const text = [
     `# ${manifest.lessonSlug} — ${recipe.title}`,
     '',
-    'Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.',
+    'Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.',
     '',
     `**Entrada:** ${recipe.entry}`,
     '',
@@ -328,50 +367,60 @@ export function editorialMarkdown(result: ReturnType<typeof buildEditorial>) {
       '',
       `**Foco:** ${step.focus}`,
       '',
-      `**Fala de ligação / orientação ao aluno:** “${step.say}”`,
-      '',
     )
     if (step.kind === 'experiment') {
-      const definition = SCENE_MODELS[step.mission!]
-      text.push(
-        `**Experiência nativa:** ${step.mission}. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.`,
-        '',
-        `**Conclusão observável:** ${definition.goals.map((goal) => goal.label).join('; ')}.`,
-        '',
-        '**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.',
-        '',
-      )
-    } else {
-      const clip = montage.clips.find((clip) => clip.key === `video-${step.key}`)!
-      text.push(
-        `**Fonte:** ${clip.sourceFile} → ${clip.sourceSection}.`,
-        '',
-        `**Montagem:** ${clip.edit}`,
-        '',
-        `**Na tela:** ${clip.visual}`,
-        '',
-        `**Trecho original selecionado, antes da edição:** ${clip.narration}`,
-        '',
-      )
-      if (step.kind === 'observe')
-        text.push(
-          '**Aluno:** assiste, pausa ou revê. Sem alterar parâmetros e sem converter esta seção em experimentação. Conclui com 90% do clipe assistido.',
-          '',
-        )
-      else
-        text.push(
-          '**Aluno:** assiste ao gesto, pausa, monta no Estúdio já aberto e usa Conferir. Assistir ao vídeo não substitui a construção.',
-          '',
-          '**Critérios automáticos:**',
-          '',
-          ...(step.checks ?? []).map((check) => `- ${check.label}`),
-          '',
-          '**Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.',
-          '',
-        )
+      text.push(...cenaMarkdown(blocoDaSecao(step.cena!.chave)))
+      continue
     }
+    text.push(`**Fala de ligação / orientação ao aluno:** “${step.say}”`, '')
+    const clip = montage.clips.find((clip) => clip.key === `video-${step.key}`)!
+    text.push(
+      ...clipeMarkdown(clip),
+      `**Na tela:** ${clip.visual}`,
+      '',
+      `**Trecho original selecionado, antes da edição:** ${clip.narration}`,
+      '',
+    )
+    if (step.kind === 'observe' && step.cena)
+      text.push(
+        `**Aluno:** assiste ao clipe, pausa ou revê. Depois, na mesma seção, abre a cena abaixo. É a cena que conclui a seção.`,
+        '',
+        '#### A cena depois do clipe',
+        '',
+        ...cenaMarkdown(blocoDaSecao(step.cena.chave)),
+      )
+    else if (step.kind === 'observe')
+      text.push(
+        '**Aluno:** assiste, pausa ou revê. Sem alterar parâmetros e sem converter esta seção em experimentação. Conclui com 90% do clipe assistido.',
+        '',
+      )
+    else
+      text.push(
+        '**Aluno:** assiste ao gesto, pausa, monta no Estúdio já aberto e usa Conferir. Assistir ao vídeo não substitui a construção.',
+        '',
+        '**Critérios automáticos:**',
+        '',
+        ...(step.checks ?? []).map((check) => `- ${check.label}`),
+        '',
+        '**Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.',
+        '',
+      )
   }
+  const abertura = montage.clips.find((clip) => clip.key === 'video-abertura-editorial')!
+  const fecho = montage.clips.find((clip) => clip.key === 'video-fecho-editorial')!
   text.push(
+    '## Clipes de abertura e fecho',
+    '',
+    '### Abertura',
+    '',
+    `**Ponte nova:** “${abertura.newNarration}”`,
+    '',
+    ...clipeMarkdown(abertura),
+    '### Fecho',
+    '',
+    `**Ponte nova:** “${fecho.newNarration}”`,
+    '',
+    ...clipeMarkdown(fecho),
     '## Conferência final e quiz',
     '',
     recipe.test,

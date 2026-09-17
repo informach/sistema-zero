@@ -88,6 +88,15 @@
       "outSeconds": null
     }
   ],
+  "cenas": [
+    {
+      "secao": "estado-modelo",
+      "bloco": "experiencia-estado-modelo",
+      "cena": "game-state",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    }
+  ],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

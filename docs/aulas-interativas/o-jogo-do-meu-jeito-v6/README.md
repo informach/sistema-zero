@@ -1,6 +1,6 @@
 # O jogo do meu jeito — revisão das oito aulas gravadas
 
-As oito aulas foram refeitas a partir dos roteiros originais: **76 seções, 13 demonstrações, 5 experimentos funcionais, 55 clipes planejados, 8 entregas pela galeria e 16 perguntas de quiz final**. Cada aula original continua sendo uma aula. Os arquivos originais foram apenas lidos e preservados; os vídeos ainda precisam de recorte e complementos.
+As oito aulas foram refeitas a partir dos roteiros originais: **76 seções, 13 seções de observação, 5 seções de experimentação, 55 clipes planejados, 8 entregas pela galeria e 16 perguntas de quiz final**. As experiências são **10 cenas nativas** (4 de experimentar e 6 de demonstrar) e **1 comparação em HTML** (a dos quadros, na aula 3). Cada aula original continua sendo uma aula. Os arquivos originais foram apenas lidos e preservados; os vídeos ainda precisam de recorte e complementos.
 
 Em cada pasta, `roteiro.md` apresenta o percurso, as falas revisadas, o trabalho da criança e os critérios do professor. `manifesto.json` organiza os blocos e a conclusão das seções. `montagem.json` identifica os trechos do roteiro gravado por entrada e saída, com instruções de corte, substituição de fala e imagem. Não há minutagens inventadas nem vídeos já editados neste pacote.
 
@@ -9,10 +9,10 @@ Em cada pasta, `roteiro.md` apresenta o percurso, as falas revisadas, o trabalho
 | Aula | Como fica a experiência | Criação entregue |
 | --- | --- | --- |
 | [1 — Seu jogo no Estúdio Completo](aula-01/roteiro.md) | Observar a lista e a ponte da cópia; criar um projeto de teste; importar o Dia 5; salvar e reencontrar o cartão certo | Jogo importado do Desafio, separado do projeto vazio |
-| [2 — Desenhe a sua nave](aula-02/roteiro.md) | Preparar o quadro; experimentar o espelho; contorno; cor; observar volume; luz/sombra; entender salvamento | `nave`, pixel art, Personagem 32 × 32, espaço inferior para o motor |
+| [2 — Desenhe a sua nave](aula-02/roteiro.md) | Preparar o quadro; experimentar os dois espelhos na cena `symmetry`; contorno; cor; ver a luz na cena `shading`; luz/sombra; entender salvamento | `nave`, pixel art, Personagem 32 × 32, espaço inferior para o motor |
 | [3 — O motor ganha movimento](aula-03/roteiro.md) | Observar o livrinho; desenhar fogo-base; comparar quadros iguais/diferentes; duplicar e mover a ponta; observar fantasma; conferir e nomear | `nave`, animação `voando`, dois quadros, 8 fps |
 | [4 — Asteroide em vetor](aula-04/roteiro.md) | Preparar o quadro; observar preenchimento/contorno; traçar; suavizar; copiar crateras; comparar bordas | `asteroide`, vetor, Personagem 64 × 64, espaço superior para a chama |
-| [5 — Chama e animação](aula-05/roteiro.md) | Comparar ordem das formas; construir chama externa/interna; observar mudança local; duplicar, ajustar e nomear | Nave e asteroide juntos; `girando` com dois quadros, 8 fps |
+| [5 — Chama e animação](aula-05/roteiro.md) | Mudar as camadas na cena `layers`, que fala com os botões do painel Camadas do Pinta; construir chama externa/interna; observar mudança local; duplicar, ajustar e nomear | Nave e asteroide juntos; `girando` com dois quadros, 8 fps |
 | [6 — A nave entra no jogo](aula-06/roteiro.md) | Trazer as duas artes; substituir o criador; observar a folha inteira; experimentar o recorte; carregar folha; animar e testar | Mesmo jogo, nave própria em 54 × 54 e folha com quadros 32 × 32 |
 | [7 — Os asteroides entram](aula-07/roteiro.md) | Carregar folha 64 × 64; observar tempo do jogo versus quadros da animação; trocar criador preservando o sorteio; animar cada nascimento | Mesmo jogo com as duas artes, regras e reinício preservados |
 | [8 — Publique o jogo](aula-08/roteiro.md) | Publicar primeiro e conferir no Mural; observar possibilidades futuras de versões, ideias e ajuda; enviar o projeto e link; fechar o curso | Projeto final; professor confere a publicação pelo endereço enviado |
@@ -22,8 +22,8 @@ Em cada pasta, `roteiro.md` apresenta o percurso, as falas revisadas, o trabalho
 | Formato | Professor | Criança | Conclusão |
 | --- | --- | --- | --- |
 | Apresentação | Recorta resultado e abertura da aula | Assiste, pausa ou revê | 90% do vídeo isolado |
-| Demonstração | Mostra uma relação com imagem e fala; sem controles de manipulação | Observa, pausa ou revê | 90% do vídeo isolado; não vira experimento |
-| Experimentação | Usa um dos cinco exemplos delimitados deste pacote | Escolhe duas situações, testa e guarda cada resultado; responde uma pergunta | Participação registrada no navegador e resposta corrigida no servidor |
+| Demonstração | Mostra a relação no clipe e, em seis seções, numa cena que toca sozinha | Observa, pausa ou revê; na cena guiada avança parte por parte e termina em "Agora é sua vez" | 90% do vídeo isolado ou a cena vista até o fim |
+| Experimentação | Escolhe a cena e o elenco (ou, na aula 3, a comparação em HTML) | Aposta antes de mexer, mexe até as descobertas caírem, pede pista e responde a pergunta | As descobertas da cena mais a resposta, corrigida no servidor |
 | Aplicação | Seleciona clipe do gesto e critérios de conferência da criação | Pausa, usa a ferramenta completa em outra aba e volta à aula | Uma pergunta verifica compreensão; a montagem/desenho será revisada na entrega |
 | Entrega | Configura seleção da galeria e revisa a criação recebida | Seleciona a criação já salva na conta e envia | Recebimento confirmado; não é nota automática de beleza ou jogabilidade |
 | Fechamento e quiz | Retoma o resultado e seleciona duas questões | Assiste e responde; pode rever e tentar novamente | Vídeo isolado e acerto das duas questões |
@@ -44,11 +44,10 @@ As duas perguntas do quiz final evitam repetir todas as checagens feitas durante
 
 | Arquivo | Única variável | O que fica fixo | Resultado observado |
 | --- | --- | --- | --- |
-| [espelho.html](interacoes/espelho.html) | Espelho desligado/ligado | Mesmo traço e mesmo eixo | Um ou dois traços correspondentes |
 | [quadros.html](interacoes/quadros.html) | Fogo igual/diferente no segundo quadro | Corpo, posição, dois quadros, 8 fps | Aparência estática ou pulsação |
-| [bordas.html](interacoes/bordas.html) | Ampliação 1×/8× | Mesma forma em pixels e vetor | Degraus dos pixels e redesenho das linhas |
-| [ordem.html](interacoes/ordem.html) | Quem está na frente | Mesmas formas e posições | Pedra coberta ou inteira à frente |
-| [folha.html](interacoes/folha.html) | Largura do recorte 16/32 | Altura 32, folha 64 × 32, sprite 54 × 54 | Parte do desenho ou quadro inteiro |
+
+O espelho, as bordas de pixel e vetor, a ordem das formas e a largura do recorte viraram cenas nativas
+(`symmetry`, `pixel-vector`, `layers` e `sheet-vs-sprite`): os HTML deles saíram do repositório.
 
 São fragmentos HTML incorporados ao manifesto e executados no iframe isolado existente, sem rede, cookies ou acesso à galeria. Não são o motor do Estúdio nem uma cópia do Pinta. Guardam escolhas e observações pelo protocolo do player. A pergunta e o gabarito ficam fora do iframe; a participação do HTML continua sendo evidência declarada pelo cliente, não uma execução revalidada pelo servidor como nas experiências nativas do Dino.
 

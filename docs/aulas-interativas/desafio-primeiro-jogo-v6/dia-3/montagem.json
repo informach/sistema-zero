@@ -53,7 +53,7 @@
       "exit": " menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
       "narration": "Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um asteroide e encaixa dentro do A cada 40 quadros. Confere se o grupo é o asteroides. E onde ele nasce? Aqui vem um truque novo. Se todo asteroide nascesse no mesmo lugar, o jogo ficava fácil demais: era só ficar longe daquele ponto. Mas a gente quer surpresa. Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um x aleatório na tela e arrasta ele pra cima do número que já vem no x, até encaixar. Aleatório quer dizer sorteado: cada vez, o jogo sorteia um lugar novo, e nem eu nem você sabemos onde a próxima pedra vai cair. No y, escreve menos 30. E olha que interessante: aqui o menos não é velocidade, é posição. Menos 30 é um pouquinho acima da tela, do lado de fora. O asteroide nasce escondidinho lá em cima e entra na tela caindo, bem natural. O tamanho, deixa 40. A cor, escolhe uma com cara de pedra, tipo um cinza. O vx deixa 0, porque ele não anda pros lados. E no vy, escreve 3. Positivo, sem o menos, porque o asteroide desce. Olha o truque de ontem aí: menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.",
       "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar.",
-      "visual": "Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. A passagem é observada sem controles.",
+      "visual": "Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. No clipe, a passagem é observada sem controles; a cena da seção vem depois.",
       "newNarration": "Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.",
       "inSeconds": null,
       "outSeconds": null,
@@ -127,7 +127,12 @@
       "newNarration": "Um tiro que passa longe continua subindo. Um tiro que encontra um asteroide tira os dois e solta a explosão. Nesta aula, a nave ainda não perde vida quando uma pedra encosta nela. Isso vem no Dia 4.",
       "inSeconds": null,
       "outSeconds": null,
-      "production": "regravar-estudio-atual"
+      "production": "regravar-estudio-atual",
+      "cenaAnterior": {
+        "cena": "spawn",
+        "oQueMudou": "A orientação de edição corta os testes com 20 e 80 quadros porque a comparação isolada já mostraria intervalos diferentes. Essa comparação em HTML virou a cena spawn, que compara nascer em todo quadro com nascer no relógio e deixa escolher o tempo do relógio em segundos, não em quadros.",
+        "acao": "conferir"
+      }
     },
     {
       "key": "video-fecho-v6",
@@ -189,6 +194,22 @@
       "heading": "Fecho",
       "clips": ["video-fecho-v6"],
       "decision": "Recortar com as substituições e imagens indicadas."
+    }
+  ],
+  "cenas": [
+    {
+      "secao": "intervalo",
+      "bloco": "experiencia-intervalo",
+      "cena": "spawn",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    },
+    {
+      "secao": "nascer-fora",
+      "bloco": "demonstracao-nascer-fora",
+      "cena": "velocity",
+      "atividade": "demonstration",
+      "clipesAntes": ["video-nascer-fora"]
     }
   ],
   "studio": {

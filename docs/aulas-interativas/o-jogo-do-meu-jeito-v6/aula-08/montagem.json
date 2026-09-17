@@ -88,6 +88,7 @@
       "production": "regravar-estudio-atual"
     }
   ],
+  "cenas": [],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

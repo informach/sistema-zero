@@ -66,7 +66,12 @@
       "production": "regravar-estudio-atual",
       "sourceFile": "roteiro-aula-01-corre-dino.md",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "cenaAnterior": {
+        "cena": "coordinates",
+        "oQueMudou": "A seção deixou de ser só o vídeo: depois dele a criança abre a cena coordinates e mexe no x e no y. O marcador animado sobre a cartela e a frase de que não há arraste nem parâmetros para a criança descrevem a demonstração antiga.",
+        "acao": "cortar"
+      }
     },
     {
       "key": "video-dino-v7",
@@ -92,6 +97,36 @@
     }
   ],
   "sourceHash": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
+  "cenas": [
+    {
+      "secao": "tela-v7",
+      "bloco": "experiencia-tela",
+      "cena": "stage-size",
+      "atividade": "experimentation",
+      "clipesAntes": ["video-tela-v7"]
+    },
+    {
+      "secao": "descricao-demonstracao-v7",
+      "bloco": "experiencia-leitor-de-tela",
+      "cena": "screen-reader",
+      "atividade": "experimentation",
+      "clipesAntes": ["video-descricao-demo-v7"]
+    },
+    {
+      "secao": "coordenadas-demonstracao-v7",
+      "bloco": "experiencia-coordenadas",
+      "cena": "coordinates",
+      "atividade": "experimentation",
+      "clipesAntes": ["video-coordenadas-demo-v7"]
+    },
+    {
+      "secao": "comeco",
+      "bloco": "descoberta",
+      "cena": "world",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    }
+  ],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

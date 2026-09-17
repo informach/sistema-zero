@@ -49,13 +49,40 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** Abriu. Agora olha a faixa lá embaixo da tela. Ali tem uma linha com o nome parado, e dentro dela um quadradinho pequeno com a sua nave. Esse quadradinho é um quadro. Quadro é cada desenho da sua animação. É tipo folhear um livrinho: cada folha tem um desenho um pouquinho diferente, e quando você folheia rápido parece que a coisa se mexe. Embaixo do nome parado está escrito 1 quadro, e é por isso que a sua nave não tem como se mexer: ela é uma folha só.
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
 - Diferenciar imagem de um quadro e sequência de imagens.
 
 **Ajuda no ponto da dificuldade:** O movimento da nave pelo jogo e a troca dos desenhos do motor são coisas distintas.
+
+#### A cena depois do clipe
+
+**Cena:** `frames`, “Dois desenhos viram movimento”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** esta cena não desenha personagem do elenco.
+
+**O que a criança lê ao abrir:** “Veja o quadro 1, o quadro 2 e depois a prévia trocando os dois, devagar e rápido.”
+
+**Como o palco começa:** Na tela, com a prévia parada: o quadro 1.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Quando o fogo pulsa rápido, o que está na tela?”
+
+- Os dois quadros misturados (se ela escolher esta, a tela conta depois: “Quando a prévia rápida parou, ficou um quadro só na tela.”)
+- Um quadro de cada vez ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Parou a prévia rápida e viu um quadro só”.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “Quadro 1: a nave com o fogo pequeno.”
+2. “Quadro 2: a mesma nave, com o fogo maior.”
+3. “Devagar, 2 por segundo. Um, outro, um, outro.”
+4. “Rápido, 8 por segundo. O fogo pulsou e a nave ficou parada.”
+5. “De novo rápido, e parou de repente. Na prévia ficou um quadro inteiro.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ### Desenhe o fogo no primeiro quadro
 
@@ -177,7 +204,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** Olha a prévia do Júlio. O tamanho da mudança entre um quadro e o outro é escolha sua, e ele muda tudo: com os dois fogos quase iguais, o motor pulsa de leve. Com uma diferença grande, ele pulsa forte. Só que tem uma dificuldade aqui, e ela aparece assim que você quer ajustar: você enxerga um quadro por vez. Pra saber o quanto o fogo cresceu, você teria que ficar clicando de um quadro pro outro, comparando de memória. Pra isso existe o Fantasma do quadro anterior, na mesma fileira de botõezinhos do Duplicar quadro. Procura ele e clica. Ele acendeu. E olha o que apareceu na sua tela: o desenho do quadro de antes, bem apagadinho, por baixo do seu. É o fantasma, e ele está ali só pra você enxergar onde a coisa estava no outro quadro. É só uma ajuda de tela, então não dá pra pintar nem apagar em cima dele. Agora ficou fácil ajustar. Com o fantasma aceso, você vê o fogo de antes por baixo e o de agora por cima, ao mesmo tempo, e dá pra deixar os dois saindo do mesmo ponto, ali no motor, com a diferença de tamanho que você quiser. Uma coisa pra guardar: ele mostra o quadro anterior, então é no segundo quadro que ele trabalha. No primeiro ele não tem o que mostrar. Antes de fechar o passo, olha a sua nave inteira com calma. Vê se os dois fogos saem do mesmo lugar, se nenhum deles subiu por cima da nave e se a cor ficou como você quis. Achou alguma coisa faltando? Põe agora, que o Lápis ainda está na sua mão. Terceiro passo concluído.
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
@@ -185,6 +212,32 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 - Não acrescenta quadros nem desenhos à exportação.
 
 **Ajuda no ponto da dificuldade:** Se não apareceu no primeiro, está funcionando como previsto.
+
+#### A cena depois do clipe
+
+**Cena:** `onion-skin`, “O fantasma do quadro de antes”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** esta cena não desenha personagem do elenco.
+
+**O que a criança lê ao abrir:** “Olhe o fogo do quadro 2 sozinho. Depois veja o fantasma ligado e compare os dois fogos.”
+
+**Como o palco começa:** Fantasma desligado: só o quadro 1 está na tela.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “No quadro 2 só aparece o fogo novo. Dá para saber se ele ficou maior que o do quadro 1?”
+
+- Não dá para saber ✓ (o que acontece de verdade)
+- Dá, é só olhar o fogo 2 (se ela escolher esta, a tela conta depois: “Com o fantasma ligado, o fogo 1 apareceu tracejado. Sem o fantasma, o fogo 1 não aparecia.”)
+
+O palpite volta à tela quando ela descobre: “Viu o fogo 1 tracejado no quadro 2”.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “Quadro 2, fantasma desligado. O fogo cresceu quanto? Não dá para saber.”
+2. “Com o fantasma ligado, o fogo do quadro 1 aparece tracejado por cima.”
+3. “Com os dois à vista, o fogo cresce um pouco e sai do mesmo lugar.”
+4. “Voltou para o quadro 1. Com o fantasma ligado, nada tracejado aparece.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ### Confira a animação e dê um nome
 

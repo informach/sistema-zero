@@ -108,6 +108,23 @@
       "outSeconds": null
     }
   ],
+  "cenas": [
+    {
+      "secao": "espelho",
+      "bloco": "experimento-espelho",
+      "cena": "symmetry",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    },
+    {
+      "secao": "luz-demo",
+      "bloco": "demonstracao-luz",
+      "cena": "shading",
+      "atividade": "demonstration",
+      "apresentacao": "inline",
+      "clipesAntes": ["video-luz-demo"]
+    }
+  ],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

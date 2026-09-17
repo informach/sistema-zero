@@ -1,12 +1,13 @@
 {
   "status": "passed",
-  "scope": "Oito fontes e hashes, todas as Partes, 55 recortes por âncoras, geração reproduzível, manifestos, critérios de progressão com galeria previamente configurada, respostas corretas/incorretas e geometria real de exportação. Não comprova importação em conta real, mídia editada, qualidade artística, jogabilidade das criações dos alunos ou publicação.",
+  "scope": "Oito fontes e hashes, todas as Partes, 55 recortes por âncoras, geração reproduzível, manifestos, critérios de progressão com galeria previamente configurada, cenas descritas no roteiro com os textos de hoje, respostas corretas/incorretas e geometria real de exportação. Não comprova importação em conta real, mídia editada, qualidade artística, jogabilidade das criações dos alunos ou publicação.",
   "totals": {
     "lessons": 8,
     "sections": 76,
     "clips": 55,
     "demonstrations": 13,
-    "experiments": 5,
+    "experiments": 1,
+    "cenas": 10,
     "quizQuestions": 16
   },
   "results": [
@@ -17,6 +18,7 @@
       "clips": 7,
       "demonstrations": 2,
       "experiments": 0,
+      "cenas": 0,
       "gallery": "estudio",
       "quizQuestions": 2
     },
@@ -26,7 +28,8 @@
       "sections": 11,
       "clips": 8,
       "demonstrations": 2,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 2,
       "gallery": "pinta",
       "quizQuestions": 2
     },
@@ -37,6 +40,7 @@
       "clips": 7,
       "demonstrations": 2,
       "experiments": 1,
+      "cenas": 2,
       "gallery": "pinta",
       "quizQuestions": 2
     },
@@ -46,7 +50,8 @@
       "sections": 10,
       "clips": 7,
       "demonstrations": 1,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 2,
       "gallery": "pinta",
       "quizQuestions": 2
     },
@@ -56,7 +61,8 @@
       "sections": 10,
       "clips": 7,
       "demonstrations": 1,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 1,
       "gallery": "pinta",
       "quizQuestions": 2
     },
@@ -66,7 +72,8 @@
       "sections": 10,
       "clips": 7,
       "demonstrations": 1,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 2,
       "gallery": "estudio",
       "quizQuestions": 2
     },
@@ -77,6 +84,7 @@
       "clips": 6,
       "demonstrations": 1,
       "experiments": 0,
+      "cenas": 1,
       "gallery": "estudio",
       "quizQuestions": 2
     },
@@ -87,6 +95,7 @@
       "clips": 6,
       "demonstrations": 3,
       "experiments": 0,
+      "cenas": 0,
       "gallery": "estudio",
       "quizQuestions": 2
     }

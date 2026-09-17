@@ -1,6 +1,6 @@
 # Desafio do Primeiro Jogo — aulas interativas v6
 
-A introdução e os cinco dias foram refeitos a partir dos seis roteiros originais da pasta `desafio-primeiro-jogo/entregas/videos`. Este pacote reúne **78 seções, 61 clipes planejados, 17 demonstrações, 6 experimentações, 32 construções no Estúdio, 5 entregas e 12 perguntas de quiz**.
+A introdução e os cinco dias foram refeitos a partir dos seis roteiros originais da pasta `desafio-primeiro-jogo/entregas/videos`. Este pacote reúne **78 seções, 61 clipes planejados, 16 seções de observação, 7 seções de experimentação, 32 construções no Estúdio, 5 entregas e 12 perguntas de quiz**. As experiências são **8 cenas nativas** (5 de experimentar e 3 de demonstrar, nos Dias 1 a 4) e **2 comparações em HTML** (a proteção do Dia 4 e as telas do Dia 5).
 
 Os originais permanecem intactos. A pasta contém roteiros, referências e capturas; os arquivos de vídeo gravados não foram fornecidos nela. Os recortes usam âncoras de fala, com tempos ainda não preenchidos. Os arquivos em `arquivo-3-dias` documentam uma versão antiga; a revisão segue a sequência atual de cinco dias.
 
@@ -9,7 +9,7 @@ Os originais permanecem intactos. A pasta contém roteiros, referências e captu
 | Aula | Resultado | Seções | Clipes | Demonstrações | Experimentos |
 | --- | --- | ---: | ---: | ---: | ---: |
 | [Introdução](introducao/roteiro.md) | Encontrar a aula, os materiais, o salvamento e a ajuda | 7 | 6 | 4 | 0 |
-| [Dia 1](dia-1/roteiro.md) | Nave visível, controlada pelas setas e contida na tela | 16 | 12 | 3 | 2 |
+| [Dia 1](dia-1/roteiro.md) | Nave visível, controlada pelas setas e contida na tela | 16 | 12 | 2 | 3 |
 | [Dia 2](dia-2/roteiro.md) | Tiros alinhados à nave, com movimento, limpeza e som | 12 | 9 | 2 | 1 |
 | [Dia 3](dia-3/roteiro.md) | Asteroides que chegam e podem ser destruídos | 13 | 10 | 3 | 1 |
 | [Dia 4](dia-4/roteiro.md) | Pontos, três vidas e proteção temporária | 13 | 10 | 2 | 1 |

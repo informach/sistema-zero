@@ -14,7 +14,7 @@ Adaptação do roteiro gravado: Helena narra; Júlio desenha nas aulas 2–5. Um
 | --- | --- | --- |
 | 1. O que vamos criar hoje | presentation | O jogo ficou no Estúdio. Hoje a criança abre o Pinta pela primeira vez e desenha a nave. |
 | 2. Prepare a tela da sua nave | application | Criar nave como personagem em pixel art de 32 × 32. |
-| 3. Experimente: um traço, dois lados | exploration | Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado. |
+| 3. Experimente: o espelho no seu traço | exploration | Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado. |
 | 4. Desenhe o contorno e reserve o motor | application | Fazer a silhueta com espaço inferior reservado. |
 | 5. Pinte o corpo, a cabine e os detalhes | application | Escolher uma base média e distinguir balde de lápis. |
 | 6. Observe: a luz dá volume | demonstration | Visualizar direção da luz e sombra antes de pintar. |
@@ -68,33 +68,47 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Devolutiva:** Os números indicam largura e altura do quadro, que usaremos depois na folha de animação.
 
-### Experimente: um traço, dois lados
+### Experimente: o espelho no seu traço
 
-**Por que neste momento:** Uma comparação curta prepara a ferramenta sem pedir que a criança refaça o próprio desenho.
+**Por que neste momento:** Pintar a asa com os espelhos desligados e depois ligados prepara a ferramenta sem pedir que a criança refaça o próprio desenho.
 
-**Narração revisada / ponte:** “Neste exemplo, faça o mesmo traço com o espelho desligado e ligado. Registre os dois resultados. O que apareceu do outro lado? Depois vamos usar essa ideia na sua nave.”
+**Cena:** `symmetry`, “O que o espelho faz com o seu traço?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem e condução:** Grade ampliada, eixo central tracejado e o mesmo traço fixo à esquerda. Única escolha: espelho ligado/desligado. Não oferecer pincel livre.
+**Elenco:** esta cena não desenha personagem do elenco.
 
-**Atividade implementada:** [espelho.html](../interacoes/espelho.html), incorporada ao manifesto. Modelo didático separado da criação.
+**O que a criança lê ao abrir:** “Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.”
 
-**Criança:** escolhe as duas situações previstas, observa e registra cada resultado. Depois de registrar os dois, os controles encerram; a comparação fica visível e uma pergunta nativa verifica a conclusão. Nenhum desafio adicional é aberto.
+**Como o palco começa:** Espelhos desligados, na grade da nave.
 
-**Conclusão:** o iframe registra participação local; a pergunta é corrigida no servidor. Esse registro não equivale a uma prova de domínio nem inspeciona a galeria.
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você pinta a asa do lado esquerdo com o Espelho lado a lado ligado. Onde aparece a outra asa?”
 
-**O que observar:**
+- Grudada na primeira, deixando a asa mais grossa (se ela escolher esta, a tela conta depois: “A outra asa apareceu do outro lado do meio, virada.”)
+- Do outro lado do meio, virada ✓ (o que acontece de verdade)
 
-- Mesma linha em ambos os testes.
-- Com espelho, traço correspondente à direita.
+O palpite volta à tela quando ela descobre: “Pintou com o Espelho lado a lado”.
 
-**Ajuda no ponto da dificuldade:** Compare os dois lados do eixo. Este exemplo usa Linha; o balde tem outro comportamento.
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-**Pergunta:** O que o espelho mudou neste teste?
+1. Pedido: “Com os dois espelhos desligados, pinte a asa.” Ao descobrir: “Pintou com o espelho desligado”.
+2. Pedido: “Deixe ligado só o Espelho lado a lado e pinte a asa.” Ao descobrir: “Pintou com o Espelho lado a lado”.
+3. Pedido: “Deixe ligado só o espelho de cima e de baixo e pinte a asa.” Ao descobrir: “Pintou com o espelho de cima e de baixo”.
 
-- Criou o traço correspondente do outro lado. (correta)
-- Virou o desenho inteiro de cabeça para baixo.
+**Frase de sucesso:** “Com o espelho ligado, cada traço aparece também do outro lado do meio. Desligado, fica só onde você pintou!”
 
-**Devolutiva:** Espelho lado a lado repete o traço enquanto você desenha. Espelhar na horizontal ou na vertical transforma algo já desenhado.
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Pinte a asa e conte quantas asas apareceram.”
+2. “Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.”
+3. “Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa de novo.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “O que os dois espelhos fazem com o traço que você pinta?”
+
+- Pintam uma cópia do traço do outro lado do meio. ✓ (correta)
+- Deixam o traço mais grosso, grudado no primeiro.
+
+**Explicação que ela lê ao acertar:** “O espelho lado a lado copia o traço para o outro lado do meio, e o de cima e de baixo copia para cima ou para baixo. A cópia aparece enquanto você pinta.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Desenhe o contorno e reserve o motor
 
@@ -188,7 +202,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** A sua nave está pintada, mas ela ainda parece um adesivo, uma coisa chapada. Quem resolve isso é a luz e sombra. E antes da cor tem uma decisão sua: de que lado vem a luz. Da esquerda, da direita, de cima, nenhum é o certo. O único cuidado é escolher um lado e ficar nele até o fim. Na nave do Júlio a luz vem da esquerda.
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
@@ -196,6 +210,26 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 - Tom de luz da própria família da cor.
 
 **Ajuda no ponto da dificuldade:** A seta mostra de onde vem a luz; ela não faz parte da nave.
+
+#### A cena depois do clipe
+
+**Cena:** `shading`, “A luz dá volume”. Formato: demonstração no meio do texto (um botão Ver acontecer, que toca as partes de uma vez). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** esta cena não desenha personagem do elenco.
+
+**O que a criança lê ao abrir:** “Aperte Ver acontecer. Olhe de que lado fica a sombra quando o sol muda de lugar.”
+
+**Como o palco começa:** A bola tem um tom só, com o sol na esquerda.
+
+**Previsão:** nenhuma. A demonstração no meio do texto não trava o palco com uma pergunta.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “Um azul mais escuro longe do sol e um mais claro perto dele: a bola ficou redonda.”
+2. “Com um tom só, a bola parece um adesivo.”
+3. “Mudou o sol de lado. Olhe onde ficou o azul mais escuro.”
+
+**No fim:** um ✓ pequeno ao lado do botão, que vira Ver de novo. Este formato não tem “Agora é sua vez”. A seção conclui quando a demonstração é vista até o fim.
 
 ### Dê luz e sombra à sua nave
 

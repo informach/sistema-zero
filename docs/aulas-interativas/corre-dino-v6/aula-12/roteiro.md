@@ -1,6 +1,6 @@
 # aula-12 — Sorteios dentro de limites
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.
 
@@ -44,17 +44,47 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 ### O que o sorteio pode mudar?
 
-**Por que aqui:** Duas comparações delimitadas respondem à mesma pergunta sobre sorteio: posição com velocidade fixa, depois velocidade com posição fixa.
+**Por que aqui:** Sortear de verdade, uma propriedade por vez (primeiro o lugar, depois a velocidade), mostra que cada resultado fica dentro dos limites e que um lugar pode repetir.
 
 **Foco:** Comparar resultados de um sorteio dentro da faixa, mantendo a outra propriedade fixa.
 
-**Fala de ligação / orientação ao aluno:** “Primeiro compare os dois exemplos de posição, com a mesma velocidade. Depois compare os dois de velocidade, com a mesma posição. São exemplos escolhidos para enxergar a diferença; um sorteio real também pode repetir.”
+**Cena:** `random`, “Cada cacto pode nascer diferente”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** random. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Posições diferentes, mesma velocidade; Velocidades −5 e −6, mesma posição.
+**O que a criança lê ao abrir:** “Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Nenhum lugar sorteado ainda.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Sorteando o lugar, dois cactos podem nascer no mesmo ponto?”
+
+- Nunca, o sorteio evita repetir (se ela escolher esta, a tela conta depois: “Um lugar saiu de novo, e a marquinha dele ganhou 2×.”)
+- Podem sim ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Um lugar repetiu”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Aperte Sortear lugar até sair um lugar diferente.” Ao descobrir: “Saíram lugares diferentes”.
+2. Pedido: “Aperte Sortear lugar mais oito vezes.” Ao descobrir: “Um lugar repetiu”.
+3. Pedido: “Aperte Sortear velocidade até sair um cacto −5 e um −6.” Ao descobrir: “O cacto −6 chegou mais longe que o −5”.
+
+**Frase de sucesso:** “Cada sorteio saiu dentro dos limites que você deu, e às vezes repetiu!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “A régua mostra onde um cacto pode nascer, depois da borda da tela.”
+2. “Sorteie uma coisa por vez: primeiro o lugar, depois a velocidade.”
+3. “Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que o sorteio garante?”
+
+- Um valor diferente do anterior.
+- Um valor dentro dos limites que você escolheu. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Sortear é tirar um número da faixa, e a faixa é sua. Repetir é possível, e é por isso que o percurso parece novo sem ser controlado.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Sorteie o lugar de nascimento
 
@@ -98,7 +128,31 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Trecho original selecionado, antes da edição:** Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em menos 5. A gente quer que ele seja menos 5 ou um pouquinho mais rápido, sorteado. Na categoria Programação, subcategoria Matemática, pega o bloco de conta, aquele com dois espaços e o sinal no meio. Esse é novo, você nunca usou. O nome já entrega: ele serve pra fazer conta. Clica, segura e arrasta ele por cima do vx. Esse bloco de conta tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje a gente não quer o mais. Abre a listinha e escolhe o menos. No espaço da esquerda, que já vem com um número, escreve -5 por cima. E no espaço da direita, vai de novo em Jogo 2D, subcategoria Mira e contas, pega outro um número de tanto a tanto e arrasta por cima do que está lá. Nele, põe 0 e 1. Lê junto comigo: menos 5, menos um número sorteado entre 0 e 1. Se sortear 0, o cacto anda a menos 5. Se sortear 1, ele anda a menos 6, ou seja, um tiquinho mais rápido. Espera... menos um número deixa ele mais rápido? Parece esquisito, mas faz sentido: lembra da Aula 5, que velocidade negativa é pra esquerda, e quanto mais negativo, mais rápido? Então tirar 1 de menos 5 dá menos 6, que é mais rápido ainda. Isso engana a cabeça da gente, e por isso vale reparar. Clica na área do jogo e joga. Agora, além do espaço entre eles variar, uns cactos vêm um tiquinho mais rápidos que os outros. Você não consegue nem decorar o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.
 
-**Aluno:** assiste, pausa ou revê. Sem alterar parâmetros e sem converter esta seção em experimentação. Conclui com 90% do clipe assistido.
+**Aluno:** assiste ao clipe, pausa ou revê. Depois, na mesma seção, abre a cena abaixo. É a cena que conclui a seção.
+
+#### A cena depois do clipe
+
+**Cena:** `velocity`, “O que move o cacto a cada quadro”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: cacto.
+
+**O que a criança lê ao abrir:** “Olhe o sinal e o tamanho de cada passo.”
+
+**Como o palco começa:** O cacto está em x 400, y 230, com velocidade 0 para o lado e 0 para baixo.
+
+**Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…”
+
+- Anda para a esquerda com passos iguais aos do −5 (se ela escolher esta, a tela conta depois: “Com −6, o x diminuiu 6 a cada quadro, 1 a mais que com −5.”)
+- Anda para a esquerda com passos maiores ✓ (o que acontece de verdade)
+
+**Partes da demonstração (roteiro escrito na aula):**
+
+1. “Velocidade −5: a cada quadro o x do cacto diminui 5, para a esquerda.” A parte espera acontecer: “Velocidade negativa levou para a esquerda”.
+2. “Velocidade −6: ainda para a esquerda, e cada quadro tira 6. Embaixo da tela, compare os passos de antes com os de agora.” A parte espera acontecer: “Velocidade negativa levou para a esquerda”.
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ### Conecte a conta ao cacto
 
@@ -125,6 +179,26 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Use um único bloco para criar o cacto com posição e velocidade sorteadas.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Os cactos repetem o mesmo padrão. Vamos variar onde nascem e a velocidade que recebem, uma propriedade por vez.”
+
+**Fonte:** roteiro-aula-12-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-12-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1. As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade. Terminar indicando o quiz, sem abrir desafios extras.
+
+**⚠️ Mostra a cena anterior:** A orientação de edição descreve a experimentação como duas comparações com exemplos fixos. Desde o lote 5 do Raio-X a cena random sorteia de verdade, um lugar ou uma velocidade por vez, e um lugar pode repetir. Ação: conferir.
 
 ## Conferência final e quiz
 

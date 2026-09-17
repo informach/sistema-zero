@@ -1,6 +1,6 @@
 # aula-10 — Uma colisão mais justa
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.
 
@@ -72,13 +72,42 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Comparar a detecção mantendo os desenhos na mesma posição.
 
-**Fala de ligação / orientação ao aluno:** “Aproxime o cacto até o contato indicado. Depois ajuste apenas a área de colisão e compare. O desenho do Dino continua do mesmo tamanho.”
+**Cena:** `hitbox`, “Onde a batida acontece?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** hitbox. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Áreas em contato; Áreas separadas; Mesma posição, áreas diferentes.
+**O que a criança lê ao abrir:** “Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** O cacto está a 149 do Dino. As áreas pontilhadas ainda não se encostam.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com esta área grande, quando vai aparecer BATEU?”
+
+- Antes de os desenhos se encostarem ✓ (o que acontece de verdade)
+- Só quando os desenhos se encostarem (se ela escolher esta, a tela conta depois: “Apareceu BATEU com um vão entre os dois desenhos.”)
+
+O palpite volta à tela quando ela descobre: “BATEU com os desenhos ainda longe”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Aproxime o cacto do Dino com a Distância do cacto, um toque de cada vez.” Ao descobrir: “BATEU com os desenhos ainda longe”.
+2. Pedido: “Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino.” Ao descobrir: “Área menor, mesmo lugar: a batida sumiu”.
+
+**Frase de sucesso:** “O Dino ficou do mesmo tamanho. Só a área mudou, e a batida ficou justa!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.”
+2. “Deixe o cacto onde bateu. Mude só a área do Dino.”
+3. “Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que o jogo usa para saber que houve batida?”
+
+- Áreas invisíveis em volta de cada um. ✓ (correta)
+- Os pixels coloridos de cada desenho.
+
+**Explicação que ela lê ao acertar:** “O desenho é para os olhos; a área é para a conta. Diminuir só a área deixa a batida justa, sem mudar o tamanho do Dino.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Leve o ajuste para o seu jogo
 
@@ -130,6 +159,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Retire o desenho provisório da área de colisão.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “A batida pode parecer acontecer antes do toque. Vamos enxergar a área usada pela colisão e ajustá-la.”
+
+**Fonte:** roteiro-aula-10-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-10-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. 80% é a escolha desta versão do Corre Dino; não ensinar que uma área sempre menor é universalmente mais justa. Evitar comparar tentativas com posições diferentes como prova do ajuste. A experiência nativa mantém o caso de comparação. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

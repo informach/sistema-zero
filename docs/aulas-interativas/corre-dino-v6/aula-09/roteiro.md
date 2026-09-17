@@ -1,6 +1,6 @@
 # aula-09 — Colidir, terminar e jogar de novo
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Hoje a batida vai encerrar a partida, mostrar uma tela de fim e permitir recomeçar.
 
@@ -123,13 +123,43 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Distinguir a cena de fim de uma nova partida preparada.
 
-**Fala de ligação / orientação ao aluno:** “Neste exemplo, termine uma partida e ligue o reinício. Compare o estado de fim com a nova partida preparada.”
+**Cena:** `restart`, “Jogue outra vez”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** restart. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Colisão encerrou a partida; Outra partida iniciada pela ação de reinício.
+**O que a criança lê ao abrir:** “Jogue até bater e toque na tela para voltar. Olhe a pista. Depois troque o que o toque faz e compare.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Na tela de início, com a pista vazia.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se o toque no fim só voltar para a tela de início, o que acontece com os cactos da partida?”
+
+- Somem sozinhos (se ela escolher esta, a tela conta depois: “Os cactos da partida anterior continuaram na pista.”)
+- Continuam na pista ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Só trocar de tela deixou os cactos na pista”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Toque na tela e deixe o tempo passar.” Ao descobrir: “A batida levou para o fim”.
+2. Pedido: “No fim, com Ir para o início escolhido, toque na tela duas vezes.” Ao descobrir: “Só trocar de tela deixou os cactos na pista”.
+3. Pedido: “Depois de jogar de novo com Ir para o início, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.” Ao descobrir: “Reiniciar começou com a pista limpa”.
+
+**Frase de sucesso:** “A pista começou limpa. Isso é jogar de novo de verdade!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Olhe a pista depois de voltar para o início. Quantos cactos ficaram?”
+2. “Troque o que o toque faz no fim e compare as duas pistas.”
+3. “Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que Reiniciar o jogo faz que Ir para o início não faz?”
+
+- Só mostra a tela de início.
+- Limpa a pista para a partida nova começar do zero. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Trocar de tela não apaga nada. Se ninguém limpar a pista, a partida nova começa com os cactos da velha.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Monte o caminho de volta
 
@@ -155,6 +185,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Mantenha um único evento de qualquer tecla ou toque.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Hoje a batida vai encerrar a partida, mostrar uma tela de fim e permitir recomeçar.”
+
+**Fonte:** roteiro-aula-09-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-09-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Colisão com grupo é um comando contínuo, dentro do Se jogando em A cada quadro. Preservar a montagem do original; não transferir para a área Quando acontecer. Parte 5: trocar três partidas obrigatórias por uma rodada completa e uma conferência da outra entrada. Não tornar recorde, convite a amigos ou competição requisito. A justiça da área de colisão será investigada na aula 10; não desviar desta aula para calibrá-la. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

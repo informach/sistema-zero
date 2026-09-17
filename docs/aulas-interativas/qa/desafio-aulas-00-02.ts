@@ -1,6 +1,9 @@
+import type { CenaDaAula } from './cenas-editorial'
 import { finalChecks, checks as k } from './desafio-checks'
 import type { Recipe, Step } from './desafio-editorial'
 
+const porquePadrao =
+  'Introduzir esta relação no momento em que ela será usada, antes de acrescentar outra tarefa.'
 export const step = (
   key: string,
   title: string,
@@ -16,14 +19,25 @@ export const step = (
   kind,
   focus,
   say,
-  reason:
-    'Introduzir esta relação no momento em que ela será usada, antes de acrescentar outra tarefa.',
+  reason: porquePadrao,
   edit: 'Recortar apenas o gesto desta seção. Retirar a contagem antiga de passos e as chamadas para a parte seguinte. A fala revisada orienta a substituição; evitar repetir as duas explicações.',
   visual:
     'Mostrar o bloco, sua categoria e o encaixe completo, com uma pausa para enxergar o resultado.',
   help: 'Reveja o encaixe destacado e compare o nome do bloco com a orientação. Corrija no mesmo projeto.',
   ...extra,
 })
+/**
+ * Uma experimentação por cena nativa. Sem fala, sem imagem e sem ajuda: a instrução, as pistas, a previsão
+ * e a pergunta moram no bloco da cena (`cena`), e o roteiro as lê de lá.
+ */
+export const experimentacao = (
+  key: string,
+  title: string,
+  source: string,
+  focus: string,
+  cena: CenaDaAula,
+  extra: Pick<Partial<Step>, 'reason'> = {},
+): Step => ({ key, title, source, kind: 'experiment', focus, reason: porquePadrao, cena, ...extra })
 export const earlyRecipes: Record<number, Recipe> = {
   0: {
     title: 'Bem-vindo: encontre sua aula e saiba continuar',
@@ -46,7 +60,7 @@ export const earlyRecipes: Record<number, Recipe> = {
         {
           edit: 'Usar a ideia de acompanhar e entregar; substituir a imagem antiga de vídeo em cima e Estúdio embaixo pela página atual por seções. Regravar as instruções de navegação.',
           visual:
-            'Percorrer uma seção de vídeo, uma demonstração sem controles, uma comparação encerrada e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.',
+            'Percorrer uma seção de vídeo, uma demonstração guiada que termina em Agora é sua vez, uma experimentação em que a criança mexe e confere o que descobriu, e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.',
           help: 'O índice permite rever seções disponíveis; a lista O que falta para concluir indica a tarefa pendente.',
         },
       ),
@@ -178,26 +192,84 @@ export const earlyRecipes: Record<number, Recipe> = {
           help: 'Veja qual direção muda enquanto o outro número fica parado.',
         },
       ),
-      step(
+      experimentacao(
         'coordenadas',
         'Compare duas alturas',
         'Parte 3.',
-        'experiment',
         'Descobrir o efeito de aumentar somente y.',
-        'O x vai ficar em 400. Mostre a nave em y 110 e depois em y 410. Compare a altura e responda: quando o y aumenta, a nave vai para qual lado?',
         {
-          experiment: 'coordenadas',
-          question: [
-            'O y foi de 110 para 410, com o mesmo x. A nave foi…',
-            'Mais para baixo.',
-            'Mais para a direita.',
-            'Mudar y altera a posição vertical. Na tela, os valores crescem para baixo.',
-          ],
+          chave: 'experiencia-coordenadas',
+          bloco: {
+            title: 'Compare duas alturas',
+            instructions: 'A nave começa lá em cima. Mude só o y e veja para que lado ela vai.',
+            hints: [
+              'Olhe o número do y e onde a nave está.',
+              'Deixe o x parado e aumente só o y. Olhe para onde a nave vai.',
+              'Aperte + no y três vezes, sem tocar no x.',
+            ],
+            required: true,
+            activity: {
+              type: 'experimentation',
+              scene: 'coordinates',
+              cast: {
+                hero: {
+                  name: 'nave',
+                  gender: 'f',
+                },
+              },
+              setup: {
+                actions: [
+                  {
+                    type: 'stage',
+                    width: 800,
+                    height: 480,
+                  },
+                  {
+                    type: 'place',
+                    x: 400,
+                    y: 40,
+                  },
+                ],
+                goals: ['down'],
+              },
+            },
+            checkpoint: {
+              prompt: 'Você quer a nave mais perto da beirada de baixo da tela. O que faz com o y?',
+              choices: [
+                {
+                  id: 'diminui',
+                  label: 'Diminuo o y.',
+                },
+                {
+                  id: 'aumenta',
+                  label: 'Aumento o y.',
+                },
+              ],
+              correctChoiceId: 'aumenta',
+              explanation:
+                'Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo a nave fica.',
+            },
+            prediction: {
+              prompt: 'Se o y AUMENTAR, para onde a nave vai?',
+              choices: [
+                {
+                  id: 'cima',
+                  label: 'Para cima',
+                  shows: 'Aumentando o y, a nave desceu.',
+                },
+                {
+                  id: 'baixo',
+                  label: 'Para baixo',
+                },
+              ],
+              correctChoiceId: 'baixo',
+              revealOn: 'down',
+            },
+          },
+        },
+        {
           reason:
             'Depois de ver os dois eixos, variar apenas um reduz a carga e revela a direção do y.',
-          visual:
-            'Caixa da nave na tela completa, marca no canto e eixo vertical. Duas posições prontas; sem arrastar livremente.',
-          help: 'Compare a distância até o alto da tela; o x ficou igual.',
         },
       ),
       step(
@@ -225,6 +297,26 @@ export const earlyRecipes: Record<number, Recipe> = {
           visual:
             'Quadro dividido: cartão “nave criada: 1” permanece; tela muda de vazia para nave desenhada. Em seguida três quadros numerados, com uma só nave na memória.',
           help: 'O número de naves criadas permanece 1, mesmo quando aparecem vários quadros.',
+          cena: {
+            chave: 'experiencia-criar-desenhar',
+            bloco: {
+              required: true,
+              title: 'Criar não é desenhar',
+              instructions:
+                'Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.',
+              hints: [],
+              activity: {
+                type: 'experimentation',
+                scene: 'world',
+                cast: {
+                  hero: {
+                    name: 'nave',
+                    gender: 'f',
+                  },
+                },
+              },
+            },
+          },
         },
       ),
       step(
@@ -236,24 +328,62 @@ export const earlyRecipes: Record<number, Recipe> = {
         'Em Jogo 2D, Tempo e repetição, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. O espaço de dentro recebe o que o jogo faz de novo a cada quadro.',
         { from: 'E tem um bloco que faz exatamente isso.', checks: k.quadro },
       ),
-      step(
+      experimentacao(
         'limpeza',
         'O que acontece sem limpar a tela?',
         'Parte 5.',
-        'experiment',
         'Relacionar a limpeza com a remoção dos desenhos anteriores.',
-        'Passe três quadros sem limpar. Depois passe os mesmos três quadros limpando antes de desenhar. Observe quantos desenhos ficam. É sempre uma só nave; você está comparando as imagens que ela deixa.',
         {
-          experiment: 'limpeza',
-          question: [
-            'Qual sequência evita deixar os desenhos antigos na tela?',
-            'Limpar e depois desenhar a nave em cada quadro.',
-            'Criar uma nave nova em cada quadro.',
-            'A limpeza apaga a imagem anterior; não apaga o objeto guardado no jogo.',
-          ],
-          visual:
-            'Três posições idênticas nos dois ensaios, com desenhos anteriores esmaecidos apenas no caso sem limpeza.',
-          help: 'Conte os desenhos que sobraram depois do terceiro quadro.',
+          chave: 'experiencia-limpeza',
+          bloco: {
+            required: true,
+            title: 'O que acontece sem limpar a tela?',
+            instructions:
+              'Aperte Avançar 1 quadro e olhe a tela e o x da nave. Depois desenhe a nave a cada quadro. Por último, ligue Limpar a tela antes.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'draw-loop',
+              cast: {
+                hero: {
+                  name: 'nave',
+                  gender: 'f',
+                },
+              },
+            },
+            checkpoint: {
+              prompt: 'Quais escolhas deixam uma nave só na tela, num lugar novo?',
+              choices: [
+                {
+                  id: 'a',
+                  label: 'Desenhar a cada quadro e limpar antes.',
+                },
+                {
+                  id: 'b',
+                  label: 'Desenhar a cada quadro, sem limpar.',
+                },
+              ],
+              correctChoiceId: 'a',
+              explanation:
+                'A limpeza apaga a imagem anterior. Ela não apaga a nave, que continua guardada no jogo.',
+            },
+            prediction: {
+              prompt: 'Sem limpar antes de desenhar, o que fica na tela?',
+              choices: [
+                {
+                  id: 'rastro',
+                  label: 'Um rastro de naves',
+                },
+                {
+                  id: 'uma',
+                  label: 'Uma nave só',
+                  shows: 'Sem limpar, as naves de antes continuaram na tela.',
+                },
+              ],
+              correctChoiceId: 'rastro',
+              revealOn: 'trail',
+            },
+          },
         },
       ),
       step(
@@ -314,7 +444,7 @@ export const earlyRecipes: Record<number, Recipe> = {
       'Preservar x 400 e y 410 para reaproveitar a gravação, explicando que são o canto da caixa. O centro horizontal seria 427 com largura 54.',
       'A maior fragmentação acontece aqui porque a criança está conhecendo o Estúdio; nos dias seguintes, padrões conhecidos ficam juntos.',
       'A escolha de cores permanece focada na nave e no fundo. Não solicitar testes de velocidade livre nem números extras para concluir.',
-      'Demonstrações usam vídeo com pausa; as duas comparações usam HTML isolado, sem copiar automaticamente valores para o projeto.',
+      'Demonstrações usam vídeo com pausa. As três experimentações do dia são cenas separadas do projeto (coordinates, world e draw-loop), vestidas com a nave; nenhuma copia valores para o projeto.',
     ],
     quiz: [
       [
@@ -384,24 +514,94 @@ export const earlyRecipes: Record<number, Recipe> = {
         'Dentro do evento de espaço, encaixe Criar tiro no grupo, de Jogo 2D, Muitos, e escolha tiros. Em Posição e tamanho, pegue o centro x do sprite e a posição y do sprite. Encaixe no x e no y do tiro e escolha nave nos dois. Raio 5; escolha uma cor visível.',
         { checks: k.origemTiro },
       ),
-      step(
+      experimentacao(
         'direcao',
         'Compare o sinal da velocidade',
         'Parte 4.',
-        'experiment',
         'Descobrir o que o sinal de vy muda.',
-        'Os dois tiros começam no mesmo lugar. Compare vy menos 9 e vy mais 9. Avance os passos e observe o número y e a direção. Só o sinal mudou; o vx continua zero.',
         {
-          experiment: 'direcao',
-          question: [
-            'Qual vy faz o tiro subir?',
-            'vy = −9.',
-            'vy = +9.',
-            'Subir diminui o y. A velocidade negativa produz essa diminuição.',
-          ],
-          visual:
-            'Dois percursos verticais, origem marcada e leituras de y; sequência manual ampliada de 10 quadros por passo.',
-          help: 'O topo da tela tem valores menores de y. Veja em qual teste o y diminui.',
+          chave: 'experiencia-direcao',
+          bloco: {
+            title: 'Compare o sinal da velocidade',
+            instructions:
+              'Ponha a velocidade para baixo (o vy do seu tiro) em −9 e deixe o tempo passar. Depois troque para 9 e compare: para onde o tiro vai agora?',
+            hints: [
+              'Olhe o número do y na faixa enquanto o tiro sobe ou desce.',
+              'Mexa só na velocidade para baixo. A velocidade para o lado fica em 0.',
+              'Ponha a velocidade para baixo em −9 e deixe o tempo passar. Depois ponha em 9 e deixe o tempo passar de novo.',
+            ],
+            required: true,
+            activity: {
+              type: 'experimentation',
+              scene: 'velocity',
+              cast: {
+                hero: {
+                  name: 'tiro',
+                  gender: 'm',
+                },
+              },
+              setup: {
+                actions: [
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 5,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 3,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 0,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 0.6,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 0,
+                    vy: 0,
+                  },
+                ],
+                goals: ['down', 'up'],
+              },
+            },
+            checkpoint: {
+              prompt: 'O que o sinal da velocidade para baixo decide?',
+              choices: [
+                {
+                  id: 'b',
+                  label: 'Se o tiro anda mais rápido ou mais devagar.',
+                },
+                {
+                  id: 'a',
+                  label: 'Se o tiro sobe ou desce.',
+                },
+              ],
+              correctChoiceId: 'a',
+              explanation:
+                'A velocidade para baixo é o vy, e ela é somada no y a cada quadro. Com 9, o y cresce e o tiro desce. Com −9, o y diminui e o tiro sobe.',
+            },
+            prediction: {
+              prompt: 'Com a velocidade para baixo em −9, para onde o tiro vai?',
+              choices: [
+                {
+                  id: 'baixo',
+                  label: 'Para baixo',
+                  shows: 'Com o número negativo, o y diminuiu e o tiro subiu.',
+                },
+                {
+                  id: 'cima',
+                  label: 'Para cima',
+                },
+              ],
+              correctChoiceId: 'cima',
+              revealOn: 'up',
+            },
+          },
         },
       ),
       step(

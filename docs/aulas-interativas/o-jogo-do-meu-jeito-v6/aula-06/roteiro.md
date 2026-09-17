@@ -123,7 +123,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** E as duas vieram do seu próprio desenho: a sua nave tem dois quadros, um com o motor apagado e um com o motor aceso, que você desenhou lá no Pinta. Quando o desenho sai do Pinta e vem pro jogo, ele não vem um quadro de cada vez. Ele vem numa imagem só, com os dois quadros em fila, um do lado do outro. Isso tem nome: chama folha de quadros. E o bloco pegou essa imagem inteira e esticou ela dentro do lugar da sua nave. A imagem inteira tem os dois quadros, então apareceram dois. A gente quer outra coisa: que o jogo entenda que ali tem uma fila de desenhos e mostre um de cada vez, bem depressa. Isso chama animar. Segundo passo concluído, e o terceiro é o conserto."
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
@@ -132,33 +132,74 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Ajuda no ponto da dificuldade:** A folha tem os desenhos; o sprite é quem os apresenta no jogo.
 
+#### A cena depois do clipe
+
+**Cena:** `sheet-vs-sprite`, “A folha e o tamanho no jogo”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** esta cena não desenha personagem do elenco.
+
+**O que a criança lê ao abrir:** “Veja o jogo mostrar a folha inteira e depois um quadro de cada vez.”
+
+**Como o palco começa:** Nenhum recorte da folha de 64 por 32 ainda: o jogo está vazio, num quadrado de 54 por 54.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?”
+
+- Duas naves espremidas ✓ (o que acontece de verdade)
+- Uma nave só (se ela escolher esta, a tela conta depois: “O jogo mostrou a folha inteira: as duas naves, espremidas.”)
+
+O palpite volta à tela quando ela descobre: “Viu o jogo mostrar a folha inteira”.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “O jogo mostra a folha inteira: duas naves espremidas.”
+2. “Recorte de 32 por 32: agora cabe uma nave só.”
+3. “Trocando de quadro, o fogo muda: pequeno, grande, pequeno, grande.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
+
 ### Experimente: onde cortar a folha?
 
 **Por que neste momento:** A criança testa a relação entre o quadro desenhado no Pinta e a medida informada ao carregar a folha.
 
-**Narração revisada / ponte:** “A folha deste exemplo tem dois desenhos de 32 × 32. Compare recortar com largura 16 e com largura 32. A altura fica em 32 e o tamanho no jogo não muda. Registre os dois e veja qual recorte pega uma nave inteira.”
+**Cena:** `sheet-vs-sprite`, “A folha e o tamanho no jogo”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem e condução:** Folha 64 × 32 com moldura do recorte e resultado num quadrado fixo rotulado 54 × 54. Uma escolha: largura 16 ou 32. Sem painel de velocidade.
+**Elenco:** esta cena não desenha personagem do elenco.
 
-**Atividade implementada:** [folha.html](../interacoes/folha.html), incorporada ao manifesto. Modelo didático separado da criação.
+**O que a criança lê ao abrir:** “Mude a largura do recorte e olhe a nave no jogo. Qual largura mostra uma nave inteira?”
 
-**Criança:** escolhe as duas situações previstas, observa e registra cada resultado. Depois de registrar os dois, os controles encerram; a comparação fica visível e uma pergunta nativa verifica a conclusão. Nenhum desafio adicional é aberto.
+**Como o palco começa:** Nenhum recorte da folha de 64 por 32 ainda: o jogo está vazio, num quadrado de 54 por 54.
 
-**Conclusão:** o iframe registra participação local; a pergunta é corrigida no servidor. Esse registro não equivale a uma prova de domínio nem inspeciona a galeria.
+**Caso preparado na aula:** a missão cobra só estas descobertas: “Recortou 16 e olhou o jogo”, “Achou o recorte que mostra uma nave inteira” e “Mudou o tamanho no jogo e conferiu a folha”.
 
-**O que observar:**
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Os quadros da nave têm 32 de largura. Com um recorte de 16, o que aparece no jogo?”
 
-- 16 pega parte da nave; 32 pega um quadro inteiro.
-- A dimensão exibida no jogo permanece 54 × 54.
+- Metade da nave, esticada ✓ (o que acontece de verdade)
+- A nave inteira, menor (se ela escolher esta, a tela conta depois: “Com o recorte de 16, o jogo mostrou só metade da nave, esticada.”)
 
-**Ajuda no ponto da dificuldade:** O corte segue o tamanho do desenho no Pinta, não o tamanho em que ele aparece no jogo.
+O palpite volta à tela quando ela descobre: “Recortou 16 e olhou o jogo”.
 
-**Pergunta:** Qual largura recorta uma nave inteira nesta folha?
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-- 32, a largura de cada quadro desenhado no Pinta. (correta)
-- 54, porque esse é o tamanho do sprite na tela.
+1. Pedido: “Escolha a largura 16 e olhe o jogo.” Ao descobrir: “Recortou 16 e olhou o jogo”.
+2. Pedido: “Escolha a largura 32 e olhe o jogo.” Ao descobrir: “Achou o recorte que mostra uma nave inteira”.
+3. Pedido: “Com o recorte de 32, deixe a nave do jogo bem maior ou bem menor e olhe a folha.” Ao descobrir: “Mudou o tamanho no jogo e conferiu a folha”.
 
-**Devolutiva:** O sprite pode ampliar o quadro. O recorte continua seguindo a geometria da folha original.
+**Frase de sucesso:** “O recorte precisa ter o tamanho de UM quadro da folha. O tamanho no jogo é outra escolha!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Mude a largura do recorte e olhe o que aparece no jogo.”
+2. “Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?”
+3. “Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “No bloco Carregar folha de quadros, qual é o tamanho de cada quadro?”
+
+- 54 x 54, o tamanho da nave no jogo.
+- 32 x 32, o tamanho de um quadro na folha. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “O bloco pergunta o tamanho de um quadro na folha: 32. O 54 é o tamanho em que a nave aparece no jogo.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Prepare a folha da nave
 

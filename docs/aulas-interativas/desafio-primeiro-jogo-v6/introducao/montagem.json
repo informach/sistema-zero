@@ -24,7 +24,7 @@
       "exit": "inho rápido só pra mostrar que você mandou bem. Fez essas coisinhas? Aula concluída, XP conquistado!",
       "narration": "E por falar em aula, deixa eu te mostrar rapidinho o que conta pra você completar uma e ganhar aquele XP. É bem simples: você assiste o vídeo da aula, faz no estúdio tudo que a aula pedir, envia a sua atividade pro professor ali no botão, e responde a Hora do Desafio, que é um quizinho rápido só pra mostrar que você mandou bem. Fez essas coisinhas? Aula concluída, XP conquistado!",
       "edit": "Usar a ideia de acompanhar e entregar; substituir a imagem antiga de vídeo em cima e Estúdio embaixo pela página atual por seções. Regravar as instruções de navegação.",
-      "visual": "Percorrer uma seção de vídeo, uma demonstração sem controles, uma comparação encerrada e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.",
+      "visual": "Percorrer uma seção de vídeo, uma demonstração guiada que termina em Agora é sua vez, uma experimentação em que a criança mexe e confere o que descobriu, e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.",
       "newNarration": "Cada seção tem uma tarefa. Em algumas você assiste; em outras, observa um exemplo ou faz uma comparação curta. Quando aparecer o Estúdio, é sua vez de montar. Confira o que falta, envie a construção quando a aula pedir e responda ao quiz.",
       "inSeconds": null,
       "outSeconds": null
@@ -154,6 +154,7 @@
       "decision": "Recortar com as substituições e imagens indicadas."
     }
   ],
+  "cenas": [],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

@@ -1,6 +1,6 @@
 # aula-03 — Pular e voltar: gravidade e impulso
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Hoje o Dino vai saltar e voltar ao chão. Primeiro vamos descobrir por que ele ainda não consegue pular.
 
@@ -54,13 +54,42 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Comparar a trajetória com e sem aplicar gravidade.
 
-**Fala de ligação / orientação ao aluno:** “Este exemplo já dá um impulso ao Dino. Compare a subida sem gravidade com a volta ao chão quando você liga a gravidade. No seu projeto, ele primeiro precisa cair até o chão.”
+**Cena:** `gravity`, “Faça o Dino voltar ao chão”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** gravity. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica).
 
-**Conclusão observável:** Subida sem aplicar gravidade; Volta ao chão com gravidade.
+**O que a criança lê ao abrir:** “Aqui a gravidade está desligada. Toque no Dino para pular e veja até onde vai. Depois, com o Dino no ar, ligue a gravidade.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** O Dino está parado no chão.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Sem a gravidade, o que acontece depois do salto?”
+
+- O Dino sobe e não volta ✓ (o que acontece de verdade)
+- O Dino volta ao chão (se ela escolher esta, a tela conta depois: “Sem gravidade, o Dino continuou subindo e não voltou.”)
+
+O palpite volta à tela quando ela descobre: “Sem gravidade, não parou de subir”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com a gravidade desligada, faça o Dino pular e espere.” Ao descobrir: “Sem gravidade, não parou de subir”.
+2. Pedido: “Com o Dino no ar, ligue a gravidade e espere.” Ao descobrir: “Com gravidade, o pulo voltou ao chão”.
+
+**Frase de sucesso:** “A gravidade puxou para baixo, a subida virou descida e o Dino voltou ao chão!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Toque no Dino e olhe o número da altura. O número para de crescer?”
+2. “Com o Dino no ar, ligue a gravidade e olhe o que muda.”
+3. “Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que o Dino voltou ao chão?”
+
+- O pulo perde a força sozinho.
+- A gravidade puxa para baixo o tempo todo. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “O pulo dá ao Dino uma velocidade para cima. Sem gravidade ela nunca acaba, e o Dino sobe para sempre. A gravidade tira um pouco dessa velocidade a cada quadro, até a subida virar descida.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Traga o Dino para o chão
 
@@ -93,13 +122,42 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Comparar dois impulsos mantendo a mesma gravidade.
 
-**Fala de ligação / orientação ao aluno:** “Agora a gravidade fica igual. Faça um salto, aumente o impulso e compare as marcas de altura.”
+**Cena:** `impulse`, “Escolha a altura do salto”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** impulse. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica).
 
-**Conclusão observável:** Um salto completo; Outra altura com a mesma gravidade.
+**O que a criança lê ao abrir:** “Agora a gravidade fica igual. Faça um salto com impulso 9. Depois leve o impulso até 14 e pule de novo. Compare as duas marcas.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** O impulso está em 9. Faça o Dino saltar para ver a altura.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com impulso 9, o salto chega a 68 de altura. Com impulso 14, até onde o salto chega?”
+
+- Mais de 150, mais que o dobro ✓ (o que acontece de verdade)
+- Uns 100, um pouco mais alto (se ela escolher esta, a tela conta depois: “Com impulso 14, o salto passou de 150 de altura.”)
+
+O palpite volta à tela quando ela descobre: “Outro impulso, marca bem diferente”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Faça o Dino pular e espere o salto terminar.” Ao descobrir: “Um salto chegou ao chão”.
+2. Pedido: “Pule com impulso 9 e depois com impulso 14.” Ao descobrir: “Outro impulso, marca bem diferente”.
+
+**Frase de sucesso:** “Com a mesma gravidade, um impulso maior fez uma marca muito mais alta!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “A marca azul é o salto de antes.”
+2. “Mude só o impulso. A gravidade continua igual.”
+3. “Leve o impulso até 14 e toque no Dino para comparar as marcas.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Quem decide a altura do salto?”
+
+- A força do impulso, contra a mesma gravidade. ✓ (correta)
+- O tempo que você segura a tecla.
+
+**Explicação que ela lê ao acertar:** “A gravidade não mudou. Um empurrão maior faz a subida durar mais, e por isso a altura cresce muito.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Prepare o salto do seu jogo
 
@@ -125,6 +183,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Controle o dino com força 14, antes de desenhá-lo.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Hoje o Dino vai saltar e voltar ao chão. Primeiro vamos descobrir por que ele ainda não consegue pular.”
+
+**Fonte:** roteiro-aula-03-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-03-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Cortar o convite a testar agachamento para pássaros nesta aula; o objetivo é o salto. O modelo de gravidade é ilustrativo. O sintoma inicial do Estúdio é flutuar sem conseguir pular, não sair voando. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

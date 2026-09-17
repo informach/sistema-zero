@@ -1,3 +1,4 @@
+import { PISTAS_DE_FABRICA } from './cenas-editorial'
 import type { Recipe } from './meu-jeito-editorial'
 
 export const lateRecipes: Record<number, Recipe> = {
@@ -18,22 +19,66 @@ export const lateRecipes: Record<number, Recipe> = {
         title: 'Experimente: a pedra sumiu ou foi coberta?',
         kind: 'experiment',
         part: 1,
-        experiment: 'ordem',
         focus: 'Comparar as mesmas formas com a chama na frente e atrás.',
         reason:
           'O laboratório mostra a causa de um resultado normal do vetor, antes de a chama cobrir a própria pedra.',
-        say: 'Compare a chama na frente e atrás da pedra. As duas formas continuam presentes. Mude só a ordem, registre os dois resultados e descubra quando conseguimos ver a pedra inteira.',
-        edit: 'Reaproveita a explicação da pilha de papel como instrução do modelo. Não repetir a mesma demonstração em outra seção.',
-        visual:
-          'Uma pedra com crateras e uma chama, nas mesmas posições. Duas opções de ordem e uma lista indicando quem está na frente. Nada de mover, apagar ou trocar cores.',
-        criteria: ['Cobrir não apaga a forma.', 'Chama atrás deixa a pedra à frente.'],
-        help: 'A lista continua com duas formas. Compare quem cobre quem.',
-        question: [
-          'A pedra reapareceu quando a chama foi para trás. O que mudou?',
-          'A ordem das formas.',
-          'A pedra foi desenhada de novo.',
-          'As formas eram as mesmas. A que fica por cima pode esconder parte da outra.',
-        ],
+        cena: {
+          chave: 'experimento-ordem',
+          bloco: {
+            required: true,
+            title: 'A pedra sumiu ou foi coberta?',
+            instructions:
+              'A chama está cobrindo a pedra. Mude as camadas e descubra quando a pedra aparece inteira.',
+            hints: [],
+            prediction: {
+              prompt: 'Se a chama for uma camada para trás, onde a pedra aparece?',
+              choices: [
+                {
+                  id: 'atras',
+                  label: 'Atrás da chama',
+                  shows: 'A pedra ficou na frente da chama.',
+                },
+                {
+                  id: 'frente',
+                  label: 'Na frente da chama',
+                },
+              ],
+              correctChoiceId: 'frente',
+              revealOn: 'front',
+            },
+            activity: {
+              type: 'experimentation',
+              scene: 'layers',
+              pilha: 'camadas',
+              cast: {
+                hero: {
+                  name: 'pedra',
+                  gender: 'f',
+                },
+                scenery: {
+                  name: 'chama',
+                  gender: 'f',
+                },
+              },
+            },
+            checkpoint: {
+              prompt: 'A pedra reapareceu quando a chama foi para trás. O que mudou?',
+              choices: [
+                {
+                  id: 'b',
+                  label: 'A pedra foi desenhada de novo.',
+                },
+                {
+                  id: 'a',
+                  label: 'A ordem das formas.',
+                },
+              ],
+              correctChoiceId: 'a',
+              explanation:
+                'As formas eram as mesmas. A que fica por cima pode esconder parte da outra.',
+            },
+          },
+        },
       },
       {
         key: 'chama-externa',
@@ -265,32 +310,80 @@ export const lateRecipes: Record<number, Recipe> = {
           'Tamanho de quadro e tamanho visível do sprite são independentes.',
         ],
         help: 'A folha tem os desenhos; o sprite é quem os apresenta no jogo.',
+        cena: {
+          chave: 'demonstracao-folha',
+          bloco: {
+            required: true,
+            title: 'Veja duas imagens dentro de uma folha só',
+            instructions: 'Veja o jogo mostrar a folha inteira e depois um quadro de cada vez.',
+            hints: [],
+            activity: {
+              type: 'demonstration',
+              scene: 'sheet-vs-sprite',
+            },
+            prediction: {
+              prompt:
+                'A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?',
+              choices: [
+                {
+                  id: 'espremidas',
+                  label: 'Duas naves espremidas',
+                },
+                {
+                  id: 'uma',
+                  label: 'Uma nave só',
+                  shows: 'O jogo mostrou a folha inteira: as duas naves, espremidas.',
+                },
+              ],
+              correctChoiceId: 'espremidas',
+              revealOn: 'squeezed',
+            },
+          },
+          noFimDaLista: true,
+        },
       },
       {
         key: 'recorte',
         title: 'Experimente: onde cortar a folha?',
         kind: 'experiment',
         part: 3,
-        experiment: 'folha',
         focus:
           'Comparar largura de recorte 16 e 32 na mesma folha, mantendo o sprite do jogo em 54 × 54.',
         reason:
           'A criança testa a relação entre o quadro desenhado no Pinta e a medida informada ao carregar a folha.',
-        say: 'A folha deste exemplo tem dois desenhos de 32 × 32. Compare recortar com largura 16 e com largura 32. A altura fica em 32 e o tamanho no jogo não muda. Registre os dois e veja qual recorte pega uma nave inteira.',
-        edit: 'Modelo separado do projeto. Não alterar nem corrigir automaticamente os blocos da criança.',
-        visual:
-          'Folha 64 × 32 com moldura do recorte e resultado num quadrado fixo rotulado 54 × 54. Uma escolha: largura 16 ou 32. Sem painel de velocidade.',
-        criteria: [
-          '16 pega parte da nave; 32 pega um quadro inteiro.',
-          'A dimensão exibida no jogo permanece 54 × 54.',
-        ],
-        help: 'O corte segue o tamanho do desenho no Pinta, não o tamanho em que ele aparece no jogo.',
-        question: [
-          'Qual largura recorta uma nave inteira nesta folha?',
-          '32, a largura de cada quadro desenhado no Pinta.',
-          '54, porque esse é o tamanho do sprite na tela.',
-          'O sprite pode ampliar o quadro. O recorte continua seguindo a geometria da folha original.',
-        ],
+        cena: {
+          chave: 'experimento-recorte',
+          bloco: {
+            required: true,
+            title: 'Onde cortar a folha?',
+            instructions:
+              'Mude a largura do recorte e olhe a nave no jogo. Qual largura mostra uma nave inteira?',
+            hints: PISTAS_DE_FABRICA,
+            activity: {
+              type: 'experimentation',
+              scene: 'sheet-vs-sprite',
+              setup: {
+                goals: ['crop-half', 'crop-whole', 'size-apart'],
+              },
+            },
+            checkpoint: {
+              prompt: 'No bloco Carregar folha de quadros, qual é o tamanho de cada quadro?',
+              choices: [
+                {
+                  id: 'jogo',
+                  label: '54 x 54, o tamanho da nave no jogo.',
+                },
+                {
+                  id: 'quadro',
+                  label: '32 x 32, o tamanho de um quadro na folha.',
+                },
+              ],
+              correctChoiceId: 'quadro',
+              explanation:
+                'O bloco pergunta o tamanho de um quadro na folha: 32. O 54 é o tamanho em que a nave aparece no jogo.',
+            },
+          },
+        },
       },
       {
         key: 'carregar-folha',
@@ -428,6 +521,30 @@ export const lateRecipes: Record<number, Recipe> = {
           'Quadro do jogo não é desenho da folha.',
         ],
         help: 'Pergunte “é o tempo do jogo ou uma imagem da animação?” ao ler a palavra quadro.',
+        cena: {
+          chave: 'demonstracao-nascimento',
+          bloco: {
+            required: true,
+            title: 'Veja uma nave e muitos nascimentos',
+            instructions:
+              'Veja o que acontece com e sem o relógio. Você pode pausar e ver de novo.',
+            hints: [],
+            activity: {
+              type: 'demonstration',
+              scene: 'spawn',
+              cast: {
+                hero: {
+                  name: 'nave',
+                  gender: 'f',
+                },
+                obstacle: {
+                  name: 'asteroide',
+                  gender: 'm',
+                },
+              },
+            },
+          },
+        },
       },
       {
         key: 'novo-criador',

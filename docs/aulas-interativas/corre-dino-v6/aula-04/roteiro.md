@@ -1,6 +1,6 @@
 # aula-04 — O som deve escutar o pulo
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.
 
@@ -77,13 +77,43 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Separar comando de entrada e acontecimento real de pulo.
 
-**Fala de ligação / orientação ao aluno:** “Compare o som ligado à tecla com o som ligado ao pulo. Teste o toque e uma tentativa enquanto o Dino já está no ar.”
+**Cena:** `jump-sound`, “O som acompanha o pulo”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** jump-sound. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica).
 
-**Conclusão observável:** Som sem novo salto; Sem salto, o som espera; Som no salto por tecla; Som no salto por toque.
+**O que a criança lê ao abrir:** “Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar som para Quando o Dino pular e teste de novo.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Nenhum pulo e nenhum som ainda.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “O som ainda escuta a tecla Espaço. Com o Dino no ar, você aperta Espaço de novo. O que acontece?”
+
+- Nada: sem pulo novo, sem som (se ela escolher esta, a tela conta depois: “A linha do tempo ganhou um som sem pulo.”)
+- Toca o som, e o Dino não pula de novo ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Som sem pulo”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com Tocar som em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.” Ao descobrir: “Som sem pulo”.
+2. Pedido: “Com Tocar som em Quando apertar Espaço, pule tocando no Dino.” Ao descobrir: “Pulo sem som”.
+3. Pedido: “Leve Tocar som para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.” Ao descobrir: “Um som em cada pulo, por tecla e por toque”.
+
+**Frase de sucesso:** “Em Quando o Dino pular, o som toca uma vez em cada pulo, por tecla ou por toque!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.”
+2. “Agora pule tocando no Dino. Tocou som?”
+3. “Leve Tocar som para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que Tocar som foi para Quando o Dino pular?”
+
+- Assim o som toca uma vez por pulo, venha da tecla ou do toque. ✓ (correta)
+- Tanto faz: a tecla e o pulo tocam nas mesmas horas.
+
+**Explicação que ela lê ao acertar:** “A tecla é o que você faz. O pulo é o que o Dino faz. Nem toda tecla vira pulo, e tocar na tela também faz pular. O som que escuta o pulo nunca erra.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Faça o som acompanhar o pulo
 
@@ -110,6 +140,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Retire o evento provisório de tecla.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Seu Dino já pula. Hoje o som vai acompanhar o pulo, seja qual for o controle usado.”
+
+**Fonte:** roteiro-aula-04-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-04-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Parte 4: retirar o passeio pelos 27 sons do percurso obrigatório. Manter o som de pulo para conferir a relação evento → som. Não depender só da audição: a experiência nativa deve manter o contador/indicador visual de pulo e som. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

@@ -95,6 +95,22 @@
       "outSeconds": null
     }
   ],
+  "cenas": [
+    {
+      "secao": "livrinho",
+      "bloco": "demonstracao-quadros",
+      "cena": "frames",
+      "atividade": "demonstration",
+      "clipesAntes": ["video-livrinho"]
+    },
+    {
+      "secao": "fantasma",
+      "bloco": "demonstracao-fantasma",
+      "cena": "onion-skin",
+      "atividade": "demonstration",
+      "clipesAntes": ["video-fantasma"]
+    }
+  ],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

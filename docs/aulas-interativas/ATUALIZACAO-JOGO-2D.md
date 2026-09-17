@@ -40,3 +40,5 @@ bun docs/aulas-interativas/qa/gerar-blocos-cursos.ts --check
 ```
 
 Os testes `correDinoEditorial`, `desafioEditorial` e `meuJeitoEditorial` no pacote Studio compilam os blocos reais e exercitam o motor. Os validadores editoriais conferem fontes, hashes, âncoras, manifestos e reprodução dos arquivos. Os geradores não escrevem no banco nem publicam cursos.
+
+As cenas nativas de cada aula (experimentação e demonstração) são dados das receitas (`cena:` em cada passo, com o bloco na ordem das chaves do manifesto), e o roteiro descreve cada uma lendo o catálogo do core: instrução, previsão, pedidos e rótulos das metas, pistas e roteiro da demonstração ficam em dia sozinhos. Depois de rodar os três geradores, `git diff -- 'docs/aulas-interativas/**/manifesto.json'` sai vazio: JSON com o mesmo conteúdo não é regravado (o Biome preserva o desenho de cada objeto, e os blocos de cena editados à mão estão fechados numa linha só), e o que muda passa pelo Biome do repositório.

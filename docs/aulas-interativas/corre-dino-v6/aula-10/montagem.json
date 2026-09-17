@@ -88,6 +88,15 @@
       "outSeconds": null
     }
   ],
+  "cenas": [
+    {
+      "secao": "comparar-area",
+      "bloco": "experiencia-comparar-area",
+      "cena": "hitbox",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    }
+  ],
   "studio": {
     "edition": "jogo-2d-1.0-documento-2",
     "documentFormatVersion": 2,

@@ -1,3 +1,4 @@
+import { PISTAS_DE_FABRICA } from './cenas-editorial'
 import { absent, c, frame, inLoop, p, type Recipe, timer } from './corre-dino-editorial'
 
 const draw = c('desenhar', 'Desenhe o sprite dino dentro de A cada quadro.', 'sz_g2d_draw_sprite', {
@@ -115,7 +116,7 @@ export const earlyRecipes: Record<number, Recipe> = {
     steps: [
       {
         key: 'quadros',
-        title: 'Veja como desenhos viram movimento',
+        title: 'Descubra como desenhos viram movimento',
         kind: 'observe',
         part: 1,
         from: 'Você já viu um daqueles livrinhos de folhear',
@@ -126,6 +127,20 @@ export const earlyRecipes: Record<number, Recipe> = {
         visual:
           'Cartela com três poses do Dino, contador de quadros e reprodução curta. Mostrar um quadro por vez, sem controles de velocidade. Com movimento reduzido, trocar por cartões numerados.',
         edit: 'Usar a analogia do caderno; não repetir a montagem que vem na próxima seção.',
+        cena: {
+          chave: 'experiencia-laco',
+          bloco: {
+            required: true,
+            title: 'Descubra por que o desenho se repete',
+            instructions:
+              'Aperte Avançar 1 quadro e olhe a tela e o x do Dino. Depois desenhe o Dino a cada quadro. Por último, ligue Limpar a tela antes.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'draw-loop',
+            },
+          },
+        },
       },
       {
         key: 'motor',
@@ -185,10 +200,26 @@ export const earlyRecipes: Record<number, Recipe> = {
         key: 'camadas',
         title: 'Quem fica na frente?',
         kind: 'experiment',
-        mission: 'layers',
         focus: 'Trocar apenas a ordem de dois desenhos e observar a sobreposição.',
         reason: 'A criança acabou de ver o desaparecimento e agora pode testar sua causa.',
-        say: 'Neste exemplo, compare Floresta depois do Dino e Dino depois da Floresta. Só a ordem muda.',
+        cena: {
+          chave: 'experiencia-camadas',
+          bloco: {
+            title: 'Quem fica na frente?',
+            instructions:
+              'O Dino está escondido atrás da floresta. Mude a ordem de desenhar e descubra quem fica na frente. Só a ordem muda.',
+            hints: [
+              'O Dino está atrás da floresta. Onde fica a floresta na lista?',
+              'Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.',
+              'No fim, deixe o Dino no fim da lista, como fica no jogo.',
+            ],
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'layers',
+            },
+          },
+        },
       },
       {
         key: 'ordem-certa',
@@ -271,10 +302,38 @@ export const earlyRecipes: Record<number, Recipe> = {
         key: 'gravidade-modelo',
         title: 'O que faz o Dino voltar?',
         kind: 'experiment',
-        mission: 'gravity',
         focus: 'Comparar a trajetória com e sem aplicar gravidade.',
         reason: 'Isolar a ação da gravidade sem acrescentar força variável.',
-        say: 'Este exemplo já dá um impulso ao Dino. Compare a subida sem gravidade com a volta ao chão quando você liga a gravidade. No seu projeto, ele primeiro precisa cair até o chão.',
+        cena: {
+          chave: 'experiencia-gravidade-modelo',
+          bloco: {
+            title: 'O que faz o Dino voltar?',
+            instructions:
+              'Aqui a gravidade está desligada. Toque no Dino para pular e veja até onde vai. Depois, com o Dino no ar, ligue a gravidade.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'gravity',
+            },
+            prediction: {
+              prompt: 'Sem a gravidade, o que acontece depois do salto?',
+              choices: [
+                {
+                  id: 'sobe',
+                  label: 'O Dino sobe e não volta',
+                },
+                {
+                  id: 'volta',
+                  label: 'O Dino volta ao chão',
+                  shows: 'Sem gravidade, o Dino continuou subindo e não voltou.',
+                },
+              ],
+              correctChoiceId: 'sobe',
+              revealOn: 'floating',
+            },
+          },
+        },
       },
       {
         key: 'aplicar-gravidade',
@@ -291,11 +350,27 @@ export const earlyRecipes: Record<number, Recipe> = {
         key: 'impulso-modelo',
         title: 'O que muda a altura?',
         kind: 'experiment',
-        mission: 'impulse',
         focus: 'Comparar dois impulsos mantendo a mesma gravidade.',
         reason:
           'Só introduzir o segundo parâmetro depois de estabilizar a explicação da gravidade.',
-        say: 'Agora a gravidade fica igual. Faça um salto, aumente o impulso e compare as marcas de altura.',
+        cena: {
+          chave: 'experiencia-impulso-modelo',
+          bloco: {
+            title: 'O que muda a altura?',
+            instructions:
+              'Agora a gravidade fica igual. Faça um salto com impulso 9. Depois leve o impulso até 14 e pule de novo. Compare as duas marcas.',
+            hints: [
+              'A marca azul é o salto de antes.',
+              'Mude só o impulso. A gravidade continua igual.',
+              'Leve o impulso até 14 e toque no Dino para comparar as marcas.',
+            ],
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'impulse',
+            },
+          },
+        },
       },
       {
         key: 'regular-pulo',
@@ -385,11 +460,27 @@ export const earlyRecipes: Record<number, Recipe> = {
         key: 'entrada-ou-pulo',
         title: 'O dedo e o Dino fazem a mesma coisa?',
         kind: 'experiment',
-        mission: 'jump-sound',
         focus: 'Separar comando de entrada e acontecimento real de pulo.',
         reason:
           'O laboratório compara controles e repetição no ar sem obrigar a criança a reconstruir o caso.',
-        say: 'Compare o som ligado à tecla com o som ligado ao pulo. Teste o toque e uma tentativa enquanto o Dino já está no ar.',
+        cena: {
+          chave: 'experiencia-entrada-ou-pulo',
+          bloco: {
+            title: 'O dedo e o Dino fazem a mesma coisa?',
+            instructions:
+              'Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar som para Quando o Dino pular e teste de novo.',
+            hints: [
+              'Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.',
+              'Agora pule tocando no Dino. Tocou som?',
+              'Leve Tocar som para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.',
+            ],
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'jump-sound',
+            },
+          },
+        },
       },
       {
         key: 'escutar-dino',
@@ -461,10 +552,22 @@ export const earlyRecipes: Record<number, Recipe> = {
         key: 'ritmo',
         title: 'Dê um intervalo aos nascimentos',
         kind: 'experiment',
-        mission: 'spawn',
         focus: 'Comparar criação a cada quadro e criação com relógio.',
         reason: 'Isolar o tempo de nascimento antes de introduzir posição ou velocidade.',
-        say: 'Compare os nascimentos a cada quadro. Depois ligue o relógio e observe o espaço entre os cactos.',
+        cena: {
+          chave: 'experiencia-ritmo',
+          bloco: {
+            title: 'Dê um intervalo aos nascimentos',
+            instructions:
+              'Aperte ▶ Tempo e veja os cactos nascerem a cada quadro. Depois leve Criar cacto para dentro do relógio e observe o espaço entre os cactos.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'spawn',
+            },
+          },
+        },
       },
       {
         key: 'relogio-cacto',
@@ -511,6 +614,124 @@ export const earlyRecipes: Record<number, Recipe> = {
         visual:
           'Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo.',
         edit: 'Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4.',
+        cena: {
+          chave: 'demonstracao-sentido',
+          bloco: {
+            required: true,
+            title: 'Veja para que lado o número negativo leva',
+            instructions: 'Olhe o número da velocidade e para que lado o cacto anda a cada quadro.',
+            hints: [],
+            activity: {
+              type: 'demonstration',
+              scene: 'velocity',
+              cast: {
+                hero: {
+                  name: 'cacto',
+                  gender: 'm',
+                },
+              },
+              setup: {
+                actions: [
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 5,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 3.8,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 0,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 3,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 0,
+                    vy: 0,
+                  },
+                ],
+              },
+              script: [
+                {
+                  id: 'passo-1',
+                  caption:
+                    'Velocidade −5: a cada quadro o x do cacto diminui 5. O cacto vem para a esquerda.',
+                  highlight: 'scene',
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: -5,
+                      vy: 0,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 2,
+                    },
+                  ],
+                  waitFor: 'left',
+                },
+                {
+                  id: 'passo-2',
+                  caption:
+                    'Velocidade 5: a cada quadro o x aumenta 5. O cacto iria embora para a direita.',
+                  highlight: 'scene',
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: 5,
+                      vy: 0,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 2,
+                    },
+                  ],
+                  waitFor: 'moves',
+                },
+                {
+                  id: 'passo-3',
+                  caption: 'Velocidade 0: a cada quadro o x soma 0. O cacto fica no lugar.',
+                  highlight: 'scene',
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: 0,
+                      vy: 0,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 2,
+                    },
+                  ],
+                  waitFor: 'stopped',
+                },
+              ],
+            },
+            prediction: {
+              prompt:
+                'O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…',
+              choices: [
+                {
+                  id: 'cinco',
+                  label: '5',
+                  shows: 'Com −5, o x diminuiu e o cacto veio para a esquerda.',
+                },
+                {
+                  id: 'menos-cinco',
+                  label: '−5',
+                },
+              ],
+              correctChoiceId: 'menos-cinco',
+              revealOn: 'left',
+            },
+          },
+        },
       },
     ],
     finalChecks: [

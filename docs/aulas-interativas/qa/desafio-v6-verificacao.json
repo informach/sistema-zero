@@ -1,12 +1,13 @@
 {
   "status": "passed",
-  "scope": "Fontes, reprodução editorial, contratos do catálogo, critérios dos projetos e correção das respostas. Não inclui publicação nem mídia editada.",
+  "scope": "Fontes, reprodução editorial, contratos do catálogo, critérios dos projetos, cenas descritas no roteiro com os textos de hoje e correção das respostas. Não inclui publicação nem mídia editada.",
   "totals": {
     "sections": 78,
     "clips": 61,
-    "demonstrations": 17,
+    "demonstrations": 16,
     "applications": 32,
-    "experiments": 6,
+    "experiments": 2,
+    "cenas": 8,
     "questions": 12
   },
   "results": [
@@ -18,6 +19,7 @@
       "demonstrations": 4,
       "applications": 0,
       "experiments": 0,
+      "cenas": 0,
       "questions": 2
     },
     {
@@ -25,9 +27,10 @@
       "sourceHash": "047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6",
       "sections": 16,
       "clips": 12,
-      "demonstrations": 3,
+      "demonstrations": 2,
       "applications": 7,
-      "experiments": 2,
+      "experiments": 0,
+      "cenas": 3,
       "questions": 2
     },
     {
@@ -37,7 +40,8 @@
       "clips": 9,
       "demonstrations": 2,
       "applications": 5,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 1,
       "questions": 2
     },
     {
@@ -47,7 +51,8 @@
       "clips": 10,
       "demonstrations": 3,
       "applications": 5,
-      "experiments": 1,
+      "experiments": 0,
+      "cenas": 2,
       "questions": 2
     },
     {
@@ -58,6 +63,7 @@
       "demonstrations": 2,
       "applications": 6,
       "experiments": 1,
+      "cenas": 2,
       "questions": 2
     },
     {
@@ -68,6 +74,7 @@
       "demonstrations": 3,
       "applications": 9,
       "experiments": 1,
+      "cenas": 0,
       "questions": 2
     }
   ]

@@ -59,7 +59,7 @@
     "key": "demonstracao-jump-sound",
     "content": {
       "kind": "interactive",
-      "title": "Observe: O som acompanha o salto",
+      "title": "Observe: O som acompanha o pulo",
       "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
       "hints": [],
       "required": false,
@@ -87,7 +87,7 @@
     "key": "demonstracao-cleanup",
     "content": {
       "kind": "interactive",
-      "title": "Observe: Cuide dos cactos invisíveis",
+      "title": "Observe: Para onde vai o cacto que sai da tela?",
       "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
       "hints": [],
       "required": false,
@@ -101,7 +101,7 @@
     "key": "demonstracao-game-state",
     "content": {
       "kind": "interactive",
-      "title": "Observe: O relógio espera você começar",
+      "title": "Observe: O relógio na tela de início",
       "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
       "hints": [],
       "required": false,
@@ -115,7 +115,7 @@
     "key": "demonstracao-controls",
     "content": {
       "kind": "interactive",
-      "title": "Observe: Faça o convite funcionar",
+      "title": "Observe: O convite para começar",
       "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
       "hints": [],
       "required": false,
@@ -157,7 +157,7 @@
     "key": "demonstracao-score",
     "content": {
       "kind": "interactive",
-      "title": "Observe: Pontos só durante a partida",
+      "title": "Observe: Quando o placar cresce?",
       "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
       "hints": [],
       "required": false,

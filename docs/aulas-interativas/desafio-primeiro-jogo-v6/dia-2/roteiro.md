@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 16–24 minutos. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 
@@ -122,19 +122,44 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Descobrir o que o sinal de vy muda.
 
-**Fala revisada / orientação:** “Os dois tiros começam no mesmo lugar. Compare vy menos 9 e vy mais 9. Avance os passos e observe o número y e a direção. Só o sinal mudou; o vx continua zero.”
+**Cena:** `velocity`, “O que move o tiro a cada quadro”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem:** Dois percursos verticais, origem marcada e leituras de y; sequência manual ampliada de 10 quadros por passo.
+**Elenco:** personagem: tiro.
 
-**Controles:** vy = −9 ou vy = +9; avançar os três passos de cada comparação. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.
+**O que a criança lê ao abrir:** “Ponha a velocidade para baixo (o vy do seu tiro) em −9 e deixe o tempo passar. Depois troque para 9 e compare: para onde o tiro vai agora?”
 
-**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.
+**Como o palco começa:** O tiro está em x 240, y 210, com velocidade 0 para o lado e 0 para baixo.
 
-**Pergunta:** Qual vy faz o tiro subir?
+**Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado; a missão cobra só estas descobertas: “Velocidade positiva levou para baixo” e “Velocidade negativa levou para cima”.
 
-**Resposta:** vy = −9.. Subir diminui o y. A velocidade negativa produz essa diminuição.
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Com a velocidade para baixo em −9, para onde o tiro vai?”
 
-**Ajuda no mesmo objetivo:** O topo da tela tem valores menores de y. Veja em qual teste o y diminui.
+- Para baixo (se ela escolher esta, a tela conta depois: “Com o número negativo, o y diminuiu e o tiro subiu.”)
+- Para cima ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Velocidade negativa levou para cima”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Ponha a velocidade para baixo num número negativo e deixe o tempo passar.” Ao descobrir: “Velocidade negativa levou para cima”.
+2. Pedido: “Ponha a velocidade para baixo num número positivo e deixe o tempo passar.” Ao descobrir: “Velocidade positiva levou para baixo”.
+
+**Frase de sucesso:** “A posição muda sozinha porque a velocidade é somada nela em cada quadro!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “Olhe o número do y na faixa enquanto o tiro sobe ou desce.”
+2. “Mexa só na velocidade para baixo. A velocidade para o lado fica em 0.”
+3. “Ponha a velocidade para baixo em −9 e deixe o tempo passar. Depois ponha em 9 e deixe o tempo passar de novo.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “O que o sinal da velocidade para baixo decide?”
+
+- Se o tiro anda mais rápido ou mais devagar.
+- Se o tiro sobe ou desce. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “A velocidade para baixo é o vy, e ela é somada no y a cada quadro. Com 9, o y cresce e o tiro desce. Com −9, o y diminui e o tiro sobe.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Configure o disparo e seu som
 

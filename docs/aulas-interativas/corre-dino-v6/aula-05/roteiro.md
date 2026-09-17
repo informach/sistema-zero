@@ -1,6 +1,6 @@
 # aula-05 — Cactos no ritmo certo
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.
 
@@ -74,13 +74,42 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Comparar criação a cada quadro e criação com relógio.
 
-**Fala de ligação / orientação ao aluno:** “Compare os nascimentos a cada quadro. Depois ligue o relógio e observe o espaço entre os cactos.”
+**Cena:** `spawn`, “Abra espaço entre os cactos”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** spawn. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Criação em cada quadro; Criação com intervalo.
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo e veja os cactos nascerem a cada quadro. Depois leve Criar cacto para dentro do relógio e observe o espaço entre os cactos.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Ainda não nasceu nenhum cacto.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um cacto em CADA quadro, como fica a tela?”
+
+- Uma parede de cactos ✓ (o que acontece de verdade)
+- Cactos bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram cactos colados uns nos outros.”)
+
+O palpite volta à tela quando ela descobre: “Viu a parede de cactos”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com Criar cacto em A cada quadro, deixe o tempo passar um segundo inteiro.” Ao descobrir: “Viu a parede de cactos”.
+2. Pedido: “Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.” Ao descobrir: “Com o relógio, sobrou espaço”.
+
+**Frase de sucesso:** “Com o relógio, nasce um cacto de cada vez e sobra espaço entre um cacto e outro!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Veja quantos cactos nascem enquanto o tempo passa.”
+2. “Compare o mesmo tempo com e sem o relógio.”
+3. “Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que abriu espaço entre os cactos?”
+
+- Deixar os cactos mais rápidos.
+- Esperar um tempo entre uma criação e a outra. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “A velocidade dos cactos não mudou. O que mudou foi o tempo entre um nascimento e o seguinte, e é isso que vira espaço.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Monte os dois ritmos do jogo
 
@@ -169,7 +198,52 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Trecho original selecionado, antes da edição:** Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula pra escapar. Ah, e por enquanto, se o dino encostar num cacto, ainda não acontece nada. Ele atravessa como fantasma. É de propósito, e é justamente o que a gente resolve lá na Aula 9. Agora vamos sentir o que dois números fazem com a dificuldade do jogo inteiro. Primeiro a velocidade. No bloco de criar o cacto, troca o vx de menos 5 pra menos 3 e joga um pouco: eles vêm devagar, dá até sono. Agora põe menos 9 e joga de novo: vêm voando, e você tem que acertar o tempo do pulo na hora exata. Agora o relógio. Troca o 1.4 por 0.8 e joga: vem cacto quase colado um no outro, bem difícil. Agora põe 2.5 e joga mais uma vez: vem um de vez em quando, bem espaçado. Repara no que a gente acabou de fazer: com dois numerozinhos, mexeu na dificuldade do jogo inteiro. Rápido e junto é difícil. Devagar e espaçado é fácil. Agora, antes de fechar, põe os dois de volta nos números do nosso jogo: o vx em menos 5 e o relógio em 1.4. Esses dois são os valores que as próximas aulas usam, então eles precisam voltar pro lugar. E não é frescura minha: lá na última aula do curso você vai criar uma caixinha que começa valendo menos 5, e ela tem que combinar com o vx do cacto. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.
 
-**Aluno:** assiste, pausa ou revê. Sem alterar parâmetros e sem converter esta seção em experimentação. Conclui com 90% do clipe assistido.
+**Aluno:** assiste ao clipe, pausa ou revê. Depois, na mesma seção, abre a cena abaixo. É a cena que conclui a seção.
+
+#### A cena depois do clipe
+
+**Cena:** `velocity`, “O que move o cacto a cada quadro”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: cacto.
+
+**O que a criança lê ao abrir:** “Olhe o número da velocidade e para que lado o cacto anda a cada quadro.”
+
+**Como o palco começa:** O cacto está em x 400, y 230, com velocidade 0 para o lado e 0 para baixo.
+
+**Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…”
+
+- 5 (se ela escolher esta, a tela conta depois: “Com −5, o x diminuiu e o cacto veio para a esquerda.”)
+- −5 ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Velocidade negativa levou para a esquerda”.
+
+**Partes da demonstração (roteiro escrito na aula):**
+
+1. “Velocidade −5: a cada quadro o x do cacto diminui 5. O cacto vem para a esquerda.” A parte espera acontecer: “Velocidade negativa levou para a esquerda”.
+2. “Velocidade 5: a cada quadro o x aumenta 5. O cacto iria embora para a direita.” A parte espera acontecer: “A posição mudou sozinha, com o relógio”.
+3. “Velocidade 0: a cada quadro o x soma 0. O cacto fica no lugar.” A parte espera acontecer: “Com velocidade zero, o cacto fica parado”.
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Vamos criar cactos, fazê-los andar e dar espaço entre um e outro.”
+
+**Fonte:** roteiro-aula-05-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-05-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Não obrigar a criança a montar a avalanche: observar e experimentar já mostram a causa. Conservar 1,4 segundo, x 560 e velocidade -5 como estado de saída para as próximas aulas. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

@@ -1,6 +1,6 @@
 # aula-13 — A dificuldade cresce e sabe parar
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Vamos guardar a velocidade base, aumentá-la aos poucos e colocar um limite. Depois conferiremos o jogo completo.
 
@@ -118,13 +118,44 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Observar a regra de velocidade atribuída ao nascer sob uma base limitada.
 
-**Fala de ligação / orientação ao aluno:** “Crie um cacto, avance o relógio e acompanhe a base até -9. Compare com um cacto novo. No limite, descontar 1 ainda pode dar -10; o antigo conserva a velocidade que recebeu.”
+**Cena:** `acceleration`, “Acelere com um limite”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** acceleration. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Base chega a −9 e permanece; No limite, sorteio produz −10; Cacto anterior conserva sua velocidade.
+**O que a criança lê ao abrir:** “Aperte Passar 5 segundos várias vezes e olhe a velocidade de cada cacto novo. O que acontece quando a base chega em −9?”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** A base está em −5, com a condição ligada. 0 cactos na fileira.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com a condição Se velocidade > −9 ligada, um cacto novo ainda pode sair com −10?”
+
+- Não, −9 é o limite (se ela escolher esta, a tela conta depois: “Com a base parada em −9, o sorteio tirou mais 1 e nasceu um cacto −10.”)
+- Pode, se o sorteio tirar mais 1 ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Mesmo parada em −9, saiu um cacto −10”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com a condição ligada, aperte Passar 5 segundos cinco vezes.” Ao descobrir: “A base parou em −9”.
+2. Pedido: “Com a base em −9 e a condição ligada, aperte Passar 5 segundos mais quatro vezes.” Ao descobrir: “Mesmo parada em −9, saiu um cacto −10”.
+3. Pedido: “Aperte Passar 5 segundos três vezes e olhe o número embaixo de cada cacto.” Ao descobrir: “Os cactos velhos não mudaram de número”.
+4. Pedido: “Desligue a condição e aperte Passar 5 segundos cinco vezes.” Ao descobrir: “Sem a condição, a base passou de −9”.
+
+**Frase de sucesso:** “A base parou em −9, e mesmo assim um cacto saiu com −10. O sorteio vem depois da base!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Olhe o número embaixo de cada cacto da fileira.”
+2. “Passe 5 segundos até a conta da base dizer não.”
+3. “Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “A condição Se velocidade > −9 segura o quê?”
+
+- Qualquer velocidade que aparece no jogo.
+- Só a base, antes do sorteio. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “A base fica mais rápida até −9 e para. O sorteio vem depois e ainda pode tirar mais 1, por isso sai −10 às vezes.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Monte o acelerador com limite
 
@@ -173,6 +204,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Atualize a descrição com espaço, seta para cima e toque.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Vamos guardar a velocidade base, aumentá-la aos poucos e colocar um limite. Depois conferiremos o jogo completo.”
+
+**Fonte:** roteiro-aula-13-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-13-corre-dino.md → Fecho do curso.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. O limite -9 vale para a base; um novo cacto ainda pode receber -10 depois do sorteio. Os antigos mantêm a velocidade recebida. Não exigir três partidas nem prometer que uma comparação pequena mede cientificamente a diversão. Fecho: substituir a exigência de publicação e mural por entrega do projeto e quiz. Publicar/compartilhar é uma escolha posterior, sem bloquear conclusão. Não prometer números de XP não conferidos. O trecho de Ponte pode entrar como curiosidade breve do fechamento, sem exigir mudança de modo nem nova atividade. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

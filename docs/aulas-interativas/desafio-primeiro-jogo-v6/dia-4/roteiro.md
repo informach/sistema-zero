@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 18–26 minutos. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 
@@ -46,10 +46,35 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Trecho original antes da edição:** Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos, o jogo precisa de uma memória, um lugarzinho que guarda um número. Isso se chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.
 
-**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.
+**Conclusão:** o clipe tem pausa e repetição. Depois dele, na mesma seção, vem a cena abaixo, e é ela que conclui a seção.
 
 
 **Ajuda no mesmo objetivo:** Veja qual ação muda o número e qual apenas mostra o mesmo número.
+
+### A cena depois do clipe
+
+**Cena:** `variable`, “Guardar, mudar e mostrar”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: nave e obstáculo: asteroide.
+
+**O que a criança lê ao abrir:** “Veja o número mudar dentro da caixa antes de aparecer na tela.”
+
+**Como o palco começa:** A caixa pontos ainda não existe.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: a caixa pontos guarda 0. Um acerto soma 1, com Mostrar placar desligado. Quanto a caixa guarda?”
+
+- 0, porque ninguém viu (se ela escolher esta, a tela conta depois: “O número da caixa mudou, mesmo sem aparecer na tela.”)
+- 1 ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Mudou o valor sem estar na tela”.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “O jogo cria a caixa pontos e guarda 0.”
+2. “Três acertos: a caixa vai para 3. A tela ainda não mostra nada.”
+3. “Mostrar placar copia o 3 para a tela. A caixa continua 3.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ## Crie a memória dos pontos
 
@@ -222,10 +247,35 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Trecho original antes da edição:** Clica na área do jogo. Olha o seu placar lá em cima e os três coraçõezinhos embaixo dele! Agora explode uns asteroides e vê os pontos subirem. E aí, faz uma coisa que quase nunca se pede num jogo: deixa um asteroide te acertar de propósito. Sentiu? Explosão, a tela tremeu, a nave ficou piscando invencível e um coração apagou. Leva mais uma batida... dois corações. O seu jogo agora tem o que ganhar e o que perder. Só falta uma coisa: quando os corações acabarem, nada acontece ainda. E quando os pontos chegarem lá no alto, também nada. Isso é assunto pra amanhã.
 
-**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.
+**Conclusão:** o clipe tem pausa e repetição. Depois dele, na mesma seção, vem a cena abaixo, e é ela que conclui a seção.
 
 
 **Ajuda no mesmo objetivo:** Se a segunda batida muito próxima não tira vida, pode ser a proteção funcionando.
+
+### A cena depois do clipe
+
+**Cena:** `lives`, “O que a batida muda?”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: nave e obstáculo: asteroide.
+
+**O que a criança lê ao abrir:** “Veja o que o acerto muda e o que a batida muda.”
+
+**Como o palco começa:** 3 vidas e 0 pontos no placar.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?”
+
+- Só o coração ✓ (o que acontece de verdade)
+- O placar e o coração (se ela escolher esta, a tela conta depois: “A batida não tirou nenhum ponto do placar.”)
+
+O palpite volta à tela quando ela descobre: “Os pontos ficaram, mesmo perdendo vida”.
+
+**Partes da demonstração (roteiro escrito na aula):**
+
+1. “O tiro acertou um asteroide: o placar ganhou 1. Os corações não mudaram.”
+2. “Um asteroide bateu na nave: saiu um coração. O placar continua 1.”
+3. “Mais duas batidas: acabaram os corações e a partida. O placar guardou o 1.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ## Teste final e acompanhamento
 

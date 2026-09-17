@@ -1,3 +1,4 @@
+import { PREVISAO_DE_FABRICA } from './cenas-editorial'
 import type { Recipe } from './meu-jeito-editorial'
 
 export const earlyRecipes: Record<number, Recipe> = {
@@ -184,28 +185,42 @@ export const earlyRecipes: Record<number, Recipe> = {
       },
       {
         key: 'espelho',
-        title: 'Experimente: um traço, dois lados',
+        title: 'Experimente: o espelho no seu traço',
         kind: 'experiment',
         part: 2,
-        experiment: 'espelho',
         focus: 'Comparar o mesmo traço de Linha com Espelho lado a lado desligado e ligado.',
         reason:
-          'Uma comparação curta prepara a ferramenta sem pedir que a criança refaça o próprio desenho.',
-        say: 'Neste exemplo, faça o mesmo traço com o espelho desligado e ligado. Registre os dois resultados. O que apareceu do outro lado? Depois vamos usar essa ideia na sua nave.',
-        edit: 'Substitui a repetição explicativa do espelho; manter o clique real no vídeo do contorno.',
-        visual:
-          'Grade ampliada, eixo central tracejado e o mesmo traço fixo à esquerda. Única escolha: espelho ligado/desligado. Não oferecer pincel livre.',
-        criteria: [
-          'Mesma linha em ambos os testes.',
-          'Com espelho, traço correspondente à direita.',
-        ],
-        help: 'Compare os dois lados do eixo. Este exemplo usa Linha; o balde tem outro comportamento.',
-        question: [
-          'O que o espelho mudou neste teste?',
-          'Criou o traço correspondente do outro lado.',
-          'Virou o desenho inteiro de cabeça para baixo.',
-          'Espelho lado a lado repete o traço enquanto você desenha. Espelhar na horizontal ou na vertical transforma algo já desenhado.',
-        ],
+          'Pintar a asa com os espelhos desligados e depois ligados prepara a ferramenta sem pedir que a criança refaça o próprio desenho.',
+        cena: {
+          chave: 'experimento-espelho',
+          bloco: {
+            required: true,
+            title: 'O que o espelho faz com o seu traço?',
+            instructions:
+              'Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'symmetry',
+            },
+            checkpoint: {
+              prompt: 'O que os dois espelhos fazem com o traço que você pinta?',
+              choices: [
+                {
+                  id: 'a',
+                  label: 'Pintam uma cópia do traço do outro lado do meio.',
+                },
+                {
+                  id: 'grudado',
+                  label: 'Deixam o traço mais grosso, grudado no primeiro.',
+                },
+              ],
+              correctChoiceId: 'a',
+              explanation:
+                'O espelho lado a lado copia o traço para o outro lado do meio, e o de cima e de baixo copia para cima ou para baixo. A cópia aparece enquanto você pinta.',
+            },
+          },
+        },
       },
       {
         key: 'contorno',
@@ -272,6 +287,21 @@ export const earlyRecipes: Record<number, Recipe> = {
           'Mesma nave, posição e escala em comparação; seta fica fora da arte. Mostrar corpo e cabine separadamente.',
         criteria: ['Sombra do lado oposto à luz.', 'Tom de luz da própria família da cor.'],
         help: 'A seta mostra de onde vem a luz; ela não faz parte da nave.',
+        cena: {
+          chave: 'demonstracao-luz',
+          bloco: {
+            title: 'A luz dá volume',
+            instructions:
+              'Aperte Ver acontecer. Olhe de que lado fica a sombra quando o sol muda de lugar.',
+            hints: [],
+            required: false,
+            activity: {
+              type: 'demonstration',
+              scene: 'shading',
+              presentation: 'inline',
+            },
+          },
+        },
       },
       {
         key: 'volume',
@@ -372,6 +402,21 @@ export const earlyRecipes: Record<number, Recipe> = {
           'Mostrar quadro 1 e quadro 2 lado a lado, depois alternância breve, com nave fixa. Sem controles.',
         criteria: ['Diferenciar imagem de um quadro e sequência de imagens.'],
         help: 'O movimento da nave pelo jogo e a troca dos desenhos do motor são coisas distintas.',
+        cena: {
+          chave: 'demonstracao-quadros',
+          bloco: {
+            required: true,
+            title: 'Veja dois desenhos virarem movimento',
+            instructions:
+              'Veja o quadro 1, o quadro 2 e depois a prévia trocando os dois, devagar e rápido.',
+            hints: [],
+            activity: {
+              type: 'demonstration',
+              scene: 'frames',
+            },
+          },
+          noFimDaLista: true,
+        },
       },
       {
         key: 'fogo-base',
@@ -465,6 +510,21 @@ export const earlyRecipes: Record<number, Recipe> = {
           'Não acrescenta quadros nem desenhos à exportação.',
         ],
         help: 'Se não apareceu no primeiro, está funcionando como previsto.',
+        cena: {
+          chave: 'demonstracao-fantasma',
+          bloco: {
+            required: true,
+            title: 'Veja o fantasma do quadro anterior',
+            instructions:
+              'Olhe o fogo do quadro 2 sozinho. Depois veja o fantasma ligado e compare os dois fogos.',
+            hints: [],
+            activity: {
+              type: 'demonstration',
+              scene: 'onion-skin',
+            },
+          },
+          noFimDaLista: true,
+        },
       },
       {
         key: 'nome-voando',
@@ -571,6 +631,21 @@ export const earlyRecipes: Record<number, Recipe> = {
           'Mesma pedra com interior fixo enquanto só a linha muda. Fundo quadriculado continua aparecendo onde não há forma.',
         criteria: ['Identificar interior e borda separadamente.'],
         help: 'Plaquinha cheia é o interior; moldura é a linha em volta.',
+        cena: {
+          chave: 'demonstracao-cores',
+          bloco: {
+            title: 'A cor de dentro e a linha de fora',
+            instructions:
+              'Aperte Ver acontecer e olhe a pedra. Veja o que sobra quando uma parte fica Sem cor.',
+            hints: [],
+            required: false,
+            activity: {
+              type: 'demonstration',
+              scene: 'fill-stroke',
+              presentation: 'inline',
+            },
+          },
+        },
       },
       {
         key: 'traco',
@@ -653,25 +728,39 @@ export const earlyRecipes: Record<number, Recipe> = {
         title: 'Experimente: aproxime as duas bordas',
         kind: 'experiment',
         part: 4,
-        experiment: 'bordas',
         focus: 'Comparar a mesma silhueta em pixels e em vetor em duas ampliações.',
         reason:
           'Agora a criança já desenhou com os dois estilos. A comparação usa uma silhueta comum para isolar a representação.',
-        say: 'Veja a mesma pedra em pixels e em vetor. Compare no tamanho pequeno e ampliado, sem mudar o desenho. Registre os dois. O que acontece com a borda de cada uma?',
-        edit: 'Transforma as duas idas à galeria da Parte 4 numa comparação delimitada na aula. O zoom dos desenhos reais permanece como recurso de revisão, não mais uma tarefa obrigatória.',
-        visual:
-          'Mesma forma e mesma escala dos dois lados; primeiro 1×, depois 8×. Identificar pixels por degraus, não por uma imagem deliberadamente embaçada.',
-        criteria: [
-          'Pixels ficam evidentes na ampliação; curva é redesenhada no exemplo vetorial.',
-          'Não concluir que um estilo é melhor que o outro.',
-        ],
-        help: 'Compare a borda, não a cor. A tela física também usa pixels; a diferença é como o desenho é representado.',
-        question: [
-          'No exemplo ampliado, por que o vetor preserva a curva?',
-          'A forma é redesenhada a partir dos pontos e curvas.',
-          'Porque o Pinta adiciona mais quadros de animação.',
-          'A representação vetorial permite redesenhar a curva. Uma imagem exportada em pixels depois tem a resolução com que foi exportada.',
-        ],
+        cena: {
+          chave: 'experimento-bordas',
+          bloco: {
+            required: true,
+            title: 'De perto, a borda conta',
+            instructions: 'Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'pixel-vector',
+            },
+            checkpoint: {
+              prompt: 'Com a lupa bem perto, por que a pedra de vetor continua lisa?',
+              choices: [
+                {
+                  id: 'b',
+                  label: 'Ela é feita de quadradinhos bem menores.',
+                },
+                {
+                  id: 'a',
+                  label: 'Ela é refeita a partir dos pontos e das curvas.',
+                },
+              ],
+              correctChoiceId: 'a',
+              explanation:
+                'O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem.',
+            },
+            prediction: PREVISAO_DE_FABRICA,
+          },
+        },
       },
     ],
     delivery:

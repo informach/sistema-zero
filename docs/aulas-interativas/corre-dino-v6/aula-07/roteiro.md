@@ -1,6 +1,6 @@
 # aula-07 — O jogo só corre quando está jogando
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Vamos separar inicio, jogando e fim. Hoje o jogo aprenderá a esperar; a tela com título vem na próxima aula.
 
@@ -103,13 +103,43 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Observar e impedir atividade fora do estado jogando.
 
-**Fala de ligação / orientação ao aluno:** “Compare o início com a partida. Ligue a condição e observe quando as ações do jogo podem acontecer. Volte ao início para conferir a espera.”
+**Cena:** `game-state`, “O relógio na tela de início”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** game-state. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Relógio funcionando no início; Relógio espera no início; Relógio funciona jogando.
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Na tela de início. 0 cactos criados até agora.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Na tela de início, antes de começar, nascem cactos?”
+
+- Sim, já nascem ✓ (o que acontece de verdade)
+- Não, só depois de começar (se ela escolher esta, a tela conta depois: “Os cactos nasceram na tela de início, antes de começar.”)
+
+O palpite volta à tela quando ela descobre: “Nasceram cactos antes de começar”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Na tela de início, com Criar cacto fora do Se, deixe o tempo passar.” Ao descobrir: “Nasceram cactos antes de começar”.
+2. Pedido: “Leve Criar cacto para dentro de Se jogando e deixe o tempo passar 2 segundos na tela de início.” Ao descobrir: “No início, nada nasceu por 2 segundos”.
+3. Pedido: “Com Criar cacto dentro de Se jogando, comece a partida e deixe o tempo passar.” Ao descobrir: “Jogando, voltou a nascer”.
+
+**Frase de sucesso:** “Dentro de Se jogando, Criar cacto espera no início e volta a criar na partida!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “Aperte ▶ na tela de início e conte os cactos que aparecem.”
+2. “O que fica dentro de Se jogando só acontece durante a partida.”
+3. “Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que faz Criar cacto esperar na tela de início?”
+
+- O botão de começar, que liga o relógio.
+- Uma condição: só criar cactos enquanto estiver jogando. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “O relógio está sempre lá. A condição é um guarda na porta: ela deixa passar só quando a partida está acontecendo.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Faça o relógio esperar também
 
@@ -134,6 +164,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - No relógio de 1,4 s, crie cactos somente se a tela for jogando.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Vamos separar inicio, jogando e fim. Hoje o jogo aprenderá a esperar; a tela com título vem na próxima aula.”
+
+**Fonte:** roteiro-aula-07-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-07-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Não inventar um botão de começar nesta aula; ele pertence à aula 8. São dois grupos protegidos nesta aula: quadro e relógio. Evitar referências futuras a três embrulhos. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

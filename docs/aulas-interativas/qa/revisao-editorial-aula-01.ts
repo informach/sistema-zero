@@ -1,4 +1,11 @@
 import type { LearningManifest, SectionProjectCheck } from '../../../packages/core/src/learning'
+import {
+  blocoDaCena,
+  type CenaAnterior,
+  type CenaDaAula,
+  intencaoDaCena,
+  PISTAS_DE_FABRICA,
+} from './cenas-editorial'
 
 const sourceFile = 'roteiro-aula-01-corre-dino.md'
 export const lessonOneCuts = {
@@ -73,6 +80,79 @@ export const lessonOneCuts = {
   ].map((clip) => ({ ...clip, sourceFile, inSeconds: null, outSeconds: null })),
 }
 
+/**
+ * As cenas da aula 1, como dado. As três primeiras entraram em 14/09/2026 logo depois do clipe de cada
+ * passo (tela, descrição e coordenadas); a descoberta de criar e desenhar é a experimentação que já
+ * existia, com criar e desenhar como dois controles separados desde o lote 5 do Raio-X.
+ *
+ * ⚠️⚠️ A pergunta do fim ficou só em DUAS das quatro cenas (decisão da dona, 17/09/2026). São quatro
+ * cenas seguidas, cada uma com previsão E pergunta: oito momentos de responder na primeira aula da
+ * criança. As quatro previsões continuam (é o palpite antes de mexer, e não vale nota); a `stage-size`
+ * e a `screen-reader` dispensam a pergunta do fim (`semPerguntaFinal`), e a `coordinates` e a `world`
+ * — as duas que ensinam a ideia que a aula cobra no quiz — a mantêm.
+ */
+export const lessonOneScenes = {
+  'video-tela-v7': {
+    chave: 'experiencia-tela',
+    bloco: {
+      required: true,
+      title: 'Descubra o limite da tela',
+      instructions:
+        'Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.',
+      hints: [],
+      activity: { type: 'experimentation', scene: 'stage-size' },
+      semPerguntaFinal: true,
+    },
+  },
+  'video-descricao-demo-v7': {
+    chave: 'experiencia-leitor-de-tela',
+    bloco: {
+      required: true,
+      title: 'Ouça o que a descrição informa',
+      instructions:
+        'Aperte Ouvir a tela com o campo vazio. Depois escreva a descrição do seu jogo e ouça de novo.',
+      hints: [],
+      activity: { type: 'experimentation', scene: 'screen-reader' },
+      semPerguntaFinal: true,
+    },
+  },
+  'video-coordenadas-demo-v7': {
+    chave: 'experiencia-coordenadas',
+    bloco: {
+      required: true,
+      title: 'Descubra o endereço na tela',
+      instructions:
+        'Mude o x e veja para que lado o Dino vai. Depois mude só o y e compare. Por último, leve o Dino para x 0 e y 0.',
+      hints: [],
+      activity: { type: 'experimentation', scene: 'coordinates' },
+    },
+  },
+} satisfies Record<string, CenaDaAula>
+
+export const lessonOneDiscovery = {
+  chave: 'descoberta',
+  bloco: {
+    required: false,
+    title: 'Criar e mostrar são a mesma coisa?',
+    // Lote 5 do Raio-X: criar e desenhar são controles independentes, e a instrução não diz o que a
+    // tela mostra. Sem "Neste exemplo," (full review de experiência, B11).
+    instructions:
+      'Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.',
+    hints: PISTAS_DE_FABRICA,
+    activity: { type: 'experimentation', scene: 'world' },
+  },
+} satisfies CenaDaAula
+
+/** Clipes da aula 1 que mostram ou descrevem a experiência num estado que não existe mais. */
+export const lessonOneOldScenes: Record<string, CenaAnterior> = {
+  'video-coordenadas-demo-v7': {
+    cena: 'coordinates',
+    oQueMudou:
+      'A seção deixou de ser só o vídeo: depois dele a criança abre a cena coordinates e mexe no x e no y. O marcador animado sobre a cartela e a frase de que não há arraste nem parâmetros para a criança descrevem a demonstração antiga.',
+    acao: 'cortar',
+  },
+}
+
 export function reviseLessonOne(source: LearningManifest): LearningManifest {
   if (source.courseSlug !== 'corre-dino' || source.lessonSlug !== 'aula-01')
     throw new Error('A revisão editorial é específica da aula 1 do Corre Dino.')
@@ -82,13 +162,6 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
   const quiz = manifest.blocks.find((block) => block.key === 'quiz-final')
   if (!workspace || !discovery || !quiz || !('content' in quiz) || quiz.content.kind !== 'quiz')
     throw new Error('A aula 1 precisa preservar projeto, experimentação e quiz.')
-  if ('content' in discovery && discovery.content.kind === 'interactive') {
-    discovery.content.title = 'Criar e mostrar são a mesma coisa?'
-    discovery.content.instructions =
-      // Lote 5 do Raio-X: criar e desenhar são controles independentes, e a instrução não diz o que a
-      // tela mostra. Sem "Neste exemplo," (full review de experiência, B11).
-      'Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.'
-  }
   quiz.content.questions = quiz.content.questions.filter(
     (question) => question.id !== 'q3-coordenadas',
   )
@@ -108,10 +181,14 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     content: { kind: 'dialogue', pose: 'speaking', text },
   })
   manifest.blocks = [
-    ...lessonOneCuts.clips.map((clip) => ({
-      key: clip.key,
-      plannedVideo: `Fonte: ${sourceFile}, ${clip.sourceSection}. Entrada: “${clip.entry}”. Saída: “${clip.exit}”. Montagem: ${clip.edit} Timecodes dependem da conferência do vídeo gravado.`,
-    })),
+    ...lessonOneCuts.clips.flatMap((clip) => {
+      const video = {
+        key: clip.key,
+        plannedVideo: `Fonte: ${sourceFile}, ${clip.sourceSection}. Entrada: “${clip.entry}”. Saída: “${clip.exit}”. Montagem: ${clip.edit} Timecodes dependem da conferência do vídeo gravado.`,
+      }
+      const cena = lessonOneScenes[clip.key as keyof typeof lessonOneScenes]
+      return cena ? [video, blocoDaCena(cena)] : [video]
+    }),
     dialogue(
       'orientacao-iniciar-v7',
       'Em Áreas do projeto, coloque Ao iniciar no espaço de montar. Nesta etapa ele fica vazio. Confira seu projeto para continuar.',
@@ -128,10 +205,10 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       'orientacao-dino-v7',
       'Em Jogo 2D, Kits prontos, Dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula.',
     ),
-    discovery,
+    blocoDaCena(lessonOneDiscovery),
     dialogue(
       'orientacao-descoberta-v7',
-      'Esta é uma experiência separada do seu projeto. Vamos descobrir por que criar não basta para aparecer. No seu jogo, o desenho será montado na próxima aula.',
+      'Esta é uma experiência separada do seu projeto. No seu jogo, o desenho vem na próxima aula.',
     ),
     dialogue(
       'orientacao-entrega-v7',
@@ -196,6 +273,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     objective: string,
     blockKeys: string[],
     projectChecks?: SectionProjectCheck[],
+    concluiCom?: string[],
   ): Section => ({
     key,
     title,
@@ -207,7 +285,9 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     pendingMedia: [],
     completion: {
       version: 1,
-      blockIds: projectChecks ? [] : blockKeys.filter((key) => !key.startsWith('orientacao-')),
+      blockIds:
+        concluiCom ??
+        (projectChecks ? [] : blockKeys.filter((key) => !key.startsWith('orientacao-'))),
       ...(projectChecks ? { projectChecks } : {}),
     },
   })
@@ -232,15 +312,18 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       'Prepare a tela e veja seus limites',
       'application',
       'Preparar o palco de 480 × 270 e tornar sua borda visível.',
-      ['video-tela-v7', 'orientacao-tela-v7'],
+      ['video-tela-v7', lessonOneScenes['video-tela-v7'].chave, 'orientacao-tela-v7'],
       [checks.stage, checks.border],
+      [lessonOneScenes['video-tela-v7'].chave],
     ),
     section(
       'descricao-demonstracao-v7',
       'Ouça o que a descrição informa',
-      'demonstration',
+      intencaoDaCena(lessonOneScenes['video-descricao-demo-v7']),
       'Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.',
-      ['video-descricao-demo-v7'],
+      ['video-descricao-demo-v7', lessonOneScenes['video-descricao-demo-v7'].chave],
+      undefined,
+      [lessonOneScenes['video-descricao-demo-v7'].chave],
     ),
     section(
       'descricao-criar-v7',
@@ -252,10 +335,12 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     ),
     section(
       'coordenadas-demonstracao-v7',
-      'Veja como funciona o endereço na tela',
-      'demonstration',
+      'Descubra o endereço na tela',
+      intencaoDaCena(lessonOneScenes['video-coordenadas-demo-v7']),
       'Observar x crescendo para a direita e y crescendo para baixo, uma direção por vez.',
-      ['video-coordenadas-demo-v7'],
+      ['video-coordenadas-demo-v7', lessonOneScenes['video-coordenadas-demo-v7'].chave],
+      undefined,
+      [lessonOneScenes['video-coordenadas-demo-v7'].chave],
     ),
     section(
       'dino-v7',

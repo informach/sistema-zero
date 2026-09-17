@@ -5,10 +5,10 @@ O jogo pronto aparece só como apresentação. O resultado desta aula é um palc
 ## Decisões didáticas
 
 - A primeira montagem exige apenas a área Ao iniciar vazia. A criança recebe uma confirmação cedo, sem precisar terminar toda a preparação.
-- Tela e borda ficam juntas: o vídeo original já mostra a borda revelando o palco. Uma segunda demonstração repetiria a explicação.
-- A leitura da descrição vem antes da escrita, para a criança entender quem usa a informação. É um leitor de tela real na captura; não afirmar que o bloco ativa voz sozinho. **Desde 14/09/2026 a seção também traz a cena `screen-reader`: a criança ouve a tela vazia, escreve a descrição e ouve de novo.**
-- Coordenadas vêm antes de preencher x e y. **Desde 14/09/2026 a seção traz a cena `coordinates`, em que ela mexe em x e em y e vê o Dino mudar de lugar no palco de 480 × 270.** O vídeo continua abrindo o assunto; a descoberta passou a ser dela. A cena abre em x 110/y 150, os mesmos números do bloco.
-- Criar versus desenhar é experimentado depois da criação no projeto: a tela vazia produz a pergunta. O laboratório responde sem adiantar a montagem do desenho da aula 2.
+- Tela e borda ficam juntas: o vídeo original já mostra a borda revelando o palco. Logo depois do clipe, a cena stage-size deixa a criança ligar a borda e mudar largura e altura até 480 por 270, antes de montar no projeto.
+- A leitura da descrição vem antes da escrita, para a criança entender quem usa a informação. O clipe traz um leitor de tela real; não afirmar que o bloco ativa voz sozinho. Depois dele, a cena screen-reader: ela ouve a tela sem descrição, escreve a frase e ouve de novo.
+- Coordenadas vêm antes de preencher x e y. O clipe abre o assunto e a cena coordinates entrega os controles: mexer só no x, depois só no y, e levar o Dino até 0, 0. A cena abre em x 110 e y 150, os mesmos números do bloco.
+- Criar versus desenhar é experimentado depois da criação no projeto: a tela vazia produz a pergunta. Na cena world, criar o Dino e ligar o desenho são dois controles separados, na ordem que a criança quiser. A cena responde sem adiantar a montagem do desenho da aula 2.
 - Na trilha guiada, o identificador é dino. A cor pode ser escolhida; padronizar o nome evita erros de seleção nas próximas aulas. O título visível do jogo poderá ser escolhido na aula 8.
 
 ## Percurso e roteiro
@@ -23,7 +23,7 @@ O jogo pronto aparece só como apresentação. O resultado desta aula é um palc
 
 **Fala original selecionada, antes dos cortes acima:** Oi! Seja bem-vindo ao Corre, Dino! Aqui a gente vai criar um jogo em que um dinossauro corre pela floresta enquanto tenta desviar dos obstáculos. Ele começa nessa telinha de abertura, com o nome do jogo. Você aperta Enter, e o dino sai correndo. Aí os cactos começam a vir, e você aperta espaço pra pular e escapar deles. Olha o placar no cantinho, subindo enquanto você aguenta. E quando bate: explosão, a tela treme, e aparece o quanto você fez, pra dar aquela vontade de tentar de novo. E quem vai fazer esse jogo é você. Não é ajudar a fazer, não: é você montando cada pedacinho dele, do começo ao fim. Hoje é o primeiro dia. No fim desta aula a tela do seu jogo já vai estar montada, com o céu da cor que você escolher, e o seu dinossauro já vai estar criado. E pra chegar lá, a gente vai passar por quatro passos. O primeiro é pegar a área onde o jogo vai ser montado. No segundo, a gente prepara a tela. No terceiro, você conta pro computador o que é o seu jogo. E no quarto, a gente cria o dino. Então bora começar pelo primeiro.
 
-**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas. Nenhuma demonstração oferece alterar parâmetros.
+**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas.
 
 ### 2. Um lugar para começar
 
@@ -53,6 +53,41 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Fala original selecionada, antes dos cortes acima:** Agora a gente prepara a tela onde o jogo acontece. Quase tudo que a gente usa neste curso mora na categoria Jogo 2D, os blocos cor de rosa. Quando for de outra categoria, eu aviso. Na categoria Jogo 2D, subcategoria Aparência, pega o bloco Preparar o jogo em tela cheia. Arrasta pra dentro da área Ao iniciar e encaixa no topo, até dar o cliquinho. Ele tem três campos. Os dois primeiros são números: a largura da tela, de um lado ao outro, e a altura, de cima a baixo. Vêm com 800 e 480, e a gente troca os dois. Escreve 480 na largura e 270 na altura. Esses dois números são o tamanho da telinha do jogo, e daqui a pouco você vai ver ela na tela. Ela é comprida e baixinha, no formato de uma tela de TV, e isso é bom pra jogo de corrida, porque dá pra ver o cacto chegando de longe. O terceiro campo é o quadradinho de cor, no fim. Clica nele e escolhe a cor do fundo da área do jogo. O bom é escolher uma que combine com o seu jogo, e o nosso é um dinossauro correndo na floresta, então eu vou colocar um azul claro, parecendo o azul do céu. E você pode colocar aí a cor que você quiser. Agora olha a área do jogo, ali do lado dos blocos: ela ficou da cor que você escolheu. Só que essa cor pintou tudo, e aí fica confuso: não dá pra ver onde é a telinha do jogo e onde começa o espaço em volta dela. Então vamos colocar uma borda na telinha, pra ficar fácil de enxergar. Ainda na categoria Jogo 2D, subcategoria Aparência, pega o bloco Mostrar a borda da tela. Clica, segura, arrasta pra dentro do Ao iniciar e encaixa logo abaixo do Preparar o jogo em tela cheia. Ele tem dois campos. O primeiro é a cor da borda: escolhe uma bem diferente da cor que você pôs no céu, senão ela some no meio. A minha vai ficar branca. O segundo é a espessura, que é a grossura do risco, e já vem em 4, que é uma boa. Deixa assim. Agora olha de novo. Apareceu o retângulo! É essa a telinha do seu jogo, e é ela que tem 480 de largura e 270 de altura. Tudo que o seu jogo desenhar vai acontecer aí dentro, e o que está do lado de fora da borda é só o espaço em volta. E repara: se você mexer no tamanho da janela, o retângulo estica e encolhe junto, mas a forma dele continua sempre essa, comprida e baixinha. Isso fecha o segundo passo. O terceiro é rapidinho.
 
+#### A cena da seção
+
+**Cena:** `stage-size`, “A tela e o limite dela”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: Dino (o de fábrica).
+
+**O que a criança lê ao abrir:** “Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.”
+
+**Como o palco começa:** Tela de 800 por 480, com a borda escondida.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Sem a borda, dá para ver onde a tela do jogo acaba?”
+
+- Não dá, a tela some no fundo. ✓ (o que acontece de verdade)
+- Dá, a tela aparece sozinha. (se ela escolher esta, a tela conta depois: “Sem a borda, a tela sumia no fundo, e só apareceu quando a borda ligou.”)
+
+O palpite volta à tela quando ela descobre: “A borda mostra onde a tela acaba”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Ligue a borda da tela.” Ao descobrir: “A borda mostra onde a tela acaba”.
+2. Pedido: “Com a borda à vista, mude a largura ou a altura.” Ao descobrir: “A borda acompanha os números”.
+3. Pedido: “Deixe a tela em 480 por 270.” Ao descobrir: “Chegou na tela de 480 por 270”.
+
+**Frase de sucesso:** “A tela tem um limite, e o limite é uma escolha sua!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Aperte o botão da borda.”
+2. “Com a borda à vista, diminua a largura e olhe a borda.”
+3. “Deixe 480 de largura e 270 de altura, o tamanho do Corre Dino.”
+
+**Pergunta depois de descobrir:** nenhuma. Esta aula dispensou a pergunta do fim, e a descoberta é que conclui o bloco.
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e, logo embaixo, a frase de sucesso. Na revisita, a faixa mostra “✓ Você já descobriu isto.”.
+
 **Orientação ao aluno:** “Dentro de Ao iniciar, prepare a tela de 480 × 270. Logo abaixo, coloque Mostrar a borda da tela, com espessura 4. Escolha uma borda que apareça sobre o céu.”
 
 **Critérios da construção:**
@@ -60,13 +95,11 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 - Prepare a tela de 480 × 270 em Ao iniciar.
 - Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.
 
-Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
+A seção também pede a cena concluída. Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
 
 ### 4. Ouça o que a descrição informa
 
-**Tipo:** exploration. **Objetivo:** Ouvir a tela sem descrição, escrever a sua e reconhecer que é a frase que informa objetivo e controle.
-
-**Experiência da seção:** cena `screen-reader` (`experiencia-leitor-de-tela`). Duas colunas: o que aparece na tela contra o que a pessoa ouve. Descobertas: ouviu a tela sem descrição; a frase diz o que fazer; a frase diz como se joga. ⚠️ O reconhecimento é por palavra e serve para orientar enquanto ela escreve — a conferência que vale é a do servidor.
+**Tipo:** exploration. **Objetivo:** Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.
 
 **Reaproveitamento:** Parte 3. Passo 3: contar o que é o seu jogo.
 
@@ -74,7 +107,40 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Fala original selecionada, antes dos cortes acima:** Tem gente que joga videogame sem enxergar a tela. Pessoas cegas jogam, e jogam muito bem. Elas usam um programa chamado leitor de tela, que vai lendo em voz alta o que está acontecendo no computador. Só que esse programa não enxerga o desenho do seu jogo. Ele precisa que alguém conte pra ele, e esse alguém é você.
 
-**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas. Nenhuma demonstração oferece alterar parâmetros.
+#### A cena da seção
+
+**Cena:** `screen-reader`, “O que o leitor de tela lê”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
+
+**O que a criança lê ao abrir:** “Aperte Ouvir a tela com o campo vazio. Depois escreva a descrição do seu jogo e ouça de novo.”
+
+**Como o palco começa:** A descrição do jogo está vazia.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você aperta Ouvir a tela sem escrever nada. O que a pessoa ouve?”
+
+- Um Dino correndo e pulando cactos. (se ela escolher esta, a tela conta depois: “O leitor de tela disse só "Tela do jogo. Imagem."”)
+- Só "Tela do jogo. Imagem." ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Sem frase, a pessoa ouve só Imagem”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Aperte Ouvir a tela com o campo vazio.” Ao descobrir: “Sem frase, a pessoa ouve só Imagem”.
+2. Pedido: “Escreva o que se faz no jogo e aperte Ouvir a tela de novo.” Ao descobrir: “A frase diz o que fazer”.
+3. Pedido: “Escreva também qual tecla usar e aperte Ouvir a tela de novo.” Ao descobrir: “A frase diz como jogar”.
+
+**Frase de sucesso:** “O programa não vê o desenho. Quem conta o jogo é a sua frase!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Aperte Ouvir a tela antes de escrever qualquer coisa.”
+2. “Escreva o que se faz no jogo. Por exemplo: pule, corra, desvie.”
+3. “Escreva também a tecla. Por exemplo: apertando espaço.”
+
+**Pergunta depois de descobrir:** nenhuma. Esta aula dispensou a pergunta do fim, e a descoberta é que conclui o bloco.
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e, logo embaixo, a frase de sucesso. Na revisita, a faixa mostra “✓ Você já descobriu isto.”.
 
 ### 5. Conte o que é o seu jogo
 
@@ -96,17 +162,55 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 ### 6. Descubra o endereço na tela
 
-**Tipo:** exploration. **Objetivo:** Descobrir que x cresce para a direita e y cresce para baixo, mexendo num eixo por vez.
-
-**Experiência da seção:** cena `coordinates` (`experiencia-coordenadas`). Palco de 480 × 270 com régua nos dois eixos, origem marcada no canto de cima, guias até cada eixo e o fantasma da posição anterior. Controles de x e de y com deslizante, passo de 20 e teclado. ⚠️ A descoberta é por EIXO: mexer nos dois ao mesmo tempo não registra nada, porque não diz qual deles levou o Dino para onde. Descobertas: x maior leva para a direita; y maior leva para baixo; mesmo x, altura diferente.
+**Tipo:** exploration. **Objetivo:** Observar x crescendo para a direita e y crescendo para baixo, uma direção por vez.
 
 **Reaproveitamento:** Parte 4. Passo 4: criar o dino.
 
-**Montagem / imagem:** Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. ⚠️ A frase "não há arraste nem parâmetros para a criança" valia até 14/09/2026 e foi REVOGADA: o vídeo abre o assunto e a cena entrega os controles. O clipe pode encurtar, porque a demonstração dos dois eixos agora acontece na cena.
+**Montagem / imagem:** Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. Não há arraste nem parâmetros para a criança.
+
+**⚠️ Mostra a cena anterior:** A seção deixou de ser só o vídeo: depois dele a criança abre a cena coordinates e mexe no x e no y. O marcador animado sobre a cartela e a frase de que não há arraste nem parâmetros para a criança descrevem a demonstração antiga. Ação: cortar.
 
 **Fala original selecionada, antes dos cortes acima:** O x diz se ele fica mais pra esquerda ou mais pra direita. O y diz se fica mais pra cima ou mais pra baixo. E tem uma coisa do y que pega todo mundo de surpresa: o y cresce pra baixo. Quanto maior o y, mais embaixo na tela. É o contrário da aula de matemática, e o motivo é que a tela conta as linhas de cima pra baixo, igual você lê um texto. A linha 150 está bem mais embaixo que a linha 1.
 
-**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas. Nenhuma demonstração oferece alterar parâmetros.
+#### A cena da seção
+
+**Cena:** `coordinates`, “O endereço na tela”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: Dino (o de fábrica).
+
+**O que a criança lê ao abrir:** “Mude o x e veja para que lado o Dino vai. Depois mude só o y e compare. Por último, leve o Dino para x 0 e y 0.”
+
+**Como o palco começa:** O Dino está em x 110, y 150.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se você AUMENTAR o y, para onde o Dino vai?”
+
+- Para cima (se ela escolher esta, a tela conta depois: “Aumentando o y, o Dino desceu.”)
+- Para baixo ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Aumente só o x.” Ao descobrir: “x maior leva para a direita”.
+2. Pedido: “Aumente só o y.” Ao descobrir: “y maior leva para baixo”.
+3. Pedido: “Leve o Dino para x 0 e y 0.” Ao descobrir: “O 0, 0 fica no canto de cima, à esquerda”.
+
+**Frase de sucesso:** “x maior vai para a direita. y maior vai para baixo. E o 0, 0 fica no canto de cima!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Mexa só no x e olhe para que lado o Dino foi.”
+2. “Agora deixe o x parado e aumente o y. Olhe para onde o Dino vai.”
+3. “Diminua o x até 0. Depois diminua o y até 0.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Você quer o Dino mais perto da beirada de baixo da tela. O que faz com o y?”
+
+- Diminuo o y.
+- Aumento o y. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo o Dino fica.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### 7. Crie o seu dinossauro
 
@@ -130,9 +234,46 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Tipo:** exploration. **Objetivo:** No exemplo, observar o mesmo Dino criado sem aparecer e depois desenhado na tela.
 
-**Orientação ao aluno:** “Esta é uma experiência separada do seu projeto. Vamos descobrir por que criar não basta para aparecer. No seu jogo, o desenho será montado na próxima aula.”
+**Orientação ao aluno:** “Esta é uma experiência separada do seu projeto. No seu jogo, o desenho vem na próxima aula.”
 
-**Experimento separado do projeto:** crie o Dino nos bastidores, observe-o sem desenho e conecte o desenho à tela. Conclusão: o mesmo Dino existe antes de aparecer. Ajuda conduz ao mesmo objetivo; depois, continuar ou rever.
+#### A cena da seção
+
+**Cena:** `world`, “Faça o Dino aparecer”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: Dino (o de fábrica).
+
+**O que a criança lê ao abrir:** “Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.”
+
+**Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?”
+
+- Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
+- Em lugar nenhum. Sem desenho, o Dino não existe. (se ela escolher esta, a tela conta depois: “A ficha do Dino ficou nos bastidores, com a tela vazia.”)
+
+O palpite volta à tela quando ela descobre: “O Dino existe sem aparecer”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Deixe o Dino criado com o desenho desligado.” Ao descobrir: “O Dino existe sem aparecer”.
+2. Pedido: “Com o Dino criado, ligue o desenho.” Ao descobrir: “O mesmo Dino aparece na tela”.
+
+**Frase de sucesso:** “É o mesmo Dino dos dois lados: criar guarda, desenhar mostra!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Olhe a ficha dos bastidores e a tela do jogo.”
+2. “Toque em Criar Dino e olhe os dois lados.”
+3. “Ligue e desligue o desenho e compare os dois lados.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que a tela ficou sem o Dino, mesmo com o Dino criado?”
+
+- Faltava ligar o desenho. ✓ (correta)
+- O jogo ainda estava carregando o Dino.
+
+**Explicação que ela lê ao acertar:** “Criar guarda o Dino nos bastidores. Desenhar mostra o Dino na tela. São dois blocos porque são duas coisas.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### 9. Confira e guarde sua construção
 
@@ -148,7 +289,7 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 - Descreva o objetivo e o controle do Corre Dino em Ao iniciar.
 - Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.
 
-Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
+A seção também pede a cena concluída. Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
 
 ### 10. Relembre o que você construiu
 
@@ -160,19 +301,19 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Fala original selecionada, antes dos cortes acima:** Parabéns, você terminou a Aula 1! Olha os quatro passos de hoje: você pegou a área Ao iniciar, preparou a tela, contou pro computador o que é o seu jogo e criou o dino. E olha a sua tela: ela tem forma e tem cor, escolhidas por você. No começo da aula era um espaço em branco. E você já aprendeu coisa de criador de jogo. Sabe o que é um sprite, que é cada coisinha do jogo que se mexe ou que dá pra tocar. Sabe que x maior é mais pra direita e y maior é mais pra baixo. E sabe que o que acontece uma vez só, no comecinho, vai dentro do Ao iniciar. Na próxima aula o seu dino aparece na tela, correndo, com a floresta se mexendo atrás dele. E é lá que eu vou te contar uma coisa que está dentro de TODOS os jogos do mundo. É com ela que o seu dino aparece e sai correndo na floresta. Te espero lá!
 
-**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas. Nenhuma demonstração oferece alterar parâmetros.
+**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas.
 
 ### 11. O que você entendeu?
 
 **Tipo:** closing. **Objetivo:** Retomar Ao iniciar, criação e desenho, e direção das coordenadas.
 
-**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas. Nenhuma demonstração oferece alterar parâmetros.
+**Aluno:** pode pausar e rever. Vídeos isolados concluem com 90% assistido; o quiz exige respostas corrigidas.
 
 ## Conferência do professor e da produção
 
 Conferir o retângulo 480 × 270, contraste da borda, descrição e Dino criado em x 110/y 150/tamanho 64. O Dino invisível é esperado. Não acrescentar Desenhar o sprite nesta aula.
 
-Produzir o complemento com leitor de tela real, legendas e descrição visível. ⚠️ O marcador de coordenadas NÃO precisa mais ser produzido: a cena `coordinates` faz o papel dele, com a criança no controle. Os demais trechos são recortes do vídeo existente, com as correções indicadas. Não há timecodes porque os arquivos gravados não foram fornecidos.
+Produzir o complemento com leitor de tela real, legendas e descrição visível. O marcador de coordenadas não precisa mais ser produzido: a cena coordinates faz esse papel, com a criança no controle. Os demais trechos são recortes do vídeo existente, com as correções indicadas. Não há timecodes porque os arquivos gravados não foram fornecidos.
 
 A descrição do palco não torna sozinha o jogo inteiro acessível e não liga o leitor de tela. Ela fornece informação ao recurso que a pessoa utiliza. [Referência: nomes e descrições acessíveis, W3C](https://www.w3.org/WAI/ARIA/apg/practices/names-and-descriptions/).
 

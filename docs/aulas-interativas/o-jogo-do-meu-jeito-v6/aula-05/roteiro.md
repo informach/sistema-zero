@@ -35,29 +35,45 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Por que neste momento:** O laboratório mostra a causa de um resultado normal do vetor, antes de a chama cobrir a própria pedra.
 
-**Narração revisada / ponte:** “Compare a chama na frente e atrás da pedra. As duas formas continuam presentes. Mude só a ordem, registre os dois resultados e descubra quando conseguimos ver a pedra inteira.”
+**Cena:** `layers`, “Quem fica na frente?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem e condução:** Uma pedra com crateras e uma chama, nas mesmas posições. Duas opções de ordem e uma lista indicando quem está na frente. Nada de mover, apagar ou trocar cores.
+**Elenco:** personagem: pedra e cenário: chama.
 
-**Atividade implementada:** [ordem.html](../interacoes/ordem.html), incorporada ao manifesto. Modelo didático separado da criação.
+**O que a criança lê ao abrir:** “A chama está cobrindo a pedra. Mude as camadas e descubra quando a pedra aparece inteira.”
 
-**Criança:** escolhe as duas situações previstas, observa e registra cada resultado. Depois de registrar os dois, os controles encerram; a comparação fica visível e uma pergunta nativa verifica a conclusão. Nenhum desafio adicional é aberto.
+**Como o palco começa:** Só um pedacinho da pedra aparece no desenho.
 
-**Conclusão:** o iframe registra participação local; a pergunta é corrigida no servidor. Esse registro não equivale a uma prova de domínio nem inspeciona a galeria.
+**Lista:** a do painel Camadas do Pinta, com a forma da frente em cima. Os pedidos e as pistas falam em “uma camada para trás” e “uma camada para a frente”, como os botões do Pinta.
 
-**O que observar:**
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se a chama for uma camada para trás, onde a pedra aparece?”
 
-- Cobrir não apaga a forma.
-- Chama atrás deixa a pedra à frente.
+- Atrás da chama (se ela escolher esta, a tela conta depois: “A pedra ficou na frente da chama.”)
+- Na frente da chama ✓ (o que acontece de verdade)
 
-**Ajuda no ponto da dificuldade:** A lista continua com duas formas. Compare quem cobre quem.
+O palpite volta à tela quando ela descobre: “A pedra apareceu na frente”.
 
-**Pergunta:** A pedra reapareceu quando a chama foi para trás. O que mudou?
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-- A ordem das formas. (correta)
+1. Pedido: “Mande a chama uma camada para trás.” Ao descobrir: “A pedra apareceu na frente”.
+2. Pedido: “Com a pedra em cima da lista Camadas, mande a chama uma camada para a frente.” Ao descobrir: “Escondeu de novo só trocando a ordem”.
+3. Pedido: “Mande a chama uma camada para trás de novo.” Ao descobrir: “No jogo, quem é desenhado por último fica na frente”.
+
+**Frase de sucesso:** “Só a ordem mudou: quem é desenhado por último fica por cima, e ninguém foi apagado!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Onde está o resto da pedra?”
+2. “Olhe a lista Camadas. A de cima fica na frente.”
+3. “Mande a chama uma camada para trás.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “A pedra reapareceu quando a chama foi para trás. O que mudou?”
+
 - A pedra foi desenhada de novo.
+- A ordem das formas. ✓ (correta)
 
-**Devolutiva:** As formas eram as mesmas. A que fica por cima pode esconder parte da outra.
+**Explicação que ela lê ao acertar:** “As formas eram as mesmas. A que fica por cima pode esconder parte da outra.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Desenhe a chama atrás da pedra
 

@@ -1,4 +1,4 @@
-import { step } from './desafio-aulas-00-02'
+import { experimentacao, step } from './desafio-aulas-00-02'
 import { finalChecks, checks as k } from './desafio-checks'
 import type { Recipe } from './desafio-editorial'
 
@@ -22,26 +22,54 @@ export const lateRecipes: Record<number, Recipe> = {
         'Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.',
         { checks: k.grupoAsteroides },
       ),
-      step(
+      experimentacao(
         'intervalo',
-        'Um relógio mais rápido cria mais?',
+        'Abra espaço entre os asteroides',
         'Parte 2.',
-        'experiment',
-        'Relacionar intervalo de nascimento com quantidade no mesmo período.',
-        'Compare nascer a cada 20 quadros e a cada 40 quadros. Nos dois testes, observe 120 quadros. A velocidade de queda fica igual. Conte quantas pedras nasceram em cada situação.',
+        'Distinguir nascer em cada quadro de nascer no ritmo de um relógio.',
         {
-          experiment: 'intervalo',
-          question: [
-            'Em 120 quadros, qual relógio cria mais asteroides?',
-            'O de 20 quadros entre os nascimentos.',
-            'O de 40 quadros entre os nascimentos.',
-            'O intervalo de 20 cabe seis vezes em 120; o de 40 cabe três. Isso muda a frequência, não a velocidade de queda.',
-          ],
+          chave: 'experiencia-intervalo',
+          bloco: {
+            required: true,
+            title: 'Abra espaço entre os asteroides',
+            instructions:
+              'Aperte ▶ Tempo e veja quantos asteroides nascem. Depois leve Criar asteroide para dentro do relógio e compare.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'spawn',
+              cast: {
+                hero: {
+                  name: 'nave',
+                  gender: 'f',
+                },
+                obstacle: {
+                  name: 'asteroide',
+                  gender: 'm',
+                },
+              },
+            },
+            checkpoint: {
+              prompt: 'Por que virou uma parede de asteroides sem o relógio?',
+              choices: [
+                {
+                  id: 'lentos',
+                  label: 'Porque os asteroides ficaram lentos e se amontoaram.',
+                },
+                {
+                  id: 'todo-quadro',
+                  label: 'Porque o pedido de criar acontece em todo quadro.',
+                },
+              ],
+              correctChoiceId: 'todo-quadro',
+              explanation:
+                'Sem um relógio para segurar, o pedido de criar acontece em todo quadro, e os asteroides nascem colados.',
+            },
+          },
+        },
+        {
           reason:
-            'Separar frequência de velocidade antes da montagem evita interpretar um número maior como chuva mais intensa.',
-          visual:
-            'Contagem de quadros 0, 40, 80, 120 e fichas dos asteroides que nasceram. As fichas são um registro, não sprites acumulados no jogo.',
-          help: 'Conte os nascimentos no mesmo total de quadros. Um intervalo menor se repete mais vezes.',
+            'Ver a parede de asteroides que nasce em todo quadro, antes de montar o relógio, mostra para que ele serve.',
         },
       ),
       step(
@@ -68,8 +96,127 @@ export const lateRecipes: Record<number, Recipe> = {
         {
           edit: 'Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar.',
           visual:
-            'Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. A passagem é observada sem controles.',
+            'Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. No clipe, a passagem é observada sem controles; a cena da seção vem depois.',
           help: 'y responde “onde está?”; vy responde “como muda de altura?”.',
+          cena: {
+            chave: 'demonstracao-nascer-fora',
+            bloco: {
+              title: 'Onde a pedra nasce e o que faz a pedra descer',
+              instructions:
+                'São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.',
+              hints: [],
+              required: false,
+              activity: {
+                type: 'demonstration',
+                scene: 'velocity',
+                cast: {
+                  hero: {
+                    name: 'pedra',
+                    gender: 'f',
+                    plural: 'pedras',
+                  },
+                },
+                setup: {
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: 10,
+                      vy: -5,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 3.6,
+                    },
+                    {
+                      type: 'velocity',
+                      vx: 0,
+                      vy: -5,
+                    },
+                    // ⚠️ 3 s, e não 3,4 s: a 5 quadros por segundo são 15 quadros de −5, que levam a
+                    // pedra de y 45 a y −30 — o MESMO número que o clipe narra e que a criança digita
+                    // no Estúdio (y menos 30, tamanho 40). Com 3,4 s ela parava em −40, e a seção
+                    // mostrava três números para um lugar só.
+                    {
+                      type: 'advance',
+                      seconds: 3,
+                    },
+                    {
+                      type: 'velocity',
+                      vx: 0,
+                      vy: 0,
+                    },
+                  ],
+                },
+                script: [
+                  {
+                    id: 'passo-1',
+                    caption:
+                      'A pedra nasce em y −30, na faixa fora da tela. Quem joga ainda não vê a pedra.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 0,
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-2',
+                    caption:
+                      'Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 3,
+                      },
+                      {
+                        type: 'advance',
+                        seconds: 3,
+                      },
+                    ],
+                    waitFor: 'down',
+                  },
+                  {
+                    id: 'passo-3',
+                    caption: 'Velocidade 0: a pedra para onde chegou.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 0,
+                      },
+                      {
+                        type: 'advance',
+                        seconds: 1,
+                      },
+                    ],
+                    waitFor: 'stopped',
+                  },
+                ],
+              },
+              prediction: {
+                prompt:
+                  'Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?',
+                choices: [
+                  {
+                    id: 'aumenta',
+                    label: 'O y aumenta',
+                  },
+                  {
+                    id: 'diminui',
+                    label: 'O y diminui',
+                    shows: 'Com a velocidade para baixo em 3, o número do y ficou maior.',
+                  },
+                ],
+                correctChoiceId: 'aumenta',
+                revealOn: 'down',
+              },
+            },
+          },
         },
       ),
       step(
@@ -152,12 +299,23 @@ export const lateRecipes: Record<number, Recipe> = {
       'A nave ainda não tem dano: retirar a sugestão de que desviar já é uma regra de sobrevivência. Pode mover para mirar.',
       'As colisões são comandos do motor, apesar de a fala usar “quando”. A categoria e o comportamento do bloco prevalecem sobre essa ambiguidade.',
     ],
+    cenasAnteriores: {
+      'video-teste-colisao': {
+        cena: 'spawn',
+        oQueMudou:
+          'A orientação de edição corta os testes com 20 e 80 quadros porque a comparação isolada já mostraria intervalos diferentes. Essa comparação em HTML virou a cena spawn, que compara nascer em todo quadro com nascer no relógio e deixa escolher o tempo do relógio em segundos, não em quadros.',
+        acao: 'conferir',
+      },
+    },
     quiz: [
+      // ⚠️ Em SEGUNDOS, e com os números da bancada (0,5 s a 2 s): a pergunta antiga ("de 40 para 20
+      // quadros") era a conclusão da comparação em HTML, que virou a cena `spawn`. A cena de hoje
+      // escolhe o tempo do relógio em segundos, e a criança nunca vê quadro nenhum ali.
       [
-        'O que muda quando o intervalo cai de 40 para 20 quadros?',
+        'Na cena, o relógio esperava 2 segundos entre um asteroide e outro. Você troca para meio segundo. O que muda?',
         'Nascem mais asteroides no mesmo tempo.',
-        'Cada asteroide passa a cair duas vezes mais rápido.',
-        'Intervalo controla nascimento; vy controla a queda.',
+        'Cada asteroide passa a cair mais rápido.',
+        'O relógio só decide de quanto em quanto tempo nasce um asteroide: esperando menos, nascem mais no mesmo tempo. Quem faz cada um descer é o vy.',
       ],
       [
         'Dentro da colisão, quem é asteroide?',
@@ -190,6 +348,29 @@ export const lateRecipes: Record<number, Recipe> = {
           visual:
             'Caixa pontos e placar lado a lado. Uma colisão muda 0 para 1; dois quadros seguintes mostram 1. Não ensinar por um contador abstrato desconectado da colisão.',
           help: 'Veja qual ação muda o número e qual apenas mostra o mesmo número.',
+          cena: {
+            chave: 'demonstracao-memoria',
+            bloco: {
+              required: true,
+              title: 'Veja o número e o placar',
+              instructions: 'Veja o número mudar dentro da caixa antes de aparecer na tela.',
+              hints: [],
+              activity: {
+                type: 'demonstration',
+                scene: 'variable',
+                cast: {
+                  hero: {
+                    name: 'nave',
+                    gender: 'f',
+                  },
+                  obstacle: {
+                    name: 'asteroide',
+                    gender: 'm',
+                  },
+                },
+              },
+            },
+          },
         },
       ),
       step(
@@ -292,6 +473,88 @@ export const lateRecipes: Record<number, Recipe> = {
           visual:
             'Placar 0 → 1; corações 3 → 2; após proteção, 2 → 1. Cada mudança acompanhada de rótulo, sem depender apenas do som ou do vermelho.',
           help: 'Se a segunda batida muito próxima não tira vida, pode ser a proteção funcionando.',
+          cena: {
+            chave: 'demonstracao-vidas',
+            bloco: {
+              required: true,
+              title: 'Veja ponto e vida mudarem por motivos diferentes',
+              instructions: 'Veja o que o acerto muda e o que a batida muda.',
+              hints: [],
+              activity: {
+                type: 'demonstration',
+                scene: 'lives',
+                cast: {
+                  hero: {
+                    name: 'nave',
+                    gender: 'f',
+                  },
+                  obstacle: {
+                    name: 'asteroide',
+                    gender: 'm',
+                  },
+                },
+                script: [
+                  {
+                    id: 'passo-1',
+                    caption:
+                      'O tiro acertou um asteroide: o placar ganhou 1. Os corações não mudaram.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'shoot',
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-2',
+                    caption: 'Um asteroide bateu na nave: saiu um coração. O placar continua 1.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'connect',
+                        port: 'life',
+                        enabled: true,
+                      },
+                      {
+                        type: 'collide',
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-3',
+                    caption:
+                      'Mais duas batidas: acabaram os corações e a partida. O placar guardou o 1.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'collide',
+                      },
+                      {
+                        type: 'collide',
+                      },
+                    ],
+                  },
+                ],
+              },
+              prediction: {
+                prompt: 'Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?',
+                choices: [
+                  {
+                    id: 'so-coracao',
+                    label: 'Só o coração',
+                  },
+                  {
+                    id: 'placar-e-coracao',
+                    label: 'O placar e o coração',
+                    shows: 'A batida não tirou nenhum ponto do placar.',
+                  },
+                ],
+                correctChoiceId: 'so-coracao',
+                revealOn: 'points-stay',
+              },
+            },
+            noFimDaLista: true,
+          },
         },
       ),
     ],

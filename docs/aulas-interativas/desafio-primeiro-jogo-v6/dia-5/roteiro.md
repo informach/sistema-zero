@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 28–40 minutos, com pausa possível após proteger as ações. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 

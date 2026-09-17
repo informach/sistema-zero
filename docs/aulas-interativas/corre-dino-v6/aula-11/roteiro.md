@@ -1,6 +1,6 @@
 # aula-11 — Pontos que contam a sua partida
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Vamos guardar pontos, mostrar o placar e contar o resultado quando a partida termina.
 
@@ -98,13 +98,44 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Fazer o relógio pontuar apenas durante a partida.
 
-**Fala de ligação / orientação ao aluno:** “Compare início, jogando e fim. Coloque Somar ponto dentro de Se jogando e confira os três momentos. O resultado precisa ficar guardado no fim.”
+**Cena:** `score`, “Quando o placar cresce?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** score. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Pontos aumentam jogando; Pontos esperam no início; Valor fica parado no fim.
+**O que a criança lê ao abrir:** “Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Na tela de início, Somar ponto está solto, e o placar está em 0.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com Somar ponto solto, o placar cresce na tela de início?”
+
+- Sim, cresce até no início ✓ (o que acontece de verdade)
+- Não, espera o jogo começar (se ela escolher esta, a tela conta depois: “Com a peça solta, o placar cresceu na tela de início.”)
+
+O palpite volta à tela quando ela descobre: “Solto, o placar cresceu no início”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com Somar ponto solto, deixe o tempo passar na tela de início.” Ao descobrir: “Solto, o placar cresceu no início”.
+2. Pedido: “Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e espere de novo.” Ao descobrir: “Dentro de Se jogando, o início esperou”.
+3. Pedido: “Com Somar ponto em Se jogando, aperte Próxima tela até Jogando e deixe o tempo passar.” Ao descobrir: “Pontos aumentam jogando”.
+4. Pedido: “Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.” Ao descobrir: “No fim, o placar parou no valor”.
+
+**Frase de sucesso:** “Os pontos crescem jogando e ficam guardados fora da partida!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Com a peça solta, o placar deve crescer antes de começar?”
+2. “Compare o placar das três telas na fileira embaixo do palco.”
+3. “Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que o placar parou no fim?”
+
+- Porque Somar ponto só roda dentro de Se jogando. ✓ (correta)
+- Porque o jogo apaga os pontos no fim.
+
+**Explicação que ela lê ao acertar:** “O número continua guardado no fim. Se jogando só decide QUANDO somar.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Conte um ponto por segundo
 
@@ -171,6 +202,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - No subtítulo do fim, junte texto, valor de pontos e texto nessa ordem.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Vamos guardar pontos, mostrar o placar e contar o resultado quando a partida termina.”
+
+**Fonte:** roteiro-aula-11-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-11-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Revisar referências antigas: medidor retirado na aula 6; Se ensinado na aula 7; dois grupos protegidos naquela aula. A checagem confere a conexão da variável e a frase; o professor também confere contraste e posicionamento no jogo. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

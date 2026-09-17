@@ -6,7 +6,7 @@ O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas co
 
 ⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
 
-⭐ **Os 54 manifestos — históricos e atuais — passam por teste** (`packages/core/tests/learning.test.ts`): formato, critérios de seção sem pendência, cada trecho a gravar numa seção só, e cada atividade interativa com um caminho de passar que é EXPRESSO COMO AÇÕES da criança, nunca como um "passou" pronto. Antes só o pacote histórico tinha rede: as atividades interativas das revisões atuais podiam quebrar num contrato novo e só aparecer na hora de importar. Hoje são **60** nos três cursos v6 (19 experimentações, 4 demonstrações, 11 experiências em HTML e 26 perguntas curtas), medidas em 15/09/2026.
+⭐ **Os 54 manifestos — históricos e atuais — passam por teste** (`packages/core/tests/learning.test.ts`): formato, critérios de seção sem pendência, cada trecho a gravar numa seção só, e cada atividade interativa com um caminho de passar que é EXPRESSO COMO AÇÕES da criança, nunca como um "passou" pronto. Antes só o pacote histórico tinha rede: as atividades interativas das revisões atuais podiam quebrar num contrato novo e só aparecer na hora de importar. Hoje são **67** nos três cursos v6 (27 experimentações de cena, 11 demonstrações de cena, 3 experiências em HTML e 26 perguntas curtas), medidas em 17/09/2026.
 
 ## Histórico do pacote inicial
 

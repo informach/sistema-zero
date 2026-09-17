@@ -6,6 +6,17 @@ import {
   type LearningManifest,
   type SectionProjectCheck,
 } from '../../../packages/core/src/learning'
+import {
+  blocoDaCena,
+  type CenaAnterior,
+  type CenaDaAula,
+  cenaAnteriorMarkdown,
+  cenaMarkdown,
+  cenasDaMontagem,
+  eCena,
+  intencaoDaCena,
+  marcarCenasAnteriores,
+} from './cenas-editorial'
 import { experimentHtml, experiments } from './desafio-interacoes'
 import {
   annotateStudioRecording,
@@ -24,13 +35,20 @@ export interface Step {
   to?: string
   focus: string
   reason: string
-  say: string
-  edit: string
-  visual: string
-  help: string
+  /** Fala do clipe ou instrução do experimento em HTML. A cena não tem: a instrução mora no bloco. */
+  say?: string
+  edit?: string
+  visual?: string
+  /** Ajuda do clipe ou do experimento em HTML. A cena traz as pistas dela. */
+  help?: string
   checks?: SectionProjectCheck[]
   experiment?: keyof typeof experiments
   question?: Question
+  /**
+   * A cena da seção. Na experimentação é a atividade inteira; na observação vem logo depois do clipe e
+   * é ela que conclui a seção.
+   */
+  cena?: CenaDaAula
 }
 export interface Recipe {
   title: string
@@ -45,6 +63,8 @@ export interface Recipe {
   corrections: string[]
   omitted?: Record<string, string>
   quiz: Question[]
+  /** Clipes que mostram ou descrevem a experiência num estado que não existe mais, pela chave do clipe. */
+  cenasAnteriores?: Record<string, CenaAnterior>
 }
 export const plain = (s: string) => s.replaceAll('**', '').replace(/\s+/g, ' ').trim()
 export function originalOf(directory: string, day: number) {
@@ -137,6 +157,7 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
     objective: string,
     keys: string[],
     checks?: SectionProjectCheck[],
+    concluiCom?: string[],
   ) {
     sections.push({
       key,
@@ -149,7 +170,7 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
       pendingMedia: [],
       completion: {
         version: 1,
-        blockIds: checks ? [] : keys,
+        blockIds: concluiCom ?? (checks ? [] : keys),
         ...(checks ? { projectChecks: checks } : {}),
       },
     })
@@ -163,9 +184,19 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
       recipe.opening,
     ),
   ])
+  const noFim: LearningManifest['blocks'] = []
+  const cena = (dado: CenaDaAula) => {
+    ;(dado.noFimDaLista ? noFim : blocks).push(blocoDaCena(dado))
+    return dado.chave
+  }
   for (const step of recipe.steps) {
-    if (step.kind === 'experiment') {
-      if (!step.experiment || !step.question) throw new Error(`Experimento incompleto: ${step.key}`)
+    if (step.kind === 'experiment' && step.cena) {
+      if (step.cena.bloco.activity.type !== 'experimentation')
+        throw new Error(`A cena de experimentar precisa ser uma experimentação: ${step.key}`)
+      section(step.key, step.title, 'exploration', step.focus, [cena(step.cena)])
+    } else if (step.kind === 'experiment') {
+      if (!step.experiment || !step.question || step.say === undefined || !step.help)
+        throw new Error(`Experimento incompleto: ${step.key}`)
       const [prompt, correct, wrong, explanation] = step.question
       const key = `experiencia-${step.key}`
       blocks.push({
@@ -190,6 +221,8 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
       })
       section(step.key, step.title, 'exploration', step.focus, [key])
     } else {
+      if (step.say === undefined || step.edit === undefined || step.visual === undefined)
+        throw new Error(`Clipe incompleto: ${step.key}`)
       const key = video(
         `video-${step.key}`,
         step.source,
@@ -199,8 +232,21 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
         step.from,
         step.to,
       )
-      if (step.kind === 'observe') section(step.key, step.title, 'demonstration', step.focus, [key])
+      if (step.kind === 'observe' && step.cena) {
+        const chave = cena(step.cena)
+        section(
+          step.key,
+          step.title,
+          intencaoDaCena(step.cena),
+          step.focus,
+          [key, chave],
+          undefined,
+          [chave],
+        )
+      } else if (step.kind === 'observe')
+        section(step.key, step.title, 'demonstration', step.focus, [key])
       else {
+        if (step.cena) throw new Error(`Construção com cena ainda não prevista: ${step.key}`)
         if (!step.checks?.length) throw new Error(`Construção sem critério: ${step.key}`)
         const instruction = `fala-${step.key}`
         blocks.push({
@@ -256,6 +302,7 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
     'Reconhecer duas relações importantes desta aula.',
     ['quiz-v6'],
   )
+  blocks.push(...noFim)
   const manifest: LearningManifest = {
     version: 4,
     courseSlug: previous.courseSlug,
@@ -289,8 +336,9 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
       sourceFile: original.file,
       sourceHash: original.hash,
       status: 'Roteiro conferido; tempos, imagens atuais e edição pendentes de montagem.',
-      clips,
+      clips: marcarCenasAnteriores(slug, clips, recipe.cenasAnteriores),
       sourceReview,
+      cenas: cenasDaMontagem(manifest),
       studio: lessonStudioEdition(manifest),
     },
   }
@@ -307,6 +355,10 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
     explanation: 'Entender',
     material: 'Consultar',
   }
+  const marcaDoClipe = (chave: string) => {
+    const marca = montage.clips.find((c) => c.key === chave)?.cenaAnterior
+    return marca ? [cenaAnteriorMarkdown(marca), ''] : []
+  }
   return (
     [
       `# ${m.lessonSlug} — ${r.title}`,
@@ -317,7 +369,7 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
       '',
       `**Tempo de percurso estimado:** ${r.minutes}. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.`,
       '',
-      'A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.',
+      'A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.',
       '',
       '## Percurso',
       '',
@@ -332,8 +384,24 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
       '',
       `“${r.opening}”`,
       '',
+      ...marcaDoClipe('video-abertura-v6'),
       ...r.steps.flatMap((s) => {
         const clip = montage.clips.find((c) => c.key === `video-${s.key}`)
+        const daCena = (dado: CenaDaAula) => {
+          const block = m.blocks.find((b) => b.key === dado.chave)
+          if (!block || !eCena(block)) throw new Error(`Cena ausente do manifesto: ${dado.chave}`)
+          return cenaMarkdown(block.content)
+        }
+        if (s.kind === 'experiment' && s.cena)
+          return [
+            `## ${s.title}`,
+            '',
+            `**Por que aqui:** ${s.reason}`,
+            '',
+            `**Foco:** ${s.focus}`,
+            '',
+            ...daCena(s.cena),
+          ]
         return [
           `## ${s.title}`,
           '',
@@ -361,17 +429,23 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
                 '',
                 `**Montagem:** ${s.edit}`,
                 '',
+                ...(clip!.cenaAnterior ? [cenaAnteriorMarkdown(clip!.cenaAnterior), ''] : []),
                 `**Trecho original antes da edição:** ${clip!.narration}`,
                 '',
-                s.kind === 'observe'
-                  ? '**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.'
-                  : '**Conclusão:** construir e usar a conferência da etapa. O vídeo orienta; os encaixes ativos do projeto são verificados.',
+                s.kind === 'observe' && s.cena
+                  ? '**Conclusão:** o clipe tem pausa e repetição. Depois dele, na mesma seção, vem a cena abaixo, e é ela que conclui a seção.'
+                  : s.kind === 'observe'
+                    ? '**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.'
+                    : '**Conclusão:** construir e usar a conferência da etapa. O vídeo orienta; os encaixes ativos do projeto são verificados.',
                 '',
                 ...(s.checks ?? []).map((c) => `- ${c.label}`),
                 '',
               ]),
           `**Ajuda no mesmo objetivo:** ${s.help}`,
           '',
+          ...(s.kind === 'observe' && s.cena
+            ? ['### A cena depois do clipe', '', ...daCena(s.cena)]
+            : []),
         ]
       }),
       '## Teste final e acompanhamento',
@@ -386,6 +460,7 @@ export function scriptMarkdown(result: ReturnType<typeof buildLesson>) {
       '',
       `“${r.closing}”`,
       '',
+      ...marcaDoClipe('video-fecho-v6'),
       ...r.quiz.flatMap(([q, a, b, why]) => [
         `**${q}**`,
         '',

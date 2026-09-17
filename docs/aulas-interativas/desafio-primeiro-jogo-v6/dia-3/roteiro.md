@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 18–27 minutos. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 
@@ -14,7 +14,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 | --- | --- | --- |
 | 1. O que vamos fazer hoje | Assistir | Retomar o Dia 2: nave controlada e tiros que sobem. |
 | 2. Prepare o grupo das pedras | Fazer no Estúdio | Separar tiros e asteroides em grupos diferentes. |
-| 3. Um relógio mais rápido cria mais? | Experimentar | Relacionar intervalo de nascimento com quantidade no mesmo período. |
+| 3. Abra espaço entre os asteroides | Experimentar | Distinguir nascer em cada quadro de nascer no ritmo de um relógio. |
 | 4. Monte o relógio dos asteroides | Fazer no Estúdio | Criar uma repetição periódica separada do motor principal. |
 | 5. Observe posição e velocidade | Observar | Distinguir y negativo de vy positivo e reconhecer o sorteio de x. |
 | 6. Crie a pedra no relógio | Fazer no Estúdio | Configurar nascimento e movimento vertical do asteroide. |
@@ -52,25 +52,48 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Ajuda no mesmo objetivo:** Reveja o encaixe destacado e compare o nome do bloco com a orientação. Corrija no mesmo projeto.
 
-## Um relógio mais rápido cria mais?
+## Abra espaço entre os asteroides
 
-**Por que aqui:** Separar frequência de velocidade antes da montagem evita interpretar um número maior como chuva mais intensa.
+**Por que aqui:** Ver a parede de asteroides que nasce em todo quadro, antes de montar o relógio, mostra para que ele serve.
 
-**Foco:** Relacionar intervalo de nascimento com quantidade no mesmo período.
+**Foco:** Distinguir nascer em cada quadro de nascer no ritmo de um relógio.
 
-**Fala revisada / orientação:** “Compare nascer a cada 20 quadros e a cada 40 quadros. Nos dois testes, observe 120 quadros. A velocidade de queda fica igual. Conte quantas pedras nasceram em cada situação.”
+**Cena:** `spawn`, “Abra espaço entre os asteroides”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem:** Contagem de quadros 0, 40, 80, 120 e fichas dos asteroides que nasceram. As fichas são um registro, não sprites acumulados no jogo.
+**Elenco:** personagem: nave e obstáculo: asteroide.
 
-**Controles:** Nascer a cada 20 quadros ou Nascer a cada 40 quadros; avançar os três passos de cada comparação. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo e veja quantos asteroides nascem. Depois leve Criar asteroide para dentro do relógio e compare.”
 
-**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.
+**Como o palco começa:** Ainda não nasceu nenhum asteroide.
 
-**Pergunta:** Em 120 quadros, qual relógio cria mais asteroides?
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
 
-**Resposta:** O de 20 quadros entre os nascimentos.. O intervalo de 20 cabe seis vezes em 120; o de 40 cabe três. Isso muda a frequência, não a velocidade de queda.
+- Uma parede de asteroides ✓ (o que acontece de verdade)
+- Asteroides bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram asteroides colados uns nos outros.”)
 
-**Ajuda no mesmo objetivo:** Conte os nascimentos no mesmo total de quadros. Um intervalo menor se repete mais vezes.
+O palpite volta à tela quando ela descobre: “Viu a parede de asteroides”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com Criar asteroide em A cada quadro, deixe o tempo passar um segundo inteiro.” Ao descobrir: “Viu a parede de asteroides”.
+2. Pedido: “Leve Criar asteroide para dentro do relógio e deixe o tempo passar até nascerem dois asteroides.” Ao descobrir: “Com o relógio, sobrou espaço”.
+
+**Frase de sucesso:** “Com o relógio, nasce um asteroide de cada vez e sobra espaço entre um asteroide e outro!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Veja quantos asteroides nascem enquanto o tempo passa.”
+2. “Compare o mesmo tempo com e sem o relógio.”
+3. “Leve Criar asteroide para dentro do relógio e deixe o tempo passar até nascerem dois asteroides.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “Por que virou uma parede de asteroides sem o relógio?”
+
+- Porque os asteroides ficaram lentos e se amontoaram.
+- Porque o pedido de criar acontece em todo quadro. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Sem um relógio para segurar, o pedido de criar acontece em todo quadro, e os asteroides nascem colados.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Monte o relógio dos asteroides
 
@@ -103,7 +126,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Fala revisada / orientação:** “Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.”
 
-**Imagem:** Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. A passagem é observada sem controles.
+**Imagem:** Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. No clipe, a passagem é observada sem controles; a cena da seção vem depois.
 
 **Fonte:** roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa.
 
@@ -111,10 +134,37 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Trecho original antes da edição:** Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um asteroide e encaixa dentro do A cada 40 quadros. Confere se o grupo é o asteroides. E onde ele nasce? Aqui vem um truque novo. Se todo asteroide nascesse no mesmo lugar, o jogo ficava fácil demais: era só ficar longe daquele ponto. Mas a gente quer surpresa. Na categoria Jogo 2D, subcategoria Mira e contas, pega o bloco um x aleatório na tela e arrasta ele pra cima do número que já vem no x, até encaixar. Aleatório quer dizer sorteado: cada vez, o jogo sorteia um lugar novo, e nem eu nem você sabemos onde a próxima pedra vai cair. No y, escreve menos 30. E olha que interessante: aqui o menos não é velocidade, é posição. Menos 30 é um pouquinho acima da tela, do lado de fora. O asteroide nasce escondidinho lá em cima e entra na tela caindo, bem natural. O tamanho, deixa 40. A cor, escolhe uma com cara de pedra, tipo um cinza. O vx deixa 0, porque ele não anda pros lados. E no vy, escreve 3. Positivo, sem o menos, porque o asteroide desce. Olha o truque de ontem aí: menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.
 
-**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.
+**Conclusão:** o clipe tem pausa e repetição. Depois dele, na mesma seção, vem a cena abaixo, e é ela que conclui a seção.
 
 
 **Ajuda no mesmo objetivo:** y responde “onde está?”; vy responde “como muda de altura?”.
+
+### A cena depois do clipe
+
+**Cena:** `velocity`, “O que move a pedra a cada quadro”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: pedra.
+
+**O que a criança lê ao abrir:** “São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.”
+
+**Como o palco começa:** A pedra está em x 240, y −30, com velocidade 0 para o lado e 0 para baixo.
+
+**Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?”
+
+- O y aumenta ✓ (o que acontece de verdade)
+- O y diminui (se ela escolher esta, a tela conta depois: “Com a velocidade para baixo em 3, o número do y ficou maior.”)
+
+O palpite volta à tela quando ela descobre: “Velocidade positiva levou para baixo”.
+
+**Partes da demonstração (roteiro escrito na aula):**
+
+1. “A pedra nasce em y −30, na faixa fora da tela. Quem joga ainda não vê a pedra.”
+2. “Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.” A parte espera acontecer: “Velocidade positiva levou para baixo”.
+3. “Velocidade 0: a pedra para onde chegou.” A parte espera acontecer: “Com velocidade zero, a pedra fica parada”.
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ## Crie a pedra no relógio
 
@@ -223,6 +273,8 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Montagem:** Usar os acertos do início; acrescentar um tiro que erra. Retirar novos testes com 20 e 80, já substituídos pela comparação isolada.
 
+**⚠️ Mostra a cena anterior:** A orientação de edição corta os testes com 20 e 80 quadros porque a comparação isolada já mostraria intervalos diferentes. Essa comparação em HTML virou a cena spawn, que compara nascer em todo quadro com nascer no relógio e deixa escolher o tempo do relógio em segundos, não em quadros. Ação: conferir.
+
 **Trecho original antes da edição:** Clica na área do jogo. Olha essa chuva de pedras! Agora mira num asteroide e aperta a barra de espaço. Bum! Explodiu de verdade, com barulho e tudo. Atira em mais alguns. Desvia dos que vêm na sua direção, acerta os que estão longe. Sente como o seu jogo já parece um jogo de verdade.
 
 **Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.
@@ -256,12 +308,12 @@ Os critérios verificam estrutura, valores e relações indicados; o professor c
 
 “A chuva de asteroides já funciona, e os tiros conseguem destruí-los. Você usou um relógio para criar e uma colisão para responder ao encontro de dois objetos. Amanhã, cada acerto vai valer ponto.”
 
-**O que muda quando o intervalo cai de 40 para 20 quadros?**
+**Na cena, o relógio esperava 2 segundos entre um asteroide e outro. Você troca para meio segundo. O que muda?**
 
 - Nascem mais asteroides no mesmo tempo. (correta)
-- Cada asteroide passa a cair duas vezes mais rápido.
+- Cada asteroide passa a cair mais rápido.
 
-Intervalo controla nascimento; vy controla a queda.
+O relógio só decide de quanto em quanto tempo nasce um asteroide: esperando menos, nascem mais no mesmo tempo. Quem faz cada um descer é o vy.
 
 **Dentro da colisão, quem é asteroide?**
 

@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 20–30 minutos. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 
@@ -18,9 +18,9 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 | 4. Observe o endereço na tela | Observar | Reconhecer x horizontal, y vertical e a origem no alto à esquerda. |
 | 5. Compare duas alturas | Experimentar | Descobrir o efeito de aumentar somente y. |
 | 6. Crie sua nave | Fazer no Estúdio | Criar o sprite uma vez com posição e tamanho definidos. |
-| 7. Criar não é desenhar | Observar | Distinguir o objeto preparado do desenho repetido. |
+| 7. Criar não é desenhar | Experimentar | Distinguir o objeto preparado do desenho repetido. |
 | 8. Ligue o motor de quadros | Fazer no Estúdio | Encaixar o motor na área de repetição. |
-| 9. O que acontece sem a borracha? | Experimentar | Relacionar a limpeza com a remoção dos desenhos anteriores. |
+| 9. O que acontece sem limpar a tela? | Experimentar | Relacionar a limpeza com a remoção dos desenhos anteriores. |
 | 10. Desenhe o espaço | Fazer no Estúdio | Limpar antes de pintar o fundo em cada quadro. |
 | 11. Dê as setas e uma borda à nave | Fazer no Estúdio | Mover horizontalmente sem sair da tela. |
 | 12. Faça a nave aparecer por último | Fazer no Estúdio | Desenhar a nave depois do fundo e de atualizar a posição. |
@@ -105,19 +105,43 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Foco:** Descobrir o efeito de aumentar somente y.
 
-**Fala revisada / orientação:** “O x vai ficar em 400. Mostre a nave em y 110 e depois em y 410. Compare a altura e responda: quando o y aumenta, a nave vai para qual lado?”
+**Cena:** `coordinates`, “O endereço na tela”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem:** Caixa da nave na tela completa, marca no canto e eixo vertical. Duas posições prontas; sem arrastar livremente.
+**Elenco:** personagem: nave.
 
-**Controles:** y = 110 ou y = 410; mostrar cada posição uma vez. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.
+**O que a criança lê ao abrir:** “A nave começa lá em cima. Mude só o y e veja para que lado ela vai.”
 
-**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.
+**Como o palco começa:** A nave está em x 400, y 40.
 
-**Pergunta:** O y foi de 110 para 410, com o mesmo x. A nave foi…
+**Caso preparado na aula:** a cena não parte do começo de fábrica: 2 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado; a missão cobra só esta descoberta: “y maior leva para baixo”.
 
-**Resposta:** Mais para baixo.. Mudar y altera a posição vertical. Na tela, os valores crescem para baixo.
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se o y AUMENTAR, para onde a nave vai?”
 
-**Ajuda no mesmo objetivo:** Compare a distância até o alto da tela; o x ficou igual.
+- Para cima (se ela escolher esta, a tela conta depois: “Aumentando o y, a nave desceu.”)
+- Para baixo ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Aumente só o y.” Ao descobrir: “y maior leva para baixo”.
+
+**Frase de sucesso:** “y maior leva a nave para baixo. O 0 do y fica lá no alto!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “Olhe o número do y e onde a nave está.”
+2. “Deixe o x parado e aumente só o y. Olhe para onde a nave vai.”
+3. “Aperte + no y três vezes, sem tocar no x.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “Você quer a nave mais perto da beirada de baixo da tela. O que faz com o y?”
+
+- Diminuo o y.
+- Aumento o y. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo a nave fica.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Crie sua nave
 
@@ -157,10 +181,49 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Trecho original antes da edição:** Agora vem a parte mais importante do dia, um segredo que está dentro de todos os jogos do mundo. Você já viu aqueles livrinhos que, quando a gente passa as páginas bem rápido, parece que o bonequinho se mexe? Cada página é um desenho um pouquinho diferente, e passando rápido o seu olho enxerga movimento. Um jogo funciona igualzinho. Cada página dessas tem um nome: quadro. O jogo desenha um quadro, depois outro, depois outro, muito rápido, e é isso que faz tudo parecer que se mexe.
 
-**Conclusão:** 90% do clipe assistido. Pausar e rever são as únicas opções. O vídeo não abre controles de experimentar.
+**Conclusão:** o clipe tem pausa e repetição. Depois dele, na mesma seção, vem a cena abaixo, e é ela que conclui a seção.
 
 
 **Ajuda no mesmo objetivo:** O número de naves criadas permanece 1, mesmo quando aparecem vários quadros.
+
+### A cena depois do clipe
+
+**Cena:** `world`, “Faça a nave aparecer”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: nave.
+
+**O que a criança lê ao abrir:** “Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.”
+
+**Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: você cria a nave com o desenho desligado. Onde fica a nave?”
+
+- Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
+- Em lugar nenhum. Sem desenho, a nave não existe. (se ela escolher esta, a tela conta depois: “A ficha da nave ficou nos bastidores, com a tela vazia.”)
+
+O palpite volta à tela quando ela descobre: “A nave existe sem aparecer”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Deixe a nave criada com o desenho desligado.” Ao descobrir: “A nave existe sem aparecer”.
+2. Pedido: “Com a nave criada, ligue o desenho.” Ao descobrir: “A mesma nave aparece na tela”.
+
+**Frase de sucesso:** “É a mesma nave dos dois lados: criar guarda, desenhar mostra!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Olhe a ficha dos bastidores e a tela do jogo.”
+2. “Toque em Criar nave e olhe os dois lados.”
+3. “Ligue e desligue o desenho e compare os dois lados.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que a tela ficou sem a nave, mesmo com a nave criada?”
+
+- Faltava ligar o desenho. ✓ (correta)
+- O jogo ainda estava carregando a nave.
+
+**Explicação que ela lê ao acertar:** “Criar guarda a nave nos bastidores. Desenhar mostra a nave na tela. São dois blocos porque são duas coisas.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Ligue o motor de quadros
 
@@ -184,25 +247,49 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Ajuda no mesmo objetivo:** Reveja o encaixe destacado e compare o nome do bloco com a orientação. Corrija no mesmo projeto.
 
-## O que acontece sem a borracha?
+## O que acontece sem limpar a tela?
 
 **Por que aqui:** Introduzir esta relação no momento em que ela será usada, antes de acrescentar outra tarefa.
 
 **Foco:** Relacionar a limpeza com a remoção dos desenhos anteriores.
 
-**Fala revisada / orientação:** “Passe três quadros sem limpar. Depois passe os mesmos três quadros limpando antes de desenhar. Observe quantos desenhos ficam. É sempre uma só nave; você está comparando as imagens que ela deixa.”
+**Cena:** `draw-loop`, “Por que o desenho se repete”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem:** Três posições idênticas nos dois ensaios, com desenhos anteriores esmaecidos apenas no caso sem limpeza.
+**Elenco:** personagem: nave.
 
-**Controles:** Sem limpar ou Limpar a cada quadro; avançar os três passos de cada comparação. Só essas duas situações. Resultado fica guardado; ao terminar, controles se encerram. Não altera o Estúdio.
+**O que a criança lê ao abrir:** “Aperte Avançar 1 quadro e olhe a tela e o x da nave. Depois desenhe a nave a cada quadro. Por último, ligue Limpar a tela antes.”
 
-**Conclusão:** registrar as duas situações e acertar a pergunta externa ao quadro. Estado HTML é participação informada pelo cliente; a resposta é corrigida no servidor, sem alegar auditoria dos comandos.
+**Como o palco começa:** Quadro 0: 1 nave na tela.
 
-**Pergunta:** Qual sequência evita deixar os desenhos antigos na tela?
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Sem limpar antes de desenhar, o que fica na tela?”
 
-**Resposta:** Limpar e depois desenhar a nave em cada quadro.. A limpeza apaga a imagem anterior; não apaga o objeto guardado no jogo.
+- Um rastro de naves ✓ (o que acontece de verdade)
+- Uma nave só (se ela escolher esta, a tela conta depois: “Sem limpar, as naves de antes continuaram na tela.”)
 
-**Ajuda no mesmo objetivo:** Conte os desenhos que sobraram depois do terceiro quadro.
+O palpite volta à tela quando ela descobre: “Sem limpar, os desenhos velhos ficam”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com a nave na tela, desenhe só no começo, sem limpar a tela, e aperte Avançar 1 quadro.” Ao descobrir: “Sem desenhar de novo, a tela não muda”.
+2. Pedido: “Desenhe a nave a cada quadro, sem limpar a tela, e deixe o tempo passar.” Ao descobrir: “Sem limpar, os desenhos velhos ficam”.
+3. Pedido: “Desenhe a nave a cada quadro, ligue Limpar a tela antes e deixe o tempo passar.” Ao descobrir: “Limpando e desenhando, a nave anda”.
+
+**Frase de sucesso:** “A cada quadro o jogo limpa a tela e desenha de novo. É assim que a nave anda!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Aperte Avançar 1 quadro e compare a tela com o x da nave na faixa.”
+2. “Escolha desenhar a cada quadro e avance dois quadros.”
+3. “Ligue Limpar a tela antes e avance de novo.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “Quais escolhas deixam uma nave só na tela, num lugar novo?”
+
+- Desenhar a cada quadro e limpar antes. ✓ (correta)
+- Desenhar a cada quadro, sem limpar.
+
+**Explicação que ela lê ao acertar:** “A limpeza apaga a imagem anterior. Ela não apaga a nave, que continua guardada no jogo.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Desenhe o espaço
 
@@ -334,7 +421,7 @@ A preparação ocorre uma vez; o motor atualiza e desenha depois.
 - Preservar x 400 e y 410 para reaproveitar a gravação, explicando que são o canto da caixa. O centro horizontal seria 427 com largura 54.
 - A maior fragmentação acontece aqui porque a criança está conhecendo o Estúdio; nos dias seguintes, padrões conhecidos ficam juntos.
 - A escolha de cores permanece focada na nave e no fundo. Não solicitar testes de velocidade livre nem números extras para concluir.
-- Demonstrações usam vídeo com pausa; as duas comparações usam HTML isolado, sem copiar automaticamente valores para o projeto.
+- Demonstrações usam vídeo com pausa. As três experimentações do dia são cenas separadas do projeto (coordinates, world e draw-loop), vestidas com a nave; nenhuma copia valores para o projeto.
 
 ## Destino de todo o roteiro original
 

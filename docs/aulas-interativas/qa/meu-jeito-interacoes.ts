@@ -1,12 +1,11 @@
-/** Portable, network-free HTML for the existing LearningHtml sandbox. */
+/**
+ * HTML portátil, sem rede, para o sandbox do LearningHtml.
+ *
+ * ⚠️ Só os experimentos que ALGUMA aula usa. Os que viraram cena nativa saíram daqui e do disco
+ * (17/09/2026); o corpo do `experimentHtml` abaixo é o mesmo de sempre, porque ele vai GRAVADO nos
+ * manifestos e reescrevê-lo mudaria arquivo publicado.
+ */
 export const experimentDefinitions = {
-  espelho: {
-    title: 'Um traço, dois lados',
-    prompt: 'O mesmo traço de Linha. Só o espelho muda.',
-    options: ['Espelho desligado', 'Espelho ligado'],
-    results: ['O traço aparece só à esquerda.', 'O mesmo traço aparece também à direita do eixo.'],
-    takeaway: 'O espelho repete o traço do outro lado enquanto você desenha.',
-  },
   quadros: {
     title: 'O que faz o motor pulsar?',
     prompt: 'Dois quadros, sempre a 8 fps. Só o desenho do segundo fogo muda.',
@@ -16,37 +15,6 @@ export const experimentDefinitions = {
       'A diferença no fogo aparece como uma pulsação. O corpo fica no lugar.',
     ],
     takeaway: 'Duplicar guarda a base. Alterar a cópia cria a mudança visível.',
-  },
-  bordas: {
-    title: 'Aproxime a mesma pedra',
-    prompt: 'A forma é a mesma. Compare pixels e vetor em dois tamanhos.',
-    options: ['Tamanho 1×', 'Ampliação 8×'],
-    results: [
-      'No tamanho pequeno, as duas bordas ocupam pouco espaço.',
-      'Ampliados, os pixels formam degraus; o vetor redesenha as linhas.',
-    ],
-    takeaway: 'São representações diferentes. Nenhuma é a melhor para todo desenho.',
-  },
-  ordem: {
-    title: 'A pedra sumiu?',
-    prompt: 'Duas formas na mesma posição. Mude apenas quem fica na frente.',
-    options: ['Chama na frente', 'Pedra na frente'],
-    results: [
-      'A chama cobre parte da pedra. A pedra continua ali.',
-      'A pedra aparece inteira; a chama está atrás.',
-    ],
-    takeaway: 'Cobrir uma forma não a apaga. A ordem decide quem aparece por cima.',
-  },
-  folha: {
-    title: 'Uma janela para cada quadro',
-    prompt: 'Cada desenho mede 32 × 32. Só a largura do recorte muda; a altura fica em 32.',
-    options: ['Recortar largura 16', 'Recortar largura 32'],
-    results: [
-      'O recorte de 16 pega só parte do primeiro desenho.',
-      'O recorte de 32 pega um quadro inteiro da nave.',
-    ],
-    takeaway:
-      'O recorte segue o tamanho do quadro no Pinta. O sprite pode mostrar esse quadro em outro tamanho.',
   },
 } as const
 

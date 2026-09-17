@@ -1,46 +1,9 @@
+/**
+ * ⚠️ Só os experimentos que ALGUMA aula usa. Os que viraram cena nativa saíram daqui e do disco
+ * (17/09/2026); o corpo do `experimentHtml` abaixo é o mesmo de sempre, porque ele vai GRAVADO nos
+ * manifestos e reescrevê-lo mudaria arquivo publicado.
+ */
 export const experiments = {
-  coordenadas: {
-    title: 'Mais para cima ou para baixo?',
-    prompt: 'O x fica em 400. Mude somente o y e localize a nave.',
-    options: ['y = 110', 'y = 410'],
-    steps: 1,
-    results: [
-      'Com y = 110, a nave fica mais perto do alto.',
-      'Com y = 410, a nave fica mais perto de baixo.',
-    ],
-    conclusion:
-      'O y cresce para baixo. A marca aponta o canto da caixa; o centro da nave fica um pouco à direita.',
-  },
-  limpeza: {
-    title: 'O desenho anterior fica?',
-    prompt: 'É a mesma nave em três posições. Compare com e sem limpar antes de desenhar.',
-    options: ['Sem limpar', 'Limpar a cada quadro'],
-    steps: 3,
-    results: [
-      'Sem limpar, os três desenhos permanecem.',
-      'Limpando, só o desenho mais recente permanece.',
-    ],
-    conclusion: 'Criar prepara um objeto. Limpar e desenhar novamente mostram cada quadro.',
-  },
-  direcao: {
-    title: 'Qual tiro sobe?',
-    prompt: 'Mesma posição inicial, vx = 0 e mesma quantidade de passos. Só o sinal do vy muda.',
-    options: ['vy = −9', 'vy = +9'],
-    steps: 3,
-    results: ['O y diminui: o tiro sobe.', 'O y aumenta: o tiro desce.'],
-    conclusion:
-      'O sinal decide a direção. Este modelo mostra três passos ampliados de 10 quadros cada.',
-  },
-  intervalo: {
-    title: 'Qual relógio cria mais pedras?',
-    prompt:
-      'Compare o mesmo total: 120 quadros, avançando 40 por vez. A velocidade de queda não muda.',
-    options: ['Nascer a cada 20 quadros', 'Nascer a cada 40 quadros'],
-    steps: 3,
-    results: ['Em 120 quadros, nasceram 6 asteroides.', 'Em 120 quadros, nasceram 3 asteroides.'],
-    conclusion:
-      'Um intervalo menor cria mais asteroides no mesmo tempo. A contagem mostra nascimentos, não quantos ainda estão na tela.',
-  },
   protecao: {
     title: 'Um respiro depois da batida',
     prompt: 'A nave começa com 3 vidas. Três asteroides diferentes batem nos quadros 1, 6 e 11.',

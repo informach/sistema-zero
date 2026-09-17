@@ -83,7 +83,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A cada quadro do jogo. O quadro desse nome conta o tempo do jogo, ele não é o desenho da sua animação: são duas coisas diferentes com o mesmo nome. Dentro dele tem o Se a tela atual é jogando, e dentro desse tem um bloco só, o que começa com No grupo asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
@@ -91,6 +91,30 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 - Quadro do jogo não é desenho da folha.
 
 **Ajuda no ponto da dificuldade:** Pergunte “é o tempo do jogo ou uma imagem da animação?” ao ler a palavra quadro.
+
+#### A cena depois do clipe
+
+**Cena:** `spawn`, “Abra espaço entre os asteroides”. Formato: demonstração guiada (uma parte de cada vez, no ritmo da criança). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: nave e obstáculo: asteroide.
+
+**O que a criança lê ao abrir:** “Veja o que acontece com e sem o relógio. Você pode pausar e ver de novo.”
+
+**Como o palco começa:** Ainda não nasceu nenhum asteroide.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
+
+- Uma parede de asteroides ✓ (o que acontece de verdade)
+- Asteroides bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram asteroides colados uns nos outros.”)
+
+O palpite volta à tela quando ela descobre: “Viu a parede de asteroides”.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “Sem relógio, nasce um asteroide em cada quadro. Olhe a parede.”
+2. “Agora Criar asteroide mora no relógio: um a cada segundo.”
+
+**No fim:** aparece “✓ Você viu tudo!” e o botão “Agora é sua vez”, que abre a bancada da cena a partir de onde a demonstração parou. É um rascunho local: o que a criança mexe ali não é guardado e não conta nota. A seção conclui quando a demonstração é vista até o fim.
 
 ### Troque a peça e aproveite o sorteio
 

@@ -6,7 +6,7 @@
 
 **Tempo de percurso estimado:** 6–9 minutos. Estimativa editorial incluindo montagem; validar com crianças. Não é duração medida dos vídeos.
 
-A demonstração tem apenas vídeo, com pausa e repetição. O experimento é separado do projeto e tem uma comparação finita. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
+A demonstração é observação: o vídeo, com pausa e repetição, e às vezes uma cena que toca sozinha. A experimentação fica separada do projeto: uma cena em que a criança mexe e descobre ou, nos Dias 4 e 5, uma comparação curta em HTML. A construção usa o mesmo Estúdio da aula, sem reiniciar a cada seção.
 
 ## Percurso
 
@@ -32,7 +32,7 @@ A demonstração tem apenas vídeo, com pausa e repetição. O experimento é se
 
 **Fala revisada / orientação:** “Cada seção tem uma tarefa. Em algumas você assiste; em outras, observa um exemplo ou faz uma comparação curta. Quando aparecer o Estúdio, é sua vez de montar. Confira o que falta, envie a construção quando a aula pedir e responda ao quiz.”
 
-**Imagem:** Percorrer uma seção de vídeo, uma demonstração sem controles, uma comparação encerrada e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.
+**Imagem:** Percorrer uma seção de vídeo, uma demonstração guiada que termina em Agora é sua vez, uma experimentação em que a criança mexe e confere o que descobriu, e uma construção. Mostrar Índice da aula, Anterior e o avanço que só libera depois do objetivo.
 
 **Fonte:** roteiro-aula-introdutoria-desafio-primeiro-jogo.md → O que conta pra completar uma aula.
 

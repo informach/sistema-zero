@@ -1,3 +1,4 @@
+import { PISTAS_DE_FABRICA } from './cenas-editorial'
 import {
   absent,
   c,
@@ -217,11 +218,23 @@ export const lateRecipes: Record<number, Recipe> = {
         key: 'comparar-area',
         title: 'Ajuste só a área de colisão',
         kind: 'experiment',
-        mission: 'hitbox',
         focus: 'Comparar a detecção mantendo os desenhos na mesma posição.',
         reason:
           'Permitir uma comparação controlada que seria difícil de repetir numa corrida real.',
-        say: 'Aproxime o cacto até o contato indicado. Depois ajuste apenas a área de colisão e compare. O desenho do Dino continua do mesmo tamanho.',
+        cena: {
+          chave: 'experiencia-comparar-area',
+          bloco: {
+            title: 'Ajuste só a área de colisão',
+            instructions:
+              'Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'hitbox',
+            },
+          },
+        },
       },
       {
         key: 'ajustar-area',
@@ -344,10 +357,22 @@ export const lateRecipes: Record<number, Recipe> = {
         key: 'quando-contar',
         title: 'Em quais momentos os pontos crescem?',
         kind: 'experiment',
-        mission: 'score',
         focus: 'Fazer o relógio pontuar apenas durante a partida.',
         reason: 'Retomar estado e tempo antes de montar o novo relógio.',
-        say: 'Compare início, jogando e fim. Coloque Somar ponto dentro de Se jogando e confira os três momentos. O resultado precisa ficar guardado no fim.',
+        cena: {
+          chave: 'experiencia-quando-contar',
+          bloco: {
+            title: 'Em quais momentos os pontos crescem?',
+            instructions:
+              'Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'score',
+            },
+          },
+        },
       },
       {
         key: 'relogio-pontos',
@@ -442,12 +467,25 @@ export const lateRecipes: Record<number, Recipe> = {
         key: 'sorteio-controlado',
         title: 'O que o sorteio pode mudar?',
         kind: 'experiment',
-        mission: 'random',
         focus:
           'Comparar resultados de um sorteio dentro da faixa, mantendo a outra propriedade fixa.',
+        // Lote 5 do Raio-X: a cena sorteia de verdade, um sorteio de cada vez. Os quatro exemplos fixos saíram.
         reason:
-          'Duas comparações delimitadas respondem à mesma pergunta sobre sorteio: posição com velocidade fixa, depois velocidade com posição fixa.',
-        say: 'Primeiro compare os dois exemplos de posição, com a mesma velocidade. Depois compare os dois de velocidade, com a mesma posição. São exemplos escolhidos para enxergar a diferença; um sorteio real também pode repetir.',
+          'Sortear de verdade, uma propriedade por vez (primeiro o lugar, depois a velocidade), mostra que cada resultado fica dentro dos limites e que um lugar pode repetir.',
+        cena: {
+          chave: 'experiencia-sorteio-controlado',
+          bloco: {
+            title: 'O que o sorteio pode mudar?',
+            instructions:
+              'Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'random',
+            },
+          },
+        },
       },
       {
         key: 'sortear-posicao',
@@ -471,6 +509,104 @@ export const lateRecipes: Record<number, Recipe> = {
         visual:
           'Duas contas alinhadas e duas setas à esquerda com origem igual. Não alterar o tamanho do cacto nem o intervalo. Distinguir valor numérico de rapidez.',
         edit: 'Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5.',
+        cena: {
+          chave: 'demonstracao-conta-velocidade',
+          bloco: {
+            title: 'O sinal e o tamanho do passo',
+            instructions: 'Olhe o sinal e o tamanho de cada passo.',
+            hints: [],
+            required: false,
+            prediction: {
+              prompt: 'Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…',
+              choices: [
+                {
+                  id: 'iguais',
+                  label: 'Anda para a esquerda com passos iguais aos do −5',
+                  shows: 'Com −6, o x diminuiu 6 a cada quadro, 1 a mais que com −5.',
+                },
+                {
+                  id: 'esquerda-mais',
+                  label: 'Anda para a esquerda com passos maiores',
+                },
+              ],
+              correctChoiceId: 'esquerda-mais',
+            },
+            activity: {
+              type: 'demonstration',
+              scene: 'velocity',
+              cast: {
+                hero: {
+                  name: 'cacto',
+                  gender: 'm',
+                },
+              },
+              setup: {
+                actions: [
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 5,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 3.8,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 10,
+                    vy: 0,
+                  },
+                  {
+                    type: 'advance',
+                    seconds: 3,
+                  },
+                  {
+                    type: 'velocity',
+                    vx: 0,
+                    vy: 0,
+                  },
+                ],
+              },
+              script: [
+                {
+                  id: 'passo-1',
+                  caption: 'Velocidade −5: a cada quadro o x do cacto diminui 5, para a esquerda.',
+                  highlight: 'scene',
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: -5,
+                      vy: 0,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 1.2,
+                    },
+                  ],
+                  waitFor: 'left',
+                },
+                {
+                  id: 'passo-2',
+                  caption:
+                    'Velocidade −6: ainda para a esquerda, e cada quadro tira 6. Embaixo da tela, compare os passos de antes com os de agora.',
+                  highlight: 'scene',
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: -6,
+                      vy: 0,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 1.2,
+                    },
+                  ],
+                  waitFor: 'left',
+                },
+              ],
+            },
+          },
+        },
       },
       {
         key: 'sortear-velocidade',
@@ -490,6 +626,14 @@ export const lateRecipes: Record<number, Recipe> = {
       'Parte 4: retirar o alargamento livre da faixa para 500–700. Fechar nos limites 500–560 e variação 0–1.',
       'As duas comparações do laboratório são exemplos didáticos controlados; não são prova estatística de aleatoriedade.',
     ],
+    cenasAnteriores: {
+      'video-fecho-editorial': {
+        cena: 'random',
+        oQueMudou:
+          'A orientação de edição descreve a experimentação como duas comparações com exemplos fixos. Desde o lote 5 do Raio-X a cena random sorteia de verdade, um lugar ou uma velocidade por vez, e um lugar pode repetir.',
+        acao: 'conferir',
+      },
+    },
     quiz: [
       [
         'Um sorteio pode produzir o mesmo resultado de novo?',
@@ -568,11 +712,23 @@ export const lateRecipes: Record<number, Recipe> = {
         key: 'aceleracao-modelo',
         title: 'Teste a base, o limite e os próximos cactos',
         kind: 'experiment',
-        mission: 'acceleration',
         focus: 'Observar a regra de velocidade atribuída ao nascer sob uma base limitada.',
         reason:
           'Ver os passos de tempo e os cactos antigos sem exigir que a criança sobreviva muito tempo para comparar.',
-        say: 'Crie um cacto, avance o relógio e acompanhe a base até -9. Compare com um cacto novo. No limite, descontar 1 ainda pode dar -10; o antigo conserva a velocidade que recebeu.',
+        cena: {
+          chave: 'experiencia-aceleracao-modelo',
+          bloco: {
+            title: 'Teste a base, o limite e os próximos cactos',
+            instructions:
+              'Aperte Passar 5 segundos várias vezes e olhe a velocidade de cada cacto novo. O que acontece quando a base chega em −9?',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'acceleration',
+            },
+          },
+        },
       },
       {
         key: 'relogio-aceleracao',

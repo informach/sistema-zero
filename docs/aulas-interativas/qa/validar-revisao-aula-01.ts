@@ -41,15 +41,18 @@ assert.deepEqual(
   [...new Set(sections.flatMap((s) => (s.workspaceBlockId ? [s.workspaceBlockId] : [])))],
   ['projeto'],
 )
+// ⚠️ As seções da descrição e das coordenadas eram DEMONSTRAÇÃO (só o clipe) até 14/09/2026: hoje
+// cada uma termina numa cena em que a criança mexe (`screen-reader` e `coordinates`), e a régua antiga
+// reprovava o manifesto publicado.
 assert.deepEqual(
   sections.map((s) => s.intent),
   [
     'presentation',
     'application',
     'application',
-    'demonstration',
+    'exploration',
     'application',
-    'demonstration',
+    'exploration',
     'application',
     'exploration',
     'delivery',

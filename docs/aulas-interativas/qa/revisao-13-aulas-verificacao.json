@@ -1,28 +1,35 @@
 {
   "status": "passed",
-  "scope": "Local: 13 fontes, roteiros, manifestos, contratos do catálogo Jogo 2D e programas finais independentes. Não inclui mídia, banco ou publicação.",
+  "scope": "Local: 13 fontes, reprodução de manifestos, montagens e roteiros, cenas descritas com os textos de hoje, marcas de cena anterior, contratos do catálogo Jogo 2D e programas finais independentes. Não inclui mídia, banco ou publicação.",
   "totals": {
     "lessons": 13,
     "sections": 128,
-    "clips": 88
+    "clips": 88,
+    "experiments": 18,
+    "sceneDemonstrations": 2,
+    "clipsWithOldScene": 2
   },
   "results": [
     {
       "lesson": "aula-01",
       "sourceHash": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
       "sections": 11,
-      "demonstrations": 2,
-      "experiments": 1,
+      "demonstrations": 0,
+      "experiments": 4,
+      "sceneDemonstrations": 0,
       "clips": 8,
+      "clipsWithOldScene": 1,
       "finalChecks": 5
     },
     {
       "lesson": "aula-02",
       "sourceHash": "c93882dd5de5ee1c27966f6c98e86bf301e5066acc3d059cf1c07cf38a8bd2a1",
       "sections": 12,
-      "demonstrations": 2,
-      "experiments": 1,
+      "demonstrations": 1,
+      "experiments": 2,
+      "sceneDemonstrations": 0,
       "clips": 9,
+      "clipsWithOldScene": 0,
       "finalChecks": 6
     },
     {
@@ -31,7 +38,9 @@
       "sections": 9,
       "demonstrations": 0,
       "experiments": 2,
+      "sceneDemonstrations": 0,
       "clips": 5,
+      "clipsWithOldScene": 0,
       "finalChecks": 4
     },
     {
@@ -40,7 +49,9 @@
       "sections": 8,
       "demonstrations": 0,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 5,
+      "clipsWithOldScene": 0,
       "finalChecks": 5
     },
     {
@@ -49,7 +60,9 @@
       "sections": 11,
       "demonstrations": 3,
       "experiments": 1,
+      "sceneDemonstrations": 1,
       "clips": 8,
+      "clipsWithOldScene": 0,
       "finalChecks": 8
     },
     {
@@ -58,7 +71,9 @@
       "sections": 9,
       "demonstrations": 0,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 6,
+      "clipsWithOldScene": 0,
       "finalChecks": 3
     },
     {
@@ -67,7 +82,9 @@
       "sections": 9,
       "demonstrations": 1,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 6,
+      "clipsWithOldScene": 0,
       "finalChecks": 17
     },
     {
@@ -76,7 +93,9 @@
       "sections": 9,
       "demonstrations": 1,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 6,
+      "clipsWithOldScene": 0,
       "finalChecks": 5
     },
     {
@@ -85,7 +104,9 @@
       "sections": 10,
       "demonstrations": 1,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 7,
+      "clipsWithOldScene": 0,
       "finalChecks": 9
     },
     {
@@ -94,7 +115,9 @@
       "sections": 9,
       "demonstrations": 1,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 6,
+      "clipsWithOldScene": 0,
       "finalChecks": 3
     },
     {
@@ -103,7 +126,9 @@
       "sections": 11,
       "demonstrations": 2,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 8,
+      "clipsWithOldScene": 0,
       "finalChecks": 5
     },
     {
@@ -112,7 +137,9 @@
       "sections": 9,
       "demonstrations": 2,
       "experiments": 1,
+      "sceneDemonstrations": 1,
       "clips": 6,
+      "clipsWithOldScene": 1,
       "finalChecks": 4
     },
     {
@@ -121,7 +148,9 @@
       "sections": 11,
       "demonstrations": 2,
       "experiments": 1,
+      "sceneDemonstrations": 0,
       "clips": 8,
+      "clipsWithOldScene": 0,
       "finalChecks": 11
     }
   ]

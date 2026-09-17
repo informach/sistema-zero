@@ -1,6 +1,6 @@
 # aula-08 — Uma tela de início que responde ao jogador
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** O jogo já espera. Vamos mostrar o menu e permitir começar pelo teclado ou pelo toque.
 
@@ -92,17 +92,47 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 ### O menu funciona com toque?
 
-**Por que aqui:** A limitação foi observada no próprio jogo; agora a criança testa a ligação que falta.
+**Por que aqui:** A limitação foi observada no próprio jogo; agora a criança testa os dois jeitos de começar que a tela de início promete.
 
 **Foco:** Comparar acesso pelo teclado e pelo toque.
 
-**Fala de ligação / orientação ao aluno:** “Neste exemplo, comece pelo teclado e depois pelo toque. Ligue o toque para que os dois caminhos funcionem.”
+**Cena:** `controls`, “O convite para começar”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** controls. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica).
 
-**Conclusão observável:** Toque ainda não conectado; Partida iniciada por toque; Partida iniciada por Enter.
+**O que a criança lê ao abrir:** “A tela de início promete dois jeitos de começar: tocar na tela ou apertar Enter. Teste os dois, voltando ao início.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** A tela de início mostra o convite para começar.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você toca na tela de início. O que acontece?”
+
+- A partida começa (se ela escolher esta, a tela conta depois: “A tela continuou no INÍCIO.”)
+- Nada acontece ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Tocou e nada aconteceu”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com Começar em Quando apertar Enter, toque na tela de início.” Ao descobrir: “Tocou e nada aconteceu”.
+2. Pedido: “Leve Começar para Quando apertar qualquer tecla ou tocar na tela, e toque na tela de início.” Ao descobrir: “Começou tocando”.
+3. Pedido: “Na tela de início, aperte Enter.” Ao descobrir: “Começou com Enter”.
+
+**Frase de sucesso:** “Agora os dois jeitos que o convite promete começam a partida!”
+
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
+
+1. “Toque na tela de início e olhe se ela muda.”
+2. “Olhe em que caixa está a peça Começar.”
+3. “Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que tocar não começava a partida?”
+
+- O convite estava escrito errado.
+- Nada no jogo escutava o toque. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “Escrever toque na tela não liga nada. O jogo só começa quando o toque está na caixa que chama Começar. Agora o convite e o jogo dizem a mesma coisa.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Atenda aos dois jeitos de começar
 
@@ -129,6 +159,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Mostre a tela de início no senão se inicio, com a dica combinada.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “O jogo já espera. Vamos mostrar o menu e permitir começar pelo teclado ou pelo toque.”
+
+**Fonte:** roteiro-aula-08-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-08-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Parte 3: aproveitar os testes; reduzir o passeio por cores e frases a uma escolha breve de título. Não confundir esta correção com a aula 4: aqui escutar a entrada é adequado, mas precisamos atender a mais de uma entrada. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

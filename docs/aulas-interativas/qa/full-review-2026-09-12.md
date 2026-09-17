@@ -83,7 +83,7 @@ Na raiz, passar a pasta dos originais aos dois validadores:
 ```powershell
 bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
 bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts 'CAMINHO_DOS_ROTEIROS'
-bun docs/aulas-interativas/qa/experience-benchmark.ts
+bun docs/aulas-interativas/qa/experience-benchmark.ts   # apagado em 17/09/2026
 ```
 
 Os projetos são executados por `packages/studio/src/blockly/__tests__/correDinoEditorial.test.ts`, a partir de `packages/studio`, para carregar o ambiente de testes do Blockly. Os demais arquivos de regressão estão em core/tests/project-relationships, member-shell/tests/experience-controller, members/tests/integration/project-pattern-schema e admin/tests/project-pattern-editor.

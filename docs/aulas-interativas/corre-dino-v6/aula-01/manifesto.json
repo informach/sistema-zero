@@ -50,7 +50,8 @@
         "activity": {
           "type": "experimentation",
           "scene": "stage-size"
-        }
+        },
+        "semPerguntaFinal": true
       }
     },
     {
@@ -68,7 +69,8 @@
         "activity": {
           "type": "experimentation",
           "scene": "screen-reader"
-        }
+        },
+        "semPerguntaFinal": true
       }
     },
     {

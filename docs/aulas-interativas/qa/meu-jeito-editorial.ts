@@ -3,6 +3,17 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isLearningManifest, type LearningManifest } from '../../../packages/core/src/learning'
 import {
+  blocoDaCena,
+  type CenaAnterior,
+  type CenaDaAula,
+  cenaAnteriorMarkdown,
+  cenaMarkdown,
+  cenasDaMontagem,
+  eCena,
+  intencaoDaCena,
+  marcarCenasAnteriores,
+} from './cenas-editorial'
+import {
   annotateStudioRecording,
   currentStudioRecipe,
   lessonStudioEdition,
@@ -19,13 +30,20 @@ export interface Step {
   to?: string
   focus: string
   reason: string
-  say: string
-  edit: string
-  visual: string
-  criteria: string[]
-  help: string
+  /** Fala do clipe ou instrução do experimento em HTML. A cena não tem: a instrução mora no bloco. */
+  say?: string
+  edit?: string
+  visual?: string
+  criteria?: string[]
+  /** Ajuda do clipe ou do experimento em HTML. A cena traz as pistas dela. */
+  help?: string
   question?: Question
-  experiment?: 'espelho' | 'quadros' | 'bordas' | 'ordem' | 'folha'
+  experiment?: 'quadros'
+  /**
+   * A cena da seção. Na experimentação é a atividade inteira, com a pergunta; na observação vem logo
+   * depois do clipe e é ela que conclui a seção.
+   */
+  cena?: CenaDaAula
 }
 export interface Recipe {
   title: string
@@ -40,6 +58,8 @@ export interface Recipe {
   rubric: string[]
   corrections: string[]
   quiz: Question[]
+  /** Clipes que mostram ou descrevem a experiência num estado que não existe mais, pela chave do clipe. */
+  cenasAnteriores?: Record<string, CenaAnterior>
 }
 export const plain = (s: string) => s.replaceAll('**', '').replace(/\s+/g, ' ').trim()
 export function originalOf(directory: string, lesson: number) {
@@ -153,7 +173,9 @@ export function buildLesson(
     html?: string,
   ) {
     const [prompt, correct, wrong, explanation] = question
-    const correctId = blocks.length % 2 ? 'opcao-2' : 'opcao-1'
+    // ⚠️ A cena acrescentada DEPOIS de um clipe de observação não entra na conta: as perguntas que já
+    // estavam publicadas guardam o id que tinham antes de a cena chegar.
+    const correctId = (blocks.length - cenasDeObservacao) % 2 ? 'opcao-2' : 'opcao-1'
     const choices = [
       { id: correctId, label: correct },
       { id: correctId === 'opcao-1' ? 'opcao-2' : 'opcao-1', label: wrong },
@@ -172,6 +194,8 @@ export function buildLesson(
     })
     return key
   }
+  let cenasDeObservacao = 0
+  const noFim: LearningManifest['blocks'] = []
   const intro = video(
     'video-abertura-v6',
     'Abertura',
@@ -181,8 +205,16 @@ export function buildLesson(
   )
   section('abertura-v6', 'O que vamos criar hoje', 'presentation', recipe.entry, [intro], [intro])
   for (const step of recipe.steps) {
+    if (step.kind === 'experiment' && step.cena) {
+      if (step.cena.bloco.activity.type !== 'experimentation' || step.cena.noFimDaLista)
+        throw new Error(`A cena de experimentar fica no lugar do experimento: ${step.key}`)
+      blocks.push(blocoDaCena(step.cena))
+      section(step.key, step.title, 'exploration', step.focus, [step.cena.chave], [step.cena.chave])
+      continue
+    }
     if (step.kind === 'experiment') {
-      if (!step.experiment || !step.question) throw new Error(`Experimento incompleto: ${step.key}`)
+      if (!step.experiment || !step.question || step.say === undefined || !step.help)
+        throw new Error(`Experimento incompleto: ${step.key}`)
       const html = readFileSync(
         resolve(root, 'o-jogo-do-meu-jeito-v6', 'interacoes', `${step.experiment}.html`),
         'utf8',
@@ -191,6 +223,14 @@ export function buildLesson(
       section(step.key, step.title, 'exploration', step.focus, [key], [key])
       continue
     }
+    if (
+      step.say === undefined ||
+      step.edit === undefined ||
+      step.visual === undefined ||
+      !step.criteria ||
+      !step.help
+    )
+      throw new Error(`Clipe incompleto: ${step.key}`)
     const key = video(
       `video-${step.key}`,
       `Parte ${step.part}.`,
@@ -200,10 +240,27 @@ export function buildLesson(
       step.from,
       step.to,
     )
+    if (step.kind === 'observe' && step.cena) {
+      if (step.cena.noFimDaLista) noFim.push(blocoDaCena(step.cena))
+      else {
+        blocks.push(blocoDaCena(step.cena))
+        cenasDeObservacao++
+      }
+      section(
+        step.key,
+        step.title,
+        intencaoDaCena(step.cena),
+        step.focus,
+        [key, step.cena.chave],
+        [step.cena.chave],
+      )
+      continue
+    }
     if (step.kind === 'observe') {
       section(step.key, step.title, 'demonstration', step.focus, [key], [key])
       continue
     }
+    if (step.cena) throw new Error(`Construção com cena ainda não prevista: ${step.key}`)
     if (!step.question) throw new Error(`Pergunta ausente: ${step.key}`)
     const guide = `orientacao-${step.key}`
     blocks.push({
@@ -289,6 +346,7 @@ export function buildLesson(
     ['quiz-v6'],
     ['quiz-v6'],
   )
+  blocks.push(...noFim)
   const manifest: LearningManifest = {
     version: 4,
     courseSlug: previous.courseSlug,
@@ -307,13 +365,23 @@ export function buildLesson(
     sourceHash: original.hash,
     status:
       'Âncoras conferidas no texto; mídia e timecodes ainda precisam de edição e conferência.',
-    clips,
+    clips: marcarCenasAnteriores(slug, clips, recipe.cenasAnteriores),
+    cenas: cenasDaMontagem(manifest),
     studio: lessonStudioEdition(manifest),
   }
   return { manifest, montage, recipe }
 }
 
 export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof buildLesson>) {
+  const daCena = (dado: CenaDaAula) => {
+    const block = manifest.blocks.find((b) => b.key === dado.chave)
+    if (!block || !eCena(block)) throw new Error(`Cena ausente do manifesto: ${dado.chave}`)
+    return cenaMarkdown(block.content)
+  }
+  const marcaDoClipe = (chave: string) => {
+    const marca = montage.clips.find((c) => c.key === chave)?.cenaAnterior
+    return marca ? [cenaAnteriorMarkdown(marca), ''] : []
+  }
   const lines = [
     `# ${manifest.lessonSlug} — ${recipe.title}`,
     '',
@@ -335,12 +403,23 @@ export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof 
     '',
     recipe.opening,
     '',
+    ...marcaDoClipe('video-abertura-v6'),
     'Reutilizar o resultado mostrado na abertura original; substituir sua lista de passos pela orientação acima. O índice da aula mostra a sequência nova.',
     '',
     '## Roteiro das seções',
     '',
   ]
   for (const step of recipe.steps) {
+    if (step.kind === 'experiment' && step.cena) {
+      lines.push(
+        `### ${step.title}`,
+        '',
+        `**Por que neste momento:** ${step.reason}`,
+        '',
+        ...daCena(step.cena),
+      )
+      continue
+    }
     lines.push(
       `### ${step.title}`,
       '',
@@ -371,10 +450,16 @@ export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof 
         '',
         `**Edição:** ${step.edit}`,
         '',
+        ...marcaDoClipe(clip.key),
         `**Trecho original de referência, antes da edição:** ${clip.narration}`,
         '',
       )
-      if (step.kind === 'observe')
+      if (step.kind === 'observe' && step.cena)
+        lines.push(
+          '**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.',
+          '',
+        )
+      else if (step.kind === 'observe')
         lines.push(
           '**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.',
           '',
@@ -390,11 +475,13 @@ export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof 
     lines.push(
       '**O que observar:**',
       '',
-      ...step.criteria.map((s) => `- ${s}`),
+      ...(step.criteria ?? []).map((s) => `- ${s}`),
       '',
       `**Ajuda no ponto da dificuldade:** ${step.help}`,
       '',
     )
+    if (step.kind === 'observe' && step.cena)
+      lines.push('#### A cena depois do clipe', '', ...daCena(step.cena))
     if (step.question)
       lines.push(
         `**Pergunta:** ${step.question[0]}`,
@@ -421,6 +508,7 @@ export function scriptMarkdown({ manifest, montage, recipe }: ReturnType<typeof 
     '',
     recipe.closing,
     '',
+    ...marcaDoClipe('video-fecho-v6'),
     '## Quiz final',
     '',
     ...recipe.quiz.flatMap(([q, a, b, explanation]) => [

@@ -85,13 +85,34 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Trecho original de referência, antes da edição:** A primeira parte é a cor, e ela vem antes do traço, pra forma já nascer da cor certa. Olha lá no pé da caixa de ferramentas: tem dois quadradinhos de cor, e eles são coisas diferentes. O que é uma plaquinha cheia é o Preenchimento, a cor de dentro da forma. O que é uma moldura vazada é o Contorno, a cor da linha em volta. Clica no Preenchimento e, no painel de cores da direita, clica na cor da sua pedra. A do Júlio vai de roxo, e a sua pode ser marrom, ou uma cor que nem está ali na grade. Pra essa, no alto do painel tem um botão redondo com um sinal de mais, o Nova cor. Clica nele e abre a janela Escolher uma cor. Arrasta a bolinha na barra colorida pra escolher a cor, e depois mexe a bolinha no quadrado pra deixar ela mais clara, mais escura ou mais forte. Clica em Adicionar, e ela já vai pra sua pedra. Agora o contorno. Quando o Júlio quer a forma limpa, ele tira a linha. Clica no quadradinho da moldura, o Contorno, e no painel de cores pega a primeira casinha, aquela quadriculada, que se chama Sem cor. O Júlio gosta da pedra dele sem linha, porque no espaço escuro ela fica mais limpa. Mas isso é gosto dele: se você quiser a sua com linha em volta, deixa uma cor aí no Contorno.
 
-**Criança:** apenas assiste, pausa e revê. Conclusão com 90% do clipe; sem controles de experimento e sem abrir a ferramenta nesta seção.
+**Criança:** assiste ao clipe, pausa e revê, sem abrir a ferramenta nesta seção. Depois do clipe vem a cena abaixo, e é ela que conclui a seção.
 
 **O que observar:**
 
 - Identificar interior e borda separadamente.
 
 **Ajuda no ponto da dificuldade:** Plaquinha cheia é o interior; moldura é a linha em volta.
+
+#### A cena depois do clipe
+
+**Cena:** `fill-stroke`, “A cor de dentro e a linha de fora”. Formato: demonstração no meio do texto (um botão Ver acontecer, que toca as partes de uma vez). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** esta cena não desenha personagem do elenco.
+
+**O que a criança lê ao abrir:** “Aperte Ver acontecer e olhe a pedra. Veja o que sobra quando uma parte fica Sem cor.”
+
+**Como o palco começa:** Preenchimento azul, contorno laranja.
+
+**Previsão:** nenhuma. A demonstração no meio do texto não trava o palco com uma pergunta.
+
+**Partes da demonstração (o roteiro de fábrica da cena):**
+
+1. “Contorno em Sem cor: sobra o preenchimento.”
+2. “O contorno voltou.”
+3. “Preenchimento em Sem cor: dá para ver o fundo por dentro. Sobra a linha.”
+4. “As duas com cor: preenchimento e contorno juntos.”
+
+**No fim:** um ✓ pequeno ao lado do botão, que vira Ver de novo. Este formato não tem “Agora é sua vez”. A seção conclui quando a demonstração é vista até o fim.
 
 ### Marque os pontos e feche a pedra
 
@@ -206,29 +227,43 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Por que neste momento:** Agora a criança já desenhou com os dois estilos. A comparação usa uma silhueta comum para isolar a representação.
 
-**Narração revisada / ponte:** “Veja a mesma pedra em pixels e em vetor. Compare no tamanho pequeno e ampliado, sem mudar o desenho. Registre os dois. O que acontece com a borda de cada uma?”
+**Cena:** `pixel-vector`, “De perto, a borda conta”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Imagem e condução:** Mesma forma e mesma escala dos dois lados; primeiro 1×, depois 8×. Identificar pixels por degraus, não por uma imagem deliberadamente embaçada.
+**Elenco:** esta cena não desenha personagem do elenco.
 
-**Atividade implementada:** [bordas.html](../interacoes/bordas.html), incorporada ao manifesto. Modelo didático separado da criação.
+**O que a criança lê ao abrir:** “Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.”
 
-**Criança:** escolhe as duas situações previstas, observa e registra cada resultado. Depois de registrar os dois, os controles encerram; a comparação fica visível e uma pergunta nativa verifica a conclusão. Nenhum desafio adicional é aberto.
+**Como o palco começa:** Lupa em 1: as duas pedras quase do tamanho do jogo.
 
-**Conclusão:** o iframe registra participação local; a pergunta é corrigida no servidor. Esse registro não equivale a uma prova de domínio nem inspeciona a galeria.
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se você aproximar muito, o que acontece com as bordas?”
 
-**O que observar:**
+- Só a de pixel vira degraus ✓ (o que acontece de verdade)
+- As duas viram degraus (se ela escolher esta, a tela conta depois: “De perto, a borda da pedra de vetor continuou lisa.”)
 
-- Pixels ficam evidentes na ampliação; curva é redesenhada no exemplo vetorial.
-- Não concluir que um estilo é melhor que o outro.
+O palpite volta à tela quando ela descobre: “Aproximou até as bordas ficarem diferentes”.
 
-**Ajuda no ponto da dificuldade:** Compare a borda, não a cor. A tela física também usa pixels; a diferença é como o desenho é representado.
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-**Pergunta:** No exemplo ampliado, por que o vetor preserva a curva?
+1. Pedido: “Deixe Aproximar em 4 vezes ou mais.” Ao descobrir: “Aproximou até as bordas ficarem diferentes”.
+2. Pedido: “Deixe Aproximar em 6 vezes ou mais.” Ao descobrir: “Aproximou até ver os pontos do vetor”.
+3. Pedido: “Depois de aproximar, volte Aproximar para 1 ou 2 vezes.” Ao descobrir: “Voltou para longe e comparou de novo”.
 
-- A forma é redesenhada a partir dos pontos e curvas. (correta)
-- Porque o Pinta adiciona mais quadros de animação.
+**Frase de sucesso:** “De longe as duas parecem a mesma pedra. De perto, a de pixel mostra os quadradinhos e a de vetor continua lisa!”
 
-**Devolutiva:** A representação vetorial permite redesenhar a curva. Uma imagem exportada em pixels depois tem a resolução com que foi exportada.
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Aproxime devagar e pare quando uma borda mudar.”
+2. “Continue aproximando. Olhe o que aparece na borda da pedra de vetor.”
+3. “Volte Aproximar para 1 vez e compare as duas de longe.”
+
+**Pergunta depois de descobrir (escrita na aula; conta para concluir):** “Com a lupa bem perto, por que a pedra de vetor continua lisa?”
+
+- Ela é feita de quadradinhos bem menores.
+- Ela é refeita a partir dos pontos e das curvas. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ## Entrega e revisão do professor
 

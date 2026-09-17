@@ -85,7 +85,28 @@
       "newNarration": "Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.",
       "production": "regravar-estudio-atual",
       "inSeconds": null,
-      "outSeconds": null
+      "outSeconds": null,
+      "cenaAnterior": {
+        "cena": "random",
+        "oQueMudou": "A orientação de edição descreve a experimentação como duas comparações com exemplos fixos. Desde o lote 5 do Raio-X a cena random sorteia de verdade, um lugar ou uma velocidade por vez, e um lugar pode repetir.",
+        "acao": "conferir"
+      }
+    }
+  ],
+  "cenas": [
+    {
+      "secao": "sorteio-controlado",
+      "bloco": "experiencia-sorteio-controlado",
+      "cena": "random",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    },
+    {
+      "secao": "menos-corre-mais",
+      "bloco": "demonstracao-conta-velocidade",
+      "cena": "velocity",
+      "atividade": "demonstration",
+      "clipesAntes": ["video-menos-corre-mais"]
     }
   ],
   "studio": {

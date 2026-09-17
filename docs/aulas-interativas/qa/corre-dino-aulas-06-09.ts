@@ -1,3 +1,4 @@
+import { PISTAS_DE_FABRICA } from './cenas-editorial'
 import {
   absent,
   c,
@@ -202,10 +203,42 @@ export const middleRecipes: Record<number, Recipe> = {
         key: 'visivel-guardado',
         title: 'Sair da tela é ser apagado?',
         kind: 'experiment',
-        mission: 'cleanup',
         focus: 'Comparar objetos visíveis, guardados e removidos.',
         reason: 'O laboratório revela os bastidores que a tela comum esconde.',
-        say: 'Observe os cactos que saíram. Ligue a limpeza e compare o que continua guardado. O objetivo é cuidar dos que já não são usados.',
+        cena: {
+          chave: 'experiencia-visivel-guardado',
+          bloco: {
+            title: 'Sair da tela é ser apagado?',
+            instructions:
+              'Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.',
+            hints: [
+              'Compare os cactos na tela com a prateleira dos bastidores.',
+              'Conte os cactos da prateleira depois que um cacto sai.',
+              'Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo.',
+            ],
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'cleanup',
+            },
+            prediction: {
+              prompt: 'O cacto que saiu da tela ainda existe no jogo?',
+              choices: [
+                {
+                  id: 'some',
+                  label: 'Não, ele sumiu',
+                  shows: 'Os cactos que saíram foram para a prateleira dos bastidores.',
+                },
+                {
+                  id: 'existe',
+                  label: 'Sim, ele continua guardado',
+                },
+              ],
+              correctChoiceId: 'existe',
+              revealOn: 'invisible-stored',
+            },
+          },
+        },
       },
       {
         key: 'faxina',
@@ -309,11 +342,43 @@ export const middleRecipes: Record<number, Recipe> = {
         key: 'estado-modelo',
         title: 'Quem ainda está trabalhando no início?',
         kind: 'experiment',
-        mission: 'game-state',
         focus: 'Observar e impedir atividade fora do estado jogando.',
         reason:
           'Depois do primeiro Se, revelar que outra rotina também precisa obedecer ao estado.',
-        say: 'Compare o início com a partida. Ligue a condição e observe quando as ações do jogo podem acontecer. Volte ao início para conferir a espera.',
+        cena: {
+          chave: 'experiencia-estado-modelo',
+          bloco: {
+            title: 'Quem ainda está trabalhando no início?',
+            instructions:
+              'Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.',
+            hints: [
+              'Aperte ▶ na tela de início e conte os cactos que aparecem.',
+              'O que fica dentro de Se jogando só acontece durante a partida.',
+              'Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida.',
+            ],
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'game-state',
+            },
+            prediction: {
+              prompt: 'Na tela de início, antes de começar, nascem cactos?',
+              choices: [
+                {
+                  id: 'ja-nascem',
+                  label: 'Sim, já nascem',
+                },
+                {
+                  id: 'so-depois',
+                  label: 'Não, só depois de começar',
+                  shows: 'Os cactos nasceram na tela de início, antes de começar.',
+                },
+              ],
+              correctChoiceId: 'ja-nascem',
+              revealOn: 'outside',
+            },
+          },
+        },
       },
       {
         key: 'relogio-protegido',
@@ -420,11 +485,23 @@ export const middleRecipes: Record<number, Recipe> = {
         key: 'toque-tecla',
         title: 'O menu funciona com toque?',
         kind: 'experiment',
-        mission: 'controls',
         focus: 'Comparar acesso pelo teclado e pelo toque.',
         reason:
-          'A limitação foi observada no próprio jogo; agora a criança testa a ligação que falta.',
-        say: 'Neste exemplo, comece pelo teclado e depois pelo toque. Ligue o toque para que os dois caminhos funcionem.',
+          'A limitação foi observada no próprio jogo; agora a criança testa os dois jeitos de começar que a tela de início promete.',
+        cena: {
+          chave: 'experiencia-toque-tecla',
+          bloco: {
+            title: 'O menu funciona com toque?',
+            instructions:
+              'A tela de início promete dois jeitos de começar: tocar na tela ou apertar Enter. Teste os dois, voltando ao início.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'controls',
+            },
+          },
+        },
       },
       {
         key: 'entrada-completa',
@@ -530,10 +607,22 @@ export const middleRecipes: Record<number, Recipe> = {
         // "Jogar de novo" (full review de experiência, B11): o "Recomeçar" da moldura faz outra coisa.
         title: 'Jogar de novo é só trocar de tela?',
         kind: 'experiment',
-        mission: 'restart',
         focus: 'Distinguir a cena de fim de uma nova partida preparada.',
         reason: 'Entender o reset antes de montar o segundo ramo do evento de entrada.',
-        say: 'Neste exemplo, termine uma partida e ligue o reinício. Compare o estado de fim com a nova partida preparada.',
+        cena: {
+          chave: 'experiencia-reset-modelo',
+          bloco: {
+            title: 'Jogar de novo é só trocar de tela?',
+            instructions:
+              'Jogue até bater e toque na tela para voltar. Olhe a pista. Depois troque o que o toque faz e compare.',
+            hints: PISTAS_DE_FABRICA,
+            required: false,
+            activity: {
+              type: 'experimentation',
+              scene: 'restart',
+            },
+          },
+        },
       },
       {
         key: 'jogar-novamente',

@@ -1,6 +1,6 @@
 # aula-02 — O Dino aparece: quadros, limpeza e camadas
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.
 
@@ -13,7 +13,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 | Seção | Experiência | Objetivo |
 | --- | --- | --- |
 | 1. O que vamos fazer hoje | presentation | Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele. |
-| 2. Veja como desenhos viram movimento | demonstration | Distinguir um quadro da repetição de quadros. |
+| 2. Descubra como desenhos viram movimento | exploration | Distinguir um quadro da repetição de quadros. |
 | 3. Monte o motor do jogo | application | Separar preparação de repetição. |
 | 4. Faça o Dino aparecer | application | Conectar o desenho ao personagem criado. |
 | 5. Limpe antes de desenhar | application | Começar um quadro sem resíduos do anterior. |
@@ -27,7 +27,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 ## Decisões e roteiro de cada seção
 
-### Veja como desenhos viram movimento
+### Descubra como desenhos viram movimento
 
 **Por que aqui:** A criança precisa visualizar repetição antes de receber a área nova.
 
@@ -43,7 +43,47 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Trecho original selecionado, antes da edição:** Você já viu um daqueles livrinhos de folhear, que tem um desenho em cada página, e quando você passa as páginas bem rápido o bonequinho parece que se mexe? Cada página é um desenho um tiquinho diferente da anterior. Pois é exatamente assim que um jogo funciona. Um jogo é um filme que vai sendo desenhado na hora, uma página de cada vez. No cinema, as páginas já estão prontas. No jogo não: o computador olha como as coisas estão agora, e desenha uma página nova. E de novo. E de novo. Umas 60 vezes por segundo. E cada uma dessas páginas tem um nome: quadro. Lembra dessa palavra, porque ela vai voltar o curso inteiro. Movimento, num jogo, é ilusão: é a mesma figura desenhada um tiquinho mais pra lá a cada quadro. E quem faz essa ilusão é você.
 
-**Aluno:** assiste, pausa ou revê. Sem alterar parâmetros e sem converter esta seção em experimentação. Conclui com 90% do clipe assistido.
+**Aluno:** assiste ao clipe, pausa ou revê. Depois, na mesma seção, abre a cena abaixo. É a cena que conclui a seção.
+
+#### A cena depois do clipe
+
+**Cena:** `draw-loop`, “Por que o desenho se repete”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+
+**Elenco:** personagem: Dino (o de fábrica).
+
+**O que a criança lê ao abrir:** “Aperte Avançar 1 quadro e olhe a tela e o x do Dino. Depois desenhe o Dino a cada quadro. Por último, ligue Limpar a tela antes.”
+
+**Como o palco começa:** Quadro 0: 1 Dino na tela.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se o jogo desenhar sem limpar antes, o que aparece?”
+
+- Um Dino só, andando (se ela escolher esta, a tela conta depois: “Sem limpar, os desenhos de antes continuaram na tela.”)
+- Um rastro de Dinos ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Sem limpar, os desenhos velhos ficam”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Com o Dino na tela, desenhe só no começo, sem limpar a tela, e aperte Avançar 1 quadro.” Ao descobrir: “Sem desenhar de novo, a tela não muda”.
+2. Pedido: “Desenhe o Dino a cada quadro, sem limpar a tela, e deixe o tempo passar.” Ao descobrir: “Sem limpar, os desenhos velhos ficam”.
+3. Pedido: “Desenhe o Dino a cada quadro, ligue Limpar a tela antes e deixe o tempo passar.” Ao descobrir: “Limpando e desenhando, o Dino anda”.
+
+**Frase de sucesso:** “A cada quadro o jogo limpa a tela e desenha de novo. É assim que o Dino anda!”
+
+**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+
+1. “Aperte Avançar 1 quadro e compare a tela com o x do Dino na faixa.”
+2. “Escolha desenhar a cada quadro e avance dois quadros.”
+3. “Ligue Limpar a tela antes e avance de novo.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que faz o desenho parecer que se mexe?”
+
+- Desenhar de novo a cada quadro, limpando antes. ✓ (correta)
+- Empurrar o desenho que já estava lá.
+
+**Explicação que ela lê ao acertar:** “O jogo apaga e redesenha muitas vezes por segundo. Sem desenhar de novo, a tela não muda; sem limpar, sobra rastro.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Monte o motor do jogo
 
@@ -142,13 +182,43 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Trocar apenas a ordem de dois desenhos e observar a sobreposição.
 
-**Fala de ligação / orientação ao aluno:** “Neste exemplo, compare Floresta depois do Dino e Dino depois da Floresta. Só a ordem muda.”
+**Cena:** `layers`, “Quem fica na frente?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** layers. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** personagem: Dino (o de fábrica) e cenário: floresta (o de fábrica).
 
-**Conclusão observável:** Floresta na frente; Dino na frente.
+**O que a criança lê ao abrir:** “O Dino está escondido atrás da floresta. Mude a ordem de desenhar e descubra quem fica na frente. Só a ordem muda.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** Só um pedacinho do Dino aparece no desenho.
+
+**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Na ordem de desenhar, o Dino vem DEPOIS da floresta. Onde o Dino aparece?”
+
+- Atrás da floresta (se ela escolher esta, a tela conta depois: “O Dino ficou na frente da floresta.”)
+- Na frente da floresta ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “O Dino apareceu na frente”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Leve o Dino para o fim da ordem de desenhar.” Ao descobrir: “O Dino apareceu na frente”.
+2. Pedido: “Com o Dino no fim da ordem de desenhar, leve a floresta para o fim.” Ao descobrir: “Escondeu de novo só trocando a ordem”.
+3. Pedido: “Leve o Dino de novo para o fim da ordem de desenhar.” Ao descobrir: “No jogo, quem é desenhado por último fica na frente”.
+
+**Frase de sucesso:** “Só a ordem mudou: quem é desenhado por último fica por cima, e ninguém foi apagado!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “O Dino está atrás da floresta. Onde fica a floresta na lista?”
+2. “Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.”
+3. “No fim, deixe o Dino no fim da lista, como fica no jogo.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Quem aparece por cima?”
+
+- A peça desenhada primeiro.
+- A peça desenhada por último. ✓ (correta)
+
+**Explicação que ela lê ao acertar:** “O jogo pinta uma peça de cada vez. A última pintura fica por cima das outras, como um adesivo colado depois.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Organize as camadas do seu jogo
 
@@ -202,6 +272,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Mantenha a descrição do jogo em Ao iniciar.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Seu Dino foi criado e ainda está invisível. Hoje vamos desenhá-lo e pôr a floresta atrás dele.”
+
+**Fonte:** roteiro-aula-02-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-02-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. Parte 3: aproveitar a ilusão de movimento no fechamento; retirar a exploração livre das velocidades 2 e 9 e manter 5. Nomes dos identificadores ficam canônicos na trilha guiada; a cor do Dino pode ser escolhida. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 

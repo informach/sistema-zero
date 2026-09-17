@@ -1,6 +1,6 @@
 # aula-06 — O que sai da tela ainda existe?
 
-Revisão baseada no roteiro original gravado. Demonstração é observação; experimentação é uma atividade separada e delimitada. Todas as construções usam o mesmo Estúdio da aula.
+Revisão baseada no roteiro original gravado. Demonstração é observação: o clipe e, quando a seção tem, a cena que toca sozinha. Experimentação é uma cena separada do projeto, em que a criança mexe e descobre. Todas as construções usam o mesmo Estúdio da aula.
 
 **Entrada:** Os cactos saem da tela, mas podem continuar guardados. Vamos medir antes de fazer a limpeza.
 
@@ -79,13 +79,42 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 
 **Foco:** Comparar objetos visíveis, guardados e removidos.
 
-**Fala de ligação / orientação ao aluno:** “Observe os cactos que saíram. Ligue a limpeza e compare o que continua guardado. O objetivo é cuidar dos que já não são usados.”
+**Cena:** `cleanup`, “Para onde vai o cacto que sai da tela?”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
-**Experiência nativa:** cleanup. Modelo didático separado do projeto; não promete reproduzir todos os números e a física do Estúdio.
+**Elenco:** obstáculo: cacto (o de fábrica).
 
-**Conclusão observável:** Fora da tela, ainda no grupo; Regra retira automaticamente.
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.”
 
-**Interação:** usar apenas os controles desta missão. Ajudas em três níveis conduzem ao mesmo objetivo. Ao concluir, os controles ficam encerrados e a criança continua a aula; comparações que ela guardou permanecem consultáveis. Não acrescentar outra missão.
+**Como o palco começa:** 3 cactos na tela e 3 no grupo.
+
+**Previsão, antes de mexer (escrita na aula; não vale nota):** “O cacto que saiu da tela ainda existe no jogo?”
+
+- Não, ele sumiu (se ela escolher esta, a tela conta depois: “Os cactos que saíram foram para a prateleira dos bastidores.”)
+- Sim, ele continua guardado ✓ (o que acontece de verdade)
+
+O palpite volta à tela quando ela descobre: “Saiu da tela e ficou no grupo”.
+
+**O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
+
+1. Pedido: “Deixe o tempo passar até dois cactos saírem da tela.” Ao descobrir: “Saiu da tela e ficou no grupo”.
+2. Pedido: “Ligue Remover do grupo quem saiu da tela e deixe o tempo passar.” Ao descobrir: “A regra tirou do grupo quem saiu”.
+
+**Frase de sucesso:** “Sair da tela não tira ninguém do grupo: quem tira é a regra!”
+
+**Pistas (uma por vez, no botão Uma pista; escritas na aula):**
+
+1. “Compare os cactos na tela com a prateleira dos bastidores.”
+2. “Conte os cactos da prateleira depois que um cacto sai.”
+3. “Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo.”
+
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que é preciso uma regra para retirar os cactos que saem?”
+
+- Porque sair da tela não apaga nada: eles se acumulam nos bastidores. ✓ (correta)
+- Porque senão eles voltam pelo outro lado.
+
+**Explicação que ela lê ao acertar:** “A tela é só a janela. Quem saiu dela continua no grupo, ocupando lugar, até alguém mandar retirar.”
+
+**Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 
 ### Limpe os cactos que saíram
 
@@ -138,6 +167,24 @@ Revisão baseada no roteiro original gravado. Demonstração é observação; ex
 - Retire o placar provisório usado como medidor.
 
 **Se não passar:** apontar o objetivo pendente pelo nome. Rever o encaixe ou a configuração, corrigir no mesmo projeto e conferir novamente. A revisão visual do jogo continua necessária.
+
+## Clipes de abertura e fecho
+
+### Abertura
+
+**Ponte nova:** “Os cactos saem da tela, mas podem continuar guardados. Vamos medir antes de fazer a limpeza.”
+
+**Fonte:** roteiro-aula-06-corre-dino.md → Abertura.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a retomada e o resultado de hoje. Trocar convites a exploração livre pela missão delimitada abaixo.
+
+### Fecho
+
+**Ponte nova:** “Sua construção está guardada. Agora responda três perguntas curtas sobre o que mudou hoje.”
+
+**Fonte:** roteiro-aula-06-corre-dino.md → Fecho.
+
+**Montagem:** Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter a recapitulação. As Especificações antigas dizem que o medidor fica até a aula 7, mas Parte 4 e Fecho o retiram na aula 6. Seguir Parte 4/Fecho e a continuidade da aula 7. Retirar instrumento não é desligar a rotina de limpeza. Terminar indicando o quiz, sem abrir desafios extras.
 
 ## Conferência final e quiz
 
