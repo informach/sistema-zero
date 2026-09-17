@@ -16,6 +16,36 @@ function bloco(ancora: string): string {
   return css.slice(abre + 1, css.indexOf('}', abre))
 }
 
+/**
+ * ⚠️ O `bloco()` acima lê só o PRIMEIRO bloco do seletor no texto, e é por isso que um
+ * override posterior (`.pensa-planner .pensa-project-card { border-width: 2px }` no fim do
+ * arquivo) escapava dos testes da camada do cartão. Este varre o arquivo INTEIRO e devolve
+ * todas as regras cujo seletor casa, corpo e seletor. As regras dentro de `@container`/
+ * `@media` casam normalmente: o cabeçalho da at-rule não fecha antes da primeira `{` de
+ * dentro, então a tentativa que começa nele falha e o motor avança para a regra interna.
+ */
+function regras(casa: RegExp): Array<{ seletor: string; corpo: string }> {
+  const achadas: Array<{ seletor: string; corpo: string }> = []
+  const re = /([^{}]+)\{([^{}]*)\}/g
+  // ⚠️ Sem tirar os comentários, o texto que antecede a regra entra no "seletor" — e os
+  // comentários deste arquivo citam `::after` e nomes de classe o tempo todo.
+  const limpo = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  let m = re.exec(limpo)
+  while (m) {
+    const seletor = (m[1] ?? '').trim()
+    if (!seletor.startsWith('@') && casa.test(seletor)) {
+      achadas.push({ seletor, corpo: m[2] ?? '' })
+    }
+    m = re.exec(limpo)
+  }
+  return achadas
+}
+
+/** Declara a propriedade `prop` neste corpo? (início da declaração, não substring.) */
+function declara(corpo: string, prop: string): boolean {
+  return new RegExp(`(^|;)\\s*${prop}\\s*:`).test(corpo)
+}
+
 const CHAVES = [
   '--pz-bg',
   '--pz-surface',
@@ -109,10 +139,59 @@ describe('o cartão do plano abre em qualquer ponto', () => {
     const camada = bloco('.pensa-project-card__open::after {')
     const borda = /border:\s*(\d+)px\s+solid/.exec(cartao)?.[1]
     expect(borda).toBeDefined()
-    expect(camada).toMatch(new RegExp(`inset:\\s*-${borda}px(?![\\d.])`))
+    // ⚠️ O inset é ancorado nas QUATRO bordas (`-1px` e ponto final). Sem o `;` no fim,
+    // `inset: -1px 0 0 0` passava e deixava a faixa morta nos outros três lados.
+    expect(camada).toMatch(new RegExp(`inset:\\s*-${borda}px\\s*;`))
     const raio = /border-radius:\s*([^;]+);/.exec(cartao)?.[1]?.trim()
     expect(raio).toBeDefined()
     expect(camada).toContain(`border-radius: ${raio}`)
+  })
+
+  it('a borda do cartão é declarada UMA vez: um override posterior quebraria o par', () => {
+    // O `-1px` é o negativo da borda declarada em `.pensa-project-card`. Uma regra
+    // posterior com mais especificidade (`.pensa-planner .pensa-project-card`) mudaria a
+    // borda sem que a comparação acima visse — o teste lia só o primeiro bloco.
+    const doCartao = regras(/\.pensa-project-card(?![\w-])/)
+    expect(doCartao.length).toBeGreaterThan(0)
+    const comBorda = doCartao.filter(
+      (regra) => declara(regra.corpo, 'border') || declara(regra.corpo, 'border-width'),
+    )
+    expect(comBorda.map((regra) => regra.seletor)).toEqual(['.pensa-project-card'])
+  })
+
+  it('o cartão não recorta nada: `overflow` cortaria o -1px em silêncio', () => {
+    // O plano RECUSOU `overflow: hidden` no cartão justamente por isso, e nenhum teste via.
+    for (const regra of regras(/\.pensa-project-card(?![\w-])/)) {
+      expect(declara(regra.corpo, 'overflow')).toBe(false)
+      expect(declara(regra.corpo, 'overflow-x')).toBe(false)
+      expect(declara(regra.corpo, 'overflow-y')).toBe(false)
+    }
+  })
+
+  it('nada torna o BOTÃO o bloco de referência: a camada encolheria para a pílula', () => {
+    // `transform`/`translate` já estão travados no teste acima, mas `position`, `contain`,
+    // `filter` e `will-change` fazem o MESMO estrago e escapavam: com
+    // `.pensa-project-card__open { position: relative }` os oito pontos do cartão viram
+    // `null` (medido no navegador) e o defeito volta inteiro.
+    const proibidas = ['position', 'contain', 'filter', 'backdrop-filter', 'will-change']
+    const doBotao = regras(/\.pensa-project-card__open(?![\w-])/).filter(
+      (regra) => !regra.seletor.includes('::after'),
+    )
+    expect(doBotao.length).toBeGreaterThan(0)
+    for (const regra of doBotao) {
+      for (const prop of proibidas) {
+        expect({ seletor: regra.seletor, prop, declara: declara(regra.corpo, prop) }).toEqual({
+          seletor: regra.seletor,
+          prop,
+          declara: false,
+        })
+      }
+      // E o que mexe o botão só pode valer `none`.
+      for (const prop of ['transform', 'translate', 'rotate', 'scale', 'perspective']) {
+        const valor = new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`).exec(regra.corpo)?.[1]
+        if (valor) expect(valor.trim()).toBe('none')
+      }
+    }
   })
 
   it('a lixeira sobe acima da área esticada, senão existe sem nunca receber um clique', () => {

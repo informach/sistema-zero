@@ -22,7 +22,7 @@ As ferramentas atualizam `PATCH /tasks/:id/progress`; o Pensa lê o resumo e `ne
 
 ## Handoff
 
-- `/pinta?tarefa=<id>` restaura o brief, preenche tipo, estilo e paleta, vincula o desenho aberto e exige “Usar no Estúdio” quando o cartão pede.
+- `/pinta?tarefa=<id>` restaura o brief, preenche tipo, estilo e paleta, vincula o desenho aberto e exige “Usar no Estúdio” quando o cartão pede. A volta é o botão “Voltar ao plano” no pé do painel do brief, sempre visível na galeria e no editor: ele guarda o desenho e só então navega para `/pensa?plano=<projectId>`; gravação que falha não navega e mostra o recado na própria tela. O contrato é o `onReturnToPlan` opcional do `PintaTaskSession`, e o id do plano vem do handoff, não da URL. O Molda tem o mesmo botão, com o mesmo rótulo, no guia da tarefa.
 - `/estudio?tarefa=<id>` restaura ou cria `pensa-<pensaProjectId sem hífens>`, apresenta as extensões permitidas no guia e mantém o painel após reload. O vínculo local usa `sz:studio:pensa-link:<viewerId>:<pensaProjectId>`.
 
 `StudioTaskSession` é independente de `LessonActivity`. O backup pertence ao armazenamento do host do Estúdio, não ao Pensa.

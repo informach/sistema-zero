@@ -320,9 +320,25 @@ export const COPY = {
      * O MESMO rótulo do Molda (decisão da dona): uma frase só para a mesma ação
      * nas duas ferramentas. Ele não muda enquanto guarda: trocar o texto mudaria
      * o nome acessível no meio da ação.
+     *
+     * ⚠️ A DIFERENÇA para o Molda é o comportamento, não o rótulo: lá o botão RECUSA
+     * sair com a criação aberta e manda usar o "Voltar" da barra; aqui ele guarda e
+     * sai sozinho, que é o que ela pediu. O Molda é que fica devendo, então não
+     * "conserte" o Pinta para o lado de lá.
      */
     back: 'Voltar ao plano',
-    backError: 'Não consegui guardar seu desenho agora. Confira a internet e tente de novo.',
+    /** Enquanto guarda, na região viva abaixo do botão (o botão não muda de rótulo). */
+    backBusy: 'Guardando seu desenho…',
+    /**
+     * ⚠️⚠️ É SEMPRE esta frase que a criança lê quando a volta falha, nunca a mensagem
+     * do erro. A do caso comum é `editor.saveError` ("Não consegui salvar"), que é o
+     * rótulo de três palavras do SELO da barra: não diz o que aconteceu com o desenho,
+     * nem que ela continua no Pinta, nem o que fazer. A técnica vai para o console.
+     * ⚠️ E nada de "confira a internet": esta gravação é LOCAL (IndexedDB), então o
+     * conselho mandaria a criança olhar para o lugar errado.
+     */
+    backError:
+      'Não consegui guardar seu desenho, então você continua aqui no Pinta. Tente de novo daqui a pouquinho.',
   },
   tools: {
     pencil: 'Lápis',

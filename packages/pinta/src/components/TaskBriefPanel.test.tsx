@@ -154,6 +154,25 @@ describe('Voltar ao plano', () => {
     expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
   })
 
+  test('o botão e o recado ficam FORA do brief que recolhe e do corpo que rola', () => {
+    const view = render(
+      <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
+    )
+    const botao = screen.getByRole('button', { name: COPY.task.back })
+    const details = view.container.querySelector('details')
+    expect(details).toBeTruthy()
+    // Nem dentro do <details> (recolher o brief o esconderia, e o estado recolhido
+    // atravessa a troca galeria↔editor) nem dentro do corpo `max-h-52 overflow-auto`
+    // (no celular ele nascia abaixo da dobra do painel).
+    expect(details?.contains(botao)).toBe(false)
+    expect(botao.closest('.overflow-auto')).toBeNull()
+    // E nada de controle interativo dentro do <summary>: o clique abriria o brief.
+    expect(view.container.querySelector('summary button')).toBeNull()
+    // A ordem de leitura e o Tab seguem o texto: resumo, brief, saída.
+    const foco = Array.from(view.container.querySelectorAll<HTMLElement>('summary, button, input'))
+    expect(foco.at(-1)).toBe(botao)
+  })
+
   test('dois cliques seguidos guardam e navegam UMA vez só', async () => {
     let liberar: (() => void) | null = null
     const onReturn = mock(
@@ -163,15 +182,18 @@ describe('Voltar ao plano', () => {
         }),
     )
     render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
-    const botao = screen.getByRole('button', { name: COPY.task.back })
+    const botao = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
 
     fireEvent.click(botao)
+    // O rótulo NÃO muda enquanto guarda (mudaria o nome acessível no meio da ação).
+    expect(botao.disabled).toBe(true)
+    expect(botao.getAttribute('aria-busy')).toBe('true')
+    // ⚠️⚠️ O `disabled` sai daqui de propósito: no clique duplo REAL o navegador chega ao
+    // segundo clique ANTES do re-render que o aplica, e quem segura é a trava por REF.
+    // Com o atributo no lugar, o teste passava mesmo sem a trava (medido no full review).
+    botao.removeAttribute('disabled')
     fireEvent.click(botao)
     expect(onReturn).toHaveBeenCalledTimes(1)
-    // O rótulo NÃO muda enquanto guarda (mudaria o nome acessível no meio da ação).
-    const ocupado = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
-    expect(ocupado.disabled).toBe(true)
-    expect(ocupado.getAttribute('aria-busy')).toBe('true')
 
     await act(async () => {
       liberar?.()
@@ -180,14 +202,50 @@ describe('Voltar ao plano', () => {
     expect(onReturn).toHaveBeenCalledTimes(1)
   })
 
-  test('falha ao guardar mostra o recado no painel e o botão volta a funcionar', async () => {
+  test('enquanto guarda anuncia numa região viva, e navegar não devolve o botão', async () => {
+    let liberar: (() => void) | null = null
+    const onReturn = mock(
+      () =>
+        new Promise<void>((resolve) => {
+          liberar = () => resolve()
+        }),
+    )
+    const view = render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    // A região viva monta VAZIA (uma que nasce com o texto não é anunciada).
+    const status = view.container.querySelector('[role="status"]')
+    expect(status?.textContent).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+    await waitFor(() => expect(status?.textContent).toBe(COPY.task.backBusy))
+
+    await act(async () => {
+      liberar?.()
+      await Bun.sleep(0)
+    })
+    // Quem navegou não volta para esta tela: o botão NÃO é reabilitado no sucesso.
+    const botao = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
+    expect(botao.disabled).toBe(true)
+    expect(botao.getAttribute('aria-busy')).toBe('true')
+  })
+
+  test('falha ao guardar mostra o recado desta tela, nunca a mensagem do erro', async () => {
+    // O caso COMUM: o `flush` do editor rejeita com `COPY.editor.saveError`, que é o
+    // rótulo de três palavras do selo da barra.
     const onReturn = mock(async () => {
-      throw new Error('Não consegui salvar')
+      throw new Error(COPY.editor.saveError)
     })
     render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
     fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
 
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('salvar'))
+    const alerta = await waitFor(() => screen.getByRole('alert'))
+    expect(alerta.textContent).toBe(COPY.task.backError)
+    expect(alerta.textContent).not.toContain(COPY.editor.saveError)
+    // Nada de "internet": esta gravação é local.
+    expect(alerta.textContent).not.toContain('internet')
+    // E o recado não sai em letra miúda: o piso da casa para criança é 12px.
+    expect(alerta.tagName).toBe('P')
+    expect(alerta.className).toContain('text-sm')
+
     const botao = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
     expect(botao.disabled).toBe(false)
     expect(botao.getAttribute('aria-busy')).toBe('false')
@@ -195,9 +253,9 @@ describe('Voltar ao plano', () => {
     expect(screen.getByText(/Pequena, ágil/)).toBeTruthy()
   })
 
-  test('falha SEM mensagem cai no recado do copy', async () => {
+  test('erro do HOST também vira a frase desta tela', async () => {
     const onReturn = mock(async () => {
-      throw new Error('')
+      throw new Error('Falha de mentira do playground.')
     })
     render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
     fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))

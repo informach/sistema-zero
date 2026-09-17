@@ -615,11 +615,41 @@ describe('PintaApp — Voltar ao plano', () => {
     editarPendente()
     fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
 
-    await waitFor(
-      () => expect(screen.getByRole('alert').textContent).toContain(COPY.editor.saveError),
-      { timeout: 5000 },
-    )
+    // A criança lê a frase DESTA tela, nunca a mensagem crua do armazenamento.
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError), {
+      timeout: 5000,
+    })
     expect(eventos).toEqual([])
+  })
+
+  it('🚨 pela GALERIA (editor fechado) navega SEM gravar nada', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    // O painel do brief aparece nas DUAS telas, e este é o caminho mais comum: nenhum
+    // desenho aberto, `editorRef.current === null`, nada a gravar antes de sair.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(() => expect(eventos).toEqual(['navegou']), { timeout: 5000 })
   })
 
   it('sem o `onReturnToPlan` do host o botão não existe (playground, aula, Pinta solto)', async () => {
