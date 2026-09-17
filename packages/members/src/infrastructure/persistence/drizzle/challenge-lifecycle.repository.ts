@@ -288,52 +288,69 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
  * pelas contas candidatas esconderia justamente uma relação conflitante.
  */
 async function loadOwnerClaims(db: Database, accountIds: string[]): Promise<OwnerRow[]> {
+  const accountRows = sql.join(
+    accountIds.map((accountId) => sql`(${accountId}::uuid)`),
+    sql`, `,
+  )
   const discovered = await db.execute<{ userId: string }>(sql`
-    select user_id as "userId" from members.gamification_profiles
-      where account_id = any(${accountIds}::uuid[])
+    with candidate_accounts(id) as (values ${accountRows})
+    select source.user_id as "userId" from members.gamification_profiles source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.profile_preferences
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.profile_preferences source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.lesson_navigation
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.lesson_navigation source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.lesson_section_progress
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.lesson_section_progress source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.lesson_block_progress
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.lesson_block_progress source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.learning_attempts
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.learning_attempts source
+      join candidate_accounts candidate on candidate.id = source.account_id
     union
-    select user_id as "userId" from members.studio_submissions
-      where account_id = any(${accountIds}::uuid[])
+    select source.user_id as "userId" from members.studio_submissions source
+      join candidate_accounts candidate on candidate.id = source.account_id
   `)
   if (discovered.length === 0) return []
 
-  const profileIds = discovered.map(({ userId }) => userId)
+  const profileRows = sql.join(
+    discovered.map(({ userId }) => sql`(${userId}::uuid)`),
+    sql`, `,
+  )
   return db.execute<OwnerRow>(sql`
-    select user_id as "userId", account_id as "accountId" from members.gamification_profiles
-      where user_id = any(${profileIds}::uuid[])
+    with candidate_profiles(id) as (values ${profileRows})
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.gamification_profiles source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.profile_preferences
-      where user_id = any(${profileIds}::uuid[])
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.profile_preferences source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.lesson_navigation
-      where user_id = any(${profileIds}::uuid[])
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.lesson_navigation source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.lesson_section_progress
-      where user_id = any(${profileIds}::uuid[])
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.lesson_section_progress source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.lesson_block_progress
-      where user_id = any(${profileIds}::uuid[])
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.lesson_block_progress source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.learning_attempts
-      where user_id = any(${profileIds}::uuid[])
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.learning_attempts source
+      join candidate_profiles candidate on candidate.id = source.user_id
     union
-    select user_id as "userId", account_id as "accountId" from members.studio_submissions
-      where user_id = any(${profileIds}::uuid[]) and account_id is not null
+    select source.user_id as "userId", source.account_id as "accountId"
+      from members.studio_submissions source
+      join candidate_profiles candidate on candidate.id = source.user_id
+      where source.account_id is not null
   `)
 }
 
