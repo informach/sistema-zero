@@ -1,5 +1,9 @@
+import { PalettePicker } from '@sistemazero/member-shell/components/palette-picker'
+import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
 import { drawersForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { ChevronRight, type LucideIcon, Smile, Sofa, UserRound } from 'lucide-react'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
@@ -11,6 +15,7 @@ import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
+import { PALETTE_COOKIE } from '@/lib/cookies'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import {
   checkStudioAccessReadonly,
@@ -37,6 +42,12 @@ export const dynamic = 'force-dynamic'
 export default async function ProfilePage() {
   const session = await getSession()
   if (!session) redirect('/login')
+
+  // A cor vem do MESMO espelho que o layout raiz leu — sem GET na montagem do seletor.
+  const paletteEscolhida = paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value)
+  // Sessão de suporte somente-leitura: o BFF já recusa o PUT, então o seletor abre desabilitado
+  // com o motivo, em vez de deixar a pessoa clicar num 403.
+  const readOnly = isReadonlyImpersonation(session)
 
   const [profilesRes, gam, avatarRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
     await Promise.all([
@@ -160,6 +171,13 @@ export default async function ProfilePage() {
               />
             </li>
           </ul>
+          {/* As caixinhas de cor: é aqui que a criança escolhe, e é o único lugar que grava. */}
+          <PalettePicker
+            className="mt-4 md:mt-6"
+            viewerId={session.id}
+            initial={paletteEscolhida}
+            readOnly={readOnly}
+          />
           {gamification ? (
             <StreakProtection
               className="mt-4 md:mt-6"

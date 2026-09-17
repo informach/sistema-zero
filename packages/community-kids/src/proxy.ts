@@ -1,5 +1,5 @@
 import { createMemberProxy } from '@sistemazero/member-shell/server/proxy'
-import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { ACCESS_COOKIE, PALETTE_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
 
 /**
  * Gate de borda da plataforma kids — a LÓGICA vive no @sistemazero/member-shell
@@ -10,6 +10,7 @@ import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
  */
 export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
+  paletteCookie: PALETTE_COOKIE,
   // `/perfis` (grade estilo Netflix) exige sessão (conta OU perfil), mas é a rota
   // de SELEÇÃO — isenta do gate de perfil abaixo.
   protectedPrefixes: [

@@ -1,3 +1,4 @@
+import { PALETTES, readPalette } from '@sistemazero/core/palette'
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
 import type { LearningService } from '../../../application/learning/learning.service'
@@ -44,166 +45,198 @@ const actor = (headers: Record<string, string | undefined>) => ({
 })
 
 export function learningRoutes(deps: LearningRoutesDeps) {
-  return new Elysia({ name: 'learning', prefix: '/members' })
-    .use(galleryDeliveryRoutes(deps))
-    .onTransform(({ headers }) =>
-      assertInternalCaller(headers['x-internal-token'], deps.internalToken),
-    )
-    .get('/preferences/kids', ({ headers }) => deps.preferences.read(resolveUserId(headers)))
-    .put(
-      '/preferences/kids',
-      ({ headers, body }) => deps.preferences.save(actor(headers), body.theme),
-      {
-        body: t.Object({ theme: t.Union([t.Literal('padrao'), t.Literal('pink')]) }),
-      },
-    )
-    .post(
-      '/lessons/:lessonId/sections/:sectionId/action-check',
-      ({ headers, params, body }) =>
-        deps.learning.checkAction(actor(headers), params.lessonId, params.sectionId, body.revision),
-      { params: SectionProjectParams, body: t.Object({ revision: t.String({ format: 'uuid' }) }) },
-    )
-    .put(
-      '/lessons/:lessonId/navigation',
-      ({ headers, params, body }) =>
-        deps.learning.navigation(actor(headers), params.lessonId, body.sectionId),
-      { params: LearningLessonParams, body: LearningNavigationBody },
-    )
-    .post(
-      '/lessons/:lessonId/section-help',
-      ({ headers, params, body }) =>
-        deps.learning.help(
-          actor(headers),
-          params.lessonId,
-          body.sectionId,
-          body.body,
-          body.requestId,
-        ),
-      { params: LearningLessonParams, body: LearningHelpBody },
-    )
-    .put(
-      '/lessons/:lessonId/blocks/:blockId/learning-progress',
-      ({ headers, params, body }) =>
-        deps.learning.save(actor(headers), params.lessonId, params.blockId, body),
-      { params: LearningBlockParams, body: LearningProgressBody },
-    )
-    .post(
-      '/lessons/:lessonId/blocks/:blockId/learning-attempts',
-      ({ headers, params, body }) =>
-        deps.learning.attempt(actor(headers), params.lessonId, params.blockId, body),
-      { params: LearningBlockParams, body: LearningAttemptBody },
-    )
-    .post(
-      '/lessons/:lessonId/sections/:sectionId/project-check',
-      ({ headers, params, body }) =>
-        deps.learning.checkProject(
-          actor(headers),
-          params.lessonId,
-          params.sectionId,
-          body.revision,
-          body.project,
-        ),
-      { params: SectionProjectParams, body: SectionProjectBody },
-    )
-    .group('/admin', (app) =>
-      app
-        .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
-        .get('/lessons/:id/draft', ({ params }) => deps.drafts.read(params.id), {
-          params: IdParams,
-        })
-        .patch(
-          '/lessons/:id/draft',
-          async ({ params, headers, body }) => {
-            const draft = await deps.drafts.change(
-              params.id,
-              resolveUserId(headers),
-              draftCommand(body),
-            )
-            return { revision: draft.revision, updatedAt: draft.updatedAt }
-          },
-          { params: IdParams, body: DraftCommandSchema },
-        )
-        .post(
-          '/lessons/:id/draft/validate',
-          ({ params, body }) =>
-            deps.drafts.validate(params.id, body.expectedRevision, body.readyVideoIds),
-          { params: IdParams, body: DraftPublishSchema },
-        )
-        .post(
-          '/lessons/:id/draft/publish',
-          ({ params, headers, body }) =>
-            deps.drafts.publish(
-              params.id,
-              resolveUserId(headers),
-              body.expectedRevision,
-              body.operationId,
-              body.readyVideoIds,
-            ),
-          { params: IdParams, body: DraftPublishSchema },
-        )
-        .post(
-          '/lessons/:id/draft/unpublish',
-          ({ params, headers, body }) =>
-            deps.drafts.unpublish(
-              params.id,
-              resolveUserId(headers),
-              body.expectedRevision,
-              body.operationId,
-            ),
-          { params: IdParams, body: DraftPublishSchema },
-        )
-        .get('/lessons/:id/structure', ({ params }) => deps.learning.adminStructure(params.id), {
-          params: IdParams,
-        })
-        .post(
-          '/lessons/:id/import-preview',
-          async ({ params, body }) => {
-            const { document: _document, ...preview } = await deps.imports.preview(
-              params.id,
-              body.document,
-            )
-            return preview
-          },
-          { params: IdParams, body: LearningImportPreviewBody },
-        )
-        .post(
-          '/lessons/:id/import-learning',
-          ({ params, headers, body }) =>
-            deps.imports.apply(
-              params.id,
-              body.document,
-              body.expectedFingerprint,
-              resolveUserId(headers),
-              body.operationId,
-            ),
-          { params: IdParams, body: LearningImportApplyBody },
-        )
-        .get(
-          '/lessons/:id/learning-evidence',
-          ({ params, query }) => deps.learning.evidencePage(query, params.id, query.beforeId),
-          {
+  return (
+    new Elysia({ name: 'learning', prefix: '/members' })
+      .use(galleryDeliveryRoutes(deps))
+      .onTransform(({ headers }) =>
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
+      // A rota VIVA. O vocabulário é derivado de `PALETTES`, nunca reescrito aqui: cor nova entra
+      // no core e esta borda a aceita sozinha. `null` = voltar para "nunca escolhi".
+      .get('/preferences', ({ headers }) => deps.preferences.read(resolveUserId(headers)))
+      .put(
+        '/preferences',
+        ({ headers, body }) => deps.preferences.save(actor(headers), readPalette(body.palette)),
+        {
+          body: t.Object({
+            palette: t.Union([...PALETTES.map((id) => t.Literal(id)), t.Null()]),
+          }),
+        },
+      )
+      // ⚠️ LEGADO, com data de morte (etapa de limpeza do plano das paletas): o alternador de dois
+      // estados do kids. Existe só para a janela em que o members já subiu e os apps ainda não —
+      // members e apps são deployados em separado, e sem isto a troca de tema quebraria no meio.
+      // `padrao` era o "desligado" do interruptor, não uma escolha: ele vira `null`.
+      .get('/preferences/kids', async ({ headers }) => {
+        const { palette } = await deps.preferences.read(resolveUserId(headers))
+        return { theme: palette === 'pink' ? 'pink' : 'padrao' }
+      })
+      .put(
+        '/preferences/kids',
+        async ({ headers, body }) => {
+          await deps.preferences.save(actor(headers), body.theme === 'pink' ? 'pink' : null)
+          return { theme: body.theme }
+        },
+        {
+          body: t.Object({ theme: t.Union([t.Literal('padrao'), t.Literal('pink')]) }),
+        },
+      )
+      .post(
+        '/lessons/:lessonId/sections/:sectionId/action-check',
+        ({ headers, params, body }) =>
+          deps.learning.checkAction(
+            actor(headers),
+            params.lessonId,
+            params.sectionId,
+            body.revision,
+          ),
+        {
+          params: SectionProjectParams,
+          body: t.Object({ revision: t.String({ format: 'uuid' }) }),
+        },
+      )
+      .put(
+        '/lessons/:lessonId/navigation',
+        ({ headers, params, body }) =>
+          deps.learning.navigation(actor(headers), params.lessonId, body.sectionId),
+        { params: LearningLessonParams, body: LearningNavigationBody },
+      )
+      .post(
+        '/lessons/:lessonId/section-help',
+        ({ headers, params, body }) =>
+          deps.learning.help(
+            actor(headers),
+            params.lessonId,
+            body.sectionId,
+            body.body,
+            body.requestId,
+          ),
+        { params: LearningLessonParams, body: LearningHelpBody },
+      )
+      .put(
+        '/lessons/:lessonId/blocks/:blockId/learning-progress',
+        ({ headers, params, body }) =>
+          deps.learning.save(actor(headers), params.lessonId, params.blockId, body),
+        { params: LearningBlockParams, body: LearningProgressBody },
+      )
+      .post(
+        '/lessons/:lessonId/blocks/:blockId/learning-attempts',
+        ({ headers, params, body }) =>
+          deps.learning.attempt(actor(headers), params.lessonId, params.blockId, body),
+        { params: LearningBlockParams, body: LearningAttemptBody },
+      )
+      .post(
+        '/lessons/:lessonId/sections/:sectionId/project-check',
+        ({ headers, params, body }) =>
+          deps.learning.checkProject(
+            actor(headers),
+            params.lessonId,
+            params.sectionId,
+            body.revision,
+            body.project,
+          ),
+        { params: SectionProjectParams, body: SectionProjectBody },
+      )
+      .group('/admin', (app) =>
+        app
+          .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+          .get('/lessons/:id/draft', ({ params }) => deps.drafts.read(params.id), {
             params: IdParams,
-            query: t.Object({
-              ...LearningReportQuery.properties,
-              beforeId: t.Optional(t.String({ format: 'uuid' })),
-            }),
-          },
-        )
-        .get(
-          '/lessons/:id/learning-evidence/:evidenceId',
-          ({ params, query }) => deps.learning.evidence(query, params.id, params.evidenceId),
-          {
-            params: t.Object({
-              id: t.String({ format: 'uuid' }),
-              evidenceId: t.String({ format: 'uuid' }),
-            }),
-            query: LearningReportQuery,
-          },
-        )
-        .get(
-          '/lessons/:id/learning-report',
-          ({ params, query }) => deps.learning.report(query, params.id),
-          { params: IdParams, query: LearningReportQuery },
-        ),
-    )
+          })
+          .patch(
+            '/lessons/:id/draft',
+            async ({ params, headers, body }) => {
+              const draft = await deps.drafts.change(
+                params.id,
+                resolveUserId(headers),
+                draftCommand(body),
+              )
+              return { revision: draft.revision, updatedAt: draft.updatedAt }
+            },
+            { params: IdParams, body: DraftCommandSchema },
+          )
+          .post(
+            '/lessons/:id/draft/validate',
+            ({ params, body }) =>
+              deps.drafts.validate(params.id, body.expectedRevision, body.readyVideoIds),
+            { params: IdParams, body: DraftPublishSchema },
+          )
+          .post(
+            '/lessons/:id/draft/publish',
+            ({ params, headers, body }) =>
+              deps.drafts.publish(
+                params.id,
+                resolveUserId(headers),
+                body.expectedRevision,
+                body.operationId,
+                body.readyVideoIds,
+              ),
+            { params: IdParams, body: DraftPublishSchema },
+          )
+          .post(
+            '/lessons/:id/draft/unpublish',
+            ({ params, headers, body }) =>
+              deps.drafts.unpublish(
+                params.id,
+                resolveUserId(headers),
+                body.expectedRevision,
+                body.operationId,
+              ),
+            { params: IdParams, body: DraftPublishSchema },
+          )
+          .get('/lessons/:id/structure', ({ params }) => deps.learning.adminStructure(params.id), {
+            params: IdParams,
+          })
+          .post(
+            '/lessons/:id/import-preview',
+            async ({ params, body }) => {
+              const { document: _document, ...preview } = await deps.imports.preview(
+                params.id,
+                body.document,
+              )
+              return preview
+            },
+            { params: IdParams, body: LearningImportPreviewBody },
+          )
+          .post(
+            '/lessons/:id/import-learning',
+            ({ params, headers, body }) =>
+              deps.imports.apply(
+                params.id,
+                body.document,
+                body.expectedFingerprint,
+                resolveUserId(headers),
+                body.operationId,
+              ),
+            { params: IdParams, body: LearningImportApplyBody },
+          )
+          .get(
+            '/lessons/:id/learning-evidence',
+            ({ params, query }) => deps.learning.evidencePage(query, params.id, query.beforeId),
+            {
+              params: IdParams,
+              query: t.Object({
+                ...LearningReportQuery.properties,
+                beforeId: t.Optional(t.String({ format: 'uuid' })),
+              }),
+            },
+          )
+          .get(
+            '/lessons/:id/learning-evidence/:evidenceId',
+            ({ params, query }) => deps.learning.evidence(query, params.id, params.evidenceId),
+            {
+              params: t.Object({
+                id: t.String({ format: 'uuid' }),
+                evidenceId: t.String({ format: 'uuid' }),
+              }),
+              query: LearningReportQuery,
+            },
+          )
+          .get(
+            '/lessons/:id/learning-report',
+            ({ params, query }) => deps.learning.report(query, params.id),
+            { params: IdParams, query: LearningReportQuery },
+          ),
+      )
+  )
 }

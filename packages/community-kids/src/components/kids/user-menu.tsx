@@ -1,7 +1,7 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, Palette, User, Users } from 'lucide-react'
+import { LogOut, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
@@ -11,7 +11,6 @@ import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
 import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
-import { useProfileTheme } from './profile-theme'
 
 /**
  * As iniciais do responsável (sessão da CONTA, sem foto) no `UserAvatar` do member-shell são
@@ -51,7 +50,6 @@ export function UserMenu({
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const theme = useProfileTheme()
 
   useEffect(() => {
     if (!open) return
@@ -194,23 +192,8 @@ export function UserMenu({
             <User className="size-4" />
             Meu perfil
           </Link>
-          <button
-            type="button"
-            onClick={() => void theme?.toggle()}
-            disabled={!theme || theme.busy || Boolean(theme.error)}
-            className={itemClass}
-          >
-            <Palette className="size-4" />
-            Mudar tema
-          </button>
-          {theme?.error && (
-            <div className="px-3 py-2 text-sm">
-              <p role="alert">{theme.error}</p>
-              <button type="button" onClick={theme.retry} className="min-h-11 underline">
-                Tentar novamente
-              </button>
-            </div>
-          )}
+          {/* A cor mora em Meu perfil (logo acima). Dois lugares escrevendo o mesmo estado
+              foi como o adulto e o kids divergiram antes. */}
           <div className="border-t border-border" />
           <button
             type="button"

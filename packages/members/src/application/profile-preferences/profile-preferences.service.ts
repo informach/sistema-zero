@@ -1,4 +1,4 @@
-import type { KidsTheme } from '@sistemazero/core/learning'
+import type { PalettePreference } from '@sistemazero/core/palette'
 import type { LearningOwner } from '../../domain/ports/learning-repository.port'
 import type { ProfilePreferencesRepository } from '../../domain/ports/profile-preferences-repository.port'
 
@@ -7,11 +7,13 @@ export class ProfilePreferencesService {
     private readonly repository: ProfilePreferencesRepository,
     private readonly clock: () => Date,
   ) {}
+
   async read(userId: string) {
-    return { theme: await this.repository.getKidsTheme(userId) }
+    return { palette: await this.repository.getPalette(userId) }
   }
-  async save(owner: LearningOwner, theme: KidsTheme) {
-    await this.repository.setKidsTheme(owner, theme, this.clock())
-    return { theme }
+
+  async save(owner: LearningOwner, palette: PalettePreference) {
+    await this.repository.setPalette(owner, palette, this.clock())
+    return { palette }
   }
 }

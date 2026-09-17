@@ -69,7 +69,6 @@ export const PALETTE_RECIPES: readonly PaletteRecipe[] = [
   {
     id: 'pink',
     hue: 359.5,
-    legacySelectors: [':root[data-tema="pink"]'],
     overrides: {
       ground: '#f4ecf2',
       'ground-alt': '#ecdde8',

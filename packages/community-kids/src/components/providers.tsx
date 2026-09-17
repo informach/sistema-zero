@@ -1,31 +1,21 @@
 'use client'
 
-import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 
 /**
- * Os dois temas do kids (11/09/2026): Padrão (a paleta do Pen, com o azul de ação) e Pink. Não
- * existe mais claro/escuro. O tema vai no atributo `data-tema` do <html>, que o `globals.css` lê.
+ * A cor da plataforma NÃO passa mais por aqui.
  *
- * ⚠️ `storageKey` NOVO de propósito: o script do next-themes aplica o valor guardado sem conferir a
- * lista de temas, e quem tinha `theme=dark` salvo na chave antiga ficaria preso num tema que não
- * existe mais. Com a chave nova, todo mundo abre no Padrão.
+ * Até 17/09/2026 este arquivo montava o `next-themes` com os dois temas (Padrão e Pink). Ele
+ * saiu inteiro: o valor dele era do APARELHO (localStorage) enquanto a preferência é do PERFIL,
+ * e o script de "no-flash" dele lê um armazenamento que o servidor não enxerga — era daí que
+ * vinha o flash medido no F5. Hoje quem decide a cor é o servidor, que emite `data-sz-palette`
+ * no `<html>` a partir de um espelho em cookie hidratado pelo proxy.
  */
-const TEMAS = ['padrao', 'pink']
-
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="data-tema"
-      themes={TEMAS}
-      defaultTheme="padrao"
-      storageKey="sz-kids-tema"
-      enableSystem={false}
-      enableColorScheme={false}
-      disableTransitionOnChange
-    >
+    <>
       {children}
       <Toaster position="top-right" richColors closeButton />
-    </ThemeProvider>
+    </>
   )
 }

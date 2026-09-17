@@ -617,6 +617,13 @@
       "when": 1789593444391,
       "tag": "0087_married_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1789659402727,
+      "tag": "0088_profile_palette",
+      "breakpoints": true
     }
   ]
 }

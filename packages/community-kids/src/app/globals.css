@@ -121,8 +121,11 @@
   --sz-tool-sig-pensa: var(--sz-community-amber);
 }
 
-/* Ajustes próprios das ferramentas no Pink; a paleta-base já vem do arquivo canônico. */
-:root[data-tema="pink"] {
+/* Ajustes próprios das ferramentas na paleta Rosa; a paleta-base vem do arquivo gerado.
+   ⚠️ Rechaveado de `data-tema` para `data-sz-palette` em 17/09/2026: o atributo antigo deixou de
+   ser emitido, e sem isto estes três ajustes viravam código morto EM SILÊNCIO — o Estúdio
+   voltaria à cor que não passa AA sobre o chão rosado. */
+:root[data-sz-palette="pink"] {
   --sz-tool-sig-estudio: #0e7c86;
   /* O Estúdio como TEXTO (link e selo sobre o branco e o chão rosado): o verde-azulado
      escurecido até passar AA nos dois (6,3:1 no branco, 5,4:1 no chão). */

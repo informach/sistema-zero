@@ -142,8 +142,7 @@
   --sz-logo-zero: #c16734;
 }
 
-[data-sz-palette="pink"],
-:root[data-tema="pink"] {
+[data-sz-palette="pink"] {
   --sz-ground: #f4ecf2;
   --sz-ground-alt: #ecdde8;
   --sz-surface-2: #f8f1f6;

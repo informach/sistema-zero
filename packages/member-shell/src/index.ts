@@ -1,5 +1,6 @@
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
+import { paletteCookieName } from './lib/palette-cookie'
 import { createShellRoutes } from './routes'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
@@ -51,7 +52,9 @@ export function createShell(cfg: ShellConfig) {
   // import e quebraria o `next build` (page data collection roda com
   // NODE_ENV=production sobre a .env de dev). Mesma técnica do lib/cookies
   // original; o zod continua validando no PRIMEIRO USO real.
-  const cookies = sessionCookieNames(cfg.cookieBase, process.env.NODE_ENV === 'production')
+  const prod = process.env.NODE_ENV === 'production'
+  const cookies = sessionCookieNames(cfg.cookieBase, prod)
+  const paletteCookie = paletteCookieName(cfg.cookieBase, prod)
   const session = createSessionModule(cookies)
   const gateway = createGatewayModule(session)
   const auth = createAuthClient(gateway)
@@ -61,7 +64,16 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
-    ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
+    ...createShellRoutes({
+      session,
+      gateway,
+      auth,
+      members,
+      payments,
+      profiles,
+      media,
+      paletteCookie,
+    }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media }),
@@ -76,6 +88,11 @@ export function createShell(cfg: ShellConfig) {
   return {
     config: cfg,
     cookies,
+    /**
+     * O nome do cookie da cor. O `proxy.ts` do app o passa ao `createMemberProxy` e o layout raiz
+     * o lê para emitir `data-sz-palette` no `<html>`.
+     */
+    paletteCookie,
     session,
     gateway,
     auth,

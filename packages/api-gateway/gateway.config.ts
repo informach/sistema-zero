@@ -2097,6 +2097,22 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 20, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
       maxBodyBytes: 2 * 1024 * 1024,
     },
+    // A cor do perfil. ⚠️ O teto de 60/min por principal é CIRCUITO DE SEGURANÇA, não estimativa:
+    // foi ele que pegou o laço de `setTheme` que martelava a rota (429 em série). Quem clica
+    // rápido nas caixinhas é o CLIENTE que precisa juntar os cliques — não se sobe este número.
+    {
+      id: 'members-profile-palette',
+      methods: ['GET', 'PUT'],
+      pathPattern: '/members/preferences',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    // ⚠️ LEGADO, morre na etapa de limpeza do plano das paletas: o alternador de dois estados do
+    // kids. Fica de pé só enquanto os apps ainda não emitem a cor nova.
     {
       id: 'members-profile-preferences',
       methods: ['GET', 'PUT'],

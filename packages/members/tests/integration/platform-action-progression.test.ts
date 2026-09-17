@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, type PlatformAction } from '@sistemazero/core/learning'
+import { PALETTES } from '@sistemazero/core/palette'
 import { defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import { DEFAULT_ROOM_WALL_COLORS, defaultRoomState } from '../../src/domain/room/room-catalog'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -129,22 +130,25 @@ describe('platform actions as section criteria', () => {
     )
     expect(await (await ctx.verify()).json()).toMatchObject({ passed: true })
   })
-  test('theme checks saved per-profile preference; default, invalid theme and sibling preference do not pass', async () => {
+  test('a acao passa com QUALQUER cor escolhida, e nao passa sem escolha', async () => {
     const ctx = setup('change-theme')
     expect(await (await ctx.verify()).json()).toMatchObject({ passed: false })
-    expect((await ctx.request('/preferences/kids', 'PUT', { theme: 'purple' })).status).toBe(400)
+    // Formato invalido morre na borda, com a uniao derivada de PALETTES.
+    expect((await ctx.request('/preferences', 'PUT', { palette: 'roxo' })).status).toBe(400)
+    // O irmao escolher nao faz esta crianca passar: a preferencia e por PERFIL.
     expect(
-      (await ctx.request('/preferences/kids', 'PUT', { theme: 'pink' }, ctx.sibling)).status,
+      (await ctx.request('/preferences', 'PUT', { palette: 'pink' }, ctx.sibling)).status,
     ).toBe(200)
     expect(await (await ctx.verify()).json()).toMatchObject({ passed: false })
-    expect((await ctx.request('/preferences/kids', 'PUT', { theme: 'padrao' })).status).toBe(200)
+    // ⭐ TODA paleta do catalogo passa. O laco e o que impede um swatch novo de reprovar em
+    // silencio: a regua e "escolheu uma cor", nunca "escolheu a cor X".
+    for (const palette of PALETTES) {
+      expect((await ctx.request('/preferences', 'PUT', { palette })).status).toBe(200)
+      expect(await (await ctx.request('/preferences')).json()).toEqual({ palette })
+      expect(await (await ctx.verify()).json()).toMatchObject({ passed: true, palette })
+    }
+    // E voltar para "nunca escolhi" reprova de novo.
+    expect((await ctx.request('/preferences', 'PUT', { palette: null })).status).toBe(200)
     expect(await (await ctx.verify()).json()).toMatchObject({ passed: false })
-    expect((await ctx.request('/preferences/kids', 'PUT', { theme: 'pink' })).status).toBe(200)
-    expect(await (await ctx.verify()).json()).toMatchObject({
-      passed: true,
-      theme: 'pink',
-      sectionProgress: { completed: 1 },
-    })
-    expect(await (await ctx.request('/preferences/kids')).json()).toEqual({ theme: 'pink' })
   })
 })

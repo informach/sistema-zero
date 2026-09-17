@@ -149,57 +149,53 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect('/login')
 
   return (
-    <ProfileThemeProvider key={session.id} viewerId={session.id}>
-      <div className="flex min-h-screen flex-col bg-background">
-        <a
-          href="#main-content"
-          className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          Pular para o conteúdo
-        </a>
-        {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
-        {session.act ? (
-          <ImpersonationBanner
-            studentName={
-              session.activeProfile?.name ??
-              (`${session.firstName} ${session.lastName}`.trim() || session.email)
-            }
-            actorName={actorLabel(session.act)}
-            mode={session.act.mode}
-          />
-        ) : null}
-        <FocusModeProvider viewerId={session.id}>
-          <div className="flex flex-1">
-            <Suspense fallback={<SidebarFallback />}>
-              <SidebarChrome session={session} />
+    <div className="flex min-h-screen flex-col bg-background">
+      <a
+        href="#main-content"
+        className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        Pular para o conteúdo
+      </a>
+      {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
+      {session.act ? (
+        <ImpersonationBanner
+          studentName={
+            session.activeProfile?.name ??
+            (`${session.firstName} ${session.lastName}`.trim() || session.email)
+          }
+          actorName={actorLabel(session.act)}
+          mode={session.act.mode}
+        />
+      ) : null}
+      <FocusModeProvider viewerId={session.id}>
+        <div className="flex flex-1">
+          <Suspense fallback={<SidebarFallback />}>
+            <SidebarChrome session={session} />
+          </Suspense>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Suspense
+              fallback={
+                <div className="sticky top-0 z-40 h-14 border-(--menu-2) border-b bg-(--menu) md:hidden" />
+              }
+            >
+              <TopbarChrome session={session} />
             </Suspense>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <Suspense
-                fallback={
-                  <div className="sticky top-0 z-40 h-14 border-(--menu-2) border-b bg-(--menu) md:hidden" />
-                }
-              >
-                <TopbarChrome session={session} />
-              </Suspense>
-              <MainContainer>{children}</MainContainer>
-              {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
+            <MainContainer>{children}</MainContainer>
+            {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
                 das ferramentas para não oferecer porta trancada), e sem o boundary o
                 celular esperaria a ida ao gateway para ver QUALQUER menu — o oposto do
                 que o comentário acima promete. O fallback é a MESMA barra sem o dado:
                 as cinco abas aparecem na hora e só a gaveta chega depois. */}
-              <Suspense fallback={<MobileTabbar />}>
-                <TabbarChrome />
-              </Suspense>
-            </div>
+            <Suspense fallback={<MobileTabbar />}>
+              <TabbarChrome />
+            </Suspense>
           </div>
-        </FocusModeProvider>
-        {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
-        <Suspense fallback={null}>
-          <CelebrationChrome session={session} />
-        </Suspense>
-      </div>
-    </ProfileThemeProvider>
+        </div>
+      </FocusModeProvider>
+      {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
+      <Suspense fallback={null}>
+        <CelebrationChrome session={session} />
+      </Suspense>
+    </div>
   )
 }
-
-import { ProfileThemeProvider } from '@/components/kids/profile-theme'

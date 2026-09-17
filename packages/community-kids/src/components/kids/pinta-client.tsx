@@ -6,7 +6,6 @@
 import type { PintaHostAdapter, PintaInitialIntent, PintaTaskSession } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
 import {
@@ -52,9 +51,11 @@ export function PintaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
   const router = useRouter()
-  // O Pinta SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // O Pinta SEGUE a plataforma (hoje só claro) — sem toggle próprio.
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
   // "Editar este desenho" vindo do Estúdio: `/pinta?desenho=<id>` numa ABA NOVA.
   // Precisa ser query string — o botão de lá abre com `noopener` (padrão do app),
   // e aí sessionStorage (o caminho do intent do Pensa) não atravessa. Lido no 1º
@@ -277,8 +278,8 @@ export function PintaClient({
           }
         : {}),
     }
+    // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
   }, [
-    theme,
     studioAvailable,
     viewerId,
     router,

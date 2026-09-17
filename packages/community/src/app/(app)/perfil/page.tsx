@@ -1,3 +1,9 @@
+import { PalettePicker } from '@sistemazero/member-shell/components/palette-picker'
+import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
+import { Card, CardContent, CardHeader, CardTitle } from '@sistemazero/ui/card'
+import { cookies } from 'next/headers'
+import { PALETTE_COOKIE } from '@/lib/cookies'
 import { getMeReadonly } from '@/server/auth'
 import { getSession } from '@/server/session'
 import { ProfileClient } from './profile-client'
@@ -15,6 +21,9 @@ export default async function ProfilePage() {
 
   if (!user) return null
 
+  // A cor vem do MESMO espelho que o layout raiz leu — sem GET na montagem do seletor.
+  const paletteEscolhida = paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value)
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
@@ -23,6 +32,20 @@ export default async function ProfilePage() {
           Seus dados de acesso e informações pessoais.
         </p>
       </div>
+      {/* Renderizado pela PÁGINA (servidor), não pelo formulário do cliente: a cor não é dado
+          de cadastro e não deve engordar o `profile-client`. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cor do tema</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PalettePicker
+            viewerId={user.id}
+            initial={paletteEscolhida}
+            readOnly={Boolean(session && isReadonlyImpersonation(session))}
+          />
+        </CardContent>
+      </Card>
       <ProfileClient user={user} />
     </div>
   )

@@ -36,11 +36,12 @@ describe('a folha gerada está em dia com o registro', () => {
     expect(rede).toContain(`--sz-ground: ${casa.ground};`)
   })
 
-  test('⚠️ o tema pink de hoje continua alcançável pelo seletor antigo', () => {
-    // Enquanto os apps não emitem `data-sz-palette`, é isto que mantém o kids e o funil de pé.
-    // Ele sai na etapa de limpeza, junto com o `data-tema`.
-    const rosa = PALETTE_RECIPES.find((r) => r.id === 'pink')
-    expect(rosa?.legacySelectors).toContain(':root[data-tema="pink"]')
+  test('⚠️ o `data-tema` morreu: nenhum seletor legado sobrou na folha', async () => {
+    // CSS e atributo viajam no MESMO bundle do app, então não existe janela de skew aqui — o
+    // build antigo, ainda no ar, carrega a folha antiga junto. (A rota HTTP legada é outra
+    // história: members e apps sobem separados, e ela fica mais uma release.)
+    expect(await Bun.file(FOLHA).text()).not.toContain('data-tema')
+    for (const recipe of PALETTE_RECIPES) expect(recipe.legacySelectors ?? []).toEqual([])
   })
 
   test('os tokens que nunca mudam ficam no :root, fora dos blocos de paleta', async () => {

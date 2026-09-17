@@ -8,7 +8,6 @@ import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
 import {
@@ -57,9 +56,11 @@ export function MoldaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<MoldaPersistenceLike | null>(null)
   const router = useRouter()
-  // O Molda SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // O Molda SEGUE a plataforma (hoje só claro) — sem toggle próprio.
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
   // Deep link `/molda?criacao=<id>` (o Estúdio abre numa aba nova, com `noopener`,
   // então é query string). Lido no 1º render e limpo da URL logo depois.
   const searchParams = useSearchParams()
@@ -235,7 +236,9 @@ export function MoldaClient({
         return { updated: true }
       },
     }),
-    [theme, studioAvailable, router, initialAssetId, viewerId, stableAccess],
+    // ⚠️ `theme` saiu do dep array: ele virou constante quando o tema escuro deixou de existir
+    // nesta plataforma (o hook que o calculava era código morto).
+    [studioAvailable, router, initialAssetId, viewerId, stableAccess],
   )
 
   // Botão do menu lateral, selo "Guardado na sua conta", a seta da galeria para Criar e o

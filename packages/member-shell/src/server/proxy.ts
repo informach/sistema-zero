@@ -3,6 +3,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { expireCookieOptions, type SessionCookieNames } from '../lib/cookies'
 import { isSameOriginRequest, requiresOriginCheck } from '../lib/csrf'
 import { isProd } from '../lib/env'
+import {
+  decodePaletteCookie,
+  encodePaletteCookie,
+  PALETTE_COOKIE_MAX_AGE,
+} from '../lib/palette-cookie'
+import { fetchPaletteOnce } from './palette'
 import { refreshTokens } from './refresh'
 
 export interface MemberProxyConfig {
@@ -19,6 +25,11 @@ export interface MemberProxyConfig {
    * subrotas são isentas. Ausente = sem gate (community adulto).
    */
   requireProfileSelectPath?: string
+  /**
+   * Nome do cookie que espelha a cor escolhida. Setado, o proxy o hidrata ANTES do render, e o
+   * layout raiz emite `data-sz-palette` no `<html>` sem nenhum salto do cliente.
+   */
+  paletteCookie?: string
 }
 
 /**
@@ -92,7 +103,7 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
       req.cookies.set(accessCookie, result.accessToken)
       req.cookies.set(refreshCookie, result.refreshToken)
       validAccess = result.accessToken
-      response = NextResponse.next({ request: { headers: req.headers } })
+      response = nextResponseWithCookies(req, response)
       // `__Host-` (prod) exige Secure + Path=/ + sem Domain — este `base` cumpre.
       const base = {
         httpOnly: true,
@@ -103,6 +114,37 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
       }
       response.cookies.set(accessCookie, result.accessToken, base)
       response.cookies.set(refreshCookie, result.refreshToken, base)
+    }
+
+    // ⭐ Espelho da COR do perfil, hidratado ANTES do render.
+    //
+    // ⚠️⚠️ É aqui que o flash morre. O tema antigo vivia no `localStorage` (por APARELHO)
+    // enquanto a preferência é do PERFIL: o servidor pintava uma cor e um script do cliente
+    // trocava depois — o `padrão → pink` medido em todo F5 —, e existia uma chave extra só para
+    // decidir "de quem é este valor". Com o dono dentro do cookie, quem reconcilia é o servidor,
+    // e a correção de um irmão que acabou de entrar acontece ANTES do primeiro byte de HTML.
+    if (cfg.paletteCookie && !pathname.startsWith('/api/') && validAccess) {
+      const owner = subjectOf(validAccess)
+      const mirror = decodePaletteCookie(req.cookies.get(cfg.paletteCookie)?.value, owner ?? '')
+      if (owner && !mirror.known) {
+        const fetched = await fetchPaletteOnce(validAccess, forwardHeadersFrom(req))
+        const unavailable = fetched === 'unavailable'
+        const value = encodePaletteCookie(owner, unavailable ? null : fetched)
+        // A request enxerga o valor no MESMO ciclo — é o que o render vai ler.
+        req.cookies.set(cfg.paletteCookie, value)
+        // Não descarte os cookies de sessão que podem ter sido rotacionados logo acima. Uma
+        // request que renova token E hidrata a paleta precisa devolver os três cookies.
+        response = nextResponseWithCookies(req, response)
+        response.cookies.set(cfg.paletteCookie, value, {
+          httpOnly: true,
+          sameSite: 'lax' as const,
+          secure: isProd(),
+          path: '/',
+          // Gateway fora: grava CURTO e se auto-cura na próxima navegação, em vez de congelar a
+          // cor da casa por seis horas.
+          maxAge: unavailable ? 60 : PALETTE_COOKIE_MAX_AGE,
+        })
+      }
     }
 
     // Gate de PERFIL (kids): a conta logada SEM perfil selecionado (token sem a
@@ -116,10 +158,35 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     ) {
       const url = req.nextUrl.clone()
       url.pathname = cfg.requireProfileSelectPath
-      return NextResponse.redirect(url)
+      return copyResponseCookies(response, NextResponse.redirect(url))
     }
 
     return response
+  }
+}
+
+/**
+ * Recria a continuação com os cookies atuais da REQUEST sem perder cookies já destinados ao
+ * browser. Isso importa quando duas reconciliações acontecem no mesmo ciclo (sessão + paleta).
+ */
+function nextResponseWithCookies(req: NextRequest, previous: NextResponse): NextResponse {
+  return copyResponseCookies(previous, NextResponse.next({ request: { headers: req.headers } }))
+}
+
+/** Preserva nome, valor e atributos (`Secure`, `HttpOnly`, `Max-Age`, `Path`, ...). */
+function copyResponseCookies(from: NextResponse, to: NextResponse): NextResponse {
+  for (const cookie of from.cookies.getAll()) to.cookies.set(cookie)
+  return to
+}
+
+/** O dono da sessão (`sub` do JWT já validado). É a chave do espelho da cor. */
+function subjectOf(token: string | undefined): string | undefined {
+  if (!token) return undefined
+  try {
+    const sub = decodeJwt(token).sub
+    return typeof sub === 'string' && sub ? sub : undefined
+  } catch {
+    return undefined
   }
 }
 

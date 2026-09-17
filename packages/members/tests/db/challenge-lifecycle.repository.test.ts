@@ -61,8 +61,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
     // Um perfil de OUTRA conta conclui tudo. O candidato da conta compradora
     // continua sem início: não existe inferência por “último perfil” ou e-mail.
     await conn.sql`
-      insert into members.profile_preferences (user_id, account_id, kids_theme, updated_at)
-      values (${wrongProfileId}, ${otherAccountId}, 'padrao', now())
+      insert into members.profile_preferences (user_id, account_id, palette, updated_at)
+      values (${wrongProfileId}, ${otherAccountId}, null, now())
       on conflict (user_id) do update set account_id = excluded.account_id
     `
     for (const lessonId of lessonIds) {
@@ -95,8 +95,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
     // Uma segunda relação conflitante torna a posse ambígua; o repositório não
     // escolhe uma conta arbitrariamente e retira esse progresso da automação.
     await conn.sql`
-      insert into members.profile_preferences (user_id, account_id, kids_theme, updated_at)
-      values (${correctProfileId}, ${otherAccountId}, 'padrao', now())
+      insert into members.profile_preferences (user_id, account_id, palette, updated_at)
+      values (${correctProfileId}, ${otherAccountId}, null, now())
       on conflict (user_id) do update set account_id = excluded.account_id
     `
     const ambiguous = await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 10)
@@ -237,12 +237,15 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
       add column if not exists account_id uuid,
       add column if not exists audience text not null default 'kids'`,
     `create table if not exists members.profile_preferences (
-      user_id uuid primary key, account_id uuid not null, kids_theme text not null default 'padrao',
+      user_id uuid primary key, account_id uuid not null, palette varchar(32),
       updated_at timestamptz not null default now())`,
+    // ⚠️ O banco de tests/db é COMPARTILHADO e o `create ... if not exists` é
+    // quem-chega-primeiro-vence: sem este `add column if not exists` a tabela criada por outro
+    // arquivo ficaria sem a coluna nova, e a ordem dos arquivos não é contrato.
     `alter table members.profile_preferences
       add column if not exists user_id uuid,
       add column if not exists account_id uuid,
-      add column if not exists kids_theme text not null default 'padrao',
+      add column if not exists palette varchar(32),
       add column if not exists updated_at timestamptz not null default now()`,
     `create table if not exists members.lesson_navigation (
       user_id uuid not null, account_id uuid not null, lesson_id uuid not null, section_id uuid not null,

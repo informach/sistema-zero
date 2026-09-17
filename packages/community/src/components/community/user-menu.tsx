@@ -1,9 +1,8 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, Palette, Receipt, User } from 'lucide-react'
+import { LogOut, Receipt, User } from 'lucide-react'
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
@@ -16,7 +15,6 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const { resolvedTheme, setTheme } = useTheme()
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -38,9 +36,6 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
     }
   }
 
-  // Padrão ⇄ Pink. O ícone é um só, então não precisa esperar a hidratação (o do Sol/Lua dependia
-  // do tema guardado e só aparecia depois de montar).
-  const isPink = resolvedTheme === 'pink'
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
@@ -90,10 +85,8 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
             <Receipt className="size-4" />
             Compras
           </Link>
-          <button onClick={() => setTheme(isPink ? 'padrao' : 'pink')} className={itemClass}>
-            <Palette className="size-4" />
-            Mudar tema
-          </button>
+          {/* A cor mora em Meu perfil. Dois lugares escrevendo o mesmo estado foi como o
+              adulto e o kids divergiram antes. */}
           <div className="border-t border-border" />
           <button onClick={logout} disabled={busy} className={`${itemClass} disabled:opacity-50`}>
             <LogOut className="size-4" />

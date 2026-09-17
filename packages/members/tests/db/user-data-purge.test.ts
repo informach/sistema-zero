@@ -32,7 +32,11 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'mission_claims (user_id uuid not null)',
       'room_inventory (user_id uuid not null)',
       'studio_submissions (user_id uuid not null, account_id uuid)',
-      'lesson_section_progress (user_id uuid not null, account_id uuid not null)',
+      // ⚠️ `lesson_id` entra aqui mesmo sem esta suíte usá-lo: o banco de tests/db é
+      // COMPARTILHADO e o `challenge-lifecycle` cria esta tabela com `lesson_id not null`. Quem
+      // chega primeiro vence, a ordem dos arquivos não é contrato, e sem a coluna o insert
+      // abaixo quebra só quando o outro arquivo roda antes — num banco novo, como o do CI.
+      'lesson_section_progress (user_id uuid not null, account_id uuid not null, lesson_id uuid)',
       'lesson_navigation (user_id uuid not null, account_id uuid not null)',
       'lesson_block_progress (user_id uuid not null, account_id uuid not null)',
       'learning_attempts (user_id uuid not null, account_id uuid not null)',
@@ -84,11 +88,11 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       `lesson_evidence (id uuid primary key, user_id uuid not null, account_id uuid,
         lesson_id uuid not null, block_id uuid, section_id uuid, kind text,
         revision text, payload jsonb, created_at timestamptz)`,
-      // Tema do kids por perfil (migration 0086). A mesma regra do comentário acima: a
-      // purga alcança a tabela, então sem o DDL aqui o teste cai com 42P01 num banco
-      // novo — o do CI — e só passa onde a migration já rodou.
+      // A cor do perfil (migration 0086, renomeada para `palette` na 0088). A mesma regra do
+      // comentário acima: a purga alcança a tabela, então sem o DDL aqui o teste cai com 42P01
+      // num banco novo — o do CI — e só passa onde a migration já rodou.
       `profile_preferences (user_id uuid primary key, account_id uuid not null,
-        kids_theme text default 'padrao' not null, updated_at timestamptz not null)`,
+        palette varchar(32), updated_at timestamptz not null)`,
       'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
       `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
         user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,
@@ -195,7 +199,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         (${randomUUID()}, ${profileId}, ${accountId}, 'studio', 'proj-1', 'Nave', 'classic', now(), now(), now()),
         (${randomUUID()}, ${accountId}, ${accountId}, 'pinta', 'd-1', 'nave', 'pixel-sprite', now(), now(), now())`
 
-    await conn.sql`insert into members.lesson_section_progress (user_id, account_id) values (${profileId}, ${accountId})`
+    await conn.sql`insert into members.lesson_section_progress (user_id, account_id, lesson_id) values (${profileId}, ${accountId}, ${randomUUID()})`
     const cleanupId = randomUUID()
     const createdAt = new Date('2026-08-19T12:00:00.000Z')
     const notBefore = new Date('2026-08-19T12:15:00.000Z')

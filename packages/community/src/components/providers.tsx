@@ -1,26 +1,20 @@
 'use client'
 
-import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 
-/** Os dois temas da plataforma (11/09/2026): o Padrão, do Pen, e o Pink. Não existe escuro. */
-const TEMAS = ['padrao', 'pink']
-
+/**
+ * A cor da plataforma NÃO passa mais por aqui.
+ *
+ * Até 17/09/2026 este arquivo montava o `next-themes` com os dois temas (Padrão e Pink). Ele
+ * saiu inteiro: o valor dele era do APARELHO (localStorage) enquanto a preferência é do PERFIL,
+ * e o script de "no-flash" dele lê um armazenamento que o servidor não enxerga. Hoje quem decide
+ * a cor é o servidor, que emite `data-sz-palette` no `<html>` a partir do espelho em cookie.
+ */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="data-tema"
-      themes={TEMAS}
-      defaultTheme="padrao"
-      // Chave NOVA de propósito: o script do next-themes aplica o valor guardado sem conferir a
-      // lista de temas, e quem tinha `theme=dark` salvo ficaria preso num tema que não existe.
-      storageKey="sz-tema"
-      enableSystem={false}
-      enableColorScheme={false}
-      disableTransitionOnChange
-    >
+    <>
       {children}
       <Toaster position="top-right" richColors closeButton />
-    </ThemeProvider>
+    </>
   )
 }

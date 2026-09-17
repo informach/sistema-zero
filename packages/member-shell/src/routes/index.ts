@@ -89,6 +89,8 @@ export interface ShellRoutesDeps {
   payments: PaymentsClient
   profiles: ProfilesClient
   media: MediaModule
+  /** Nome do cookie que espelha a cor escolhida (ver `lib/palette-cookie`). */
+  paletteCookie: string
 }
 
 export type ShellRoutes = ReturnType<typeof createShellRoutes>
@@ -276,7 +278,7 @@ const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0
  * `export const { POST } = shell.routes.authLogin`.
  */
 export function createShellRoutes(deps: ShellRoutesDeps) {
-  const { session, gateway, auth, members, payments, profiles, media } = deps
+  const { session, gateway, auth, members, payments, profiles, media, paletteCookie } = deps
 
   const impersonationReadonly = () =>
     NextResponse.json(
@@ -1688,7 +1690,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningProjectCheck,
     learningActionCheck,
     learningProgress,
-    profilePreferences: createProfilePreferencesRoutes(session, gateway),
+    profilePreferences: createProfilePreferencesRoutes(session, gateway, paletteCookie),
     galleryDelivery: createGalleryDeliveryRoutes(session, gateway),
     learningAttempt,
     learningHelp,

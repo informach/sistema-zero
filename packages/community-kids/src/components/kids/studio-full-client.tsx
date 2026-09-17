@@ -19,7 +19,6 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
@@ -151,10 +150,12 @@ export function StudioFullClient({
     projectName: string
   } | null>(null)
   const openedTaskKeyRef = useRef<string | null>(null)
-  // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
+  // O Estúdio SEGUE a plataforma (hoje só claro) — sem toggle próprio e sem
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
-  const { resolvedTheme } = useTheme()
-  const studioTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const studioTheme: 'light' | 'dark' = 'light'
   // Só a Lenda/admin (tier.pro) E no desktop pode criar projetos PRO (modo Código):
   // o WebContainer não roda no celular/tablet, então nem oferecemos a escolha lá. É
   // um PRÉ-FILTRO; o gate real é a capacidade (`canRunProMode`) na rota /estudio/pro.

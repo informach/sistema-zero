@@ -818,6 +818,40 @@ na hora, mas voltaria). O que mudou, e é contrato:
 - ⚠️ Prefixo `watermarked/` tem lifecycle no bucket: cache expira sozinho e re-gerar é barato.
   Trocar o PDF gera etag novo → cache novo; o antigo morre pelo lifecycle.
 
+## A cor do perfil: espelho em cookie, hidratado pelo proxy (17/09/2026)
+
+O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL e vive no banco
+(`profile_preferences.palette`); o que a torna instantânea e sem flash é um ESPELHO em cookie.
+
+- **`lib/palette-cookie.ts`** (puro): `paletteCookieName` (`__Host-` em prod, régua dos cookies de
+  sessão), `encodePaletteCookie`/`decodePaletteCookie` e `paletteValueOf`. ⚠️⚠️ O valor é
+  `"<dono>.<cor>"` — **o dono faz parte do valor**. Irmãos dividem o mesmo jar de cookies, e sem o
+  dono o perfil que entrasse depois herdaria a cor do anterior até a primeira ida ao servidor. Era
+  exatamente essa janela que o `sz:kids:tema-dono` do cliente tentava fechar; com o dono no cookie,
+  quem fecha é o SERVIDOR, antes do primeiro byte de HTML.
+- **`server/palette.ts`**: `fetchPaletteOnce`, com single-flight em `globalThis` via `Symbol.for`
+  (nunca escopo de módulo — o Turbopack dá cópias por bundle, e a rajada de prefetch RSC chega
+  junta). ⚠️ 4xx vira `'unavailable'`, NÃO `null`: tratar recusa de sessão como "sem cor" gravaria
+  um espelho mentiroso de seis horas.
+- **`server/proxy.ts`** ganhou `paletteCookie`: quando o dono do cookie não bate com o `sub` do
+  token, ele busca e reescreve o cookie da REQUEST e da RESPONSE (o mesmo movimento da rotação de
+  sessão) — o render do mesmo ciclo já lê o valor certo. Gateway fora grava cookie de 60s e se
+  auto-cura na navegação seguinte, sem redirect e sem bloquear.
+- **`routes/profile-preferences.ts`** fala `/members/preferences` com `{palette}` (zod derivado de
+  `PALETTES`) e **grava o cookie em todo 2xx** — inclusive no GET, que é o auto-conserto de um
+  espelho atrasado. Layout não pode gravar cookie; route handler pode. A rota legada
+  `/members/preferences/kids` segue no members por uma release (deploy de members e apps é
+  separado); esta aqui já é a nova.
+- **`components/palette-picker.tsx`**: as caixinhas de cor. Radios NATIVOS (setas, Home/End e
+  `aria-checked` de graça), nome acessível = rótulo em português, marca de seleção não-cromática,
+  alvo ≥44px. ⭐ ZERO hexadecimal no componente: cada caixinha leva `data-sz-palette` e lê
+  `--sz-action` de dentro de si — custom property herda e o seletor de atributo pinta a subárvore,
+  então a amostra é a cor real da folha gerada. Recebe o valor inicial do SERVIDOR (sem GET na
+  montagem), pinta otimista, agrupa cliques (o teto do gateway é 60/min e é circuito de segurança)
+  e, em falha, volta para a última cor CONFIRMADA — nunca para a cor da casa.
+- ⚠️ Mora AQUI e não no `@sistemazero/ui`: aquele pacote não tem dep de framework nem CSS próprio
+  de componente, e este fala com o BFF e carrega o contrato do `x-sz-viewer`.
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa

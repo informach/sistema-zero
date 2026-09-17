@@ -7,7 +7,6 @@ import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import type { StudioTutorConfig } from '@sistemazero/studio'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
@@ -22,7 +21,7 @@ const EXIT_FLUSH_TIMEOUT_MS = 3000
 
 /**
  * Wrapper KIDS fino da rota `/estudio/pro/[id]` (modo Código / WebContainer): provê
- * o tema da comunidade (next-themes) + a volta p/ a lista ao `<StudioProEditor>` do
+ * a plataforma + a volta p/ a lista ao `<StudioProEditor>` do
  * member-shell (reusável pelo adulto). A rota é a ÚNICA com COOP/COEP (headers
  * escopados no next.config) — por isso o PRO abre aqui, não no `/estudio` clássico.
  *
@@ -44,8 +43,10 @@ export function StudioProClient({
   /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
   zappyEnabled?: boolean
 }) {
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [cloud, setCloud] = useState<CreationsCloud | null>(null)
   // Carga COMPLETA (não soft-nav): sair da rota PRO larga o cross-origin isolation

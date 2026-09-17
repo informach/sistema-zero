@@ -77,15 +77,19 @@ export class PlatformActionService {
           : 'Decore seu quarto com um item ou uma nova aparência e salve antes de verificar.',
       }
     }
-    const theme = await this.preferences.getKidsTheme(userId)
-    const passed = audience === 'kids' && theme === 'pink'
+    // ⭐ A régua é "ESCOLHEU uma cor", não "escolheu a cor X": ela sobrevive a paleta nova, a
+    // paleta que sai do catálogo e ao fim do tema Pink. Antes ela cobrava `theme === 'pink'`, o
+    // que um seletor de cores quebraria em silêncio — a criança escolheria roxo e a aula diria
+    // que ela não fez nada. `null` = nunca escolheu.
+    const palette = await this.preferences.getPalette(userId)
+    const passed = palette !== null
     return {
       action,
       passed,
       feedback: passed
-        ? 'O tema Pink está salvo no seu perfil!'
-        : 'Abra o menu do seu perfil, escolha “Mudar tema” e volte para verificar.',
-      ...(theme ? { theme } : {}),
+        ? 'Sua cor está guardada no seu perfil!'
+        : 'Vá em Meu perfil, escolha a sua cor e volte aqui para eu conferir.',
+      ...(palette ? { palette } : {}),
     }
   }
 }

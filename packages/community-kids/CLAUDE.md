@@ -188,39 +188,29 @@ antigas: "cor não muda de valor, só aparece mais", "o fundo não segue o tema,
 "pílulas chapadas, sem sombra dura". Commits: `c04b0bdf` (paleta, temas e chão), `d117ee3b` (menu
 escuro e logo) e `52de024f` (3D).
 
-- **Temas:** next-themes com `attribute="data-tema"`, `themes=['padrao','pink']`,
-  `defaultTheme="padrao"`, `enableSystem={false}` e **`storageKey="sz-kids-tema"` (chave NOVA):**
-  o script sem flash aplicaria o `dark` guardado sem conferir a lista. `resolvedTheme` agora é
-  `'padrao'` ou `'pink'`. ⚠️ **Desde `3441a938` (12/09/2026) o tema é do PERFIL e vive no
-  SERVIDOR** (`profile_preferences.kids_theme`, migration `0086` do members): o "Mudar tema" do
-  menu do avatar NÃO chama `setTheme` — ele chama o `toggle()` do `ProfileThemeProvider`
-  (`components/kids/profile-theme.tsx`, montado no layout `(app)` com `key={session.id}`), que
-  PUTa em `/api/members/preferences` e só então aplica. Irmãos no mesmo navegador têm temas
-  independentes, e o next-themes virou só o aplicador no documento. ⚠️ O
-  `@custom-variant dark (&:is(.dark *))` FICA: sem ele os `dark:` do ui e do member-shell passariam
-  a seguir o modo escuro do sistema operacional; como não existe `.dark`, eles ficam inertes.
-- ⚠️⚠️ **O `setTheme` do next-themes NUNCA entra em dependência de efeito** (regressão de
-  12/09 a 14/09/2026): ele é um `useCallback` com o tema ATUAL na dependência, então a identidade
-  dele MUDA a cada troca. No `ProfileThemeProvider` isso virou laço — aplicar o Pink reexecutava
-  o efeito de carga, que reiniciava para o Padrão, que relia o Pink do servidor: **as cores
-  piscavam** e cada volta gastava um GET, até o limite de 60/min da rota
-  `members-profile-preferences` no gateway devolver 429 e a criança ler "Não consegui carregar o
-  tema do seu perfil.". O conserto é a ref sempre em dia (`aplicarTema`), o mesmo padrão do
-  `onSectionChange` do member-shell. Travado por `tests/profile-theme.test.tsx`, que monta o
-  `ThemeProvider` REAL (um fake com `setTheme` estável não morde). ⚠️ Esse teste instala o
-  `matchMedia` dele e o restaura: o mock de `main-container.test.tsx` vaza para quem roda depois
-  e não tem o `addListener` legado que o next-themes chama.
-- ⚠️ **O reinício no Padrão ao montar é CONDICIONAL, e a condição é o DONO do tema local**
-  (`sz:kids:tema-dono`, achado do full review de 14/09/2026). A chave do next-themes
-  (`sz-kids-tema`) é do APARELHO, não do perfil, e o reinício existia para o tema do irmão não
-  ficar na tela até o GET responder. Só que, incondicional, ele desfazia o trabalho do script sem
-  flash e a tela de quem usa o Pink **piscava azul em TODO F5** (medido: a sequência de `data-tema`
-  era `padrao → pink` em cada carga). Agora o dono é gravado junto a cada tema aplicado: dono igual
-  ao perfil = o valor local é nosso e fica; dono diferente (ou storage bloqueado) = reinicia como
-  antes. ⚠️ Os três pedaços são load-bearing e cada um tem um caso que reprova sem ele — a primeira
-  versão do teste do irmão olhava o estado FINAL e passava até sem reinício nenhum (o que o
-  reinício protege é a JANELA até o GET, então o teste segura a resposta do servidor). De quebra,
-  falha de rede agora deixa o tema da criança na tela em vez de jogá-la no Padrão.
+- **A COR é do PERFIL e vem do SERVIDOR (17/09/2026).** O `next-themes` SAIU do kids e do adulto,
+  e com ele o `data-tema`, o `ProfileThemeProvider`, o `profile-theme.tsx` e a chave
+  `sz:kids:tema-dono`. Hoje: o catálogo de cores mora em `@sistemazero/core/palette` (ids em
+  inglês, rótulos em português, `DEFAULT_PALETTE = 'blue'` para TODO o ecossistema), os VALORES são
+  gerados em `@sistemazero/ui` (ver o CLAUDE.md de lá) e a cor escolhida chega por
+  **`data-sz-palette` no `<html>`**, emitido pelo layout raiz a partir de um espelho em cookie que
+  o **proxy do member-shell** hidrata ANTES do render.
+  ⚠️⚠️ **É isso que apagou o flash.** O valor do `next-themes` era do APARELHO (localStorage) e a
+  preferência é do PERFIL; o script de "no-flash" dele lê um armazenamento que o servidor não
+  enxerga, então servidor e cliente nunca podiam concordar no primeiro quadro. As duas cicatrizes
+  que existiam por causa disso — o reinício condicional pelo "dono do tema local" e a proibição de
+  `setTheme` em dep array — morreram junto com a biblioteca. O dono agora vive DENTRO do valor do
+  cookie (`"<dono>.<cor>"`) e quem reconcilia é o servidor.
+  ⚠️ Os seis `useTheme()` do kids (Estúdio, Pinta, Pensa, Molda, avatar 3D, Estúdio Pro) calculavam
+  uma CONSTANTE (`resolvedTheme` nunca era `'dark'` com `themes=['padrao','pink']`) e viraram
+  literais — código morto removido, não mudança de comportamento. Se o eixo claro/escuro voltar,
+  volta com atributo e hook próprios.
+  ⚠️ O ajuste das cores de ferramenta sob a paleta Rosa foi rechaveado para
+  `:root[data-sz-palette="pink"]` no `globals.css`: com o atributo antigo ele viraria código morto
+  em silêncio, e o Estúdio voltaria a uma cor que não passa AA sobre o chão rosado.
+  O seletor de cor é o `PalettePicker` do member-shell, montado em "Meu perfil" (a entrada
+  "Mudar tema" do menu do avatar SAIU: dois lugares escrevendo o mesmo estado foi como o adulto e
+  o kids divergiram antes).
 - **Tokens:** a fonte CANÔNICA da paleta Pen é
   `packages/ui/src/styles/community-kids-theme.css` (`--sz-community-*`, inclusive o Pink).
   `theme-kids.css` importa essa fonte e preserva os aliases `--sz-kids-*`. O `globals.css` daqui

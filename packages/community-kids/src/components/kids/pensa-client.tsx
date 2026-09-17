@@ -3,7 +3,6 @@
 import type { PensaHostAdapter, PensaTransport } from '@sistemazero/pensa'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
@@ -25,8 +24,10 @@ export function PensaClient({
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const router = useRouter()
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
 
   const loadPensa = useCallback(async () => {
     setMod(null)
@@ -77,7 +78,8 @@ export function PensaClient({
           `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
         ),
     }),
-    [transport, theme, pintaOwned, studioAvailable, moldaAvailable, router],
+    // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
+    [transport, pintaOwned, studioAvailable, moldaAvailable, router],
   )
 
   // Só o botão do menu lateral (o Pensa persiste no servidor: sem selo de nuvem), desenhado

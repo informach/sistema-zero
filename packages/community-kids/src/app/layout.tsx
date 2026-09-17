@@ -1,7 +1,12 @@
+import { renderedPalette } from '@sistemazero/core/palette'
+import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
+import { derive } from '@sistemazero/ui/tokens'
 import { GeistMono } from 'geist/font/mono'
 import type { Metadata, Viewport } from 'next'
 import { Baloo_2, Nunito } from 'next/font/google'
+import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
+import { PALETTE_COOKIE } from '@/lib/cookies'
 import './globals.css'
 
 // Tipografia kids: Baloo 2 (display arredondada/amigável, boa cobertura PT-BR)
@@ -25,19 +30,29 @@ export const metadata: Metadata = {
   },
 }
 
-// Os temas Padrão e Pink são os dois claros (o escuro saiu em 11/09/2026). A barra do
-// navegador no celular fica na cor do menu, a âncora escura que no celular é a barra do topo
-// (o navy do Padrão; no Pink o menu é ameixa, e o meta não segue o tema sem script).
-export const viewport: Viewport = {
-  colorScheme: 'light',
-  themeColor: '#121a30',
+/** A cor do perfil, decidida no SERVIDOR. O proxy já deixou o espelho em dia antes do render. */
+async function paletteAtual() {
+  return renderedPalette(paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value))
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * A barra do navegador no celular acompanha a cor escolhida.
+ *
+ * ⚠️ Era um `#121a30` congelado, e ele JÁ estava errado no tema Pink (lá o menu é ameixa) — o
+ * `viewport` estático não tinha como seguir o tema. Com a cor resolvida no servidor, ele segue:
+ * `derive()` é a MESMA função que gera a folha de estilo, então não há espelho manual de
+ * hexadecimal para divergir quando entra uma cor nova.
+ */
+export async function generateViewport(): Promise<Viewport> {
+  return { colorScheme: 'light', themeColor: derive(await paletteAtual()).menu }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pt-BR"
       suppressHydrationWarning
+      data-sz-palette={await paletteAtual()}
       className={`${baloo.variable} ${nunito.variable} ${GeistMono.variable}`}
     >
       <body

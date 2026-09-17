@@ -15,6 +15,7 @@
     "./community-kids-theme.css": "./src/styles/community-kids-theme.css",
     "./theme-kids.css": "./src/styles/theme-kids.css",
     "./tool-chrome.css": "./src/styles/tool-chrome.css",
+    "./console.css": "./src/styles/console.css",
     "./*": "./src/components/ui/*.tsx"
   },
   "scripts": {

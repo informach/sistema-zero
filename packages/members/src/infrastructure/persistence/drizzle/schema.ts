@@ -1,10 +1,10 @@
 import type {
-  KidsTheme,
   LearningAnswers,
   LearningResult,
   LessonDraftDocument,
   LessonSection,
 } from '@sistemazero/core/learning'
+import type { Palette } from '@sistemazero/core/palette'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
@@ -48,12 +48,22 @@ export const profilePreferences = members.table(
   {
     userId: uuid('user_id').primaryKey(),
     accountId: uuid('account_id').notNull(),
-    kidsTheme: text('kids_theme').$type<KidsTheme>().notNull().default('padrao'),
+    /**
+     * `null` = nunca escolheu; quem renderiza pinta a cor da casa. ⚠️ O CHECK é de FORMA, não de
+     * vocabulário: um `in ('a','b',…)` pediria uma migration por cor nova, e apertar um CHECK
+     * VALIDA as linhas existentes — com todas as migrações pendentes numa transação só, uma
+     * linha fora da lista derruba o lote inteiro (lição da `0063`). A régua de quais cores
+     * existem mora em `@sistemazero/core/palette`, e a leitura é tolerante.
+     */
+    palette: varchar('palette', { length: 32 }).$type<Palette>(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (table) => [
     index('profile_preferences_account_idx').on(table.accountId),
-    check('profile_preferences_kids_theme_check', sql`${table.kidsTheme} in ('padrao', 'pink')`),
+    check(
+      'profile_preferences_palette_shape_check',
+      sql`${table.palette} is null or ${table.palette} ~ '^[a-z0-9-]{1,32}$'`,
+    ),
   ],
 )
 

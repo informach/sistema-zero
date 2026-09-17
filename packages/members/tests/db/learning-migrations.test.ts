@@ -227,17 +227,19 @@ describe.skipIf(!url)(
         migrationsTable: 'members_migrations',
       })
     }, 60000)
-    test('profile theme survives reload, stays isolated and cannot recreate an erased account', async () => {
+    test('a cor do perfil sobrevive ao reload, fica isolada e não recria conta apagada', async () => {
       const { db } = get(),
         repo = new DrizzleProfilePreferencesRepository(db)
       const profile = { userId: randomUUID(), accountId: randomUUID() },
         sibling = randomUUID()
-      expect(await repo.getKidsTheme(profile.userId)).toBeNull()
-      await repo.setKidsTheme(profile, 'pink', now)
-      expect(await new DrizzleProfilePreferencesRepository(db).getKidsTheme(profile.userId)).toBe(
+      expect(await repo.getPalette(profile.userId)).toBeNull()
+      await repo.setPalette(profile, 'pink', now)
+      expect(await new DrizzleProfilePreferencesRepository(db).getPalette(profile.userId)).toBe(
         'pink',
       )
-      expect(await repo.getKidsTheme(sibling)).toBeNull()
+      // ⚠️ A migração RENOMEIA a coluna e normaliza 'padrao' para null: uma cor gravada tem de
+      // atravessar a pasta inteira de migrações rodada do zero, que é o que este arquivo faz.
+      expect(await repo.getPalette(sibling)).toBeNull()
       await new DrizzleUserDataPurgeRepository(db).purgeForUser({
         userIds: [profile.userId],
         accountId: profile.accountId,
@@ -248,8 +250,8 @@ describe.skipIf(!url)(
           notBefore: now,
         },
       })
-      expect(await repo.getKidsTheme(profile.userId)).toBeNull()
-      await expect(repo.setKidsTheme(profile, 'pink', now)).rejects.toThrow('excluída')
+      expect(await repo.getPalette(profile.userId)).toBeNull()
+      await expect(repo.setPalette(profile, 'pink', now)).rejects.toThrow('excluída')
     })
     test('concurrent watched intervals merge without replacing the earlier half', async () => {
       const { db } = get(),
