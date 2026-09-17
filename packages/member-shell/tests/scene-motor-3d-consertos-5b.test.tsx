@@ -221,7 +221,7 @@ describe('axis-z: o chão, o cubo e as cores (MÉDIOS)', () => {
     const bancada = html(
       <MotorSceneControls scene="axis-z" state={mundo('axis-z')} dispatch={nada} />,
     )
-    const saidas = [...bancada.matchAll(/<output class="[^"]*?(text-scene-[a-z-]+)"/g)].map(
+    const saidas = [...bancada.matchAll(/<output\b[^>]*class="[^"]*?(text-scene-[a-z-]+)"/g)].map(
       (m) => m[1],
     )
     expect(saidas).toEqual(['text-scene-alert', 'text-scene-leaf', 'text-scene-a'])
