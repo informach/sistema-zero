@@ -989,8 +989,16 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
           <details class="faq">
             <summary>É assinatura?<span class="material-symbols-rounded">add</span></summary>
             <div class="a">
-              Não. O Desafio é um pagamento único de {priceLabelShort}, ou {displayedTotal} quando
-              um cupom de evento válido estiver aplicado. Não há renovação automática.
+              Não. O Desafio é um pagamento único de {priceLabelShort}. {
+                validCoupon ? (
+                  <>Com o cupom {validCoupon.code}, o valor desta compra fica em {displayedTotal}. </>
+                ) : (
+                  <>
+                    Quando um cupom de evento válido for informado, o checkout mostra o valor com
+                    desconto antes da confirmação.{' '}
+                  </>
+                )
+              }Não há renovação automática.
             </div>
           </details>
           <details class="faq">

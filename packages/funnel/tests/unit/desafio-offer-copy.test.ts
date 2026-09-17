@@ -20,6 +20,9 @@ describe('copy comercial do Desafio de 30 dias', () => {
 
     expect(offer).toContain('30 dias de acesso a partir')
     expect(offer).toContain('Pagamento único · Não é assinatura')
+    expect(offer).toContain('Com o cupom {validCoupon.code}')
+    expect(offer).toContain('o checkout mostra o valor com')
+    expect(offer).not.toContain('ou {displayedTotal} quando')
     expect(offer).not.toContain('R$ 97')
     expect(offer).not.toContain('Pagamento único · Acesso vitalício')
     expect(checkout).toContain('Código de palestra, escola ou clínica')
