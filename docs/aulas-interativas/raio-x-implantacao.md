@@ -156,6 +156,19 @@ acima. Quem acrescenta: o agente que mudou o manifesto e o orquestrador do lote.
 | --- | --- | --- |
 | (nenhum ainda) | | |
 
+### Depois de importar: a voz do Zappy
+
+As instruções e as falas do Zappy saem na voz dele, gravada no ElevenLabs — mas o manifesto NÃO carrega
+o áudio: ele é gerado na autoria. Depois de importar cada aula, abra o editor dela e clique em **"Gerar a
+voz do Zappy"** (ao lado de "Revisar para publicar"), e publique. Sem isso nada quebra: o "Ouvir" continua
+saindo na voz do navegador, como antes.
+
+⚠️ Reimportar um manifesto reescreve os blocos e leva o dicionário junto — clique no botão de novo. O
+áudio continua no R2 e é reaproveitado, então regerar não custa crédito nenhum.
+
+⚠️ Exige `ELEVENLABS_API_KEY` no serviço **admin** do ambiente (só nele). Guia completo:
+[`docs/voz-do-zappy.md`](../voz-do-zappy.md).
+
 ## 5. ⚠️ REIMPORTAR um manifesto já importado recomeça o progresso EM ANDAMENTO
 
 `members/src/infrastructure/persistence/drizzle/lesson-draft.repository.ts` dá revisão nova a todo bloco cujo

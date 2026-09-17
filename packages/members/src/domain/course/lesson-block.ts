@@ -1,4 +1,5 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
+import type { SceneVozes } from '@sistemazero/core/learning/scene'
 
 export type { InteractiveBlock } from '@sistemazero/core/learning'
 
@@ -70,6 +71,8 @@ export interface DialogueBlock {
   /** Ausente = 'speaking' (o balão pede um mascote falando). */
   pose?: DialoguePose
   text: string
+  /** A voz do Zappy: `texto falado → MP3`, gerado na autoria (core `voz.ts`). */
+  vozes?: SceneVozes
 }
 
 export type VideoProvider = 'mux' | 'youtube' | 'vimeo' | 'file'

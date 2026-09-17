@@ -500,6 +500,39 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
     const atividade = devolvido.content.activity
     expect(atividade.type === 'experimentation' ? atividade.pilha : null).toBe('camadas')
   })
+
+  /**
+   * ⚠⚠ A voz do Zappy é um `Record` de chaves ARBITRÁRIAS (a chave é o texto falado), que é
+   * justamente a forma que o `normalize` do Elysia costuma podar. Sem esta prova, a publicação
+   * gravaria o bloco sem o dicionário — aceita, sem erro nenhum — e a cena voltaria à voz do
+   * navegador sem ninguém saber por quê. É a armadilha que este arquivo já documentou três vezes.
+   */
+  test('o `normalize` do Elysia não apaga `vozes` (chaves arbitrárias sobrevivem)', async () => {
+    const app = new Elysia().post('/', ({ body }) => body, {
+      body: t.Object({ content: InteractiveBlockSchema }),
+    })
+    const vozes = {
+      'Crie o Dino e ligue o desenho.': 'https://cdn.test/aulas/voz/abc.mp3',
+      'Antes de mexer. Onde fica o Dino? Pode ser: Nos bastidores.': '/aulas/voz/def.mp3',
+    }
+    const bloco: InteractiveBlock = {
+      ...base,
+      activity: { type: 'experimentation', scene: 'world', vozes },
+    }
+    const resposta = await app.handle(
+      new Request('http://members.test/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content: bloco }),
+      }),
+    )
+    expect(resposta.status).toBe(200)
+    const devolvido = (await resposta.json()) as { content: InteractiveBlock }
+    const atividade = devolvido.content.activity
+    expect(atividade.type === 'experimentation' ? atividade.vozes : null).toEqual(vozes)
+    // E o domínio aceita o mesmo bloco: borda e guarda concordam.
+    expect(isInteractiveBlock(bloco)).toBe(true)
+  })
 })
 
 describe('⚠️⚠️ "sem a pergunta do fim" ATRAVESSA uma rota com o corpo tipado', () => {

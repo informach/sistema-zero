@@ -2575,6 +2575,41 @@ repetem a cada navegação; um chime ali vira tortura por repetição).
   áudio agora vem do `.riv`, no keyframe. Dois ao mesmo tempo seria chime por cima de chime. O
   `tools-celebration` já era mudo (vem atrás da `MuralCelebration`) e o Rive dele também é.
 
+⭐⭐ **A BOCA obedece ao "Ouvir" (17/09/2026).** O balão de fala ganhou um `.riv` PRÓPRIO
+(`/zappy/fala.riv`, 42 KB) e um regime novo: montado com `autoplay: false`, ele fica PARADO no
+primeiro quadro (boca fechada) e só anda enquanto o áudio da voz do Zappy toca — fim do MP3 ou
+"Parar" e ele volta à mesma pose. O estado vem do member-shell pelo contexto
+`components/zappy-fala-context` (`{podeFalar, falando}`), provido em DOIS lugares — o
+`DialogueBlockView` (em volta do slot `mascot`) e a faixa da instrução do `scene-activity` (em
+volta do `renderInstruction`) —, e a régua que o traduz em "toca ou não" é o `tocandoDoZappy` do
+`mascot.tsx`. ⚠️ Vale para a voz do NAVEGADOR também: para a criança, alguém está falando.
+- ⚠️⚠️ **A régua é a POSE, não o balão:** só `speaking` obedece. A autora escolhe a cara do Zappy
+  em cada bloco (`DIALOGUE_POSES`), e `happy`/`thinking`/`celebrating` animam em laço por desenho
+  — congelá-las porque o balão tem áudio tiraria movimento que ninguém pediu para tirar.
+- ⚠️⚠️ **Balão SEM botão "Ouvir" continua animando sozinho** (`podeFalar` falso → `tocando`
+  `undefined` → autoplay de sempre). É a maioria: a instrução de cena sem dicionário, a pista, o
+  retorno da resposta. Decisão dela, e o `zappy-fala.test.tsx` a guarda.
+- ⚠️⚠️ **PARAR é `stop` + `pause` + `drawFrame`**, nessa ordem: `pause` sozinho não rebobina nem
+  repinta e a boca ficaria congelada ABERTA no meio de um viseme. Medido: volta ao quadro inicial
+  com 0,00% de pixels diferentes (o `reset()` rebobina também, mas destrói o artboard e deu 1,3%).
+- ⚠️ **A `key` do canvas carrega a EXPRESSÃO e o REGIME** (`speaking:voz`): o `useRive` lê os
+  parâmetros uma vez, então um canvas montado solto que depois passe a ser regido seguiria rodando
+  sozinho, sem erro nenhum. Na cena isso acontece — o `temVoz` do navegador só liga depois do
+  `voiceschanged`.
+- **Medições que decidiram o código** (harness `tmp/zappy/`, `getImageData` dentro do
+  `requestAnimationFrame`, `useOffscreenRenderer: false`): a `State Machine 1` do arquivo novo
+  segue CONGELADA (1 quadro distinto em 240, mesmo com a camada `Mouth` que ela ganhou), a
+  `Timeline 1` anima (240/240) e **repete sozinha** (6 `Loop` em 12 s, zero `Stop`) — por isso não
+  existe rede de religar —, e `autoplay: false` PINTA o primeiro quadro, inclusive depois do
+  resize.
+- ⚠️ **O nome do arquivo mudou de propósito** (`speaking.riv` → `fala.riv`): `/zappy/*` tem
+  `Cache-Control` de um dia, e sobrescrever serviria o arquivo VELHO com o código novo pelas 24 h
+  seguintes — em staging isso lê como "a animação não funcionou". O `tests/mascot-assets.test.ts`
+  passou a derivar o nome do arquivo da URL do mapa, nunca da chave da pose.
+- ⭐ O `fala.riv` é o `speaking` PADRONIZADO: trouxe `SMLipSync`/`Viseme` (a infraestrutura de lip
+  sync que faltava só nele) e veio SEM o MP3 inerte — 42 KB contra 54 KB. Some uma pendência de
+  editor; sobram `thinking`/`sleeping` (~131 KB) para reexportar sem áudio.
+
 **Quatro caminhos voltam ao WebP, todos calados:** SSR, `prefers-reduced-motion`, a economia de
 dados do aparelho (`navigator.connection.saveData`) e qualquer falha do Rive. A pose nunca some da
 tela. ⚠️ Isso é uma faca de dois gumes: **a quebra também é silenciosa**, e foi para isso que
@@ -2605,9 +2640,9 @@ e os nomes `Artboard 1`/`State Machine 1` DENTRO dos bytes) e a asserção nova 
 **Pendências no editor (dela), todas registradas em `mascot.tsx`:** o fundo do artboard (acima, a
 que BLOQUEIA); renomear `Artboard 1`/
 `State Machine 1` para nomes estáveis (um reexport que os mude derruba tudo no WebP sem avisar);
-padronizar o `speaking.riv`, único do lote sem `SMLipSync`/`Viseme`/camada `Mouth`; e reexportar
-`thinking`/`sleeping`/`speaking` SEM áudio (~164 KB de MP3 que hoje atravessam a rede e nunca
-tocam). O `alivio.riv` ("Magical Heart UI Chime") ficou FORA do `public/`: não tem tela de destino
+~~padronizar o `speaking.riv`~~ (FEITO: o `fala.riv` de 17/09 trouxe `SMLipSync`/`Viseme`/camada
+`Mouth` e nenhum áudio); e reexportar `thinking`/`sleeping` SEM áudio (~131 KB de MP3 que hoje
+atravessam a rede e nunca tocam). O `alivio.riv` ("Magical Heart UI Chime") ficou FORA do `public/`: não tem tela de destino
 nem WebP de queda — o candidato natural é o quiz reprovado, hoje com o Zappy dormindo.
 
 ⭐ Os arquivos trazem `mouth_open`/`mouth_state` + a state machine `SMLipSync` com `Viseme`: é

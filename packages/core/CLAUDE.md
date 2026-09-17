@@ -78,6 +78,8 @@ Deploy, ordem dos serviços (members ANTES de kids e community) e manifestos a i
 | `readout.ts` | O que a cena diz de si: a faixa (`sceneReadout`) e a frase (`sceneSituation`); `drawLoopOnScreen`, `screenReaderSays` |
 | `cast.ts` | O elenco (`castText`, `SCENE_FIGURES`, `actorFigure`, `SCENE_ROLES`, `sceneWorld`) e o português que a plataforma gera (`quantos`, `decimal`, `numero`) |
 | `questions.ts` | `SCENE_QUESTIONS`: a previsão e a explicação de cada cena |
+| `voz.ts` | A voz do Zappy: `chaveDeVoz`/`textoFalado` (a chave do dicionário É o texto falado), `SceneVozes`/`isSceneVozes`, `filaDeVoz` (tudo ou nada por fala), `falaDaPergunta` e `textosFalaveisDaCena` (o que o gerador do admin grava). ⚠⚠ Mora aqui porque gerador e player precisam produzir a MESMA string — duas cópias que divirjam dão áudio que o player nunca encontra |
+| `audio-url.ts` | `isSceneAudioUrl` (módulo próprio só para o `voz.ts` usá-la sem fechar ciclo com o `index.ts`) |
 | `session.ts` | As sessões (`stepExperiment`, `stepDemonstration`, `SESSION_LIMITS`), o pacote guardado (`pack*`, `read*Session`), os segmentos (`apply*Segment`, `SceneConflictError`) e `sceneEmitsSound` |
 | `index.ts` | As duas atividades, `isSceneSetup`, `isSceneScript`, `sceneStart`, `sceneTargets`, `sceneScript`, `sceneModelFor`, `sceneHintsFor` e a leitura tolerante (`sceneSetupGoals`, `sceneUnknownSetupGoals`, `sceneActivityForReading`) |
 | `learning/index.ts` | O bloco: `isInteractiveBlock`, a projeção pública (`publicInteractiveBlock`, `PUBLIC_ACTIVITY_FIELDS`, `isPublicInteractiveBlock`), `blockPrediction`/`blockCheckpoint`, `learningHints`, `evaluateLearning`, `PERGUNTA_MUDOU` |
@@ -111,7 +113,7 @@ de gesto compartilhados, em `tests/fixtures/exploration-paths.ts`.
   versão e não carrega gesto de antes. O editor do admin NOMEIA a ação que a lista da cena não oferece
   ("<nome> · não vale nesta cena" quando o domínio a recusa, "<nome> · não cabe aqui" quando ela é legal e só
   não é oferecida ali), porque o motor trata ação ilegal como no-op.
-- **Campo novo na atividade** (como `setup`, `cast`, `presentation`, `pilha`): o tipo e o validador em
+- **Campo novo na atividade** (como `setup`, `cast`, `presentation`, `pilha`, `vozes`): o tipo e o validador em
   `index.ts`, `PUBLIC_ACTIVITY_FIELDS` em `learning/index.ts` (⚠️ fora da lista ele não chega ao navegador, e
   a criança abre uma cena diferente da que o servidor avalia), o `InteractiveBlockSchema` do members e o
   editor do admin.

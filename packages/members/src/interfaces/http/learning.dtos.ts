@@ -342,6 +342,13 @@ export const InteractiveBlockSchema = t.Object({
       type: t.Literal('demonstration'),
       scene: SceneId,
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
+      /**
+       * A voz do Zappy: `texto falado → MP3`. ⚠⚠ PRECISA estar aqui: campo fora do DTO some
+       * no `normalize` do Elysia, e a publicação gravaria o bloco sem o dicionário — aceita,
+       * sem erro, e a cena muda no ar. Quem recusa um dicionário malformado é o core
+       * (`isSceneVozes`), que tem a régua e a mensagem certa.
+       */
+      vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
       /** Sem roteiro próprio, vale o do modelo da cena. */
       script: t.Optional(SceneScriptSchema),
       cast: t.Optional(SceneCastSchema),
@@ -360,6 +367,13 @@ export const InteractiveBlockSchema = t.Object({
       type: t.Literal('experimentation'),
       scene: SceneId,
       instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
+      /**
+       * A voz do Zappy: `texto falado → MP3`. ⚠⚠ PRECISA estar aqui: campo fora do DTO some
+       * no `normalize` do Elysia, e a publicação gravaria o bloco sem o dicionário — aceita,
+       * sem erro, e a cena muda no ar. Quem recusa um dicionário malformado é o core
+       * (`isSceneVozes`), que tem a régua e a mensagem certa.
+       */
+      vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
       cast: t.Optional(SceneCastSchema),
       setup: t.Optional(SceneSetupSchema),

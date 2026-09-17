@@ -22,6 +22,7 @@ import {
   SCENE_QUESTIONS,
   type SceneActivity,
   type SceneId,
+  type SceneVozes,
   sceneActivityForReading,
   sceneGoalIds,
   sceneHintsFor,
@@ -198,6 +199,10 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     'scene',
     'script',
     'instructionAudioUrl',
+    // ⚠⚠ PÚBLICO por definição: o dicionário da voz do Zappy é o que o "Ouvir" toca. Fora da
+    // lista, o bloco chega ao navegador sem áudio nenhum e a cena volta à voz do sistema, calada
+    // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
+    'vozes',
     'cast',
     'setup',
     'presentation',
@@ -210,6 +215,10 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     'scene',
     'initialImpulse',
     'instructionAudioUrl',
+    // ⚠⚠ PÚBLICO por definição: o dicionário da voz do Zappy é o que o "Ouvir" toca. Fora da
+    // lista, o bloco chega ao navegador sem áudio nenhum e a cena volta à voz do sistema, calada
+    // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
+    'vozes',
     'cast',
     'setup',
     'pilha',
@@ -856,7 +865,7 @@ export interface LearningManifest {
           | InteractiveBlock
           | ManifestQuiz
           | { kind: 'rich_text'; markdown: string }
-          | { kind: 'dialogue'; pose?: string; text: string }
+          | { kind: 'dialogue'; pose?: string; text: string; vozes?: SceneVozes }
       }
     | { key: string; existing: { kind: string; index: number } }
     | { key: string; plannedVideo: string }

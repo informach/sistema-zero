@@ -13,6 +13,7 @@ import {
   type ExperimentSession,
   evaluateDemonstration,
   evaluateExperimentation,
+  filaDeVoz,
   SCENE_LIMITS,
   type SceneActivity,
   type SceneCast,
@@ -91,6 +92,7 @@ import {
 import { SceneSandbox } from './scene-sandbox'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
 import { useSceneVoice } from './use-scene-voice'
+import { ZappyFalaProvider } from './zappy-fala-context'
 
 /**
  * O player das cenas de aula: experimentação e demonstração.
@@ -1106,6 +1108,27 @@ export function SceneActivityView({
         : '',
     conclusao ? '' : hintText,
   ]
+  /**
+   * A voz do ZAPPY cobre esta fala inteira?
+   *
+   * ⚠⚠ TUDO OU NADA (`filaDeVoz`): o dicionário é gerado na autoria e cobre o que está ESCRITO
+   * na aula — instrução, pergunta do palpite, checkpoint. O que o MOTOR monta na hora (a pista que
+   * a criança pediu, a legenda "Parte N", a frase de situação) não tem áudio, e aí a fala inteira
+   * sai na voz do navegador, como sempre foi. Misturar as duas numa leitura só — o Zappy dizendo a
+   * instrução e a voz do sistema emendando a pergunta que TRANCA o palco — seria o pior resultado.
+   */
+  const vozDoZappy = filaDeVoz(falaDoOuvir, activity.vozes)
+  /**
+   * ⭐ Quem decide o botão "Ouvir" decide também a BOCA do mascote — a mesma expressão, uma vez
+   * só. Um balão cujo Zappy fica parado esperando um botão que não existe seria o pior dos dois
+   * mundos, e duas cópias da condição divergem no primeiro conserto.
+   * ⚠️ Vale para a voz do NAVEGADOR também: para a criança, alguém está falando.
+   */
+  const podeOuvir = Boolean(vozDoZappy) || voz.temVoz
+  const falaDoZappy = useMemo(
+    () => ({ podeFalar: podeOuvir, falando: voz.falando }),
+    [podeOuvir, voz.falando],
+  )
   const anelDaCena = running && demoStep?.highlight === 'scene'
   /**
    * ⚠️⚠️ "Ligar som" só nas cenas que FAZEM som (a régua do core), e fora de qualquer `fieldset`:
@@ -1172,7 +1195,9 @@ export function SceneActivityView({
                   {instruction}
                 </p>
               ) : (
-                player.renderInstruction(instruction, 'speaking')
+                <ZappyFalaProvider value={falaDoZappy}>
+                  {player.renderInstruction(instruction, 'speaking')}
+                </ZappyFalaProvider>
               )
             ) : (
               <p className="text-base font-medium leading-relaxed">{instruction}</p>
@@ -1204,7 +1229,7 @@ export function SceneActivityView({
                 Ouvir instrução
               </SceneButton>
             </>
-          ) : voz.temVoz ? (
+          ) : podeOuvir ? (
             <SceneButton
               tom="discreta"
               // ⚠️ Abaixo de 480px só o ícone: o rótulo espremia a instrução numa coluna de 200px.
@@ -1219,7 +1244,7 @@ export function SceneActivityView({
                 // (um Vimeo responde por mensagem) a deixava muda. A parte síncrona do pedido de foco
                 // já pausa as outras mídias antes de a fala entrar na fila.
                 void requestLessonMediaFocus(owner.current)
-                voz.falar(falaDoOuvir)
+                voz.falar(falaDoOuvir, activity.vozes)
               }}
             >
               {voz.falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}

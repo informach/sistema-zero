@@ -1,3 +1,4 @@
+import type { ZappyFalaInfo } from '@sistemazero/member-shell/components/zappy-fala-context'
 import { cn } from '@/lib/cn'
 
 export type MascotExpression = 'happy' | 'celebrating' | 'thinking' | 'sleeping' | 'speaking'
@@ -37,7 +38,11 @@ export const ZAPPY_RIVE_SRC: Record<MascotExpression, string> = {
   celebrating: '/zappy/celebrating.riv',
   thinking: '/zappy/thinking.riv',
   sleeping: '/zappy/sleeping.riv',
-  speaking: '/zappy/speaking.riv',
+  // ⭐ A BOCA (17/09/2026): arquivo NOVO, com `SMLipSync`/`Viseme` e sem o MP3 inerte dos outros
+  // — e é o único regido pelo botão "Ouvir" (ver `tocandoDoZappy`). ⚠️ O nome mudou de propósito:
+  // `/zappy/*` tem `Cache-Control` de um dia, e sobrescrever o `speaking.riv` serviria o arquivo
+  // VELHO com o código novo pelas 24h seguintes — a animação certa "não funcionaria" sem culpado.
+  speaking: '/zappy/fala.riv',
 }
 
 /**
@@ -46,13 +51,20 @@ export const ZAPPY_RIVE_SRC: Record<MascotExpression, string> = {
  * estado que não entra na timeline: montar por ela deixa o Zappy PARADO, com o
  * runtime rodando a 60 fps e desenhando sempre o mesmo quadro (medido: 242 quadros
  * seguidos idênticos). Pela `Timeline 1` as cinco poses animam — `happy`,
- * `celebrating` e `thinking` em laço; `sleeping` e `speaking` tocam uma vez e
- * assentam, que é o certo para elas.
+ * `celebrating`, `thinking` e a nova `fala` em laço; `sleeping` toca uma vez e assenta, que é o
+ * certo para ela.
  *
  * ⚠️ O parâmetro `animations` do runtime está marcado como deprecated em favor de
  * `stateMachine`. Sair do deprecated depende do editor, não daqui: é a `State
  * Machine 1` ganhar um estado que toque a `Timeline 1`. Enquanto não ganhar, trocar
  * para `stateMachine` volta a congelar o mascote.
+ *
+ * ⚠️ O `fala.riv` (17/09/2026) NÃO mudou isso, e foi MEDIDO antes de escrever código:
+ * a `State Machine 1` dele — que agora tem duas camadas, `Layer 1` e `Mouth` — deu 1
+ * quadro distinto em 240 (`ultimaMudanca` -1, congelada como as antigas), e a
+ * `Timeline 1`, 240 em 240. A diferença dele para as outras poses é o LAÇO: ele
+ * repete sozinho (6 eventos `Loop` em 12s, zero `Stop`), então quem o rege só precisa
+ * ligar e desligar — não há fim de animação para remendar.
  *
  * ⚠️ Os nomes são os GENÉRICOS de fábrica e o runtime casa por string: um reexport
  * que os renomeie derruba o mascote no fallback WebP **sem erro nenhum**.
@@ -83,9 +95,10 @@ export const ZAPPY_RIVE_TIMELINE = 'Timeline 1'
  * REAGE, silêncio quando ele só está presente — `speaking`/`thinking`/`sleeping`
  * repetem a cada seção de aula e a cada cadeado, e viram tortura com chime.
  *
- * ⚠️ Os ~164 KB de MP3 embutidos em `thinking`/`sleeping`/`speaking` seguem
- * atravessando a rede sem tocar. Reexportar essas três sem áudio continua sendo a
- * maior economia disponível no lote.
+ * ⚠️ Os MP3 embutidos em `thinking` e `sleeping` seguem atravessando a rede sem tocar
+ * (~131 KB). Reexportar as duas sem áudio continua sendo a maior economia do lote — a
+ * terceira já saiu: o `fala.riv` veio SEM áudio nenhum nos bytes, e por isso pesa
+ * 42 KB contra os 54 KB do `speaking.riv` que ele substituiu.
  */
 export const ZAPPY_RIVE_COM_SOM: Record<MascotExpression, boolean> = {
   happy: false,
@@ -93,6 +106,32 @@ export const ZAPPY_RIVE_COM_SOM: Record<MascotExpression, boolean> = {
   thinking: false,
   sleeping: false,
   speaking: false,
+}
+
+/**
+ * A pose cuja animação é a BOCA — a única que o botão "Ouvir" rege.
+ *
+ * ⚠️⚠️ A régua é a POSE, não o balão. A autora escolhe a cara do Zappy em cada bloco de diálogo
+ * (`DIALOGUE_POSES`: falando, feliz, pensativo, comemorando), e `happy`/`thinking`/`celebrating`
+ * animam em laço por desenho — pará-las até alguém apertar "Ouvir" tiraria movimento que ninguém
+ * pediu para tirar. Quem a voz rege é a boca; o resto do mascote segue como sempre.
+ */
+export const ZAPPY_POSE_DA_FALA: MascotExpression = 'speaking'
+
+/**
+ * O canvas deve estar tocando AGORA? `undefined` = não é regido por ninguém, toca como sempre
+ * (autoplay). Booleano = a voz manda: parado no primeiro quadro (boca fechada) até o áudio sair.
+ *
+ * ⚠️ `podeFalar` falso é o balão SEM botão "Ouvir" (a instrução de cena sem dicionário, a pista,
+ * o retorno da resposta): sem áudio para acompanhar, deixar o Zappy congelado seria só tirar
+ * movimento da tela. Ele continua animando como antes de tudo isto.
+ */
+export function tocandoDoZappy(
+  expression: MascotExpression,
+  fala: ZappyFalaInfo | null,
+): boolean | undefined {
+  if (!fala?.podeFalar || expression !== ZAPPY_POSE_DA_FALA) return undefined
+  return fala.falando
 }
 
 interface KidsMascotProps {

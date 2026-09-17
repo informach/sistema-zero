@@ -980,7 +980,8 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `scene-sandbox.tsx` | "Agora é sua vez". |
 | `scene-frame.tsx` | A faixa de estado (`SceneReadoutBand`) e os botões do mundo (`botoesDoMundo`), iguais no player e na vez. |
 | `use-scene-clock.ts` | `useSceneClock`, `limiarDoRelogio`, `relogioDaCena`, `estadoVistoDaCena`, `tempoDeLeitura`. |
-| `use-scene-voice.ts` | `useSceneVoice`: a voz do navegador. |
+| `use-scene-voice.ts` | `useSceneVoice`: a voz do ZAPPY (fila de MP3) e, faltando áudio, a do navegador. |
+| `zappy-fala-context.tsx` | `ZappyFalaProvider`/`useZappyFala`: quem tem botão "Ouvir" na tela rege a BOCA do mascote. |
 | `scene-lugar-reservado.tsx` | `LugarReservado`: o espaço acima da bancada que não encolhe. |
 | `scene-bench.tsx` | O vocabulário da bancada: `Medida`, `Chave`, `Escolha`. |
 | `exploration-stage.tsx` | `SceneButton` e o despacho do palco (`ExplorationStage`). |
@@ -1120,6 +1121,26 @@ professor).
   provedor aprovava qualquer resposta, e o professor nunca lia a explicação que escreveu.
 
 **Voz, som e anúncios.**
+- ⭐⭐ **A voz do ZAPPY vem primeiro (17/09/2026).** `activity.vozes` é o dicionário `texto falado → MP3`,
+  gerado na AUTORIA pelo botão do admin (guia operacional: `docs/voz-do-zappy.md`). O player monta a
+  `falaDoOuvir` de sempre e pergunta ao core `filaDeVoz(falaDoOuvir, activity.vozes)`: ⚠⚠ TUDO OU NADA —
+  faltando o áudio de QUALQUER trecho (a pista que o motor monta na hora, a legenda "Parte N"), a fala
+  inteira sai na voz do navegador. Misturar as duas numa leitura — o Zappy dizendo a instrução e a voz do
+  sistema emendando a pergunta que TRANCA o palco — seria pior que qualquer uma sozinha. O botão aparece
+  com `vozDoZappy || voz.temVoz`: com dicionário, a cena fala num aparelho sem voz de sistema nenhuma.
+  ⚠⚠ O hook toca a fila num ÚNICO `<audio>` reaproveitado (no iOS o destravamento pelo gesto vale para o
+  ELEMENTO; um `new Audio()` por trecho calaria a fala no meio, só no iPhone), e um erro de áudio cai para
+  a síntese do que falta em vez de deixar a criança no escuro.
+- ⭐⭐ **A BOCA do mascote anda com o áudio (17/09/2026).** O `.riv` do balão (`fala.riv`, no kids)
+  monta PARADO e só anima enquanto sai som. O estado nasce aqui e chega ao mascote — que é asset do
+  KIDS e entra por SLOT — pelo contexto `zappy-fala-context` (`{podeFalar, falando}`): o provider
+  embrulha o `{mascot}` no `dialogue-block.tsx` e o `player.renderInstruction(...)` no
+  `scene-activity.tsx`, e o que conta é a POSIÇÃO na árvore, não onde o elemento foi criado. ⚠️ Na
+  cena, `podeFalar` sai da MESMA expressão que decide o botão (`podeOuvir`), nunca de uma cópia —
+  um Zappy parado esperando um botão que não existe seria o pior dos dois mundos. ⚠️ Os outros seis
+  call sites do `renderInstruction` (pista, feedback, entrega por galeria, ação de plataforma,
+  prévia) NÃO provêem o contexto: sem áudio para acompanhar, o mascote anima como sempre animou.
+  O contrato ponta a ponta é cobrado no kids (`tests/zappy-fala.test.tsx`), que é onde o mascote existe.
 - **"🔊 Ouvir"** (`useSceneVoice`, `speechSynthesis` em pt-BR) aparece sem `instructionAudioUrl` e só com
   `temVoz` (a API existe E há voz em português, ou a lista ainda está vazia; recalculado no `voiceschanged`). O
   hook devolve `{ temVoz, falando, falar, parar }`. Ele lê o que PEDE resposta agora (instrução, pergunta do

@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { ZappyFalaProvider } from '@sistemazero/member-shell/components/zappy-fala-context'
 import { act, cleanup, render } from '@testing-library/react'
 import {
+  tocandoDoZappy,
+  ZAPPY_POSE_DA_FALA,
   ZAPPY_RIVE_COM_SOM,
   ZAPPY_RIVE_LIGADO,
   ZAPPY_RIVE_SRC,
@@ -157,5 +160,108 @@ describe('o interruptor', () => {
     expect(img?.getAttribute('src')).toBe(ZAPPY_SRC.celebrating)
     expect(img?.className).toContain('kid-wiggle')
     await assenta()
+  })
+})
+
+/**
+ * ⭐⭐ A régua da BOCA, pura. Ela decide sozinha três coisas que ninguém vê quebrar: qual pose a
+ * voz rege, o que acontece sem provider, e o que acontece num balão sem áudio.
+ */
+describe('tocandoDoZappy', () => {
+  test('sem contexto, ninguém rege: toca como sempre', () => {
+    expect(tocandoDoZappy(ZAPPY_POSE_DA_FALA, null)).toBeUndefined()
+  })
+
+  test('⚠️ o balão SEM "Ouvir" continua animando sozinho', () => {
+    expect(tocandoDoZappy(ZAPPY_POSE_DA_FALA, { podeFalar: false, falando: false })).toBeUndefined()
+  })
+
+  /**
+   * ⚠️⚠️ A decisão da dona: a autora escolhe a cara do Zappy no balão, e as outras poses animam em
+   * laço por desenho. A voz rege a BOCA — congelar o Zappy feliz porque o balão tem áudio seria
+   * tirar movimento que ninguém pediu para tirar.
+   */
+  test('⚠️⚠️ só a pose da fala obedece: as outras seguem livres', () => {
+    const falando = { podeFalar: true, falando: true }
+    expect(tocandoDoZappy('celebrating', falando)).toBeUndefined()
+    expect(tocandoDoZappy('happy', falando)).toBeUndefined()
+    expect(tocandoDoZappy('thinking', falando)).toBeUndefined()
+    expect(tocandoDoZappy(ZAPPY_POSE_DA_FALA, falando)).toBe(true)
+  })
+
+  test('com "Ouvir" na tela e o áudio parado, a boca fica parada', () => {
+    expect(tocandoDoZappy(ZAPPY_POSE_DA_FALA, { podeFalar: true, falando: false })).toBe(false)
+  })
+})
+
+/**
+ * O elo que a régua não alcança: o que o CANVAS recebe. O falso do `test-setup` emite o
+ * `data-tocando`, então dá para ver o regime sem WebGL nenhum.
+ */
+describe('o regime chega ao canvas', () => {
+  const regime = () => document.querySelector('[data-tocando]')?.getAttribute('data-tocando')
+
+  test('⭐ o áudio tocando liga a boca; parar desliga', async () => {
+    matchMedia(false)
+    const { rerender } = render(
+      <ZappyFalaProvider value={{ podeFalar: true, falando: true }}>
+        <KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    expect(regime()).toBe('true')
+
+    rerender(
+      <ZappyFalaProvider value={{ podeFalar: true, falando: false }}>
+        <KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    expect(regime()).toBe('false')
+  })
+
+  /**
+   * ⚠️⚠️ Trocar de REGIME remonta o canvas (a `key` muda), e o "já desenhou" da montagem anterior
+   * precisa cair junto — senão a troca abre um buraco do tamanho do mascote, que é exatamente o
+   * que o WebP por baixo existe para impedir. Acontece de verdade na cena: o `temVoz` do navegador
+   * só liga depois do `voiceschanged`, e o mascote já está montado quando isso chega.
+   */
+  test('⚠️⚠️ virar regido volta ao WebP enquanto o canvas novo carrega', async () => {
+    matchMedia(false)
+    // ⚠️ A ÁRVORE é a mesma nos dois renders (o provider já está lá, só o valor muda): envolver o
+    // mascote depois trocaria a posição dele na árvore, o React montaria um componente NOVO e o
+    // WebP voltaria pelo motivo errado — o teste passaria sem provar nada. É o caso real da cena,
+    // onde o `podeFalar` vira verdadeiro com o mascote já montado.
+    const { rerender } = render(
+      <ZappyFalaProvider value={{ podeFalar: false, falando: false }}>
+        <KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    // O Rive desenhou: o WebP sai de cena, como na tela de verdade.
+    await act(async () => {
+      ;(
+        globalThis as Record<string, unknown> & { zappyRiveDesenhou?: () => void }
+      ).zappyRiveDesenhou?.()
+    })
+    expect(imagem()).toBeNull()
+
+    rerender(
+      <ZappyFalaProvider value={{ podeFalar: true, falando: true }}>
+        <KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    // ⚠️ A asserção que MORDE: com o "já desenhou" preso à pose (e não à montagem), o canvas
+    // remontaria com o WebP fora da tela e a troca abriria um buraco do tamanho do mascote.
+    expect(imagem()?.getAttribute('src')).toBe(ZAPPY_SRC[ZAPPY_POSE_DA_FALA])
+    expect(regime()).toBe('true')
+  })
+
+  test('sem provider o canvas segue solto (autoplay de sempre)', async () => {
+    matchMedia(false)
+    render(<KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />)
+    await assenta()
+    expect(regime()).toBe('undefined')
   })
 })

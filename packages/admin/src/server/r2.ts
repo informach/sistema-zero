@@ -3,6 +3,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   type PutObjectCommandInput,
@@ -311,6 +312,27 @@ export async function r2DeleteUgcPrefixes(prefixes: readonly string[]): Promise<
       console.warn('[r2] exclusão UGC parcial, apagando falhas uma a uma', { failedKeys })
     },
   })
+}
+
+/**
+ * O objeto já está no bucket público?
+ *
+ * ⚠⚠ É o que faz a voz do Zappy ser paga UMA vez por frase. A key é o hash do texto: a frase
+ * que já tem áudio nunca volta ao ElevenLabs, nem quando a aula é republicada, nem quando a
+ * mesma frase aparece em dez aulas. Erro de rede não pode virar "não existe" (gastaria crédito à
+ * toa, mas sobretudo mascararia um R2 fora do ar), então só o 404/NotFound responde falso.
+ */
+export async function r2ObjectExists(key: string): Promise<boolean> {
+  const cfg = requireR2Config()
+  try {
+    await getClient(cfg).send(new HeadObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }))
+    return true
+  } catch (error) {
+    const status = (error as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode
+    const nome = (error as { name?: string })?.name
+    if (status === 404 || nome === 'NotFound' || nome === 'NoSuchKey') return false
+    throw new Error('Falha ao consultar o armazenamento.', { cause: error })
+  }
 }
 
 export function r2PublicUrl(key: string): string {

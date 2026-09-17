@@ -16,6 +16,7 @@ import {
   type LessonDraftIssue,
   migrateLegacyInteractiveBlock,
 } from '@sistemazero/core/learning'
+import type { SceneVozes } from '@sistemazero/core/learning/scene'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -61,6 +62,7 @@ import { LessonManifestImport } from '@/components/editor/lesson-manifest-import
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { useLessonDraft } from '@/components/editor/use-lesson-draft'
+import { VozZappyButton } from '@/components/editor/voz-zappy-button'
 import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -609,6 +611,33 @@ function LessonEditorSession({
   useEffect(() => {
     if (blockOpen) blockHeadingRef.current?.focus()
   }, [blockOpen])
+  /**
+   * Grava o dicionário da voz do Zappy no bloco.
+   *
+   * ⚠⚠ O dicionário é SUBSTITUÍDO, nunca fundido com o anterior: a chave é o texto falado, então
+   * fundir manteria para sempre a entrada da frase ANTIGA — lixo que conta no teto de 40 entradas e
+   * que um dia faria o bloco ser recusado por um áudio que ninguém mais ouve.
+   *
+   * ⚠ Na cena o dicionário mora na ATIVIDADE; no balão do Zappy, no próprio bloco.
+   */
+  const aplicarVozes = useCallback(
+    (id: string, vozes: SceneVozes) => {
+      const bloco = session.getSnapshot().draft?.document.blocks.find((b) => b.id === id)
+      if (!bloco) return
+      const atual = bloco.content
+      const content: LessonBlockContent =
+        atual.kind === 'dialogue'
+          ? { ...atual, vozes }
+          : atual.kind === 'interactive' &&
+              (atual.activity?.type === 'demonstration' ||
+                atual.activity?.type === 'experimentation')
+            ? { ...atual, activity: { ...atual.activity, vozes } }
+            : atual
+      if (content === atual) return
+      session.enqueue({ type: 'block', block: { id, content } }, true)
+    },
+    [session],
+  )
   const receiveVideo = useCallback(
     (id: string, video: ReadyVideo) => {
       const current = session.getSnapshot().draft
@@ -1398,6 +1427,13 @@ function LessonEditorSession({
                   Despublicar aula
                 </Button>
               )}
+              {canWrite ? (
+                <VozZappyButton
+                  blocos={draft?.document.blocks ?? []}
+                  disabled={busy || loading || draftState.status === 'conflict'}
+                  onVozes={aplicarVozes}
+                />
+              ) : null}
               {canWrite ? (
                 <Button
                   onClick={() => void reviewLesson()}

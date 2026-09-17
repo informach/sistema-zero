@@ -9,6 +9,7 @@ import {
   type ScenePilha,
   type SceneSetup,
   type SceneStep,
+  type SceneVozes,
   sceneGoalIds,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -168,6 +169,7 @@ export interface MemoriaDaAutoria {
   setup?: SceneSetup
   initialImpulse?: number
   instructionAudioUrl?: string
+  vozes?: SceneVozes
   html?: string
 }
 
@@ -178,6 +180,7 @@ export function lembrar(anterior: MemoriaDaAutoria, value: InteractiveBlock): Me
   if (a.type === 'demonstration' || a.type === 'experimentation') {
     nova.scene = a.scene
     if (a.instructionAudioUrl) nova.instructionAudioUrl = a.instructionAudioUrl
+    if (a.vozes) nova.vozes = a.vozes
     if (a.setup) nova.setup = a.setup
   }
   if (a.type === 'demonstration' && a.script) nova.script = a.script
@@ -375,6 +378,13 @@ export function trocarTipo(
   // ⚠️ O caso ACOMPANHA as duas irmãs, como a cena e o áudio: montar o mundo de partida é o
   // trabalho mais caro da autoria de uma atividade, e perdê-lo num passeio pelo grupo de rádio
   // (que a SETA do teclado faz sozinha) é a pior perda das quatro.
+  // ⚠⚠ A voz do Zappy ACOMPANHA as duas irmãs, como a cena e o áudio. Perdida na troca, o bloco
+  // seria publicado sem dicionário e a cena voltaria à voz do sistema — sem erro, sem aviso, e só
+  // uma criança ouvindo a diferença. As chaves são o TEXTO: o que não servir mais é inócuo.
+  const vozesLembradas =
+    a.type === 'demonstration' || a.type === 'experimentation'
+      ? (a.vozes ?? memoria.vozes)
+      : memoria.vozes
   const casoLembrado =
     a.type === 'demonstration' || a.type === 'experimentation'
       ? (a.setup ?? memoria.setup)
@@ -388,6 +398,7 @@ export function trocarTipo(
       type: tipo,
       scene: cena ?? 'world',
       instructionAudioUrl: audio,
+      vozes: vozesLembradas,
       setup: casoAoTrocarCena(casoLembrado, cena ?? 'world', { metas: false }).setup,
       script: a.type === 'demonstration' ? a.script : memoria.script?.map((p) => ({ ...p })),
       pilha: pilhaNaCena(pilhaLembrada, cena ?? 'world'),
@@ -398,6 +409,7 @@ export function trocarTipo(
       type: tipo,
       scene: destino,
       instructionAudioUrl: audio,
+      vozes: vozesLembradas,
       setup: casoAoTrocarCena(casoLembrado, destino, { metas: true }).setup,
       pilha: pilhaNaCena(pilhaLembrada, destino),
       initialImpulse: CENAS_COM_IMPULSO.includes(destino)

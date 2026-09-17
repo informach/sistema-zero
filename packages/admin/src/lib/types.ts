@@ -1,4 +1,5 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
+import type { SceneVozes } from '@sistemazero/core/learning/scene'
 /**
  * Contratos compartilhados entre o BFF e os componentes do painel. Espelham as
  * views do @sistemazero/catalog e o UserView do @sistemazero/auth (type-only —
@@ -477,6 +478,11 @@ export interface DialogueBlock {
   kind: 'dialogue'
   pose?: DialoguePose
   text: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gravada pelo botão "Gerar a voz do Zappy". Mirror do
+   * members. ⚠️ Sem ela o balão não ganha botão de ouvir no app da criança.
+   */
+  vozes?: SceneVozes
 }
 
 export interface RichTextBlock {

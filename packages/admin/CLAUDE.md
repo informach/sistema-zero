@@ -167,6 +167,39 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
   linhas de cada ramo): os ramos de cena fazem `return` com as próprias linhas, e a conclusão ficava
   invisível justamente onde ela passou a decidir o `passed`.
 
+## A voz do Zappy nas aulas (17/09/2026)
+
+⭐⭐ As falas do Zappy e as instruções das cenas saem na voz DELE (ElevenLabs), e não na voz do
+sistema operacional da criança. **O áudio é gerado AQUI, na autoria** — nunca no navegador de quem
+assiste: o texto da aula é fixo, então uma frase gerada uma vez vale para todas as crianças, para
+sempre. Gerar no cliente seria pagar por clique, expor a chave e trocar 50 ms de CDN por segundos de
+síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy.md`**.
+
+- **Botão "Gerar a voz do Zappy"** (`components/editor/voz-zappy-button.tsx`), ao lado de "Revisar
+  para publicar": cuida da AULA INTEIRA num clique — reaproveita o que já tem voz, regera o que teve
+  o texto alterado e gera o que falta. ⭐ Não precisa saber o que mudou: a key do MP3 no R2 é o HASH
+  do texto falado (`keyDaVoz`), então frase intocada é achada por HEAD no bucket (zero crédito) e
+  frase editada tem key nova. O rótulo diz o ESTADO ("Gerar a voz do Zappy (3)" × "Voz do Zappy: em
+  dia"), que é o que responde "preciso clicar de novo?".
+- ⚠⚠ **Os textos saem da PROJEÇÃO PÚBLICA do bloco** (`publicInteractiveBlock`), que é o que o
+  navegador da criança recebe: é ela que resolve a previsão e a pergunta do MODELO da cena quando o
+  professor não escreveu as suas. Gerando do rascunho cru, a cena que herda o palpite do modelo
+  ficaria muda justamente na pergunta que TRANCA o palco.
+- **Rota** `POST /api/media/voz-zappy` (`server/voz-zappy.ts` + `app/api/media/voz-zappy/route.ts`):
+  recebe TEXTOS e devolve `{vozes, geradas, reaproveitadas, caracteres}`. Como as outras rotas de
+  mídia, NÃO passa pelo gateway → `requireMediaSession()` obrigatório (é uma rota que gasta crédito
+  de serviço pago; sem sessão seria torneira aberta). ⚠⚠ O cliente manda TEXTO, nunca a key: quem
+  decide onde o arquivo mora é o servidor. Teto de 24 falas por pedido — o botão loteia sozinho.
+- **Onde o dicionário é gravado**: na cena, em `activity.vozes`; no balão do Zappy, em
+  `content.vozes` do próprio bloco. ⚠⚠ O `aplicarVozes` do `lesson-editor-client` SUBSTITUI o
+  dicionário, nunca funde: a chave é o texto, então fundir guardaria para sempre a entrada da frase
+  ANTIGA — lixo que conta no teto de 40 entradas do core.
+- **Envs (só no admin)**: `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID` (opcional; o padrão já é a voz
+  da dona). Ausentes → 503 amigável e a aula segue na voz do navegador. ⚠⚠ A chave NÃO vai para o
+  community/kids: a criança recebe URL de MP3 público, como qualquer mídia de aula.
+- ⚠ **Reimportar um manifesto apaga o dicionário daquela aula** (o manifesto não o carrega). Basta
+  clicar no botão de novo: o áudio continua no R2 e é reaproveitado sem custo.
+
 ## Autoria de aulas — 12/09/2026
 
 O cadastro prioriza criação do zero. `LessonSectionAuthoring` apresenta seções recolhíveis,

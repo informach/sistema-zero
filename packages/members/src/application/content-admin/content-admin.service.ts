@@ -1,6 +1,11 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isInteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_IDS, type SceneId, sceneUnknownSetupGoals } from '@sistemazero/core/learning/scene'
+import {
+  isSceneVozes,
+  SCENE_IDS,
+  type SceneId,
+  sceneUnknownSetupGoals,
+} from '@sistemazero/core/learning/scene'
 import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
@@ -457,6 +462,12 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
       'Configure a atividade e sua verificação. Experimentos e HTML essenciais precisam de uma pergunta de verificação.',
     )
   }
+  // ⚠⚠ A voz do Zappy do BALÃO passa pela MESMA régua da cena (`isSceneVozes`): chave normalizada,
+  // endereço `https://` ou do próprio site, teto de entradas. Na cena quem cobra é o
+  // `isInteractiveBlock` acima; aqui o `dialogue` não tem guard de core, e sem esta linha o DTO
+  // deixaria passar um dicionário que o player nunca encontraria — um balão mudo, sem erro nenhum.
+  if (content.kind === 'dialogue' && !isSceneVozes(content.vozes))
+    throw new InvalidContentCommandError('A voz deste recado está inválida. Gere a voz de novo.')
   if (
     (content.kind === 'studio' || content.kind === 'pinta') &&
     content.purpose === 'experiment' &&

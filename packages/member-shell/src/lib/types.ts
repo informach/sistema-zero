@@ -4,6 +4,7 @@ import type {
   LessonSection,
   SectionProgressView,
 } from '@sistemazero/core/learning'
+import type { SceneVozes } from '@sistemazero/core/learning/scene'
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -380,6 +381,12 @@ export interface DialogueBlock {
   kind: 'dialogue'
   pose?: DialoguePose
   text: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gerado na autoria (core `voz.ts`). Mirror do members.
+   * ⚠️ Sem ele o balão não ganha botão de ouvir — aqui NÃO há queda para a voz do sistema, que
+   * seria outro personagem falando no lugar do Zappy.
+   */
+  vozes?: SceneVozes
 }
 export interface VideoBlock {
   kind: 'video'

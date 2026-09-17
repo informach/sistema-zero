@@ -7,6 +7,7 @@ import {
   type SceneSetup,
   SETUP_LIMITS,
 } from './actions'
+import { isSceneAudioUrl } from './audio-url'
 import { castText, isSceneCast, type SceneCast } from './cast'
 import {
   type SceneModel,
@@ -18,10 +19,12 @@ import {
 import { openScene, stepScene } from './engine'
 import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
 import type { SceneStart } from './state'
+import { isSceneVozes, type SceneVozes } from './voz'
 
 export * from './actions'
 // O ateliê do lote 5 do Raio-X: as réguas do fogo, do espelho, da lupa e da folha.
 export * from './atelie'
+export * from './audio-url'
 export * from './cast'
 export * from './catalog'
 export * from './engine'
@@ -37,6 +40,8 @@ export * from './questions'
 export * from './readout'
 export * from './session'
 export * from './state'
+// A voz do Zappy: o dicionário `texto falado → MP3` e a regra do tudo-ou-nada da fala.
+export * from './voz'
 
 /**
  * As duas atividades de cena.
@@ -56,6 +61,13 @@ export interface DemonstrationActivity {
   /** Sem roteiro próprio, vale o do modelo. O professor só escreve quando quer outro. */
   script?: SceneStep[]
   instructionAudioUrl?: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gerado na autoria. Ver `voz.ts`.
+   *
+   * ⚠️ O `instructionAudioUrl` acima continua valendo e GANHA dele na instrução: ele é a
+   * narração escolhida à mão para esta cena, e escolha de quem autora nunca perde para o lote.
+   */
+  vozes?: SceneVozes
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
   /** De onde a cena parte. ⚠️ Sem `goals`: a demonstração não cobra meta nenhuma. */
@@ -79,6 +91,13 @@ export interface ExperimentationActivity {
   /** Só `gravity` e `impulse`: a altura de partida do salto. */
   initialImpulse?: number
   instructionAudioUrl?: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gerado na autoria. Ver `voz.ts`.
+   *
+   * ⚠️ O `instructionAudioUrl` acima continua valendo e GANHA dele na instrução: ele é a
+   * narração escolhida à mão para esta cena, e escolha de quem autora nunca perde para o lote.
+   */
+  vozes?: SceneVozes
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
   /** De onde a cena parte e o que ela cobra. Ver `SceneSetup`. */
@@ -98,26 +117,12 @@ const pilhaValida = (value: Record<string, unknown>) =>
   (SCENE_PILHAS.some((p) => p === value.pilha) && scenePilhaAceita(value.scene as SceneId))
 
 const isScene = (v: unknown): v is SceneId => SCENE_IDS.some((s) => s === v)
-// ⚠️ O `[^/]` não é enfeite: sem ele, `//host-qualquer/audio.mp3` passa como se fosse
-// caminho local e o player carrega áudio de terceiro, pelo protocolo da página.
-const AUDIO = /^(https:\/\/|\/[^/])/
-
-/**
- * O endereço do áudio da instrução: `https://` ou um caminho do próprio site.
- *
- * ⚠️ EXPORTADA para o editor do admin fazer a mesma pergunta em vez de copiar o regex. O editor
- * antes derivava "áudio inválido" de `!isSceneActivity(...)`, que também é falso por roteiro
- * inválido e por impulso fora de faixa — e a tela acusava um `https://` perfeito.
- */
-export function isSceneAudioUrl(value: unknown): boolean {
-  if (value === undefined) return true
-  return typeof value === 'string' && value.length <= 4000 && AUDIO.test(value)
-}
 const validAudio = isSceneAudioUrl
 
 export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (!isSceneVozes(value.vozes)) return false
   if (!pilhaValida(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   // ⚠️ Meta é assunto de quem experimenta. Numa demonstração a lista não teria efeito nenhum,
@@ -146,6 +151,7 @@ export function isDemonstrationActivity(value: unknown): value is DemonstrationA
 export function isExperimentationActivity(value: unknown): value is ExperimentationActivity {
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
+  if (!isSceneVozes(value.vozes)) return false
   if (!pilhaValida(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene)) return false
@@ -330,6 +336,19 @@ export function sceneActivityForReading(value: unknown): unknown {
     const caso = goals.length ? { ...semMetas, goals } : semMetas
     const { setup: _caso, ...semCaso } = value
     atividade = Object.keys(caso).length ? { ...value, setup: caso } : semCaso
+  }
+  /**
+   * ⚠⚠ Dicionário de voz inválido SAI, em vez de derrubar a cena.
+   *
+   * É a mesma arapuca do `revealOn`: o `isPublicInteractiveBlock` roda no NAVEGADOR, contra o core
+   * que ESTE app tem. Com o members um deploy à frente (a ordem de deploy manda members primeiro),
+   * um teto novo em `VOZ_LIMITS` faria o kids antigo recusar a atividade inteira — "esta atividade
+   * precisa de uma configuração válida" no lugar da cena, por causa do ÁUDIO. Sem o dicionário a
+   * cena abre igual e o "Ouvir" cai na voz do navegador, que é o pior aceitável.
+   */
+  if (atividade.vozes !== undefined && !isSceneVozes(atividade.vozes)) {
+    const { vozes: _voz, ...semVozes } = atividade
+    atividade = semVozes
   }
   if (value.type === 'demonstration' && Array.isArray(value.script)) {
     const conhecidas = sceneGoalIds(scene)

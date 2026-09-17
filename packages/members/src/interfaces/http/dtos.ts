@@ -1045,6 +1045,9 @@ const DialogueBlockSchema = t.Object({
   // Texto SIMPLES (sem markdown) e curto de propósito: o balão existe para não ser
   // parede de texto. Ver DIALOGUE_MAX_LENGTH no domínio.
   text: t.String({ minLength: 1, maxLength: 400 }),
+  // A voz do Zappy. ⚠⚠ Campo fora do DTO some no `normalize` do Elysia: sem esta linha a
+  // publicação gravaria o balão mudo, sem erro nenhum.
+  vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
 })
 const VideoBlockSchema = t.Object({
   kind: t.Literal('video'),

@@ -1,9 +1,16 @@
 'use client'
 
+import { useZappyFala } from '@sistemazero/member-shell/components/zappy-fala-context'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
-import { KidsMascot, type MascotExpression, ZAPPY_RIVE_COM_SOM, ZAPPY_RIVE_LIGADO } from './mascot'
+import {
+  KidsMascot,
+  type MascotExpression,
+  tocandoDoZappy,
+  ZAPPY_RIVE_COM_SOM,
+  ZAPPY_RIVE_LIGADO,
+} from './mascot'
 import { useReducedMotion } from './room/use-reduced-motion'
 
 /**
@@ -85,14 +92,24 @@ export function KidsMascotAnimated({
   sound?: boolean
 }) {
   const semMovimento = useReducedMotion()
+  /**
+   * ⭐ Quem tem botão "Ouvir" na tela rege a BOCA daqui (o balão do bloco `dialogue` e a faixa da
+   * instrução da cena proveem o contexto no member-shell). Sem provider — que é a maioria das
+   * telas — `tocando` é `undefined` e nada muda: o mascote anima como sempre animou.
+   */
+  const fala = useZappyFala()
+  const tocando = tocandoDoZappy(expression, fala)
+  /** O que REMONTA o canvas: trocar de arquivo (pose) ou trocar de regime (livre × regido). */
+  const montagem = `${expression}:${tocando === undefined ? 'livre' : 'voz'}`
   const [anima, setAnima] = useState(false)
-  // ⚠️⚠️ O estado da CARGA anda junto com a pose, num objeto só. O `useRive` lê os
-  // parâmetros UMA vez (as dependências dele são o canvas, um booleano de "tem
-  // params" e a instância — nunca o `src`), então trocar de expressão não troca o
-  // arquivo: por isso a `key` no canvas lá embaixo. E, remontando, o "já desenhou"
-  // da pose anterior precisa cair junto, senão o WebP da pose nova não aparece
-  // durante a carga dela — e um `.riv` que falhou condenaria todas as seguintes.
-  const [carga, setCarga] = useState({ pose: expression, pronto: false, falhou: false })
+  // ⚠️⚠️ O estado da CARGA anda junto com a MONTAGEM, num objeto só. O `useRive` lê
+  // os parâmetros UMA vez (as dependências dele são o canvas, um booleano de "tem
+  // params" e a instância — nunca o `src` nem o `autoplay`), então trocar de expressão
+  // não troca o arquivo e trocar de regime não troca o autoplay: por isso a `key` no
+  // canvas lá embaixo. E, remontando, o "já desenhou" da montagem anterior precisa cair
+  // junto, senão o WebP não aparece durante a carga da nova — e um `.riv` que falhou
+  // condenaria todas as seguintes.
+  const [carga, setCarga] = useState({ montagem, pronto: false, falhou: false })
 
   // ⚠️ A decisão de animar NASCE `false` e só muda num efeito, mesmo quando o
   // `useReducedMotion` já saberia responder na primeira renderização. O servidor
@@ -105,7 +122,7 @@ export function KidsMascotAnimated({
 
   // Ajuste de estado durante o render (padrão do React para prop que muda): zera na
   // mesma passada, sem o quadro extra que um efeito custaria.
-  if (carga.pose !== expression) setCarga({ pose: expression, pronto: false, falhou: false })
+  if (carga.montagem !== montagem) setCarga({ montagem, pronto: false, falhou: false })
 
   if (!anima || carga.falhou) {
     return <KidsMascot expression={expression} className={cn(className, stillClassName)} />
@@ -124,13 +141,18 @@ export function KidsMascotAnimated({
           className={cn('absolute inset-0 size-full', stillClassName)}
         />
       )}
+      {/* ⚠️⚠️ A `key` carrega a EXPRESSÃO e o REGIME: o `useRive` lê os parâmetros uma vez (as
+          deps dele não têm `src` nem `autoplay`), então um canvas montado solto que depois passe
+          a ser regido pela voz seguiria rodando sozinho, sem erro nenhum. Na cena isso acontece
+          de verdade — o `temVoz` do navegador só liga depois do `voiceschanged`. */}
       <MascotRiveCanvas
-        key={expression}
+        key={montagem}
         expression={expression}
         className="size-full"
         silencioso={!(sound ?? ZAPPY_RIVE_COM_SOM[expression])}
-        onPronto={() => setCarga({ pose: expression, pronto: true, falhou: false })}
-        onFalhou={() => setCarga({ pose: expression, pronto: false, falhou: true })}
+        tocando={tocando}
+        onPronto={() => setCarga({ montagem, pronto: true, falhou: false })}
+        onFalhou={() => setCarga({ montagem, pronto: false, falhou: true })}
       />
     </span>
   )

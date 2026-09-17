@@ -1,4 +1,5 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import { createElement } from 'react'
 
 GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -69,7 +70,21 @@ afterEach(() => {
  * precisa de WebGL e mora no e2e.
  */
 const { mock } = await import('bun:test')
+/**
+ * ⚠️ O falso EMITE o `data-tocando`: é como o teste vê o regime que o canvas recebeu (parado,
+ * tocando, ou solto como sempre) sem WebGL nenhum. Ele é um `<span>` vazio e decorativo — quem
+ * conta nós ou `aria-hidden` no balão olha o caso ADULTO, que não tem mascote.
+ *
+ * ⚠️⚠️ Ele NÃO chama `onPronto` sozinho — guarda a função em `zappyRiveDesenhou`. Chamar na
+ * montagem tiraria o WebP de baixo em TODA suíte (e os testes que provam "a primeira pintura é
+ * sempre o WebP" passariam a medir outra coisa); deixá-la ao alcance de quem precisa é o que
+ * permite testar o que acontece DEPOIS de o Rive desenhar — por exemplo, se a remontagem do
+ * canvas devolve o WebP enquanto o novo carrega.
+ */
 mock.module('./src/components/kids/mascot-rive-canvas', () => ({
-  MascotRiveCanvas: () => null,
+  MascotRiveCanvas: ({ tocando, onPronto }: { tocando?: boolean; onPronto: () => void }) => {
+    ;(globalThis as Record<string, unknown>).zappyRiveDesenhou = onPronto
+    return createElement('span', { 'data-tocando': String(tocando), 'aria-hidden': 'true' })
+  },
   aquecerRuntimeRive: () => {},
 }))

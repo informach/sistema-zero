@@ -266,15 +266,12 @@ export function anuncioDaEscolha(
   return `Seu palpite: ${semPontoFinal(escolhida.label)}. ${demonstracao ? 'Agora assista.' : 'A cena abriu.'}`
 }
 
-/** A pergunta do palpite como a voz lê: o enunciado e as opções, na ordem da tela. */
-export function falaDaPergunta(
-  rotulo: string,
-  pergunta: { prompt: string; choices: readonly { label: string }[] },
-): string {
-  const opcoes = pergunta.choices.map((c, i) =>
-    i === 0 ? `Pode ser: ${semPontoFinal(c.label)}.` : `Ou: ${semPontoFinal(c.label)}.`,
-  )
-  return [`${rotulo}.`, pergunta.prompt, ...opcoes].join(' ')
-}
+/**
+ * A pergunta do palpite como a voz lê. ⚠⚠ A função MUDOU DE CASA (17/09/2026): ela mora no core
+ * (`scene/voz.ts`) porque o gerador da voz do Zappy, no admin, precisa produzir a MESMA string — a
+ * chave do dicionário é o texto falado. Duas cópias que divirjam num "Pode ser:" dão um áudio que
+ * o player nunca encontra, sem erro nenhum. Reexportada daqui só para quem já a importava.
+ */
+export { falaDaPergunta } from '@sistemazero/core/learning/scene'
 
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')
