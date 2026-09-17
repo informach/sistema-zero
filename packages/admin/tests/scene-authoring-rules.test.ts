@@ -350,3 +350,39 @@ describe('⚠️⚠️ a previsão própria na troca de cena (review do lote 2 d
     expect(trocarTipo(mundo, 'demonstration').bloco.prediction?.revealOn).toBe('hidden')
   })
 })
+
+describe('“esta cena entra sem a pergunta do fim” na troca de tipo', () => {
+  const semPergunta: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'Descubra o limite da tela',
+    instructions: 'Ligue a borda.',
+    hints: [],
+    required: true,
+    activity: { type: 'experimentation', scene: 'stage-size' },
+    semPerguntaFinal: true,
+  }
+
+  test('⚠️⚠️ ela NÃO atravessa para os outros três tipos', () => {
+    // A caixa só existe na experimentação (é a única que herda pergunta do modelo) e some junto
+    // com o tipo. Carregada para fora, deixaria o bloco recusado para sempre sem caminho de
+    // volta na tela — o mesmo defeito que já tirou daqui a pergunta anexa e o impulso inicial.
+    for (const tipo of ['demonstration', 'question', 'html'] as const) {
+      const { bloco } = trocarTipo(semPergunta, tipo)
+      expect(bloco.semPerguntaFinal, tipo).toBeUndefined()
+    }
+    // ⚠️ E o bloco continua PUBLICÁVEL na irmã. Os outros dois ficam de fora porque já nascem
+    // pedindo trabalho por regras ANTERIORES a este campo: a "Pergunta curta" fabrica a pergunta
+    // em branco (o convite a escrevê-la) e o HTML essencial exige uma pergunta corrigida no
+    // servidor. Os dois recusariam igual sem o `semPerguntaFinal` na história.
+    expect(isInteractiveBlock(trocarTipo(semPergunta, 'demonstration').bloco)).toBe(true)
+  })
+
+  test('ficar na experimentação (trocando de cena) preserva a escolha', () => {
+    const { bloco } = trocarTipo(semPergunta, 'experimentation')
+    expect(bloco.semPerguntaFinal).toBe(true)
+    expect(isInteractiveBlock(bloco)).toBe(true)
+    const trocada = trocarCena(semPergunta, 'screen-reader')
+    expect(trocada.bloco.semPerguntaFinal).toBe(true)
+    expect(isInteractiveBlock(trocada.bloco)).toBe(true)
+  })
+})

@@ -3,8 +3,6 @@ import type { SceneAction, SceneId, SceneSetup } from './actions'
 import { openScene, stepScene } from './engine'
 import { sceneSituation } from './readout'
 import {
-  hydrateSceneState,
-  isSceneState,
   LUGARES_NAO_SORTEADOS,
   PLACAR_NAO_VISTO,
   type SceneState,
@@ -361,34 +359,5 @@ describe('lives: o ACERTO muda o placar, a BATIDA muda os corações', () => {
     // Sem vidas, nem o tiro soma.
     c.faz({ type: 'shoot' })
     expect(c.estado.lifeline.points).toBe(1)
-  })
-})
-
-describe('retratos guardados antes do lote 5 abrem', () => {
-  test('⚠️⚠️ os campos novos são completados campo a campo, e a caixa com número já existe', () => {
-    const base = crianca('variable').faz(
-      { type: 'store', value: 0 },
-      { type: 'store', value: 7 },
-    ).estado
-    const antigo = JSON.parse(JSON.stringify(base))
-    delete antigo.match.seen
-    delete antigo.match.cleared
-    delete antigo.speed.spots
-    delete antigo.drive.trailX
-    delete antigo.drive.trailY
-    delete antigo.drive.prevX
-    delete antigo.drive.prevY
-    delete antigo.drive.steps
-    delete antigo.box.created
-    delete antigo.lifeline.shots
-    delete antigo.lifeline.last
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.box.created).toBe(true)
-    expect(hidratado.match.seen).toEqual([...PLACAR_NAO_VISTO])
-    expect(hidratado.speed.spots).toEqual([...LUGARES_NAO_SORTEADOS])
-    expect(hidratado.drive.trailX).toEqual([hidratado.drive.x])
-    expect(hidratado.lifeline).toMatchObject({ shots: 0, last: 'nada' })
   })
 })

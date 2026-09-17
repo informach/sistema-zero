@@ -9,7 +9,6 @@ import {
   type ExperimentSession,
   packExperiment,
   readSceneSegment,
-  SCENE_CLOCK_MARK,
   SCENE_MODELS,
   SCENE_QUESTIONS,
   type SceneCheckpoint,
@@ -20,10 +19,10 @@ import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesso
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
- * ⚠️⚠️ O player novo contra um members de OUTRA versão das regras (full review final de dados e
- * deploy, MÉDIO-1). O pipeline não garante o members antes do kids: com este player e o members de
- * antes, 32 de 142 blocos concluíam na tela e gravavam `passed:false`, e 10 caíam em 400 ("Sem
- * internet" para sempre). Relatório: `tmp/storyboard/implementacao/consertos-full-dados.md`.
+ * ⚠️⚠️ O que o player faz quando o servidor RECUSA o que ele produz (full review final de dados e
+ * deploy, MÉDIO-1). Um 400 numa gravação de cena não é falha de rede: tentar de novo não resolve, e
+ * "Sem internet… a gente guarda quando voltar" prometia o que nunca acontece.
+ * Relatório: `tmp/storyboard/implementacao/consertos-full-dados.md`.
  *
  * ⚠️ O `test-setup.ts` só devolve os globais da JANELA: cada teste aqui restaura o `fetch` no `finally`.
  */
@@ -38,19 +37,16 @@ const mundo: InteractiveBlock = {
 }
 
 /**
- * Um members em miniatura. `eco`: devolve o marcador do segmento (o members com as regras deste
- * player); sem ele, é o members de antes. `recusa`: a tentativa volta `passed:false` (a cena não
- * fechou lá). `statusDoSegmento`: a gravação do segmento responde com esse erro.
+ * Um members em miniatura. `recusa`: a tentativa volta `passed:false` (a cena não fechou lá).
+ * `statusDoSegmento`: a gravação do segmento responde com esse erro.
  */
 function servidor({
-  eco,
   recusa = false,
   statusDoSegmento,
 }: {
-  eco: boolean
   recusa?: boolean
   statusDoSegmento?: number
-}) {
+} = {}) {
   const start = sceneStart(mundo.activity as { type: 'experimentation'; scene: 'world' })
   let checkpoint: SceneCheckpoint<ExperimentSession> | null = null
   const tentativas: Record<string, unknown>[] = []
@@ -59,7 +55,6 @@ function servidor({
     sceneSessionId: checkpoint?.sessionId ?? '',
     sceneSegmentId: checkpoint?.segmentId ?? '',
     sceneCheckpoint: checkpoint ? packExperiment('world', checkpoint.session) : [],
-    ...(eco ? { sceneClock: SCENE_CLOCK_MARK } : {}),
   })
   const progresso = (result: unknown = null) => ({
     blockId: 'bloco',
@@ -142,37 +137,9 @@ async function concluirEResponder(certa: boolean) {
   )
 }
 
-describe('⚠️⚠️ MÉDIO-1: o player não afirma a conclusão que um servidor de outra versão recusou', () => {
-  test('⚠️⚠️ a resposta CERTA recusada pelo members de antes: a cena para e a conclusão sai da tela', async () => {
-    const { tentativas, restaurar } = servidor({ eco: false, recusa: true })
-    try {
-      aluno('crianca-1')
-      await concluirEResponder(true)
-      await waitFor(
-        () => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'),
-        {
-          timeout: 5000,
-        },
-      )
-      expect(tentativas).toHaveLength(1)
-      expect(screen.getByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
-      // A conclusão que o servidor recusou não fica afirmada, e a recusa não vira "resposta errada".
-      expect(screen.queryByText('Agora explique')).toBeNull()
-      // ⚠️ Fora da região de anúncios: o que ela já disse fica no DOM até o próximo anúncio, e o
-      // recado novo chega pelo `role="alert"`.
-      expect(
-        screen.queryAllByText(/Você descobriu/).filter((el) => !el.closest('[aria-live]')),
-      ).toEqual([])
-      expect(screen.queryByText(/Ainda não é essa/)).toBeNull()
-      expect(screen.queryByText(/Sem internet/)).toBeNull()
-    } finally {
-      restaurar()
-    }
-  })
-
-  test('e o members com as MESMAS regras segue dizendo "Ainda não é essa" à resposta errada', async () => {
-    // O par de controle: a mesma recusa, com o marcador devolvido, é da criança.
-    const { restaurar } = servidor({ eco: true })
+describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação que o servidor recusou', () => {
+  test('a resposta ERRADA continua sendo da criança: "Ainda não é essa", sem recado de erro', async () => {
+    const { restaurar } = servidor()
     try {
       aluno('crianca-2')
       await concluirEResponder(false)
@@ -186,8 +153,8 @@ describe('⚠️⚠️ MÉDIO-1: o player não afirma a conclusão que um servid
     }
   })
 
-  test('⚠️⚠️ o segmento recusado com 400 (um gesto que o members de antes não conhece) não é "Sem internet"', async () => {
-    const { restaurar } = servidor({ eco: false, statusDoSegmento: 400 })
+  test('⚠️⚠️ o segmento recusado com 400 não é "Sem internet": a saída é o "Abrir de novo"', async () => {
+    const { restaurar } = servidor({ statusDoSegmento: 400 })
     try {
       aluno('crianca-3')
       fireEvent.click(
@@ -210,7 +177,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não afirma a conclusão que um servid
   })
 
   test('BAIXO-6: o 409 diz que a atividade mudou OU está aberta em outro lugar', async () => {
-    const { restaurar } = servidor({ eco: true, statusDoSegmento: 409 })
+    const { restaurar } = servidor({ statusDoSegmento: 409 })
     try {
       aluno('crianca-4')
       fireEvent.click(

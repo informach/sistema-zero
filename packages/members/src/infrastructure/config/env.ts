@@ -113,14 +113,6 @@ const EnvSchema = z
     AI_LIMIT_DAILY: z.coerce.number().int().positive().default(50),
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
 
-    // Recusar (409) o player de cena de OUTRA VERSÃO DAS REGRAS: segmento sem o marcador
-    // `sceneClock` igual ao `SCENE_CLOCK_MARK` do core, em qualquer cena. ⚠️ O nome é do relógio
-    // de quadro fixo, mas o marcador é a versão das regras (sobe quando muda regra de meta que o
-    // player decide). Desligada por padrão; liga DEPOIS de o kids e o community com o player novo
-    // estarem no ar, e desliga antes de um members com marcador novo ou de qualquer rollback.
-    // Procedimento: `docs/aulas-interativas/raio-x-implantacao.md`.
-    SCENE_CLOCK_STRICT: optionalBool(false),
-
     // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
     // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;
     // advisory lock garante 1 réplica por ciclo). Reprocessar entrega antiga é

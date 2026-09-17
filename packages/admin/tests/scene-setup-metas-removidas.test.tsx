@@ -9,9 +9,9 @@ const { createRoot } = await import('react-dom/client')
 const { SceneSetupEditor } = await import('../src/components/editor/scene-setup-editor')
 
 /**
- * ⚠️⚠️ O bloco do banco citando uma meta que SAIU do catálogo (full review final de dados e deploy,
- * MÉDIO-3). O editor só desenha as caixas das metas que existem: sem o aviso, a professora lia
- * "desmarque as descobertas" sem ter o que desmarcar, e o bloco não salvava.
+ * ⚠️⚠️ O caso citando um objetivo que a cena NÃO tem (full review final de dados e deploy, MÉDIO-3).
+ * O editor só desenha as caixas dos objetivos que existem: sem o aviso, a professora lia "desmarque
+ * as descobertas" sem ter o que desmarcar, e o bloco não salvava. Quem autora precisa VER o erro.
  */
 async function montar(inicial: SceneActivity) {
   const container = document.createElement('div')
@@ -49,7 +49,7 @@ async function montar(inicial: SceneActivity) {
   }
 }
 
-test('⚠️⚠️ a meta que saiu aparece no aviso, e "Tirar do caso" deixa o caso salvável', async () => {
+test('⚠️⚠️ o objetivo que não existe é NOMEADO, e "Tirar do caso" deixa o caso salvável', async () => {
   const tela = await montar({
     type: 'experimentation',
     scene: 'coordinates',
@@ -57,7 +57,7 @@ test('⚠️⚠️ a meta que saiu aparece no aviso, e "Tirar do caso" deixa o c
   })
   try {
     expect(tela.aviso()?.textContent).toContain('same-x')
-    expect(tela.aviso()?.textContent).toContain('saiu da cena')
+    expect(tela.aviso()?.textContent).toContain('não é um objetivo desta cena')
     // O aviso genérico não aparece junto: o que falta resolver é só a meta que saiu.
     expect(tela.container.textContent).not.toContain('Este caso não vale para a cena escolhida')
     await tela.tirar()
@@ -69,25 +69,25 @@ test('⚠️⚠️ a meta que saiu aparece no aviso, e "Tirar do caso" deixa o c
   }
 })
 
-test('a meta com sucessora diz qual entra no lugar, e a troca é feita', async () => {
+test('⚠️ nenhum objetivo entra sozinho no lugar: o aviso lista os dois e a troca é DELA', async () => {
   const tela = await montar({
     type: 'experimentation',
     scene: 'sheet-vs-sprite',
-    setup: { goals: ['cut', 'two-cells'] },
+    setup: { goals: ['cut', 'two-cells', 'crop-whole'] },
   })
   try {
     const texto = tela.aviso()?.textContent ?? ''
     expect(texto).toContain('cut')
-    expect(texto).toContain('Achou o recorte que mostra uma nave inteira')
     expect(texto).toContain('two-cells')
     await tela.tirar()
+    // Só o que ela tinha marcado de verdade sobra: nada é escolhido no lugar do que saiu.
     expect(tela.activity.setup).toEqual({ goals: ['crop-whole'] })
   } finally {
     await tela.desmontar()
   }
 })
 
-test('um caso que só tinha metas que saíram some inteiro (caso vazio não é caso)', async () => {
+test('um caso que só tinha objetivos inexistentes some inteiro (caso vazio não é caso)', async () => {
   const tela = await montar({
     type: 'experimentation',
     scene: 'hitbox',

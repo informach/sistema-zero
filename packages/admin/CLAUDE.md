@@ -50,6 +50,12 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
   uma ação por engano ficava com ela para sempre.
 - O editor AVISA um caso que termina com um salto que não saiu do chão (`saltoParadoNoCaso`): o motor
   abre esse caso sem o salto. Trava: `tests/scene-authoring.test.tsx`.
+- ⚠️⚠️ **Objetivo que a cena não tem é NOMEADO, nunca tolerado em silêncio** (`sceneUnknownSetupGoals`
+  do core): o aviso lista cada id, diz que o rascunho guarda mas a aula não publica enquanto ele
+  estiver ali, e oferece "Tirar do caso" — que só REMOVE, nunca escolhe outro objetivo no lugar. A
+  publicação repete a mesma frase e NOMEIA os ids (`assertBlockCoherent` no members), porque é ela
+  quem recusa. Quem autora é a dona: ela precisa ver o erro. Para a criança a leitura do core descarta o id, então a aula não some. Trava:
+  `tests/scene-setup-metas-removidas.test.tsx`.
 
 ### O roteiro da demonstração (`editor/scene-authoring.tsx`)
 
@@ -76,15 +82,14 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
   `<select>` deixa de escolher uma delas (clicar em "Desligar a sombra" selecionava "Ligar a sombra") e
   o React avisa só no console. Par novo de irmãs entra no `DISTINGUE`. O `inspect` fica sem `kind` de
   propósito: a lupa vale para as duas pedras e um roteiro antigo com a de vetor casa com a única opção.
-- ⚠️⚠️ **Nomes por cena e ação legada: UM mecanismo, `POR_CENA.<cena>`.** `rotulos` troca o nome onde
-  a bancada da cena fala outra língua (`acceleration` "Passar 5 segundos", `restart` "Tocar na tela",
-  `hitbox` "Mudar o tamanho da área do Dino", com o campo dizendo a porcentagem do Dino, como a
-  bancada); `esconder` tira da lista a ação que a bancada não
-  oferece mais: `clock` na `acceleration` (anda a base sem nascer cacto), `move`/`collide` na `restart`
-  (terminam a partida sem cacto), `paint`/`mirror` na `symmetry`, `wireframe` na `mesh` e `mode` na
-  `contact` (nada lê o `hit.mode`). As escondidas continuam na `TODAS` e LEGAIS (sessões e roteiros
-  salvos), e um passo que já usa uma aparece "<nome> · ação antiga" (`rotuloDaAcaoAntiga`); "Ação
-  incompatível · revisar" é só para ação ilegal na cena. Trava: `tests/scene-action-fields.test.tsx`.
+- ⚠️⚠️ **Nomes por cena: `POR_CENA.<cena>.rotulos`**, onde a bancada da cena fala outra língua
+  (`acceleration` "Passar 5 segundos", `restart` "Tocar na tela", `hitbox` "Mudar o tamanho da área do
+  Dino", com o campo dizendo a porcentagem do Dino, como a bancada). ⚠️⚠️ **Não existe lista de ações
+  escondidas**: ação que sai da bancada sai do CORE (a funcionalidade nasceu na primeira versão e não
+  carrega gesto de antes), e quem filtra é o `isSceneAction`. Um passo que use uma ação que a cena não
+  aceita aparece "<nome> · não vale nesta cena" (`rotuloDaAcaoIncompativel`) — o motor trata ilegal como
+  no-op, então sem o rótulo o passo parecia certo e não fazia nada; "Ação incompatível · revisar" é para
+  a que não está na lista `TODAS`. Trava: `tests/scene-action-fields.test.tsx`.
 - ⚠️ **O nome não entrega a resposta**: na `mesh` o `see-points` é "A pele: inteira / transparente /
   sem pele" (o "Ver os pontos" respondia a previsão da cena).
 - **Valor de fábrica que não quebra o roteiro**: o `approach` nasce em 0 (encostados), porque na
@@ -157,7 +162,7 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
   de "registro não confere com esta cena" (informação sobre a criança × alarme sobre o sistema). O
   resumo de cada cena usa as réguas do core (`onionFireLength`, `scenePickLetter`) e o que o estado
   guarda (o espelho conta os gestos em `mirror.strokes` e `mirror.copies`). Na `contact` ele não fala
-  de "pergunta contínua / por acontecimento" (o `hit.mode` não é lido por nada).
+  de "pergunta contínua / por acontecimento": é uma regra que saiu da cena.
 - ⚠️ **A frase escolhida na pergunta anexa aparece nos QUATRO tipos** (`conclusaoLines`, somada às
   linhas de cada ramo): os ramos de cena fazem `return` com as próprias linhas, e a conclusão ficava
   invisível justamente onde ela passou a decidir o `passed`.

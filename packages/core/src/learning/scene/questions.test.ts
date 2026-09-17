@@ -3,12 +3,15 @@ import type { InteractiveBlock } from '../index'
 import {
   blockCheckpoint,
   blockPrediction,
+  evaluateLearning,
   isInteractiveBlock,
   publicInteractiveBlock,
 } from '../index'
 import { SCENE_IDS, type SceneId } from './actions'
 import type { SceneCast } from './cast'
+import { sceneStart } from './index'
 import { SCENE_QUESTIONS } from './questions'
+import { initialExperiment, packExperiment, stepExperiment } from './session'
 
 const NAVE: SceneCast = {
   hero: { name: 'nave', gender: 'f' },
@@ -252,5 +255,138 @@ describe('os resolvedores', () => {
     expect(isInteractiveBlock(previsao({}, { shows: 'Olhe a tela.' }))).toBe(true)
     expect(isInteractiveBlock(previsao({}, { shows: '' }))).toBe(false)
     expect(isInteractiveBlock(previsao({}, { shows: 3 }))).toBe(false)
+  })
+})
+
+/**
+ * "Esta cena entra sem a pergunta do fim" (`semPerguntaFinal`), a decisão da dona de 17/09/2026.
+ *
+ * A Aula 1 do Corre Dino tem QUATRO cenas seguidas, e até aqui cada experimentação herdava a
+ * pergunta do modelo sem jeito nenhum de dispensá-la: com as quatro previsões, eram oito momentos
+ * de responder na primeira aula da criança. O campo é a única porta para "aqui ela só mexe" — e a
+ * régua dele é a de sempre: só onde tem efeito, e a cena continua concluindo sozinha.
+ */
+describe('a cena que entra sem a pergunta do fim', () => {
+  const semPergunta = (scene: SceneId = 'stage-size'): InteractiveBlock => ({
+    ...bloco(scene, 'experimentation'),
+    semPerguntaFinal: true,
+  })
+
+  test('a pergunta de fábrica não chega ao bloco, e a previsão continua chegando', () => {
+    const b = semPergunta()
+    expect(blockCheckpoint(b)).toBeUndefined()
+    // ⚠️ A previsão NÃO vai junto: ela é o palpite de ANTES, não vale nota, e a decisão foi manter
+    // as quatro. Tirar as duas com um campo só apagaria metade do ciclo sem ninguém pedir.
+    expect(blockPrediction(b)?.prompt).toBe(SCENE_QUESTIONS['stage-size'].prediction.prompt)
+    // E a mesma cena sem o campo segue recebendo a pergunta do modelo.
+    expect(blockCheckpoint(bloco('stage-size', 'experimentation'))?.prompt).toBe(
+      SCENE_QUESTIONS['stage-size'].explain.prompt,
+    )
+  })
+
+  test('⚠️ a pergunta ESCRITA no bloco vence, mesmo com o campo (linha crua do banco)', () => {
+    // O resolvedor roda sobre o conteúdo do banco, sem passar pelo guard. Os dois juntos são
+    // recusados na autoria; se uma linha antiga carregar os dois, a criança vê a que alguém
+    // escreveu, e não um bloco mudo.
+    const escrita = {
+      prompt: 'Por quê?',
+      choices: [
+        { id: 'a', label: 'Porque sim' },
+        { id: 'b', label: 'Porque não' },
+      ],
+      correctChoiceId: 'a',
+      explanation: 'É isso.',
+    }
+    expect(blockCheckpoint({ ...semPergunta(), checkpoint: escrita })).toEqual(escrita)
+  })
+
+  test('⚠️⚠️ a projeção pública não manda pergunta nenhuma, nem o campo, ao navegador', () => {
+    const publico = publicInteractiveBlock(semPergunta()) as unknown as Record<string, unknown>
+    expect(publico.checkpoint).toBeUndefined()
+    expect(publico.semPerguntaFinal).toBeUndefined()
+    expect(publico.prediction).toBeDefined()
+    expect(publicInteractiveBlock(bloco('stage-size', 'experimentation')).checkpoint).toBeDefined()
+  })
+
+  test('⚠️⚠️ só `true`, e só onde o campo TEM efeito', () => {
+    expect(isInteractiveBlock(semPergunta())).toBe(true)
+    expect(isInteractiveBlock(semPergunta('screen-reader'))).toBe(true)
+    // `false` seria um segundo jeito de dizer "com pergunta", que já é a ausência do campo.
+    expect(isInteractiveBlock({ ...semPergunta(), semPerguntaFinal: false })).toBe(false)
+    expect(isInteractiveBlock({ ...semPergunta(), semPerguntaFinal: 'nao' })).toBe(false)
+    // Duas ordens contrárias: tirar a pergunta e escrever a minha.
+    expect(
+      isInteractiveBlock({
+        ...semPergunta(),
+        checkpoint: {
+          prompt: 'Por quê?',
+          choices: [
+            { id: 'a', label: 'A' },
+            { id: 'b', label: 'B' },
+          ],
+          correctChoiceId: 'a',
+          explanation: 'É isso.',
+        },
+      }),
+    ).toBe(false)
+    // A demonstração NÃO tem pergunta de fábrica: ali o campo seria decoração silenciosa.
+    expect(isInteractiveBlock({ ...bloco('world', 'demonstration'), semPerguntaFinal: true })).toBe(
+      false,
+    )
+    expect(
+      isInteractiveBlock({
+        kind: 'interactive',
+        title: 'B',
+        instructions: 'I',
+        hints: [],
+        required: false,
+        activity: { type: 'html', html: '<p>oi</p>' },
+        semPerguntaFinal: true,
+      }),
+    ).toBe(false)
+  })
+})
+
+/**
+ * ⚠️⚠️ A prova que a decisão exige: SEM a pergunta, a cena ainda CONCLUI.
+ *
+ * Sem isto o campo seria uma armadilha: a seção da Aula 1 tem a cena como critério de conclusão
+ * (`completion.blockIds`), e um bloco que nunca fecha tranca a criança na primeira aula dela.
+ */
+describe('sem a pergunta, quem conclui é a descoberta', () => {
+  /** Os gestos da `stage-size`: ligar a borda, mexer nos números e chegar em 480 por 270. */
+  const CAMINHO = [
+    { type: 'border', visible: true },
+    { type: 'stage', width: 600, height: 300 },
+    { type: 'stage', width: 480, height: 270 },
+  ] as const
+
+  const sessaoCompleta = (b: InteractiveBlock) => {
+    const start = sceneStart(b.activity as Parameters<typeof sceneStart>[0])
+    let sessao = initialExperiment(start)
+    for (const acao of CAMINHO) sessao = stepExperiment(start, sessao, acao).session
+    return { sceneCheckpoint: packExperiment('stage-size', sessao) }
+  }
+
+  test('a descoberta sozinha conclui o bloco, e nada conclui antes dela', () => {
+    const b: InteractiveBlock = {
+      ...bloco('stage-size', 'experimentation'),
+      semPerguntaFinal: true,
+    }
+    expect(evaluateLearning(b, {}).passed).toBe(false)
+    expect(evaluateLearning(b, sessaoCompleta(b)).passed).toBe(true)
+  })
+
+  test('⚠️ a MESMA cena com a pergunta de fábrica ainda espera a resposta', () => {
+    // O contraste é o teste: sem ele, um `blockCheckpoint` devolvendo `undefined` por engano
+    // (uma cena sem pergunta no catálogo, por exemplo) passaria por "a dona pediu assim".
+    const b = bloco('stage-size', 'experimentation')
+    const guardado = sessaoCompleta(b)
+    expect(evaluateLearning(b, guardado).passed).toBe(false)
+    const pergunta = blockCheckpoint(b)
+    if (!pergunta) throw new Error('a experimentação herda a pergunta do modelo')
+    expect(evaluateLearning(b, { ...guardado, checkpoint: pergunta.correctChoiceId }).passed).toBe(
+      true,
+    )
   })
 })

@@ -10,7 +10,7 @@ import {
   avisoDoTempo,
   campoNumerico,
   camposDoEndereco,
-  rotuloDaAcaoAntiga,
+  rotuloDaAcaoIncompativel,
   sceneActionChoices,
 } from '../src/components/editor/scene-action-editor'
 
@@ -117,57 +117,53 @@ describe('⚠️ o editor avisa o tempo que não cai em quadro inteiro (review d
   })
 })
 
-describe('⚠️⚠️ os nomes por cena e as ações legadas (consertos do review da onda A do lote 5, B7)', () => {
+describe('⚠️⚠️ os nomes por cena (consertos do review da onda A do lote 5, B7)', () => {
   const nomes = (scene: SceneId) => sceneActionChoices(scene).map((c) => c.label)
 
-  test('acceleration: "Passar 5 segundos", e o relógio antigo (que não faz nascer cacto) some da lista', () => {
+  test('acceleration: "Passar 5 segundos" é o nome da bancada para o sorteio de velocidade', () => {
     expect(nomes('acceleration')).toContain('Passar 5 segundos')
     expect(nomes('acceleration')).not.toContain('Sortear velocidade')
-    expect(nomes('acceleration')).not.toContain('Avançar o relógio')
-    // Continua legal: o roteiro antigo abre, com o nome e a marca de antiga.
-    expect(isSceneAction({ type: 'clock' }, 'acceleration')).toBe(true)
-    expect(rotuloDaAcaoAntiga({ type: 'clock' }, 'acceleration')).toBe(
-      'Avançar o relógio · ação antiga',
-    )
-  })
-
-  test('restart: sem "Mover o obstáculo" nem "Provocar colisão", e o toque com o nome da bancada', () => {
-    expect(nomes('restart')).not.toContain('Mover o obstáculo')
-    expect(nomes('restart')).not.toContain('Provocar colisão')
-    expect(nomes('restart')).toContain('Tocar na tela')
     // A random segue com o nome de sempre.
     expect(nomes('random')).toContain('Sortear velocidade')
+  })
+
+  test('restart: o toque com o nome da bancada, e nada de terminar a partida sem cacto na pista', () => {
+    expect(nomes('restart')).toContain('Tocar na tela')
+    expect(nomes('restart')).not.toContain('Mover o obstáculo')
+    expect(nomes('restart')).not.toContain('Provocar colisão')
+    // E não é só a lista: o domínio recusa as duas na `restart`.
+    expect(isSceneAction({ type: 'move', distance: 60 }, 'restart')).toBe(false)
+    expect(isSceneAction({ type: 'collide' }, 'restart')).toBe(false)
+    expect(isSceneAction({ type: 'collide' }, 'score')).toBe(true)
   })
 
   test('hitbox: a largura diz a porcentagem da bancada', () => {
     const campo = campoNumerico({ type: 'resize', width: 64 })
     expect(campo?.label).toBe('Largura da área (100% do Dino)')
-    expect(rotuloDaAcaoAntiga({ type: 'shoot' }, 'hitbox')).toBe('Ação incompatível · revisar')
   })
 
-  test('⚠️⚠️ UM mecanismo de ação legada: escondida por cena, com nome e "· ação antiga" (full review)', () => {
-    // O `paint` e o `mirror` tinham saído da lista inteira e viravam "Ação incompatível" numa ação
-    // ainda legal; o `mode` (sem efeito nenhum) e o `wireframe` (repete "A pele") seguiam oferecidos.
-    const legadas: [SceneId, SceneAction, string][] = [
-      ['symmetry', { type: 'paint', column: 4 }, 'Pintar uma coluna · ação antiga'],
-      [
-        'symmetry',
-        { type: 'mirror', on: true, line: 6 },
-        'Ligar o espelho de eixo móvel · ação antiga',
-      ],
-      ['mesh', { type: 'wireframe', on: true }, 'Ligar o raio-X do modelo · ação antiga'],
-      ['contact', { type: 'mode', kind: 'ask' }, 'Perguntar se está encostando · ação antiga'],
-    ]
-    for (const [scene, acao, rotulo] of legadas) {
-      expect(isSceneAction(acao, scene)).toBe(true)
-      expect(sceneActionChoices(scene).some((c) => c.value.type === acao.type)).toBe(false)
-      expect(rotuloDaAcaoAntiga(acao, scene)).toBe(rotulo)
-    }
-    // Nenhuma ação LEGAL de cena nenhuma cai em "Ação incompatível": toda uma tem nome na lista.
+  test('⚠️⚠️ a ação que NÃO vale na cena é NOMEADA no editor, nunca escondida em silêncio', () => {
+    // O motor trata ação ilegal como no-op: sem este rótulo, o passo parecia certo e não fazia nada.
+    expect(rotuloDaAcaoIncompativel({ type: 'shoot' }, 'restart')).toBe(
+      'Atirar · não vale nesta cena',
+    )
+    expect(rotuloDaAcaoIncompativel({ type: 'move', distance: 60 }, 'restart')).toBe(
+      'Mover o obstáculo · não vale nesta cena',
+    )
+    // ⚠️ E ele CONFERE com o domínio: ação LEGAL fora da lista não é acusada de não valer na cena.
+    expect(rotuloDaAcaoIncompativel({ type: 'reset' }, 'restart')).toBe(
+      'Restaurar a cena · não cabe aqui',
+    )
+    expect(rotuloDaAcaoIncompativel({ type: 'move', distance: 60 }, 'hitbox')).toBe(
+      'Mover o obstáculo · não cabe aqui',
+    )
+    // Nenhuma ação dos roteiros de fábrica cai em "Ação incompatível": toda uma tem nome na lista.
     for (const scene of SCENE_IDS)
       for (const passo of SCENE_MODELS[scene].script)
-        for (const acao of passo.actions)
-          expect(rotuloDaAcaoAntiga(acao, scene)).not.toBe('Ação incompatível · revisar')
+        for (const acao of passo.actions) {
+          expect(isSceneAction(acao, scene), `${scene} · ${acao.type}`).toBe(true)
+          expect(rotuloDaAcaoIncompativel(acao, scene)).not.toBe('Ação incompatível · revisar')
+        }
   })
 
   test('⚠️ todo tipo de ação dos roteiros de fábrica é oferecido na lista da cena', () => {

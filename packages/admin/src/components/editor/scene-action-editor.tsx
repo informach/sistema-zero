@@ -59,7 +59,6 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Provocar colisão', value: { type: 'collide' } },
   { label: 'Voltar à tela inicial', value: { type: 'home' } },
   { label: 'Recomeçar o jogo', value: { type: 'restart' } },
-  { label: 'Avançar o relógio', value: { type: 'clock' } },
   { label: 'Restaurar a cena', value: { type: 'reset' } },
   // O núcleo do Iniciante 2D (15/09/2026).
   { label: 'Mudar a velocidade', value: { type: 'velocity', vx: 5, vy: 0 } },
@@ -79,8 +78,6 @@ const TODAS: { label: string; value: SceneAction }[] = [
   // ⚠️ Lote 5 do Raio-X (G5): o padrão é ENCOSTADOS (0). Na `contact` o encosto é a distância 0 dos
   // desenhos, e com 20 o primeiro passo do roteiro deixava de mostrar a batida que ele promete.
   { label: 'Mudar a distância entre os dois', value: { type: 'approach', distance: 0 } },
-  { label: 'Perguntar se está encostando', value: { type: 'mode', kind: 'ask' } },
-  { label: 'Esperar o acontecimento da batida', value: { type: 'mode', kind: 'event' } },
   { label: 'Atirar', value: { type: 'shoot' } },
   { label: 'Mudar a recarga', value: { type: 'recharge', seconds: 1 } },
   { label: 'Mover o alvo da mira', value: { type: 'target', x: 120, y: 220 } },
@@ -124,12 +121,7 @@ const TODAS: { label: string; value: SceneAction }[] = [
   },
   // As seis cenas do lote 4. Os valores de fábrica são os do roteiro de cada uma: o passo
   // grande do fantasma, a lupa que revela a borda, o pedaço 1 da folha.
-  // ⚠️ Lote 5 do Raio-X (G4): o ateliê com os nomes do Pinta. O `paint` de colunas e o `mirror` com
-  // linha do eixo continuam legais (roteiros antigos), e a `symmetry` os esconde em `POR_CENA`: o Pinta
-  // não tem eixo móvel. Ficam AQUI para o passo antigo que os usa ter nome ("· ação antiga").
-  { label: 'Pintar uma coluna', value: { type: 'paint', column: 4 } },
-  { label: 'Ligar o espelho de eixo móvel', value: { type: 'mirror', on: true, line: 6 } },
-  { label: 'Desligar o espelho de eixo móvel', value: { type: 'mirror', on: false, line: 6 } },
+  // ⚠️ Lote 5 do Raio-X (G4): o ateliê com os nomes do Pinta.
   { label: 'Mostrar o quadro 1', value: { type: 'frame', index: 1 } },
   { label: 'Mostrar o quadro 2', value: { type: 'frame', index: 2 } },
   { label: 'Ligar a prévia', value: { type: 'play', on: true } },
@@ -170,8 +162,6 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Girar a câmera (ou o modelo)', value: { type: 'orbit', yaw: 1, pitch: 1 } },
   // ⚠️ Os nomes da bancada (consertos do review da onda B do lote 5, G6).
   { label: 'Voltar para onde a câmera começou', value: { type: 'recenter' } },
-  { label: 'Ligar o raio-X do modelo', value: { type: 'wireframe', on: true } },
-  { label: 'Desligar o raio-X do modelo', value: { type: 'wireframe', on: false } },
   // Lote 5 do Raio-X (G6): os nomes da bancada nova ("A pele", "O estado mora"). ⚠️ "A pele" desde os
   // consertos do review da onda B: "Ver os pontos" respondia a previsão da `mesh`.
   { label: 'A pele: inteira', value: { type: 'see-points', level: 'nada' } },
@@ -201,12 +191,11 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   jump: ['input'],
   start: ['input'],
   sample: ['kind'],
-  // ⚠️ Sem `inspect: ['kind']` desde o lote 5 (G4): a lupa vale para as DUAS pedras, e um roteiro
-  // antigo com a pedra de vetor ainda precisa casar com a única opção da lista.
+  // ⚠️ Sem `inspect: ['kind']` desde o lote 5 (G4): a lupa vale para as DUAS pedras, então o tipo
+  // sozinho já é a identidade e a lista tem uma opção só.
   'mirror-mode': ['mode'],
   trace: ['piece'],
   crop: ['width'],
-  mode: ['kind'],
   count: ['kind'],
   frame: ['index'],
   define: ['field'],
@@ -221,8 +210,6 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   show: ['on'],
   play: ['on'],
   onion: ['on'],
-  mirror: ['on'],
-  wireframe: ['on'],
   'see-points': ['level'],
   'brain-scope': ['shared'],
   shade: ['on'],
@@ -275,47 +262,42 @@ export function avisoDoTempo(scene: SceneId, tempo: number, noCaso: boolean): st
 }
 
 /**
- * ⚠️⚠️ Os nomes POR CENA e as ações LEGADAS que a bancada não oferece (consertos do review da onda A do
- * lote 5, B7). Os rótulos acima são globais, e três cenas redesenhadas ficaram com nomes de outra coisa:
- * na `acceleration` o "Sortear velocidade" é o "Passar 5 segundos" da criança, e o "Avançar o relógio"
- * (`clock`) anda a base SEM nascer cacto (um roteiro com ele nunca mostra `old-speed`); na `restart`,
- * "Mover o obstáculo" e "Provocar colisão" terminam a partida sem cacto na pista. As escondidas
- * continuam LEGAIS (conteúdo antigo abre), e um passo que já as usa mostra "· ação antiga".
- * A chave é a `identidade` da ação.
- *
- * ⚠️⚠️ É o ÚNICO mecanismo de ação legada (full review de 16/09/2026). O `paint` e o `mirror` tinham
- * saído da lista `TODAS` em vez de entrar aqui, e o passo antigo que os usava aparecia como "Ação
- * incompatível · revisar" numa ação ainda legal; e o `mode` da `contact` e o `wireframe` da `mesh`
- * seguiam oferecidos: o primeiro não tem efeito nenhum (nada lê `hit.mode`), o segundo repete "A pele"
- * com outro nome. Ação que a bancada não oferece mais: fica em `TODAS` e é escondida aqui, por cena.
+ * ⚠️⚠️ Os nomes POR CENA (consertos do review da onda A do lote 5, B7). Os rótulos acima são globais, e
+ * três cenas redesenhadas ficaram com nomes de outra coisa: na `acceleration` o "Sortear velocidade" é o
+ * "Passar 5 segundos" da criança, e na `restart` o "Iniciar por toque" é "Tocar na tela". A chave é a
+ * `identidade` da ação.
  */
-const POR_CENA: Partial<
-  Record<SceneId, { rotulos?: Record<string, string>; esconder?: readonly SceneAction['type'][] }>
-> = {
-  acceleration: { rotulos: { 'sample:velocity': 'Passar 5 segundos' }, esconder: ['clock'] },
-  restart: { rotulos: { 'start:tap': 'Tocar na tela' }, esconder: ['move', 'collide'] },
+const POR_CENA: Partial<Record<SceneId, { rotulos?: Record<string, string> }>> = {
+  acceleration: { rotulos: { 'sample:velocity': 'Passar 5 segundos' } },
+  restart: { rotulos: { 'start:tap': 'Tocar na tela' } },
   hitbox: { rotulos: { resize: 'Mudar o tamanho da área do Dino' } },
-  symmetry: { esconder: ['paint', 'mirror'] },
-  mesh: { esconder: ['wireframe'] },
-  contact: { esconder: ['mode'] },
 }
 
 /** As ações que ESTA cena aceita. A legalidade é do domínio, não de uma lista daqui. */
 export function sceneActionChoices(scene: SceneId) {
   const cena = POR_CENA[scene]
-  return TODAS.filter(
-    (a) => isSceneAction(a.value, scene) && !cena?.esconder?.includes(a.value.type),
-  ).map((a) => {
+  return TODAS.filter((a) => isSceneAction(a.value, scene)).map((a) => {
     const rotulo = cena?.rotulos?.[identidade(a.value)]
     return rotulo ? { ...a, label: rotulo } : a
   })
 }
 
-/** O nome de uma ação LEGADA (legal na cena, fora da lista dela), para o passo que já a usa. */
-export function rotuloDaAcaoAntiga(action: SceneAction, scene: SceneId): string {
-  if (!isSceneAction(action, scene)) return 'Ação incompatível · revisar'
-  const antiga = TODAS.find((c) => identidade(c.value) === identidade(action))
-  return antiga ? `${antiga.label} · ação antiga` : 'Ação incompatível · revisar'
+/**
+ * O nome de uma ação que a lista desta cena não oferece, para o passo que a usa continuar abrindo
+ * no editor. ⚠️ O motor trata ação ilegal como no-op, então ela é um erro de autoria silencioso: o
+ * `<option>` NOMEIA o problema em vez de deixar o passo parecer certo.
+ *
+ * ⚠️⚠️ Ele CONFERE a legalidade com o domínio em vez de afirmá-la. Uma ação pode ficar fora da
+ * lista sem ser ilegal — o caso não oferece o `reset`, e a `identidade` deixaria de casar no dia em
+ * que a lista `TODAS` não cobrisse um valor de um campo de `DISTINGUE`. Sem esta conferência o
+ * editor diria à professora que uma ação legal "não vale nesta cena".
+ */
+export function rotuloDaAcaoIncompativel(action: SceneAction, scene: SceneId): string {
+  const conhecida = TODAS.find((c) => identidade(c.value) === identidade(action))
+  if (!conhecida) return 'Ação incompatível · revisar'
+  return isSceneAction(action, scene)
+    ? `${conhecida.label} · não cabe aqui`
+    : `${conhecida.label} · não vale nesta cena`
 }
 
 /**
@@ -390,8 +372,6 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
       ...L.shift,
       value: action.offset,
     }
-  if (action.type === 'paint')
-    return { label: 'Coluna do traço', field: 'column' as const, ...L.column, value: action.column }
   if (action.type === 'cut')
     return { label: 'Quadro do recorte', field: 'cell' as const, ...L.cell, value: action.cell }
   if (action.type === 'sprite')
@@ -470,17 +450,8 @@ export function camposDoEndereco(action: SceneAction, scene: SceneId) {
       { label: 'x', field: 'x' as const, ...SCENE_LIMITS.addressX, value: action.x },
       { label: 'y', field: 'y' as const, ...SCENE_LIMITS.addressY, value: action.y },
     ]
-  // ⚠️ O eixo do espelho e a lupa entram AQUI, e não no campo numérico solto, porque cada um
-  // viaja junto de um interruptor (`on`, `kind`): separá-los deixaria a ação meio escolhida.
-  if (action.type === 'mirror')
-    return [
-      {
-        label: 'linha do eixo',
-        field: 'line' as const,
-        ...SCENE_LIMITS.mirrorLine,
-        value: action.line,
-      },
-    ]
+  // ⚠️ A lupa entra AQUI, e não no campo numérico solto: o zoom viaja junto do interruptor
+  // (`kind`), e separá-los deixaria a ação meio escolhida.
   if (action.type === 'inspect')
     return [
       { label: 'aproximar', field: 'zoom' as const, ...SCENE_LIMITS.zoom, value: action.zoom },
@@ -640,7 +611,9 @@ export function SceneActionEditor({
                 </option>
               ))}
               {!choices.some((c) => identidade(c.value) === identidade(action)) && (
-                <option value={identidade(action)}>{rotuloDaAcaoAntiga(action, scene)}</option>
+                <option value={identidade(action)}>
+                  {rotuloDaAcaoIncompativel(action, scene)}
+                </option>
               )}
             </Select>
             {numero && (

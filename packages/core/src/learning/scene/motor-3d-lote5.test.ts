@@ -1,43 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 import { isSceneAction } from './actions'
 import { openScene, stepScene } from './engine'
-import { DELTA_RACE, hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
+import { hydrateSceneState, initialScene } from './state'
 
 /**
- * Os contratos de ESTADO do lote 5 do Raio-X no motor e na porta do 3D (G6): o retrato de antes abre,
- * o caso do professor não fecha meta por ela e as duas ações novas só valem na cena delas.
+ * Os contratos de ESTADO do lote 5 do Raio-X no motor e na porta do 3D (G6): o caso do professor não
+ * fecha meta pela criança e as duas ações novas só valem na cena delas.
  * O comportamento de cada cena está em `engine-scenes.test.ts` e `pedidos-no-motor.test.ts`.
  */
 
-describe('⚠️⚠️ o retrato de antes do lote 5 abre (pool, entity-state, delta-time, mesh)', () => {
-  test('sem os campos novos, o retrato é completado a partir do que ele já guardava', () => {
-    const atual = initialScene({ scene: 'pool' })
-    const { onScreen: _o, progress: _p, last: _l, ...berçarioAntigo } = atual.nursery
-    const { shared: _s, ...cabecasAntigas } = atual.brains
-    const { fastFrames: _f, slowFrames: _d, ...maquinasAntigas } = atual.machines
-    const { see: _v, sawHalf: _h, ...modeloAntigo } = atual.model
-    const antigo = {
-      ...atual,
-      nursery: { ...berçarioAntigo, created: 3 },
-      brains: cabecasAntigas,
-      machines: { ...maquinasAntigas, fastX: 42, slowX: 21 },
-      model: { ...modeloAntigo, wire: true },
-    }
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    // Antes, o número guardado era o de corpos na tela.
-    expect(hidratado.nursery.onScreen).toBe(3)
-    expect(hidratado.nursery.created).toBe(3)
-    // As pegadas saem da posição: uma a cada passo da corrida.
-    expect(hidratado.machines.fastFrames).toBe(Math.floor(42 / DELTA_RACE.passo))
-    expect(hidratado.machines.slowFrames).toBe(Math.floor(21 / DELTA_RACE.passo))
-    // O raio-X ligado de antes é o "tudo" de agora.
-    expect(hidratado.model.see).toBe('tudo')
-    expect(hidratado.model.sawHalf).toBe(false)
-    expect(hidratado.brains.shared).toBe(false)
-  })
-
+describe('a hidratação do retrato guardado', () => {
   test('a hidratação não inventa um estado inválido: o retrato atual passa inteiro', () => {
     const atual = initialScene({ scene: 'mesh' })
     expect(hydrateSceneState(atual)).toEqual(atual)

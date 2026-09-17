@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_MODELS, type SceneStep } from '@sistemazero/core/learning/scene'
+import { SCENE_MODELS, SCENE_QUESTIONS, type SceneStep } from '@sistemazero/core/learning/scene'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -46,8 +46,31 @@ async function montar(inicial: InteractiveBlock) {
       )
     await act(async () => alvo.click())
   }
+  /** As caixas de marcar (a pergunta anexa, a previsão, "sem a pergunta do fim"). */
+  const marcar = async (trecho: string) => {
+    const alvo = [...container.querySelectorAll('input[type="checkbox"]')].find((c) =>
+      c.closest('label')?.textContent?.includes(trecho),
+    ) as HTMLInputElement | undefined
+    if (!alvo)
+      throw new Error(
+        `Sem a caixa "${trecho}". Disponíveis: ${[
+          ...container.querySelectorAll('input[type="checkbox"]'),
+        ]
+          .map((c) => c.closest('label')?.textContent?.slice(0, 50))
+          .join(' | ')}`,
+      )
+    await act(async () => alvo.click())
+  }
   return {
     clicar,
+    marcar,
+    temCaixa: (trecho: string) =>
+      [...container.querySelectorAll('input[type="checkbox"]')].some((c) =>
+        c.closest('label')?.textContent?.includes(trecho),
+      ),
+    get texto() {
+      return container.textContent ?? ''
+    },
     get value() {
       return value
     },
@@ -325,6 +348,57 @@ test('⚠️⚠️ a pilha de camadas: só na layers, acompanha a cena irmã e s
     await b.clicar('Quem fica na frente?')
     await b.clicar('Lista de blocos do Estúdio')
     expect(atividade().pilha).toBeUndefined()
+  } finally {
+    await b.fechar()
+  }
+})
+
+const SEM_PERGUNTA = 'sem a pergunta do fim'
+
+test('⭐⭐ a caixa "sem a pergunta do fim" tira a pergunta de fábrica da experimentação', async () => {
+  // Decisão da dona (17/09/2026): a Aula 1 do Corre Dino tem quatro cenas seguidas, cada uma com
+  // previsão E pergunta. Até aqui não havia como uma aula dizer "aqui a criança só mexe".
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    const modelo = SCENE_QUESTIONS.world.explain
+    expect(b.texto).toContain(modelo.prompt)
+    await b.marcar(SEM_PERGUNTA)
+    expect(b.value.semPerguntaFinal).toBe(true)
+    expect(isInteractiveBlock(b.value)).toBe(true)
+    // A pergunta herdada some da tela junto: prometê-la ali seria mentira.
+    expect(b.texto).not.toContain(modelo.prompt)
+    expect(b.texto).toContain('sem pergunta')
+    await b.marcar(SEM_PERGUNTA)
+    expect(b.value.semPerguntaFinal).toBeUndefined()
+    expect(b.texto).toContain(modelo.prompt)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ escrever a minha pergunta DESMARCA a caixa (as duas juntas são recusadas)', async () => {
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    await b.marcar(SEM_PERGUNTA)
+    expect(b.value.semPerguntaFinal).toBe(true)
+    await b.marcar('Escrever a minha pergunta')
+    expect(b.value.semPerguntaFinal).toBeUndefined()
+    expect(b.value.checkpoint?.prompt).toBe(SCENE_QUESTIONS.world.explain.prompt)
+    expect(isInteractiveBlock(b.value)).toBe(true)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('⚠️ a caixa NÃO existe onde não há pergunta de fábrica para tirar', async () => {
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    expect(b.temCaixa(SEM_PERGUNTA)).toBe(true)
+    // A demonstração não herda pergunta (a criança assistiu), e o core recusa o campo ali.
+    await b.clicar('Demonstração')
+    expect(b.temCaixa(SEM_PERGUNTA)).toBe(false)
+    await b.clicar('Pergunta curta')
+    expect(b.temCaixa(SEM_PERGUNTA)).toBe(false)
   } finally {
     await b.fechar()
   }

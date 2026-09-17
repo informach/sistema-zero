@@ -1,5 +1,6 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isInteractiveBlock } from '@sistemazero/core/learning'
+import { SCENE_IDS, type SceneId, sceneUnknownSetupGoals } from '@sistemazero/core/learning/scene'
 import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
@@ -420,6 +421,15 @@ export class LessonAdminService {
 
 // ── Blocos ──────────────────────────────────────────────────────────────────
 
+/** Os ids de objetivo que o caso cita e a cena escolhida não conhece. */
+function metasQueACenaNaoTem(content: LessonBlockContent): string[] {
+  const activity = (content as { activity?: { scene?: unknown; setup?: { goals?: unknown } } })
+    .activity
+  const scene = activity?.scene
+  if (!SCENE_IDS.some((id) => id === scene)) return []
+  return sceneUnknownSetupGoals(scene as SceneId, activity?.setup?.goals)
+}
+
 /** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
 export function assertBlockCoherent(content: LessonBlockContent): void {
   if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
@@ -433,10 +443,20 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
         'A entrega pela galeria precisa de limites válidos e não usa cadeia, vitrine incorporada nem modo de exploração.',
       )
   }
-  if (content.kind === 'interactive' && !isInteractiveBlock(content))
+  if (content.kind === 'interactive' && !isInteractiveBlock(content)) {
+    // ⚠️⚠️ O objetivo que a cena não tem sai NOMEADO, na mesma voz do editor (M3 do full review 2 de
+    // dados, 17/09/2026). O rascunho guarda o caso assim, e quem recusa é a publicação: com a frase
+    // genérica a professora lia "configure a atividade" sobre um bloco em que só um id estava
+    // errado, e não tinha como saber qual.
+    const semNaCena = metasQueACenaNaoTem(content)
+    if (semNaCena.length)
+      throw new InvalidContentCommandError(
+        `Este caso cita ${semNaCena.length === 1 ? 'um objetivo que não existe' : 'objetivos que não existem'} nesta cena: ${semNaCena.join(', ')}. Confira se a cena certa está escolhida e tire do caso.`,
+      )
     throw new InvalidContentCommandError(
       'Configure a atividade e sua verificação. Experimentos e HTML essenciais precisam de uma pergunta de verificação.',
     )
+  }
   if (
     (content.kind === 'studio' || content.kind === 'pinta') &&
     content.purpose === 'experiment' &&

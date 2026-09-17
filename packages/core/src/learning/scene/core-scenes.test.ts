@@ -8,8 +8,9 @@ import {
   sceneStart,
   sceneTargets,
 } from './index'
+import { TILEMAP_MARKS_MAX } from './nucleo'
 import { sceneReadout, sceneSituation } from './readout'
-import { hydrateSceneState, isSceneState, type SceneState } from './state'
+import { isSceneState, type SceneState } from './state'
 
 /**
  * As onze cenas do NÚCLEO do Iniciante 2D (15/09/2026).
@@ -290,19 +291,6 @@ describe('velocity: a posição muda porque a velocidade soma nela', () => {
     expect(descobertas(parou)).toContain('stopped')
   })
 
-  test('⚠️⚠️ retrato ANTIGO sem âncora: ela nasce onde o personagem está, sem caminho inventado', () => {
-    // Uma âncora do padrão de fábrica (x 60) num retrato com a nave em x 200 afirmaria 140 px de
-    // caminho: o próximo passo do relógio fecharia "a posição mudou sozinha" com a velocidade ZERO.
-    const base = openScene({ scene: 'velocity' })
-    const { anchorX: _x, anchorY: _y, ...driveAntigo } = { ...base.drive, x: 200, y: 40 }
-    const hidratado = hydrateSceneState({ ...base, drive: driveAntigo }) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.drive.anchorX).toBe(200)
-    expect(hidratado.drive.anchorY).toBe(40)
-    const passo = stepScene({ scene: 'velocity' }, hidratado, { type: 'advance', seconds: 1 })
-    expect(descobertas(passo)).toHaveLength(0)
-  })
-
   test('⚠️⚠️ `down` e `up` são metas SÓ DE CASO: a missão de fábrica é a do lado', () => {
     // Somadas às outras três, a missão sem caso passou a cobrar cinco metas que a instrução, as
     // pistas e a demonstração não pediam (e a prévia do admin mostrava as cinco).
@@ -546,19 +534,6 @@ describe('contact: a pergunta contínua contra o acontecimento', () => {
     expect(descobertas(voltou)).toContain('apart')
   })
 
-  test('⚠️⚠️ TROCAR a pergunta (a ação antiga) não é afastar, e não zera mais nada', () => {
-    const alternou = rodar('contact', [
-      { type: 'approach', distance: 0 },
-      { type: 'advance', seconds: 1 },
-      { type: 'mode', kind: 'event' },
-      { type: 'mode', kind: 'ask' },
-      { type: 'advance', seconds: 1 },
-    ])
-    expect(alternou.hit.distance).toBe(0)
-    expect(alternou.hit.bottom).toBe(10 - 1)
-    expect(descobertas(alternou)).not.toContain('apart')
-  })
-
   test('⚠️ AFASTAR sozinho não é a descoberta: ela é o coração cair de novo na volta', () => {
     const soAfastou = rodar('contact', [
       { type: 'approach', distance: 0 },
@@ -661,7 +636,7 @@ describe('tilemap: o desenho nasce das letras', () => {
     expect(descobertas(igual)).toHaveLength(0)
   })
 
-  test('⚠️⚠️ a lista de letras NÃO cresce com o mapa: o retrato tem que continuar legível', () => {
+  test('⚠️⚠️ as marcas NÃO crescem com o mapa: o retrato tem que continuar legível', () => {
     // O mapa tem 60 casas e a pista manda pintar um chão inteiro. Empilhando uma entrada por
     // TROCA, a lista passava do teto que o validador aceita e o retrato virava ilegível para o
     // próprio leitor — a criança lia "esta descoberta mudou, recomece" no meio do desenho.
@@ -674,7 +649,9 @@ describe('tilemap: o desenho nasce das letras', () => {
         tile: '#',
       })),
     )
-    expect(muitas.grid.written).toEqual(['#'])
+    // Uma marca por CASA, no máximo: 40 trocas passam pelas mesmas 10 casas.
+    expect(muitas.grid.marks.length).toBeLessThanOrEqual(TILEMAP_MARKS_MAX)
+    expect(new Set(muitas.grid.marks).size).toBe(muitas.grid.marks.length)
     expect(isSceneState(muitas)).toBe(true)
   })
 

@@ -55,6 +55,9 @@ export function lessonEditorialWarnings(
       if (
         type === 'experimentation' &&
         !block.content.checkpoint &&
+        // ⚠️ Quem dispensou a pergunta do fim não precisa conferir se ela ainda fala do recorte:
+        // não há pergunta nenhuma naquele bloco, e o aviso mandaria olhar um texto que sumiu.
+        !block.content.semPerguntaFinal &&
         // ⚠️ Contra a missão de FÁBRICA, e não contra todas as metas: as metas só de caso
         // (`soNoCaso`) nunca estiveram na missão que a pergunta de fábrica cobre.
         sceneTargets(block.content.activity).length <

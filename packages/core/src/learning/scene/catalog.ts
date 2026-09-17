@@ -18,7 +18,8 @@ export interface SceneStep {
   caption: string
   /**
    * Que parte da tela merece atenção neste passo. ⚠️ `compare` só desenha nas cenas de
-   * `SCENE_COMPARISONS`; nas outras continua VÁLIDO (roteiro antigo abre) e não mostra nada.
+   * `SCENE_COMPARISONS`; nas outras continua VÁLIDO (o roteiro escrito para outra cena abre) e não
+   * mostra nada.
    */
   highlight?: 'scene' | 'tools' | 'compare'
   actions: SceneAction[]

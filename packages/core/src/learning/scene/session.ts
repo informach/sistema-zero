@@ -252,97 +252,18 @@ export function isDemonstrationCommand(value: unknown): value is DemonstrationCo
 }
 
 /**
- * Como o SERVIDOR rejoga uma demonstração.
+ * Um passo da demonstração: o mesmo motor no player e no servidor, que rejoga os comandos.
  *
- * ⚠️⚠️ `tolerarPlayerAnterior` existe por causa do DEPLOY (lote 1 do Raio-X, consertos). Até o
- * lote 1 a etapa com `waitFor` acabava na primeira fatia em que a descoberta acontecia; hoje ela
- * dura o `advance` inteiro. Uma aba aberta antes do deploy continua mandando os comandos do jeito
- * antigo: o `next` chega com a etapa "ainda não pronta" no servidor novo e é ignorado, e na última
- * etapa ela para de mandar tique — a demonstração assistida inteira nunca era registrada (medido
- * em 10 modelos, entre eles a obrigatória da Aula 5). Os deploys do Railway não são atômicos, então
- * a janela existe também sem aba velha: o members sobe antes do kids.
- *
- * Tolerante, o servidor aceita o que o player antigo considerava pronto: a etapa está na ÚLTIMA
- * ação, ela é `advance` e o `waitFor` já foi descoberto. O cliente continua estrito (nunca passa
- * a opção), e é por isso que ela não muda nada para o player novo: ele só manda `next` com a
- * etapa pronta de verdade.
- *
- * ⚠️⚠️ Com o relógio de quadro fixo (lote 4) "já foi descoberto" deixou de bastar. O player antigo
- * decide pelo motor DELE, que contava um quadro por fatia: a `pool` fechava "criados chegou a 3" em
- * 0,15 s, e o servidor, a um corpo por segundo, só em 3 s. Ele mandava o `next` (ou parava de mandar
- * tique na última etapa) com a descoberta ainda por vir no servidor, e 6 dos 45 modelos voltavam a
- * não registrar (medido com o motor de produção). Por isso a tolerância olha o FIM da ação: o
- * servidor toca o resto do `advance` numa cópia e aceita se a descoberta prometida está lá, que é
- * exatamente o que o player novo teria visto. No `next` a cópia VIRA o estado (a etapa seguinte
- * começa de onde o roteiro a deixa); na última etapa ela só marca `viewed`.
- *
- * ⚠️⚠️ Só para o player ANTERIOR (review do lote 4): o members passa `!sceneSegmentHasClock(...)`.
- * Ligada para todos, a folga valia também para o player novo e para sempre: um tique de 0,04 s na
- * última ação marcava "assistida" com quase todo o `advance` final por ver (13 demonstrações, entre
- * elas a `velocity` das Aulas 5 e 12 do Corre Dino, com 0,96 s faltando).
+ * ⚠️⚠️ A etapa com `waitFor` dura o `advance` INTEIRO. Encerrá-la na primeira fatia em que a
+ * descoberta acontecia fazia o roteiro "avance 1 s" durar uma fatia de 0,05 s: na `velocity` o Dino
+ * andava 2,5 px e a fala dizia "a cada quadro ele anda um pouco para a direita" sobre um movimento
+ * invisível. O `waitFor` é a PROMESSA que o validador (`playsOut`) confere tocando o roteiro inteiro.
  */
-export interface DemonstrationReplayOptions {
-  tolerarPlayerAnterior?: boolean
-}
-
-/**
- * A etapa na forma em que o player anterior a dava por pronta: na ÚLTIMA ação, um `advance` já
- * começado, numa etapa que espera uma descoberta. Devolve o estado com o RESTO do `advance` tocado
- * (numa cópia) quando a descoberta prometida está nele, ou `null`.
- */
-function fimDaEspera(
-  start: SceneStart,
-  sessao: DemonstrationSession,
-  script: readonly SceneStep[],
-  semFim?: Set<string>,
-): SceneState | null {
-  const passo = script[sessao.step]
-  const acao = passo?.actions[sessao.action]
-  if (!passo?.waitFor || sessao.action !== passo.actions.length - 1) return null
-  if (acao?.type !== 'advance' || sessao.elapsed <= 0) return null
-  const chave = `${sessao.step}:${sessao.action}`
-  if (semFim?.has(chave)) return null
-  const resto = acao.seconds - sessao.elapsed
-  const fim =
-    resto >= 0.001
-      ? stepScene(start, sessao.state, { type: 'advance', seconds: resto })
-      : cloneScene(sessao.state)
-  if (fim.evidence.discoveries.includes(passo.waitFor)) return fim
-  semFim?.add(chave)
-  return null
-}
-
 export function stepDemonstration(
   start: SceneStart,
   script: readonly SceneStep[],
   previous: DemonstrationSession,
   command: DemonstrationCommand,
-  opcoes: DemonstrationReplayOptions = {},
-): { session: DemonstrationSession; events: SceneEvent[] } {
-  return passoDaDemonstracao(start, script, previous, command, opcoes)
-}
-
-/**
- * ⚠️⚠️ O CUSTO da tolerância por requisição (full review final de dados e deploy, MÉDIO-2).
- *
- * `fimDaEspera` toca o RESTO do `advance` numa cópia (até os 10 s do `scriptAdvance`). Chamado a cada
- * comando, um segmento de 100 comandos rodava o resto 100 vezes: 185 ms de CPU do members por
- * requisição num roteiro autorável da `spawn`, com 300 requisições por minuto por conta e uma réplica.
- * Duas travas, nenhuma muda o que o player anterior registra:
- * - o `next` na ÚLTIMA etapa não toca nada (não há etapa seguinte para onde a cópia iria; aplicá-la
- *   só adiantava o mundo, e o tique seguinte tocava o mesmo resto de novo por cima dele);
- * - `semFim`, por segmento: a (etapa, ação) cuja espera já se provou impossível não é tocada de novo.
- *   O relógio de quadro fixo toca o mesmo mundo em qualquer fatiamento (`clock.test.ts`), então o fim
- *   do `advance` visto de um ponto mais adiante da MESMA ação é o mesmo: a resposta continua `null`.
- * O custo fica em no máximo um resto por (etapa, ação) por requisição.
- */
-function passoDaDemonstracao(
-  start: SceneStart,
-  script: readonly SceneStep[],
-  previous: DemonstrationSession,
-  command: DemonstrationCommand,
-  { tolerarPlayerAnterior = false }: DemonstrationReplayOptions,
-  semFim?: Set<string>,
 ): { session: DemonstrationSession; events: SceneEvent[] } {
   if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
   const before = previous.state
@@ -398,15 +319,7 @@ function passoDaDemonstracao(
   }
 
   if (command.type === 'next') {
-    const fim =
-      !next.ready && tolerarPlayerAnterior && next.step < script.length - 1
-        ? fimDaEspera(start, next, script, semFim)
-        : null
-    // ⚠️ Aceito, o `next` do player anterior completa a ação que ele pulou: a etapa seguinte começa
-    // do estado em que o roteiro deixa esta, e não do meio do `advance`.
-    if (fim) next.state = fim
-    const pronta = next.ready || fim !== null
-    if (pronta && next.step < script.length - 1) {
+    if (next.ready && next.step < script.length - 1) {
       next.step += 1
       next.action = 0
       next.elapsed = 0
@@ -456,17 +369,6 @@ function passoDaDemonstracao(
     next.ready = true
     if (next.step === script.length - 1) next.viewed = true
   }
-  // O player anterior parava de mandar tique na última etapa assim que a descoberta acontecia NO
-  // MOTOR DELE. ⚠️ Aqui o estado não muda: o player novo continua mandando os tiques dessa ação, e
-  // tocar o resto agora os aplicaria duas vezes.
-  if (
-    tolerarPlayerAnterior &&
-    !next.viewed &&
-    !next.ready &&
-    next.step === script.length - 1 &&
-    fimDaEspera(start, next, script, semFim)
-  )
-    next.viewed = true
 
   const events = sceneEvents(before, next.state, 'tick', false)
   if (next.viewed && !previous.viewed) events.push({ type: 'viewed', id: 'viewed' })
@@ -673,29 +575,7 @@ export function readSceneSegment(answers: unknown): SceneSegment | null {
   return { sessionId, segmentId, baseSequence: baseSequence as number, commands }
 }
 
-/**
- * ⭐⭐ O MARCADOR do player que conhece o relógio de quadro fixo (review do lote 4 do Raio-X).
- *
- * ⚠️⚠️ Existe por causa do deploy. O player de antes do lote 4 decide a conclusão pelo motor DELE (um
- * quadro por fatia): numa aba aberta durante o deploy, a EXPERIMENTAÇÃO mostrava "concluiu" e o
- * members novo, rejogando os mesmos comandos no relógio novo, gravava `passed:false`; com a
- * assinatura das descobertas igual, o player antigo nem reenviava, e depois do F5 as metas voltavam
- * a faltar (122 de 432 reproduções com o player de produção). Sem marcador o servidor não tinha como
- * separar os dois players. Com ele, o members pode recusar o antigo com 409 (`SCENE_CLOCK_STRICT`), e
- * o player antigo cai no recado que ele já sabe mostrar ("Reabra a aula"), que carrega o novo.
- *
- * ⚠️ O marcador fica FORA do `readSceneSegment` de propósito: o members guarda o hash do segmento
- * lido para reconhecer um reenvio, e um campo novo nele mudaria o hash dos segmentos gravados antes
- * do deploy (o reenvio de um deles viraria conflito).
- *
- * ⚠️⚠️ É a VERSÃO DAS REGRAS do player, e não só "conhece o relógio" (consertos do review da onda A do
- * lote 5, A2). O lote 5 mudou a regra de cenas SEM relógio (`coordinates`, `layers`, `hitbox`) e tirou o
- * relógio de outras (`random`, `acceleration`): o player do lote 4 mandava o mesmo `1`, e o members novo
- * não tinha como recusá-lo. Mudou regra de meta que o player decide sozinho? Suba o número.
- */
-export const SCENE_CLOCK_MARK = 2
-
-/** O lado do cliente: monta as respostas achatadas de um segmento, com o marcador do relógio. */
+/** O lado do cliente: monta as respostas achatadas de um segmento. */
 export function sceneSegmentAnswers(segment: {
   sessionId: string
   segmentId: string
@@ -707,16 +587,7 @@ export function sceneSegmentAnswers(segment: {
     sceneSegmentId: segment.segmentId,
     sceneBaseSequence: segment.baseSequence,
     sceneCommands: segment.commands.map((c) => JSON.stringify(c)),
-    sceneClock: SCENE_CLOCK_MARK,
   }
-}
-
-/**
- * O segmento veio de um player com as regras DESTE core? ⚠️ O nome é do relógio de quadro fixo, mas a
- * pergunta é a versão das regras (`SCENE_CLOCK_MARK`), em qualquer cena.
- */
-export function sceneSegmentHasClock(answers: unknown): boolean {
-  return isRecord(answers) && answers.sceneClock === SCENE_CLOCK_MARK
 }
 
 export class SceneConflictError extends Error {
@@ -762,17 +633,12 @@ export function applyDemonstrationSegment(
   script: readonly SceneStep[],
   checkpoint: SceneCheckpoint<DemonstrationSession> | null,
   segment: SceneSegment,
-  /** ⚠️ Só o members passa `tolerarPlayerAnterior` (ver `DemonstrationReplayOptions`). */
-  opcoes: DemonstrationReplayOptions = {},
 ): SceneCheckpoint<DemonstrationSession> {
   if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new SceneConflictError()
   let session = checkpoint?.session ?? initialDemonstration(start)
-  // ⚠️ Um por SEGMENTO (ver `passoDaDemonstracao`): é o que limita a tolerância a um resto por
-  // (etapa, ação) em cada requisição.
-  const semFim = opcoes.tolerarPlayerAnterior ? new Set<string>() : undefined
   for (const command of segment.commands) {
     if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
-    session = passoDaDemonstracao(start, script, session, command, opcoes, semFim).session
+    session = stepDemonstration(start, script, session, command).session
   }
   return {
     sequence: segment.baseSequence + segment.commands.length,

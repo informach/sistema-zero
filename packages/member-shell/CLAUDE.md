@@ -911,10 +911,12 @@ ações, metas, relógio de quadro fixo, frases, elenco, protocolo com o members
 `@sistemazero/core/learning/scene`, com o CLAUDE.md dele; aqui mora o que a criança vê e toca. A régua desta
 casa vale em tudo abaixo: **toque, teclado e leitor de tela levam ao MESMO lugar.**
 
-O player manda em todo segmento o marcador da versão das regras (`SCENE_CLOCK_MARK`, que o `sceneSegmentAnswers`
-do core põe, pelo `SceneController`); nada a fazer aqui além de usá-lo. ⚠️ Mudou uma regra de meta que o player
-decide sozinho? O número sobe no core, no mesmo commit. Ordem de deploy, `SCENE_CLOCK_STRICT`, manifestos a
-reimportar e pontes de compatibilidade: [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+⭐⭐ Player e servidor rodam o MESMO motor, e a funcionalidade nasce na PRIMEIRA versão (decisão da dona,
+17/09/2026): o segmento não leva carimbo de versão e o player não tem caminho para "servidor de outra versão".
+O que ele tem é o `servidorRecusou` (`scene-activity.tsx`): 400/422 numa gravação de cena não é falha de rede —
+tentar de novo não resolve, então a cena para, a conclusão sai da tela e a saída é "Abrir de novo" com "Esta
+atividade mudou.". Ordem de deploy e manifestos a importar:
+[`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
 Conferência visual das 45 com os componentes de produção: `bun run galeria:cenas` no community-kids.
 
 ### Mapa dos arquivos (`src/components/`)
@@ -986,8 +988,7 @@ professor).
   porque "Recomeçar" antes do palpite contava como gesto e apagava o "trocar".
 - **Guardado no `localStorage`** (`sz:scene-prediction:<scope>`, scope = perfil, aula, bloco e revisão) com a
   IMPRESSÃO da pergunta (enunciado e opções): pergunta diferente descarta o palpite, porque o deploy troca a
-  previsão do modelo sem mudar o `scope`. O id cru do `sessionStorage` antigo ainda é lido se for opção válida
-  (ponte; ver o raio-x).
+  previsão do modelo sem mudar o `scope`.
 - Congela no primeiro gesto: o "trocar" (44px) só existe sem gesto, sem ação além de pistas e sem meta caída
   (`trocavel`). É revelado quando a meta `revealOn` cai (sem ela, na conclusão). Não tranca a REVISITA.
 - ⚠️⚠️ **O retomado tem dois tempos:** a frase "Você achou: X. Olhe…" (`fraseDoPalpite`) aparece junto do
@@ -1061,12 +1062,10 @@ professor).
   atividade mudou ou está aberta em outro lugar." + "Abrir de novo" (depois de um deploy o 409 é quase sempre
   revisão nova do bloco ou regra nova); falha de rede = uma frase + "Tentar salvar". Cópia local que falha e
   rascunho recusado ("Continuamos de onde você parou.", sem tom de erro) não assustam. Na vez, nada.
-- ⚠️⚠️ **Servidor de OUTRA versão das regras não é recusa da criança:** o progresso que volta do segmento diz se o
-  members conhece o marcador deste player (`sceneSegmentHasClock`). Tentativa reprovada por um servidor sem ele,
-  ou 400/422 no envio, param a cena, tiram da tela a conclusão que o servidor não aceitou e mostram "Esta
-  atividade mudou." + "Abrir de novo" (sem "versão" no texto). Sem isso a resposta certa virava "Ainda não é
-  essa" e o 400 prometia "a gente guarda quando voltar" para sempre. A ordem de deploy que evita a janela está no
-  raio-x.
+- ⚠️⚠️ **Gravação RECUSADA não é recusa da criança** (`servidorRecusou`): 400/422 no envio param a cena, tiram
+  da tela a conclusão que o servidor não aceitou e mostram "Esta atividade mudou." + "Abrir de novo" (sem
+  "versão" no texto). Sem isso o 400 prometia "a gente guarda quando voltar" para sempre. A ordem de deploy
+  (members antes de kids) está no raio-x.
 - ⚠️⚠️ **Sem ensaio em volta, o avaliador de VERDADE** (`evaluateLearning(previewContent, …)`): a prévia sem
   provedor aprovava qualquer resposta, e o professor nunca lia a explicação que escreveu.
 

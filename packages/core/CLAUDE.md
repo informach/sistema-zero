@@ -61,15 +61,15 @@ bancada moram no member-shell, com a tabela cena → palco/bancada no `packages/
 ⚠️ O 3D (`axis-z`, `camera-3d`, `mesh`, `pick-ray`) é DESENHADO à mão em SVG (`scene-3d.tsx` do
 member-shell), não renderizado: uma biblioteca 3D pesaria em toda cena do player.
 
-Deploy, ordem dos serviços, a flag `SCENE_CLOCK_STRICT`, manifestos a reimportar e as pontes de
-compatibilidade: [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+Deploy, ordem dos serviços (members ANTES de kids e community) e manifestos a importar:
+[`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
 
 ### Mapa: arquivo → responsabilidade
 
 | Arquivo | O que mora |
 |---|---|
 | `actions.ts` | `SCENE_IDS`, `SCENE_GROUPS`, as portas (`SCENE_PORTS` e o `PORTS` de cada cena), a união `SceneAction` e `isSceneAction`, a régua ÚNICA de legalidade (player, validador de roteiro e DTO do members perguntam a ela); `SCENE_LIMITS` e as listas (`MIRROR_MODES`, `SYMMETRY_PIECES`, `SHEET_CROP_WIDTHS`, `MESH_LEVELS`, `MESH_SKIN_LABELS`, `MAP_TILES`); o relógio (`SCENE_FRAME_RATE`, `sceneFrameRate`, `sceneStepLabel`, `sceneStepSeconds`, `sceneLongFrame`); `SceneSetup` |
-| `state.ts` | `SceneState` (um grupo por assunto), `initialScene` (o mundo de fábrica), `hydrateSceneState` e os `completar*`, `isSceneState` (campo a campo), `cloneScene` (à mão), `observe`, `sceneCactiOnScreen` e as constantes de cena (`POOL_CROSSING`, `DELTA_RACE`, `HITBOX_*`, `DRAW_LOOP_LANE`…) |
+| `state.ts` | `SceneState` (um grupo por assunto), `initialScene` (o mundo de fábrica), `hydrateSceneState`, `isSceneState` (campo a campo), `cloneScene` (à mão), `observe`, `sceneCactiOnScreen` e as constantes de cena (`POOL_CROSSING`, `DELTA_RACE`, `HITBOX_*`, `DRAW_LOOP_LANE`…) |
 | `engine.ts` | `openScene` (abre o caso) e os `esquecerOGesto*`, `stepScene` (o motor, puro), o quadro (`umQuadro`) e as réguas exportadas: `facesAVista`, `scenePickPath`, `sceneBrainLabel`, `sceneDescriptionSays`, `PARADA_DO_SALTO`/`TOPO_DO_SALTO` e as do ▶ (`sceneClockShouldStop`, `sceneGestureRunsClock`) |
 | `nucleo.ts`, `atelie.ts` | As réguas puras do núcleo do Iniciante 2D (de `hold-vs-press` a `tilemap`) e do ateliê (de `frames` a `sheet-vs-sprite`), sem importar o estado |
 | `pistas.ts`, `pilha.ts` | `PISTA_DA_META` (a meta a que cada degrau da escada de pistas serve); `ScenePilha` e `LAYERS_CAMADAS` (a `layers` apresentada como o painel Camadas do Pinta) |
@@ -78,8 +78,8 @@ compatibilidade: [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aul
 | `readout.ts` | O que a cena diz de si: a faixa (`sceneReadout`) e a frase (`sceneSituation`); `drawLoopOnScreen`, `screenReaderSays` |
 | `cast.ts` | O elenco (`castText`, `SCENE_FIGURES`, `actorFigure`, `SCENE_ROLES`, `sceneWorld`) e o português que a plataforma gera (`quantos`, `decimal`, `numero`) |
 | `questions.ts` | `SCENE_QUESTIONS`: a previsão e a explicação de cada cena |
-| `session.ts` | As sessões (`stepExperiment`, `stepDemonstration`, `SESSION_LIMITS`), o pacote guardado (`pack*`, `read*Session`), os segmentos (`apply*Segment`, `SceneConflictError`), o marcador (`SCENE_CLOCK_MARK`) e `sceneEmitsSound` |
-| `index.ts` | As duas atividades, `isSceneSetup`, `isSceneScript`, `sceneStart`, `sceneTargets`, `sceneScript`, `sceneModelFor`, `sceneHintsFor` e a leitura tolerante (`SCENE_RETIRED_GOALS`, `sceneSetupGoals`, `sceneActivityForReading`) |
+| `session.ts` | As sessões (`stepExperiment`, `stepDemonstration`, `SESSION_LIMITS`), o pacote guardado (`pack*`, `read*Session`), os segmentos (`apply*Segment`, `SceneConflictError`) e `sceneEmitsSound` |
+| `index.ts` | As duas atividades, `isSceneSetup`, `isSceneScript`, `sceneStart`, `sceneTargets`, `sceneScript`, `sceneModelFor`, `sceneHintsFor` e a leitura tolerante (`sceneSetupGoals`, `sceneUnknownSetupGoals`, `sceneActivityForReading`) |
 | `learning/index.ts` | O bloco: `isInteractiveBlock`, a projeção pública (`publicInteractiveBlock`, `PUBLIC_ACTIVITY_FIELDS`, `isPublicInteractiveBlock`), `blockPrediction`/`blockCheckpoint`, `learningHints`, `evaluateLearning`, `PERGUNTA_MUDOU` |
 
 Fora do core: o DTO TypeBox do members (`packages/members/src/interfaces/http/learning.dtos.ts`, que deriva
@@ -100,33 +100,28 @@ de gesto compartilhados, em `tests/fixtures/exploration-paths.ts`.
   pista que serve a ela vai no `PISTA_DA_META`. Ela obedece à régua "a meta só cai quando a criança VIU".
   ⚠️ Id de meta não muda: sessões, manifestos e `revealOn` o citam; meta nova é ACRÉSCIMO. A descoberta
   guardada não é validada contra o catálogo, então sessão com meta que saiu continua abrindo.
-- **Meta que sai.** Entra em `SCENE_RETIRED_GOALS` (`index.ts`) no mesmo commit, com a sucessora que cobra
-  o MESMO gesto ou `null`. A autoria (`isSceneSetup`) segue recusando o id velho; a leitura
-  (`sceneSetupGoals`, `sceneActivityForReading`) troca pela sucessora ou descarta, senão o bloco do banco
-  some da aula e trava a seção obrigatória. A consulta ao banco antes de reimportar está no doc de implantação.
-- **⚠️⚠️ Mudou uma regra de meta que o player decide sozinho** (em qualquer cena, com ou sem relógio)? Suba
-  `SCENE_CLOCK_MARK` no mesmo commit (ver "Compatibilidade e deploy").
+- **Meta que sai.** A autoria (`isSceneSetup`) passa a recusar o id velho, e o editor do admin NOMEIA cada
+  objetivo que a cena não tem. A leitura (`sceneSetupGoals`, `sceneActivityForReading`) descarta o id
+  desconhecido — senão o bloco do banco some da aula e trava a seção obrigatória —, e NADA entra no lugar:
+  quem autora conserta. A consulta ao banco antes de importar está no doc de implantação.
 - **Ação ou porta nova.** Ação no fim da união `SceneAction`, com o `case` de `isSceneAction` dizendo em que
   cena ela vale; porta em `SCENE_PORTS` e no `PORTS` da cena. No mesmo passo o `SceneActionSchema` do members
-  e o editor do admin (os dois leem `SCENE_PORTS`). ⚠️ Ação que sai da bancada NÃO sai do core: sessões e
-  roteiros salvos a usam (lista e critério de remoção na seção 7 do doc de implantação).
-  O motor a traduz para o gesto de hoje, e o editor do admin a mantém na lista `TODAS`, escondida por cena
-  em `POR_CENA.<cena>.esconder` (um passo antigo aparece "<nome> · ação antiga"). Um mecanismo só.
+  e o editor do admin (os dois leem `SCENE_PORTS`). ⚠️ Ação que sai da bancada SAI do core
+  (união, `isSceneAction`, motor, DTO do members e lista `TODAS` do admin): a funcionalidade nasce na primeira
+  versão e não carrega gesto de antes. O editor do admin NOMEIA a ação que a lista da cena não oferece
+  ("<nome> · não vale nesta cena" quando o domínio a recusa, "<nome> · não cabe aqui" quando ela é legal e só
+  não é oferecida ali), porque o motor trata ação ilegal como no-op.
 - **Campo novo na atividade** (como `setup`, `cast`, `presentation`, `pilha`): o tipo e o validador em
   `index.ts`, `PUBLIC_ACTIVITY_FIELDS` em `learning/index.ts` (⚠️ fora da lista ele não chega ao navegador, e
   a criança abre uma cena diferente da que o servidor avalia), o `InteractiveBlockSchema` do members e o
   editor do admin.
 - **Campo novo no estado.** Todos os passos:
   1. o tipo em `SceneState` e o padrão em `initialScene`;
-  2. `hydrateSceneState`: grupo novo entra na lista de padrões; campo novo num grupo existente é completado
-     campo a campo. ⚠️⚠️ Isso evita a RECUSA do retrato antigo (a criança perderia a sessão sem saber por
-     quê), e NÃO evita meta falsa: campo DERIVADO do que o retrato já tem precisa de um `completar*` que o
-     calcule dele (`drive.anchorX` do próprio `x`, `render.drawn` do `trail`, `nursery.onScreen` do
-     `created`, `machines.fastFrames` da posição, `model.see` do `wire`, `hunt.measured` do `looked`), senão
-     o padrão de fábrica afirma um caminho ou uma medida que ninguém fez. O padrão da HIDRATAÇÃO pode
-     diferir do de fábrica de propósito: `sheet.loaded` abre `false` na `sheet-vs-sprite` e hidrata `true`;
-     Substituído (16/09/2026): "campo novo num grupo que já existe é seguro" → seguro só contra a recusa,
-     porque o padrão de fábrica derrubava meta num retrato antigo.
+  2. `hydrateSceneState`: GRUPO novo entra na lista de padrões (é o que deixa um retrato gravado antes de a
+     cena ter aquele assunto abrir como a de fábrica). ⚠️⚠️ A régua para no grupo: CAMPO faltando dentro de
+     um grupo presente NÃO é completado, o retrato é inválido e quem chama o trata como ausente. Preencher
+     campo a campo fabricava estado incoerente e meta falsa (um `drive` sem âncora fechava "a posição mudou
+     sozinha" com a velocidade em zero);
   3. `isSceneState` (e a função `is*` da família) com o TETO do campo;
   4. `cloneScene`, escrito à mão: array ou objeto aninhado sem cópia vaza entre estados;
   5. `esquecerOGesto*` quando o campo CONTA gesto ou guarda história (ver "O caso").
@@ -257,6 +252,15 @@ nos cursos, 7 tinham previsão e 8 pergunta. O que depende de alguém lembrar n�
   atividade inteira em "precisa de uma configuração válida".
 - A cena aceita pergunta anexa (`block.checkpoint`): a sessão mora em `answers.sceneCheckpoint`, e não mais
   na chave `answers.checkpoint` da alternativa escolhida (era essa colisão que proibia a pergunta).
+- ⭐⭐ **`block.semPerguntaFinal`** (17/09/2026, decisão da dona): a aula dispensa a pergunta do fim daquela
+  cena, e a criança só mexe. Escrever a sua TROCA a pergunta; este campo a TIRA — é a única porta para isso.
+  Campo de BLOCO (mora ao lado do `checkpoint`, não na atividade), só `true`, e `isInteractiveBlock` o recusa
+  fora da experimentação de cena ou junto de um `checkpoint` escrito (campo sem efeito e ordens contrárias).
+  Sem pergunta, quem conclui o bloco e a seção é a DESCOBERTA, e o palco mostra a frase de sucesso na hora
+  (`SceneConclusion` já fazia isso). Fora do core: o `InteractiveBlockSchema` do members (campo de bloco não
+  declarado é recusado com 400) e a caixa "Esta cena entra sem a pergunta do fim" no editor do admin, que sai
+  na troca de tipo (`trocarTipo`). Primeiro uso: `stage-size` e `screen-reader` da Aula 1 do Corre Dino, que
+  tem quatro cenas seguidas e daria oito momentos de responder na primeira aula da criança.
 - A explicação dá a palavra final (`withAttachedQuestion`). Enquanto a cena não fecha, a pergunta não
   reprova; errar e não ter respondido têm recados diferentes, sem nunca dizer qual é a certa; uma resposta
   que não é opção da pergunta de agora devolve `PERGUNTA_MUDOU`, que o player reconhece para oferecer "Abrir
@@ -393,8 +397,8 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 - `lives`: `shoot` soma ponto e as vidas ficam; `lifeline.last` guarda a causa para o palco.
 
 **O núcleo do Iniciante 2D** (réguas em `nucleo.ts`)
-- `hold-vs-press`: UMA tecla (`hold`); o `press` legado vira afundar e soltar. Afundar leva as duas raquetes
-  ao começo, e o caso não deixa a tecla segurada.
+- `hold-vs-press`: UMA tecla (`hold`); o `press` é o "Apertar uma vez", que afunda e solta. Afundar leva as
+  duas raquetes ao começo, e o caso não deixa a tecla segurada.
 - `group-loop`: as distâncias vão e voltam com o relógio (`huntDistances`); `hunt.measured` é a foto de cada
   régua, e `nearest` compara a foto. `auto` é a troca do mais perto depois de `HUNT_LOOP_SEEN_TICKS` de laço
   ligado; `choose` com o laço ligado é recusado.
@@ -404,8 +408,7 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 - `camera`: `window` pede a janela MUDAR de lugar com a câmera seguindo, depois de o Dino ter sumido; `follows`
   pede ligar a câmera com o Dino FORA. `CAMERA_WALK_MAX` é o fim do "Andar"; o motor aceita o mundo inteiro.
 - `contact`: as duas regras ao mesmo tempo, uma pista cada; o encosto é distância 0 dos desenhos
-  (`contactTouching`; o palco posiciona com `CONTACT_DRAWINGS`). Um "fim de jogo" recomeça as duas pistas. O
-  `mode` legado só grava o campo, que nada lê.
+  (`contactTouching`; o palco posiciona com `CONTACT_DRAWINGS`). Um "fim de jogo" recomeça as duas pistas.
 - `cooldown`: os tiros VOAM; `burst` no terceiro tiro sem recarga em 1 s de relógio; `spaced` pede o vão à
   vista; o aperto recusado aparece por `COOLDOWN_REFUSED_SECONDS` e some. Recarga abaixo de 0,001 s acabou (a
   sobra binária recusava o tiro de quem esperou).
@@ -414,8 +417,8 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
   `AIM_TARGET_MARGIN` é a folga da bancada; o motor aceita a tela inteira.
 - `diagonal`: sem relógio; o gesto é `stride` ("Andar 1 segundo"). `faster` e `same` são comparações com os
   fantasmas; a distância vem dos componentes sem arredondar.
-- `tilemap`: a marca é da CASA (`tilemapMark`; `TILEMAP_MARK` aceita a antiga, por linha, que a
-  `tilemapMarkedRows` ainda lê) e só as vivas contam; `coin-row` olha só a linha escrita (`isTilemapCoinRow`).
+- `tilemap`: a marca é da CASA (`tilemapMark`, `#3:4`, com o formato travado por `TILEMAP_MARK`) e só as
+  vivas contam; `coin-row` olha só a linha escrita (`isTilemapCoinRow`).
 
 **O motor e a porta do 3D**
 - `pool`: o cacto atravessa com um NÚMERO (`nursery.onScreen`); sem reciclagem cada saída fabrica o próximo,
@@ -434,7 +437,7 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
   que é a tarefa da criança.
 - `mesh`: `see-points` com `MESH_LEVELS`; `MESH_SKIN_LABELS` é como faixa, bancada e admin dizem os degraus
   (os ids não mudaram). `skin` pede a pele sobre pontos JÁ vistos (a revelação e a conclusão não caem no
-  mesmo gesto). O `wireframe` legado vira os degraus das pontas.
+  mesmo gesto).
 - `pick-ray`: `PICK_BOXES` (a da frente é a menor); `scenePickPath(x, y)` devolve as caixas no caminho, da
   mais perto para a mais longe, e `scenePickLetter` dá a letra.
 
@@ -445,32 +448,30 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 - `onion-skin`: o fantasma é o contorno TRACEJADO do fogo 1; as metas do `shift` pedem o quadro 2
   (`onionFireZone`).
 - `symmetry`: os dois espelhos são DUAS chaves, como no Pinta (`MIRROR_MODES` com `xy`, `mirrorAxes`,
-  `mirrorModeFor`, `mirrorCopyAxes`); com as duas ligadas nenhuma meta cai. ⚠️⚠️ A cópia COLADA no traço não
+  `mirrorModeFor`, `mirrorCopyAxes`), sempre no MEIO do desenho; com as duas ligadas nenhuma meta cai. ⚠️⚠️ A cópia COLADA no traço não
   conta (`symmetryCopySeparated`): é o desenho da resposta errada. `mirror.strokes`/`copies` contam GESTOS,
-  e é o que faixa e painel do professor mostram. O `paint`/`mirror` legados viram marca `c:N` e lado a
-  lado; `line`/`painted`/`lastLine` só existem por compatibilidade.
+  e é o que faixa e painel do professor mostram.
 - `pixel-vector`: uma lupa para as duas pedras, e só o zoom conta (degraus em `LUPA`).
 - `sheet-vs-sprite`: o jogo abre VAZIO (`sheet.loaded`) e em 54; `size-apart` pede o tamanho fora de
-  `TAMANHO_PARECIDO`, depois de `crop-whole`. O `cut` legado carrega o jogo e fica preso na largura.
+  `TAMANHO_PARECIDO`, depois de `crop-whole`. ⚠️ O `cut` é o "Quadro do recorte" da bancada (e o pulsar do
+  fogo na parte 3 da demonstração): preso ao que cabe na largura de agora, ele carrega o jogo.
 - `fill-stroke` e `shading`: os rótulos do Pinta; `shade` ligado com o sol já do outro lado também é `side`.
 
-### Compatibilidade e deploy
+### Leitura do que está guardado, e deploy
 
-- Retrato antigo continua abrindo: `readExperimentSession`/`readDemonstrationSession` HIDRATAM antes de
-  validar. A cena vai gravada no pacote, e retrato de outra cena é recusado (as cenas dividem ids de meta).
-- ⭐⭐ **`SCENE_CLOCK_MARK` (`session.ts`) é a VERSÃO DAS REGRAS do player**, apesar do nome. O
-  `sceneSegmentAnswers` manda o número em todo segmento e o `sceneSegmentHasClock` compara por IGUALDADE:
-  outro valor, ou nenhum, é player de outra versão. ⚠️⚠️ Mudou regra de meta que o player decide sozinho?
-  Suba no mesmo commit. ⚠️ O marcador fica FORA do `readSceneSegment`: o members guarda o hash do segmento
-  lido, e um campo novo ali tornaria conflito o reenvio de um segmento gravado antes do deploy.
-  Substituído (16/09/2026): "`sceneClock: 1`, o player que conhece o relógio" → a versão das regras (hoje
-  `2`), porque o lote 5 mudou metas de cenas sem relógio e o `1` não separava os dois players.
-- `tolerarPlayerAnterior` (`DemonstrationReplayOptions`): só o members passa, e só para segmento sem o marcador
-  atual. Aceita o que o player anterior dava por pronto tocando o RESTO do `advance` numa cópia; o custo fica
-  em um resto por (etapa, ação) por segmento (`semFim`). O cliente é sempre estrito.
-- ⚠️⚠️ O pipeline NÃO garante a ordem dos serviços, a flag `SCENE_CLOCK_STRICT` do members recusa o player
-  antigo com 409, e reimportar manifesto recomeça o progresso em andamento: a ordem, a flag, a consulta ao
-  banco, os manifestos e as pontes (com o critério para remover cada uma) estão em
+- O retrato guardado passa pela hidratação antes do validador: `readExperimentSession`/
+  `readDemonstrationSession` chamam `hydrateSceneState` (o GRUPO ausente recebe o padrão de fábrica; o grupo
+  presente vale como veio, inteiro) e só então `isSceneState` confere campo a campo. É robustez contra
+  retrato truncado, não ponte de versão. A cena vai gravada no pacote, e retrato de outra cena é recusado
+  (as cenas dividem ids de meta).
+- ⚠️⚠️ **Retrato incompleto é INVÁLIDO, e quem chama o trata como ausente** (17/09/2026): no members, a
+  linha guardada que não hidrata vale como sessão inexistente — a cena recomeça limpa e a gravação nova
+  substitui a linha. Antes ela virava 409 em toda gravação daquele bloco, para sempre.
+- ⭐⭐ **A funcionalidade nasce na PRIMEIRA versão** (decisão da dona, 17/09/2026): nada de carimbo de versão
+  das regras, flag de compatibilidade, tolerância a player anterior nem substituição de meta que saiu. Mudou
+  uma regra? Muda para todo mundo.
+- ⚠️⚠️ O pipeline NÃO garante a ordem dos serviços, e reimportar manifesto recomeça o progresso em andamento:
+  a ordem (members ANTES de kids e community), a consulta ao banco e os manifestos estão em
   [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
 
 ## Comandos (de dentro de `packages/core`)

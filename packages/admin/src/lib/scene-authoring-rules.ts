@@ -443,6 +443,11 @@ export function trocarTipo(
           : tipo === 'question' && !value.checkpoint
             ? { prompt: '', choices: escolhasNovas(), correctChoiceId: 'first', explanation: '' }
             : value.checkpoint,
+      // ⚠️⚠️ "Sem a pergunta do fim" só existe na EXPERIMENTAÇÃO (é a única que herda pergunta do
+      // modelo), e a caixa some junto com o tipo. Carregada para fora, ela deixaria o bloco recusado
+      // para sempre sem caminho de volta na tela — o mesmo defeito que levou a pergunta e o impulso
+      // a saírem daqui. Voltar para Experimentação não a ressuscita: é uma caixa, não um trabalho.
+      semPerguntaFinal: tipo === 'experimentation' ? value.semPerguntaFinal : undefined,
     },
     aviso: avisos.join(' '),
   }

@@ -23,12 +23,12 @@ const toqueRecusado = (scene: SceneId): SceneState =>
 const ligaTudo = (scene: SceneId): SceneState[] => {
   const acoes: SceneAction[] = [
     ...scenePorts(scene).map((port): SceneAction => ({ type: 'connect', port, enabled: true })),
-    { type: 'wireframe', on: true },
+    { type: 'see-points', level: 'tudo' },
     { type: 'shade', on: true },
     { type: 'loop', on: true },
     { type: 'erase', on: true },
     { type: 'onion', on: true },
-    { type: 'mirror', on: true, line: 6 },
+    { type: 'mirror-mode', mode: 'x' },
   ]
   return [acoes.reduce((e, a) => stepScene({ scene }, e, a), nasce(scene))]
 }

@@ -47,15 +47,13 @@ function preparar(activity: SceneActivity) {
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
     )
-  const gravar = (commands: unknown[], marcador: boolean | 1 = true) => {
+  const gravar = (commands: unknown[]) => {
     const answers = sceneSegmentAnswers({
       sessionId: 'sessao-full',
       segmentId: `segmento-${randomUUID()}`,
       baseSequence: 0,
       commands,
     })
-    if (marcador === false) delete answers.sceneClock
-    if (marcador === 1) answers.sceneClock = 1
     return pedir(`/lessons/${lessonId}/blocks/${blockId}/learning-progress`, 'PUT', {
       revision: REVISION,
       hintsUsed: 0,
@@ -74,37 +72,20 @@ function preparar(activity: SceneActivity) {
   return { gravar, tentar, ler, blockId }
 }
 
-const codigo = async (resposta: Response) =>
-  ((await resposta.json()) as { error?: { code?: string } }).error?.code
-
-describe('BAIXO-1: o comando que deixou de ser legal, vindo de outra versão, é 409 (reabrir)', () => {
-  const tempo = [{ type: 'advance', seconds: 0.05 }]
-
-  test('⚠️⚠️ com a flag DESLIGADA, o ▶ de uma aba antiga da `random` cai no "Reabra a aula"', async () => {
-    // Sem marcador (o player publicado) e com o marcador 1 (o do lote 4): o `advance` saiu da `random`.
-    const semMarcador = await preparar({ type: 'experimentation', scene: 'random' }).gravar(
-      tempo,
-      false,
-    )
-    expect(semMarcador.status).toBe(409)
-    expect(await codigo(semMarcador)).toBe('LEARNING_CONFLICT')
-    const lote4 = await preparar({ type: 'experimentation', scene: 'random' }).gravar(tempo, 1)
-    expect(lote4.status).toBe(409)
-  })
-
-  test('e o player com as regras DESTE servidor segue recebendo 400: é pedido mal formado', async () => {
-    const atual = await preparar({ type: 'experimentation', scene: 'random' }).gravar(tempo)
-    expect(atual.status).toBe(400)
-    // O comando legal, sem marcador, continua aceito com a flag desligada (a janela do deploy).
-    const legal = await preparar({ type: 'experimentation', scene: 'coordinates' }).gravar(
-      [{ type: 'place', x: 0, y: 150 }],
-      false,
-    )
+describe('BAIXO-1: o comando que não é legal nesta cena é 400 (pedido mal formado)', () => {
+  test('⚠️ o ▶ na `random` é recusado: lá o tempo mora no gesto "Passar 5 segundos"', async () => {
+    const recusado = await preparar({ type: 'experimentation', scene: 'random' }).gravar([
+      { type: 'advance', seconds: 0.05 },
+    ])
+    expect(recusado.status).toBe(400)
+    const legal = await preparar({ type: 'experimentation', scene: 'coordinates' }).gravar([
+      { type: 'place', x: 0, y: 150 },
+    ])
     expect(legal.status).toBe(200)
   })
 })
 
-describe('MÉDIO-3: o bloco do banco citando uma meta que saiu', () => {
+describe('MÉDIO-3: o bloco do banco citando uma meta que a cena não tem', () => {
   const comMetaQueSaiu: SceneActivity = {
     type: 'experimentation',
     scene: 'coordinates',
@@ -126,7 +107,7 @@ describe('MÉDIO-3: o bloco do banco citando uma meta que saiu', () => {
     })
   })
 
-  test('⚠️⚠️ e a seção fecha: só com metas que saíram, vale a missão do modelo (e não uma VAZIA)', async () => {
+  test('⚠️⚠️ e a seção fecha: só com id que a cena não tem, vale a missão do modelo (e não uma VAZIA)', async () => {
     // Antes, a missão filtrada ficava vazia e "Missão VAZIA reprova": obrigatória, a seção nunca fechava.
     const { gravar, tentar } = preparar({
       type: 'experimentation',

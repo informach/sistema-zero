@@ -237,7 +237,7 @@ describe('symmetry: os dois espelhos do Pinta, no meio da grade', () => {
     ).toEqual([])
   })
 
-  test('⚠️ desligar o espelho guarda qual era; o `mirror` e o `paint` antigos continuam legais', () => {
+  test('⚠️ desligar o espelho guarda qual era, e a faixa conta os GESTOS', () => {
     const desligado = rodar('symmetry', [
       { type: 'mirror-mode', mode: 'y' },
       { type: 'mirror-mode', mode: 'off' },
@@ -248,13 +248,6 @@ describe('symmetry: os dois espelhos do Pinta, no meio da grade', () => {
     expect(faixa('symmetry', desligado)).toBe(
       'espelho desligado · seus traços 0 · cópias do espelho 0',
     )
-    // O `mirror` de antes do lote 5 liga o lado a lado; o `paint {column}` vira um traço de pé.
-    const antigo = rodar('symmetry', [
-      { type: 'mirror', on: true, line: 9 },
-      { type: 'paint', column: 3 },
-    ])
-    expect(antigo.mirror.marks).toEqual(['c:3', 'c:3|x'])
-    expect(descobertas(antigo)).toEqual(['two-sides'])
     expect(isSceneAction({ type: 'dot', x: 16, y: 0 }, 'symmetry')).toBe(false)
     expect(isSceneAction({ type: 'trace', piece: 'rabo' }, 'symmetry')).toBe(false)
     expect(isSceneAction({ type: 'mirror-mode', mode: 'z' }, 'symmetry')).toBe(false)
@@ -372,32 +365,6 @@ describe('fill-stroke e shading: a demonstração nunca passa por um estado sem 
     expect(sceneSituation('shading', { ...redonda, caption: '' })).toBe(
       'Sol na esquerda, sombra na direita.',
     )
-  })
-})
-
-describe('⚠️⚠️ o retrato de antes do lote 5 abre', () => {
-  test('sem `mirror.axis`, `mirror.marks` e `sheet.width`, o retrato é completado e vale', () => {
-    const atual = initialScene({ scene: 'sheet-vs-sprite' })
-    const { axis: _a, marks: _m, ...espelhoAntigo } = atual.mirror
-    const { width: _w, loaded: _l, ...folhaAntiga } = atual.sheet
-    const { strokes: _s, copies: _c, ...espelhoSemGestos } = espelhoAntigo
-    const antigo = {
-      ...atual,
-      mirror: espelhoSemGestos,
-      sheet: { ...folhaAntiga, cell: 3, size: 48 },
-    }
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.mirror.marks).toEqual([])
-    expect(hidratado.mirror.axis).toBe('x')
-    expect(hidratado.sheet.width).toBe(64)
-    // ⚠️ Consertos do review da onda B do lote 5: o retrato de antes MOSTRAVA o recorte, e reabrir não
-    // esvazia o jogo; os contadores de gesto do espelho começam do zero.
-    expect(hidratado.sheet.loaded).toBe(true)
-    expect([hidratado.mirror.strokes, hidratado.mirror.copies]).toEqual([0, 0])
-    // O que o retrato trazia de mundo continua igual.
-    expect(hidratado.sheet.size).toBe(48)
   })
 })
 

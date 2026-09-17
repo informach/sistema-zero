@@ -417,8 +417,6 @@ describe('mesh: o que tem embaixo da pele', () => {
   test('⚠️ "a pele por cima dos pontos" só conta DEPOIS de ver os pontos', () => {
     const s = rodar('mesh', [ver('nada')])
     expect(descobertas(s)).toHaveLength(0)
-    const raioX = rodar('mesh', [{ type: 'wireframe', on: false }])
-    expect(descobertas(raioX)).toHaveLength(0)
   })
 
   test('⚠️⚠️ a metade mostra os pontos, e a pele por cima deles pede o SEGUNDO gesto', () => {
@@ -433,17 +431,6 @@ describe('mesh: o que tem embaixo da pele', () => {
     // Ou: primeiro tudo, e a metade por cima dos pontos já vistos.
     const doTudo = rodar('mesh', [ver('tudo'), ver('metade')])
     expect(descobertas(doTudo)).toEqual(['points', 'skin'])
-  })
-
-  test('⚠️ o raio-X de antes são os degraus das pontas: ligar e desligar não passa pela metade', () => {
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): desligar o raio-X devolvia "a roupa" sem a criança
-    // ver pele e pontos juntos. A pele por cima pede a metade.
-    const s = rodar('mesh', [
-      { type: 'wireframe', on: true },
-      { type: 'wireframe', on: false },
-    ])
-    expect(s.model).toMatchObject({ wire: false, see: 'nada' })
-    expect(descobertas(s)).toEqual(['points'])
   })
 
   test('girar o modelo não é girar a câmera, e com os pontos à vista a frase diz que eles giram', () => {

@@ -160,8 +160,6 @@ export function buildApp(
     zappy?: ZappyHistoryService
     /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
     deletedAccountIds?: string[]
-    /** `SCENE_CLOCK_STRICT`: recusar o player de cena de antes do relógio de quadro fixo. */
-    sceneClockStrict?: boolean
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -329,7 +327,6 @@ export function buildApp(
     clock,
     teacherThreads,
     sectionProgression,
-    { sceneClockStrict: opts.sceneClockStrict },
   )
   const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
   const submitStudio = new SubmitStudioProjectService(

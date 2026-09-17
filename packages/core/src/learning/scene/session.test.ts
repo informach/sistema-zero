@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { SCENE_IDS } from './actions'
 import { SCENE_MODELS } from './catalog'
-import { stepScene } from './engine'
 import {
   applyDemonstrationSegment,
   applyExperimentSegment,
@@ -14,12 +13,10 @@ import {
   readDemonstrationSession,
   readExperimentSession,
   readSceneSegment,
-  SCENE_CLOCK_MARK,
   SceneConflictError,
   sceneEmitsSound,
   sceneFromTrial,
   sceneSegmentAnswers,
-  sceneSegmentHasClock,
   sceneTrial,
   stepDemonstration,
   stepExperiment,
@@ -277,132 +274,17 @@ describe('sessão de demonstração', () => {
     expect(semBatida).toBe(0)
   })
 
-  /**
-   * ⚠️⚠️ O PLAYER ANTERIOR ao lote 1, copiado daqui como era: a etapa com `waitFor` ficava pronta
-   * na PRIMEIRA fatia em que a descoberta acontecia. É ele que uma aba aberta antes do deploy
-   * continua rodando, e é contra os comandos DELE que o servidor novo precisa registrar a
-   * demonstração assistida.
-   */
-  function passoDoPlayerAnterior(
-    start: { scene: (typeof SCENE_IDS)[number] },
-    roteiro: (typeof SCENE_MODELS)[keyof typeof SCENE_MODELS]['script'],
-    s: ReturnType<typeof initialDemonstration>,
-    command: { type: 'start' } | { type: 'next' } | { type: 'tick'; seconds: number },
-    /**
-     * ⚠️⚠️ O PIOR caso do motor antigo (lote 4 do Raio-X): ele contava um quadro por fatia, então a
-     * descoberta da etapa vinha, no mais cedo, na PRIMEIRA fatia da última ação. O servidor novo conta
-     * no ritmo da cena e só a vê depois (a `pool`, um corpo por segundo). Sem este modo o teste usaria o
-     * motor NOVO para decidir quando o player antigo terminava, e passaria com a tolerância quebrada.
-     */
-    piorCaso = false,
-  ) {
-    if (command.type !== 'tick') return stepDemonstration(start, roteiro, s, command).session
-    if (s.ready) return s
-    const next = { ...s }
-    const passo = roteiro[next.step]
-    const acao = passo?.actions[next.action]
-    if (!passo || !acao) return next
-    next.elapsed += command.seconds
-    if (acao.type === 'advance') {
-      const fatia = Math.min(command.seconds, acao.seconds - (next.elapsed - command.seconds))
-      if (fatia >= 0.001)
-        next.state = stepScene(start, next.state, { type: 'advance', seconds: fatia })
-      const acabou = next.elapsed + 1e-6 >= acao.seconds
-      const alcancou =
-        next.action === passo.actions.length - 1 &&
-        passo.waitFor !== undefined &&
-        (piorCaso || next.state.evidence.discoveries.includes(passo.waitFor))
-      if (acabou || alcancou) {
-        next.action += 1
-        next.elapsed = 0
-      }
-    } else if (next.elapsed >= 0.45) {
-      next.state = stepScene(start, next.state, acao)
-      next.action += 1
-      next.elapsed = 0
-    }
-    if (next.action >= passo.actions.length) {
-      next.ready = true
-      if (next.step === roteiro.length - 1) next.viewed = true
-    }
-    return next
-  }
-  /** Os comandos que o player anterior MANDA, tocando em fatias de 0,05 s. */
-  function comandosDoPlayerAnterior(scene: (typeof SCENE_IDS)[number], piorCaso = false) {
-    const start = { scene }
-    const roteiro = SCENE_MODELS[scene].script
-    const comandos: ({ type: 'start' } | { type: 'next' } | { type: 'tick'; seconds: number })[] = [
-      { type: 'start' },
-    ]
-    let s = passoDoPlayerAnterior(start, roteiro, initialDemonstration(start), { type: 'start' })
-    for (let i = 0; i < 4000 && !s.viewed; i++) {
-      comandos.push({ type: 'tick', seconds: 0.05 })
-      s = passoDoPlayerAnterior(start, roteiro, s, { type: 'tick', seconds: 0.05 }, piorCaso)
-      if (s.ready && s.step < roteiro.length - 1) {
-        comandos.push({ type: 'next' })
-        s = passoDoPlayerAnterior(start, roteiro, s, { type: 'next' }, piorCaso)
-      }
-    }
-    return comandos
-  }
-  const replay = (
-    scene: (typeof SCENE_IDS)[number],
-    commands: unknown[],
-    opcoes?: { tolerarPlayerAnterior?: boolean },
-  ) =>
-    applyDemonstrationSegment(
-      { scene },
-      SCENE_MODELS[scene].script,
-      null,
-      { sessionId: 's', segmentId: 'g', baseSequence: 0, commands },
-      opcoes,
-    ).session.viewed
+  const replay = (scene: (typeof SCENE_IDS)[number], commands: unknown[]) =>
+    applyDemonstrationSegment({ scene }, SCENE_MODELS[scene].script, null, {
+      sessionId: 's',
+      segmentId: 'g',
+      baseSequence: 0,
+      commands,
+    }).session.viewed
 
-  test('⚠️⚠️ deploy: o servidor TOLERANTE registra a demonstração vista num player anterior', () => {
-    const naoRegistra: string[] = []
-    const tolerante: string[] = []
-    for (const scene of SCENE_IDS) {
-      const comandos = comandosDoPlayerAnterior(scene)
-      if (!replay(scene, comandos)) naoRegistra.push(scene)
-      if (!replay(scene, comandos, { tolerarPlayerAnterior: true })) tolerante.push(scene)
-    }
-    // Anti-vácuo: sem a tolerância o defeito do review aparece (velocity, gravity, pool…).
-    expect(naoRegistra).toContain('velocity')
-    expect(naoRegistra.length).toBeGreaterThanOrEqual(5)
-    expect(tolerante).toEqual([])
-  })
-
-  test('⚠️⚠️ deploy com o relógio de quadro fixo: o player anterior terminando a etapa na PRIMEIRA fatia', () => {
-    // O motor antigo do navegador descobria quase tudo na primeira fatia; o do servidor, só no quadro
-    // da cena. Medido com o motor de produção: 6 dos 45 modelos (velocity, aim, diagonal, pool,
-    // entity-state, delta-time) voltavam a não registrar com a tolerância olhando só o estado ATUAL.
-    const naoRegistra: string[] = []
-    for (const scene of SCENE_IDS)
-      if (!replay(scene, comandosDoPlayerAnterior(scene, true), { tolerarPlayerAnterior: true }))
-        naoRegistra.push(scene)
-    expect(naoRegistra).toEqual([])
-    // O `next` aceito COMPLETA a ação pulada: a etapa seguinte começa de onde o roteiro a deixa.
-    const pool = { scene: 'pool' } as const
-    const roteiro = SCENE_MODELS.pool.script
-    let s = stepDemonstration(pool, roteiro, initialDemonstration(pool), { type: 'start' }).session
-    for (let i = 0; i < 60 && s.action < roteiro[0]!.actions.length - 1; i++)
-      s = stepDemonstration(pool, roteiro, s, { type: 'tick', seconds: 0.05 }).session
-    s = stepDemonstration(pool, roteiro, s, { type: 'tick', seconds: 0.05 }).session
-    expect(s.state.nursery.created).toBeLessThan(3)
-    const tolerante = stepDemonstration(
-      pool,
-      roteiro,
-      s,
-      { type: 'next' },
-      { tolerarPlayerAnterior: true },
-    )
-    expect(tolerante.session.step).toBe(1)
-    expect(tolerante.session.state.nursery.created).toBe(3)
-    // Sem tolerância (o player novo), o mesmo `next` no meio da ação continua ignorado.
-    expect(stepDemonstration(pool, roteiro, s, { type: 'next' }).session.step).toBe(0)
-  })
-
-  test('⚠️ e a tolerância não muda nada para o player NOVO, nem aceita `next` antes da hora', () => {
+  test('⚠️⚠️ o servidor rejoga os comandos do player e registra a demonstração assistida nas 45', () => {
+    // O player e o servidor rodam o MESMO motor: os comandos que fecham a demonstração na tela dela
+    // precisam fechá-la no rejogo, senão a criança assiste tudo e o bloco não conclui.
     for (const scene of SCENE_IDS) {
       const start = { scene }
       const roteiro = SCENE_MODELS[scene].script
@@ -418,23 +300,30 @@ describe('sessão de demonstração', () => {
           s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
         }
       }
+      expect(s.viewed, scene).toBe(true)
       expect(replay(scene, comandos), scene).toBe(true)
-      expect(replay(scene, comandos, { tolerarPlayerAnterior: true }), scene).toBe(true)
     }
-    // Um `next` no meio de uma etapa SEM descoberta continua ignorado, tolerante ou não.
+  })
+
+  test('⚠️ o `next` no meio de uma etapa é ignorado: a etapa só termina com o `advance` inteiro', () => {
     const velocity = { scene: 'velocity' } as const
     const roteiro = SCENE_MODELS.velocity.script
-    let s = stepDemonstration(velocity, roteiro, initialDemonstration(velocity), {
+    const s = stepDemonstration(velocity, roteiro, initialDemonstration(velocity), {
       type: 'start',
     }).session
-    s = stepDemonstration(
-      velocity,
-      roteiro,
-      s,
-      { type: 'next' },
-      { tolerarPlayerAnterior: true },
-    ).session
-    expect(s.step).toBe(0)
+    expect(stepDemonstration(velocity, roteiro, s, { type: 'next' }).session.step).toBe(0)
+    // E o mesmo na etapa que espera uma descoberta: a `pool` fabrica um corpo por segundo, e o `next`
+    // com o `advance` pela metade não adianta o mundo nem pula a etapa.
+    const pool = { scene: 'pool' } as const
+    const script = SCENE_MODELS.pool.script
+    let p = stepDemonstration(pool, script, initialDemonstration(pool), { type: 'start' }).session
+    for (let i = 0; i < 60 && p.action < script[0]!.actions.length - 1; i++)
+      p = stepDemonstration(pool, script, p, { type: 'tick', seconds: 0.05 }).session
+    p = stepDemonstration(pool, script, p, { type: 'tick', seconds: 0.05 }).session
+    expect(p.state.nursery.created).toBeLessThan(3)
+    const depois = stepDemonstration(pool, script, p, { type: 'next' }).session
+    expect(depois.step).toBe(0)
+    expect(depois.state).toEqual(p.state)
   })
 
   test('só aceita os três comandos dela, e o tique tem teto', () => {
@@ -589,28 +478,19 @@ describe('o que vai e volta do servidor', () => {
     ).toBeNull()
   })
 
-  test('⚠️⚠️ o marcador do relógio: o player novo se identifica, e o segmento lido não muda de forma', () => {
+  test('as respostas do segmento são RASAS: só o que a borda do members admite', () => {
     const answers = sceneSegmentAnswers({
       sessionId: 'a1',
       segmentId: 'b2',
       baseSequence: 0,
       commands: [{ type: 'advance', seconds: 0.2 }],
     })
-    expect(answers.sceneClock).toBe(SCENE_CLOCK_MARK)
-    expect(sceneSegmentHasClock(answers)).toBe(true)
-    // O player de antes do lote 4 não manda o marcador (e um valor desconhecido não conta).
-    const { sceneClock: _marca, ...antigo } = answers
-    expect(sceneSegmentHasClock(antigo)).toBe(false)
-    expect(sceneSegmentHasClock({ ...antigo, sceneClock: SCENE_CLOCK_MARK + 1 })).toBe(false)
-    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5, A2): o marcador virou a VERSÃO das
-    // regras, e o player do lote 4 (que mandava 1) passou a ser "anterior" também.
-    expect(SCENE_CLOCK_MARK).toBe(2)
-    expect(sceneSegmentHasClock({ ...antigo, sceneClock: 1 })).toBe(false)
-    expect(sceneSegmentHasClock(null)).toBe(false)
-    // ⚠️⚠️ O segmento lido é IGUAL com e sem o marcador: o members guarda o hash dele para reconhecer
-    // um reenvio, e um segmento gravado antes do deploy e reenviado pelo player novo não pode virar
-    // conflito.
-    expect(JSON.stringify(readSceneSegment(answers))).toBe(JSON.stringify(readSceneSegment(antigo)))
+    expect(Object.keys(answers).sort()).toEqual([
+      'sceneBaseSequence',
+      'sceneCommands',
+      'sceneSegmentId',
+      'sceneSessionId',
+    ])
     expect(Object.keys(readSceneSegment(answers) ?? {})).toEqual([
       'sessionId',
       'segmentId',

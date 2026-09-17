@@ -83,8 +83,8 @@ import {
  * mesmas regras. O que muda entre elas é de onde as ações vêm (do roteiro ou da criança) e
  * como a evidência é colhida, nunca a física.
  *
- * ⚠️ Ação ilegal para a cena é um no-op silencioso, não um erro: um roteiro antigo ou um
- * pacote adulterado não derruba a aula da criança no meio.
+ * ⚠️ Ação ilegal para a cena é um no-op silencioso, não um erro: um roteiro escrito para outra
+ * cena, ou um pacote adulterado, não derruba a aula da criança no meio.
  */
 /**
  * Por onde a cena COMEÇA nesta atividade: o mundo de fábrica com o caso do professor aplicado.
@@ -130,14 +130,13 @@ export function openScene(start: SceneStart): SceneState {
  * e esses campos ALIMENTAM metas e desenhos. Um caso que leva a nave para (300, 40) deixava o
  * fantasma em (110, 150), o mundo de fábrica: a cena ABRIA com o rastro de um lugar onde a
  * criança nunca esteve, e a primeira vez que ela passasse pelo x de fábrica disparava "mesmo x,
- * altura diferente" comparando com uma posição que o caso tinha substituído. ⚠️ Essa meta (`same-x`)
- * saiu no lote 5 e `place.visitedX` não alimenta mais nada: segue zerado aqui por ser retrato gravado.
+ * altura diferente" comparando com uma posição que o caso tinha substituído.
  *
  * O mundo é do professor; a história é da criança, e ela começa vazia.
  */
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   // Os fantasmas e os "onde eu estava antes" passam a apontar para onde a cena ABRE.
-  aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y, visitedX: [] }
+  aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y }
   aberto.drive = {
     ...aberto.drive,
     fromX: aberto.drive.x,
@@ -148,14 +147,7 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   }
   // ⚠️ As marcas do papel e os dois contadores de gesto também (consertos do review da onda B do lote
   // 5): o caso que pinta abria com "você pintou 1" e as cópias dele no papel. O espelho escolhido fica.
-  aberto.mirror = {
-    ...aberto.mirror,
-    painted: [],
-    lastLine: aberto.mirror.line,
-    marks: [],
-    strokes: 0,
-    copies: 0,
-  }
+  aberto.mirror = { ...aberto.mirror, marks: [], strokes: 0, copies: 0 }
   // ⚠️ Daqui para baixo é tudo CONTADOR do que já foi feito, e cada um alimenta uma meta que
   // fala de repetição ("dois lugares", "todo quadro", "vários"). Deixar um de fora é deixar a
   // criança fechar num gesto o que devia levar vários — foi o achado do full review.
@@ -175,7 +167,7 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   // SÃO o relógio (`huntDistances`), e com o zero um caso com tempo abria com os números de um instante
   // e saltava para os do instante 0 no primeiro quadro, trocando o mais perto no salto.
   aberto.hunt = { ...aberto.hunt, looked: [] }
-  aberto.grid = { ...aberto.grid, edits: base.grid.edits, written: [] }
+  aberto.grid = { ...aberto.grid, edits: base.grid.edits }
   aberto.view = { ...aberto.view, wasLost: base.view.wasLost }
   aberto.speed = {
     ...aberto.speed,
@@ -603,11 +595,7 @@ export function stepScene(
 
     case 'move':
       s.contact.distance = action.distance
-      if (scene === 'hitbox') moverNaHitbox(s)
-      else if (s.match.screen === 'playing' && sceneContact(s.contact)) {
-        s.match.screen = 'end'
-        observe(s, 'ended', 'A batida levou para o fim.')
-      }
+      moverNaHitbox(s)
       break
 
     case 'resize':
@@ -657,7 +645,6 @@ export function stepScene(
         s.contact.distance = 25
         // ⚠️ Sem legenda no fim (review do lote 2): "Confira se os pontos ficam parados" sugeria o
         // resultado da meta `score-end`. A situação diz onde a partida está e o placar.
-        if (scene === 'restart') observe(s, 'ended', 'A batida levou para o fim.')
         if (scene === 'score') verPlacar(s)
       }
       break
@@ -683,13 +670,6 @@ export function stepScene(
       s.crowd.interval = action.seconds
       resetTrack(s)
       s.caption = `Tudo recomeçou do zero, com o intervalo de ${decimal(action.seconds)} s.`
-      break
-
-    case 'clock':
-      // ⚠️ LEGADO (lote 5 do Raio-X): o relógio da base sozinho, sem cacto novo. O gesto da criança
-      // é o "Passar 5 segundos" (`sample` de velocidade), que anda a base E faz nascer o cacto.
-      passarABase(s)
-      s.caption = `Base do próximo cacto: ${numero(s.speed.base)}.`
       break
 
     case 'sample':
@@ -1012,19 +992,6 @@ export function stepScene(
       break
     }
 
-    /**
-     * ⚠️ O espelho ANTIGO, com a linha do eixo (antes do lote 5 do Raio-X). O Espelho lado a lado do
-     * Pinta reflete sempre no meio do desenho, e a cena mandava a criança procurar um eixo móvel que
-     * não existe. Continua legal (roteiros e retratos antigos): liga o espelho lado a lado e guarda a
-     * linha, que o palco não desenha mais.
-     */
-    case 'mirror':
-      // ⚠️ Sem legenda: "o que você pintar fica só de um lado" era a meta `one-side` antes de pintar.
-      s.mirror.on = action.on
-      s.mirror.line = action.line
-      s.mirror.axis = 'x'
-      break
-
     /** Os dois espelhos do Pinta, sempre no meio (lote 5 do Raio-X). Sem legenda: a faixa diz qual. */
     case 'mirror-mode':
       s.mirror.on = action.mode !== 'off'
@@ -1037,23 +1004,11 @@ export function stepScene(
      * ⚠️⚠️ As três metas são sobre QUAL espelho estava ligado no traço: desligado, lado a lado e de
      * cima e de baixo, os dois espelhos do Pinta. O terceiro só conta DEPOIS do lado a lado (a bancada
      * o deixa fechado com o motivo até lá): é o caso novo, que a criança prevê com o que já viu.
-     * ⚠️ O `paint {column}` de antes do lote 5 vira um traço de pé na grade (`c:N`).
      */
     case 'trace':
-    case 'dot':
-    case 'paint': {
-      const base =
-        action.type === 'trace'
-          ? action.piece
-          : action.type === 'dot'
-            ? `p:${action.x},${action.y}`
-            : `c:${action.column}`
-      const nome =
-        action.type === 'trace'
-          ? NOME_DO_TRACO[action.piece]
-          : action.type === 'dot'
-            ? 'um quadradinho'
-            : 'uma coluna'
+    case 'dot': {
+      const base = action.type === 'trace' ? action.piece : `p:${action.x},${action.y}`
+      const nome = action.type === 'trace' ? NOME_DO_TRACO[action.piece] : 'um quadradinho'
       pintarMarca(s, base)
       // ⚠️ Os GESTOS contam, e não as marcas (consertos do review da onda B do lote 5, B4): pintar a asa
       // de novo não é marca nova, e a faixa ficava parada no quarto toque.
@@ -1283,13 +1238,6 @@ export function stepScene(
       // Sem legenda: a distância e a vida perdida a situação já diz.
       break
     }
-    case 'mode': {
-      // ⚠️⚠️ Lote 5 do Raio-X: as DUAS regras ficam sempre à vista, uma pista cada, e a Escolha da
-      // pergunta saiu da bancada. A ação continua legal (roteiros e sessões de antes), e guardar o modo
-      // não zera mais nada: zerar a vida aqui era o que apagava a comparação.
-      s.hit.mode = action.kind
-      break
-    }
     case 'shoot': {
       if (scene === 'lives') {
         acertarComOTiro(s)
@@ -1479,10 +1427,6 @@ export function stepScene(
       s.caption = saiu ? 'A câmera voltou para onde começou.' : 'A câmera já estava onde começou.'
       break
     }
-    case 'wireframe':
-      // ⚠️ O gesto de antes do lote 5 (raio-X ligado ou desligado) são os degraus das pontas.
-      verOsPontos(s, action.on ? 'tudo' : 'nada')
-      break
     case 'see-points':
       verOsPontos(s, action.level)
       break
@@ -1939,7 +1883,6 @@ function verOsPontos(s: SceneState, nivel: MeshLevel): void {
   if (s.model.see === nivel) return
   const jaViuOsPontos = s.evidence.discoveries.includes('points')
   s.model.see = nivel
-  s.model.wire = nivel === 'tudo'
   if (nivel !== 'nada') observe(s, 'points', 'Viu os pontos e as linhas que formam o modelo', true)
   if ((nivel === 'metade' && jaViuOsPontos) || (nivel === 'nada' && s.model.sawHalf))
     observe(s, 'skin', 'Viu a pele por cima dos mesmos pontos', true)
@@ -3368,15 +3311,11 @@ function escreverNoMapa(s: SceneState, row: number, col: number, tile: string): 
   }
   g.rows[row] = linha.slice(0, col) + tile + linha.slice(col + 1)
   g.edits += 1
-  // ⚠️⚠️ Guarda a LETRA, uma vez só: a lista não cresce com as 60 casas do mapa.
-  if (!g.written.includes(tile)) g.written.push(tile)
   observe(s, 'text-is-map', 'Trocou uma letra e o desenho mudou', true)
   // ⚠️⚠️ A marca é da CASA e sai quando a casa recebe outra letra (consertos do review da onda B do lote
-  // 5): marcada só pela linha, um `#` apagado continuava contando para "a mesma peça em duas linhas". A
-  // marca antiga da mesma peça nesta linha (`#3`, de antes) dá lugar à da casa. O corte mantém o teto do
-  // validador mesmo com marcas antigas sobrando.
+  // 5): marcada só pela linha, um `#` apagado continuava contando para "a mesma peça em duas linhas".
   const casa = `${row}:${col}`
-  g.marks = g.marks.filter((m) => m.slice(1) !== casa && m !== `${tile}${row}`)
+  g.marks = g.marks.filter((m) => m.slice(1) !== casa)
   if (tile === '#' || tile === 'o') {
     g.marks = [...g.marks, tilemapMark(tile, row, col)].slice(-TILEMAP_MARKS_MAX)
     if (tilemapMarkedRows(g.rows, g.marks, tile).length >= 2)

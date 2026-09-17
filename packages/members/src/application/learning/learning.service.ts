@@ -27,17 +27,13 @@ import {
   readDemonstrationSession,
   readExperimentSession,
   readSceneSegment,
-  SCENE_CLOCK_MARK,
   type SceneCheckpoint,
   SceneConflictError,
   type SceneSegment,
   type SceneStart,
   type SceneStep,
-  sceneGoals,
   sceneModel,
-  sceneSegmentHasClock,
   sceneStart,
-  sceneTargets,
 } from '@sistemazero/core/learning/scene'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
 import type { LessonWithContent } from '../../domain/course/course'
@@ -103,8 +99,8 @@ function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): C
   return null
 }
 
-/** Lê o que está guardado na forma da cena certa. Formato errado devolve `null`, e quem
- *  chama trata isso como conflito em vez de recomeçar por cima do trabalho da criança. */
+/** Lê o que está guardado na forma da cena certa. Formato errado devolve `null`, e quem chama
+ *  trata isso como sessão INEXISTENTE: a cena recomeça limpa e a gravação nova substitui a linha. */
 function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuardada | null {
   const { sceneSequence, sceneSessionId, sceneSegmentId, sceneCheckpoint } = answers
   if (!Number.isSafeInteger(sceneSequence) || Number(sceneSequence) < 0) return null
@@ -122,31 +118,11 @@ function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuarda
   return session ? { kind: 'experimentation', checkpoint: { ...comum, session } } : null
 }
 
-/**
- * A cena FECHOU no que este servidor guardou? A demonstração, vista até o fim; a experimentação, com
- * todas as metas que a atividade cobra. ⚠️ Sem o `settled` da `layers`/`jump-sound` de propósito: a
- * montagem desfeita depois de descobrir é um "ainda não" do avaliador, não uma divergência de versão.
- */
-function cenaFechouNoServidor(
-  activity: InteractiveBlock['activity'],
-  answers: LearningAnswers,
-): boolean {
-  if (activity.type === 'demonstration')
-    return readDemonstrationSession(activity.scene, answers.sceneCheckpoint)?.viewed === true
-  if (activity.type !== 'experimentation') return true
-  const sessao = readExperimentSession(activity.scene, answers.sceneCheckpoint)
-  if (!sessao) return false
-  const metas = sceneGoals(activity.scene, sessao.state, activity.cast, sceneTargets(activity))
-  return metas.every((g) => g.complete)
-}
-
 /** Aplica o segmento sobre o que estava guardado e devolve as respostas prontas para gravar. */
 function applySceneSegment(
   cena: Cena,
   guardado: CenaGuardada | null,
   segment: SceneSegment,
-  /** O segmento veio de um player com as regras deste servidor (`sceneSegmentHasClock`: a versão das regras). */
-  playerComRelogio: boolean,
 ): LearningAnswers {
   const c =
     cena.kind === 'demonstration'
@@ -155,13 +131,6 @@ function applySceneSegment(
           cena.script,
           guardado?.kind === 'demonstration' ? guardado.checkpoint : null,
           segment,
-          // ⚠️⚠️ O servidor é TOLERANTE com o player anterior ao lote 1 (a etapa com `waitFor`
-          // acabava na primeira fatia com a descoberta). Sem isto, uma aba aberta durante o
-          // deploy — ou o kids subindo depois do members — nunca registrava a demonstração
-          // assistida. ⚠️⚠️ Só para o player ANTERIOR (review do lote 4): ligada para todos, a folga
-          // marcava "assistida" com um tique de 0,04 s na última ação também para o player novo, e
-          // para sempre. O player novo se identifica pelo marcador; ver `DemonstrationReplayOptions`.
-          { tolerarPlayerAnterior: !playerComRelogio },
         )
       : applyExperimentSegment(
           cena.start,
@@ -176,11 +145,6 @@ function applySceneSegment(
       cena.kind === 'demonstration'
         ? packDemonstration(cena.start.scene, c.session as DemonstrationSession)
         : packExperiment(cena.start.scene, c.session as ExperimentSession),
-    // ⚠️ QUEM escreveu este checkpoint (consertos do review da onda B do lote 5, MÉDIO-5): o marcador do
-    // player que mandou o último segmento, na mesma chave em que ele chega. É ele que diz, na tentativa,
-    // se a cena foi fechada por um player com as regras deste servidor (`sceneSegmentHasClock`). ⚠️ Fica
-    // fora do hash do segmento (`readSceneSegment` não o lê), como o marcador que chega.
-    ...(playerComRelogio ? { sceneClock: SCENE_CLOCK_MARK } : {}),
   }
   // ⚠️ O que o SERVIDOR monta também tem de caber. Numa cena cheia de cactos o checkpoint
   // passa do limite, a gravação iria ao banco em silêncio e a tentativa seguinte — que ecoa
@@ -199,8 +163,6 @@ export class LearningService {
     private readonly clock: () => Date,
     private readonly teacherThreads: TeacherThreadsService,
     readonly sections: SectionProgressionService,
-    /** `sceneClockStrict`: recusar o player de antes do relógio de quadro fixo (`SCENE_CLOCK_STRICT`). */
-    private readonly options: { sceneClockStrict?: boolean } = {},
   ) {}
 
   private async requireLesson(actor: LearningActor, lessonId: string) {
@@ -368,46 +330,28 @@ export class LearningService {
     if (cena) {
       const segment = readSceneSegment(input.answers)
       if (!segment) throw new ValidationError('Segmento de experiência inválido.')
-      const playerComRelogio = sceneSegmentHasClock(input.answers)
-      /**
-       * ⚠️⚠️ A aba aberta durante o deploy do relógio de quadro fixo (review do lote 4 do Raio-X).
-       *
-       * O player de antes do lote 4 decide a conclusão pelo motor DELE (um quadro por fatia). Na
-       * EXPERIMENTAÇÃO ele mostrava "concluiu" enquanto este servidor, rejogando os mesmos comandos
-       * no relógio novo, gravava `passed:false`; com a assinatura igual ele nem reenviava, e depois
-       * do F5 as metas voltavam a faltar (122 de 432 reproduções). Com a flag ligada, o segmento sem
-       * o marcador numa cena com relógio é recusado com 409, e o player antigo cai no recado que ele
-       * já sabe mostrar ("Reabra a aula"), que carrega o player novo. ⚠️ Desligada por padrão: ela
-       * só liga DEPOIS de o kids (e o community) com o player novo estarem no ar, senão toda aba
-       * recusaria antes de existir player que mande o marcador. Ordem no CLAUDE.md do members.
-       * ⚠️⚠️ TODA cena, com ou sem relógio (consertos do review da onda A do lote 5, A2). O marcador
-       * virou a VERSÃO DAS REGRAS (`SCENE_CLOCK_MARK` 2): a onda A mudou metas de cenas sem relógio
-       * (`coordinates`, `layers`, `hitbox`) e tirou o relógio de `random` e `acceleration`. Só nas
-       * cenas com relógio, o player do lote 4 concluía na tela e este servidor gravava `passed:false`,
-       * e numa aba antiga da `random` o ▶ virava um 400 que o player lê como "sem internet" para sempre.
-       * Recusado aqui (antes da validação dos comandos), ele cai no "Reabra a aula".
-       */
-      if (this.options.sceneClockStrict && !playerComRelogio) throw new LearningConflictError()
       // ⚠️ Validar ANTES de aplicar. Uma demonstração não aceita gesto de criança e uma
       // experimentação não aceita comando de roteiro: mandar o comando errado é pedido mal
       // formado (400), não falha do servidor.
       const aceita = cena.kind === 'demonstration' ? isDemonstrationCommand : undefined
       for (const comando of segment.commands)
-        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start)) {
-          // ⚠️⚠️ Sem o marcador ATUAL, o comando que este core recusa é quase sempre de um player de
-          // OUTRA versão das regras (full review final de dados e deploy, BAIXO-1): o `advance` saiu da
-          // `random`, da `acceleration` e da `diagonal`. Com a flag desligada ele recebia 400, que o
-          // player lê como "Aguardando conexão" para sempre; com 409 ele cai no "Reabra a aula". O
-          // player com as regras deste servidor segue recebendo 400 (é pedido mal formado de verdade).
-          if (!playerComRelogio) throw new LearningConflictError()
+        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start))
           throw new ValidationError('Comando de experiência inválido para esta atividade.')
-        }
       const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
         (p) => p.blockId === blockId && p.revision === input.revision,
       )
       const hash = createHash('sha256').update(JSON.stringify(segment)).digest('hex')
       const guardado = saved ? readSceneCheckpointOf(cena, saved.answers) : null
-      if (saved && !guardado) throw new LearningConflictError()
+      // ⚠️⚠️ Sessão guardada que NÃO hidrata (retrato truncado, adulterado ou incoerente) vale
+      // como INEXISTENTE: a cena recomeça limpa e esta gravação substitui a linha. Tratá-la como
+      // conflito trancava o bloco para sempre — 409 em toda gravação, recarregar não adiantava
+      // (a linha continuava no banco) e não havia caminho de cura dentro do produto. O conflito
+      // de VERDADE (sessão válida de outra aba, pedido fora de ordem, segmento repetido com outro
+      // conteúdo) continua abaixo, e a gravação segue presa à linha que ESTE pedido leu.
+      const sequenciaNaLinha =
+        saved && typeof saved.answers.sceneSequence === 'number'
+          ? saved.answers.sceneSequence
+          : null
       // O mesmo segmento reenviado (a rede piscou) devolve o que já foi gravado, em vez de
       // aplicar duas vezes; um segmento DIFERENTE com o mesmo id é conflito de verdade.
       if (saved && guardado?.checkpoint.segmentId === segment.segmentId) {
@@ -416,13 +360,17 @@ export class LearningService {
       }
       // A base que o cliente diz conhecer tem de ser a versão atual. Duas abas abertas, ou
       // um pedido fora de ordem, caem aqui — e perder o trabalho da outra ponta seria pior
-      // que recusar este.
+      // que recusar este. ⚠️ Sem sessão legível a base é ZERO, que é onde o player também
+      // recomeça: ele lê o checkpoint com a MESMA régua do servidor.
       if (segment.baseSequence !== (guardado?.checkpoint.sequence ?? 0))
         throw new LearningConflictError()
-      expectedExperienceSequence = guardado?.checkpoint.sequence ?? null
+      // ⚠️ A trava otimista aponta para a linha que este pedido LEU, não para o que foi
+      // hidratado: assim a linha ilegível é substituída, mas uma gravação concorrente que
+      // entrar no meio ainda derruba esta (a sequência no banco deixa de ser a lida).
+      expectedExperienceSequence = guardado?.checkpoint.sequence ?? sequenciaNaLinha
       try {
         answers = {
-          ...applySceneSegment(cena, guardado, segment, playerComRelogio),
+          ...applySceneSegment(cena, guardado, segment),
           segmentHash: hash,
         }
       } catch (error) {
@@ -480,29 +428,6 @@ export class LearningService {
         saved.answers.sceneSequence !== answers.sceneSequence ||
         saved.answers.sceneSessionId !== answers.sceneSessionId ||
         saved.answers.sceneSegmentId !== answers.sceneSegmentId
-      )
-        throw new LearningConflictError()
-      /**
-       * ⚠️⚠️ O player de OUTRA versão das regras diz que concluiu, e este servidor diz que não
-       * (consertos do review da onda B do lote 5, MÉDIO-5).
-       *
-       * Quem manda a tentativa de uma cena é o player, e ele só manda quando o motor DELE fechou a cena.
-       * Com o mesmo motor dos dois lados isso nunca discorda. Discorda quando o player é de antes das
-       * regras de agora: as demonstrações que CRESCERAM no lote 5 (`frames`, `fill-stroke`,
-       * `sheet-vs-sprite`, nas Aulas 3, 4 e 6 de O Jogo do Meu Jeito) terminam no player publicado com um
-       * `next` a menos, e metas trocadas (a `same-x` virou `origin` na `coordinates`) fecham a
-       * experimentação lá e não aqui. Avaliada, a tentativa voltava `passed:false`, e o player antigo
-       * ficava em "Guardando este resultado…" para sempre, sem erro e sem recado, com a flag
-       * `SCENE_CLOCK_STRICT` ainda desligada. Com o 409 ele cai no "Reabra a aula" que já sabe mostrar, e
-       * reabrir carrega o player novo.
-       * ⚠️ Só sem o marcador ATUAL no que está guardado (`sceneClock`, gravado por `applySceneSegment`): o
-       * player novo, que tem as mesmas regras deste servidor, continua recebendo o "ainda não" de sempre.
-       * ⚠️ Só quando a CENA não fechou aqui: descoberta feita com a pergunta errada é resposta errada, e
-       * a montagem desfeita da `layers` e da `jump-sound` também não é conflito (as metas estão feitas).
-       */
-      if (
-        !sceneSegmentHasClock(saved.answers) &&
-        !cenaFechouNoServidor(block.content.activity, saved.answers)
       )
         throw new LearningConflictError()
       // ⚠️⚠️ A SESSÃO vem do servidor; o que a CRIANÇA respondeu vem do cliente.

@@ -225,9 +225,14 @@ describe('draw-loop: limpar sem desenhar deixa a tela VAZIA', () => {
     expect(dinosNaFaixa(congelada)).toBe('1')
   })
 
-  test('⚠️ retrato guardado antes do campo `empty` continua valendo', () => {
-    const { empty: _fora, ...antigo } = openScene(start).render
-    const hidratado = hydrateSceneState({ ...openScene(start), render: antigo })
+  test('⚠️⚠️ retrato com o `render` sem o campo `empty` é INVÁLIDO, e não completado', () => {
+    // Consertos do full review 2 (M-1): campo faltando dentro do grupo não recebe o valor de
+    // fábrica (isso fabricava estado incoerente); o retrato é recusado e a cena recomeça limpa.
+    const { empty: _fora, ...truncado } = openScene(start).render
+    expect(isSceneState(hydrateSceneState({ ...openScene(start), render: truncado }))).toBe(false)
+    // O grupo INTEIRO ausente continua recebendo o padrão de fábrica.
+    const { render: _grupo, ...semRender } = openScene(start)
+    const hidratado = hydrateSceneState(semRender)
     expect(isSceneState(hidratado)).toBe(true)
     expect((hidratado as SceneState).render.empty).toBe(false)
   })

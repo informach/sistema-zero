@@ -1992,9 +1992,7 @@ pública do R2 de cada ambiente, ex. prod `https://cdn.sistemazero.com.br/` · s
 pública do bucket `testes`; fora da allowlist → 400 `AVATAR_INVALID`). Opcional:
 `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
 de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
-`ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS) e
-**`SCENE_CLOCK_STRICT`** (default `false`; `true` só DEPOIS de kids e community com o player novo no
-ar — ver §"Sessão e tentativa de cena" e `docs/aulas-interativas/raio-x-implantacao.md`). No GATEWAY:
+`ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:
 `MEMBERS_URL=http://members.railway.internal:3004` + `MEMBERS_INTERNAL_TOKEN`. Ler tokens dos
 irmãos com `railway variables --kv`.
 
@@ -2102,8 +2100,10 @@ vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
 ## Sessão e tentativa de cena
 
 O members não confia no que o player diz ter visto: ele rejoga os comandos da cena com o motor do
-core e avalia a tentativa pelo que ELE guardou (`learning.service.ts`). Ordem dos serviços, a flag
-`SCENE_CLOCK_STRICT`, manifestos a reimportar e as pontes que um dia saem estão em
+core e avalia a tentativa pelo que ELE guardou (`learning.service.ts`). ⭐⭐ Player e servidor rodam o
+MESMO motor, e a funcionalidade nasce na PRIMEIRA versão (decisão da dona, 17/09/2026): não há marcador
+de versão das regras, flag de compatibilidade nem tolerância a player anterior — a única precaução é a
+ORDEM de deploy (members antes de kids e community), em
 [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md),
 e só lá.
 
@@ -2114,10 +2114,15 @@ e só lá.
   com caso dos manifestos v6 abre igual no servidor e no player).
 - **O segmento** chega achatado nas respostas (`readSceneSegment`) e é validado ANTES de aplicar: a
   demonstração só aceita `isDemonstrationCommand`, a experimentação só `isExperimentCommand`. Comando
-  errado de um player com o marcador atual é pedido mal formado (400); sem o marcador, é 409 (ver "O
-  player de outra versão"). O mesmo `segmentId` reenviado devolve o que já foi gravado
+  que a cena não aceita é pedido mal formado (400). O mesmo `segmentId` reenviado devolve o que já foi gravado
   (`segmentHash`); hash diferente, ou `baseSequence` que não é a guardada, é 409 `LEARNING_CONFLICT`
   (duas abas, pedido fora de ordem).
+- ⚠️⚠️ **A linha guardada que NÃO hidrata vale como sessão INEXISTENTE** (17/09/2026): a cena recomeça
+  limpa e a gravação nova substitui a linha, presa por `expectedExperienceSequence` à sequência que ESTE
+  pedido leu. Antes ela era conflito (`saved && !guardado` → 409), e isso trancava o bloco para sempre:
+  recarregar não adiantava, a linha continuava no banco e reimportar o mesmo manifesto não muda a revisão.
+  O conflito de VERDADE (sessão válida de outra aba) continua 409. Trava:
+  `tests/integration/learning-scene-sessao-ilegivel.test.ts`.
 - ⚠️⚠️ **O `advance` da criança pede no máximo 1 s e 30 quadros** (`SESSION_LIMITS.advanceSeconds` e
   `advanceFrames`, no `isExperimentCommand` do core): com o relógio de quadro fixo, um segmento hostil
   de 100 × 30 s custava ~0,25 s de CPU por requisição na `spawn`. O caso e o roteiro do professor
@@ -2127,54 +2132,6 @@ e só lá.
   recebe as respostas guardadas com, por cima, só `checkpoint` e `prediction` do corpo. Trocar o objeto
   inteiro jogava fora a escolha da pergunta anexa, e nenhuma cena com pergunta fecharia. ⚠️ A lista é
   explícita: aceitar tudo o que vier do corpo devolveria ao cliente o poder de reescrever a sessão.
-
-### A versão das regras e a flag
-
-- ⭐⭐ **`SCENE_CLOCK_MARK`** (core `session.ts`) é a VERSÃO DAS REGRAS do player. O nome ficou do
-  relógio de quadro fixo, mas a pergunta não é "tem relógio". O player manda `sceneClock` em todo
-  segmento (`sceneSegmentAnswers`) e `sceneSegmentHasClock` compara por IGUALDADE: outro valor, ou
-  nenhum, é player de outra versão. ⚠️ Mudou regra de meta que o player decide sozinho? Suba o número
-  no mesmo commit. ⚠️ O marcador fica FORA do `readSceneSegment`: o hash guardado é o do segmento lido,
-  e um campo novo nele transformaria em conflito o reenvio de um segmento gravado antes do deploy.
-- **O checkpoint guarda QUEM o escreveu**: `applySceneSegment` grava `sceneClock: SCENE_CLOCK_MARK` nas
-  respostas quando o segmento trouxe o marcador atual (também fora do hash). É o que a tentativa lê.
-- **`SCENE_CLOCK_STRICT`** (env `optionalBool(false)`, chega ao `LearningService` como
-  `{ sceneClockStrict }`, o 8º argumento): ligada, segmento sem o marcador ATUAL é **409
-  `LEARNING_CONFLICT`** antes de validar os comandos, em TODA cena, demonstração ou experimentação. O
-  player antigo cai no recado de conflito ("Reabra a aula"), e reabrir carrega o player novo com o
-  rascunho local. Trava: `tests/integration/learning-scene-clock.test.ts` (cena sem relógio, marcador
-  velho, o ▶ de uma aba antiga da `random` virando 409 e o reenvio com marcador de um segmento gravado
-  sem ele). ⚠️ Quando ligar, desligar e religar: a regra de ouro do `raio-x-implantacao.md` (desligar
-  antes de um members com marcador novo e antes de qualquer rollback de members ou kids).
-- Substituído (16/09/2026): marcador `1` e strict só em cena com relógio → marcador = versão das
-  regras (hoje 2) e strict em toda cena, porque a onda A do lote 5 mudou metas de cenas sem relógio
-  (`coordinates`, `layers`, `hitbox`) e o player do lote 4 mandava o mesmo `1`.
-
-### O player de outra versão
-
-- ⚠️⚠️ **A tolerância da demonstração vale só para o player sem o marcador atual**
-  (`tolerarPlayerAnterior: !playerComRelogio`, no `applyDemonstrationSegment`). O servidor aceita o que
-  o player anterior dava por pronto olhando o FIM da ação; a régua e o teto de custo por requisição
-  moram no core (`passoDaDemonstracao`). Ligada para todos, um tique de 0,04 s na última ação marcava
-  "assistida" também para o player novo, e para sempre (13 demonstrações). Trava: describe "a
-  tolerância da demonstração vale só para o player ANTERIOR" do `learning-scene-clock.test.ts`, e o
-  `learning-scene-setup.test.ts`, que manda o segmento SEM marcador como o player antigo de verdade.
-- ⚠️⚠️ **A tentativa do player de outra versão é 409, também com a flag desligada**: sem o marcador
-  atual no guardado E com a cena NÃO fechada no servidor (`cenaFechouNoServidor`: a demonstração com
-  `viewed`; a experimentação com todas as metas da atividade, sem o `settled`, que é um "ainda não" do
-  avaliador e não divergência de versão). Sem isto, uma demonstração que cresceu ou uma meta trocada
-  (`same-x` → `origin`) fechava no player publicado e não aqui: a tentativa voltava `passed:false` e o
-  player ficava em "Guardando este resultado…" para sempre, sem recado. O player novo continua
-  recebendo o "ainda não" de sempre. Não há lista de cenas: vale para todo roteiro ou meta que mudar.
-  Trava: describe "o player publicado numa demonstração que cresceu" do `learning-scene-clock.test.ts`
-  (conferido por mutação).
-- ⚠️⚠️ **Comando que este core recusa, num segmento SEM o marcador atual, é 409 e não 400**, também
-  com a flag desligada: é quase sempre ação que deixou de ser legal numa versão nova (o `advance` saiu
-  da `random`, da `acceleration` e da `diagonal`). O 400 o player antigo lê como "Aguardando conexão"
-  para sempre; o 409 cai no "Reabra a aula". Com o marcador atual segue 400. Trava:
-  `tests/integration/learning-full-dados.test.ts` (describe "BAIXO-1").
-- A tolerância e o 409 de `cenaFechouNoServidor` são pontes: o critério de saída está na tabela
-  "Pontes do Raio-X" do `raio-x-implantacao.md`.
 
 ## O DTO das cenas (`learning.dtos.ts`)
 
@@ -2188,9 +2145,9 @@ listado ali.
   `SCENE_IDS`, `MAP_TILES`, `MIRROR_MODES`, `SYMMETRY_PIECES`, `SHEET_CROP_WIDTHS`, `MESH_LEVELS`,
   `SCENE_FIGURES`. Já houve três cópias da mesma regra (motor, editor e DTO) e elas divergiram. O
   `place` usa `addressX`/`addressY` (a maior tela de um caso, 800 × 480), e não `placeX`/`placeY`.
-- ⚠️ **Ação nova do core entra no `SceneActionSchema` no mesmo commit.** Porta nova entra sozinha
-  (`SCENE_PORTS`); tipo novo não. Sem ele o members recusa a gravação do player novo, e é por isso que o
-  members sobe antes do kids (ordem no `raio-x-implantacao.md`).
+- ⚠️ **Ação que entra ou SAI do core mexe no `SceneActionSchema` no mesmo commit.** Porta nova entra
+  sozinha (`SCENE_PORTS`); tipo novo não. Sem ele o members recusa a gravação do player novo, e é por
+  isso que o members sobe antes do kids (ordem no `raio-x-implantacao.md`).
 - ⚠️⚠️ **Campo que o `normalize` do Elysia apagaria fica DECLARADO**, porque numa rota de corpo tipado o
   campo não declarado some em silêncio (o bloco salva e o campo nunca mais existe): `figure` do elenco
   (`SceneActorSchema`); `revealOn` e o `shows` de cada escolha da previsão (schema PRÓPRIO, não o
@@ -2199,7 +2156,6 @@ listado ali.
   corpo com o `InteractiveBlockSchema` (importação `t.Unknown()`, rascunho com propriedade a mais,
   publicação por `safeParse`): a declaração guarda o dia em que uma tipar, e o teste mede por uma rota
   tipada de verdade (o `Check` aceita propriedade a mais e não prova nada).
-- `Answers` deixa passar o marcador `sceneClock` (registro de string para número).
 
 ## Aulas por seções (09/2026)
 

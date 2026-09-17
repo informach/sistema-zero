@@ -1,6 +1,5 @@
 import {
   isRecord,
-  MAP_TILES,
   MESH_LEVELS,
   type MeshLevel,
   SCENE_LIMITS,
@@ -184,12 +183,6 @@ export interface ScenePlace {
   fromX: number
   fromY: number
   /**
-   * ⚠️ LEGADO (lote 5 do Raio-X, 16/09/2026): servia à meta "mesmo x, altura diferente", que caía
-   * junto com "y maior leva para baixo" e saiu. O campo fica para o retrato guardado antes continuar
-   * válido, e o motor não o escreve mais.
-   */
-  visitedX: number[]
-  /**
    * A TELA do endereço (lote 5): 480 × 270 de fábrica, a do Corre Dino. Um caso a troca com a ação
    * `stage` (o Desafio abre em 800 × 480, a tela do jogo da criança), e o endereço fica preso nela.
    */
@@ -286,15 +279,9 @@ export interface SceneAnimation {
    */
   shift: number
 }
-/** O espelho: onde ele está, o que já foi pintado e com que eixo. */
+/** O espelho: se está ligado, o que já foi pintado e com que eixo. */
 export interface SceneMirror {
   on: boolean
-  /** A linha do espelho do papel de 12 colunas (antes do lote 5). ⚠️ Guardada, e sem uso no palco. */
-  line: number
-  /** As colunas do papel de 12 colunas (antes do lote 5). ⚠️ Guardadas, e sem uso no palco. */
-  painted: number[]
-  /** O eixo do último traço espelhado no papel de 12 colunas. 0 = nenhum ainda. */
-  lastLine: number
   /**
    * ⭐ Lote 5 do Raio-X: QUAL espelho do Pinta está ligado (`x` lado a lado, `y` de cima e de
    * baixo, `xy` os dois: no Pinta são duas chaves independentes), sempre no meio da grade 16 × 16.
@@ -488,7 +475,6 @@ export interface SceneView {
 /** O contato: a pergunta contínua contra o acontecimento da batida. */
 export interface SceneHit {
   distance: number
-  mode: 'ask' | 'event'
   /** Quanto de vida já se foi. */
   damage: number
   /** Estava encostado no passo anterior? É o que separa "encostando" de "acabou de encostar". */
@@ -498,7 +484,6 @@ export interface SceneHit {
    *
    * ⚠️ É o que separa "afastar e voltar" de "ficar encostado": só liga num quadro com os dois LONGE
    * depois de `once`, e sem ele a encostada seguinte fechava `apart` sem o cacto ter se afastado.
-   * O `mode` (ação legada) só grava `mode`: não zera nada, e nada lê o campo.
    */
   away: boolean
   /**
@@ -590,19 +575,12 @@ export interface SceneGrid {
   /** Casas que a criança trocou. */
   edits: number
   /**
-   * As letras DISTINTAS que ela já escreveu. ⚠️ Só gravado: a meta `same-letter` lê `marks` (abaixo)
-   * desde o lote 5, e nada mais lê este campo. Fica no retrato por compatibilidade (sessões gravadas o
-   * trazem, e o validador o confere). ⚠️⚠️ Distintas, e não uma por troca: o mapa tem 60 casas e a
-   * lista não pode passar do teto que o validador aceita, senão o retrato é recusado.
-   */
-  written: string[]
-  /**
    * ⚠️⚠️ Em que LINHAS cada peça (`#` ou `o`) já foi escrita, como `"#3"` (lote 5 do Raio-X). "A mesma
    * letra vira a mesma peça" caía apagando duas casas (escrever "." duas vezes), e escrevendo "ooo"
    * numa linha só ela caía junto com a meta das moedas. Hoje pede a mesma PEÇA em duas linhas.
    * ⚠️⚠️ Consertos do review da onda B do lote 5: a marca é da CASA (`"#3:4"`, `tilemapMark`) e sai
    * quando a casa recebe outra letra; só contam as marcas VIVAS (`tilemapMarkedRows`). No máximo uma
-   * por casa (60). A de antes (`"#3"`) continua lida.
+   * por casa (60).
    */
   marks: string[]
   /** A casa que acabou de ser escrita (−1: nenhuma). O palco a acende no texto E no desenho. */
@@ -701,8 +679,6 @@ export interface SceneOrbit {
 }
 /** O modelo: os pontos ligados por baixo da pele. */
 export interface SceneModelView {
-  /** A malha inteira, sem pele. ⚠️ Desde o lote 5 é o mesmo que `see === 'tudo'`, e anda junto. */
-  wire: boolean
   yaw: number
   /** "Ver os pontos" em três degraus (lote 5 do Raio-X): só a pele, a pele transparente, só a malha. */
   see: MeshLevel
@@ -824,7 +800,6 @@ const PLACE_PADRAO: ScenePlace = {
   y: 150,
   fromX: 110,
   fromY: 150,
-  visitedX: [110],
   width: 480,
   height: 270,
 }
@@ -862,19 +837,11 @@ const ANIMATION_PADRAO: SceneAnimation = {
   // e com ele vê que chutou.
   shift: 40,
 }
-const MIRROR_PADRAO: SceneMirror = {
-  on: false,
-  line: 6,
-  painted: [],
-  lastLine: 0,
-  axis: 'x',
-  marks: [],
-  strokes: 0,
-  copies: 0,
-}
+const MIRROR_PADRAO: SceneMirror = { on: false, axis: 'x', marks: [], strokes: 0, copies: 0 }
 const PIXELS_PADRAO: ScenePixels = { kind: 'pixel', zoom: 1 }
 // ⚠️ Lote 5 do Raio-X: a nave do Meu Jeito entra no jogo em 54 × 54, e a folha abre inteira (64).
-const SHEET_PADRAO: SceneSheet = { cell: 1, size: 54, cuts: [], width: 64, loaded: true }
+// ⚠️ O jogo abre VAZIO (`loaded: false`): é o recorte da criança que o carrega.
+const SHEET_PADRAO: SceneSheet = { cell: 1, size: 54, cuts: [], width: 64, loaded: false }
 const LIFELINE_PADRAO: SceneLifeline = {
   lives: 3,
   points: 0,
@@ -945,7 +912,6 @@ const BLUEPRINT_PADRAO: SceneBlueprint = {
 const VIEW_PADRAO: SceneView = { heroX: 200, follow: false, wasLost: false }
 const HIT_PADRAO: SceneHit = {
   distance: 120,
-  mode: 'ask',
   damage: 0,
   touching: false,
   away: false,
@@ -998,7 +964,6 @@ const WALKPAD_PADRAO: SceneWalkPad = {
 const GRID_PADRAO: SceneGrid = {
   rows: ['..........', '..........', '..........', '..........', '..........', '##########'],
   edits: 0,
-  written: [],
   marks: [],
   lastRow: -1,
   lastCol: -1,
@@ -1033,28 +998,30 @@ const CIRCLES_PADRAO: SceneCircles = { distance: 140, a: 30, b: 30, touched: fal
 // subir é +y — e ela precisa começar de onde dá para subir.
 const SPACE_PADRAO: SceneSpace = { x: 0, y: 0, z: 0, moved: [] }
 const ORBIT_PADRAO: SceneOrbit = { yaw: 1, pitch: 1, fewest: 3, returned: false }
-const MODEL_PADRAO: SceneModelView = { wire: false, yaw: 1, see: 'nada', sawHalf: false }
+const MODEL_PADRAO: SceneModelView = { yaw: 1, see: 'nada', sawHalf: false }
 // ⚠️⚠️ A mira ABRE num lugar vazio, embaixo das caixas (lote 5 do Raio-X): em 240, 135 ela nascia
 // DENTRO de uma caixa, e a faixa e a frase diziam "nada" até o primeiro toque acender a mesma caixa.
 const RAY_PADRAO: SceneRay = { x: 240, y: 235, hit: 0, hits: [] }
 const INK_PADRAO: SceneInk = { fill: true, stroke: true, seen: [] }
 const LIGHT_PADRAO: SceneLight = { side: 'left', shade: false, sides: [] }
-// ⚠️ Retrato de antes do relógio de quadro fixo (lote 4) volta sem sobra: o próximo quadro da cena
-// cai no ritmo novo a partir dali, e nada do que a criança já viu muda.
 const CLOCK_PADRAO: SceneClock = { carry: 0 }
 
 /**
- * ⚠️⚠️ Um retrato guardado ANTES de a cena ganhar um grupo novo de estado continua válido.
+ * ⚠️⚠️ O retrato guardado vira um estado COMPLETO antes de o validador olhar para ele.
  *
- * `place` e `description` nasceram em 14/09/2026, com as cenas `coordinates` e `screen-reader`.
- * Sem esta hidratação, `isSceneState` recusaria todo checkpoint gravado antes disso — e o
- * player trata recusa como "esta descoberta mudou, recomece": a criança abriria uma cena que
- * ela já tinha mexido e encontraria o trabalho apagado, com um recado de erro. A conclusão em
- * si não se perderia (o servidor nunca rebaixa um `passed:true`), mas a montagem e as
- * comparações guardadas, sim.
+ * O estado da cena vai serializado inteiro no checkpoint e a leitura confere campo a campo
+ * (`isSceneState`). Aqui o GRUPO que não veio recebe o padrão de fábrica — um retrato gravado por
+ * uma cena que ainda não tinha aquele assunto abre como a cena de fábrica abre, em vez de ser
+ * recusado inteiro.
  *
- * Grupo novo daqui para a frente entra do mesmo jeito: padrão aqui, e não campo obrigatório na
- * leitura do que já está no banco.
+ * ⚠️⚠️ UMA regra, e ela para no grupo: o que o retrato TRAZ vale como veio, inteiro. Campo faltando
+ * DENTRO de um grupo presente não é completado com o valor de fábrica — o retrato é inválido, e
+ * quem chama o trata como ausente (a cena recomeça limpa). Preencher campo a campo fabricava estado
+ * incoerente e meta FALSA: um `drive` sem âncora voltava com `anchorX: 60` ao lado de `x: 120`, e o
+ * primeiro passo do relógio fechava "a posição mudou sozinha" com a velocidade em ZERO, escrevendo
+ * "o x foi de 60 para 120" numa conclusão que ninguém andou. E a régua era incoerente: cinco grupos
+ * (`match`, `speed`, `flight`, `sound`, `crowd`) nunca estiveram nesta lista, então neles o campo
+ * faltando já recusava o retrato. Agora recusa em todos.
  */
 export function hydrateSceneState(value: unknown): unknown {
   if (!isRecord(value)) return value
@@ -1094,160 +1061,16 @@ export function hydrateSceneState(value: unknown): unknown {
   const saida: Record<string, unknown> = { ...value }
   for (const [nome, padrao] of grupos) {
     const guardado = saida[nome]
-    // ⚠️⚠️ CAMPO a campo, não só grupo a grupo. Um grupo que já existe pode ter nascido antes de
-    // um campo novo (`hit.away`, `grid.written`), e o validador recusaria o retrato inteiro: a
-    // sessão da criança deixaria de hidratar e ela voltaria ao começo sem saber por quê.
+    if (isRecord(guardado)) continue
     // ⚠️ Cópia PROFUNDA dos arrays: a rasa deixava `BRAINS_PADRAO.states`, `GRID_PADRAO.rows` e
-    // irmãos sendo a MESMA instância em todo retrato legado hidratado no processo do servidor.
-    const base = copiaProfunda(padrao as unknown as Record<string, unknown>)
-    saida[nome] = isRecord(guardado) ? { ...base, ...guardado } : base
+    // irmãos sendo a MESMA instância em todo retrato hidratado no processo do servidor.
+    saida[nome] = copiaProfunda(padrao as unknown as Record<string, unknown>)
   }
-  // ⚠️⚠️ A âncora da velocidade NÃO pode vir do padrão de fábrica. Num retrato antigo com a nave
-  // em x 200, uma âncora em 60 afirmaria 140 px de caminho que ninguém andou, e o próximo passo do
-  // relógio fecharia "a posição mudou sozinha" com a velocidade em ZERO. Sem âncora guardada, ela
-  // é o lugar onde o personagem já está: o caminho recomeça a contar dali.
-  const drive = saida.drive as Record<string, unknown>
-  const driveGuardado = isRecord(value.drive) ? value.drive : {}
-  if (!('anchorX' in driveGuardado)) drive.anchorX = drive.x
-  if (!('anchorY' in driveGuardado)) drive.anchorY = drive.y
-  completarCorreDino(saida)
-  completarATelaEOMundo(value, saida)
-  completarCorreDinoSegundaMetade(value, saida)
-  completarOMotorEO3D(value, saida)
-  completarONucleo(value, saida)
   return saida
-}
-
-/**
- * Os campos que os consertos do review da onda B do lote 5 deram ao núcleo do Iniciante 2D, quando o
- * retrato é de antes deles. ⚠️ A foto medida de cada régua (`hunt.measured`) não pode vir do padrão
- * (zero = "não medido"): um retrato com os três já medidos abriria com as nuvens "?" de volta. Sem a
- * foto, o número medido é o de agora, que era o que a régua de antes mostrava.
- */
-function completarONucleo(value: Record<string, unknown>, saida: Record<string, unknown>) {
-  const hunt = saida.hunt as Record<string, unknown>
-  const huntGuardado = isRecord(value.hunt) ? value.hunt : {}
-  if ('measured' in huntGuardado) return
-  const { distances, looked } = hunt
-  if (!Array.isArray(distances) || !Array.isArray(looked)) return
-  hunt.measured = distances.map((d, i) => (looked.includes(i + 1) && num(d) ? d : 0))
-}
-
-/**
- * Os campos que o lote 5 do Raio-X deu ao motor e ao 3D (`pool`, `delta-time`, `mesh`), quando o
- * retrato é de antes deles e o padrão de fábrica mentiria sobre o que já está lá.
- *
- * ⚠️ A `pool` de antes guardava só os contadores: o cacto da tela é o ÚLTIMO fabricado (sem ele, a
- * faixa diria "3 fabricados" com a pista vazia). A corrida de antes começava em 40 e não contava
- * quadros: as pegadas saem das posições guardadas, no passo "a cada quadro". O modelo de antes só
- * tinha o raio-X ligado ou desligado, que são os degraus `tudo` e `nada`.
- */
-function completarOMotorEO3D(value: Record<string, unknown>, saida: Record<string, unknown>) {
-  const { nursery, machines, model } = saida
-  const nurseryGuardado = isRecord(value.nursery) ? value.nursery : {}
-  if (isRecord(nursery) && !('onScreen' in nurseryGuardado))
-    nursery.onScreen = typeof nursery.created === 'number' ? nursery.created : 0
-  const machinesGuardado = isRecord(value.machines) ? value.machines : {}
-  if (isRecord(machines) && !('fastFrames' in machinesGuardado)) {
-    const quadros = (x: unknown) =>
-      typeof x === 'number' && Number.isFinite(x)
-        ? Math.max(0, Math.floor(x / DELTA_RACE.passo))
-        : 0
-    machines.fastFrames = quadros(machines.fastX)
-    machines.slowFrames = quadros(machines.slowX)
-  }
-  const modelGuardado = isRecord(value.model) ? value.model : {}
-  if (isRecord(model) && !('see' in modelGuardado))
-    model.see = model.wire === true ? 'tudo' : 'nada'
-}
-
-/**
- * Os campos que o lote 5 do Raio-X deu às cenas da segunda metade do Corre Dino e dos números
- * (`restart`, `score`, `random`, `acceleration`, `velocity`, `variable`, `lives`).
- *
- * ⚠️ `match` e `speed` não passam pela lista de padrões (são grupos de nascença): campo a campo aqui.
- * ⚠️⚠️ O rastro da velocidade nasce onde o personagem JÁ está, como a âncora: o padrão de fábrica
- * (x 60) desenharia pontinhos num lugar onde ninguém passou. E a caixa de um retrato antigo já
- * existe quando guardou, somou ou mostrou alguma coisa: sem isso a cena abriria sem a caixa que a
- * criança acabou de encher.
- */
-function completarCorreDinoSegundaMetade(
-  value: Record<string, unknown>,
-  saida: Record<string, unknown>,
-): void {
-  const { match, speed, drive, box } = saida
-  if (isRecord(match)) {
-    if (!('seen' in match)) match.seen = [...PLACAR_NAO_VISTO]
-    if (!('cleared' in match)) match.cleared = 0
-  }
-  if (isRecord(speed) && !('spots' in speed)) speed.spots = [...LUGARES_NAO_SORTEADOS]
-  const driveGuardado = isRecord(value.drive) ? value.drive : {}
-  if (isRecord(drive) && !('trailX' in driveGuardado)) {
-    drive.trailX = [drive.x]
-    drive.trailY = [drive.y]
-    drive.prevX = []
-    drive.prevY = []
-    drive.steps = 0
-  }
-  const boxGuardado = isRecord(value.box) ? value.box : {}
-  if (isRecord(box) && !('created' in boxGuardado))
-    box.created = box.value !== 0 || box.shown === true || box.changes !== 0
-}
-
-/**
- * Os campos que o lote 5 do Raio-X deu aos QUATRO grupos de nascença (`flight`, `sound`, `crowd`,
- * `match`), que não passam pela lista de padrões acima: eles existem desde a primeira cena e não têm
- * um padrão único (a gravidade de fábrica muda de cena para cena). Campo a campo, sem tocar no resto.
- * ⚠️ Retrato antigo NUNCA ganha história: sem marca de salto anterior, sem apertos na linha do
- * tempo, sem tentativas de começar. O que ele traz de mundo continua igual.
- */
-function completarCorreDino(saida: Record<string, unknown>): void {
-  const completar = (grupo: unknown, campos: Record<string, unknown>) => {
-    if (!isRecord(grupo)) return
-    for (const [campo, padrao] of Object.entries(campos))
-      if (!(campo in grupo)) grupo[campo] = Array.isArray(padrao) ? [] : padrao
-  }
-  completar(saida.flight, { base: 0, before: 0, beforeForce: 0 })
-  completar(saida.sound, { beats: [] })
-  completar(saida.crowd, { untimedBorn: 0, untimedSeconds: 0 })
-  completar(saida.match, { tries: [] })
 }
 
 /** O que o leitor de tela diz de uma tela SEM descrição. Motor, faixa e painel leem o mesmo texto. */
 export const SCREEN_READER_EMPTY = 'Tela do jogo. Imagem.'
-
-/**
- * Os campos que o lote 5 do Raio-X deu a `render` (`draw-loop`) e a `description` (`screen-reader`),
- * quando o retrato guardado é de antes deles e o padrão de fábrica mentiria sobre o que já está lá.
- */
-function completarATelaEOMundo(value: Record<string, unknown>, saida: Record<string, unknown>) {
-  // ⚠️ O `draw-loop` de antes guardava só QUANTOS Dinos havia na tela (`trail`, `empty`), e não
-  // ONDE. O padrão (um Dino no começo) desmentiria um retrato com rastro ou com a tela vazia: a tela
-  // sai com o mesmo número de desenhos, em casas seguidas a partir do começo, e o x no mais novo.
-  const render = saida.render
-  const renderGuardado = isRecord(value.render) ? value.render : {}
-  if (isRecord(render) && !('drawn' in renderGuardado)) {
-    const { start, step, places } = DRAW_LOOP_LANE
-    const trilha =
-      typeof render.trail === 'number' && Number.isFinite(render.trail) ? render.trail : 0
-    const quantos = render.empty === true ? 0 : Math.min(places, Math.max(1, Math.floor(trilha)))
-    const desenhos = Array.from({ length: quantos }, (_, i) => start + i * step)
-    render.drawn = desenhos
-    render.trail = desenhos.length
-    if (!('x' in renderGuardado)) render.x = desenhos.at(-1) ?? start
-  }
-  // ⚠️ A escuta com frase de antes mora no `heard`: sem isto o painel perderia a frase dela.
-  const description = saida.description
-  const descriptionGuardada = isRecord(value.description) ? value.description : {}
-  if (
-    isRecord(description) &&
-    !('said' in descriptionGuardada) &&
-    typeof description.heard === 'string' &&
-    description.heard !== '' &&
-    description.heard !== SCREEN_READER_EMPTY
-  )
-    description.said = description.heard
-}
 
 /** Um grupo de estado com os arrays dele copiados — o padrão nunca sai daqui por referência. */
 function copiaProfunda(grupo: Record<string, unknown>): Record<string, unknown> {
@@ -1343,15 +1166,14 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     },
     // ⚠️ x 110 e y 150 são os MESMOS números que a Aula 1 pede no bloco "Criar dinossauro".
     // A cena abre onde o projeto dela vai ficar, para o número ter a mesma cara nos dois lugares.
-    place: { ...PLACE_PADRAO, visitedX: [...PLACE_PADRAO.visitedX] },
+    place: { ...PLACE_PADRAO },
     description: { ...DESCRIPTION_PADRAO },
     stage: { ...STAGE_PADRAO },
     render: { ...RENDER_PADRAO, drawn: [...RENDER_PADRAO.drawn] },
     animation: { ...ANIMATION_PADRAO },
-    mirror: { ...MIRROR_PADRAO, painted: [], marks: [] },
+    mirror: { ...MIRROR_PADRAO, marks: [] },
     pixels: { ...PIXELS_PADRAO },
-    // ⚠️ O jogo abre VAZIO (A4 da onda B): o padrão `loaded: true` é só para o retrato antigo.
-    sheet: { ...SHEET_PADRAO, cuts: [], loaded: false },
+    sheet: { ...SHEET_PADRAO, cuts: [] },
     lifeline: { ...LIFELINE_PADRAO },
     drive: {
       ...DRIVE_PADRAO,
@@ -1374,7 +1196,7 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     weapon: { ...WEAPON_PADRAO, bullets: [], shotTimes: [] },
     sight: { ...SIGHT_PADRAO },
     walkPad: { ...WALKPAD_PADRAO, ghosts: [] },
-    grid: { ...GRID_PADRAO, rows: [...GRID_PADRAO.rows], written: [], marks: [] },
+    grid: { ...GRID_PADRAO, rows: [...GRID_PADRAO.rows], marks: [] },
     nursery: { ...NURSERY_PADRAO },
     brains: { ...BRAINS_PADRAO, states: [...BRAINS_PADRAO.states] },
     machines: { ...MACHINES_PADRAO },
@@ -1423,16 +1245,12 @@ export function cloneScene(state: SceneState): SceneState {
       },
       spots: [...state.speed.spots],
     },
-    place: { ...state.place, visitedX: [...state.place.visitedX] },
+    place: { ...state.place },
     description: { ...state.description },
     stage: { ...state.stage },
     render: { ...state.render, drawn: [...state.render.drawn] },
     animation: { ...state.animation },
-    mirror: {
-      ...state.mirror,
-      painted: [...state.mirror.painted],
-      marks: [...state.mirror.marks],
-    },
+    mirror: { ...state.mirror, marks: [...state.mirror.marks] },
     pixels: { ...state.pixels },
     sheet: { ...state.sheet, cuts: [...state.sheet.cuts] },
     lifeline: { ...state.lifeline },
@@ -1464,7 +1282,6 @@ export function cloneScene(state: SceneState): SceneState {
     grid: {
       ...state.grid,
       rows: [...state.grid.rows],
-      written: [...state.grid.written],
       marks: [...state.grid.marks],
     },
     nursery: { ...state.nursery },
@@ -1640,7 +1457,6 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!between(place.x, 0, place.width) || !between(place.y, 0, place.height)) return false
   if (!between(place.fromX, 0, place.width)) return false
   if (!between(place.fromY, 0, place.height)) return false
-  if (!numbers(place.visitedX, 24)) return false
   if (typeof description.text !== 'string' || description.text.length > SCENE_LIMITS.describe.max)
     return false
   if (typeof description.heard !== 'string' || description.heard.length > 260) return false
@@ -1711,7 +1527,7 @@ function isEngineState(g: Record<string, unknown>): boolean {
   if (!between(orbit.pitch, L.pitch.min, L.pitch.max)) return false
   if (!num(orbit.fewest) || !bool(orbit.returned)) return false
   const model = g.model as Record<string, unknown>
-  if (!bool(model.wire) || !between(model.yaw, L.yaw.min, L.yaw.max)) return false
+  if (!between(model.yaw, L.yaw.min, L.yaw.max)) return false
   const ray = g.ray as Record<string, unknown>
   if (!between(ray.x, L.pointX.min, L.pointX.max)) return false
   if (!between(ray.y, L.pointY.min, L.pointY.max)) return false
@@ -1765,7 +1581,6 @@ function isCoreState(g: Record<string, unknown>): boolean {
   if (!bool(view.follow) || !bool(view.wasLost)) return false
   const hit = g.hit as Record<string, unknown>
   if (!between(hit.distance, L.approach.min, L.approach.max)) return false
-  if (hit.mode !== 'ask' && hit.mode !== 'event') return false
   if (!num(hit.damage) || !bool(hit.touching) || !bool(hit.away)) return false
   const weapon = g.weapon as Record<string, unknown>
   if (!between(weapon.seconds, L.recharge.min, L.recharge.max)) return false
@@ -1781,8 +1596,7 @@ function isCoreState(g: Record<string, unknown>): boolean {
   const grid = g.grid as Record<string, unknown>
   if (!Array.isArray(grid.rows) || grid.rows.length !== 6) return false
   if (!grid.rows.every((r) => typeof r === 'string' && /^[.#o]{10}$/.test(r))) return false
-  // A lista guarda LETRAS distintas, e o alfabeto do mapa tem três.
-  return num(grid.edits) && strings(grid.written, MAP_TILES.length)
+  return num(grid.edits)
 }
 
 /**
@@ -1939,15 +1753,13 @@ function isArtState(
   if (!between(animation.rate, L.rate.min, L.rate.max)) return false
   if (!between(animation.shift, L.shift.min, L.shift.max)) return false
   if (!num(animation.swaps) || !num(animation.elapsed)) return false
-  if (!bool(mirror.on) || !between(mirror.line, L.mirrorLine.min, L.mirrorLine.max)) return false
-  if (!numbers(mirror.painted, 24) || !num(mirror.lastLine)) return false
-  if (!mirror.painted.every((c) => c >= L.column.min && c <= L.column.max)) return false
+  if (!bool(mirror.on)) return false
   if (pixels.kind !== 'pixel' && pixels.kind !== 'vector') return false
   if (!between(pixels.zoom, L.zoom.min, L.zoom.max)) return false
   if (!between(sheet.cell, L.cell.min, L.cell.max)) return false
   if (!between(sheet.size, L.sprite.min, L.sprite.max)) return false
-  // ⚠️ Os VALORES, e não só a quantidade: o mesmo que `mirror.painted` já fazia. Um recorte 99
-  // vindo de retrato adulterado não desenha nada na folha de quatro pedaços.
+  // ⚠️ Os VALORES dos recortes, e não só a quantidade: um recorte 99 vindo de retrato adulterado
+  // não desenha nada na folha de quatro pedaços.
   if (!numbers(sheet.cuts, 4)) return false
   if (!sheet.cuts.every((c) => c >= L.cell.min && c <= L.cell.max)) return false
   if (!isAtelieExtra(mirror, sheet)) return false

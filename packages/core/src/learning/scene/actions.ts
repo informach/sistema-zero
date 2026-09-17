@@ -124,7 +124,7 @@ export type SceneAction =
   | { type: 'move'; distance: number }
   | { type: 'resize'; width: number }
   | { type: 'start'; input: 'key' | 'tap' }
-  | { type: 'collide' | 'home' | 'restart' | 'clock' | 'reset' }
+  | { type: 'collide' | 'home' | 'restart' | 'reset' }
   | { type: 'interval'; seconds: number }
   | { type: 'sample'; kind: 'position' | 'velocity'; unit: number; guided: boolean }
   | { type: 'hint'; level: number }
@@ -149,10 +149,6 @@ export type SceneAction =
   /** O fantasma do quadro anterior, e onde o desenho do segundo quadro fica. */
   | { type: 'onion'; on: boolean }
   | { type: 'shift'; offset: number }
-  /** O traço e o espelho. ⚠️ O eixo viaja JUNTO do interruptor, como em `place`: ligar o
-   *  espelho sem dizer onde ele está deixaria a cena com dois estados para uma coisa só. */
-  | { type: 'paint'; column: number }
-  | { type: 'mirror'; on: boolean; line: number }
   /** A lupa: qual desenho ela está olhando, e de quão perto. */
   | { type: 'inspect'; kind: 'pixel' | 'vector'; zoom: number }
   /** Onde cortar a folha, e o tamanho que o recorte tem DENTRO do jogo. */
@@ -161,8 +157,8 @@ export type SceneAction =
   /* ── O ateliê, redesenhado no lote 5 do Raio-X (16/09/2026) ──────────────────────────── */
   /** O espelho do Pinta, sempre no MEIO do desenho: desligado, lado a lado (`x`), de cima e de
    *  baixo (`y`) ou os DOIS (`xy`, consertos do review da onda B do lote 5: no Pinta são duas chaves
-   *  independentes). ⚠️ O `mirror` antigo (com a linha do eixo) continua legal, mas o Pinta não tem
-   *  eixo móvel: o player novo manda este. */
+   *  independentes). ⚠️ O Pinta não tem eixo móvel: o espelho mora no meio do desenho, e a cena não
+   *  pede à criança que procure um eixo que não existe. */
   | { type: 'mirror-mode'; mode: 'off' | 'x' | 'y' | 'xy' }
   /** Um traço pronto da nave na grade 16 × 16: a asa, a ponta ou a cabine. */
   | { type: 'trace'; piece: 'asa' | 'ponta' | 'cabine' }
@@ -192,7 +188,6 @@ export type SceneAction =
   | { type: 'walk'; x: number }
   /** Aproximar quem bate, e QUAL pergunta o jogo faz sobre o contato. */
   | { type: 'approach'; distance: number }
-  | { type: 'mode'; kind: 'ask' | 'event' }
   /** O tiro e a recarga entre dois tiros. */
   | { type: 'shoot' }
   | { type: 'recharge'; seconds: number }
@@ -221,12 +216,6 @@ export type SceneAction =
   | { type: 'orbit'; yaw: number; pitch: number }
   /** A câmera de volta à vista de sempre. */
   | { type: 'recenter' }
-  /**
-   * O raio-X do modelo: os pontos ligados, sem a pele. ⚠️ Desde o lote 5 do Raio-X a bancada manda
-   * `see-points` (três degraus); este continua legal para roteiros e sessões gravados antes, e vale
-   * o degrau `tudo` (ligado) ou `nada` (desligado).
-   */
-  | { type: 'wireframe'; on: boolean }
   /**
    * "Ver os pontos" do modelo, em TRÊS degraus (lote 5 do Raio-X): `nada` (só a pele), `metade` (a
    * pele transparente, com os pontos logo embaixo) e `tudo` (só a malha). Só `mesh`.
@@ -347,9 +336,6 @@ export const SCENE_LIMITS = {
   rate: { min: 1, max: 12 },
   /** O quanto o desenho do segundo quadro anda em relação ao primeiro. */
   shift: { min: 0, max: 60 },
-  /** As doze colunas do papel e as onze linhas onde o espelho pode ficar (entre colunas). */
-  column: { min: 0, max: 11 },
-  mirrorLine: { min: 1, max: 11 },
   /** A lupa. Em 1 as duas pedras parecem a mesma; a partir de 5 a borda conta qual é qual. */
   zoom: { min: 1, max: 8 },
   /** As quatro células da folha e o tamanho do recorte dentro do jogo, em pixels. */
@@ -578,7 +564,7 @@ const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
 
 /**
  * Uma ação só é legal na cena que a oferece. O motor trata ação ilegal como no-op em vez de
- * erro: um roteiro antigo ou um pacote adulterado não derruba a aula da criança.
+ * erro: um roteiro escrito para outra cena, ou um pacote adulterado, não derruba a aula da criança.
  */
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
   if (!isRecord(value)) return false
@@ -597,22 +583,17 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'advance':
       return between(value.seconds, L.advance.min, L.advance.max) && sceneFrameRate(scene) !== null
     case 'move':
-      return (
-        (scene === 'hitbox' || scene === 'restart') &&
-        between(value.distance, L.move.min, L.move.max)
-      )
+      return scene === 'hitbox' && between(value.distance, L.move.min, L.move.max)
     case 'resize':
       return scene === 'hitbox' && between(value.width, L.resize.min, L.resize.max)
     case 'start':
       return oneOf(MATCHES, scene) && (value.input === 'key' || value.input === 'tap')
     case 'collide':
-      return scene === 'restart' || scene === 'score' || scene === 'lives'
+      return scene === 'score' || scene === 'lives'
     case 'home':
       return oneOf(MATCHES, scene)
     case 'restart':
       return scene === 'restart'
-    case 'clock':
-      return scene === 'acceleration'
     case 'interval':
       return scene === 'spawn' && between(value.seconds, L.interval.min, L.interval.max)
     case 'sample':
@@ -673,19 +654,6 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
         scene === 'onion-skin' &&
         between(value.offset, L.shift.min, L.shift.max) &&
         Number.isInteger(value.offset)
-      )
-    case 'paint':
-      return (
-        scene === 'symmetry' &&
-        between(value.column, L.column.min, L.column.max) &&
-        Number.isInteger(value.column)
-      )
-    case 'mirror':
-      return (
-        scene === 'symmetry' &&
-        typeof value.on === 'boolean' &&
-        between(value.line, L.mirrorLine.min, L.mirrorLine.max) &&
-        Number.isInteger(value.line)
       )
     case 'inspect':
       return (
@@ -785,8 +753,6 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
         between(value.distance, L.approach.min, L.approach.max) &&
         Number.isInteger(value.distance)
       )
-    case 'mode':
-      return scene === 'contact' && (value.kind === 'ask' || value.kind === 'event')
     case 'shoot':
       // ⚠️ Nas `lives` o tiro é o ACERTO que soma ponto (lote 5): no Desafio o ponto vem do tiro no
       // asteroide, e não do tempo jogado.
@@ -859,8 +825,6 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       )
     case 'recenter':
       return scene === 'camera-3d'
-    case 'wireframe':
-      return scene === 'mesh' && typeof value.on === 'boolean'
     case 'see-points':
       return scene === 'mesh' && MESH_LEVELS.some((n) => n === value.level)
     case 'brain-scope':

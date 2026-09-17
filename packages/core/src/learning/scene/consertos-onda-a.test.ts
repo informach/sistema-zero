@@ -1,6 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import type { SceneAction, SceneId, SceneSetup } from './actions'
 import { sceneModel } from './catalog'
 import {
@@ -17,6 +15,10 @@ import { SCENE_QUESTIONS } from './questions'
 import { sceneReadout, sceneSituation } from './readout'
 import {
   applyDemonstrationSegment,
+  initialDemonstration,
+  initialExperiment,
+  packDemonstration,
+  packExperiment,
   readDemonstrationSession,
   readExperimentSession,
   stepDemonstration,
@@ -34,18 +36,9 @@ import {
  * Os consertos dos dois reviews da onda A do lote 5 do Raio-X (16/09/2026), no MOTOR.
  *
  * Relatório: `community-kids/tmp/storyboard/implementacao/consertos-lote5-ondaA.md`. Cada `describe`
- * reprova sem o conserto dele (conferido desfazendo o conserto). As sessões ANTIGAS vêm de retratos
- * gravados de verdade pelo motor do lote 4 (`tests/fixtures/retratos-lote4.json`, gerado com o
- * `packExperiment`/`packDemonstration` daquela versão), e não de um estado atual com campos apagados.
+ * reprova sem o conserto dele (conferido desfazendo o conserto). As sessões guardadas são montadas
+ * pelo motor e passam pelo `pack*`/`read*Session`, que é o caminho do banco.
  */
-
-const RETRATOS = JSON.parse(
-  readFileSync(resolve(import.meta.dir, '../../../tests/fixtures/retratos-lote4.json'), 'utf8'),
-) as {
-  hitbox: string[]
-  acceleration: string[]
-  livesDemo: { parts: string[]; step: number; ready: boolean; len: number }
-}
 
 const FATIA = 0.05
 
@@ -105,18 +98,26 @@ describe('A1 · acceleration: a ordem invertida não tranca as metas sem dizer',
     expect(c.estado.caption).not.toContain('Recomece')
   })
 
-  test('⚠️⚠️ a sessão gravada pelo lote 4 (base −11 sem a placa) reabre e diz como sair', () => {
-    const sessao = readExperimentSession('acceleration', RETRATOS.acceleration)
+  test('⚠️⚠️ a sessão guardada com a base em −11 e a placa desligada reabre e diz como sair', () => {
+    const start = { scene: 'acceleration' as const }
+    // A ordem invertida: desligar a placa primeiro e deixar a base passar de −9.
+    let guardada = stepExperiment(start, initialExperiment(start), {
+      type: 'connect',
+      port: 'limit',
+      enabled: false,
+    }).session
+    for (let i = 0; i < 5; i++) guardada = stepExperiment(start, guardada, cinco()).session
+    expect(guardada.state.speed.base).toBeLessThan(-9)
+    // Pelo caminho do banco: empacota, relê e continua.
+    const sessao = readExperimentSession('acceleration', packExperiment('acceleration', guardada))
     expect(sessao).not.toBeNull()
     if (!sessao) return
     expect(sessao.state.speed.limited).toBe(false)
-    expect(sessao.state.speed.base).toBe(-11)
-    const start = { scene: 'acceleration' as const }
-    let s = stepExperiment(start, sessao, {
-      type: 'connect',
-      port: 'limit',
-      enabled: true,
-    }).session
+    // ⚠️ O valor EXATO: cinco sorteios de 0,3 com a placa desligada param a base em −10, e é ele
+    // que tem de atravessar o pacote (comparar a sessão relida com a guardada não fixaria nada).
+    expect(sessao.state.speed.base).toBe(-10)
+    expect(guardada.state.speed.base).toBe(-10)
+    let s = stepExperiment(start, sessao, { type: 'connect', port: 'limit', enabled: true }).session
     s = stepExperiment(start, s, cinco()).session
     expect(s.state.caption).toContain('Recomece para ver a base parar em −9')
     expect(sceneHint('acceleration', s.state, 1)).toContain('Recomece')
@@ -134,9 +135,10 @@ describe('A1 · acceleration: a ordem invertida não tranca as metas sem dizer',
 })
 
 describe('A3 · a demonstração com o roteiro que ENCOLHEU recomeça, sem lançar', () => {
-  test('⚠️⚠️ a sessão das lives gravada na 4ª etapa pelo lote 4 reabre com o roteiro de 3', () => {
-    expect(RETRATOS.livesDemo.len).toBe(4)
-    expect(RETRATOS.livesDemo.step).toBe(3)
+  test('⚠️⚠️ a sessão parada na 4ª etapa reabre com o roteiro de 3, no player e no servidor', () => {
+    // O roteiro do bloco pode ENCOLHER a qualquer momento: a professora tira uma etapa do roteiro
+    // autoral e as sessões em andamento apontam para uma etapa que não existe mais. Antes, o
+    // primeiro tique LANÇAVA "Etapa de demonstração inválida." no player e o members respondia 500.
     const activity: DemonstrationActivity = {
       type: 'demonstration',
       scene: 'lives',
@@ -145,7 +147,18 @@ describe('A3 · a demonstração com o roteiro que ENCOLHEU recomeça, sem lanç
     const start = sceneStart(activity)
     const script = sceneScript(activity)
     expect(script.length).toBe(3)
-    const sessao = readDemonstrationSession('lives', RETRATOS.livesDemo.parts)
+    // A sessão foi guardada com o roteiro ANTIGO, de 4 etapas, parada na última.
+    const maior = [...script, { ...script[0]!, id: 'etapa-4' }]
+    let antes = stepDemonstration(start, maior, initialDemonstration(start), {
+      type: 'start',
+    }).session
+    for (let i = 0; i < 600 && antes.step < maior.length - 1; i++) {
+      antes = stepDemonstration(start, maior, antes, { type: 'tick', seconds: 0.05 }).session
+      if (antes.ready && antes.step < maior.length - 1)
+        antes = stepDemonstration(start, maior, antes, { type: 'next' }).session
+    }
+    expect(antes.step).toBe(3)
+    const sessao = readDemonstrationSession('lives', packDemonstration('lives', antes))
     expect(sessao?.step).toBe(3)
     if (!sessao) return
     // No player: o tique recomeça do zero, e o `viewed` fica como estava.
@@ -207,9 +220,15 @@ describe('A3 · a demonstração com o roteiro que ENCOLHEU recomeça, sem lanç
   })
 })
 
-describe('A4 · hitbox: a sessão do lote 4 com a área em 75% tem saída', () => {
-  test('⚠️⚠️ o retrato gravado reabre, e a pista manda aumentar a área em vez de aproximar à toa', () => {
-    const sessao = readExperimentSession('hitbox', RETRATOS.hitbox)
+describe('A4 · hitbox: a sessão com a área em 75% tem saída', () => {
+  test('⚠️⚠️ a sessão guardada reabre, e a pista manda aumentar a área em vez de aproximar à toa', () => {
+    const start = { scene: 'hitbox' as const }
+    // A criança diminuiu a área antes de ver o BATEU: dali em diante aproximar não mostra nada.
+    const guardada = stepExperiment(start, initialExperiment(start), {
+      type: 'resize',
+      width: sceneAreaWidth(75),
+    }).session
+    const sessao = readExperimentSession('hitbox', packExperiment('hitbox', guardada))
     expect(sessao).not.toBeNull()
     if (!sessao) return
     expect(sceneAreaPercent(sessao.state.contact.width)).toBe(75)
@@ -219,7 +238,6 @@ describe('A4 · hitbox: a sessão do lote 4 com a área em 75% tem saída', () =
         'Aumente o Tamanho da área do Dino',
       )
     // Seguindo a pista (aumentar a área e aproximar de novo), a batida com vão aparece.
-    const start = { scene: 'hitbox' as const }
     let s = stepExperiment(start, sessao, { type: 'resize', width: sceneAreaWidth(130) }).session
     for (
       let d = s.state.contact.distance;

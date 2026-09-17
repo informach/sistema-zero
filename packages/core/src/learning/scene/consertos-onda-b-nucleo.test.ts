@@ -14,7 +14,7 @@ import {
 } from './nucleo'
 import { SCENE_QUESTIONS } from './questions'
 import { sceneReadout, sceneSituation } from './readout'
-import { hydrateSceneState, isSceneState, type SceneState } from './state'
+import { isSceneState, type SceneState } from './state'
 
 /**
  * Os consertos dos dois reviews da onda B do lote 5 do Raio-X no NÚCLEO do Iniciante 2D (16/09/2026):
@@ -193,19 +193,6 @@ describe('group-loop: o laço que segue o mais perto', () => {
     expect(c.estado.hunt.loopTicks).toBe(1)
     expect(c.viu('auto')).toBe(false)
   })
-
-  test('retrato de antes: a foto das réguas medidas vem das distâncias, e o laço conta do zero', () => {
-    const antigo = JSON.parse(
-      JSON.stringify(crianca('group-loop').faz(...medirOsTres).estado),
-    ) as Record<string, Record<string, unknown>>
-    delete antigo.hunt?.loopTicks
-    delete antigo.hunt?.measured
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.hunt.measured).toEqual(hidratado.hunt.distances)
-    expect(hidratado.hunt.loopTicks).toBe(0)
-  })
 })
 
 describe('hold-vs-press', () => {
@@ -304,7 +291,7 @@ describe('tilemap: BAIXO-2, só a linha escrita e só as peças que ficaram', ()
     expect(c.viu('same-letter')).toBe(true)
   })
 
-  test('a marca de antes (`#3`, só a linha) continua lida enquanto a linha tem a peça', () => {
+  test('⚠️ a marca é da CASA: o retrato com marca fora do formato é recusado', () => {
     const rows = [
       '..........',
       '..........',
@@ -313,10 +300,13 @@ describe('tilemap: BAIXO-2, só a linha escrita e só as peças que ficaram', ()
       '..........',
       '##########',
     ]
-    expect(tilemapMarkedRows(rows, ['#3', '#1:2'], '#')).toEqual([3])
-    const antigo = JSON.parse(JSON.stringify(openScene({ scene: 'tilemap' })))
-    antigo.grid.marks = ['#3', 'o1']
-    expect(isSceneState(antigo)).toBe(true)
+    // Só a casa que AINDA tem a peça conta; a marca de uma casa apagada some da conta.
+    expect(tilemapMarkedRows(rows, ['#3:3', '#1:2'], '#')).toEqual([3])
+    const cru = JSON.parse(JSON.stringify(openScene({ scene: 'tilemap' })))
+    cru.grid.marks = ['#3:3', 'o1:0']
+    expect(isSceneState(cru)).toBe(true)
+    cru.grid.marks = ['#3']
+    expect(isSceneState(cru)).toBe(false)
   })
 })
 

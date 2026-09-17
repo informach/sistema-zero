@@ -47,21 +47,20 @@ export function SceneSetupEditor({
   }
 
   /**
-   * ⚠️⚠️ As descobertas que a cena NÃO tem mais (full review final de dados e deploy, MÉDIO-3). O bloco
-   * criado antes de uma meta sair do catálogo guarda o id velho, que nenhuma caixa abaixo desenha: sem
-   * este aviso a professora lia "desmarque as descobertas" sem ter o que desmarcar, e não conseguia
-   * salvar. Para a criança elas já não contam (a leitura tolerante do core as tira).
+   * ⚠️⚠️ Os objetivos que a cena NÃO tem (full review final de dados e deploy, MÉDIO-3). O caso pode
+   * citar um id que nenhuma caixa abaixo desenha: sem este aviso a professora lia "desmarque as
+   * descobertas" sem ter o que desmarcar, e não conseguia salvar. O bloco fica RECUSADO na publicação
+   * até ela resolver — o erro é dela para ver, não para conviver em silêncio.
    */
   const desconhecidas =
     activity.type === 'experimentation' ? sceneUnknownSetupGoals(activity.scene, setup?.goals) : []
-  const semAsQueSairam: SceneSetup = {
+  const soAsQueExistem: SceneSetup = {
     ...setup,
     goals: sceneSetupGoals(activity.scene, setup?.goals),
   }
-  const nomeDaMeta = (meta: string) => modelo.goals.find((g) => g.id === meta)?.label ?? meta
 
-  // O aviso genérico olha o caso SEM as descobertas que saíram: elas têm o aviso próprio acima.
-  const casoConferido = desconhecidas.length ? casoLimpo(semAsQueSairam) : setup
+  // O aviso genérico olha o caso SEM os objetivos que não existem: eles têm o aviso próprio acima.
+  const casoConferido = desconhecidas.length ? casoLimpo(soAsQueExistem) : setup
   const invalido =
     casoConferido !== undefined &&
     !isSceneSetup(casoConferido, activity.scene, { goals: activity.type === 'experimentation' })
@@ -137,20 +136,18 @@ export function SceneSetupEditor({
           className="space-y-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200"
         >
           <p>
-            Este caso cita descobertas que a cena não tem mais. Para as crianças elas já não contam,
-            e a atividade continua aparecendo. Para salvar, tire do caso:
+            Este caso cita objetivos que não existem nesta cena. O rascunho guarda assim, mas a aula
+            não publica enquanto eles estiverem aqui. Confira se a cena certa está escolhida e tire
+            do caso:
           </p>
           <ul className="list-disc pl-5">
             {desconhecidas.map((meta) => (
-              <li key={meta.id}>
-                <code>{meta.id}</code>
-                {meta.successor
-                  ? ` virou "${nomeDaMeta(meta.successor)}", que fica marcada no lugar.`
-                  : ' saiu da cena, sem outra no lugar.'}
+              <li key={meta}>
+                <code>{meta}</code> não é um objetivo desta cena.
               </li>
             ))}
           </ul>
-          <Button type="button" variant="outline" size="sm" onClick={() => aplicar(semAsQueSairam)}>
+          <Button type="button" variant="outline" size="sm" onClick={() => aplicar(soAsQueExistem)}>
             Tirar do caso
           </Button>
         </div>

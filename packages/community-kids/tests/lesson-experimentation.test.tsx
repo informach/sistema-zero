@@ -16,7 +16,6 @@ import {
   packDemonstration,
   packExperiment,
   readSceneSegment,
-  SCENE_CLOCK_MARK,
   SCENE_IDS,
   SCENE_MODELS,
   SCENE_QUESTIONS,
@@ -546,10 +545,6 @@ function servidorQueCorrige(bloco: InteractiveBlock) {
       : atividade.type === 'demonstration'
         ? packDemonstration(atividade.scene, checkpoint.session as DemonstrationSession)
         : packExperiment(atividade.scene, checkpoint.session as ExperimentSession),
-    // ⚠️ Mudou de propósito (full review final de dados e deploy, MÉDIO-1): o members com as regras
-    // deste player devolve o marcador no progresso gravado, e é por ele que o player separa a recusa
-    // da criança ("Ainda não é essa") da recusa de um servidor de outra versão ("Esta atividade mudou.").
-    sceneClock: SCENE_CLOCK_MARK,
   })
   const progresso = (result: unknown = null) => ({
     blockId: 'bloco',
@@ -1312,17 +1307,18 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     aluno(bloco)
     expect(await screen.findByText(/Primeiro, seu palpite/)).toBeTruthy()
     cleanup()
+    // E o palpite da pergunta de HOJE volta com a criança.
     localStorage.clear()
-    // E o id cru antigo do `sessionStorage` vale se ainda for uma opção.
-    sessionStorage.setItem(
-      'sz:scene-prediction:crianca-moldura:aula:bloco:rev',
+    guardarPalpite(
+      'crianca-moldura:aula:bloco:rev',
+      SCENE_QUESTIONS.world.prediction,
       SCENE_QUESTIONS.world.prediction.choices[0]?.id as string,
     )
     try {
       aluno(bloco)
       expect(await screen.findByText('Seu palpite:')).toBeTruthy()
     } finally {
-      sessionStorage.clear()
+      localStorage.clear()
     }
   })
 

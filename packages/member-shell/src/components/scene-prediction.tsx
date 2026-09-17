@@ -46,8 +46,6 @@ function impressao(prediction: LearningPrediction): string {
  * aba ou outro aparelho reabriam uma atividade JÁ CONCLUÍDA com o palco trancado atrás de "escolha
  * um palpite", enquanto o cartão logo abaixo dizia que ela tinha concluído: o palpite ali já não era
  * palpite. O `scope` leva o perfil, então irmãos no mesmo navegador não herdam o palpite um do outro.
- * O da sessão ainda é LIDO (um id cru, do formato antigo), para uma aba aberta antes do deploy não
- * perder o que já escolheu, e só vale se o id ainda for uma das opções.
  */
 export function lerPalpite(
   scope: string | null,
@@ -58,21 +56,18 @@ export function lerPalpite(
     typeof id === 'string' && prediction.choices.some((c) => c.id === id)
   try {
     const guardado = localStorage.getItem(chave(scope))
-    if (guardado) {
-      const lido: unknown = JSON.parse(guardado)
-      if (
-        typeof lido === 'object' &&
-        lido !== null &&
-        'pergunta' in lido &&
-        'escolha' in lido &&
-        lido.pergunta === impressao(prediction) &&
-        existe(lido.escolha)
-      )
-        return lido.escolha
-      return ''
-    }
-    const antigo = sessionStorage.getItem(chave(scope))
-    return existe(antigo) ? antigo : ''
+    if (!guardado) return ''
+    const lido: unknown = JSON.parse(guardado)
+    if (
+      typeof lido === 'object' &&
+      lido !== null &&
+      'pergunta' in lido &&
+      'escolha' in lido &&
+      lido.pergunta === impressao(prediction) &&
+      existe(lido.escolha)
+    )
+      return lido.escolha
+    return ''
   } catch {
     return ''
   }

@@ -12,7 +12,6 @@ import {
 import { evaluateExperimentation, sceneHint } from './evaluate'
 import { sceneReadout, sceneSituation } from './readout'
 import {
-  hydrateSceneState,
   isSceneState,
   type SceneState,
   SOUND_BEATS_MAX,
@@ -345,28 +344,5 @@ describe('controls: os selos das tentativas', () => {
     for (let i = 0; i < START_TRIES_MAX + 3; i++) c.faz({ type: 'start', input: 'tap' })
     expect(c.estado.match.tries).toHaveLength(START_TRIES_MAX)
     expect(isSceneState(c.estado)).toBe(true)
-  })
-})
-
-describe('⚠️⚠️ retrato de antes do lote 5 continua abrindo', () => {
-  test('sem os campos novos, a hidratação os completa e o validador aceita', () => {
-    const s = openScene({ scene: 'jump-sound' }) as unknown as Record<
-      string,
-      Record<string, unknown>
-    >
-    const antigo = JSON.parse(JSON.stringify(s)) as Record<string, Record<string, unknown>>
-    delete antigo.flight?.base
-    delete antigo.flight?.before
-    delete antigo.flight?.beforeForce
-    delete antigo.sound?.beats
-    delete antigo.crowd?.untimedBorn
-    delete antigo.crowd?.untimedSeconds
-    delete antigo.match?.tries
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.sound.beats).toEqual([])
-    expect(hidratado.match.tries).toEqual([])
-    expect(hidratado.flight.base).toBe(0)
   })
 })

@@ -29,7 +29,6 @@ import {
   sceneHintDone,
   sceneHintStep,
   sceneScript,
-  sceneSegmentHasClock,
   sceneSetupGoals,
   sceneShowsComparison,
   sceneSituation,
@@ -296,14 +295,6 @@ export function SceneActivityView({
   const fila = useRef<string[]>([])
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
-  /**
-   * ⚠️⚠️ O servidor desta aba conhece as MESMAS regras deste player? (full review final de dados e
-   * deploy, MÉDIO-1). O segmento sobe com o marcador (`sceneSegmentAnswers`) e o members com as mesmas
-   * regras o devolve no progresso gravado; o de outra versão, não. `null` enquanto nenhum segmento
-   * desta tela voltou. É a resposta ao MEU segmento, e não o que já estava guardado: uma aba antiga
-   * que gravou por último não conta.
-   */
-  const regrasDoServidor = useRef<boolean | null>(null)
   /**
    * ⚠️⚠️ O que a última tentativa já levou.
    *
@@ -730,14 +721,14 @@ export function SceneActivityView({
   })
 
   /**
-   * ⚠️⚠️ O servidor é de OUTRA versão das regras (full review final de dados e deploy, MÉDIO-1).
+   * ⚠️⚠️ O servidor RECUSOU o que este player produz (full review final de dados e deploy, MÉDIO-1).
    *
-   * O deploy não garante o members antes do kids. Com este player contra o members de antes, 32 de 142
-   * blocos concluíam AQUI e o servidor gravava `passed:false`, e 10 caíam em 400 ("Sem internet" para
-   * sempre). Nos dois casos a cena para, a conclusão que o servidor recusou sai da tela e a saída é o
-   * "Abrir de novo". Sem "versão" no texto (lote 2): para a criança, a atividade mudou.
+   * Um 400/422 numa gravação de cena não é falha de rede: tentar de novo não resolve, e "Sem
+   * internet… a gente guarda quando voltar" prometia o que nunca acontece. A cena para, a conclusão
+   * que o servidor recusou sai da tela e a saída é o "Abrir de novo". Sem "versão" no texto (lote 2):
+   * para a criança, a atividade mudou.
    */
-  const servidorDeOutraVersao = () => {
+  const servidorRecusou = () => {
     setConflict(true)
     setRunning(false)
     if (!demoMode) setConclusao('')
@@ -838,7 +829,6 @@ export function SceneActivityView({
           { keepalive: true },
         )
         controller.acknowledge(progress.answers)
-        regrasDoServidor.current = sceneSegmentHasClock(progress.answers)
         player.onLearningProgress?.(progress)
       }
       // ⚠️ Quem decide é o avaliador DO TIPO (`result`), não o da experimentação: em `jump-sound` e
@@ -888,13 +878,6 @@ export function SceneActivityView({
         // nenhuma nova tentativa de envio. O POST é idempotente pelo `attemptId`.
         enviado.current = assinatura
         enviadoChave.current = chave
-        // ⚠️⚠️ Recusada por um servidor de OUTRA versão, a recusa não é da criança: a resposta certa
-        // viraria "Ainda não é essa", e a demonstração vista, "veja de novo até o fim" (MÉDIO-1).
-        if (!response.attempt.result.passed && regrasDoServidor.current === false) {
-          player.onLearningProgress?.(response.progress)
-          servidorDeOutraVersao()
-          return
-        }
         // Com pergunta anexa, é o servidor quem diz se a frase escolhida explica o que aconteceu.
         aplicarResultado(response.attempt.result, escolhida, assentada)
         // ⚠️ Nas duas cenas que pedem montagem ASSENTADA, a criança pode mexer antes de o registro
@@ -917,9 +900,8 @@ export function SceneActivityView({
         // quase sempre revisão nova do bloco (reimportação) ou regra nova, e não outra aba.
         setError('Esta atividade mudou ou está aberta em outro lugar.')
       } else if (player && (status === 400 || status === 422)) {
-        // ⚠️⚠️ O servidor recusou o que este player produz (MÉDIO-1): tentar de novo não resolve, e
-        // "Sem internet… a gente guarda quando voltar" prometia o que nunca acontece.
-        servidorDeOutraVersao()
+        // ⚠️⚠️ Pedido mal formado ou grande demais: tentar de novo não resolve (MÉDIO-1).
+        servidorRecusou()
       } else if (!player) {
         // ⚠️ No ensaio de autoria não existe conexão a aguardar: a falha veio do próprio ensaio (o
         // professor pediu "falhar na próxima confirmação") ou do avaliador.
@@ -1894,7 +1876,7 @@ function tempoDoPalpite(frase: string): number {
  */
 const PISTA_FEITA = '✓ Feito! Se precisar, peça outra pista.'
 
-/** O recado do servidor de outra versão das regras (ver `servidorDeOutraVersao`). */
+/** O recado de quando o servidor recusa o que este player produz (`servidorRecusou`). */
 const ATIVIDADE_MUDOU = 'Esta atividade mudou.'
 
 /** Os dois conjuntos de metas são o MESMO (a ordem não importa). */

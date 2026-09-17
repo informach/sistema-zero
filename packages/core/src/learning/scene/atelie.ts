@@ -105,13 +105,12 @@ export const NOME_DO_TRACO: Readonly<Record<'asa' | 'ponta' | 'cabine', string>>
 }
 
 /**
- * Uma MARCA no papel: um traço pronto (`asa`), um quadradinho tocado (`p:3,10`) ou a coluna do
- * `paint` antigo (`c:4`), com a cópia do espelho marcada no fim (`asa|x` lado a lado, `asa|y` de cima
- * e de baixo, `asa|xy` a cópia na diagonal, que só existe com os DOIS espelhos ligados). ⚠️ O validador
- * do retrato usa ESTA régua: uma marca que o palco não sabe desenhar não entra no estado.
+ * Uma MARCA no papel: um traço pronto (`asa`) ou um quadradinho tocado (`p:3,10`), com a cópia do
+ * espelho marcada no fim (`asa|x` lado a lado, `asa|y` de cima e de baixo, `asa|xy` a cópia na
+ * diagonal, que só existe com os DOIS espelhos ligados). ⚠️ O validador do retrato usa ESTA régua:
+ * uma marca que o palco não sabe desenhar não entra no estado.
  */
-export const MARCA_DO_PAPEL =
-  /^(asa|ponta|cabine|p:(1[0-5]|[0-9]),(1[0-5]|[0-9])|c:(1[01]|[0-9]))(\|(xy|x|y))?$/
+export const MARCA_DO_PAPEL = /^(asa|ponta|cabine|p:(1[0-5]|[0-9]),(1[0-5]|[0-9]))(\|(xy|x|y))?$/
 
 /** O eixo do espelho no estado: o lado a lado (`x`), o de cima e de baixo (`y`) ou os dois (`xy`). */
 export type MirrorAxis = 'x' | 'y' | 'xy'
@@ -149,11 +148,6 @@ export function symmetryMarkCells(marca: string): [number, number][] {
   if (base.startsWith('p:')) {
     const [x = 0, y = 0] = base.slice(2).split(',').map(Number)
     celulas = [[x, y]]
-  } else if (base.startsWith('c:')) {
-    // ⚠️ O `paint {column}` de antes do lote 5 (12 colunas): vira um traço de pé, da linha 3 à 12, na
-    // coluna 2 a 13. Ele segue legal para roteiros e retratos antigos; o player novo não o manda.
-    const coluna = Number(base.slice(2)) + 2
-    celulas = Array.from({ length: 10 }, (_, i): [number, number] => [coluna, 3 + i])
   } else celulas = (TRACOS_DA_NAVE[base as 'asa'] ?? []).map(([x, y]): [number, number] => [x, y])
   if (eixo === 'x') return celulas.map(([x, y]) => [ultimo - x, y])
   if (eixo === 'y') return celulas.map(([x, y]) => [x, ultimo - y])

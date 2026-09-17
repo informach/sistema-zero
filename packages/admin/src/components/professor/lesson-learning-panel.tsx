@@ -54,8 +54,8 @@ function opcaoQueSaiu(id: string, pergunta?: { choices: { id: string }[] }): str
  * ⚠️⚠️ É o `sceneReadout` do core, e não uma terceira descrição do estado (full review de 16/09/2026). A
  * cópia daqui dizia "de cima e de baixo" onde a faixa diz "cima e baixo", "partida" onde a tela diz
  * "Jogando", "área do Dino 51.2" onde a bancada diz "80%", "-9" sem o sinal de menos, "quadro(s)", e ainda
- * falava da "pergunta contínua" da `contact`, uma regra que saiu da cena (o campo `hit.mode` não é lido
- * por nada). O complemento por cena (`complementoDaMontagem`) é só o que a faixa NÃO mostra e o professor
+ * falava da "pergunta contínua" da `contact`, uma regra que saiu da cena. O complemento por cena
+ * (`complementoDaMontagem`) é só o que a faixa NÃO mostra e o professor
  * precisa para intervir.
  * ⚠️ SEM o elenco aqui: quem veste é o chamador (`castText` na frase inteira), uma vez só.
  */

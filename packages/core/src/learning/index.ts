@@ -139,6 +139,23 @@ export interface InteractiveBlock {
   checkpoint?: LearningCheckpoint
   /** A pergunta de antes. Não é avaliada: ver `LearningPrediction`. */
   prediction?: LearningPrediction
+  /**
+   * Esta experimentação entra SEM a pergunta do fim.
+   *
+   * ⚠️⚠️ É a única maneira de uma aula dizer "aqui a criança só mexe". Toda experimentação herda a
+   * pergunta do modelo da cena (`SCENE_QUESTIONS[cena].explain`), e escrever a sua no bloco TROCA a
+   * pergunta, nunca a tira. Numa aula com quatro cenas seguidas isso dá oito momentos de responder
+   * (previsão + pergunta em cada), e a Aula 1 do Corre Dino é a primeira aula da criança: a dona
+   * decidiu manter as quatro previsões e deixar a pergunta do fim só em duas cenas.
+   *
+   * ⚠️ A cena continua CONCLUINDO sozinha: sem pergunta, quem dá a palavra final é a descoberta
+   * (`evaluateSceneBlock`), e a seção que tem a cena como critério fecha do mesmo jeito.
+   *
+   * ⚠️ Só `true`, e só onde ela teria efeito: na EXPERIMENTAÇÃO de cena e sem `checkpoint` escrito
+   * no bloco (`isInteractiveBlock` recusa os dois casos). Campo sem efeito é armadilha para quem
+   * autora, e "tirar a pergunta" junto de "escrever a minha" seriam duas ordens contrárias.
+   */
+  semPerguntaFinal?: true
 }
 /** Authoring, presentation and evidence use the same hints, including curated mission defaults. */
 export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'>): string[] {
@@ -158,7 +175,7 @@ export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'
  *  `correctChoiceId` da pergunta anexa, tratado abaixo. */
 export type PublicLearningActivity = LearningActivity
 export interface PublicInteractiveBlock
-  extends Omit<InteractiveBlock, 'activity' | 'checkpoint' | 'prediction'> {
+  extends Omit<InteractiveBlock, 'activity' | 'checkpoint' | 'prediction' | 'semPerguntaFinal'> {
   activity: PublicLearningActivity
   checkpoint?: Omit<LearningCheckpoint, 'correctChoiceId' | 'explanation'>
   /**
@@ -206,8 +223,9 @@ function publicActivity(activity: LearningActivity): LearningActivity {
   const cru = activity as unknown as Record<string, unknown>
   const saida: Record<string, unknown> = {}
   for (const campo of permitidos) if (cru[campo] !== undefined) saida[campo] = cru[campo]
-  // ⚠️⚠️ A meta que saiu do catálogo não chega ao navegador (full review final de dados e deploy,
-  // MÉDIO-3): um bloco do banco citando `same-x` sumia da aula e travava a seção obrigatória.
+  // ⚠️⚠️ A meta que a cena não tem não chega ao navegador (full review final de dados e deploy,
+  // MÉDIO-3): um bloco do banco citando um id que não existe sumia da aula e travava a seção
+  // obrigatória. Quem autora vê o erro no editor do admin; a criança não perde a aula por isso.
   return sceneActivityForReading(saida) as unknown as LearningActivity
 }
 
@@ -271,6 +289,10 @@ export function blockPrediction(block: InteractiveBlock): LearningPrediction | u
  */
 export function blockCheckpoint(block: InteractiveBlock): LearningCheckpoint | undefined {
   if (block.checkpoint) return block.checkpoint
+  // ⚠️ DEPOIS da pergunta escrita no bloco, de propósito: os dois juntos são recusados na autoria,
+  // mas este resolvedor roda sobre o conteúdo CRU do banco, sem passar pelo guard. Se uma linha
+  // antiga carregar os dois, quem a criança vê continua sendo a pergunta que alguém escreveu.
+  if (block.semPerguntaFinal) return undefined
   const a = block.activity
   if (a.type !== 'experimentation') return undefined
   const modelo = SCENE_QUESTIONS[a.scene]?.explain
@@ -340,9 +362,9 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
     return false
   return isInteractiveBlock({
     ...value,
-    // ⚠️⚠️ A LEITURA é tolerante com a meta desconhecida (`sceneActivityForReading`), pelos dois lados
-    // de um deploy: o members atrás (bloco citando uma meta que saiu) ou à frente (uma que o navegador
-    // ainda não conhece). Quem consome a atividade lê as metas pelo `sceneTargets`/`sceneSetupGoals`.
+    // ⚠️⚠️ A LEITURA é tolerante com a meta desconhecida (`sceneActivityForReading`). Este guarda roda
+    // no NAVEGADOR, contra o catálogo DO NAVEGADOR: com o members à frente numa aba já aberta, uma meta
+    // nova derrubaria a atividade inteira. Quem consome lê as metas pelo `sceneTargets`/`sceneSetupGoals`.
     activity: sceneActivityForReading(a),
     // ⚠️⚠️ O `revealOn` é conferido na AUTORIA, nunca aqui (review do lote 2 do Raio-X). Este guarda
     // roda no NAVEGADOR, contra o catálogo DO NAVEGADOR: com o members um deploy à frente (ou numa
@@ -592,6 +614,15 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
     }
   }
   const a = value.activity
+  // ⚠️⚠️ "Esta cena entra sem a pergunta do fim" só vale onde ela teria efeito: a pergunta de fábrica
+  // é da EXPERIMENTAÇÃO (na demonstração a criança não conduziu, e ali não existe pergunta a tirar), e
+  // um bloco que escreveu a PRÓPRIA pergunta estaria dando duas ordens contrárias. Nos dois casos o
+  // campo seria decoração silenciosa, que é a armadilha que o `goals` da demonstração já recusa.
+  if (value.semPerguntaFinal !== undefined) {
+    if (value.semPerguntaFinal !== true || value.checkpoint !== undefined) return false
+    if (!record(a) || a.type !== 'experimentation' || !SCENE_IDS.some((s) => s === a.scene))
+      return false
+  }
   switch (a.type) {
     case 'demonstration':
     case 'experimentation':

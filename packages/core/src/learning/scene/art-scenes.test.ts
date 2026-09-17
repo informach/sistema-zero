@@ -246,9 +246,9 @@ describe('lives: ponto e vida mudam por motivos diferentes', () => {
 describe('a legalidade das ações novas é por CENA', () => {
   test('⚠️ o gesto de uma cena é no-op na outra, e o estado não se mexe', () => {
     // `isSceneAction` é a única fonte de legalidade, e o motor trata ilegal como no-op para
-    // que roteiro antigo ou pacote adulterado não derrube a aula no meio.
+    // que um roteiro escrito para outra cena, ou um pacote adulterado, não derrube a aula no meio.
     const pares: [SceneId, SceneAction][] = [
-      ['frames', { type: 'paint', column: 3 }],
+      ['frames', { type: 'trace', piece: 'asa' }],
       ['symmetry', { type: 'play', on: true }],
       ['pixel-vector', { type: 'cut', cell: 2 }],
       ['sheet-vs-sprite', { type: 'inspect', kind: 'pixel', zoom: 6 }],
@@ -265,8 +265,8 @@ describe('a legalidade das ações novas é por CENA', () => {
   test('os números fora da faixa são recusados pela mesma régua', () => {
     expect(isSceneAction({ type: 'rate', perSecond: 40 }, 'frames')).toBe(false)
     expect(isSceneAction({ type: 'rate', perSecond: 8 }, 'frames')).toBe(true)
-    expect(isSceneAction({ type: 'paint', column: 12 }, 'symmetry')).toBe(false)
-    expect(isSceneAction({ type: 'mirror', on: true, line: 0 }, 'symmetry')).toBe(false)
+    expect(isSceneAction({ type: 'dot', x: 20, y: 3 }, 'symmetry')).toBe(false)
+    expect(isSceneAction({ type: 'mirror-mode', mode: 'diagonal' }, 'symmetry')).toBe(false)
     expect(isSceneAction({ type: 'inspect', kind: 'lapis', zoom: 3 }, 'pixel-vector')).toBe(false)
     expect(isSceneAction({ type: 'cut', cell: 2.5 }, 'sheet-vs-sprite')).toBe(false)
     expect(isSceneAction({ type: 'sprite', size: 200 }, 'sheet-vs-sprite')).toBe(false)

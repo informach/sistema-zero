@@ -88,21 +88,14 @@ function preparar(content: InteractiveBlock) {
         body: JSON.stringify(body),
       }),
     )
-  /**
-   * Grava UM segmento e devolve as respostas que o servidor guardou. `playerAnterior` tira o marcador
-   * do relógio (`sceneClock`): o player de antes do lote 4 não o manda.
-   */
-  const gravar = async (
-    commands: unknown[],
-    { playerAnterior = false } = {},
-  ): Promise<LearningAnswers> => {
+  /** Grava UM segmento e devolve as respostas que o servidor guardou. */
+  const gravar = async (commands: unknown[]): Promise<LearningAnswers> => {
     const answers = sceneSegmentAnswers({
       sessionId: 'sessao-caso',
       segmentId: `segmento-${randomUUID()}`,
       baseSequence: 0,
       commands,
     })
-    if (playerAnterior) delete answers.sceneClock
     const resposta = await request('/learning-progress', 'PUT', {
       revision: REVISION,
       hintsUsed: 0,
@@ -187,32 +180,5 @@ describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o playe
         expect(servidor?.state, onde).toEqual(player.state)
       }
     }
-  })
-})
-
-describe('⚠️⚠️ deploy: a demonstração vista num player ANTERIOR ao lote 1 é registrada', () => {
-  test('Aula 5 do Corre Dino (velocity, obrigatória): os comandos do player antigo concluem', async () => {
-    const content = blocoDoManifesto('corre-dino-v6/aula-05/manifesto.json', 'demonstracao-sentido')
-    expect(content.activity).toMatchObject({ type: 'demonstration', scene: 'velocity' })
-    const { gravar, tentar } = preparar(content)
-    // O player antigo dava a etapa por pronta na PRIMEIRA fatia com a descoberta esperada, mandava
-    // `next` ali mesmo, e na última etapa parava de mandar tique. Cada etapa do roteiro do modelo
-    // é [velocidade, avançar 1 s]: o respiro de 0,45 s aplica a velocidade, e a primeira fatia de
-    // 0,05 s já traz a descoberta (5 de velocidade anda 2,5 px).
-    const etapa = [
-      { type: 'tick', seconds: 0.5 },
-      { type: 'tick', seconds: 0.05 },
-    ]
-    // ⚠️ Mudou de propósito (review do lote 4): o player anterior é o que NÃO manda o marcador do
-    // relógio, e só ele ganha a tolerância. Com o marcador estes comandos não concluem (ver
-    // `learning-scene-clock.test.ts`).
-    const respostas = await gravar(
-      [{ type: 'start' }, ...etapa, { type: 'next' }, ...etapa, { type: 'next' }, ...etapa],
-      { playerAnterior: true },
-    )
-    const sessao = readDemonstrationSession('velocity', respostas.sceneCheckpoint)
-    expect(sessao?.step).toBe(2)
-    expect(sessao?.viewed).toBe(true)
-    expect((await tentar(respostas)).passed).toBe(true)
   })
 })

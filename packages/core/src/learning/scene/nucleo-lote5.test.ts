@@ -106,7 +106,7 @@ describe('hold-vs-press: uma tecla, duas raquetes', () => {
   test('⚠️⚠️ a raquete que chega no fim da pista VOLTA ao começo: segurar de novo sempre anda', () => {
     const ultimo = HOLD_LANE.start + (HOLD_LANE.places - 1) * HOLD_LANE.step
     expect(holdLaneNext(ultimo)).toBe(HOLD_LANE.start)
-    // Um retrato antigo tinha a raquete em 440 (de 10 em 10): ela entra na grade.
+    // Um valor FORA da grade (retrato adulterado) entra nela em vez de travar a raquete.
     expect(holdLaneNext(440)).toBe(HOLD_LANE.start)
     const c = crianca('hold-vs-press').faz(afunda).tempo(10).faz(solta).faz(afunda).tempo(1)
     expect(c.estado.input.holdSteps).toBe(4)
@@ -327,14 +327,6 @@ describe('contact: as duas regras ao mesmo tempo', () => {
     expect(c.viu('drain')).toBe(false)
     c.faz({ type: 'approach', distance: 0 }).tempo(1)
     expect(c.viu('drain')).toBe(true)
-  })
-
-  test('⚠️ a pergunta antiga (`mode`) continua legal e não zera nada', () => {
-    const c = crianca('contact').faz({ type: 'approach', distance: 0 }).tempo(0.5)
-    const antes = c.estado.hit
-    c.faz({ type: 'mode', kind: 'event' })
-    expect(c.estado.hit.top).toBe(antes.top)
-    expect(c.estado.hit.bottom).toBe(antes.bottom)
   })
 
   test('a frase diz há quanto tempo estão encostados, com o nome colado ao verbo', () => {
@@ -617,38 +609,39 @@ describe('⚠️⚠️ o CASO não pré-semeia a memória do gesto no núcleo', 
   })
 })
 
-describe('retratos guardados antes do lote 5 do núcleo abrem', () => {
-  test('⚠️⚠️ os campos novos são completados campo a campo', () => {
-    const antigo = JSON.parse(JSON.stringify(openScene({ scene: 'contact' })))
-    for (const campo of ['pressFrom', 'holdFrom', 'pressSteps', 'holdSteps'])
-      delete antigo.input[campo]
-    delete antigo.hunt.blind
-    for (const campo of ['cacti', 'copy', 'ticks', 'seq', 'editSeq', 'pending'])
-      delete antigo.blueprint[campo]
-    for (const campo of ['top', 'bottom', 'frames', 'topTouch', 'bottomTouch', 'touches'])
-      delete antigo.hit[campo]
-    for (const campo of ['time', 'bullets', 'shotTimes', 'refusedAt']) delete antigo.weapon[campo]
-    for (const campo of ['flying', 'bulletX', 'bulletY', 'bulletVX', 'bulletVY', 'aimed', 'result'])
-      delete antigo.sight[campo]
-    for (const campo of ['x', 'y', 'last', 'ghosts', 'strides']) delete antigo.walkPad[campo]
-    for (const campo of ['marks', 'lastRow', 'lastCol']) delete antigo.grid[campo]
-    // A raquete de antes andava de 10 em 10 até 440, e o alvo morava em 360, 80.
-    antigo.input.holdX = 440
-    antigo.sight.targetX = 360
-    antigo.sight.targetY = 80
-    expect(isSceneState(antigo)).toBe(false)
-    const hidratado = hydrateSceneState(antigo) as SceneState
+describe('o retrato truncado: UMA régua, e ela para no grupo', () => {
+  test('⚠️⚠️ campo faltando DENTRO de um grupo presente é retrato inválido', () => {
+    // Consertos do full review 2 (M-1): completar campo a campo fabricava estado incoerente e meta
+    // falsa. Agora vale o que o retrato traz, inteiro — e o que vem quebrado é recusado.
+    const grupos = ['input', 'hunt', 'blueprint', 'hit', 'weapon', 'sight', 'walkPad', 'grid']
+    for (const grupo of grupos) {
+      const truncado = JSON.parse(JSON.stringify(openScene({ scene: 'contact' })))
+      const campo = Object.keys(truncado[grupo])[0] as string
+      delete truncado[grupo][campo]
+      expect(isSceneState(truncado), `${grupo}.${campo}`).toBe(false)
+      expect(isSceneState(hydrateSceneState(truncado)), `${grupo}.${campo}`).toBe(false)
+    }
+  })
+
+  test('⚠️ o grupo INTEIRO ausente continua recebendo o padrão de fábrica', () => {
+    // A robustez que fica: o retrato de uma cena que ainda não tinha o assunto abre como a de
+    // fábrica, em vez de a criança perder a montagem com "esta descoberta mudou, recomece".
+    const { hit: _fora, ...semHit } = JSON.parse(JSON.stringify(openScene({ scene: 'contact' })))
+    expect(isSceneState(semHit)).toBe(false)
+    const hidratado = hydrateSceneState(semHit) as SceneState
     expect(isSceneState(hidratado)).toBe(true)
     expect(hidratado.hit).toMatchObject({ top: CONTACT_HEARTS, bottom: CONTACT_HEARTS })
-    expect(hidratado.sight).toMatchObject({
-      targetX: 360,
-      targetY: 80,
-      flying: false,
-      result: 'nada',
-    })
-    // E a raquete de 440 entra na grade (430, o último lugar), que é onde o fantasma dela fica.
-    // ⚠️ Mudou de propósito (consertos do review da onda B do lote 5): afundar a tecla leva as duas
-    // raquetes ao começo da pista, e no quadro seguinte a de baixo dá o primeiro passo.
+  })
+
+  test('⚠️ a raquete fora da grade entra nela: robustez contra retrato adulterado', () => {
+    // A raquete anda de 10 em 10; um retrato adulterado com 440 encaixa no último lugar (430), que
+    // é onde o fantasma dela fica. ⚠️ Mudou de propósito (consertos do review da onda B do lote 5):
+    // afundar a tecla leva as duas raquetes ao começo da pista, e no quadro seguinte a de baixo dá
+    // o primeiro passo.
+    const adulterado = JSON.parse(JSON.stringify(openScene({ scene: 'hold-vs-press' })))
+    adulterado.input.holdX = 440
+    const hidratado = hydrateSceneState(adulterado) as SceneState
+    expect(isSceneState(hidratado)).toBe(true)
     const depois = stepScene({ scene: 'hold-vs-press' }, hidratado, afunda)
     expect(isSceneState(depois)).toBe(true)
     expect(depois.input.holdFrom).toBe(430)

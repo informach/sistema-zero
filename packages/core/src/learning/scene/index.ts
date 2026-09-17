@@ -275,8 +275,8 @@ export function sceneStart(activity: SceneActivity): SceneStart {
  * caso específico do professor, e somá-las à missão sem caso a tornava maior que a instrução.
  */
 export function sceneTargets(activity: SceneActivity): readonly string[] {
-  // ⚠️⚠️ Pela LEITURA TOLERANTE (`sceneSetupGoals`): a meta que saiu do catálogo não esvazia a missão
-  // (vazia, ela reprovaria para sempre) e a sucessora entra no lugar. Player e members leem daqui.
+  // ⚠️⚠️ Pela `sceneSetupGoals`: um id que a cena não tem não esvazia a missão (vazia, ela reprovaria
+  // para sempre). Player e members leem daqui.
   const alvo =
     activity.type === 'experimentation'
       ? sceneSetupGoals(activity.scene, activity.setup?.goals)
@@ -285,65 +285,27 @@ export function sceneTargets(activity: SceneActivity): readonly string[] {
 }
 
 /**
- * ⚠️⚠️ As metas que SAÍRAM do catálogo, com a sucessora quando existe uma que afirma a mesma coisa
- * (full review final de dados e deploy, MÉDIO-3). `null` = saiu sem equivalente.
- *
- * Os manifestos não citavam nenhuma delas, mas um bloco criado ou editado no admin (a staging tem
- * blocos assim) guarda o id velho em `setup.goals`. O validador da autoria recusa, e é certo: quem
- * salva precisa ver. Na LEITURA, recusar escondia a atividade da criança ("precisa de uma
- * configuração válida") e, obrigatória, travava a seção. Só entra aqui a sucessora que cobra o MESMO
- * gesto: `cut` ("cada pedaço da folha é um desenho inteiro") virou `crop-whole` ("achou o recorte que
- * mostra uma nave inteira"). `same-x` e `origin` NÃO são a mesma meta (o 0, 0 não é "mesmo x"), e a
- * `two-cells` e a `separate` não têm par.
- * ⚠️ Meta que sair do catálogo entra nesta tabela no mesmo commit.
- */
-export const SCENE_RETIRED_GOALS: ReadonlyMap<
-  SceneId,
-  ReadonlyMap<string, string | null>
-> = new Map<SceneId, ReadonlyMap<string, string | null>>([
-  ['coordinates', new Map([['same-x', null]])],
-  ['hitbox', new Map([['separate', null]])],
-  [
-    'sheet-vs-sprite',
-    new Map<string, string | null>([
-      ['cut', 'crop-whole'],
-      ['two-cells', null],
-    ]),
-  ],
-])
-
-/**
- * As metas do caso que ESTA cena conhece, na ordem do professor: a sucessora no lugar da que saiu, e
- * o id desconhecido fora. ⚠️ É LEITURA: quem publica continua passando pelo `isSceneSetup`, estrito.
- * ⚠️ `Map`, e não objeto literal: "constructor" num objeto devolveria uma função do protótipo.
+ * As metas do caso que ESTA cena conhece, na ordem do professor: o id que a cena não tem fica fora.
+ * ⚠️ É LEITURA, contra dado que pode estar adulterado ou meio salvo: quem publica continua passando
+ * pelo `isSceneSetup`, estrito, e o editor do admin NOMEIA a meta que não existe.
  */
 export function sceneSetupGoals(scene: SceneId, goals: unknown): string[] {
   if (!Array.isArray(goals)) return []
   const conhecidas = sceneGoalIds(scene)
-  const saidas = SCENE_RETIRED_GOALS.get(scene)
   const alvo: string[] = []
-  for (const meta of goals) {
-    if (typeof meta !== 'string') continue
-    const id = conhecidas.includes(meta) ? meta : saidas?.get(meta)
-    if (id && !alvo.includes(id)) alvo.push(id)
-  }
+  for (const meta of goals)
+    if (typeof meta === 'string' && conhecidas.includes(meta) && !alvo.includes(meta))
+      alvo.push(meta)
   return alvo.slice(0, SETUP_LIMITS.goals)
 }
 
-/**
- * O aviso do ADMIN: cada meta do caso que a cena não conhece mais, com a sucessora (ou `null`).
- * Vazio quando o caso só cita metas vivas.
- */
-export function sceneUnknownSetupGoals(
-  scene: SceneId,
-  goals: unknown,
-): Array<{ id: string; successor: string | null }> {
+/** O aviso do ADMIN: cada meta que o caso cita e a cena não tem. Vazio quando o caso está inteiro. */
+export function sceneUnknownSetupGoals(scene: SceneId, goals: unknown): string[] {
   if (!Array.isArray(goals)) return []
   const conhecidas = sceneGoalIds(scene)
-  const saidas = SCENE_RETIRED_GOALS.get(scene)
-  return goals
-    .filter((meta): meta is string => typeof meta === 'string' && !conhecidas.includes(meta))
-    .map((id) => ({ id, successor: saidas?.get(id) ?? null }))
+  return goals.filter(
+    (meta): meta is string => typeof meta === 'string' && !conhecidas.includes(meta),
+  )
 }
 
 /**

@@ -214,6 +214,16 @@ const validos: Array<[string, InteractiveBlock]> = [
       },
     },
   ],
+  [
+    // ⚠️ Decisão da dona (17/09/2026): a Aula 1 do Corre Dino tem quatro cenas seguidas, e a
+    // pergunta do fim ficou só em duas. É a única maneira de uma aula dizer "aqui ela só mexe".
+    'cena que entra sem a pergunta do fim',
+    {
+      ...base,
+      activity: { type: 'experimentation', scene: 'stage-size' },
+      semPerguntaFinal: true,
+    },
+  ],
   ['sem pistas', { ...base, hints: [] }],
   ['dez pistas', { ...base, hints: Array.from({ length: 10 }, (_, i) => `pista ${i}`) }],
 ]
@@ -311,6 +321,35 @@ const invalidos: Array<[string, unknown]> = [
       },
     },
   ],
+  // ⚠️⚠️ "Sem a pergunta do fim" só tem efeito na EXPERIMENTAÇÃO (a demonstração não herda
+  // pergunta nenhuma) e não convive com a pergunta escrita no bloco: são duas ordens contrárias.
+  // A borda só sabe a forma do campo; quem conhece as duas regras é o core.
+  [
+    'sem a pergunta do fim numa demonstração',
+    {
+      ...base,
+      activity: { type: 'demonstration', scene: 'world' },
+      semPerguntaFinal: true,
+    },
+  ],
+  [
+    'sem a pergunta do fim com a pergunta escrita no bloco',
+    {
+      ...base,
+      semPerguntaFinal: true,
+      checkpoint: {
+        prompt: 'p',
+        choices: [
+          { id: 'a', label: 'A' },
+          { id: 'b', label: 'B' },
+        ],
+        correctChoiceId: 'a',
+        explanation: 'e',
+      },
+    },
+  ],
+  // A borda tem a forma fechada (`t.Literal(true)`), então este é recusado dos DOIS lados.
+  ['sem a pergunta do fim com `false`', { ...base, semPerguntaFinal: false }],
 ]
 
 describe('o DTO da borda e o guarda do domínio', () => {
@@ -339,6 +378,10 @@ describe('o DTO da borda e o guarda do domínio', () => {
         'pilha fora da layers',
         // A meta é do CATÁLOGO da cena: só o core sabe quais existem.
         'previsão que se revela numa meta de outra cena',
+        // "Sem a pergunta do fim" tem forma fechada na borda e DUAS regras no core: só na
+        // experimentação, e nunca junto da pergunta escrita no bloco.
+        'sem a pergunta do fim numa demonstração',
+        'sem a pergunta do fim com a pergunta escrita no bloco',
       ].sort(),
     )
     for (const [nome, bloco] of invalidos) expect(isInteractiveBlock(bloco), nome).toBe(false)
@@ -456,5 +499,38 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
     const devolvido = (await resposta.json()) as { content: InteractiveBlock }
     const atividade = devolvido.content.activity
     expect(atividade.type === 'experimentation' ? atividade.pilha : null).toBe('camadas')
+  })
+})
+
+describe('⚠️⚠️ "sem a pergunta do fim" ATRAVESSA uma rota com o corpo tipado', () => {
+  test('o `normalize` do Elysia não apaga `semPerguntaFinal`, e recusa qualquer valor fora de `true`', async () => {
+    /**
+     * ⚠️⚠️ Campo no nível do BLOCO é recusado alto (400) quando não está declarado — diferente de
+     * um campo dentro de `activity`, que o rascunho grava tal e qual. Sem a declaração no DTO, a
+     * escolha da professora derrubaria a gravação inteira do bloco; com ela mal declarada, o
+     * `normalize` de uma rota tipada a apagaria em silêncio e a pergunta voltaria à tela da criança.
+     */
+    const app = new Elysia().post('/', ({ body }) => body, {
+      body: t.Object({ content: InteractiveBlockSchema }),
+    })
+    const enviar = (content: unknown) =>
+      app.handle(
+        new Request('http://members.test/', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ content }),
+        }),
+      )
+    const bloco: InteractiveBlock = {
+      ...base,
+      activity: { type: 'experimentation', scene: 'stage-size' },
+      semPerguntaFinal: true,
+    }
+    const resposta = await enviar(bloco)
+    expect(resposta.status).toBe(200)
+    const devolvido = (await resposta.json()) as { content: InteractiveBlock }
+    expect(devolvido.content.semPerguntaFinal).toBe(true)
+    // Anti-vácuo: `false` seria um segundo jeito de dizer "com pergunta", e a borda o recusa.
+    expect((await enviar({ ...bloco, semPerguntaFinal: false })).status).not.toBe(200)
   })
 })

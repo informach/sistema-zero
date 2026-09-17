@@ -117,17 +117,7 @@ describe('draw-loop: o Dino anda nos bastidores, e a tela só muda quando algué
     expect(aberto.evidence.discoveries).toEqual([])
   })
 
-  test('⚠️ retrato de antes do lote 5 (só `trail` e `empty`) volta com o MESMO número na tela', () => {
-    const { x: _x, drawn: _d, ...velho } = openScene(start).render
-    const comRastro = hydrateSceneState({ ...openScene(start), render: { ...velho, trail: 3 } })
-    expect(isSceneState(comRastro)).toBe(true)
-    expect(drawLoopOnScreen(comRastro as SceneState)).toBe(3)
-    const vazia = hydrateSceneState({
-      ...openScene(start),
-      render: { ...velho, trail: 0, empty: true },
-    })
-    expect(drawLoopOnScreen(vazia as SceneState)).toBe(0)
-    // E um retrato NOVO não é tocado.
+  test('⚠️ a hidratação não toca o retrato inteiro', () => {
     const novo = rodar(start, quadros(2))
     expect(hydrateSceneState(novo)).toEqual(novo)
   })
@@ -193,8 +183,6 @@ describe('world: criar e desenhar são controles independentes', () => {
 })
 
 describe('screen-reader: a voz e as duas escutas', () => {
-  const start = { scene: 'screen-reader' } as const
-
   test('⚠️ o CASO não pré-semeia escuta: nem a frase ouvida, nem a contagem que dispara a voz', () => {
     const caso = {
       scene: 'screen-reader' as const,
@@ -208,20 +196,5 @@ describe('screen-reader: a voz e as duas escutas', () => {
     const aberto = openScene(caso)
     expect(aberto.description).toMatchObject({ heard: '', said: '', listens: 0, heardEmpty: false })
     expect(aberto.description.text).toBe('Pule apertando espaço')
-  })
-
-  test('⚠️ retrato de antes do lote 5: a frase que a pessoa ouviu volta para o painel', () => {
-    const {
-      said: _s,
-      listens: _l,
-      ...velho
-    } = rodar(start, [
-      { type: 'describe', text: 'Pule apertando espaço' },
-      { type: 'listen' },
-    ]).description
-    const hidratado = hydrateSceneState({ ...openScene(start), description: velho }) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(hidratado.description.said).toBe('Tela do jogo. Pule apertando espaço')
-    expect(hidratado.description.listens).toBe(0)
   })
 })

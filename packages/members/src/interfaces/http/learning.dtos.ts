@@ -62,7 +62,6 @@ const SceneActionSchema = t.Union([
       t.Literal('collide'),
       t.Literal('home'),
       t.Literal('restart'),
-      t.Literal('clock'),
       t.Literal('reset'),
     ]),
   }),
@@ -110,15 +109,6 @@ const SceneActionSchema = t.Union([
   t.Object({
     type: t.Literal('shift'),
     offset: t.Integer({ minimum: L.shift.min, maximum: L.shift.max }),
-  }),
-  t.Object({
-    type: t.Literal('paint'),
-    column: t.Integer({ minimum: L.column.min, maximum: L.column.max }),
-  }),
-  t.Object({
-    type: t.Literal('mirror'),
-    on: t.Boolean(),
-    line: t.Integer({ minimum: L.mirrorLine.min, maximum: L.mirrorLine.max }),
   }),
   t.Object({
     type: t.Literal('inspect'),
@@ -190,10 +180,6 @@ const SceneActionSchema = t.Union([
     type: t.Literal('approach'),
     distance: t.Integer({ minimum: L.approach.min, maximum: L.approach.max }),
   }),
-  t.Object({
-    type: t.Literal('mode'),
-    kind: t.Union([t.Literal('ask'), t.Literal('event')]),
-  }),
   t.Object({ type: t.Literal('shoot') }),
   t.Object({
     type: t.Literal('recharge'),
@@ -250,7 +236,6 @@ const SceneActionSchema = t.Union([
     pitch: t.Integer({ minimum: L.pitch.min, maximum: L.pitch.max }),
   }),
   t.Object({ type: t.Literal('recenter') }),
-  t.Object({ type: t.Literal('wireframe'), on: t.Boolean() }),
   // Lote 5 do Raio-X (G6): "Ver os pontos" em três degraus (`mesh`) e onde o estado das torres mora
   // (`entity-state`). Os degraus vêm do core, como as letras do mapa.
   t.Object({
@@ -416,6 +401,15 @@ export const InteractiveBlockSchema = t.Object({
       revealOn: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
     }),
   ),
+  /**
+   * "Esta experimentação entra SEM a pergunta do fim."
+   *
+   * ⚠️⚠️ Precisa estar declarado AQUI, e não só no core: campo não declarado no nível do BLOCO é
+   * recusado alto (400 `VALIDATION_ERROR`), então o editor mandaria a escolha da professora e a
+   * gravação inteira falharia. Quem confere que ela só aparece onde tem efeito (experimentação de
+   * cena, sem pergunta escrita no bloco) é o `isInteractiveBlock` do core, na publicação.
+   */
+  semPerguntaFinal: t.Optional(t.Literal(true)),
 })
 const SectionRule = t.Union([
   t.Object({ type: t.Literal('usesLoop') }),

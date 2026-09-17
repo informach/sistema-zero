@@ -20,7 +20,7 @@
  */
 export const HOLD_LANE = { start: 40, step: 30, places: 14 } as const
 
-/** O lugar da pista mais perto de `x`. ⚠️ Um retrato antigo tinha raquetes de 10 em 10 até 440. */
+/** O lugar da pista mais perto de `x`: um valor fora da grade (retrato adulterado) entra nela. */
 export function holdLaneSnap(x: number): number {
   const { start, step, places } = HOLD_LANE
   const lugar = Math.max(0, Math.round((x - start) / step)) % places
@@ -115,7 +115,7 @@ export const CAMERA_WALK_STEP = 40
 /**
  * Até onde o "Andar" leva o Dino: um passo antes do fim do mundo (consertos do review da onda B do
  * lote 5). ⚠️ Em 1200 o Dino ficava cortado pela metade na borda da tela e a bolinha dele saía do
- * mapa. O motor continua aceitando 1200 (`SCENE_LIMITS.worldX`): uma sessão antiga lá abre.
+ * mapa. O motor aceita o mundo inteiro (`SCENE_LIMITS.worldX`); quem limita é o botão da bancada.
  */
 export const CAMERA_WALK_MAX = CAMERA_WORLD.width - CAMERA_WALK_STEP
 /** Onde a tela começa no mundo: parada em 0, ou com o Dino no meio (presa nas pontas do mundo). */
@@ -270,14 +270,13 @@ export function tilemapCoinRow(rows: readonly string[]): number | null {
 /**
  * A marca de uma peça escrita pela criança numa CASA: `#3:4` é um bloco na linha 3, casa 4.
  *
- * ⚠️⚠️ Consertos do review da onda B do lote 5: a marca era só da LINHA (`#3`) e nunca saía. Escrever
- * `#` na linha 4, apagar com `.` e escrever `#` na linha 2 fechava "a mesma peça em duas linhas" com um
- * bloco só no mapa. Hoje a marca é da casa e sai quando a casa recebe outra letra. Uma marca antiga
- * (`#3`, sem a casa) continua lida: vale enquanto a linha dela ainda tiver aquela peça.
+ * ⚠️⚠️ Consertos do review da onda B do lote 5: a marca é da CASA e sai quando a casa recebe outra
+ * letra. Marcada só pela linha, escrever `#` na linha 4, apagar com `.` e escrever `#` na linha 2
+ * fechava "a mesma peça em duas linhas" com um bloco só no mapa.
  */
 export const tilemapMark = (tile: string, row: number, col: number) => `${tile}${row}:${col}`
-/** O formato das marcas: o de agora (`#3:4`) e o de antes (`#3`). */
-export const TILEMAP_MARK = /^[#o][0-5](?::\d)?$/
+/** O formato das marcas: a peça, a linha e a casa (`#3:4`). */
+export const TILEMAP_MARK = /^[#o][0-5]:\d$/
 /** No máximo uma marca por casa: seis linhas de dez casas. */
 export const TILEMAP_MARKS_MAX = 60
 
@@ -292,8 +291,7 @@ export function tilemapMarkedRows(
     if (marca[0] !== tile) continue
     const row = Number(marca[1])
     const [, casa] = marca.split(':')
-    const viva = casa === undefined ? rows[row]?.includes(tile) : rows[row]?.[Number(casa)] === tile
-    if (viva) linhas.add(row)
+    if (rows[row]?.[Number(casa)] === tile) linhas.add(row)
   }
   return [...linhas].sort((a, b) => a - b)
 }

@@ -266,8 +266,13 @@ export function LearningBuilder({
    */
   const heranca = {
     previsao: blockPrediction({ ...value, prediction: undefined }),
-    pergunta: blockCheckpoint({ ...value, checkpoint: undefined }),
+    // ⚠️ Sem o `semPerguntaFinal` também: o editor precisa MOSTRAR o que a cena oferece mesmo com a
+    // caixa "sem a pergunta do fim" marcada, senão desmarcar viraria um salto no escuro.
+    pergunta: blockCheckpoint({ ...value, checkpoint: undefined, semPerguntaFinal: undefined }),
   }
+  /** "Esta cena entra sem a pergunta do fim" só existe onde há pergunta de fábrica para tirar. */
+  const podeDispensarPergunta = a.type === 'experimentation' && Boolean(heranca.pergunta)
+  const semPergunta = Boolean(value.semPerguntaFinal)
   // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por roteiro inválido
   // e por impulso fora de faixa — então a tela acusava o endereço (um `https://` perfeito)
   // quando o defeito era outro. Apontar o culpado errado com precisão é pior que a parede.
@@ -701,6 +706,10 @@ export function LearningBuilder({
                     explanation: '',
                   })
                 : undefined,
+              // ⚠️ Escrever a minha pergunta e dispensar a pergunta são ordens contrárias, e o
+              // domínio recusa as duas juntas. Aqui quem chegou por último manda: a caixa marcada
+              // agora é a escolha da professora, e não há trabalho a perder no outro lado.
+              ...(e.target.checked ? { semPerguntaFinal: undefined } : {}),
             })
           }
         />
@@ -708,7 +717,23 @@ export function LearningBuilder({
           ? 'Escrever a minha pergunta (substitui a da cena)'
           : 'Incluir pergunta de verificação'}
       </label>
-      {!checkpoint && heranca.pergunta && (
+      {/* ⭐⭐ "Esta cena entra sem a pergunta do fim": a única maneira de uma aula pedir só o mexer.
+          A Aula 1 do Corre Dino tem quatro cenas seguidas, e previsão + pergunta em cada uma dão
+          oito momentos de responder na primeira aula da criança. ⚠️ A cena continua concluindo
+          sozinha: quem dá a palavra final passa a ser a descoberta. */}
+      {podeDispensarPergunta && !checkpoint && (
+        <label className="flex min-h-11 items-center gap-3">
+          <input
+            type="checkbox"
+            checked={semPergunta}
+            onChange={(e) =>
+              onChange({ ...value, semPerguntaFinal: e.target.checked ? true : undefined })
+            }
+          />
+          Esta cena entra sem a pergunta do fim (a criança só mexe e descobre)
+        </label>
+      )}
+      {!checkpoint && heranca.pergunta && !semPergunta && (
         <PerguntaHerdada
           titulo="Depois da descoberta, a criança vai responder esta pergunta da cena:"
           prompt={heranca.pergunta.prompt}
@@ -716,6 +741,13 @@ export function LearningBuilder({
           correctChoiceId={heranca.pergunta.correctChoiceId}
           explicacao={heranca.pergunta.explanation}
         />
+      )}
+      {!checkpoint && semPergunta && (
+        <p className="text-sm text-muted-foreground">
+          A cena termina em “✓ Você descobriu!”, sem pergunta. A descoberta é que conclui o bloco e
+          a seção. Desmarque a caixa para usar a pergunta da cena, ou marque a de cima para escrever
+          a sua.
+        </p>
       )}
       {value.required && a.type === 'html' && !checkpoint && (
         <p role="status" className="text-sm text-destructive">
