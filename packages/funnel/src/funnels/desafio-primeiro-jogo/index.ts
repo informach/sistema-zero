@@ -20,7 +20,6 @@ import {
   DESAFIO_PERFIL_LABELS,
   DESAFIO_VALUE_SCHEMA,
   desafioComputePerfil,
-  desafioDerive,
   desafioRenderCorpo,
 } from './quiz'
 
@@ -57,7 +56,6 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
       steps: DESAFIO_QUIZ_STEPS,
       total: DESAFIO_TOTAL,
       valueSchema: DESAFIO_VALUE_SCHEMA,
-      derive: desafioDerive,
       computePerfil: desafioComputePerfil,
     },
     hero: {

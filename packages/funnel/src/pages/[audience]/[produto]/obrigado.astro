@@ -7,8 +7,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import {
   computeFixedAccessExpiry,
   fixedAccessFromSnapshot,
-  fixedAccessLabel,
-  formatSaoPauloDate,
   formatSaoPauloDateTime,
 } from '../../../lib/access-period'
 import { getLeadId } from '../../../lib/lead-session'
@@ -40,7 +38,7 @@ const accessEnd =
     : null
 const buyerEmail = paymentContext?.email ?? lead?.email ?? null
 const isTimedChallenge = f.key === 'kids/desafio-primeiro-jogo' && fixedAccess !== null
-const timedAccessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
+const isCommunity = f.key === 'kids/comunidade-dos-criadores'
 
 // CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
 // audiência: o funil kids leva ao app KIDS, não ao community adulto.
@@ -58,8 +56,10 @@ const pageTitle = approved
   : `Pagamento em análise | ${productName}`
 const confirmationTitle = approved
   ? isTimedChallenge
-    ? `Pagamento aprovado. Os ${timedAccessLabel} do Desafio começam agora.`
-    : 'Pagamento confirmado!'
+    ? 'Pagamento aprovado. Agora o primeiro jogo pode sair do papel.'
+    : isCommunity
+      ? 'Assinatura confirmada. Agora vamos preparar o primeiro acesso.'
+      : 'Pagamento confirmado!'
   : 'Pagamento ainda aguardando confirmação.'
 ---
 
@@ -71,9 +71,9 @@ const confirmationTitle = approved
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
   <Header productName={productName} />
-  <main class="mx-auto max-w-2xl px-4 py-14 sm:py-20">
+  <main class:list={['mx-auto max-w-2xl px-4 py-14 sm:py-20', { 'kids-thanks': f.theme === 'kids' }]}>
     <!-- ── Confirmação ──────────────────────────────────────────────────── -->
-    <section class="reveal-up text-center">
+    <section class="kids-thanks-hero reveal-up text-center">
       <div class:list={['check-badge mx-auto', { pending: !approved }]} aria-hidden="true">
         <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none">
           {
@@ -106,26 +106,30 @@ const confirmationTitle = approved
             ) : (
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )
-          ) : (
+          ) : isTimedChallenge ? (
             <>Os 30 dias ainda não começaram. Assim que o pagamento for aprovado, enviaremos o acesso e a data final para o e-mail da compra.</>
+          ) : (
+            <>Assim que o pagamento for aprovado, enviaremos as instruções de acesso para o e-mail da compra.</>
           )
         }
       </p>
     </section>
 
     <!-- ── Sua compra ───────────────────────────────────────────────────── -->
-    <section class="card reveal-up mt-12 p-5 sm:p-6" style="animation-delay: 120ms">
-      <div class="flex items-center gap-5 sm:gap-7">
+    <section class="kids-thanks-purchase card reveal-up mt-12 p-5 sm:p-6" style="animation-delay: 120ms">
+      <div class="kids-thanks-purchase-row flex items-center gap-5 sm:gap-7">
         <div class="relative shrink-0">
           <div
-            class="absolute -inset-3 rounded-2xl bg-gradient-to-br from-lime/35 to-cyan/25 blur-xl"
+            class="kids-thanks-product-glow absolute -inset-3 rounded-2xl bg-gradient-to-br from-lime/35 to-cyan/25 blur-xl"
             aria-hidden="true"
           >
           </div>
           <img
             src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
             alt={`Capa do curso ${productName}`}
-            class="relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 object-cover shadow-xl sm:w-28"
+            width="112"
+            height="112"
+            class="kids-thanks-product-image relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 object-cover shadow-xl sm:w-28"
             decoding="async"
           />
         </div>
@@ -160,8 +164,16 @@ const confirmationTitle = approved
     </section>
 
     <!-- ── Como acessar ─────────────────────────────────────────────────── -->
-    <section class="reveal-up mt-12" style="animation-delay: 240ms">
-      <h2 class="text-center text-xl font-bold">Como acessar</h2>
+    <section class="kids-thanks-steps reveal-up mt-12" style="animation-delay: 240ms">
+      <h2 class="text-center text-xl font-bold">
+        {
+          isTimedChallenge
+            ? 'O primeiro caminho dentro da plataforma'
+            : isCommunity
+              ? 'Os primeiros passos da sua família'
+              : 'Como acessar'
+        }
+      </h2>
       <ol class="mt-6 flex flex-col gap-3">
         {
           passos.map((passo, i) => (
@@ -173,9 +185,6 @@ const confirmationTitle = approved
                 <p class="font-bold">{passo.titulo}</p>
                 <p class="mt-1 text-sm leading-relaxed text-muted">
                   {passo.texto}
-                  {isTimedChallenge && accessEnd && i === passos.length - 1
-                    ? ` Data final: ${formatSaoPauloDate(accessEnd)}.`
-                    : ''}
                 </p>
               </div>
             </li>
@@ -186,7 +195,11 @@ const confirmationTitle = approved
       {
         approved && (
           <a href={communityUrl} class="btn btn-primary mt-8 w-full">
-            {isTimedChallenge ? 'Criar acesso e começar →' : 'Ir para a área de membros →'}
+            {isTimedChallenge
+              ? 'Criar acesso e abrir a primeira etapa →'
+              : isCommunity
+                ? 'Criar perfil e abrir a Comunidade →'
+                : 'Ir para a área de membros →'}
           </a>
         )
       }

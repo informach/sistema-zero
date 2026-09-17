@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { COPY } from '../core/copy'
 import type { PintaTaskSession } from '../core/types'
 
 export function TaskBriefPanel({
@@ -7,14 +8,25 @@ export function TaskBriefPanel({
   outputMissing = false,
   onRecreate,
   onRelink,
+  onReturn,
 }: {
   session: PintaTaskSession
   outputMissing?: boolean
   onRecreate?: () => void
   onRelink?: () => void
+  /**
+   * "Voltar ao plano": GUARDA o desenho e navega. Ausente = o botão não aparece
+   * (Pinta solto, aula, playground). Rejeitar = não navegou, e o recado aparece
+   * no painel.
+   */
+  onReturn?: () => void | Promise<void>
 }): JSX.Element {
   const [updating, setUpdating] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [returning, setReturning] = useState(false)
+  // A trava é um REF, não o estado: dois cliques no mesmo turno leem o `returning`
+  // do fecho anterior, e aí a criança guardaria e navegaria duas vezes.
+  const returningRef = useRef(false)
   const toggle = async (kind: 'step' | 'criterion', id: string, checked: boolean) => {
     if (updating || session.progress.status === 'completed') return
     setUpdating(true)
@@ -41,6 +53,22 @@ export function TaskBriefPanel({
       setSyncError('Não consegui concluir agora. Confira a internet e tente de novo.')
     } finally {
       setUpdating(false)
+    }
+  }
+  const returnToPlan = async () => {
+    if (!onReturn || returningRef.current) return
+    returningRef.current = true
+    setReturning(true)
+    setSyncError(null)
+    try {
+      await onReturn()
+    } catch (error) {
+      // O recado do próprio salvamento quando existe (ele já é frase de criança);
+      // senão a frase genérica do copy.
+      setSyncError(error instanceof Error && error.message ? error.message : COPY.task.backError)
+    } finally {
+      returningRef.current = false
+      setReturning(false)
     }
   }
   const requiredDone =
@@ -130,6 +158,20 @@ export function TaskBriefPanel({
               onClick={() => void complete()}
             >
               Concluir tarefa
+            </button>
+          ) : null}
+          {/* Fica na tela INCLUSIVE com a tarefa concluída: terminar o desenho é
+              justamente quando ela quer voltar ao plano. Sem `aria-label` e sem
+              `title` — o nome acessível é o texto visível. */}
+          {onReturn ? (
+            <button
+              type="button"
+              className="min-h-11 rounded-lg border border-pin-accent font-bold disabled:opacity-50"
+              disabled={returning}
+              aria-busy={returning}
+              onClick={() => void returnToPlan()}
+            >
+              {COPY.task.back}
             </button>
           ) : null}
           {!session.progress.outputRef ? (

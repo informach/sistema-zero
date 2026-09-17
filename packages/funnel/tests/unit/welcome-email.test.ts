@@ -121,7 +121,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     for (const message of gw.calls.messages) {
       expect(message.input.templateKey).toBe('challenge-access-approved')
       expect(message.input.variables?.expira_em).toBe('16/10/2026, 12:30')
-      expect(message.input.variables?.acao).toBe('Definir senha e começar')
+      expect(message.input.variables?.acao).toBe('Criar acesso e abrir a primeira etapa')
       expect(message.idempotencyKey).toStartWith('challenge-access-approved')
     }
   })

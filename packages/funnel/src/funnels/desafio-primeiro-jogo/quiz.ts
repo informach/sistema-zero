@@ -1,127 +1,118 @@
-// Lógica do quiz do "Desafio do Primeiro Jogo": validação por chave, derivação das
-// horas/ano e resolução do perfil. Espelha o módulo do NCI, mas SEM motor de
-// pontuação — o perfil é a própria resposta da P1 (`perfil_p1`).
+// Lógica do quiz do Desafio do Primeiro Jogo. As respostas observam como a
+// criança usa jogos e tecnologia, sem transformar o resultado em diagnóstico.
 
 import { z } from 'zod'
 import type { QuizAnswers } from '../registry'
 
-const PERFIL = z.enum(['explorador', 'especialista', 'foguete', 'investigador'])
-const FOCO = z.enum(['jogos', 'tecnologia', 'temas_especificos', 'videos_tutoriais'])
-const INCOMODO = z.enum([
-  'consome_nao_cria',
-  'copia_e_trava',
-  'tela_e_tensao',
-  'interesse_sem_resultado',
-])
-const VISUALIZACAO = z.enum([
-  'mostrar_familia',
-  'escola_colegas',
-  'abrir_para_criar',
-  'terminar_e_continuar',
-])
-const PESA = z.enum(['terminar', 'baixo_custo', 'autonomia', 'rapido_divertido'])
-const QUER = z.enum([
-  'criar_proprio',
-  'desenvolver_habilidade',
-  'terminar_e_mostrar',
-  'virar_aprendizado',
-])
-const SIM_NAO = z.enum(['sim', 'nao'])
+const PERFIL_VALUES = ['explorador', 'especialista', 'foguete', 'investigador'] as const
+const PERFIL = z.enum(PERFIL_VALUES)
 
-/**
- * Validação do `value` por chave (server-side). Numéricos com teto que cabe em
- * int4 (horas/dia ≤ 24, dias/semana ≤ 7, horas/ano ≤ 100k). Chaves fora daqui são
- * rejeitadas pelo `patchLead`. `horas_ano_calculadas` é DERIVADA (não enviada pelo
- * cliente), mas fica aqui com teto p/ blindar contra envio forjado.
- */
+const USO_DIGITAL = z.enum(['joga_pronto', 'assiste', 'tutoriais', 'ja_cria'])
+const RESULTADO_DESEJADO = z.enum([
+  'mostrar_criacao',
+  'raciocinio',
+  'concluir_projeto',
+  'entender_tecnologia',
+])
+const APOIO_PARA_COMECAR = z.enum([
+  'projeto_curto',
+  'sem_experiencia',
+  'acompanhar_sem_programar',
+  'investimento_pequeno',
+])
+
+/** Validação do `value` por chave no servidor. */
 export const DESAFIO_VALUE_SCHEMA = {
+  uso_digital_atual: USO_DIGITAL,
   perfil_p1: PERFIL,
-  horas_tela_passiva_dia: z.coerce.number().int().min(0).max(24),
-  foco_onde: FOCO,
-  ja_largou: SIM_NAO,
-  maior_incomodo: INCOMODO,
-  dias_por_semana: z.coerce.number().int().min(0).max(7),
-  horas_ano_calculadas: z.coerce.number().int().min(0).max(100_000),
-  incomodo_tempo_tela: z.coerce.number().int().min(1).max(10),
-  visualizacao: VISUALIZACAO,
-  o_que_pesa: PESA,
-  o_que_quer: QUER,
+  perfil_p2: PERFIL,
+  perfil_p3: PERFIL,
+  perfil_p4: PERFIL,
+  resultado_desejado: RESULTADO_DESEJADO,
+  apoio_para_comecar: APOIO_PARA_COMECAR,
 }
 
-/** horas/ano = horas/dia × dias/semana × 52 — derivado quando ambos existem. */
-export function desafioDerive(a: QuizAnswers): QuizAnswers {
-  const horas = a.horas_tela_passiva_dia
-  const dias = a.dias_por_semana
-  if (typeof horas === 'number' && typeof dias === 'number') {
-    return { horas_ano_calculadas: horas * dias * 52 }
-  }
-  return {}
-}
-
-/** Perfil = a própria resposta da P1 (sem motor de pontuação). */
-export function desafioComputePerfil(a: QuizAnswers): string {
-  return typeof a.perfil_p1 === 'string' ? a.perfil_p1 : ''
-}
-
-// Mapas value→rótulo legível p/ interpolar no corpo do resultado (verbatim do doc).
-const P3_LABELS: Record<string, string> = {
-  jogos: 'jogos',
-  tecnologia: 'tecnologia',
-  temas_especificos: 'temas específicos como dinossauros, espaço ou personagens',
-  videos_tutoriais: 'vídeos e tutoriais',
-}
-const P5_LABELS: Record<string, string> = {
-  consome_nao_cria: 'ele consome muito, mas quase nada vira uma criação própria',
-  copia_e_trava: 'ele acompanha tutoriais, mas trava quando precisa mudar alguma coisa',
-  tela_e_tensao: 'o assunto às vezes vira só mais tempo de tela e tensão em casa',
-  interesse_sem_resultado: 'existe muito interesse, mas ainda falta um projeto concreto',
-}
-// P8 (o que o pai mais gostaria de ver primeiro) → encaixa em "sonha ver {resposta_p8}".
-const P8_LABELS: Record<string, string> = {
-  mostrar_familia: 'ele chamando a família para mostrar algo que criou',
-  escola_colegas: 'ele compartilhando um projeto com colegas',
-  abrir_para_criar: 'ele abrindo o computador também para criar',
-  terminar_e_continuar: 'ele concluindo um projeto curto e querendo experimentar o próximo',
-}
-// P10 (o que o pai sonha que ele se torne) → encaixa em "quer ver {resposta_p10}".
-const P10_LABELS: Record<string, string> = {
-  criar_proprio: 'autoria, criando coisas próprias além de consumir as dos outros',
-  desenvolver_habilidade: 'uma habilidade que ele tenha prazer em desenvolver',
-  terminar_e_mostrar: 'orgulho de terminar e compartilhar o que fez',
-  virar_aprendizado: 'aprendizado que continue para além de um passatempo',
-}
-
-/** Resolve {resposta_p3}/{resposta_p5}/{resposta_p8}/{resposta_p10}/{resultado} no diagnóstico. */
-export function desafioRenderCorpo(corpo: string, a: QuizAnswers): string {
-  const p3 = typeof a.foco_onde === 'string' ? (P3_LABELS[a.foco_onde] ?? a.foco_onde) : ''
-  const p5 =
-    typeof a.maior_incomodo === 'string' ? (P5_LABELS[a.maior_incomodo] ?? a.maior_incomodo) : ''
-  const p8 = typeof a.visualizacao === 'string' ? (P8_LABELS[a.visualizacao] ?? a.visualizacao) : ''
-  const p10 = typeof a.o_que_quer === 'string' ? (P10_LABELS[a.o_que_quer] ?? a.o_que_quer) : ''
-  const resultado =
-    typeof a.horas_ano_calculadas === 'number'
-      ? a.horas_ano_calculadas.toLocaleString('pt-BR')
-      : '—'
-  return corpo
-    .replaceAll('{resposta_p3}', p3)
-    .replaceAll('{resposta_p5}', p5)
-    .replaceAll('{resposta_p8}', p8)
-    .replaceAll('{resposta_p10}', p10)
-    .replaceAll('{resultado}', resultado)
+function isPerfil(value: unknown): value is (typeof PERFIL_VALUES)[number] {
+  return typeof value === 'string' && PERFIL_VALUES.some((perfil) => perfil === value)
 }
 
 /**
- * Frase do desejo (P10) para a OFERTA retomar ("Você disse que sonha ver ..."). Recebe
- * o enum `quer` (segmento não-PII vindo da URL, igual ao perfil) → frase, ou null.
+ * O perfil é o comportamento que mais aparece nas quatro perguntas de perfil.
+ * Em caso de empate, a primeira resposta funciona como desempate porque observa
+ * a reação espontânea da criança ao entrar em um jogo novo.
  */
-export function desafioDesejoLabel(quer: string | null | undefined): string | null {
-  return typeof quer === 'string' ? (P10_LABELS[quer] ?? null) : null
+export function desafioComputePerfil(a: QuizAnswers): string {
+  if (!isPerfil(a.perfil_p1)) return ''
+
+  const scores: Record<(typeof PERFIL_VALUES)[number], number> = {
+    explorador: 0,
+    especialista: 0,
+    foguete: 0,
+    investigador: 0,
+  }
+
+  for (const key of ['perfil_p1', 'perfil_p2', 'perfil_p3', 'perfil_p4'] as const) {
+    const resposta = a[key]
+    if (isPerfil(resposta)) scores[resposta] += 1
+  }
+
+  let perfil = a.perfil_p1
+  for (const candidato of PERFIL_VALUES) {
+    if (scores[candidato] > scores[perfil]) perfil = candidato
+  }
+  return perfil
 }
 
-/** Rótulos por perfil (aba Perfis do /admin + a Tela de Resultado). */
+const USO_LABELS: Record<string, string> = {
+  joga_pronto: 'o tempo digital dele fica principalmente em jogos que já estão prontos',
+  assiste: 'boa parte desse tempo vai para vídeos sobre jogos e personagens',
+  tutoriais: 'ele acompanha tutoriais, mas nem sempre chega a um projeto terminado',
+  ja_cria: 'ele já tenta modificar ou criar alguma coisa no computador',
+}
+
+const DESEJO_LABELS: Record<string, string> = {
+  mostrar_criacao: 'chamando a família para mostrar algo que criou',
+  raciocinio: 'pensando, testando e resolvendo problemas dentro de um projeto',
+  concluir_projeto: 'começando e terminando um projeto',
+  entender_tecnologia: 'entendendo melhor como a tecnologia funciona',
+}
+
+const APOIO_LABELS: Record<string, string> = {
+  projeto_curto: 'um projeto curto, com uma chegada clara',
+  sem_experiencia: 'um começo que não exija experiência anterior',
+  acompanhar_sem_programar: 'a possibilidade de acompanhar sem saber programar',
+  investimento_pequeno: 'um investimento pequeno antes de escolher algo maior',
+}
+
+/** Resolve as respostas personalizadas usadas na tela de resultado. */
+export function desafioRenderCorpo(corpo: string, a: QuizAnswers): string {
+  const uso =
+    typeof a.uso_digital_atual === 'string'
+      ? (USO_LABELS[a.uso_digital_atual] ?? a.uso_digital_atual)
+      : ''
+  const desejo =
+    typeof a.resultado_desejado === 'string'
+      ? (DESEJO_LABELS[a.resultado_desejado] ?? a.resultado_desejado)
+      : ''
+  const apoio =
+    typeof a.apoio_para_comecar === 'string'
+      ? (APOIO_LABELS[a.apoio_para_comecar] ?? a.apoio_para_comecar)
+      : ''
+
+  return corpo
+    .replaceAll('{resposta_uso}', uso)
+    .replaceAll('{resposta_desejo}', desejo)
+    .replaceAll('{resposta_apoio}', apoio)
+}
+
+/** Frase do desejo que a oferta retoma depois do quiz. */
+export function desafioDesejoLabel(quer: string | null | undefined): string | null {
+  return typeof quer === 'string' ? (DESEJO_LABELS[quer] ?? null) : null
+}
+
 export const DESAFIO_PERFIL_LABELS: Record<string, string> = {
-  explorador: 'O Explorador',
-  especialista: 'O Especialista',
-  foguete: 'O Foguete',
-  investigador: 'O Investigador',
+  explorador: 'Criador Explorador',
+  especialista: 'Criador Inventor',
+  foguete: 'Criador Desafiador',
+  investigador: 'Criador Investigador',
 }

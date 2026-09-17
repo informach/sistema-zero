@@ -47,10 +47,13 @@ function ObservedPintaApp({
   return <output data-testid="pinta-app">montado</output>
 }
 
+/** A query string da vez (`?tarefa=` é o deep link do Pensa). */
+let searchParams = new URLSearchParams()
+
 mock.module('next/navigation', () => ({
   ...actualNavigation,
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams,
 }))
 
 mock.module('@sistemazero/pinta', () => ({
@@ -120,4 +123,79 @@ test('a volta da ponte diz POR QUE não atualizou (nunca levado ao Estúdio, bib
   expect(personalNamespaces).toEqual(['perfil-b', 'perfil-b', 'perfil-b', 'perfil-b', 'perfil-b'])
   expect(namespaces).toContain('perfil-b')
   expect(namespaces).not.toContain('personal:perfil-b')
+})
+
+/** O que a rota `/api/pensa/tasks/:id/handoff` devolve para uma tarefa de arte. */
+const handoffDeArte = {
+  project: { id: 'plano-1', name: 'Bosque encantado' },
+  cycle: { id: 'ciclo-1', number: 1, goal: null },
+  capability: { owned: true, blockedReason: null },
+  task: {
+    id: 'tarefa-1',
+    title: 'Desenhar a heroína',
+    summary: null,
+    category: 'art',
+    estimatedMinutes: 20,
+    position: 1,
+    dependencies: [],
+    revision: 1,
+    supersedesTaskId: null,
+    destination: 'pinta',
+    guide: { steps: [], criteria: [] },
+    context: {
+      kind: 'pinta',
+      assetId: 'heroina',
+      artKind: 'sprite',
+      style: 'pixel',
+      palette: [{ role: 'roupa', color: '#aa33cc' }],
+      appearance: 'Pequena, ágil e com capa roxa',
+      animations: [],
+      states: [],
+      usage: 'Personagem principal',
+      requiresStudioUse: false,
+    },
+    progress: {
+      status: 'in_progress',
+      completedStepIds: [],
+      completedCriteriaIds: [],
+      startedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      outputRef: null,
+    },
+  },
+}
+
+test('com ?tarefa= o "Voltar ao plano" do brief leva ao plano do Pensa, e o id vem do handoff', async () => {
+  searchParams = new URLSearchParams('tarefa=tarefa-1')
+  const fetchOriginal = globalThis.fetch
+  globalThis.fetch = (async (_input: RequestInfo | URL) =>
+    new Response(JSON.stringify(handoffDeArte), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })) as typeof fetch
+
+  try {
+    const view = render(<PintaClient viewerId="perfil-c" studioAvailable />)
+    await waitFor(() => expect(lastAdapter?.taskSession).toBeDefined())
+    const session = lastAdapter?.taskSession
+    if (!session) throw new Error('sem taskSession')
+
+    router.push.mockClear()
+    await session.onReturnToPlan?.()
+    expect(router.push).toHaveBeenCalledTimes(1)
+    expect(router.push).toHaveBeenCalledWith('/pensa?plano=plano-1')
+    view.unmount()
+  } finally {
+    globalThis.fetch = fetchOriginal
+    searchParams = new URLSearchParams()
+  }
+})
+
+test('sem ?tarefa= não há brief nenhum (quem abre o Pinta pelo menu não tem plano para voltar)', async () => {
+  searchParams = new URLSearchParams()
+  const view = render(<PintaClient viewerId="perfil-d" studioAvailable />)
+  await waitFor(() => expect(lastAdapter?.resyncToStudio).toBeDefined())
+  expect(lastAdapter?.taskSession).toBeUndefined()
+  view.unmount()
 })

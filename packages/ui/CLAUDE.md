@@ -23,10 +23,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 3. **Sem CSS próprio nos COMPONENTES**: os componentes usam tokens dos apps (`--primary`,
    `--success`, `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e
    community) nos DOIS temas (light/dark). **Duas exceções, as duas OPT-IN por `@import`:**
-   (a) `src/styles/theme-kids.css` (export `@sistemazero/ui/theme-kids.css`, 07/2026) —
-   PRIMITIVOS de marca da linha kids (`--sz-kids-*`, só constantes; nenhuma classe, nenhum token
-   semântico). Importado pelo funnel e pelo community-kids, que apontam seus tokens semânticos
-   para os primitivos; studio/pensa/pinta/molda referenciam com fallback literal (sem dep).
+   (a) `src/styles/community-kids-theme.css` + `src/styles/theme-kids.css` (exports
+   `@sistemazero/ui/community-kids-theme.css` e `@sistemazero/ui/theme-kids.css`, 09/2026) — o
+   primeiro é a fonte CANÔNICA da paleta Pen da Comunidade Kids (`--sz-community-*`); o segundo
+   contém somente os aliases legados `--sz-kids-*` e o importa. Funnel e community-kids importam
+   `theme-kids.css`, mapeiam seus tokens semânticos para a mesma fonte e NUNCA repetem os valores
+   Pen localmente; studio/pensa/pinta/molda referenciam os aliases com fallback literal (sem dep).
    (b) **`src/styles/tool-chrome.css`** (export `@sistemazero/ui/tool-chrome.css`, 07/09/2026) —
    o CHROME COMPARTILHADO das ferramentas embarcadas (Pinta, Estúdio, Pensa; Molda no lote 6b):
    tokens SEMÂNTICOS `--sz-tool-*` (claro em `:root` + nos escopos claros de cada ferramenta;

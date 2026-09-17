@@ -123,6 +123,7 @@ const priceCents =
     ? initialCoupon.listPriceCents
     : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const productName = offer?.productName || f.productName
+const isCommunity = f.key === 'kids/comunidade-dos-criadores'
 const fixedAccess = fixedAccessFromOffer(offer)
 const accessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
 const estimatedAccessEnd = fixedAccess
@@ -177,22 +178,42 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
   <!-- Sem header: o checkout abre direto no card do produto (estilo Hotmart). -->
-  <main class="mx-auto max-w-xl px-4 py-10 sm:py-12">
+  <main class:list={['mx-auto max-w-xl px-4 py-10 sm:py-12', { 'kids-checkout': f.theme === 'kids' }]}>
     {
       f.key === 'kids/desafio-primeiro-jogo' && (
         <div class="mb-6 text-center">
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
           <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
-            Falta um passo para começar o primeiro jogo.
+            Conclua a inscrição no Desafio do Primeiro Jogo
           </h1>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+            Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois
+            da aprovação, os 30 dias de acesso começam.
+          </p>
+        </div>
+      )
+    }
+    {
+      isCommunity && (
+        <div class="mb-6 text-center">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
+          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
+            Escolha como sua família quer começar
+          </h1>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+            Revise o plano, o valor e a renovação. Os dados abaixo são do responsável. O perfil da
+            criança será criado depois, dentro da plataforma.
+          </p>
         </div>
       )
     }
     <!-- ── Produto ─────────────────────────────────────────────────────── -->
-    <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
+    <div class="checkout-product-card flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
         src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
         alt={`Capa do curso ${productName}`}
+        width="80"
+        height="80"
         class="size-16 shrink-0 rounded-lg border border-line/60 object-cover sm:size-20"
         decoding="async"
       />
@@ -214,6 +235,7 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
         allowCoupon={offer?.allowsCoupon === true}
         successPath={successPath}
         isKids={f.audience === 'kids'}
+        isChallenge={f.key === 'kids/desafio-primeiro-jogo'}
         installmentsMax={offer?.installmentsMax ?? null}
         pricingMode={offer?.pricingMode ?? 'one_time'}
         billingIntervalMonths={offer?.billingIntervalMonths ?? null}

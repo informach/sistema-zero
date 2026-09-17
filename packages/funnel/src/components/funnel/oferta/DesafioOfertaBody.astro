@@ -1,13 +1,14 @@
 ---
 // Página de vendas do "Desafio do Primeiro Jogo" (funil kids). Layout PRÓPRIO,
-// porte fiel da página colorida aprovada pela usuária (tema creme claro, azul +
-// laranja, Baloo 2/Nunito, botões 3D, balões dos personagens, decorações
+// com a composição aprovada e a identidade canônica da Comunidade Kids
+// (paleta Pen, Baloo 2/Nunito, botões 3D, balões dos personagens e decorações
 // flutuantes). É uma OFERTA PADRÃO: a personalização por perfil vive só na tela
 // de resultado (que é o elo entre o quiz e esta página). O CSS sob medida vive
 // no `<style>` escopado abaixo, sob `.dpj` (não vaza para as páginas
 // compartilhadas). Os CTAs de compra levam `data-checkout-cta` → o
 // PreCheckoutModal (mesma ilha do NCI) abre o checkout.
 import '@fontsource/material-symbols-rounded/400.css'
+import { desafioDesejoLabel } from '../../../funnels/desafio-primeiro-jogo/quiz'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -27,15 +28,24 @@ interface Props {
   /** "37.00" (JSON-LD). */
   priceReais: string
   imagesBase: string
-  /** Repassado pela rota (o resultado envia ?perfil= para o tracking); a oferta padrão não o renderiza. */
+  /** Repassado pela rota para o tracking. */
   perfil: string | null
-  /** Repassado pela rota (?quer= do quiz); a oferta padrão não o renderiza. */
+  /** Desejo declarado no quiz, quando a visita vem da tela de resultado. */
   quer?: string | null
   ofertaUrl: string
   coupon: CouponPresentation
 }
-const { f, productName, priceLabel, priceLabelShort, priceReais, imagesBase, ofertaUrl, coupon } =
-  Astro.props
+const {
+  f,
+  productName,
+  priceLabel,
+  priceLabelShort,
+  priceReais,
+  imagesBase,
+  quer,
+  ofertaUrl,
+  coupon,
+} = Astro.props
 
 const description = f.seoDescription
 const img = (file: string) => `${imagesBase}/${file}`
@@ -45,6 +55,7 @@ const displayedTotal = validCoupon
   ? formatBRLFromCents(validCoupon.finalPriceCents)
   : priceLabelShort
 const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents) : null
+const desejoDoQuiz = desafioDesejoLabel(quer)
 ---
 
 <BaseLayout
@@ -82,7 +93,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
     <!-- ===== HERO ===== -->
     <section class="hero sec">
-      <svg class="deco float" style="top:12%;left:4%;width:46px" viewBox="0 0 24 24" fill="#FFCE3A"
+      <svg class="deco float" style="top:12%;left:4%;width:46px" viewBox="0 0 24 24" fill="var(--sz-community-yellow)"
         ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
         ></path></svg
       >
@@ -90,27 +101,34 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
         class="deco float slow rev"
         style="top:22%;right:6%;width:34px"
         viewBox="0 0 24 24"
-        fill="#F368A6"
+        fill="var(--sz-community-pink-light)"
         ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
         ></path></svg
       >
-      <div class="blob" style="width:220px;height:220px;background:#CDE8FF;top:-40px;right:-40px">
+      <div class="blob" style="width:220px;height:220px;background:var(--sz-community-ground-alt);top:-40px;right:-40px">
       </div>
-      <div class="blob" style="width:160px;height:160px;background:#CFF3DC;bottom:20px;left:-50px">
+      <div class="blob" style="width:160px;height:160px;background:var(--sz-community-mint);bottom:20px;left:-50px">
       </div>
       <div class="wrap">
         <div class="grid">
           <div class="hero-copy">
-            <span class="eyebrow">Para crianças a partir de 9 anos que gostam de jogos e tecnologia</span>
+            <span class="eyebrow">Para famílias com crianças a partir de 9 anos que gostam de jogos</span>
             <h1>
-              Seu filho não precisa de mais tempo de tela. Precisa descobrir o que consegue
-              <span class="hl">criar com uma parte dele.</span>
+              Seu filho passa horas envolvido com jogos. E se uma parte desse tempo terminasse em
+              <span class="hl">um jogo criado por ele?</span>
             </h1>
             <p class="lead">
-              Em cinco dias guiados, ele transforma comandos visuais em um jogo de nave feito por
-              ele — com tiros, asteroides, pontos, vidas, vitória, derrota e um link para
-              compartilhar.
+              Em cinco etapas guiadas, ele monta um jogo de nave com tiros, asteroides, pontos,
+              vidas, vitória e derrota. No final, publica um link para mostrar o que criou.
             </p>
+            {
+              desejoDoQuiz && (
+                <p class="quiz-echo">
+                  No quiz, você disse que gostaria de ver seu filho {desejoDoQuiz}. O Desafio
+                  transforma essa vontade em um primeiro projeto curto e possível de concluir.
+                </p>
+              )
+            }
             <div class="chips">
               <span class="chip"
                 ><span class="material-symbols-rounded">bolt</span>Uma parte funcionando por dia</span
@@ -127,8 +145,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
             </div>
             <div class="hero-cta">
               <a href="#oferta" class="btn big">
-                <span class="material-symbols-rounded">sports_esports</span>Quero transformar parte
-                desse tempo em criação
+                <span class="material-symbols-rounded">sports_esports</span>Quero ver meu filho criar
+                o primeiro jogo
               </a>
             </div>
             <div class="seals">
@@ -203,8 +221,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
           </div>
         </div>
         <div class="market">
-          A proposta não é acrescentar horas à rotina. É trocar uma pequena parte do consumo que já
-          existe por um projeto curto, com decisões e um resultado criado pela criança.
+          A proposta não é aumentar o tempo de tela. É dar outra direção para uma parte do tempo
+          digital que já existe na rotina.
         </div>
       </div>
     </section>
@@ -212,16 +230,17 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     <!-- ===== DUAS TELAS ===== -->
     <section class="sec">
       <div class="wrap center">
-        <span class="eyebrow">Tela demais preocupa. Você tem razão em se preocupar.</span>
-        <h2 class="reveal">O mesmo computador.<br />Uma postura diferente diante dele.</h2>
+        <span class="eyebrow">Vamos começar pelo que preocupa você</span>
+        <h2 class="reveal">Mais tempo de tela não é a resposta.</h2>
         <p class="sub">
-          A proposta não é aumentar o tempo nem chamar qualquer tela de aprendizado. É fazer uma
-          troca pequena e concreta dentro do tempo que já existe.
+          Uma atividade não deixa de exigir equilíbrio só porque é educativa. Ao mesmo tempo,
+          jogos e tecnologia já fazem parte da rotina, da escola e das conversas das crianças. A
+          oportunidade aqui é mudar o que acontece durante uma pequena parte desse tempo.
         </p>
         <div class="two">
           <div class="screen neg reveal">
             <h3>
-              <span class="material-symbols-rounded">sentiment_dissatisfied</span>Antes
+              <span class="material-symbols-rounded">sentiment_dissatisfied</span>Quando ele só joga
             </h3>
             <figure class="art">
               <img
@@ -247,7 +266,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
           </div>
           <div class="screen pos reveal">
             <h3>
-              <span class="material-symbols-rounded">celebration</span>Durante o Desafio
+              <span class="material-symbols-rounded">celebration</span>Quando ele cria o jogo
             </h3>
             <figure class="art">
               <img
@@ -278,11 +297,12 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     <!-- ===== A ATENÇÃO DELE (coração) ===== -->
     <section class="sec culpa">
       <div class="wrap center">
-        <span class="eyebrow">Não é mais tela. É outra direção para uma parte dela.</span>
-        <h2 class="reveal">Uma troca pequena, concreta<br />e possível de acompanhar.</h2>
+        <span class="eyebrow">O interesse já está aí</span>
+        <h2 class="reveal">O que ele pratica<br />enquanto o jogo ganha forma.</h2>
         <p class="sub">
-          Jogos, vídeos e tecnologia já aparecem em casa, na escola e nas conversas das crianças.
-          Durante cinco etapas, uma parte desse tempo passa a ter um projeto, decisões e um resultado.
+          Enquanto seu filho se envolve com a nave, os tiros e os asteroides, ele precisa tomar
+          decisões para fazer o jogo funcionar. É isso que transforma uma parte do tempo digital
+          em experiência de criação.
         </p>
         <div class="box reveal">
           <div class="box-grid">
@@ -296,42 +316,47 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               />
             </figure>
             <p>
-              O Desafio começa no interesse que a criança já demonstra e oferece uma sequência
-              curta: montar uma parte, testar o que aconteceu e avançar para a próxima decisão.
+              O Desafio parte de algo que a criança já conhece. Em vez de receber todas as regras
+              prontas, ela monta uma parte, testa o que aconteceu e decide o próximo ajuste.
             </p>
           </div>
         </div>
         <div class="thesis reveal">
-          Enquanto cria, seu filho pratica ações que não aparecem quando ele só joga: dividir um
-          projeto, relacionar comando e efeito, testar, observar, ajustar e decidir como o jogo funciona.
+          Para chegar ao jogo pronto, seu filho organiza o projeto em partes, relaciona cada
+          comando ao que acontece na tela, encontra erros e testa soluções. Tudo isso aparece no
+          próprio jogo, sem depender de uma promessa abstrata.
         </div>
         <div class="shift">
           <div class="card reveal">
-            <div class="from">Só seguir regras prontas</div>
+            <div class="from">Quando a nave sai da tela</div>
             <div class="to">
-              <span class="material-symbols-rounded">arrow_circle_right</span>Esse interesse é o
-              Definir regras e efeitos
+              <span class="material-symbols-rounded">arrow_circle_right</span>Ele aprende a criar um
+              limite
             </div>
             <p>
-              A criança escolhe movimento, dificuldade e consequência dentro do projeto.
+              A criança combina posição, movimento e condição para manter a nave dentro do espaço
+              do jogo.
             </p>
           </div>
           <div class="card reveal">
-            <div class="from">Horas que só consomem</div>
+            <div class="from">Quando o ponto não aparece</div>
             <div class="to">
-              <span class="material-symbols-rounded">arrow_circle_right</span>Uma parte do tempo que cria
+              <span class="material-symbols-rounded">arrow_circle_right</span>Ele relaciona causa e
+              consequência
             </div>
             <p>
-              A família mantém seus limites e troca apenas uma parte do consumo por uma criação.
+              Ele verifica a colisão, o valor da pontuação e a ordem dos comandos até o placar
+              responder.
             </p>
           </div>
           <div class="card reveal">
-            <div class="from">Parar no primeiro erro</div>
+            <div class="from">Quando um comando falha</div>
             <div class="to">
-              <span class="material-symbols-rounded">arrow_circle_right</span>Testar, observar e ajustar
+              <span class="material-symbols-rounded">arrow_circle_right</span>Ele procura, testa e
+              corrige
             </div>
             <p>
-              O erro vira informação sobre qual bloco ou regra precisa mudar.
+              O erro vira uma pista. Ele observa o resultado, muda um bloco e testa de novo.
             </p>
           </div>
         </div>
@@ -366,8 +391,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               <img
                 src={img('print-dia1.webp')}
                 alt="Jogo do Dia 1: a nave voando no espaço"
-                width="791"
-                height="476"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
@@ -384,8 +409,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               <img
                 src={img('print-dia2.webp')}
                 alt="Jogo do Dia 2: a nave atirando no espaço"
-                width="653"
-                height="393"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
@@ -402,8 +427,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               <img
                 src={img('print-dia3.webp')}
                 alt="Jogo do Dia 3: os asteroides caindo enquanto a nave atira"
-                width="655"
-                height="391"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
@@ -420,8 +445,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               <img
                 src={img('print-dia4.webp')}
                 alt="Jogo do Dia 4: o placar de pontos e os corações de vida na tela"
-                width="654"
-                height="396"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
@@ -438,8 +463,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               <img
                 src={img('print-dia5.webp')}
                 alt="Jogo do Dia 5: a tela de início do jogo pronto, com o nome Nave contra Asteroides"
-                width="875"
-                height="526"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
@@ -470,7 +495,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
         </div>
         <div class="center como-cta">
           <a href="#oferta" class="btn">
-            <span class="material-symbols-rounded">rocket_launch</span>Quero transformar parte desse tempo em criação
+            <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criar o
+            primeiro jogo
           </a>
         </div>
       </div>
@@ -480,26 +506,112 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     <section class="sec">
       <div class="wrap center">
         <span class="eyebrow">Olha por dentro</span>
-        <h2 class="reveal">O estúdio onde ele cria abre<br />dentro da própria aula</h2>
+        <h2 class="reveal">Veja o caminho que seu filho percorre<br />até o jogo ficar pronto</h2>
         <p class="sub">
-          Sem instalar nada, sem configurar nada. Ele entra, arrasta os blocos e vê o jogo acontecer
-          ali do lado. Tudo no mesmo lugar.
+          Não é uma coleção de vídeos soltos. A plataforma mostra a próxima etapa, apresenta a ideia
+          e abre o espaço de criação no momento de colocar a mão na massa.
         </p>
-        <div class="browser reveal">
-          <div class="bar">
-            <i></i><i></i><i></i><span class="url">kids.sistemazero.com.br</span>
-          </div>
-          <figure class="art">
-            <img
-              src={img('print-estudio.webp')}
-              alt="A plataforma por dentro: a aula, o estúdio com os blocos e o jogo rodando"
-              width="1100"
-              height="1532"
-              loading="lazy"
-            />
-          </figure>
+        <div class="platform-tour">
+          <article class="platform-step reveal">
+            <div class="platform-copy">
+              <span>1</span>
+              <h3>Ele sabe por onde começar e qual é o próximo passo</h3>
+              <p>
+                A trilha organiza o projeto em cinco etapas. O progresso fica visível para a criança
+                voltar e continuar de onde parou.
+              </p>
+            </div>
+            <div class="browser">
+              <div class="bar">
+                <i></i><i></i><i></i><span class="url">kids.sistemazero.com.br</span>
+              </div>
+              <figure class="art">
+                <img
+                  src={img('plataforma-trilha.webp')}
+                  alt="Trilha atual do Desafio, com os cinco dias e o progresso da criança"
+                  width="1180"
+                  height="808"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </article>
+          <article class="platform-step reveal">
+            <div class="platform-copy">
+              <span>2</span>
+              <h3>Cada aula entrega uma tarefa pequena de cada vez</h3>
+              <p>
+                Em vez de receber tudo de uma vez, ele observa uma ideia, faz a parte proposta e
+                testa o resultado antes de avançar.
+              </p>
+            </div>
+            <div class="browser">
+              <div class="bar">
+                <i></i><i></i><i></i><span class="url">kids.sistemazero.com.br</span>
+              </div>
+              <figure class="art">
+                <img
+                  src={img('plataforma-aula.webp')}
+                  alt="Aula atual do Desafio dividida em seções curtas e sequenciais"
+                  width="1180"
+                  height="502"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </article>
+          <article class="platform-step reveal">
+            <div class="platform-copy">
+              <span>3</span>
+              <h3>Em pontos importantes, ele experimenta antes de programar</h3>
+              <p>
+                A criança compara situações na tela, responde ao que observou e chega ao Estúdio já
+                entendendo a lógica que vai usar.
+              </p>
+            </div>
+            <div class="browser">
+              <div class="bar">
+                <i></i><i></i><i></i><span class="url">kids.sistemazero.com.br</span>
+              </div>
+              <figure class="art">
+                <img
+                  src={img('plataforma-experimento.webp')}
+                  alt="Experimento interativo do Desafio comparando a proteção da nave entre batidas"
+                  width="1180"
+                  height="1007"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </article>
+          <article class="platform-step reveal">
+            <div class="platform-copy">
+              <span>4</span>
+              <h3>Depois, ele monta e vê o jogo funcionar na mesma tela</h3>
+              <p>
+                O Estúdio abre dentro da atividade, sem instalação. A paleta mostra os blocos daquela
+                etapa, e o resultado aparece ao lado para testar e corrigir.
+              </p>
+            </div>
+            <div class="browser">
+              <div class="bar">
+                <i></i><i></i><i></i><span class="url">kids.sistemazero.com.br</span>
+              </div>
+              <figure class="art">
+                <img
+                  src={img('plataforma-estudio.webp')}
+                  alt="Estúdio atual do Desafio com blocos de programação e o jogo funcionando ao lado"
+                  width="1180"
+                  height="912"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </article>
         </div>
-        <p class="sub plat-note">Ele arrasta os blocos e vê o jogo acontecer do lado.</p>
+        <p class="sub plat-note">
+          As telas acima foram montadas com o conteúdo e os blocos do próprio Desafio.
+        </p>
       </div>
     </section>
 
@@ -515,75 +627,77 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
           <div class="gift reveal">
             <figure class="art">
               <img
-                src={img('entrega-trilha.webp')}
-                alt="Trilha guiada de 5 dias"
-                width="760"
-                height="570"
+                src={img('plataforma-trilha.webp')}
+                alt="Trilha guiada com a introdução e os cinco dias do Desafio"
+                width="1180"
+                height="808"
                 loading="lazy"
               />
             </figure>
-            <h4>Trilha guiada de 5 dias</h4>
-            <p>Uma atividade por dia, com começo, meio e fim.</p>
+            <h4>Introdução + trilha guiada de 5 dias</h4>
+            <p>Uma sequência clara para sair do primeiro bloco e chegar ao jogo completo.</p>
           </div>
           <div class="gift reveal">
             <figure class="art">
               <img
-                src={img('entrega-estudio.webp')}
-                alt="Estúdio e blocos feitos pra criança"
-                width="760"
-                height="376"
+                src={img('plataforma-aula.webp')}
+                alt="Orientações do Desafio dentro de uma aula organizada em etapas"
+                width="1180"
+                height="502"
                 loading="lazy"
               />
             </figure>
-            <h4>Estúdio e blocos feitos pra criança</h4>
+            <h4>Passo a passo dentro da aula</h4>
             <p>
-              Abre dentro da própria aula, sem instalar programas. A criança monta o projeto com
-              comandos visuais em blocos.
+              Vídeos e orientações acompanham a construção para a criança saber o que observar,
+              montar e testar.
             </p>
           </div>
           <div class="gift reveal">
             <figure class="art">
               <img
-                src={img('entrega-link.webp')}
-                alt="Link do jogo pra compartilhar"
-                width="486"
-                height="538"
+                src={img('plataforma-materiais.webp')}
+                alt="Caderno do Aluno e Mapa dos Pais incluídos no Desafio"
+                width="1180"
+                height="545"
                 loading="lazy"
               />
             </figure>
-            <h4>Link do jogo pra compartilhar</h4>
+            <h4>Caderno do Aluno + Mapa dos Pais</h4>
             <p>
-              No fim, ela publica o jogo e gera um link pra mandar pros amigos e a família jogarem,
-              no computador ou no celular.
+              A criança consulta os bloquinhos usados no projeto. Os pais recebem um guia para
+              acompanhar, mesmo sem entender de tecnologia.
             </p>
           </div>
           <div class="gift reveal">
             <figure class="art">
               <img
-                src={img('entrega-video.webp')}
-                alt="Passo a passo em vídeo"
-                width="760"
-                height="434"
+                src={img('plataforma-estudio.webp')}
+                alt="Estúdio guiado com os blocos necessários para a etapa do jogo"
+                width="1180"
+                height="912"
                 loading="lazy"
               />
             </figure>
-            <h4>Passo a passo em vídeo</h4>
-            <p>Aulas em vídeo e instruções dentro da própria atividade.</p>
+            <h4>Estúdio guiado dentro da plataforma</h4>
+            <p>
+              Sem instalar programas. A criança monta o projeto com comandos visuais e testa o
+              resultado na mesma tela.
+            </p>
           </div>
           <div class="gift reveal">
             <figure class="art">
               <img
-                src={img('entrega-mapa.webp')}
-                alt="Mapa dos pais"
-                width="760"
-                height="1075"
+                src={img('print-dia5.webp')}
+                alt="Jogo Nave contra Asteroides pronto ao final do Desafio"
+                width="788"
+                height="474"
                 loading="lazy"
               />
             </figure>
-            <h4>Mapa dos pais</h4>
+            <h4>Jogo pronto + link para compartilhar</h4>
             <p>
-              Uma página simples explicando como acompanhar, em português de quem não entende de
-              tecnologia.
+              No final, ela publica a criação e gera um link para a família e os amigos jogarem.
             </p>
           </div>
           <div class="gift reveal">
@@ -597,7 +711,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               />
             </figure>
             <h4>Certificado de conclusão</h4>
-            <p>Em PDF ou imagem, gerado ao terminar o desafio.</p>
+            <p>Emitido ao concluir as etapas necessárias e disponível para baixar em PDF.</p>
           </div>
         </div>
         <!-- personagem como apoio visual; copy dirigida aos pais -->
@@ -629,42 +743,42 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     <!-- ===== O QUE ELE DESENVOLVE ===== -->
     <section class="sec menta">
       <div class="wrap center">
-        <span class="eyebrow">O que a experiência exercita</span>
-        <h2 class="reveal">Ações que não aparecem<br />quando ele só joga.</h2>
+        <span class="eyebrow">O que acontece enquanto ele cria</span>
+        <h2 class="reveal">O jogo diverte a criança.<br />O processo é o que interessa aos pais.</h2>
         <p class="sub">
-          A proposta é oferecer prática guiada dentro de um projeto concreto, sem prometer um
-          resultado escolar ou comportamental.
+          Cada habilidade abaixo aparece em uma tarefa concreta do projeto. Você não precisa
+          imaginar o que ele está praticando. Dá para observar no jogo que vai ganhando forma.
         </p>
         <div class="gift-grid">
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">psychology</span></div>
-            <h4>Dividir um projeto</h4>
-            <p>Organizar a criação em etapas curtas, com uma entrega observável por encontro.</p>
+            <h4>Organizar em etapas</h4>
+            <p>Construir primeiro a nave, depois o movimento, os obstáculos, as regras e as telas finais.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">flag</span></div>
-            <h4>Relacionar comando e efeito</h4>
-            <p>Perceber como cada bloco altera movimento, colisão, pontos ou vidas na tela.</p>
+            <h4>Entender limites</h4>
+            <p>Combinar posição e movimento para que a nave responda sem escapar da área do jogo.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">emoji_events</span></div>
-            <h4>Testar e ajustar</h4>
-            <p>Observar o que aconteceu e mudar uma regra quando o resultado não era o esperado.</p>
+            <h4>Relacionar causa e consequência</h4>
+            <p>Definir o que muda nos pontos e nas vidas quando a nave acerta ou encosta em algo.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">swap_horiz</span></div>
-            <h4>Tomar decisões</h4>
-            <p>Escolher regras, movimento e dificuldade dentro do primeiro projeto.</p>
+            <h4>Encontrar e corrigir</h4>
+            <p>Procurar o bloco que não funcionou, mudar uma parte e testar o resultado novamente.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">explore</span></div>
-            <h4>Fechar uma versão jogável</h4>
-            <p>Levar a criação até um estado que possa ser aberto, jogado e compartilhado.</p>
+            <h4>Levar uma ideia até o fim</h4>
+            <p>Unir as cinco etapas em uma versão com início, desafio, vitória e derrota.</p>
           </div>
           <div class="gift reveal">
             <div class="ico"><span class="material-symbols-rounded">rocket</span></div>
-            <h4>Explicar o que criou</h4>
-            <p>Mostrar o jogo e contar quais escolhas fazem a nave, os pontos e as vidas funcionarem.</p>
+            <h4>Explicar e compartilhar</h4>
+            <p>Publicar o link, mostrar o jogo e contar quais escolhas fazem cada parte funcionar.</p>
           </div>
         </div>
       </div>
@@ -736,32 +850,30 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
               Programar é o nosso dia a dia.
             </p>
             <p>
-              Formados em Sistemas de Informação, criamos software de verdade, com passagem por
-              lugares como o Banco do Brasil, Tractebel Engineering e InCeres, e hoje no setor
-              agrícola. Mas quem trouxe a gente até aqui foi o André, nosso filho, autista nível 1,
-              com hiperfoco em jogos.
+              Formados em Sistemas de Informação, trabalhamos há anos criando software. Mas a
+              ideia do Sistema Zero começou dentro de casa, com o André, nosso filho, autista nível
+              1 e com hiperfoco em jogos.
             </p>
             <p>
-              Quando ele tinha 7 anos, a gente vivia preocupado. O foco dele morava só no jogar, e
-              isso atrapalhava o resto. Andava desatento, custava a ouvir, se confundia nas
-              instruções e não engatava na escola. O hiperfoco, que era a força dele, estava jogando
-              contra ele.
+              Quando ele tinha 7 anos, quase todo o interesse digital dele terminava no jogar. A
+              gente se preocupava com o tempo de tela, como qualquer família, mas também percebia
+              que simplesmente discutir o computador não mostrava a ele outra possibilidade.
             </p>
             <p>
-              A virada veio quando a gente parou de brigar com os jogos e começou a ensinar o André
-              a criar os próprios, no lugar de só jogar o que os outros fazem. Ele entrou de cabeça,
-              cheio de ideias.
+              Foi aí que começamos a criar jogos com o André. Em vez de apenas entrar em uma fase
+              pronta, ele passou a escolher regras, testar comandos e decidir o que queria mudar.
             </p>
             <p>
-              Hoje, aos 11, ele continua jogando, mas também cria. Ficou mais atento, gosta de
-              aprender, tira notas excelentes, e os professores que antes pediam mais foco agora
-              elogiam. O mesmo hiperfoco, agora a favor dele.
+              Uma cena ficou marcada para a gente: quando uma versão funcionou, ele nos chamou para
+              jogar, explicou as regras e já começou a imaginar o que faria diferente na próxima.
+              O jogo continuava divertido para ele, mas agora havia também algo criado por suas
+              próprias mãos.
             </p>
             <!-- historia-andre:fim -->
             <p>
-              Criamos o Sistema Zero para encurtar a distância entre o interesse por jogos e a
-              primeira criação funcionando. O Desafio organiza essa experiência em etapas pequenas,
-              visuais e possíveis de acompanhar em família.
+              Criamos o Sistema Zero para que outras famílias também tenham um primeiro projeto
+              guiado, curto e possível de acompanhar. O Desafio encurta a distância entre gostar de
+              jogos e conseguir criar um que funcione.
             </p>
           </div>
         </div>
@@ -906,8 +1018,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
             </div>
             <div class="offer-cta">
               <button type="button" class="btn big btn-oferta" data-checkout-cta>
-                <span class="material-symbols-rounded">sports_esports</span>Quero dar esse primeiro
-                passo ao meu filho
+                <span class="material-symbols-rounded">sports_esports</span>Quero ver meu filho criar
+                o primeiro jogo
               </button>
               <p class="mini">
                 30 dias a partir da aprovação · Pagamento único · Sem renovação · Garantia de 7 dias
@@ -1036,7 +1148,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
     <!-- ===== CTA FINAL ===== -->
     <section class="sec final">
-      <svg class="deco float" style="top:16%;left:8%;width:40px" viewBox="0 0 24 24" fill="#FFCE3A"
+      <svg class="deco float" style="top:16%;left:8%;width:40px" viewBox="0 0 24 24" fill="var(--sz-community-yellow)"
         ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
         ></path></svg
       >
@@ -1044,7 +1156,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
         class="deco float rev slow"
         style="bottom:18%;right:9%;width:52px"
         viewBox="0 0 24 24"
-        fill="#37C871"><circle cx="12" cy="12" r="10"></circle></svg
+        fill="var(--sz-community-green)"><circle cx="12" cy="12" r="10"></circle></svg
       >
       <div class="wrap">
         <figure class="art final-art">
@@ -1056,16 +1168,18 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
             loading="lazy"
           />
         </figure>
-        <h2 class="reveal">O primeiro jogo não precisa ficar para “um dia”.<br />Pode começar com uma pequena parte do tempo que já existe.</h2>
+        <h2 class="reveal">
+          Hoje, você chama seu filho para sair do jogo.<br />Depois do Desafio, pode ser ele quem
+          chama você para conhecer o jogo que criou.
+        </h2>
         <p class="sub">
-          Em cinco etapas, seu filho deixa de apenas seguir as regras de um jogo e experimenta criar
-          as próprias. Você acompanha sem precisar programar, e os dois terminam com algo concreto
-          para abrir, jogar e compartilhar.
+          São cinco etapas guiadas, 30 dias de acesso e um primeiro projeto que vocês conseguem
+          abrir, jogar e mostrar para a família.
         </p>
         <div class="final-cta">
           <button type="button" class="btn big" data-checkout-cta>
-            <span class="material-symbols-rounded">sports_esports</span>Quero transformar parte desse
-            tempo em criação
+            <span class="material-symbols-rounded">sports_esports</span>Quero ver meu filho criar o
+            primeiro jogo
           </button>
         </div>
         <p class="price-line">
@@ -1162,28 +1276,32 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ===== Paleta kids (creme + azul + laranja) + base ===== */
+  /* ===== Aliases locais da identidade canônica da Comunidade Kids ===== */
   .dpj {
-    --azul: #1e88e5;
-    --azul-esc: #1560a8;
-    --laranja: #fb8c00;
-    --laranja-cta: #ff9a1f;
-    --rosa: #f368a6;
-    --verde: #37c871;
-    --verde-menta: #dff6e6;
-    --amarelo: #ffce3a;
-    --creme: #fff7e9;
-    --ceu: #e4f2ff;
-    --menta-bg: #e6f8ec;
-    --lilas: #efe7ff;
-    --navy: #0c1e3e;
-    --tinta: #26314a;
-    --tinta-suave: #5c6b85;
-    --branco: #ffffff;
-    --borda: #eae3d3;
-    --sombra: 0 14px 40px rgba(28, 48, 90, 0.12);
-    --sombra-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
-    --raio: 26px;
+    --azul: var(--sz-community-action);
+    --azul-esc: var(--sz-community-action-step);
+    --laranja: var(--sz-community-orange);
+    --laranja-cta: var(--sz-community-action);
+    --rosa: var(--sz-community-pink);
+    --verde: var(--sz-community-green);
+    --verde-menta: var(--sz-community-mint);
+    --amarelo: var(--sz-community-yellow);
+    --creme: var(--sz-community-ground);
+    --ceu: var(--sz-community-ground-alt);
+    --menta-bg: var(--sz-community-mint);
+    --lilas: var(--sz-community-lilac);
+    --navy: var(--sz-community-menu);
+    --tinta: var(--sz-community-ink);
+    --tinta-suave: var(--sz-community-ink-muted);
+    --branco: var(--sz-community-card);
+    --borda: var(--sz-community-line);
+    --campo: var(--sz-community-field);
+    --degrau: var(--sz-community-action-step);
+    --degrau-cartao: var(--sz-community-card-step);
+    --vermelho: var(--sz-community-red);
+    --sombra: 0 5px 0 var(--degrau-cartao);
+    --sombra-sm: 0 4px 0 var(--degrau-cartao);
+    --raio: 18px;
     --raio-sm: 16px;
     --head: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
     --body: 'Nunito', ui-sans-serif, system-ui, sans-serif;
@@ -1242,7 +1360,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     text-transform: uppercase;
     color: var(--azul);
     background: #fff;
-    border: 2px solid #cfe6ff;
+    border: 2px solid var(--borda);
     padding: 6px 16px;
     border-radius: 22px;
     box-shadow: var(--sombra-sm);
@@ -1271,13 +1389,13 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     font-family: var(--head);
     font-weight: 600;
     font-size: 1.08rem;
-    color: #3a2400;
-    background: linear-gradient(180deg, #ffb53f, #ff9a1f);
+    color: var(--sz-community-on-action);
+    background: var(--azul);
     border-radius: 16px;
     padding: 16px 30px;
     box-shadow:
-      0 10px 0 #d8760a,
-      0 18px 30px rgba(255, 154, 31, 0.34);
+      0 6px 0 var(--degrau),
+      0 14px 24px color-mix(in srgb, var(--azul) 24%, transparent);
     transition:
       transform 0.12s ease,
       box-shadow 0.12s ease;
@@ -1287,14 +1405,14 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   .dpj .btn:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 12px 0 #d8760a,
-      0 22px 36px rgba(255, 154, 31, 0.42);
+      0 8px 0 var(--degrau),
+      0 18px 30px color-mix(in srgb, var(--azul) 30%, transparent);
   }
   .dpj .btn:active {
     transform: translateY(4px);
     box-shadow:
-      0 6px 0 #d8760a,
-      0 12px 20px rgba(255, 154, 31, 0.34);
+      0 2px 0 var(--degrau),
+      0 8px 14px color-mix(in srgb, var(--azul) 24%, transparent);
   }
   .dpj .btn .material-symbols-rounded {
     font-size: 22px;
@@ -1332,8 +1450,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     margin: 22px 0 8px;
   }
   .dpj .chip {
-    background: #fff;
-    border: 2px solid #e7eefb;
+    background: var(--branco);
+    border: 2px solid var(--borda);
     border-radius: 999px;
     padding: 9px 16px;
     font-weight: 800;
@@ -1455,7 +1573,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     position: sticky;
     top: 0;
     z-index: 60;
-    background: rgba(255, 247, 233, 0.92);
+    background: color-mix(in srgb, var(--creme) 92%, transparent);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--borda);
   }
@@ -1478,7 +1596,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     width: 36px;
     height: 36px;
     border-radius: 11px;
-    background: linear-gradient(150deg, #37a6f5, #1e88e5);
+    background: var(--azul);
     display: grid;
     place-items: center;
     color: #fff;
@@ -1505,13 +1623,13 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
        (botão + sombra) ficar visualmente centrado na faixa. */
     margin-bottom: 6px;
     box-shadow:
-      0 6px 0 #d8760a,
-      0 10px 18px rgba(255, 154, 31, 0.3);
+      0 5px 0 var(--degrau),
+      0 10px 18px color-mix(in srgb, var(--azul) 22%, transparent);
   }
   .dpj .header-cta:hover {
     box-shadow:
-      0 8px 0 #d8760a,
-      0 14px 22px rgba(255, 154, 31, 0.4);
+      0 6px 0 var(--degrau),
+      0 14px 22px color-mix(in srgb, var(--azul) 28%, transparent);
   }
   @media (max-width: 560px) {
     .dpj .nav .price-mini {
@@ -1572,7 +1690,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
   /* ===== hero ===== */
   .dpj .hero {
-    background: linear-gradient(180deg, #dceeff 0%, #e9f7ef 62%, var(--creme) 100%);
+    background: var(--creme);
     padding-top: 52px;
   }
   .dpj .hero .grid {
@@ -1595,9 +1713,20 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .hero .lead {
     font-size: clamp(1.02rem, 2.3vw, 1.24rem);
-    color: #41506e;
+    color: var(--tinta-suave);
     margin: 18px auto 0;
     max-width: 560px;
+  }
+  .dpj .hero .quiz-echo {
+    max-width: 560px;
+    margin: 16px auto 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(30, 136, 229, 0.22);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--branco) 76%, transparent);
+    color: var(--tinta-suave);
+    font-size: 0.94rem;
+    line-height: 1.5;
   }
   .dpj .hero-cta {
     margin-top: 22px;
@@ -1636,7 +1765,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
   /* ===== stats ===== */
   .dpj .stats-band {
-    background: linear-gradient(180deg, #1e88e5, #1560a8);
+    background: linear-gradient(180deg, var(--navy), var(--sz-community-menu-2));
     color: #fff;
     padding: 46px 0;
   }
@@ -1706,12 +1835,12 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     flex-direction: column;
   }
   .dpj .screen.neg {
-    background: #f1f3f7;
-    border: 2px solid #e2e6ee;
+    background: var(--sz-community-surface-2);
+    border: 2px solid var(--borda);
   }
   .dpj .screen.pos {
-    background: linear-gradient(180deg, #fffdf5, #fff4da);
-    border: 2px solid #ffe1a0;
+    background: var(--sz-community-yellow-surface);
+    border: 2px solid color-mix(in srgb, var(--amarelo) 55%, var(--borda));
   }
   .dpj .screen h3 {
     font-size: 1.24rem;
@@ -1720,7 +1849,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     gap: 9px;
   }
   .dpj .screen.neg h3 {
-    color: #7a8397;
+    color: var(--tinta-suave);
   }
   .dpj .screen.pos h3 {
     color: var(--laranja);
@@ -1739,11 +1868,11 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     margin: 0 auto;
   }
   .dpj .screen p {
-    color: #4a566e;
+    color: var(--tinta-suave);
     margin-bottom: 14px;
   }
   .dpj .screen.neg p {
-    color: #7a8397;
+    color: var(--tinta-suave);
   }
   .dpj .tags {
     display: flex;
@@ -1765,13 +1894,13 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     font-size: 20px;
   }
   .dpj .screen.neg .tag {
-    color: #8a93a6;
+    color: var(--tinta-suave);
   }
   .dpj .screen.neg .tag .material-symbols-rounded {
-    color: #aab2c2;
+    color: var(--campo);
   }
   .dpj .screen.pos .tag {
-    color: #2f7d4e;
+    color: var(--verde);
   }
   .dpj .screen.pos .tag .material-symbols-rounded {
     color: var(--verde);
@@ -1807,11 +1936,11 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     margin: 0 auto;
   }
   .dpj .culpa .box p {
-    color: #4a566e;
+    color: var(--tinta-suave);
   }
   .dpj .thesis {
-    background: linear-gradient(180deg, #fff7e9, #ffefcf);
-    border: 2px solid #ffe0a3;
+    background: var(--sz-community-yellow-surface);
+    border: 2px solid color-mix(in srgb, var(--amarelo) 55%, var(--borda));
     border-radius: var(--raio);
     padding: 24px 26px;
     margin: 24px auto 0;
@@ -1823,8 +1952,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .thesis.verde {
     text-align: center;
-    background: linear-gradient(180deg, #eaf9f0, #ddf6e6);
-    border-color: #b7e9c8;
+    background: var(--menta-bg);
+    border-color: color-mix(in srgb, var(--verde) 35%, var(--borda));
   }
   .dpj .thesis.compacta {
     max-width: 760px;
@@ -1854,8 +1983,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     color: var(--tinta-suave);
     font-weight: 800;
     font-size: 0.86rem;
-    text-decoration: line-through;
-    opacity: 0.75;
+    opacity: 0.9;
   }
   .dpj .shift .to {
     font-family: var(--head);
@@ -1872,7 +2000,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     font-size: 20px;
   }
   .dpj .shift .card p {
-    color: #4a566e;
+    color: var(--tinta-suave);
     font-size: 0.95rem;
   }
   @media (max-width: 760px) {
@@ -1918,7 +2046,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     width: 52px;
     height: 52px;
     border-radius: 15px;
-    background: linear-gradient(150deg, #37a6f5, #1e88e5);
+    background: var(--azul);
     color: #fff;
     font-family: var(--head);
     font-weight: 700;
@@ -1934,23 +2062,23 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     right: 24px;
   }
   .dpj .day:nth-child(2) .num {
-    background: linear-gradient(150deg, #4bd886, #2f9e57);
+    background: var(--verde);
   }
   .dpj .day:nth-child(3) .num {
-    background: linear-gradient(150deg, #ff8fc0, #e0559a);
+    background: var(--rosa);
   }
   .dpj .day:nth-child(4) .num {
-    background: linear-gradient(150deg, #ffb53f, #ef6c00);
+    background: var(--laranja);
   }
   .dpj .day:nth-child(5) .num {
-    background: linear-gradient(150deg, #3d5896, #0c1e3e);
+    background: var(--navy);
   }
   .dpj .day h3 {
     font-size: 1.4rem;
     margin: 8px 0;
   }
   .dpj .day p {
-    color: #4a566e;
+    color: var(--tinta-suave);
   }
   .dpj .day .print-frame {
     border-radius: 18px;
@@ -1991,7 +2119,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     align-items: center;
     gap: 6px;
     padding: 9px 14px;
-    background: #f1f4f9;
+    background: var(--sz-community-surface-2);
     border-bottom: 1px solid var(--borda);
   }
   .dpj .browser .bar i {
@@ -2019,6 +2147,63 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .plat-note {
     margin-top: 24px;
+  }
+  .dpj .platform-tour {
+    display: grid;
+    gap: 28px;
+    margin-top: 42px;
+  }
+  .dpj .platform-step {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.55fr);
+    gap: 28px;
+    align-items: center;
+    border: 1px solid var(--borda);
+    border-radius: 28px;
+    background: #fff;
+    padding: 24px;
+    box-shadow: var(--sombra-sm);
+  }
+  .dpj .platform-step:nth-child(even) .platform-copy {
+    order: 2;
+  }
+  .dpj .platform-step .browser {
+    max-width: none;
+    margin: 0;
+  }
+  .dpj .platform-copy {
+    text-align: left;
+  }
+  .dpj .platform-copy > span {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--azul);
+    color: #fff;
+    font-family: var(--head);
+    font-size: 1.15rem;
+    font-weight: 800;
+    box-shadow: 0 4px 0 var(--degrau);
+  }
+  .dpj .platform-copy h3 {
+    margin: 18px 0 9px;
+    font-size: 1.32rem;
+    line-height: 1.2;
+  }
+  .dpj .platform-copy p {
+    color: var(--tinta-suave);
+    font-size: 0.96rem;
+  }
+  @media (max-width: 760px) {
+    .dpj .platform-step {
+      grid-template-columns: 1fr;
+      padding: 16px;
+    }
+    .dpj .platform-step:nth-child(even) .platform-copy {
+      order: 0;
+    }
   }
 
   /* ===== entregáveis + decorados ===== */
@@ -2057,7 +2242,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   .dpj .gift figure.art {
     border-radius: 14px;
     overflow: hidden;
-    background: #eef4fb;
+    background: var(--sz-community-surface-2);
     margin-bottom: 14px;
   }
   .dpj .gift figure.art img {
@@ -2069,41 +2254,41 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     color: var(--verde);
   }
   .dpj .gift:nth-child(2) .ico {
-    background: #e3f0ff;
+    background: color-mix(in srgb, var(--azul) 12%, var(--branco));
   }
   .dpj .gift:nth-child(2) .ico .material-symbols-rounded {
     color: var(--azul);
   }
   .dpj .gift:nth-child(3) .ico {
-    background: #ffe3f1;
+    background: var(--sz-community-pink-surface);
   }
   .dpj .gift:nth-child(3) .ico .material-symbols-rounded {
     color: var(--rosa);
   }
   .dpj .gift:nth-child(4) .ico {
-    background: #fff0d4;
+    background: var(--sz-community-yellow-surface);
   }
   .dpj .gift:nth-child(4) .ico .material-symbols-rounded {
     color: var(--laranja);
   }
   .dpj .gift:nth-child(5) .ico {
-    background: #eee7ff;
+    background: var(--lilas);
   }
   .dpj .gift:nth-child(5) .ico .material-symbols-rounded {
-    color: #6a4fd0;
+    color: var(--sz-community-purple);
   }
   .dpj .gift:nth-child(6) .ico {
-    background: #fff6cf;
+    background: var(--sz-community-yellow-surface);
   }
   .dpj .gift:nth-child(6) .ico .material-symbols-rounded {
-    color: #d9a400;
+    color: var(--laranja);
   }
   .dpj .gift h4 {
     font-size: 1.1rem;
     margin-bottom: 6px;
   }
   .dpj .gift p {
-    color: #4a566e;
+    color: var(--tinta-suave);
     font-size: 0.94rem;
   }
   .dpj .scope-note {
@@ -2115,11 +2300,11 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .coupon-alert {
     margin-top: 14px;
-    border: 2px solid #f2b84b;
+    border: 2px solid color-mix(in srgb, var(--amarelo) 70%, var(--laranja));
     border-radius: 14px;
-    background: #fff8dd;
+    background: var(--sz-community-yellow-surface);
     padding: 12px 14px;
-    color: #5d4210;
+    color: var(--tinta);
     font-size: 0.9rem;
     line-height: 1.45;
   }
@@ -2146,7 +2331,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     border-radius: 16px;
     padding: 16px 20px;
     box-shadow: var(--sombra-sm);
-    border: 2px solid #f0ead9;
+    border: 2px solid var(--borda);
   }
   .dpj .arow .al-name {
     font-weight: 800;
@@ -2174,8 +2359,8 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     opacity: 0.7;
   }
   .dpj .arow.hi {
-    background: linear-gradient(180deg, #eaf9f0, #ddf6e6);
-    border-color: #8fdcac;
+    background: var(--menta-bg);
+    border-color: color-mix(in srgb, var(--verde) 42%, var(--borda));
   }
   .dpj .arow.hi .al-val {
     color: var(--verde);
@@ -2196,7 +2381,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
   /* ===== autoridade ===== */
   .dpj .auth {
-    background: linear-gradient(180deg, var(--lilas), #f7f3ff);
+    background: var(--lilas);
   }
   .dpj .auth .grid {
     display: grid;
@@ -2209,7 +2394,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     text-align: left;
   }
   .dpj .auth .story p {
-    color: #463f5e;
+    color: var(--tinta-suave);
     margin-bottom: 14px;
   }
   .dpj .auth .story .lead-line {
@@ -2227,7 +2412,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     border-radius: 999px;
     padding: 8px 16px;
     font-weight: 800;
-    color: #6a4fd0;
+    color: var(--sz-community-purple);
     box-shadow: var(--sombra-sm);
     font-size: 0.9rem;
   }
@@ -2254,7 +2439,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     border-radius: var(--raio);
     padding: 24px;
     box-shadow: var(--sombra-sm);
-    border: 1px solid #eef0f5;
+    border: 2px solid var(--borda);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -2265,7 +2450,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     letter-spacing: 2px;
   }
   .dpj .depo .quote {
-    color: #41506e;
+    color: var(--tinta-suave);
     font-size: 1rem;
     line-height: 1.55;
     margin-top: 12px;
@@ -2312,19 +2497,19 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
   /* ===== oferta ===== */
   .dpj .oferta {
-    background: linear-gradient(180deg, #fff4da, #ffe9be);
+    background: var(--ceu);
   }
   .dpj .offer-card {
     max-width: 720px;
     margin: 34px auto 0;
     background: #fff;
     border-radius: 30px;
-    box-shadow: 0 26px 60px rgba(210, 140, 20, 0.28);
+    box-shadow: 0 6px 0 var(--degrau-cartao);
     overflow: hidden;
-    border: 3px solid #ffd874;
+    border: 2px solid var(--borda);
   }
   .dpj .offer-top {
-    background: linear-gradient(150deg, #37a6f5, #1560a8);
+    background: var(--azul);
     color: #fff;
     padding: 26px;
     text-align: center;
@@ -2390,7 +2575,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .offer-body .anchor {
     text-align: center;
-    color: #8a7a55;
+    color: var(--tinta-suave);
     font-size: 0.92rem;
     margin-top: 14px;
   }
@@ -2420,10 +2605,10 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj .warranty p {
     font-size: 0.95rem;
-    color: #2f6b45;
+    color: var(--verde);
   }
   .dpj .warranty b {
-    color: #0f9c4d;
+    color: var(--verde);
   }
   .dpj .offer-cta {
     text-align: center;
@@ -2451,7 +2636,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
     background: #fff;
     border-radius: 16px;
     box-shadow: var(--sombra-sm);
-    border: 2px solid #f0ead9;
+    border: 2px solid var(--borda);
     overflow: hidden;
   }
   .dpj details.faq summary {
@@ -2480,7 +2665,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   }
   .dpj details.faq .a {
     padding: 0 22px 20px;
-    color: #4a566e;
+    color: var(--tinta-suave);
   }
   .dpj details.faq[open] summary {
     color: var(--azul);
@@ -2488,7 +2673,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
 
   /* ===== CTA final ===== */
   .dpj .final {
-    background: linear-gradient(180deg, #e4f2ff, #e9f7ef);
+    background: var(--creme);
     text-align: center;
   }
   .dpj .final h2 {
@@ -2554,7 +2739,7 @@ const discountLabel = validCoupon ? formatBRLFromCents(validCoupon.discountCents
   .dpj .mobar-btn {
     padding: 12px 18px;
     font-size: 0.96rem;
-    box-shadow: 0 5px 0 #d8760a;
+    box-shadow: 0 5px 0 var(--degrau);
   }
   @media (max-width: 760px) {
     .dpj .mobar {

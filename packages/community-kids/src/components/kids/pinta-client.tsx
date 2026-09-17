@@ -197,6 +197,11 @@ export function PintaClient({
               throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
             updateHandoffProgress(body.task.progress)
           },
+          // "Voltar ao plano" no painel do brief: o id do plano já veio no handoff
+          // (nada de parâmetro novo na URL). Espelho do Molda (`molda-client.tsx`).
+          // Quem guarda o desenho ANTES de chamar é o próprio Pinta.
+          onReturnToPlan: () =>
+            router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
         }
       : undefined
     return {

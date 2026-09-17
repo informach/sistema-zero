@@ -16,9 +16,9 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'As horas que o seu filho passa dentro do jogo escondem o maior talento dele, esperando um lugar pra ir',
+  h1: 'Seu filho já passa horas envolvido com jogos. Na Comunidade, ele pode usar uma parte desse tempo para criar os próprios jogos.',
   subtitulo:
-    'Na Comunidade dos Criadores, o mesmo tempo que hoje só consome jogo passa a criar: cursos com professor acompanhando, jogos publicados com link de verdade e uma carreira de criador que sobe nível a nível.',
+    'Uma jornada online com projetos guiados, ferramentas próprias, acompanhamento de professor e uma Carreira do Criador que mostra qual é o próximo passo.',
   tempo: '',
 }
 
@@ -32,16 +32,14 @@ export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_70
 // Diferença pro Desafio: é ASSINATURA — o texto avisa do aviso prévio de renovação
 // e aponta o cancelamento na área do responsável.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
-  intro: 'Obrigado por investir no potencial do seu filho.',
+  intro: 'Obrigado por escolher um caminho de criação para o seu filho.',
   entrega: [
-    'Todos os cursos kids, com o Estúdio dentro de cada aula (e os novos que entrarem)',
-    'Clube dos Criadores: o fórum seguro e moderado da idade dele',
-    'Mural dos Criadores: cada jogo publicado com link próprio e QR code',
-    'Acompanhamento de professor nos Recados',
-    'Carreira de Criador: níveis, conquistas e missões',
-    'Kit de Criação Livre: Estúdio Completo, Pensa e Pinta',
-    'Desafio do Mês: um tema novo pra comunidade inteira, todo mês',
-    'Mundo do Criador: avatar e quarto virtual com os troféus dele',
+    'Desafio do Primeiro Jogo e todos os cursos da plataforma',
+    'Estúdio, Pinta, Pensa e Molda, liberados conforme a Carreira do Criador',
+    'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
+    'Acompanhamento do professor pelas atividades e pelos Recados',
+    'Carreira do Criador, desafios, conquistas e Mundo do Criador',
+    'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
   passos: [
     {
@@ -50,19 +48,19 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
         'Enviamos o link de primeiro acesso para o e-mail da compra. É com ele que você cria a sua senha. Se não chegar em alguns minutos, dê uma olhada no spam ou nas promoções.',
     },
     {
-      titulo: 'Faça o cadastro do seu filho',
+      titulo: 'Crie o perfil da criança',
       texto:
-        'Já dentro da plataforma, crie o perfil do seu filho. É rapidinho, e a assinatura cobre até 2 perfis de criança na mesma conta.',
+        'Já dentro da plataforma, crie o perfil do seu filho. A assinatura permite até 2 perfis de criança na mesma conta, cada um com seu próprio progresso.',
     },
     {
-      titulo: 'Cada um tem o seu acesso',
+      titulo: 'Mostre a Carreira do Criador',
       texto:
-        'Tem a área do aluno, onde seu filho entra pelo perfil dele, e a área do responsável, onde você acompanha o progresso e gerencia a assinatura (inclusive o cancelamento, em um clique).',
+        'Abra a plataforma junto com seu filho, veja o posto inicial e entre no primeiro curso liberado. A carreira vai mostrar o que vem depois.',
     },
     {
-      titulo: 'É só começar a criar',
+      titulo: 'Acompanhe pela área do responsável',
       texto:
-        'Abra a plataforma junto com o seu filho. O primeiro curso já leva ele do zero ao primeiro jogo publicado no Mural, com link pra mandar pra família. Antes de cada renovação, você recebe um aviso por e-mail.',
+        'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação. Antes de renovar, enviamos um aviso por e-mail.',
     },
   ],
 }

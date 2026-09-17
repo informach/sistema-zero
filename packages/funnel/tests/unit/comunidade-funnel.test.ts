@@ -42,6 +42,18 @@ describe('registro do funil Comunidade dos Criadores', () => {
       expect(p.titulo.length).toBeGreaterThan(0)
       expect(p.texto.length).toBeGreaterThan(0)
     }
+    expect(o.entrega.join(' ')).toContain('Desafio do Primeiro Jogo')
+    expect(o.entrega.join(' ')).toContain('Estúdio, Pinta, Pensa e Molda')
+    expect(o.entrega.join(' ')).toContain('Até 2 perfis de criança')
+    expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Carreira do Criador')
+  })
+
+  test('metadados repetem a promessa central sem defender mais tempo de tela', () => {
+    const f = COMUNIDADE_DOS_CRIADORES
+    expect(f.content.landing.h1).toContain('uma parte desse tempo')
+    expect(f.content.landing.h1).toContain('criar os próprios jogos')
+    expect(f.seoTitle).toContain('Jogos criados pelo seu filho')
+    expect(f.seoDescription).toContain('parte do tempo digital')
   })
 
   test('fallback de preço próprio da página (o da rota é o do NCI)', () => {

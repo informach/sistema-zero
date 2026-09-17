@@ -179,6 +179,16 @@ export interface PintaTaskSession {
       usedInStudioAt?: string
     }
   }): Promise<void>
+  /**
+   * "Voltar ao plano" no painel do brief (09/2026): leva a criança de volta ao
+   * plano do Pensa que abriu esta tarefa. O id do plano já está em `project.id`,
+   * então o host não precisa de parâmetro novo de URL.
+   *
+   * OPCIONAL de propósito, como o `sendToStudio` do adapter: ausente = o botão
+   * não aparece (o playground, a aula e os fixtures seguem válidos). O Pinta
+   * GUARDA o desenho antes de chamar; se a gravação falhar, não chama.
+   */
+  onReturnToPlan?(): void | Promise<void>
 }
 
 export interface PintaHostAdapter {

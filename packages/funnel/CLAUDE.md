@@ -131,19 +131,19 @@ admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*
 `--font-sans` → Nunito (h1–h3 **Baloo 2**, via `@fontsource` — a MESMA display do
 community-kids, unificada em 07/2026; Fredoka foi removida do pacote). Como as utilitárias
 (`text-lime`/`bg-card`/`border-line`…) são `var(--color-*)`, **todas as páginas/ilhas compartilhadas
-re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal).
+re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal). A fonte
+CANÔNICA é `packages/ui/src/styles/community-kids-theme.css` (`--sz-community-*`), importada por
+`@sistemazero/ui/theme-kids.css`; o funil inteiro, inclusive o Desafio, usa a mesma identidade da
+plataforma. Não repetir valores Pen em `global.css` nem nos bodies bespoke: criar somente aliases
+semânticos com `var(--sz-community-*)`.
 
-**Tema kids = CLARO e colorido (11/07, extraído da página colorida aprovada; é o tema oficial de
-TODO funil kids futuro — basta `theme:'kids'`):** fundo **azul-céu `#E4F2FF`** nas etapas
-compartilhadas (quiz/resultado/checkout/obrigado; a página de vendas usa o creme `#FFF7E9` próprio
-dentro do `.dpj`), cards brancos, tinta `#26314A`, `--color-lime` = **laranja profundo `#EF6C00`**
-(token de TEXTO/acento, legível no claro) e `--color-cyan` = **azul `#1E88E5`**; radius 16/22px. O
-**CTA usa gradiente laranja vivo** (`#FFB53F→#FF9A1F`) com **sombra 3D dura** (`box-shadow: 0 6px 0
-#D8760A` + `:active` afunda) via overrides `.theme-kids .btn/.btn-primary/.card` no fim do
-`global.css` (fora de `@layer`, DEPOIS dos componentes base). Paleta de apoio da página de vendas
-(no `.dpj`): rosa `#F368A6`, verde `#37C871`, amarelo `#FFCE3A`, navy `#0C1E3E`. Textos logo abaixo
-de um CTA 3D pedem **respiro extra** (~26px+, a sombra ocupa a área); num container de altura fixa
-(ex.: a faixa sticky do topo da oferta), compense a sombra com `margin-bottom` igual à sua altura.
+**Tema kids = identidade da Comunidade Kids (17/09; é o tema oficial de TODO funil kids futuro —
+basta `theme:'kids'`):** as páginas compartilhadas e as duas ofertas usam o chão Pen, cartões
+brancos, tinta Pen e ação azul. O CTA é azul chapado com o degrau
+`--sz-community-action-step`; cartões interativos usam `--sz-community-card-step`. Os pontos de
+alegria (rosa, verde, amarelo, roxo e laranja) também vêm da fonte canônica. Textos logo abaixo de
+um CTA 3D pedem **respiro extra**; num container de altura fixa, compense a sombra com
+`margin-bottom` igual à sua altura.
 ⚠️ `overflow-x` em wrapper que contém um sticky deve ser `clip` (nunca `hidden`, que cria scroll
 container e mata o sticky). O wordmark branco (`img[alt="Sistema Zero"]`) recebe filtro escuro no
 kids. Ilustrações dos personagens: 3D cartoon, geradas com chroma key `#00B140` e recortadas para
@@ -157,9 +157,9 @@ promover a um map local `Record<funnelKey, Component>`). `content.sales` (shape 
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida (porte fiel da página colorida
-aprovada: creme + azul + laranja, balões dos personagens, decorações flutuantes), com o CSS bespoke
-num `<style>` Astro escopado por `.dpj` (tokens próprios no wrapper, não no `:root`) e ícones
+partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida alinhado à plataforma (balões dos
+personagens, decorações flutuantes), com o CSS bespoke num `<style>` Astro escopado por `.dpj`
+(aliases semânticos no wrapper apontam para `--sz-community-*`, nunca valores repetidos) e ícones
 **Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
 outlined); `ComunidadeOfertaBody.astro` = idem, escopado por `.cdc`. ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
@@ -180,9 +180,9 @@ fallback (`COMUNIDADE_PRECO_FALLBACK`).
 **Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 67 público / R$ 37 com
 cupom de evento):** criança 9+ monta um jogo de nave em 5 etapas, com 30 dias contados da aprovação;
 é pagamento único sem renovação. **Comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
-Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
-(`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
-`renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. O funil público deve
+Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): 7 perguntas de múltipla
+escolha; o perfil resulta da maioria entre `perfil_p1` a `perfil_p4`, com `perfil_p1` como
+desempate; `renderCorpo` resolve `{resposta_uso}`/`{resposta_desejo}`/`{resposta_apoio}`. O funil público deve
 apontar para `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua
 reservada aos contratos vitalícios históricos e ao fluxo de bolsas.
 

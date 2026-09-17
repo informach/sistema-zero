@@ -1,7 +1,7 @@
 ---
 // Página de vendas da "Comunidade dos Criadores" (funil kids, ASSINATURA
-// mensal/anual). Layout PRÓPRIO no mesmo tema do Desafio (creme + azul +
-// laranja, Baloo 2/Nunito, botões 3D, balões dos personagens), estrutura 8D em
+// mensal/anual). Layout PRÓPRIO alinhado à paleta Pen da Comunidade Kids
+// (chão azul-acinzentado, ação azul, Baloo 2/Nunito e relevo 3D), estrutura 8D em
 // 19 blocos. O CSS sob medida vive no `<style>` escopado abaixo, sob `.cdc`
 // (tokens no wrapper, não no :root). Os CTAs de compra levam `data-checkout-cta`
 // → PreCheckoutModal; os CTAs de PLANO levam também `data-checkout-oferta`
@@ -102,51 +102,47 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
         class="deco float slow rev"
         style="top:22%;right:6%;width:34px"
         viewBox="0 0 24 24"
-        fill="#F368A6"
+        fill="var(--sz-community-pink-light)"
+        aria-hidden="true"
         ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
         ></path></svg
       >
-      <div class="blob" style="width:220px;height:220px;background:#CDE8FF;top:-40px;right:-40px">
+      <div class="blob" style="width:220px;height:220px;background:var(--sz-community-ground-alt);top:-40px;right:-40px">
       </div>
-      <div class="blob" style="width:160px;height:160px;background:#CFF3DC;bottom:20px;left:-50px">
+      <div class="blob" style="width:160px;height:160px;background:var(--sz-community-mint);bottom:20px;left:-50px">
       </div>
       <div class="wrap">
         <div class="grid">
           <div class="hero-copy">
             <span class="eyebrow"
-              >Pra crianças de 9 a 14 anos<br />que vivem em jogos e tecnologia</span
+              >Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia</span
             >
             <h1>
-              As horas que o seu filho passa dentro do jogo escondem o maior <span class="hl"
-                >talento dele</span
-              >, esperando um lugar pra ir
+              Seu filho já passa horas envolvido com jogos. Na Comunidade, ele pode usar uma parte
+              desse tempo para <span class="hl">criar os próprios jogos.</span>
             </h1>
             <p class="lead">
-              Quando uma criança que ama games aprende a criar os próprios jogos, o tempo de jogo
-              que hoje te preocupa passa a construir raciocínio, autonomia e orgulho do que ela faz.
-              E pra ela, é só diversão.
+              A Comunidade dos Criadores é uma jornada online em que a criança aprende a planejar,
+              construir, testar e publicar jogos, com projetos guiados, ferramentas próprias,
+              acompanhamento de professor e uma carreira que mostra qual é o próximo passo.
             </p>
             <ul class="hero-bullets">
               <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>A mesma
-                cabeça que decora um jogo inteiro monta um jogo do zero, com telas, placar e
-                final
+                <span class="tick"><span class="material-symbols-rounded">check</span></span>Cursos e
+                projetos organizados para cada etapa da criança
               </li>
               <li>
                 <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                cria o próprio jogo, publica com um link de verdade e manda pros amigos e pros avós
-                jogarem
+                cria, publica e compartilha jogos com um link de verdade
               </li>
               <li>
                 <span class="tick"><span class="material-symbols-rounded">check</span></span>A cada
-                jogo que termina, ganha raciocínio, paciência e a certeza de que é capaz de criar,
-                tudo brincando
+                conquista, a Carreira do Criador mostra o próximo passo
               </li>
             </ul>
             <div class="hero-cta">
               <a href="#planos" class="btn big">
-                <span class="material-symbols-rounded">rocket_launch</span>Quero que meu filho
-                comece a criar
+                <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criando
               </a>
             </div>
             <div class="seals">
@@ -185,9 +181,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <span class="name">Zappy</span>
           </div>
           <div class="bubble">
-            Oi, sou o Zappy. Aqui dentro a gente monta jogo de verdade: com fases, placar e até
-            chefão. Depois você publica e manda o link pra família inteira jogar o seu jogo. Chama
-            seu pai ou sua mãe pra ler esta página com você.
+            Oi, sou o Zappy. Aqui você começa com um jogo e libera novos projetos e ferramentas
+            conforme a sua carreira avança. Quando publicar, pode mandar o link para a família
+            inteira jogar. Chama seu pai, sua mãe ou seu responsável para conhecer com você.
           </div>
         </div>
       </div>
@@ -217,10 +213,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec" id="dor">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O que passa pela sua cabeça</span>
+          <span class="eyebrow">Vamos começar pelo que preocupa você</span>
           <h2 class="reveal">
-            Ali, naquele jogo, ele é <span class="hl">inteiro</span>.<br />E é exatamente isso que
-            mexe com você
+            Mais tempo de tela não é a solução.<br />O ponto é o que acontece durante <span class="hl"
+              >uma parte do tempo que já existe.</span
+            >
           </h2>
         </div>
         <div class="feat">
@@ -235,29 +232,23 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Você já parou na porta do quarto e ficou só olhando o seu filho jogar, sem
-              interromper. O corpo pra frente, os olhos que não piscam, uma concentração de horas
-              que você queria ver na hora da lição e quase nunca vê.
+              Equilíbrio continua sendo importante. Uma atividade não deixa de precisar de limites
+              só porque envolve aprendizado.
             </p>
             <p>
-              O que aperta o peito é ver todo esse mergulho, essa cabeça que aprende cada detalhe de
-              um jogo em poucos dias, indo pra um lugar que no fim não devolve nada. Ele domina um
-              mundo que outra pessoa criou, decora cada canto, e quando desliga, zera. Amanhã começa
-              do zero de novo. Não sobra nada que seja dele.
+              Ao mesmo tempo, jogos e tecnologia já fazem parte da escola, das conversas e do tempo
+              livre das crianças. A proposta da Comunidade não é chamar qualquer uso de tela de
+              produtivo. É oferecer uma alternativa concreta para uma parte desse tempo.
             </p>
             <p>
-              Essa atenção toda tem uma explicação que tira o peso das suas costas e das dele. O jogo
-              foi construído pra prender atenção: recompensa a cada poucos segundos, uma fase sempre
-              puxando a próxima. Preguiça e vício não explicam o que você vê da porta do quarto;
-              engenharia de atenção explica. Seu filho está sendo bom numa máquina desenhada pra
-              capturar exatamente isso, e pra ser vencida sem deixar rastro.
+              Em vez de apenas entrar em jogos criados por outras pessoas, seu filho também pode
+              aprender a criar regras, personagens, desafios e mundos próprios.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          No fundo, o que passa pela sua cabeça é uma pergunta só, aquela que você às vezes nem
-          termina de pensar: se ele consegue mergulhar assim nisso, imagina se toda essa energia
-          fosse pra algo que ficasse pra ele.
+          A tela continua pedindo equilíbrio. O que muda aqui é o papel da criança durante uma
+          parte dela: de quem recebe tudo pronto para quem toma decisões e constrói um projeto.
         </div>
       </div>
     </section>
@@ -266,10 +257,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-amar" id="virada">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">A virada de chave</span>
+          <span class="eyebrow">Uma mudança concreta de papel</span>
           <h2 class="reveal">
-            O que você achava que era a <span class="hl">fraqueza</span> dele<br />é, na verdade, a
-            maior <span class="hl2">força</span>
+            O interesse pelos jogos não precisa<br />terminar apenas no <span class="hl2">jogar.</span>
           </h2>
         </div>
         <div class="feat feat-rev">
@@ -284,24 +274,20 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Esse interesse é o material mais valioso que o seu filho tem, e quase ninguém
-              percebe isso a tempo. Toda criança que fica horas presa num jogo está treinando, sem
-              saber, uma habilidade que muito adulto gostaria de ter: mergulhar de cabeça numa coisa
-              e só largar quando domina.
+              Quando joga, seu filho entra em um mundo pronto, aprende as regras e tenta vencer
+              desafios definidos por outra pessoa.
             </p>
             <p>
-              A criança que só joga e a criança que cria têm o mesmo interesse, na mesma quantidade.
-              A diferença inteira está em pra onde esse interesse aponta.
+              Quando cria, ele escolhe uma ideia, organiza as partes, monta comandos, testa o
+              resultado, encontra erros e decide o que precisa mudar.
             </p>
             <div class="tese">
-              As horas que consomem deixam um recorde que some. As mesmas horas, apontadas pra criar,
-              deixam um jogo que fica, com o nome dele, que a família inteira pode abrir e jogar.
-              Mesma criança, mesmo tempo, dois destinos completamente diferentes.
+              O jogo continua interessante para a criança. A diferença é que agora existe autoria.
+              Ao final de um projeto, ela tem algo que pode abrir, jogar, explicar e compartilhar.
             </div>
             <p style="margin-top:16px;">
-              E virar essa chave é possível justamente porque a criança já gosta de games e
-              tecnologia. Ninguém arrasta ela pra lugar nenhum. O caminho começa de dentro do que
-              ela já ama.
+              A Comunidade parte de um interesse que já existe e apresenta uma nova possibilidade
+              dentro dele. Não substitui os limites da família. Acrescenta um caminho de criação.
             </p>
           </div>
         </div>
@@ -312,53 +298,48 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec" id="paliativo">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O que costuma não pegar</span>
+          <span class="eyebrow">O primeiro jogo é só o começo</span>
           <h2 class="reveal">
-            Você já tentou redirecionar essas horas.<br />As saídas óbvias falham num ponto que <span
-              class="hl2">ninguém conta</span
+            Depois da primeira criação, a criança precisa<br />saber <span class="hl2"
+              >o que fazer em seguida.</span
             >
           </h2>
         </div>
         <div class="pal">
           <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">timer_off</span></span>
+            <span class="xi"><span class="material-symbols-rounded">sports_esports</span></span>
             <div>
-              <h4>Limitar o tempo de tela</h4>
+              <h4>O primeiro jogo mostra que é possível</h4>
               <p>
-                Diminui as horas, mas o destino delas continua o mesmo. Ele volta pro mesmo lugar
-                assim que pode, e no meio disso vira briga diária, culpa e cara feia. O interesse
-                segue intacto, apontado pro mesmo canto.
+                A criança deixa de imaginar e vê uma criação própria funcionando. Essa primeira
+                entrega torna o próximo projeto mais fácil de visualizar.
               </p>
             </div>
           </div>
           <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">sports_soccer</span></span>
+            <span class="xi"><span class="material-symbols-rounded">route</span></span>
             <div>
-              <h4>Empurrar outro hobby</h4>
+              <h4>Uma sequência evita a tela em branco</h4>
               <p>
-                Esporte, música, um curso que os pais escolhem. Quando a atividade fala com o que a
-                criança ama, a atenção migra; quando chega de fora, ela faz de má vontade, aguenta um
-                ou dois meses e larga, porque aquilo não acende nada dentro dela. Disciplina
-                resolve pouco onde o interesse ainda nem nasceu.
+                Em vez de terminar um curso e ficar sem saber para onde ir, ela encontra outro
+                projeto com dificuldade compatível com o que já aprendeu.
               </p>
             </div>
           </div>
           <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">travel_explore</span></span>
+            <span class="xi"><span class="material-symbols-rounded">military_tech</span></span>
             <div>
-              <h4>Deixar solto no Roblox ou no YouTube</h4>
+              <h4>A carreira organiza a continuidade</h4>
               <p>
-                O editor do Roblox é ferramenta profissional em inglês, sem trilha e sem ninguém do
-                lado quando ele trava. O YouTube é tutorial picado, sem sequência. A criança se
-                perde na primeira dificuldade e volta a só jogar.
+                Cursos, projetos, ferramentas e conquistas aparecem em uma ordem clara. A criança
+                enxerga o que concluiu e qual é o próximo passo.
               </p>
             </div>
           </div>
         </div>
         <div class="tese reveal">
-          Nenhuma dessas tentativas faz a única coisa que redireciona esse interesse de verdade:
-          pegar a criança onde ela já está, dentro dos games e da tecnologia, e apontar ele pra
-          criar, com um caminho na ordem certa e alguém junto quando ela trava.
+          Um curso isolado pode ensinar um projeto. A Comunidade organiza uma jornada para que a
+          primeira criação encontre uma próxima etapa.
         </div>
       </div>
     </section>
@@ -366,10 +347,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <!-- ===== BLOCO 05 · PROVA SOCIAL 1 (crianças reais) ===== -->
     <section class="sec sec-verde" id="prova">
       <div class="wrap center">
-        <span class="eyebrow">Quem já virou a chave</span>
-        <h2 class="reveal">As crianças que já saíram<br />do só jogar pra <span class="hl">criar</span></h2>
+        <span class="eyebrow">Projetos que podem ser vistos e jogados</span>
+        <h2 class="reveal">Quando a ideia sai da cabeça<br />e começa a <span class="hl">funcionar</span></h2>
         <p class="sub">
-          Elas entraram como quem só jogava. Hoje mostram os próprios jogos pra quem quiser ver.
+          Estes relatos falam de resultados observáveis: montar, testar, publicar e mostrar uma
+          criação própria.
         </p>
         <div class="depo-grid">
           <div class="depo reveal">
@@ -437,7 +419,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-slim">
       <div class="wrap">
         <div class="ctaband reveal">
-          <h3>Existe um lugar feito pra pegar esse interesse e apontar ele pra criação.</h3>
+          <h3>O primeiro jogo pode ser uma conquista. A Comunidade mostra o caminho depois dele.</h3>
           <a href="#metodo" class="btn big">
             <span class="material-symbols-rounded">visibility</span>Quero conhecer por dentro
           </a>
@@ -449,14 +431,15 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-tint" id="metodo">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O método que faz terminar</span>
+          <span class="eyebrow">Como a continuidade funciona</span>
           <h2 class="reveal">
-            Por que a criança larga quase toda criação na primeira dificuldade,<br />e por que aqui
-            ela <span class="hl">volta na terça pra terminar</span>
+            Um projeto de cada vez, com etapas que ajudam<br />a criança a <span class="hl"
+              >tirar a ideia do papel.</span
+            >
           </h2>
           <p class="sub">
-            A criança larga porque fica sozinha diante da tela em branco. Aqui ela segue um caminho
-            com nome, ordem e um fim visível a cada volta: o Método Z.E.R.O.
+            O Método Z.E.R.O. organiza cada criação em partes menores, do planejamento à
+            publicação. Assim, a criança não precisa começar diante de uma tela em branco.
           </p>
         </div>
         <div class="zero">
@@ -503,12 +486,13 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             E acima do método, uma jornada: a <span class="hl2">Carreira de Criador</span>
           </h2>
           <p class="sub">
-            O Z.E.R.O. é o que a criança faz. A Carreira é quem ela se torna: cada jogo publicado
-            sobe um nível, como a faixa do judô, e nível que sobe não volta atrás.
+            O Z.E.R.O. organiza o projeto. A Carreira organiza a jornada: cursos concluídos e
+            projetos publicados registram o avanço, como as faixas do judô. Cada novo posto libera
+            cursos e ferramentas que combinam com o que a criança já aprendeu.
           </p>
         </div>
         <div class="career reveal">
-          <span class="lvl-pill" style="--c:#9aa3b8"
+          <span class="lvl-pill" style="--c:var(--sz-community-field)"
             ><span class="material-symbols-rounded">bolt</span>Faísca</span
           >
           <span class="lvl-pill" style="--c:var(--verde)"
@@ -517,17 +501,25 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           <span class="lvl-pill" style="--c:var(--azul)"
             ><span class="material-symbols-rounded">lightbulb</span>Inventor</span
           >
+          <span class="lvl-pill" style="--c:var(--verde)"
+            ><span class="material-symbols-rounded">explore</span>Explorador de Mundos</span
+          >
           <span class="lvl-pill" style="--c:var(--roxo)"
             ><span class="material-symbols-rounded">swords</span>Mestre dos Jogos</span
+          >
+          <span class="lvl-pill" style="--c:var(--azul)"
+            ><span class="material-symbols-rounded">castle</span>Arquiteto de Mundos</span
+          >
+          <span class="lvl-pill" style="--c:var(--laranja)"
+            ><span class="material-symbols-rounded">auto_awesome</span>Gênio da Criação</span
           >
           <span class="lvl-pill" style="--c:var(--rosa)"
             ><span class="material-symbols-rounded">military_tech</span>Lenda</span
           >
         </div>
         <div class="tese reveal">
-          Isso funciona pelo mesmo motivo que faz o seu filho não largar o jogo que joga: o cérebro
-          dele responde a ciclos curtos de esforço e resultado. Zero motivação forçada. É o
-          mecanismo que já prende ele no jogo, agora trabalhando a favor de quem cria.
+          Toda a plataforma faz parte da assinatura. A liberação gradual não esconde uma compra
+          extra. Ela apresenta os recursos em uma ordem que acompanha o avanço da criança.
         </div>
         <!-- fala do Dedé pra criança -->
         <div class="kid verde reveal">
@@ -544,8 +536,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <span class="name">Dedé</span>
           </div>
           <div class="bubble">
-            Cada jogo que você termina sobe a sua carreira. Eu comecei na Faísca e agora tô
-            batalhando pra chegar em Mestre dos Jogos. Qual nome você vai dar pro seu primeiro jogo?
+            Cada aventura que você conclui e cada projeto que publica fazem a sua carreira andar.
+            Eu comecei na Faísca e agora tô batalhando pra chegar em Mestre dos Jogos. Qual nome
+            você vai dar pro seu primeiro jogo?
           </div>
         </div>
       </div>
@@ -555,12 +548,13 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-rosa" id="desenvolve">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Enquanto ele acha que está brincando</span>
-          <h2 class="reveal">O que cresce <span class="hl">por baixo</span> da diversão</h2>
-          <p class="sub">
-            O seu filho vai achar que está só montando joguinho. E é bom que ache, porque é assim
-            que criança aprende de verdade, quando nem sente o esforço. Por baixo, uma coisa de cada
-            vez, cresce tudo isto.
+        <span class="eyebrow">O que acontece durante um projeto</span>
+        <h2 class="reveal">
+          Criar um jogo exige muito mais<br />do que <span class="hl">apertar botões.</span>
+        </h2>
+        <p class="sub">
+          Enquanto o jogo ganha forma, a criança precisa tomar decisões, testar possibilidades e
+          entender a relação entre cada comando e o resultado que aparece na tela.
           </p>
         </div>
         <div class="dev">
@@ -570,8 +564,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h4>Raciocínio lógico</h4>
             <p>
-              Ele aprende a pegar um problema grande e quebrar em partes pequenas, uma de cada vez.
-              É a base de quase tudo que ele vai estudar e resolver na vida.
+              Relacionar cada comando ao que acontece no jogo e investigar por que algo não
+              funcionou como esperado.
             </p>
           </div>
           <div class="dev-item reveal">
@@ -580,8 +574,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h4>Resiliência</h4>
             <p>
-              Descobre que errar faz parte. Ele testa, vê o que deu errado, conserta e segue. Sermão
-              nenhum ensina isso; consertar o próprio jogo ensina.
+              Testar uma ideia, observar o resultado, fazer ajustes e tentar novamente quando
+              alguma parte não funciona.
             </p>
           </div>
           <div class="dev-item reveal">
@@ -590,8 +584,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h4>Planejamento</h4>
             <p>
-              Ele imagina o jogo pronto na cabeça e vai atrás, passo a passo. Vira organização, e
-              essa organização escapa pra escola e pra vida.
+              Dividir uma ideia em etapas e decidir o que precisa ser construído primeiro para o
+              projeto avançar.
             </p>
           </div>
           <div class="dev-item reveal">
@@ -600,8 +594,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h4>Autoria e autoestima</h4>
             <p>
-              Ele cria do zero uma coisa que é só dele e assina embaixo. Muda como ele se enxerga:
-              de quem só joga o que os outros fizeram pra quem faz o que os outros jogam.
+              Escolher regras, personagens e desafios, explicar as próprias decisões e apresentar
+              algo que foi criado por ele.
             </p>
           </div>
           <div class="dev-item reveal">
@@ -610,25 +604,24 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h4>Persistência</h4>
             <p>
-              Ele termina o que começou, do início ao fim. Pra muita criança que vive mergulhada num
-              jogo, é a primeira vez que isso acontece, e a sensação gruda.
+              Acompanhar uma sequência de etapas e continuar ajustando o projeto até chegar a uma
+              versão que possa ser publicada.
             </p>
           </div>
           <div class="dev-item reveal">
             <div class="di" style="background:var(--ciano)">
               <span class="material-symbols-rounded">rocket_launch</span>
             </div>
-            <h4>Preparo pro que vem</h4>
+            <h4>Familiaridade com tecnologia</h4>
             <p>
-              Ele ganha vocabulário, lógica e familiaridade com tecnologia num mundo cada vez mais
-              digital. Porta que se abre e caminho que fica disponível.
+              Usar ferramentas digitais para construir, testar e compartilhar, em vez de apenas
+              navegar por experiências prontas.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          Nada disso cai numa nota de boletim, mas é o que fica pra vida. E o mais bonito: pra ele,
-          foi só diversão. Aprender brincando é o jeito que funciona melhor nessa idade, porque o
-          esforço nem parece esforço.
+          Essas habilidades são praticadas dentro dos projetos. A Comunidade não promete mudança
+          automática de notas, comportamento ou desempenho em outras atividades.
         </div>
       </div>
     </section>
@@ -638,113 +631,131 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       <div class="wrap">
         <div class="center">
           <span class="eyebrow">Uma olhada por dentro</span>
-          <h2 class="reveal">Onde o seu filho vai passar as tardes <span class="hl2">criando</span></h2>
+          <h2 class="reveal">Um lugar que cresce junto com <span class="hl2">o seu filho</span></h2>
           <p class="sub">
-            É um lugar inteiro, feito pra criança de 9 a 14 anos se sentir em casa e querer voltar.
-            Site de curso tem uma lista de vídeos; aqui tem estúdio, vitrine, clube e carreira.
+            Toda a plataforma está incluída na assinatura. A liberação acontece conforme a
+            Carreira do Criador, para a criança aprender primeiro, conquistar o próximo posto e
+            abrir novas possibilidades sem nenhuma compra extra por dentro.
           </p>
         </div>
         <div class="cards">
           <div class="card reveal">
             <figure class="shot">
               <img
-                src={img('print-estudio.webp')}
-                alt="O Estúdio: blocos coloridos de um lado e o jogo rodando do outro"
-                width="1100"
-                height="538"
+                src={img('print-carreira.webp')}
+                alt="Mapa da Carreira do Criador, de Faísca a Lenda, com o posto atual destacado"
+                width="1280"
+                height="720"
                 loading="lazy"
               />
             </figure>
-            <h3>O Estúdio, onde o jogo nasce</h3>
+            <h3>A Carreira organiza cada conquista</h3>
             <p>
-              A criança arrasta bloquinhos coloridos, como peças de montar, e vê o jogo dela rodando
-              ao lado na mesma hora. Nada de código difícil, nada pra instalar, tudo no navegador.
+              A criança enxerga onde está, o que já conquistou e qual é o próximo passo. Os cursos e
+              as ferramentas abrem conforme ela avança de Faísca até Lenda.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-aula.webp')}
+                alt="Aula prática da Comunidade com etapas guiadas, blocos do Estúdio e jogo funcionando ao lado"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>Cursos que viram projetos</h3>
+            <p>
+              A explicação e a prática ficam juntas. A criança aprende uma ideia, monta no Estúdio
+              dentro da aula e vê o resultado aparecer no próprio jogo.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-oficina.webp')}
+                alt="Oficina de criação com Estúdio e Pinta liberados e Pensa e Molda incluídos nos próximos postos"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>Quatro ferramentas, uma oficina completa</h3>
+            <p>
+              Estúdio, Pinta, Pensa e Molda estão incluídos. Ela planeja, desenha, modela e constrói,
+              com cada oficina liberada no momento certo da carreira.
             </p>
           </div>
           <div class="card reveal">
             <figure class="shot">
               <img
                 src={img('print-mural.webp')}
-                alt="O Mural: jogos publicados, cada um com link e QR code"
-                width="1100"
-                height="595"
+                alt="Mural dos Criadores com jogos da turma, contador de jogadas e botões para jogar e compartilhar"
+                width="1280"
+                height="720"
                 loading="lazy"
               />
             </figure>
-            <h3>O Mural, a vitrine</h3>
+            <h3>O Mural transforma projeto em orgulho</h3>
             <p>
-              Cada jogo publicado ganha um link próprio e um QR code. É aqui que o jogo do seu filho
-              ganha um endereço no mundo, pra mandar pros avós e ver o contador de jogadas subir.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-carreira.webp')}
-                alt="A Carreira: os níveis de Faísca a Lenda e as conquistas"
-                width="977"
-                height="353"
-                loading="lazy"
-              />
-            </figure>
-            <h3>A Carreira, de Faísca a Lenda</h3>
-            <p>
-              A cada jogo, ele sobe de nível, junta conquistas e vê o próprio progresso numa tela
-              só. É o que faz ele querer voltar amanhã.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-mundo.webp')}
-                alt="O Mundo do Criador: o avatar e o quarto virtual com os troféus"
-                width="1100"
-                height="825"
-                loading="lazy"
-              />
-            </figure>
-            <h3>O Mundo do Criador, a casa dele</h3>
-            <p>
-              Ele monta o próprio personagem e decora o quarto virtual, onde os troféus ficam
-              expostos. Um cantinho que é só dele ali dentro.
+              Cada jogo publicado ganha um endereço para jogar e compartilhar. A criança vê as
+              jogadas chegando e percebe que criou algo que existe para outras pessoas.
             </p>
           </div>
           <div class="card reveal">
             <figure class="shot">
               <img
                 src={img('print-clube.webp')}
-                alt="O Clube dos Criadores: o fórum da criançada, moderado"
-                width="1059"
-                height="583"
+                alt="Clube dos Criadores com canais, conversas da turma e aviso de acompanhamento do professor"
+                width="1280"
+                height="720"
                 loading="lazy"
               />
             </figure>
             <h3>O Clube dos Criadores</h3>
             <p>
-              O fórum onde ela conversa com outras crianças que criam, tira dúvida e mostra o que
-              fez. Moderado por gente de verdade, sem estranhos.
+              Um espaço moderado onde ela conversa com outras crianças que criam, compartilha
+              ideias, tira dúvidas e mostra o que fez.
             </p>
           </div>
           <div class="card reveal">
             <figure class="shot">
               <img
                 src={img('print-recados.webp')}
-                alt="Os Recados: o professor respondendo a criança"
-                width="793"
-                height="296"
+                alt="Caixa de Recados com devolutivas do professor sobre aulas, entregas e jogos publicados"
+                width="1280"
+                height="720"
                 loading="lazy"
               />
             </figure>
             <h3>Os Recados, com o professor</h3>
             <p>
-              Quando ela trava, um professor de verdade olha o que ela fez e responde ali dentro.
-              Tem gente do outro lado, e gente que viu o jogo dela.
+              As atividades enviadas podem ser revisadas pelo professor, que orienta a criança
+              dentro da plataforma e conversa com ela sobre o projeto.
+            </p>
+          </div>
+          <div class="card card-wide reveal">
+            <figure class="shot">
+              <img
+                src={img('print-espaco.webp')}
+                alt="Meu Espaço com avatar, posto atual, sequência, experiência, jogos e conquistas da criança"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>Um espaço com a cara dela</h3>
+            <p>
+              Avatar, quarto, sequência e conquistas guardam a história da criança e mostram o que
+              ela já construiu ao longo da carreira.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          Repare que nada aqui parece dever de casa. Cada tela foi pensada pra criança sentir que
-          aquilo é dela, e é isso que transforma "mais um curso" num lugar que ela quer habitar.
+          A progressão não esconde conteúdo e não empurra uma compra nova. Ela dá ordem ao caminho:
+          tudo faz parte da assinatura, e cada recurso chega quando a criança já tem base para usar,
+          criar e sentir que conquistou aquele novo passo.
         </div>
       </div>
     </section>
@@ -811,8 +822,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <div class="tese reveal">
-          A criança que mais se transforma aqui é aquela que hoje é chamada de grudada demais no
-          jogo. É exatamente esse interesse que o percurso pega pela mão e aponta pra criação.
+          A Comunidade combina melhor com a criança que demonstra interesse por jogos e tecnologia
+          e está pronta para experimentar o papel de quem também cria.
         </div>
       </div>
     </section>
@@ -822,10 +833,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       <div class="wrap">
         <div class="center">
           <span class="eyebrow">O que está incluído</span>
-          <h2 class="reveal">Tudo que o seu filho recebe no dia em que entra</h2>
+          <h2 class="reveal">Tudo que faz parte da assinatura</h2>
           <p class="sub">
-            A assinatura libera a plataforma inteira. Zero pacote extra pra comprar por dentro, zero
-            módulo avulso.
+            Toda a plataforma está incluída na assinatura, sem nenhuma compra extra por dentro. A
+            liberação acontece conforme a Carreira do Criador, para cada conquista chegar no momento
+            certo.
           </p>
         </div>
         <div class="cards">
@@ -833,10 +845,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <div class="ci" style="background:var(--rosa)">
               <span class="material-symbols-rounded">smart_toy</span>
             </div>
-            <h3>Todos os cursos, com Estúdio na aula</h3>
+            <h3>Desafio do Primeiro Jogo e todos os cursos</h3>
             <p>
-              As trilhas que ensinam a criar jogos, do primeiro ao mais avançado, cada aula com o
-              Estúdio embutido pra construir ali mesmo. Novos cursos entram e ele já tem acesso.
+              O primeiro projeto e as trilhas seguintes, do início aos projetos mais avançados. Os
+              cursos atuais e os novos estão incluídos, e a carreira mostra qual é o próximo a ser
+              liberado.
             </p>
           </div>
           <div class="card reveal">
@@ -855,8 +868,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h3>Clube dos Criadores</h3>
             <p>
-              O fórum da criançada, moderado por gente de verdade, onde ela conversa com outras
-              crianças que criam. Um lugar da idade dela, seguro, sem estranhos.
+              O espaço moderado em que a criança conversa sobre ideias, projetos e dificuldades
+              com outros criadores da faixa etária atendida.
             </p>
           </div>
           <div class="card reveal">
@@ -865,8 +878,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h3>Acompanhamento do professor</h3>
             <p>
-              As atividades enviadas são revisadas por um professor, que responde nos Recados quando
-              ela trava. Tem alguém de verdade do outro lado olhando o que ela faz.
+              As atividades enviadas podem ser revisadas pelo professor, que responde pelos Recados
+              e orienta a criança sobre o projeto.
             </p>
           </div>
           <div class="card reveal">
@@ -875,8 +888,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h3>Carreira de Criador e conquistas</h3>
             <p>
-              A jornada de Faísca a Lenda, com os níveis, as conquistas e as missões que mostram,
-              toda semana, o quanto ele evoluiu. É o que faz ele querer voltar amanhã.
+              A jornada completa, de Faísca a Lenda, com oito postos, conquistas e missões que
+              mostram o avanço e liberam novas possibilidades na hora certa.
             </p>
           </div>
           <div class="card destaque reveal">
@@ -885,8 +898,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             </div>
             <h3>Até 2 perfis de criança</h3>
             <p>
-              Uma assinatura libera a plataforma inteira pra até 2 perfis na mesma conta. Tem
-              irmãos? Cada um cria os próprios jogos, com a própria carreira.
+              Uma assinatura inclui toda a plataforma para até 2 perfis na mesma conta. Tem
+              irmãos? Cada um cria os próprios jogos e abre cursos e ferramentas no ritmo da
+              própria carreira.
             </p>
           </div>
         </div>
@@ -897,50 +911,50 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-verde" id="bonus">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">E ainda tem mais</span>
-          <h2 class="reveal">Três coisas que fazem a criança <span class="hl">voltar sozinha</span></h2>
+          <span class="eyebrow">Mais motivos para continuar criando</span>
+          <h2 class="reveal">Três experiências que mantêm<br /><span class="hl">a jornada em movimento</span></h2>
           <p class="sub">
-            Os três existem pra criança querer voltar amanhã. Entram junto com a assinatura, sem
-            custo a mais.
+            Elas fazem parte da assinatura e oferecem novas formas de criar, participar e registrar
+            as conquistas.
           </p>
         </div>
         <div class="cards">
           <div class="card bonus reveal">
-            <span class="bonus-tag">Bônus 1</span>
+            <span class="bonus-tag">Experiência 1</span>
             <div class="ci" style="background:var(--rosa)">
               <span class="material-symbols-rounded">palette</span>
             </div>
             <h3>Kit de Criação Livre</h3>
             <p>
-              Estúdio Completo, Pinta e Pensa: as três ferramentas de criar o jogo da própria
-              cabeça. Planejar, desenhar os personagens e montar tudo sem trilha. É quando ele deixa
-              de seguir e começa a inventar.
+              Estúdio, Pinta, Pensa e Molda: as quatro ferramentas para planejar, desenhar em 2D,
+              modelar em 3D e construir o jogo da própria cabeça. Todas estão incluídas, e cada uma
+              abre no posto da carreira em que a criança já consegue aproveitar o que ela oferece.
             </p>
             <p class="anchor-note">
-              Vendidas separadas, as três custam <s>R$ 291</s>. Na assinatura, entram inclusas.
+              Estúdio e Pinta chegam no posto de Construtor, Pensa no posto de Inventor e Molda no
+              posto de Explorador de Mundos.
             </p>
           </div>
           <div class="card bonus reveal">
-            <span class="bonus-tag">Bônus 2</span>
+            <span class="bonus-tag">Experiência 2</span>
             <div class="ci" style="background:var(--laranja)">
               <span class="material-symbols-rounded">calendar_month</span>
             </div>
             <h3>Desafio do Mês</h3>
             <p>
-              Todo mês, um tema novo e um desafio pra comunidade inteira, com prateleira própria no
-              Mural. É o motivo recorrente pra criança voltar, mesmo depois de já ter publicado
-              vários jogos.
+              Um novo tema convida a comunidade a experimentar ideias e publicar criações em uma
+              prateleira própria no Mural.
             </p>
           </div>
           <div class="card bonus reveal">
-            <span class="bonus-tag">Bônus 3</span>
+            <span class="bonus-tag">Experiência 3</span>
             <div class="ci" style="background:var(--roxo)">
               <span class="material-symbols-rounded">bedroom_child</span>
             </div>
             <h3>Mundo do Criador</h3>
             <p>
-              Avatar e quarto virtual em 3D, onde os troféus das conquistas ficam expostos. É a casa
-              dele ali dentro, o que transforma a plataforma num lugar que ele sente como dele.
+              Avatar e quarto virtual em 3D guardam os troféus e as conquistas da criança em um
+              espaço que registra a história dela na plataforma.
             </p>
           </div>
         </div>
@@ -951,43 +965,42 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-tint" id="valor">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Quanto vale e quanto custa</span>
+          <span class="eyebrow">Escolha como sua família quer começar</span>
           <h2 class="reveal">
-            Quanto vale apontar esse interesse pra um lugar que <span class="hl">constrói o seu filho</span>
+            A jornada completa, com opção<br />mensal ou <span class="hl">anual.</span>
           </h2>
           <p class="sub">
-            Pense no que você já investe pra desenvolver o seu filho. Você paga porque acredita no
-            desenvolvimento dele, e faz todo sentido.
+            Nos dois planos, a criança recebe a mesma plataforma, os mesmos cursos e as mesmas
+            ferramentas. O que muda é o período e a forma de pagamento.
           </p>
         </div>
         <div class="compare">
           <div class="cmp reveal">
-            <div class="cmp-t">Escolinha de esporte</div>
-            <div class="cmp-v">R$ 150 a 300</div>
-            <div class="cmp-u">por mês</div>
+            <div class="cmp-t">Cursos e projetos</div>
+            <div class="cmp-v">Incluídos</div>
+            <div class="cmp-u">liberados conforme a carreira</div>
           </div>
           <div class="cmp reveal">
-            <div class="cmp-t">Curso de inglês</div>
-            <div class="cmp-v">R$ 200 a 400</div>
-            <div class="cmp-u">por mês</div>
+            <div class="cmp-t">Ferramentas de criação</div>
+            <div class="cmp-v">4 oficinas</div>
+            <div class="cmp-u">sem compra extra</div>
           </div>
           <div class="cmp reveal">
-            <div class="cmp-t">Sessão de terapia</div>
-            <div class="cmp-v">R$ 150 a 300</div>
-            <div class="cmp-u">cada, em geral uma por semana</div>
+            <div class="cmp-t">Perfis de criança</div>
+            <div class="cmp-v">Até 2</div>
+            <div class="cmp-u">cada um com seu progresso</div>
           </div>
         </div>
         <p class="between reveal">
-          A Comunidade dá acesso a tudo: os cursos com professor acompanhando, as ferramentas de
-          criar, a comunidade moderada, o Mural com link próprio e a Carreira inteira. Por menos que
-          uma mensalidade de qualquer atividade dessas.
+          A Comunidade reúne cursos, ferramentas de criação, acompanhamento, Mural, Clube e a
+          Carreira do Criador em uma única assinatura.
         </p>
 
         <div class="plans" id="planos">
           <div class="plan reveal">
             <h4>Mensal</h4>
             <div class="now">{mensalLabel}<small>/mês</small></div>
-            <div class="cond">Renovação automática no cartão. Cancele quando quiser, em um clique.</div>
+            <div class="cond">Para conhecer o ritmo da plataforma. Renovação automática no cartão.</div>
             <button
               type="button"
               class="btn plan-btn"
@@ -1003,7 +1016,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <div class="from">12 meses no mensal sairiam por <s>{anualAncoraLabel}</s></div>
             <div class="now">{anualLabel}<small>/ano</small></div>
             <div class="permonth">equivale a {anualPorMesLabel} por mês</div>
-            <div class="cond">No cartão recorrente ou à vista no Pix e boleto. 12 meses de acesso.</div>
+            <div class="cond">Para dar continuidade aos projetos. 12 meses de acesso.</div>
             <button
               type="button"
               class="btn plan-btn"
@@ -1018,11 +1031,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           Garantia de 7 dias · Aviso por e-mail antes de toda renovação · Até 2 perfis de criança
         </p>
         <div class="tese reveal">
-          Aqui o desenvolvimento parte do que ele mais ama fazer, então você nunca precisa empurrar:
-          ele vai sozinho. E tem um valor que a conta acima nem mede, a sua tranquilidade. Saber que
-          aquele tempo todo de jogo, que antes te preocupava, agora constrói raciocínio, autonomia e
-          um caminho de possibilidades. No plano anual, isso custa {anualPorMesLabel} por mês. Um
-          lanche de shopping por semana.
+          A criança pode começar pelo Desafio do Primeiro Jogo e seguir para novos projetos no
+          próprio ritmo. O papel da família continua importante para organizar os momentos de uso,
+          acompanhar o começo e celebrar o que foi criado.
         </div>
       </div>
     </section>
@@ -1031,9 +1042,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-verde" id="mudanca">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">De jogador a criador</span>
+          <span class="eyebrow">O que torna a experiência interessante para a criança</span>
           <h2 class="reveal">
-            O que muda numa casa quando o interesse <span class="hl">encontra um lugar pra ir</span>
+            Ela entra pelo jogo que quer criar<br />e encontra <span class="hl">um caminho para continuar.</span>
           </h2>
         </div>
         {/* Quando existirem depoimentos REAIS de pais (com resultado + prazo), esta
@@ -1043,35 +1054,32 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
         <div class="shifts">
           <div class="shift reveal">
             <span class="material-symbols-rounded">swap_horiz</span>
-            <h4>De disperso a criador</h4>
+            <h4>Um projeto com escolhas próprias</h4>
             <p>
-              A criança que a escola chama de dispersa passa a se apresentar como criadora de
-              jogos. A palavra muda porque a experiência muda: agora existe uma coisa no mundo, com
-              link e nome, que ela fez.
+              A criança escolhe regras, personagens e desafios. O resultado carrega decisões que
+              foram tomadas por ela durante a criação.
             </p>
           </div>
           <div class="shift reveal">
             <span class="material-symbols-rounded">flag_check</span>
-            <h4>De quem abandona a quem termina</h4>
+            <h4>Uma criação que pode ser compartilhada</h4>
             <p>
-              O ciclo Z.E.R.O. entrega um fim visível a cada volta, e terminar vicia tanto quanto
-              jogar. A criança que largava judô no segundo mês volta na terça pra fechar a missão
-              que faltou.
+              Quando publica, ela recebe um link para mostrar o jogo e convidar outras pessoas para
+              experimentar o que construiu.
             </p>
           </div>
           <div class="shift reveal">
             <span class="material-symbols-rounded">videogame_asset</span>
-            <h4>De quem consome a quem faz</h4>
+            <h4>Um progresso que fica visível</h4>
             <p>
-              As horas de tela continuam existindo, e a briga em volta delas diminui, porque o que
-              acontece na tela mudou de natureza. No fim da tarde sobra um jogo, um nível a mais na
-              carreira e um assunto novo no jantar.
+              Projetos, postos, ferramentas e conquistas registram o caminho percorrido e mostram
+              qual é a próxima possibilidade dentro da plataforma.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          Repare no que se repete nas três mudanças: a criança passa a se ver de um jeito novo. Esse
-          é o resultado que a mensalidade compra e que nota de boletim nenhuma mede.
+          A experiência fala a linguagem dos jogos, mas coloca a criança no papel de quem também
+          planeja, testa, explica e publica.
         </div>
         <!-- fala da Debinha pra criança -->
         <div class="kid rosa reveal">
@@ -1089,7 +1097,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
           <div class="bubble">
             O melhor momento é mandar o link do seu jogo no grupo da família e ficar espiando o
-            contador de jogadas subir. Prepara o coração, porque todo mundo vai querer jogar.
+            contador de jogadas subir. Cada nova jogada mostra que alguém abriu uma criação sua.
           </div>
         </div>
       </div>
@@ -1099,11 +1107,13 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec" id="suporte">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Ninguém trava sozinho</span>
-          <h2 class="reveal">Seu filho nunca fica sozinho quando <span class="hl2">trava</span></h2>
+          <span class="eyebrow">Orientação durante a jornada</span>
+          <h2 class="reveal">Autonomia para criar, com adultos responsáveis<br /><span class="hl2"
+              >acompanhando o caminho.</span
+            ></h2>
           <p class="sub">
-            O interesse de uma criança morre no momento em que ela trava e a resposta demora. Aqui,
-            isso foi resolvido em dois lugares ao mesmo tempo.
+            A criança segue os projetos no ritmo dela e conta com canais de acompanhamento dentro
+            da própria plataforma.
           </p>
         </div>
         <div class="feat feat-rev">
@@ -1111,32 +1121,29 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <img
               src={img('print-recados.webp')}
               alt="Os Recados: o canal onde o professor responde a criança dentro da plataforma"
-              width="793"
-              height="296"
+              width="1280"
+              height="720"
               loading="lazy"
             />
           </figure>
           <div class="feat-txt">
             <p>
-              <strong>O professor acompanha as atividades.</strong> Quando seu filho envia o que fez,
-              um professor olha e responde nos Recados, o canal direto de mensagens dele dentro da plataforma.
-              Do outro lado tem uma pessoa que viu o jogo dele e fala com ele sobre aquilo.
+              <strong>O professor acompanha as atividades enviadas.</strong> Ele pode revisar o que a
+              criança fez e responder pelos Recados, conversando sobre aquele projeto.
             </p>
             <p>
-              <strong>A comunidade responde junto.</strong> No Clube dos Criadores, moderado por gente
-              de verdade, a criança pergunta e outras crianças que já passaram por aquilo ajudam. Ver
-              um colega da mesma idade resolver é, muitas vezes, o que destrava mais rápido.
+              <strong>O Clube aproxima quem também cria.</strong> No espaço moderado, a criança pode
+              conversar sobre ideias, mostrar o que fez e trocar experiências com outros criadores.
             </p>
             <p>
-              E pra você existe a área do responsável, separada da conta da criança: o progresso, os
-              perfis e a assinatura inteira (inclusive o cancelamento) resolvidos em poucos cliques,
-              numa tela feita pra pais.
+              <strong>O responsável tem uma área própria.</strong> Perfis e assinatura ficam separados
+              da experiência da criança, inclusive o controle da próxima renovação.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          O suporte é a diferença entre a criança que desiste no primeiro erro e a criança que, com
-          uma resposta na hora certa, descobre que errar faz parte de criar e continua.
+          A orientação não substitui a tentativa. Ela ajuda a criança a entender o erro, fazer um
+          novo teste e seguir construindo quando precisa de apoio.
         </div>
       </div>
     </section>
@@ -1145,8 +1152,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-verde" id="garantia">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Risco zero pra você</span>
-          <h2 class="reveal">Você testa por 7 dias, e sai quando quiser <span class="hl">em um clique</span></h2>
+          <span class="eyebrow">Conheça antes de decidir continuar</span>
+          <h2 class="reveal">Sua família tem <span class="hl">7 dias de garantia.</span></h2>
         </div>
         <div class="seal-box reveal">
           <div class="seal-badge">
@@ -1156,22 +1163,19 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
           <div>
             <p>
-              <strong>Garantia de 7 dias.</strong> Entre, deixe seu filho usar de verdade, e se nesses
-              primeiros 7 dias você sentir que a Comunidade é pra ele mais pra frente, a gente devolve
-              o seu dinheiro. Zero formulário longo, zero pergunta constrangedora.
+              <strong>Conheça a plataforma por 7 dias.</strong> Crie o perfil da criança, abra o
+              primeiro percurso e observe como a experiência entra na rotina da sua família.
             </p>
             <p>
-              <strong>Cancelamento em um clique, quando você quiser.</strong> Depois dos 7 dias, o cancelamento
-              fica no próprio painel do responsável. Um clique, sem multa, sem carência escondida, sem
-              ligar pra ninguém. E antes de qualquer renovação você recebe um aviso por e-mail, pra nunca
-              ser pego de surpresa.
+              <strong>Se não fizer sentido neste momento,</strong> solicite o reembolso dentro do
+              prazo da garantia. Depois desse período, você pode desativar a próxima renovação pelo
+              painel do responsável. Também enviamos um aviso antes de renovar.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          O risco de experimentar é nosso por 7 dias, e depois disso a porta de saída fica sempre
-          destrancada. Quem confia no que entrega dispensa cadeado. A gente prefere que seu filho
-          fique porque quer voltar, e é isso que a plataforma inteira foi construída pra fazer.
+          A garantia permite conhecer o caminho por dentro. A continuidade deve ser uma decisão
+          consciente da família, com as condições da assinatura apresentadas antes do pagamento.
         </div>
       </div>
     </section>
@@ -1181,7 +1185,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       <div class="wrap">
         <div class="center">
           <span class="eyebrow">Quem está por trás</span>
-          <h2 class="reveal">Quem construiu tudo isso, e <span class="hl2">por quê</span></h2>
+          <h2 class="reveal">A Comunidade começou com uma pergunta<br /><span class="hl2"
+              >dentro da nossa própria casa.</span
+            ></h2>
         </div>
         <div class="grid">
           <figure class="art reveal">
@@ -1200,33 +1206,28 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             >
             <!-- historia-andre:inicio -->
             <p class="lead-line">
-              A gente é a Helena e o Júlio, e a Comunidade dos Criadores nasceu dentro da nossa
-              casa, por causa de um menino chamado André.
+              A gente é a Helena e o Júlio. Somos desenvolvedores de sistemas, e o Sistema Zero
+              começou com o André, nosso filho.
             </p>
             <p>
               Nós dois somos desenvolvedores de sistemas, formados em Sistemas de Informação, com
               mais de dez anos de estrada e passagem por lugares como o Banco do Brasil. Programar
-              é o nosso dia a dia. O que a gente demorou pra saber era o que fazer com o foco do
-              nosso filho.
+              é o nosso dia a dia.
             </p>
             <p>
-              O André tem hiperfoco em jogos. Aos 7 anos, esse foco vivia inteiro no jogar, e
-              trabalhava contra ele: a gente repetia dez vezes pra ele ouvir, ele se perdia na
-              escola, andava sempre desatento. A maior força dele estava jogando no time errado.
-              Provavelmente parecido com o que você vive aí.
+              O André é autista nível 1 e tem hiperfoco em jogos. Quando ele tinha 7 anos, quase todo
+              o interesse digital dele terminava no jogar. A gente também se preocupava com o tempo
+              de tela, mas percebeu que apenas discutir o computador não mostrava outra possibilidade.
             </p>
             <p>
-              A virada foi ensinar o André a criar os próprios jogos, juntando o que ele mais ama
-              com o que a gente sabe fazer. Ele manteve o hiperfoco, e hoje cria além de jogar.
-              Ficou mais atento, passou a gostar de aprender, tira notas excelentes, e os
-              professores que antes reclamavam hoje elogiam.
+              Quando começamos a criar jogos juntos, apareceu uma mudança que dava para observar.
+              Em vez de falar apenas das fases que outras pessoas tinham criado, o André passou a
+              nos chamar para testar suas regras, explicar escolhas e imaginar a próxima versão.
             </p>
             <!-- historia-andre:fim -->
             <p>
-              Foi vendo essa transformação dentro de casa que a gente entendeu: em português, feito
-              de verdade pra criança, o lugar que a gente precisou não existia. Então a gente
-              construiu, peça por peça. Cada tela da Comunidade saiu do caminho que a gente trilhou
-              com o próprio filho.
+              Foi dessa experiência que nasceu a Comunidade dos Criadores: um lugar em português,
+              pensado para ajudar outras crianças a começar, continuar e compartilhar o que criam.
             </p>
           </div>
         </div>
@@ -1245,11 +1246,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               quê?<span class="material-symbols-rounded">add</span></summary
             >
             <div class="a">
-              Porque aqui o interesse se sustenta em vitória, e vitória visível. O método Z.E.R.O.
-              faz a criança terminar e publicar um jogo a cada ciclo, e a Carreira mostra o nível
-              dela subindo. É o mesmo motivo pelo qual ela não larga o jogo que joga: resultado
-              aparecendo o tempo todo. E como o percurso puxa do que ele já ama, ninguém arrasta
-              ninguém. Se quiser testar antes de assumir o ano, comece pelo plano mensal.
+              Nenhuma plataforma pode garantir o interesse de toda criança. Aqui, a continuidade é
+              apoiada por projetos com entregas visíveis, pela Carreira do Criador e pela liberação
+              de novas possibilidades conforme ela avança. Se preferir conhecer o ritmo antes de
+              escolher o ano, comece pelo plano mensal.
             </div>
           </details>
           <details class="faq">
@@ -1259,11 +1259,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              O tempo pode até ser parecido, mas o que ele faz na tela muda de natureza: sai do
-              consumir e vai pro criar. Em vez de terminar a tarde com um recorde que some, ele
-              termina com um jogo que existe, que ele planejou, montou e publicou. Muitos pais
-              contam que a briga da tela diminui, porque a criança para de fugir pra tela e passa a
-              voltar pra terminar o que começou.
+              Essa não é a proposta. Cada família continua definindo horários e limites. A
+              Comunidade oferece uma atividade de criação para ocupar uma parte do tempo digital
+              que já faz parte da rotina.
             </div>
           </details>
           <details class="faq">
@@ -1273,10 +1271,21 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Consegue, e é exatamente pra ele. O ponto de partida é gostar de games, só isso. O
-              método pega a criança do zero, com passos pequenos e linguagem de criança, e o
-              primeiro jogo sai nos primeiros dias. Quem ama jogo tem tudo pra virar quem cria
-              jogo.
+              Os primeiros cursos partem do zero e usam blocos visuais. A criança não precisa
+              conhecer programação, mas precisa conseguir ler e utilizar mouse e teclado com
+              alguma autonomia.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >Se está tudo incluído, por que algumas ferramentas aparecem fechadas?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Porque a Carreira organiza a ordem de liberação. Estúdio e Pinta chegam no posto de
+              Construtor, Pensa no posto de Inventor e Molda no posto de Explorador de Mundos. Não
+              existe compra extra para liberar essas ferramentas.
             </div>
           </details>
           <details class="faq">
@@ -1286,12 +1295,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              O gratuito entrega a ferramenta e mais nada. Sem um caminho na ordem certa, a maioria
-              das crianças abre, se perde e volta a só jogar. O que você paga aqui é o que o
-              gratuito não tem: o passo a passo, o professor que responde quando ela trava, a
-              comunidade segura da idade dela, a progressão de níveis que sustenta o interesse e o
-              jogo publicado com link de verdade. É a diferença entre a criança ter uma ferramenta
-              e a criança virar criadora.
+              Ferramentas gratuitas podem ser bons pontos de partida. A assinatura reúne uma
+              sequência de cursos e projetos, ferramentas próprias, acompanhamento, comunidade
+              moderada, publicação dos jogos e uma carreira que organiza o próximo passo.
             </div>
           </details>
           <details class="faq">
@@ -1301,10 +1307,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Em um clique, dentro do painel do responsável, sem multa e sem carência escondida.
-              Nos primeiros 7 dias, se sentir que ainda é cedo, você pede o dinheiro de volta.
-              Depois disso, sai quando quiser, e ainda recebe um aviso por e-mail antes de qualquer
-              renovação.
+              Nos primeiros 7 dias, você pode solicitar o reembolso conforme as condições da
+              garantia. Depois disso, pode desativar a próxima renovação pelo painel do responsável.
+              Também enviamos um aviso por e-mail antes de renovar.
             </div>
           </details>
           <details class="faq">
@@ -1314,10 +1319,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Aprende, e por um caminho que funciona melhor nessa idade. Em vez de assistir aula
-              parado, ele cria desde a primeira semana, e um professor de verdade revisa o que ele
-              faz e responde nos Recados. Criança dessa faixa aprende fazendo e errando com
-              orientação. E aqui o projeto é dele, com a cara dele.
+              A criança segue cursos e projetos no ritmo dela. As atividades enviadas podem ser
+              revisadas pelo professor, que orienta pelos Recados. A experiência combina explicação,
+              prática e testes dentro do próprio projeto.
             </div>
           </details>
           <details class="faq">
@@ -1327,10 +1331,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              É. O Clube dos Criadores é moderado por gente de verdade, exclusivo pra crianças de 9
-              a 14 anos, sem estranhos e sem rede social aberta. O perfil público vem desligado por
-              padrão, e você, como responsável, controla tudo pela área dos pais. A segurança foi
-              desenhada desde o primeiro dia dentro das regras de proteção de dados de crianças.
+              O Clube dos Criadores é moderado e atende crianças de 9 a 14 anos. O perfil público
+              começa desligado, e o responsável administra os perfis e a assinatura pela área da
+              família. A plataforma segue regras específicas de proteção de dados de crianças.
             </div>
           </details>
           <details class="faq">
@@ -1340,8 +1343,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             >
             <div class="a">
               A partir dos 9 anos, se a criança já lê e usa o mouse com firmeza, ela acompanha o
-              percurso. O método foi desenhado pra essa idade, com passos pequenos e linguagem que
-              fala com criança, e os primeiros ciclos são os mais guiados de todos.
+              percurso. Os primeiros projetos são mais guiados e apresentam uma etapa por vez.
             </div>
           </details>
           <details class="faq">
@@ -1351,9 +1353,29 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Quem guia a criança é o método e o professor. O seu papel é acompanhar pela área do
-              responsável, feita pra quem tem zero intimidade com tecnologia, e comemorar quando
-              ele te chamar pra jogar o que criou.
+              Não precisa. O caminho técnico é apresentado para a criança. Seu papel é ajudar a
+              organizar os momentos de uso, acompanhar o primeiro acesso e se interessar pelo que
+              ela criou.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >Meu filho já fez o Desafio do Primeiro Jogo. Precisa fazer novamente?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Não. O Desafio continua disponível dentro da assinatura, mas a criança pode seguir do
+              ponto em que está e avançar para os próximos cursos e projetos.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >Posso cadastrar irmãos?<span class="material-symbols-rounded">add</span></summary
+            >
+            <div class="a">
+              Sim. A assinatura permite até 2 perfis de criança. Cada perfil possui seu próprio
+              progresso, seus projetos e a sua Carreira do Criador.
             </div>
           </details>
           <details class="faq">
@@ -1376,7 +1398,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
         <div class="center">
           <span class="eyebrow">A hora de decidir</span>
           <h2 class="reveal">
-            As mesmas horas, apontadas pra um lugar onde <span class="hl">o que ele faz fica</span>
+            A tela já faz parte da rotina.<br />A criação pode <span class="hl"
+              >começar a fazer parte também.</span
+            >
           </h2>
         </div>
         <div class="final-grid">
@@ -1391,19 +1415,23 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Você chegou até aqui porque reconheceu o seu filho em algum ponto desta página. As
-              horas no jogo, o brilho quando ele fala do assunto, a vontade de que toda aquela
-              energia fosse pra algum lugar que importa. A Comunidade dos Criadores é esse lugar.
+              Você não precisa transformar toda hora de jogo em aula. A proposta é reservar uma
+              parte do tempo digital para que seu filho construa algo próprio, avance em novos
+              projetos e descubra outras possibilidades dentro do interesse que já tem.
             </p>
-            <p class="final-list-title">No dia em que entra, ele recebe:</p>
+            <p class="final-list-title">A partir do dia em que entra, a assinatura inclui:</p>
             <ul class="final-list">
               <li>
-                <span class="material-symbols-rounded">check_circle</span>Todos os cursos, com o
-                Estúdio dentro de cada aula, e os novos que entrarem
+                <span class="material-symbols-rounded">check_circle</span>O Desafio do Primeiro Jogo
+                para começar pelo primeiro projeto
+              </li>
+              <li>
+                <span class="material-symbols-rounded">check_circle</span>Todos os cursos atuais e
+                os novos que entrarem, liberados conforme ele avança na carreira
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>O Clube dos Criadores,
-                fórum seguro e moderado da idade dele
+                espaço moderado para crianças da faixa etária atendida
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>O Mural, com link próprio
@@ -1418,8 +1446,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
                 Faísca a Lenda, com todo o sistema de conquistas
               </li>
               <li>
-                <span class="material-symbols-rounded">check_circle</span>O Kit de Criação Livre,
-                pra criar o jogo da própria cabeça
+                <span class="material-symbols-rounded">check_circle</span>Estúdio, Pinta, Pensa e
+                Molda, incluídos e liberados no momento certo da carreira
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>O Desafio do Mês, sempre
@@ -1431,14 +1459,15 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               </li>
             </ul>
             <p>
-              Tudo por menos que uma mensalidade de atividade extracurricular, com garantia de 7
-              dias, aviso antes de toda renovação e cancelamento em um clique.
+              O primeiro jogo é uma conquista. A Comunidade é o caminho que vem depois, com 7 dias
+              de garantia e aviso antes de cada renovação.
             </p>
           </div>
         </div>
         <div class="final-cta reveal">
           <a href="#planos" class="btn big">
-            <span class="material-symbols-rounded">rocket_launch</span>Escolher o plano e começar
+            <span class="material-symbols-rounded">rocket_launch</span>Quero que meu filho faça parte
+            da Comunidade
           </a>
           <p class="price-line">
             Anual {anualLabel} (equivale a {anualPorMesLabel}/mês) · ou mensal {mensalLabel}/mês ·
@@ -1446,10 +1475,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </p>
         </div>
         <div class="tese reveal">
-          Adiar tem um custo que a fatura nunca mostra: mais um trimestre de horas do seu filho indo
-          embora em recordes que zeram, quando ele já poderia estar somando jogos, níveis e a
-          certeza de que é capaz de criar. O interesse dele vai continuar firme de qualquer jeito. A
-          única escolha que está na sua mão é pra onde ele aponta.
+          Para os pais, a Comunidade oferece direção, acompanhamento e continuidade. Para a
+          criança, oferece jogos para criar, projetos para publicar e uma carreira para percorrer.
         </div>
         <p class="terms">
           Ao assinar, você concorda com os <a href="/kids/termos">termos de uso</a> e a <a
@@ -1508,8 +1535,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
 </script>
 
 <style>
-  /* ===== Comunidade dos Criadores — CSS sob medida, MESMO tema do Desafio
-     (creme + azul + laranja, Baloo 2/Nunito, botões 3D). Escopado pelo Astro a
+  /* ===== Comunidade dos Criadores — CSS sob medida, alinhado à paleta Pen
+     da Comunidade Kids (chão frio, ação azul, Baloo 2/Nunito e relevo 3D).
+     Escopado pelo Astro a
      este componente + prefixado por `.cdc` (tokens no wrapper, não no :root).
      Ícones Material Symbols Rounded via @fontsource (self-hosted). ===== */
   .material-symbols-rounded {
@@ -1528,30 +1556,35 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ===== Paleta kids (creme + azul + laranja) + base ===== */
+  /* ===== Paleta Pen da plataforma Kids + base ===== */
   .cdc {
-    --azul: #1e88e5;
-    --azul-esc: #1560a8;
-    --laranja: #fb8c00;
-    --laranja-cta: #ff9a1f;
-    --rosa: #f368a6;
-    --roxo: #8b5cf6;
-    --ciano: #22b8d0;
-    --verde: #37c871;
-    --amarelo: #ffce3a;
-    --creme: #fff7e9;
-    --ceu: #e4f2ff;
-    --menta-bg: #e6f8ec;
-    --rosa-bg: #fff0f7;
-    --amar-bg: #fff6dc;
-    --navy: #0c1e3e;
-    --tinta: #26314a;
-    --tinta-suave: #5c6b85;
-    --branco: #ffffff;
-    --borda: #eae3d3;
-    --sombra: 0 14px 40px rgba(28, 48, 90, 0.12);
-    --sombra-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
-    --raio: 26px;
+    --azul: var(--sz-community-action);
+    --azul-esc: var(--sz-community-action-step);
+    --laranja: var(--sz-community-orange);
+    --laranja-cta: var(--sz-community-action);
+    --rosa: var(--sz-community-pink);
+    --roxo: var(--sz-community-purple);
+    --ciano: var(--sz-community-blue);
+    --verde: var(--sz-community-green);
+    --amarelo: var(--sz-community-yellow);
+    --creme: var(--sz-community-ground);
+    --ceu: var(--sz-community-ground-alt);
+    --superficie: var(--sz-community-surface-2);
+    --menta-bg: var(--sz-community-ground);
+    --rosa-bg: var(--sz-community-ground-alt);
+    --amar-bg: var(--sz-community-ground-alt);
+    --navy: var(--sz-community-menu);
+    --navy-2: var(--sz-community-menu-2);
+    --tinta: var(--sz-community-ink);
+    --tinta-suave: var(--sz-community-ink-muted);
+    --branco: var(--sz-community-card);
+    --borda: var(--sz-community-line);
+    --campo: var(--sz-community-field);
+    --degrau: var(--sz-community-action-step);
+    --degrau-cartao: var(--sz-community-card-step);
+    --sombra: 0 5px 0 var(--degrau-cartao);
+    --sombra-sm: 0 3px 0 var(--degrau-cartao);
+    --raio: 18px;
     --raio-sm: 16px;
     --head: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
     --body: 'Nunito', ui-sans-serif, system-ui, sans-serif;
@@ -1575,6 +1608,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     letter-spacing: -0.01em;
     font-weight: 700;
     margin: 0;
+    text-wrap: balance;
   }
   .cdc p {
     margin: 0;
@@ -1605,7 +1639,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     background: var(--ceu);
   }
   .cdc .sec-verde {
-    background: var(--menta-bg);
+    background: var(--creme);
   }
   .cdc .sec-rosa {
     background: var(--rosa-bg);
@@ -1625,7 +1659,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     text-transform: uppercase;
     color: var(--azul);
     background: #fff;
-    border: 2px solid #cfe6ff;
+    border: 2px solid var(--borda);
     padding: 6px 16px;
     border-radius: 22px;
     box-shadow: var(--sombra-sm);
@@ -1638,7 +1672,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     font-weight: 700;
   }
   .cdc .hl {
-    color: var(--laranja);
+    color: var(--azul);
   }
   .cdc .hl2 {
     color: var(--azul);
@@ -1654,6 +1688,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     margin: 30px auto 0;
     background: #fff;
     border-left: 6px solid var(--amarelo);
+    border-top: 2px solid var(--borda);
+    border-right: 2px solid var(--borda);
+    border-bottom: 2px solid var(--borda);
     border-radius: 0 var(--raio-sm) var(--raio-sm) 0;
     padding: 18px 22px;
     font-weight: 700;
@@ -1667,7 +1704,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     font-weight: 600;
   }
 
-  /* ===== botões (3D com sombra dura, iguais aos do Desafio) ===== */
+  /* ===== botões 3D da plataforma Kids ===== */
   .cdc .btn {
     display: inline-flex;
     align-items: center;
@@ -1678,13 +1715,12 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     font-family: var(--head);
     font-weight: 600;
     font-size: 1.08rem;
-    color: #3a2400;
-    background: linear-gradient(180deg, #ffb53f, #ff9a1f);
+    min-height: 48px;
+    color: #fff;
+    background: var(--azul);
     border-radius: 16px;
     padding: 16px 30px;
-    box-shadow:
-      0 10px 0 #d8760a,
-      0 18px 30px rgba(255, 154, 31, 0.34);
+    box-shadow: 0 6px 0 var(--degrau);
     transition:
       transform 0.12s ease,
       box-shadow 0.12s ease;
@@ -1692,16 +1728,16 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     line-height: 1.15;
   }
   .cdc .btn:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 12px 0 #d8760a,
-      0 22px 36px rgba(255, 154, 31, 0.42);
+    transform: translateY(-1px);
+    box-shadow: 0 7px 0 var(--degrau);
   }
   .cdc .btn:active {
     transform: translateY(4px);
-    box-shadow:
-      0 6px 0 #d8760a,
-      0 12px 20px rgba(255, 154, 31, 0.34);
+    box-shadow: 0 2px 0 var(--degrau);
+  }
+  .cdc .btn:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--azul) 35%, white);
+    outline-offset: 4px;
   }
   .cdc .btn .material-symbols-rounded {
     font-size: 22px;
@@ -1716,9 +1752,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     position: sticky;
     top: 0;
     z-index: 40;
-    background: rgba(255, 247, 233, 0.9);
+    background: color-mix(in srgb, var(--creme) 92%, transparent);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(28, 48, 90, 0.08);
+    border-bottom: 2px solid var(--borda);
   }
   .cdc .nav {
     display: flex;
@@ -1740,12 +1776,12 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     width: 36px;
     height: 36px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--azul), var(--roxo));
+    background: var(--azul);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    box-shadow: var(--sombra-sm);
+    box-shadow: 0 3px 0 var(--degrau);
     flex-shrink: 0;
   }
   .cdc .logo .badge .material-symbols-rounded {
@@ -1760,9 +1796,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   .cdc .header-cta {
     padding: 10px 18px;
     font-size: 0.98rem;
-    box-shadow:
-      0 6px 0 #d8760a,
-      0 10px 18px rgba(255, 154, 31, 0.3);
+    box-shadow: 0 5px 0 var(--degrau);
     /* compensa a sombra 3D dentro da barra de altura fixa */
     margin-bottom: 6px;
   }
@@ -1780,7 +1814,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
 
   /* ===== hero ===== */
   .cdc .hero {
-    background: linear-gradient(180deg, var(--ceu) 0%, var(--creme) 100%);
+    background: var(--creme);
     padding-top: 54px;
   }
   .cdc .hero .grid {
@@ -1824,7 +1858,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(55, 200, 113, 0.35);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--verde) 65%, black);
     margin-top: 2px;
   }
   .cdc .hero-bullets .tick .material-symbols-rounded {
@@ -1852,10 +1886,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     position: relative;
   }
   .cdc .hero-art .glow {
-    position: absolute;
-    inset: 8% 6%;
-    background: radial-gradient(circle, rgba(255, 206, 58, 0.5), transparent 65%);
-    filter: blur(30px);
+    display: none;
   }
   .cdc .hero-art img {
     position: relative;
@@ -1942,8 +1973,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   .cdc .kid .bubble {
     position: relative;
     background: #fff;
-    border: 2px solid #cfe6ff;
-    border-radius: 22px;
+    border: 2px solid var(--borda);
+    border-radius: var(--raio);
     padding: 18px 22px;
     font-weight: 600;
     box-shadow: var(--sombra-sm);
@@ -1957,8 +1988,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     width: 22px;
     height: 22px;
     background: #fff;
-    border-left: 2px solid #cfe6ff;
-    border-bottom: 2px solid #cfe6ff;
+    border-left: 2px solid var(--borda);
+    border-bottom: 2px solid var(--borda);
     transform: rotate(45deg);
     border-radius: 0 0 0 6px;
   }
@@ -1990,6 +2021,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     justify-content: center;
     gap: 12px;
     text-align: left;
+    min-height: 82px;
+    padding: 14px 18px;
+    background: var(--navy-2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--raio-sm);
   }
   .cdc .stat .material-symbols-rounded {
     font-size: 30px;
@@ -2060,10 +2096,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .pal-item {
     background: #fff;
-    border-radius: 20px;
+    border-radius: var(--raio);
     padding: 22px 24px;
     box-shadow: var(--sombra-sm);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     display: flex;
     gap: 16px;
   }
@@ -2072,8 +2108,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: #fdeaea;
-    color: #e05353;
+    background: color-mix(in srgb, var(--azul) 10%, white);
+    color: var(--azul);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2098,10 +2134,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .depo {
     background: #fff;
-    border-radius: 22px;
+    border-radius: var(--raio);
     padding: 24px;
     box-shadow: var(--sombra);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2153,8 +2189,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
 
   /* ===== banda CTA ===== */
   .cdc .ctaband {
-    background: linear-gradient(135deg, var(--azul), var(--roxo));
-    border-radius: 30px;
+    background: var(--navy);
+    border: 2px solid var(--navy-2);
+    border-radius: var(--raio);
     padding: 42px 32px;
     text-align: center;
     color: #fff;
@@ -2176,9 +2213,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .zstep {
     background: #fff;
-    border-radius: 22px;
+    border-radius: var(--raio);
     padding: 24px 20px;
     box-shadow: var(--sombra);
+    border: 2px solid var(--borda);
     border-top: 6px solid var(--c);
   }
   .cdc .zstep .zl {
@@ -2230,7 +2268,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     padding: 10px 20px;
     font-family: var(--head);
     font-weight: 700;
-    box-shadow: var(--sombra-sm);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 28%, var(--degrau-cartao));
     display: inline-flex;
     align-items: center;
     gap: 9px;
@@ -2261,10 +2299,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .dev-item {
     background: #fff;
-    border-radius: 22px;
+    border-radius: var(--raio);
     padding: 24px 22px;
     box-shadow: var(--sombra-sm);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
   }
   .cdc .dev-item .di {
     width: 48px;
@@ -2305,11 +2343,14 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .card {
     background: #fff;
-    border-radius: 24px;
+    border-radius: var(--raio);
     padding: 24px;
     box-shadow: var(--sombra);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     position: relative;
+  }
+  .cdc .card.card-wide {
+    grid-column: 2;
   }
   .cdc .card h3 {
     font-size: 1.14rem;
@@ -2334,7 +2375,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     font-size: 28px;
   }
   .cdc .card.destaque {
-    background: linear-gradient(160deg, #eafbe4, #d5ecff);
+    background: var(--superficie);
+    border-color: color-mix(in srgb, var(--azul) 45%, var(--borda));
   }
   .cdc .card .shot {
     margin: 0 0 14px;
@@ -2345,11 +2387,12 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
        o vão é preenchido com o azul-céu claro da própria plataforma (#F0F9FF, a
        cor de fundo dos prints), compondo sem emenda. Altura fixa p/ o grid alinhar. */
     height: 200px;
-    background: #f0f9ff;
+    background: var(--superficie);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
+    box-shadow: none;
   }
   .cdc .card .shot img {
     max-width: 100%;
@@ -2365,7 +2408,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     background: #fff;
     border-radius: 18px;
     padding: 8px;
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     box-shadow: var(--sombra);
   }
   .cdc .shot-feat img {
@@ -2377,15 +2420,15 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   .cdc .shot-slot {
     border-radius: 16px;
     min-height: 150px;
-    background: repeating-linear-gradient(45deg, #eef3fb, #eef3fb 12px, #e6edf8 12px, #e6edf8 24px);
-    border: 2px dashed #b9c6e0;
+    background: var(--superficie);
+    border: 2px dashed var(--campo);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 18px;
-    color: #5b6f96;
+    color: var(--tinta-suave);
     margin-bottom: 14px;
   }
   .cdc .shot-slot .material-symbols-rounded {
@@ -2415,7 +2458,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     top: -12px;
     left: 20px;
     background: var(--amarelo);
-    color: #6b4d00;
+    color: var(--tinta);
     font-family: var(--head);
     font-weight: 700;
     font-size: 0.8rem;
@@ -2435,6 +2478,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     .cdc .cards {
       grid-template-columns: 1fr;
     }
+    .cdc .card.card-wide {
+      grid-column: auto;
+    }
   }
 
   /* ===== para quem é / não é ===== */
@@ -2448,7 +2494,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .two-box {
     background: #fff;
-    border-radius: 24px;
+    border: 2px solid var(--borda);
+    border-radius: var(--raio);
     padding: 26px;
     box-shadow: var(--sombra);
   }
@@ -2456,7 +2503,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     border-top: 6px solid var(--verde);
   }
   .cdc .two-box.isnt {
-    border-top: 6px solid #e05353;
+    border-top: 6px solid var(--sz-community-red);
   }
   .cdc .two-box h3 {
     font-size: 1.16rem;
@@ -2495,7 +2542,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     background: var(--verde);
   }
   .cdc .isnt .mk {
-    background: #e05353;
+    background: var(--sz-community-red);
   }
   @media (max-width: 860px) {
     .cdc .two {
@@ -2513,10 +2560,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .cmp {
     background: #fff;
-    border-radius: 20px;
+    border-radius: var(--raio);
     padding: 20px;
     box-shadow: var(--sombra-sm);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     text-align: center;
   }
   .cdc .cmp-t {
@@ -2564,15 +2611,15 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     position: relative;
   }
   .cdc .plan.destaque {
-    border-color: var(--laranja);
-    background: linear-gradient(170deg, #fff, #fff6e6);
+    border-color: var(--azul);
+    background: var(--superficie);
   }
   .cdc .plan h4 {
     font-size: 1.2rem;
     color: var(--tinta-suave);
   }
   .cdc .plan.destaque h4 {
-    color: var(--laranja);
+    color: var(--azul);
   }
   .cdc .plan .from {
     font-size: 0.9rem;
@@ -2592,7 +2639,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     color: var(--tinta-suave);
   }
   .cdc .plan.destaque .now {
-    color: var(--laranja);
+    color: var(--azul);
   }
   .cdc .plan .permonth {
     font-family: var(--head);
@@ -2656,10 +2703,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .shift {
     background: #fff;
-    border-radius: 22px;
+    border-radius: var(--raio);
     padding: 24px;
     box-shadow: var(--sombra);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
   }
   .cdc .shift .material-symbols-rounded {
     font-size: 30px;
@@ -2688,6 +2735,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     background: #fff;
     border-radius: var(--raio);
     box-shadow: var(--sombra);
+    border: 2px solid var(--borda);
     padding: 32px;
     display: grid;
     grid-template-columns: auto 1fr;
@@ -2709,7 +2757,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     width: 130px;
     height: 130px;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 35%, #fff, #eaf6ef);
+    background: var(--superficie);
     border: 4px dashed var(--verde);
     display: flex;
     flex-direction: column;
@@ -2768,7 +2816,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     align-items: center;
     gap: 8px;
     background: #fff;
-    border: 2px solid #cfe6ff;
+    border: 2px solid var(--borda);
     color: var(--azul);
     font-family: var(--head);
     font-weight: 700;
@@ -2797,9 +2845,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   }
   .cdc .faq {
     background: #fff;
-    border-radius: 18px;
+    border-radius: var(--raio-sm);
     box-shadow: var(--sombra-sm);
-    border: 1px solid var(--borda);
+    border: 2px solid var(--borda);
     overflow: hidden;
   }
   .cdc .faq summary {
@@ -2813,12 +2861,17 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     justify-content: space-between;
     align-items: center;
     gap: 14px;
+    min-height: 56px;
+  }
+  .cdc .faq summary:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--azul) 28%, transparent);
+    outline-offset: -3px;
   }
   .cdc .faq summary::-webkit-details-marker {
     display: none;
   }
   .cdc .faq summary .material-symbols-rounded {
-    color: var(--laranja);
+    color: var(--azul);
     transition: transform 0.2s;
     flex-shrink: 0;
   }
@@ -2833,7 +2886,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
 
   /* ===== oferta final ===== */
   .cdc .final {
-    background: linear-gradient(180deg, var(--menta-bg), var(--ceu));
+    background: var(--ceu);
   }
   .cdc .final-grid {
     display: grid;
@@ -2911,9 +2964,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(18, 26, 48, 0.97);
     backdrop-filter: blur(8px);
-    border-top: 1px solid var(--borda);
+    border-top: 2px solid var(--navy-2);
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
     transform: translateY(110%);
     transition: transform 0.25s ease;
@@ -2924,20 +2977,18 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
   .cdc .mobar .p {
     font-family: var(--head);
     font-weight: 700;
-    color: var(--navy);
+    color: #fff;
     font-size: 0.98rem;
   }
   .cdc .mobar .dias {
-    color: var(--tinta-suave);
+    color: var(--sz-community-menu-text);
     font-size: 0.85rem;
     font-weight: 600;
   }
   .cdc .mobar-btn {
     padding: 12px 22px;
     font-size: 1rem;
-    box-shadow:
-      0 6px 0 #d8760a,
-      0 10px 16px rgba(255, 154, 31, 0.3);
+    box-shadow: 0 5px 0 var(--degrau);
     margin-bottom: 4px;
   }
   @media (max-width: 860px) {
@@ -2971,9 +3022,6 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     .cdc .hero .grid {
       grid-template-columns: 1fr;
       gap: 18px;
-    }
-    .cdc .hero-art {
-      order: -1;
     }
     .cdc .hero-art img {
       max-width: 320px;

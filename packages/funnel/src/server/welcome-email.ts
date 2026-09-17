@@ -93,14 +93,15 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
         templateKey = 'welcome'
         link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
         keyPrefix = 'welcome'
-        action = 'Definir senha e começar'
-        guidance = 'Crie sua senha pelo botão abaixo e escolha o perfil da criança para começar.'
+        action = 'Criar acesso e abrir a primeira etapa'
+        guidance =
+          'Crie sua senha pelo botão abaixo, cadastre o perfil da criança e abram juntos a primeira etapa.'
       } else {
         templateKey = 'new-access'
         link = `${baseUrl}/cursos`
         keyPrefix = 'new-access'
-        action = 'Começar o desafio'
-        guidance = 'Entre com seu e-mail e sua senha de sempre para começar.'
+        action = 'Abrir a primeira etapa'
+        guidance = 'Entre com seu e-mail e sua senha de sempre e abra a primeira etapa do Desafio.'
       }
 
       const variables: Record<string, string> = { nome: firstName, link }

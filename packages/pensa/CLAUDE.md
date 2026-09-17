@@ -73,7 +73,14 @@ do `.pensa-planner`.
   verde), "Editado há…" (`core/relativeTime.ts`, `Intl.RelativeTimeFormat` pt-BR: "agora" e "ontem"
   como palavra, o resto em número; nada de "anteontem"/"semana passada") e o **"Continuar"** em
   pílula primária cujo `::after` estica a área clicável para o cartão INTEIRO; o nome acessível é
-  "Continuar o plano <nome>" (os testes acham o plano por ele). O **cartão "Novo plano"**
+  "Continuar o plano <nome>" (os testes acham o plano por ele). ⚠️⚠️ Esse `::after` é
+  **`inset: -1px`**, o negativo da borda do cartão, e não `inset: 0` (17/09/2026): um absoluto se
+  resolve contra o PADDING box, então com zero a moldura de 1px ficava fora da camada e virava uma
+  faixa morta. Medido no playground, antes: 1,000px nas quatro arestas e 1,414px nos quatro cantos,
+  com o cursor alternando entre seta e mãozinha a meio pixel da borda ("o cursor fica piscando e
+  tremendo", relato dela) e o clique na moldura não abrindo o plano; depois: 0,000 nos oito pontos,
+  `pointer` desde o primeiro meio pixel, e a moldura abre. Mexeu na borda do cartão, mexa no inset
+  (o `tokens.test.ts` compara os dois e reprova se divergirem). O **cartão "Novo plano"**
   (`.sz-tool-card--new`) FECHA a grade: abre o mesmo campo lá em cima e o foco volta a QUEM abriu
   (`openerRef`); com o campo já aberto só leva o foco até ele. Rodapé "Mostrando N planos". Sem
   planos: o convite `.pensa-empty` em cartão branco e o campo já aberto (sem o cartão "Novo plano").

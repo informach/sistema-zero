@@ -61,6 +61,7 @@ export default function CheckoutForm({
   allowCoupon = false,
   successPath,
   isKids = false,
+  isChallenge = false,
   installmentsMax = null,
   pricingMode = 'one_time',
   billingIntervalMonths = null,
@@ -85,6 +86,8 @@ export default function CheckoutForm({
   successPath: string
   /** Funil kids → os dados são do RESPONSÁVEL (quem compra); o título deixa claro. */
   isKids?: boolean
+  /** Ajusta a copy do cupom para o Desafio vendido em eventos, escolas e clínicas. */
+  isChallenge?: boolean
   /** Máximo de parcelas da OFERTA (catálogo) — limita o seletor do cartão. */
   installmentsMax?: number | null
   /** `one_time` (avulso, como sempre) ou `subscription` (recorrente). */
@@ -259,12 +262,14 @@ export default function CheckoutForm({
       : null
 
   return (
-    <div className="flex flex-col gap-7">
+    <div
+      className={`flex flex-col gap-7 ${funnel.startsWith('kids/') ? 'kids-checkout-form' : ''}`}
+    >
       {/* Alternador mensal ↔ anual (ofertas irmãs do catálogo). */}
       {altOffer && (
         <fieldset>
           <legend className="text-lg font-bold text-ink">Escolha o seu plano</legend>
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="checkout-plan-grid mt-3 grid grid-cols-2 gap-3">
             <PlanCard
               id="plano-principal"
               checked={choice === 'main'}
@@ -288,15 +293,19 @@ export default function CheckoutForm({
       {couponAllowed && (
         <div>
           <label htmlFor="coupon" className="mb-1 block text-sm font-semibold text-ink">
-            Código de palestra, escola ou clínica
+            {isChallenge
+              ? 'Recebeu um código em uma escola, clínica ou palestra?'
+              : 'Código de desconto'}
           </label>
           <div className="flex gap-2">
             <input
               id="coupon"
+              name="coupon"
               className={`${inputClass} uppercase`}
               placeholder="Digite o código"
               value={couponInput}
               disabled={appliedCode !== null}
+              spellCheck={false}
               onChange={(e) => {
                 setCouponInput(e.target.value.toUpperCase())
                 if (couponDecisionRequired) setCouponMsg(null)
@@ -347,7 +356,7 @@ export default function CheckoutForm({
       {!chosen.isSubscription && (
         <section
           aria-label="Resumo da compra"
-          className="rounded-2xl border border-line/70 bg-card/40 p-4 sm:p-5"
+          className="checkout-summary rounded-2xl border border-line/70 bg-card/40 p-4 sm:p-5"
         >
           <h2 className="text-lg font-bold text-ink">Resumo da compra</h2>
           <dl className="mt-3 space-y-2 text-sm">
@@ -376,7 +385,7 @@ export default function CheckoutForm({
       )}
 
       {/* ── Dados pessoais ─────────────────────────────────────────────── */}
-      <section aria-labelledby="dados-pessoais">
+      <section aria-labelledby="dados-pessoais" className="checkout-section">
         <h2 id="dados-pessoais" className="text-lg font-bold text-ink">
           {isKids ? 'Dados pessoais do responsável' : 'Dados pessoais'}
         </h2>
@@ -384,9 +393,11 @@ export default function CheckoutForm({
           <Field label="Seu e-mail" error={errorFor('email')}>
             <input
               className={inputClass}
+              name="email"
               type="email"
               inputMode="email"
               autoComplete="email"
+              spellCheck={false}
               placeholder="Digite seu e-mail para receber a compra"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -399,9 +410,11 @@ export default function CheckoutForm({
           >
             <input
               className={inputClass}
+              name="emailConfirm"
               type="email"
               inputMode="email"
               autoComplete="off"
+              spellCheck={false}
               placeholder="Digite novamente seu e-mail"
               value={emailConfirm}
               onChange={(e) => setEmailConfirm(e.target.value)}
@@ -411,6 +424,7 @@ export default function CheckoutForm({
           <Field label="Nome completo" error={errorFor('nome')}>
             <input
               className={inputClass}
+              name="nome"
               autoComplete="name"
               placeholder="Digite seu nome completo"
               value={nome}
@@ -421,6 +435,7 @@ export default function CheckoutForm({
           <Field label="CPF" error={errorFor('cpf')}>
             <input
               className={inputClass}
+              name="cpf"
               inputMode="numeric"
               placeholder="000.000.000-00"
               value={cpf}
@@ -431,6 +446,7 @@ export default function CheckoutForm({
           <Field label="Telefone / WhatsApp" error={errorFor('telefone')}>
             <input
               className={inputClass}
+              name="telefone"
               type="tel"
               inputMode="tel"
               autoComplete="tel"
@@ -443,9 +459,10 @@ export default function CheckoutForm({
         </div>
       </section>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line/70 bg-card/30 p-4 text-sm leading-relaxed text-muted">
+      <label className="checkout-terms flex cursor-pointer items-start gap-3 rounded-xl border border-line/70 bg-card/30 p-4 text-sm leading-relaxed text-muted">
         <input
           type="checkbox"
+          name="termsAccepted"
           checked={termsAccepted}
           onChange={(event) => setTermsAccepted(event.target.checked)}
           className="mt-0.5 h-4 w-4 shrink-0 accent-lime"
@@ -479,7 +496,7 @@ export default function CheckoutForm({
       </label>
 
       {/* ── Forma de pagamento ─────────────────────────────────────────── */}
-      <fieldset>
+      <fieldset className="checkout-section">
         <legend className="text-lg font-bold text-ink">Escolha a forma de pagamento</legend>
         <div className="mt-4 flex flex-col gap-3">
           {pixAvailable && (
@@ -623,9 +640,10 @@ function PlanCard({
   return (
     <label
       htmlFor={id}
+      data-selected={checked}
       className={`relative flex cursor-pointer flex-col gap-0.5 rounded-xl border p-4 transition ${
         checked ? 'border-lime/60 bg-card/50' : 'border-line/70 bg-card/30'
-      }`}
+      } checkout-plan-card`}
     >
       {badge && (
         <span className="absolute -top-2.5 right-3 rounded-full bg-lime px-2 py-0.5 text-[11px] font-bold text-black">
@@ -668,9 +686,10 @@ function MethodCard({
 }) {
   return (
     <div
+      data-selected={checked}
       className={`rounded-xl border transition ${
         checked ? 'border-lime/60 bg-card/50' : 'border-line/70 bg-card/30'
-      }`}
+      } checkout-method-card`}
     >
       <label
         htmlFor={id}

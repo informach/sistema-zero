@@ -100,6 +100,21 @@ describe('o cartão do plano abre em qualquer ponto', () => {
     expect(antes).not.toMatch(/@layer\s+[\w-]+\s*\{/)
   })
 
+  it('a área esticada cobre a MOLDURA: o inset é o negativo da borda, e o raio é o mesmo', () => {
+    // 17/09/2026: com `inset: 0` a camada parava no padding box e a borda de 1px do cartão virava
+    // uma faixa onde o ponteiro saía dela e voltava (cursor piscando entre seta e mãozinha, e o
+    // clique na beirada não abria o plano). Medido no playground: 1px nas arestas, 1,41px na
+    // diagonal dos cantos. A camada tem que ser a caixa de BORDA, e o raio o externo.
+    const cartao = bloco('.pensa-project-card {')
+    const camada = bloco('.pensa-project-card__open::after {')
+    const borda = /border:\s*(\d+)px\s+solid/.exec(cartao)?.[1]
+    expect(borda).toBeDefined()
+    expect(camada).toMatch(new RegExp(`inset:\\s*-${borda}px(?![\\d.])`))
+    const raio = /border-radius:\s*([^;]+);/.exec(cartao)?.[1]?.trim()
+    expect(raio).toBeDefined()
+    expect(camada).toContain(`border-radius: ${raio}`)
+  })
+
   it('a lixeira sobe acima da área esticada, senão existe sem nunca receber um clique', () => {
     // A MESMA camada invisível que faz o cartão inteiro abrir engole qualquer botão novo
     // do cartão: ela é pintada depois. Sem `position` + `z-index` aqui, o defeito é mudo —

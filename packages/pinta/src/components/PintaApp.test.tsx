@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { strToU8, zipSync } from 'fflate'
 import { COPY } from '../core/copy'
 import { createPixelBackgroundAsset } from '../core/project'
+import type { PintaTaskSession } from '../core/types'
 import { galleryToPintaJson } from '../export/projectJson'
 import { clearIdbMock } from '../testing/idbMock'
 
@@ -500,5 +501,143 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
     })
     expect(screen.queryByText(COPY.gallery.drawingGone)).toBeNull()
+  })
+})
+
+/**
+ * "Voltar ao plano" (09/2026): o painel do brief pede a saída, o `PintaApp` GRAVA o
+ * desenho aberto e só então chama o host. A ordem é o que importa — por isso ela é
+ * REGISTRADA numa lista compartilhada, e não deduzida de um `await` cego (a gravação
+ * que demora, e a que falha, são justamente os casos que um `await` cego esconde).
+ */
+describe('PintaApp — Voltar ao plano', () => {
+  function tarefa(onReturnToPlan: () => void | Promise<void>): PintaTaskSession {
+    return {
+      taskId: 'tarefa-1',
+      project: { id: 'plano-1', name: 'Bosque' },
+      cycle: { id: 'ciclo-1', number: 1, goal: null },
+      title: 'Desenhar a nave',
+      summary: null,
+      brief: {
+        assetId: 'nave',
+        artKind: 'sprite',
+        style: 'pixel',
+        palette: [],
+        appearance: 'Uma nave comprida',
+        animations: [],
+        states: [],
+        usage: 'Personagem principal',
+        requiresStudioUse: false,
+      },
+      guide: { steps: [], criteria: [] },
+      progress: {
+        status: 'in_progress',
+        completedStepIds: [],
+        completedCriteriaIds: [],
+        startedAt: null,
+        completedAt: null,
+        updatedAt: null,
+        outputRef: null,
+      },
+      onProgress: async () => undefined,
+      onReturnToPlan,
+    }
+  }
+
+  async function abrirNave(): Promise<void> {
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+  }
+
+  /** Uma edição pendente e determinística: crescer o quadro pelo diálogo de tamanho. */
+  function editarPendente(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) }))
+    fireEvent.change(screen.getByLabelText(COPY.newAsset.customSize.width), {
+      target: { value: '128' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.apply }))
+  }
+
+  it('🚨 com o editor aberto e uma edição pendente, GRAVA antes de navegar', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      // A gravação DEMORA: navegar antes dela terminar apareceria na lista.
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        await Bun.sleep(5)
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    await abrirNave()
+    // O autosave é debounced (~1 s): o clique acontece ANTES de ele disparar sozinho.
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(() => expect(eventos).toEqual(['gravou', 'navegou']), { timeout: 5000 })
+  })
+
+  it('🚨 gravação que REJEITA não navega e mostra o recado no painel', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const persistence = {
+      ...createMemoryPersistence([nave]),
+      persistAssets: async () => {
+        throw new Error('sem espaço')
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(
+      () => expect(screen.getByRole('alert').textContent).toContain(COPY.editor.saveError),
+      { timeout: 5000 },
+    )
+    expect(eventos).toEqual([])
+  })
+
+  it('sem o `onReturnToPlan` do host o botão não existe (playground, aula, Pinta solto)', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const semVolta = tarefa(() => undefined)
+    delete semVolta.onReturnToPlan
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: semVolta }}
+        persistence={createMemoryPersistence([nave])}
+      />,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
   })
 })

@@ -314,6 +314,16 @@ export const COPY = {
       done: 'Pronto, o tamanho mudou',
     },
   },
+  /** Painel do brief da tarefa do Pensa (galeria e editor). */
+  task: {
+    /**
+     * O MESMO rótulo do Molda (decisão da dona): uma frase só para a mesma ação
+     * nas duas ferramentas. Ele não muda enquanto guarda: trocar o texto mudaria
+     * o nome acessível no meio da ação.
+     */
+    back: 'Voltar ao plano',
+    backError: 'Não consegui guardar seu desenho agora. Confira a internet e tente de novo.',
+  },
   tools: {
     pencil: 'Lápis',
     eraser: 'Borracha',

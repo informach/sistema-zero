@@ -73,6 +73,19 @@ seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatóri
 vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
 progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
+⭐ **"Voltar ao plano" no painel (09/2026)**: com `PintaTaskSession.onReturnToPlan` (opcional;
+ausente = o botão não aparece) o painel ganha o botão de volta ao plano do Pensa, na galeria E no
+editor, inclusive com a tarefa concluída. O rótulo é o MESMO do Molda (`COPY.task.back`) e não muda
+enquanto guarda (`disabled` + `aria-busy` com o mesmo texto: trocá-lo mudaria o nome acessível no
+meio da ação). O id do plano já vem em `session.project.id` — nenhum parâmetro novo de URL.
+⚠️ O `PintaApp` GUARDA antes de navegar: ele pega a store do editor aberto pelo `onEditorReady` do
+contexto (2º consumidor, ao lado do bloco de aula) e só chama o host com `flush().ok`, a mesma
+disciplina do "Voltar" do editor; falhou, o painel mostra o recado no `syncError` e NÃO navega (o
+flush de desmonte é `void` e não serve de garantia). ⚠️ NÃO mexer no `hostChrome.back`, que é só da
+galeria e sempre "Voltar para Criar". Testes: `TaskBriefPanel.test.tsx` (existência, 44px, clique
+duplo, falha) e `PintaApp.test.tsx` (a ORDEM gravação → navegação numa lista compartilhada, e a
+gravação que rejeita).
+
 ## Chrome do HOST na barra (07/09/2026)
 
 O kids parou de pôr o selo "Guardado na sua conta" numa linha ACIMA do Pinta e o puxador do menu

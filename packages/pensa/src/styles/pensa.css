@@ -448,7 +448,10 @@
    inteiro para que clicar em qualquer ponto abra o plano, e é pintado depois. Sem o
    `position` + `z-index` aqui, o botão aparece mas NUNCA recebe o clique — quem o recebe
    é a camada invisível, e a criança abriria o plano ao tentar apagá-lo. Pelo mesmo motivo
-   ele não anda no hover (ver o comentário do `__open`): a cor basta. */
+   ele não anda no hover (ver o comentário do `__open`): a cor basta.
+   ⚠️ E o "Continuar" perder o hover enquanto o ponteiro cruza a lixeira é DELIBERADO, não é o
+   tremor que a camada resolve: ali o clique apaga em vez de abrir, e a pílula apagada diz isso.
+   Quem tentar "consertar" devolvendo o hover por cima da lixeira volta a perder o clique dela. */
 .pensa-planner .pensa-project-card__remove {
   position: relative;
   z-index: 1;
@@ -484,11 +487,23 @@
   outline: 2px solid var(--pz-danger);
   outline-offset: 2px;
 }
-/* A área clicável do "Continuar" é o cartão inteiro. */
+/* A área clicável do "Continuar" é o cartão inteiro, MOLDURA INCLUSA.
+   ⚠️⚠️ `inset: -1px`, nunca `inset: 0`: um absoluto se resolve contra o PADDING box, então com
+   zero a borda de 1px do cartão ficava FORA da camada. Sobrava uma faixa morta de 1px nas arestas
+   e de 1,41px na diagonal dos cantos (onde ainda entrava o descasamento de raio, porque o raio
+   declarado aqui é o EXTERNO e o padding box tem um a menos). Nessa faixa o ponteiro caía no
+   cartão (cursor de seta, "Continuar" sem hover) e um décimo de pixel para dentro caía na camada
+   (mãozinha, pílula escurecida, sombra de 4 para 5px, com transição de 0,12s): parado na beirada,
+   o cursor da criança piscava entre os dois estados sem parar, e clicar na moldura não abria o
+   plano. Em zoom de 125% e 150% as duas fronteiras arredondam separadas e o efeito piora. Com
+   -1px a camada É a caixa de borda, o raio daqui é o mesmo do cartão, e os dois contornos viram
+   um só: a faixa some por construção, nas arestas e nos cantos ao mesmo tempo.
+   ⚠️ O -1px é o NEGATIVO da borda do cartão do plano, lá em cima: mexeu numa, mexa na outra. O
+   `tokens.test.ts` compara as duas e reprova se divergirem. */
 .pensa-project-card__open::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px;
   border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
 }
 /* ⚠️ E por isso o "Continuar" NÃO anda, nem no hover nem no aperto: `transform` ou `translate`

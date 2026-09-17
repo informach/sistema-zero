@@ -395,22 +395,22 @@ const seeds = [
   {
     key: 'challenge-access-approved',
     channel: 'email' as const,
-    name: 'Desafio — acesso aprovado (e-mail)',
-    subject: 'O Desafio do Primeiro Jogo já está liberado, {{nome}} 🎮',
+    name: 'Desafio: acesso aprovado (e-mail)',
+    subject: 'O primeiro jogo do seu filho pode começar, {{nome}} 🎮',
     variables: ['nome', 'link', 'expira_em', 'acao', 'orientacao'],
     body: emailLayout({
-      preheader: 'Os 30 dias começaram com a aprovação do pagamento. Veja a data final do acesso.',
-      title: 'O Desafio já está liberado 🎮',
+      preheader: 'O acesso está liberado. Veja a data final e abram juntos a primeira etapa.',
+      title: 'O primeiro jogo pode começar 🎮',
       content: [
         p(
-          'Olá, {{nome}}! O pagamento foi aprovado e o acesso ao <strong>Desafio do Primeiro Jogo</strong> já começou.',
+          'Olá, {{nome}}! O pagamento foi aprovado e o <strong>Desafio do Primeiro Jogo</strong> já está liberado para sua família.',
         ),
         p('O acesso fica disponível até <strong>{{expira_em}}</strong>, sem renovação automática.'),
         p('{{orientacao}}'),
         ctaButton('{{acao}}', '{{link}}'),
         divider,
         small(
-          'Uma boa primeira meta é entrar hoje, escolher o perfil da criança e abrir o Dia 1. O desafio pode ser feito no ritmo da família dentro do período de acesso.',
+          'Escolham um primeiro momento possível na rotina, cadastrem o perfil da criança e abram a etapa 1. As cinco etapas podem ser distribuídas dentro do período de acesso.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -420,24 +420,24 @@ const seeds = [
   {
     key: 'challenge-access-approved',
     channel: 'whatsapp' as const,
-    name: 'Desafio — acesso aprovado (WhatsApp)',
+    name: 'Desafio: acesso aprovado (WhatsApp)',
     variables: ['nome', 'link', 'expira_em', 'acao', 'orientacao'],
     body: [
       'Olá, {{nome}}! 🎮',
       '',
-      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* já está liberado.',
+      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* já está liberado para sua família.',
       'Seu acesso vai até *{{expira_em}}*, sem renovação automática.',
       '',
       '{{orientacao}}',
       '{{link}}',
       '',
-      'Primeira meta: entrar hoje e abrir o Dia 1. 🚀',
+      'Primeiro passo: escolher um momento possível e abrir a etapa 1. 🚀',
     ].join('\n'),
   },
   {
     key: 'challenge-not-activated',
     channel: 'email' as const,
-    name: 'Desafio — conta ainda não ativada (e-mail)',
+    name: 'Desafio: conta ainda não ativada (e-mail)',
     subject: '{{nome}}, falta só criar sua senha para começar o Desafio',
     variables: ['nome', 'link'],
     body: emailLayout({
@@ -457,14 +457,14 @@ const seeds = [
   {
     key: 'challenge-not-started',
     channel: 'email' as const,
-    name: 'Desafio — Dia 1 ainda não iniciado (e-mail)',
-    subject: 'Que tal abrir o Dia 1 hoje, {{nome}}?',
+    name: 'Desafio: etapa 1 ainda não iniciada (e-mail)',
+    subject: 'Que tal abrir a primeira etapa, {{nome}}?',
     variables: ['nome', 'link'],
     body: emailLayout({
       preheader: 'A conta está pronta; o próximo passo leva poucos minutos.',
       title: 'Hoje pode ser o começo do primeiro jogo',
       content: [
-        p('Olá, {{nome}}! A conta já está pronta, mas o Dia 1 ainda não foi iniciado.'),
+        p('Olá, {{nome}}! A conta já está pronta, mas a primeira etapa ainda não foi iniciada.'),
         p(
           'Não precisa separar uma tarde inteira. Entre com a criança, escolha o perfil e dê apenas o primeiro passo. Quando quiserem, vocês continuam de onde pararam.',
         ),
@@ -477,15 +477,15 @@ const seeds = [
   {
     key: 'challenge-day-one-complete',
     channel: 'email' as const,
-    name: 'Desafio — Dia 1 concluído (e-mail)',
-    subject: 'Dia 1 concluído: o jogo já começou a ganhar forma 🎉',
+    name: 'Desafio: etapa 1 concluída (e-mail)',
+    subject: 'Primeira etapa concluída: o jogo já começou a ganhar forma 🎉',
     variables: ['nome', 'link'],
     body: emailLayout({
       preheader: 'Celebre o primeiro passo e continue do ponto em que a criança parou.',
       title: 'Primeira fase concluída 🎉',
       content: [
         p(
-          'Olá, {{nome}}! O Dia 1 foi concluído. Esse primeiro passo é importante: a criança já saiu da ideia e começou a construir o próprio jogo.',
+          'Olá, {{nome}}! A primeira etapa foi concluída. O jogo já saiu da ideia e começou a ganhar forma na tela.',
         ),
         p('Quando estiverem prontos, retomem do mesmo ponto. Uma etapa de cada vez é suficiente.'),
         ctaButton('Continuar o Desafio', '{{link}}'),
@@ -497,7 +497,7 @@ const seeds = [
   {
     key: 'challenge-expiry-7d',
     channel: 'email' as const,
-    name: 'Desafio — faltam 7 dias (e-mail)',
+    name: 'Desafio: faltam 7 dias (e-mail)',
     subject: 'Falta uma semana para o acesso ao Desafio terminar',
     variables: ['nome', 'data', 'link'],
     body: emailLayout({
@@ -508,7 +508,7 @@ const seeds = [
           'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
         ),
         p(
-          'Falta uma semana. Entre para ver onde a criança parou e escolha a próxima etapa possível — sem precisar recomeçar.',
+          'Falta uma semana. Entre para ver onde a criança parou e escolha a próxima etapa possível, sem precisar recomeçar.',
         ),
         ctaButton('Retomar o Desafio', '{{link}}'),
         fallbackLink('{{link}}'),
@@ -520,7 +520,7 @@ const seeds = [
   {
     key: 'challenge-expiry-3d',
     channel: 'email' as const,
-    name: 'Desafio — faltam 3 dias (e-mail)',
+    name: 'Desafio: faltam 3 dias (e-mail)',
     subject: 'Últimos 3 dias do acesso ao Desafio do Primeiro Jogo',
     variables: ['nome', 'data', 'link'],
     body: emailLayout({
@@ -542,7 +542,7 @@ const seeds = [
   {
     key: 'challenge-completed',
     channel: 'email' as const,
-    name: 'Desafio — concluído (e-mail)',
+    name: 'Desafio: concluído (e-mail)',
     subject: 'O primeiro jogo ficou pronto! E agora?',
     variables: ['nome', 'link'],
     body: emailLayout({
@@ -565,7 +565,7 @@ const seeds = [
   {
     key: 'challenge-expired',
     channel: 'email' as const,
-    name: 'Desafio — acesso encerrado (e-mail)',
+    name: 'Desafio: acesso encerrado (e-mail)',
     subject: 'O período do Desafio terminou, {{nome}}',
     variables: ['nome', 'data', 'link'],
     body: emailLayout({

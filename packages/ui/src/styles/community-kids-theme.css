@@ -1,0 +1,78 @@
+/*
+ * IDENTIDADE CANÔNICA DA COMUNIDADE KIDS
+ *
+ * Esta é a única fonte dos valores da paleta Pen usados pela plataforma e
+ * pelo funil kids. Os consumidores podem criar aliases semânticos próprios,
+ * mas não devem repetir estes valores.
+ *
+ * O tema Pink troca os papéis de tema. As cores de identidade das ferramentas
+ * permanecem estáveis; somente chão, tinta, menu e ação acompanham o tema.
+ */
+:root {
+  /* Chão, superfícies e texto */
+  --sz-community-ground: #e9eef6;
+  --sz-community-ground-alt: #dde5f0;
+  --sz-community-card: #ffffff;
+  --sz-community-surface-2: #eff3f9;
+  --sz-community-line: #d6deea;
+  --sz-community-ink: #0f1a33;
+  --sz-community-ink-muted: #46536e;
+  --sz-community-field: #74829f;
+
+  /* Ação e relevo 3D */
+  --sz-community-action: #1b5cf3;
+  --sz-community-action-step: #1343b8;
+  --sz-community-action-light: #6e9bff;
+  --sz-community-on-action: #ffffff;
+  --sz-community-over-action: #e2ebff;
+  --sz-community-white-step: #0f3fb0;
+  --sz-community-card-step: #b9c6d9;
+
+  /* Âncora escura */
+  --sz-community-menu: #121a30;
+  --sz-community-menu-2: #1b2540;
+  --sz-community-menu-text: #cbd4e8;
+  --sz-community-menu-icon: #8e9bba;
+  --sz-community-menu-glass: rgb(255 255 255 / 0.08);
+  --sz-community-logo-zero: #0074fc;
+
+  /* Identidade das ferramentas e pontos de alegria */
+  --sz-community-blue: #1b5cf3;
+  --sz-community-blue-light: #6e9bff;
+  --sz-community-blue-deep: #0a2a7a;
+  --sz-community-yellow: #ffc02e;
+  --sz-community-red: #cf3f36;
+  --sz-community-pink: #c8246f;
+  --sz-community-pink-light: #f368a6;
+  --sz-community-purple: #6d3bf5;
+  --sz-community-green: #0b7a54;
+  --sz-community-orange: #b55a00;
+  --sz-community-amber: #e8a317;
+
+  /* Fundos de apoio */
+  --sz-community-mint: #dcf0e4;
+  --sz-community-lilac: #e5e0f7;
+  --sz-community-pink-surface: #f8e4ee;
+  --sz-community-yellow-surface: #fff3c4;
+}
+
+:root[data-tema="pink"] {
+  --sz-community-ground: #f4ecf2;
+  --sz-community-ground-alt: #ecdde8;
+  --sz-community-surface-2: #f8f1f6;
+  --sz-community-line: #e7d5e1;
+  --sz-community-ink: #1f1026;
+  --sz-community-ink-muted: #5a4760;
+  --sz-community-field: #9a7892;
+  --sz-community-action: #c8246f;
+  --sz-community-action-step: #8e1650;
+  --sz-community-action-light: #ff7ab6;
+  --sz-community-over-action: #fff0f6;
+  --sz-community-white-step: #7e1146;
+  --sz-community-card-step: #d2b6c8;
+  --sz-community-menu: #25132b;
+  --sz-community-menu-2: #331d3a;
+  --sz-community-menu-text: #e6d3e1;
+  --sz-community-menu-icon: #b08fab;
+  --sz-community-logo-zero: #e2489a;
+}

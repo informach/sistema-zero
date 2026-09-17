@@ -17,6 +17,7 @@ import {
   type PintaHostChrome,
   PintaHostChromeProvider,
   type PintaHostChromeStatus,
+  type PintaTaskSession,
   setPintaStorageNamespace,
 } from '@sistemazero/pinta'
 import { type JSX, StrictMode, useEffect, useState } from 'react'
@@ -76,6 +77,57 @@ function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
 
 const hostDemo = new URLSearchParams(window.location.search).get('host') === '1'
 
+/**
+ * `?tarefa=1` monta um brief de mentira (o que o kids monta a partir do handoff do
+ * Pensa), para ver o painel — e o "Voltar ao plano" — no navegador sem banco.
+ * `onReturnToPlan` só loga: aqui não há para onde navegar.
+ *
+ * `?tarefa=falha` faz a volta REJEITAR, para conferir que nada navega e o recado
+ * aparece no painel.
+ */
+const taskDemo = new URLSearchParams(window.location.search).get('tarefa')
+const DEMO_TASK: PintaTaskSession = {
+  taskId: 'tarefa-demo',
+  project: { id: 'plano-demo', name: 'Bosque encantado' },
+  cycle: { id: 'ciclo-demo', number: 1, goal: 'Desenhar a turma do jogo' },
+  title: 'Desenhar a heroína',
+  summary: 'A personagem que a criança controla.',
+  brief: {
+    assetId: 'heroina',
+    artKind: 'sprite',
+    style: 'pixel',
+    palette: [
+      { role: 'roupa', color: '#aa33cc' },
+      { role: 'pele', color: '#f2c4a0' },
+    ],
+    appearance: 'Pequena, ágil e com capa roxa.',
+    animations: ['andar'],
+    states: ['parada'],
+    usage: 'Personagem principal',
+    requiresStudioUse: false,
+  },
+  guide: {
+    steps: [{ id: 'desenhar', text: 'Desenhar a personagem de frente', required: true }],
+    criteria: [{ id: 'silhueta', text: 'Dá para reconhecer de longe', required: true }],
+  },
+  progress: {
+    status: 'in_progress',
+    completedStepIds: [],
+    completedCriteriaIds: [],
+    startedAt: '2026-09-17T12:00:00.000Z',
+    completedAt: null,
+    updatedAt: '2026-09-17T12:00:00.000Z',
+    outputRef: null,
+  },
+  onProgress: async (input) => {
+    console.log('[playground] onProgress', input)
+  },
+  onReturnToPlan: () => {
+    if (taskDemo === 'falha') throw new Error('Falha de mentira do playground.')
+    console.log('[playground] onReturnToPlan → /pensa?plano=plano-demo')
+  },
+}
+
 const app = (
   <PintaApp
     adapter={{
@@ -117,6 +169,7 @@ const app = (
         ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }
         : {}),
       onOpenStudio: () => console.log('[playground] onOpenStudio'),
+      ...(taskDemo ? { taskSession: DEMO_TASK } : {}),
     }}
   />
 )

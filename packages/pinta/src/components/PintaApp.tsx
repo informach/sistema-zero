@@ -4,10 +4,11 @@
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
+import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
 import { createPaletteLibraryStore } from '../state/paletteLibraryStore'
 import {
@@ -112,6 +113,15 @@ export function PintaApp({
   // "Abrir este desenho" (botão Editar do Estúdio): também 1x, e só depois que a
   // galeria carrega — ver o InitialAssetOpener.
   const initialAssetIdRef = useRef(resolvedAdapter.initialAssetId ?? null)
+  // A store do editor ABERTO (null na galeria). É o que deixa o "Voltar ao plano"
+  // do painel gravar antes de sair, sem o painel conhecer o editor.
+  // ⚠️ A identidade tem que ser estável: o `EditorScreen` tem `onEditorReady` nas
+  // deps do efeito que se anuncia, e uma função nova por render o faria
+  // desanunciar e reanunciar a cada volta do `useMemo` do contexto.
+  const editorRef = useRef<PintaEditorStore | null>(null)
+  const handleEditorReady = useCallback((editor: PintaEditorStore | null) => {
+    editorRef.current = editor
+  }, [])
 
   const context = useMemo<PintaAppContextValue>(
     () => ({
@@ -138,6 +148,7 @@ export function PintaApp({
         initialAssetIdRef.current = null
         return id
       },
+      onEditorReady: handleEditorReady,
     }),
     [
       resolvedAdapter,
@@ -146,6 +157,7 @@ export function PintaApp({
       store.clipboard,
       store.paletteLibrary,
       initialIntentVersion,
+      handleEditorReady,
     ],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
@@ -162,6 +174,22 @@ export function PintaApp({
       artKind: session.brief.artKind,
       style: session.brief.style,
     })
+  }
+  /**
+   * "Voltar ao plano": GUARDA e só então navega, a MESMA disciplina do "Voltar"
+   * do editor (`EditorScreen`, que só fecha com `flush().ok`). O flush do
+   * desmonte NÃO serve de garantia: ele é `void` e roda depois da navegação.
+   *
+   * Falhou ao guardar? Lança, e o painel mostra o recado sem navegar — o desenho
+   * da criança não pode ficar para trás numa troca de tela.
+   */
+  const returnToPlan = async () => {
+    const editor = editorRef.current
+    if (editor) {
+      const saved = await editor.getState().flush()
+      if (!saved.ok) throw new Error(saved.error)
+    }
+    await resolvedAdapter.taskSession?.onReturnToPlan?.()
   }
 
   return (
@@ -184,6 +212,7 @@ export function PintaApp({
               outputMissing={taskOutputMissing}
               onRecreate={recreateTaskAsset}
               onRelink={() => setView({ screen: 'gallery' })}
+              {...(resolvedAdapter.taskSession.onReturnToPlan ? { onReturn: returnToPlan } : {})}
             />
           ) : null}
           {view.screen === 'gallery' ? (

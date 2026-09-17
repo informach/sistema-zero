@@ -221,12 +221,13 @@ escuro e logo) e `52de024f` (3D).
   versão do teste do irmão olhava o estado FINAL e passava até sem reinício nenhum (o que o
   reinício protege é a JANELA até o GET, então o teste segura a resposta do servidor). De quebra,
   falha de rede agora deixa o tema da criança na tela em vez de jogá-la no Padrão.
-- **Tokens** (`globals.css`, seção "A PALETA DO PEN"): primitivos `--pen-*` (chão, chão
-  alternativo, cartão, superfície 2, linha, tinta, tinta suave, campo, ação e os degraus do 3D) e
-  `--menu-*` no `:root`; o Pink (`:root[data-tema="pink"]`) redefine só primitivos. ⚠️ Os
-  `--sz-kids-*` NEUTROS são redefinidos AQUI para apontar para o Pen, **nunca** no
-  `theme-kids.css` (o funil importa o mesmo arquivo). É por eles que a paleta chega às quatro
-  ferramentas, cujos escopos claros re-declaram os `--sz-tool-*` a partir dos primitivos.
+- **Tokens:** a fonte CANÔNICA da paleta Pen é
+  `packages/ui/src/styles/community-kids-theme.css` (`--sz-community-*`, inclusive o Pink).
+  `theme-kids.css` importa essa fonte e preserva os aliases `--sz-kids-*`. O `globals.css` daqui
+  mantém somente os aliases históricos `--pen-*`/`--menu-*` para o contrato interno da plataforma.
+  O funil kids importa o mesmo `theme-kids.css`; portanto, valor Pen novo ou corrigido nasce no
+  arquivo canônico e NUNCA é repetido nos consumidores. É pelos aliases `--sz-kids-*` que a
+  paleta chega às quatro ferramentas, cujos escopos claros re-declaram os `--sz-tool-*`.
 - ⚠️⚠️ **Identidade × ação.** O azul de IDENTIDADE (`--sz-kids-azul-texto`, `--kids-cyan`, o
   Estúdio, o nível Construtor(a), as unidades e grupos de missão) não muda no Pink; a cor de AÇÃO
   (botão, link, item ativo, "você está aqui") é `--pen-acao` → `--primary` e `--sz-kids-acao`, e
@@ -2218,6 +2219,12 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   mantém o plano visível mesmo sem posse. O client abre `?tarefa=<id>`; cada ferramenta busca
   `/api/pensa/tasks/:id/handoff`, restaura seu painel e sincroniza
   `/api/pensa/tasks/:id/progress`. Não use `sessionStorage` para contexto de tarefa.
+  ⭐ **A volta existe (09/2026):** o `pinta-client` monta `taskSession.onReturnToPlan` =
+  `router.push('/pensa?plano=' + handoff.project.id)` (espelho do `onReturn` do
+  `molda-client`/`MoldaTaskGuide`), e o painel do brief do Pinta desenha o botão "Voltar ao plano"
+  nas duas telas. O id do plano vem do HANDOFF, nunca de parâmetro novo na URL, e quem guarda o
+  desenho antes de navegar é o pacote. ⚠️ O `hostChrome.back` continua sendo só da galeria, sempre
+  "Voltar para Criar" (`tests/host-chrome.test.tsx`, `tests/nav-back.test.ts`).
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa

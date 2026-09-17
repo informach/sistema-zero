@@ -1,32 +1,31 @@
-# Comunidade dos Criadores: alinhamento visual com a plataforma Kids
+# Funil Kids: alinhamento visual com a plataforma
 
 Status: aprovado em 17/09/2026.
 
 ## Objetivo
 
-Alinhar visualmente toda a jornada pública da Comunidade dos Criadores à identidade atual da
-Comunidade Kids, sem alterar copy, ordem narrativa, preços, regras comerciais, imagens, links ou
-comportamento do checkout.
+Alinhar visualmente toda a jornada pública Kids, incluindo a Comunidade dos Criadores e o Desafio
+do Primeiro Jogo, à identidade atual da plataforma, sem alterar copy, ordem narrativa, preços,
+regras comerciais, imagens, links ou comportamento do checkout.
 
 A captura `Landing — Desafio do Primeiro Jogo.png` é o norte de composição. A implementação atual
 da Comunidade Kids é a fonte de verdade para cores, superfícies, bordas, tipografia e relevo.
 
 ## Escopo
 
-1. Página de oferta da Comunidade dos Criadores.
-2. Pré-checkout compartilhado, com aplicação condicionada ao funil da Comunidade.
-3. Checkout compartilhado, preservando os demais funis.
-4. Página de obrigado compartilhada, preservando os demais funis.
+1. Páginas de oferta da Comunidade dos Criadores e do Desafio do Primeiro Jogo.
+2. Quiz e resultado do Desafio.
+3. Pré-checkout, checkout e página de obrigado dos dois produtos Kids.
 
 ## Princípio de implementação
 
-Usar um sistema visual Kids adaptado ao funil, sem importar diretamente componentes da aplicação
-`community-kids`. Os tokens serão espelhados no tema público para manter a identidade consistente
-sem criar acoplamento entre aplicações.
+Usar um sistema visual Kids compartilhado, sem importar componentes da aplicação `community-kids`.
+A paleta Pen terá uma única fonte canônica em `@sistemazero/ui`; plataforma e funil importarão o
+mesmo contrato, sem espelhar hexadecimais entre aplicações.
 
-Na oferta bespoke, os estilos permanecem escopados sob `.cdc`. Nas etapas compartilhadas, o tema
-kids fornece a fundação e uma classe específica da Comunidade permite os ajustes que não devem
-atingir o Desafio do Primeiro Jogo.
+Nas ofertas bespoke, os estilos permanecem escopados sob `.cdc` e `.dpj`, usando apenas aliases
+semânticos para os tokens canônicos. Nas etapas compartilhadas, `.theme-kids` fornece a fundação
+visual para os dois produtos.
 
 ## Tokens visuais
 
@@ -61,7 +60,7 @@ Baloo 2 continua como fonte de títulos e Nunito como fonte de corpo.
 - Gradientes decorativos e sombras difusas antigas removidos ou reduzidos.
 - Imagens do produto apresentadas em molduras claras e coerentes com os cartões internos.
 
-## Página de oferta
+## Páginas de oferta
 
 - Topbar clara e compacta, com CTA azul.
 - Hero sobre o chão da plataforma, mantendo texto, ilustração e ações atuais.
@@ -72,6 +71,9 @@ Baloo 2 continua como fonte de títulos e Nunito como fonte de corpo.
 - Planos com hierarquia mais forte e seleção coerente com os cartões interativos da plataforma.
 - FAQ e fechamento no mesmo sistema visual.
 - Barra móvel de compra em navy com CTA azul.
+
+O Desafio mantém conteúdo, narrativa e imagens próprios, mas abandona a paleta paralela
+creme/laranja para usar o mesmo chão, ação azul, superfícies, linhas e relevo da plataforma.
 
 ## Pré-checkout
 

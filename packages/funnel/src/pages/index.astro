@@ -32,7 +32,7 @@ const description =
 >
   <div class="bio">
     <!-- decorações flutuantes -->
-    <svg class="deco flutua" style="top:9%;left:8%;width:44px" viewBox="0 0 24 24" fill="#FFCE3A"
+    <svg class="deco flutua" style="top:9%;left:8%;width:44px" viewBox="0 0 24 24" fill="var(--sz-community-yellow)"
       ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
       ></path></svg
     >
@@ -40,7 +40,7 @@ const description =
       class="deco flutua lenta"
       style="top:16%;right:10%;width:32px"
       viewBox="0 0 24 24"
-      fill="#F368A6"
+      fill="var(--sz-community-pink-light)"
       ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
       ></path></svg
     >
@@ -48,19 +48,19 @@ const description =
       class="deco flutua inversa"
       style="bottom:14%;left:12%;width:26px"
       viewBox="0 0 24 24"
-      fill="#37C871"><circle cx="12" cy="12" r="10"></circle></svg
+      fill="var(--sz-community-green)"><circle cx="12" cy="12" r="10"></circle></svg
     >
     <svg
       class="deco flutua lenta inversa"
       style="bottom:22%;right:8%;width:40px"
       viewBox="0 0 24 24"
-      fill="#1E88E5"
+      fill="var(--sz-community-blue)"
       ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
       ></path></svg
     >
-    <div class="bolha" style="width:240px;height:240px;background:#cde8ff;top:-70px;left:-70px">
+    <div class="bolha" style="width:240px;height:240px;background:var(--sz-community-ground-alt);top:-70px;left:-70px">
     </div>
-    <div class="bolha" style="width:190px;height:190px;background:#dff6e6;bottom:-50px;right:-40px">
+    <div class="bolha" style="width:190px;height:190px;background:var(--sz-community-mint);bottom:-50px;right:-40px">
     </div>
 
     <main class="cartao">
@@ -147,7 +147,7 @@ const description =
        top/bottom negativos) são cortadas sem esticar a página, senão elas
        criam barra de rolagem e uma sobra depois do rodapé. */
     overflow: clip;
-    background: linear-gradient(180deg, #dceeff 0%, var(--color-bg) 55%, #e9f7ef 100%);
+    background: var(--sz-community-ground);
   }
 
   /* decorações */
@@ -222,11 +222,11 @@ const description =
     font-weight: 600;
     font-size: 0.88rem;
     color: var(--color-cyan);
-    background: #fff;
-    border: 2px solid #cfe6ff;
+    background: var(--sz-community-card);
+    border: 2px solid var(--sz-community-line);
     border-radius: 999px;
     padding: 5px 16px;
-    box-shadow: 0 8px 22px rgba(28, 48, 90, 0.1);
+    box-shadow: 0 4px 0 var(--sz-community-card-step);
   }
   .descricao {
     margin: 16px auto 0;
@@ -249,6 +249,7 @@ const description =
     gap: 14px;
     text-align: left;
     text-decoration: none;
+    border: 2px solid var(--sz-community-line);
     border-radius: 18px;
     padding: 16px 22px;
     font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
@@ -275,61 +276,49 @@ const description =
     opacity: 0.85;
   }
   .botao.laranja {
-    background: linear-gradient(180deg, #ffb53f, #ff9a1f);
-    color: #3a2400;
-    box-shadow:
-      0 7px 0 #d8760a,
-      0 16px 26px rgba(255, 154, 31, 0.32);
+    background: var(--sz-community-card);
+    color: var(--sz-community-ink);
+    box-shadow: 0 5px 0 var(--sz-community-card-step);
   }
   .botao.laranja:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 9px 0 #d8760a,
-      0 20px 32px rgba(255, 154, 31, 0.4);
+    transform: translateY(-1px);
+    border-color: var(--sz-community-action);
+    box-shadow: 0 6px 0 var(--sz-community-card-step);
   }
   .botao.laranja:active {
-    transform: translateY(4px);
-    box-shadow:
-      0 3px 0 #d8760a,
-      0 8px 14px rgba(255, 154, 31, 0.3);
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--sz-community-card-step);
+  }
+  .botao.laranja .material-symbols-rounded {
+    color: var(--sz-community-action);
   }
   .botao.azul {
-    background: linear-gradient(180deg, #37a6f5, #1e88e5);
-    color: #fff;
-    box-shadow:
-      0 7px 0 #145aa0,
-      0 16px 26px rgba(30, 136, 229, 0.32);
+    background: var(--sz-community-action);
+    color: var(--sz-community-on-action);
+    border-color: var(--sz-community-action);
+    box-shadow: 0 5px 0 var(--sz-community-action-step);
   }
   .botao.azul:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 9px 0 #145aa0,
-      0 20px 32px rgba(30, 136, 229, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 0 var(--sz-community-action-step);
   }
   .botao.azul:active {
-    transform: translateY(4px);
-    box-shadow:
-      0 3px 0 #145aa0,
-      0 8px 14px rgba(30, 136, 229, 0.3);
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--sz-community-action-step);
   }
   .botao.verde {
-    background: linear-gradient(180deg, #4cd888, #37c871);
-    color: #0b3a20;
-    box-shadow:
-      0 7px 0 #1f8f4d,
-      0 16px 26px rgba(55, 200, 113, 0.32);
+    background: var(--sz-community-menu);
+    color: var(--sz-community-on-action);
+    border-color: var(--sz-community-menu);
+    box-shadow: 0 5px 0 var(--sz-community-menu-2);
   }
   .botao.verde:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 9px 0 #1f8f4d,
-      0 20px 32px rgba(55, 200, 113, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 0 var(--sz-community-menu-2);
   }
   .botao.verde:active {
-    transform: translateY(4px);
-    box-shadow:
-      0 3px 0 #1f8f4d,
-      0 8px 14px rgba(55, 200, 113, 0.3);
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--sz-community-menu-2);
   }
 
   .rodape {

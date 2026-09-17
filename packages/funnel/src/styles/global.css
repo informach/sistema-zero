@@ -132,34 +132,37 @@
   --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
 }
 
-/* ── Tema KIDS (Desafio do Primeiro Jogo) ────────────────────────────────────
+/* ── Tema KIDS (todo o funil) ────────────────────────────────────────────────
    Re-skin do funil para o público kids: REDEFINE os tokens de marca sob
-   `.theme-kids` no <html>. Tema CLARO e colorido (creme + azul + laranja CTA,
-   fontes Baloo 2/Nunito), extraído da página colorida aprovada pela usuária.
+   `.theme-kids` no <html>. A paleta vem da mesma fonte canônica da plataforma,
+   importada por `theme-kids.css`; este bloco só faz o mapeamento semântico.
    Como as utilitárias (`text-lime`, `bg-card`…) são `var(--color-*)`, todas as
    páginas/ilhas compartilhadas (quiz/checkout/obrigado/resultado) re-skinam sem
    mudar markup. O funil carrega `theme:'kids'` e as páginas passam o htmlClass.
-   No funil, `--color-lime` é o token de CTA/destaque → vira LARANJA;
-   `--color-cyan` (acento) → AZUL. Paleta completa de apoio (rosa/verde/amarelo)
-   documentada no CLAUDE.md; o CSS sob medida da página de vendas vive no
-   DesafioOfertaBody. */
+   No funil, `--color-lime` é o token histórico de CTA/destaque, mas aponta
+   para a ação azul da Comunidade. */
 .theme-kids {
-  /* Azul-céu (o mesmo da seção de entregáveis da oferta): fundo das etapas
-     compartilhadas. A página de vendas usa o creme próprio dentro de `.dpj`. */
-  --color-bg: var(--sz-kids-ceu);
-  --color-card: #ffffff;
-  --color-card-2: #eef3fb;
-  /* Laranja profundo para TEXTO e acentos (legível sobre fundo claro);
-     o CTA usa o gradiente laranja vivo definido em `.theme-kids .btn-primary`. */
-  --color-lime: var(--sz-kids-laranja-texto);
-  --color-lime-strong: var(--sz-kids-laranja-texto-forte);
-  --color-cyan: var(--sz-kids-azul); /* azul = acento secundário */
-  --color-ink: var(--sz-kids-tinta);
-  --color-muted: var(--sz-kids-tinta-suave);
-  --color-line: #d3e2f4;
+  --color-bg: var(--sz-community-ground);
+  --color-card: var(--sz-community-card);
+  --color-card-2: var(--sz-community-surface-2);
+  --color-lime: var(--sz-community-action);
+  --color-lime-strong: var(--sz-community-action-step);
+  --color-cyan: var(--sz-community-blue);
+  --color-ink: var(--sz-community-ink);
+  --color-muted: var(--sz-community-ink-muted);
+  --color-line: var(--sz-community-line);
+  --kids-ground-alt: var(--sz-community-ground-alt);
+  --kids-field: var(--sz-community-field);
+  --kids-action-step: var(--sz-community-action-step);
+  --kids-card-step: var(--sz-community-card-step);
+  --kids-menu: var(--sz-community-menu);
+  --kids-menu-2: var(--sz-community-menu-2);
+  --kids-success: var(--sz-community-green);
+  --kids-danger: var(--sz-community-red);
+  --kids-warning: var(--sz-community-yellow);
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius-btn: 16px;
-  --radius-card: 22px;
+  --radius-card: 16px;
 }
 .theme-kids h1,
 .theme-kids h2,
@@ -256,32 +259,178 @@ body {
   font-weight: 600;
 }
 .theme-kids .btn-primary {
-  background: var(--sz-kids-grad-cta);
-  color: var(--sz-kids-cta-tinta);
-  box-shadow:
-    0 6px 0 var(--sz-kids-laranja-sombra),
-    0 14px 24px rgba(255, 154, 31, 0.32);
+  background: var(--sz-community-action);
+  color: var(--sz-community-on-action);
+  box-shadow: 0 5px 0 var(--kids-action-step);
 }
 .theme-kids .btn-primary:hover {
   filter: none;
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 var(--sz-kids-laranja-sombra),
-    0 18px 30px rgba(255, 154, 31, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 var(--kids-action-step);
 }
 .theme-kids .btn-primary:active {
-  transform: translateY(4px);
-  box-shadow:
-    0 2px 0 var(--sz-kids-laranja-sombra),
-    0 8px 14px rgba(255, 154, 31, 0.3);
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--kids-action-step);
 }
 
-/* Cards brancos precisam de sombra suave para se destacar do fundo creme. */
+/* O relevo duro é a linguagem compartilhada da plataforma Kids. */
 .theme-kids .card {
-  box-shadow: 0 8px 22px rgba(28, 48, 90, 0.08);
+  border: 2px solid var(--color-line);
+  box-shadow: 0 4px 0 var(--kids-card-step);
 }
 
-/* O wordmark é branco (feito para o tema escuro); sobre o fundo creme ele some.
+/* Jornada de compra compartilhada pelos dois produtos kids. */
+.theme-kids .kids-precheckout-overlay {
+  background: color-mix(in srgb, var(--kids-menu) 78%, transparent);
+}
+.theme-kids .kids-precheckout {
+  max-height: calc(100dvh - 1rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-card);
+  border: 2px solid var(--color-line);
+  box-shadow: 0 5px 0 var(--kids-card-step);
+}
+.theme-kids .kids-precheckout-close {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+.theme-kids .kids-precheckout input,
+.theme-kids .kids-checkout-form input:not([type="checkbox"], [type="radio"]),
+.theme-kids .kids-checkout-form select {
+  min-height: 48px;
+  border: 2px solid var(--kids-field);
+  background: var(--color-card);
+}
+.theme-kids .kids-precheckout input:focus-visible,
+.theme-kids .kids-checkout-form input:not([type="checkbox"], [type="radio"]):focus-visible,
+.theme-kids .kids-checkout-form select:focus-visible {
+  border-color: var(--color-lime);
+  outline: 3px solid color-mix(in srgb, var(--color-lime) 18%, transparent);
+  outline-offset: 1px;
+}
+.theme-kids .kids-precheckout input[aria-invalid="true"],
+.theme-kids .kids-checkout-form input[aria-invalid="true"] {
+  border-color: var(--kids-danger);
+}
+.theme-kids .kids-precheckout button,
+.theme-kids .kids-checkout-form button {
+  min-height: 44px;
+}
+.theme-kids :where(a, button, summary, input, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-lime) 32%, transparent);
+  outline-offset: 3px;
+}
+.theme-kids :where(a, button, summary, label) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--color-lime) 18%, transparent);
+}
+.theme-kids :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+.theme-kids .kids-checkout {
+  padding-top: 3rem;
+  padding-bottom: 4rem;
+}
+.theme-kids .checkout-product-card {
+  border: 2px solid var(--color-line);
+  background: var(--color-card);
+  box-shadow: 0 4px 0 var(--kids-card-step);
+}
+.theme-kids .kids-checkout-form {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: 0 4px 0 var(--kids-card-step);
+}
+.theme-kids .kids-checkout-form .checkout-section {
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--color-line);
+}
+.theme-kids .kids-checkout-form .checkout-summary,
+.theme-kids .kids-checkout-form .checkout-terms {
+  border: 2px solid var(--color-line);
+  background: var(--color-card-2);
+}
+.theme-kids .kids-checkout-form .checkout-plan-card,
+.theme-kids .kids-checkout-form .checkout-method-card {
+  min-height: 72px;
+  border: 2px solid var(--color-line);
+  background: var(--color-card-2);
+  box-shadow: 0 3px 0 var(--kids-card-step);
+}
+.theme-kids .kids-checkout-form .checkout-plan-card[data-selected="true"],
+.theme-kids .kids-checkout-form .checkout-method-card[data-selected="true"] {
+  border-color: var(--color-lime);
+  background: var(--color-card);
+  box-shadow: 0 4px 0 var(--kids-action-step);
+}
+.theme-kids .kids-checkout-form .checkout-plan-card > .absolute {
+  background: var(--color-lime);
+  color: #fff;
+}
+.theme-kids .kids-thanks {
+  padding-top: 4rem;
+  padding-bottom: 5rem;
+}
+.theme-kids .kids-thanks .check-badge:not(.pending) {
+  border: 2px solid var(--kids-success);
+  background: color-mix(in srgb, var(--kids-success) 10%, white);
+  color: var(--kids-success);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--kids-success) 48%, var(--kids-card-step));
+}
+.theme-kids .kids-thanks-product-glow {
+  display: none;
+}
+.theme-kids .kids-thanks-product-image {
+  transform: none;
+  border: 2px solid var(--color-line);
+  box-shadow: none;
+}
+.theme-kids .kids-thanks-steps .card {
+  background: var(--color-card);
+}
+.theme-kids header {
+  border-bottom: 2px solid var(--color-line);
+  background: color-mix(in srgb, var(--sz-community-ground) 94%, transparent);
+}
+.theme-kids footer {
+  border-top: 2px solid var(--color-line);
+  background: var(--kids-ground-alt);
+}
+
+@media (max-width: 640px) {
+  .theme-kids .kids-checkout {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+  .theme-kids .kids-checkout-form {
+    padding: 1.125rem;
+  }
+  .theme-kids .kids-thanks {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+  }
+  .theme-kids .kids-thanks-purchase-row {
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .theme-kids .kids-thanks-product-image {
+    width: 5rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .theme-kids .kids-checkout-form .checkout-plan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* O wordmark é branco (feito para o tema escuro); sobre o chão claro ele some.
    No kids (header e rodapé) vira monocromático escuro, sem trocar o asset. */
 .theme-kids img[alt="Sistema Zero"] {
   filter: brightness(0) opacity(0.72);

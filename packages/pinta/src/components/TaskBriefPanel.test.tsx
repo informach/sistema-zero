@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { COPY } from '../core/copy'
 import type { PintaTaskSession } from '../core/types'
 import { TaskBriefPanel } from './TaskBriefPanel'
 
@@ -125,5 +126,81 @@ describe('Brief do meu jogo', () => {
     expect(
       (screen.getByRole('button', { name: 'Concluir tarefa' }) as HTMLButtonElement).disabled,
     ).toBe(true)
+  })
+})
+
+describe('Voltar ao plano', () => {
+  test('sem o callback do host o botão não existe', () => {
+    render(<TaskBriefPanel session={session().value} />)
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
+  })
+
+  test('aparece com alvo de 44px, chama uma vez, e continua com a tarefa concluída', async () => {
+    const onReturn = mock(async () => undefined)
+    const view = render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    const botao = screen.getByRole('button', { name: COPY.task.back })
+    expect(botao.classList.contains('min-h-11')).toBe(true)
+    // O nome acessível é o texto visível: nada de `aria-label` nem de `title`.
+    expect(botao.getAttribute('aria-label')).toBeNull()
+    expect(botao.getAttribute('title')).toBeNull()
+
+    fireEvent.click(botao)
+    await waitFor(() => expect(onReturn).toHaveBeenCalledTimes(1))
+
+    // Terminar o desenho é justamente quando ela quer voltar: o botão fica.
+    const concluida = session({ status: 'completed', completedAt: '2026-09-17T12:00:00.000Z' })
+    view.rerender(<TaskBriefPanel session={concluida.value} onReturn={onReturn} />)
+    expect(screen.queryByRole('button', { name: 'Concluir tarefa' })).toBeNull()
+    expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
+  })
+
+  test('dois cliques seguidos guardam e navegam UMA vez só', async () => {
+    let liberar: (() => void) | null = null
+    const onReturn = mock(
+      () =>
+        new Promise<void>((resolve) => {
+          liberar = () => resolve()
+        }),
+    )
+    render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    const botao = screen.getByRole('button', { name: COPY.task.back })
+
+    fireEvent.click(botao)
+    fireEvent.click(botao)
+    expect(onReturn).toHaveBeenCalledTimes(1)
+    // O rótulo NÃO muda enquanto guarda (mudaria o nome acessível no meio da ação).
+    const ocupado = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
+    expect(ocupado.disabled).toBe(true)
+    expect(ocupado.getAttribute('aria-busy')).toBe('true')
+
+    await act(async () => {
+      liberar?.()
+      await Bun.sleep(0)
+    })
+    expect(onReturn).toHaveBeenCalledTimes(1)
+  })
+
+  test('falha ao guardar mostra o recado no painel e o botão volta a funcionar', async () => {
+    const onReturn = mock(async () => {
+      throw new Error('Não consegui salvar')
+    })
+    render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('salvar'))
+    const botao = screen.getByRole('button', { name: COPY.task.back }) as HTMLButtonElement
+    expect(botao.disabled).toBe(false)
+    expect(botao.getAttribute('aria-busy')).toBe('false')
+    // O brief continua na tela: falhar não tira a criança de onde ela estava.
+    expect(screen.getByText(/Pequena, ágil/)).toBeTruthy()
+  })
+
+  test('falha SEM mensagem cai no recado do copy', async () => {
+    const onReturn = mock(async () => {
+      throw new Error('')
+    })
+    render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError))
   })
 })
