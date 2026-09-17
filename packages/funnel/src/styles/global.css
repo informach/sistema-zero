@@ -8,6 +8,24 @@
 @source "../../../ui/src";
 @custom-variant dark (&:is(.dark *));
 
+/* Classe canônica dos ícones do funil. A fonte é carregada uma única vez pelo
+   BaseLayout para que os nomes das ligaturas nunca apareçam como texto. */
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
 /* ── Design system (No Comando da IA) ────────────────────────────────────────
    Tema escuro. Tokens expostos como utilitários do Tailwind v4 (bg-bg, text-lime…)
    e como CSS custom properties (var(--color-lime)). */

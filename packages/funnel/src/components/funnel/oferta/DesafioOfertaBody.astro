@@ -7,7 +7,6 @@
 // no `<style>` escopado abaixo, sob `.dpj` (não vaza para as páginas
 // compartilhadas). Os CTAs de compra levam `data-checkout-cta` → o
 // PreCheckoutModal (mesma ilha do NCI) abre o checkout.
-import '@fontsource/material-symbols-rounded/400.css'
 import { desafioDesejoLabel } from '../../../funnels/desafio-primeiro-jogo/quiz'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -137,7 +136,7 @@ const desejoDoQuiz = desafioDesejoLabel(quer)
                 ><span class="material-symbols-rounded">child_care</span>A partir dos 9 anos</span
               >
               <span class="chip"
-                ><span class="material-symbols-rounded">favorite</span>Você não precisa programar</span
+                ><span class="material-symbols-rounded">favorite</span>Você apoia sem precisar ensinar</span
               >
               <span class="chip"
                 ><span class="material-symbols-rounded">schedule</span>30 dias de acesso</span
@@ -200,9 +199,8 @@ const desejoDoQuiz = desafioDesejoLabel(quer)
             <span class="name">Zappy</span>
           </div>
           <div class="bubble">
-            Seu papel é reservar o momento e celebrar as pequenas entregas. O caminho técnico
-            aparece passo a passo para a criança, e você não precisa entender de programação para
-            acompanhar.
+            Seu papel é reservar o momento e celebrar as pequenas entregas. As aulas mostram o
+            caminho para a criança, passo a passo. Você acompanha sem precisar ensinar.
           </div>
         </div>
       </div>
@@ -788,10 +786,11 @@ const desejoDoQuiz = desafioDesejoLabel(quer)
     <section class="sec contas">
       <div class="wrap center">
         <span class="eyebrow">O papel dos pais</span>
-        <h2 class="reveal">Você não precisa saber programar.</h2>
+        <h2 class="reveal">Você não precisa ensinar. Só precisa ajudar a começar.</h2>
         <p class="sub">
-          Seu papel é ajudar a reservar o momento, garantir um computador compatível e celebrar as
-          pequenas entregas. O caminho técnico aparece passo a passo para a criança.
+          Escolha um momento possível na rotina, garanta um computador compatível e acompanhe o
+          primeiro acesso. As aulas mostram o caminho para a criança, passo a passo. Depois, vocês
+          comemoram juntos cada parte do jogo que funcionar.
         </p>
         <div class="anchor-list">
           <div class="arow reveal">
@@ -1258,23 +1257,8 @@ const desejoDoQuiz = desafioDesejoLabel(quer)
   /* ===== Desafio do Primeiro Jogo — CSS sob medida (porte fiel da página
      colorida aprovada). Tudo escopado pelo Astro a este componente + prefixado
      por `.dpj` (os tokens ficam no wrapper, não no :root global) → não vaza
-     para as páginas/ilhas compartilhadas. Fontes Baloo 2/Nunito e Material
-     Symbols Rounded vêm do @fontsource (self-hosted). ===== */
-  .material-symbols-rounded {
-    font-family: 'Material Symbols Rounded';
-    font-weight: 500;
-    font-style: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-  }
+     para as páginas/ilhas compartilhadas. Fontes e ícones são self-hosted e
+     carregados pelo BaseLayout. ===== */
 
   /* ===== Aliases locais da identidade canônica da Comunidade Kids ===== */
   .dpj {
@@ -2351,12 +2335,10 @@ const desejoDoQuiz = desafioDesejoLabel(quer)
     white-space: nowrap;
     text-align: right;
   }
-  .dpj .arow .al-val span {
+  .dpj .arow .al-val .material-symbols-rounded {
     display: block;
-    font-family: var(--body);
-    font-weight: 700;
-    font-size: 0.72rem;
-    opacity: 0.7;
+    font-size: 1.65rem;
+    opacity: 0.82;
   }
   .dpj .arow.hi {
     background: var(--menta-bg);

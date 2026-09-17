@@ -23,12 +23,27 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 3. **Sem CSS próprio nos COMPONENTES**: os componentes usam tokens dos apps (`--primary`,
    `--success`, `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e
    community) nos DOIS temas (light/dark). **Duas exceções, as duas OPT-IN por `@import`:**
-   (a) `src/styles/community-kids-theme.css` + `src/styles/theme-kids.css` (exports
-   `@sistemazero/ui/community-kids-theme.css` e `@sistemazero/ui/theme-kids.css`, 09/2026) — o
-   primeiro é a fonte CANÔNICA da paleta Pen da Comunidade Kids (`--sz-community-*`); o segundo
-   contém somente os aliases legados `--sz-kids-*` e o importa. Funnel e community-kids importam
-   `theme-kids.css`, mapeiam seus tokens semânticos para a mesma fonte e NUNCA repetem os valores
-   Pen localmente; studio/pensa/pinta/molda referenciam os aliases com fallback literal (sem dep).
+   (a) **`src/tokens/` + `src/styles/palettes/community.css` (GERADO) + os dois aliases**
+   (`src/styles/community-kids-theme.css` e `src/styles/theme-kids.css`; exports
+   `@sistemazero/ui/palettes.css`, `.../community-kids-theme.css` e `.../theme-kids.css`).
+   ⭐ **Desde 17/09/2026 a fonte canônica das CORES é o registro TS em `src/tokens/`, não um
+   arquivo CSS**: `palettes.ts` (uma paleta = uma matiz), `recipe.ts` (a receita ajustada às
+   paletas aprovadas), `derive.ts` (pura: id → 36 tokens), `contrast.ts` (a auditoria) e
+   `emit.ts`. `bun run tokens:gen` escreve `src/styles/palettes/community.css`, que é
+   COMPROMETIDO no repositório — e `tests/palettes-generated.test.ts` o regenera em memória e
+   compara byte a byte, o que faz o TESTE ser a conferência de build (o pacote segue sem build).
+   ⚠️⚠️ O gerador AUDITA contraste e sai com erro nomeando a dupla que reprovou: paleta ilegível
+   não chega ao disco. ⚠️ Cor nova é UMA LINHA em `palettes.ts` (a matiz) mais o id em
+   `@sistemazero/core/palette` — que é onde mora o VOCABULÁRIO (ids, rótulos pt-BR,
+   `DEFAULT_PALETTE`), porque banco, gateway e BFF precisam dele sem arrastar React.
+   A paleta escolhida pela pessoa chega por **`data-sz-palette` no `<html>`** (⚠️ NÃO reutilizar
+   `data-sz-theme`, que é das ferramentas embarcadas); o servidor SEMPRE emite o atributo.
+   `community-kids-theme.css` virou camada de alias `--sz-community-*` → `--sz-*` com ZERO
+   literal, e `theme-kids.css` (os `--sz-kids-*`) segue intocado atrás dele. Funnel e
+   community-kids importam `theme-kids.css`, mapeiam seus tokens semânticos para a mesma fonte e
+   NUNCA repetem os valores localmente (o contrato varre TODO valor que o gerador produz, então
+   cresce sozinho com o catálogo); studio/pensa/pinta/molda referenciam os aliases com fallback
+   literal (sem dep).
    (b) **`src/styles/tool-chrome.css`** (export `@sistemazero/ui/tool-chrome.css`, 07/09/2026) —
    o CHROME COMPARTILHADO das ferramentas embarcadas (Pinta, Estúdio, Pensa; Molda no lote 6b):
    tokens SEMÂNTICOS `--sz-tool-*` (claro em `:root` + nos escopos claros de cada ferramenta;

@@ -8,7 +8,6 @@
 // (slug da oferta mensal/anual) → o modal anexa `?oferta=` e o checkout
 // pré-seleciona o plano. Copy segue o Light Copy (sem travessão, sem "!",
 // sem "Não é X. É Y.", depoimentos reais, bônus ancorados).
-import '@fontsource/material-symbols-rounded/400.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -1539,22 +1538,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
      da Comunidade Kids (chão frio, ação azul, Baloo 2/Nunito e relevo 3D).
      Escopado pelo Astro a
      este componente + prefixado por `.cdc` (tokens no wrapper, não no :root).
-     Ícones Material Symbols Rounded via @fontsource (self-hosted). ===== */
-  .material-symbols-rounded {
-    font-family: 'Material Symbols Rounded';
-    font-weight: 500;
-    font-style: normal;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-  }
+     Os ícones self-hosted são carregados pelo BaseLayout. ===== */
 
   /* ===== Paleta Pen da plataforma Kids + base ===== */
   .cdc {
