@@ -6,6 +6,7 @@ import {
   auditTokens,
   describeFailure,
   knownContrastGaps,
+  measureTokens,
   PAIRS_PER_PALETTE,
 } from '../src/tokens/contrast'
 import { derive } from '../src/tokens/derive'
@@ -22,14 +23,26 @@ describe('toda paleta continua legível', () => {
 
   test('as dívidas conhecidas seguem nos valores de hoje, e estão escritas', () => {
     // A catraca: elas não podem piorar em silêncio, e quem for pagá-las acha o porquê aqui.
-    for (const { pair, ratios } of knownContrastGaps()) {
-      expect(pair.knownGap?.why.length).toBeGreaterThan(80)
-      for (const [id, ratio] of Object.entries(ratios)) {
-        expect({ id, acima: ratio >= (pair.knownGap?.floor ?? pair.min) }).toEqual({
-          id,
-          acima: true,
-        })
-      }
+    const gaps = knownContrastGaps()
+    expect(gaps.length).toBeGreaterThan(0)
+    for (const { label, gap, ratios } of gaps) {
+      expect({ label, explicado: gap.why.length > 120 }).toEqual({ label, explicado: true })
+      for (const [id, ratio] of Object.entries(ratios))
+        expect({ label, id, acima: ratio >= gap.floor }).toEqual({ label, id, acima: true })
+    }
+  })
+
+  test('⭐ o piso de cada dívida é JUSTO — ninguém a afrouxa sem alguém ver', () => {
+    // Sem isto nada impediria trocar um `floor` por 3.5 e a dupla passar para sempre. O piso tem
+    // de ficar colado no PIOR valor medido hoje: afrouxá-lo reprova aqui na hora.
+    for (const { label, gap, min, ratios } of knownContrastGaps()) {
+      const pior = Math.min(...Object.values(ratios))
+      expect({ label, folga: Number((pior - gap.floor).toFixed(3)) < 0.06 }).toEqual({
+        label,
+        folga: true,
+      })
+      // E o piso é mesmo uma DÍVIDA: se ele já alcança o alvo, a exceção não deveria existir.
+      expect({ label, aindaDevendo: gap.floor < min }).toEqual({ label, aindaDevendo: true })
     }
   })
 })
@@ -40,14 +53,13 @@ describe('toda paleta continua legível', () => {
  */
 describe('a varredura não é de mentira', () => {
   test('mediu o que prometeu medir', () => {
-    let medidos = 0
-    for (const id of PALETTES) {
-      const tokens = derive(id)
-      auditTokens(tokens, id)
-      medidos += PAIRS_PER_PALETTE
-    }
-    expect(medidos).toBe(PALETTES.length * PAIRS_PER_PALETTE)
-    expect(PAIRS_PER_PALETTE).toBeGreaterThan(15)
+    // ⚠️ Conta o que a auditoria REALMENTE devolveu. A versão anterior somava a constante num
+    // laço e comparava com o mesmo produto — passava com a auditoria devolvendo `[]`.
+    const medidas = PALETTES.flatMap((id) => measureTokens(derive(id), id))
+    expect(medidas.length).toBe(PALETTES.length * PAIRS_PER_PALETTE)
+    expect(PAIRS_PER_PALETTE).toBeGreaterThan(20)
+    // E cada medição é um número de verdade, não um zero silencioso.
+    for (const m of medidas) expect(Number.isFinite(m.ratio) && m.ratio >= 1).toBe(true)
   })
 
   test('⭐ o teste SABE reprovar: uma paleta deliberadamente ruim não passa', () => {

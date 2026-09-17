@@ -14,11 +14,31 @@ import { contrast } from './color'
 import { derive } from './derive'
 import type { TokenName } from './recipe'
 
+/**
+ * Todo token MENOS o `menu-glass`, que é `rgb(… / .08)` e não um hexadecimal.
+ * ⚠️ Sem esta restrição uma dupla que o nomeasse type-checava e o gerador morria com um erro de
+ * parse de cor no meio, em vez do relatório de contraste que ele existe para dar.
+ */
+export type ColorToken = Exclude<TokenName, 'menu-glass'>
+
+/**
+ * Uma dívida MEDIDA: a dupla está abaixo do alvo HOJE, em TODAS as paletas — inclusive nas duas
+ * aprovadas à mão que já estão em produção. Em vez de baixar a régua (que esconderia) ou de
+ * travar a entrega numa correção de design que não é deste lote, ela fica com CATRACA: não pode
+ * piorar, o alvo real continua escrito em `min`, e um teste exige que o piso seja JUSTO — assim
+ * ninguém a afrouxa depois sem que alguém veja.
+ */
+export interface KnownGap {
+  readonly floor: number
+  readonly why: string
+}
+
 export interface ContrastPair {
-  readonly fg: TokenName
-  readonly bg: TokenName
+  readonly fg: ColorToken
+  readonly bg: ColorToken
   readonly min: number
   readonly role: string
+  readonly knownGap?: KnownGap
 }
 
 /**
@@ -37,23 +57,58 @@ export interface ContrastPair {
  */
 export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: 'ink', bg: 'ground', min: 4.5, role: 'texto no chão' },
+  // ⚠️⚠️ O chão ALTERNATIVO é o fundo da PÁGINA DE AULA nos dois apps (`.kids-aula` e
+  // `.sz-app:has(.sz-aula-adulto)`) e das faixas do kids — e não estava na matriz. Ele é mais
+  // escuro que o chão, então toda dupla nele é mais apertada.
+  { fg: 'ink', bg: 'ground-alt', min: 4.5, role: 'texto no chão alternativo' },
+  { fg: 'ink-muted', bg: 'ground-alt', min: 4.5, role: 'texto suave no chão alternativo' },
   { fg: 'ink', bg: 'card', min: 4.5, role: 'texto no cartão' },
   { fg: 'ink-muted', bg: 'card', min: 4.5, role: 'texto suave no cartão' },
   { fg: 'ink-muted', bg: 'ground', min: 4.5, role: 'texto suave no chão' },
   { fg: 'on-action', bg: 'action', min: 4.5, role: 'texto do botão' },
   { fg: 'action', bg: 'card', min: 4.5, role: 'link no cartão' },
   { fg: 'action', bg: 'ground', min: 4.5, role: 'link no chão' },
+  {
+    fg: 'action',
+    bg: 'ground-alt',
+    min: 4.5,
+    role: 'link no chão alternativo',
+    knownGap: {
+      floor: 4.05,
+      why: 'O chão ALTERNATIVO é mais escuro que o chão, e a âncora da cor de ação foi calibrada contra o chão. Medido em TODAS as seis paletas, inclusive azul e rosa, que estão em produção: a dívida é do SURFACE, não das cores novas. Fechá-la é decisão de design (clarear o chão alternativo, ou parar de pôr texto na cor de ação sobre ele) e merece commit próprio.',
+    },
+  },
   { fg: 'over-action', bg: 'action', min: 4.5, role: 'texto claro sobre a ação' },
   { fg: 'menu-text', bg: 'menu', min: 4.5, role: 'texto do menu' },
   { fg: 'action-light', bg: 'menu', min: 4.5, role: 'aba ativa no menu' },
   { fg: 'menu-icon', bg: 'menu', min: 3, role: 'ícone do menu' },
   { fg: 'field', bg: 'card', min: 3, role: 'borda de campo no cartão' },
   { fg: 'field', bg: 'ground', min: 3, role: 'borda de campo no chão' },
+  {
+    fg: 'field',
+    bg: 'ground-alt',
+    min: 3,
+    role: 'borda de campo no chão alternativo',
+    knownGap: {
+      floor: 2.9,
+      why: 'O chão ALTERNATIVO é mais escuro que o chão, e a âncora da cor de ação foi calibrada contra o chão. Medido em TODAS as seis paletas, inclusive azul e rosa, que estão em produção: a dívida é do SURFACE, não das cores novas. Fechá-la é decisão de design (clarear o chão alternativo, ou parar de pôr texto na cor de ação sobre ele) e merece commit próprio.',
+    },
+  },
   { fg: 'green', bg: 'ground', min: 3, role: 'identidade verde (selo, borda) no chão variável' },
   { fg: 'red', bg: 'ground', min: 3, role: 'identidade vermelha (assinatura do Pinta) no chão' },
   { fg: 'purple', bg: 'ground', min: 3, role: 'identidade roxa no chão variável' },
   { fg: 'action-step', bg: 'action', min: 1.4, role: 'degrau 3D do botão' },
   { fg: 'card-step', bg: 'card', min: 1.4, role: 'degrau 3D do cartão' },
+  {
+    fg: 'card-step',
+    bg: 'ground-alt',
+    min: 1.4,
+    role: 'degrau 3D sobre o chão alternativo',
+    knownGap: {
+      floor: 1.35,
+      why: 'O chão ALTERNATIVO é mais escuro que o chão, e a âncora da cor de ação foi calibrada contra o chão. Medido em TODAS as seis paletas, inclusive azul e rosa, que estão em produção: a dívida é do SURFACE, não das cores novas. Fechá-la é decisão de design (clarear o chão alternativo, ou parar de pôr texto na cor de ação sobre ele) e merece commit próprio.',
+    },
+  },
 ]
 
 /**
@@ -68,21 +123,37 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
 export interface ExternalTextPair {
   readonly hex: string
   readonly name: string
-  readonly bg: TokenName
+  readonly bg: ColorToken
   readonly min: number
-  /**
-   * Uma dívida MEDIDA que já existe em produção hoje, na paleta azul, e que este trabalho não
-   * causou. Em vez de baixar a régua (que esconderia) ou de travar a entrega numa correção que
-   * não é deste lote, a dupla fica com catraca: ela não pode PIORAR, e o alvo real continua
-   * escrito em `min`.
-   */
-  readonly knownGap?: { readonly floor: number; readonly why: string }
+  readonly knownGap?: KnownGap
 }
 
 export const EXTERNAL_TEXT_PAIRS: readonly ExternalTextPair[] = [
   { hex: '#096b4a', name: '--pen-ok-texto (o verde de sucesso EM TEXTO)', bg: 'ground', min: 4.5 },
   { hex: '#096b4a', name: '--pen-ok-texto (o verde de sucesso EM TEXTO)', bg: 'card', min: 4.5 },
   { hex: '#d92d34', name: '--pen-alerta (o vermelho de erro) EM TEXTO', bg: 'card', min: 4.5 },
+  {
+    hex: '#096b4a',
+    name: '--pen-ok-texto (o verde de sucesso EM TEXTO)',
+    bg: 'ground-alt',
+    min: 4.5,
+  },
+  {
+    hex: '#096b4a',
+    name: '--pen-ok-texto (o verde de sucesso EM TEXTO)',
+    bg: 'surface-2',
+    min: 4.5,
+  },
+  {
+    hex: '#d92d34',
+    name: '--pen-alerta (o vermelho de erro) EM TEXTO',
+    bg: 'surface-2',
+    min: 4.5,
+    knownGap: {
+      floor: 4.3,
+      why: 'A superfície 2 é o `--muted`/`--secondary`, e `text-destructive` sobre `bg-muted` é composição real. Medido em TODAS as seis paletas (4,31–4,34), inclusive as de produção: mesma família da dívida do vermelho sobre o chão. O conserto é escurecer o `--pen-alerta` na camada do app.',
+    },
+  },
   {
     hex: '#d92d34',
     name: '--pen-alerta (o vermelho de erro) EM TEXTO',
@@ -120,29 +191,68 @@ export function auditPalette(id: PaletteId): ContrastFailure[] {
  * nenhuma — e este repositório já aprendeu isso duas vezes.
  */
 export function auditTokens(tokens: Record<TokenName, string>, label: string): ContrastFailure[] {
+  return measureTokens(tokens, label).filter((m) => m.ratio < m.min)
+}
+
+/**
+ * TODA medição, aprovada ou não.
+ *
+ * ⚠️ Existe separada porque a guarda anti-vácuo precisa contar o que foi REALMENTE medido. A
+ * primeira versão dela somava `PAIRS_PER_PALETTE` num laço e comparava com o mesmo produto: uma
+ * identidade aritmética que passava até com a auditoria devolvendo `[]` na primeira linha.
+ */
+export function measureTokens(tokens: Record<TokenName, string>, label: string): ContrastFailure[] {
   const palette = label as PaletteId
-  const falhas: ContrastFailure[] = []
-  for (const { fg, bg, min, role } of CONTRAST_PAIRS) {
-    const ratio = contrast(tokens[fg], tokens[bg])
-    if (ratio < min) falhas.push({ palette, fg, bg, role, min, ratio })
+  const medidas: ContrastFailure[] = []
+  for (const { fg, bg, min, role, knownGap } of CONTRAST_PAIRS) {
+    // A catraca da dívida conhecida: cobra-se o piso de hoje, não o alvo — mas cobra-se.
+    medidas.push({
+      palette,
+      fg,
+      bg,
+      role,
+      min: knownGap?.floor ?? min,
+      ratio: contrast(tokens[fg], tokens[bg]),
+    })
   }
   for (const { hex, name, bg, min, knownGap } of EXTERNAL_TEXT_PAIRS) {
-    const ratio = contrast(hex, tokens[bg])
-    // A catraca da dívida conhecida: cobra-se o piso de hoje, não o alvo — mas cobra-se.
-    const exigido = knownGap?.floor ?? min
-    if (ratio < exigido) falhas.push({ palette, fg: hex, bg, role: name, min: exigido, ratio })
+    medidas.push({
+      palette,
+      fg: hex,
+      bg,
+      role: name,
+      min: knownGap?.floor ?? min,
+      ratio: contrast(hex, tokens[bg]),
+    })
   }
-  return falhas
+  return medidas
 }
 
 /** As dívidas de contraste que este módulo carrega de propósito, para quem for pagá-las. */
-export function knownContrastGaps(): { pair: ExternalTextPair; ratios: Record<string, number> }[] {
-  return EXTERNAL_TEXT_PAIRS.filter((p) => p.knownGap).map((pair) => ({
-    pair,
+/** As dívidas de contraste que este módulo carrega de propósito, para quem for pagá-las. */
+export function knownContrastGaps(): {
+  label: string
+  gap: KnownGap
+  min: number
+  ratios: Record<string, number>
+}[] {
+  const das = CONTRAST_PAIRS.filter((p) => p.knownGap).map((p) => ({
+    label: `${p.fg}/${p.bg}`,
+    gap: p.knownGap as KnownGap,
+    min: p.min,
     ratios: Object.fromEntries(
-      PALETTES.map((id) => [id, Number(contrast(pair.hex, derive(id)[pair.bg]).toFixed(2))]),
+      PALETTES.map((id) => [id, Number(contrast(derive(id)[p.fg], derive(id)[p.bg]).toFixed(4))]),
     ),
   }))
+  const externas = EXTERNAL_TEXT_PAIRS.filter((p) => p.knownGap).map((p) => ({
+    label: `${p.hex}/${p.bg}`,
+    gap: p.knownGap as KnownGap,
+    min: p.min,
+    ratios: Object.fromEntries(
+      PALETTES.map((id) => [id, Number(contrast(p.hex, derive(id)[p.bg]).toFixed(4))]),
+    ),
+  }))
+  return [...das, ...externas]
 }
 
 export function describeFailure({ palette, fg, bg, role, min, ratio }: ContrastFailure): string {

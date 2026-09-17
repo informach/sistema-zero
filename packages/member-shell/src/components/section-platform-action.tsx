@@ -66,7 +66,7 @@ export function SectionPlatformAction({
     <div className="space-y-4 rounded-2xl border border-border bg-card p-5">
       {player?.renderInstruction?.(
         action === 'change-theme'
-          ? 'No menu do seu perfil, use “Mudar tema”. Depois volte aqui para eu conferir!'
+          ? 'Vá em Meu perfil, escolha a sua cor e volte aqui para eu conferir!'
           : 'Deixe do seu jeito, salve e volte aqui para eu conferir!',
       )}
       <div className="flex flex-wrap gap-3">

@@ -4,7 +4,7 @@
  * Fonte: `packages/ui/src/tokens/` (registro em `palettes.ts`, receita em `recipe.ts`).
  * Para mudar uma cor, mexa no registro e rode `bun run tokens:gen` no `packages/ui`.
  *
- * Uma paleta = uma matiz. Os 18 tokens abaixo seguem a cor escolhida pela pessoa; os outros 18
+ * Uma paleta = uma matiz. Os 19 tokens abaixo seguem a cor escolhida pela pessoa; os outros 18
  * (identidade das ferramentas, estado e constantes) vivem no `:root` e nunca mudam.
  */
 

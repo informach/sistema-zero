@@ -22,7 +22,7 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    `button.bg-primary.text-primary-foreground` no globals.css de cada app.
 3. **Sem CSS próprio nos COMPONENTES**: os componentes usam tokens dos apps (`--primary`,
    `--success`, `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e
-   community) nos DOIS temas (light/dark). **Duas exceções, as duas OPT-IN por `@import`:**
+   community) nos DOIS temas (light/dark). **TRÊS exceções, todas OPT-IN por `@import`:**
    (a) **`src/tokens/` + `src/styles/palettes/community.css` (GERADO) + os dois aliases**
    (`src/styles/community-kids-theme.css` e `src/styles/theme-kids.css`; exports
    `@sistemazero/ui/palettes.css`, `.../community-kids-theme.css` e `.../theme-kids.css`).
@@ -100,6 +100,13 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    SEMPRE `in oklab` (o branco `oklch(1 0 0)` tem matiz explícito; em oklch a mistura gira e dá
    rosa). Contrato em `tests/tool-chrome.test.ts` (lê a folha e os `@import` dos hosts como texto;
    `bun test tests`). Nenhum componente deste pacote referencia `--sz-kids-*`/`--sz-tool-*`.
+   (c) **`src/styles/console.css`** (export `@sistemazero/ui/console.css`, 17/09/2026) — os
+   tokens do chassi das FERRAMENTAS INTERNAS (admin, helpdesk-app, marketing-app), claro e
+   escuro. Os três carregavam este mesmo bloco COPIADO: o `:root` diferia por uma palavra de
+   comentário e o `.dark` era byte a byte igual, ~330 linhas. ⚠️ Token de console novo nasce
+   AQUI, não nos `globals.css` — eles não têm mais bloco `:root`/`.dark`. Contrato em
+   `tests/console-theme.test.ts` (importam a folha, não redeclaram, o `@import` vem antes de
+   qualquer regra, e todo token que o `@theme inline` deles consome existe na folha).
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 

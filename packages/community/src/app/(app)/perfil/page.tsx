@@ -39,8 +39,11 @@ export default async function ProfilePage() {
           <CardTitle>Cor do tema</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* ⚠️ `session.id` (o `sub` do JWT), NUNCA o `user.id` do /auth/me: é contra o `sub` que o
+              BFF compara o `x-sz-viewer`. Divergir aqui vira 409 permanente com um recado que
+              manda reabrir a página — o que não conserta nada. */}
           <PalettePicker
-            viewerId={user.id}
+            viewerId={session?.id ?? user.id}
             initial={paletteEscolhida}
             readOnly={Boolean(session && isReadonlyImpersonation(session))}
           />

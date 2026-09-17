@@ -9,13 +9,6 @@ import type { Palette } from '../palette/palette'
 export const PLATFORM_ACTIONS = ['customize-avatar', 'customize-room', 'change-theme'] as const
 export type PlatformAction = (typeof PLATFORM_ACTIONS)[number]
 
-/**
- * O interruptor de dois estados do tema kids. ⚠️ LEGADO: sai na etapa de limpeza, junto com a
- * rota `/members/preferences/kids`. O vocabulário vivo é `PALETTES`, em `@sistemazero/core/palette`.
- */
-export const KIDS_THEMES = ['padrao', 'pink'] as const
-export type KidsTheme = (typeof KIDS_THEMES)[number]
-
 export const PLATFORM_ACTION_LABELS: Record<PlatformAction, string> = {
   'customize-avatar': 'Personalizar o avatar',
   'customize-room': 'Personalizar o quarto',

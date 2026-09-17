@@ -1,5 +1,5 @@
 /**
- * A derivação: id de paleta → os 36 tokens, como hexadecimal.
+ * A derivação: id de paleta → os 37 tokens, como hexadecimal.
  *
  * Pura e sem estado, de propósito: o gerador de CSS, o teste de contraste, o `themeColor` da aba
  * do navegador, as caixinhas do seletor e o espelho do Blockly (que não lê custom property
@@ -22,7 +22,7 @@ import {
   type TokenName,
 } from './recipe'
 
-/** Só os 18 que seguem a cor — é o que cada bloco `[data-sz-palette="…"]` declara. */
+/** Só os 19 que seguem a cor — é o que cada bloco `[data-sz-palette="…"]` declara. */
 export function derivePaletteTokens(id: PaletteId): Record<PaletteToken, string> {
   const recipe = paletteRecipe(id)
   const action = actionFor(recipe.hue, recipe.chromaCap)
@@ -40,7 +40,7 @@ export function derivePaletteTokens(id: PaletteId): Record<PaletteToken, string>
   return tokens
 }
 
-/** A paleta inteira: os 18 que seguem a cor mais os 18 que nunca mudam. */
+/** A paleta inteira: os 19 que seguem a cor mais os 18 que nunca mudam. */
 export function derive(id: PaletteId): Record<TokenName, string> {
   return { ...FIXED_TOKENS, ...derivePaletteTokens(id) }
 }

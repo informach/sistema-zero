@@ -993,7 +993,7 @@ do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medid
 travado por `tests/main-container.test.tsx` (regime das rotas embarcadas + ramo normal fora do
 regime + o par main↔frames); mexeu no piso de um lado, mexa no outro (o comentário do
 `studio-full-client` aponta o par). **SEGUE o tema da comunidade:** o
-`studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
+`studio-full-client` passa `theme='light'` (constante: não há tema escuro aqui) ao `<StudioEditor>` E ao
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
@@ -1619,7 +1619,7 @@ de Inventor(a), liberado):
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
 `KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema do next-themes e sprites do Zappy). A persistência do plano é
+do pacote no effect, tema claro fixo e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
 (shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
 `…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
@@ -1650,7 +1650,7 @@ Inventor(a), liberado):
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
 = `KidsPintaUnavailable` (retry); produto + carreira ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
-dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
+dinâmico no effect, tema claro fixo). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
 (`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
@@ -1699,7 +1699,7 @@ atalho e dica do "Trazer do Molda") → 200 sem produto = `KidsLockedMolda`; sta
 `KidsMoldaUnavailable` (retry); produto + carreira ≥ **`THREE_D_CREATION_MIN_LEVEL`**
 (`explorer`, o Explorador(a) de Mundos desde 05/09 — antes `hacker`: ⚠️ a oficina abre no posto
 que ganha o kit Jogo 3D, consumidor do modelo; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
-dinâmico no effect, tema do next-themes, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
+dinâmico no effect, tema claro fixo, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
 deep link `?criacao=`). **Sem backend próprio** (galeria no IndexedDB POR PERFIL), mas COM a nuvem
 desde 04/09: **"Guardado na sua conta" com a tool `molda`** — `src/lib/molda-cloud-persistence.ts`
 embrulha `createMoldaPersistence({namespace})` (molde do wrapper do Pinta, sem biblioteca de
@@ -2380,7 +2380,7 @@ test:community (5) + biome + **build dos 3 apps**.
   fantasma (`freeFloorSpot`/`freeWallSpot` agora devolvem `null`).
 - **Quarto: drag sem churn** — `moveTo` num ref; o efeito de pointer listeners (`room-canvas-3d.tsx`)
   ficou estável (era re-assinado a cada frame do arraste; fechava a janela rara de órbita travada).
-- **Avatar: configurador SEGUE o tema da comunidade** (`useTheme` do next-themes, igual ao Estúdio)
+- **Avatar: configurador abre no CLARO** (constante; não há tema escuro nesta plataforma)
   — era `prefers-color-scheme` do SO.
 - **Avatar: giro da "cabine" mais suave** (~230°/s; era ~630°/s) — gatilho vestibular no PADRÃO (quase
   nenhuma criança tem `prefers-reduced-motion` no SO); o caminho reduzido segue assentando sem girar.

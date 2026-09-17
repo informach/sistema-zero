@@ -41,7 +41,6 @@ describe('a folha gerada está em dia com o registro', () => {
     // build antigo, ainda no ar, carrega a folha antiga junto. (A rota HTTP legada é outra
     // história: members e apps sobem separados, e ela fica mais uma release.)
     expect(await Bun.file(FOLHA).text()).not.toContain('data-tema')
-    for (const recipe of PALETTE_RECIPES) expect(recipe.legacySelectors ?? []).toEqual([])
   })
 
   test('os tokens que nunca mudam ficam no :root, fora dos blocos de paleta', async () => {

@@ -19,7 +19,7 @@ const AVISO = `/*
  * Fonte: \`packages/ui/src/tokens/\` (registro em \`palettes.ts\`, receita em \`recipe.ts\`).
  * Para mudar uma cor, mexa no registro e rode \`bun run tokens:gen\` no \`packages/ui\`.
  *
- * Uma paleta = uma matiz. Os 18 tokens abaixo seguem a cor escolhida pela pessoa; os outros 18
+ * Uma paleta = uma matiz. Os 19 tokens abaixo seguem a cor escolhida pela pessoa; os outros 18
  * (identidade das ferramentas, estado e constantes) vivem no \`:root\` e nunca mudam.
  */`
 
@@ -53,8 +53,7 @@ export function toCss(): string {
   )
 
   for (const recipe of PALETTE_RECIPES) {
-    const seletores = [`[data-sz-palette="${recipe.id}"]`, ...(recipe.legacySelectors ?? [])]
-    partes.push(bloco(seletores, linhasDaPaleta(recipe.id)))
+    partes.push(bloco([`[data-sz-palette="${recipe.id}"]`], linhasDaPaleta(recipe.id)))
   }
 
   return `${partes.join('\n\n')}\n`

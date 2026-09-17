@@ -22,11 +22,6 @@ export interface PaletteRecipe {
    * nova nasce sem override nenhum.
    */
   readonly overrides?: Partial<Record<PaletteToken, string>>
-  /**
-   * Seletores do mundo antigo, com data de morte (etapa 7 do plano). É o que deixa o kids e o
-   * funil seguirem funcionando enquanto os apps ainda não emitem `data-sz-palette`.
-   */
-  readonly legacySelectors?: readonly string[]
 }
 
 /**

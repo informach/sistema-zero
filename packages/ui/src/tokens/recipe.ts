@@ -6,9 +6,17 @@
  * que ninguém enxerga. É isso que torna uma cor nova parente das antigas, em vez de vizinha.
  */
 import type { Lab, Lch } from './color'
-import { fitChroma, hexToOklab, oklabToHex, oklchToHex, solveActionLightness } from './color'
+import {
+  fitChroma,
+  hexToOklab,
+  inSrgb,
+  oklabToHex,
+  oklabToOklch,
+  oklchToHex,
+  solveActionLightness,
+} from './color'
 
-/** Os 18 tokens que SEGUEM a cor escolhida. */
+/** Os 19 tokens que SEGUEM a cor escolhida. */
 export const PALETTE_TOKENS = [
   'ground',
   'ground-alt',
@@ -130,10 +138,20 @@ export function actionFor(hue: number, chromaCap: number = ACTION_ANCHOR.chromaC
   return solveActionLightness(hue, ACTION_ANCHOR.whiteContrast, chromaCap)
 }
 
-/** Um neutro tingido pela ação. */
+/**
+ * Um neutro tingido pela ação.
+ *
+ * ⚠️ Passa pelo MESMO ajuste de gamute que a família da ação: sem ele a cor saía presa na borda
+ * do sRGB, com a matiz torta — medido no `over-action` das matizes 257°–300,5°, que inclui a
+ * paleta roxa em produção. O erro visível era ΔE ≈ 0,003, mas o invariante "uma receita, segura
+ * em qualquer matiz" não valia, e nada notaria se ele crescesse.
+ */
 export function neutralFor(token: NeutralToken, action: Lab): string {
   const { l, t, base } = NEUTRAL_RECIPE[token]
-  return oklabToHex([l, t * action[1] + (1 - t) * base[0], t * action[2] + (1 - t) * base[1]])
+  const lab: Lab = [l, t * action[1] + (1 - t) * base[0], t * action[2] + (1 - t) * base[1]]
+  if (inSrgb(lab)) return oklabToHex(lab)
+  const [, croma, matiz] = oklabToOklch(lab)
+  return oklchToHex([l, fitChroma(l, croma, matiz), matiz])
 }
 
 /** Um parente da ação (degrau do relevo, clara, logo). */

@@ -27,8 +27,7 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > (feed/fórum/etc.) é fatia futura.
 >
 > **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
-> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Mudar tema/
-> Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
+> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
 > regras de exibição em `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe
 > rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
 > grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
@@ -47,23 +46,30 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
 > incluem `/packages/member-shell/**` como gatilho de deploy deste app.
 
-## Tema: a paleta do Pen, temas Padrão e Pink (11/09/2026)
+## Tema: a paleta do Pen, e a COR escolhida pela pessoa (17/09/2026)
 
 O visual segue as telas-modelo do Pen (`esboço plataforma.pen`, quadro "Paleta"): **um fundo só por
-página**, a **barra do topo escura** (a âncora do Pen; o adulto não tem menu lateral) e o verde
-**`#0B7A54`** como cor de ação. Não existe mais claro/escuro: são dois temas, **Padrão** e **Pink**
-(no Pink, o rosa entra no lugar do verde). Só design mudou: estrutura, textos e função seguem iguais.
+página** e a **barra do topo escura** (a âncora do Pen; o adulto não tem menu lateral). Não existe
+claro/escuro.
 
-- **Tokens** (`globals.css`): primitivos `--pen-*` (chão, chão alternativo, cartão, superfície 2,
-  linha, tinta, tinta suave, ação e hover, sobre-ação, campo, sucesso, ok-texto, alerta) e
-  `--topo-*` (barra). Os semânticos (`--background`, `--primary`, `--muted`…) apontam para eles, e
-  o Pink (`:root[data-tema="pink"]`) redefine só primitivos. ⚠️ **`--pen-sucesso` NÃO segue o
-  tema:** o `accent` só marca estado de sucesso (✓ de aula concluída, "Aula concluída", acerto do
-  quiz, entrega aprovada no member-shell); no Pink a ação vira rosa e o sucesso fica verde.
-- **next-themes:** `attribute="data-tema"`, `themes=['padrao','pink']`, `defaultTheme="padrao"`,
-  `enableSystem={false}` e **`storageKey="sz-tema"` (chave NOVA de propósito):** o script sem flash
-  aplica o valor guardado sem conferir a lista, e quem tinha `theme=dark` salvo ficaria preso num
-  tema inexistente. "Mudar tema" (menu do avatar) alterna Padrão ⇄ Pink.
+⭐ **Desde 17/09/2026 a cor principal é escolhida por CADA PESSOA, em Meu perfil**, entre seis
+swatches curados (`@sistemazero/core/palette`: `blue teal green orange pink purple`), e a cor da
+casa é o **azul**, igual em todo o ecossistema — o verde `#0B7A54` deixou de ser o padrão do
+adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
+
+- **Tokens** (`globals.css`): os primitivos `--pen-*` e `--topo-*` continuam com os MESMOS nomes
+  (são contrato do `ui` e do member-shell), mas deixaram de ter valor próprio: hoje cada um é um
+  alias de `var(--sz-community-*)`, que vem do `@sistemazero/ui`. ⚠️ **Não existe mais um
+  hexadecimal de paleta neste arquivo** — os 29 que havia saíram, e um contrato varre todo valor
+  que o gerador produz (`packages/ui/tests/community-kids-theme.test.ts`). Valor novo nasce no
+  registro de `packages/ui/src/tokens`. ⚠️ **`--pen-sucesso`/`--pen-alerta` NÃO seguem a cor** (são
+  ESTADO) e por isso seguem literais aqui: sob a paleta rosa, o ✓ de aula concluída e a resposta
+  certa do quiz continuariam verdes.
+- **Sem `next-themes`.** A biblioteca saiu em 17/09/2026, junto com o `data-tema`: o valor dela era
+  do APARELHO (localStorage) enquanto a preferência é do PERFIL, e o script de "no-flash" dela lê um
+  armazenamento que o servidor não enxerga. Hoje a cor chega por **`data-sz-palette` no `<html>`**,
+  emitido pelo layout raiz a partir de um espelho em cookie que o proxy do member-shell hidrata
+  antes do render (ver o CLAUDE.md de lá). O seletor é o `PalettePicker`, em Meu perfil.
 - ⚠️ **`@custom-variant dark (&:is(.dark *))` FICA:** sem ela o Tailwind v4 volta ao
   `prefers-color-scheme` e os `dark:` do `@sistemazero/ui` e do member-shell passariam a seguir o
   modo escuro do sistema operacional. Como não existe `.dark` em lugar nenhum, eles ficam inertes.
@@ -255,7 +261,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Geist fonts, Providers: next-themes + Toaster)
+    layout.tsx              Root (Geist fonts, data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
     (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)

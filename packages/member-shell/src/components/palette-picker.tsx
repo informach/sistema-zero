@@ -54,6 +54,12 @@ export function PalettePicker({
   const desejada = useRef<Palette | null>(initial)
   const emVoo = useRef(false)
   const ultimoEnvio = useRef(0)
+  /**
+   * A cor que o servidor RECUSOU e que o "Tentar de novo" vai reenviar. `undefined` = nada
+   * pendente. ⚠️ Sem isto o botão de erro era MORTO: a tela volta para a cor confirmada, então
+   * `desejada === confirmada` e o `enviar()` saía na primeira linha, sem pedido nenhum.
+   */
+  const alvoRecusado = useRef<Palette | null | undefined>(undefined)
 
   const enviar = useCallback(async () => {
     if (emVoo.current) return
@@ -77,16 +83,23 @@ export function PalettePicker({
       confirmada.current = alvo
       setErro(null)
     } catch (e) {
-      // ⚠️ Volta para a última cor CONFIRMADA, nunca para a cor da casa: uma falha de rede não
-      // pode apagar da tela a cor que a pessoa já tinha.
-      desejada.current = confirmada.current
-      setEscolhida(confirmada.current)
-      paintPalette(confirmada.current)
-      setErro(
-        (e as { code?: string })?.code === 'VIEWER_CHANGED'
-          ? 'O perfil mudou. Abra a página novamente.'
-          : 'Não consegui guardar a sua cor agora.',
-      )
+      // ⚠️⚠️ Só desfaz se NADA mais novo foi escolhido no meio. A pessoa clica Laranja, a rede
+      // falha, e ela já clicou Verde enquanto isso: desfazer aqui jogaria o Verde fora sem nunca
+      // enviá-lo — o clique sumia em silêncio e a tela voltava para uma cor que ela não acabou
+      // de escolher. Com algo mais novo na fila, o `finally` abaixo o envia.
+      if (desejada.current === alvo) {
+        // Volta para a última cor CONFIRMADA, nunca para a cor da casa: uma falha de rede não
+        // pode apagar da tela a cor que a pessoa já tinha.
+        alvoRecusado.current = alvo
+        desejada.current = confirmada.current
+        setEscolhida(confirmada.current)
+        paintPalette(confirmada.current)
+        setErro(
+          (e as { code?: string })?.code === 'VIEWER_CHANGED'
+            ? 'O perfil mudou. Abra a página novamente.'
+            : 'Não consegui guardar a sua cor agora.',
+        )
+      }
     } finally {
       ultimoEnvio.current = Date.now()
       emVoo.current = false
@@ -97,9 +110,22 @@ export function PalettePicker({
 
   const escolher = (palette: Palette) => {
     if (readOnly) return
+    alvoRecusado.current = undefined
+    setErro(null)
     setEscolhida(palette)
     desejada.current = palette
     paintPalette(palette)
+    void enviar()
+  }
+
+  /** Reenvia a cor que o servidor recusou — é o que faz o botão do erro existir de verdade. */
+  const tentarDeNovo = () => {
+    const alvo = alvoRecusado.current
+    if (alvo === undefined || readOnly) return
+    setErro(null)
+    setEscolhida(alvo)
+    desejada.current = alvo
+    paintPalette(alvo)
     void enviar()
   }
 
@@ -129,7 +155,7 @@ export function PalettePicker({
               {/* Radios NATIVOS: setas, Home/End, `aria-checked` e o foco vêm da plataforma. */}
               <input
                 type="radio"
-                name="sz-palette"
+                name={`sz-palette-${grupo}`}
                 value={palette}
                 checked={ativa}
                 onChange={() => escolher(palette)}
@@ -163,7 +189,7 @@ export function PalettePicker({
       {erro ? (
         <p role="alert" className="mt-1 text-destructive text-sm">
           {erro}{' '}
-          <button type="button" onClick={() => void enviar()} className="min-h-11 underline">
+          <button type="button" onClick={tentarDeNovo} className="min-h-11 underline">
             Tentar de novo
           </button>
         </p>

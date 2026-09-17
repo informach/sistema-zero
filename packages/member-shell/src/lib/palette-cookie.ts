@@ -20,6 +20,12 @@ import { prefixedCookieName } from './cookies'
  */
 export const PALETTE_COOKIE_MAX_AGE = 6 * 60 * 60
 
+/**
+ * Quando o gateway não respondeu. Curto o bastante para se auto-curar, longo o bastante para uma
+ * indisponibilidade não virar uma tentativa por navegação — cada uma segura o render.
+ */
+export const PALETTE_COOKIE_UNAVAILABLE_MAX_AGE = 5 * 60
+
 /** `<base>_palette`, com `__Host-` em produção (mesma régua dos cookies de sessão). */
 export function paletteCookieName(base: string, prod: boolean): string {
   return prefixedCookieName(`${base}_palette`, prod)

@@ -12,7 +12,13 @@ import type { ForwardHeaders } from './refresh'
  */
 export type PaletteFetchResult = PalettePreference | 'unavailable'
 
-const TIMEOUT_MS = 8_000
+/**
+ * ⚠️⚠️ Este é um orçamento de RENDER, não de API. A busca acontece DENTRO do proxy, antes do
+ * primeiro byte de HTML: um gateway pendurado vira tempo que a criança passa olhando uma tela
+ * branca. Um segundo já é generoso para uma chamada na rede interna, e estourar não custa nada
+ * — a página sai na cor da casa e a navegação seguinte tenta de novo.
+ */
+const TIMEOUT_MS = 1_000
 
 /**
  * ⚠️⚠️ O single-flight vive em `globalThis` via `Symbol.for`, NUNCA em escopo de módulo: o

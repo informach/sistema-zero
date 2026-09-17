@@ -367,7 +367,7 @@ jobs:
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;

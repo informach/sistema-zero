@@ -134,4 +134,59 @@ describe('o seletor de cor', () => {
       expect(radio.getAttribute('value')).toBe(id)
     }
   })
+  it('⚠️⚠️ um clique feito DURANTE um envio que falha não pode sumir', async () => {
+    // Medido no review: a pessoa clica Laranja, a rede cai, e ela clica Verde enquanto isso.
+    // Desfazer sem olhar o que está na fila jogava o Verde fora sem nunca enviá-lo — o clique
+    // sumia em silêncio e a tela voltava para uma cor que ela não acabou de escolher.
+    render(<PalettePicker viewerId={VIEWER} initial="pink" />)
+    let liberar: (() => void) | undefined
+    const primeiraTerminou = new Promise<void>((r) => {
+      liberar = r
+    })
+    // Só o PRIMEIRO envio falha; o segundo (o clique mais novo) tem de conseguir sair.
+    globalThis.fetch = (async (_i: RequestInfo | URL, init?: RequestInit) => {
+      const n = puts.length
+      if (init?.method === 'PUT') puts.push(JSON.parse(String(init.body)))
+      if (n === 0) {
+        await primeiraTerminou
+        throw new Error('rede')
+      }
+      return new Response(JSON.stringify({ palette: 'green' }), { status: 200 })
+    }) as unknown as typeof fetch
+
+    await act(async () => {
+      clicar('orange')
+    })
+    await waitFor(() => expect(puts.length).toBe(1))
+    await act(async () => {
+      clicar('green')
+    })
+    await act(async () => {
+      liberar?.()
+      await Promise.resolve()
+    })
+    // O Verde é a intenção viva: ele TEM de sair, e a tela não volta para o rosa.
+    await waitFor(() => expect(puts.at(-1)).toEqual({ palette: 'green' }), { timeout: 4000 })
+    expect(document.documentElement.dataset.szPalette).toBe('green')
+  })
+
+  it('⚠️ "Tentar de novo" reenvia a cor recusada — não é botão morto', async () => {
+    render(<PalettePicker viewerId={VIEWER} initial="pink" />)
+    responder = () => new Response('{}', { status: 500 })
+    await act(async () => {
+      clicar('orange')
+    })
+    await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy())
+    expect(puts.length).toBe(1)
+
+    responder = () => new Response(JSON.stringify({ palette: 'orange' }), { status: 200 })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /tentar de novo/i }))
+    })
+    // Sem o alvo recusado guardado, `desejada === confirmada` e o envio saía na 1ª linha: zero
+    // pedidos, erro na tela para sempre.
+    await waitFor(() => expect(puts.length).toBe(2), { timeout: 4000 })
+    expect(puts.at(-1)).toEqual({ palette: 'orange' })
+    expect(document.documentElement.dataset.szPalette).toBe('orange')
+  })
 })

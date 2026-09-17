@@ -7,6 +7,7 @@ import {
   decodePaletteCookie,
   encodePaletteCookie,
   PALETTE_COOKIE_MAX_AGE,
+  PALETTE_COOKIE_UNAVAILABLE_MAX_AGE,
 } from '../lib/palette-cookie'
 import { fetchPaletteOnce } from './palette'
 import { refreshTokens } from './refresh'
@@ -140,9 +141,10 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
           sameSite: 'lax' as const,
           secure: isProd(),
           path: '/',
-          // Gateway fora: grava CURTO e se auto-cura na próxima navegação, em vez de congelar a
-          // cor da casa por seis horas.
-          maxAge: unavailable ? 60 : PALETTE_COOKIE_MAX_AGE,
+          // Gateway fora: grava um cookie CURTO e se auto-cura, em vez de congelar a cor da
+          // casa por seis horas. ⚠️ 5 min, não 1: com 60s uma indisponibilidade de meia hora
+          // rende 30 tentativas POR APARELHO, cada uma segurando o render até o timeout.
+          maxAge: unavailable ? PALETTE_COOKIE_UNAVAILABLE_MAX_AGE : PALETTE_COOKIE_MAX_AGE,
         })
       }
     }
