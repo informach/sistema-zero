@@ -19,7 +19,8 @@
     "./time": "./src/time/index.ts",
     "./zappy": "./src/zappy/index.ts",
     "./learning": "./src/learning/index.ts",
-    "./learning/scene": "./src/learning/scene/index.ts"
+    "./learning/scene": "./src/learning/scene/index.ts",
+    "./palette": "./src/palette/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

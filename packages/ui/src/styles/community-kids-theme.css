@@ -1,78 +1,64 @@
 /*
- * IDENTIDADE CANÔNICA DA COMUNIDADE KIDS
+ * ALIASES `--sz-community-*` — CAMADA DE COMPATIBILIDADE, SEM VALOR NENHUM.
  *
- * Esta é a única fonte dos valores da paleta Pen usados pela plataforma e
- * pelo funil kids. Os consumidores podem criar aliases semânticos próprios,
- * mas não devem repetir estes valores.
+ * A fonte canônica das cores é `./palettes/community.css`, GERADA a partir de
+ * `packages/ui/src/tokens/` (registro em `palettes.ts`, receita em `recipe.ts`). Para mudar uma
+ * cor, mexa no registro e rode `bun run tokens:gen` — nunca edite hexadecimal aqui.
  *
- * O tema Pink troca os papéis de tema. As cores de identidade das ferramentas
- * permanecem estáveis; somente chão, tinta, menu e ação acompanham o tema.
+ * Este arquivo existe porque `--sz-community-*` é contrato consumido pela plataforma kids, pelo
+ * funil e, por dois degraus, pelas ferramentas embarcadas. Trocar VALOR é no registro; RENOMEAR
+ * segue proibido.
+ *
+ * O nome canônico encurtou para `--sz-*` porque a paleta deixou de ser só da comunidade: o mesmo
+ * contrato serve kids, adultos, funil e, na etapa do chassi `console`, o admin.
  */
+@import "./palettes/community.css";
+
 :root {
   /* Chão, superfícies e texto */
-  --sz-community-ground: #e9eef6;
-  --sz-community-ground-alt: #dde5f0;
-  --sz-community-card: #ffffff;
-  --sz-community-surface-2: #eff3f9;
-  --sz-community-line: #d6deea;
-  --sz-community-ink: #0f1a33;
-  --sz-community-ink-muted: #46536e;
-  --sz-community-field: #74829f;
+  --sz-community-ground: var(--sz-ground);
+  --sz-community-ground-alt: var(--sz-ground-alt);
+  --sz-community-card: var(--sz-card);
+  --sz-community-surface-2: var(--sz-surface-2);
+  --sz-community-line: var(--sz-line);
+  --sz-community-ink: var(--sz-ink);
+  --sz-community-ink-muted: var(--sz-ink-muted);
+  --sz-community-field: var(--sz-field);
 
   /* Ação e relevo 3D */
-  --sz-community-action: #1b5cf3;
-  --sz-community-action-step: #1343b8;
-  --sz-community-action-light: #6e9bff;
-  --sz-community-on-action: #ffffff;
-  --sz-community-over-action: #e2ebff;
-  --sz-community-white-step: #0f3fb0;
-  --sz-community-card-step: #b9c6d9;
+  --sz-community-action: var(--sz-action);
+  --sz-community-action-step: var(--sz-action-step);
+  --sz-community-action-hover: var(--sz-action-hover);
+  --sz-community-action-light: var(--sz-action-light);
+  --sz-community-on-action: var(--sz-on-action);
+  --sz-community-over-action: var(--sz-over-action);
+  --sz-community-white-step: var(--sz-white-step);
+  --sz-community-card-step: var(--sz-card-step);
 
   /* Âncora escura */
-  --sz-community-menu: #121a30;
-  --sz-community-menu-2: #1b2540;
-  --sz-community-menu-text: #cbd4e8;
-  --sz-community-menu-icon: #8e9bba;
-  --sz-community-menu-glass: rgb(255 255 255 / 0.08);
-  --sz-community-logo-zero: #0074fc;
+  --sz-community-menu: var(--sz-menu);
+  --sz-community-menu-2: var(--sz-menu-2);
+  --sz-community-menu-text: var(--sz-menu-text);
+  --sz-community-menu-icon: var(--sz-menu-icon);
+  --sz-community-menu-glass: var(--sz-menu-glass);
+  --sz-community-logo-zero: var(--sz-logo-zero);
 
-  /* Identidade das ferramentas e pontos de alegria */
-  --sz-community-blue: #1b5cf3;
-  --sz-community-blue-light: #6e9bff;
-  --sz-community-blue-deep: #0a2a7a;
-  --sz-community-yellow: #ffc02e;
-  --sz-community-red: #cf3f36;
-  --sz-community-pink: #c8246f;
-  --sz-community-pink-light: #f368a6;
-  --sz-community-purple: #6d3bf5;
-  --sz-community-green: #0b7a54;
-  --sz-community-orange: #b55a00;
-  --sz-community-amber: #e8a317;
+  /* Identidade das ferramentas e pontos de alegria — NÃO seguem a cor escolhida */
+  --sz-community-blue: var(--sz-blue);
+  --sz-community-blue-light: var(--sz-blue-light);
+  --sz-community-blue-deep: var(--sz-blue-deep);
+  --sz-community-yellow: var(--sz-yellow);
+  --sz-community-red: var(--sz-red);
+  --sz-community-pink: var(--sz-pink);
+  --sz-community-pink-light: var(--sz-pink-light);
+  --sz-community-purple: var(--sz-purple);
+  --sz-community-green: var(--sz-green);
+  --sz-community-orange: var(--sz-orange);
+  --sz-community-amber: var(--sz-amber);
 
   /* Fundos de apoio */
-  --sz-community-mint: #dcf0e4;
-  --sz-community-lilac: #e5e0f7;
-  --sz-community-pink-surface: #f8e4ee;
-  --sz-community-yellow-surface: #fff3c4;
-}
-
-:root[data-tema="pink"] {
-  --sz-community-ground: #f4ecf2;
-  --sz-community-ground-alt: #ecdde8;
-  --sz-community-surface-2: #f8f1f6;
-  --sz-community-line: #e7d5e1;
-  --sz-community-ink: #1f1026;
-  --sz-community-ink-muted: #5a4760;
-  --sz-community-field: #9a7892;
-  --sz-community-action: #c8246f;
-  --sz-community-action-step: #8e1650;
-  --sz-community-action-light: #ff7ab6;
-  --sz-community-over-action: #fff0f6;
-  --sz-community-white-step: #7e1146;
-  --sz-community-card-step: #d2b6c8;
-  --sz-community-menu: #25132b;
-  --sz-community-menu-2: #331d3a;
-  --sz-community-menu-text: #e6d3e1;
-  --sz-community-menu-icon: #b08fab;
-  --sz-community-logo-zero: #e2489a;
+  --sz-community-mint: var(--sz-mint);
+  --sz-community-lilac: var(--sz-lilac);
+  --sz-community-pink-surface: var(--sz-pink-surface);
+  --sz-community-yellow-surface: var(--sz-yellow-surface);
 }

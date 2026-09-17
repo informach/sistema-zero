@@ -1,0 +1,188 @@
+/*
+ * PALETAS DA COMUNIDADE — ARQUIVO GERADO. NÃO EDITE À MÃO.
+ *
+ * Fonte: `packages/ui/src/tokens/` (registro em `palettes.ts`, receita em `recipe.ts`).
+ * Para mudar uma cor, mexa no registro e rode `bun run tokens:gen` no `packages/ui`.
+ *
+ * Uma paleta = uma matiz. Os 18 tokens abaixo seguem a cor escolhida pela pessoa; os outros 18
+ * (identidade das ferramentas, estado e constantes) vivem no `:root` e nunca mudam.
+ */
+
+:root {
+  /* Não seguem a cor escolhida: constantes, identidade das ferramentas e estado. */
+  --sz-card: #ffffff;
+  --sz-on-action: #ffffff;
+  --sz-menu-glass: rgb(255 255 255 / 0.08);
+  --sz-blue: #1b5cf3;
+  --sz-blue-light: #6e9bff;
+  --sz-blue-deep: #0a2a7a;
+  --sz-yellow: #ffc02e;
+  --sz-red: #cf3f36;
+  --sz-pink: #c8246f;
+  --sz-pink-light: #f368a6;
+  --sz-purple: #6d3bf5;
+  --sz-green: #0b7a54;
+  --sz-orange: #b55a00;
+  --sz-amber: #e8a317;
+  --sz-mint: #dcf0e4;
+  --sz-lilac: #e5e0f7;
+  --sz-pink-surface: #f8e4ee;
+  --sz-yellow-surface: #fff3c4;
+}
+
+/* Rede de segurança: sem o atributo, vale a cor da casa. O servidor SEMPRE o emite, então
+ * isto nunca deveria pintar nada. */
+:root:not([data-sz-palette]) {
+  --sz-ground: #e9eef6;
+  --sz-ground-alt: #dde5f0;
+  --sz-surface-2: #eff3f9;
+  --sz-line: #d6deea;
+  --sz-ink: #0f1a33;
+  --sz-ink-muted: #46536e;
+  --sz-field: #74829f;
+  --sz-card-step: #b9c6d9;
+  --sz-action: #1b5cf3;
+  --sz-action-step: #1343b8;
+  --sz-action-hover: #1c4fc4;
+  --sz-action-light: #6e9bff;
+  --sz-over-action: #e2ebff;
+  --sz-white-step: #0f3fb0;
+  --sz-menu: #121a30;
+  --sz-menu-2: #1b2540;
+  --sz-menu-text: #cbd4e8;
+  --sz-menu-icon: #8e9bba;
+  --sz-logo-zero: #0074fc;
+}
+
+[data-sz-palette="blue"] {
+  --sz-ground: #e9eef6;
+  --sz-ground-alt: #dde5f0;
+  --sz-surface-2: #eff3f9;
+  --sz-line: #d6deea;
+  --sz-ink: #0f1a33;
+  --sz-ink-muted: #46536e;
+  --sz-field: #74829f;
+  --sz-card-step: #b9c6d9;
+  --sz-action: #1b5cf3;
+  --sz-action-step: #1343b8;
+  --sz-action-hover: #1c4fc4;
+  --sz-action-light: #6e9bff;
+  --sz-over-action: #e2ebff;
+  --sz-white-step: #0f3fb0;
+  --sz-menu: #121a30;
+  --sz-menu-2: #1b2540;
+  --sz-menu-text: #cbd4e8;
+  --sz-menu-icon: #8e9bba;
+  --sz-logo-zero: #0074fc;
+}
+
+[data-sz-palette="teal"] {
+  --sz-ground: #ebeff2;
+  --sz-ground-alt: #dfe4e8;
+  --sz-surface-2: #f1f3f6;
+  --sz-line: #d8dde1;
+  --sz-ink: #101928;
+  --sz-ink-muted: #485262;
+  --sz-field: #7b8490;
+  --sz-card-step: #bbc3c9;
+  --sz-action: #00777c;
+  --sz-action-step: #005357;
+  --sz-action-hover: #016165;
+  --sz-action-light: #69aaac;
+  --sz-over-action: #e8f2f5;
+  --sz-white-step: #004b4f;
+  --sz-menu: #161b2a;
+  --sz-menu-2: #202638;
+  --sz-menu-text: #d0d8df;
+  --sz-menu-icon: #939cab;
+  --sz-logo-zero: #2f8b8a;
+}
+
+[data-sz-palette="green"] {
+  --sz-ground: #ebeff0;
+  --sz-ground-alt: #dfe4e5;
+  --sz-surface-2: #f1f4f4;
+  --sz-line: #d8ddde;
+  --sz-ink: #101a25;
+  --sz-ink-muted: #48525d;
+  --sz-field: #7b858a;
+  --sz-card-step: #bbc4c4;
+  --sz-action: #0b7a54;
+  --sz-action-step: #005639;
+  --sz-action-hover: #086446;
+  --sz-action-light: #6bad8b;
+  --sz-over-action: #e8f2f1;
+  --sz-white-step: #004e34;
+  --sz-menu: #151b27;
+  --sz-menu-2: #1f2734;
+  --sz-menu-text: #d0d8db;
+  --sz-menu-icon: #939da4;
+  --sz-logo-zero: #3a8e60;
+}
+
+[data-sz-palette="orange"] {
+  --sz-ground: #f1eded;
+  --sz-ground-alt: #e8e1e1;
+  --sz-surface-2: #f5f2f2;
+  --sz-line: #e3dad9;
+  --sz-ink: #1c1720;
+  --sz-ink-muted: #564e58;
+  --sz-field: #907e81;
+  --sz-card-step: #cdbebd;
+  --sz-action: #a95300;
+  --sz-action-step: #7a3b00;
+  --sz-action-hover: #8d4503;
+  --sz-action-light: #d89167;
+  --sz-over-action: #f6eeeb;
+  --sz-white-step: #703500;
+  --sz-menu: #201822;
+  --sz-menu-2: #2c232f;
+  --sz-menu-text: #ded4d5;
+  --sz-menu-icon: #a7969c;
+  --sz-logo-zero: #c16734;
+}
+
+[data-sz-palette="pink"],
+:root[data-tema="pink"] {
+  --sz-ground: #f4ecf2;
+  --sz-ground-alt: #ecdde8;
+  --sz-surface-2: #f8f1f6;
+  --sz-line: #e7d5e1;
+  --sz-ink: #1f1026;
+  --sz-ink-muted: #5a4760;
+  --sz-field: #9a7892;
+  --sz-card-step: #d2b6c8;
+  --sz-action: #c8246f;
+  --sz-action-step: #8e1650;
+  --sz-action-hover: #a81d5d;
+  --sz-action-light: #ff7ab6;
+  --sz-over-action: #fff0f6;
+  --sz-white-step: #7e1146;
+  --sz-menu: #25132b;
+  --sz-menu-2: #331d3a;
+  --sz-menu-text: #e6d3e1;
+  --sz-menu-icon: #b08fab;
+  --sz-logo-zero: #e2489a;
+}
+
+[data-sz-palette="purple"] {
+  --sz-ground: #ededf7;
+  --sz-ground-alt: #e2e1f0;
+  --sz-surface-2: #f2f2fa;
+  --sz-line: #dcdaeb;
+  --sz-ink: #161531;
+  --sz-ink-muted: #4d4d6d;
+  --sz-field: #827ea2;
+  --sz-card-step: #c1bfd9;
+  --sz-action: #6e4ee8;
+  --sz-action-step: #4f36ab;
+  --sz-action-hover: #5c41c2;
+  --sz-action-light: #9e99ff;
+  --sz-over-action: #edeeff;
+  --sz-white-step: #49319e;
+  --sz-menu: #1a1732;
+  --sz-menu-2: #252143;
+  --sz-menu-text: #d5d4eb;
+  --sz-menu-icon: #9a96bc;
+  --sz-logo-zero: #736cff;
+}

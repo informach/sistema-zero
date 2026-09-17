@@ -13,6 +13,10 @@
 /* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
    sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
 @import "../../../member-shell/src/styles/scene.css";
+/* Paleta canônica (`@sistemazero/ui`): os `--sz-community-*` de onde os `--pen-*` abaixo
+   derivam. ⚠️ Valor Pen NÃO se repete aqui — ele nasce no registro de `packages/ui/src/tokens`
+   e a cor escolhida no perfil chega por `data-sz-palette` no <html>. */
+@import "@sistemazero/ui/community-kids-theme.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../member-shell/src";
@@ -83,18 +87,18 @@
 :root {
   color-scheme: light;
 
-  --pen-chao: #e9eef6;
-  --pen-chao-alt: #dde5f0;
-  --pen-cartao: #ffffff;
-  --pen-sup2: #eff3f9;
-  --pen-linha: #d6deea;
-  --pen-tinta: #0f1a33;
-  --pen-tinta-suave: #46536e;
-  --pen-acao: #0b7a54;
-  --pen-acao-hover: #086446;
+  --pen-chao: var(--sz-community-ground);
+  --pen-chao-alt: var(--sz-community-ground-alt);
+  --pen-cartao: var(--sz-community-card);
+  --pen-sup2: var(--sz-community-surface-2);
+  --pen-linha: var(--sz-community-line);
+  --pen-tinta: var(--sz-community-ink);
+  --pen-tinta-suave: var(--sz-community-ink-muted);
+  --pen-acao: var(--sz-community-action);
+  --pen-acao-hover: var(--sz-community-action-hover);
   /* Texto sobre a cor de ação quando não é branco puro (sobretítulo do herói). */
-  --pen-sobre-acao: #e8f5ee;
-  --pen-campo: #74829f;
+  --pen-sobre-acao: var(--sz-community-over-action);
+  --pen-campo: var(--sz-community-field);
   /* Sucesso do Pen: é ESTADO (concluído, acertou), então não segue o tema. No Padrão ele coincide
      com a cor de ação; no Pink continua verde enquanto a ação vira rosa. */
   --pen-sucesso: #0b7a54;
@@ -102,17 +106,17 @@
   --pen-alerta: #d92d34;
 
   /* Barra do topo escura: a âncora do Pen (o adulto não tem menu lateral). */
-  --topo: #121a30;
-  --topo-borda: #1b2540;
-  --topo-texto: #cbd4e8;
-  --topo-icone: #8e9bba;
-  --topo-vidro: rgb(255 255 255 / 0.08);
+  --topo: var(--sz-community-menu);
+  --topo-borda: var(--sz-community-menu-2);
+  --topo-texto: var(--sz-community-menu-text);
+  --topo-icone: var(--sz-community-menu-icon);
+  --topo-vidro: var(--sz-community-menu-glass);
 
   /* O ZERO da logo oficial (`brand-logo.tsx`): o degradê da marca, um por fundo. */
-  --logo-zero-escuro-de: #c4f042;
-  --logo-zero-escuro-ate: #42e8e0;
-  --logo-zero-claro-de: #0891a8;
-  --logo-zero-claro-ate: #c4f042;
+  --logo-zero-escuro-de: var(--sz-community-action-light);
+  --logo-zero-escuro-ate: var(--sz-community-logo-zero);
+  --logo-zero-claro-de: var(--sz-community-action);
+  --logo-zero-claro-ate: var(--sz-community-logo-zero);
 
   --background: var(--pen-chao);
   --background-alt: var(--pen-chao-alt);
@@ -156,8 +160,8 @@
   --ring: var(--pen-acao);
 
   --chart-1: var(--pen-acao);
-  --chart-2: #1b5cf3;
-  --chart-3: #6d3bf5;
+  --chart-2: var(--sz-community-blue);
+  --chart-3: var(--sz-community-purple);
   --chart-4: var(--pen-alerta);
   --chart-5: var(--pen-tinta-suave);
 
@@ -170,34 +174,6 @@
 
   /* Cartão com 24 px e botão do `Button` em pílula (a régua do Pen). */
   --radius: 1.25rem;
-}
-
-/* ============================================================
-   SISTEMA ZERO — TEMA PINK (aprovado por ela em 11/09/2026)
-   ============================================================ */
-:root[data-tema="pink"] {
-  --pen-chao: #f4ecf2;
-  --pen-chao-alt: #ecdde8;
-  --pen-sup2: #f8f1f6;
-  --pen-linha: #e7d5e1;
-  --pen-tinta: #1f1026;
-  --pen-tinta-suave: #5a4760;
-  --pen-acao: #c8246f;
-  --pen-acao-hover: #a81d5d;
-  --pen-sobre-acao: #fff0f6;
-  --pen-campo: #9a7892;
-
-  --topo: #25132b;
-  --topo-borda: #331d3a;
-  --topo-texto: #e6d3e1;
-  --topo-icone: #b08fab;
-
-  /* No Pink o ZERO fica rosa (decisão dela, a mesma da logo do kids): sobre a barra escura, do
-     rosa sobre o escuro ao rosa da logo; sobre o claro, da cor de ação ao rosa da logo. */
-  --logo-zero-escuro-de: #ff7ab6;
-  --logo-zero-escuro-ate: #e2489a;
-  --logo-zero-claro-de: #c8246f;
-  --logo-zero-claro-ate: #e2489a;
 }
 
 /* ============================================================

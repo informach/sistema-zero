@@ -9,6 +9,9 @@
     ".": "./src/index.ts",
     "./cn": "./src/lib/cn.ts",
     "./phone": "./src/lib/phone.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./styles/*": "./src/styles/*",
+    "./palettes.css": "./src/styles/palettes/community.css",
     "./community-kids-theme.css": "./src/styles/community-kids-theme.css",
     "./theme-kids.css": "./src/styles/theme-kids.css",
     "./tool-chrome.css": "./src/styles/tool-chrome.css",
@@ -17,10 +20,12 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",
+    "tokens:gen": "bun run scripts/gen-palettes.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },
   "dependencies": {
+    "@sistemazero/core": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",

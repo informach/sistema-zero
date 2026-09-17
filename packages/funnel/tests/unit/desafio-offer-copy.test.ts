@@ -53,6 +53,32 @@ describe('copy comercial do Desafio de 30 dias', () => {
     expect(visibleCopy).not.toContain('—')
   })
 
+  test('explica o papel dos pais sem exigir vocabulário técnico', () => {
+    const offer = source('components/funnel/oferta/DesafioOfertaBody.astro')
+
+    expect(offer).toContain('Você apoia sem precisar ensinar')
+    expect(offer).toContain('Você não precisa ensinar. Só precisa ajudar a começar.')
+    expect(offer).toContain('As aulas mostram o caminho para a criança, passo a passo.')
+    expect(offer).not.toContain('Você não precisa programar')
+    expect(offer).not.toContain('Você não precisa saber programar.')
+  })
+
+  test('carrega os ícones uma vez no layout e preserva a fonte nos cards do papel dos pais', () => {
+    const offer = source('components/funnel/oferta/DesafioOfertaBody.astro')
+    const communityOffer = source('components/funnel/oferta/ComunidadeOfertaBody.astro')
+    const home = source('pages/index.astro')
+    const layout = source('layouts/BaseLayout.astro')
+    const globalStyles = source('styles/global.css')
+
+    expect(layout).toContain("import '@fontsource/material-symbols-rounded/400.css'")
+    expect(globalStyles).toContain('.material-symbols-rounded')
+    expect(globalStyles).toContain('font-family: "Material Symbols Rounded", sans-serif')
+    expect(offer).not.toContain("import '@fontsource/material-symbols-rounded/400.css'")
+    expect(communityOffer).not.toContain("import '@fontsource/material-symbols-rounded/400.css'")
+    expect(home).not.toContain("import '@fontsource/material-symbols-rounded/400.css'")
+    expect(offer).not.toMatch(/\.dpj \.arow \.al-val span\s*\{[^}]*font-family/s)
+  })
+
   test('mostra a plataforma atual e somente entregas confirmadas do desafio', () => {
     const offer = source('components/funnel/oferta/DesafioOfertaBody.astro')
 
