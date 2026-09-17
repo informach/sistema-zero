@@ -7,6 +7,7 @@ import {
   type LearningAnswers,
   type LessonLearningReport,
   type LessonSection,
+  learningHints,
   playbackLessonStructure,
   publicInteractiveBlock,
   readVideoCoverage,
@@ -200,7 +201,7 @@ export class LearningService {
         input.positionSeconds > 86_400)
     )
       throw new ValidationError('Posição de vídeo inválida.')
-    const hintLimit = block.content.kind === 'interactive' ? block.content.hints.length : 0
+    const hintLimit = block.content.kind === 'interactive' ? learningHints(block.content).length : 0
     if (!Number.isInteger(input.hintsUsed) || input.hintsUsed < 0 || input.hintsUsed > hintLimit)
       throw new ValidationError('Quantidade de pistas inválida.')
     return this.repository.saveProgress({
@@ -233,7 +234,7 @@ export class LearningService {
       !isLearningAnswers(input.answers) ||
       !Number.isInteger(input.hintsUsed) ||
       input.hintsUsed < 0 ||
-      input.hintsUsed > block.content.hints.length
+      input.hintsUsed > learningHints(block.content).length
     )
       throw new ValidationError('Respostas inválidas.')
     const existing = await this.repository.findAttempt(actor, input.id)

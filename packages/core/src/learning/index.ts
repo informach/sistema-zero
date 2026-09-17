@@ -13,7 +13,12 @@ export * from './section-templates'
 export * from './simulation'
 export * from './video-watch'
 
-import { type ExplorationActivity, evaluateExploration, isExplorationActivity } from './exploration'
+import {
+  EXPLORATION_DEFINITIONS,
+  type ExplorationActivity,
+  evaluateExploration,
+  isExplorationActivity,
+} from './exploration'
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
 import { evaluateSimulation, isSimulationActivity, type SimulationActivity } from './simulation'
 export const SECTION_INTENTS = [
@@ -111,6 +116,14 @@ export interface InteractiveBlock {
   required: boolean
   /** A checkpoint is graded on the server, independently of a custom iframe. */
   checkpoint?: LearningCheckpoint
+}
+/** Authoring, presentation and evidence use the same hints, including curated mission defaults. */
+export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'>): string[] {
+  if (block.activity.type === 'exploration' && block.activity.version === 2)
+    return block.hints.length > 0
+      ? block.hints.slice(0, 3)
+      : [...EXPLORATION_DEFINITIONS[block.activity.mission].hints]
+  return block.hints
 }
 export type PublicLearningActivity =
   | Exclude<LearningActivity, SequenceActivity>

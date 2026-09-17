@@ -9,6 +9,7 @@ import {
   evaluateExploration,
   explorationGoals,
   type LearningAnswers,
+  learningHints,
   replayExploration,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
@@ -24,7 +25,12 @@ import {
   VolumeX,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import {
+  cancelLessonMediaFocus,
+  hasLessonMediaFocus,
+  registerLessonMedia,
+  requestLessonMediaFocus,
+} from '../lib/lesson-media-focus'
 import { DialogueBlockView } from './dialogue-block'
 import { ExplorationPieces } from './exploration-pieces'
 import {
@@ -160,6 +166,7 @@ export function LearningExploration({
 }) {
   const player = useLessonPlayer()
   const definition = EXPLORATION_DEFINITIONS[activity.mission]
+  const availableHints = learningHints({ activity, hints })
   const replay = replayExploration(activity, answers)
   const state = replay.state
   const goals = explorationGoals(activity, state)
@@ -211,7 +218,9 @@ export function LearningExploration({
       unregisterAudio()
       document.removeEventListener('visibilitychange', hidden)
       narration.current?.pause()
-      void soundContext.current?.close()
+      const context = soundContext.current
+      soundContext.current = null
+      void context?.close()
     }
   }, [])
 
@@ -226,9 +235,9 @@ export function LearningExploration({
     }
     const after = replayExploration(current.activity, next).state
     latest.current = { ...current, answers: next }
-    current.onChange(next, Math.min(after.hints, hints.length))
+    current.onChange(next, Math.min(after.hints, availableHints.length))
     if (evaluateExploration(current.activity, next).passed)
-      current.onEvidence(next, Math.min(after.hints, hints.length))
+      current.onEvidence(next, Math.min(after.hints, availableHints.length))
     if (
       action.type === 'jump' &&
       before.flightTime === null &&
@@ -248,10 +257,12 @@ export function LearningExploration({
       const context = soundContext.current
       void requestLessonMediaFocus(audioOwner.current)
         .then((ready) => {
+          if (!hasLessonMediaFocus(audioOwner.current)) return
           if (!ready) throw new Error('Audio busy')
           return context.resume()
         })
         .then(() => {
+          if (!hasLessonMediaFocus(audioOwner.current) || context.state === 'closed') return
           const oscillator = context.createOscillator(),
             gain = context.createGain()
           oscillator.frequency.setValueAtTime(520, context.currentTime)
@@ -308,7 +319,6 @@ export function LearningExploration({
     const o = state.observations.find((o) => o.id === id)
     return o ? [o] : []
   })
-  const availableHints = hints.length > 0 ? hints.slice(0, 3) : [...definition.hints]
   const hint = availableHints[state.hints - 1]
   function say(text: string, pose: 'speaking' | 'thinking' | 'celebrating' = 'speaking') {
     return player?.renderInstruction ? (
@@ -414,7 +424,11 @@ export function LearningExploration({
             aria-pressed={sound}
             onClick={() => {
               setSound(!sound)
-              if (sound) narration.current?.pause()
+              if (sound) {
+                cancelLessonMediaFocus(audioOwner.current)
+                narration.current?.pause()
+                void soundContext.current?.suspend()
+              }
               try {
                 localStorage.setItem('sz:lesson-sound', sound ? 'off' : 'on')
               } catch {
@@ -438,6 +452,7 @@ export function LearningExploration({
                 setAudioError('')
                 void requestLessonMediaFocus(audioOwner.current)
                   .then((ready) => {
+                    if (!hasLessonMediaFocus(audioOwner.current)) return
                     if (!ready) throw new Error('Audio busy')
                     return narration.current?.play()
                   })

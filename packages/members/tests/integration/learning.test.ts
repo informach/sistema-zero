@@ -73,6 +73,57 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
+  test('v2 default hints are saved and reported with the same limits as displayed hints', async () => {
+    const ctx = setup()
+    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+    if (!block) throw new Error('Missing fixture')
+    const activity = { type: 'exploration', version: 2, mission: 'layers' } as const
+    block.content = { ...content, activity, hints: [] }
+    const answers = appendExplorationAction(activity, {}, { type: 'hint', level: 1 })
+    const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
+    const progress = { revision: REVISION, answers, hintsUsed: 1, positionSeconds: null }
+    const saved = await ctx.request(`${path}/learning-progress`, 'PUT', progress)
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({ hintsUsed: 1 })
+    const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
+      id: randomUUID(),
+      revision: REVISION,
+      answers,
+      hintsUsed: 1,
+    })
+    expect(attempt.status).toBe(200)
+    expect(await attempt.json()).toMatchObject({
+      attempt: { hintsUsed: 1 },
+      progress: { hintsUsed: 1 },
+    })
+    expect(
+      (
+        await ctx.request(`${path}/learning-progress`, 'PUT', {
+          ...progress,
+          hintsUsed: 4,
+        })
+      ).status,
+    ).toBe(400)
+    expect(
+      (
+        await ctx.request(`${path}/learning-attempts`, 'POST', {
+          id: randomUUID(),
+          revision: REVISION,
+          answers,
+          hintsUsed: 4,
+        })
+      ).status,
+    ).toBe(400)
+    block.content = { ...content, activity, hints: ['A pista escrita pelo professor.'] }
+    expect(
+      (
+        await ctx.request(`${path}/learning-progress`, 'PUT', {
+          ...progress,
+          hintsUsed: 2,
+        })
+      ).status,
+    ).toBe(400)
+  })
   test('v2 discovery requires replayable actions, survives reload and refuses another revision', async () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)

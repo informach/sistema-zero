@@ -60,13 +60,18 @@ export function LessonRehearsal({
   for (const s of document.sections) {
     const missing: string[] = []
     for (const id of s.completion?.blockIds ?? [])
-      if (!state.completedBlocks.has(id) && !state.fixtures.has(s.id))
-        missing.push('Realize a atividade desta seção.')
+      if (!state.completedBlocks.has(id)) missing.push('Realize a atividade desta seção.')
     if (s.completion?.projectChecks?.length && !state.completedProjects.has(s.id))
       missing.push('Confira o objetivo no projeto desta seção.')
     if (s.completion?.platformAction && !state.fixtures.has(s.id))
       missing.push('Verifique a ação da plataforma.')
-    if (!s.completion) missing.push('Configure um critério de conclusão na autoria.')
+    if (
+      !s.completion ||
+      (!s.completion.blockIds.length &&
+        !s.completion.projectChecks?.length &&
+        !s.completion.platformAction)
+    )
+      missing.push('Configure um critério de conclusão na autoria.')
     if (missing.length === 0) completed.add(s.id)
     pending.set(s.id, [...new Set(missing)])
   }
@@ -80,13 +85,12 @@ export function LessonRehearsal({
       )
     }
   }
-  const fixtureApplicable = Boolean(
-    section?.completion?.platformAction ||
-      section?.completion?.blockIds.some((id) => {
-        const block = lesson.blocks.find((b) => b.id === id)
-        return block && ['studio', 'pinta', 'video', 'ebook'].includes(block.kind)
-      }),
-  )
+  const externalBlockIds =
+    section?.completion?.blockIds.filter((id) => {
+      const block = lesson.blocks.find((b) => b.id === id)
+      return block && ['studio', 'pinta', 'video', 'ebook'].includes(block.kind)
+    }) ?? []
+  const fixtureApplicable = Boolean(section?.completion?.platformAction || externalBlockIds.length)
   return (
     <div className="space-y-4">
       <div className="space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
@@ -138,7 +142,13 @@ export function LessonRehearsal({
                 try {
                   confirm()
                   if (section)
-                    setState((s) => ({ ...s, fixtures: new Set([...s.fixtures, section.id]) }))
+                    setState((s) => ({
+                      ...s,
+                      completedBlocks: new Set([...s.completedBlocks, ...externalBlockIds]),
+                      fixtures: section.completion?.platformAction
+                        ? new Set([...s.fixtures, section.id])
+                        : s.fixtures,
+                    }))
                   setStatus('Exemplo local de confirmação aplicado. Nada foi enviado ou publicado.')
                 } catch (error) {
                   setStatus(error instanceof Error ? error.message : 'Falha no ensaio.')

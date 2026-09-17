@@ -3,9 +3,13 @@ import {
   EXPLORATION_DEFINITIONS,
   type ExplorationMission,
   type InteractiveBlock,
+  initialExploration,
   type LearningBlockProgress,
+  transitionExploration,
 } from '@sistemazero/core/learning'
+import { ExplorationStage } from '@sistemazero/member-shell/components/exploration-stage'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import { LearningExploration } from '@sistemazero/member-shell/components/learning-exploration'
 import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
@@ -31,6 +35,36 @@ function block(mission: ExplorationMission) {
   }
 }
 describe('direct child exploration', () => {
+  test('curated hints shown without authored hints are included in progress evidence', () => {
+    let recordedHints = 0
+    render(
+      <LearningExploration
+        activity={{ type: 'exploration', version: 2, mission: 'layers' }}
+        answers={{}}
+        hints={[]}
+        onChange={(_, hintsUsed) => {
+          recordedHints = hintsUsed
+        }}
+        onEvidence={() => {}}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Quero uma pista' }))
+    expect(recordedHints).toBe(1)
+  })
+  test('a cactus that leaves the speed scene is reported outside instead of stuck at the edge', () => {
+    const activity = { type: 'exploration', version: 2, mission: 'random' } as const
+    const spawned = transitionExploration(activity, initialExploration(activity), {
+      type: 'sample',
+      kind: 'position',
+      unit: 0,
+      guided: true,
+    })
+    const state = transitionExploration(activity, spawned, { type: 'advance', seconds: 4 })
+    expect(state.cacti[0]?.x).toBe(-100)
+    render(<ExplorationStage activity={activity} state={state} dispatch={() => {}} paused />)
+    expect(screen.getByText('1 cacto fora da pista')).toBeTruthy()
+    expect(screen.queryByLabelText('Cacto 1, velocidade -5')).toBeNull()
+  })
   test('layer click destinations show immediate comparison and can undo without a playback button', async () => {
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
     expect(screen.queryByRole('button', { name: 'Testar' })).toBeNull()
