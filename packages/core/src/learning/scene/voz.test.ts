@@ -6,8 +6,12 @@ import {
   falaDaInstrucao,
   falaDaPergunta,
   falaDoContextoDoPalpite,
+  falasDaCena,
   filaDeVoz,
+  isSceneSpeechOverrides,
   isSceneVozes,
+  isZappySpeechText,
+  roteiroDoZappy,
   textoFalado,
   textosFalaveisDaCena,
   VOZ_LIMITS,
@@ -37,6 +41,46 @@ describe('o texto falado', () => {
   })
 })
 
+describe('o roteiro que o Zappy recebe', () => {
+  it('troca apenas letras inglesas que estão sozinhas, sem tocar no texto visível', () => {
+    expect(roteiroDoZappy('Aperte X e Y.')).toBe('Aperte xis e ípsilon.')
+    expect(roteiroDoZappy('Xilofone e yoga não são letras sozinhas.')).toBe(
+      'Xilofone e yoga não são letras sozinhas.',
+    )
+  })
+
+  it('aceita um roteiro autoral somente quando ele ainda descreve exatamente o texto na tela', () => {
+    expect(
+      roteiroDoZappy('Experiência', {
+        sourceText: 'Experiência',
+        speechText: 'Experiênssia.',
+      }),
+    ).toBe('Experiênssia.')
+    expect(
+      roteiroDoZappy('Experiência nova', {
+        sourceText: 'Experiência',
+        speechText: 'Experiênssia.',
+      }),
+    ).toBe('Experiência nova')
+  })
+
+  it('permite somente pausas curtas e explícitas no roteiro', () => {
+    expect(isZappySpeechText('Pense.<break time="0.4s" /> Agora tente.')).toBe(true)
+    expect(isZappySpeechText('Pense.<break time="3.1s" /> Agora tente.')).toBe(false)
+    expect(isZappySpeechText('<audio src="fora" />')).toBe(false)
+  })
+
+  it('valida os quatro lugares determinísticos de ajuste da cena', () => {
+    expect(
+      isSceneSpeechOverrides({
+        instruction: { sourceText: 'Aperte X.', speechText: 'Aperte xis.' },
+        'prediction-question': { sourceText: 'E agora?', speechText: 'E agora?' },
+      }),
+    ).toBe(true)
+    expect(isSceneSpeechOverrides({ inventado: { sourceText: 'A', speechText: 'A' } })).toBe(false)
+  })
+})
+
 describe('a fila da fala', () => {
   const url = (n: string) => `https://cdn.test/${n}.mp3`
 
@@ -59,15 +103,16 @@ describe('a fila da fala', () => {
 
 describe('o dicionário é validado', () => {
   it('recusa chave fora da forma falada', () => {
-    // Guardada com espaço duplo, ela nunca seria encontrada pelo player.
+    // Sem versão do perfil, a key poderia reaproveitar um MP3 gravado antes de uma correção global.
     expect(isSceneVozes({ 'Duas  palavras': 'https://cdn.test/a.mp3' })).toBe(false)
-    expect(isSceneVozes({ 'Duas palavras': 'https://cdn.test/a.mp3' })).toBe(true)
+    expect(isSceneVozes({ [chaveDeVoz('Duas palavras')]: 'https://cdn.test/a.mp3' })).toBe(true)
   })
 
   it('recusa endereço que não é https nem caminho do próprio site', () => {
-    expect(isSceneVozes({ Oi: 'http://cdn.test/a.mp3' })).toBe(false)
-    expect(isSceneVozes({ Oi: '//outro-host/a.mp3' })).toBe(false)
-    expect(isSceneVozes({ Oi: '/audio/a.mp3' })).toBe(true)
+    const chave = chaveDeVoz('Oi')
+    expect(isSceneVozes({ [chave]: 'http://cdn.test/a.mp3' })).toBe(false)
+    expect(isSceneVozes({ [chave]: '//outro-host/a.mp3' })).toBe(false)
+    expect(isSceneVozes({ [chave]: '/audio/a.mp3' })).toBe(true)
   })
 
   it('recusa dicionário acima do teto de entradas', () => {
@@ -126,6 +171,23 @@ describe('os textos faláveis de uma cena', () => {
       }),
     ).toEqual(['Mexa à vontade.'])
   })
+
+  it('resolve a fala efetiva de cada trecho sem mudar o texto que a criança vê', () => {
+    const [instruction] = falasDaCena({
+      instructions: 'Aperte X.',
+      activity: {
+        type: 'experimentation',
+        zappySpeech: {
+          instruction: { sourceText: 'Aperte X.', speechText: 'Aperte xis.<break time="0.3s" />' },
+        },
+      },
+    })
+    expect(instruction).toMatchObject({
+      slot: 'instruction',
+      visibleText: 'Aperte X.',
+      speechText: 'Aperte xis.<break time="0.3s" />',
+    })
+  })
 })
 
 /**
@@ -148,7 +210,7 @@ describe('a leitura tolerante e o dicionário', () => {
   })
 
   it('o dicionário legal atravessa intacto', () => {
-    const vozes = { 'Ligue a borda.': 'https://cdn.test/a.mp3' }
+    const vozes = { [chaveDeVoz('Ligue a borda.')]: 'https://cdn.test/a.mp3' }
     const lida = sceneActivityForReading(atividade(vozes)) as { vozes?: unknown }
     expect(lida.vozes).toEqual(vozes)
   })

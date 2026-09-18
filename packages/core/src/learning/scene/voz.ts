@@ -1,7 +1,7 @@
 import { isSceneAudioUrl } from './audio-url'
 
 /**
- * A voz do Zappy nas cenas: o dicionário `texto falado → arquivo`.
+ * A voz do Zappy nas cenas: o dicionário `roteiro efetivo → arquivo`.
  *
  * ⭐⭐ Decisão da dona (17/09/2026): a instrução deixa de sair na voz do NAVEGADOR (a do sistema
  * operacional, que muda de máquina para máquina) e passa a sair na voz do Zappy, gravada no
@@ -10,10 +10,10 @@ import { isSceneAudioUrl } from './audio-url'
  * criança nunca fala com ele — sem chave no cliente, sem latência de síntese, e a aula não cai
  * junto se o serviço cair.
  *
- * ⚠️⚠️ A CHAVE é o próprio texto falado, não um id. É o que casa o áudio com a frase sem nenhum
- * carimbo de versão: editou a frase, a chave não bate mais, não há áudio, e o "Ouvir" volta à voz
- * do navegador. Nunca existe o pior caso — a criança ouvindo a instrução ANTERIOR à correção. O
- * portão do CI acusa a falta para regerar; o navegador só não mente enquanto isso.
+ * ⚠️⚠️ A criança lê o texto editorial correto; o ElevenLabs recebe um ROTEIRO efetivo, que pode
+ * ajustar a pronúncia de uma letra isolada ou inserir uma pausa. A chave carrega a versão desse
+ * perfil e o roteiro efetivo: mudar qualquer um dos dois não deixa um MP3 antigo fingir que está
+ * em dia.
  *
  * ⚠️ Por isso `chaveDeVoz` tem de ser a MESMA função dos dois lados (gerador e player). Ela mora
  * aqui, no core, e não no hook nem no script: duas cópias que divergem num espaço a mais dão um
@@ -22,6 +22,18 @@ import { isSceneAudioUrl } from './audio-url'
 
 /** Setas, triângulos, marcas e emoji: a voz leria "triângulo preto apontando para a direita". */
 const SIMBOLOS = /[←-⇿─-➿⬀-⯿\u{1F300}-\u{1FAFF}]/gu
+
+/** Uma mudança aqui invalida propositalmente o cache dos MP3s pré-gerados. */
+export const ZAPPY_PRONUNCIATION_PROFILE_VERSION = 'pt-BR-1'
+
+/**
+ * Tetos do dicionário. A chave inclui a versão do perfil, portanto acompanha o teto de uma fala
+ * possível, e não o tamanho pequeno dos exemplos atuais.
+ */
+export const VOZ_LIMITS = { entradas: 12, chave: 6000 } as const
+
+const PAUSE_TAG = /<break time="(0\.\d+|[12](?:\.\d+)?|3(?:\.0+)?)s"\s*\/>/g
+const QUALQUER_TAG = /<[^>]*>/g
 
 /**
  * O texto como ele é FALADO: sem os símbolos da tela e com o espaço colapsado.
@@ -34,12 +46,74 @@ export function textoFalado(texto: string): string {
   return texto.replace(SIMBOLOS, ' ').replace(/\s+/g, ' ').trim()
 }
 
-/** A chave do dicionário: o texto falado, e nada mais. Ver o aviso do topo. */
-export function chaveDeVoz(texto: string): string {
-  return textoFalado(texto)
+/**
+ * Roteiro que pode ir ao ElevenLabs. Não é HTML: só a pausa curta e fechada é aceita, para que a
+ * autoria tenha cadência sem ganhar uma superfície livre de SSML.
+ */
+export function isZappySpeechText(value: unknown): value is string {
+  if (typeof value !== 'string' || !value.trim() || value.length > VOZ_LIMITS.chave) return false
+  const tags = value.match(QUALQUER_TAG) ?? []
+  if (tags.some((tag) => !/^<break time="(?:0\.\d+|[12](?:\.\d+)?|3(?:\.0+)?)s"\s*\/>$/.test(tag)))
+    return false
+  return Boolean(textoFalado(value.replace(QUALQUER_TAG, ' ')))
 }
 
-/** `texto falado → URL do MP3`. Mora na atividade da cena e viaja até o navegador. */
+/** Deixa a mesma pausa com a mesma forma para a key e para o cache do R2. */
+export function normalizarRoteiroDoZappy(texto: string): string {
+  return textoFalado(
+    texto.replace(PAUSE_TAG, (_tag, segundos: string) => `<break time="${Number(segundos)}s" />`),
+  )
+}
+
+/**
+ * Perfil global, pequeno e auditável. Só entram aqui correções invariáveis; palavra estrangeira
+ * depende do contexto e deve ser ajustada pela própria fala no Admin, depois de ouvida.
+ */
+export function aplicarPerfilDePronunciaDoZappy(texto: string): string {
+  return textoFalado(texto)
+    .replace(/(^|[^\p{L}\p{N}])X(?=$|[^\p{L}\p{N}])/gu, '$1xis')
+    .replace(/(^|[^\p{L}\p{N}])Y(?=$|[^\p{L}\p{N}])/gu, '$1ípsilon')
+}
+
+/** A exceção fica presa ao texto que a criança vê; texto alterado não reaproveita fala velha. */
+export interface ZappySpeechOverride {
+  sourceText: string
+  speechText: string
+}
+
+export function isZappySpeechOverride(value: unknown): value is ZappySpeechOverride {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const ajuste = value as Record<string, unknown>
+  return (
+    typeof ajuste.sourceText === 'string' &&
+    ajuste.sourceText === textoFalado(ajuste.sourceText) &&
+    isZappySpeechText(ajuste.speechText) &&
+    ajuste.speechText === normalizarRoteiroDoZappy(ajuste.speechText)
+  )
+}
+
+/** O roteiro efetivo preserva a tela como fonte da verdade e só usa ajuste ainda correspondente. */
+export function roteiroDoZappy(textoVisivel: string, ajuste?: ZappySpeechOverride): string {
+  const origem = textoFalado(textoVisivel)
+  if (ajuste && isZappySpeechOverride(ajuste) && ajuste.sourceText === origem)
+    return ajuste.speechText
+  return aplicarPerfilDePronunciaDoZappy(origem)
+}
+
+const VOZ_KEY_PREFIX = `zappy:${ZAPPY_PRONUNCIATION_PROFILE_VERSION}:`
+
+/** A chave que viaja no bloco: versão do perfil mais o roteiro que o Zappy realmente vai falar. */
+export function chaveDeVoz(roteiro: string): string {
+  return `${VOZ_KEY_PREFIX}${normalizarRoteiroDoZappy(roteiro)}`
+}
+
+function isChaveDeVoz(value: string): boolean {
+  if (!value.startsWith(VOZ_KEY_PREFIX)) return false
+  const roteiro = value.slice(VOZ_KEY_PREFIX.length)
+  return isZappySpeechText(roteiro) && value === chaveDeVoz(roteiro)
+}
+
+/** `chave do roteiro efetivo → URL do MP3`. Mora na atividade da cena e viaja até o navegador. */
 export type SceneVozes = Readonly<Record<string, string>>
 
 /**
@@ -54,8 +128,6 @@ export type SceneVozes = Readonly<Record<string, string>>
  * castigando quem escreveu uma pergunta longa e legal por causa do dicionário de voz. Quem decide
  * o que vale a pena GERAR é o admin, com um teto próprio e um recado que nomeia a fala.
  */
-export const VOZ_LIMITS = { entradas: 12, chave: 6000 } as const
-
 export function isSceneVozes(value: unknown): value is SceneVozes {
   if (value === undefined) return true
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
@@ -63,9 +135,7 @@ export function isSceneVozes(value: unknown): value is SceneVozes {
   if (entradas.length > VOZ_LIMITS.entradas) return false
   for (const [chave, url] of entradas) {
     if (!chave || chave.length > VOZ_LIMITS.chave) return false
-    // ⚠️ A chave precisa já estar normalizada: guardada com espaço duplo, ela nunca seria
-    // encontrada pelo player (que procura pelo `chaveDeVoz` do texto da tela).
-    if (chave !== chaveDeVoz(chave)) return false
+    if (!isChaveDeVoz(chave)) return false
     if (typeof url !== 'string' || !isSceneAudioUrl(url)) return false
   }
   return true
@@ -79,15 +149,15 @@ export function isSceneVozes(value: unknown): value is SceneVozes {
  * que o motor monta na hora, por exemplo), a fala INTEIRA sai na voz do navegador, como antes.
  */
 export function filaDeVoz(
-  trechos: readonly string[],
+  roteiros: readonly string[],
   vozes: SceneVozes | undefined,
 ): readonly string[] | null {
   if (!vozes) return null
   const fila: string[] = []
-  for (const trecho of trechos) {
-    const texto = chaveDeVoz(trecho)
-    if (!texto) continue
-    const url = vozes[texto]
+  for (const roteiro of roteiros) {
+    const chave = chaveDeVoz(roteiro)
+    if (!normalizarRoteiroDoZappy(roteiro)) continue
+    const url = vozes[chave]
     if (!url) return null
     fila.push(url)
   }
@@ -134,6 +204,35 @@ export function falaDaInstrucao(instruction: string): string {
   return instruction
 }
 
+export const SCENE_SPEECH_SLOTS = [
+  'instruction',
+  'prediction-context',
+  'prediction-question',
+  'checkpoint',
+] as const
+export type SceneSpeechSlot = (typeof SCENE_SPEECH_SLOTS)[number]
+export type SceneSpeechOverrides = Readonly<Partial<Record<SceneSpeechSlot, ZappySpeechOverride>>>
+
+export function isSceneSpeechOverrides(value: unknown): value is SceneSpeechOverrides | undefined {
+  if (value === undefined) return true
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const entries = Object.entries(value as Record<string, unknown>)
+  if (!entries.length) return false
+  return entries.every(
+    ([slot, ajuste]) =>
+      (SCENE_SPEECH_SLOTS as readonly string[]).includes(slot) && isZappySpeechOverride(ajuste),
+  )
+}
+
+export interface ZappySpeech {
+  slot: SceneSpeechSlot
+  /** O que a criança lê, sempre em grafia editorial correta. */
+  visibleText: string
+  /** O que o ElevenLabs recebe, depois do perfil ou de uma exceção autoral. */
+  speechText: string
+  key: string
+}
+
 /**
  * Os textos de um bloco que a voz do Zappy PODE gravar de antemão.
  *
@@ -146,7 +245,7 @@ export function falaDaInstrucao(instruction: string): string {
  * palpite com a escolha da criança) fica DE FORA por definição: depende do estado. Nessas falas o
  * player cai inteiro na voz do navegador — ver `filaDeVoz`.
  */
-export function textosFalaveisDaCena(bloco: {
+export function falasDaCena(bloco: {
   instructions?: string
   checkpoint?: { prompt: string; choices: readonly { label: string }[] }
   prediction?: {
@@ -154,20 +253,32 @@ export function textosFalaveisDaCena(bloco: {
     prompt: string
     choices: readonly { label: string }[]
   }
-  activity?: { type?: string }
-}): readonly string[] {
+  activity?: { type?: string; zappySpeech?: SceneSpeechOverrides }
+}): readonly ZappySpeech[] {
   const demonstracao = bloco.activity?.type === 'demonstration'
-  return [
-    falaDaInstrucao(bloco.instructions ?? ''),
-    bloco.prediction
-      ? falaDoContextoDoPalpite(
+  const falas: readonly [SceneSpeechSlot, string][] = [
+    ['instruction', falaDaInstrucao(bloco.instructions ?? '')],
+    [
+      'prediction-context',
+      bloco.prediction
+        ? falaDoContextoDoPalpite(
           demonstracao ? 'Antes de assistir' : 'Seu palpite',
           bloco.prediction.context,
         )
-      : '',
-    bloco.prediction ? falaDaEscolhaDoPalpite(bloco.prediction) : '',
-    bloco.checkpoint ? falaDaPergunta('Agora explique', bloco.checkpoint) : '',
+        : '',
+    ],
+    ['prediction-question', bloco.prediction ? falaDaEscolhaDoPalpite(bloco.prediction) : ''],
+    ['checkpoint', bloco.checkpoint ? falaDaPergunta('Agora explique', bloco.checkpoint) : ''],
   ]
-    .map(chaveDeVoz)
-    .filter(Boolean)
+  return falas.flatMap(([slot, visibleText]) => {
+    const texto = textoFalado(visibleText)
+    if (!texto) return []
+    const speechText = roteiroDoZappy(texto, bloco.activity?.zappySpeech?.[slot])
+    return [{ slot, visibleText: texto, speechText, key: chaveDeVoz(speechText) }]
+  })
+}
+
+/** Mantido como atalho da autoria: devolve o roteiro efetivo, não a chave do dicionário. */
+export function textosFalaveisDaCena(bloco: Parameters<typeof falasDaCena>[0]): readonly string[] {
+  return falasDaCena(bloco).map((fala) => fala.speechText)
 }

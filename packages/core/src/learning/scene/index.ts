@@ -20,7 +20,12 @@ import { isSceneCenario, type SceneCenarioId } from './cenario'
 import { openScene, stepScene } from './engine'
 import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
 import type { SceneStart } from './state'
-import { isSceneVozes, type SceneVozes } from './voz'
+import {
+  isSceneSpeechOverrides,
+  isSceneVozes,
+  type SceneSpeechOverrides,
+  type SceneVozes,
+} from './voz'
 
 export * from './actions'
 // O ateliê do lote 5 do Raio-X: as réguas do fogo, do espelho, da lupa e da folha.
@@ -73,6 +78,8 @@ export interface DemonstrationActivity {
    * narração escolhida à mão para esta cena, e escolha de quem autora nunca perde para o lote.
    */
   vozes?: SceneVozes
+  /** Ajustes de pronúncia do Zappy, presos ao texto visível de cada fala. */
+  zappySpeech?: SceneSpeechOverrides
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
   /** De onde a cena parte. ⚠️ Sem `goals`: a demonstração não cobra meta nenhuma. */
@@ -112,6 +119,8 @@ export interface ExperimentationActivity {
    * narração escolhida à mão para esta cena, e escolha de quem autora nunca perde para o lote.
    */
   vozes?: SceneVozes
+  /** Ajustes de pronúncia do Zappy, presos ao texto visível de cada fala. */
+  zappySpeech?: SceneSpeechOverrides
   /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
   cast?: SceneCast
   /** De onde a cena parte e o que ela cobra. Ver `SceneSetup`. */
@@ -155,6 +164,7 @@ export function isDemonstrationActivity(value: unknown): value is DemonstrationA
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
   if (!isSceneVozes(value.vozes)) return false
+  if (!isSceneSpeechOverrides(value.zappySpeech)) return false
   if (!pilhaValida(value)) return false
   if (!cenarioValido(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
@@ -185,6 +195,7 @@ export function isExperimentationActivity(value: unknown): value is Experimentat
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
   if (!validAudio(value.instructionAudioUrl)) return false
   if (!isSceneVozes(value.vozes)) return false
+  if (!isSceneSpeechOverrides(value.zappySpeech)) return false
   if (!pilhaValida(value)) return false
   if (!cenarioValido(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
@@ -374,6 +385,11 @@ export function sceneActivityForReading(value: unknown): unknown {
   if (atividade.vozes !== undefined && !isSceneVozes(atividade.vozes)) {
     const { vozes: _voz, ...semVozes } = atividade
     atividade = semVozes
+  }
+  /** Um ajuste de fala torto não pode derrubar a cena no player. */
+  if (atividade.zappySpeech !== undefined && !isSceneSpeechOverrides(atividade.zappySpeech)) {
+    const { zappySpeech: _roteiro, ...semRoteiro } = atividade
+    atividade = semRoteiro
   }
   if (value.type === 'demonstration' && Array.isArray(value.script)) {
     const conhecidas = sceneGoalIds(scene)
