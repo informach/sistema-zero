@@ -288,7 +288,7 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       activity: { type: 'experimentation', scene: 'world', cast: nave },
     }
     expect(publicInteractiveBlock(bloco).prediction?.prompt).toBe(
-      'Imagine: você cria a nave com o desenho desligado. Onde fica a nave?',
+      'Imagine: a nave já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está a nave?',
     )
   })
 

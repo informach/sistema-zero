@@ -588,24 +588,13 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
   /* ── O mundo do jogo ─────────────────────────────────────────────────────────────────────── */
   world: {
     prediction: {
-      /**
-       * ⚠️⚠️ A pergunta de antes ("Você cria o Dino e não liga o desenho. O que aparece?") a criança
-       * JÁ VIVEU no Estúdio uma seção antes, onde criou o dino e ele não apareceu: o palpite não tinha
-       * risco nenhum (lote 5 do Raio-X, 16/09/2026). A crença ingênua que sobra é a de que desligar o
-       * desenho APAGA o personagem, ou que sem desenho ele nem existe. Ids novos: o sentido mudou.
-       * ⚠️⚠️ A pergunta fala de um ESTADO (criado, desenho desligado), e não de um gesto ("você desliga
-       * o desenho"): `hidden` cai nos dois caminhos, criando com o desenho desligado ou desligando
-       * depois, e pelo gesto o palpite voltava no "Criar" de quem nunca tinha desligado nada.
-       */
-      // ⚠️⚠️ "Imagine:" (full review de experiência, M5): a frase no presente afirmava um Dino criado com a
-      // faixa logo abaixo dizendo "bastidores: vazio", e a criança de 8 anos lê as duas coisas como fatos.
-      // Previsão sobre um estado que a tela ainda não mostra começa com "Imagine:".
-      prompt: 'Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?',
+      prompt:
+        'Imagine: o Dino já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está o Dino?',
       choices: [
         { id: 'bastidores', label: 'Nos bastidores, sem aparecer na tela.' },
         {
           id: 'nenhum',
-          label: 'Em lugar nenhum. Sem desenho, o Dino não existe.',
+          label: 'Em lugar nenhum. O Dino só existe quando aparece na tela.',
           shows: 'A ficha do Dino ficou nos bastidores, com a tela vazia.',
         },
       ],
@@ -613,14 +602,14 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       revealOn: 'hidden',
     },
     explain: {
-      prompt: 'Por que a tela ficou sem o Dino, mesmo com o Dino criado?',
+      prompt: 'Por que o Dino pode existir nos bastidores sem aparecer na tela?',
       choices: [
-        { id: 'duas', label: 'Faltava ligar o desenho.' },
+        { id: 'duas', label: 'Criar o Dino e mostrar na tela são duas ações diferentes.' },
         { id: 'lento', label: 'O jogo ainda estava carregando o Dino.' },
       ],
       correctChoiceId: 'duas',
       explanation:
-        'Criar guarda o Dino nos bastidores. Desenhar mostra o Dino na tela. São dois blocos porque são duas coisas.',
+        'Criar prepara o Dino nos bastidores. Mostrar na tela é outra ação. Tirar da tela faz o Dino deixar de aparecer, sem apagar o que foi criado.',
     },
   },
   layers: {

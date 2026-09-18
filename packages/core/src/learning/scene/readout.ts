@@ -304,16 +304,12 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
       ]
     case 'world':
       return [
-        // ⚠️ O rótulo NÃO usa particípio ("Dino criado"): ele concordaria com o personagem, e
-        // um elenco feminino leria "nave criado". O que é constante aqui é o lugar.
-        // ⚠️ "bastidores: com o Dino" (lote 5): "o Dino nos bastidores ainda não" se lia como uma frase
-        // só, e o nome dos dois lados da faixa agora é o nome dos dois lados do palco.
+        { label: 'bastidores', value: state.world.created ? 'com o Dino' : 'vazio', tone: 'a' },
         {
-          label: 'bastidores',
-          value: state.world.created ? 'com o Dino' : 'vazio',
-          tone: 'a',
+          label: 'na tela do jogo',
+          value: state.world.created && state.world.drawn ? 'Dino apareceu' : 'ainda não apareceu',
+          tone: 'b',
         },
-        { label: 'desenho na tela', value: liga(state.world.drawn, 'm'), tone: 'b' },
       ]
     case 'layers':
       // ⚠️⚠️ A ORDEM, e não o efeito dela (lote 2 do Raio-X). A faixa punha lado a lado "quem é
@@ -925,10 +921,10 @@ function situacao(scene: SceneId, state: SceneState): string {
         ? `Sem vidas, a partida acabou com o placar em ${state.lifeline.points}.`
         : `${quantos(state.lifeline.lives, 'vida', 'vidas')} e ${quantos(state.lifeline.points, 'ponto', 'pontos')} no placar.`
     case 'world':
-      // ⚠️ Sem particípio solto ("foi criado") e sem pronome ("ele aparece"): os dois
-      // concordam com o personagem, e o elenco só sabe flexionar o que está colado ao nome.
-      // ⚠️⚠️ E sem dizer o que APARECE na tela: é a pergunta da previsão da cena.
-      return `${state.world.created ? 'O Dino está nos bastidores' : 'Os bastidores estão vazios'}, com o desenho ${liga(state.world.drawn, 'm')}.`
+      if (!state.world.created) return 'Os bastidores estão vazios e a tela do jogo também.'
+      return state.world.drawn
+        ? 'O Dino está nos bastidores e apareceu na tela do jogo.'
+        : 'O Dino está nos bastidores e ainda não apareceu na tela do jogo.'
     case 'layers':
       // ⚠️ O que se VÊ, e não "vem por último e cobre": a ordem está na faixa, o efeito no
       // desenho, e juntar os dois numa frase era escrever a regra.

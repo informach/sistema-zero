@@ -166,13 +166,11 @@ describe('a faixa de estado', () => {
     // "laço desligada", "raio-X desligada". ⚠️ A tabela é a régua: rótulo novo com chave entra
     // nela, e a guarda de que a varredura LEU as chaves impede o laço que aprova tudo.
     const GENERO: Record<string, 'm' | 'f'> = {
-      // ⚠️ Mudou de propósito (lote 5): o `draw-loop` saiu da tabela (a faixa mostra quadro, x e
-      // Dinos, e os botões dizem as chaves) e o `world` diz "desenho na tela".
+      // ⚠️ O `world` não expõe uma chave: a faixa diz se o Dino apareceu na tela do jogo.
       fantasma: 'm',
       // ⚠️ Mudou de propósito (lote 5, G4): o espelho virou ESCOLHA (desligado, lado a lado, cima e
       // baixo), e só o "desligado" é chave. Ele fica na tabela pelo gênero, sem a posição "ligado".
       espelho: 'm',
-      'desenho na tela': 'm',
       gravidade: 'f',
       // ⚠️ Mudou de propósito (review do lote 2): "som no salto", "relógio dentro de Se jogando" e
       // "Somar ponto dentro de Se jogando" saíram da tabela porque deixaram de ser chaves ("o som
@@ -261,10 +259,9 @@ describe('a frase da situação', () => {
     const criado = stepScene({ scene: 'world' }, inicio, { type: 'create' })
     const semCaption = { ...criado, caption: '' }
     expect(sceneSituation('world', { ...inicio, caption: '' })).toContain('vazios')
-    // Mudou de propósito (lote 2 do Raio-X): a frase diz onde o Dino está e o estado do desenho,
-    // e não mais "nada foi mandado desenhar ainda", que puxava a resposta da previsão.
+    // A frase diz onde o Dino está e se ele já apareceu na tela, sem expor uma chave técnica.
     expect(sceneSituation('world', semCaption)).toContain('O Dino está nos bastidores')
-    expect(sceneSituation('world', semCaption)).toContain('desenho desligado')
+    expect(sceneSituation('world', semCaption)).toContain('ainda não apareceu na tela')
   })
 
   test('⚠️⚠️ um é UM: a frase concorda em número com o que conta', () => {

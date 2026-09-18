@@ -157,28 +157,31 @@ describe('stage-size: os números só descobrem alguma coisa com a borda à vist
   })
 })
 
-describe('world: criar e desenhar são controles independentes', () => {
+describe('world: primeiro criar nos bastidores, depois mostrar na tela', () => {
   const start = { scene: 'world' } as const
-  const desenho = (enabled: boolean): SceneAction => ({ type: 'connect', port: 'draw', enabled })
+  const mostrar = (enabled: boolean): SceneAction => ({ type: 'connect', port: 'draw', enabled })
 
-  test('⚠️⚠️ desenhar sem ninguém criado não mostra nada e não derruba meta', () => {
-    const s = rodar(start, [desenho(true)])
-    expect(s.world).toMatchObject({ created: false, drawn: true })
+  test('⚠️⚠️ não deixa mostrar antes de criar e não derruba meta', () => {
+    const s = rodar(start, [mostrar(true)])
+    expect(s.world).toMatchObject({ created: false, drawn: false })
     expect(s.evidence.discoveries).toEqual([])
-    expect(faixa('world', s)).toEqual({ bastidores: 'vazio', 'desenho na tela': 'ligado' })
+    expect(faixa('world', s)).toEqual({
+      bastidores: 'vazio',
+      'na tela do jogo': 'ainda não apareceu',
+    })
   })
 
-  test('as duas ordens fecham a cena, e em qualquer uma o Dino some da tela sem sumir dos bastidores', () => {
-    const desenhaPrimeiro = rodar(start, [desenho(true), { type: 'create' }, desenho(false)])
-    expect(desenhaPrimeiro.evidence.discoveries).toEqual(['visible', 'hidden'])
-    expect(desenhaPrimeiro.world.created).toBe(true)
-    expect(evaluateExperimentation('world', desenhaPrimeiro).passed).toBe(true)
-    const criaPrimeiro = rodar(start, [{ type: 'create' }, desenho(true)])
-    expect(criaPrimeiro.evidence.discoveries).toEqual(['hidden', 'visible'])
-    expect(faixa('world', criaPrimeiro)).toEqual({
+  test('criar, mostrar e tirar da tela preserva o Dino nos bastidores', () => {
+    const visivel = rodar(start, [{ type: 'create' }, mostrar(true)])
+    expect(visivel.evidence.discoveries).toEqual(['hidden', 'visible'])
+    expect(faixa('world', visivel)).toEqual({
       bastidores: 'com o Dino',
-      'desenho na tela': 'ligado',
+      'na tela do jogo': 'Dino apareceu',
     })
+
+    const retirado = rodar(start, [{ type: 'create' }, mostrar(true), mostrar(false)])
+    expect(retirado.world).toMatchObject({ created: true, drawn: false })
+    expect(evaluateExperimentation('world', retirado).passed).toBe(true)
   })
 })
 

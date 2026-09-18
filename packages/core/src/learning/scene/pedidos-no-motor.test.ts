@@ -395,17 +395,13 @@ const CENAS: Record<SceneId, Cena> = {
   world: {
     pedidos: {
       hidden: {
-        texto: 'Deixe o Dino criado com o desenho desligado.',
+        texto: 'Crie o Dino nos bastidores.',
         faz: (m) => {
-          // Lote 5: criar e desenhar são controles independentes, e a criança pode chegar aqui por
-          // qualquer ordem. Já criado e desligado, o gesto é ligar e desligar de novo.
-          if (m.estado.world.created && !m.estado.world.drawn) ligado(m, 'draw', true)
-          ligado(m, 'draw', false)
           if (!m.estado.world.created) m.faz({ type: 'create' })
         },
       },
       visible: {
-        texto: 'Com o Dino criado, ligue o desenho.',
+        texto: 'Mostre o Dino na tela do jogo.',
         faz: (m) => {
           if (!m.estado.world.created) m.faz({ type: 'create' })
           ligado(m, 'draw', true)

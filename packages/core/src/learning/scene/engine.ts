@@ -329,6 +329,11 @@ export function stepScene(
   action: SceneAction,
 ): SceneState {
   if (!isSceneAction(action, start.scene)) return previous
+  // A sequência da cena `world` é intencionalmente guiada: primeiro o personagem existe nos
+  // bastidores; só então ele pode aparecer na tela. A bancada fecha o segundo gesto, mas o motor
+  // também precisa manter esse limite se uma ação chegar por outra superfície.
+  if (action.type === 'connect' && action.port === 'draw' && !previous.world.created)
+    return previous
   const s = cloneScene(previous)
   s.evidence.actions = previous.evidence.actions + 1
   /**
@@ -354,13 +359,8 @@ export function stepScene(
     case 'create':
       if (!s.world.created) {
         s.world.created = true
-        observe(
-          s,
-          s.world.drawn ? 'visible' : 'hidden',
-          s.world.drawn
-            ? 'O Dino foi criado e aparece na tela.'
-            : 'O Dino existe nos bastidores, sem desenho na tela.',
-        )
+        s.world.drawn = false
+        observe(s, 'hidden', 'O Dino existe nos bastidores e ainda não apareceu na tela do jogo.')
       }
       break
 
@@ -368,14 +368,13 @@ export function stepScene(
       switch (action.port) {
         case 'draw':
           s.world.drawn = action.enabled
-          if (s.world.created)
-            observe(
-              s,
-              s.world.drawn ? 'visible' : 'hidden',
-              s.world.drawn
-                ? 'O mesmo Dino agora aparece na tela.'
-                : 'O Dino continua existindo sem aparecer.',
-            )
+          observe(
+            s,
+            s.world.drawn ? 'visible' : 'hidden',
+            s.world.drawn
+              ? 'O mesmo Dino apareceu na tela do jogo.'
+              : 'O Dino continua nos bastidores, fora da tela do jogo.',
+          )
           break
         case 'gravity':
           // ⭐⭐ A gravidade age A PARTIR DE AGORA (lote 5 do Raio-X). Ligar o fio zerava a altura e o

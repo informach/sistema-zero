@@ -740,33 +740,28 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
   world: {
     id: 'world',
     group: 'world',
-    title: 'Faça o Dino aparecer',
-    // ⚠️⚠️ Criar e desenhar são dois controles INDEPENDENTES desde o lote 5 do Raio-X (16/09/2026): o
-    // fio do desenho só aparecia depois de criar, e a outra metade do contraste (desenhar sem ninguém
-    // criado) não existia. A ordem é dela.
+    title: 'Criar e mostrar são duas coisas diferentes',
     instruction:
-      'Crie o Dino e ligue o desenho, na ordem que quiser. Olhe os dois lados a cada toque.',
-    manipulates: 'Criar o Dino nos bastidores e desenhar o Dino na tela',
-    success: 'É o mesmo Dino dos dois lados: criar guarda, desenhar mostra!',
-    // ⚠️ "E se você desligar o desenho?" virou a PREVISÃO (é o que a criança ainda não viveu no
-    // Estúdio); a pergunta do fim passa a ser o caso que só o controle independente permite.
-    extra: 'E se você ligar o desenho antes de criar o Dino? O que aparece na tela?',
+      'Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.',
+    manipulates: 'Criar o Dino nos bastidores e mostrar o Dino na tela',
+    success: 'Quando aparece na tela do jogo, é o mesmo Dino que já existia nos bastidores.',
+    extra: 'Quando você tirar o Dino da tela, o Dino deixa de existir?',
     goals: [
       {
         id: 'hidden',
-        label: 'O Dino existe sem aparecer',
-        pedido: 'Deixe o Dino criado com o desenho desligado.',
+        label: 'O Dino existe nos bastidores',
+        pedido: 'Crie o Dino nos bastidores.',
       },
       {
         id: 'visible',
         label: 'O mesmo Dino aparece na tela',
-        pedido: 'Com o Dino criado, ligue o desenho.',
+        pedido: 'Mostre o Dino na tela do jogo.',
       },
     ],
     hints: [
       'Olhe a ficha dos bastidores e a tela do jogo.',
-      'Toque em Criar Dino e olhe os dois lados.',
-      'Ligue e desligue o desenho e compare os dois lados.',
+      'Primeiro, crie o Dino nos bastidores.',
+      'Depois, mostre o Dino na tela do jogo.',
     ],
     script: [
       {
@@ -777,13 +772,13 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'step-2',
-        caption: 'Ligar o desenho faz o mesmo Dino aparecer.',
+        caption: 'Mostrar o Dino na tela faz o mesmo Dino aparecer no jogo.',
         highlight: 'scene',
         actions: [{ type: 'connect', port: 'draw', enabled: true }],
       },
       {
         id: 'step-3',
-        caption: 'Desligar o desenho tira o Dino da tela, e não dos bastidores.',
+        caption: 'Tirar o Dino da tela não apaga o que existe nos bastidores.',
         highlight: 'scene',
         actions: [{ type: 'connect', port: 'draw', enabled: false }],
       },
