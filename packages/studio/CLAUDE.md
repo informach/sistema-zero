@@ -755,6 +755,51 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 - **No playground** (`bun run dev`): o `EditorScreen` passa um `share` de DEMONSTRAÇÃO (IA/publish
   mockados; print real) só p/ ver/testar o fluxo — o botão não existe sem `share`.
 
+## `./arte` — a arte do Jogo 2D como fonte ÚNICA (18/09/2026)
+
+Relato dela: *"nas cenas das experiências e demonstrações a aparência está muito fraquinha; a
+extensão Jogo 2D já tem o Dino, a nave, o fundo de estrelas, o fundo da floresta, os cactos, e
+está bem melhor — se a experiência é do corredinho, a cena tem que ser com os elementos do jogo
+real"*. O obstáculo era estrutural: os personagens do Jogo 2D sempre viveram dentro de TEMPLATE
+LITERALS em `game-2d/runtime/*` — strings que o TypeScript não enxerga, que ninguém pode importar
+e que já derrubaram o pacote dez vezes por uma crase crua. Como a cena de aula não tinha como usar
+aquela arte, ela acabou com um SEGUNDO Dino, desenhado à mão em SVG no member-shell.
+
+**`src/arte/`** é a arte como código de verdade, exportada pelo subpath LEVE
+**`@sistemazero/studio/arte`** (molde de `./controls` e `./server-examples`: nada de Blockly,
+Monaco, three ou React, e nada que toque o DOM em runtime — a cena renderiza no servidor).
+
+- ⭐⭐ **`Pincel` é um `Pick<CanvasRenderingContext2D, …>`**, e é a peça central. Não é "uma
+  interface parecida com o canvas": é literalmente o subconjunto que a arte usa, então o runtime do
+  jogo passa o `ctx` DIRETO (custo zero, zero risco de divergir) e o TypeScript cobra do pincel de
+  SVG a mesma assinatura. Uma interface escrita à mão em paralelo seria a terceira cópia de um
+  contrato que já existe.
+- ⭐ **`PincelSvg` é um adaptador, não uma reescrita**: `save`/`translate`/`scale`/`rotate` viram
+  `<g transform>` ANINHADOS, o que mantém as coordenadas LOCAIS — achatando a matriz, todo `arc`
+  viraria uma elipse girada calculada à mão. Volta inteira sai em DOIS comandos `A` (um `A` cujo
+  ponto final é igual ao inicial não desenha nada), o sentido é preservado (o recorte da cidade
+  fura os buracos com um arco anti-horário), `shadowBlur` vira `feDropShadow` e os ids de degradê,
+  recorte e sombra são determinísticos por instância.
+- ⚠️ **Nada de globais nos desenhos.** `now()`, `dinoGround(ctx)` e `world.gravity` viraram
+  parâmetros (`Ambiente { t, chao, gravidadeParaCima }`). É o que torna o desenho determinístico e
+  o que permite a cena animar pelo relógio DELA.
+- ⚠️ **Os FUNDOS têm uma mudança deliberada**: o parallax do runtime sorteia com `Math.random()` e
+  MUTA a posição a cada quadro; aqui a posição é função de `(semente, área, deslocamento)`. Uma
+  cena que renderiza no servidor e re-renderiza a cada gesto não pode sortear o céu. O teste
+  `subpath.test.ts` proíbe `Math.random` no módulo inteiro.
+- ⭐⭐ **`__tests__/paridade.test.ts` é o entregável central**: avalia a STRING do runtime de hoje
+  num escopo com stubs, roda os dois desenhos contra um `PincelGravador` e compara a sequência de
+  operações argumento a argumento. É ele que impede as duas cópias de divergirem enquanto
+  coexistirem, e é o portão do dia em que o runtime passar a ser GERADO daqui (ainda não é).
+  Provado que morde: um `w * 0.52` virado `0.53` no corpo do Dino reprova quatro casos.
+- Quem consome: `packages/member-shell/src/components/scene-arte.tsx` (`ArteSvg` e
+  `FundoDoCenario`), pelos cenários do `packages/core/src/learning/scene/cenario.ts`.
+- ⚠️ **Ainda NÃO gerado, e isso é decisão DELA** (18/09/2026, depois do full review: *"vamos deixar
+  como está por enquanto; depois a gente pensa"*): `game-2d/runtime/*` continua com as strings de
+  hoje. O lote que fecha a duplicação (bundlar `src/arte` e emitir `__gen_arteRuntime.ts`) mexe no
+  runtime EM PRODUÇÃO e precisa reancorar a catraca de payload gzip (teto E piso), que está a 0,6%
+  do teto. Até lá, quem segura as duas cópias juntas é o teste de paridade — ele não é opcional.
+
 ## Regras não-negociáveis
 
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
