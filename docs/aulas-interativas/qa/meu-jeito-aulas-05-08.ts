@@ -31,6 +31,11 @@ export const lateRecipes: Record<number, Recipe> = {
               'A chama está cobrindo a pedra. Mude as camadas e descubra quando a pedra aparece inteira.',
             hints: [],
             prediction: {
+              context: {
+                label: 'A ordem das camadas',
+                explanation:
+                  'Nesta experiência, vamos mudar a ordem da pedra e da chama para descobrir o que fica na frente.',
+              },
               prompt: 'Se a chama for uma camada para trás, onde a pedra aparece?',
               choices: [
                 {
@@ -322,6 +327,11 @@ export const lateRecipes: Record<number, Recipe> = {
               scene: 'sheet-vs-sprite',
             },
             prediction: {
+              context: {
+                label: 'A folha de sprites',
+                explanation:
+                  'Nesta demonstração, vamos olhar uma folha que guarda duas naves antes de escolher o que o jogo mostra.',
+              },
               prompt:
                 'A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?',
               choices: [

@@ -319,6 +319,11 @@ describe('⚠️⚠️ a previsão própria na troca de cena (review do lote 2 d
     activity: { type: 'experimentation', scene: 'world' },
     // É o que "Escrever a minha previsão" copia da cena: o `revealOn` vem junto, sem campo na tela.
     prediction: {
+      context: {
+        label: 'Bastidores e tela do jogo',
+        explanation:
+          'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+      },
       prompt: 'O que aparece?',
       choices: [
         { id: 'dino', label: 'O Dino', shows: 'Olhe a tela.' },

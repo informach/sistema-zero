@@ -234,6 +234,10 @@
           ]
         },
         "prediction": {
+          "context": {
+            "label": "Vidas e placar",
+            "explanation": "Nesta demonstração, vamos observar o que muda nas vidas e no placar quando a nave encosta em um asteroide."
+          },
           "prompt": "Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?",
           "choices": [
             { "id": "so-coracao", "label": "Só o coração" },

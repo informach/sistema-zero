@@ -222,6 +222,11 @@ export const middleRecipes: Record<number, Recipe> = {
               scene: 'cleanup',
             },
             prediction: {
+              context: {
+                label: 'A limpeza dos cactos',
+                explanation:
+                  'Nesta experiência, vamos comparar um cacto que saiu da tela com o que ainda está guardado nos bastidores.',
+              },
               prompt: 'O cacto que saiu da tela ainda existe no jogo?',
               choices: [
                 {
@@ -362,6 +367,11 @@ export const middleRecipes: Record<number, Recipe> = {
               scene: 'game-state',
             },
             prediction: {
+              context: {
+                label: 'O estado do jogo',
+                explanation:
+                  'Nesta experiência, vamos observar o que o jogo deixa acontecer antes e depois de a partida começar.',
+              },
               prompt: 'Na tela de início, antes de começar, nascem cactos?',
               choices: [
                 {

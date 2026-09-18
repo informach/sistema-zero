@@ -234,6 +234,10 @@
           "explanation": "O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem."
         },
         "prediction": {
+          "context": {
+            "label": "A lupa das pedras",
+            "explanation": "Nesta experiência, vamos aproximar duas pedras para comparar como cada uma fica de perto."
+          },
           "prompt": "Se você aproximar muito, o que acontece com as bordas?",
           "choices": [
             {

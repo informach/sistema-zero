@@ -18,6 +18,11 @@ const NAVE: SceneCast = {
   obstacle: { name: 'asteroide', gender: 'm' },
 }
 
+const CONTEXTO = {
+  label: 'O botão de teste',
+  explanation: 'Nesta experiência, vamos observar o botão de teste antes de escolher um palpite.',
+}
+
 const bloco = (scene: SceneId, tipo: 'experimentation' | 'demonstration'): InteractiveBlock => ({
   kind: 'interactive',
   title: 'Bloco',
@@ -51,6 +56,10 @@ describe('a previsão e a explicação das 45 cenas', () => {
         expect(q.prompt.trim().length, `${scene} · ${nome}`).toBeGreaterThan(10)
       }
       expect(explain.explanation.trim().length, scene).toBeGreaterThan(10)
+      expect(prediction.context.label.trim().length, `${scene} · contexto`).toBeGreaterThan(2)
+      expect(prediction.context.explanation.trim().length, `${scene} · contexto`).toBeGreaterThan(
+        20,
+      )
     }
   })
 
@@ -80,6 +89,13 @@ describe('a previsão e a explicação das 45 cenas', () => {
     }
   })
 
+  test('o palpite do leitor de tela nomeia a ferramenta antes de perguntar', () => {
+    const { context, prompt } = SCENE_QUESTIONS['screen-reader'].prediction
+    expect(context.explanation).toContain('Ouvir a tela')
+    expect(prompt).toContain('leitor de tela')
+    expect(prompt).toContain('Ouvir a tela')
+  })
+
   test('⚠️⚠️ o texto sobrevive ao elenco: nada volta dizendo "Dino" numa turma de nave', () => {
     // A régua do elenco só flexiona o que está COLADO ao nome. Uma pergunta escrita com o
     // personagem em outra forma passa pelo `castText` intacta, e a criança lê "o Dino" ao lado
@@ -94,6 +110,8 @@ describe('a previsão e a explicação das 45 cenas', () => {
         activity: { type: 'experimentation', scene, cast: NAVE },
       })
       const tudo = [
+        palpite?.context.label,
+        palpite?.context.explanation,
         palpite?.prompt,
         ...(palpite?.choices ?? []).map((c) => c.label),
         pergunta?.prompt,
@@ -137,7 +155,11 @@ describe('os resolvedores', () => {
       expect(
         blockPrediction({
           ...nolinha,
-          prediction: { prompt: 'Vai subir?', choices: [{ id: 'a', label: 'Vai' }] },
+          prediction: {
+            context: CONTEXTO,
+            prompt: 'Vai subir?',
+            choices: [{ id: 'a', label: 'Vai' }],
+          },
         })?.prompt,
         scene,
       ).toBe('Vai subir?')
@@ -171,7 +193,7 @@ describe('os resolvedores', () => {
     const b: InteractiveBlock = {
       ...bloco('world', 'experimentation'),
       checkpoint: meu,
-      prediction: { prompt: 'O meu palpite', choices: meu.choices },
+      prediction: { context: CONTEXTO, prompt: 'O meu palpite', choices: meu.choices },
     }
     expect(blockCheckpoint(b)).toEqual(meu)
     expect(blockPrediction(b)?.prompt).toBe('O meu palpite')
@@ -215,6 +237,7 @@ describe('os resolvedores', () => {
     const escrita = publicInteractiveBlock({
       ...bloco('world', 'experimentation'),
       prediction: {
+        context: CONTEXTO,
         prompt: 'Vai aparecer?',
         choices: [
           { id: 'sim', label: 'Sim' },
@@ -226,6 +249,7 @@ describe('os resolvedores', () => {
       } as InteractiveBlock['prediction'],
     }).prediction
     expect(escrita).toEqual({
+      context: CONTEXTO,
       prompt: 'Vai aparecer?',
       choices: [
         { id: 'sim', label: 'Sim' },
@@ -241,6 +265,7 @@ describe('os resolvedores', () => {
       ({
         ...bloco('world', 'experimentation'),
         prediction: {
+          context: CONTEXTO,
           prompt: 'Vai aparecer?',
           choices: [
             { id: 'sim', label: 'Sim' },
@@ -255,6 +280,31 @@ describe('os resolvedores', () => {
     expect(isInteractiveBlock(previsao({}, { shows: 'Olhe a tela.' }))).toBe(true)
     expect(isInteractiveBlock(previsao({}, { shows: '' }))).toBe(false)
     expect(isInteractiveBlock(previsao({}, { shows: 3 }))).toBe(false)
+    expect(
+      isInteractiveBlock({
+        ...bloco('world', 'experimentation'),
+        prediction: {
+          prompt: 'Vai aparecer?',
+          choices: [
+            { id: 'sim', label: 'Sim' },
+            { id: 'nao', label: 'Não' },
+          ],
+        },
+      } as unknown),
+    ).toBe(false)
+    expect(
+      isInteractiveBlock({
+        ...bloco('world', 'experimentation'),
+        prediction: {
+          context: { label: '', explanation: 'Contexto inválido.' },
+          prompt: 'Vai aparecer?',
+          choices: [
+            { id: 'sim', label: 'Sim' },
+            { id: 'nao', label: 'Não' },
+          ],
+        },
+      } as unknown),
+    ).toBe(false)
   })
 })
 

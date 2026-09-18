@@ -1,4 +1,5 @@
-import type { SceneId } from './actions'
+import type { LearningPredictionContext } from '../prediction-context'
+import { SCENE_IDS, type SceneId } from './actions'
 
 /**
  * A PREVISÃO e a EXPLICAÇÃO de cada cena: o primeiro e o terceiro tempo do ciclo.
@@ -55,6 +56,7 @@ interface Escolha {
 }
 
 export interface ScenePrediction {
+  context: LearningPredictionContext
   prompt: string
   choices: Escolha[]
   /** O que acontece de verdade. Não reprova ninguém: serve ao relatório do professor. */
@@ -79,6 +81,240 @@ export interface SceneQuestions {
   explain: SceneExplanation
 }
 
+interface ScenePredictionDefinition extends Omit<ScenePrediction, 'context'> {}
+
+interface SceneQuestionDefinition extends Omit<SceneQuestions, 'prediction'> {
+  prediction: ScenePredictionDefinition
+}
+
+/**
+ * A apresentação do assunto vem antes da pergunta. Cada entrada foi escrita para nomear o que a
+ * criança verá na prévia, sem responder à previsão antes de ela apostar.
+ */
+export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContext> = {
+  coordinates: {
+    label: 'Os números x e y',
+    explanation:
+      'Nesta experiência, vamos usar os números x e y para escolher onde o personagem aparece na tela do jogo.',
+  },
+  'screen-reader': {
+    label: 'Ouvir a tela',
+    explanation:
+      'Nesta experiência, vamos usar o botão “Ouvir a tela”. Ele lê em voz alta o que aparece no jogo.',
+  },
+  'stage-size': {
+    label: 'A borda da tela do jogo',
+    explanation:
+      'Nesta experiência, vamos olhar a tela do jogo e a borda que mostra onde ela termina.',
+  },
+  'draw-loop': {
+    label: 'O desenho que se repete',
+    explanation:
+      'Nesta experiência, vamos observar o que acontece quando o jogo desenha de novo em cada quadro.',
+  },
+  frames: {
+    label: 'Os quadros da animação',
+    explanation:
+      'Nesta experiência, vamos olhar os quadros de uma animação antes de deixar a prévia tocar.',
+  },
+  'onion-skin': {
+    label: 'O fantasma da animação',
+    explanation:
+      'Nesta experiência, vamos usar o fantasma que deixa um quadro antigo aparecer junto do quadro atual.',
+  },
+  symmetry: {
+    label: 'O espelho do desenho',
+    explanation:
+      'Nesta experiência, vamos usar um espelho para copiar um traço para o outro lado do desenho.',
+  },
+  'pixel-vector': {
+    label: 'A lupa das pedras',
+    explanation:
+      'Nesta experiência, vamos aproximar duas pedras para comparar como cada uma fica de perto.',
+  },
+  'sheet-vs-sprite': {
+    label: 'O recorte da folha de sprites',
+    explanation:
+      'Nesta experiência, vamos escolher um pedaço de uma folha de desenhos para colocar no jogo.',
+  },
+  world: {
+    label: 'Bastidores e tela do jogo',
+    explanation:
+      'Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.',
+  },
+  layers: {
+    label: 'A ordem dos desenhos',
+    explanation:
+      'Nesta experiência, vamos organizar a ordem em que os desenhos entram para ver o que fica na frente.',
+  },
+  gravity: {
+    label: 'A gravidade do pulo',
+    explanation: 'Nesta experiência, vamos observar como a gravidade muda o caminho de um pulo.',
+  },
+  impulse: {
+    label: 'A força do pulo',
+    explanation:
+      'Nesta experiência, vamos comparar o que muda quando o pulo começa com mais ou menos força.',
+  },
+  'jump-sound': {
+    label: 'O som do pulo',
+    explanation:
+      'Nesta experiência, vamos comparar o som que o jogo faz com o jeito usado para pular.',
+  },
+  spawn: {
+    label: 'O nascimento dos obstáculos',
+    explanation:
+      'Nesta experiência, vamos observar de onde os obstáculos surgem enquanto o jogo está rodando.',
+  },
+  cleanup: {
+    label: 'A limpeza dos obstáculos',
+    explanation:
+      'Nesta experiência, vamos observar o que o jogo faz com um obstáculo que já saiu da tela.',
+  },
+  'game-state': {
+    label: 'O estado do jogo',
+    explanation:
+      'Nesta experiência, vamos usar o estado do jogo para decidir o que pode acontecer em cada momento.',
+  },
+  controls: {
+    label: 'Os controles do jogo',
+    explanation:
+      'Nesta experiência, vamos ligar um controle do jogo e observar o que ele permite fazer.',
+  },
+  restart: {
+    label: 'O botão de recomeçar',
+    explanation:
+      'Nesta experiência, vamos observar o que o jogo guarda e o que ele reinicia quando a partida recomeça.',
+  },
+  hitbox: {
+    label: 'A área de colisão',
+    explanation:
+      'Nesta experiência, vamos comparar a área que encosta com o desenho que aparece no jogo.',
+  },
+  score: {
+    label: 'O placar',
+    explanation: 'Nesta experiência, vamos observar quando o placar do jogo muda.',
+  },
+  lives: {
+    label: 'As vidas do jogador',
+    explanation:
+      'Nesta experiência, vamos observar o que acontece com as vidas durante uma partida.',
+  },
+  random: {
+    label: 'O sorteio do jogo',
+    explanation:
+      'Nesta experiência, vamos usar um sorteio para escolher entre vários lugares possíveis.',
+  },
+  acceleration: {
+    label: 'A aceleração',
+    explanation: 'Nesta experiência, vamos observar como a velocidade muda enquanto o tempo passa.',
+  },
+  velocity: {
+    label: 'A velocidade',
+    explanation:
+      'Nesta experiência, vamos comparar para onde o personagem vai quando a velocidade muda.',
+  },
+  'hold-vs-press': {
+    label: 'A tecla apertada e segurada',
+    explanation:
+      'Nesta experiência, vamos comparar apertar uma tecla uma vez com manter a mesma tecla segurada.',
+  },
+  variable: {
+    label: 'A caixa que guarda um número',
+    explanation:
+      'Nesta experiência, vamos observar uma caixa que guarda um número e muda durante o jogo.',
+  },
+  'group-loop': {
+    label: 'O grupo de inimigos',
+    explanation:
+      'Nesta experiência, vamos observar como o jogo passa por cada inimigo de um grupo.',
+  },
+  'enemy-type': {
+    label: 'O tipo de inimigo',
+    explanation:
+      'Nesta experiência, vamos escolher um tipo de inimigo e observar o que os novos inimigos recebem.',
+  },
+  camera: {
+    label: 'A câmera do jogo',
+    explanation:
+      'Nesta experiência, vamos observar como a câmera mostra só uma parte de um mundo maior.',
+  },
+  contact: {
+    label: 'O contato entre objetos',
+    explanation:
+      'Nesta experiência, vamos observar o que o jogo percebe quando dois objetos encostam.',
+  },
+  cooldown: {
+    label: 'O tempo de espera',
+    explanation:
+      'Nesta experiência, vamos observar o tempo que o jogo espera antes de deixar uma ação acontecer de novo.',
+  },
+  aim: {
+    label: 'A mira',
+    explanation:
+      'Nesta experiência, vamos apontar uma mira para descobrir o que ela consegue alcançar.',
+  },
+  diagonal: {
+    label: 'O movimento na diagonal',
+    explanation:
+      'Nesta experiência, vamos comparar um movimento reto com um movimento que vai para dois lados ao mesmo tempo.',
+  },
+  tilemap: {
+    label: 'O mapa de quadradinhos',
+    explanation:
+      'Nesta experiência, vamos observar como letras em um mapa viram partes do cenário do jogo.',
+  },
+  pool: {
+    label: 'A caixa de objetos prontos',
+    explanation:
+      'Nesta experiência, vamos observar como o jogo guarda e reaproveita objetos que não estão na tela.',
+  },
+  'entity-state': {
+    label: 'O estado de um personagem',
+    explanation:
+      'Nesta experiência, vamos observar como um personagem muda de estado durante o jogo.',
+  },
+  'delta-time': {
+    label: 'O tempo entre os quadros',
+    explanation:
+      'Nesta experiência, vamos comparar como dois computadores podem deixar o jogo andar no mesmo ritmo.',
+  },
+  'circle-collision': {
+    label: 'Dois círculos que encostam',
+    explanation:
+      'Nesta experiência, vamos observar a distância entre dois círculos para descobrir quando eles encostam.',
+  },
+  'axis-z': {
+    label: 'O eixo z',
+    explanation:
+      'Nesta experiência, vamos usar o eixo z para escolher se algo fica mais perto ou mais longe.',
+  },
+  'camera-3d': {
+    label: 'A câmera em três dimensões',
+    explanation:
+      'Nesta experiência, vamos girar uma câmera para observar o mesmo objeto por lados diferentes.',
+  },
+  mesh: {
+    label: 'A malha do objeto',
+    explanation:
+      'Nesta experiência, vamos observar os pontos e as linhas que formam um objeto em três dimensões.',
+  },
+  'pick-ray': {
+    label: 'O raio da mira',
+    explanation:
+      'Nesta experiência, vamos apontar um raio para descobrir qual objeto ele alcança primeiro.',
+  },
+  'fill-stroke': {
+    label: 'Preenchimento e contorno',
+    explanation: 'Nesta experiência, vamos comparar o miolo e a borda de um mesmo desenho.',
+  },
+  shading: {
+    label: 'Luz e sombra',
+    explanation:
+      'Nesta experiência, vamos observar como luz e sombra mudam a aparência de uma forma.',
+  },
+}
+
 /**
  * ⚠️ `Record<SceneId, …>`: o TS reprova a cena nova que chegar sem as duas perguntas.
  *
@@ -93,7 +329,7 @@ export interface SceneQuestions {
  * repetição maior que 3, na ordem do catálogo E na ordem real de cada curso. Mudou uma ordem aqui?
  * Rode aquele teste: ele diz em que trecho quebrou.
  */
-export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
+const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
   /* ── A tela e quem a lê ──────────────────────────────────────────────────────────────────── */
   coordinates: {
     prediction: {
@@ -123,7 +359,8 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
       // ⚠️ "Quem não enxerga consegue saber como se joga?" já dizia a resposta na pergunta, e a
       // errada ("o desenho conta sozinho") era espantalho. A crença de verdade é achar que o
       // computador descreve o desenho.
-      prompt: 'Você aperta Ouvir a tela sem escrever nada. O que a pessoa ouve?',
+      prompt:
+        'Antes de apertar “Ouvir a tela”, o que o leitor de tela vai dizer quando ainda não há texto no jogo?',
       choices: [
         {
           id: 'dino',
@@ -1401,3 +1638,21 @@ export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = {
     },
   },
 }
+
+const sceneQuestionEntries: [SceneId, SceneQuestions][] = SCENE_IDS.map((sceneId) => {
+  const questions = SCENE_QUESTION_DEFINITIONS[sceneId]
+  return [
+    sceneId,
+    {
+      ...questions,
+      prediction: {
+        ...questions.prediction,
+        context: SCENE_PREDICTION_CONTEXTS[sceneId],
+      },
+    },
+  ]
+})
+
+export const SCENE_QUESTIONS: Record<SceneId, SceneQuestions> = Object.fromEntries(
+  sceneQuestionEntries,
+) as Record<SceneId, SceneQuestions>

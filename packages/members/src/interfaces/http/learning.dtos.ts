@@ -396,6 +396,10 @@ export const InteractiveBlockSchema = t.Object({
    */
   prediction: t.Optional(
     t.Object({
+      context: t.Object({
+        label: t.String({ minLength: 1, maxLength: 180 }),
+        explanation: t.String({ minLength: 1, maxLength: 2000 }),
+      }),
       prompt: t.String({ minLength: 1, maxLength: 5000 }),
       /**
        * ⚠️ As escolhas da previsão têm `shows` (para onde olhar quando a criança escolheu esta e a

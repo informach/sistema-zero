@@ -189,6 +189,11 @@ const validos: Array<[string, InteractiveBlock]> = [
     {
       ...base,
       prediction: {
+        context: {
+          label: 'O botão de teste',
+          explanation:
+            'Nesta experiência, vamos observar o botão de teste antes de escolher um palpite.',
+        },
         prompt: 'Vai aparecer?',
         choices: [
           { id: 'sim', label: 'Sim' },
@@ -232,6 +237,19 @@ const validos: Array<[string, InteractiveBlock]> = [
  *  saber QUAIS — uma divergência nova aqui precisa ser uma decisão, não um acidente. */
 const invalidos: Array<[string, unknown]> = [
   ['pistas repetidas', { ...base, hints: ['igual', 'igual'] }],
+  [
+    'previsão sem o contexto que apresenta o assunto',
+    {
+      ...base,
+      prediction: {
+        prompt: 'Vai aparecer?',
+        choices: [
+          { id: 'sim', label: 'Sim' },
+          { id: 'nao', label: 'Não' },
+        ],
+      },
+    },
+  ],
   // A pilha só existe na `layers`: só o core sabe qual cena tem ordem de desenhar.
   [
     'pilha fora da layers',
@@ -312,6 +330,10 @@ const invalidos: Array<[string, unknown]> = [
     {
       ...base,
       prediction: {
+        context: {
+          label: 'Bastidores e tela do jogo',
+          explanation: 'Nesta experiência, vamos comparar o que existe nos bastidores e na tela.',
+        },
         prompt: 'Vai aparecer?',
         choices: [
           { id: 'sim', label: 'Sim' },
@@ -429,7 +451,7 @@ describe('⚠️⚠️ a figura do elenco ATRAVESSA uma rota com o corpo tipado'
 })
 
 describe('⚠️⚠️ a previsão retomável ATRAVESSA uma rota com o corpo tipado', () => {
-  test('o `normalize` do Elysia não apaga `revealOn` nem `shows`', async () => {
+  test('o `normalize` do Elysia não apaga contexto, `revealOn` nem `shows`', async () => {
     /**
      * Review do lote 2 do Raio-X (16/09/2026). O caso "cena com previsão retomável" acima usa o
      * `Check`, que aceita propriedade a mais: ele passava igual com o DTO ANTIGO, sem os dois
@@ -445,6 +467,10 @@ describe('⚠️⚠️ a previsão retomável ATRAVESSA uma rota com o corpo tip
     const bloco: InteractiveBlock = {
       ...base,
       prediction: {
+        context: {
+          label: 'Bastidores e tela do jogo',
+          explanation: 'Nesta experiência, vamos comparar o que existe nos bastidores e na tela.',
+        },
         prompt: 'Vai aparecer?',
         choices: [
           { id: 'sim', label: 'Sim' },
@@ -463,6 +489,7 @@ describe('⚠️⚠️ a previsão retomável ATRAVESSA uma rota com o corpo tip
     )
     expect(resposta.status).toBe(200)
     const devolvido = (await resposta.json()) as { content: InteractiveBlock }
+    expect(devolvido.content.prediction?.context).toEqual(bloco.prediction?.context)
     expect(devolvido.content.prediction?.revealOn).toBe('hidden')
     expect(devolvido.content.prediction?.choices[1]?.shows).toBe('Olhe a tela: ela ficou vazia.')
     // Anti-vácuo: a mesma rota APAGA o que não está declarado, senão o teste aprovaria qualquer DTO.

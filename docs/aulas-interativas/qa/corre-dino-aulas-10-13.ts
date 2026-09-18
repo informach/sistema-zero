@@ -517,6 +517,11 @@ export const lateRecipes: Record<number, Recipe> = {
             hints: [],
             required: false,
             prediction: {
+              context: {
+                label: 'O sinal da velocidade',
+                explanation:
+                  'Nesta demonstração, vamos comparar o tamanho dos passos do cacto quando a velocidade fica negativa.',
+              },
               prompt: 'Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…',
               choices: [
                 {

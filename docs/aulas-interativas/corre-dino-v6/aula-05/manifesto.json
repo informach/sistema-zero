@@ -222,6 +222,10 @@
           ]
         },
         "prediction": {
+          "context": {
+            "label": "A velocidade para o lado",
+            "explanation": "Nesta demonstração, vamos acompanhar como a velocidade para o lado move o cacto pela tela."
+          },
           "prompt": "O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…",
           "choices": [
             {

@@ -92,6 +92,10 @@
           "explanation": "A velocidade para baixo é o vy, e ela é somada no y a cada quadro. Com 9, o y cresce e o tiro desce. Com −9, o y diminui e o tiro sobe."
         },
         "prediction": {
+          "context": {
+            "label": "A velocidade para baixo",
+            "explanation": "Nesta experiência, vamos usar a velocidade para baixo para observar o caminho de um tiro na tela."
+          },
           "prompt": "Com a velocidade para baixo em −9, para onde o tiro vai?",
           "choices": [
             {

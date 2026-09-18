@@ -250,6 +250,11 @@ export const earlyRecipes: Record<number, Recipe> = {
                 'Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo a nave fica.',
             },
             prediction: {
+              context: {
+                label: 'Os números x e y',
+                explanation:
+                  'Nesta experiência, vamos usar os números x e y para escolher onde a nave aparece na tela do jogo.',
+              },
               prompt: 'Se o y AUMENTAR, para onde a nave vai?',
               choices: [
                 {
@@ -368,6 +373,11 @@ export const earlyRecipes: Record<number, Recipe> = {
                 'A limpeza apaga a imagem anterior. Ela não apaga a nave, que continua guardada no jogo.',
             },
             prediction: {
+              context: {
+                label: 'O desenho que se repete',
+                explanation:
+                  'Nesta experiência, vamos observar o que acontece quando o jogo desenha a nave de novo em cada quadro.',
+              },
               prompt: 'Sem limpar antes de desenhar, o que fica na tela?',
               choices: [
                 {
@@ -586,6 +596,11 @@ export const earlyRecipes: Record<number, Recipe> = {
                 'A velocidade para baixo é o vy, e ela é somada no y a cada quadro. Com 9, o y cresce e o tiro desce. Com −9, o y diminui e o tiro sobe.',
             },
             prediction: {
+              context: {
+                label: 'A velocidade para baixo',
+                explanation:
+                  'Nesta experiência, vamos usar a velocidade para baixo para observar o caminho de um tiro na tela.',
+              },
               prompt: 'Com a velocidade para baixo em −9, para onde o tiro vai?',
               choices: [
                 {

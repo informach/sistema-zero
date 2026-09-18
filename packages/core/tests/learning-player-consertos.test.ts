@@ -49,6 +49,10 @@ describe('o guarda PÚBLICO e a previsão retomável', () => {
       isInteractiveBlock({
         ...mundo,
         prediction: {
+          context: {
+            label: 'Bastidores e tela do jogo',
+            explanation: 'Nesta experiência, vamos comparar o que existe nos bastidores e na tela.',
+          },
           prompt: 'Vai aparecer?',
           choices: [
             { id: 'sim', label: 'Sim' },

@@ -140,6 +140,10 @@
           "scene": "cleanup"
         },
         "prediction": {
+          "context": {
+            "label": "A limpeza dos cactos",
+            "explanation": "Nesta experiência, vamos comparar um cacto que saiu da tela com o que ainda está guardado nos bastidores."
+          },
           "prompt": "O cacto que saiu da tela ainda existe no jogo?",
           "choices": [
             {

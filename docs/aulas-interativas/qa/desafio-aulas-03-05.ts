@@ -199,6 +199,11 @@ export const lateRecipes: Record<number, Recipe> = {
                 ],
               },
               prediction: {
+                context: {
+                  label: 'A velocidade para baixo',
+                  explanation:
+                    'Nesta demonstração, vamos acompanhar como a velocidade para baixo muda o número y de uma pedra.',
+                },
                 prompt:
                   'Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?',
                 choices: [
@@ -537,6 +542,11 @@ export const lateRecipes: Record<number, Recipe> = {
                 ],
               },
               prediction: {
+                context: {
+                  label: 'Vidas e placar',
+                  explanation:
+                    'Nesta demonstração, vamos observar o que muda nas vidas e no placar quando a nave encosta em um asteroide.',
+                },
                 prompt: 'Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?',
                 choices: [
                   {

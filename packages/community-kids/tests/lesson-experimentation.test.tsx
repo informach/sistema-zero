@@ -469,6 +469,11 @@ describe('a previsão sobe junto da tentativa', () => {
     const comPrevisao: InteractiveBlock = {
       ...content('layers'),
       prediction: {
+        context: {
+          label: 'A ordem dos desenhos',
+          explanation:
+            'Nesta experiência, vamos organizar a ordem em que os desenhos entram para ver o que fica na frente.',
+        },
         prompt: 'Quem aparece na frente: quem foi desenhado antes ou depois?',
         choices: [
           { id: 'antes', label: 'Quem foi desenhado antes' },
@@ -641,6 +646,11 @@ function mundoComPalpite(revealOn?: string): InteractiveBlock {
   return {
     ...content('world'),
     prediction: {
+      context: {
+        label: 'Bastidores e tela do jogo',
+        explanation:
+          'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+      },
       prompt: 'Você cria e não liga o desenho. O que aparece?',
       choices: [
         { id: 'aparece', label: 'O Dino aparece', shows: 'Olhe a tela: ela ficou vazia.' },

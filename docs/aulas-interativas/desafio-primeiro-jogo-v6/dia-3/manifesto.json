@@ -177,6 +177,10 @@
           ]
         },
         "prediction": {
+          "context": {
+            "label": "A velocidade para baixo",
+            "explanation": "Nesta demonstração, vamos acompanhar como a velocidade para baixo muda o número y de uma pedra."
+          },
           "prompt": "Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?",
           "choices": [
             {

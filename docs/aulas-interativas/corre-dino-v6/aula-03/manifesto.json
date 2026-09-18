@@ -124,6 +124,10 @@
           "scene": "gravity"
         },
         "prediction": {
+          "context": {
+            "label": "A gravidade do pulo",
+            "explanation": "Nesta experiência, vamos observar o caminho do Dino quando ele pula com a gravidade desligada."
+          },
           "prompt": "Sem a gravidade, o que acontece depois do salto?",
           "choices": [
             {

@@ -317,6 +317,11 @@ export const earlyRecipes: Record<number, Recipe> = {
               scene: 'gravity',
             },
             prediction: {
+              context: {
+                label: 'A gravidade do pulo',
+                explanation:
+                  'Nesta experiência, vamos observar o caminho do Dino quando ele pula com a gravidade desligada.',
+              },
               prompt: 'Sem a gravidade, o que acontece depois do salto?',
               choices: [
                 {
@@ -714,6 +719,11 @@ export const earlyRecipes: Record<number, Recipe> = {
               ],
             },
             prediction: {
+              context: {
+                label: 'A velocidade para o lado',
+                explanation:
+                  'Nesta demonstração, vamos acompanhar como a velocidade para o lado move o cacto pela tela.',
+              },
               prompt:
                 'O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…',
               choices: [

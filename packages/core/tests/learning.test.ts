@@ -550,6 +550,10 @@ describe('os blocos do modelo anterior', () => {
     // vale nota. Se um dia o avaliador olhar para `answers.prediction`, errar o palpite passa a
     // reprovar a atividade — e a cena estaria ensinando a criança a não arriscar.
     const previsao = {
+      context: {
+        label: 'O teste',
+        explanation: 'Nesta experiência, vamos observar o teste antes de escolher um palpite.',
+      },
       prompt: 'O que você acha que vai acontecer?',
       choices: [
         { id: 'certa', label: 'Uma coisa' },

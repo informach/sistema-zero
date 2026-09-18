@@ -49,6 +49,11 @@ function relatorio(answers: LearningAnswers, passed: boolean): LessonLearningRep
           hints: [],
           activity: { type: 'experimentation', scene: 'world' },
           prediction: {
+            context: {
+              label: 'Bastidores e tela do jogo',
+              explanation:
+                'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+            },
             prompt: 'O que aparece?',
             choices: [
               { id: 'aparece', label: 'O Dino aparece' },

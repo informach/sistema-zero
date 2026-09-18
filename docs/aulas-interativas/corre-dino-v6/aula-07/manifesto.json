@@ -139,6 +139,10 @@
           "scene": "game-state"
         },
         "prediction": {
+          "context": {
+            "label": "O estado do jogo",
+            "explanation": "Nesta experiência, vamos observar o que o jogo deixa acontecer antes e depois de a partida começar."
+          },
           "prompt": "Na tela de início, antes de começar, nascem cactos?",
           "choices": [
             {

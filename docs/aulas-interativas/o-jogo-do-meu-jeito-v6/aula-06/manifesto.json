@@ -299,6 +299,10 @@
           "scene": "sheet-vs-sprite"
         },
         "prediction": {
+          "context": {
+            "label": "A folha de sprites",
+            "explanation": "Nesta demonstração, vamos olhar uma folha que guarda duas naves antes de escolher o que o jogo mostra."
+          },
           "prompt": "A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?",
           "choices": [
             {

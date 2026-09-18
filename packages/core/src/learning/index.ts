@@ -3,6 +3,7 @@ export * from './authoring'
 export * from './gallery-delivery'
 export * from './legacy-layout'
 export * from './manifest-quiz'
+export * from './prediction-context'
 export * from './project-structure'
 export * from './quiz'
 export * from './requirements'
@@ -10,6 +11,7 @@ export * from './section-progression'
 export * from './section-templates'
 export * from './video-watch'
 
+import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
   castText,
   evaluateDemonstration,
@@ -26,7 +28,6 @@ import {
   sceneActivityForReading,
   sceneGoalIds,
   sceneHintsFor,
-  sceneModel,
   sceneStart,
   sceneTargets,
 } from './scene'
@@ -91,6 +92,8 @@ export interface LearningCheckpoint {
  * quantos previram o quê.
  */
 export interface LearningPrediction {
+  /** O assunto apresentado antes da pergunta. */
+  context: LearningPredictionContext
   prompt: string
   choices: (LearningChoice & {
     /** Para onde olhar quando a criança escolheu esta opção errada. Ver `ScenePrediction`. */
@@ -175,6 +178,10 @@ export function learningHints(block: Pick<InteractiveBlock, 'activity' | 'hints'
 /** Nenhuma das quatro atividades carrega gabarito: o que precisa ficar no servidor é o
  *  `correctChoiceId` da pergunta anexa, tratado abaixo. */
 export type PublicLearningActivity = LearningActivity
+/** A previsão que chega ao player sempre tem o contexto que abre a atividade. */
+export interface PublicLearningPrediction extends Omit<LearningPrediction, 'context'> {
+  context: LearningPredictionContext
+}
 export interface PublicInteractiveBlock
   extends Omit<InteractiveBlock, 'activity' | 'checkpoint' | 'prediction' | 'semPerguntaFinal'> {
   activity: PublicLearningActivity
@@ -186,7 +193,7 @@ export interface PublicInteractiveBlock
    * criança apostava antes de mexer e nunca ficava sabendo se acertou, que é metade do ciclo.
    * ⚠️ O checkpoint continua podado: aquele entra no `passed`.
    */
-  prediction?: LearningPrediction
+  prediction?: PublicLearningPrediction
 }
 const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
   // ⚠️ `cast` é PÚBLICO de propósito: é texto que a criança lê, não gabarito. Sem ele na
@@ -263,9 +270,9 @@ function publicActivity(activity: LearningActivity): LearningActivity {
  * não só aquele bloco. Sem modelo, a cena volta a não ter pergunta — que é exatamente o que ela
  * era antes deste lote.
  */
-export function blockPrediction(block: InteractiveBlock): LearningPrediction | undefined {
-  if (block.prediction) return block.prediction
+export function blockPrediction(block: InteractiveBlock): PublicLearningPrediction | undefined {
   const a = block.activity
+  if (block.prediction) return block.prediction
   if (a.type !== 'experimentation' && a.type !== 'demonstration') return undefined
   // ⚠️⚠️ A demonstração `inline` fica de FORA do padrão, e é o contrário de um detalhe: ela existe
   // para ser "um ▶ e nada mais, no meio de uma explicação" — o degrau entre o parágrafo e a
@@ -277,6 +284,10 @@ export function blockPrediction(block: InteractiveBlock): LearningPrediction | u
   const modelo = SCENE_QUESTIONS[a.scene]?.prediction
   if (!modelo) return undefined
   return {
+    context: {
+      label: castText(modelo.context.label, a.cast),
+      explanation: castText(modelo.context.explanation, a.cast),
+    },
     prompt: castText(modelo.prompt, a.cast),
     // ⚠️ O `shows` passa pelo elenco como o rótulo: é a frase que a criança lê logo depois de
     // ver a cena ("Olhe a tela: ela ficou vazia"), e ela cita o personagem.
@@ -345,6 +356,10 @@ export function publicInteractiveBlock(block: InteractiveBlock): PublicInteracti
     ...(palpite
       ? {
           prediction: {
+            context: {
+              label: palpite.context.label,
+              explanation: palpite.context.explanation,
+            },
             prompt: palpite.prompt,
             choices: palpite.choices.map((c) => ({
               id: c.id,
@@ -367,7 +382,12 @@ export function isPublicInteractiveBlock(value: unknown): value is PublicInterac
   if (checkpoint !== undefined && (!record(checkpoint) || !choices(checkpoint.choices)))
     return false
   const prediction = value.prediction
-  if (prediction !== undefined && (!record(prediction) || !choices(prediction.choices)))
+  if (
+    prediction !== undefined &&
+    (!record(prediction) ||
+      !isLearningPredictionContext(prediction.context) ||
+      !choices(prediction.choices))
+  )
     return false
   return isInteractiveBlock({
     ...value,
@@ -594,7 +614,13 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
     // legítima ("o que você acha que vai acontecer?" numa cena de exploração livre). Quando
     // existe, ele precisa apontar para uma das alternativas — um id solto seria um relatório
     // dizendo que ninguém previu certo.
-    if (!record(p) || !text(p.prompt, 5000) || !choices(p.choices)) return false
+    if (
+      !record(p) ||
+      !isLearningPredictionContext(p.context) ||
+      !text(p.prompt, 5000) ||
+      !choices(p.choices)
+    )
+      return false
     if (
       p.correctChoiceId !== undefined &&
       !p.choices.some((choice) => choice.id === p.correctChoiceId)
