@@ -7,7 +7,7 @@ import { type ReactNode, useEffect, useMemo, useRef } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 import type { DialogueBlock } from '../lib/types'
 import { useSceneVoice } from './use-scene-voice'
-import { ZappyFalaProvider } from './zappy-fala-context'
+import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
 
 /**
  * Balão de fala do mascote, no lugar de contexto corrido. Para criança, "o Zappy
@@ -38,6 +38,15 @@ export function DialogueBlockView({
   mascot?: ReactNode
 }) {
   const voz = useSceneVoice()
+  /**
+   * A cena já é dona da fala quando usa este balão para vestir sua instrução. Nesse caso o estado
+   * vem de fora, no mesmo instante em que o botão "Ouvir" inicia ou para o MP3. O balão não pode
+   * pôr um provider vazio por cima dele: o mascote veria "modo livre" e o Rive ficaria em loop.
+   *
+   * Nos blocos `dialogue` normais não há provider ancestral; eles continuam criando e entregando
+   * seu próprio estado, a partir do `useSceneVoice` deste componente.
+   */
+  const falaDaCena = useZappyFala()
   const fila = filaDeVoz([content.text], content.vozes)
   /**
    * ⚠⚠ O balão entra no FOCO de mídia da aula, como o vídeo e a cena. Sem registro o
@@ -53,10 +62,18 @@ export function DialogueBlockView({
    * devolve um array NOVO a cada render e o contexto mudaria de identidade em todos eles.
    */
   const temFala = fila !== null
-  const fala = useMemo(() => ({ podeFalar: temFala, falando: voz.falando }), [temFala, voz.falando])
+  const falaPropria = useMemo(
+    () => ({ podeFalar: temFala, falando: voz.falando }),
+    [temFala, voz.falando],
+  )
+  const mascote = falaDaCena ? (
+    mascot
+  ) : (
+    <ZappyFalaProvider value={falaPropria}>{mascot}</ZappyFalaProvider>
+  )
   return (
     <div className="flex items-end gap-3">
-      <ZappyFalaProvider value={fala}>{mascot}</ZappyFalaProvider>
+      {mascote}
       <div className="relative min-w-0 flex-1 rounded-2xl border-2 border-(--unit,var(--color-border)) bg-card p-4">
         {mascot ? (
           <span

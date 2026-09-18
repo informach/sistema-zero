@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { ZappyFalaProvider } from '@sistemazero/member-shell/components/zappy-fala-context'
 import { act, cleanup, render } from '@testing-library/react'
 import {
@@ -218,6 +219,38 @@ describe('o regime chega ao canvas', () => {
     )
     await assenta()
     expect(regime()).toBe('false')
+  })
+
+  /**
+   * ⚠️⚠️ A instrução da cena é um caso de composição: `SceneActivity` põe o estado da fala no
+   * provider, o player Kids o veste como `DialogueBlockView`, e só então o mascote entra no slot.
+   * O balão sem dicionário próprio não pode encobrir o provider de fora com um contexto vazio;
+   * se encobrir, o Rive recebe `undefined`, entra em autoplay e a boca não para nunca.
+   */
+  test('⭐⭐ o balão da instrução preserva o estado de fala da cena até o canvas', async () => {
+    matchMedia(false)
+    const texto = 'Agora clique em ouvir para escutar o Zappy.'
+    const { rerender } = render(
+      <ZappyFalaProvider value={{ podeFalar: true, falando: false }}>
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text: texto }}
+          mascot={<KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />}
+        />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    expect(regime()).toBe('false')
+
+    rerender(
+      <ZappyFalaProvider value={{ podeFalar: true, falando: true }}>
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text: texto }}
+          mascot={<KidsMascotAnimated expression={ZAPPY_POSE_DA_FALA} className="size-16" />}
+        />
+      </ZappyFalaProvider>,
+    )
+    await assenta()
+    expect(regime()).toBe('true')
   })
 
   /**
