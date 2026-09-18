@@ -201,4 +201,31 @@ describe('hitMovableShapeAt: quem entra na varredura', () => {
     const tampa = rect('tampa', [0, 0, 100, 100], { fill: '#00a0c8', locked: true })
     expect(hitMovableShapeAt([livre, tampa], { x: 50, y: 50 })).toBe(livre)
   })
+
+  it('TEXTO girado: a caixa alinhada aos eixos não vale como resposta', () => {
+    // ⚠️⚠️ É esta a garantia que a rede do duplo clique do palco compra ao chamar o `shapeHitAt`
+    // em vez de comparar com o `shapeBounds` (que IGNORA a rotação, e está documentado que
+    // ignora). Num texto deitado 90°, o retângulo não-girado cobre um pedaço grande de papel
+    // vazio: pela caixa, um duplo clique ali abriria a janela de um texto que não está debaixo
+    // do dedo; e o duplo clique EM CIMA do glifo cairia fora. Os dois sentidos, num caso só.
+    const texto: VectorShape = {
+      ...BASE,
+      id: 'giro',
+      type: 'text',
+      x: 0,
+      y: 0,
+      text: 'Oi',
+      fontSize: 20,
+      rotation: 90,
+    }
+    const caixa = shapeBounds(texto)
+    const centro = { x: caixa.x + caixa.width / 2, y: caixa.y + caixa.height / 2 }
+    // O centro não se mexe com o giro: continua em cima do texto.
+    expect(shapeHitAt(texto, centro)).toBe(true)
+    // A ponta LARGA da caixa não-girada: com 90°, o texto ali é fino, e o ponto cai fora.
+    const pontaDaCaixa = { x: caixa.x + caixa.width - 1, y: centro.y }
+    expect(shapeHitAt(texto, pontaDaCaixa)).toBe(false)
+    // E o anti-vácuo: o MESMO ponto, sem o giro, acerta o texto.
+    expect(shapeHitAt({ ...texto, rotation: 0 }, pontaDaCaixa)).toBe(true)
+  })
 })

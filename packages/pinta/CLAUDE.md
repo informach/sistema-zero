@@ -2874,6 +2874,119 @@ com captura de pé) e §"a faixa da seleção: uma moldura só" (os três ramos 
 `useStudioResync.test.tsx` (`failed` avisa, `not-linked` cala, rejeição avisa, raster falho cala;
 o canvas é dublado no protótipo e restaurado).
 
+## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
+
+Dois relatos dela no editor de VETOR, os dois já dados como corrigidos antes e os dois vivos na
+staging.
+
+### "quando seleciono um objeto e arrasto, se tiver texto, ele fica selecionado"
+
+⭐⭐ **A correção de 06/09 (seção acima) leu isso como "o objeto de TEXTO entra no laço" e
+consertou AQUILO** — e aquilo estava certo. O relato é outro andar: a **seleção nativa do
+navegador**. Até aqui o pacote inteiro não tinha **uma linha** de `user-select` (a única ocorrência
+era o `TilePicker` do mapa), e os dois commits de 06/09 não acrescentam nenhum `preventDefault` de
+ponteiro nem tocam o CSS.
+
+- **MEDIDO no playground com o ponteiro de verdade** (arrastando o texto do desenho até as dicas
+  do topo): sem a regra, a seleção pega **457 caracteres** da interface e **termina no `<text>` do
+  próprio desenho** — é literalmente o "se tiver texto, ele fica selecionado". Com a regra: **0**.
+- ⚠⚠ **A regra mora na ÁREA (`[data-pinta-theme] .pin-work`), não só no palco.** Medi as duas:
+  com ela só no `.pin-stage`, o texto do DESENHO sai da seleção (conteúdo com `none` fica de fora
+  até quando a seleção passa por cima dele) **mas os rótulos em volta continuam azuis**. A `.pin-work`
+  cobre os TRÊS editores (`EditorScreen` do pixel e do vetor, `TilemapEditor` do mapa).
+- ⚠⚠ **E ela DEVOLVE `user-select: text` a `input`/`textarea`/`[contenteditable]` de dentro.** Sem
+  isso a criança perde o clique duplo e o arrastar dentro do nome do desenho, do campo do hex e da
+  caixa do texto (conferido no navegador: o `<textarea>` do diálogo está DENTRO da `.pin-work` e
+  volta a `text`).
+- ⚠ Fora de camada, como todo este arquivo: a utilitária `select-none` mora em `@layer utilities`
+  e perderia para qualquer regra sem camada.
+- ⚠ **O que MASCARAVA o defeito nas primeiras medições:** o `setPointerCapture` do palco já
+  impede a seleção quando o arrasto começa DENTRO do `<svg>`. Só reproduz com o gesto real dela,
+  que começa na forma e cruza a interface. Testar isso no `bun test` é impossível (happy-dom não
+  tem seleção nativa nem layout): o que o `styles/tokens.test.ts` trava é o CONTRATO (a regra
+  existe, tem o prefixo do WebKit, fica fora de camada e os campos voltam DEPOIS dela).
+
+### "não estou conseguindo editar um texto, quando seleciono para editar ele apaga"
+
+Eram DOIS caminhos com o mesmo sintoma, e o segundo explica o "apaga":
+
+1. ⭐⭐ **Ferramenta Texto em cima de um texto que JÁ EXISTE** — o gesto intuitivo.
+   `handleShapePointerDown` saía cedo **sem `stopPropagation`** quando a ferramenta não é
+   Selecionar/Editar-pontos, o evento borbulhava para o `<svg>` e caía em
+   `setTextDialog({mode:'new'})` + `setTextValue('')`: a janela abria **vazia**, e salvar criava um
+   SEGUNDO texto por cima do primeiro. Agora ela abre a edição DAQUELE texto (`abrirEdicaoDeTexto`
+   é o ponto único dos dois caminhos). ⚠ Trancada segue atravessando, como no resto do palco.
+2. ⭐ **Duplo clique com a Selecionar num texto pequeno.** Depois do 1º clique a forma já está
+   selecionada e as **oito alças de 14px de TELA** são desenhadas por cima dela; num texto pequeno
+   elas cobrem quase todo o glifo, o 2º clique acerta uma alça e, como os dois cliques tiveram
+   alvos diferentes, o navegador dispara o `dblclick` no **ancestral comum** (o `<svg>`) — o
+   `handleShapeDoubleClick` da forma nunca roda. A rede é o `handleStageDoubleClick` do palco, que
+   vale não importa em qual peça cada clique caiu (só dentro da caixa do texto selecionado, com a
+   folga das alças). É por isso que o defeito era INTERMITENTE: em zoom alto o texto fica maior
+   que as alças e o caminho de sempre funciona.
+- ⭐⭐ **E a tremida de 1-2px desse 2º clique era um redimensionamento DE VERDADE:** no texto o
+  `scaleShape` escala o `fontSize` com fator de até 0,05 (`geometry.ts`, piso 6), ou seja a palavra
+  praticamente sumia — a leitura literal do "ele apaga". Entrou o **`alcaAindaParada`**: um limiar
+  de 4px de TELA para as alças de redimensionar e girar, em LATCH (passou uma vez, o gesto segue
+  inteiro até o solto, inclusive voltando para perto do começo). Mover não tem limiar: ele já tem
+  a guarda de delta zero, e um passo de 1px lá não destrói conteúdo.
+- **Provado no navegador:** com a ferramenta Texto, clicar no texto abre "Mudar o texto" com o
+  conteúdo dentro, e o palco segue com UM texto só.
+- Testes: `vectorUi.test.tsx` §"editar um texto no vetor" (5 casos; os três consertos provados por
+  MUTAÇÃO). ⚠⚠ **Gotcha do teste:** a alça é `rect[width="14"]`, NUNCA `rect[stroke="#00a0c8"]`
+  — esse seletor casa PRIMEIRO com a moldura tracejada da seleção, que é `pointerEvents: none`,
+  deixa o toque descer ao palco e vira um laço cujo solto LIMPA a seleção (dois testes meus
+  passaram a mentir por isso antes de eu achar).
+
+### Full review do lote (18/09/2026) — o que ele mudou
+
+Três revisores (estado/eventos · CSS/cascata/criança · testes). Os achados que viraram código:
+
+- ⭐⭐ **[ALTO] Recolher escondia o ÚNICO caminho de recuperar um desenho que sumiu.** O bloco
+  `outputMissing` (o `role="alert"` "Este desenho não está neste aparelho" mais os botões
+  "Recriar com este brief" e "Vincular outro desenho") morava DENTRO do brief. Era tolerável
+  enquanto o `<details>` nascia aberto toda vez; com a seta que LEMBRA, deixou de ser: a criança
+  que recolheu uma vez abriria a tarefa noutro aparelho e veria só o título, sem nada dizendo que
+  existe saída. Desceu para o pé. **Recolher esconde o brief, nunca um problema.**
+- ⭐ **[MÉDIO] A rede do duplo clique usa o `shapeHitAt`**, não o `shapeBounds`: aquele trata a
+  ROTAÇÃO (a caixa a ignora, e está documentado), então num texto girado a primeira versão
+  errava nos dois sentidos — em cima do glifo não abria, e no vazio abria. Trava PURA em
+  `vector/hitTest.test.ts` ("TEXTO girado"), com o anti-vácuo do mesmo ponto sem o giro.
+- ⭐ **[MÉDIO] Recolher o brief re-disparava o PATCH de progresso.** O `EditorScreen` tinha o
+  OBJETO `adapter.taskSession` nas deps do efeito que vincula o desenho à tarefa, e o host o
+  remonta a cada mudança do adapter — desde a seta, a cada clique nela. Com a tarefa ainda
+  `planned` (ou com o primeiro PATCH em voo, ou depois de um que falhou offline), isso remarcava
+  com o MESMO `expectedUpdatedAt`: 409, recarga do brief e toast de erro. A dep virou o
+  `progress`, que vem por referência do handoff; a sessão vem de um ref.
+- **[MÉDIO] `openAsset`/`closeEditor` do contexto viraram `useCallback`**: o `context` depende do
+  adapter, e com eles nascendo inline o `onOpenCard` da galeria mudava de identidade a cada clique
+  na seta, quebrando o `memo` de TODOS os cartões — contra o invariante escrito no próprio
+  `AssetCard`.
+- **[BAIXO] Texto TRANCADO com a ferramenta Texto AVISA** em vez de atravessar: atravessando, ele
+  caía no palco e criava um texto novo por cima, reproduzindo o "selecionei para editar e ele
+  apagou" justamente para a forma que a criança protegeu.
+- **[BAIXO] `[contenteditable]:not([contenteditable="false"])`** no lugar de `[contenteditable="true"]`:
+  o atributo vale sem valor e como `plaintext-only`.
+
+E o que os revisores acharam nos TESTES deste lote (todos meus):
+- o helper `corpoDe` do `styles/tokens.test.ts` casava o seletor por string EXATA e quebrou quando
+  o biome partiu o seletor em três linhas — e a asserção de ordem que ele carregava era
+  **silenciosamente vácua** (`indexOf` de um literal que não existe devolve -1, e qualquer índice
+  é maior que -1). Hoje compara NORMALIZADO e a asserção de ordem SAIU: ela afirmava um
+  invariante FALSO, porque valor herdado perde para qualquer declaração que case o elemento,
+  independentemente de ordem e de especificidade;
+- `toContain('mb-2')` passa com `mb-20` (virou `classList.contains`);
+- `seta.querySelector('button')` era quase inerte (a seta É o botão): virou
+  `seta.contains(botao)`, que é o invariante de verdade.
+
+⚠ **Medido só com ponteiro.** A folha declara `-webkit-user-select` porque o iPad é o alvo
+principal do Pinta, mas a prova que existe é de mouse. `-webkit-touch-callout` segue com a regra
+do navegador. Vale reconferir no aparelho o callout de toque longo e as alças de seleção dentro
+dos campos.
+⚠ Efeito colateral aceito: com a regra na área, as mensagens dos diálogos do editor (que o Pinta
+renderiza INLINE dentro da `.pin-work`) deixaram de ser selecionáveis. Só `input`/`textarea` e
+`contenteditable` voltam.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

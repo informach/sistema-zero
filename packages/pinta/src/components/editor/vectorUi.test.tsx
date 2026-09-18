@@ -3437,3 +3437,221 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
     expectSameFrame()
   })
 })
+
+/**
+ * 18/09/2026 — "não estou conseguindo editar um texto, quando seleciono para editar ele apaga".
+ * Eram DOIS caminhos com o mesmo sintoma: a ferramenta Texto atravessava o texto e abria a
+ * janela vazia (nascendo um segundo texto por cima), e o duplo clique num texto pequeno morria
+ * nas alças, que ainda o encolhiam com a tremida do segundo clique.
+ */
+describe('editar um texto no vetor', () => {
+  // ⚠ A alça é `rect[width="14"]` (14px de tela em zoom 1), NUNCA `rect[stroke="#00a0c8"]`:
+  // esse seletor casa PRIMEIRO com a moldura tracejada da seleção, que é `pointerEvents: none`
+  // e deixa o toque descer ao palco — virava um laço, e o solto limpava a seleção.
+  async function criarTexto(stage: HTMLElement, conteudo: string): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 120, clientY: 120 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: conteudo },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe(conteudo)
+    })
+  }
+
+  it('a ferramenta Texto sobre um texto que já existe EDITA aquele texto, com o conteúdo dentro', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    // O gesto intuitivo: pegar a ferramenta de escrever e tocar na palavra.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 2, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.editText)).toBeTruthy()
+    })
+    // ⚠️ O anti-vácuo desta feature: antes a janela abria com o campo VAZIO.
+    const campo = screen.getByPlaceholderText(COPY.vector.textPlaceholder) as HTMLTextAreaElement
+    expect(campo.value).toBe('Oi')
+    fireEvent.change(campo, { target: { value: 'Olá' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.saveText }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Olá')
+    })
+    // E não nasceu um segundo texto por cima do primeiro.
+    expect(stage.querySelectorAll('text').length).toBe(1)
+  })
+
+  it('o duplo clique vale mesmo quando a ALÇA rouba o segundo clique', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    // 1º clique: seleciona (e é isso que faz nascerem as alças por cima do glifo).
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 3, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 3, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    // O navegador dispara o `dblclick` no ancestral comum quando os dois cliques têm alvos
+    // diferentes — ou seja, no `<svg>`, e não no `<text>`.
+    fireEvent.doubleClick(stage, { clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.editText)).toBeTruthy()
+    })
+    const campo = screen.getByPlaceholderText(COPY.vector.textPlaceholder) as HTMLTextAreaElement
+    expect(campo.value).toBe('Oi')
+  })
+
+  it('duplo clique LONGE do texto selecionado não abre a janela', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 4, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 4, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    fireEvent.doubleClick(stage, { clientX: 420, clientY: 330 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.queryByText(COPY.vector.editText)).toBeNull()
+  })
+
+  it('tremida de 2px numa alça NÃO encolhe o texto: alça pede arrasto de verdade', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 5, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 5, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('font-size')
+    const alca = stage.querySelector('rect[width="14"]')
+    if (!alca) throw new Error('alça esperada')
+    fireEvent.pointerDown(alca, { isPrimary: true, pointerId: 6, clientX: 140, clientY: 140 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 6, clientX: 142, clientY: 141 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 6, clientX: 142, clientY: 141 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(stage.querySelector('text')?.getAttribute('font-size')).toBe(antes ?? null)
+    // ⚠ Sonda: o texto segue selecionado e a alça segue na tela (a tremida não é um "toque"
+    // que desfaz a seleção — se fosse, o anti-vácuo abaixo passaria por não achar a alça).
+    expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+  })
+
+  it('e um arrasto DE VERDADE na mesma alça continua redimensionando (anti-vácuo)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 8, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 8, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('font-size')
+    const alca = stage.querySelector('rect[width="14"]')
+    if (!alca) throw new Error('alça esperada')
+    fireEvent.pointerDown(alca, { isPrimary: true, pointerId: 9, clientX: 140, clientY: 140 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 9, clientX: 200, clientY: 200 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 9, clientX: 200, clientY: 200 })
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('font-size')).not.toBe(antes ?? null)
+    })
+  })
+})
+
+/**
+ * Achados do full review de 18/09/2026 sobre a edição de texto no vetor.
+ */
+describe('editar um texto no vetor: os consertos do full review', () => {
+  async function criarTexto(stage: HTMLElement): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 20, clientX: 200, clientY: 200 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Oi' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Oi')
+    })
+  }
+
+  it('texto TRANCADO com a ferramenta Texto avisa, e NÃO cria outro por cima', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    // Tranca pelo painel Camadas (o caminho da criança).
+    fireEvent.click(screen.getByRole('button', { name: /^Trancar: Texto/ }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 22, clientX: 202, clientY: 202 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy()
+    })
+    // ⚠️ O anti-vácuo: sem a guarda o clique ATRAVESSAVA e nascia um segundo texto por cima.
+    expect(screen.queryByText(COPY.vector.textPrompt)).toBeNull()
+    expect(stage.querySelectorAll('text').length).toBe(1)
+  })
+
+  it('e a alça de GIRAR tem o mesmo limiar: tremida não gira a forma', async () => {
+    // ⚠ O latch é lido nos DOIS ramos (redimensionar e girar), e só o primeiro tinha teste
+    // (achado do full review de 18/09/2026): tirar a linha do `rotate` era mutante sobrevivente.
+    // E a alça de girar é ainda menor que as de redimensionar.
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 30, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 30, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('circle[data-rotate]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('transform') ?? null
+    const girar = stage.querySelector('circle[data-rotate]')
+    if (!girar) throw new Error('alça de girar esperada')
+    fireEvent.pointerDown(girar, { isPrimary: true, pointerId: 31, clientX: 140, clientY: 100 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 31, clientX: 142, clientY: 101 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 31, clientX: 142, clientY: 101 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(stage.querySelector('text')?.getAttribute('transform') ?? null).toBe(antes)
+  })
+
+  it('e um giro DE VERDADE continua girando (anti-vácuo)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 32, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 32, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('circle[data-rotate]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('transform') ?? null
+    const girar = stage.querySelector('circle[data-rotate]')
+    if (!girar) throw new Error('alça de girar esperada')
+    fireEvent.pointerDown(girar, { isPrimary: true, pointerId: 33, clientX: 140, clientY: 100 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 33, clientX: 260, clientY: 260 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 33, clientX: 260, clientY: 260 })
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('transform') ?? null).not.toBe(antes)
+    })
+  })
+})

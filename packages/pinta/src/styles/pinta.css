@@ -370,6 +370,37 @@
 [data-pinta-theme] .pin-stage {
   background: var(--pin-stage);
 }
+/* ⚠⚠ A ÁREA DE TRABALHO NÃO entra na seleção de texto do navegador (18/09/2026).
+
+   Relato dela: "quando seleciono um objeto e arrasto, se tiver texto, ele fica selecionado".
+   MEDIDO no playground, com o ponteiro de verdade: um arrasto que começa na área do editor
+   grifa os rótulos das dicas, da caixa e dos painéis — e a seleção termina no `<text>` do
+   próprio desenho ("Bem-vindo ao jogo"), que é o "texto" da queixa. O navegador só começa a
+   grifar se o elemento de partida for selecionável, e conteúdo com `none` fica de fora até
+   quando a seleção passa por cima dele: por isso a regra mora no ANCESTRAL da área inteira, e
+   não só no palco (com ela só no palco, medi: o texto do desenho saía da seleção, mas os
+   rótulos em volta continuavam azuis).
+   ⚠ A correção de 06/09 leu o mesmo relato como "o objeto de TEXTO entra no laço" e consertou
+   aquilo; este é o outro andar, e até agora nenhum `user-select` existia no pacote.
+   ⚠ Fora de camada, como todo este arquivo: a utilitária `select-none` mora em
+   `@layer utilities` e perderia para qualquer regra sem camada. */
+[data-pinta-theme] .pin-work {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* ⚠⚠ E os campos seguem selecionáveis: `none` herdado num `<input>`/`<textarea>` tira da
+   criança o clique duplo, o arrastar sobre o que ela digitou e, em alguns navegadores, o
+   próprio recortar. O nome do desenho, o hex da cor e a caixa do texto passam por aqui.
+   ⚠ `[contenteditable]:not([contenteditable="false"])` e não `[contenteditable="true"]`: o
+   atributo vale SEM valor e também como `plaintext-only`, e a forma estrita deixaria os dois de
+   fora (achado do full review de 18/09/2026; hoje o pacote não tem nenhum, mas o dia em que
+   tiver não pode ser o dia em que a digitação trava). */
+[data-pinta-theme]
+  .pin-work
+  :is(input, textarea, [contenteditable]:not([contenteditable="false"])) {
+  -webkit-user-select: text;
+  user-select: text;
+}
 [data-pinta-theme] .pin-band {
   border-top: 1px solid var(--color-pin-border);
   background: var(--pin-band);

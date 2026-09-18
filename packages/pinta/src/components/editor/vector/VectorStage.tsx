@@ -29,7 +29,7 @@ import {
   translateShape,
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
-import { hitMovableShapeAt } from '../../../vector/hitTest'
+import { hitMovableShapeAt, shapeHitAt } from '../../../vector/hitTest'
 import {
   clearImageSampleCache,
   type ImageSample,
@@ -447,6 +447,34 @@ export function VectorStage(): JSX.Element {
   }
 
   /**
+   * ⚠⚠ A alça só vale depois de um arrasto de VERDADE (18/09/2026).
+   *
+   * As alças medem 14px de tela e se estendem 7px para DENTRO da caixa, então num alvo pequeno
+   * (um texto de uma palavra em zoom baixo) elas cobrem quase tudo. Sem limiar, a tremida de
+   * um ou dois pixels do segundo clique de um duplo clique já era um redimensionamento de
+   * verdade — e no texto o `scaleShape` escala o `fontSize` com fator de até 0,05, ou seja,
+   * a palavra praticamente SUMIA. É a leitura literal do "ele apaga" que ela relatou.
+   *
+   * O limiar é em pixels de TELA (como todo o resto dos gestos: o palco pode mudar de lugar no
+   * meio) e é um LATCH: passou uma vez, o gesto segue inteiro até o solto, inclusive voltando
+   * para perto do começo — senão não daria para desfazer o arrasto arrastando de volta.
+   */
+  const ALCA_LIMIAR_PX = 4
+  const alcaMoveuRef = useRef(false)
+
+  function alcaAindaParada(
+    gesture: { startClient: Vec2 },
+    event: { clientX: number; clientY: number },
+  ): boolean {
+    if (alcaMoveuRef.current) return false
+    const dx = event.clientX - gesture.startClient.x
+    const dy = event.clientY - gesture.startClient.y
+    if (Math.hypot(dx, dy) < ALCA_LIMIAR_PX) return true
+    alcaMoveuRef.current = true
+    return false
+  }
+
+  /**
    * Abre um gesto: captura o ponteiro no palco e, de todo jeito, ouve o solto no
    * `document`. Sem isto, soltar FORA do `<svg>` (alvo pequeno em zoom baixo) com o
    * capture perdido deixava o gesto preso e o palco "morto" até recarregar.
@@ -454,6 +482,7 @@ export function VectorStage(): JSX.Element {
   function beginGesture(gesture: Gesture): void {
     dragCleanupRef.current?.()
     gestureRef.current = gesture
+    alcaMoveuRef.current = false
     const captured = svgRef.current
       ? safeSetPointerCapture(svgRef.current, gesture.pointerId)
       : false
@@ -741,6 +770,26 @@ export function VectorStage(): JSX.Element {
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
     // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
     if (spaceHeld) return
+    // ⭐⭐ Ferramenta TEXTO em cima de um texto que JÁ EXISTE: edita aquele texto (18/09/2026).
+    // Relato dela: "não estou conseguindo editar um texto, quando seleciono para editar ele
+    // apaga". Este é o gesto intuitivo — pegar a ferramenta de escrever e tocar na palavra — e
+    // até aqui ele ATRAVESSAVA a forma (a saída cedo logo abaixo não pára a propagação), caía no
+    // palco e abria a janela em `mode: 'new'` com o campo VAZIO. Salvando, nascia um SEGUNDO
+    // texto por cima do primeiro, o que na tela parece o texto ter virado outra coisa.
+    // ⚠ Trancada segue atravessando, como no resto do palco: para o mouse ela não está ali.
+    if (tool === 'text' && shape.type === 'text' && event.isPrimary && !gestureStillActive()) {
+      event.stopPropagation()
+      // ⚠ Trancado, o gesto AVISA em vez de atravessar. Atravessando (que é o que o resto do
+      // palco faz com a trancada) ele caía no palco e criava um texto NOVO por cima dela —
+      // reproduzindo, para um texto trancado, exatamente o "selecionei para editar e ele apagou"
+      // que este lote veio consertar. Achado do full review de 18/09/2026.
+      if (shape.locked === true) {
+        showToast(COPY.layers.lockedShapeWarning)
+        return
+      }
+      abrirEdicaoDeTexto(shape)
+      return
+    }
     if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureStillActive())
       return
     // Trancada: o clique ATRAVESSA para o palco (sem stopPropagation) — para o
@@ -894,12 +943,48 @@ export function VectorStage(): JSX.Element {
     })
   }
 
+  /** Abre a janela do texto JÁ COM o conteúdo dentro. Ponto Único dos dois caminhos de edição. */
+  function abrirEdicaoDeTexto(shape: VectorShape): void {
+    if (shape.type !== 'text') return
+    setTextDialog({ mode: 'edit', shapeId: shape.id })
+    setTextValue(shape.text)
+  }
+
   /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
   function handleShapeDoubleClick(shape: VectorShape): void {
     if (tool !== 'select' || shape.type !== 'text') return
     if (shape.locked === true) return
-    setTextDialog({ mode: 'edit', shapeId: shape.id })
-    setTextValue(shape.text)
+    abrirEdicaoDeTexto(shape)
+  }
+
+  /**
+   * O duplo clique do PALCO. Fecha a Caneta e, com a Selecionar, é a REDE do texto pequeno.
+   *
+   * ⚠⚠ Por que a rede precisa existir: depois do primeiro clique a forma já está selecionada
+   * e as oito alças (14px de TELA cada, opacas) são desenhadas POR CIMA dela. Num texto
+   * pequeno elas cobrem quase todo o glifo, então o segundo clique acerta uma alça: como os
+   * dois cliques tiveram alvos diferentes, o navegador dispara o `dblclick` no ancestral comum
+   * (o `<svg>`) e o `handleShapeDoubleClick` da forma NUNCA roda. Ouvindo aqui, o gesto vale
+   * não importa em qual peça cada clique caiu. É por isso que o defeito era intermitente: em
+   * zoom alto o texto fica maior que as alças e o caminho de sempre funciona.
+   */
+  function handleStageDoubleClick(event: { clientX: number; clientY: number }): void {
+    if (tool === 'pen' && penPoints.length > 0) {
+      finishPen(penPoints)
+      return
+    }
+    if (tool !== 'select') return
+    const alvo = single
+    if (alvo?.type !== 'text' || alvo.locked === true) return
+    // ⚠⚠ Só EM CIMA do texto selecionado (com a folga das alças, que ficam meio para fora): um
+    // duplo clique no vazio do papel não pode abrir a janela de um texto distante. Quem responde
+    // é o `shapeHitAt`, que leva o ponto ao espaço LOCAL da forma e TRATA a rotação — a primeira
+    // versão comparava com a caixa do `shapeBounds`, que a ignora (está documentado), e num texto
+    // girado errava nos dois sentidos: o duplo clique em cima do glifo caía fora e o duplo
+    // clique no vazio caía dentro. E a rede existe justamente para o texto pequeno, girado
+    // inclusive. De quebra some a terceira cópia da régua de "o ponto está na forma?".
+    if (!shapeHitAt(alvo, svgPoint(event), 8 / zoom)) return
+    abrirEdicaoDeTexto(alvo)
   }
 
   function handlePointerMove(event: StagePointer): void {
@@ -971,6 +1056,8 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'resize') {
+      // Tremida do duplo clique não é arrasto (ver `alcaAindaParada`).
+      if (alcaAindaParada(gesture, event)) return
       const { anchor, start, baseShapes, handle } = gesture
       const point = maybeSnap(gesturePoint(gesture, event))
       const isCorner = handle.length === 2
@@ -989,6 +1076,8 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'rotate') {
+      // Mesma régua do redimensionar: gesto de alça pede arrasto de verdade.
+      if (alcaAindaParada(gesture, event)) return
       const point = gesturePoint(gesture, event)
       const angle = Math.atan2(point.y - gesture.center.y, point.x - gesture.center.x)
       // Delta TOTAL sobre a base (nunca acumulado): mesma régua do mover e do
@@ -1244,9 +1333,7 @@ export function VectorStage(): JSX.Element {
             // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
             // em vez de deixar o palco preso.
             onLostPointerCapture={(event) => endGesture(event)}
-            onDoubleClick={
-              tool === 'pen' && penPoints.length > 0 ? () => finishPen(penPoints) : undefined
-            }
+            onDoubleClick={handleStageDoubleClick}
           >
             {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia) — o
                 olhinho do painel Camadas tira a forma do palco inteiro. */}
