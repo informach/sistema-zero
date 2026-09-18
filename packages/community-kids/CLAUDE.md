@@ -1654,7 +1654,7 @@ dinâmico no effect, tema claro fixo). **Sem backend próprio**: a galeria vive 
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
 (`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
-em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil.
+em "Meus desenhos" na aba "Imagens" (menu ⋯ → Materiais) do `/estudio` do MESMO perfil.
 **Mão DUPLA (08/2026):** o Estúdio ganhou um botão "Editar" nos desenhos vindos daqui →
 `studio-full-client` passa `onEditDrawing` = `window.open('/pinta?desenho=<id>', '_blank',
 'noopener,noreferrer')`; o `pinta-client` lê `?desenho=` (query, porque `noopener` corta o

@@ -82,8 +82,16 @@ export function UndoRedo({ state }: { state: UndoRedoState }): JSX.Element {
   )
 }
 
-/** No compacto os dois não cabem na barra: entram no "⋯", numa seção "Editar". */
-export function undoRedoMenuItems(state: UndoRedoState, t: (key: string) => string): MenuItem[] {
+/**
+ * No compacto os dois não cabem na barra: entram no "⋯", numa seção "Editar".
+ * ⚠️ O id sai TIPADO (`'undo' | 'redo'`) porque a `Topbar` indexa o mapa de
+ * comportamentos por ele: com `MenuItem` cru era preciso um `as` no código de
+ * produção, e aí o compilador deixava de ser a rede contra id fora da árvore.
+ */
+export function undoRedoMenuItems(
+  state: UndoRedoState,
+  t: (key: string) => string,
+): Array<MenuItem & { id: 'undo' | 'redo' }> {
   return [
     {
       id: 'undo',

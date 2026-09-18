@@ -34,7 +34,7 @@ type PintaResyncResult =
  * Pinta embarcado na comunidade kids (produto vendável). O pacote traz a UI inteira
  * (galeria + editores); este host injeta o tema da comunidade e a PONTE "Usar no
  * Estúdio": salva o desenho na biblioteca pessoal do Studio (IndexedDB do MESMO
- * perfil — aparece em "Meus desenhos" no painel de Imagens do /estudio).
+ * perfil — aparece em "Meus desenhos" na aba "Imagens" do /estudio).
  */
 export function PintaClient({
   viewerId,

@@ -31,7 +31,7 @@ offline, o 3D não.
 - **Áudio precisa de GESTO** (autoplay policy do Chrome): o `AudioContext` do
   `AudioListener` nasce suspenso. Chame `listener.context.resume()` dentro de um
   `keydown`/clique antes do primeiro `play()` (o Passeio 3D faz exatamente isso).
-- **`AudioLoader.load('nome', …)`** resolve o som ENVIADO no painel de Imagens
+- **`AudioLoader.load('nome', …)`** resolve o som ENVIADO na aba "Sons" (menu ⋯ → Materiais)
   (🔊 Enviar som) pelo nome, com ou sem extensão. Qualquer URL que não é asset
   segue bloqueada.
 - **ShaderMaterial com GLSL do aluno** roda (GPU local, sem rede), mas é "opaco"

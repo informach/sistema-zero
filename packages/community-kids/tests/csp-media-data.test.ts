@@ -12,7 +12,7 @@ import { describe, expect, it } from 'bun:test'
  * O defeito real (08/2026): faltava `data:`. O áudio que a criança envia é
  * embutido como `data:audio/…`, então:
  *
- *   1. o `<audio>` da PRÉVIA no painel "Imagens e sons" (que roda na página do
+ *   1. o `<audio>` da PRÉVIA na aba "Sons" dos materiais (que roda na página do
  *      Next) era recusado — com `preload="none"`, o clique no play simplesmente
  *      não fazia nada, sem erro visível na UI;
  *   2. o som DENTRO do jogo também, porque o iframe do preview é `srcdoc` e

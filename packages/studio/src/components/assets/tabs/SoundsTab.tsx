@@ -56,7 +56,7 @@ export function SoundsTab({
           <EmptyHint>
             {allowUpload
               ? 'Nenhum som ainda. Envie um do computador aqui em cima; depois use o nome dele no bloco "Carregar o som".'
-              : 'Nenhum som ainda. Nesta aula os sons vêm prontos com o projeto.'}
+              : 'Nenhum som ainda. Os sons deste projeto são escolhidos por quem montou a atividade.'}
           </EmptyHint>
         ) : (
           <ul className="flex flex-col gap-2">

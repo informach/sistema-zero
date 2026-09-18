@@ -3,6 +3,7 @@ import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../../asset-library/catalog'
 import type { PersonalAsset } from '../../../asset-library/personal'
+import { useT } from '../../../studio/i18n'
 import type { EditTarget } from '../creationOrigin'
 import { EditInOriginButton } from '../EditInOriginButton'
 import { AssetNameInput, type AssetsTabCommon, DeleteAssetButton, EmptyHint } from './common'
@@ -47,6 +48,7 @@ export function ImagesTab({
   onDeletePersonal,
   onAddFromLibrary,
 }: ImagesTabProps): JSX.Element {
+  const t = useT()
   return (
     <div className="flex flex-col gap-4">
       {allowUpload || onOpenPinta ? (
@@ -58,7 +60,7 @@ export function ImagesTab({
           ) : null}
           {onOpenPinta ? (
             <Button variant={allowUpload ? 'subtle' : 'primary'} size="sm" onClick={onOpenPinta}>
-              🎨 Trazer do Pinta
+              {t('pintaImport.button')}
             </Button>
           ) : null}
         </div>
@@ -158,7 +160,7 @@ export function ImagesTab({
           </h3>
           {personalImages.length === 0 ? (
             <EmptyHint>
-              Desenhe no Pinta e toque em "Usar no Estúdio" — seus desenhos aparecem aqui.
+              Desenhe no Pinta e toque em "Usar no Estúdio". Seus desenhos aparecem aqui.
             </EmptyHint>
           ) : (
             <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">

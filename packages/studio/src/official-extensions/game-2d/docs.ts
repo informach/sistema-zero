@@ -122,7 +122,7 @@ O Estúdio liga o motor automaticamente a partir das Áreas do projeto.
 
 ### Dê aparência aos personagens
 
-Use **Materiais do jogo** (menu ⋯ → Imagens, Sons ou Modelos 3D) para enviar imagens do
+Use o menu ⋯ → **Materiais** (Imagens, Sons ou Modelos 3D) para enviar imagens do
 computador ou escolher da biblioteca;
 depois é só usar o **nome** da imagem nos blocos.
 

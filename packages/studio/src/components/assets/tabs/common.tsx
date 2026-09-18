@@ -63,7 +63,11 @@ export function AssetsTabStrip({
             type="button"
             role="tab"
             aria-selected={selected}
-            aria-controls={`${baseId}-panel-${item.id}`}
+            // ⚠️ Só a aba ATIVA tem painel no DOM (a janela renderiza um só), então
+            // só ela pode apontar para um id que existe. Referência pendurada é
+            // atributo ARIA inválido — e o axe classifica como "incomplete", ou seja,
+            // não reprova ninguém: falha muda.
+            aria-controls={selected ? `${baseId}-panel-${item.id}` : undefined}
             tabIndex={selected ? 0 : -1}
             onClick={() => onSelect(item.id)}
             onKeyDown={(e) => onKeyDown(e, index)}

@@ -24,6 +24,29 @@ export type ThreeDConsumerProjectLike = Pick<
   'installedExtensions' | 'files' | 'blocksState'
 >
 
+/**
+ * ⚠️⚠️ O `JSON.stringify` do estado dos blocos é CARO e esta função passou a rodar no
+ * caminho quente: desde 18/09/2026 a Topbar a consulta para decidir a porta "Modelos
+ * 3D", e a Topbar nunca desmonta — o seletor do zustand reexecuta a cada `set()` da
+ * store de projeto, ou seja, a cada TECLA na Ponte e a cada lote de 120 ms do Blockly.
+ * Medido no Reino Zero (blocksState de 216 KB): 1,15 ms por chamada, +66% no tempo de
+ * cada atualização de um projeto SEM 3D (onde as duas guardas baratas falham e o
+ * stringify roda inteiro). Falha MUDA: nada quebra, o editor só fica pesado.
+ *
+ * O cache é por IDENTIDADE do `blocksState`, e é o que mata o caso pior: digitar no
+ * Monaco troca `files`, nunca o `blocksState`, então a resposta vem do WeakMap.
+ */
+const canvas3DByBlocksState = new WeakMap<object, boolean>()
+
+function blocksStateUsesCanvas3D(blocksState: Project['blocksState']): boolean {
+  if (!blocksState || typeof blocksState !== 'object') return false
+  const cached = canvas3DByBlocksState.get(blocksState)
+  if (cached !== undefined) return cached
+  const usa = JSON.stringify(blocksState).includes('sz_t3d_')
+  canvas3DByBlocksState.set(blocksState, usa)
+  return usa
+}
+
 export function projectHas3DConsumer(
   project: ThreeDConsumerProjectLike | null | undefined,
 ): boolean {
@@ -33,5 +56,27 @@ export function projectHas3DConsumer(
   }
   const files = project.files as unknown as Record<string, string | undefined> | undefined
   if (/from\s+['"]three(['"]|\/)/.test(files?.['script.js'] ?? '')) return true
-  return project.blocksState ? JSON.stringify(project.blocksState).includes('sz_t3d_') : false
+  return blocksStateUsesCanvas3D(project.blocksState)
+}
+
+/**
+ * A régua da aba "Modelos 3D" e da porta dela no menu ⋯ — FONTE ÚNICA de propósito.
+ * A janela e o menu tinham a mesma conta escrita duas vezes, e divergir produz falha
+ * muda nas duas direções: porta sem aba (a janela abriria em "Imagens" pelo fallback)
+ * ou aba sem porta. Derivar mata a classe; duplicar deixa caminho esquecido.
+ *
+ * Três motivos independentes: há quem consuma 3D; o projeto TEM arquivo 3D (um órfão
+ * precisa continuar gerenciável); ou o host deu o "Trazer do Molda" — sem o terceiro,
+ * a porta do Molda sumiria justo para quem ainda não instalou nada de 3D, inclusive
+ * para trazer TEXTURA, que é imagem e entra em qualquer projeto.
+ */
+export function projectHas3DMaterials(
+  project: (ThreeDConsumerProjectLike & Pick<Project, 'assets'>) | null | undefined,
+  hasMoldaLibrary: boolean,
+): boolean {
+  if (hasMoldaLibrary) return true
+  if (projectHas3DConsumer(project)) return true
+  return (project?.assets ?? []).some(
+    (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
+  )
 }

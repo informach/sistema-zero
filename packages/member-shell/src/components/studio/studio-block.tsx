@@ -135,7 +135,7 @@ export function StudioBlockView({
   // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
   const [message, setMessage] = useState('')
   const MESSAGE_MAX = 1000
-  // "Sincronizar com o enviado": puxa do servidor o projeto que o aluno enviou e
+  // "Trazer o que eu enviei": puxa do servidor o projeto que o aluno enviou e
   // substitui o editor (o editor semeia do rascunho LOCAL — defasa se terminou em
   // outro PC). Confirmação porque SUBSTITUI o que está aberto aqui.
   const [syncOpen, setSyncOpen] = useState(false)
@@ -322,7 +322,7 @@ export function StudioBlockView({
     }
   }, [lessonId, blockId, player, activity, message])
 
-  // Abre a confirmação de "Sincronizar com o enviado" (item do menu ⋯ do Estúdio).
+  // Abre a confirmação de "Trazer o que eu enviei" (item do menu ⋯ do Estúdio).
   // Estável (o Studio latcha este callback no mount).
   const openSync = useCallback(() => {
     setSyncNote(null)
@@ -512,7 +512,7 @@ export function StudioBlockView({
                     : undefined
                 : undefined
             }
-            // Item ⋯ → "Sincronizar com o enviado" (só na aula; abre a confirmação).
+            // Item ⋯ → "Trazer o que eu enviei" (só na aula; abre a confirmação).
             onCloudSync={lessonId ? openSync : undefined}
             blockUnloadWhenDirty={false}
           />
@@ -607,7 +607,7 @@ export function StudioBlockView({
         {templateWarning ? (
           <p className="mt-3 text-sm font-medium text-destructive">
             Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou.
-            Se terminou em outro computador, use o menu ⋯ e escolha Sincronizar com o enviado antes.
+            Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.
           </p>
         ) : null}
         <div className="mt-4 flex flex-col gap-1.5">
@@ -630,7 +630,7 @@ export function StudioBlockView({
       <Dialog
         open={syncOpen}
         onClose={() => setSyncOpen(false)}
-        title="Sincronizar com o enviado?"
+        title="Trazer o que você enviou?"
         footer={
           <>
             <Button
@@ -643,7 +643,7 @@ export function StudioBlockView({
             </Button>
             <Button size="sm" onClick={() => void doSync()} disabled={syncing}>
               {syncing ? <Spinner /> : null}
-              Sincronizar
+              Trazer
             </Button>
           </>
         }

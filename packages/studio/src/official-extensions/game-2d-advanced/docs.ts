@@ -398,7 +398,7 @@ A UI que o MOTOR desenha para você. Vale em qualquer jogo, não só no RPG:
 
 ### 🔊 Som
 
-Importe sons em **"Sons"** (menu ⋯) (efeitos ou música que você baixou/gravou),
+Importe sons em **"Sons"** (no menu ⋯), efeitos ou música que você baixou ou gravou,
 **Carregue o som** dando um nome, e **Toque o som** por esse nome. Combina com os
 avisos ("Quando chegar o aviso inimigo:morreu, tocar o som explosao"). Sem
 importar nada, **Tocar o som pronto** (moeda/batida/explosão…) já funciona.

@@ -83,13 +83,13 @@ export function StudioFullClient({
   initialProjectId?: string | null
   /**
    * Posse do PINTA (a página checa `refs=pinta,estudio-completo` numa ida) —
-   * liga o "Trazer do Pinta" no painel de Imagens. Produtos vendidos à parte:
+   * liga o "Trazer do Pinta" na aba "Imagens". Produtos vendidos à parte:
    * sem posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   pintaOwned?: boolean
   /**
    * Posse do MOLDA (a mesma ida `refs=estudio-completo,pinta,molda`) — liga o "Trazer
-   * do Molda" no painel de Imagens (modelos .glb, texturas .png, céus .hdr). Sem
+   * do Molda" na aba "Modelos 3D" (modelos .glb, texturas .png, céus .hdr). Sem
    * posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   moldaOwned?: boolean

@@ -38,7 +38,7 @@ export const earlyRecipes: Record<number, Recipe> = {
         part: 2,
         focus: 'Criar o projeto de teste, instalar Jogo 2D e voltar à lista.',
         reason: 'É uma ação completa com começo e fim, separada da importação do jogo verdadeiro.',
-        say: 'Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.',
+        say: 'Crie Meu jogo novo. Abra Mais opções → O meu jogo → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.',
         edit: 'Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão.',
         visual:
           'Zoom em Instalada, Fechar e na marca clicável de retorno. Mostrar o cartão do projeto de teste.',

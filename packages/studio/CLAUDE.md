@@ -138,7 +138,7 @@ has no categories. Can't change mode."). A medição é síncrona (`useLayoutEff
 estado não-medido nunca chega à tela. Cruzar o limiar wide↔narrow EM USO ainda remonta (custo raro, aceito).
 
 **Mostrar/esconder painéis** (espelho do `showPreview`): `showConsole`/`showTerminal`/`showAI` no `uiStore`,
-togglados no menu "⋯" → Exibição da Topbar, **cada um no contexto em que aparece** (Console em todo modo;
+togglados no menu "⋯" → Mostrar da Topbar, **cada um no contexto em que aparece** (Console em todo modo;
 Terminal/IA só em `mode === 'code'`). `useVisibleBottomTabs` (`src/components/layout/bottomTabs.tsx`) é o
 ponto único que cruza features×contexto×preferência — consumido pelo `BottomPanel` (wide), `NarrowPanels`
 (abas) e `Shell` (decide se a barra inferior existe). No wide, esconder tudo COLAPSA a barra inferior.
@@ -382,15 +382,109 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   template). `ConvertLegacyPrompt.tsx` (no `Shell`) oferece a conversão automaticamente ao abrir um
   básico **legado com `extraFiles`** (Blocos/Ponte não editam extras) — "Transformar" ou "Agora não".
 
-## Topbar: ações (06/2026)
+## Topbar: o menu ⋯ e os materiais (18/09/2026)
+
+Relato dela: *"aquele menu de três pontinhos não está claro; e o painel de importação está com
+imagem, modelo 3D e som tudo no mesmo lugar dentro de Imagem — como é que a criança vai adivinhar
+que som ela vai ter que importar clicando no link Imagem?"*. A régua pedida foi a mesma da
+reorganização da paleta do Jogo 2D (13/09): grupo = a COISA do mundo da criança, ordem de uso,
+**nenhum grupo de despejo**, cada item em um lugar só, e a árvore como **dado PURO** com a lista
+derivada dela.
+
+**A árvore é `components/layout/topbar/menuLayout.ts`** (molde de `game-2d/palette.ts`): só grupo,
+ordem e chave de texto. A `Topbar` registra um `Partial<Record<StudioMenuItemId, MenuItemBehavior>>`
+com o que cada item FAZ, e as seções saem de um `map` sobre a árvore — item ausente do mapa não
+aparece (é assim que as features desligadas pelo host somem, sem um `if` de exibição sequer).
+
+Seis grupos: **Editar** (desfazer/refazer, só abaixo de `STUDIO_BAR_UNDO_MIN_PX`) · **O meu jogo**
+(Salvar · Trazer o que eu enviei · Extensões · Virar profissional) · **Materiais** (Imagens · Sons ·
+Modelos 3D) · **Mostrar** (Console · Terminal · IA) · **Levar o jogo** (Baixar o projeto · Baixar o
+código · Baixar para publicar) · **Estúdio** (Mudar tema · Meus projetos). Saíram "Arquivo" (nome do
+sistema de arquivos) e "Exibição"/"Conta", que tinham virado despejo — o gerenciador de materiais
+morava em "Exibição".
+
+- ⚠️⚠️ **A linha de apoio (`MenuItem.hint`) não pode entrar no NOME acessível**: o nome viraria
+  "Baixar o código um .zip com o código…" e todo `getByRole('menuitem', { exact: true })` dos e2e
+  quebraria em silêncio. Mas também não pode SUMIR para quem usa leitor de tela — ela existe porque
+  o nome sozinho não basta. O `Menu` aponta `aria-labelledby` para o span do rótulo e
+  `aria-describedby` para o da dica. Um `aria-label` cru resolvia a primeira metade e apagava a
+  segunda (foi a primeira versão, pega no full review).
+- ⭐ **O id do item vai ao DOM (`data-sz-menu-item`)**: perguntar pelo RÓTULO é ambíguo — com dois
+  itens de mesmo texto, um item morto passa por vivo. Medido ao sabotar o drift.
+- ⚠️ **"Virar profissional" mora em "O meu jogo", não com os três "Baixar"**: ele não leva o jogo a
+  lugar nenhum, transforma este projeto e apaga os blocos para sempre. No grupo das saídas, o
+  agrupamento ensinava que os quatro são a mesma coisa.
+- ⚠️ **Nomes que o review consertou porque MENTIAM**: "Publicar na internet" virou **"Baixar para
+  publicar"** (o `ExportDialog` termina num download; nada é publicado, e o nome competia com o
+  Compartilhar, que é o único que põe o jogo no ar) e "Levar para o Estúdio" virou **"Baixar o
+  projeto"** (dentro do próprio Estúdio Completo, "levar para o Estúdio" mandava a criança para
+  onde ela já estava).
+- Drift em `components/layout/__tests__/menuLayout.test.tsx`: item da árvore que nenhum contexto
+  real constrói, a lista LITERAL de ids do contexto com tudo ligado (um piso numérico deixava um
+  grupo inteiro sumir calado), o agrupamento conferido contra os grupos esperados (sem isso,
+  achatar o menu numa lista só passava verde) e a régua do despejo com a metade que morde. A
+  direção oposta fica com o COMPILADOR: o mapa é tipado pela árvore, e por isso o
+  `undoRedoMenuItems` devolve `id: 'undo' | 'redo'` — com `MenuItem` cru era preciso um `as` no
+  código de produção, e o compilador deixava de ser rede.
+
+### A janela "Materiais do jogo" (era "Imagens e sons")
+
+Três portas no menu abrem a MESMA janela, cada uma na SUA aba. O `AssetsPanel` virou a CASCA (tira
+de abas, cota do projeto, recado de erro, inputs de arquivo, modais aninhadas) e cada aba mora em
+`components/assets/tabs/` (`ImagesTab`, `SoundsTab`, `Models3DTab`, mais o `common.tsx` com a tira
+e as peças repetidas). O estado caro — biblioteca pessoal, catálogos do Pinta e do Molda — fica na
+casca e desce por props: carregá-lo por aba refaria a varredura de desenhos a cada troca.
+
+- ⭐⭐ **A régua da aba 3D tem TRÊS motivos independentes** e é FONTE ÚNICA
+  (`projectHas3DMaterials` em `components/assets/has3DConsumer.ts`, consumida pela aba E pela porta
+  do menu): há quem consuma 3D; o projeto TEM arquivo 3D (um órfão precisa continuar gerenciável);
+  ou o host deu o "Trazer do Molda" — sem o terceiro, a porta do Molda sumiria justo para quem
+  ainda não instalou nada de 3D, inclusive para trazer TEXTURA, que é imagem e entra em qualquer
+  projeto. As duas cópias da conta viveram um commit separadas; o review as juntou antes de
+  divergirem.
+- ⚠️⚠️ **`projectHas3DConsumer` faz `JSON.stringify(blocksState)` e passou a rodar no caminho
+  QUENTE**: a Topbar nunca desmonta e o seletor do zustand reexecuta a cada `set()` da store — cada
+  tecla na Ponte, cada lote de 120 ms do Blockly. Medido no Reino Zero (blocksState de 216 KB):
+  1,15 ms por chamada, **+66% no tempo de cada atualização** de um projeto sem 3D. Hoje há cache por
+  IDENTIDADE do `blocksState` (WeakMap), que mata o caso pior — digitar no Monaco troca `files`,
+  nunca o `blocksState`. E o seletor devolve um BOOLEAN, nunca a referência do projeto (devolvê-la
+  re-renderizaria a barra a cada tecla).
+- ⭐⭐ **A aba não é um interruptor.** `openAssetsTab` é a ação das PORTAS (fechada abre; outra aba
+  troca; a mesma aba fecha, porque a porta é a entrada e a saída); `setAssetsTab` é a da TIRA. Ligar
+  a tira à ação da porta fazia o clique na aba já ativa fechar a janela inteira — achado no
+  navegador, com a janela aberta.
+- ⭐ **A fiação mora num lugar só** (`components/assets/useAssetsPanel.ts`): o `Shell` e o teste
+  consomem o MESMO hook. Um teste que refizesse a fiação à mão estaria testando a própria cópia —
+  reverter o `Shell` passava verde, e foi o que o full review provou.
+- ⚠️ **O fallback de aba avisa o host**: a aba pode sumir COM a janela aberta (excluir o último
+  `.glb` de um projeto sem extensão 3D). Sem devolver a escolha à store, ela ficava em `models3d`,
+  nenhuma porta do menu aparecia ligada e "Imagens" precisava de dois cliques para fechar.
+- ⚠️ A janela ESPELHA a aba pedida em estado próprio (padrão "ajustar estado quando a prop muda",
+  sem efeito): controlada só por fora, ela ficava inerte para qualquer host que não religasse o
+  callback.
+- ⚠️ **Só a aba ATIVA leva `aria-controls`**: a janela renderiza um painel só, e referência
+  pendurada é atributo ARIA inválido que o axe classifica como *incomplete* — ou seja, não reprova
+  ninguém.
+- ⚠️ O `Tabs` de `components/layout/TabStrip.tsx` NÃO serve aqui: é para painel de ALTURA FIXA e
+  mantém todos os filhos montados (xterm/Monaco/Blockly/iframe). Numa modal rolável, `h-full` +
+  `overflow-hidden` cortariam a lista.
+- ⚠️ O emoji da aba "Imagens" colide com o do card da galeria do Pinta, e `getByText` **não**
+  respeita `aria-hidden`: teste que procure emoji nesta janela tem de escopar no `role="dialog"` ou
+  no `role="tabpanel"`.
+- **A copy toda aponta a aba certa** (som → `"Sons"`, modelo/céu → `"Modelos 3D"`, imagem →
+  `"Imagens"`, sempre com "no menu ⋯"): campos do Blockly, avisos dos runtimes das cinco extensões,
+  manuais, `ai.ts` do Zappy e o `audioBridge` do núcleo. ⚠️ O manual do Jogo 2D está a ~90
+  caracteres do teto de 60.000 do manifesto: medir o delta antes de commitar (este lote ENCOLHEU 23).
+
+## Topbar: ações (06/2026, histórico)
 
 A `Topbar` (`components/layout/Topbar.tsx`) deixa SOLTO só o botão **"Compartilhar"** (quando há
-`share`) + o toggle de Preview + o menu **⋯**. **Salvar e Baixar VIVEM no ⋯** (seção "Arquivo", junto
-de Exportar/Virar profissional) — decisão de UX do estúdio-produto kids (Topbar enxuta). O badge de
+`share`) + o toggle de Preview + o menu **⋯**. **Salvar e Baixar VIVEM no ⋯** (à época na seção "Arquivo", junto
+de Exportar/Virar profissional; ver a seção de 18/09/2026 acima para os grupos de hoje) — decisão de UX do estúdio-produto kids (Topbar enxuta). O badge de
 status ("Salvo"/"Não salvo"/"Erro") continua visível na Topbar comunicando o estado. Mudança no
 componente COMPARTILHADO → vale p/ `<StudioEditor>` E `<StudioLesson>` (na aula o Baixar já era oculto
 por `features.download:false`; o Salvar agora também fica no ⋯).
-**Mais 2 itens no ⋯ → Arquivo (28/06):**
+**Mais 2 itens no ⋯ → Arquivo (28/06; hoje em "Levar o jogo" e "O meu jogo"):**
 - **"Exportar para o Estúdio"** (SEM gate, vale nos DOIS componentes): baixa o projeto ATUAL como
   `.szproject.json` — o MESMO formato que a listagem importa (`downloadProjectAsJSON` em
   `export/download.ts`, reusada também pelo `ProjectCard`). É como a criança leva o projeto da AULA
@@ -1343,7 +1437,7 @@ prove o caminho inválido e o round-trip nos testes.
     `fill`) + `resolveSpriteVisual` (puro, cache `WeakMap` por workspace) +
     `attachSpriteThumbWatcher` (refresh coalescido em BLOCK_CHANGE/CREATE/DELETE de DECLARADOR +
     FINISHED_LOADING; registrado no inject do `BlocklyPanel` junto de um subscribe da identidade de
-    `project.assets` — renomear/trocar asset no painel Imagens não gera evento Blockly). Sem visual
+    `project.assets` — renomear/trocar asset na aba "Imagens" não gera evento Blockly). Sem visual
     (nome local de laço 🔁/desconhecido/asset sumido sem cor) → só texto, como antes; a serialização
     fica INTOCADA (elementos extras no `fieldGroup_` não entram). Pop-up com swatch 36×36
     (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** tem o CÍRCULO CROMÁTICO:
@@ -1477,7 +1571,7 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
 
 **2. Sincronia de volta** — `src/asset-library/personalSync.ts`
 (`syncDrawingsIntoProjects(storeApi)`), disparada pelo `DrawingSyncWatcher` (montado no `Shell`, no
-`focus`/`visibilitychange`) e ao abrir o painel de Imagens. Alcança **TODOS os jogos da criança**
+`focus`/`visibilitychange`) e ao abrir a janela dos materiais. Alcança **TODOS os jogos da criança**
 (decisão dela), não só o aberto:
 
 - **Portão barato:** marcador `localStorage sz:desenhos-alterados:<ns>` (escrito por
@@ -1499,7 +1593,7 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
   os dele; não traz e a geometria é a mesma → preserva o do projeto (peças/mapa do `TileConfigDialog`
   não existem no Pinta); geometria MUDOU → descarta (índices inválidos).
 - **Silenciosa no sucesso** (decisão dela), **nunca na recusa**: cota estourada vai para
-  `takeDrawingSyncFailures()` e o painel de Imagens mostra ao abrir.
+  `takeDrawingSyncFailures()` e a janela dos materiais mostra ao abrir.
 - Preview, miniaturas de bloco e export reagem sozinhos (identidade nova de `project.assets`).
 
 Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.tsx`. O playground
@@ -2130,8 +2224,9 @@ código, e todos mudam o que a criança tenta fazer:
   e o rótulo do menu dizia o oposto do instante da pisada ("virar casco **móvel**"). Pior: o
   **"Atualizar os cascos"** é OBRIGATÓRIO — sem ele o casco fica parado para sempre e não há aviso
   nenhum — e o manual nunca o nomeava, nem o `ai.ts` o mencionava.
-- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto é o painel **Imagens e
-  sons**, e o próprio manual acerta 300 linhas depois.
+- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto era o painel **Imagens e
+  sons** (desde 18/09/2026, a janela **Materiais do jogo** e as abas **Imagens** / **Sons** /
+  **Modelos 3D**), e o próprio manual acerta 300 linhas depois.
 - **A dica do "Ajustar" tinha 787 caracteres** — sete vezes a mediana da extensão —, com uma tabela
   de donos de parâmetro em prosa corrida dentro de um balão. Foi para o manual, e o drift que a
   cobrava foi junto. Mais três dicas com duas frases COLADAS por falta de um espaço na concatenação.

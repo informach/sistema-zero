@@ -45,7 +45,7 @@ import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
-import { projectHas3DConsumer } from '../assets/has3DConsumer'
+import { projectHas3DMaterials } from '../assets/has3DConsumer'
 import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
 import {
@@ -98,20 +98,18 @@ export interface TopbarProps {
  */
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectName, projectMode, projectKind, has3DAssets } = useProjectStore(
+  const { hasProject, projectName, projectMode, projectKind, has3DInProject } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectName: s.project?.name ?? '',
       projectMode: s.project?.mode ?? 'blocks',
       projectKind: s.project?.kind,
-      // A MESMA régua da aba "Modelos 3D" (ver AssetsPanel): quem consome .glb/.hdr
-      // está instalado, ou o projeto já tem arquivo 3D para gerenciar. O terceiro
-      // motivo (o host deu o Molda) entra fora do seletor, logo abaixo.
-      has3DAssets:
-        projectHas3DConsumer(s.project) ||
-        (s.project?.assets ?? []).some(
-          (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
-        ),
+      // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
+      // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
+      // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
+      // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
+      // estado dos blocos a cada `set()` da store.
+      has3DInProject: projectHas3DMaterials(s.project, false),
     })),
   )
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -151,9 +149,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // quando o lado esquerdo já fosse verdadeiro, e a ordem dos hooks mudaria de
   // um render para o outro (o biome pegou).
   const moldaLibrary = useStudioMoldaLibrary()
-  // A porta "Modelos 3D" acompanha a ABA da janela (ver `AssetsPanel`): some só
-  // quando não há consumidor 3D, nem arquivo 3D, nem o "Trazer do Molda".
-  const has3DMaterials = has3DAssets || Boolean(moldaLibrary)
+  // A porta "Modelos 3D" acompanha a ABA da janela pela FONTE ÚNICA da régua.
+  const has3DMaterials = has3DInProject || Boolean(moldaLibrary)
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
@@ -260,7 +257,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const undoInMenu = width < STUDIO_BAR_UNDO_MIN_PX
   if (undoRedo && undoInMenu) {
     for (const item of undoRedoMenuItems(undoRedo, t)) {
-      behaviors[item.id as StudioMenuItemId] = {
+      behaviors[item.id] = {
         icon: item.icon,
         disabled: item.disabled,
         onSelect: item.onSelect,

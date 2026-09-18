@@ -27,14 +27,25 @@ describe('a árvore editorial do menu ⋯', () => {
   const grupos = STUDIO_MENU_LAYOUT.map((g) => g.id)
   const itens = STUDIO_MENU_LAYOUT.flatMap((g) => g.items.map((i) => i.id))
 
+  /** A régua do despejo, aplicada a uma lista qualquer de grupos. */
+  const despejoEntre = (grupos: { id: string; labelKey: string }[]) =>
+    grupos
+      .filter((g) => /mais|outros|tudo|misc|geral/i.test(`${g.id} ${ptBR[g.labelKey] ?? ''}`))
+      .map((g) => g.id)
+
   it('não tem grupo de despejo ("Mais", "Outros", "Tudo")', () => {
     // O balde é a versão silenciosa do problema: quem não cabe em grupo nenhum
     // cai lá e a criança acha o item no lugar errado, sem nada acusar. A poda de
     // grupo VAZIO continua valendo (é o que faz a aula mostrar menos).
-    const despejo = STUDIO_MENU_LAYOUT.filter((g) =>
-      /mais|outros|tudo|misc|geral/i.test(`${g.id} ${ptBR[g.labelKey]} ${en[g.labelKey]}`),
-    )
-    expect(despejo.map((g) => g.id)).toEqual([])
+    expect(despejoEntre([...STUDIO_MENU_LAYOUT])).toEqual([])
+  })
+
+  it('e a régua do despejo MORDE (senão o caso acima passaria para sempre)', () => {
+    // Sem esta metade, corromper a expressão regular deixaria o teste de cima
+    // verde eternamente — é o `toEqual([])` sobre filtro derivado que esta base
+    // já pagou caro noutros lugares.
+    expect(despejoEntre([{ id: 'misc', labelKey: 'topbar.group.studio' }])).toEqual(['misc'])
+    expect(despejoEntre([{ id: 'take', labelKey: 'topbar.group.take' }])).toEqual([])
   })
 
   it('cada item mora em UM grupo só, e nenhum id se repete', () => {
@@ -117,12 +128,41 @@ describe('a árvore editorial do menu ⋯', () => {
 
   it('os itens saem na ordem da árvore, agrupados como ela manda', () => {
     const exibidos = idsExibidos('blocks')
-    // Anti-vácuo: sem isto, um menu que não renderizasse nada passaria.
-    expect(exibidos.length).toBeGreaterThan(8)
-    expect(exibidos).toEqual(itens.filter((id) => exibidos.includes(id)))
-    for (const grupo of STUDIO_MENU_LAYOUT) {
-      const caixa = screen.queryByRole('group', { name: ptBR[grupo.labelKey] })
-      if (!caixa) continue
+    // ⚠️ A lista INTEIRA e literal, não um piso numérico: com `length > 8` o menu
+    // podia perder um grupo de quatro itens e passar. Este é o contexto do host
+    // com tudo ligado, a 390px (por isso desfazer e refazer entram no menu).
+    expect(exibidos).toEqual([
+      'undo',
+      'redo',
+      'save',
+      'sync',
+      'extensions',
+      'convert',
+      'assetsImages',
+      'assetsSounds',
+      'console',
+      'exportStudio',
+      'download',
+      'export',
+      'theme',
+      'projects',
+    ])
+    // ⚠️ Anti-vácuo do AGRUPAMENTO: sem esta linha, achatar o menu numa lista só
+    // (ou tirar o `aria-label` dos grupos) deixaria o laço abaixo sem nenhuma
+    // caixa para conferir, e ele viraria um no-op verde. Ela também é o que cobra
+    // a poda de grupo VAZIO — um cabeçalho sem item nenhum apareceria aqui.
+    // Escopado no `role="menu"`: o segmentado dos modos também é um `fieldset`.
+    const menu = screen.getByRole('menu', { name: 'Mais opções' })
+    const gruposEsperados = STUDIO_MENU_LAYOUT.filter((g) =>
+      g.items.some((i) => exibidos.includes(i.id)),
+    )
+    expect(
+      within(menu)
+        .getAllByRole('group')
+        .map((el) => el.getAttribute('aria-label')),
+    ).toEqual(gruposEsperados.map((g) => ptBR[g.labelKey] ?? null))
+    for (const grupo of gruposEsperados) {
+      const caixa = within(menu).getByRole('group', { name: ptBR[grupo.labelKey] })
       const dentro = within(caixa)
         .getAllByRole('menuitem')
         .map((el) => el.getAttribute('data-sz-menu-item'))
@@ -172,6 +212,18 @@ describe('as portas dos materiais no menu ⋯', () => {
     abrirMenu()
     expect(screen.getByRole('menuitem', { name: 'Imagens' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'Sons' })).toBeTruthy()
+    // ⚠️ Com a janela FECHADA nenhuma porta pode aparecer ligada. Sem esta metade,
+    // apagar o `showAssets &&` do `active` passaria batido: a porta da aba padrão
+    // ficaria marcada como aberta para sempre.
+    expect(
+      screen.getByRole('menuitem', { name: 'Imagens' }).getAttribute('aria-current'),
+    ).toBeNull()
+  })
+
+  it('sem quem consuma 3D, sem arquivo 3D e sem o Molda, a porta "Modelos 3D" não existe', () => {
+    const { abrirMenu } = montar()
+    abrirMenu()
+    expect(screen.queryByRole('menuitem', { name: 'Modelos 3D' })).toBeNull()
   })
 
   it('só a porta da aba ABERTA fica ligada', () => {

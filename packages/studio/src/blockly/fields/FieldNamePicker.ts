@@ -1399,7 +1399,7 @@ const KIND_UI: Record<NameKind, KindUI> = {
     icon: '🔊',
     placeholder: 'nome do som',
     empty:
-      'Nenhum som carregado ainda — use "Carregar o som" (importe em "Sons") ou digite o nome abaixo.',
+      'Nenhum som carregado ainda. Use "Carregar o som" (importe em "Sons", no menu ⋯) ou digite o nome abaixo.',
   },
   npc: {
     icon: '🧙',

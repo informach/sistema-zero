@@ -12,10 +12,12 @@ export const ptBR: Record<string, string> = {
   'topbar.saving': 'Salvando…',
   'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
-  'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
-  'topbar.export': 'Publicar na internet',
-  'topbar.exportStudio': 'Levar para o Estúdio',
+  // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
+  // termina num download). "Publicar na internet" prometia o ato e competia com o
+  // Compartilhar, que é o único que de fato põe o jogo no ar.
+  'topbar.export': 'Baixar para publicar',
+  'topbar.exportStudio': 'Baixar o projeto',
   'topbar.cloudSync': 'Trazer o que eu enviei',
   'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
@@ -36,10 +38,11 @@ export const ptBR: Record<string, string> = {
   'topbar.group.studio': 'Estúdio',
   // A linha de apoio dos três jeitos de o jogo sair daqui: os nomes sozinhos não
   // diziam o destino, e os três tinham o MESMO ícone.
-  'topbar.hint.exportStudio': 'um arquivo para abrir no Estúdio Completo',
-  'topbar.hint.download': 'uma pasta .zip para abrir no computador',
+  'topbar.hint.exportStudio': 'um arquivo para abrir este mesmo projeto no Estúdio Completo',
+  'topbar.hint.download': 'um .zip com o código, para abrir no computador',
   'topbar.hint.export': 'um .zip pronto para pôr no ar',
-  'topbar.hint.convertPro': 'troca os blocos por um projeto de código',
+  'topbar.hint.convertPro': 'troca os blocos por um projeto de código, sem volta',
+  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você entregou',
   'topbar.modes': 'Modo de edição',
   'topbar.undo': 'Desfazer',
   'topbar.redo': 'Refazer',
@@ -283,7 +286,7 @@ export const ptBR: Record<string, string> = {
   'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
-  'convert.working': 'Virando…',
+  'convert.working': 'Virando profissional…',
 
   'share.action': 'Compartilhar',
   'share.title': 'Compartilhar no Mural dos Criadores',

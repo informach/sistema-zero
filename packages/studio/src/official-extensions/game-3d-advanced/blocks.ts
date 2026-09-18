@@ -1958,7 +1958,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som que você importou (em "Sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de o jogo começar automaticamente.',
+      'Prepara um som que você importou (em "Sons", no menu ⋯). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de o jogo começar automaticamente.',
   },
   {
     type: 'sz_g3k_play_sound',

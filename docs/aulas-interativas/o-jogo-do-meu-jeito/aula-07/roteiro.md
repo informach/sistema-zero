@@ -177,7 +177,7 @@ agora tem duas, `folha-nave` e `folha-asteroide`), abrir a listinha da animaçã
 `girando`, com zoom nos três campos seguintes se preenchendo sozinhos. Clicar na área do jogo,
 apertar Enter e jogar por alguns segundos, com zoom na nave e nos asteroides girando. Enquanto a
 narração fala do editar desenho, abrir o
-menu de três pontinhos, o título Exibição, o item "Imagens", dar um close no "✏️ editar desenho" de
+menu de três pontinhos, o título Materiais, o item "Imagens", dar um close no "✏️ editar desenho" de
 um dos cards **sem clicar nele**, e **fechar a modal no "Fechar"** antes do Fecho.
 
 **Produção:** aula-07-passo-03: gravar a demonstração "fazer os asteroides girarem" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.

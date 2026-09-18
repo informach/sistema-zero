@@ -5,6 +5,7 @@ import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { AssetsPanel } from './AssetsPanel'
+import { useAssetsPanelWiring } from './useAssetsPanel'
 
 /**
  * Upload de binários 3D (modelo .glb / céu .hdr) — a porta que faltava: o motor
@@ -136,7 +137,47 @@ describe('Materiais do jogo — as abas', () => {
   it('imagens e sons têm aba SEMPRE; a de 3D só com quem consuma 3D', () => {
     seedProject()
     abrir()
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['🖼️Imagens', '🔊Sons'])
+    // Pelo NOME acessível, não pelo `textContent`: o emoji é `aria-hidden` e não é
+    // contrato — travá-lo quebraria o teste em qualquer mudança de markup.
+    expect(
+      screen.getAllByRole('tab').map((t) => t.getAttribute('aria-label') ?? t.textContent),
+    ).toEqual(['🖼️Imagens', '🔊Sons'])
+  })
+
+  it('a aba ativa é a única que aponta para um painel (aria-controls não fica pendurado)', () => {
+    seedProject()
+    abrir('Sons')
+    const [imagens, sons] = screen.getAllByRole('tab')
+    const alvo = sons?.getAttribute('aria-controls')
+    expect(alvo).toBeTruthy()
+    expect(document.getElementById(alvo as string)).toBeTruthy()
+    // A inativa não pode apontar para um id que não existe no DOM.
+    expect(imagens?.getAttribute('aria-controls')).toBeNull()
+  })
+
+  it('a tira de abas anda pelo teclado (setas, Home e End)', () => {
+    seedProject({ with3DExtension: true })
+    abrir()
+    const primeira = screen.getByRole('tab', { name: 'Imagens' })
+    primeira.focus()
+    fireEvent.keyDown(primeira, { key: 'ArrowRight' })
+    expect(screen.getByRole('tab', { name: 'Sons' }).getAttribute('aria-selected')).toBe('true')
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Sons' }), { key: 'End' })
+    expect(screen.getByRole('tab', { name: 'Modelos 3D' }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Modelos 3D' }), { key: 'Home' })
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('sem permissão de envio, nenhuma aba oferece o botão de enviar', () => {
+    seedProject({ with3DExtension: true })
+    render(<AssetsPanel open onClose={() => {}} allowUpload={false} />)
+    expect(screen.queryByText('Enviar imagem')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(screen.queryByText('🔊 Enviar som')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
+    expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
   })
 
   it('a aba de som ensina o próximo passo mesmo sem nenhum som (era o buraco)', () => {
@@ -260,19 +301,12 @@ describe('Materiais do jogo — a aba "Modelos 3D"', () => {
  */
 describe('Materiais do jogo — a janela ligada à store, como no Shell', () => {
   function Hospedeiro(): JSX.Element | null {
-    const showAssets = useUIStore((s) => s.showAssets)
-    const assetsTab = useUIStore((s) => s.assetsTab)
-    const setAssetsTab = useUIStore((s) => s.setAssetsTab)
-    const setShowAssets = useUIStore((s) => s.setShowAssets)
-    if (!showAssets) return null
-    return (
-      <AssetsPanel
-        open
-        onClose={() => setShowAssets(false)}
-        tab={assetsTab}
-        onTabChange={setAssetsTab}
-      />
-    )
+    // ⚠️ A fiação vem do MESMO hook que o `Shell` usa. Refazê-la à mão aqui seria
+    // testar a própria cópia: o defeito morava no fio, e reverter o `Shell` para
+    // `openAssetsTab` passaria verde.
+    const wiring = useAssetsPanelWiring()
+    if (!wiring.open) return null
+    return <AssetsPanel {...wiring} />
   }
 
   it('clicar na aba que JÁ está ativa não fecha a janela', () => {
@@ -307,6 +341,48 @@ describe('Materiais do jogo — a janela ligada à store, como no Shell', () => 
     render(<Hospedeiro />)
     fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
     expect(useUIStore.getState().assetsTab).toBe('sounds')
+    expect(useUIStore.getState().showAssets).toBe(true)
+  })
+
+  it('uma porta NOVA do menu manda na janela que já está aberta', () => {
+    // O espelho de prop: sem ele, pedir outra aba com a janela aberta não mexeria
+    // em nada (e o clique na porta do menu não tem outro jeito de chegar aqui).
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    act(() => {
+      useUIStore.getState().openAssetsTab('sounds')
+    })
+    expect(screen.getByRole('tab', { name: 'Sons' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('a aba que SOME com a janela aberta devolve a escolha à store', () => {
+    // Excluir o último arquivo 3D de um projeto sem extensão 3D apaga a aba em que
+    // a criança está. Sem devolver a escolha, a store ficava em 'models3d': nenhuma
+    // porta do menu aparecia ligada e "Imagens" precisava de dois cliques para
+    // fechar a janela, contrariando a regra da própria store.
+    seedProject()
+    useProjectStore.getState().addAsset({
+      name: 'orfao',
+      dataUrl: GLB_OK,
+      kind: 'model3d',
+      originalFileName: 'orfao.glb',
+      source: 'upload',
+    })
+    act(() => {
+      useUIStore.getState().openAssetsTab('models3d')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByText('Excluir'))
+    const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })
+    act(() => {
+      fireEvent.click(within(confirmation).getByRole('button', { name: 'Excluir' }))
+    })
+    expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('true')
+    expect(useUIStore.getState().assetsTab).toBe('images')
     expect(useUIStore.getState().showAssets).toBe(true)
   })
 })

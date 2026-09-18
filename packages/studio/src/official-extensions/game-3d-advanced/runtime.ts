@@ -3134,7 +3134,7 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!key) { warn('"Carregar o som" precisa de um nome'); return; }
     var a = text(asset, '');
     var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
-    if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Sons")'); return; }
+    if (!src) { warn('o som "' + a + '" não está no projeto. Importe em "Sons", no menu ⋯'); return; }
     // A fábrica do projeto roda no preload E no começo de cada partida. Sons são
     // assets do documento, não recursos da arena: a mesma fonte deve ser carregada
     // uma vez e reutilizada em todos os restarts.
@@ -3206,7 +3206,7 @@ const gameKit3DRuntimeAfterModelSource = `
   function playMusic(name) {
     var k = text(name, '');
     var src = sounds[k];
-    if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto (importe em "Sons")'); return; }
+    if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto. Importe em "Sons", no menu ⋯'); return; }
     if (_musicName === k && _music) return; // já é esta: não recomeça do zero
     stopMusic();
     // ⭐ Audio PRÓPRIO, não o do sounds[]. O mapa sounds[] é dividido com o

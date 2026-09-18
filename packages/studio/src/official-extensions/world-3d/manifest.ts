@@ -361,7 +361,7 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 ### 🔊 Sons
 
 - **Carregar o som … do arquivo …**. Prepara um som do projeto (envie em
-  "Imagens") e dá um apelido. Faça no começo.
+  "Sons", no menu ⋯) e dá um apelido. Faça no começo.
 - **Tocar o som …**. Toca um som carregado (bom em "Quando bater forte").
 - **Tocar a música … sem parar**. A trilha sonora persistente do seu mundo (em loop).
   Inicie em **⚙️ Ao iniciar**, em **⚡ Quando acontecer** ou diretamente numa função,

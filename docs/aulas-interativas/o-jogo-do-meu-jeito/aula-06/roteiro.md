@@ -91,14 +91,14 @@ Confira os nomes antes de trocar os blocos.
 **Na tela (sequência técnica preservada):**
 
 no menu da esquerda, clicar em Estúdio. Na tela "Meus Jogos", **clicar no cartão** do
-projeto do jogo da nave. Na barra de cima, abrir o menu de três pontinhos, apontar o título Exibição
-e clicar em "Imagens". Mostrar a modal "Imagens e sons": a fileira de botões em cima, a seção
+projeto do jogo da nave. Na barra de cima, abrir o menu de três pontinhos, apontar o título Materiais
+e clicar em "Imagens". Mostrar a janela "Materiais do jogo": a fileira de botões em cima, a seção
 "No projeto" com a frase de lista vazia e, mais embaixo, a seção "Biblioteca". Clicar em
 "🎨 Trazer do Pinta". Mostrar a modal "Trazer do
 Pinta" com a frase de ajuda e os cards dos desenhos dela. Clicar no card `nave`, no botão "Adicionar
 ao projeto", e mostrar ele virar o selo "✓ no projeto". Repetir no card `asteroide`. **Fechar a
 modal do Trazer do Pinta pelo "Fechar" do rodapé**, mostrar os dois desenhos dentro da seção
-"No projeto" e **fechar também a modal "Imagens e sons" pelo "Fechar" do rodapé dela**. Só com as
+"No projeto" e **fechar também a janela "Materiais do jogo" pelo "Fechar" do rodapé dela**. Só com as
 duas janelas fechadas, cortar para a área do jogo, ainda igual.
 
 **Produção:** aula-06-passo-01: gravar a demonstração "trazer os seus desenhos para dentro do projeto" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.

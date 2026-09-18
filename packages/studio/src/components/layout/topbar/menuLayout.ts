@@ -28,8 +28,12 @@ export const STUDIO_MENU_LAYOUT = [
     labelKey: 'topbar.group.myGame',
     items: [
       { id: 'save', labelKey: 'topbar.save' },
-      { id: 'sync', labelKey: 'topbar.cloudSync' },
+      { id: 'sync', labelKey: 'topbar.cloudSync', hintKey: 'topbar.hint.cloudSync' },
       { id: 'extensions', labelKey: 'topbar.extensions' },
+      // ⚠️ "Virar profissional" mora AQUI, e não com os três "Baixar": ele não leva o
+      // jogo a lugar nenhum — transforma este projeto e APAGA os blocos para sempre.
+      // No grupo das saídas, o agrupamento ensinava que os quatro são a mesma coisa.
+      { id: 'convert', labelKey: 'topbar.convertPro', hintKey: 'topbar.hint.convertPro' },
     ],
   },
   {
@@ -54,15 +58,15 @@ export const STUDIO_MENU_LAYOUT = [
     ],
   },
   {
-    // Os três jeitos de o jogo sair daqui tinham o MESMO ícone e nomes que não
-    // se distinguiam. Cada um diz o DESTINO e leva uma linha de apoio.
+    // Os três jeitos de o jogo sair daqui tinham o MESMO ícone e nomes que não se
+    // distinguiam. Os três BAIXAM um arquivo (nenhum publica sozinho): o nome diz o
+    // que vem, e a linha de apoio diz para que serve.
     id: 'take',
     labelKey: 'topbar.group.take',
     items: [
       { id: 'exportStudio', labelKey: 'topbar.exportStudio', hintKey: 'topbar.hint.exportStudio' },
       { id: 'download', labelKey: 'topbar.download', hintKey: 'topbar.hint.download' },
       { id: 'export', labelKey: 'topbar.export', hintKey: 'topbar.hint.export' },
-      { id: 'convert', labelKey: 'topbar.convertPro', hintKey: 'topbar.hint.convertPro' },
     ],
   },
   {

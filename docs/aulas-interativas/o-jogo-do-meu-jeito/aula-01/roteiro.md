@@ -112,7 +112,7 @@ clicar em "+ Novo projeto", digitar "Meu jogo novo" no campo "Nome do projeto" e
 em "Criar e abrir". Com o projeto aberto, mostrar a área de montar vazia. Na coluna da esquerda,
 apontar primeiro as categorias **que estão lá** (🗂️ Áreas do projeto e Programação), e só então
 rolar a lista inteira, devagar, para mostrar que **não existe** a categoria Jogo 2D. Depois abrir o menu de três pontinhos,
-apontar o título **Exibição** e clicar em "Extensões". Mostrar a modal "Extensões oficiais" e parar no
+apontar o título **O meu jogo** e clicar em "Extensões". Mostrar a modal "Extensões oficiais" e parar no
 card "Jogo 2D": o nome à esquerda e a descrição embaixo dele. Clicar em "Instalar", **dar zoom no
 selo "Instalada" que nasce ao lado do nome e no botão que virou "Remover"**, clicar no **"Fechar"**
 do rodapé da modal e mostrar a categoria Jogo 2D agora presente na coluna da esquerda.

@@ -295,7 +295,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Sons", no menu ⋯) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_g2d_play_clip',

@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
+import { useT } from '../../../studio/i18n'
 import type { EditTarget } from '../creationOrigin'
 import { EditInOriginButton } from '../EditInOriginButton'
 import {
@@ -44,13 +45,14 @@ export function Models3DTab({
   editTargetOf,
   onOpenInOrigin,
 }: Models3DTabProps): JSX.Element {
+  const t = useT()
   return (
     <div className="flex flex-col gap-4">
       {onOpenMolda || (allowUpload && has3DExtension) ? (
         <div className="flex flex-wrap items-center gap-3">
           {onOpenMolda ? (
             <Button variant="primary" size="sm" onClick={onOpenMolda}>
-              🧊 Trazer do Molda
+              {t('moldaImport.button')}
             </Button>
           ) : null}
           {allowUpload && has3DExtension ? (
@@ -68,8 +70,9 @@ export function Models3DTab({
       ) : null}
       {!has3DExtension ? (
         <p className="text-xs text-sz-fg-mute">
-          Para USAR um modelo 3D, instale antes uma extensão que entenda 3D (Jogo 3D, Jogo 3D
-          Avançado, Mundo 3D ou Canvas 3D), em "Extensões".
+          Para USAR um modelo 3D, instale antes uma extensão que entenda 3D: Jogo 3D, Jogo 3D
+          Avançado ou Mundo 3D, em "Extensões". (O Canvas 3D já vem no Estúdio, não precisa
+          instalar.)
         </p>
       ) : null}
 
@@ -79,8 +82,8 @@ export function Models3DTab({
         </h3>
         {models3d.length === 0 ? (
           <EmptyHint>
-            Nenhum modelo 3D ainda. Monte um no Molda e traga ele aqui (ou envie um .glb do
-            computador); o céu 360° é um arquivo .hdr.
+            Nenhum modelo 3D ainda. Monte um no Molda e traga ele aqui, ou envie um .glb do
+            computador. O céu 360° é um arquivo .hdr.
           </EmptyHint>
         ) : (
           <>

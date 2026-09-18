@@ -31,13 +31,13 @@
     },
     {
       "key": "video-projeto-teste",
-      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: começar um projeto do zero e instalar os bloquinhos. Entrada: “Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se ”. Saída: “ projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"”. Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão. Complemento: “Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-01-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: começar um projeto do zero e instalar os bloquinhos. Entrada: “Começa pelo Novo projeto. Clica nele. Abriu uma janelinha com o campo Nome do projeto. O meu vai se ”. Saída: “ projeto, viu. Ele fica guardado aí, e a gente volta nele no fim do curso. Segundo passo concluído.\"”. Reaproveitar o caminho completo. Atualizar a lista de categorias e extensões conforme o perfil de gravação; não prometer que haverá um único cartão. Complemento: “Crie Meu jogo novo. Abra Mais opções → O meu jogo → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
     },
     {
       "key": "orientacao-projeto-teste",
       "content": {
         "kind": "rich_text",
-        "markdown": "Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.\n\n**Antes de voltar à aula, confira:**\n\n- Projeto de teste aparece em Meus Jogos.\n- Jogo 2D aparece na paleta depois de instalado.\n\nSe a categoria não apareceu, confira Instalada e feche a janela de extensões.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+        "markdown": "Crie Meu jogo novo. Abra Mais opções → O meu jogo → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.\n\n**Antes de voltar à aula, confira:**\n\n- Projeto de teste aparece em Meus Jogos.\n- Jogo 2D aparece na paleta depois de instalado.\n\nSe a categoria não apareceu, confira Instalada e feche a janela de extensões.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
       }
     },
     {

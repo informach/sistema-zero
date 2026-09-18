@@ -1088,7 +1088,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (disposed) return null;
     var k = text(name, '');
     if (!k) {
-      warn('escreva o NOME do modelo (o nome dele em "Modelos 3D", no menu de tres pontinhos)');
+      warn('escreva o NOME do modelo (o nome dele em "Modelos 3D", no menu de três pontinhos)');
       return null;
     }
     if (!_modelCache) _modelCache = {};
@@ -1100,7 +1100,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     var entry = MODELS3D[k];
     if (!entry || entry.kind !== 'model3d') {
-      warn('o modelo "' + k + '" não está no projeto — envie o .glb em "Modelos 3D"');
+      warn('o modelo "' + k + '" não está no projeto. Envie o .glb em "Modelos 3D"');
       return null;
     }
     var buf = dataUrlToBuffer(entry.dataUrl);
@@ -8840,7 +8840,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var key = text(name, '');
       var url = SOUNDS[text(asset, '')];
       if (!url) {
-        warn('o som "' + text(asset, '') + '" não está no projeto — envie em "Imagens" na barra de cima');
+        warn('o som "' + text(asset, '') + '" não está no projeto. Envie em "Sons", no menu ⋯');
         return;
       }
       // Aponta o apelido para o arquivo e pré-carrega.

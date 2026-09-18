@@ -60,7 +60,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Por que neste momento:** É uma ação completa com começo e fim, separada da importação do jogo verdadeiro.
 
-**Narração revisada / ponte:** “Crie Meu jogo novo. Abra Mais opções → Exibição → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.”
+**Narração revisada / ponte:** “Crie Meu jogo novo. Abra Mais opções → O meu jogo → Extensões e instale Jogo 2D. Feche a janela e volte à lista pelo botão Sistema Zero Studio. Guarde esse projeto de teste separado do jogo da nave.”
 
 **Imagem e condução:** Zoom em Instalada, Fechar e na marca clicável de retorno. Mostrar o cartão do projeto de teste.
 

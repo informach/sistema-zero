@@ -6,7 +6,7 @@ export const gameKitAudioRuntime = `
     if (!key) { warn('"Carregar o som" precisa de um nome'); return; }
     var a = text(asset, '');
     var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
-    if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Sons")'); return; }
+    if (!src) { warn('o som "' + a + '" não está no projeto. Importe em "Sons", no menu ⋯'); return; }
     var loaded = sounds[key];
     if (loaded && loaded._szgkSrc === src) return;
     if (loaded) {

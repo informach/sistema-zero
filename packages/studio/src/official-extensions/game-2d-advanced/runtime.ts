@@ -4844,7 +4844,7 @@ ${gameKitAudioRuntime}
           entry.el.style.backgroundSize = 'cover';
           entry.el.style.backgroundPosition = 'center';
         } else {
-          warnOnce('screenbg:' + asset, 'a imagem "' + asset + '" não está no projeto (importe em "Imagens")');
+          warnOnce('screenbg:' + asset, 'a imagem "' + asset + '" não está no projeto. Importe em "Imagens", no menu ⋯');
         }
       }
     }),

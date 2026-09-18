@@ -42,7 +42,7 @@ export glTF com `NearestFilter`, projeto JSON com migração lazy.
 
 ## Estado (04/09/2026) — os 8 lotes do plano prontos: L1 (pacote + galeria + rota kids), L2 (Montar), L3 (Pintar + GLB), L4 (Céu + HDR), L5 (Textura + Vestir), L6 (nuvem), L7 (Estúdio) e L8 (modelos prontos + backup ZIP)
 
-**Estúdio (L7):** o "🧊 Trazer do Molda" do painel de Imagens do Estúdio Completo lê este
+**Estúdio (L7):** o "🧊 Trazer do Molda" da aba "Modelos 3D" (menu ⋯ → Materiais) do Estúdio Completo lê este
 pacote pelo subpath `./studio-library` (`listGalleryForStudio` + `exportAssetForStudio`, os
 três tipos), e o kit iniciante Jogo 3D ganhou os blocos "Criar o objeto … com o modelo"
 (`.glb`) e "Usar o céu 360°" (`.hdr`). Nada mudou aqui; o que o Estúdio espera do export está

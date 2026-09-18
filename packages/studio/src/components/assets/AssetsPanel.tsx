@@ -31,7 +31,7 @@ import {
   evidencedOriginOf,
   personalKindOf,
 } from './creationOrigin'
-import { projectHas3DConsumer } from './has3DConsumer'
+import { projectHas3DConsumer, projectHas3DMaterials } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
@@ -91,10 +91,13 @@ export function AssetsPanel({
   onTabChange = () => {},
 }: AssetsPanelProps): JSX.Element {
   const t = useT()
-  const { hasProject, assets, has3DExtension } = useProjectStore(
+  const { hasProject, assets, has3DExtension, has3DMaterials } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       assets: s.project?.assets ?? EMPTY_ASSETS,
+      // A régua da ABA, na fonte única compartilhada com a porta do menu ⋯. O
+      // "Trazer do Molda" entra fora do seletor (é contexto, não projeto).
+      has3DMaterials: projectHas3DMaterials(s.project, false),
       // Quem CONSOME .glb/.hdr (Jogo 3D, Jogo 3D Avançado, Mundo 3D ou Canvas 3D —
       // ver `has3DConsumer.ts`). Sem nenhum deles o upload seria peso morto na cota
       // (a SEÇÃO de modelos continua sem gate: gerenciar/excluir um órfão nunca
@@ -550,7 +553,7 @@ export function AssetsPanel({
   // 3. o host deu o "Trazer do Molda" — a aba é o ENDEREÇO dele, e sem ela o
   //    botão sumiria justamente para quem ainda não instalou nada de 3D (inclusive
   //    para trazer TEXTURA, que é imagem e sempre entra).
-  const has3DTab = has3DExtension || models3d.length > 0 || Boolean(moldaLibrary)
+  const has3DTab = has3DMaterials || Boolean(moldaLibrary)
   const tabs: AssetsTabItem[] = [
     { id: 'images', label: t('assets.tab.images'), icon: '🖼️' },
     { id: 'sounds', label: t('assets.tab.sounds'), icon: '🔊' },
@@ -559,6 +562,18 @@ export function AssetsPanel({
   // A aba pedida pode ter deixado de existir (a criança removeu a extensão 3D e
   // apagou os modelos com a janela aberta): cai para a primeira, nunca em branco.
   const activeTab: AssetsTab = tabs.some((item) => item.id === selectedTab) ? selectedTab : 'images'
+
+  // ⚠️ O fallback acima não pode ficar só na janela: a aba pode sumir COM a janela
+  // aberta (excluir o último .glb de um projeto sem extensão 3D, que é o caminho do
+  // próprio teste do órfão). Sem avisar o host, a store continuava em 'models3d' e
+  // NENHUMA porta do menu aparecia ligada — e a porta "Imagens" precisava de dois
+  // cliques para fechar a janela, contrariando a regra da própria store.
+  useEffect(() => {
+    if (activeTab !== selectedTab) {
+      setSelectedTab(activeTab)
+      onTabChange(activeTab)
+    }
+  }, [activeTab, selectedTab, onTabChange])
 
   return (
     <Modal

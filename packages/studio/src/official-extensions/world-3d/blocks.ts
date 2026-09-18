@@ -1538,7 +1538,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pendura um quadro com uma imagem do projeto (envie em "Imagens") numa moldura, em pé no mundo. A sua foto, o seu desenho, a capa do seu jogo.',
+      'Pendura um quadro com uma imagem do projeto (envie em "Imagens", no menu ⋯) numa moldura, em pé no mundo. A sua foto, o seu desenho, a capa do seu jogo.',
   },
 
   // ---- 🖼️ Galeria ----
@@ -1821,7 +1821,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som do projeto (envie o arquivo em "Imagens" na barra de cima) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo em "Sons", no menu ⋯) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_w3d_play_sound',

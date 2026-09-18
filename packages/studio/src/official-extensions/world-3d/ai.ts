@@ -140,7 +140,7 @@ chama o ciclo de vida automaticamente. NÃO gere
   SÓLIDOS (colidem com o carro); flores/cogumelos não. Teto global ~12.000
   instâncias. Respeita as áreas do clearArea; o centro (spawn) já nasce limpo.
 - \`SZWorld3D.scatterModel(n, nomeDoModelo, tamanho)\` — espalha um .glb do
-  projeto (o aluno envia no painel de assets e escolhe no seletor). Sólido se for
+  projeto (o aluno envia em "Imagens", no menu ⋯, e escolhe no seletor). Sólido se for
   grandinho.
 - \`SZWorld3D.placeThing(especie, x, z, tamanho)\` — UMA cópia num ponto exato.
 - \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.

@@ -1,5 +1,5 @@
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
@@ -10,9 +10,13 @@ export interface MenuItem {
   /**
    * Linha de apoio abaixo do rótulo, para quando o nome sozinho não diz o
    * DESTINO (os três jeitos de o jogo sair do Estúdio, por exemplo).
-   * ⚠️ Ela NÃO entra no nome acessível: o botão passa a levar `aria-label` com o
-   * rótulo puro, senão o nome viraria "Baixar o código uma pasta .zip…" e os
-   * `getByRole('menuitem', { name, exact: true })` dos e2e quebrariam em silêncio.
+   * ⚠️ Ela não pode entrar no NOME acessível (o nome viraria "Baixar o código um
+   * .zip com o código…" e os `getByRole('menuitem', { name, exact: true })` dos
+   * e2e quebrariam em silêncio), mas também não pode SUMIR para quem usa leitor
+   * de tela — a dica existe justamente porque o nome sozinho não basta. Por isso
+   * o botão aponta `aria-labelledby` para o span do rótulo e `aria-describedby`
+   * para o span da dica: nome curto, descrição junto. Um `aria-label` cru
+   * resolvia a primeira metade e apagava a segunda.
    */
   hint?: string
   icon?: ReactNode
@@ -69,6 +73,7 @@ export function Menu({
   triggerClassName,
   triggerVariant = 'default',
 }: MenuProps): JSX.Element {
+  const baseId = useId()
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<PanelPos | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -227,7 +232,8 @@ export function Menu({
                         data-sz-menu-item={item.id}
                         tabIndex={-1}
                         disabled={item.disabled}
-                        aria-label={item.hint ? item.label : undefined}
+                        aria-labelledby={item.hint ? `${baseId}-rotulo-${item.id}` : undefined}
+                        aria-describedby={item.hint ? `${baseId}-dica-${item.id}` : undefined}
                         aria-current={item.active || undefined}
                         onClick={() => {
                           item.onSelect()
@@ -246,9 +252,14 @@ export function Menu({
                           </span>
                         )}
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate">{item.label}</span>
+                          <span id={`${baseId}-rotulo-${item.id}`} className="block truncate">
+                            {item.label}
+                          </span>
                           {item.hint && (
-                            <span className="block text-xs leading-snug text-sz-fg-mute">
+                            <span
+                              id={`${baseId}-dica-${item.id}`}
+                              className="block text-xs leading-snug text-sz-fg-mute"
+                            >
                               {item.hint}
                             </span>
                           )}

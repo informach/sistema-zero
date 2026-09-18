@@ -254,7 +254,7 @@ export const lateRecipes: Record<number, Recipe> = {
         focus: 'Importar as artes do Pinta no projeto certo, sem esperar troca visual automática.',
         reason:
           'O jogo e a galeria são acervos distintos; confirmar a ponte antes de alterar blocos.',
-        say: 'Abra o jogo da nave em Meus Jogos. Em Mais opções → Exibição → Imagens, escolha Trazer do Pinta. Adicione nave e asteroide. Feche as duas janelas e confira: os desenhos estão No projeto, mas o jogo ainda usa as peças do kit.',
+        say: 'Abra o jogo da nave em Meus Jogos. Em Mais opções → Materiais → Imagens, escolha Trazer do Pinta. Adicione nave e asteroide. Feche as duas janelas e confira: os desenhos estão No projeto, mas o jogo ainda usa as peças do kit.',
         edit: 'Reutilizar o caminho inteiro, incluindo ambos os Fechar. Não afirmar que No projeto estará vazio em toda conta. Manter botão de adição de cada desenho.',
         visual:
           'Selo no projeto em cada arte e lista No projeto com as duas. Não selecionar desenhos da Biblioteca pronta.',
