@@ -708,9 +708,20 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     servidorQueCorrige(mundoComPalpite('hidden'))
     aluno(mundoComPalpite('hidden'))
     expect(await screen.findByText('Seu palpite')).toBeTruthy()
-    expect(screen.getByText('Bastidores e tela do jogo')).toBeTruthy()
-    expect(screen.getByText('Hoje vamos usar:')).toBeTruthy()
-    expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy()
+    expect(
+      screen.getByText(
+        (_, node) =>
+          node?.tagName === 'P' &&
+          node.textContent?.startsWith(
+            'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+          ) === true,
+      ),
+    ).toBeTruthy()
+    const previa = screen.getByTestId('scene-prediction-preview')
+    expect(previa.getAttribute('aria-label')).toBe(
+      'Prévia da experiência: Bastidores e tela do jogo',
+    )
+    expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
     expect(screen.queryByRole('button', { name: '＋ Criar Dino' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
@@ -1424,8 +1435,10 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
           ) === true,
       ),
     ).toBeTruthy()
-    expect(screen.getByText('Hoje vamos usar:')).toBeTruthy()
-    expect(screen.getByText('Ouvir a tela')).toBeTruthy()
+    expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
+    expect(screen.getByTestId('scene-prediction-preview').getAttribute('aria-label')).toBe(
+      'Prévia da experiência: Ouvir a tela',
+    )
     expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
 
     await palpitar('screen-reader')

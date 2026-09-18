@@ -1235,7 +1235,7 @@ export function SceneActivityView({
                     cima, e o palco perde a borda própria aqui dentro (o gancho `sz-scene-frame`).
                     O anel de destaque vai na moldura inteira. */}
                     <div
-                      className={`mx-auto w-full max-w-scene overflow-hidden rounded-2xl border border-border [&_.sz-scene-frame]:rounded-none [&_.sz-scene-frame]:border-0 ${
+                      className={`w-full overflow-hidden rounded-2xl border border-border [&_.sz-scene-frame]:rounded-none [&_.sz-scene-frame]:border-0 ${
                         anelDaCena ? 'ring-2 ring-primary ring-offset-4 ring-offset-card' : ''
                       }`}
                     >

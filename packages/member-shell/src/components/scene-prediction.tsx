@@ -156,9 +156,6 @@ export function ScenePrediction({
           })}
         </div>
         {preview}
-        <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground">
-          Hoje vamos usar: <span className="font-bold">{prediction.context.label}</span>
-        </p>
         <div className="space-y-2">
           {prediction.choices.map((choice) => {
             const atual = choice.id === escolha

@@ -24,7 +24,7 @@ export function ScenePredictionPreview({ activity, contextLabel }: ScenePredicti
       data-slot="scene-prediction-preview"
       data-scene-prediction-preview
       data-testid="scene-prediction-preview"
-      className="mx-auto w-full max-w-scene overflow-hidden rounded-2xl border border-border [&_.sz-scene-frame]:rounded-none [&_.sz-scene-frame]:border-0 [&_button]:hidden [&_input]:hidden [&_select]:hidden [&_textarea]:hidden [&_[role=button]]:hidden [&_[role=slider]]:hidden"
+      className="w-full overflow-hidden rounded-2xl border border-border [&_.sz-scene-frame]:rounded-none [&_.sz-scene-frame]:border-0 [&_button]:hidden [&_input]:hidden [&_select]:hidden [&_textarea]:hidden [&_[role=button]]:hidden [&_[role=slider]]:hidden"
     >
       <ExplorationStage activity={activity} state={state} preview={preview} />
     </div>

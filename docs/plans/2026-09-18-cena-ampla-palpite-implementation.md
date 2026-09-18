@@ -23,7 +23,9 @@
 ### Task 1: Travar a hierarquia visual do palpite
 
 **Files:**
-- Modify: `packages/community-kids/tests/lesson-scene-design.test.tsx`
+- Create: `packages/member-shell/tests/scene-prediction-layout.test.tsx`
+- Modify: `packages/community-kids/tests/lesson-experimentation.test.tsx` (somente as duas
+  expectativas que ainda descrevem o card removido)
 - Modify: `packages/member-shell/src/components/scene-prediction.tsx`
 - Modify: `packages/member-shell/src/components/scene-prediction-preview.tsx`
 
@@ -31,25 +33,29 @@
 - Consumes: `ScenePrediction` e `ScenePredictionPreview`, ambos renderizados pelo player compartilhado.
 - Produces: palpite com apenas contexto, prévia e escolhas; prévia sem teto de largura.
 
+> O teste compartilhado da Comunidade Kids está em edição por outra sessão. Para preservar esse
+> trabalho, a cobertura nasce ao lado dos componentes no `member-shell`; o comportamento continua
+> sendo validado na fonte que ambos os apps consomem.
+
 - [ ] **Step 1: Escrever o teste que falha**
 
-Acrescentar ao `describe('a prévia antes do palpite')` uma asserção que mantenha o rótulo acessível e a ocultação de controles, mas rejeite o teto visual:
+Criar `scene-prediction-layout.test.tsx` com `renderToStaticMarkup`. Ele deve montar um
+`ScenePrediction` com contexto, pergunta e escolhas e provar que a explicação permanece no
+balão, mas `Hoje vamos usar:` não aparece. Deve também montar a prévia e extrair a tag com
+`data-testid="scene-prediction-preview"`, exigindo `w-full` e rejeitando `max-w-scene` e
+`mx-auto` apenas nessa moldura.
 
-```tsx
-expect(previa.className).toContain('w-full')
-expect(previa.className).not.toContain('max-w-scene')
-expect(previa.className).not.toContain('mx-auto')
-```
-
-Acrescentar ao teste do palpite uma asserção de que `Hoje vamos usar:` não aparece como texto próprio, enquanto `prediction.context.explanation` continua presente no balão.
+Nas duas jornadas de palpite do teste de integração do Kids que ainda pedem `Hoje vamos usar:`,
+substituir a expectativa pelo contexto no balão e pelo `aria-label` da prévia. Também deve ficar
+explícito que o texto do card não aparece.
 
 - [ ] **Step 2: Rodar o teste para confirmar a falha**
 
 Run:
 
 ```powershell
-cd packages/community-kids
-bun test tests/lesson-scene-design.test.tsx --dots
+cd packages/member-shell
+bun test tests/scene-prediction-layout.test.tsx --dots
 ```
 
 Expected: falha porque a prévia ainda contém `mx-auto max-w-scene` e o card “Hoje vamos usar” ainda é renderizado.
@@ -84,7 +90,7 @@ Expected: passa, com prévia segura e ampla e sem opção visual extra.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add -- packages/member-shell/src/components/scene-prediction.tsx packages/member-shell/src/components/scene-prediction-preview.tsx packages/community-kids/tests/lesson-scene-design.test.tsx
+git add -- packages/member-shell/src/components/scene-prediction.tsx packages/member-shell/src/components/scene-prediction-preview.tsx packages/member-shell/tests/scene-prediction-layout.test.tsx
 git commit -m "feat(kids): ampliar cena e simplificar palpite"
 ```
 
@@ -92,7 +98,7 @@ git commit -m "feat(kids): ampliar cena e simplificar palpite"
 
 **Files:**
 - Modify: `packages/member-shell/src/components/scene-activity.tsx:1251`
-- Test: `packages/community-kids/tests/lesson-scene-design.test.tsx`
+- Test: `packages/member-shell/tests/scene-prediction-layout.test.tsx`
 
 **Interfaces:**
 - Consumes: a moldura que já contém `SceneReadoutBand` e `ExplorationStage`.
@@ -100,23 +106,18 @@ git commit -m "feat(kids): ampliar cena e simplificar palpite"
 
 - [ ] **Step 1: Estender o teste para o palco aberto**
 
-Depois de escolher uma alternativa numa cena de experimentação, localizar a moldura que contém `.sz-scene-frame` e verificar que o pai direto continua `w-full`, mas não contém `max-w-scene` nem `mx-auto`.
-
-```tsx
-const frame = document.querySelector('.sz-scene-frame')
-const moldura = frame?.parentElement
-expect(moldura?.className).toContain('w-full')
-expect(moldura?.className).not.toContain('max-w-scene')
-expect(moldura?.className).not.toContain('mx-auto')
-```
+No mesmo teste novo, ler a fonte de `scene-activity.tsx` e conferir a lista de classes da única
+moldura que contém `SceneReadoutBand` e `ExplorationStage`: ela preserva `w-full` e não pode mais
+começar por `mx-auto w-full max-w-scene`. Esse contrato de fonte evita montar o player completo,
+que depende do BFF e de estado de progresso, sem abrir mão da regra visual concreta.
 
 - [ ] **Step 2: Rodar o teste para confirmar a falha**
 
 Run:
 
 ```powershell
-cd packages/community-kids
-bun test tests/lesson-scene-design.test.tsx --dots
+cd packages/member-shell
+bun test tests/scene-prediction-layout.test.tsx --dots
 ```
 
 Expected: falha porque a moldura aberta ainda usa `mx-auto w-full max-w-scene`.
@@ -142,10 +143,11 @@ Não mudar o `fieldset`, a faixa, o anel de foco, o `RelogioDaArteProvider` ou q
 Run:
 
 ```powershell
-cd packages/community-kids
-bun test tests/lesson-scene-design.test.tsx tests/lesson-experimentation.test.tsx tests/lesson-scene-experiencia.test.tsx --dots
-cd ..\member-shell
+cd packages/member-shell
+bun test tests/scene-prediction-layout.test.tsx --dots
 bun run typecheck
+cd ..\community-kids
+bun test tests/lesson-experimentation.test.tsx tests/lesson-scene-experiencia.test.tsx --dots
 cd ..\..
 git diff --check
 ```
