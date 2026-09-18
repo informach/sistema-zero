@@ -32,6 +32,7 @@ import {
 import { LessonSectionProvider } from '@sistemazero/member-shell/components/lesson-section-context'
 import { PecaQueMudaDeCaixa } from '@sistemazero/member-shell/components/scene-dino-controls'
 import { LessonSceneControls } from '@sistemazero/member-shell/components/scene-lesson-controls'
+import { ScenePredictionPreview } from '@sistemazero/member-shell/components/scene-prediction-preview'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { act, useState } from 'react'
 
@@ -76,6 +77,41 @@ function block(scene: SceneId, hints: string[] = []) {
 const contendo = (trecho: string) => (_: string, node: Element | null) =>
   node?.textContent?.includes(trecho) === true &&
   !Array.from(node.children).some((filho) => filho.textContent?.includes(trecho))
+
+describe('a prévia antes do palpite', () => {
+  test('mostra somente o palco inicial do leitor de tela, sem controles', () => {
+    render(
+      <ScenePredictionPreview
+        activity={{ type: 'experimentation', scene: 'screen-reader' }}
+        contextLabel="Ouvir a tela"
+      />,
+    )
+    const previa = screen.getByTestId('scene-prediction-preview')
+    expect(previa.getAttribute('role')).toBe('img')
+    expect(previa.getAttribute('aria-label')).toContain('Ouvir a tela')
+    expect(previa.className).toContain('[&_button]:hidden')
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
+    expect(screen.queryByRole('meter')).toBeNull()
+  })
+
+  test('oculta a ordem das camadas e não monta as ferramentas da cena', () => {
+    render(
+      <ScenePredictionPreview
+        activity={{ type: 'experimentation', scene: 'layers' }}
+        contextLabel="A ordem dos desenhos"
+      />,
+    )
+    const previa = screen.getByTestId('scene-prediction-preview')
+    expect(previa.hasAttribute('data-scene-prediction-preview')).toBeTrue()
+    expect(previa.querySelector('desc')?.textContent).toContain('aparecem separados')
+    expect(previa.textContent).not.toContain('A floresta fica na frente')
+    expect(previa.textContent).not.toContain('Nada fica na frente do Dino')
+    expect(screen.queryByRole('button', { name: /^Descer / })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
+    expect(screen.queryByRole('meter')).toBeNull()
+  })
+})
 
 describe('a pista não apaga a instrução', () => {
   test('⚠️ o enunciado FICA na tela depois de pedir ajuda', async () => {
@@ -681,6 +717,10 @@ describe('a previsão antes de mexer', () => {
    * avalia nada — errar é parte da descoberta, e reprovar por isso ensinaria a não arriscar.
    */
   const PREVISAO = {
+    context: {
+      label: 'A batida do Dino no cacto',
+      explanation: 'Você vai aproximar o cacto do Dino para descobrir quando os dois encostam.',
+    },
     prompt: 'O que acontece quando o cacto chega bem perto do Dino?',
     choices: [
       { id: 'toca', label: 'As áreas se tocam e dá batida' },

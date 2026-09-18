@@ -1,4 +1,4 @@
-import type { SceneAction, SceneGroup, SceneId } from './actions'
+import { SCENE_IDS, type SceneAction, type SceneGroup, type SceneId } from './actions'
 
 /**
  * Os 45 modelos de cena: o catálogo ÚNICO do sistema.
@@ -78,6 +78,15 @@ export interface SceneGoal {
   pedido: string
 }
 
+/** Partes do palco que poderiam entregar a resposta antes de a criança apostar. */
+export type ScenePredictionPreviewConceal = 'layers-order'
+
+/** A prévia é sempre o começo real da cena, com redactions declaradas quando necessárias. */
+export interface ScenePredictionPreview {
+  initial: true
+  conceal: readonly ScenePredictionPreviewConceal[]
+}
+
 export interface SceneModel {
   id: SceneId
   group: SceneGroup
@@ -94,6 +103,8 @@ export interface SceneModel {
   hints: readonly [string, string, string]
   /** O roteiro da demonstração desta cena. A demonstração autorada substitui; sem ela, é este. */
   script: readonly SceneStep[]
+  /** A cena que a criança vê antes de responder ao palpite. */
+  predictionPreview: ScenePredictionPreview
   /**
    * ⚠️⚠️ A frase de sucesso de uma MISSÃO RESTRITA, pela lista de metas dela em ordem alfabética e
    * juntas por `+` (consertos do review da onda A do lote 5). O Dia 1 do Desafio cobra só `down`, e o
@@ -103,7 +114,7 @@ export interface SceneModel {
   successNoCaso?: Readonly<Record<string, string>>
 }
 
-export const SCENE_MODELS: Record<SceneId, SceneModel> = {
+const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPreview'>> = {
   coordinates: {
     id: 'coordinates',
     group: 'stage',
@@ -3016,6 +3027,67 @@ export const SCENE_MODELS: Record<SceneId, SceneModel> = {
     ],
   },
 }
+
+const PREVIA_INICIAL: ScenePredictionPreview = { initial: true, conceal: [] }
+
+/**
+ * Uma entrada por cena, mesmo quando a prévia é a inicial sem redaction. Assim, qualquer cena
+ * nova precisa decidir conscientemente o que mostra antes do palpite.
+ */
+const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
+  coordinates: PREVIA_INICIAL,
+  'screen-reader': PREVIA_INICIAL,
+  'stage-size': PREVIA_INICIAL,
+  'draw-loop': PREVIA_INICIAL,
+  frames: PREVIA_INICIAL,
+  'onion-skin': PREVIA_INICIAL,
+  symmetry: PREVIA_INICIAL,
+  'pixel-vector': PREVIA_INICIAL,
+  'sheet-vs-sprite': PREVIA_INICIAL,
+  world: PREVIA_INICIAL,
+  layers: { initial: true, conceal: ['layers-order'] },
+  gravity: PREVIA_INICIAL,
+  impulse: PREVIA_INICIAL,
+  'jump-sound': PREVIA_INICIAL,
+  spawn: PREVIA_INICIAL,
+  cleanup: PREVIA_INICIAL,
+  'game-state': PREVIA_INICIAL,
+  controls: PREVIA_INICIAL,
+  restart: PREVIA_INICIAL,
+  hitbox: PREVIA_INICIAL,
+  score: PREVIA_INICIAL,
+  lives: PREVIA_INICIAL,
+  random: PREVIA_INICIAL,
+  acceleration: PREVIA_INICIAL,
+  velocity: PREVIA_INICIAL,
+  'hold-vs-press': PREVIA_INICIAL,
+  variable: PREVIA_INICIAL,
+  'group-loop': PREVIA_INICIAL,
+  'enemy-type': PREVIA_INICIAL,
+  camera: PREVIA_INICIAL,
+  contact: PREVIA_INICIAL,
+  cooldown: PREVIA_INICIAL,
+  aim: PREVIA_INICIAL,
+  diagonal: PREVIA_INICIAL,
+  tilemap: PREVIA_INICIAL,
+  pool: PREVIA_INICIAL,
+  'entity-state': PREVIA_INICIAL,
+  'delta-time': PREVIA_INICIAL,
+  'circle-collision': PREVIA_INICIAL,
+  'axis-z': PREVIA_INICIAL,
+  'camera-3d': PREVIA_INICIAL,
+  mesh: PREVIA_INICIAL,
+  'pick-ray': PREVIA_INICIAL,
+  'fill-stroke': PREVIA_INICIAL,
+  shading: PREVIA_INICIAL,
+}
+
+export const SCENE_MODELS: Record<SceneId, SceneModel> = Object.fromEntries(
+  SCENE_IDS.map((scene) => [
+    scene,
+    { ...SCENE_MODEL_DEFINITIONS[scene], predictionPreview: SCENE_PREDICTION_PREVIEWS[scene] },
+  ]),
+) as Record<SceneId, SceneModel>
 
 export function sceneModel(scene: SceneId): SceneModel {
   return SCENE_MODELS[scene]

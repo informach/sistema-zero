@@ -172,6 +172,13 @@ export function LayersStage({
       <ActorFigure figure={heroi} x={DINO_DO_LAYERS} y={piso} />
     </g>
   )
+  /** Antes do palpite, os dois desenhos aparecem, mas ainda não um cobrindo o outro. */
+  const desenhosSeparados = (
+    <>
+      <g transform="translate(-105 0)">{dino}</g>
+      <g transform="translate(105 0)">{floresta}</g>
+    </>
+  )
   return (
     <SceneCanvas
       view={STAGE}
@@ -187,7 +194,7 @@ export function LayersStage({
       // longe do nome.
       descricao={
         escondida
-          ? 'A ordem de desenhar, ainda escondida.'
+          ? 'O Dino e a floresta aparecem separados. Você vai descobrir qual fica na frente.'
           : frente
             ? 'Nada fica na frente do Dino, e a floresta fica atrás.'
             : 'A floresta fica na frente, e só um pedaço do Dino aparece.'
@@ -195,8 +202,14 @@ export function LayersStage({
     >
       <Pista mundo={mundo} semEstrelas={[{ x: 14, y: 8, w: 240, h: 30 }]} />
       <Selo>{castText('Quem fica na frente', cast)}</Selo>
-      {frente ? floresta : dino}
-      {frente ? dino : floresta}
+      {escondida ? (
+        desenhosSeparados
+      ) : (
+        <>
+          {frente ? floresta : dino}
+          {frente ? dino : floresta}
+        </>
+      )}
     </SceneCanvas>
   )
 }

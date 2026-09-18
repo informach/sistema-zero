@@ -36,9 +36,11 @@ export * from './nucleo'
 // experiência do conjunto, 16/09/2026).
 export * from './pilha'
 export * from './pistas'
+export * from './prediction-preview'
 export * from './questions'
 export * from './readout'
 export * from './session'
+export * from './start'
 export * from './state'
 // A voz do Zappy: o dicionário `texto falado → MP3` e a regra do tudo-ou-nada da fala.
 export * from './voz'
@@ -263,15 +265,6 @@ function playsOut(steps: SceneStep[], scene: SceneId, setup?: SceneSetup): boole
     if (!state.evidence.discoveries.includes(step.waitFor)) return false
   }
   return true
-}
-
-/** Por onde a cena desta atividade começa: a cena, o impulso de partida e o caso. */
-export function sceneStart(activity: SceneActivity): SceneStart {
-  const impulso =
-    activity.type === 'experimentation' && activity.initialImpulse !== undefined
-      ? { initialImpulse: activity.initialImpulse }
-      : {}
-  return { scene: activity.scene, ...impulso, ...(activity.setup ? { setup: activity.setup } : {}) }
 }
 
 /**

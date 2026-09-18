@@ -310,11 +310,14 @@ export function ScreenReaderStage({
   state,
   dispatch,
   interactive,
+  preview = false,
   cast,
 }: {
   state: SceneState
-  dispatch: (action: SceneAction) => void
+  dispatch?: (action: SceneAction) => void
   interactive: boolean
+  /** A prévia não mostra campo, botão ou controle da cena. */
+  preview?: boolean
   cast?: SceneCast
 }) {
   const id = useId()
@@ -375,13 +378,13 @@ export function ScreenReaderStage({
     setRascunho(valor)
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => {
-      if (valor !== text) dispatch({ type: 'describe', text: valor })
+      if (valor !== text) dispatch?.({ type: 'describe', text: valor })
     }, 500)
   }
   function confirmar(valor: string) {
     if (fechado) return
     if (timer.current) clearTimeout(timer.current)
-    if (valor !== text) dispatch({ type: 'describe', text: valor })
+    if (valor !== text) dispatch?.({ type: 'describe', text: valor })
   }
   const nada = !heardEmpty && !said
   /**
@@ -501,7 +504,7 @@ export function ScreenReaderStage({
             </p>
             {/* ⚠️ `temVoz`, e não `disponivel` (consertos do review da onda A do lote 5, B4): com vozes
                 sem português a chave dizia "Voz: ligada" e nada falava. */}
-            {voz.temVoz && (
+            {!preview && voz.temVoz && (
               /* ⚠️ Chave com o ESTADO no rótulo. Quem já usa um leitor de tela de verdade ouve o painel
                  duas vezes com a voz ligada, e é por isso que ela desliga aqui. */
               <SceneButton
@@ -567,52 +570,60 @@ export function ScreenReaderStage({
         </div>
       </div>
       <div className={duasColunas ? 'col-span-2' : undefined}>
-        <label className="block text-sm font-semibold" htmlFor={`${id}-desc`}>
-          Descrição do jogo
-        </label>
-        <p className="mb-2 text-xs text-muted-foreground">
-          É o campo do bloco Descrever o jogo para leitor de tela.
-        </p>
-        <textarea
-          id={`${id}-desc`}
-          rows={2}
-          maxLength={SCENE_LIMITS.describe.max}
-          disabled={!interactive}
-          // ⚠️ `readOnly` + `aria-disabled`, e não `disabled`: fechado continua no Tab, dizendo o motivo.
-          readOnly={fechado}
-          aria-disabled={fechado || undefined}
-          aria-describedby={fechado ? `${id}-nota` : undefined}
-          value={rascunho}
-          /* ⚠️⚠️ Fechado, o MOTIVO mora dentro do campo, com o cadeado e o fundo apagado (consertos do
+        {preview ? (
+          <p className="rounded-xl border border-dashed border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+            A descrição será escrita depois da sua escolha.
+          </p>
+        ) : (
+          <>
+            <label className="block text-sm font-semibold" htmlFor={`${id}-desc`}>
+              Descrição do jogo
+            </label>
+            <p className="mb-2 text-xs text-muted-foreground">
+              É o campo do bloco Descrever o jogo para leitor de tela.
+            </p>
+            <textarea
+              id={`${id}-desc`}
+              rows={2}
+              maxLength={SCENE_LIMITS.describe.max}
+              disabled={!interactive}
+              // ⚠️ `readOnly` + `aria-disabled`, e não `disabled`: fechado continua no Tab, dizendo o motivo.
+              readOnly={fechado}
+              aria-disabled={fechado || undefined}
+              aria-describedby={fechado ? `${id}-nota` : undefined}
+              value={rascunho}
+              /* ⚠️⚠️ Fechado, o MOTIVO mora dentro do campo, com o cadeado e o fundo apagado (consertos do
              review da onda A do lote 5): a criança tocava, o campo ganhava o anel azul de campo aberto,
              ela digitava e nada aparecia, e o único sinal era a borda tracejada e uma nota de 12px. */
-          placeholder={
-            fechado
-              ? '🔒 Primeiro aperte Ouvir a tela.'
-              : 'Escreva o que é o seu jogo e como se joga'
-          }
-          onChange={(e) => escrever(e.target.value)}
-          onBlur={(e) => confirmar(e.target.value)}
-          onKeyDown={(e) => {
-            // A primeira tecla num campo fechado vira aviso falado (uma vez só).
-            if (fechado && !tentouEscrever && e.key.length === 1) setTentouEscrever(true)
-          }}
-          className={`w-full rounded-xl border p-3 text-sm ${
-            fechado
-              ? 'cursor-not-allowed border-dashed border-muted-foreground/50 bg-muted placeholder:text-muted-foreground focus-visible:outline-dashed'
-              : 'border-border bg-background'
-          }`}
-        />
-        {fechado && interactive && (
-          <p
-            id={`${id}-nota`}
-            role="status"
-            className={`mt-1 text-muted-foreground ${tentouEscrever ? 'text-sm font-semibold' : 'text-xs'}`}
-          >
-            {tentouEscrever
-              ? 'O campo ainda está fechado. Abre depois de ouvir a tela vazia.'
-              : 'Abre depois de ouvir a tela vazia.'}
-          </p>
+              placeholder={
+                fechado
+                  ? '🔒 Primeiro aperte Ouvir a tela.'
+                  : 'Escreva o que é o seu jogo e como se joga'
+              }
+              onChange={(e) => escrever(e.target.value)}
+              onBlur={(e) => confirmar(e.target.value)}
+              onKeyDown={(e) => {
+                // A primeira tecla num campo fechado vira aviso falado (uma vez só).
+                if (fechado && !tentouEscrever && e.key.length === 1) setTentouEscrever(true)
+              }}
+              className={`w-full rounded-xl border p-3 text-sm ${
+                fechado
+                  ? 'cursor-not-allowed border-dashed border-muted-foreground/50 bg-muted placeholder:text-muted-foreground focus-visible:outline-dashed'
+                  : 'border-border bg-background'
+              }`}
+            />
+            {fechado && interactive && (
+              <p
+                id={`${id}-nota`}
+                role="status"
+                className={`mt-1 text-muted-foreground ${tentouEscrever ? 'text-sm font-semibold' : 'text-xs'}`}
+              >
+                {tentouEscrever
+                  ? 'O campo ainda está fechado. Abre depois de ouvir a tela vazia.'
+                  : 'Abre depois de ouvir a tela vazia.'}
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

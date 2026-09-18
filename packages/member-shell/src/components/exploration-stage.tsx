@@ -1,6 +1,11 @@
 'use client'
 
-import type { SceneAction, SceneActivity, SceneState } from '@sistemazero/core/learning/scene'
+import type {
+  SceneAction,
+  SceneActivity,
+  ScenePredictionPreview,
+  SceneState,
+} from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import type { ComponentProps } from 'react'
 import { cn } from '../lib/cn'
@@ -167,18 +172,23 @@ export function ExplorationStage({
   state,
   dispatch,
   escondida = false,
+  preview,
 }: {
   activity: SceneActivity
   state: SceneState
-  dispatch: (action: SceneAction) => void
+  dispatch?: (action: SceneAction) => void
   /**
    * O palpite ainda não veio (full review de experiência, M6): o desenho que escreve a resposta para quem
    * não enxerga (a descrição da `layers`) segue o `valoresEscondidos` da faixa.
    */
   escondida?: boolean
+  /** A prévia só mostra o palco inicial, sem entregar controles ou a resposta do palpite. */
+  preview?: ScenePredictionPreview
 }) {
   const m = activity.scene
   const cast = activity.cast
+  const podeInteragir = activity.type === 'experimentation' && !preview ? dispatch : undefined
+  const valoresEscondidos = escondida || preview?.conceal.includes('layers-order') === true
   // ⚠️ As duas cenas de 14/09/2026 têm palco PRÓPRIO: uma é sobre o sistema de coordenadas da
   // tela e a outra sobre o que uma pessoa que não vê a tela recebe. Nenhuma das duas cabe no
   // palco compartilhado (chão, árvores, pista), que é sobre o mundo do jogo.
@@ -187,8 +197,9 @@ export function ExplorationStage({
     return (
       <ScreenReaderStage
         state={state}
-        dispatch={dispatch}
-        interactive={activity.type === 'experimentation'}
+        dispatch={podeInteragir}
+        interactive={Boolean(podeInteragir)}
+        preview={Boolean(preview)}
         cast={cast}
       />
     )
@@ -213,12 +224,10 @@ export function ExplorationStage({
         state={state}
         // ⚠ Na demonstração a criança ASSISTE: sem gesto direto no desenho.
         onJump={
-          activity.type === 'experimentation' && m !== 'hitbox'
-            ? (input) => dispatch({ type: 'jump', input })
-            : undefined
+          podeInteragir && m !== 'hitbox' ? (input) => dispatch({ type: 'jump', input }) : undefined
         }
         onDistance={
-          activity.type === 'experimentation' && m === 'hitbox'
+          podeInteragir && m === 'hitbox'
             ? (distance) => dispatch({ type: 'move', distance })
             : undefined
         }
@@ -228,23 +237,22 @@ export function ExplorationStage({
   // palco compartilhado desenhava a mesma pista para as seis (o triângulo sem função, "removidos"
   // desde a abertura, a floresta escondendo o Dino inteiro), e cada uma precisa ver outra coisa.
   if (m === 'layers')
-    return <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={escondida} />
+    return (
+      <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={valoresEscondidos} />
+    )
   if (m === 'jump-sound')
     return (
       <JumpSoundStage
         state={state}
         cast={cast}
-        onJump={
-          activity.type === 'experimentation'
-            ? (input) => dispatch({ type: 'jump', input })
-            : undefined
-        }
+        onJump={podeInteragir ? (input) => dispatch({ type: 'jump', input }) : undefined}
       />
     )
   if (m === 'spawn') return <SpawnStage state={state} cast={cast} />
   if (m === 'cleanup') return <CleanupStage state={state} cast={cast} />
-  if (m === 'game-state') return <GameStateStage state={state} cast={cast} dispatch={dispatch} />
-  if (m === 'controls') return <ControlsStage state={state} cast={cast} dispatch={dispatch} />
+  if (m === 'game-state')
+    return <GameStateStage state={state} cast={cast} dispatch={podeInteragir} />
+  if (m === 'controls') return <ControlsStage state={state} cast={cast} dispatch={podeInteragir} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em
   // `scene-atelie-stages`, com a nave 32 × 32, a grade do espelho, as duas pedras e a folha da aula.
@@ -257,7 +265,7 @@ export function ExplorationStage({
         state={state}
         cast={cast}
         // ⚠ Na demonstração a criança ASSISTE: sem o toque direto na grade.
-        dispatch={activity.type === 'experimentation' ? dispatch : undefined}
+        dispatch={podeInteragir}
       />
     )
   if (m === 'pixel-vector') return <PixelVectorStage state={state} cast={cast} />
@@ -276,23 +284,9 @@ export function ExplorationStage({
   if (m === 'camera') return <CameraStage state={state} cast={cast} />
   if (m === 'contact') return <ContactStage state={state} cast={cast} />
   if (m === 'cooldown') return <CooldownStage state={state} cast={cast} />
-  if (m === 'aim')
-    return (
-      <AimStage
-        state={state}
-        cast={cast}
-        dispatch={activity.type === 'experimentation' ? dispatch : undefined}
-      />
-    )
+  if (m === 'aim') return <AimStage state={state} cast={cast} dispatch={podeInteragir} />
   if (m === 'diagonal') return <DiagonalStage state={state} cast={cast} />
-  if (m === 'tilemap')
-    return (
-      <TilemapStage
-        state={state}
-        cast={cast}
-        dispatch={activity.type === 'experimentation' ? dispatch : undefined}
-      />
-    )
+  if (m === 'tilemap') return <TilemapStage state={state} cast={cast} dispatch={podeInteragir} />
   // As oito do motor e do 3D (lote 5 do Raio-X): `scene-motor-stages` e `scene-3d-stages`, este pela
   // régua do 3D (`scene-3d.tsx`). As duas do ateliê (`fill-stroke`, `shading`) estão no
   // `scene-atelie-stages` desde o lote 5 (G4).
@@ -315,7 +309,7 @@ export function ExplorationStage({
         state={state}
         cast={cast}
         // ⚠ Na demonstração a criança ASSISTE: sem o toque direto no desenho.
-        dispatch={activity.type === 'experimentation' ? dispatch : undefined}
+        dispatch={podeInteragir}
       />
     )
   if (m === 'score')
@@ -324,7 +318,7 @@ export function ExplorationStage({
         state={state}
         cast={cast}
         // ⚠️ O convite "Toque para começar" é o botão da partida (consertos do review da onda A do lote 5).
-        dispatch={activity.type === 'experimentation' ? dispatch : undefined}
+        dispatch={podeInteragir}
       />
     )
   if (m === 'random') return <RandomStage state={state} cast={cast} />
