@@ -79,7 +79,7 @@ const contendo = (trecho: string) => (_: string, node: Element | null) =>
   !Array.from(node.children).some((filho) => filho.textContent?.includes(trecho))
 
 describe('a prévia antes do palpite', () => {
-  test('mostra somente o palco inicial do leitor de tela, sem controles', () => {
+  test('mostra o palco inicial e apresenta o botão do leitor de tela sem liberá-lo', () => {
     render(
       <ScenePredictionPreview
         activity={{ type: 'experimentation', scene: 'screen-reader' }}
@@ -87,11 +87,15 @@ describe('a prévia antes do palpite', () => {
       />,
     )
     const previa = screen.getByTestId('scene-prediction-preview')
-    expect(previa.getAttribute('role')).toBe('img')
+    expect(previa.getAttribute('role')).toBe('group')
     expect(previa.getAttribute('aria-label')).toContain('Ouvir a tela')
-    expect(previa.className).toContain('[&_button]:hidden')
+    expect(previa.querySelector('[data-preview-stage]')?.getAttribute('role')).toBe('img')
+    expect(previa.querySelector('[data-preview-stage]')?.className).toContain('[&_button]:hidden')
     expect(screen.queryByRole('textbox')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
+    const botao = screen.getByRole('button', { name: 'Ouvir a tela' }) as HTMLButtonElement
+    expect(botao.disabled).toBe(true)
+    expect(botao.getAttribute('aria-describedby')).toBeTruthy()
+    expect(previa.textContent).toContain('Você vai usar este botão depois do seu palpite.')
     expect(screen.queryByRole('meter')).toBeNull()
   })
 
