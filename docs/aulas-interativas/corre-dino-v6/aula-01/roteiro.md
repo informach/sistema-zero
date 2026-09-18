@@ -125,7 +125,7 @@ A seção também pede a cena concluída. Se faltar algo, mostrar o objetivo pen
 
 **Hoje vamos usar:** Ouvir a tela.
 
-**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Antes de apertar “Ouvir a tela”, o que o leitor de tela vai dizer quando ainda não há texto no jogo?”
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Quando você apertar “Ouvir a tela” sem escrever uma descrição do jogo, o que o leitor de tela vai dizer?”
 
 - Um Dino correndo e pulando cactos. (se ela escolher esta, a tela conta depois: “O leitor de tela disse só "Tela do jogo. Imagem."”)
 - Só "Tela do jogo. Imagem." ✓ (o que acontece de verdade)
