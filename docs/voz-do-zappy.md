@@ -4,7 +4,7 @@ As falas do Zappy e as instruções das cenas saem na voz dele, gravada no Eleve
 do sistema operacional da criança. Este é o guia operacional: como ligar, quanto custa, o que fazer
 quando algo não fala.
 
-Decidido e implementado em 17/09/2026.
+Decidido em 17/09/2026; roteiro de pronúncia implementado em 18/09/2026.
 
 ⚠️ **A voz é a do André**, uma criança de 12 anos — é ele que faz o Zappy. No ElevenLabs ela se
 chama `AndrePro` (clonada, pt), id `0zTjt1MBEwfzcDnBGtaL`. Quem trocar a voz um dia troca só a env:
@@ -47,9 +47,9 @@ A licença do ElevenLabs precisa permitir uso comercial e distribuição do áud
 No editor da aula, ao lado de "Revisar para publicar", há o botão **"Gerar a voz do Zappy"**. Ele
 diz quantos blocos estão sem voz; quando está tudo em dia, diz "Voz do Zappy: em dia".
 
-Um clique cuida da aula inteira: **o que já tem voz é reaproveitado, o que teve o texto alterado é
-gerado de novo, e o que ainda não tem é gerado.** Não é preciso saber o que mudou, e rodar duas
-vezes seguidas não custa nada na segunda.
+Um clique cuida da aula inteira: **o que já tem voz é reaproveitado, o que teve o texto ou o roteiro
+alterado é gerado de novo, e o que ainda não tem é gerado.** Não é preciso saber o que mudou, e
+rodar duas vezes seguidas não custa nada na segunda.
 
 O que ganha voz:
 
@@ -60,14 +60,48 @@ O que ganha voz:
 
 Depois de gerar, **publique a aula**: o dicionário viaja no bloco, como qualquer outro conteúdo.
 
+## Ajustar uma pronúncia
+
+Em cada cena e balão há o painel **Como o Zappy fala**. Ele mostra duas colunas:
+
+- **A criança lê**: a frase editorial, sempre a fonte pedagógica e com a grafia correta.
+- **Como o Zappy fala**: o roteiro enviado ao ElevenLabs. Ele só deve mudar quando a prévia mostrar
+  uma pronúncia ruim, uma letra isolada ou quando a frase pedir uma pausa.
+
+Use **Gerar e ouvir** para conferir a voz real. Essa prévia chama a mesma rota e o mesmo cache do
+botão da aula, portanto não há uma voz de teste diferente da voz final. Quando o texto estiver bom,
+clique em **Gerar a voz do Zappy** para gravar o dicionário completo no bloco e publique a aula.
+
+O campo aceita texto normal e apenas pausas curtas neste formato:
+
+```
+Pense um pouco.<break time="0.5s" />Agora tente.
+```
+
+São aceitas pausas de 0,1 a 3 segundos. Não há HTML nem SSML livre no campo.
+
+O perfil padrão já lê **X** como “xis” e **Y** como “ípsilon” quando são letras isoladas. Inglês e
+palavras cuja pronúncia depende da frase ficam no roteiro daquela fala, depois de ouvir a prévia.
+Use **Restaurar padrão** para apagar uma exceção. Se o texto que a criança vê mudar, o ajuste antigo
+é descartado automaticamente: uma pronúncia não pode escapar de uma frase para outra.
+
 ## Como o áudio casa com o texto
 
-⚠️⚠️ **A chave do dicionário é o próprio texto falado**, não um id nem um número de versão. É o que
-evita o pior caso possível: você corrige uma instrução, esquece de regerar, e a criança continua
-ouvindo a frase ERRADA. Não acontece — texto editado não encontra o áudio dele, e a fala volta para
-a voz do navegador até você clicar no botão de novo.
+⚠️⚠️ **A chave do dicionário é o roteiro efetivo do Zappy, com a versão do perfil de pronúncia**,
+nunca um id de bloco. A frase visível fica para a criança ler e para a contingência do navegador;
+o roteiro é o que encontra o MP3. Assim, corrigir uma instrução ou a pronúncia dela não encontra o
+áudio antigo: até gerar de novo, a cena inteira cai para a voz do navegador em vez de misturar duas
+vozes.
 
-Pelo mesmo motivo o botão sabe sozinho o que está desatualizado, sem guardar nenhum controle.
+O arquivo no R2 também incorpora voz, modelo, versão do perfil e roteiro. Pelo mesmo motivo o botão
+sabe sozinho o que está desatualizado, sem guardar nenhum controle.
+
+### Primeira geração depois desta mudança
+
+O formato anterior do dicionário não é aceito pelo player novo. Como as aulas interativas ainda não
+foram publicadas para alunos, não há migração nem compatibilidade legada: abra cada aula que tenha
+voz, clique **Gerar a voz do Zappy** e publique. Os MP3 que coincidirem no cache são reaproveitados;
+as falas cujo roteiro mudou serão sintetizadas de novo.
 
 ## O que NÃO ganha voz do Zappy, e por quê
 
@@ -101,14 +135,19 @@ procedimento estão em `aulas-interativas/raio-x-implantacao.md`.)
 1. **O botão não aparece na aula**: a aula não tem bloco de fala do Zappy nem cena.
 2. **O botão responde "indisponível"**: falta `ELEVENLABS_API_KEY` no admin (503), ou a cota do
    ElevenLabs acabou. O detalhe do erro fica no log do admin.
-3. **O botão diz "em dia" mas a criança não ouve o Zappy**: a fala daquele momento inclui um trecho
-   dinâmico (pista pedida, legenda de parte) — é o comportamento esperado, descrito acima.
-4. **Algumas frases não saíram**: o toast diz quantas. Uma frase que falha não derruba as outras;
+3. **O botão diz "em dia" mas a criança não ouve o Zappy**: confira primeiro se a aula foi gerada
+   depois da mudança de roteiro. Se foi, aquela fala provavelmente inclui um trecho dinâmico (pista
+   pedida, legenda de parte) — é o comportamento esperado, descrito acima.
+4. **A pronúncia saiu errada**: abra **Como o Zappy fala**, escreva a pronúncia como ela deve soar,
+   use pontuação ou uma pausa curta se ajudar, clique **Gerar e ouvir** e depois gere a aula inteira.
+5. **A prévia toca, mas a aula ainda usa a voz do navegador**: a prévia não publica o dicionário;
+   clique **Gerar a voz do Zappy** e publique a aula.
+6. **Algumas frases não saíram**: o toast diz quantas. Uma frase que falha não derruba as outras;
    clique de novo e só as que faltam são tentadas.
-5. **O Zappy fica parado enquanto o áudio toca**: ele cai no desenho estático quando o aparelho
+7. **O Zappy fica parado enquanto o áudio toca**: ele cai no desenho estático quando o aparelho
    pediu menos movimento (`prefers-reduced-motion`), quando a economia de dados está ligada ou se o
    Rive não subiu. Com o Rive no ar, a boca anda em laço do primeiro ao último segundo do áudio.
-6. **O Zappy se mexe sem ninguém apertar nada**: é o esperado nos balões SEM botão "Ouvir" (pista,
+8. **O Zappy se mexe sem ninguém apertar nada**: é o esperado nos balões SEM botão "Ouvir" (pista,
    retorno da resposta, instrução sem voz gravada) e nos balões em que a autora escolheu outra cara
    que não "falando". A voz rege só a boca da pose "falando".
 
@@ -120,14 +159,15 @@ procedimento estão em `aulas-interativas/raio-x-implantacao.md`.)
 | A geração (ElevenLabs + R2) | `packages/admin/src/server/voz-zappy.ts` |
 | A rota | `packages/admin/src/app/api/media/voz-zappy/route.ts` |
 | O botão | `packages/admin/src/components/editor/voz-zappy-button.tsx` |
+| O painel de pronúncia | `packages/admin/src/components/editor/zappy-speech-editor.tsx` |
 | O "Ouvir" da cena | `packages/member-shell/src/components/use-scene-voice.ts` |
 | O balão que fala | `packages/member-shell/src/components/dialogue-block.tsx` |
 | A boca do Zappy (contexto) | `packages/member-shell/src/components/zappy-fala-context.tsx` |
 | O mascote animado | `packages/community-kids/src/components/kids/mascot-rive*.tsx` + `public/zappy/fala.riv` |
 
 Os MP3 ficam no bucket R2 **público**, em `aulas/voz/<hash>.mp3`, com cache imutável. O hash cobre o
-texto, a voz e o modelo: trocar a voz do Zappy um dia não quebra nada no ar — as frases antigas
-continuam existindo e as novas nascem em arquivo próprio.
+roteiro efetivo, o perfil, a voz e o modelo: trocar qualquer um deles não quebra nada no ar — os
+arquivos antigos continuam existindo e as novas falas nascem em arquivo próprio.
 
 ## Full review (correções) — 17/09/2026
 

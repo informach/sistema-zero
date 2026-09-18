@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
+import { chaveDeVoz } from '@sistemazero/core/learning/scene'
 import { Elysia, getSchemaValidator, t } from 'elysia'
 import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
 
@@ -529,18 +530,19 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
   })
 
   /**
-   * ⚠⚠ A voz do Zappy é um `Record` de chaves ARBITRÁRIAS (a chave é o texto falado), que é
-   * justamente a forma que o `normalize` do Elysia costuma podar. Sem esta prova, a publicação
-   * gravaria o bloco sem o dicionário — aceita, sem erro nenhum — e a cena voltaria à voz do
-   * navegador sem ninguém saber por quê. É a armadilha que este arquivo já documentou três vezes.
+   * ⚠⚠ A voz do Zappy é um `Record` de chaves ARBITRÁRIAS, agora derivadas do roteiro efetivo e
+   * versionadas pelo perfil de pronúncia. É justamente a forma que o `normalize` do Elysia costuma
+   * podar. Sem esta prova, a publicação gravaria o bloco sem o dicionário — aceita, sem erro nenhum
+   * — e a cena voltaria à voz do navegador sem ninguém saber por quê.
    */
   test('o `normalize` do Elysia não apaga `vozes` (chaves arbitrárias sobrevivem)', async () => {
     const app = new Elysia().post('/', ({ body }) => body, {
       body: t.Object({ content: InteractiveBlockSchema }),
     })
     const vozes = {
-      'Crie o Dino e ligue o desenho.': 'https://cdn.test/aulas/voz/abc.mp3',
-      'Antes de mexer. Onde fica o Dino? Pode ser: Nos bastidores.': '/aulas/voz/def.mp3',
+      [chaveDeVoz('Crie o Dino e ligue o desenho.')]: 'https://cdn.test/aulas/voz/abc.mp3',
+      [chaveDeVoz('Antes de mexer. Onde fica o Dino? Pode ser: Nos bastidores.')]:
+        '/aulas/voz/def.mp3',
     }
     const bloco: InteractiveBlock = {
       ...base,
