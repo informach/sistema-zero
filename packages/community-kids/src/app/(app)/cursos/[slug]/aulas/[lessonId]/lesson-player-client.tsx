@@ -194,9 +194,10 @@ export function LessonPlayer({
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
-      renderInstruction: (text, pose = 'speaking') => (
+      renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
           content={{ kind: 'dialogue', text, pose }}
+          speech={speech}
           mascot={
             /* Mudo pelo mesmo motivo do bloco `dialogue` (ver kids-lesson-blocks):
                instrução de seção é estado, e há uma por seção. */

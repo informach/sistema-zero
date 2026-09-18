@@ -79,7 +79,7 @@ export interface SceneGoal {
 }
 
 /** Partes do palco que poderiam entregar a resposta antes de a criança apostar. */
-export type ScenePredictionPreviewConceal = 'layers-order'
+export type ScenePredictionPreviewConceal = 'layers-order' | 'camera-colors'
 
 /** A prévia é sempre o começo real da cena, com redactions declaradas quando necessárias. */
 export interface ScenePredictionPreview {
@@ -3075,7 +3075,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'delta-time': PREVIA_INICIAL,
   'circle-collision': PREVIA_INICIAL,
   'axis-z': PREVIA_INICIAL,
-  'camera-3d': PREVIA_INICIAL,
+  'camera-3d': { initial: true, conceal: ['camera-colors'] },
   mesh: PREVIA_INICIAL,
   'pick-ray': PREVIA_INICIAL,
   'fill-stroke': PREVIA_INICIAL,

@@ -136,6 +136,11 @@ describe('M1 · a pista congela no clique e vira "Feito" quando a meta dela cai'
 
 describe('M2 · os avisos da descoberta ficam SOBRE o palco, sem vão reservado no fluxo', () => {
   const PALPITE: NonNullable<InteractiveBlock['prediction']> = {
+    context: {
+      label: 'Bastidores e tela do jogo',
+      explanation:
+        'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+    },
     prompt: 'Você cria e não liga o desenho. O que aparece?',
     choices: [
       { id: 'aparece', label: 'O Dino aparece', shows: 'Olhe a tela: ela ficou vazia.' },
@@ -209,6 +214,7 @@ describe('M3 · a faixa e a frase reservam a MAIOR altura que a cena atinge, ant
     )
     try {
       const { container } = abrir(bloco({ type: 'experimentation', scene: 'world' }))
+      await palpitar('world')
       const faixa = () => container.querySelector<HTMLElement>('[data-lugar-reservado="faixa"]')
       await waitFor(() => expect(faixa()?.style.minHeight).toBe('69px'))
       expect(naFaixa('bastidores')).toBe('vazio')
@@ -221,6 +227,7 @@ describe('M3 · a faixa e a frase reservam a MAIOR altura que a cena atinge, ant
     const restaurar = medidasFalsas((texto) => (texto.length > 45 ? 40 : 20))
     try {
       const { container } = abrir(bloco({ type: 'experimentation', scene: 'draw-loop' }))
+      await palpitar('draw-loop')
       const frase = () => container.querySelector<HTMLElement>('[data-lugar-reservado="situacao"]')
       await waitFor(() => expect(frase()?.style.minHeight).toBe('40px'))
     } finally {
@@ -249,40 +256,38 @@ describe('M4 · layers: "Descobertas 2 de 3" até a terceira troca, sem "2 de 2"
   })
 })
 
-describe('M6 · o que o desenho diz a quem não enxerga segue o véu do palpite', () => {
+describe('M6 · a prévia segura mostra a cena sem antecipar a descoberta', () => {
   const noop = () => {}
-  test('layers: a descrição e a pilha escondem a ordem com o palpite pendente', () => {
+
+  test('layers: os desenhos aparecem separados e a bancada ainda não existe', () => {
     const activity: SceneActivity = { type: 'experimentation', scene: 'layers' }
     const estado = openScene({ scene: 'layers' })
     const { container } = render(
-      <>
-        <ExplorationStage activity={activity} state={estado} dispatch={noop} escondida />
-        <ExplorationPieces
-          activity={activity}
-          state={estado}
-          dispatch={noop}
-          more={false}
-          escondida
-        />
-      </>,
+      <ExplorationStage
+        activity={activity}
+        state={estado}
+        preview={{ initial: true, conceal: ['layers-order'] }}
+      />,
     )
     expect(container.querySelector('desc')?.textContent).toBe(
-      'A ordem de desenhar, ainda escondida.',
+      'O Dino e a floresta aparecem separados. Você vai descobrir qual fica na frente.',
     )
     expect(container.textContent).not.toContain('A floresta fica na frente')
-    expect(screen.getByRole('button', { name: 'Descer ? para o 2º lugar' })).toBeTruthy()
-    const pilha = container.querySelector('ol[data-pilha]')
-    expect(pilha?.querySelector('.sr-only')?.textContent).toBe('1º a desenhar: ?')
+    expect(screen.queryByRole('button', { name: /^Descer / })).toBeNull()
   })
 
-  test('camera-3d: sem contar as cores (nem o rodapé) até o palpite', () => {
+  test('camera-3d: a prévia não conta as cores nem entrega a regra do cubo', () => {
     const activity: SceneActivity = { type: 'experimentation', scene: 'camera-3d' }
     const estado = openScene({ scene: 'camera-3d' })
     const { container, rerender } = render(
-      <ExplorationStage activity={activity} state={estado} dispatch={noop} escondida />,
+      <ExplorationStage
+        activity={activity}
+        state={estado}
+        preview={{ initial: true, conceal: ['camera-colors'] }}
+      />,
     )
     expect(container.textContent).not.toMatch(/cores?\b|mesma cor/)
-    rerender(<ExplorationStage activity={activity} state={estado} dispatch={noop} />)
+    rerender(<ExplorationStage activity={activity} state={estado} dispatch={() => {}} />)
     expect(container.textContent).toContain('Lados opostos têm a mesma cor.')
   })
 

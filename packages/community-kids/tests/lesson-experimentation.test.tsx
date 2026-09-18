@@ -494,13 +494,13 @@ describe('a previsão sobe junto da tentativa', () => {
         <InteractiveLessonBlock block={{ ...block('layers'), content: comPrevisao }} />
       </LessonPlayerProvider>,
     )
-    // Antes do palpite a cena está fechada: o botão da montagem é herdeiro do fieldset.
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a ordem de desenhar é uma pilha com "Descer"/"Subir".
-    const depois = await screen.findByRole('button', { name: /^Descer / })
-    expect(depois.closest('fieldset')?.disabled).toBe(true)
+    // Antes do palpite não há botão de montagem, nem versão desativada dele.
+    expect(screen.queryByRole('button', { name: /^Descer / })).toBeNull()
     // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
-    fireEvent.click(screen.getByRole('button', { name: 'Quem foi desenhado antes' }))
-    await waitFor(() => expect(depois.closest('fieldset')?.disabled).toBe(false))
+    const escolha = await screen.findByRole('button', { name: 'Quem foi desenhado antes' })
+    await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
+    fireEvent.click(escolha)
+    await screen.findByRole('button', { name: /^Descer / })
     await trocarOrdem(3)
     await waitFor(() => expect(screen.getByText('✓ Guardado')).toBeTruthy(), {
       timeout: 5000,
@@ -704,46 +704,33 @@ function relogioManual() {
 }
 
 describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
-  test('⚠️⚠️ com `revealOn`: palco coberto, palpite congelado no gesto e retomado quando a meta cai', async () => {
+  test('⚠️⚠️ o palpite apresenta o assunto antes de montar a descoberta, e trocar fecha tudo de novo', async () => {
     servidorQueCorrige(mundoComPalpite('hidden'))
     aluno(mundoComPalpite('hidden'))
-    // 1. Palco coberto, com o motivo ligado; a pergunta mora DENTRO do `legend`.
-    const legenda = await screen.findByText('Você cria e não liga o desenho. O que aparece?')
-    expect(legenda.closest('legend')?.textContent).toContain('Antes de mexer')
-    const trava = screen
-      .getByRole('button', { name: '＋ Criar Dino' })
-      .closest('fieldset[disabled]')
-    expect(trava).toBeTruthy()
-    const descrito = [...document.querySelectorAll('fieldset[aria-describedby]')].find((f) =>
-      f.contains(trava),
-    )
-    expect(
-      document.getElementById(descrito?.getAttribute('aria-describedby') ?? '')?.textContent,
-    ).toBe('Primeiro, seu palpite ↑')
-    const conferir = screen.getByRole('button', { name: 'Conferir' })
-    await waitFor(() => expect(conferir.getAttribute('aria-disabled')).toBe('true'))
-    // 2. Escolher congela numa linha, e "trocar" existe só até o primeiro gesto.
-    // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
-    fireEvent.click(screen.getByRole('button', { name: 'O Dino aparece' }))
+    expect(await screen.findByText('Seu palpite')).toBeTruthy()
+    expect(screen.getByText('Bastidores e tela do jogo')).toBeTruthy()
+    expect(screen.getByText('Hoje vamos usar:')).toBeTruthy()
+    expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '＋ Criar Dino' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
+    expect(screen.queryByRole('meter')).toBeNull()
+
+    const escolha = screen.getByRole('button', { name: 'O Dino aparece' })
+    await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
+    fireEvent.click(escolha)
     await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
-    fireEvent.click(screen.getByRole('button', { name: 'trocar' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy())
-    expect(screen.queryByText(/Você achou/)).toBeNull()
-    // 3 e 4. O gesto que derruba a meta `hidden` retoma o palpite, com o "para onde olhar".
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
-    await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
-    expect(screen.queryByRole('button', { name: 'trocar' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'O Dino aparece' })).toBeNull()
-    await waitFor(() => expect(anunciado()).toContain(retomado))
-    // O aviso da descoberta, colado ao palco e depois do gesto.
-    expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy()
-    // ⚠️ E o palpite fica guardado no PERFIL (não na aba), com a impressão da pergunta.
-    expect(
-      JSON.parse(localStorage.getItem('sz:scene-prediction:crianca-moldura:aula:bloco:rev') ?? '{}')
-        .escolha,
-    ).toBe('aparece')
+    expect(await screen.findByRole('button', { name: '＋ Criar Dino' })).toBeTruthy()
+    expect(document.activeElement?.textContent).toContain(SCENE_MODELS.world.instruction)
+    expect(screen.getByRole('button', { name: 'Trocar meu palpite' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Trocar meu palpite' }))
+    await waitFor(() => expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy())
+    expect(screen.queryByRole('button', { name: '＋ Criar Dino' })).toBeNull()
+    expect(document.activeElement?.textContent).toContain(
+      'Nesta experiência, vamos comparar o que existe nos bastidores',
+    )
+    expect(localStorage.getItem('sz:scene-prediction:crianca-moldura:aula:bloco:rev')).toBeNull()
   })
 
   test('⚠️ sem `revealOn`, o palpite só volta quando a cena CONCLUI, e o acerto é verde', async () => {
@@ -890,6 +877,7 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
     const bloco = content('world')
     servidorQueCorrige(bloco)
     aluno(bloco, { hintsUsed: 2 })
+    await palpitar('world')
     expect(await screen.findByText('Pista 2 de 3.')).toBeTruthy()
   })
 
@@ -927,7 +915,7 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
     expect(SCENE_IDS.some((s) => sceneEmitsSound(s))).toBe(true)
   })
 
-  test('⭐ "Ouvir" lê a instrução e a pista na voz pt-BR do navegador, sem áudio gravado', async () => {
+  test('⭐ "Ouvir" lê somente a instrução na voz pt-BR do navegador, sem áudio gravado', async () => {
     const falas: { texto: string; lang: string }[] = []
     const janela = window as unknown as Record<string, unknown>
     const vozOriginal = janela.speechSynthesis
@@ -955,7 +943,7 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
       expect(falas.every((f) => f.lang === 'pt-BR')).toBe(true)
       const lido = falas.map((f) => f.texto).join(' ')
       expect(lido).toContain(SCENE_MODELS.world.instruction.slice(0, 20))
-      expect(lido).toContain(SCENE_MODELS.world.hints[0]?.slice(0, 15) as string)
+      expect(lido).not.toContain(SCENE_MODELS.world.hints[0]?.slice(0, 15) as string)
     } finally {
       janela.speechSynthesis = vozOriginal
       janela.SpeechSynthesisUtterance = falaOriginal
@@ -1069,11 +1057,11 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
 
 /** O primeiro palpite do MODELO da cena: escolher abre o palco. */
 async function palpitar(scene: SceneId) {
-  fireEvent.click(
-    await screen.findByRole('button', {
-      name: SCENE_QUESTIONS[scene].prediction.choices[0]?.label as string,
-    }),
-  )
+  const escolha = await screen.findByRole('button', {
+    name: SCENE_QUESTIONS[scene].prediction.choices[0]?.label as string,
+  })
+  await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
+  fireEvent.click(escolha)
   await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
 }
 /** A resposta de uma escolha da pergunta final, pelo rótulo. */
@@ -1274,26 +1262,19 @@ describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () =
 })
 
 describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
-  test('⚠️⚠️ o véu trava também o gesto DIRETO no desenho (tocar e apertar Espaço no Dino)', async () => {
+  test('⚠️⚠️ antes do palpite o gesto direto do Dino nem é montado', async () => {
     // Aula 3: "Toque no Dino para pular" deixava a criança ver a resposta antes de palpitar.
     const bloco = content('gravity')
     const { enviados } = servidorQueCorrige(bloco)
     aluno(bloco)
-    // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): "Fazer o Dino pular".
-    const dino = await screen.findByRole('button', { name: 'Fazer o Dino pular' })
-    expect(dino.closest('[inert]')).toBeTruthy()
-    const frase = () => document.querySelector('p.min-h-6.text-center')?.textContent
-    const antes = frase()
-    fireEvent.click(dino)
-    fireEvent.keyDown(dino, { code: 'Space' })
-    // ⚠️ Mudou de propósito (full review de 16/09/2026): a gravação é forçada em vez de 1,3 s reais.
+    expect(await screen.findByTestId('scene-prediction-preview')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Fazer o Dino pular' })).toBeNull()
     await forcarAGravacao()
-    expect(frase()).toBe(antes)
     for (const e of enviados.filter((x) => x.url.endsWith('/learning-progress')))
       expect(JSON.stringify(e.body)).not.toContain('jump')
   })
 
-  test('⚠️⚠️ palpite guardado de uma pergunta que NÃO existe mais reabre o véu', async () => {
+  test('⚠️⚠️ palpite guardado de uma pergunta que NÃO existe mais volta ao momento do palpite', async () => {
     // O lote 2 trocou os ids de 22 previsões do modelo. Com o id morto no `localStorage`, o palco
     // abria destrancado com as opções à vista, e o id morto subia na tentativa.
     const bloco = content('world')
@@ -1303,7 +1284,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       JSON.stringify({ escolha: 'id-velho', pergunta: 'outra pergunta' }),
     )
     aluno(bloco)
-    expect(await screen.findByText(/Primeiro, seu palpite/)).toBeTruthy()
+    expect(await screen.findByText('Seu palpite')).toBeTruthy()
     cleanup()
     // O mesmo id de hoje, mas guardado para OUTRA pergunta (a `game-state` manteve os ids e mudou o
     // sentido): também reabre.
@@ -1315,7 +1296,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       }),
     )
     aluno(bloco)
-    expect(await screen.findByText(/Primeiro, seu palpite/)).toBeTruthy()
+    expect(await screen.findByText('Seu palpite')).toBeTruthy()
     cleanup()
     // E o palpite da pergunta de HOJE volta com a criança.
     localStorage.clear()
@@ -1332,17 +1313,19 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     }
   })
 
-  test('⚠️⚠️ as opções são BOTÕES e o foco vai para a linha do palpite', async () => {
+  test('⚠️⚠️ as opções são BOTÕES e o foco segue para o balão da descoberta', async () => {
     // Num grupo de rádios a seta do teclado já escolhia: uma seta fechava o cartão e o foco caía no
     // nada, sem a criança ouvir a segunda opção.
     const bloco = content('world')
     servidorQueCorrige(bloco)
     aluno(bloco)
-    await screen.findByText(SCENE_QUESTIONS.world.prediction.prompt)
+    await screen.findByRole('button', {
+      name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
+    })
     expect(screen.queryAllByRole('radio')).toHaveLength(0)
     await palpitar('world')
     await waitFor(() =>
-      expect(document.activeElement?.closest('p')?.textContent).toContain('Seu palpite:'),
+      expect(document.activeElement?.textContent).toContain(SCENE_MODELS.world.instruction),
     )
     await waitFor(() => expect(anunciado()).toContain('A cena abriu.'))
   })
@@ -1395,36 +1378,57 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     expect(screen.queryByText('Antes de mexer') === null).toBe(true)
   })
 
-  test('⚠️ pedir pista depois do palpite NÃO apaga o "trocar", e "Recomeçar" antes dele não conta', async () => {
+  test('⚠️ antes do palpite não há ferramentas, e uma pista depois dele não apaga o trocar', async () => {
     const bloco = content('world')
     servidorQueCorrige(bloco)
     aluno(bloco)
-    await screen.findByText(/Primeiro, seu palpite/)
-    // Antes do palpite, "Recomeçar", "Desfazer" e "Uma pista" ficam FECHADOS com o motivo.
+    await screen.findByText('Seu palpite')
+    // Antes do palpite, nenhuma ferramenta da descoberta é montada.
     for (const nome of ['Recomeçar', 'Uma pista']) {
-      const botao = screen.getByRole('button', { name: nome })
-      expect(botao.getAttribute('aria-disabled')).toBe('true')
-      fireEvent.click(botao)
+      expect(screen.queryByRole('button', { name: nome })).toBeNull()
     }
     await palpitar('world')
-    expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Trocar meu palpite' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
     expect(await screen.findByText('Pista 1 de 3.')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'trocar' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Trocar meu palpite' })).toBeTruthy()
   })
 
-  test('⚠️ a demonstração inline com previsão escrita pelo professor não toca antes do palpite', async () => {
+  test('⚠️ a demonstração inline com previsão escrita pelo professor só monta o controle depois do palpite', async () => {
     const bloco: InteractiveBlock = {
       ...mundoComPalpite(),
       activity: { type: 'demonstration', scene: 'world', presentation: 'inline' },
     }
     servidorQueCorrige(bloco)
     aluno(bloco)
-    const ver = await screen.findByRole('button', { name: /Ver acontecer/ })
-    expect(ver.getAttribute('aria-disabled')).toBe('true')
+    expect(screen.queryByRole('button', { name: /Ver acontecer/ })).toBeNull()
+    fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
+    expect(await screen.findByRole('button', { name: /Ver acontecer/ })).toBeTruthy()
+  })
+
+  test('⚠️⚠️ o palpite do leitor de tela apresenta o recurso antes de perguntar', async () => {
+    const bloco: InteractiveBlock = {
+      ...content('screen-reader'),
+      prediction: SCENE_QUESTIONS['screen-reader'].prediction,
+    }
+    servidorQueCorrige(bloco)
+    aluno(bloco)
+
     expect(
-      document.getElementById(ver.getAttribute('aria-describedby') ?? '')?.textContent,
-    ).toMatch(/Primeiro, seu palpite/)
+      await screen.findByText(
+        (_, node) =>
+          node?.tagName === 'P' &&
+          node.textContent?.startsWith(
+            'Nesta experiência, vamos usar o botão “Ouvir a tela”. Ele lê em voz alta o que aparece no jogo.',
+          ) === true,
+      ),
+    ).toBeTruthy()
+    expect(screen.getByText('Hoje vamos usar:')).toBeTruthy()
+    expect(screen.getByText('Ouvir a tela')).toBeTruthy()
+    expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
+
+    await palpitar('screen-reader')
+    expect(await screen.findByLabelText('Descrição do jogo')).toBeTruthy()
   })
 })
 
@@ -1743,14 +1747,15 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
     })
   })
 
-  test('⚠️ layers (MÉDIO): com o palpite pendente, a faixa não mostra a ordem (a regra se deduzia)', async () => {
+  test('⚠️ layers (MÉDIO): antes do palpite só a prévia mostra os desenhos separados', async () => {
     aluno(content('layers'))
     await screen.findByRole('button', {
       name: SCENE_QUESTIONS.layers.prediction.choices[0]?.label as string,
     })
-    const faixa = document.querySelector('dl') as HTMLElement
-    expect(faixa.textContent).toContain('?')
-    expect(faixa.textContent).not.toMatch(/floresta/i)
+    expect(document.querySelector('dl')).toBeNull()
+    const previa = screen.getByTestId('scene-prediction-preview')
+    expect(previa.querySelector('desc')?.textContent).toContain('aparecem separados')
+    expect(previa.textContent).not.toContain('A floresta fica na frente')
   })
 
   test('⚠️⚠️ T3: começar a partida pelo palco leva o foco à bancada, e não ao body', async () => {

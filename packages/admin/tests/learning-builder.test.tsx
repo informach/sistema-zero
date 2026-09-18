@@ -188,6 +188,18 @@ test('⚠️ o bloco NOVO já nasce com o texto do modelo', () => {
   expect(isInteractiveBlock(EMPTY_LEARNING)).toBe(true)
 })
 
+test('a previsão própria começa com o contexto claro da cena', async () => {
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    await b.marcar('Escrever a minha previsão')
+    expect(b.value.prediction?.context).toEqual(SCENE_QUESTIONS.world.prediction.context)
+    expect(b.texto).toContain('O que vamos usar')
+    expect(b.texto).toContain('Como apresentar antes do palpite')
+  } finally {
+    await b.fechar()
+  }
+})
+
 test('⚠️ passar por outro tipo e voltar devolve o roteiro escrito à mão', async () => {
   // Os quatro cartões são UM grupo de rádio, e a seta do teclado já seleciona ao passar: ir de
   // Demonstração até HTML atravessa os outros dois. Cada passagem apagava o roteiro autoral.

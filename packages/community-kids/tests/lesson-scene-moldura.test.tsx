@@ -212,6 +212,11 @@ describe('T2 · o lugar que só cresce (a peça da moldura)', () => {
 
 describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio do gesto', () => {
   const PALPITE: NonNullable<InteractiveBlock['prediction']> = {
+    context: {
+      label: 'Bastidores e tela do jogo',
+      explanation:
+        'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+    },
     prompt: 'Você cria e não liga o desenho. O que aparece?',
     choices: [
       { id: 'aparece', label: 'O Dino aparece', shows: 'Olhe a tela: ela ficou vazia.' },

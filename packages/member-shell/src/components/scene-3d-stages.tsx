@@ -212,16 +212,12 @@ function CameraNoMapa({ x, y, angulo }: { x: number; y: number; angulo: number }
 export function Camera3dStage({
   state,
   cast,
-  escondida = false,
+  ocultarContagem = false,
 }: {
   state: SceneState
   cast?: SceneCast
-  /**
-   * O palpite ainda não veio (full review de experiência, M6): a descrição dizia "Daqui aparecem 2 cores"
-   * e o rodapé "Lados opostos têm a mesma cor." embaixo de "quantas cores você vê?". Sem os dois até o
-   * palpite; depois voltam, porque contar as cores é a TAREFA de quem não enxerga também.
-   */
-  escondida?: boolean
+  /** A prévia não entrega quantas cores a criança vai descobrir ao girar a câmera. */
+  ocultarContagem?: boolean
 }) {
   const { yaw, pitch } = state.orbit
   const faces = cuboGirado(
@@ -247,8 +243,8 @@ export function Camera3dStage({
       titulo="O cubo visto de onde a câmera está, e a câmera vista de cima"
       // ⚠️ A descrição CONTA as cores: é o que quem não enxerga recebe no lugar do desenho. Para quem
       // vê, a contagem saiu do desenho e da faixa (é a tarefa da cena).
-      descricao={`A câmera está na volta ${yaw + 1} de 8, ${NOME_DA_ALTURA[pitch] ?? 'no meio'}.${escondida ? '' : ` Daqui ${vistas === 1 ? 'aparece' : 'aparecem'} ${quantos(vistas, 'cor', 'cores')}.`}`}
-      rodape={escondida ? undefined : 'Lados opostos têm a mesma cor.'}
+      descricao={`A câmera está na volta ${yaw + 1} de 8, ${NOME_DA_ALTURA[pitch] ?? 'no meio'}.${ocultarContagem ? '' : ` Daqui ${vistas === 1 ? 'aparece' : 'aparecem'} ${quantos(vistas, 'cor', 'cores')}.`}`}
+      rodape={ocultarContagem ? undefined : 'Lados opostos têm a mesma cor.'}
     >
       {(palco) => (
         <>

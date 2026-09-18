@@ -171,24 +171,19 @@ export function ExplorationStage({
   activity,
   state,
   dispatch,
-  escondida = false,
   preview,
 }: {
   activity: SceneActivity
   state: SceneState
   dispatch?: (action: SceneAction) => void
-  /**
-   * O palpite ainda não veio (full review de experiência, M6): o desenho que escreve a resposta para quem
-   * não enxerga (a descrição da `layers`) segue o `valoresEscondidos` da faixa.
-   */
-  escondida?: boolean
   /** A prévia só mostra o palco inicial, sem entregar controles ou a resposta do palpite. */
   preview?: ScenePredictionPreview
 }) {
   const m = activity.scene
   const cast = activity.cast
   const podeInteragir = activity.type === 'experimentation' && !preview ? dispatch : undefined
-  const valoresEscondidos = escondida || preview?.conceal.includes('layers-order') === true
+  const ocultarOrdemDasCamadas = preview?.conceal.includes('layers-order') === true
+  const ocultarCoresDaCamera = preview?.conceal.includes('camera-colors') === true
   // ⚠️ As duas cenas de 14/09/2026 têm palco PRÓPRIO: uma é sobre o sistema de coordenadas da
   // tela e a outra sobre o que uma pessoa que não vê a tela recebe. Nenhuma das duas cabe no
   // palco compartilhado (chão, árvores, pista), que é sobre o mundo do jogo.
@@ -224,11 +219,13 @@ export function ExplorationStage({
         state={state}
         // ⚠ Na demonstração a criança ASSISTE: sem gesto direto no desenho.
         onJump={
-          podeInteragir && m !== 'hitbox' ? (input) => dispatch({ type: 'jump', input }) : undefined
+          podeInteragir && m !== 'hitbox'
+            ? (input) => podeInteragir({ type: 'jump', input })
+            : undefined
         }
         onDistance={
           podeInteragir && m === 'hitbox'
-            ? (distance) => dispatch({ type: 'move', distance })
+            ? (distance) => podeInteragir({ type: 'move', distance })
             : undefined
         }
       />
@@ -238,14 +235,19 @@ export function ExplorationStage({
   // desde a abertura, a floresta escondendo o Dino inteiro), e cada uma precisa ver outra coisa.
   if (m === 'layers')
     return (
-      <LayersStage state={state} cast={cast} pilha={activity.pilha} escondida={valoresEscondidos} />
+      <LayersStage
+        state={state}
+        cast={cast}
+        pilha={activity.pilha}
+        ocultarOrdem={ocultarOrdemDasCamadas}
+      />
     )
   if (m === 'jump-sound')
     return (
       <JumpSoundStage
         state={state}
         cast={cast}
-        onJump={podeInteragir ? (input) => dispatch({ type: 'jump', input }) : undefined}
+        onJump={podeInteragir ? (input) => podeInteragir({ type: 'jump', input }) : undefined}
       />
     )
   if (m === 'spawn') return <SpawnStage state={state} cast={cast} />
@@ -295,7 +297,8 @@ export function ExplorationStage({
   if (m === 'delta-time') return <DeltaTimeStage state={state} cast={cast} />
   if (m === 'circle-collision') return <CircleCollisionStage state={state} cast={cast} />
   if (m === 'axis-z') return <AxisZStage state={state} cast={cast} />
-  if (m === 'camera-3d') return <Camera3dStage state={state} cast={cast} escondida={escondida} />
+  if (m === 'camera-3d')
+    return <Camera3dStage state={state} cast={cast} ocultarContagem={ocultarCoresDaCamera} />
   if (m === 'mesh') return <MeshStage state={state} cast={cast} />
   if (m === 'pick-ray') return <PickRayStage state={state} cast={cast} />
   if (m === 'fill-stroke') return <FillStrokeStage state={state} cast={cast} />

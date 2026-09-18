@@ -18,7 +18,6 @@ export function ExplorationPieces({
   more,
   travada = false,
   pontoPorAcerto = false,
-  escondida = false,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -32,8 +31,6 @@ export function ExplorationPieces({
    * causa do Corre Dino, logo depois de a criança ver a do jogo dela. Com o roteiro atirando, ele sai.
    */
   pontoPorAcerto?: boolean
-  /** O palpite ainda não veio: o que a bancada diria ao leitor de tela fica "?" (ver `DinoSceneControls`). */
-  escondida?: boolean
 }) {
   const m = activity.scene
   // ⚠️ O helper `connection` (o fio) SAIU (full review de experiência, M8): as `lives` eram as últimas
@@ -89,7 +86,6 @@ export function ExplorationPieces({
           dispatch={dispatch}
           more={more}
           travada={travada}
-          escondida={escondida}
         />
       )}
       {m === 'lives' && (

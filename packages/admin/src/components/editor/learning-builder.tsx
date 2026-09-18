@@ -7,6 +7,7 @@ import {
   type InteractiveBlock,
   type LearningActivity,
   type LearningChoice,
+  type LearningPrediction,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
@@ -45,6 +46,13 @@ const initialChoices = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
   { id: 'second', label: 'Segunda possibilidade' },
 ]
+
+/** Uma previsão própria só publica depois de apresentar claramente o assunto da descoberta. */
+const initialPrediction = (): LearningPrediction => ({
+  context: { label: '', explanation: '' },
+  prompt: '',
+  choices: initialChoices(),
+})
 
 /**
  * ⚠⚠ O que o PROFESSOR escreve não passa pelo elenco — e com o campo nascendo já preenchido
@@ -590,7 +598,7 @@ export function LearningBuilder({
                   // o professor que clicasse para "dar uma olhada" trocava uma pergunta pronta
                   // por uma incompleta — e a aula parava de publicar por causa disso.
                   prediction: e.target.checked
-                    ? (heranca.previsao ?? { prompt: '', choices: initialChoices() })
+                    ? (heranca.previsao ?? initialPrediction())
                     : undefined,
                 })
               }
@@ -620,6 +628,54 @@ export function LearningBuilder({
           {previsao && (
             <>
               {cena?.cast ? <AvisoDeElenco campo="na previsão" /> : null}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field
+                  label="O que vamos usar"
+                  htmlFor={`${id}-prediction-context-label`}
+                  error={
+                    previsao.context.label.trim()
+                      ? undefined
+                      : 'Dê um nome claro ao recurso ou ideia da descoberta.'
+                  }
+                >
+                  <Input
+                    id={`${id}-prediction-context-label`}
+                    value={previsao.context.label}
+                    onChange={(e) =>
+                      onChange({
+                        ...value,
+                        prediction: {
+                          ...previsao,
+                          context: { ...previsao.context, label: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label="Como apresentar antes do palpite"
+                  htmlFor={`${id}-prediction-context-explanation`}
+                  error={
+                    previsao.context.explanation.trim()
+                      ? undefined
+                      : 'Explique do que se trata antes de fazer a pergunta.'
+                  }
+                >
+                  <Input
+                    id={`${id}-prediction-context-explanation`}
+                    value={previsao.context.explanation}
+                    onChange={(e) =>
+                      onChange({
+                        ...value,
+                        prediction: {
+                          ...previsao,
+                          context: { ...previsao.context, explanation: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </Field>
+              </div>
               <Field
                 label="Pergunta de antes"
                 htmlFor={`${id}-prediction`}

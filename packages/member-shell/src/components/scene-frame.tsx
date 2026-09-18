@@ -47,7 +47,6 @@ export function SceneReadoutBand({
   children,
   colada = false,
   relogioAndando = false,
-  valoresEscondidos = false,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -60,19 +59,13 @@ export function SceneReadoutBand({
   colada?: boolean
   /** O ▶ está rodando: nas cenas de quadro longo, a faixa mostra o quadro em andamento. */
   relogioAndando?: boolean
-  /**
-   * Os valores viram "?" enquanto o palpite não vem (consertos do review da onda A do lote 5): na
-   * `layers` a faixa dizia "1º a desenhar: o Dino · 2º: a floresta" fora do véu, e com o palco mostrando
-   * a floresta por cima a regra se deduzia antes de apostar. Os nomes das medidas ficam.
-   */
-  valoresEscondidos?: boolean
 }) {
   const quadroEmAndamento = relogioAndando && sceneLongFrame(activity.scene)
   const leituras = (estado: SceneState) =>
     sceneReadout(activity.scene, estado, activity.cast, activity.pilha)
   /**
    * ⚠️⚠️ A faixa NÃO muda de altura no meio do gesto (full review de experiência, M3). Os valores mudam de
-   * tamanho ("escondida" é mais longo que "à vista", "vazio" que "o Dino"), a faixa passava de duas linhas
+   * tamanho ("desligado" é mais longo que "ligado", "vazio" que "o Dino"), a faixa passava de duas linhas
    * para uma, e o palco e a bancada pulavam 28 px embaixo do dedo: o botão da borda da `stage-size` subia
    * no próprio toque. Hoje ela mora num `LugarReservado` cujo MOLDE são as leituras que a cena atinge (a
    * abertura, cada parte do roteiro do modelo e a de agora) empilhadas numa célula só, mais uma leitura
@@ -91,7 +84,7 @@ export function SceneReadoutBand({
   // ⚠️ A chave é só o PIOR caso: com o ▶ andando o valor de agora muda a cada fatia, e uma chave com ele
   // pediria uma medida nova 25 vezes por segundo. O pior caso só muda quando aparece um valor mais longo.
   const chave = pior.map((r) => `${r.label}:${r.value}`).join('|')
-  const lista = (rows: readonly SceneReading[], escondidos: boolean) => (
+  const lista = (rows: readonly SceneReading[]) => (
     /* ⚠️ 14px, e não 12 (lote 2): é texto que a criança LÊ. O separador vem do CSS (`after:content`), e
        não de um caractere no `dt`: sem ele, a leitura corrida dizia "o Dino nos bastidores ainda não
        desenho desligado", e com um caractere no texto o `dt` deixaria de ser o nome da medida. */
@@ -113,7 +106,7 @@ export function SceneReadoutBand({
                       : ''
             }`}
           >
-            {escondidos ? '?' : r.value}
+            {r.value}
           </dd>
         </div>
       ))}
@@ -136,7 +129,7 @@ export function SceneReadoutBand({
           {candidatos.map((rows, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: cada candidato é um lugar fixo do molde
             <div key={i} className={`${linha} [grid-area:1/1]`}>
-              {lista(rows, false)}
+              {lista(rows)}
               {children}
             </div>
           ))}
@@ -166,7 +159,7 @@ export function SceneReadoutBand({
             />
           </div>
         )}
-        {lista(atual, valoresEscondidos)}
+        {lista(atual)}
         {children}
       </div>
     </LugarReservado>
@@ -201,14 +194,12 @@ function maisLongas(candidatos: readonly (readonly SceneReading[])[]): SceneRead
   return Array.from({ length: tamanho }, (_, i) => {
     const naPosicao = candidatos.map((c) => c[i]).filter((r): r is SceneReading => Boolean(r))
     const primeira = naPosicao[0] as SceneReading
-    return naPosicao.reduce(
-      (maior, r) => ({
-        ...maior,
-        label: longa(maior.label, r.label),
-        value: longa(maior.value, r.value),
-      }),
-      primeira,
-    )
+    const maior = { ...primeira }
+    for (const leitura of naPosicao.slice(1)) {
+      maior.label = longa(maior.label, leitura.label)
+      maior.value = longa(maior.value, leitura.value)
+    }
+    return maior
   })
 }
 

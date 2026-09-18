@@ -333,20 +333,16 @@ export function PecaQueMudaDeCaixa<K extends string>({
  * da FRENTE em cima, sem números, e os botões com os nomes do Pinta ("Uma camada para a frente" e "Uma
  * camada para trás"). A mesma pilha servia às duas ferramentas, e no Meu Jeito Aula 5 ensinava "suba a
  * chama para a chama ir para trás", o contrário do que o Pinta faz dois minutos depois.
- * ⚠️ `escondida` (M6): com o palpite pendente, quem usa leitor de tela ouvia "1º a desenhar: Dino" antes
- * de apostar. Segue o `valoresEscondidos` da faixa: "?" no lugar de quem está em cada lugar.
  */
 function OrdemDeDesenhar({
   front,
   cast,
   pilha,
-  escondida = false,
   onTrocar,
 }: {
   front: boolean
   cast?: SceneCast
   pilha?: ScenePilha
-  escondida?: boolean
   onTrocar: () => void
 }) {
   const titulo = useId()
@@ -378,8 +374,7 @@ function OrdemDeDesenhar({
   /** O lugar da linha, para quem usa leitor de tela ("1º a desenhar", ou "Na frente" no Pinta). */
   const lugar = (i: number) =>
     camadas ? (i === 0 ? 'Na frente' : 'Atrás') : `${i + 1}º a desenhar`
-  /** Quem está na linha, para quem OUVE: "?" enquanto o palpite não veio. */
-  const ouvido = (peca: 'dino' | 'floresta') => (escondida ? '?' : nome(peca))
+  const ouvido = (peca: 'dino' | 'floresta') => nome(peca)
   /** O botão de cada linha: o que se LÊ e o nome acessível (que começa pelo que se lê, WCAG 2.5.3). */
   const botao = (i: number, peca: 'dino' | 'floresta') =>
     camadas
@@ -454,11 +449,8 @@ function OrdemDeDesenhar({
               )}
             </svg>
             <span className="min-w-0 flex-1 text-sm font-semibold">
-              <span className="sr-only">
-                {lugar(i)}: {escondida ? '?' : ''}
-              </span>
-              {/* ⚠️ Escondido do leitor só com o palpite pendente: à vista, a bancada está borrada. */}
-              <span aria-hidden={escondida || undefined}>{nome(peca)}</span>
+              <span className="sr-only">{lugar(i)}:</span>
+              <span>{nome(peca)}</span>
             </span>
             <SceneButton
               ref={(el) => {
@@ -496,7 +488,6 @@ export function DinoSceneControls({
   dispatch,
   more,
   travada = false,
-  escondida = false,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -505,11 +496,6 @@ export function DinoSceneControls({
   more: boolean
   /** A montagem travada da demonstração: a ajuda da peça diz como mexer, e não "arraste". */
   travada?: boolean
-  /**
-   * O palpite ainda não veio (full review de experiência, M6): o que a bancada diz ao leitor de tela
-   * segue o `valoresEscondidos` da faixa. Hoje só a pilha da `layers` escreve a resposta assim.
-   */
-  escondida?: boolean
 }) {
   const m = activity.scene
   const cast = activity.cast
@@ -522,7 +508,6 @@ export function DinoSceneControls({
           front={state.world.front}
           cast={cast}
           pilha={activity.pilha}
-          escondida={escondida}
           onTrocar={() => dispatch({ type: 'layer', front: !state.world.front })}
         />
       )

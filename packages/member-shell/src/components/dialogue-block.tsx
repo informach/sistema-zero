@@ -1,6 +1,6 @@
 'use client'
 
-import { filaDeVoz } from '@sistemazero/core/learning/scene'
+import { filaDeVoz, type SceneVozes } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Square, Volume2 } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useRef } from 'react'
@@ -8,6 +8,15 @@ import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-medi
 import type { DialogueBlock } from '../lib/types'
 import { useSceneVoice } from './use-scene-voice'
 import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
+
+/** A fala de um balão que não vem diretamente do conteúdo `dialogue` da aula. */
+export interface DialogueSpeech {
+  /** Uma unidade de fala fechada, sem instruções de outra etapa misturadas. */
+  texts: readonly string[]
+  vozes?: SceneVozes
+  /** As cenas podem usar a voz do navegador quando ainda não houver MP3 do Zappy. */
+  fallbackToBrowser: boolean
+}
 
 /**
  * Balão de fala do mascote, no lugar de contexto corrido. Para criança, "o Zappy
@@ -32,10 +41,13 @@ import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
 export function DialogueBlockView({
   content,
   mascot,
+  speech,
 }: {
   content: DialogueBlock
   /** Figura de quem fala. Sem ela o balão vira um recado destacado. */
   mascot?: ReactNode
+  /** A cena fornece sua fala de forma explícita; diálogos autorados mantêm a regra atual. */
+  speech?: DialogueSpeech
 }) {
   const voz = useSceneVoice()
   /**
@@ -47,7 +59,9 @@ export function DialogueBlockView({
    * seu próprio estado, a partir do `useSceneVoice` deste componente.
    */
   const falaDaCena = useZappyFala()
-  const fila = filaDeVoz([content.text], content.vozes)
+  const textos = speech?.texts ?? [content.text]
+  const vozes = speech?.vozes ?? content.vozes
+  const fila = filaDeVoz(textos, vozes)
   /**
    * ⚠⚠ O balão entra no FOCO de mídia da aula, como o vídeo e a cena. Sem registro o
    * `requestLessonMediaFocus` devolve falso sem pausar ninguém, e o Zappy falaria POR CIMA do
@@ -61,7 +75,7 @@ export function DialogueBlockView({
    * que o kids injeta enxerga isto). ⚠️ A dependência é `temFala`, e não `fila`: o `filaDeVoz`
    * devolve um array NOVO a cada render e o contexto mudaria de identidade em todos eles.
    */
-  const temFala = fila !== null
+  const temFala = fila !== null || (speech?.fallbackToBrowser === true && voz.temVoz)
   const falaPropria = useMemo(
     () => ({ podeFalar: temFala, falando: voz.falando }),
     [temFala, voz.falando],
@@ -85,7 +99,7 @@ export function DialogueBlockView({
             aviso) nem de `blockquote` (a atribuição é o mascote, que é decorativo
             e some para o leitor de tela, o que deixaria uma citação sem autor). */}
         <p className="whitespace-pre-line text-pretty text-base text-foreground">{content.text}</p>
-        {fila ? (
+        {temFala ? (
           <Button
             variant="outline"
             // ⚠ O `Button` do ui, e não um `<button>` cru: o kids dá o relevo 3D a todo botão por um
@@ -102,7 +116,7 @@ export function DialogueBlockView({
               // e esperar o pedido de foco (um Vimeo responde por mensagem) deixava o balão mudo.
               // A parte síncrona do pedido já pausa as outras mídias antes de o som entrar.
               void requestLessonMediaFocus(owner.current)
-              voz.falar([content.text], content.vozes)
+              voz.falar(textos, vozes)
             }}
           >
             {voz.falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}

@@ -1,8 +1,10 @@
 'use client'
 
 import type { LearningPrediction } from '@sistemazero/core/learning'
+import { falaDaPergunta } from '@sistemazero/core/learning/scene'
 import { Check, Eye } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { type ReactNode, type RefObject, useId } from 'react'
+import type { DialogueSpeech } from './dialogue-block'
 import { SceneButton } from './exploration-stage'
 import { LugarReservado } from './scene-lugar-reservado'
 
@@ -85,6 +87,16 @@ export function guardarPalpite(
   }
 }
 
+/** Apaga a escolha persistida quando a criança decide formular outro palpite. */
+export function apagarPalpite(scope: string | null) {
+  if (!scope) return
+  try {
+    localStorage.removeItem(chave(scope))
+  } catch {
+    /* aba privada: o estado em memória ainda volta ao início */
+  }
+}
+
 /** Acertou, errou, ou não há o que conferir (previsão sem gabarito). */
 export function vereditoDoPalpite(
   prediction: LearningPrediction,
@@ -98,14 +110,20 @@ export function ScenePrediction({
   prediction,
   escolha,
   onEscolher,
+  onTrocar,
   trocavel,
   revelado,
   demonstracao,
   bloqueado,
+  preview,
+  renderDialogue,
+  dialogueRef,
 }: {
   prediction: LearningPrediction
   escolha: string
   onEscolher: (id: string) => void
+  /** A troca volta a atividade inteira ao momento anterior à descoberta. */
+  onTrocar?: () => void
   /** Ainda dá para trocar: nenhum gesto na cena depois do palpite. */
   trocavel: boolean
   /** A meta que responde o palpite caiu (ou, sem `revealOn`, a cena concluiu). */
@@ -113,43 +131,38 @@ export function ScenePrediction({
   demonstracao: boolean
   /** Sem gravação possível (conflito, abrindo): as opções não respondem. */
   bloqueado: boolean
+  /** O retrato seguro da cena, usado apenas antes da escolha. */
+  preview: ReactNode
+  /** Balão hospedado pelo app, com mascote e uma fala independente. */
+  renderDialogue: (text: string, speech: DialogueSpeech) => ReactNode
+  /** Alvo do foco quando a criança escolhe trocar seu palpite. */
+  dialogueRef: RefObject<HTMLDivElement | null>
 }) {
   const id = useId()
-  const [trocando, setTrocando] = useState(false)
   const escolhida = prediction.choices.find((c) => c.id === escolha)
-  const aberto = !escolhida || (trocando && trocavel)
-  const linha = useRef<HTMLParagraphElement>(null)
-  const opcoes = useRef<HTMLDivElement>(null)
-  /** Para onde o foco vai no render seguinte: a linha depois de escolher, a opção ao trocar. */
-  const focar = useRef<'linha' | 'opcao' | null>(null)
-  useEffect(() => {
-    if (!focar.current) return
-    const alvo =
-      focar.current === 'linha'
-        ? linha.current
-        : (opcoes.current?.querySelector<HTMLButtonElement>('[aria-current="true"]') ??
-          opcoes.current?.querySelector<HTMLButtonElement>('button'))
-    if (!alvo) return
-    focar.current = null
-    alvo.focus({ preventScroll: true })
-  })
 
-  if (aberto)
+  if (!escolhida)
     return (
       <fieldset className="space-y-2 rounded-2xl bg-primary/5 p-4">
-        {/* ⚠️⚠️ A pergunta mora DENTRO do `legend` (lote 2): com ela num `<p>` ao lado, quem
-            chegava pelo Tab ouvia "Antes de mexer, grupo, Nada, botão", sem a pergunta. */}
         <legend className="float-left mb-2 w-full">
           <span className="block text-sm font-bold uppercase tracking-[.14em] text-primary">
-            {demonstracao ? 'Antes de assistir' : 'Antes de mexer'}
+            {demonstracao ? 'Antes de assistir' : 'Seu palpite'}
           </span>
-          <span className="mt-1 block text-base font-medium">{prediction.prompt}</span>
         </legend>
-        {/* ⚠️⚠️ BOTÕES, e não rádios (review do lote 2): num grupo de rádios a SETA do teclado já
-            escolhe, e aqui escolher congela o palpite. Uma seta para baixo fechava o cartão, o foco
-            caía no nada e a criança nunca ouvia a segunda opção sem escolhê-la. O botão só vale no
-            clique (toque, Enter ou Espaço). */}
-        <div ref={opcoes} className="clear-left space-y-2">
+        <div ref={dialogueRef} tabIndex={-1} className="clear-left outline-none">
+          {renderDialogue(`${prediction.context.explanation}\n\n${prediction.prompt}`, {
+            texts: [
+              prediction.context.explanation,
+              falaDaPergunta(demonstracao ? 'Antes de assistir' : 'Seu palpite', prediction),
+            ],
+            fallbackToBrowser: true,
+          })}
+        </div>
+        {preview}
+        <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground">
+          Hoje vamos usar: <span className="font-bold">{prediction.context.label}</span>
+        </p>
+        <div className="space-y-2">
           {prediction.choices.map((choice) => {
             const atual = choice.id === escolha
             return (
@@ -161,8 +174,6 @@ export function ScenePrediction({
                 aria-disabled={bloqueado || undefined}
                 onClick={() => {
                   if (bloqueado) return
-                  focar.current = 'linha'
-                  setTrocando(false)
                   onEscolher(choice.id)
                 }}
                 className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-ring ${
@@ -184,31 +195,16 @@ export function ScenePrediction({
 
   const veredito = vereditoDoPalpite(prediction, escolha)
   return (
-    /* ⚠️⚠️ As duas linhas moram num lugar que só CRESCE (consertos do review da onda B do lote 5, T2):
-       o "trocar" tem 44px e a linha sem ele ~20, então o primeiro gesto puxava o palco e a bancada 24px
-       para cima embaixo do dedo. O MESMO lugar (mesma posição na árvore) segura a linha congelada e a
-       linha no passado que vem depois dela. */
     <LugarReservado marca="palpite">
       {!revelado ? (
-        /* ⚠️ Congelado numa LINHA, encostada no palco: o cartão encolhe ~200px e o palpite fica à
-           vista no lugar em que ele vai ser respondido. O "trocar" existe só até o primeiro gesto
-           na cena: depois de ver, o palpite já não é palpite. */
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-sm">
-          {/* `tabIndex={-1}`: é para onde o foco vai depois de escolher (a opção some da tela). */}
-          <p ref={linha} tabIndex={-1} className="outline-none">
+          <p>
             <span className="font-semibold">Seu palpite:</span> {escolhida.label}
           </p>
           {demonstracao && <p className="text-muted-foreground">Agora assista e confira.</p>}
-          {trocavel && (
-            <SceneButton
-              tom="discreta"
-              className="min-h-11 px-2"
-              onClick={() => {
-                focar.current = 'opcao'
-                setTrocando(true)
-              }}
-            >
-              trocar
+          {trocavel && onTrocar && (
+            <SceneButton tom="discreta" className="min-h-11 px-2" onClick={onTrocar}>
+              Trocar meu palpite
             </SceneButton>
           )}
         </div>

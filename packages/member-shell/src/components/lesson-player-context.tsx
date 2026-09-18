@@ -7,6 +7,7 @@ import type {
   VideoWatchCoverage,
 } from '@sistemazero/core/learning'
 import { createContext, type ReactNode, useContext } from 'react'
+import type { DialogueSpeech } from './dialogue-block'
 
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
@@ -14,7 +15,11 @@ import { createContext, type ReactNode, useContext } from 'react'
  * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
-  renderInstruction?: (text: string, pose?: 'speaking' | 'thinking' | 'celebrating') => ReactNode
+  renderInstruction?: (
+    text: string,
+    pose?: 'speaking' | 'thinking' | 'celebrating',
+    speech?: DialogueSpeech,
+  ) => ReactNode
   renderActionEvidence?: (result: PlatformActionResult) => ReactNode
   refreshAfterLearning?: () => void
   sectionProjectCheck?: {

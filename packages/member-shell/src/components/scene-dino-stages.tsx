@@ -131,18 +131,14 @@ export function LayersStage({
   state,
   cast,
   pilha,
-  escondida = false,
+  ocultarOrdem = false,
 }: {
   state: SceneState
   cast?: SceneCast
   /** Como a pilha se apresenta (full review de experiência, A1): só o nome do desenho muda. */
   pilha?: ScenePilha
-  /**
-   * O palpite ainda não veio (full review de experiência, M6): a descrição para quem não enxerga dizia
-   * "A floresta fica na frente, e só um pedaço do Dino aparece." embaixo da pergunta, enquanto a faixa
-   * mostrava "?". Segue o `valoresEscondidos` da faixa.
-   */
-  escondida?: boolean
+  /** A prévia apresenta os desenhos separados para não antecipar qual fica na frente. */
+  ocultarOrdem?: boolean
 }) {
   const heroi = actorFigure(cast, 'hero')
   const cenario = actorFigure(cast, 'scenery')
@@ -193,7 +189,7 @@ export function LayersStage({
       // inteiro" virava "A pedra aparece inteiro" no Meu Jeito, porque o elenco não flexiona o que vem
       // longe do nome.
       descricao={
-        escondida
+        ocultarOrdem
           ? 'O Dino e a floresta aparecem separados. Você vai descobrir qual fica na frente.'
           : frente
             ? 'Nada fica na frente do Dino, e a floresta fica atrás.'
@@ -202,7 +198,7 @@ export function LayersStage({
     >
       <Pista mundo={mundo} semEstrelas={[{ x: 14, y: 8, w: 240, h: 30 }]} />
       <Selo>{castText('Quem fica na frente', cast)}</Selo>
-      {escondida ? (
+      {ocultarOrdem ? (
         desenhosSeparados
       ) : (
         <>
