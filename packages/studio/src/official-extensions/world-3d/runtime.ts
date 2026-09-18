@@ -1088,7 +1088,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (disposed) return null;
     var k = text(name, '');
     if (!k) {
-      warn('escreva o NOME do modelo (o nome dele no painel de imagens → modelos 3D)');
+      warn('escreva o NOME do modelo (o nome dele em "Modelos 3D", no menu de tres pontinhos)');
       return null;
     }
     if (!_modelCache) _modelCache = {};
@@ -1100,7 +1100,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     var entry = MODELS3D[k];
     if (!entry || entry.kind !== 'model3d') {
-      warn('o modelo "' + k + '" não está no projeto — envie o .glb no painel de imagens');
+      warn('o modelo "' + k + '" não está no projeto — envie o .glb em "Modelos 3D"');
       return null;
     }
     var buf = dataUrlToBuffer(entry.dataUrl);

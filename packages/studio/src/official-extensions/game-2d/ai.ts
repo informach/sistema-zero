@@ -80,7 +80,7 @@ API global injetada como window.SZGame2D:
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
 - playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopTrack("synth"): música de fundo persistente em loop (só uma por vez). Gere em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca dentro de 🔁 Enquanto estiver rodando. Repetir a mesma música não reinicia a faixa. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
-- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Imagens e sons"), em oposição a tudo acima, que é sintetizado: loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em ⚙️ Ao iniciar; playClip("apelido") toca uma vez; stopClip("apelido") para e rebobina; playTrack("apelido") toca em loop (uma trilha por vez — começar outra troca a anterior, repetir a mesma não recomeça) e stopTrack() desliga QUALQUER música, inclusive a sintetizada do playMusic. setSoundVolume(0..10) vale para os sons de arquivo. NUNCA invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca. Um som pedido antes do primeiro clique ESPERA o clique em vez de falhar calado.
+- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Sons", no menu ⋯), em oposição a tudo acima, que é sintetizado: loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em ⚙️ Ao iniciar; playClip("apelido") toca uma vez; stopClip("apelido") para e rebobina; playTrack("apelido") toca em loop (uma trilha por vez — começar outra troca a anterior, repetir a mesma não recomeça) e stopTrack() desliga QUALQUER música, inclusive a sintetizada do playMusic. setSoundVolume(0..10) vale para os sons de arquivo. NUNCA invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca. Um som pedido antes do primeiro clique ESPERA o clique em vez de falhar calado.
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
@@ -177,7 +177,7 @@ Mapa destrutível, ordem de desenho e depuração:
 - bringToFront(grupo, s)/sendToBack(grupo, s): muda a ordem de desenho do sprite dentro do grupo.
 - drawHitbox(s): contorno da área de colisão (depurar). showFps(x, y): contador de quadros por segundo.
 
-Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba Assets);
+Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba "Imagens" de Materiais do jogo);
 nos blocos/código você usa o NOME do asset (string):
 - createSprite({ x, y, w, h, image: 'nome' }): sprite que mostra uma imagem (sem image, fica colorido).
 - setImage(sprite, 'nome'): troca a imagem fixa do sprite (cancela a animação).
@@ -397,7 +397,7 @@ Quando ajudar o aluno com jogos 2D:
 - Prefira os eventos "Quando…" (onKey/onOverlap) e as perguntas (keyDown/touches) a
   ficar lendo o estado das teclas na mão — é mais próximo de como a criança pensa.
 - Mostre que sprites são apenas objetos JS com x/y/w/h.
-- Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
+- Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba "Imagens" e usar o nome dele.
 - Enquanto a imagem carrega, o cenário permanece visível; se a carga falhar, o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
 - DESEMPENHO: crie sprites/grupos/objetos UMA vez em ⚙️ Ao iniciar. Criar dentro do

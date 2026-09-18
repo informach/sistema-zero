@@ -28,7 +28,7 @@ function isExternalUrl(value: string): boolean {
  * Acha a CHAVE do manifest que o miolo da url() referencia: match exato, depois
  * percent-decoded, depois pelo nome NORMALIZADO — `normalizeAssetName` remove
  * pontos ('background.png' vira o asset 'backgroundpng'), então o CSS colado de
- * um tutorial referencia um nome que o painel de Imagens nunca produz; o
+ * um tutorial referencia um nome que a janela dos materiais nunca produz; o
  * fallback normalizado faz o `url('background.png')` achar o asset mesmo assim.
  */
 function resolveAssetKey(rawName: string, assets: Record<string, string>): string | null {

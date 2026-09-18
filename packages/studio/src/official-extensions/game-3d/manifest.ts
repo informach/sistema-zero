@@ -49,7 +49,7 @@ em um evento ou em um construtor.
 
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
 - **Criar modelo** agrupa peças da mesma cena: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
-- **Criar o objeto … com o modelo** põe na cena um modelo 3D de verdade: um arquivo \`.glb\` que você montou no **Molda** (toque em "Trazer do Molda" no painel Imagens) ou enviou. Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele como em qualquer objeto.
+- **Criar o objeto … com o modelo** põe na cena um modelo 3D de verdade: um arquivo \`.glb\` que você montou no **Molda** (toque em "Trazer do Molda" em "Modelos 3D") ou enviou. Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele como em qualquer objeto.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
 - **Pintar com uma estampa** desenha a textura na hora, sem imagem nenhuma: tijolo, pedra, terra, grama, interrogação, cano, nuvem, água, lava, moeda, xadrez e listras, repetidas conforme o tamanho da peça. Dá para fazer um jogo inteiro sem depender de arquivo. **Deixar sem sombra** alivia cenários com muitas peças.
 - Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena e chamadas posteriores não descartam os mesmos recursos de novo.
@@ -113,7 +113,7 @@ em um evento ou em um construtor.
 
 ### Som
 
-- Há dois tipos de som aqui. **Nota** e **efeito** são inventados na hora pelo computador, e não precisam de arquivo nenhum. Já **"Tocar o som"** e **"Tocar a música"** tocam um arquivo que você enviou: use o botão **Enviar som** (o do alto-falante) em "Imagens e sons", na barra de cima.
+- Há dois tipos de som aqui. **Nota** e **efeito** são inventados na hora pelo computador, e não precisam de arquivo nenhum. Já **"Tocar o som"** e **"Tocar a música"** tocam um arquivo que você enviou: use o botão **Enviar som** (o do alto-falante) em "Sons", no menu ⋯.
 - Para usar um arquivo, primeiro **carregue** ele em **Ao iniciar** e dê um apelido ("Carregar o som **moeda** do arquivo …"). Depois é só usar o apelido nos outros blocos.
 - Só toca **uma música por vez**: começar outra troca a que estava tocando. Repetir a mesma não recomeça a faixa.
 - **O volume vai de 0 a 10** e vale para todos os sons do projeto.

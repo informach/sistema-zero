@@ -89,7 +89,7 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
   o carrinho atropela de boa. Por dentro é instancing profissional: 300
   árvores custam 3 "desenhos" para a placa de vídeo.
 - **Espalhar … cópias do modelo …**. Igual, mas com um modelo .glb SEU:
-  envie o arquivo no painel de imagens (seção de modelos 3D) e escolha pelo
+  envie o arquivo em "Modelos 3D" (no menu ⋯) e escolha pelo
   seletor do bloco. Tamanho 1 = o original.
 - **Pôr 1 … em x z / Pôr o modelo …**. UMA coisa num lugar exato, para os
   cantinhos especiais (a árvore gigante do topo, a estátua da praça).

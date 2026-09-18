@@ -1460,7 +1460,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     var wanted = _soundKey(asset);
     var src = SOUNDS[wanted] || (wanted.indexOf('data:audio/') === 0 ? wanted : null);
     if (!src) {
-      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Sons" (no menu de tres pontinhos).');
       return;
     }
     var already = _sounds[key];

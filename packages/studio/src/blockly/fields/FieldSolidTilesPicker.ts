@@ -57,7 +57,7 @@ function literalTileSizeOf(block: Blockly.Block): number | null {
 
 /**
  * Resolve o tileset da IMAGEM do bloco + a geometria (cols/count) das dimensões.
- * Tamanho do tile: metadado do asset (Pinta/painel Imagens) → soquete TILE do
+ * Tamanho do tile: metadado do asset (Pinta/aba "Imagens") → soquete TILE do
  * próprio bloco (upload cru) → sem visual (fallback de texto).
  */
 export function resolveTileset(field: Blockly.Field): TilesetInfo | null {

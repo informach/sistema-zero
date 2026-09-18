@@ -135,17 +135,17 @@ function StudioCoreBody({
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
 
   // "Editar o desenho no Pinta" — mesmo latch: o host passa uma referência
-  // estável e o painel de Imagens decide se mostra o botão. `null` → sem botão.
+  // estável e a janela dos materiais decide se mostra o botão. `null` → sem botão.
   const [editDrawingValue] = useState(() => onEditDrawing ?? null)
 
   // "Editar a criação no Molda": o gêmeo do Pinta, mesmo latch. `null` → sem botão.
   const [editCreationValue] = useState(() => onEditCreation ?? null)
 
-  // "Trazer do Pinta" — mesmo latch; o painel de Imagens mostra o botão e a
+  // "Trazer do Pinta" — mesmo latch; a janela dos materiais mostra o botão e a
   // modal quando presente (e esconde a seção "Meus desenhos"). `null` → nada.
   const [pintaLibraryValue] = useState(() => pintaLibrary ?? null)
 
-  // "Trazer do Molda" — o mesmo latch do Pinta; o painel de Imagens mostra o botão e
+  // "Trazer do Molda" — o mesmo latch do Pinta; a janela dos materiais mostra o botão e
   // a modal das criações 3D quando presente. `null` → nada.
   const [moldaLibraryValue] = useState(() => moldaLibrary ?? null)
 

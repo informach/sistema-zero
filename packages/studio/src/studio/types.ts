@@ -206,7 +206,7 @@ export interface StudioCommonProps {
   onCloudSync?: () => void
   /**
    * Callback OPCIONAL "editar este desenho no Pinta": quando presente, os
-   * desenhos vindos do Pinta ganham um botão de editar no painel de Imagens (na
+   * desenhos vindos do Pinta ganham um botão de editar na aba "Imagens" (na
    * biblioteca "Meus desenhos" e nas imagens já usadas no projeto). O HOST abre o
    * Pinta — em aba nova — já naquele desenho; o Studio só entrega o id.
    * Ausente (default) → sem botão (embed do admin, bloco de aula).
@@ -215,13 +215,13 @@ export interface StudioCommonProps {
   onEditDrawing?: (drawingId: string) => void
   /**
    * Callback OPCIONAL "editar esta criação no Molda": quando presente, os modelos,
-   * céus e texturas trazidos do Molda ganham o botão "Editar" no painel de Imagens.
+   * céus e texturas trazidos do Molda ganham o botão "Editar" na janela dos materiais.
    * O HOST abre o Molda, em aba nova, já naquela criação; o Studio só entrega o id.
    * Ausente (default) → sem botão. Estável por instância (latchado, igual à `share`).
    */
   onEditCreation?: (creationId: string) => void
   /**
-   * Adapter OPCIONAL "Trazer do Pinta": quando presente, o painel de Imagens
+   * Adapter OPCIONAL "Trazer do Pinta": quando presente, a aba "Imagens"
    * ganha o botão que abre a modal com TODOS os desenhos da galeria do Pinta
    * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
    * (substituída pela modal). O host só o passa com posse do Pinta E do
@@ -230,7 +230,7 @@ export interface StudioCommonProps {
    */
   pintaLibrary?: StudioPintaLibraryAdapter
   /**
-   * Adapter OPCIONAL "Trazer do Molda": quando presente, o painel de Imagens
+   * Adapter OPCIONAL "Trazer do Molda": quando presente, a aba "Modelos 3D"
    * ganha o botão que abre a modal com TODAS as criações da galeria do Molda
    * (modelos `.glb`, texturas `.png`, céus `.hdr`; busca + importar direto ao
    * projeto). O host só o passa com posse do Molda E do Estúdio (produtos

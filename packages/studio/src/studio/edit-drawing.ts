@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react'
  * EDITAR O DESENHO — capacidade OPCIONAL do host (community-kids) para o Estúdio
  * Completo: abrir o Pinta, numa aba nova, já com AQUELE desenho aberto.
  *
- * O Studio só expõe o botão (no painel de Imagens, nos desenhos vindos do Pinta)
+ * O Studio só expõe o botão (na aba "Imagens", nos desenhos vindos do Pinta)
  * e entrega o id do desenho; navegar entre os apps é assunto do host — só ele
  * conhece as rotas. Default `null` → sem botão, que é o certo no embed do admin
  * e no bloco de aula, onde o Pinta não existe.

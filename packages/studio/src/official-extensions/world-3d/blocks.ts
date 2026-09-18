@@ -341,7 +341,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
+      'Espalha cópias de um modelo .glb SEU (envie em "Modelos 3D", no menu ⋯, e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
   },
   {
     type: 'sz_w3d_place_thing',

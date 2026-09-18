@@ -41,7 +41,7 @@ describe('rewriteCssAssetUrls', () => {
   })
 
   it('fallback pelo nome NORMALIZADO: url(fundo.png) acha o asset "fundopng"', () => {
-    // normalizeAssetName remove pontos — o painel de Imagens nunca produz um
+    // normalizeAssetName remove pontos — a janela dos materiais nunca produz um
     // nome com ".png", mas o CSS colado de tutorial referencia assim.
     const normalized = { backgroundpng: PNG }
     expect(rewriteCssAssetUrls("#c { background: url('background.png'); }", normalized)).toBe(

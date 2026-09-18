@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 /**
  * TRAZER DO MOLDA — capacidade OPCIONAL do host (community-kids) para o Estúdio
  * Completo: listar TODAS as criações da galeria do Molda (modelos `.glb`, texturas
- * `.png` e céus `.hdr`) e importar uma por id, direto do painel de Imagens. É o
+ * `.png` e céus `.hdr`) e importar uma por id, direto da aba "Modelos 3D". É o
  * mesmo fluxo PULL do "Trazer do Pinta": a criança não precisa lembrar o que já
  * "enviou" — ela abre a galeria de lá daqui.
  *

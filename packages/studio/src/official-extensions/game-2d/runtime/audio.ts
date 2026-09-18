@@ -275,7 +275,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _musicName = null;
     _musicState = null;
   }
-  // ---- 🔊 Som de ARQUIVO (o que a crianca enviou em "Imagens e sons") ----
+  // ---- 🔊 Som de ARQUIVO (o que a crianca enviou na aba "Sons") ----
   // Tudo acima e SINTETIZADO (oscilador). Daqui para baixo toca o mp3/wav dela,
   // por HTMLAudio.
   // ⚠️ Os nomes internos sao clip/track, e nao playSound/playMusic, porque esses
@@ -314,7 +314,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       ? registered
       : (wanted.indexOf('data:audio/') === 0 ? wanted : null);
     if (!src) {
-      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Sons" (no menu de tres pontinhos).');
       return;
     }
     if (_clips[key] && _clipSrc[key] === src) return;

@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 /**
  * TRAZER DO PINTA — capacidade OPCIONAL do host (community-kids) para o Estúdio
  * Completo: listar TODOS os desenhos da galeria do Pinta e importar um por id,
- * direto do painel de Imagens (fluxo PULL — a criança não precisa mais lembrar
+ * direto da aba "Imagens" (fluxo PULL — a criança não precisa mais lembrar
  * o que já "enviou").
  *
  * O Studio só desenha a modal (busca + grade + selo "no projeto") e chama o

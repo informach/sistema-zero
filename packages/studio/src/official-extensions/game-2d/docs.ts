@@ -122,7 +122,7 @@ O Estúdio liga o motor automaticamente a partir das Áreas do projeto.
 
 ### Dê aparência aos personagens
 
-Use o painel **Imagens e sons** (no menu ⋯ da barra de cima) para enviar imagens do
+Use **Materiais do jogo** (menu ⋯ → Imagens, Sons ou Modelos 3D) para enviar imagens do
 computador ou escolher da biblioteca;
 depois é só usar o **nome** da imagem nos blocos.
 
@@ -186,7 +186,7 @@ Use os demais blocos abaixo dentro do **"A cada quadro do jogo"**:
 ### Construa o cenário com mapas
 
 Tiles montam cenários (chão, paredes, plataformas) a partir de UMA imagem com vários
-quadros (o **tileset**). Escolha um no painel **Imagens e sons** (ex.: \`tileset\`).
+quadros (o **tileset**). Escolha um na aba **Imagens** (ex.: \`tileset\`).
 
 - **Conjunto e mapa de tiles vetoriais** usam Figuras desenhadas no próprio projeto como
   peças sólidas, plataformas, decoração ou **atravessa e avisa**. Assim um jogo inteiro
@@ -422,7 +422,7 @@ precisar de arquivos:
 ### Toque os SEUS sons
 
 Os blocos acima inventam o som na hora. Estes tocam um arquivo que **você** enviou: use o botão
-**Enviar som** (o do alto-falante) em "Imagens e sons", na barra de cima. Serve mp3, wav e ogg.
+**Enviar som** (o do alto-falante) em "Sons", no menu ⋯. Serve mp3, wav e ogg.
 
 - **Carregar o som … do arquivo …**. Prepara o arquivo e dá um apelido a ele ("moeda", "risada").
   Vai em **⚙️ Ao iniciar**, porque ele não toca nada: só deixa pronto.

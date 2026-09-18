@@ -279,7 +279,7 @@ export const gameTwoDFundamentalBlocks = [
 
   // ---- Áudio de ARQUIVO (o som que a criança enviou) ----
   // Tudo acima é inventado pelo computador na hora. Estes tocam o mp3/wav que
-  // ela importou em "Imagens e sons". Rótulos iguais aos do Mundo 3D e do Jogo
+  // ela importou na aba "Sons". Rótulos iguais aos do Mundo 3D e do Jogo
   // 3D de propósito: é o mesmo gesto, e ela não deveria reaprender por app.
   {
     type: 'sz_g2d_load_sound',
@@ -295,7 +295,7 @@ export const gameTwoDFundamentalBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Imagens e sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo com o botão "🔊 Enviar som", em "Sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_g2d_play_clip',

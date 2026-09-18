@@ -151,7 +151,7 @@ Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, 
 - noShadow(obj): tira do passe de sombra (continua recebendo). Deixa cenário grande mais leve.
 - setVisible(obj, "show"|"hide"): mostra/esconde e também retira o objeto das consultas de mira enquanto estiver oculto. remove(world, obj): tira da cena e dos registros de física e seleção.
 - createModel(world) -> grupo vazio; addToModel(model, peca): junta peças da mesma cena num modelo (mover o modelo move tudo junto).
-- createModelFile(world, "nomeDoModelo", tamanho) -> objeto com um modelo 3D DE VERDADE (arquivo .glb do projeto, trazido do Molda ou enviado no painel Imagens); nasce como cubo e vira o modelo quando carrega. tamanho = lado maior, em blocos. Vale tudo de objeto (setPosition, moveBy, collides, setColor).
+- createModelFile(world, "nomeDoModelo", tamanho) -> objeto com um modelo 3D DE VERDADE (arquivo .glb do projeto, trazido do Molda ou enviado em "Modelos 3D"); nasce como cubo e vira o modelo quando carrega. tamanho = lado maior, em blocos. Vale tudo de objeto (setPosition, moveBy, collides, setColor).
 
 Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - addAmbientLight(world, "#cor", forca): luz suave geral (sem sombra). addSunLight(world, "#cor", forca): sol (direcional, faz sombra).
@@ -165,7 +165,7 @@ Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
 - forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Use diretamente em clique/tecla ou numa condição do quadro, nunca diretamente em Ao iniciar. O runtime aceita no máximo 32 vozes ao mesmo tempo.
-- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Imagens e sons"): loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em Ao iniciar; depois playSound("apelido") toca uma vez, stopSound("apelido") para e rebobina, playMusic("apelido") toca em loop (uma música por vez — começar outra troca a anterior; repetir a mesma não recomeça) e stopMusic() desliga. setSoundVolume(0..10) vale para todos os sons. Nunca invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca.
+- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Sons"): loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em Ao iniciar; depois playSound("apelido") toca uma vez, stopSound("apelido") para e rebobina, playMusic("apelido") toca em loop (uma música por vez — começar outra troca a anterior; repetir a mesma não recomeça) e stopMusic() desliga. setSoundVolume(0..10) vale para todos os sons. Nunca invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca.
 - Áreas: as definições que só guardam uma receita ficam em **🧩 Meus moldes**; crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
   do núcleo em **⚡ Quando acontecer**; coloque “A cada quadro 3D”, “A cada N
   quadros” e “A cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use

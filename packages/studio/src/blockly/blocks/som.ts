@@ -6,7 +6,7 @@ import type { BlockDefinition } from './types'
  * em qualquer projeto web/Canvas, sem depender de extensão de jogo.
  *
  * ⚠️ Existe porque o núcleo não tinha áudio NENHUM: nem bipe, nem arquivo. Dava
- * para enviar um mp3 no painel "Imagens e sons" e não havia bloco para usá-lo
+ * para enviar um mp3 na janela dos materiais e não havia bloco para usá-lo
  * fora do Jogo 2D/3D e do Mundo 3D. Relato da dona do produto (08/2026).
  *
  * O código gerado chama `window.__szAudio` (ver `preview/audioBridge.ts`), que é
@@ -32,7 +32,7 @@ export const SOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som do projeto (envie o arquivo com o botão "Enviar som", em "Imagens e sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo com o botão "Enviar som", em "Sons") e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_som_play',

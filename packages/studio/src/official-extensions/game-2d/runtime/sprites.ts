@@ -128,7 +128,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     // Nome que não é asset do projeto NEM parece um endereço (sem "/" nem ":") =
     // provável erro de digitação. Avisa uma vez; segue tentando como URL.
     if (!known && source.indexOf('/') === -1 && source.indexOf(':') === -1) {
-      warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
+      warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).');
     }
     if (imageCache[url]) return imageCache[url];
     /** @type {{ img: HTMLImageElement | null, loaded: boolean, failed: boolean, url: string }} */

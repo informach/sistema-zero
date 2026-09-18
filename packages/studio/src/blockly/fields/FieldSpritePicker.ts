@@ -232,7 +232,7 @@ export function isSpriteDeclEvent(
  * Invalida o cache de visuais e re-renderiza TODOS os FieldSpritePicker do
  * workspace (coalescido num microtask — N eventos numa rodada = 1 varredura).
  * Também é o gancho para mudanças que NÃO geram evento Blockly (renomear/trocar
- * asset no painel Imagens): o BlocklyPanel chama ao ver `project.assets` mudar.
+ * asset na aba "Imagens"): o BlocklyPanel chama ao ver `project.assets` mudar.
  */
 export function refreshSpriteThumbs(ws: Blockly.Workspace): void {
   const cache = cacheFor(ws)

@@ -342,7 +342,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use em “Ao iniciar”.',
+      'Prepara um som que você importou (em "Sons"). Dê um nome; é ele que você usa em "Tocar o som". Use em “Ao iniciar”.',
   },
 
   {

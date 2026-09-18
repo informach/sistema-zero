@@ -1038,7 +1038,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       projectStoreApi.getState().project?.assets ?? []
     // Miniaturas de sprite NO BLOCO: refresh automático quando um declarador de
     // sprite muda (watcher de eventos do workspace) e quando os ASSETS do projeto
-    // mudam (renomear/trocar imagem no painel Imagens não gera evento Blockly —
+    // mudam (renomear/trocar imagem na aba "Imagens" não gera evento Blockly —
     // observa a identidade de project.assets no store da instância).
     const detachSpriteThumbs = attachSpriteThumbWatcher(injected)
     // Nome da animação no bloco "Animar sprite": campo de exibição NÃO
