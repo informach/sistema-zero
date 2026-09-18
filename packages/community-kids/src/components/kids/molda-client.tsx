@@ -17,6 +17,7 @@ import {
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/WebGL/IndexedDB); carregamos DENTRO de um
@@ -64,6 +65,12 @@ export function MoldaClient({
   // Deep link `/molda?criacao=<id>` (o Estúdio abre numa aba nova, com `noopener`,
   // então é query string). Lido no 1º render e limpo da URL logo depois.
   const searchParams = useSearchParams()
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. Vive AQUI,
+  // e não dentro do guia, porque o hook lê a preferência num efeito pós-mount: no guia, que só
+  // monta depois do módulo e do handoff, isso pintava o painel aberto por um quadro.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
   const [openRequest, setOpenRequest] = useState(() => ({
     assetId: searchParams.get('criacao'),
     revision: 0,
@@ -293,6 +300,8 @@ export function MoldaClient({
               handoff={handoff.data}
               persistence={persistence}
               onProgress={handoff.updateProgress}
+              collapsed={guiaRecolhido}
+              onCollapsedChange={setGuiaRecolhido}
               onOpenAsset={(assetId) =>
                 setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
               }

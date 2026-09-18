@@ -745,16 +745,27 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
 
   // O primeiro desenho aberto nesta sessão passa a ser o output vinculado do
   // Cartão de Criação. Recarregar é idempotente; trocar de desenho religa.
+  //
+  // ⚠⚠ A dependência é o `progress`, NÃO o objeto da sessão (18/09/2026, achado do full review
+  // da seta que recolhe o brief). O host remonta o `taskSession` a cada mudança do adapter — e
+  // desde a seta isso acontece a cada clique nela —, enquanto o `progress` vem por REFERÊNCIA do
+  // handoff e só muda quando o progresso muda de verdade. Com o objeto nas deps, um clique na
+  // seta enquanto a tarefa ainda está `planned` (ou com o primeiro PATCH em voo, ou depois de um
+  // PATCH que falhou offline) re-disparava a marcação com o MESMO `expectedUpdatedAt`: 409,
+  // recarga do brief e o toast de erro. Ou seja, recolher o painel dava erro de sincronização.
+  // A sessão vem de um ref para o corpo usar sempre a mais fresca, sem entrar nas deps.
+  const taskSessionRef = useRef(adapter.taskSession)
+  taskSessionRef.current = adapter.taskSession
+  const taskProgress = adapter.taskSession?.progress ?? null
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o `progress` é o gatilho de verdade; a sessão vem do ref
   useEffect(() => {
-    if (!stores || !adapter.taskSession || adapter.taskSession.progress.status === 'completed')
-      return
+    const sessao = taskSessionRef.current
+    if (!stores || !sessao || sessao.progress.status === 'completed') return
     const asset = stores.editor.getState().asset
-    const current = adapter.taskSession.progress.outputRef
-    if (current?.assetId === asset.id && adapter.taskSession.progress.status !== 'planned') return
-    void updateTaskProgress(adapter.taskSession, {
-      ...(adapter.taskSession.progress.status === 'planned'
-        ? { status: 'in_progress' as const }
-        : {}),
+    const current = sessao.progress.outputRef
+    if (current?.assetId === asset.id && sessao.progress.status !== 'planned') return
+    void updateTaskProgress(sessao, {
+      ...(sessao.progress.status === 'planned' ? { status: 'in_progress' as const } : {}),
       outputRef: {
         kind: 'pinta_asset',
         assetId: asset.id,
@@ -766,7 +777,7 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     }).then((saved) => {
       if (!saved) showToast(COPY.editor.taskLinkError)
     })
-  }, [stores, adapter.taskSession, showToast])
+  }, [stores, taskProgress, showToast])
 
   // Flush do autosave em pagehide e no desmonte (voltar/troca de tela).
   useEffect(() => {

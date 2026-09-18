@@ -123,6 +123,15 @@ export function PintaApp({
     editorRef.current = editor
   }, [])
 
+  // ⚠⚠ Navegação com identidade ESTÁVEL (18/09/2026, achado do full review da seta que
+  // recolhe). O `context` depende do `adapter`, e o adapter passou a mudar de identidade a cada
+  // clique na seta do brief — com `openAsset` nascendo inline, o `onOpenCard` do
+  // `GalleryScreen` (que o tem nas deps) mudava junto e o `memo` do `AssetCard` quebrava para
+  // TODOS os cartões a cada clique, contra o invariante escrito no próprio `AssetCard`
+  // ("callbacks POR ID, estáveis na galeria"). Com o `useCallback`, só quem lê o adapter
+  // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
+  const openAsset = useCallback((id: string) => setView({ screen: 'editor', assetId: id }), [])
+  const closeEditor = useCallback(() => setView({ screen: 'gallery' }), [])
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
@@ -130,8 +139,8 @@ export function PintaApp({
       persistence: store.persistence,
       clipboard: store.clipboard,
       paletteLibrary: store.paletteLibrary,
-      openAsset: (id) => setView({ screen: 'editor', assetId: id }),
-      closeEditor: () => setView({ screen: 'gallery' }),
+      openAsset,
+      closeEditor,
       takeInitialIntent: () => {
         const intent = initialIntentRef.current
         initialIntentRef.current = null
@@ -158,6 +167,8 @@ export function PintaApp({
       store.paletteLibrary,
       initialIntentVersion,
       handleEditorReady,
+      openAsset,
+      closeEditor,
     ],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null

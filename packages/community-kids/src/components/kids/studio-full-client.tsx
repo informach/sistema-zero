@@ -28,6 +28,7 @@ import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
@@ -402,6 +403,12 @@ export function StudioFullClient({
     }
   }, [cloudSync, handoffProjectId, missingTaskProject, mod, viewerId])
 
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
+  // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
+  // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
   const taskSession = useMemo<StudioTaskSession | undefined>(
     () =>
       taskHandoff
@@ -438,9 +445,11 @@ export function StudioFullClient({
                 throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
               updateTaskProgress(body.task.progress)
             },
+            collapsed: guiaRecolhido,
+            onCollapsedChange: setGuiaRecolhido,
           }
         : undefined,
-    [taskHandoff, updateTaskProgress, retryTaskHandoff],
+    [taskHandoff, updateTaskProgress, retryTaskHandoff, guiaRecolhido, setGuiaRecolhido],
   )
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a

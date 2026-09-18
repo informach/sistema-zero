@@ -89,6 +89,8 @@ test('guia vincula uma criação já guardada e preserva os IDs do plano e do as
       onOpenAsset={() => {}}
       onReturn={() => {}}
       hasOpenCreation={async () => false}
+      collapsed={false}
+      onCollapsedChange={() => {}}
     />,
   )
   await waitFor(() => expect(screen.getByRole('option', { name: asset.name })).toBeTruthy())
@@ -127,6 +129,8 @@ test('voltar ao plano aguarda o fechamento da criação pelo fluxo de salvamento
         returned = true
       }}
       hasOpenCreation={async () => true}
+      collapsed={false}
+      onCollapsedChange={() => {}}
     />,
   )
   fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
@@ -142,6 +146,8 @@ test('sair pela navegação preserva o rascunho do guia apenas no mesmo perfil e
     onOpenAsset: () => {},
     onReturn: () => {},
     hasOpenCreation: async () => false,
+    collapsed: false,
+    onCollapsedChange: () => {},
   }
   const first = render(<MoldaTaskGuide {...props} profileId="child-a" />)
   fireEvent.click(screen.getByRole('checkbox', { name: 'Modele a rocha' }))
@@ -174,4 +180,62 @@ test('sair pela navegação preserva o rascunho do guia apenas no mesmo perfil e
     />,
   )
   await waitFor(() => expect(check()).toBe(false))
+})
+
+/**
+ * 18/09/2026 — o guia recolhe por uma seta, e o pé saiu do que recolhe: com tudo dentro,
+ * recolher escondia o único caminho de volta ao plano e o aviso da criação ausente — a lição
+ * que o irmão do Pinta já pagou.
+ *
+ * ⚠️ Quem LEMBRA é o host (o hook `usePensaGuideCollapsed`, com teste próprio): aqui o par
+ * chega por prop, como nos irmãos do Pinta e do Estúdio.
+ */
+test('a seta recolhe o guia, e o pé com a volta ao plano nunca some', async () => {
+  const persistence = {
+    load: async () => null,
+    loadAll: async () => [],
+    listSummaries: async () => [],
+  }
+  const mudancas: boolean[] = []
+  function Guia({ collapsed }: { collapsed: boolean }) {
+    return (
+      <MoldaTaskGuide
+        profileId="child-seta"
+        handoff={handoff}
+        persistence={persistence}
+        onProgress={() => {}}
+        onOpenAsset={() => {}}
+        onReturn={() => {}}
+        hasOpenCreation={async () => false}
+        collapsed={collapsed}
+        onCollapsedChange={(v) => mudancas.push(v)}
+      />
+    )
+  }
+  const view = render(<Guia collapsed={false} />)
+  const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+  if (!seta) throw new Error('seta esperada')
+  expect(seta.getAttribute('aria-expanded')).toBe('true')
+  expect(screen.getByText('Rocha azul')).toBeTruthy()
+
+  // A seta AVISA; quem manda é o host.
+  fireEvent.click(seta)
+  expect(mudancas).toEqual([true])
+  expect(screen.getByText('Rocha azul')).toBeTruthy()
+
+  view.rerender(<Guia collapsed />)
+  await waitFor(() => expect(screen.queryByText('Rocha azul')).toBeNull())
+  // ⚠ Recolhido, o corpo DESMONTA e o `aria-controls` SAI: apontar para um id ausente é
+  // referência pendurada para o leitor de tela (régua do `Panel` do Pinta).
+  expect(
+    view.container.querySelector('button[aria-expanded]')?.getAttribute('aria-controls'),
+  ).toBeNull()
+  // O pé continua inteiro: a volta ao plano e a linha de situação ficam FORA do que recolhe.
+  expect(screen.getByRole('button', { name: 'Voltar ao plano' })).toBeTruthy()
+  expect(screen.getByRole('status').textContent).toContain('guardado')
+  // E a volta: clicar de novo pede para ABRIR.
+  const setaRecolhida = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+  if (!setaRecolhida) throw new Error('seta esperada')
+  fireEvent.click(setaRecolhida)
+  expect(mudancas).toEqual([true, false])
 })

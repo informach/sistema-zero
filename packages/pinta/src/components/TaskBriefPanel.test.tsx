@@ -159,18 +159,27 @@ describe('Voltar ao plano', () => {
       <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
     )
     const botao = screen.getByRole('button', { name: COPY.task.back })
-    const details = view.container.querySelector('details')
-    expect(details).toBeTruthy()
-    // Nem dentro do <details> (recolher o brief o esconderia, e o estado recolhido
-    // atravessa a troca galeria↔editor) nem dentro do corpo `max-h-52 overflow-auto`
-    // (no celular ele nascia abaixo da dobra do painel).
-    expect(details?.contains(botao)).toBe(false)
+    // Desde 18/09/2026 o `<details>` virou botão de verdade (seta visível, `aria-expanded`,
+    // e o host lembra por criança). O INVARIANTE é o mesmo: a volta não entra no que recolhe.
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    const corpo = view.container.querySelector(`#${seta.getAttribute('aria-controls')}`)
+    expect(corpo).toBeTruthy()
+    // Nem dentro do corpo que recolhe (recolher o esconderia, e o estado atravessa a troca
+    // galeria↔editor) nem dentro do corpo `max-h-52 overflow-auto` (no celular ele nascia
+    // abaixo da dobra do painel).
+    expect(corpo?.contains(botao)).toBe(false)
     expect(botao.closest('.overflow-auto')).toBeNull()
-    // E nada de controle interativo dentro do <summary>: o clique abriria o brief.
-    expect(view.container.querySelector('summary button')).toBeNull()
-    // A ordem de leitura e o Tab seguem o texto: resumo, brief, saída.
-    const foco = Array.from(view.container.querySelectorAll<HTMLElement>('summary, button, input'))
+    // E a volta não entra DENTRO da seta: com o `<details>` de antes, um controle no `<summary>`
+    // recolhia o brief ao ser clicado. `seta.querySelector('button')` não serve de trava (a seta
+    // É o botão, e ninguém aninha botão em botão) — achado do full review de 18/09/2026.
+    expect(seta.contains(botao)).toBe(false)
+    // A ordem do DOM é seta, brief, saída — e, sem `tabIndex` em lugar nenhum, ela é a ordem
+    // do Tab. Se algum dia aparecer um `tabIndex`, esta asserção para de falar do Tab.
+    expect(view.container.querySelector('[tabindex]')).toBeNull()
+    const foco = Array.from(view.container.querySelectorAll<HTMLElement>('button, input'))
     expect(foco.at(-1)).toBe(botao)
+    expect(foco.at(0)).toBe(seta)
   })
 
   test('dois cliques seguidos guardam e navegam UMA vez só', async () => {
@@ -260,5 +269,120 @@ describe('Voltar ao plano', () => {
     render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
     fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError))
+  })
+})
+
+/**
+ * 18/09/2026 — "o painel ocupa muito espaço da tela e sobra pouco para a criação".
+ * O `<details open>` recolhia, mas com o triângulo do navegador (que criança não acha) e
+ * esquecendo a escolha ao sair. Agora é seta de verdade, e quem LEMBRA é o host.
+ */
+describe('a seta que recolhe o brief', () => {
+  function setaDe(container: HTMLElement): HTMLButtonElement {
+    const seta = container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    return seta
+  }
+
+  test('sem o par do host, o painel recolhe sozinho e o corpo some', () => {
+    const view = render(<TaskBriefPanel session={session().value} />)
+    const seta = setaDe(view.container)
+    expect(seta.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByText('Como deve parecer')).toBeTruthy()
+    fireEvent.click(seta)
+    expect(seta.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByText('Como deve parecer')).toBeNull()
+    fireEvent.click(seta)
+    expect(screen.getByText('Como deve parecer')).toBeTruthy()
+  })
+
+  test('recolhido, o caminho de volta ao plano CONTINUA na tela', () => {
+    // A regra que já custou caro uma vez: recolher não pode esconder a única saída.
+    const view = render(
+      <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
+    )
+    fireEvent.click(setaDe(view.container))
+    expect(screen.queryByText('Como deve parecer')).toBeNull()
+    expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
+  })
+
+  test('com o par do host, quem manda é o `collapsed` e a seta só AVISA', () => {
+    const onCollapsedChange = mock((_v: boolean) => undefined)
+    const base = session().value
+    const view = render(
+      <TaskBriefPanel session={{ ...base, collapsed: true, onCollapsedChange }} />,
+    )
+    // Nasce recolhido porque o host lembrou — não porque o painel decidiu.
+    expect(setaDe(view.container).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByText('Como deve parecer')).toBeNull()
+    fireEvent.click(setaDe(view.container))
+    expect(onCollapsedChange).toHaveBeenCalledWith(false)
+    // ⚠️ E NÃO abriu sozinho: o host é a fonte da verdade, e ele ainda diz `true`.
+    expect(setaDe(view.container).getAttribute('aria-expanded')).toBe('false')
+    // Quando o host devolve o valor novo, aí sim abre.
+    view.rerender(<TaskBriefPanel session={{ ...base, collapsed: false, onCollapsedChange }} />)
+    expect(screen.getByText('Como deve parecer')).toBeTruthy()
+  })
+
+  test('o corpo que recolhe é o que a seta aponta, e o painel tem respiro embaixo', () => {
+    const view = render(<TaskBriefPanel session={session().value} />)
+    const seta = setaDe(view.container)
+    const corpo = view.container.querySelector(`#${seta.getAttribute('aria-controls')}`)
+    expect(corpo?.contains(screen.getByText('Como deve parecer'))).toBe(true)
+    // ⚠️ A margem de baixo é o "não fica grudado na ferramenta" que ela pediu: sem ela o
+    // brief encosta no palco do Pinta, porque o host empilha os dois sem vão nenhum.
+    const quadro = view.container.firstElementChild as HTMLElement
+    // ⚠ `classList.contains`, não `className.toContain`: 'mb-20' contém 'mb-2', e o teste
+    // passaria com um respiro dez vezes maior (achado do full review de 18/09/2026).
+    expect(quadro.classList.contains('mb-2')).toBe(true)
+    // ⚠ Recolhido, o corpo DESMONTA e o `aria-controls` SAI: apontar para um id que não
+    // existe é referência pendurada para o leitor de tela (a régua do `Panel` do pacote).
+    fireEvent.click(seta)
+    expect(seta.getAttribute('aria-controls')).toBeNull()
+    expect(seta.getAttribute('aria-expanded')).toBe('false')
+  })
+})
+
+/**
+ * 18/09/2026, achado do full review — e é ALTO justamente porque a seta passou a LEMBRAR.
+ * O aviso do desenho ausente morava dentro do brief, com os dois únicos botões que o
+ * resolvem. Com o `<details open>` de antes isso era tolerável (nascia aberto toda vez);
+ * com a escolha guardada, a criança que recolheu uma vez abriria a tarefa noutro aparelho e
+ * veria só o título, sem nada dizendo que existe um caminho de volta.
+ */
+describe('recolher esconde o brief, nunca um problema', () => {
+  test('com o desenho ausente, o aviso e os dois caminhos FICAM na tela recolhido', () => {
+    const view = render(
+      <TaskBriefPanel
+        session={session().value}
+        outputMissing
+        onRecreate={() => {}}
+        onRelink={() => {}}
+        onReturn={async () => undefined}
+      />,
+    )
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    fireEvent.click(seta)
+    // O brief some...
+    expect(screen.queryByText('Como deve parecer')).toBeNull()
+    // ...mas o alarme e as duas saídas, não.
+    expect(screen.getByRole('alert').textContent).toContain('não está neste aparelho')
+    expect(screen.getByRole('button', { name: 'Recriar com este brief' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Vincular outro desenho' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
+  })
+
+  test('sem problema nenhum, recolhido mostra só o pé da volta', () => {
+    // Anti-vácuo do caso acima: o alerta não é um elemento que esteja sempre lá.
+    const view = render(
+      <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
+    )
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    fireEvent.click(seta)
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Recriar com este brief' })).toBeNull()
+    expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
   })
 })

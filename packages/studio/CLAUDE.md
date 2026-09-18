@@ -21,7 +21,31 @@ Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidireci
 
 **Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
 de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
-progresso pelo callback do host. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
+progresso pelo callback do host.
+⭐⭐ **Ele RECOLHE por uma seta (18/09/2026).** Era o único dos três guias do Pensa que não
+recolhia, e no celular ele é a faixa do topo, comendo altura da área de criação. O botão mora
+DENTRO do `<h2>` (padrão de disclosure com cabeçalho), 44px, `aria-expanded`; recolhido, o título
+e a pílula de situação FICAM. Quem LEMBRA é o host: o par OPCIONAL
+`collapsed`/`onCollapsedChange` do `StudioTaskSession` desce como DADO (o mesmo idioma do
+`menu.hidden`/`onToggle` do `StudioHostChrome`), porque o pacote não conhece `viewerId` nem
+`localStorage`; sem o par, recolhe sozinho e esquece ao sair.
+⚠ `taskSession` NÃO é latchado no `StudioCore` (ao contrário de `activity`, `share`,
+`onCloudSync` e `onEditDrawing`), e é isso que faz o `collapsed` do host chegar vivo ao painel —
+latchar aquele contrato deixaria a seta MUDA.
+⚠ A margem de baixo é `mb-2 lg:mb-0`: até `lg` o guia é a faixa do topo e encostava no editor; a
+partir daí ele vira coluna lateral `lg:w-80` e quem separa é a borda da direita. O teto de altura
+e a rolagem só valem ABERTO.
+⚠⚠ O recado de falha (`syncError`) fica FORA do que recolhe: recolher esconde o brief, nunca um
+problema — a mesma lição que o irmão do Pinta pagou com o "Voltar ao plano".
+⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta; id ausente é referência pendurada).
+⭐ **E a COLUNA encolhe recolhida** (conserto do full review de 18/09/2026): com o `lg:w-80` fixo
+na base, a partir de `lg` recolher devolvia altura nenhuma e largura nenhuma — 320px de título e
+vazio, com a seta parecendo inerte justo onde a largura é cara. Hoje o `lg:w-80` só vale aberto e
+o recolhido é `lg:w-auto lg:max-w-80`: título longo continua no pior caso de antes, título curto
+devolve o resto. O `mb-2` saiu para a base pelo mesmo motivo (no ramo do aberto, recolhido ele
+voltava a encostar no editor).
+⚠ O sobretítulo "Guia da tarefa" dentro do botão é `aria-hidden`: o `<aside>` em volta já se
+chama assim, e sem isso o leitor anunciava o nome duas vezes. O nome do botão é a TAREFA. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
 associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 

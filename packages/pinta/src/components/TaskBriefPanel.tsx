@@ -1,7 +1,8 @@
 import type { JSX } from 'react'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaTaskSession } from '../core/types'
+import { ChevronDown } from './ui/icons'
 
 export function TaskBriefPanel({
   session,
@@ -89,6 +90,17 @@ export function TaskBriefPanel({
     session.guide.criteria
       .filter((item) => item.required)
       .every((item) => session.progress.completedCriteriaIds.includes(item.id))
+  // ⚠ O host manda o `collapsed` quando LEMBRA (uma chave por criança, valendo para as três
+  // oficinas). Sem o par, o painel recolhe por conta própria e esquece ao sair: é o caso do
+  // playground, da aula e dos testes, que não têm perfil para lembrar de nada.
+  const [recolhidoLocal, setRecolhidoLocal] = useState(false)
+  const recolhido = session.collapsed ?? recolhidoLocal
+  const corpoId = useId()
+  function trocarRecolhido(): void {
+    const proximo = !recolhido
+    setRecolhidoLocal(proximo)
+    session.onCollapsedChange?.(proximo)
+  }
   const outputReady =
     !!session.progress.outputRef &&
     !outputMissing &&
@@ -104,12 +116,33 @@ export function TaskBriefPanel({
      * galeria. Pior: o `<details>` é o MESMO nó do DOM na galeria e no editor, então
      * recolhido ele atravessava a troca de tela e escondia o ÚNICO caminho de volta.
      */
-    <div className="mx-2 mt-2 shrink-0 rounded-2xl border-2 border-pin-accent/40 bg-pin-surface px-3 py-2">
-      <details open>
-        <summary className="cursor-pointer text-sm font-black text-pin-text">
-          Brief do meu jogo · {session.title}
-        </summary>
-        <div className="mt-2 grid max-h-52 gap-3 overflow-auto text-sm md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]">
+    <div className="mx-2 mt-2 mb-2 shrink-0 rounded-2xl border-2 border-pin-accent/40 bg-pin-surface px-3 py-2">
+      {/*
+       * ⭐ A seta que recolhe (18/09/2026). Era um `<details open>`: recolhia, mas o
+       * triângulo do navegador é discreto demais para uma criança achar, e o estado morria
+       * ao sair. Agora é botão de verdade (44px, `aria-expanded`/`aria-controls`) e quem
+       * LEMBRA é o host, por criança — sem o par no contrato ele recolhe sozinho e esquece.
+       */}
+      <button
+        type="button"
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl text-left text-sm font-black text-pin-text transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        aria-expanded={!recolhido}
+        // ⚠ Recolhido o corpo DESMONTA: apontar para um id que não existe é referência
+        // pendurada para o leitor de tela. Mesma régua do `Panel` do pacote.
+        aria-controls={recolhido ? undefined : corpoId}
+        onClick={trocarRecolhido}
+      >
+        <span className="min-w-0 truncate">Brief do meu jogo · {session.title}</span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-5 shrink-0 transition-transform ${recolhido ? '' : 'rotate-180'}`}
+        />
+      </button>
+      {recolhido ? null : (
+        <div
+          id={corpoId}
+          className="mt-2 grid max-h-52 gap-3 overflow-auto text-sm md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]"
+        >
           <div>
             <p className="font-bold text-pin-text">Como deve parecer</p>
             <p className="text-pin-muted">{session.brief.appearance}</p>
@@ -186,33 +219,6 @@ export function TaskBriefPanel({
                 Crie ou vincule um desenho neste aparelho.
               </small>
             ) : null}
-            {outputMissing ? (
-              <div
-                className="grid gap-2 rounded-xl border border-pin-danger/40 bg-pin-bg p-2"
-                role="alert"
-              >
-                <small className="text-center font-bold text-pin-danger">
-                  Este desenho não está neste aparelho.
-                </small>
-                <button
-                  type="button"
-                  className="min-h-11 rounded-lg border border-pin-accent font-bold"
-                  onClick={onRecreate}
-                >
-                  Recriar com este brief
-                </button>
-                <button
-                  type="button"
-                  className="min-h-11 rounded-lg border border-pin-border font-bold"
-                  onClick={onRelink}
-                >
-                  Vincular outro desenho
-                </button>
-                <small className="text-center text-pin-muted">
-                  Para vincular, abra um desenho da galeria e salve-o.
-                </small>
-              </div>
-            ) : null}
             {session.studioUseBlockedReason ? (
               <small className="text-center font-bold text-pin-danger">
                 {session.studioUseBlockedReason}
@@ -227,19 +233,51 @@ export function TaskBriefPanel({
             ) : null}
           </div>
         </div>
-      </details>
+      )}
       {/*
        * O pé SEMPRE visível. Fica aqui, e não dentro do `<summary>`, porque controle
        * interativo dentro de um resumo é semântica errada (o clique abriria e fecharia o
        * brief). A ordem de leitura e o Tab seguem o texto: resumo, brief, saída.
        *
        * O recado de falha desceu junto com o botão, e não é só o da volta: recolher o
-       * brief também escondia o recado de uma marcação que não subiu. Um `role="alert"`
-       * só para os três casos (marcar, concluir, voltar); o outro alerta do painel é o do
-       * desenho ausente, que mora junto dos botões que o resolvem.
+       * brief também escondia o recado de uma marcação que não subiu.
+       *
+       * ⚠⚠ **E o aviso do desenho AUSENTE desceu junto (18/09/2026).** Ele morava com os dois
+       * botões que o resolvem, dentro do brief, e isso era tolerável enquanto o `<details>`
+       * nascia aberto toda vez. Com a seta que LEMBRA, deixou de ser: a criança que recolheu
+       * uma vez abriria a tarefa noutro aparelho, sem o desenho vinculado, e veria só o título
+       * — o aviso e os ÚNICOS dois caminhos de recuperação (recriar, vincular) invisíveis, sem
+       * nada dizendo que existem. Recolher esconde o brief, nunca um problema.
        */}
-      {onReturn || syncError ? (
+      {onReturn || syncError || outputMissing ? (
         <div className="mt-2 grid gap-1 border-t border-pin-border pt-2">
+          {outputMissing ? (
+            <div
+              className="grid gap-2 rounded-xl border border-pin-danger/40 bg-pin-bg p-2"
+              role="alert"
+            >
+              <small className="text-center font-bold text-pin-danger">
+                Este desenho não está neste aparelho.
+              </small>
+              <button
+                type="button"
+                className="min-h-11 rounded-lg border border-pin-accent font-bold"
+                onClick={onRecreate}
+              >
+                Recriar com este brief
+              </button>
+              <button
+                type="button"
+                className="min-h-11 rounded-lg border border-pin-border font-bold"
+                onClick={onRelink}
+              >
+                Vincular outro desenho
+              </button>
+              <small className="text-center text-pin-muted">
+                Para vincular, abra um desenho da galeria e salve-o.
+              </small>
+            </div>
+          ) : null}
           {onReturn ? (
             <>
               {/* Fica na tela INCLUSIVE com a tarefa concluída: terminar o desenho é

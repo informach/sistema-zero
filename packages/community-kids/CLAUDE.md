@@ -2215,6 +2215,36 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   nas duas telas. O id do plano vem do HANDOFF, nunca de parâmetro novo na URL, e quem guarda o
   desenho antes de navegar é o pacote. ⚠️ O `hostChrome.back` continua sendo só da galeria, sempre
   "Voltar para Criar" (`tests/host-chrome.test.tsx`, `tests/nav-back.test.ts`).
+  ⭐⭐ **O guia RECOLHE por uma seta, e quem lembra é o host (18/09/2026).** Relato dela: o painel
+  come muito da tela e sobra pouco para criar. Não existe "o painel": são TRÊS componentes
+  independentes — `TaskBriefPanel` (pacote pinta), `TaskGuidePanel` (pacote studio) e o
+  `MoldaTaskGuide` daqui, que era o único no host e o único cujo corpo engolia o "Voltar ao plano".
+  O estado mora AQUI, numa chave por CRIANÇA valendo para as três oficinas
+  (`sz:kids:pensa-guia-recolhido:<viewerId>`, hook `use-pensa-guide-collapsed.tsx`), e desce aos
+  dois pacotes como DADO pelo par OPCIONAL `collapsed`/`onCollapsedChange` das sessões de tarefa —
+  o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`, porque os pacotes não conhecem
+  `viewerId` nem `localStorage`. ⚠⚠ **O hook mora nos TRÊS clients, nunca dentro do painel** (conserto do full review de
+  18/09/2026): ele lê a preferência num efeito pós-mount, e o `MoldaTaskGuide` — que só monta
+  depois de o módulo do Molda carregar e o handoff resolver — pintava ABERTO no primeiro quadro e
+  fechava no seguinte. Pior: a `key` dele inclui a `revision` da tarefa, então cada progresso
+  guardado remontava e repetia o pisca. Nos clients o hook monta muito antes, e o painel já nasce
+  com o valor certo — por isso o guia do Molda também recebe `collapsed`/`onCollapsedChange` por
+  PROP, como os irmãos.
+  ⚠ Cobertura que FALTA, declarada: a fiação dos clients (o par descendo pelo adapter e pela
+  sessão) não tem teste. O hook tem o seu (`tests/use-pensa-guide-collapsed.test.tsx`, com os dois
+  mutantes que sobreviviam: gravar só o `'1'`, e vazar entre irmãos por varredura de prefixo) e os
+  três painéis têm os deles.
+  ⚠⚠ **A preferência é lida num `useEffect` PÓS-MOUNT, nunca no inicializador do `useState`**:
+  ler `localStorage` na primeira renderização dá mismatch de hidratação (React #418). Molde exato
+  do `focus-mode.tsx`, e a regra é load-bearing — ela já custou caro uma vez.
+  ⚠⚠ **O pé do Molda SAIU do que recolhe**: o `<details>` antigo embrulhava tudo, então recolher
+  escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não subiu — o
+  defeito que o irmão do Pinta já tinha pago. De quebra o pé saiu do corpo que ROLA (`max-h-80`),
+  onde os botões nasciam abaixo da dobra no celular.
+  ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
+  (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
+  `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
+  de fechar o lote, porque um remonte ali custaria o desenho aberto da criança.
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa

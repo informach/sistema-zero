@@ -14,6 +14,7 @@ import {
 } from '@/lib/pinta-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
@@ -148,6 +149,12 @@ export function PintaClient({
     }
   }, [persistence])
 
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
+  // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
+  // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
   const adapter = useMemo<PintaHostAdapter>(() => {
     const initialIntent: PintaInitialIntent | undefined =
       handoff && !handoff.task.progress.outputRef
@@ -203,6 +210,8 @@ export function PintaClient({
           // Quem guarda o desenho ANTES de chamar é o próprio Pinta.
           onReturnToPlan: () =>
             router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
+          collapsed: guiaRecolhido,
+          onCollapsedChange: setGuiaRecolhido,
         }
       : undefined
     return {
@@ -287,6 +296,8 @@ export function PintaClient({
     updateHandoffProgress,
     retryHandoff,
     initialAssetId,
+    guiaRecolhido,
+    setGuiaRecolhido,
   ])
 
   // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da barra do

@@ -78,6 +78,19 @@ ausente = o botão não aparece) o painel ganha o botão de volta ao plano do Pe
 editor, inclusive com a tarefa concluída. O rótulo é o MESMO do Molda (`COPY.task.back`) e não muda
 enquanto guarda (`disabled` + `aria-busy` com o mesmo texto: trocá-lo mudaria o nome acessível no
 meio da ação). O id do plano já vem em `session.project.id` — nenhum parâmetro novo de URL.
+⭐⭐ **A seta que recolhe (18/09/2026)**: o brief era um `<details open>` — recolhia, mas com o
+triângulo do navegador (que criança não acha) e esquecendo a escolha ao sair. Virou botão de
+verdade (44px, `aria-expanded`, chevron `aria-hidden`), e o painel ganhou `mb-2`: o host empilha
+brief e palco sem vão nenhum, e sem a margem um encosta no outro. Quem LEMBRA é o HOST — o par
+OPCIONAL `collapsed`/`onCollapsedChange` do `PintaTaskSession` desce como DADO, o mesmo idioma do
+`menu.hidden`/`onToggle` do `hostChrome`, porque este pacote não conhece `viewerId` nem
+`localStorage`. Sem o par (playground, `<PintaLesson>`, admin) ele recolhe por conta própria e
+esquece ao sair. ⚠ Com o par, quem manda é o host: clicar AVISA e não abre sozinho.
+⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta, e apontar para um id ausente é referência
+pendurada para o leitor de tela — a mesma régua do `Panel` deste pacote).
+⚠⚠ **O que recolhe é SÓ o brief**: o "Voltar ao plano" e o recado de falha seguem fora dele, que
+é a lição de 09/2026 logo abaixo. `TaskBriefPanel.test.tsx` trava o invariante (e não a tag: o
+teste antigo exigia `<details>` e foi reescrito).
 ⚠️ O `PintaApp` GUARDA antes de navegar: ele pega a store do editor aberto pelo `onEditorReady` do
 contexto (2º consumidor, ao lado do bloco de aula) e só chama o host com `flush().ok`, a mesma
 disciplina do "Voltar" do editor; falhou, o painel mostra o recado no `syncError` e NÃO navega (o
