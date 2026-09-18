@@ -201,9 +201,9 @@ describe('a frase embaixo do palco', () => {
     // A frase genérica era a mesma nas catorze cenas e em todo estado. Esta asserção morde: o
     // texto antigo está escrito aqui de propósito.
     render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
-    await screen.findByRole('button', { name: '＋ Criar Dino' })
+    await screen.findByRole('button', { name: 'Criar o Dino' })
     expect(screen.queryByText('Siga a missão e observe o resultado.')).toBeNull()
-    // ⚠️ Mira no `role="status"`: a narração mora ali. A descrição do SVG fala do DESENHO
+    // ⚠️ Mira no `role="status"`: a narração mora ali. A descrição do SVG fala da CENA
     // (o que está no palco) e não repete a frase — foi uma duplicação achada no full review,
     // que fazia o leitor de tela ouvir a mesma coisa duas vezes.
     const status = screen
@@ -212,7 +212,7 @@ describe('a frase embaixo do palco', () => {
       .join(' | ')
     // ⚠️ Mudou de propósito (lote 2 do Raio-X): a frase descreve o ESTADO, sem "ninguém foi criado
     // ainda" puxando a resposta da previsão.
-    expect(status).toContain('Os bastidores estão vazios, com o desenho desligado.')
+    expect(status).toContain('Os bastidores estão vazios e a tela do jogo também.')
     const desenho = document.querySelector('svg desc')?.textContent ?? ''
     expect(desenho).not.toContain('Os bastidores estão vazios')
     expect(desenho.length).toBeGreaterThan(10)
@@ -1290,8 +1290,8 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
     // ⚠️ A cena `world` nasce VAZIA, e a frase mais arriscada do player ("o Dino continua…") só
     // existe DEPOIS de criar. Sem este clique a varredura lia uma tela onde ela nem está, e
     // aprovava a frase errada em silêncio (achado por mutação).
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar nave' }))
-    await waitFor(() => expect(screen.queryByRole('button', { name: '＋ Criar nave' })).toBeNull())
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar a nave' }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Criar a nave' })).toBeNull())
     const texto = document.body.textContent ?? ''
     // ⚠️⚠️ A janela de até duas palavras no meio é o ponto desta varredura: a régua do elenco só
     // flexiona o que está COLADO ao nome, então o erro real do player é sempre com alguma coisa

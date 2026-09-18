@@ -231,30 +231,36 @@ describe('a criança mexendo na cena', () => {
     expect(ligados).toEqual([true])
   })
 
-  test('⭐⭐ criar e desenhar são controles INDEPENDENTES, e o mundo guarda o MESMO objeto', async () => {
-    // Lote 5 do Raio-X: o fio só abria depois de criar, então ligar o desenho sem ninguém criado não
-    // existia. Hoje a chave do desenho está à vista e viva desde a abertura.
+  test('⭐⭐ criar nos bastidores vem antes de mostrar na tela, sem esconder o próximo passo', async () => {
     render(<InteractiveLessonBlock block={block('world')} previewContent={content('world')} />)
-    const chave = () => screen.getByRole('button', { name: /Desenhar o Dino na tela/ })
-    expect(chave().textContent).toContain('desligado')
-    expect(chave().getAttribute('aria-pressed')).toBe('false')
-    fireEvent.click(chave())
-    expect(chave().getAttribute('aria-pressed')).toBe('true')
-    const descricoes = () => [...document.querySelectorAll('desc')].map((d) => d.textContent ?? '')
-    // Desenho ligado e ninguém criado: a tela continua vazia, e nenhuma meta cai.
-    expect(descricoes()).toContain('A tela do jogo sem nada desenhado.')
+    expect(screen.getByRole('group', { name: 'Nos bastidores' })).toBeTruthy()
+    expect(screen.getByRole('group', { name: 'Na tela do jogo' })).toBeTruthy()
+    const mostrar = () => screen.getByRole('button', { name: 'Mostrar o Dino na tela' })
+    expect(mostrar().getAttribute('aria-disabled')).toBe('true')
+    expect(mostrar().getAttribute('aria-describedby')).toBe('world-tela-do-jogo-nota')
+    expect(screen.getByText('Primeiro, crie o Dino nos bastidores.')).toBeTruthy()
+    fireEvent.click(mostrar())
     expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('0')
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
-    // ⚠️ O MESMO Dino, dito pelo DESENHO: a ficha dos bastidores tem o nome e o lugar, e a tela o
-    // desenha nesse lugar.
-    expect(screen.getByTitle('Nos bastidores')).toBeTruthy()
-    expect(descricoes()).toContain('A tela do jogo com o Dino desenhado.')
-    expect(descricoes()).toContain('Uma ficha guardada, do Dino: nome dino, x 110, y 150.')
-    // Desligar tira o Dino da tela, e não dos bastidores.
-    fireEvent.click(chave())
+    expect(
+      screen.getByRole('button', { name: '✓ Dino nos bastidores' }).getAttribute('aria-disabled'),
+    ).toBe('true')
+    expect(mostrar().getAttribute('aria-disabled')).toBeNull()
+    const descricoes = () => [...document.querySelectorAll('desc')].map((d) => d.textContent ?? '')
+    expect(descricoes()).toContain('A tela do jogo sem o Dino.')
+
+    fireEvent.click(mostrar())
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('2'))
-    expect(descricoes()).toContain('A tela do jogo sem nada desenhado.')
+    expect(screen.getByRole('button', { name: 'Tirar o Dino da tela' })).toBeTruthy()
+    // O mesmo Dino que foi criado continua na ficha e aparece no mesmo lugar do jogo.
+    expect(screen.getByTitle('Nos bastidores')).toBeTruthy()
+    expect(descricoes()).toContain('A tela do jogo com o Dino.')
+    expect(descricoes()).toContain('Uma ficha guardada, do Dino: nome dino, x 110, y 150.')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tirar o Dino da tela' }))
+    expect(descricoes()).toContain('A tela do jogo sem o Dino.')
     expect(descricoes()).toContain('Uma ficha guardada, do Dino: nome dino, x 110, y 150.')
   })
 
@@ -391,8 +397,8 @@ describe('a criança mexendo na cena', () => {
         <InteractiveLessonBlock block={block('world')} />
       </LessonPlayerProvider>,
     )
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(
       () => expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy(),
       { timeout: 5000 },
@@ -401,12 +407,12 @@ describe('a criança mexendo na cena', () => {
     expect(screen.getAllByRole('button', { name: 'Recomeçar' })).toHaveLength(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
-    await screen.findByRole('button', { name: '＋ Criar Dino' })
+    await screen.findByRole('button', { name: 'Criar o Dino' })
     // A descoberta FICA (ela não se desfaz), e nada diz que o palco vazio está concluído.
     expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
     expect(document.body.textContent).not.toMatch(/Você concluiu|investigação|mexendo de novo/)
     // E voltar a mexer não troca a frase por outra afirmação sobre o palco.
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
     expect(document.body.textContent).not.toMatch(/Você concluiu|investigação/)
   })
@@ -722,7 +728,7 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
       'Prévia da experiência: Bastidores e tela do jogo',
     )
     expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
-    expect(screen.queryByRole('button', { name: '＋ Criar Dino' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
     expect(screen.queryByRole('meter')).toBeNull()
@@ -731,13 +737,13 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
     fireEvent.click(escolha)
     await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
-    expect(await screen.findByRole('button', { name: '＋ Criar Dino' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'Criar o Dino' })).toBeTruthy()
     expect(document.activeElement?.textContent).toContain(SCENE_MODELS.world.instruction)
     expect(screen.getByRole('button', { name: 'Trocar meu palpite' })).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Trocar meu palpite' }))
     await waitFor(() => expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy())
-    expect(screen.queryByRole('button', { name: '＋ Criar Dino' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
     expect(document.activeElement?.textContent).toContain(
       'Nesta experiência, vamos comparar o que existe nos bastidores',
     )
@@ -748,10 +754,10 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     servidorQueCorrige(mundoComPalpite())
     aluno(mundoComPalpite())
     fireEvent.click(await screen.findByRole('button', { name: 'A tela fica vazia' }))
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
     await waitFor(() => expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy())
     expect(screen.queryByText(/Você achou/)).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!')
     // ⚠️ Mudou de propósito (full review de experiência, M2): o aviso é SOBREPOSTO ao palco, num cartão
     // opaco com a tinta e o contorno verdes (o fundo verde translúcido não se lia sobre o desenho).
@@ -800,8 +806,8 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
     fireEvent.click(
       await screen.findByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
     )
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(document.activeElement?.tagName).toBe('LEGEND'))
     expect(document.activeElement?.textContent).toContain(modelo.explain.prompt)
     await waitFor(() => expect(anunciado()).toContain('Você descobriu! Agora responda a pergunta.'))
@@ -846,7 +852,7 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
     expect(explicacao.closest('details')?.open).toBe(false)
     expect(explicacao.closest('details')?.textContent).toContain('Ver a explicação')
     // ⚠️ O palpite NÃO tranca a revisita (sem palpite guardado neste perfil) e a pergunta some.
-    const criar = await screen.findByRole('button', { name: '＋ Criar Dino' })
+    const criar = await screen.findByRole('button', { name: 'Criar o Dino' })
     await waitFor(() => expect(criar.closest('fieldset[disabled]')).toBeNull())
     expect(screen.queryByText('Primeiro, seu palpite ↑')).toBeNull()
     expect(screen.queryByText('Agora explique')).toBeNull()
@@ -898,8 +904,8 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
     for (let i = 0; i < 3; i++) fireEvent.click(pista)
     expect(screen.getByText('Pista 3 de 3.')).toBeTruthy()
     expect(pista).toHaveProperty('disabled', true)
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy())
     expect(screen.queryByText('Pista 3 de 3.')).toBeNull()
   })
@@ -1095,8 +1101,8 @@ async function trocarOrdem(vezes: number) {
 }
 /** Conclui o `world` a partir do palco aberto. */
 function concluirMundo() {
-  fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
-  fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
 }
 const tentativas = (enviados: { url: string; body: Record<string, unknown> }[]) =>
   enviados.filter((e) => e.url.endsWith('/learning-attempts'))
@@ -1349,7 +1355,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     servidorQueCorrige(mundoComPalpite('hidden'))
     aluno(mundoComPalpite('hidden'))
     fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
     const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
     expect(await screen.findByText(retomado)).toBeTruthy()
     // Colado ao aviso da descoberta, SOBRE o pé do palco (e não lá em cima, fora da janela).
@@ -1357,7 +1363,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     const aviso = screen.getByText('Descoberta 1 de 2')
     expect(aviso.nextElementSibling?.querySelector('p')?.textContent).toBe(retomado)
     // O gesto seguinte (ligar o desenho, que também conclui a cena) tira a frase do instante.
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(screen.queryByText(retomado) === null).toBe(true))
     // Lá em cima, a linha no passado, sem mandar olhar nada.
     expect(screen.getByText('Não era isso.')).toBeTruthy()
@@ -1472,7 +1478,7 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
     servidorQueCorrige(bloco)
     aluno(bloco)
     await palpitar('world')
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Conferir' }))
     // ⚠️ O texto errado vivia UM render e sumia no seguinte, dentro do mesmo `act`: ler a região na
     // hora do aviso já a encontraria vazia. Os registros guardam o valor ANTIGO e os nós que saíram.
@@ -1497,7 +1503,7 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
       characterDataOldValue: true,
     })
     try {
-      fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+      fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
       await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), {
         timeout: 5000,
       })

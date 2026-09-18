@@ -50,22 +50,19 @@ describe('a cena que compara bastidores e tela', () => {
     const bastidoresVazio = await screen.findByText(/ainda vazio/)
     expect(bastidoresVazio).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: /Criar Dino/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     await waitFor(() => expect(screen.queryByText(/ainda vazio/)).toBeNull())
-    // O Dino está guardado de um lado e a TELA continua sem ninguém desenhado.
+    // O Dino existe nos bastidores e a tela do jogo continua sem o Dino.
     // ⚠️ Mudou de propósito no lote 1 do Raio-X (16/09/2026): a tela perguntava "Existe. E
     // aqui?" com o texto escrito POR CIMA da árvore do meio, ilegível. Quem diz que ela está
     // vazia agora é o desenho (e a descrição dele, para quem não enxerga).
     const descricoes = [...document.querySelectorAll('desc')].map((d) => d.textContent ?? '')
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a tela do jogo tem SÓ o fundo. As árvores ficavam lá
-    // com o desenho desligado, e a tela ensinava que "desligado" apaga só o Dino.
-    expect(descricoes).toContain('A tela do jogo sem nada desenhado.')
-    // ⚠️⚠️ Mudou de propósito no review do lote 1: o rodapé "Ele existe de um lado e não aparece
-    // do outro. Criar e mostrar são duas coisas." saiu. Tinha pronome que não concorda com a nave
-    // e respondia o "Agora explique" antes de a criança chegar nele.
-    expect(document.body.textContent).not.toMatch(/Ele existe|Criar e mostrar são duas coisas/)
-    // O lugar do botão fica, com o que aconteceu escrito: a chave não pula para o lugar dele.
-    expect(screen.getByText('✓ O Dino foi criado')).toBeTruthy()
+    expect(descricoes).toContain('A tela do jogo sem o Dino.')
+    // O título apresenta o assunto, mas o player não antecipa a resposta da explicação.
+    expect(document.body.textContent).not.toMatch(/Ele existe de um lado e não aparece do outro/)
+    // O primeiro passo ganha uma confirmação e o próximo continua claro.
+    expect(screen.getByText('O Dino já existe nos bastidores.')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Mostrar o Dino na tela' })).toBeTruthy()
   })
 
   test('⚠️⚠️ nenhum texto por cima do desenho, e nenhum rodapé que mente antes de criar', () => {
@@ -79,10 +76,9 @@ describe('a cena que compara bastidores e tela', () => {
     expect(document.body.textContent).not.toMatch(/morar|E aqui\?|esperam alguém criar/)
   })
 
-  test('⚠️ a tela só mostra o Dino que EXISTE, mesmo com o desenho ligado antes', async () => {
-    // Desde o lote 5 a chave do desenho fica à vista e viva antes de criar, e um caso de professor
-    // (ou a própria criança) pode ligá-la antes. Olhando só `drawn`, a tela mostrava um Dino que
-    // os bastidores diziam não existir.
+  test('⚠️ a tela não mostra o Dino quando uma configuração tenta pular a criação', async () => {
+    // Mesmo um manifesto inválido não pode fazer a tela mostrar um personagem que ainda não existe
+    // nos bastidores. O motor ignora o pedido de mostrar antes da criação.
     const comDesenho: InteractiveBlock = {
       ...conteudo,
       activity: {
@@ -99,7 +95,7 @@ describe('a cena que compara bastidores e tela', () => {
     )
     expect(await screen.findByText(/ainda vazio/)).toBeTruthy()
     const descricoes = [...document.querySelectorAll('desc')].map((d) => d.textContent ?? '')
-    expect(descricoes).toContain('A tela do jogo sem nada desenhado.')
+    expect(descricoes).toContain('A tela do jogo sem o Dino.')
   })
 
   test('⭐⭐ os bastidores são uma FICHA com nome e lugar, e a tela desenha o MESMO Dino ali (lote 5)', async () => {
@@ -107,7 +103,7 @@ describe('a cena que compara bastidores e tela', () => {
     // outra tela de jogo, com céu e grama. Hoje são papel liso com a ficha do personagem, e a ficha
     // ACENDE na cor do desenho enquanto ele está ligado.
     render(<InteractiveLessonBlock block={bloco} previewContent={conteudo} />)
-    fireEvent.click(await screen.findByRole('button', { name: /Criar Dino/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
     const bastidores = screen.getByTitle('Nos bastidores').closest('svg')
     await waitFor(() => expect(bastidores?.textContent).toContain('nome: dino'))
     expect(bastidores?.textContent).toContain('x 110 · y 150')
@@ -115,17 +111,17 @@ describe('a cena que compara bastidores e tela', () => {
     expect(bastidores?.querySelector('.fill-scene-sky, .fill-scene-grass')).toBeNull()
     const ficha = () => document.querySelector('[data-ficha]')
     expect(ficha()?.hasAttribute('data-acesa')).toBe(false)
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(ficha()?.hasAttribute('data-acesa')).toBe(true))
     const tela = screen.getByTitle('Na tela do jogo').closest('svg')
     expect(tela?.querySelectorAll('[data-figure="dino"]')).toHaveLength(1)
   })
 
   test('⚠️ a ação que MOVE a cena é o botão em destaque', () => {
-    // O item 1 do diagnóstico do print: "＋ Criar Dino" era um botãozinho cinza dentro de uma
+    // O item 1 do diagnóstico do print: "Criar o Dino" era um botãozinho cinza dentro de uma
     // caixa tracejada, e "Ver de novo" era o azul grande do rodapé. Estava invertido.
     render(<InteractiveLessonBlock block={bloco} previewContent={conteudo} />)
-    const criar = screen.getByRole('button', { name: /Criar Dino/ })
+    const criar = screen.getByRole('button', { name: 'Criar o Dino' })
     expect(criar.className).toContain('bg-primary')
     expect(criar.className).toContain('text-primary-foreground')
   })

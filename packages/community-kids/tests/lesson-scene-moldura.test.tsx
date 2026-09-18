@@ -246,7 +246,7 @@ describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio d
     ).not.toBeNull()
 
     // O gesto que responde o palpite: o selo e a frase entram SOBRE o palco.
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
     const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
     await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
     expect(lugar()).toBeNull()
@@ -256,7 +256,7 @@ describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio d
     expect(screen.getByText('Seu palpite:').closest('[data-lugar-reservado="palpite"]')).toBe(linha)
 
     // O gesto seguinte tira os avisos.
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(screen.queryByText(retomado)).toBeNull())
     expect(sobre()).toBeNull()
   })

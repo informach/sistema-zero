@@ -74,12 +74,7 @@ const NO_JOGO: Record<
 
 export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { created, drawn } = state.world
-  /**
-   * ⚠️ A tela mostra o Dino só quando ele EXISTE e o desenho está ligado. Olhando só `drawn`, um
-   * caso de professor com o desenho ligado abria a cena com os bastidores vazios e o Dino na tela
-   * — o contrário exato do que a aula ensina. Desde o lote 5 a chave do desenho fica à vista antes
-   * de criar, então "desenho ligado, ninguém criado" é um estado que a criança alcança sozinha.
-   */
+  // O palco repete a regra do motor: só um personagem criado pode aparecer na tela do jogo.
   const naTela = created && drawn
   const heroi = actorFigure(cast, 'hero')
   const mundo = sceneCenario(cast, 'world')
@@ -102,9 +97,6 @@ export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCas
       mundo={mundo}
       titulo="Os bastidores e a tela do jogo, lado a lado"
       descricao={
-        // ⚠️ Sem "guardado… E desenhado": o elenco flexiona o particípio COLADO ao verbo e deixa o
-        // segundo para trás, e uma turma de nave ouvia "a nave está guardada nos bastidores E
-        // desenhado na tela" (relatório g1).
         created
           ? drawn
             ? 'O Dino está nos bastidores e também na tela do jogo.'
@@ -193,21 +185,17 @@ export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCas
         {
           titulo: 'Na tela do jogo',
           viewEmpilhado: TELA_EMPILHADA,
-          // ⚠️ O que quem não enxerga recebe no lugar do desenho: a tela VAZIA é vazia mesmo (lote 5).
           descricao: naTela
             ? espaco
-              ? 'A tela do jogo com o Dino desenhado entre as estrelas.'
-              : 'A tela do jogo com o Dino desenhado.'
+              ? 'A tela do jogo com o Dino entre as estrelas.'
+              : 'A tela do jogo com o Dino.'
             : espaco
-              ? 'A tela do jogo só com as estrelas do fundo, sem nada desenhado.'
-              : 'A tela do jogo sem nada desenhado.',
+              ? 'A tela do jogo só com as estrelas do fundo, sem o Dino.'
+              : 'A tela do jogo sem o Dino.',
           desenho: (
             <>
               <rect className="fill-scene-card" width={LADO.w} height={LADO.h} />
-              {/* ⚠️⚠️ A tela do jogo com moldura, do tamanho da do curso, e SÓ com o fundo (lote 5). As
-                  três árvores continuavam lá com o desenho desligado, e a tela ensinava que
-                  "desligado" apaga só o Dino; e a resposta certa da previsão antiga ("Nada") era
-                  desmentida pelo próprio desenho. */}
+              {/* A tela mantém só o cenário enquanto o Dino ainda está nos bastidores. */}
               <FundoDoCenario
                 cenario={mundo}
                 x={tela.x}

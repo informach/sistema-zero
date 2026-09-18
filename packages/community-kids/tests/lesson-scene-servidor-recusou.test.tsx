@@ -125,8 +125,8 @@ async function concluirEResponder(certa: boolean) {
       name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
     }),
   )
-  fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
-  fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
   await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
   const explicar = SCENE_QUESTIONS.world.explain
   fireEvent.click(
@@ -162,7 +162,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação qu
           name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
         }),
       )
-      fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
       await waitFor(
         () => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'),
         {
@@ -185,7 +185,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação qu
           name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
         }),
       )
-      fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
       await waitFor(
         () =>
           expect(screen.getByRole('alert').textContent).toBe(

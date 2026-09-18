@@ -41,39 +41,62 @@ export function ExplorationPieces({
   return (
     <div className="space-y-3">
       {m === 'world' && (
-        /* ⭐⭐ Lote 5 do Raio-X (16/09/2026): CRIAR e DESENHAR são dois controles independentes e
-           sempre à vista. O fio "Desenhar → Tela do jogo" só abria depois de criar, então a outra
-           metade do contraste (ligar o desenho sem ninguém criado) não existia, e as duas metas caíam
-           nos dois únicos toques possíveis, na única ordem possível. ⚠️ Sem a caixa tracejada em
-           volta: ela era uma caixa dentro da moldura da bancada. */
-        <div className="flex flex-wrap items-center gap-3">
-          {/* ⚠️⚠️ A linha "Bastidores · ainda vazio" SAIU (lote 5). Desde que o palco mostra os
-              bastidores e a tela lado a lado, ela era a mesma informação escrita duas vezes na
-              mesma tela — e o desenho diz melhor: a caixa ou está vazia, ou tem o Dino dentro. */}
-          {/* ⚠️⚠️ É ESTE o botão do print: a ação que MOVE a cena era um botãozinho de ferramenta
-              dentro de uma caixa tracejada, enquanto "Ver de novo" era o azul grande do rodapé.
-              ⚠️ Depois de criar, o lugar do botão FICA e continua FOCÁVEL (consertos do review da onda
-              A do lote 5): virava um `<p>`, e o foco de quem usa teclado caía no `body` no instante do
-              toque. Fechado, ele diz o que aconteceu, e um toque duplo não cai na chave ao lado. */}
-          <SceneButton
-            tom={state.world.created ? 'discreta' : 'gesto'}
-            fechado={state.world.created}
-            onClick={() => dispatch({ type: 'create' })}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <section
+            role="group"
+            aria-label="Nos bastidores"
+            className="space-y-2 rounded-2xl border border-border bg-muted/20 p-3"
           >
-            {castText(state.world.created ? '✓ O Dino foi criado' : '＋ Criar Dino', activity.cast)}
-          </SceneButton>
-          {/* A chave do desenho, com o ESTADO no rótulo (a régua da `Chave`). ⚠️ Mesma ação de antes
-              (`connect draw`): manifestos, roteiros e sessões guardadas seguem valendo. */}
-          <SceneButton
-            aria-pressed={state.world.drawn}
-            tom={state.world.drawn ? 'ligado' : 'ferramenta'}
-            onClick={() => dispatch({ type: 'connect', port: 'draw', enabled: !state.world.drawn })}
+            <p className="text-sm font-bold text-foreground">Nos bastidores</p>
+            <SceneButton
+              tom="gesto"
+              fechado={state.world.created}
+              onClick={() => dispatch({ type: 'create' })}
+            >
+              {castText(
+                state.world.created ? '✓ Dino nos bastidores' : 'Criar o Dino',
+                activity.cast,
+              )}
+            </SceneButton>
+            {state.world.created && (
+              <p className="text-sm text-muted-foreground">
+                {castText('O Dino já existe nos bastidores.', activity.cast)}
+              </p>
+            )}
+          </section>
+          <section
+            role="group"
+            aria-label="Na tela do jogo"
+            className="space-y-2 rounded-2xl border border-border bg-muted/20 p-3"
           >
-            {castText('Desenhar o Dino na tela', activity.cast)}:{' '}
-            {state.world.drawn ? 'ligado' : 'desligado'}
-          </SceneButton>
-          {/* ⚠️⚠️ A nota "O Dino continua nos bastidores com o desenho ligado ou desligado." SAIU
-              (lote 2 do Raio-X): ela respondia a pergunta extra da cena antes de a criança mexer. */}
+            <p className="text-sm font-bold text-foreground">Na tela do jogo</p>
+            <SceneButton
+              tom={state.world.drawn ? 'ligado' : 'ferramenta'}
+              fechado={!state.world.created}
+              aria-describedby="world-tela-do-jogo-nota"
+              onClick={() =>
+                dispatch({ type: 'connect', port: 'draw', enabled: !state.world.drawn })
+              }
+            >
+              {castText(
+                state.world.drawn ? 'Tirar o Dino da tela' : 'Mostrar o Dino na tela',
+                activity.cast,
+              )}
+            </SceneButton>
+            <p id="world-tela-do-jogo-nota" className="text-sm text-muted-foreground">
+              {!state.world.created
+                ? castText('Primeiro, crie o Dino nos bastidores.', activity.cast)
+                : state.world.drawn
+                  ? castText(
+                      'O Dino apareceu na tela do jogo. Agora, tire o Dino da tela para comparar.',
+                      activity.cast,
+                    )
+                  : castText(
+                      'O Dino está nos bastidores. Agora, mostre o Dino na tela do jogo.',
+                      activity.cast,
+                    )}
+            </p>
+          </section>
         </div>
       )}
       {/* ⭐⭐ As oito cenas do Corre Dino, primeira metade, têm bancada própria (lote 5 do Raio-X):

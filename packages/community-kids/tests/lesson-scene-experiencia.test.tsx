@@ -156,7 +156,7 @@ describe('M2 · os avisos da descoberta ficam SOBRE o palco, sem vão reservado 
     )
     await palpitar('world', 'O Dino aparece')
     expect(container.querySelector('[data-lugar-reservado="avisos"]')).toBeNull()
-    fireEvent.click(await screen.findByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
     const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
     await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
     const avisos = container.querySelector<HTMLElement>('[data-avisos-sobre-o-palco]')
@@ -381,11 +381,10 @@ describe('M9 · jump-sound: o Dino tocável tem foco visível e área de toque d
 })
 
 describe('B6 · a N-ésima bolinha acende com a N-ésima descoberta', () => {
-  test('world: criando com o desenho ligado cai a SEGUNDA meta, e acende a PRIMEIRA bolinha', async () => {
+  test('world: criar nos bastidores cai a PRIMEIRA meta e acende a PRIMEIRA bolinha', async () => {
     const { container } = abrir(bloco({ type: 'experimentation', scene: 'world' }))
     await palpitar('world')
-    fireEvent.click(screen.getByRole('button', { name: /Desenhar o Dino na tela/ }))
-    fireEvent.click(screen.getByRole('button', { name: '＋ Criar Dino' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
     const bolinhas = [...container.querySelectorAll('[role="meter"] > span.rounded-full')]
     expect(bolinhas.map((b) => b.className.includes('bg-primary'))).toEqual([true, false])
