@@ -1,7 +1,7 @@
 'use client'
 
 import type { LearningPrediction } from '@sistemazero/core/learning'
-import { falaDaPergunta } from '@sistemazero/core/learning/scene'
+import { falaDoPalpite } from '@sistemazero/core/learning/scene'
 import { Check, Eye } from 'lucide-react'
 import { type ReactNode, type RefObject, useId } from 'react'
 import type { DialogueSpeech } from './dialogue-block'
@@ -151,10 +151,7 @@ export function ScenePrediction({
         </legend>
         <div ref={dialogueRef} tabIndex={-1} className="clear-left outline-none">
           {renderDialogue(`${prediction.context.explanation}\n\n${prediction.prompt}`, {
-            texts: [
-              prediction.context.explanation,
-              falaDaPergunta(demonstracao ? 'Antes de assistir' : 'Seu palpite', prediction),
-            ],
+            texts: [falaDoPalpite(demonstracao ? 'Antes de assistir' : 'Seu palpite', prediction)],
             fallbackToBrowser: true,
           })}
         </div>
@@ -261,13 +258,5 @@ export function anuncioDaEscolha(
   if (!escolhida) return ''
   return `Seu palpite: ${semPontoFinal(escolhida.label)}. ${demonstracao ? 'Agora assista.' : 'A cena abriu.'}`
 }
-
-/**
- * A pergunta do palpite como a voz lê. ⚠⚠ A função MUDOU DE CASA (17/09/2026): ela mora no core
- * (`scene/voz.ts`) porque o gerador da voz do Zappy, no admin, precisa produzir a MESMA string — a
- * chave do dicionário é o texto falado. Duas cópias que divirjam num "Pode ser:" dão um áudio que
- * o player nunca encontra, sem erro nenhum. Reexportada daqui só para quem já a importava.
- */
-export { falaDaPergunta } from '@sistemazero/core/learning/scene'
 
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')

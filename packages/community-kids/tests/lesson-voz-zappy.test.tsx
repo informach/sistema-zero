@@ -3,6 +3,7 @@ import { publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   chaveDeVoz,
   SCENE_MODELS,
+  SCENE_QUESTIONS,
   type SceneId,
   textosFalaveisDaCena,
 } from '@sistemazero/core/learning/scene'
@@ -118,10 +119,19 @@ describe('a voz do Zappy chega ao player', () => {
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
       )
+      // Antes de escolher, só existe o balão do palpite. A primeira fala gravada da aula é a
+      // instrução, mas ela ainda não foi mostrada para a criança.
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
       await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(0))
-      // ⚠️ A fila inteira, na ordem: é o que prova que cada trecho foi ENCONTRADO no dicionário.
-      expect(audio.tocados[0]).toBe(URL_DA_FALA(0))
+      expect(audio.tocados[0]).toBe(URL_DA_FALA(1))
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
+        }),
+      )
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(1))
+      expect(audio.tocados[1]).toBe(URL_DA_FALA(0))
       // ⚠️⚠️ O anti-vácuo desta suíte: se o dicionário não respondesse, a fala cairia na síntese e
       // o teste acima continuaria verde com zero MP3 tocado — por isso a voz do navegador precisa
       // ter ficado CALADA.
@@ -139,13 +149,18 @@ describe('a voz do Zappy chega ao player', () => {
    * porque descreve o resultado). É exatamente o momento em que a criança aperta "Ouvir" para saber
    * o que vai acontecer.
    */
-  test('⭐ demonstração: a parte 1 fala a instrução do professor na voz do Zappy', async () => {
+  test('⭐ demonstração: depois do palpite, a instrução da parte 1 fala na voz do Zappy', async () => {
     const audio = audioFalso()
     const sintese = sinteseFalsa()
     try {
       const { bloco } = blocoComVoz('world', 'demonstration')
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
+      )
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
+        }),
       )
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
       await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(0))
@@ -159,14 +174,10 @@ describe('a voz do Zappy chega ao player', () => {
   })
 
   /**
-   * ⚠⚠ A REGRA DO TUDO OU NADA, no caminho real que a produz: a criança pede uma pista, o motor a
-   * monta na hora a partir do estado, e esse trecho nunca terá áudio gravado. A leitura INTEIRA sai
-   * na voz do navegador — nunca o Zappy dizendo a instrução e a voz do sistema emendando a pista.
-   *
-   * Este é o teste que MORDE se alguém trocar a regra por "toca o que tiver": o `tocados` vazio é a
-   * asserção, e ela falha no instante em que a fila passar a ser parcial.
+   * A pista não entra na fala da instrução. Assim, pedir ajuda não troca a voz do Zappy pela voz do
+   * navegador nem faz o botão repetir texto de outra etapa.
    */
-  test('⚠⚠ com a pista pedida, a fala INTEIRA cai para a voz do navegador', async () => {
+  test('⚠⚠ com a pista pedida, "Ouvir" continua sendo só a instrução gravada', async () => {
     const audio = audioFalso()
     const sintese = sinteseFalsa()
     try {
@@ -174,15 +185,15 @@ describe('a voz do Zappy chega ao player', () => {
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
       )
-      // ⚠️ O palpite pendente FECHA o rodapé inteiro ("Uma pista" incluso): sem responder, o clique
-      // abaixo seria mudo e o teste passaria pelo motivo errado.
+      // A pista só existe depois do palpite, junto da descoberta aberta.
       const opcoes = await screen.findAllByRole('button')
       const palpite = opcoes.find((b) => (b.textContent ?? '').startsWith('Nos bastidores'))
       if (palpite) fireEvent.click(palpite)
       fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
-      await waitFor(() => expect(sintese.falas.length).toBeGreaterThan(0))
-      expect(audio.tocados).toEqual([])
+      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(0))
+      expect(audio.tocados).toEqual([URL_DA_FALA(0)])
+      expect(sintese.falas).toEqual([])
     } finally {
       audio.restaurar()
       sintese.restaurar()

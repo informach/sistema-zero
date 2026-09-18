@@ -1352,7 +1352,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     )
   })
 
-  test('⚠️⚠️ na revisita de OUTRO aparelho (sem palpite guardado) não há "Antes de mexer"', async () => {
+  test('⚠️⚠️ na revisita de OUTRO aparelho, sem palpite guardado, só aparece a descoberta concluída', async () => {
     const bloco = content('world')
     servidorQueCorrige(bloco)
     const aprovado = {
@@ -1366,7 +1366,6 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     }
     aluno(bloco, aprovado)
     expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
-    expect(screen.queryByText('Antes de mexer') === null).toBe(true)
     expect(screen.queryByText(SCENE_QUESTIONS.world.prediction.prompt) === null).toBe(true)
     cleanup()
     // Com o palpite guardado neste aparelho, a linha curta no passado.
@@ -1375,7 +1374,6 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     guardarPalpite('crianca-moldura:aula:bloco:rev', previsao, previsao.correctChoiceId as string)
     aluno(bloco, aprovado)
     expect(await screen.findByText('Acertou!')).toBeTruthy()
-    expect(screen.queryByText('Antes de mexer') === null).toBe(true)
   })
 
   test('⚠️ antes do palpite não há ferramentas, e uma pista depois dele não apaga o trocar', async () => {

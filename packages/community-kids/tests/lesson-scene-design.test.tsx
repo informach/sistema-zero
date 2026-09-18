@@ -732,10 +732,7 @@ describe('a previsão antes de mexer', () => {
     prediction: PREVISAO,
   })
 
-  test('⚠️ o palco fica fechado até o palpite, e as ferramentas do rodapé NÃO', async () => {
-    // O gate é o motivo de a previsão existir: ver a cena mexer antes de palpitar acaba com a
-    // pergunta. ⚠️ Mas ele trava o PALCO, não o bloco: "Ligar som" e "Ouvir instrução" ficam
-    // no rodapé, e travar a fala gravada do professor fecharia a porta de quem ainda não lê.
+  test('⚠️ o palpite mostra contexto e prévia antes de montar a cena e as ferramentas', async () => {
     const c = comPrevisao('hitbox')
     render(
       <InteractiveLessonBlock
@@ -743,28 +740,19 @@ describe('a previsão antes de mexer', () => {
         previewContent={c}
       />,
     )
-    expect(await screen.findByText(PREVISAO.prompt)).toBeTruthy()
-    // ⚠️ `input.disabled` NÃO reflete a herança do `<fieldset disabled>`: quem morde é o
-    // fieldset, e é nele que a asserção precisa mirar (mesma lição dos botões do rodapé).
-    const distancia = screen.getByRole('slider', { name: 'Distância do cacto' })
-    expect(distancia.closest('fieldset')?.disabled).toBe(true)
-    // ⚠️ Mudou de propósito (lote 2): `hitbox` não faz som, então a ferramenta conferida é o
-    // "Recomeçar", que mora fora da trava do palco.
-    const recomecar = screen.getByRole('button', { name: 'Recomeçar' })
-    expect(recomecar.closest('fieldset[disabled]')).toBeNull()
-    // ⚠️ Mudou de propósito (consertos do review do lote 2): fora da trava, mas FECHADO com o motivo
-    // do véu. Um "Recomeçar" antes do palpite contava como gesto e apagava o "trocar"; e "Uma pista"
-    // aberta deixava ler, antes de palpitar, as pistas que respondem a previsão.
+    expect(
+      await screen.findAllByText(
+        (_, node) => node?.textContent?.includes(PREVISAO.prompt) === true,
+      ),
+    ).not.toHaveLength(0)
+    expect(screen.getByText(PREVISAO.context.label)).toBeTruthy()
+    expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy()
     for (const nome of ['Recomeçar', 'Uma pista']) {
-      const botao = screen.getByRole('button', { name: nome })
-      expect(botao.getAttribute('aria-disabled')).toBe('true')
-      expect(
-        document.getElementById(botao.getAttribute('aria-describedby') ?? '')?.textContent,
-      ).toContain('Primeiro, seu palpite')
+      expect(screen.queryByRole('button', { name: nome })).toBeNull()
     }
-    // ⚠️ E as opções são BOTÕES, não rádios.
+    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: PREVISAO.choices[0]?.label as string }))
-    await waitFor(() => expect(distancia.closest('fieldset')?.disabled).toBe(false))
+    const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
     // E a cena responde de verdade depois de aberta.
     fireEvent.change(distancia, { target: { value: '100' } })
     // ⚠️ Mudou de propósito (review do lote 2): sem a legenda "As áreas encostaram: batida!".
@@ -787,12 +775,11 @@ describe('a previsão antes de mexer', () => {
       />,
     )
     expect(await screen.findByText(/Pode errar: a cena mostra depois/)).toBeTruthy()
-    // ⚠️ A seta do véu mora num `<span aria-hidden>` (consertos do review do lote 2).
-    expect(screen.getByText(/Primeiro, seu palpite/)).toBeTruthy()
+    expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: PREVISAO.choices[1]?.label as string }))
     await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
     expect(screen.queryByRole('button', { name: PREVISAO.choices[0]?.label as string })).toBeNull()
-    expect(screen.queryByText(/Primeiro, seu palpite/)).toBeNull()
+    expect(screen.queryByTestId('scene-prediction-preview')).toBeNull()
     // ⚠️ Nada diz se ela acertou antes de a cena mostrar.
     expect(screen.queryByText(/Você achou/)).toBeNull()
   })
@@ -813,16 +800,20 @@ describe('a previsão antes de mexer', () => {
       />,
     )
     const modelo = SCENE_QUESTIONS.hitbox
-    expect(await screen.findByText(modelo.prediction.prompt)).toBeTruthy()
-    const distancia = screen.getByRole('slider', { name: 'Distância do cacto' })
-    expect(distancia.closest('fieldset')?.disabled).toBe(true)
+    expect(
+      await screen.findAllByText(
+        (_, node) => node?.textContent?.includes(modelo.prediction.prompt) === true,
+      ),
+    ).not.toHaveLength(0)
+    // A bancada inteira só existe depois do palpite; não há controles só desabilitados.
+    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
     // ⚠️ E o que é do servidor NÃO atravessa: a explicação só chega quando ela acerta.
     expect(document.body.innerHTML).not.toContain(modelo.explain.explanation)
     // O palpite abre a cena, e a cena responde de verdade.
     fireEvent.click(
       screen.getByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
     )
-    await waitFor(() => expect(distancia.closest('fieldset')?.disabled).toBe(false))
+    const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
     fireEvent.change(distancia, { target: { value: '100' } })
     // ⚠️ Mudou de propósito (review do lote 2): sem a legenda "As áreas encostaram: batida!".
     // ⚠️ E no lote 5: em 100 as áreas não encostam, e a frase segue o estado novo.
@@ -2183,8 +2174,7 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     expect(screen.getByRole('button', { name: /Ver de novo/ })).toBeTruthy()
   })
 
-  test('⚠️⚠️ a cortina da previsão cobre a BANCADA, e sai com o palpite', async () => {
-    // Com a bancada à vista durante o palpite, motivos e nomes de fio sopravam a resposta.
+  test('⚠️⚠️ antes do palpite a bancada não é montada, e depois dela abre completa', async () => {
     const publico = publicInteractiveBlock(content('hitbox'))
     render(
       <InteractiveLessonBlock
@@ -2192,13 +2182,12 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
       />,
     )
     const modelo = SCENE_QUESTIONS.hitbox
-    expect(await screen.findByText(modelo.prediction.prompt)).toBeTruthy()
-    const distancia = screen.getByRole('slider', { name: 'Distância do cacto' })
-    expect(distancia.closest('[inert]')).toBeTruthy()
+    await screen.findByRole('button', { name: modelo.prediction.choices[0]?.label as string })
+    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
     fireEvent.click(
       screen.getByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
     )
-    await waitFor(() => expect(distancia.closest('[inert]')).toBeNull())
+    expect(await screen.findByRole('slider', { name: 'Distância do cacto' })).toBeTruthy()
   })
 
   test('⚠️ a peça escolhida MUDA de cara, e escolher de novo desescolhe', async () => {

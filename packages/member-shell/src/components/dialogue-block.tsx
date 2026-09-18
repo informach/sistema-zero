@@ -3,7 +3,7 @@
 import { filaDeVoz, type SceneVozes } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Square, Volume2 } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useRef } from 'react'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 import type { DialogueBlock } from '../lib/types'
 import { useSceneVoice } from './use-scene-voice'
@@ -14,6 +14,10 @@ export interface DialogueSpeech {
   /** Uma unidade de fala fechada, sem instruções de outra etapa misturadas. */
   texts: readonly string[]
   vozes?: SceneVozes
+  /** Narração escolhida na autoria para esta fala; tem preferência sobre o dicionário gerado. */
+  audioUrl?: string
+  /** Legenda da narração, quando ela não corresponde literalmente ao texto visível. */
+  captionsText?: string
   /** As cenas podem usar a voz do navegador quando ainda não houver MP3 do Zappy. */
   fallbackToBrowser: boolean
 }
@@ -62,24 +66,42 @@ export function DialogueBlockView({
   const textos = speech?.texts ?? [content.text]
   const vozes = speech?.vozes ?? content.vozes
   const fila = filaDeVoz(textos, vozes)
+  const audio = useRef<HTMLAudioElement>(null)
+  const [tocandoArquivo, setTocandoArquivo] = useState(false)
+  /** Evita que `error` e a rejeição de `play()` disparem duas filas de fallback. */
+  const arquivoFalhou = useRef(false)
+  /** Um erro de pré-carregamento nunca pode iniciar fala sem a criança apertar “Ouvir”. */
+  const arquivoPedido = useRef(false)
   /**
    * ⚠⚠ O balão entra no FOCO de mídia da aula, como o vídeo e a cena. Sem registro o
    * `requestLessonMediaFocus` devolve falso sem pausar ninguém, e o Zappy falaria POR CIMA do
    * vídeo que está rodando — duas vozes ao mesmo tempo, que é pior que nenhuma.
    */
   const owner = useRef(Symbol('dialogue-voice'))
-  const parar = voz.parar
+  const parar = useCallback(() => {
+    arquivoFalhou.current = true
+    arquivoPedido.current = false
+    audio.current?.pause()
+    setTocandoArquivo(false)
+    voz.parar()
+  }, [voz.parar])
   useEffect(() => registerLessonMedia(owner.current, parar), [parar])
   /**
    * ⭐ A BOCA do mascote segue o áudio (o slot é renderizado DENTRO do provider, então o Zappy
    * que o kids injeta enxerga isto). ⚠️ A dependência é `temFala`, e não `fila`: o `filaDeVoz`
    * devolve um array NOVO a cada render e o contexto mudaria de identidade em todos eles.
    */
-  const temFala = fila !== null || (speech?.fallbackToBrowser === true && voz.temVoz)
-  const falaPropria = useMemo(
-    () => ({ podeFalar: temFala, falando: voz.falando }),
-    [temFala, voz.falando],
-  )
+  const temFala =
+    Boolean(speech?.audioUrl) || fila !== null || (speech?.fallbackToBrowser === true && voz.temVoz)
+  const falando = tocandoArquivo || voz.falando
+  const falaPropria = useMemo(() => ({ podeFalar: temFala, falando }), [falando, temFala])
+  const cairParaFala = useCallback(() => {
+    if (!arquivoPedido.current || arquivoFalhou.current) return
+    arquivoFalhou.current = true
+    arquivoPedido.current = false
+    setTocandoArquivo(false)
+    voz.falar(textos, vozes)
+  }, [textos, voz, vozes])
   const mascote = falaDaCena ? (
     mascot
   ) : (
@@ -99,6 +121,28 @@ export function DialogueBlockView({
             aviso) nem de `blockquote` (a atribuição é o mascote, que é decorativo
             e some para o leitor de tela, o que deixaria uma citação sem autor). */}
         <p className="whitespace-pre-line text-pretty text-base text-foreground">{content.text}</p>
+        {speech?.audioUrl ? (
+          <audio
+            ref={audio}
+            src={speech.audioUrl}
+            preload="metadata"
+            className="sr-only"
+            onPlay={() => setTocandoArquivo(true)}
+            onPause={() => setTocandoArquivo(false)}
+            onEnded={() => {
+              arquivoPedido.current = false
+              setTocandoArquivo(false)
+            }}
+            onError={cairParaFala}
+          >
+            <track
+              kind="captions"
+              srcLang="pt-BR"
+              label="Fala do Zappy"
+              src={`data:text/vtt;charset=utf-8,${encodeURIComponent(`WEBVTT\n\n00:00:00.000 --> 24:00:00.000\n${speech.captionsText ?? content.text}`)}`}
+            />
+          </audio>
+        ) : null}
         {temFala ? (
           <Button
             variant="outline"
@@ -108,19 +152,31 @@ export function DialogueBlockView({
             // toque do público (o ui desenha 36px).
             className="mt-3 min-h-11 gap-2 rounded-full"
             onClick={() => {
-              if (voz.falando) {
-                voz.parar()
+              if (falando) {
+                parar()
                 return
               }
               // ⚠️⚠️ Sem `await` antes de tocar: o Safari do iOS só libera o áudio dentro do gesto,
               // e esperar o pedido de foco (um Vimeo responde por mensagem) deixava o balão mudo.
               // A parte síncrona do pedido já pausa as outras mídias antes de o som entrar.
               void requestLessonMediaFocus(owner.current)
+              if (speech?.audioUrl) {
+                arquivoFalhou.current = false
+                arquivoPedido.current = true
+                const arquivo = audio.current
+                if (!arquivo) {
+                  cairParaFala()
+                  return
+                }
+                arquivo.currentTime = 0
+                void arquivo.play().catch(cairParaFala)
+                return
+              }
               voz.falar(textos, vozes)
             }}
           >
-            {voz.falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
-            {voz.falando ? 'Parar' : 'Ouvir'}
+            {falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
+            {falando ? 'Parar' : 'Ouvir'}
           </Button>
         ) : null}
       </div>

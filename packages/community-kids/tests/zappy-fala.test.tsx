@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { publicInteractiveBlock } from '@sistemazero/core/learning'
-import { chaveDeVoz, SCENE_MODELS, textosFalaveisDaCena } from '@sistemazero/core/learning/scene'
+import {
+  chaveDeVoz,
+  SCENE_MODELS,
+  SCENE_QUESTIONS,
+  textosFalaveisDaCena,
+} from '@sistemazero/core/learning/scene'
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
@@ -65,6 +70,31 @@ function audioFalso() {
   }
 }
 
+/** A narração escolhida na autoria usa o elemento `<audio>` do balão, não `new Audio()`. */
+function audioDoElementoFalso() {
+  const tocados: string[] = []
+  let ultimo: HTMLMediaElement | null = null
+  const playOriginal = HTMLMediaElement.prototype.play
+  const pauseOriginal = HTMLMediaElement.prototype.pause
+  HTMLMediaElement.prototype.play = function () {
+    ultimo = this
+    tocados.push(this.getAttribute('src') ?? '')
+    this.dispatchEvent(new Event('play'))
+    return Promise.resolve()
+  }
+  HTMLMediaElement.prototype.pause = function () {
+    this.dispatchEvent(new Event('pause'))
+  }
+  return {
+    tocados,
+    terminar: () => ultimo?.dispatchEvent(new Event('ended')),
+    restaurar: () => {
+      HTMLMediaElement.prototype.play = playOriginal
+      HTMLMediaElement.prototype.pause = pauseOriginal
+    },
+  }
+}
+
 const TEXTO = 'Oi! Eu sou o Zappy. Vamos criar um jogo?'
 const URL_MP3 = 'https://cdn.test/aulas/voz/zappy.mp3'
 
@@ -105,6 +135,30 @@ describe('o balão de fala rege a boca do mascote', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
       await waitFor(() => expect(estado().falando).toBe('true'))
       fireEvent.click(await screen.findByRole('button', { name: 'Parar' }))
+      await waitFor(() => expect(estado().falando).toBe('false'))
+    } finally {
+      audio.restaurar()
+      cleanup()
+    }
+  })
+
+  test('⭐ a narração escolhida na autoria também rege a boca e para ao terminar', async () => {
+    const audio = audioDoElementoFalso()
+    try {
+      render(
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text: TEXTO }}
+          speech={{ texts: [TEXTO], audioUrl: URL_MP3, fallbackToBrowser: true }}
+          mascot={<Sonda />}
+        />,
+      )
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      await waitFor(() => expect(audio.tocados).toEqual([URL_MP3]))
+      expect(estado().falando).toBe('true')
+
+      act(() => {
+        audio.terminar()
+      })
       await waitFor(() => expect(estado().falando).toBe('false'))
     } finally {
       audio.restaurar()
@@ -153,11 +207,10 @@ describe('a instrução da cena rege a boca pelo renderInstruction', () => {
   }
 
   /**
-   * ⭐⭐ Aqui o botão "Ouvir" fica FORA do balão (na faixa da instrução) e o balão vem de uma
-   * função do KIDS (`renderInstruction`) chamada de dentro do player. É o caminho que mais parece
-   * frágil e o que mais importa: prova que o provider embrulha o que a função devolve.
+   * Aqui o balão vem da função do KIDS (`renderInstruction`), exatamente como no app. Depois do
+   * palpite, o botão da instrução precisa reger o mesmo mascote e parar no fim da fala.
    */
-  test('⭐⭐ o "Ouvir" da faixa acende o mascote do balão da instrução', async () => {
+  test('⭐⭐ o "Ouvir" da instrução acende o mascote do balão', async () => {
     const audio = audioFalso()
     const fetchOriginal = globalThis.fetch
     globalThis.fetch = (() =>
@@ -172,11 +225,12 @@ describe('a instrução da cena rege a boca pelo renderInstruction', () => {
             viewerId: 'child-a',
             viewerWatermark: null,
             initialPositionSeconds: null,
-            renderInstruction: (texto) => (
-              <div>
-                <Sonda />
-                <p>{texto}</p>
-              </div>
+            renderInstruction: (texto, _pose, speech) => (
+              <DialogueBlockView
+                content={{ kind: 'dialogue', text: texto }}
+                speech={speech}
+                mascot={<Sonda />}
+              />
             ),
           }}
         >
@@ -186,18 +240,18 @@ describe('a instrução da cena rege a boca pelo renderInstruction', () => {
       await waitFor(() => expect(sonda()).not.toBeNull())
       expect(estado()).toEqual({ podeFalar: 'true', falando: 'false' })
 
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
+        }),
+      )
+      await screen.findByText('Seu palpite:')
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
       await waitFor(() => expect(estado().falando).toBe('true'))
 
-      // ⚠️ A fala da cena é uma FILA (instrução + pergunta do palpite com as opções…) no MESMO
-      // elemento de áudio: o fim de um trecho avança para o próximo, e só o último apaga a boca.
-      // No balão a fila tem um trecho só — por isso lá o `terminar()` sozinho basta.
-      for (let i = 0; i < 20 && estado().falando === 'true'; i++) {
-        act(() => {
-          audio.terminar()
-        })
-        await waitFor(() => expect(sonda()).not.toBeNull())
-      }
+      act(() => {
+        audio.terminar()
+      })
       await waitFor(() => expect(estado().falando).toBe('false'))
     } finally {
       globalThis.fetch = fetchOriginal

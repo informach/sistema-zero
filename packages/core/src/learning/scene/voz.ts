@@ -113,6 +113,26 @@ export function falaDaPergunta(
   return [`${rotulo}.`, pergunta.prompt, ...opcoes].join(' ')
 }
 
+/** A fala completa da etapa de hipótese: apresenta o assunto, pergunta e oferece as possibilidades. */
+export function falaDoPalpite(
+  rotulo: string,
+  palpite: {
+    context: { explanation: string }
+    prompt: string
+    choices: readonly { label: string }[]
+  },
+): string {
+  const opcoes = palpite.choices.map((c, i) =>
+    i === 0 ? `Pode ser: ${semPontoFinal(c.label)}.` : `Ou: ${semPontoFinal(c.label)}.`,
+  )
+  return [`${rotulo}.`, palpite.context.explanation, palpite.prompt, ...opcoes].join(' ')
+}
+
+/** A instrução prática é uma fala própria, separada da hipótese e de suas alternativas. */
+export function falaDaInstrucao(instruction: string): string {
+  return instruction
+}
+
 /**
  * Os textos de um bloco que a voz do Zappy PODE gravar de antemão.
  *
@@ -128,14 +148,18 @@ export function falaDaPergunta(
 export function textosFalaveisDaCena(bloco: {
   instructions?: string
   checkpoint?: { prompt: string; choices: readonly { label: string }[] }
-  prediction?: { prompt: string; choices: readonly { label: string }[] }
+  prediction?: {
+    context: { explanation: string }
+    prompt: string
+    choices: readonly { label: string }[]
+  }
   activity?: { type?: string }
 }): readonly string[] {
   const demonstracao = bloco.activity?.type === 'demonstration'
   return [
-    bloco.instructions ?? '',
+    falaDaInstrucao(bloco.instructions ?? ''),
     bloco.prediction
-      ? falaDaPergunta(demonstracao ? 'Antes de assistir' : 'Antes de mexer', bloco.prediction)
+      ? falaDoPalpite(demonstracao ? 'Antes de assistir' : 'Seu palpite', bloco.prediction)
       : '',
     bloco.checkpoint ? falaDaPergunta('Agora explique', bloco.checkpoint) : '',
   ]

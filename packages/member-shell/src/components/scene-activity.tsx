@@ -13,6 +13,7 @@ import {
   type ExperimentSession,
   evaluateDemonstration,
   evaluateExperimentation,
+  falaDaInstrucao,
   SCENE_LIMITS,
   type SceneActivity,
   type SceneCast,
@@ -1200,7 +1201,8 @@ export function SceneActivityView({
             )}
             <div ref={dialogoDaDescobertaRef} tabIndex={-1} className="outline-none">
               {renderDialogue(instruction, {
-                texts: [instruction],
+                texts: [falaDaInstrucao(instruction)],
+                audioUrl: activity.instructionAudioUrl,
                 fallbackToBrowser: true,
               })}
             </div>

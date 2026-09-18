@@ -2,7 +2,9 @@ import { describe, expect, it } from 'bun:test'
 import { sceneActivityForReading } from './index'
 import {
   chaveDeVoz,
+  falaDaInstrucao,
   falaDaPergunta,
+  falaDoPalpite,
   filaDeVoz,
   isSceneVozes,
   textoFalado,
@@ -81,6 +83,7 @@ describe('o dicionário é validado', () => {
 
 describe('os textos faláveis de uma cena', () => {
   const palpite = {
+    context: { explanation: 'Nesta experiência, vamos observar a gravidade do jogo.' },
     prompt: 'O que acontece se a gravidade desligar?',
     choices: [{ label: 'O Dino cai' }, { label: 'O Dino sobe' }],
   }
@@ -93,15 +96,15 @@ describe('os textos faláveis de uma cena', () => {
       activity: { type: 'experimentation' },
     })
     expect(textos).toEqual([
-      'Ligue a borda.',
-      falaDaPergunta('Antes de mexer', palpite),
+      falaDaInstrucao('Ligue a borda.'),
+      falaDoPalpite('Seu palpite', palpite),
       falaDaPergunta('Agora explique', { prompt: 'Por quê?', choices: [{ label: 'Porque sim' }] }),
     ])
   })
 
   /**
    * ⚠️ O rótulo muda com o TIPO da atividade, e o player monta a fala com ele. Gerar sempre "Antes
-   * de mexer" deixaria toda demonstração sem áudio no palpite — sem erro nenhum, só calada.
+   * de assistir" deixaria toda demonstração sem áudio no palpite — sem erro nenhum, só calada.
    */
   it('na demonstração o palpite é "Antes de assistir"', () => {
     const [, fala] = textosFalaveisDaCena({
@@ -109,7 +112,7 @@ describe('os textos faláveis de uma cena', () => {
       prediction: palpite,
       activity: { type: 'demonstration' },
     })
-    expect(fala).toBe(falaDaPergunta('Antes de assistir', palpite))
+    expect(fala).toBe(falaDoPalpite('Antes de assistir', palpite))
   })
 
   it('cena sem palpite nem pergunta fala só a instrução', () => {
