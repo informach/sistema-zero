@@ -8,9 +8,8 @@ import { ScenePrediction } from '../src/components/scene-prediction'
 import { ScenePredictionPreview } from '../src/components/scene-prediction-preview'
 
 /**
- * O PALPITE EXPLICA A CENA, mas não cria uma caixa que se parece com mais uma opção.
- * A prévia e o palco aberto usam a largura disponível do cartão; proporção e altura pertencem
- * ao palco interno, nunca a um teto artificial nesta moldura.
+ * O PALPITE PREPARA O OLHAR, mostra a cena e só então pergunta. A pergunta e as escolhas ficam
+ * juntas, e um controle citado aparece como representação estática, nunca como ação antecipada.
  */
 
 const prediction: LearningPrediction = {
@@ -28,7 +27,7 @@ const prediction: LearningPrediction = {
 const ARQUIVO_DA_CENA_ABERTA = resolve(import.meta.dir, '../src/components/scene-activity.tsx')
 
 describe('o palpite e a cena ocupam a largura útil da atividade', () => {
-  test('mantém a explicação no balão, sem criar uma falsa alternativa de recurso', () => {
+  test('mostra contexto, cena, pergunta e escolhas nessa ordem', () => {
     const html = renderToStaticMarkup(
       <ScenePrediction
         prediction={prediction}
@@ -38,18 +37,27 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
         revelado={false}
         demonstracao={false}
         bloqueado={false}
-        preview={null}
-        renderDialogue={(text) => <p>{text}</p>}
+        preview={<div data-testid="preview-do-palpite">Cena inicial</div>}
+        renderDialogue={(text) => <p data-dialogue={text}>{text}</p>}
         dialogueRef={createRef<HTMLDivElement>()}
       />,
     )
 
+    const contexto = html.indexOf(prediction.context.explanation)
+    const previa = html.indexOf('data-testid="preview-do-palpite"')
+    const pergunta = html.indexOf(prediction.prompt)
+    const escolha = html.indexOf(prediction.choices[0].label)
+
     expect(html).toContain(prediction.context.explanation)
     expect(html).toContain(prediction.prompt)
+    expect(contexto).toBeLessThan(previa)
+    expect(previa).toBeLessThan(pergunta)
+    expect(pergunta).toBeLessThan(escolha)
+    expect(html).toContain(`<legend class="sr-only">${prediction.prompt}</legend>`)
     expect(html).not.toContain('Hoje vamos usar:')
   })
 
-  test('mantém a prévia segura, mas sem teto ou centralização próprios', () => {
+  test('mostra de forma estática o controle citado, mas sem teto, centralização ou interação', () => {
     const html = renderToStaticMarkup(
       <ScenePredictionPreview
         activity={{ type: 'experimentation', scene: 'screen-reader' }}
@@ -60,9 +68,14 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
 
     expect(moldura).toBeDefined()
     expect(moldura).toContain('w-full')
+    expect(moldura).toContain('Ouvir a tela')
+    expect(moldura).toContain('Você vai usar este botão depois do seu palpite.')
     expect(moldura).toContain('[&amp;_button]:hidden')
     expect(moldura).not.toContain('max-w-scene')
     expect(moldura).not.toContain('mx-auto')
+    expect(html).toContain('data-preview-control')
+    expect(html).not.toContain('<button')
+    expect(html).not.toContain('role="button"')
   })
 
   test('abre a mesma cena sem teto de largura na moldura do palco', () => {

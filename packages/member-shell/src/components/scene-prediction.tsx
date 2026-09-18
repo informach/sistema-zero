@@ -1,7 +1,7 @@
 'use client'
 
 import type { LearningPrediction } from '@sistemazero/core/learning'
-import { falaDoPalpite } from '@sistemazero/core/learning/scene'
+import { falaDaEscolhaDoPalpite, falaDoContextoDoPalpite } from '@sistemazero/core/learning/scene'
 import { Check, Eye } from 'lucide-react'
 import { type ReactNode, type RefObject, useId } from 'react'
 import type { DialogueSpeech } from './dialogue-block'
@@ -150,35 +150,47 @@ export function ScenePrediction({
           </span>
         </legend>
         <div ref={dialogueRef} tabIndex={-1} className="clear-left outline-none">
-          {renderDialogue(`${prediction.context.explanation}\n\n${prediction.prompt}`, {
-            texts: [falaDoPalpite(demonstracao ? 'Antes de assistir' : 'Seu palpite', prediction)],
+          {renderDialogue(prediction.context.explanation, {
+            texts: [
+              falaDoContextoDoPalpite(
+                demonstracao ? 'Antes de assistir' : 'Seu palpite',
+                prediction.context,
+              ),
+            ],
             fallbackToBrowser: true,
           })}
         </div>
         {preview}
-        <div className="space-y-2">
-          {prediction.choices.map((choice) => {
-            const atual = choice.id === escolha
-            return (
-              <button
-                key={choice.id}
-                id={`${id}-${choice.id}`}
-                type="button"
-                aria-current={atual ? 'true' : undefined}
-                aria-disabled={bloqueado || undefined}
-                onClick={() => {
-                  if (bloqueado) return
-                  onEscolher(choice.id)
-                }}
-                className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  atual ? 'border-primary bg-primary/10' : 'border-border'
-                } ${bloqueado ? 'cursor-not-allowed opacity-60' : ''}`}
-              >
-                {choice.label}
-              </button>
-            )
+        <fieldset className="space-y-2">
+          <legend className="sr-only">{prediction.prompt}</legend>
+          {renderDialogue(prediction.prompt, {
+            texts: [falaDaEscolhaDoPalpite(prediction)],
+            fallbackToBrowser: true,
           })}
-        </div>
+          <div className="space-y-2">
+            {prediction.choices.map((choice) => {
+              const atual = choice.id === escolha
+              return (
+                <button
+                  key={choice.id}
+                  id={`${id}-${choice.id}`}
+                  type="button"
+                  aria-current={atual ? 'true' : undefined}
+                  aria-disabled={bloqueado || undefined}
+                  onClick={() => {
+                    if (bloqueado) return
+                    onEscolher(choice.id)
+                  }}
+                  className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    atual ? 'border-primary bg-primary/10' : 'border-border'
+                  } ${bloqueado ? 'cursor-not-allowed opacity-60' : ''}`}
+                >
+                  {choice.label}
+                </button>
+              )
+            })}
+          </div>
+        </fieldset>
         <p className="text-sm text-muted-foreground">
           {demonstracao
             ? 'Escolha o que você acha. Depois assista.'
