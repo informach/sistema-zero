@@ -80,7 +80,10 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
 - **Aula:** `.sz-app:has(.sz-aula-adulto)` troca o chão da página para o alternativo. Sob
   `.sz-aula-adulto`, os ganchos `sz-lesson-*` do member-shell viram cartões brancos, com regras
   FORA de camada (mesmo motivo do kids). Só o bloco de TEXTO vira cartão (`> div > .lesson-prose`),
-  porque quiz, materiais e recado já trazem o deles; o título da seção abre o cartão do texto.
+  porque quiz, materiais e recado já trazem o deles; o cabeçalho da seção abre o cartão do texto.
+  ⚠️ Desde 18/09/2026 esse cabeçalho é o da PÁGINA ("nome da aula · nome da seção", com o índice ao
+  lado): o player parou de renderizar o `<h1>` e o índice saiu da `sz-lesson-toolbar`, que ficou só
+  com "O que falta para concluir".
 - **Avatar da barra:** sem foto, o `UserAvatar` do member-shell é tinta escura sobre verde a 15%, e
   as iniciais sumiam na barra escura. O botão do menu aplica `[&>span]:bg-primary
   [&>span]:text-primary-foreground`: o seletor de filho vence as classes do componente

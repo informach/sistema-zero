@@ -1149,6 +1149,20 @@ bloco usa o anel de foco em `box-shadow`. A barra de cima
 (`components/kids/kids-lesson-progress.tsx`), o chip "AULA N DE M", o índice da direita e o pé
 moram no `lesson-player-client.tsx`.
 
+⭐⭐ **E o cartão do TÍTULO saiu (18/09/2026).** O nome da aula era um `<h1>` do
+`lesson-player-client.tsx` e o nome da seção um `<h2>` logo abaixo, dentro de um cartão com o
+índice: duas linhas de título, cada uma com a sua margem, e a seção — que é o que muda ao avançar —
+por último. Hoje é UM cabeçalho só, do `LessonSections`: "aula · seção" numa linha, com o índice ao
+lado, sem borda nem fundo (`.sz-lesson-section-head` ficou só com o respiro de baixo).
+- ⚠️ A regra do corpo do título é `:is(h1, h2)`, nunca `h2`: o cabeçalho VIRA `<h1>` quando o player
+  passa `lessonTitle`, e mirando só a tag antiga a regra morre em silêncio — o título encolhia para
+  1,5rem no celular e crescia para 1,875rem no desktop.
+- ⚠️ O índice fica **só no ícone abaixo de 640px** (`sr-only sm:not-sr-only`, com `aria-label`).
+  Medido nos 392 pares reais de aula × seção dos manifestos: com o cartão e com o texto do botão na
+  mesma linha eram 5,3 linhas de cabeçalho a 390px (pior caso 8); sem os dois, 3,2 (pior caso 4).
+- ⚠️ O `loading.tsx` desta rota acompanha: ele reservava a altura do `<h1>` que saiu, e sem o
+  ajuste a aula abria com pulo de layout.
+
 ⭐ **O cartão com "O que falta para concluir / Índice da aula" SAIU do kids (13/09/2026)** e não
 volta. Ele era a terceira cópia da mesma conta: a barra do topo recebe as mesmas `requirements` e
 já mede as atividades, e o índice já marca "Atividade pendente" na seção. O **"o que falta para

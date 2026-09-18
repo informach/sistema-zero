@@ -926,9 +926,16 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    renomear um gancho quebra o desenho dos DOIS apps, não só o do kids. Os nomes:
    `sz-lesson-sections` (raiz, só com a flag `kids`), `sz-lesson-toolbar` (⚠️ desde 13/09/2026 ele
    só RENDERIZA sem a flag `kids`: no kids a barra "O que falta para concluir / Índice da aula"
-   saiu inteira e o índice passou para dentro do `sz-lesson-section-head`, então regra do kids
-   para este gancho é regra morta), `sz-lesson-section-head`
-   (o `<header>` do título da seção; no kids ele é flex e carrega o índice à direita do `<h2>`),
+   saiu inteira. ⚠️ Desde 18/09/2026 o ÍNDICE também saiu dela no adulto — ele mora no cabeçalho da
+   seção nos dois apps —, então lá sobra só "O que falta para concluir"; regra do kids para este
+   gancho segue sendo regra morta), `sz-lesson-section-head`
+   (o `<header>` do cabeçalho da aula. ⚠️ Desde 18/09/2026 ele é UM cabeçalho só, nos dois apps:
+   "nome da aula · nome da seção" à esquerda e o índice à direita, SEMPRE na mesma linha. O nome da
+   aula vem da prop `lessonTitle` — o player que a passa deixa de renderizar o `<h1>` dele, e o
+   cabeçalho VIRA o `<h1>` da página; sem ela (ensaio e prévia do admin) segue `<h2>`. ⚠️⚠️ Ele é o
+   ALVO DO FOCO ao trocar de seção (`focus()` + `scrollIntoView`), então é o que leva o leitor de
+   tela ao conteúdo novo e o que faz a página subir: CSS que mire a tag precisa de `:is(h1, h2)`,
+   senão vira regra morta na página real),
    `sz-lesson-block` (cada bloco), **`sz-lesson-scene`** (a raiz da atividade de cena —
    demonstração e experimentação. ⚠️ Desde 13/09/2026 a cena NÃO desenha cartão próprio: quem
    desenha é o app, e é por este gancho que ele sabe qual bloco é uma cena. O kids já dá cartão a

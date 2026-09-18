@@ -1068,8 +1068,11 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   ⭐ A `audience` também desce até a **prévia e o ensaio da aula** (`LessonStructureEditor` →
   "Conferir livremente" e `LessonRehearsal` → "Ensaiar como aluno"), que passam `kids` ao
   `LessonSections`: desde 13/09/2026 os dois layouts DIVERGEM de verdade (no kids não existe a
-  barra "O que falta para concluir / Índice da aula" e o índice mora no cabeçalho da seção), então
-  ensaiar sempre no layout adulto mostrava ao professor uma tela que a criança não tem. ⚠️ O admin
+  barra "O que falta para concluir"), então ensaiar sempre no layout adulto mostrava ao professor
+  uma tela que a criança não tem. ⚠️ Desde 18/09/2026 o índice NÃO é mais uma dessas diferenças —
+  ele mora no cabeçalho da seção nos dois —, e os dois pontos de entrada passam `lessonTitle` para
+  o cabeçalho sair como na página de aula ("nome da aula · nome da seção"); sem isso o ensaio
+  mostraria justamente o elemento que mudou diferente do que o aluno vê. ⚠️ O admin
   não carrega o `globals.css` do kids: aqui sai a ESTRUTURA certa, sem a pele (cartões brancos).
   Travado por `tests/lesson-rehearsal.test.tsx`, que monta o ensaio nas DUAS audiências. Curso `kids` fica FORA da chave-mestra
   `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
