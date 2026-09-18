@@ -1,6 +1,6 @@
 'use client'
 
-import { filaDeVoz, type SceneVozes } from '@sistemazero/core/learning/scene'
+import { filaDeVoz, roteiroDoZappy, type SceneVozes } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Square, Volume2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -13,6 +13,8 @@ import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
 export interface DialogueSpeech {
   /** Uma unidade de fala fechada, sem instruções de outra etapa misturadas. */
   texts: readonly string[]
+  /** Roteiros efetivos, na mesma ordem das frases visíveis; só eles localizam o MP3 do Zappy. */
+  roteiros?: readonly string[]
   vozes?: SceneVozes
   /** Narração escolhida na autoria para esta fala; tem preferência sobre o dicionário gerado. */
   audioUrl?: string
@@ -64,8 +66,9 @@ export function DialogueBlockView({
    */
   const falaDaCena = useZappyFala()
   const textos = speech?.texts ?? [content.text]
+  const roteiros = speech?.roteiros ?? [roteiroDoZappy(content.text, content.zappySpeech)]
   const vozes = speech?.vozes ?? content.vozes
-  const fila = filaDeVoz(textos, vozes)
+  const fila = filaDeVoz(roteiros, vozes)
   const audio = useRef<HTMLAudioElement>(null)
   const [tocandoArquivo, setTocandoArquivo] = useState(false)
   /** Evita que `error` e a rejeição de `play()` disparem duas filas de fallback. */
@@ -100,8 +103,8 @@ export function DialogueBlockView({
     arquivoFalhou.current = true
     arquivoPedido.current = false
     setTocandoArquivo(false)
-    voz.falar(textos, vozes)
-  }, [textos, voz, vozes])
+    voz.falar(textos, vozes, roteiros)
+  }, [roteiros, textos, voz, vozes])
   const mascote = falaDaCena ? (
     mascot
   ) : (
@@ -172,7 +175,7 @@ export function DialogueBlockView({
                 void arquivo.play().catch(cairParaFala)
                 return
               }
-              voz.falar(textos, vozes)
+              voz.falar(textos, vozes, roteiros)
             }}
           >
             {falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}

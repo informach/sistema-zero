@@ -1,6 +1,13 @@
 'use client'
 
-import { filaDeVoz, type SceneVozes, textoFalado } from '@sistemazero/core/learning/scene'
+import {
+  filaDeVoz,
+  isZappySpeechText,
+  normalizarRoteiroDoZappy,
+  roteiroDoZappy,
+  type SceneVozes,
+  textoFalado,
+} from '@sistemazero/core/learning/scene'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -210,12 +217,23 @@ export function useSceneVoice() {
    * dizendo a instrução e a voz do sistema emendando a pergunta que tranca o palco.
    */
   const falar = useCallback(
-    (textos: readonly string[], vozes?: SceneVozes) => {
+    (textos: readonly string[], vozes?: SceneVozes, roteiros?: readonly string[]) => {
       // ⚠ `parar()` também SOBE a geração, e é dele que vem a invalidação dos eventos da fala anterior.
       parar()
       const limpos = textos.map(textoFalado).filter(Boolean)
       if (!limpos.length) return
-      const fila = filaDeVoz(limpos, vozes)
+      /**
+       * A tela é sempre a legenda e o plano B. O MP3, porém, é localizado pelo roteiro efetivo:
+       * uma exceção como "X" → "xis" não pode fazer o player procurar a chave do X escrito.
+       *
+       * Só aceita a lista autoral se ela corresponder 1:1 às frases vistas. Uma lista torta nunca
+       * pode tocar metade da explicação na voz do Zappy e inventar a outra metade.
+       */
+      const roteiroEfetivo =
+        roteiros?.length === limpos.length && roteiros.every(isZappySpeechText)
+          ? roteiros.map(normalizarRoteiroDoZappy)
+          : limpos.map((texto) => roteiroDoZappy(texto))
+      const fila = filaDeVoz(roteiroEfetivo, vozes)
       if (fila) {
         tocar(fila, limpos)
         return

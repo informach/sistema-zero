@@ -230,6 +230,26 @@ describe('a voz do Zappy chega ao player', () => {
       expect(sintese.falas).toEqual([])
       cleanup()
 
+      // A criança lê a letra como ela é escrita; o dicionário encontra o roteiro que o Zappy fala.
+      const textoComLetra = 'Agora aperte a tecla X.'
+      const roteiroComLetra = 'Agora aperte a tecla xis.'
+      const urlComLetra = 'https://cdn.test/aulas/voz/zappy-xis.mp3'
+      render(
+        <DialogueBlockView
+          content={{
+            kind: 'dialogue',
+            text: textoComLetra,
+            zappySpeech: { sourceText: textoComLetra, speechText: roteiroComLetra },
+            vozes: { [chaveDeVoz(roteiroComLetra)]: urlComLetra },
+          }}
+        />,
+      )
+      expect(screen.getByText(textoComLetra)).toBeTruthy()
+      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      await waitFor(() => expect(audio.tocados).toEqual([url, urlComLetra]))
+      expect(sintese.falas).toEqual([])
+      cleanup()
+
       // Sem dicionário: o texto continua lá, o botão não.
       render(<DialogueBlockView content={{ kind: 'dialogue', text: texto }} />)
       expect(screen.getByText(texto)).toBeTruthy()

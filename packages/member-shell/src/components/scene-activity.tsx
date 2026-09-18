@@ -14,6 +14,7 @@ import {
   evaluateDemonstration,
   evaluateExperimentation,
   falaDaInstrucao,
+  falasDaCena,
   SCENE_LIMITS,
   type SceneActivity,
   type SceneCast,
@@ -36,6 +37,7 @@ import {
   sceneSuccess,
   sceneTargets,
   sceneTrial,
+  textoFalado,
 } from '@sistemazero/core/learning/scene'
 import {
   AlertTriangle,
@@ -118,6 +120,8 @@ export function SceneActivityView({
   previewContent?: InteractiveBlock
 }) {
   const player = useLessonPlayer()
+  /** Roteiros estáticos da projeção pública; fala dinâmica fica inteira no plano B do navegador. */
+  const falasFixasDoZappy = useMemo(() => falasDaCena(content), [content])
   const rehearsal = useLessonPreview()
   const secao = useLessonSection()
   const id = useId()
@@ -419,7 +423,17 @@ export function SceneActivityView({
    * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
    */
   const renderDialogue = (text: string, speech: DialogueSpeech) => {
-    const fala = { ...speech, vozes: activity.vozes }
+    /**
+     * A fala só recebe MP3 se continua sendo exatamente a fala estática gerada na autoria. Uma
+     * legenda de parte, pista ou convite montado durante a cena pode mudar com o estado e nunca
+     * pode reutilizar um áudio antigo só porque se parece com uma instrução.
+     */
+    const roteiro =
+      speech.texts.length === 1
+        ? falasFixasDoZappy.find((fala) => fala.visibleText === textoFalado(speech.texts[0] ?? ''))
+            ?.speechText
+        : undefined
+    const fala = { ...speech, vozes: activity.vozes, roteiros: roteiro ? [roteiro] : undefined }
     if (player?.renderInstruction) return player.renderInstruction(text, 'speaking', fala)
     return <DialogueBlockView content={{ kind: 'dialogue', text }} speech={fala} />
   }
