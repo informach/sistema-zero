@@ -43,8 +43,8 @@ export function chaveDeVoz(texto: string): string {
 export type SceneVozes = Readonly<Record<string, string>>
 
 /**
- * Tetos do dicionário. Uma cena fala três coisas (instrução, pergunta do palpite com as opções e
- * checkpoint) e o balão do Zappy fala uma: 12 entradas é folga larga. Os limites existem porque
+ * Tetos do dicionário. Uma cena fala quatro coisas (instrução, contexto do palpite, pergunta do
+ * palpite com as opções e checkpoint): 12 entradas é folga larga. Os limites existem porque
  * isto chega do manifesto e do admin, e um `Record` sem teto é payload livre no bloco da aula.
  *
  * ⚠⚠ A CHAVE acompanha o que a AUTORIA aceita, e não o que é sensato gravar: o DTO do members
@@ -113,19 +113,23 @@ export function falaDaPergunta(
   return [`${rotulo}.`, pergunta.prompt, ...opcoes].join(' ')
 }
 
-/** A fala completa da etapa de hipótese: apresenta o assunto, pergunta e oferece as possibilidades. */
-export function falaDoPalpite(
+/** O assunto que prepara a observação da cena antes de a criança formular a hipótese. */
+export function falaDoContextoDoPalpite(
   rotulo: string,
-  palpite: {
-    context: { explanation: string }
-    prompt: string
-    choices: readonly { label: string }[]
-  },
+  contexto: { explanation: string },
 ): string {
+  return [`${rotulo}.`, contexto.explanation].join(' ')
+}
+
+/** A pergunta do palpite e as possibilidades, na mesma ordem das escolhas da tela. */
+export function falaDaEscolhaDoPalpite(palpite: {
+  prompt: string
+  choices: readonly { label: string }[]
+}): string {
   const opcoes = palpite.choices.map((c, i) =>
     i === 0 ? `Pode ser: ${semPontoFinal(c.label)}.` : `Ou: ${semPontoFinal(c.label)}.`,
   )
-  return [`${rotulo}.`, palpite.context.explanation, palpite.prompt, ...opcoes].join(' ')
+  return [palpite.prompt, ...opcoes].join(' ')
 }
 
 /** A instrução prática é uma fala própria, separada da hipótese e de suas alternativas. */
@@ -159,8 +163,12 @@ export function textosFalaveisDaCena(bloco: {
   return [
     falaDaInstrucao(bloco.instructions ?? ''),
     bloco.prediction
-      ? falaDoPalpite(demonstracao ? 'Antes de assistir' : 'Seu palpite', bloco.prediction)
+      ? falaDoContextoDoPalpite(
+          demonstracao ? 'Antes de assistir' : 'Seu palpite',
+          bloco.prediction.context,
+        )
       : '',
+    bloco.prediction ? falaDaEscolhaDoPalpite(bloco.prediction) : '',
     bloco.checkpoint ? falaDaPergunta('Agora explique', bloco.checkpoint) : '',
   ]
     .map(chaveDeVoz)

@@ -34,8 +34,15 @@ describe('a prévia segura da cena', () => {
   })
 
   test('leitor de tela começa sem texto escrito ou escutado', () => {
-    const { state } = scenePredictionPreview({ type: 'experimentation', scene: 'screen-reader' })
+    const { preview, state } = scenePredictionPreview({
+      type: 'experimentation',
+      scene: 'screen-reader',
+    })
     expect(state.description.text).toBe('')
     expect(state.description.heard).toBe('')
+    expect(preview.control).toEqual({
+      label: 'Ouvir a tela',
+      note: 'Você vai usar este botão depois do seu palpite.',
+    })
   })
 })

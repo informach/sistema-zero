@@ -2,9 +2,10 @@ import { describe, expect, it } from 'bun:test'
 import { sceneActivityForReading } from './index'
 import {
   chaveDeVoz,
+  falaDaEscolhaDoPalpite,
   falaDaInstrucao,
   falaDaPergunta,
-  falaDoPalpite,
+  falaDoContextoDoPalpite,
   filaDeVoz,
   isSceneVozes,
   textoFalado,
@@ -88,7 +89,7 @@ describe('os textos faláveis de uma cena', () => {
     choices: [{ label: 'O Dino cai' }, { label: 'O Dino sobe' }],
   }
 
-  it('lê a instrução, o palpite e a pergunta do fim', () => {
+  it('lê a instrução, o contexto, a pergunta do palpite e a pergunta do fim', () => {
     const textos = textosFalaveisDaCena({
       instructions: 'Ligue a borda.',
       prediction: palpite,
@@ -97,7 +98,8 @@ describe('os textos faláveis de uma cena', () => {
     })
     expect(textos).toEqual([
       falaDaInstrucao('Ligue a borda.'),
-      falaDoPalpite('Seu palpite', palpite),
+      falaDoContextoDoPalpite('Seu palpite', palpite.context),
+      falaDaEscolhaDoPalpite(palpite),
       falaDaPergunta('Agora explique', { prompt: 'Por quê?', choices: [{ label: 'Porque sim' }] }),
     ])
   })
@@ -107,12 +109,13 @@ describe('os textos faláveis de uma cena', () => {
    * de assistir" deixaria toda demonstração sem áudio no palpite — sem erro nenhum, só calada.
    */
   it('na demonstração o palpite é "Antes de assistir"', () => {
-    const [, fala] = textosFalaveisDaCena({
+    const [, contexto, pergunta] = textosFalaveisDaCena({
       instructions: 'Olhe a cena.',
       prediction: palpite,
       activity: { type: 'demonstration' },
     })
-    expect(fala).toBe(falaDoPalpite('Antes de assistir', palpite))
+    expect(contexto).toBe(falaDoContextoDoPalpite('Antes de assistir', palpite.context))
+    expect(pergunta).toBe(falaDaEscolhaDoPalpite(palpite))
   })
 
   it('cena sem palpite nem pergunta fala só a instrução', () => {
