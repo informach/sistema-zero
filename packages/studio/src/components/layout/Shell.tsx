@@ -55,7 +55,7 @@ export function Shell({
   const showAssets = useUIStore((s) => s.showAssets)
   const setShowAssets = useUIStore((s) => s.setShowAssets)
   const assetsTab = useUIStore((s) => s.assetsTab)
-  const openAssetsTab = useUIStore((s) => s.openAssetsTab)
+  const setAssetsTab = useUIStore((s) => s.setAssetsTab)
   const config = useStudioConfig()
   // A barra inferior (wide) só existe quando há ALGUMA aba inferior visível — as
   // features do host cruzadas com o contexto de modo e com as preferências de
@@ -161,10 +161,10 @@ export function Shell({
                     open={showAssets}
                     onClose={() => setShowAssets(false)}
                     tab={assetsTab}
-                    // Clicar numa aba DENTRO da janela é troca de aba, nunca
-                    // fechamento — quem alterna é a mesma ação das portas do menu,
-                    // e ali a janela já está aberta na outra aba.
-                    onTabChange={openAssetsTab}
+                    // ⚠️ `setAssetsTab`, NUNCA `openAssetsTab`: a aba só escolhe o
+                    // que mostrar. Com a ação das portas do menu, clicar na aba já
+                    // ativa caía no ramo "mesma aba, fecha" e a janela sumia.
+                    onTabChange={setAssetsTab}
                   />
                 </Suspense>
               </ErrorBoundary>

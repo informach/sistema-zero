@@ -72,3 +72,28 @@ describe('openAssetsTab — as portas dos materiais', () => {
     expect(createUIStore().getState().assetsTab).toBe('images')
   })
 })
+
+/**
+ * ⚠️ A ABA não é um interruptor. Ligar as abas da janela ao `openAssetsTab` fazia
+ * o clique na aba JÁ ativa cair no ramo "mesma aba, fecha" — a janela inteira
+ * sumia. Foi achado no navegador; o par de ações separadas é o conserto.
+ */
+describe('setAssetsTab — trocar de aba dentro da janela', () => {
+  it('troca a aba e NUNCA fecha a janela', () => {
+    const ui = createUIStore()
+    ui.getState().openAssetsTab('images')
+    ui.getState().setAssetsTab('sounds')
+    expect(ui.getState().assetsTab).toBe('sounds')
+    expect(ui.getState().showAssets).toBe(true)
+  })
+
+  it('escolher a MESMA aba de novo não fecha nada (a diferença para a porta)', () => {
+    const ui = createUIStore()
+    ui.getState().openAssetsTab('sounds')
+    ui.getState().setAssetsTab('sounds')
+    expect(ui.getState().showAssets).toBe(true)
+    // E a porta, no mesmo cenário, fecha — é o que separa os dois gestos.
+    ui.getState().openAssetsTab('sounds')
+    expect(ui.getState().showAssets).toBe(false)
+  })
+})

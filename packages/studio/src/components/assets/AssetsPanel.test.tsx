@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
+import { useUIStore } from '../../state/uiStore'
 import { AssetsPanel } from './AssetsPanel'
 
 /**
@@ -42,6 +44,7 @@ function seedProject(opts: { with3DExtension?: boolean } = {}): void {
 afterEach(() => {
   cleanup()
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  useUIStore.setState({ showAssets: false, assetsTab: 'images' })
 })
 
 describe('addAsset — kinds 3D (model3d/environment3d)', () => {
@@ -245,5 +248,65 @@ describe('Materiais do jogo — a aba "Modelos 3D"', () => {
     const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })
     fireEvent.click(within(confirmation).getByRole('button', { name: 'Excluir' }))
     expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(0)
+  })
+})
+
+/**
+ * ⚠️ O elo entre a janela e a store, que é onde o defeito de verdade morava:
+ * clicar na aba JÁ ativa fechava a janela inteira. O painel isolado não pegava
+ * isso (ele não sabe fechar nada) e a store isolada também não (ninguém chamava
+ * a ação errada) — só a LIGAÇÃO dos dois, que é o que este hospedeiro imita, do
+ * mesmo jeito que o `Shell` a faz. Achado no navegador, com a janela aberta.
+ */
+describe('Materiais do jogo — a janela ligada à store, como no Shell', () => {
+  function Hospedeiro(): JSX.Element | null {
+    const showAssets = useUIStore((s) => s.showAssets)
+    const assetsTab = useUIStore((s) => s.assetsTab)
+    const setAssetsTab = useUIStore((s) => s.setAssetsTab)
+    const setShowAssets = useUIStore((s) => s.setShowAssets)
+    if (!showAssets) return null
+    return (
+      <AssetsPanel
+        open
+        onClose={() => setShowAssets(false)}
+        tab={assetsTab}
+        onTabChange={setAssetsTab}
+      />
+    )
+  }
+
+  it('clicar na aba que JÁ está ativa não fecha a janela', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('sounds')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(useUIStore.getState().showAssets).toBe(true)
+    expect(screen.getByRole('tabpanel')).toBeTruthy()
+  })
+
+  it('a porta do menu continua sendo a entrada E a saída', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    expect(screen.getByRole('tabpanel')).toBeTruthy()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    expect(useUIStore.getState().showAssets).toBe(false)
+  })
+
+  it('trocar de aba na janela deixa a porta do menu certa (o estado vive na store)', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(useUIStore.getState().assetsTab).toBe('sounds')
+    expect(useUIStore.getState().showAssets).toBe(true)
   })
 })

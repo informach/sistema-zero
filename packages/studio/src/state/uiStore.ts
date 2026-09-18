@@ -32,13 +32,22 @@ interface UIStore {
   /** Qual aba a janela mostra. Sobrevive a fechar e reabrir (a criança volta onde estava). */
   assetsTab: AssetsTab
   /**
-   * O que as três portas do menu fazem. A regra precisa ser previsível para uma
+   * O que as três PORTAS do menu ⋯ fazem. A regra precisa ser previsível para uma
    * criança: fechada, abre naquela aba; aberta em OUTRA aba, TROCA a aba (clicar
    * em "Sons" com a janela nas imagens não pode fechar tudo); aberta naquela
-   * mesma aba, fecha. É por isso que isto é uma ação da store e não um `setShowAssets`
-   * na Topbar — só aqui dá para ver o estado anterior das duas coisas de uma vez.
+   * mesma aba, fecha — a porta é a entrada e a saída. É por isso que isto é uma
+   * ação da store e não um `setShowAssets` na Topbar: só aqui dá para ver o
+   * estado anterior das duas coisas de uma vez.
    */
   openAssetsTab: (tab: AssetsTab) => void
+  /**
+   * Trocar de aba DENTRO da janela. ⚠️ NÃO é o `openAssetsTab`: com ele, clicar
+   * na aba que já está ativa caía no ramo "mesma aba, fecha" e a janela inteira
+   * sumia. Uma aba não é um interruptor — ela só escolhe o que mostrar. (Achado
+   * no navegador; nenhum teste de componente pegava, porque o painel isolado não
+   * estava ligado à store.)
+   */
+  setAssetsTab: (tab: AssetsTab) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
@@ -72,6 +81,7 @@ export function createUIStore(): StoreApi<UIStore> {
           ? { showAssets: false }
           : { showAssets: true, assetsTab: tab },
       ),
+    setAssetsTab: (assetsTab) => set({ assetsTab }),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
     consoleVisibilityOverride: null,
