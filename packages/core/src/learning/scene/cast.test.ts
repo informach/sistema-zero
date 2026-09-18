@@ -510,7 +510,7 @@ describe('a figura do elenco: o desenho segue o nome', () => {
     // ⚠️ Mudou de propósito (lote 5 do Raio-X): a `entity-state` desenha TORRES, e não o elenco (G6);
     // `frames`, `onion-skin` e `sheet-vs-sprite` desenham a nave do ateliê (G4); a `diagonal` e a
     // `tilemap` ganharam o personagem (G5).
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(31)
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(30)
   })
 
   test('um espaço no fim do nome não entra na frase', () => {

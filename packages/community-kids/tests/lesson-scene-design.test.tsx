@@ -632,12 +632,17 @@ describe('as duas cenas da Aula 1 e da Aula 2', () => {
     // cobre tudo" era a resposta da previsão da cena, embaixo do palco desde a abertura.
     expect(await screen.findByText('Tela de 800 por 480, com a borda escondida.')).toBeTruthy()
     expect(screen.queryByText(/a cor do fundo cobre tudo/i)).toBeNull()
-    // ⚠️ O rótulo diz o ESTADO, não a ação (o molde da `Chave` das bancadas): o botão pintado
-    // de primário com `aria-pressed="false"` fazia o desenho e o texto se contradizerem.
-    fireEvent.click(screen.getByRole('button', { name: 'A borda da tela: escondida' }))
+    // A criança precisa ler a PRÓXIMA ação. O estado continua no `aria-pressed`, que é o contrato
+    // acessível do controle alternável.
+    const ligar = screen.getByRole('button', { name: 'Ligue a borda' })
+    expect(ligar.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(ligar)
     // ⚠️ Mudou de propósito (review do lote 2): ligar a borda não tem legenda ("A moldura apareceu:
     // é ali que o jogo acontece" era a regra), e a frase diz o estado.
     await waitFor(() => expect(screen.getByText(/com a borda à vista/)).toBeTruthy())
+    expect(
+      screen.getByRole('button', { name: 'Desligue a borda' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     expect(screen.queryByText(/A moldura apareceu/)).toBeNull()
     fireEvent.change(screen.getByRole('slider', { name: 'largura da tela' }), {
       target: { value: '600' },
@@ -664,12 +669,14 @@ describe('as duas cenas da Aula 1 e da Aula 2', () => {
     expect(
       document.getElementById(largura.getAttribute('aria-describedby') ?? '')?.textContent,
     ).toBe('Abre quando a borda estiver à vista.')
-    // Sem a borda, nada tracejado nem cantoneira: o único retângulo tem de ser a tela.
+    // Sem a borda, nada tracejado nem cantoneira: a página e a tela interna formam uma superfície só.
+    expect(document.querySelector('[data-pagina-da-experiencia]')).toBeTruthy()
+    expect(document.querySelector('[data-tela-do-jogo]')).toBeTruthy()
     expect(document.querySelector('[data-alvo]')).toBeNull()
     expect(document.querySelector('[data-borda]')).toBeNull()
     fireEvent.change(largura, { target: { value: '600' } })
     expect(largura.value).toBe('800')
-    fireEvent.click(screen.getByRole('button', { name: 'A borda da tela: escondida' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ligue a borda' }))
     await waitFor(() => expect(document.querySelector('[data-borda]')).toBeTruthy())
     const larguraDaBorda = () =>
       Number(document.querySelector('[data-borda]')?.getAttribute('width'))
@@ -753,10 +760,16 @@ describe('a previsão antes de mexer', () => {
     expect(screen.getByTestId('scene-prediction-preview').getAttribute('aria-label')).toBe(
       `Prévia da experiência: ${PREVISAO.context.label}`,
     )
+    // O rodapé não existe no momento do palpite.
     for (const nome of ['Recomeçar', 'Uma pista']) {
       expect(screen.queryByRole('button', { name: nome })).toBeNull()
     }
-    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
+    // ⚠️⚠️ A bancada, essa, fica À VISTA e FECHADA (o console de 18/09/2026, a "Proposta B"): a
+    // criança vê o que vai poder mexer. O que não pode é MEXER — a prancha é `inert`, e o gesto
+    // não chega ao motor.
+    expect(
+      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
+    ).not.toBeNull()
     fireEvent.click(screen.getByRole('button', { name: PREVISAO.choices[0]?.label as string }))
     const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
     // E a cena responde de verdade depois de aberta.
@@ -1096,7 +1109,7 @@ describe('as cinco cenas de desenho e a das vidas', () => {
     // A lista de cenas com tempo era escrita à mão no player e já tinha deixado `stage-size`
     // com um passo que não fazia nada. Hoje quem decide é a régua de legalidade do core.
     montar('stage-size')
-    expect(await screen.findByRole('button', { name: 'A borda da tela: escondida' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'Ligue a borda' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Um passo' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Avançar 1 quadro' })).toBeNull()
     cleanup()

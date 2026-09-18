@@ -137,16 +137,14 @@ export function LessonSceneControls({
           {/* ⚠️⚠️ A BORDA vem primeiro (lote 5 do Raio-X): é a primeira descoberta, e sem ela os
               números mudam a tela sem nada na tela mudar. */}
           <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
-            {/* ⚠️ O ESTADO no rótulo, o mesmo molde da `Chave` das bancadas novas:
-                o rótulo com a AÇÃO ("Mostrar a borda") num botão PINTADO de primário
-                com `aria-pressed="false"` fazia as três camadas contarem histórias
-                diferentes — o desenho dizia ligado, o texto dizia ligar. */}
+            {/* A criança lê a PRÓXIMA ação. O estado continua no `aria-pressed`, que é a camada
+                acessível própria de um botão alternável. */}
             <SceneButton
               tom={state.stage.border ? 'ligado' : 'ferramenta'}
               aria-pressed={state.stage.border}
               onClick={() => dispatch({ type: 'border', visible: !state.stage.border })}
             >
-              A borda da tela: {state.stage.border ? 'à vista' : 'escondida'}
+              {state.stage.border ? 'Desligue a borda' : 'Ligue a borda'}
             </SceneButton>
             {/* ⚠️⚠️ O atalho "Usar 480 por 270" SAIU (lote 5): ele fazia pela criança justamente a
                 ligação número × formato, e fechava duas metas num toque. */}

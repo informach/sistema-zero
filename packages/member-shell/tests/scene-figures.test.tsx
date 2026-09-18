@@ -237,10 +237,10 @@ describe('o desenho veste o elenco', () => {
         ok: true,
       })
     for (const cast of BORDAS) expect(isSceneCast(cast)).toBe(true)
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X), a mesma conta do `cast.test.ts` do core: a
-    // `entity-state` desenha torres (G6); `frames`, `onion-skin` e `sheet-vs-sprite` desenham a nave
-    // do ateliê (G4); a `diagonal` e a `tilemap` ganharam o personagem (G5).
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(31)
+    // A `stage-size` também é abstrata: ela mostra a página e o viewport, sem personagem ou cenário.
+    // As demais exceções são `entity-state` (torres), `frames`/`onion-skin`/`sheet-vs-sprite` (nave
+    // do ateliê) e as cenas que desenham só instrumentos.
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(30)
   })
 
   test('⚠️⚠️ a tabela SCENE_ROLES é EXATAMENTE o que cada palco desenha', () => {

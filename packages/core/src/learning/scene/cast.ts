@@ -256,7 +256,9 @@ export type { SceneCenarioId } from './cenario'
 export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   coordinates: ['hero'],
   'screen-reader': ['hero', 'obstacle'],
-  'stage-size': ['hero'],
+  // A experiência é só a página e o viewport do jogo: nenhum personagem ou cenário disputa com a
+  // descoberta de onde a tela termina.
+  'stage-size': [],
   'draw-loop': ['hero'],
   // ⚠️⚠️ Sem papel desde o lote 5 do Raio-X: `frames`, `onion-skin` e `sheet-vs-sprite` desenham a
   // NAVE 32 × 32 da aula (o desenho que a criança fez no Pinta), e não uma figura do elenco. Com o

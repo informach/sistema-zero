@@ -121,7 +121,7 @@ describe('M1 · a pista congela no clique e vira "Feito" quando a meta dela cai'
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
     const caixa = () => document.querySelector('[data-pista]')
     await waitFor(() => expect(caixa()?.textContent).toContain('Aperte o botão da borda.'))
-    fireEvent.click(screen.getByRole('button', { name: 'A borda da tela: escondida' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ligue a borda' }))
     await waitFor(() => expect(caixa()?.getAttribute('data-pista')).toBe('feita'))
     expect(caixa()?.textContent).toBe('✓ Feito! Se precisar, peça outra pista.')
     expect(caixa()?.textContent).not.toContain('Aperte o botão da borda.')

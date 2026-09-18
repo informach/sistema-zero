@@ -630,8 +630,9 @@ export function ScreenReaderStage({
  * era o tracejado do alvo, maior); com a borda ligada, 800 × 480 e 480 × 270 saíam quase do mesmo
  * tamanho. Hoje o espaço em volta é sempre o de 800 × 480, e 480 fica visivelmente mais estreito.
  */
-export function StageSizeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function StageSizeStage({ state }: { state: SceneState }) {
   const { width, height, border } = state.stage
+  const id = useId()
   const noAlvo = width === STAGE_TARGET.width && height === STAGE_TARGET.height
   const VIEW = { w: 560, h: 330 } as const
   const { stageWidth, stageHeight } = SCENE_LIMITS
@@ -643,9 +644,6 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
   }
   const tela = moldura(width, height)
   const alvo = moldura(STAGE_TARGET.width, STAGE_TARGET.height)
-  const mundo = sceneCenario(cast, 'stage-size')
-  const heroi = actorFigure(cast, 'hero')
-  const caixa = caixaDe(heroi)
   /** As cantoneiras do alvo: um L em cada canto, curto, fora do caminho do Dino. */
   const BRACO = 16
   const cantos = [
@@ -657,8 +655,6 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
   return (
     <SceneCanvas
       view={VIEW}
-      cast={cast}
-      mundo={mundo}
       titulo="A tela do jogo dentro do espaço em volta"
       // ⚠️ Com outras palavras que a frase embaixo do palco: iguais, o leitor de tela ouvia a mesma
       // coisa duas vezes.
@@ -667,10 +663,32 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
       // pergunta da previsão da cena já respondida, embaixo do palco, desde a abertura. E
       // "moldura" era a segunda palavra para a borda, que é o nome do botão e do bloco.
     >
-      {/* O espaço em volta tem a MESMA cor do céu: é isso que faz o limite sumir sem a borda. No
-          espaço, as estrelas continuam do lado de fora pelo mesmo motivo. ⚠️ E nada tracejado, nem
-          texto, antes da borda: o único retângulo do palco tem de ser a TELA (lote 5). */}
-      <FundoDoCenario cenario={mundo} w={VIEW.w} h={VIEW.h} detalhe="calmo" />
+      {/* A página e a tela do jogo começam com o MESMO azul. Sem a borda, elas viram uma superfície
+          só; a criança descobre o limite ao ligar a borda, sem cenário nem personagem competindo
+          pelo olhar. */}
+      <defs>
+        <clipPath id={`${id}-tela`}>
+          <rect x={tela.x} y={tela.y} width={tela.w} height={tela.h} />
+        </clipPath>
+      </defs>
+      <rect
+        data-pagina-da-experiencia=""
+        className="fill-scene-sky"
+        width={VIEW.w}
+        height={VIEW.h}
+      />
+      {/* O viewport interno é a única área que muda. Mesmo vazio agora, ele já recorta todo conteúdo
+          futuro do jogo para não sugerir que a página inteira cresce com a tela. */}
+      <g clipPath={`url(#${id}-tela)`}>
+        <rect
+          data-tela-do-jogo=""
+          className="fill-scene-sky"
+          x={tela.x}
+          y={tela.y}
+          width={tela.w}
+          height={tela.h}
+        />
+      </g>
       {/* ⭐ O ALVO só com a borda à vista, e como CANTONEIRAS (lote 5): o retângulo tracejado era um
           segundo retângulo que não é a tela, e o texto dele ficava embaixo do Dino. */}
       {border && !noAlvo && (
@@ -726,15 +744,6 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
           </Texto>
         </>
       )}
-      {/* O Dino do tamanho do jogo (a caixa de 64) e sempre ACIMA da linha de baixo da tela. */}
-      <g className="text-primary">
-        <ActorFigure
-          figure={heroi}
-          x={tela.x + tela.w / 2 + caixa.centro * escala}
-          y={tela.y + tela.h - 6}
-          escala={escala}
-        />
-      </g>
     </SceneCanvas>
   )
 }

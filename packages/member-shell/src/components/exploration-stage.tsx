@@ -198,7 +198,7 @@ export function ExplorationStage({
         cast={cast}
       />
     )
-  if (m === 'stage-size') return <StageSizeStage state={state} cast={cast} />
+  if (m === 'stage-size') return <StageSizeStage state={state} />
   /**
    * ⚠⚠ `world` saiu do palco compartilhado (lote 5): o assunto dela é *bastidores × tela*, e
    * aqui os dois nunca apareciam juntos — a tela era desenhada e "bastidores" era um controle
