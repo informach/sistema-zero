@@ -29,6 +29,13 @@ A aula 3 exemplifica a composição livre: explorar gravidade → aplicar no pro
 
 Escolha a missão pelo grupo de conceitos no editor. O resumo explica a ação e as descobertas necessárias. As artes e regras são curadas por missão; não há editor universal de cenas. Nas missões de gravidade e impulso, a condição inicial permite escolher impulso de 5 a 14 mantendo a gravidade. O áudio revisado da instrução é opcional e ativa **Ouvir instrução**. Vídeo e narração compartilham o foco de áudio.
 
+**A cena mostra o JOGO do curso.** Desde 18/09/2026 o palco desenha a arte da extensão Jogo 2D — o mesmo Dino, o mesmo cacto, a mesma nave e os mesmos fundos que a criança monta na aula. Duas escolhas de autoria mandam nisso, e elas são independentes:
+
+- **Qual jogo esta cena mostra** é o seletor no topo do painel *Quem está no palco*. Ele decide o FUNDO e o elenco de fábrica: *Corre Dino* (floresta, Dino, cacto), *Nave* (estrelas, nave, asteroide), *Gorilas* (cidade, gorila, banana) e *O jogo do meu jeito* (estrelas, pedra, chama). Deixando em **"Pelo elenco"**, a plataforma adivinha pelas figuras escolhidas — serve para uma cena solta, mas numa aula de curso vale declarar: uma cena do Desafio montada com o elenco de fábrica do Corre Dino apareceria com um dinossauro na grama. Os manifestos dos três cursos já declaram o campo em todas as cenas.
+- **O elenco** troca cada papel (*Personagem*, *Obstáculo* e *Cenário*) por outra figura, e ele veste a cena inteira: o desenho, a faixa de estado, os rótulos da bancada e o que o leitor de tela anuncia. Trocar só o elenco não troca o fundo; trocar só o jogo não obriga a mexer no elenco. ⚠️ O papel chamado **Cenário** é outra coisa: é a figura que entra na conta das camadas (de fábrica, a floresta), e não o mundo ao fundo.
+
+A arte da cena anda junto com o tempo dela: com o relógio parado o palco fica quieto (a criança lê a pergunta sem nada se mexendo) e, com o ▶ solto, o Dino corre e a chama pulsa. A moldura, a bancada e os botões continuam vestindo o tema do app.
+
 Na prévia, **Conferir livremente** abre os materiais sem travas; **Ensaiar como aluno** testa critérios e ordem. Use **Falhar na próxima confirmação** e **Ensaiar retomada** para conferir o retorno após falha sem registrar progresso real. A retomada do ensaio usa a memória da prévia; fechar essa prévia encerra o ensaio. Ações externas e entregas usam confirmação local explícita, indicada na tela.
 
 No notebook, orientação e ferramenta ficam lado a lado quando há largura útil suficiente. Em telas menores, **Ver exemplo / Criar** preservam a instância do projeto e mantêm a instrução principal perto da criação. O professor consulta missão, contrastes, montagem, pistas e revisão no acompanhamento.

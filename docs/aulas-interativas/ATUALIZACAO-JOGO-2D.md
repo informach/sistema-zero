@@ -41,4 +41,14 @@ bun docs/aulas-interativas/qa/gerar-blocos-cursos.ts --check
 
 Os testes `correDinoEditorial`, `desafioEditorial` e `meuJeitoEditorial` no pacote Studio compilam os blocos reais e exercitam o motor. Os validadores editoriais conferem fontes, hashes, âncoras, manifestos e reprodução dos arquivos. Os geradores não escrevem no banco nem publicam cursos.
 
-As cenas nativas de cada aula (experimentação e demonstração) são dados das receitas (`cena:` em cada passo, com o bloco na ordem das chaves do manifesto), e o roteiro descreve cada uma lendo o catálogo do core: instrução, previsão, pedidos e rótulos das metas, pistas e roteiro da demonstração ficam em dia sozinhos. Depois de rodar os três geradores, `git diff -- 'docs/aulas-interativas/**/manifesto.json'` sai vazio: JSON com o mesmo conteúdo não é regravado (o Biome preserva o desenho de cada objeto, e os blocos de cena editados à mão estão fechados numa linha só), e o que muda passa pelo Biome do repositório.
+As cenas nativas de cada aula (experimentação e demonstração) são dados das receitas (`cena:` em cada passo, com o bloco na ordem das chaves do manifesto), e o roteiro descreve cada uma lendo o catálogo do core: instrução, previsão, pedidos e rótulos das metas, pistas e roteiro da demonstração ficam em dia sozinhos.
+
+⭐ **O cenário da cena sai do CURSO, não de cada bloco.** Desde 18/09/2026 o palco desenha a arte da extensão Jogo 2D, e cada bloco de cena carrega um campo `cenario` dizendo QUAL jogo ele retrata. A tabela é uma só, em `qa/cenas-editorial.ts`:
+
+| Curso | `cenario` | O que a criança vê |
+| --- | --- | --- |
+| Corre Dino | `corre-dino` | floresta com sol, nuvens e morros; Dino e cacto |
+| Desafio do Primeiro Jogo | `nave` | céu estrelado; nave, asteroide e tiro |
+| O Jogo do Meu Jeito | `meu-jeito` | céu estrelado; pedra e chama |
+
+`conteudoDaCena(cena, cenario)` e `blocoDaCena(cena, cenario)` inserem o campo logo depois do `cast` (ou do `scene`, quando não há elenco), e os quatro editoriais passam `CENARIO_DO_CURSO['<curso>']`. São **38 cenas declaradas**: 20 no Corre Dino, 8 no Desafio e 10 no Meu Jeito. Sem o campo o player deriva o cenário pelas figuras do elenco — rede para cena solta, e não o caminho de um curso: uma cena do Desafio com o elenco de fábrica do Corre Dino apareceria com um dinossauro na grama. `packages/core/tests/learning.test.ts` cobra as duas metades (toda cena declara; o declarado é o do curso) e o `validar-manifestos-v6.ts` segue sendo o portão do formato. Depois de rodar os três geradores, `git diff -- 'docs/aulas-interativas/**/manifesto.json'` sai vazio: JSON com o mesmo conteúdo não é regravado (o Biome preserva o desenho de cada objeto, e os blocos de cena editados à mão estão fechados numa linha só), e o que muda passa pelo Biome do repositório.

@@ -18,6 +18,8 @@ Em cada pasta há um `roteiro.md` completo para produção e um `manifesto.json`
 
 ## Como a aula funciona
 
+⭐ **A cena é desenhada com a arte do jogo que o curso ensina.** Cada cena declara o cenário que retrata (`cenario`: `corre-dino`, `nave`, `gorilas` ou `meu-jeito`), e o palco usa o mesmo código de desenho da extensão Jogo 2D: o Dino com barriga, espinhos e perninhas que correm, o cacto de dois braços, a floresta com sol, nuvens e morros, o céu estrelado da nave. Quem decide o cenário é o CURSO — experiência do Corre Dino mostra o corredinho, experiência do Desafio mostra a nave —, e o elenco segue escolhendo as figuras de cada papel. O guia de autoria detalha as duas escolhas.
+
 O aluno vê o título da seção e seu conteúdo, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite revisar seções concluídas. As próximas exibem apenas título e cadeado até a seção atual ser concluída. A barra principal conta seções concluídas com pesos iguais; o progresso do curso permanece no índice do curso. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
 
 O servidor controla o avanço pelos critérios selecionados. Exploração nativa registra comparações feitas no navegador, sem afirmar domínio do conceito; criação verifica estrutura do projeto; entrega confirma recebimento; quiz verifica respostas. Assistir a 90% só é critério de uma seção que contém apenas vídeo. Acesso ao caderno e ações salvas da plataforma têm critérios próprios. A última seção também precisa cumprir seu critério.

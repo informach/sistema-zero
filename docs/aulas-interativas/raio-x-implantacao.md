@@ -154,7 +154,12 @@ acima. Quem acrescenta: o agente que mudou o manifesto e o orquestrador do lote.
 
 | Manifesto | O que mudou | Entra depois de |
 | --- | --- | --- |
-| (nenhum ainda) | | |
+| Os **23** com bloco de cena (13 do Corre Dino, `dia-1`…`dia-4` do Desafio, `aula-02`…`aula-07` do Meu Jeito) | 18/09/2026 — cada bloco de cena ganhou o campo `cenario` (38 no total), que diz qual jogo o palco desenha. Só acréscimo de campo; nenhuma meta, pergunta ou critério mudou. | — entram na posição normal da ordem acima; na produção isto chega na PRIMEIRA importação e não é reimportação |
+
+⚠️ Na **staging** há um manifesto de uma aula já importado para teste: se ele for um dos 23, reimportar dá
+revisão nova ao bloco de cena e recomeça o progresso em andamento daquele bloco (seção 5). Sem reimportar,
+aquela aula continua funcionando — o player deriva o cenário pelo elenco —, só pode mostrar o mundo errado
+numa cena cujo elenco não denuncia o curso.
 
 ### Depois de importar: a voz do Zappy
 
