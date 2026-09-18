@@ -1163,6 +1163,20 @@ lado, sem borda nem fundo (`.sz-lesson-section-head` ficou só com o respiro de 
 - ⚠️ O `loading.tsx` desta rota acompanha: ele reservava a altura do `<h1>` que saiu, e sem o
   ajuste a aula abria com pulo de layout.
 
+⭐⭐ **E o cartão do TÍTULO saiu (18/09/2026).** O nome da aula era um `<h1>` do
+`lesson-player-client.tsx` e o nome da seção um `<h2>` logo abaixo, dentro de um cartão com o
+índice: duas linhas de título, cada uma com a sua margem, e a seção — que é o que muda ao avançar —
+por último. Hoje é UM cabeçalho só, do `LessonSections`: "aula · seção" numa linha, com o índice ao
+lado, sem borda nem fundo (`.sz-lesson-section-head` ficou só com o respiro de baixo).
+- ⚠️ A regra do corpo do título é `:is(h1, h2)`, nunca `h2`: o cabeçalho VIRA `<h1>` quando o player
+  passa `lessonTitle`, e mirando só a tag antiga a regra morre em silêncio — o título encolhia para
+  1,5rem no celular e crescia para 1,875rem no desktop.
+- ⚠️ O índice fica **só no ícone abaixo de 640px** (`sr-only sm:not-sr-only`, com `aria-label`).
+  Medido nos 392 pares reais de aula × seção dos manifestos: com o cartão e com o texto do botão na
+  mesma linha eram 5,3 linhas de cabeçalho a 390px (pior caso 8); sem os dois, 3,2 (pior caso 4).
+- ⚠️ O `loading.tsx` desta rota acompanha: ele reservava a altura do `<h1>` que saiu, e sem o
+  ajuste a aula abria com pulo de layout.
+
 ⭐ **O cartão com "O que falta para concluir / Índice da aula" SAIU do kids (13/09/2026)** e não
 volta. Ele era a terceira cópia da mesma conta: a barra do topo recebe as mesmas `requirements` e
 já mede as atividades, e o índice já marca "Atividade pendente" na seção. O **"o que falta para
@@ -1192,6 +1206,15 @@ SUBSTITUIU o texto de obrigatoriedade, que já tem linha própria logo acima do 
 ⭐ **E um bloco que sumia voltou:** a ENTREGA por galeria (`studio`/`pinta` com `gallery`)
 colocada numa SEÇÃO não aparecia em lugar nenhum — o painel do conteúdo filtrava por kind e a
 lista da ferramenta descartava a galeria. Detalhe no CLAUDE.md do member-shell.
+
+⭐⭐ **A cena virou um CONSOLE (18/09/2026).** Relato dela: *"a aparência geral da experiência, e isso
+conta instrução do Zappy, cena e controles da cena, tem que parecer que são uma única unidade e fazem
+parte de um jogo"*. Instrução, pista, mundo, frase e bancada passaram a morar numa moldura só, e o
+placar de dentro do palco passou a ser o do Jogo 2D (o `drawScore` e os corações do runtime, pela arte
+compartilhada). É tudo do member-shell — o desenho, as regras e as armadilhas estão no CLAUDE.md de lá,
+em "O CONSOLE" e "O placar é o do Jogo 2D". O que muda AQUI é só o material: o console veste o tema do
+PERFIL (cartão, borda, cor de ação), e não o deck escuro do jogo. Foi o meio-termo que ela escolheu
+depois de ver três propostas numa maquete descartável.
 
 ⚠️ **A cena agora divide a tela como o Estúdio, e o teto dela subiu para 680px** — a régua é do
 member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que muda AQUI é o que se

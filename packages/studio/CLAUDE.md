@@ -910,8 +910,23 @@ Monaco, three ou React, e nada que toque o DOM em runtime — a cena renderiza n
   operações argumento a argumento. É ele que impede as duas cópias de divergirem enquanto
   coexistirem, e é o portão do dia em que o runtime passar a ser GERADO daqui (ainda não é).
   Provado que morde: um `w * 0.52` virado `0.53` no corpo do Dino reprova quatro casos.
+- ⭐⭐ **`arte/hud.ts` — o HUD, e não só as figuras (18/09/2026).** Relato dela, depois de olhar uma
+  cena de aula ao lado do jogo: *"o placar, por exemplo, você não fez igual ao da extensão Jogo 2D,
+  você fez um outro nada a ver com o estilo do jogo"*. Estava certa, e a causa era a mesma das
+  figuras: o coração, a barra e as medidas do placar viviam só dentro dos template literals de
+  `game-2d/runtime/arcadeKitsHud.ts`. Agora saem daqui, portados VERBATIM e travados pelo MESMO
+  teste de paridade: `CORACAO` (lado 22, vão 6), `CORES_DO_HUD`, `caminhoDoCoracao` (o `top = s*0.3`
+  da covinha), `desenharCoracao` (= `drawHeart`), `desenharCoracoes` (= `_drawHeartsVisual`, com o
+  teto de 20 do runtime) e `desenharBarra` (= `_drawBarVisual`). ⚠️ `caminhoDoCoracao` é separado do
+  preenchimento de propósito: a cena desenha a vida PERDIDA como contorno, e sem isso ela inventaria
+  outra geometria. Provado que morde: um `0.3` virado `0.31` reprova dois casos. ⚠️ A paridade
+  guarda também as CONSTANTES, não só a geometria: o teste passa `22` ao runtime e deixa o `CORACAO`
+  daqui decidir do lado da cena, então lado, vão e cor da vida não podem divergir em silêncio.
+  ⚠️ `desenharBarra` ainda não tem consumidor (nenhuma das 45 cenas mostra barra de vida): ela veio
+  junto porque o HUD é uma unidade e porque é a OUTRA forma do `drawSpriteHealth`.
 - Quem consome: `packages/member-shell/src/components/scene-arte.tsx` (`ArteSvg` e
-  `FundoDoCenario`), pelos cenários do `packages/core/src/learning/scene/cenario.ts`.
+  `FundoDoCenario`) e `scene-hud.tsx` (o placar e os corações da cena), pelos cenários do
+  `packages/core/src/learning/scene/cenario.ts`.
 - ⚠️ **Ainda NÃO gerado, e isso é decisão DELA** (18/09/2026, depois do full review: *"vamos deixar
   como está por enquanto; depois a gente pensa"*): `game-2d/runtime/*` continua com as strings de
   hoje. O lote que fecha a duplicação (bundlar `src/arte` e emitir `__gen_arteRuntime.ts`) mexe no

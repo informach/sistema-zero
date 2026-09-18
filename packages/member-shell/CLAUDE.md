@@ -937,8 +937,10 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    tela ao conteúdo novo e o que faz a página subir: CSS que mire a tag precisa de `:is(h1, h2)`,
    senão vira regra morta na página real),
    `sz-lesson-block` (cada bloco), **`sz-lesson-scene`** (a raiz da atividade de cena —
-   demonstração e experimentação. ⚠️ Desde 13/09/2026 a cena NÃO desenha cartão próprio: quem
-   desenha é o app, e é por este gancho que ele sabe qual bloco é uma cena. O kids já dá cartão a
+   demonstração e experimentação. ⚠️ Desde 13/09/2026 o BLOCO não desenha cartão próprio: quem
+   desenha é o app, e é por este gancho que ele sabe qual bloco é uma cena. ⚠️ Desde 18/09/2026 o
+   CONSOLE tem a moldura dele por dentro (borda de 1px e fundo de cartão, `sz-scene-console`) — é
+   ele que faz da instrução, do mundo e dos controles uma peça só. O kids já dá cartão a
    TODO bloco; o adulto e o ensaio do admin têm regra própria, e sem ela a cena fica solta na
    página. A cena também tem TETO de largura, `max-w-scene` = `--container-scene` (**680px**
    desde 14/09/2026; nasceu 560 e a dona achou que tinha encolhido demais), que vem
@@ -981,11 +983,13 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | Arquivo | O que faz |
 |---|---|
 | `scene-activity.tsx` | O player (`SceneActivityView`): sessão, gravação, palpite, pergunta, rodapé e relógio. Não escreve palco nem peça de bancada. |
-| `scene-prediction.tsx` | O palpite antes de mexer. |
+| `scene-prediction.tsx` | O palpite antes de mexer: as três peças do PENDENTE (`PalpiteContexto`, `PalpitePergunta`, `PalpiteOpcoes`, que o console monta) e a linha congelada depois da escolha. |
+| `scene-console.tsx` | ⭐⭐ O CONSOLE: `SceneConsole`, `ConsoleFala`, `ConsoleMundo` e `ConsolePrancha`. Só moldura. |
+| `scene-hud.tsx` | ⭐⭐ O PLACAR do jogo dentro do palco: `PlacarDoJogo`, `VidaDoJogo` e `CoracaoDoJogo`. |
 | `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e a faixa da revisita. |
 | `scene-demo-controls.tsx` | A demonstração guiada e a `MontagemTravada`. |
 | `scene-sandbox.tsx` | "Agora é sua vez". |
-| `scene-frame.tsx` | A faixa de estado (`SceneReadoutBand`) e os botões do mundo (`botoesDoMundo`), iguais no player e na vez. |
+| `scene-frame.tsx` | A faixa de estado (`SceneReadoutBand`, com a `placa` do começo e o `valoresEscondidos` do palpite) e os botões do mundo (`botoesDoMundo`), iguais no player e na vez. |
 | `use-scene-clock.ts` | `useSceneClock`, `limiarDoRelogio`, `relogioDaCena`, `estadoVistoDaCena`, `tempoDeLeitura`. |
 | `use-scene-voice.ts` | `useSceneVoice`: a voz do ZAPPY (fila de MP3) e, faltando áudio, a do navegador. |
 | `zappy-fala-context.tsx` | `ZappyFalaProvider`/`useZappyFala`: quem tem botão "Ouvir" na tela rege a BOCA do mascote. |
@@ -1001,7 +1005,143 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `scene-3d.tsx` | A régua do 3D. |
 | `scene-*-stages.tsx`, `scene-*-controls.tsx`, `experience-scene.tsx` | Palcos e bancadas por família (tabela "Cena → palco e bancada"). |
 | `lib/scene-controller.ts` | `SceneController`: sessão local, segmentos e rascunho no IndexedDB. |
-| `styles/scene.css` | A paleta `--color-scene-*`, o teto `max-w-scene` e o mundo espaço (cada app `@import`a). |
+| `styles/scene.css` | A paleta `--color-scene-*`, o teto `max-w-scene`, o mundo espaço e as peças do console (`sz-scene-console*`, `sz-scene-prancha`, `sz-scene-placa`, `sz-scene-hud-*`, `sz-scene-placar-rotulo`) — cada app `@import`a. |
+
+### O CONSOLE: a experiência inteira numa peça só (18/09/2026)
+
+⭐⭐ Relato dela, depois que as figuras passaram a ser as do Jogo 2D: *"a aparência geral da experiência, e
+isso conta instrução do Zappy, cena e controles da cena, tem que parecer que são uma única unidade e fazem
+parte de um jogo, para instigar a criança a realmente querer fazer"*. Antes disto o bloco eram QUATRO
+retângulos em volta de um desenho de jogo — o cartão do bloco, o balão do Zappy, a moldura da faixa e as
+caixas da bancada —, com raios que nem conversavam (20 / 16 / 12).
+
+Hoje é um bloco só (`scene-console.tsx`), nesta ordem:
+
+```
+┌─ console ─────────────────────────────────┐
+│  [placa]   x 300   y 150        ●●○       │  ← a faixa, no molde do drawScore do jogo
+│  🐲 a fala do Zappy, largura cheia        │  ← e a PISTA logo abaixo dela
+│ ┌──────────── o mundo ──────────────────┐ │
+│ └───────────────────────────────────────┘ │
+│  a frase da situação                      │
+│ ╭─ prancha ────────────────────────────╮  │
+│ │ [gesto]  [medida]  [chave]           │  │
+│ ╰──────────────────────────────────────╯  │
+└───────────────────────────────────────────┘
+   Desfazer · Recomeçar · Uma pista   Conferir   ← o rodapé fica FORA do console
+```
+
+⚠️⚠️ **O MATERIAL continua sendo o do APLICATIVO.** Ela viu três propostas na maquete e escolheu o
+meio-termo ("Proposta B"): a ARRUMAÇÃO é nova, mas o cromo segue vestindo o tema do perfil (cartão, borda,
+cor de ação), e não o deck escuro do jogo. Isso PRESERVA a regra "mundo é o jogo, cromo é o tema" — o que
+mudou foi só onde cada peça mora. Quem veste o jogo é o que está DENTRO do palco, mais o placar.
+
+- ⚠️ **O Zappy ganhou faixa PRÓPRIA, e não um balão por cima do mundo.** Ela viu as duas na maquete: o
+  balão sobre o cenário tapava a régua do topo e a marca do `0, 0` — justamente o que a cena do endereço
+  ensina. Pôr o balão sobre o desenho ainda exigiria cada um dos 45 palcos reservar essa faixa.
+- ⭐⭐ **A PISTA mora colada na fala do Zappy**, e não no pé do bloco. Relato dela na maquete: *"não
+  consegui ver onde apareceu a pista"*. Ela nascia depois do rodapé, longe da instrução que a criança
+  acabou de ler e fora do console; quem pede ajuda é justamente quem vai reler a instrução.
+- **A conclusão** ("Você descobriu! Agora explique") entrou no console, abaixo do mundo, na
+  `.sz-scene-console-conversa` — é o mesmo lugar em que o palpite pergunta. ⚠️ A margem no TOPO dela é
+  load-bearing: sem ela o cartão encostava no mundo, e ela reparou na maquete.
+- **A comparação guardada** ficou FORA do console: ela é um segundo mundo, e dois mundos dentro da mesma
+  moldura leem como uma coisa só. O RODAPÉ também: as ferramentas e o "Conferir" são o que a criança
+  faz COM a cena, e dentro da moldura viravam mais uma faixa.
+- **A "Agora é sua vez" usa o MESMO console** (`scene-sandbox.tsx`), com a fala do Zappy chegando
+  pela prop `fala`: ela é a experimentação continuando, então não pode ter outra cara.
+- ⚠️ As três ferramentas do rodapé passaram de `tom="discreta"` (fantasma) para **`tom="ferramenta"`**
+  (contorno). Relato dela: *"quando eu olho parece que são três textos, e quando passo o mouse também nada
+  muda"* — o kids mantém o fantasma PLANO de propósito, e o contorno já ganha o relevo e o levantar do app.
+
+**O PALPITE mora no MESMO console**, e a cena fica NO MEIO dos dois balões: contexto → mundo → pergunta →
+opções. Juntar os dois balões faria a criança responder antes de olhar — foi o primeiro desenho da maquete,
+e ela reparou na hora (*"no palpite não eram dois balões: um para o contexto e, depois embaixo da cena, a
+pergunta"*). Quatro mudanças de comportamento saíram daí, e as quatro são load-bearing:
+
+- ⭐ **A prancha fica À VISTA e FECHADA**, em vez de sumir (*"o palpite também tem ali o balão de fala do
+  Zappy, a cena do jogo e alguns controles desativados"*): a criança vê o que vai poder mexer, e o bloco não
+  muda de altura quando ela responde. ⚠️⚠️ `ConsolePrancha fechada` é a CORTINA, e por isso é **`inert` +
+  desfoque** — não o `fechado` de um controle solto (aquele continua no Tab e continua dizendo por que não
+  responde). Os dois motivos são antigos: o gesto não pode chegar ao motor antes do palpite, e **os motivos
+  dos controles fechados SOPRAM a resposta** (a nota de uma chave que diz "abre depois que 3 cactos
+  passarem" é a previsão inteira). O `inert` tira a prancha do Tab e do leitor; o desfoque apaga o texto
+  miúdo e deixa as FORMAS à vista. A trava do MOTOR não depende de nenhum dos dois: `dispatch` e
+  `action.current` recusam enquanto o palpite está pendente.
+- ⚠️⚠️ **A faixa aparece com os VALORES escondidos** (`valoresEscondidos`, um "?" por valor): os rótulos
+  dizem o que a cena mede — que é o que a criança vai olhar mudar —, e o valor responderia a pergunta antes
+  dela (na `layers` a ordem dos desenhos É a previsão). Antes a faixa simplesmente não existia ali.
+- **A PLACA "Seu palpite"** (`.sz-scene-placa--palpite`, no começo da faixa) é o que diz em que momento da
+  atividade ela está. Ela existia como legenda do cartão de palpite que o console substituiu e se perdeu no
+  caminho — achado do review deste lote. Na demonstração a placa diz "Antes de assistir".
+- **Sem medidor de descobertas no palpite**: a contagem começa no primeiro gesto, e ali não houve nenhum.
+- ⚠️ Na cena com controle na PRÉVIA (só a `screen-reader`) há dois "Ouvir a tela" na tela: o da prévia, que
+  é o único ALCANÇÁVEL e o que apresenta o recurso a quem não enxerga, e o da prancha, dentro da cortina.
+
+#### Full review do próprio lote (18/09/2026) — 8 achados
+
+Correção de review é código novo e merece review, e esta rodada pagou. Três dos oito são perdas
+silenciosas do refator (o console substituiu peças que ninguém remontou); os outros cinco são
+defeitos que o desenho novo criou.
+
+1. ⚠️⚠️ **A placa "Seu palpite" tinha sumido** — ver acima. Era a legenda do cartão que o console
+   substituiu; o CSS dela já existia e ninguém a usava.
+2. ⚠️⚠️ **A faixa aparecia no palpite com os valores VIVOS**, respondendo a pergunta. Virou o `?`.
+3. ⚠️ **O medidor de descobertas aparecia no palpite** dizendo "0 de 3" antes do primeiro gesto.
+4. ⚠️⚠️ **A "Agora é sua vez" ficou com a fala FORA do console.** Ela é a experimentação
+   continuando, e era a última sobra do desenho antigo: o balão do Zappy solto acima da moldura. O
+   player passa o balão pela prop `fala` do `SceneSandbox`, que o põe na `ConsoleFala`.
+5. ⚠️⚠️ **O `.sz-scene-console-conversa` era renderizado SEMPRE.** Vazio, as margens de cima e de
+   baixo colapsavam num vão morto de 12px entre a frase da situação e a prancha, em toda cena e o
+   tempo todo. Hoje a caixa só existe com conclusão dentro.
+6. ⚠️⚠️ **O MOLDE da faixa media com "?".** O `LugarReservado` reserva a altura do pior caso, e
+   medir com "?" (que cabe sempre numa linha) faria a faixa CRESCER no instante em que a criança
+   responde e os números voltam — exatamente o pulo que ele existe para impedir. Hoje `lista()`
+   recebe `escondidos` e o molde passa `false`. ⚠️ Medir com o valor real é seguro porque o molde
+   é `aria-hidden`, invisível e sai na mesma passada de layout: ele nunca chega à tela nem ao SSR.
+7. ⚠️ **A caixa da pista e a frase da situação encostavam nas bordas do console** (a pista também
+   no mundo logo abaixo): as duas são filhas diretas da moldura e não tinham respiro. A pista
+   ganhou `mx-3.5 mb-2.5`; a situação, uma regra por `[data-lugar-reservado='situacao']`.
+8. ⚠️ **`D_DO_CORACAO` lia `arvore()[0]`**, que é o `<defs>` quando o pincel registra um degradê.
+   Hoje procura pelo `tag` e lança se não achar — roda uma vez, na carga do módulo.
+
+⚠️ **O que foi MEDIDO e está de pé:** os rótulos do placar em 600, 524, 390 e 314px de palco (o
+piso de 12px na tela faz a letra crescer até 23 unidades no menor) não encostam no selo do canto
+nem saem do enquadramento; o `inert` não é emitido quando `fechada` é falso; e os avisos sobre o
+palco são `absolute` DENTRO do mundo, então o `overflow: hidden` do console não os corta.
+
+### O placar é o do Jogo 2D (`scene-hud.tsx` + `@sistemazero/studio/arte`)
+
+⭐⭐ Relato dela no mesmo dia: *"quando tiver placar dentro da cena, ou em algum outro elemento, a gente tem
+que seguir o mesmo design lá da extensão Jogo 2D"*. Estava certa — a cena tinha inventado DUAS linguagens de
+placar que não existem em jogo nenhum: o `Cartao` das cenas de número (um retângulo 176×92 com `rx=16` e
+borda de 2px) e o HUD solto da `lives` (número 30 à direita, com corações desenhados à mão num terceiro
+path). Havia ainda um QUARTO coração, o da ficha do `enemy-type`.
+
+- O jogo escreve o placar com `drawScore` (`game-2d/runtime/arcadeKitsHud.ts`): `label + ' ' + valor`, numa
+  linha só, `bold` na fonte da interface, **sem caixa e sem sombra**, à esquerda. As vidas são
+  `drawSpriteHealth`: corações vetoriais, lado 22 e vão 6.
+- **`PlacarDoJogo` tem duas FORMAS.** `linha` é o `drawScore` literal, e vai onde a cena desenha a TELA DO
+  JOGO por dentro (o "Pontos: 3" da `variable`): ali o que a criança precisa reconhecer é o HUD do jogo
+  dela. `empilhado` é a adaptação para os CONTADORES da cena (o placar da `score`, os cactos da `restart`, a
+  base da `acceleration`, o placar da `lives`), que ela lê de relance enquanto mexe na bancada: mesma forma
+  — sem caixa, número gordo, tinta do par —, só que o rótulo sai menor e em versalete acima do número, na
+  régua da faixa de estado. Num jogo o HUD tem a tela inteira; aqui ele divide 600 × 310 com a pista.
+- ⚠️⚠️ **A versalete é do CSS (`.sz-scene-placar-rotulo`), nunca um `.toUpperCase()` no JSX**: o texto do
+  palco é vestido pelo elenco e varrido por teste (o "o elenco veste a cena INTEIRA" do kids lê o texto
+  visível), e um "DINO" em caixa alta no DOM escaparia da varredura.
+- ⚠️⚠️ **O coração vem de `@sistemazero/studio/arte`** (`caminhoDoCoracao`, portado verbatim do runtime e
+  travado por paridade em `arte/__tests__/paridade.test.ts`): um `0.3` virado `0.31` na covinha reprova dois
+  casos. Ele é calculado UMA vez numa caixa 1 × 1 (`D_DO_CORACAO`) e usado como `<path transform>` — a
+  `contact` desenha dez por quadro, e um `PincelSvg` por coração a cada render seria caro sem mudar um pixel.
+  `CoracaoDoJogo` ancora na PONTA DE BAIXO (é assim que os palcos o penduram); `VidaDoJogo` ancora no canto
+  de cima, como o `drawSpriteHealth`, e é quem desenha a FILA.
+- ⚠️ A vida PERDIDA é o mesmo desenho em CONTORNO, no vermelho da vida (era um cinza inventado na
+  `enemy-type`): o lugar dela continua à vista, e é o que permite contar quantas faltam.
+- ⚠️ No jogo o HUD é branco porque o fundo é escuro; na cena o céu é claro, então a TINTA vem dos tokens da
+  cena (e o halo de 3px do `scene.css` faz o resto).
+- ⚠️ Com o console, as varreduras que montam as 45 cenas passaram a montar também a bancada do palpite, e
+  três delas encostaram nos 5 s de fábrica do bun. Ganharam prazo PRÓPRIO (30 s): é tempo, não regra.
 
 ### O player (`scene-activity.tsx`)
 
@@ -1035,16 +1175,18 @@ professor).
   tentativa, para o relatório do professor. "Não era isso." é âmbar e sem punição.
 - ⚠️⚠️ **Opções são BOTÕES** (`aria-current` na escolhida, `aria-disabled`), nunca rádios: num grupo de
   rádios a SETA escolhia, congelava o palpite e mandava uma tentativa por seta. A pergunta mora no `legend`.
-- ⚠️⚠️ **O palpite pendente trava a cena pelo ponto único dos gestos**: `dispatch` e `action.current` recusam;
-  o palco fica `inert` sob o véu "Primeiro, seu palpite ↑" (seta fora da fala; o `fieldset` não alcança o
-  Dino `<g role="button">` nem o arrasto); a bancada fica sob a cortina (`inert` + desfoque: os motivos dos
-  controles fechados sopravam a resposta); e o rodapé fecha **Desfazer, Recomeçar, Uma pista e Conferir**
-  (`fechado`, com o véu no `aria-describedby`), como o principal da demonstração guiada e o "Ver acontecer" da
-  inline. **"Ouvir" fica aberto** (fora de todo `fieldset`: quem ainda não lê não pode ficar sem saída diante
-  de uma pergunta escrita), e o "Ligar som" da demonstração também. Na `layers` o véu é quase opaco e a faixa
-  mostra "?" (`valoresEscondidos`): a floresta por cima somada à ordem deduzia a regra.
-  Substituído (16/09/2026): "o palpite trava o PALCO, nunca o rodapé" → fecha também as ferramentas do rodapé,
-  porque "Recomeçar" antes do palpite contava como gesto e apagava o "trocar".
+- ⚠️⚠️ **O palpite pendente trava a cena pelo ponto único dos gestos**: `dispatch` e `action.current`
+  recusam. O que a criança vê no lugar do palco vivo é o RETRATO (`ScenePredictionPreview`), que não recebe
+  gesto nenhum; a bancada fica sob a cortina (`ConsolePrancha fechada`: `inert` + desfoque, porque os motivos
+  dos controles fechados sopram a resposta); a faixa mostra "?" no lugar de cada valor
+  (`valoresEscondidos`); e o rodapé inteiro — **Desfazer, Recomeçar, Uma pista e Conferir** — não existe ali,
+  como não existem o principal da demonstração guiada e o "Ver acontecer" da inline. **"Ouvir" fica aberto**
+  (fora de todo `fieldset`: quem ainda não lê não pode ficar sem saída diante de uma pergunta escrita), e o
+  "Ligar som" da demonstração também.
+  Substituído (16/09/2026): "o palpite trava o PALCO, nunca o rodapé" → fecha também as ferramentas do
+  rodapé, porque "Recomeçar" antes do palpite contava como gesto e apagava o "trocar".
+  Substituído (18/09/2026, o console): o véu "Primeiro, seu palpite ↑" sobre o palco vivo e o "?" só na
+  `layers` → o retrato no lugar do palco e o "?" em TODA cena (ver "O CONSOLE").
 - **Guardado no `localStorage`** (`sz:scene-prediction:<scope>`, scope = perfil, aula, bloco e revisão) com a
   IMPRESSÃO da pergunta (enunciado e opções): pergunta diferente descarta o palpite, porque o deploy troca a
   previsão do modelo sem mudar o `scope`.
@@ -1248,10 +1390,13 @@ professor).
   `aria-hidden`:** é conteúdo estático lido pelo leitor, e quem ANUNCIA a mudança é o `role="status"` da frase
   embaixo do palco. Substituído (16/09/2026): faixa `aria-hidden` → faixa lida, porque escondida tirava de quem
   não enxerga os números que a cena existe para mostrar. 14px, separador por CSS (`after:content`), valores nas
-  cores do par (`scene-a`, `scene-b-ink`, `scene-alert`, `scene-leaf`).
+  cores do par (`scene-a`, `scene-b-ink`, `scene-alert`, `scene-leaf`). Desde o console ela é a tira de cima
+  dele e tem dois hóspedes: a `placa` do começo (hoje só o "Seu palpite") e o `valoresEscondidos`, que troca
+  cada valor por "?" no momento do palpite (ver "O CONSOLE").
 - **O medidor de descobertas mora NA LINHA da faixa**, perto de onde o dedo está: `role="meter"` com o nome "N de
   M descobertas", o texto "Descobertas N de M" à vista e `aria-hidden` (o medidor já diz), bolinhas sem `title`
-  (o tooltip mostrava o rótulo da meta, que é a conclusão).
+  (o tooltip mostrava o rótulo da meta, que é a conclusão). ⚠️ No palpite ele não existe: a contagem começa
+  no primeiro gesto.
 - ⭐ **`botoesDoMundo` devolve uma LISTA** e a caixa pergunta `.length > 0`: um booleano à parte esconderia um
   botão acrescentado e esquecido nele, sem erro nem teste vermelho. Rótulos: "↑ Pular"; na `jump-sound`, onde o
   jeito é o assunto, "✋ Tocar para pular" e "⌨ Apertar Espaço" (o Espaço pula no `keydown` e a marca do botão
@@ -1614,7 +1759,7 @@ Testes por família em `tests/` (`scene-dino-numbers`, `scene-nucleo`, `conserto
   de toda aula larga (a medição começa em zero). Os templates já pedem a cena como último bloco.
 - ⚠️⚠️ **O editor fica montado entre seções; a cena, não** (`editores` é da AULA, `cenasAtivas` da SEÇÃO): cada cena
   tem controlador, rascunho no IndexedDB e batida de 1 s, e mantê-las vivas custaria isso pela aula inteira.
-- ⚠️ **A cena não desenha cartão**: quem desenha é o app, pelo gancho `sz-lesson-scene` (invariante 8), com o teto
+- ⚠️ **O bloco não desenha cartão**: quem desenha é o app, pelo gancho `sz-lesson-scene` (invariante 8), com o teto
   `max-w-scene`.
 - ⚠️⚠️ **A PRÉVIA de autoria monta o bloco pela PROJEÇÃO PÚBLICA** (`publicInteractiveBlock`), com o rascunho em
   `previewContent` (que liga o avaliador local): a previsão e a pergunta chegam pelos resolvedores do core, e
