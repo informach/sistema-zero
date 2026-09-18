@@ -262,9 +262,9 @@ export function falasDaCena(bloco: {
       'prediction-context',
       bloco.prediction
         ? falaDoContextoDoPalpite(
-          demonstracao ? 'Antes de assistir' : 'Seu palpite',
-          bloco.prediction.context,
-        )
+            demonstracao ? 'Antes de assistir' : 'Seu palpite',
+            bloco.prediction.context,
+          )
         : '',
     ],
     ['prediction-question', bloco.prediction ? falaDaEscolhaDoPalpite(bloco.prediction) : ''],
