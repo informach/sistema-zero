@@ -46,7 +46,7 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     const contexto = html.indexOf(prediction.context.explanation)
     const previa = html.indexOf('data-testid="preview-do-palpite"')
     const pergunta = html.indexOf(prediction.prompt)
-    const escolha = html.indexOf(prediction.choices[0].label)
+    const escolha = html.indexOf(prediction.choices[0]!.label)
 
     expect(html).toContain(prediction.context.explanation)
     expect(html).toContain(prediction.prompt)

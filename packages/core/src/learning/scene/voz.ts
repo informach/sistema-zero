@@ -114,10 +114,7 @@ export function falaDaPergunta(
 }
 
 /** O assunto que prepara a observação da cena antes de a criança formular a hipótese. */
-export function falaDoContextoDoPalpite(
-  rotulo: string,
-  contexto: { explanation: string },
-): string {
+export function falaDoContextoDoPalpite(rotulo: string, contexto: { explanation: string }): string {
   return [`${rotulo}.`, contexto.explanation].join(' ')
 }
 
