@@ -66,6 +66,15 @@ async function openMenuItem(page: Page, name: string): Promise<void> {
   await page.getByRole('menuitem', { name, exact: true }).click()
 }
 
+/**
+ * A porta dos modelos 3D no menu ⋯ (desde 18/09/2026 cada tipo de material tem a
+ * sua, e a janela abre na aba certa). Os arquivos 3D deixaram de morar atrás da
+ * palavra "Imagens".
+ */
+async function openModels3D(page: Page): Promise<void> {
+  await openMenuItem(page, 'Modelos 3D')
+}
+
 function advanced3DKit(page: Page) {
   return page
     .getByRole('listitem')
@@ -143,13 +152,13 @@ test('enviar um céu de 1,5 MB e recarregar NA HORA: o arquivo sobrevive', async
   await installAdvanced3D(page)
   await saveNow(page)
 
-  await openMenuItem(page, 'Imagens')
+  await openModels3D(page)
   await page.locator('input[name="project-3d-files"]').setInputFiles(bigSkyFile())
   await expect(page.getByLabel('Nome do modelo 3D ceu-grande')).toHaveValue('ceu-grande')
   await page.keyboard.press('Escape')
   await reloadRightAway(page)
 
-  await openMenuItem(page, 'Imagens')
+  await openModels3D(page)
   await expect(page.getByLabel('Nome do modelo 3D ceu-grande')).toHaveValue('ceu-grande')
   expect(errors).toEqual([])
 })
@@ -164,7 +173,7 @@ test('trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta
   await installAdvanced3D(page)
   await saveNow(page)
 
-  await openMenuItem(page, 'Imagens')
+  await openModels3D(page)
   await page.getByRole('button', { name: /Trazer do Molda/ }).click()
   const modal = page.getByRole('dialog', { name: 'Trazer do Molda', exact: true })
   for (const name of ['nave-do-molda', 'grama-do-molda', 'ceu-do-molda']) {
@@ -175,9 +184,11 @@ test('trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta
   // Sem fechar a modal: é quando a varredura dos desenhos costuma estar lendo o banco.
   await reloadRightAway(page)
 
+  // A textura é IMAGEM e cai na aba de imagens; o modelo e o céu, na de 3D.
   await openMenuItem(page, 'Imagens')
-  await expect(page.getByLabel('Nome do modelo 3D nave-do-molda')).toHaveValue('nave-do-molda')
   await expect(page.getByLabel('Nome da imagem grama-do-molda')).toHaveValue('grama-do-molda')
+  await page.getByRole('tab', { name: 'Modelos 3D' }).click()
+  await expect(page.getByLabel('Nome do modelo 3D nave-do-molda')).toHaveValue('nave-do-molda')
   await expect(page.getByLabel('Nome do modelo 3D ceu-do-molda')).toHaveValue('ceu-do-molda')
   expect(errors).toEqual([])
 })

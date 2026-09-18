@@ -116,7 +116,72 @@ describe('addAsset — kinds 3D (model3d/environment3d)', () => {
   })
 })
 
-describe('AssetsPanel — seção "Modelos 3D"', () => {
+/**
+ * A janela "Materiais do jogo" em abas (18/09/2026). Antes era uma rolagem só, com
+ * as seções de som e de 3D aparecendo apenas QUANDO JÁ HAVIA arquivo daquele tipo
+ * — quem não tinha nenhum não via nada sobre eles em lugar nenhum, e o caminho
+ * para importar um som era clicar em "Imagens".
+ */
+describe('Materiais do jogo — as abas', () => {
+  /** Abre a janela e vai para a aba pedida pelo GESTO (clicando nela). */
+  function abrir(tab?: 'Sons' | 'Modelos 3D') {
+    const view = render(<AssetsPanel open onClose={() => {}} />)
+    if (tab) fireEvent.click(screen.getByRole('tab', { name: tab }))
+    return view
+  }
+
+  it('imagens e sons têm aba SEMPRE; a de 3D só com quem consuma 3D', () => {
+    seedProject()
+    abrir()
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['🖼️Imagens', '🔊Sons'])
+  })
+
+  it('a aba de som ensina o próximo passo mesmo sem nenhum som (era o buraco)', () => {
+    seedProject()
+    abrir('Sons')
+    expect(screen.getByText('🔊 Enviar som')).not.toBeNull()
+    expect(screen.getByText(/Nenhum som ainda/)).not.toBeNull()
+    // E diz QUAL bloco usa o que ela acabou de enviar.
+    expect(screen.getByText(/Carregar o som/)).not.toBeNull()
+  })
+
+  it('o som fica na aba dele, e não na de imagens', () => {
+    seedProject()
+    useProjectStore.getState().addAsset({
+      name: 'pulo',
+      dataUrl: 'data:audio/mpeg;base64,//uQx',
+      kind: 'audio',
+      source: 'upload',
+    })
+    abrir()
+    expect(screen.queryByLabelText('Nome do som pulo')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(screen.getByLabelText('Nome do som pulo')).not.toBeNull()
+  })
+
+  it('a aba ativa é a única com aria-selected, e o painel aponta para ela', () => {
+    seedProject()
+    abrir('Sons')
+    const sons = screen.getByRole('tab', { name: 'Sons' })
+    expect(sons.getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('false')
+    const painel = screen.getByRole('tabpanel')
+    expect(painel.getAttribute('aria-labelledby')).toBe(sons.id)
+  })
+
+  it('a cota do projeto fica FORA das abas (ela é do projeto, não de um tipo)', () => {
+    seedProject()
+    abrir('Sons')
+    expect(screen.getByText(/0\/128 arquivos/)).not.toBeNull()
+  })
+})
+
+describe('Materiais do jogo — a aba "Modelos 3D"', () => {
+  function abrir3D() {
+    render(<AssetsPanel open onClose={() => {}} />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
+  }
+
   it('mostra o botão de upload 3D, lista o modelo FORA da grade de imagens e renomeia', () => {
     seedProject({ with3DExtension: true })
     useProjectStore.getState().addAsset({
@@ -126,10 +191,9 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
       originalFileName: 'nave.glb',
       source: 'upload',
     })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
 
     expect(screen.getByText('📦 Enviar modelo 3D')).not.toBeNull()
-    expect(screen.getByText('Modelos 3D')).not.toBeNull()
     expect(screen.getByText('nave.glb')).not.toBeNull()
     // NÃO vira <img> quebrado na grade de imagens (a grade usa alt={name}).
     expect(screen.queryByAltText('nave')).toBeNull()
@@ -140,30 +204,31 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
     expect(useProjectStore.getState().project?.assets?.[0]?.name).toBe('nave-mae')
   })
 
-  it('sem assets 3D a seção não aparece', () => {
+  it('com a extensão e sem arquivo nenhum, a aba existe e ensina o caminho', () => {
     seedProject({ with3DExtension: true })
-    render(<AssetsPanel open onClose={() => {}} />)
-    expect(screen.queryByText('Modelos 3D')).toBeNull()
+    abrir3D()
+    expect(screen.getByText(/Nenhum modelo 3D ainda/)).not.toBeNull()
   })
 
-  it('SEM a extensão Jogo 3D Avançado o botão de upload 3D não existe (curadoria)', () => {
+  it('SEM quem consuma 3D e sem arquivo 3D, a aba nem existe (curadoria)', () => {
     seedProject()
     render(<AssetsPanel open onClose={() => {}} />)
-    expect(screen.getByText('Enviar imagem')).not.toBeNull() // os demais seguem
-    expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
+    expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
+    // A de imagens segue inteira.
+    expect(screen.getByText('Enviar imagem')).not.toBeNull()
   })
 
-  it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda: botão presente', () => {
+  it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda', () => {
     const project = createEmptyProject('p1', 'Meu Jogo')
     project.installedExtensions = [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
     useProjectStore.setState({ project, isDirty: false, saveError: null })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
     expect(screen.getByText('📦 Enviar modelo 3D')).not.toBeNull()
   })
 
-  it('asset 3D ÓRFÃO continua listado e só é excluído após confirmação', () => {
-    // O gate é só da porta de ENTRADA: esconder a seção criaria um órfão
-    // invisível comendo a cota, sem como a criança excluir.
+  it('asset 3D ÓRFÃO mantém a aba viva, sem a porta de entrada, e dá para excluir', () => {
+    // O gate é só da porta de ENTRADA: sem a aba, o órfão ficaria invisível
+    // comendo a cota, e a criança não teria como excluí-lo.
     seedProject()
     useProjectStore.getState().addAsset({
       name: 'orfao',
@@ -172,9 +237,9 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
       originalFileName: 'orfao.glb',
       source: 'upload',
     })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
     expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
-    expect(screen.getByText('Modelos 3D')).not.toBeNull()
+    expect(screen.getByText('orfao.glb')).not.toBeNull()
     fireEvent.click(screen.getByText('Excluir'))
     expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(1)
     const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })

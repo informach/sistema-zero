@@ -101,6 +101,18 @@ function moldaModel(): ProjectAsset {
   }
 }
 
+/**
+ * Vai para a aba dos modelos 3D (onde o .glb e o céu moram desde 18/09/2026). A
+ * aba existe por CONTEÚDO — basta o projeto ter um arquivo 3D —, então ela está
+ * lá mesmo sem extensão 3D instalada.
+ */
+const irParaModelos3D = async () => {
+  const aba = await screen.findByRole('tab', { name: 'Modelos 3D' })
+  await act(async () => {
+    fireEvent.click(aba)
+  })
+}
+
 /** Deixa os efeitos assíncronos do painel (catálogos, persistência) assentarem. */
 const flushEffects = () =>
   act(async () => {
@@ -387,6 +399,7 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
     seedProject([{ ...moldaModel(), libOrigin: undefined }])
     renderPanel(() => {}, { onEditCreation: () => {} })
 
+    await irParaModelos3D()
     await screen.findByRole('button', { name: 'Editar nave no Molda' })
     await flushEffects()
     expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBeUndefined()
@@ -397,6 +410,7 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
     seedProject([moldaModel()])
     const criacoes: string[] = []
     renderPanel(() => {}, { onEditCreation: (id) => criacoes.push(id) })
+    await irParaModelos3D()
     fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Molda' }))
     await waitFor(() => expect(criacoes).toEqual(['m1']))
     expect(await getPersonalAsset('m1')).toMatchObject({
@@ -411,6 +425,7 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
     seedProject([moldaModel()])
     renderPanel(() => {})
     await waitFor(() => screen.getByRole('button', { name: /^✏️ Editar$/ }))
+    await irParaModelos3D()
     expect(screen.queryByRole('button', { name: /Editar nave/ })).toBeNull()
   })
 })

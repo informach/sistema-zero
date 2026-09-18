@@ -18,9 +18,11 @@ test('traz os três formatos do Molda para o projeto escolhido e preserva o vín
   await kit.getByRole('button', { name: 'Instalar', exact: true }).click()
   await expect(kit.getByText('Instalada', { exact: true })).toBeVisible()
   await page.keyboard.press('Escape')
+  // A porta dos modelos 3D: desde 18/09/2026 cada tipo de material tem a sua no
+  // menu ⋯, e é ela que abre a janela já na aba do Molda.
   async function openAssets() {
     await page.getByRole('button', { name: 'Mais opções' }).click()
-    await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Modelos 3D', exact: true }).click()
   }
   await openAssets()
   await page.getByRole('button', { name: /Trazer do Molda/ }).click()
@@ -40,8 +42,12 @@ test('traz os três formatos do Molda para o projeto escolhido e preserva o vín
   await page.reload()
   await openAssets()
   await expect(page.getByLabel('Nome do modelo 3D nave-do-molda')).toHaveValue('nave-do-molda')
-  await expect(page.getByLabel('Nome da imagem grama-do-molda')).toHaveValue('grama-do-molda')
   await expect(page.getByLabel('Nome do modelo 3D ceu-do-molda')).toHaveValue('ceu-do-molda')
+  // A TEXTURA é imagem: ela mora na aba das imagens, e é lá que o vínculo dela
+  // tem de sobreviver ao reload.
+  await page.getByRole('tab', { name: 'Imagens' }).click()
+  await expect(page.getByLabel('Nome da imagem grama-do-molda')).toHaveValue('grama-do-molda')
+  await page.getByRole('tab', { name: 'Modelos 3D' }).click()
   await page.getByRole('button', { name: /Trazer do Molda/ }).click()
   await expect(modal.getByText('✓ no projeto', { exact: true })).toHaveCount(3)
   expect(errors).toEqual([])

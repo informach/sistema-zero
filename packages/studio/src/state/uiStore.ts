@@ -5,6 +5,8 @@ import type { IDEMode } from '#core'
 import { StudioStoresContext } from './storesContext'
 
 export type BottomTab = 'console' | 'terminal' | 'ai'
+/** As três abas da janela "Materiais do jogo" — e as três portas dela no menu ⋯. */
+export type AssetsTab = 'images' | 'sounds' | 'models3d'
 export type ConsoleVisibilityOverride = boolean | null
 
 /**
@@ -24,9 +26,19 @@ interface UIStore {
   setBottomTab: (t: BottomTab) => void
   showExtensions: boolean
   setShowExtensions: (b: boolean) => void
-  /** Abre o gerenciador de Assets (imagens/sprites) — overlay, espelho do showExtensions. */
+  /** Abre a janela "Materiais do jogo" — overlay, espelho do showExtensions. */
   showAssets: boolean
   setShowAssets: (b: boolean) => void
+  /** Qual aba a janela mostra. Sobrevive a fechar e reabrir (a criança volta onde estava). */
+  assetsTab: AssetsTab
+  /**
+   * O que as três portas do menu fazem. A regra precisa ser previsível para uma
+   * criança: fechada, abre naquela aba; aberta em OUTRA aba, TROCA a aba (clicar
+   * em "Sons" com a janela nas imagens não pode fechar tudo); aberta naquela
+   * mesma aba, fecha. É por isso que isto é uma ação da store e não um `setShowAssets`
+   * na Topbar — só aqui dá para ver o estado anterior das duas coisas de uma vez.
+   */
+  openAssetsTab: (tab: AssetsTab) => void
   showPreview: boolean
   setShowPreview: (b: boolean) => void
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
@@ -53,6 +65,13 @@ export function createUIStore(): StoreApi<UIStore> {
     setShowExtensions: (showExtensions) => set({ showExtensions }),
     showAssets: false,
     setShowAssets: (showAssets) => set({ showAssets }),
+    assetsTab: 'images',
+    openAssetsTab: (tab) =>
+      set((s) =>
+        s.showAssets && s.assetsTab === tab
+          ? { showAssets: false }
+          : { showAssets: true, assetsTab: tab },
+      ),
     showPreview: true,
     setShowPreview: (showPreview) => set({ showPreview }),
     consoleVisibilityOverride: null,

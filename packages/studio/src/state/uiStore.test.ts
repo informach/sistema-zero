@@ -36,3 +36,39 @@ describe('createUIStore', () => {
     expect(createUIStore().getState().consoleVisibilityOverride).toBeNull()
   })
 })
+
+/**
+ * As três portas do menu ⋯ abrem a MESMA janela, cada uma na sua aba. A regra
+ * precisa ser previsível para uma criança, e a armadilha é o meio-termo: clicar
+ * em "Sons" com a janela aberta nas imagens não pode FECHAR tudo (era o que um
+ * toggle puro faria, e o gesto viraria "sumiu quando eu pedi").
+ */
+describe('openAssetsTab — as portas dos materiais', () => {
+  it('fechada: abre na aba pedida', () => {
+    const ui = createUIStore()
+    ui.getState().openAssetsTab('sounds')
+    expect(ui.getState().showAssets).toBe(true)
+    expect(ui.getState().assetsTab).toBe('sounds')
+  })
+
+  it('aberta em OUTRA aba: troca a aba, sem fechar', () => {
+    const ui = createUIStore()
+    ui.getState().openAssetsTab('images')
+    ui.getState().openAssetsTab('models3d')
+    expect(ui.getState().showAssets).toBe(true)
+    expect(ui.getState().assetsTab).toBe('models3d')
+  })
+
+  it('aberta NAQUELA aba: fecha (a mesma porta é a saída)', () => {
+    const ui = createUIStore()
+    ui.getState().openAssetsTab('sounds')
+    ui.getState().openAssetsTab('sounds')
+    expect(ui.getState().showAssets).toBe(false)
+    // A aba fica: reabrir leva a criança de volta onde ela estava.
+    expect(ui.getState().assetsTab).toBe('sounds')
+  })
+
+  it('a aba começa nas imagens', () => {
+    expect(createUIStore().getState().assetsTab).toBe('images')
+  })
+})

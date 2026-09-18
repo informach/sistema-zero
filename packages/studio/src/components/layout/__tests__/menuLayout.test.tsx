@@ -54,13 +54,27 @@ describe('a árvore editorial do menu ⋯', () => {
   })
 
   /** Monta a barra com TODAS as features do host ligadas e devolve os ids exibidos. */
-  function idsExibidos(mode: 'blocks' | 'code', width = 390): StudioMenuItemId[] {
+  function idsExibidos(
+    mode: 'blocks' | 'code',
+    opts: { with3D?: boolean } = {},
+    width = 390,
+  ): StudioMenuItemId[] {
     // Limpa ANTES (e não depois): quem chama dois contextos seguidos teria duas
     // barras na tela, e o `getByRole` acusaria ambiguidade em vez do que mede.
     cleanup()
     const stores = createStudioStores({ persistence: 'none' })
     const project = createEmptyProject('01J0000000000000000000MENU', 'Meu jogo')
-    stores.project.setState({ project: { ...project, mode }, isDirty: false, saveError: null })
+    stores.project.setState({
+      project: {
+        ...project,
+        mode,
+        installedExtensions: opts.with3D
+          ? [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
+          : project.installedExtensions,
+      },
+      isDirty: false,
+      saveError: null,
+    })
     render(
       <StudioStoresContext.Provider value={stores}>
         <StudioConfigProvider value={{ ...STANDALONE_CONFIG, professional: true }}>
@@ -89,10 +103,15 @@ describe('a árvore editorial do menu ⋯', () => {
 
   it('todo item da árvore é alcançável por ALGUM contexto real (nenhum item morto)', () => {
     // Nenhum contexto sozinho mostra tudo: terminal e IA só existem no modo
-    // Código, e os materiais só no básico (o Pro gerencia arquivos na árvore).
-    // A UNIÃO dos dois é que tem de cobrir a árvore inteira — um id que nenhum
-    // cenário produz é item que a criança nunca vê.
-    const cobertos = new Set([...idsExibidos('blocks'), ...idsExibidos('code')])
+    // Código, os materiais só no básico (o Pro gerencia arquivos na árvore) e a
+    // porta dos modelos 3D pede quem consuma 3D. A UNIÃO dos contextos é que tem
+    // de cobrir a árvore inteira — um id que nenhum cenário produz é item que a
+    // criança nunca vê.
+    const cobertos = new Set([
+      ...idsExibidos('blocks'),
+      ...idsExibidos('blocks', { with3D: true }),
+      ...idsExibidos('code'),
+    ])
     expect(itens.filter((id) => !cobertos.has(id))).toEqual([])
   })
 
@@ -122,5 +141,63 @@ describe('a árvore editorial do menu ⋯', () => {
     expect(screen.getByRole('menuitem', { name: 'Baixar o código' })).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: 'Salvar' })).toBeTruthy()
     expect(screen.getByText(ptBR['topbar.hint.download'] as string)).toBeTruthy()
+  })
+})
+
+/**
+ * As três portas dos materiais no menu. A janela é UMA só, então o que a criança
+ * vê ligado precisa ser a aba que está aberta — marcar as três diria que há três
+ * janelas, e não marcar nenhuma esconderia que a janela já está aberta.
+ */
+describe('as portas dos materiais no menu ⋯', () => {
+  afterEach(cleanup)
+
+  function montar(mode: 'blocks' | 'code' = 'blocks') {
+    const stores = createStudioStores({ persistence: 'none' })
+    const project = createEmptyProject('01J000000000000000000PORT', 'Meu jogo')
+    stores.project.setState({ project: { ...project, mode }, isDirty: false, saveError: null })
+    render(
+      <StudioStoresContext.Provider value={stores}>
+        <StudioLayoutProvider value={{ width: 1440, isNarrow: false, isCompact: false }}>
+          <Topbar onExit={() => {}} />
+        </StudioLayoutProvider>
+      </StudioStoresContext.Provider>,
+    )
+    const abrirMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    return { stores, abrirMenu }
+  }
+
+  it('Imagens e Sons são portas distintas, e o som deixou de morar atrás de "Imagens"', () => {
+    const { abrirMenu } = montar()
+    abrirMenu()
+    expect(screen.getByRole('menuitem', { name: 'Imagens' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Sons' })).toBeTruthy()
+  })
+
+  it('só a porta da aba ABERTA fica ligada', () => {
+    const { stores, abrirMenu } = montar()
+    act(() => {
+      stores.ui.getState().openAssetsTab('sounds')
+    })
+    abrirMenu()
+    expect(screen.getByRole('menuitem', { name: 'Sons' }).getAttribute('aria-current')).toBe('true')
+    expect(
+      screen.getByRole('menuitem', { name: 'Imagens' }).getAttribute('aria-current'),
+    ).toBeNull()
+  })
+
+  it('a porta abre a janela na aba dela', () => {
+    const { stores, abrirMenu } = montar()
+    abrirMenu()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Sons' }))
+    expect(stores.ui.getState().showAssets).toBe(true)
+    expect(stores.ui.getState().assetsTab).toBe('sounds')
+  })
+
+  it('no modo Código não há porta de material nenhuma (o Pro usa a árvore de arquivos)', () => {
+    const { abrirMenu } = montar('code')
+    abrirMenu()
+    expect(screen.queryByRole('menuitem', { name: 'Imagens' })).toBeNull()
+    expect(screen.queryByRole('menuitem', { name: 'Sons' })).toBeNull()
   })
 })

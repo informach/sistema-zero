@@ -159,8 +159,14 @@ async function click(element: Element) {
   })
 }
 
+/** Vai para a aba onde o Molda mora. Ela existe pelo próprio adapter (ver AssetsPanel). */
+async function goTo3DTab(): Promise<void> {
+  await click(await screen.findByRole('tab', { name: 'Modelos 3D' }))
+}
+
 async function openDialog(adapter: MoldaLibraryAdapter | null): Promise<void> {
   renderPanel(adapter)
+  await goTo3DTab()
   await click(await screen.findByRole('button', { name: /Trazer do Molda/ }))
 }
 
@@ -182,14 +188,19 @@ afterEach(() => {
 })
 
 describe('AssetsPanel — botão "Trazer do Molda"', () => {
-  it('sem o adapter (aula/admin): sem botão', async () => {
+  it('sem o adapter (aula/admin): nem o botão, nem a aba que só ele justificava', async () => {
     renderPanel(null)
     await screen.findByText('Enviar imagem')
     expect(screen.queryByRole('button', { name: /Trazer do Molda/ })).toBeNull()
+    expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
   })
 
-  it('com o adapter: botão presente ao lado dos uploads', async () => {
+  it('com o adapter: botão na aba dos modelos 3D, que o próprio adapter faz existir', async () => {
+    // ⚠️ Sem extensão 3D nenhuma no projeto: a aba existe porque o host deu o
+    // Molda. Sem isso, a porta sumiria justo para quem ainda não instalou 3D —
+    // inclusive para trazer TEXTURA, que é imagem e entra em qualquer projeto.
     renderPanel(fakeAdapter())
+    await goTo3DTab()
     expect(await screen.findByRole('button', { name: /Trazer do Molda/ })).not.toBeNull()
   })
 })

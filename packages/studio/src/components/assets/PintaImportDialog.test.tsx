@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { fakeUseStore } from '../../testing/fakeIdbStore'
 
 /**
@@ -161,8 +161,11 @@ describe('PintaImportDialog', () => {
       expect(screen.getByText('dragao-pintado')).toBeTruthy()
     })
     expect(screen.getByText('ceu-azul')).toBeTruthy()
-    // Miniatura ausente → emoji do papel; presente → <img>.
-    expect(screen.getByText('🖼️')).toBeTruthy()
+    // Miniatura ausente → emoji do papel; presente → <img>. ⚠️ Escopado NA MODAL:
+    // a aba "Imagens" da janela atrás usa o mesmo emoji, e `getByText` não
+    // respeita `aria-hidden` — solto, ele acha dois e falha por ambiguidade.
+    const galeria = screen.getByRole('dialog', { name: 'Trazer do Pinta' })
+    expect(within(galeria).getByText('🖼️')).toBeTruthy()
 
     const search = screen.getByRole('searchbox', { name: 'Buscar desenhos' })
     fireEvent.change(search, { target: { value: 'Dragão' } })

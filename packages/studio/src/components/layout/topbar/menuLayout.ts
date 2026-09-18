@@ -33,12 +33,16 @@ export const STUDIO_MENU_LAYOUT = [
     ],
   },
   {
-    // As portas dos materiais do projeto. O som e o modelo 3D ganham as suas no
-    // lote seguinte (hoje moram atrás da palavra "Imagens", que a criança não tem
-    // como adivinhar).
+    // As três portas dos materiais. Abrem a MESMA janela ("Materiais do jogo"),
+    // cada uma na SUA aba — até 18/09/2026 o som e o modelo 3D moravam atrás da
+    // palavra "Imagens", e não havia como a criança adivinhar isso.
     id: 'materials',
     labelKey: 'topbar.group.materials',
-    items: [{ id: 'assetsImages', labelKey: 'assets.tab.images' }],
+    items: [
+      { id: 'assetsImages', labelKey: 'assets.tab.images' },
+      { id: 'assetsSounds', labelKey: 'assets.tab.sounds' },
+      { id: 'assetsModels', labelKey: 'assets.tab.models3d' },
+    ],
   },
   {
     id: 'show',

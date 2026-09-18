@@ -2,7 +2,7 @@ import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
-import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
+import type { LibraryAsset } from '../../asset-library/catalog'
 import {
   getPersonalAsset,
   getPersonalAssetsNamespace,
@@ -17,6 +17,7 @@ import {
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import type { AssetsTab } from '../../state/uiStore'
 import { useStudioEditCreation } from '../../studio/edit-creation'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
@@ -30,7 +31,6 @@ import {
   evidencedOriginOf,
   personalKindOf,
 } from './creationOrigin'
-import { EditInOriginButton } from './EditInOriginButton'
 import { projectHas3DConsumer } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
@@ -40,20 +40,41 @@ import {
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
+import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
+import { ImagesTab } from './tabs/ImagesTab'
+import { Models3DTab } from './tabs/Models3DTab'
+import { SoundsTab } from './tabs/SoundsTab'
 
 /**
- * Gerenciador de IMAGENS (assets) do projeto. Overlay (espelho do ExtensionsPanel)
- * aberto pela Topbar — funciona igual nos dois layouts (wide/narrow), sem comer a
- * largura do editor. Três áreas: grade das imagens do projeto (renomear/excluir),
- * "Enviar do computador" (downscale/compressão no canvas) e a "Biblioteca" (starter
- * pack — clique copia para o projeto). Todas as ações passam pelo `projectStore`
- * (os assets vivem no Project → autosave/onChange como as demais edições).
+ * "Materiais do jogo": a janela das imagens, dos sons e dos modelos 3D do projeto.
+ * Overlay (espelho do ExtensionsPanel) aberto pelas três portas do menu ⋯ —
+ * funciona igual nos dois layouts (wide/narrow), sem comer a largura do editor.
+ *
+ * ⭐ Esta é a CASCA: a tira de abas, a cota do projeto, o recado de erro, os
+ * inputs de arquivo e as modais aninhadas. Cada aba (`tabs/`) desenha o que é
+ * dela. O estado caro — a biblioteca pessoal, os catálogos do Pinta e do Molda —
+ * fica AQUI e desce por props: carregá-lo por aba refaria a varredura de desenhos
+ * a cada troca.
+ *
+ * Até 18/09/2026 era uma rolagem só, com os três tipos empilhados e o som numa
+ * seção que só existia quando já havia som. Todas as ações passam pelo
+ * `projectStore` (os assets vivem no Project → autosave/onChange como as demais
+ * edições).
  */
 export interface AssetsPanelProps {
   open: boolean
   onClose: () => void
   /** Permite desabilitar o envio do computador (ex.: numa aula). Default true. */
   allowUpload?: boolean
+  /**
+   * A aba pedida pela porta do menu que abriu a janela. A janela ESPELHA isto em
+   * estado próprio: clicar numa aba aqui dentro funciona mesmo que o host não
+   * passe `onTabChange` (senão as abas ficariam inertes fora do Shell), e uma
+   * porta NOVA do menu manda na janela já aberta.
+   */
+  tab?: AssetsTab
+  /** Avisa o host da troca, para a porta do menu marcar a aba certa. */
+  onTabChange?: (tab: AssetsTab) => void
 }
 
 const EMPTY_ASSETS: ProjectAsset[] = []
@@ -62,7 +83,13 @@ type PendingDeletion =
   | { scope: 'project'; id: string; name: string }
   | { scope: 'personal'; id: string; name: string }
 
-export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelProps): JSX.Element {
+export function AssetsPanel({
+  open,
+  onClose,
+  allowUpload = true,
+  tab = 'images',
+  onTabChange = () => {},
+}: AssetsPanelProps): JSX.Element {
   const t = useT()
   const { hasProject, assets, has3DExtension } = useProjectStore(
     useShallow((s) => ({
@@ -81,6 +108,19 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const setAssetLibraryOrigin = useProjectStore((s) => s.setAssetLibraryOrigin)
 
   const fileInputId = useId()
+  const tabsBaseId = useId()
+  // Espelho da prop: o padrão do React para "ajustar estado quando a prop muda",
+  // sem efeito (o efeito renderizaria a aba velha por um quadro).
+  const [selectedTab, setSelectedTab] = useState<AssetsTab>(tab)
+  const [lastRequestedTab, setLastRequestedTab] = useState<AssetsTab>(tab)
+  if (tab !== lastRequestedTab) {
+    setLastRequestedTab(tab)
+    setSelectedTab(tab)
+  }
+  const selectTab = (next: AssetsTab) => {
+    setSelectedTab(next)
+    onTabChange(next)
+  }
   const fileRef = useRef<HTMLInputElement>(null)
   const soundRef = useRef<HTMLInputElement>(null)
   const modelRef = useRef<HTMLInputElement>(null)
@@ -475,6 +515,26 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     if (err) setError(err)
   }
 
+  /**
+   * Só pede reimportação quando os DOIS catálogos responderam e nenhum conhece o
+   * id: catálogo ausente (aula, admin) ou indisponível não é ambiguidade — "não
+   * consultei" e "consultei e ninguém conhece" são respostas diferentes.
+   */
+  const isOriginUnknown = (asset: ProjectAsset): boolean => {
+    const id = personalIdOf(asset)
+    return (
+      asset.libOrigin === undefined &&
+      id !== null &&
+      !personalById.has(id) &&
+      catalogsComplete &&
+      catalogOrigins.has(id) &&
+      catalogOrigins.get(id) === null
+    )
+  }
+
+  const deleteFromProject = (asset: ProjectAsset) =>
+    setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+
   const handleRename = (asset: ProjectAsset, value: string) => {
     if (value === asset.name) return
     const err = renameAsset(asset.id, value)
@@ -482,11 +542,29 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     else setError(null)
   }
 
+  // Quais abas existem. ⚠️ A de modelos 3D aparece por TRÊS motivos independentes,
+  // e cada um já custou caro em algum lugar desta base:
+  // 1. há quem consuma 3D instalado — o caso normal;
+  // 2. o projeto TEM arquivo 3D — um órfão precisa continuar gerenciável (era a
+  //    régua da seção antiga, que aparecia por conteúdo, não por extensão);
+  // 3. o host deu o "Trazer do Molda" — a aba é o ENDEREÇO dele, e sem ela o
+  //    botão sumiria justamente para quem ainda não instalou nada de 3D (inclusive
+  //    para trazer TEXTURA, que é imagem e sempre entra).
+  const has3DTab = has3DExtension || models3d.length > 0 || Boolean(moldaLibrary)
+  const tabs: AssetsTabItem[] = [
+    { id: 'images', label: t('assets.tab.images'), icon: '🖼️' },
+    { id: 'sounds', label: t('assets.tab.sounds'), icon: '🔊' },
+    ...(has3DTab ? [{ id: 'models3d' as const, label: t('assets.tab.models3d'), icon: '🧊' }] : []),
+  ]
+  // A aba pedida pode ter deixado de existir (a criança removeu a extensão 3D e
+  // apagou os modelos com a janela aberta): cai para a primeira, nunca em branco.
+  const activeTab: AssetsTab = tabs.some((item) => item.id === selectedTab) ? selectedTab : 'images'
+
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Imagens e sons"
+      title={t('assets.title')}
       className="w-[680px] max-w-[92vw]"
       footer={
         <Button variant="ghost" size="sm" onClick={onClose}>
@@ -495,112 +573,60 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       }
     >
       {!hasProject ? (
-        <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar imagens e sons.</p>
+        <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar os materiais.</p>
       ) : (
         <div className="flex flex-col gap-4">
-          {allowUpload || pintaLibrary || moldaLibrary ? (
-            <div className="flex flex-wrap items-center gap-3">
-              {allowUpload ? (
-                <>
-                  <input
-                    ref={fileRef}
-                    id={fileInputId}
-                    type="file"
-                    name="project-image-files"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => void handleFiles(e.target.files)}
-                  />
-                  <input
-                    ref={soundRef}
-                    type="file"
-                    name="project-audio-files"
-                    accept="audio/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => void handleAudioFiles(e.target.files)}
-                  />
-                  {has3DExtension ? (
-                    <input
-                      ref={modelRef}
-                      type="file"
-                      name="project-3d-files"
-                      accept=".glb,.hdr"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => void handle3DFiles(e.target.files)}
-                    />
-                  ) : null}
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    {busy ? 'Processando…' : 'Enviar imagem'}
-                  </Button>
-                </>
+          {/* Os inputs de arquivo moram na CASCA (e não na aba que os usa) porque
+              o `value` precisa sobreviver à troca de aba enquanto o navegador ainda
+              está lendo os arquivos escolhidos. */}
+          {allowUpload ? (
+            <>
+              <input
+                ref={fileRef}
+                id={fileInputId}
+                type="file"
+                name="project-image-files"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => void handleFiles(e.target.files)}
+              />
+              <input
+                ref={soundRef}
+                type="file"
+                name="project-audio-files"
+                accept="audio/*"
+                multiple
+                className="hidden"
+                onChange={(e) => void handleAudioFiles(e.target.files)}
+              />
+              {has3DExtension ? (
+                <input
+                  ref={modelRef}
+                  type="file"
+                  name="project-3d-files"
+                  accept=".glb,.hdr"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => void handle3DFiles(e.target.files)}
+                />
               ) : null}
-              {pintaLibrary ? (
-                <Button
-                  variant={allowUpload ? 'subtle' : 'primary'}
-                  size="sm"
-                  onClick={() => setPintaOpen(true)}
-                >
-                  {t('pintaImport.button')}
-                </Button>
-              ) : null}
-              {moldaLibrary ? (
-                <Button
-                  variant={allowUpload || pintaLibrary ? 'subtle' : 'primary'}
-                  size="sm"
-                  onClick={() => setMoldaOpen(true)}
-                >
-                  {t('moldaImport.button')}
-                </Button>
-              ) : null}
-              {allowUpload ? (
-                <>
-                  <Button
-                    variant="subtle"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => soundRef.current?.click()}
-                  >
-                    🔊 Enviar som
-                  </Button>
-                  {has3DExtension ? (
-                    <Button
-                      variant="subtle"
-                      size="sm"
-                      disabled={busy}
-                      title="Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D"
-                      onClick={() => modelRef.current?.click()}
-                    >
-                      📦 Enviar modelo 3D
-                    </Button>
-                  ) : null}
-                </>
-              ) : null}
-              <span className="text-xs text-sz-fg-soft">
-                {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos · {budgetPct}% do
-                espaço
-              </span>
-            </div>
+            </>
           ) : null}
 
-          {/* O que cabe, ANTES do envio. A dúvida veio da dona do produto ("qual
-              tipo de som aceita, quanto tempo?") e o WAV é a armadilha: pelo
-              mesmo som ele ocupa ~10× o de um mp3, então 1 minuto já estoura
-              enquanto o mp3 aguenta uns 5. O erro de teto já existia, mas só
-              aparecia DEPOIS de escolher o arquivo. */}
-          {allowUpload ? (
-            <p className="text-xs text-sz-fg-mute">
-              Som: mp3, wav, ogg ou m4a, até 5 MB por arquivo. Um mp3 cabe com uns 5 minutos; um
-              wav, só uns 30 segundos (ele ocupa bem mais pelo mesmo som).
-            </p>
-          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <AssetsTabStrip
+              items={tabs}
+              active={activeTab}
+              onSelect={selectTab}
+              baseId={tabsBaseId}
+            />
+            {/* A cota é do PROJETO inteiro, não de um tipo: fica fora das abas. */}
+            <span className="text-xs text-sz-fg-soft">
+              {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos · {budgetPct}% do
+              espaço
+            </span>
+          </div>
 
           {error && (
             <p
@@ -611,344 +637,58 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
             </p>
           )}
 
-          <section>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-              No projeto
-            </h3>
-            {images.length === 0 ? (
-              <p className="text-sm text-sz-fg-soft">
-                Nenhuma imagem ainda. Envie do computador ou escolha uma da biblioteca abaixo.
-              </p>
-            ) : (
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {images.map((asset) => {
-                  // Quem edita esta imagem: o Pinta (desenho) ou o Molda (textura).
-                  const editTarget = editTargetOf(asset)
-                  const personalId = personalIdOf(asset)
-                  // Só pede reimportação quando os DOIS catálogos responderam e nenhum
-                  // conhece o id; catálogo ausente ou indisponível não é ambiguidade.
-                  const unresolvedLegacyOrigin =
-                    asset.libOrigin === undefined &&
-                    personalId !== null &&
-                    !personalById.has(personalId) &&
-                    catalogsComplete &&
-                    catalogOrigins.has(personalId) &&
-                    catalogOrigins.get(personalId) === null
-                  return (
-                    <li
-                      key={asset.id}
-                      className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                    >
-                      <img
-                        src={asset.dataUrl}
-                        alt={asset.name}
-                        width={48}
-                        height={48}
-                        loading="lazy"
-                        className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
-                        style={{ imageRendering: 'pixelated' }}
-                      />
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <input
-                          name={`image-name-${asset.id}`}
-                          autoComplete="off"
-                          defaultValue={asset.name}
-                          spellCheck={false}
-                          aria-label={`Nome da imagem ${asset.name}`}
-                          className="w-full rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
-                          onBlur={(e) => handleRename(asset, e.target.value.trim())}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                          }}
-                        />
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                          {asset.tilemap ? (
-                            <span
-                              className="text-[9px] text-sz-fg-soft"
-                              title={`mapa ${asset.tilemap.cols}×${asset.tilemap.rows}`}
-                            >
-                              🗺️ mapa
-                            </span>
-                          ) : null}
-                          <button
-                            type="button"
-                            title="Definir o tamanho das peças e os tiles sólidos"
-                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                            onClick={() => setTileConfig({ asset, mode: 'tileset' })}
-                          >
-                            🧩 peças
-                          </button>
-                          <button
-                            type="button"
-                            title="Fatiar esta imagem como um mapa de tiles"
-                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                            onClick={() => setTileConfig({ asset, mode: 'tilemap' })}
-                          >
-                            🗺️ fatiar
-                          </button>
-                          {editTarget ? (
-                            <EditInOriginButton
-                              assetName={asset.name}
-                              origin={editTarget.origin}
-                              onClick={() => openInOriginApp(asset, editTarget)}
-                            />
-                          ) : null}
-                          {unresolvedLegacyOrigin ? (
-                            <span className="text-xs text-sz-warn">
-                              Não sei de onde veio este desenho. Traga ele de novo pelo Pinta ou
-                              pelo Molda.
-                            </span>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="text-xs text-red-400 hover:underline"
-                            onClick={() =>
-                              setPendingDeletion({
-                                scope: 'project',
-                                id: asset.id,
-                                name: asset.name,
-                              })
-                            }
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </section>
-
-          {sounds.length > 0 ? (
-            <section>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-                Sons no projeto
-              </h3>
-              <ul className="flex flex-col gap-2">
-                {sounds.map((asset) => (
-                  <li
-                    key={asset.id}
-                    className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                  >
-                    <span className="text-lg" aria-hidden>
-                      🔊
-                    </span>
-                    <input
-                      name={`sound-name-${asset.id}`}
-                      autoComplete="off"
-                      defaultValue={asset.name}
-                      spellCheck={false}
-                      aria-label={`Nome do som ${asset.name}`}
-                      className="min-w-0 flex-1 rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
-                      onBlur={(e) => handleRename(asset, e.target.value.trim())}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                      }}
-                    />
-                    {/* biome-ignore lint/a11y/useMediaCaption: efeito sonoro de jogo, sem fala/legenda */}
-                    <audio
-                      src={asset.dataUrl}
-                      controls
-                      preload="none"
-                      className="h-8 max-w-[46%]"
-                    />
-                    <button
-                      type="button"
-                      className="text-xs text-red-400 hover:underline"
-                      onClick={() =>
-                        setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
-                      }
-                    >
-                      Excluir
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          {models3d.length > 0 ? (
-            <section>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-                Modelos 3D
-              </h3>
-              <p className="mb-2 text-xs text-sz-fg-soft">
-                Use o NOME no bloco "Criar o objeto … com o modelo" (Jogo 3D) ou na peça "modelo
-                importado" do molde; se for .hdr, em "Usar o céu 360°" ou no "céu de foto".
-              </p>
-              <ul className="flex flex-col gap-2">
-                {models3d.map((asset) => (
-                  <li
-                    key={asset.id}
-                    className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                  >
-                    <span
-                      className="text-lg"
-                      aria-hidden
-                      title={asset.kind === 'model3d' ? 'Modelo .glb' : 'Céu 360° .hdr'}
-                    >
-                      {asset.kind === 'model3d' ? '📦' : '🌅'}
-                    </span>
-                    <input
-                      name={`model-name-${asset.id}`}
-                      autoComplete="off"
-                      defaultValue={asset.name}
-                      spellCheck={false}
-                      aria-label={`Nome do modelo 3D ${asset.name}`}
-                      className="min-w-0 flex-1 rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
-                      onBlur={(e) => handleRename(asset, e.target.value.trim())}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                      }}
-                    />
-                    <span
-                      className="max-w-[30%] truncate text-[10px] text-sz-fg-soft"
-                      title={asset.originalFileName}
-                    >
-                      {asset.originalFileName}
-                    </span>
-                    {(() => {
-                      const editTarget = editTargetOf(asset)
-                      return editTarget ? (
-                        <EditInOriginButton
-                          assetName={asset.name}
-                          origin={editTarget.origin}
-                          onClick={() => openInOriginApp(asset, editTarget)}
-                        />
-                      ) : null
-                    })()}
-                    <button
-                      type="button"
-                      className="text-xs text-red-400 hover:underline"
-                      onClick={() =>
-                        setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
-                      }
-                    >
-                      Excluir
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          {/* Com o "Trazer do Pinta" presente, a seção morre (a modal cobre a
-              galeria INTEIRA, com busca). Sem o adapter (ex.: perfil que perdeu
-              a posse do Pinta), a lista antiga preserva o acesso ao que já foi
-              enviado. O EFEITO de sincronia acima roda nos dois casos — ele
-              alimenta o auto-update dos jogos e o "✏️ editar desenho". */}
-          {personalNamespace && !pintaLibrary ? (
-            <section>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-                Meus desenhos
-              </h3>
-              {personalImages.length === 0 ? (
-                <p className="text-sm text-sz-fg-soft">
-                  Desenhe no Pinta e toque em "Usar no Estúdio" — seus desenhos aparecem aqui.
-                </p>
-              ) : (
-                <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {personalImages.map((drawing) => (
-                    <li
-                      key={drawing.id}
-                      className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                    >
-                      <img
-                        src={drawing.dataUrl}
-                        alt={drawing.name}
-                        width={48}
-                        height={48}
-                        loading="lazy"
-                        className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
-                        style={{ imageRendering: 'pixelated' }}
-                      />
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <span
-                          className="truncate font-mono text-xs text-sz-fg"
-                          title={drawing.name}
-                        >
-                          {drawing.name}
-                          {drawing.tilemap ? (
-                            <span
-                              className="ml-1 text-[9px] text-sz-fg-soft"
-                              title={`mapa ${drawing.tilemap.cols}×${drawing.tilemap.rows}`}
-                            >
-                              🗺️ mapa
-                            </span>
-                          ) : null}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                          <button
-                            type="button"
-                            className="text-xs text-sz-accent hover:underline"
-                            onClick={() => addFromPersonal(drawing)}
-                          >
-                            Adicionar ao projeto
-                          </button>
-                          {onEditDrawing ? (
-                            <button
-                              type="button"
-                              title="Abrir este desenho no Pinta (ele se atualiza nos seus jogos sozinho)"
-                              className="text-xs text-sz-fg-soft hover:text-sz-accent hover:underline"
-                              onClick={() => onEditDrawing(drawing.id)}
-                            >
-                              ✏️ Editar
-                            </button>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="text-xs text-red-400 hover:underline"
-                            onClick={() =>
-                              setPendingDeletion({
-                                scope: 'personal',
-                                id: drawing.id,
-                                name: drawing.name,
-                              })
-                            }
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ) : null}
-
-          <section>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
-              Biblioteca
-            </h3>
-            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-              {ASSET_LIBRARY.map((lib) => (
-                <li key={lib.id}>
-                  <button
-                    type="button"
-                    title={`Adicionar "${lib.name}"`}
-                    className="flex w-full flex-col items-center gap-1 rounded-md border border-sz-border bg-sz-bg p-2 hover:border-sz-accent"
-                    onClick={() => addFromLibrary(lib)}
-                  >
-                    <img
-                      src={lib.dataUrl}
-                      alt={lib.name}
-                      width={40}
-                      height={40}
-                      loading="lazy"
-                      className="h-10 w-10 object-contain"
-                      style={{ imageRendering: 'pixelated' }}
-                    />
-                    <span className="max-w-full truncate text-[10px] text-sz-fg-soft">
-                      {lib.name}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <div
+            role="tabpanel"
+            id={`${tabsBaseId}-panel-${activeTab}`}
+            aria-labelledby={`${tabsBaseId}-tab-${activeTab}`}
+          >
+            {activeTab === 'images' ? (
+              <ImagesTab
+                images={images}
+                allowUpload={allowUpload}
+                busy={busy}
+                onUpload={() => fileRef.current?.click()}
+                onOpenPinta={pintaLibrary ? () => setPintaOpen(true) : null}
+                onConfigureTiles={(asset, mode) => setTileConfig({ asset, mode })}
+                onRename={handleRename}
+                onDelete={deleteFromProject}
+                editTargetOf={editTargetOf}
+                onOpenInOrigin={openInOriginApp}
+                isOriginUnknown={isOriginUnknown}
+                personalImages={personalNamespace && !pintaLibrary ? personalImages : null}
+                onAddFromPersonal={addFromPersonal}
+                onEditDrawing={onEditDrawing}
+                onDeletePersonal={(drawing) =>
+                  setPendingDeletion({ scope: 'personal', id: drawing.id, name: drawing.name })
+                }
+                onAddFromLibrary={addFromLibrary}
+              />
+            ) : null}
+            {activeTab === 'sounds' ? (
+              <SoundsTab
+                sounds={sounds}
+                allowUpload={allowUpload}
+                busy={busy}
+                onUpload={() => soundRef.current?.click()}
+                onRename={handleRename}
+                onDelete={deleteFromProject}
+              />
+            ) : null}
+            {activeTab === 'models3d' ? (
+              <Models3DTab
+                models3d={models3d}
+                allowUpload={allowUpload}
+                busy={busy}
+                has3DExtension={has3DExtension}
+                onUpload={() => modelRef.current?.click()}
+                onOpenMolda={moldaLibrary ? () => setMoldaOpen(true) : null}
+                onRename={handleRename}
+                onDelete={deleteFromProject}
+                editTargetOf={editTargetOf}
+                onOpenInOrigin={openInOriginApp}
+              />
+            ) : null}
+          </div>
         </div>
       )}
       {tileConfig ? (

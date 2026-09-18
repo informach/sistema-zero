@@ -5,6 +5,7 @@ import { modesForKind, type Project } from '#core'
 import {
   ConfirmDialog,
   cn,
+  IconBox,
   IconEye,
   IconEyeOff,
   IconFileOutput,
@@ -21,6 +22,7 @@ import {
   IconSave,
   IconShare,
   IconSparkles,
+  IconSpeaker,
   IconSun,
   IconTerminal,
   Menu,
@@ -39,9 +41,11 @@ import { useStudioConfig } from '../../studio/config'
 import { useStudioHostChrome } from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
+import { projectHas3DConsumer } from '../assets/has3DConsumer'
 import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
 import {
@@ -94,12 +98,20 @@ export interface TopbarProps {
  */
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
+  const { hasProject, projectName, projectMode, projectKind, has3DAssets } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectName: s.project?.name ?? '',
       projectMode: s.project?.mode ?? 'blocks',
       projectKind: s.project?.kind,
+      // A MESMA régua da aba "Modelos 3D" (ver AssetsPanel): quem consome .glb/.hdr
+      // está instalado, ou o projeto já tem arquivo 3D para gerenciar. O terceiro
+      // motivo (o host deu o Molda) entra fora do seletor, logo abaixo.
+      has3DAssets:
+        projectHas3DConsumer(s.project) ||
+        (s.project?.assets ?? []).some(
+          (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
+        ),
     })),
   )
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -111,7 +123,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const showAssets = useUIStore((s) => s.showAssets)
-  const setShowAssets = useUIStore((s) => s.setShowAssets)
+  const assetsTab = useUIStore((s) => s.assetsTab)
+  const openAssetsTab = useUIStore((s) => s.openAssetsTab)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
@@ -133,6 +146,14 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const onCloudSync = useStudioCloudSync()
   // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
   const hostChrome = useStudioHostChrome()
+  // "Trazer do Molda" — null quando o host não passa o adapter.
+  // ⚠️ Em linha PRÓPRIA: dentro de um `||` o curto-circuito pularia a chamada
+  // quando o lado esquerdo já fosse verdadeiro, e a ordem dos hooks mudaria de
+  // um render para o outro (o biome pegou).
+  const moldaLibrary = useStudioMoldaLibrary()
+  // A porta "Modelos 3D" acompanha a ABA da janela (ver `AssetsPanel`): some só
+  // quando não há consumidor 3D, nem arquivo 3D, nem o "Trazer do Molda".
+  const has3DMaterials = has3DAssets || Boolean(moldaLibrary)
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
@@ -265,13 +286,29 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     }
   }
 
-  // Os materiais do projeto. Só no editor básico (jogos): o Pro gerencia arquivos
-  // direto na árvore e não precisa da janela.
+  // As três portas dos materiais: a MESMA janela, cada uma na sua aba. Só no
+  // editor básico (jogos) — o Pro gerencia arquivos direto na árvore e não
+  // precisa da janela. Ligada fica só a porta da aba que está ABERTA: marcar as
+  // três diria que há três janelas.
   if (projectMode !== 'code') {
     behaviors.assetsImages = {
       icon: <IconImage />,
-      active: showAssets,
-      onSelect: () => setShowAssets(!showAssets),
+      active: showAssets && assetsTab === 'images',
+      onSelect: () => openAssetsTab('images'),
+    }
+    behaviors.assetsSounds = {
+      icon: <IconSpeaker />,
+      active: showAssets && assetsTab === 'sounds',
+      onSelect: () => openAssetsTab('sounds'),
+    }
+    // A porta do 3D acompanha a ABA: ela existe com um consumidor 3D instalado
+    // OU com algum arquivo 3D no projeto (um órfão precisa continuar gerenciável).
+    if (has3DMaterials) {
+      behaviors.assetsModels = {
+        icon: <IconBox />,
+        active: showAssets && assetsTab === 'models3d',
+        onSelect: () => openAssetsTab('models3d'),
+      }
     }
   }
 
