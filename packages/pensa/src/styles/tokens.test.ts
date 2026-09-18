@@ -204,4 +204,44 @@ describe('o cartão do plano abre em qualquer ponto', () => {
     // E o alvo não encolhe: a regra de elemento dos botões daria 44 de altura e 40 de largura.
     expect(regra).toMatch(/min-height:\s*var\(--sz-tool-hit/)
   })
+
+  it('o CARTÃO declara o cursor: o ponteiro não pode depender de qual elemento ele acerta', () => {
+    // 18/09/2026, a TERCEIRA vez que ela relatou "o cursor fica tremendo". As duas correções
+    // anteriores tiraram todo movimento do hover, e mesmo assim a seta voltava: dentro do
+    // cartão quem carrega `cursor: pointer` é o `::after` do "Continuar" (herdado da pílula) e
+    // o `<article>` em volta não declarava nada — ponto que escapasse da camada caía em `auto`.
+    // O `inset: -1px` faz as duas fronteiras coincidirem em 100%, mas elas arredondam separadas
+    // em zoom fracionário, e aí o ponteiro parado na beirada alterna várias vezes por segundo.
+    // Com o valor no ANCESTRAL, todo ponto de dentro herda `pointer`: a alternância deixa de ser
+    // possível, em vez de deixar de acontecer.
+    // ⚠ Pelo `regras()`, que TIRA os comentários: o comentário desta regra explica a herança
+    // citando `cursor: pointer`, então o `bloco()` cru passaria mesmo sem a declaração existir.
+    const cartao = regras(/^\.pensa-project-card$/)
+    expect(cartao.length).toBe(1)
+    expect(cartao[0]?.corpo).toMatch(/(?:^|;)\s*cursor:\s*pointer/)
+  })
+
+  it('NENHUMA regra desta folha pede seta: um `auto` no selo reabre o tremor', () => {
+    // ⚠⚠ Anti-vácuo do teste de cima, e ele nasceu ERRADO (achado do full review de
+    // 18/09/2026): a primeira versão varria `regras(/\.pensa-project-card/)`, ou seja só os
+    // seletores que CONTÊM o nome da classe. Provado por mutação: um `cursor: auto` injetado em
+    // `.pensa-chip` — que é literalmente o selo "Versão N"/"Plano aprovado" DENTRO do cartão —
+    // passava batido, e o mesmo valia para `.pensa-zero-track li` (a trilha Z-E-R-O) e o
+    // `.pensa-project-orbit`. Declarar no ancestral só resolve enquanto nenhum descendente pedir
+    // outra coisa, e a lista de descendentes NÃO dá para derivar do CSS.
+    //
+    // A régua passou a ser a folha INTEIRA, e ela é honesta: num planejador feito de cartões,
+    // botões e selos clicáveis, `auto`/`default`/`text` só tem uma consequência possível — o
+    // ponteiro alternando com a mãozinha da camada de cima. Campo de texto não precisa declarar
+    // nada (o `text` é o padrão do navegador), então a regra não atrapalha ninguém.
+    const comCursor = regras(/./).filter(({ corpo }) => declara(corpo, 'cursor'))
+    expect(comCursor.length).toBeGreaterThan(3)
+    for (const regra of comCursor) {
+      const valor = /(?:^|;)\s*cursor\s*:\s*([^;]+)/.exec(regra.corpo)?.[1]?.trim()
+      expect({ seletor: regra.seletor, valor }).toEqual({
+        seletor: regra.seletor,
+        valor: valor === 'not-allowed' ? 'not-allowed' : 'pointer',
+      })
+    }
+  })
 })

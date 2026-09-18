@@ -323,6 +323,18 @@
   border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
   color: var(--pz-ink);
   background: var(--pz-surface);
+  /* ⚠⚠ O cursor é declarado AQUI, no cartão, e não só na camada do "Continuar"
+     (18/09/2026). Dentro do cartão quem responde ao ponteiro é o `::after` daquele botão, que
+     herda `cursor: pointer` da pílula; o `<article>` em volta não declarava nada, então
+     qualquer ponto que escapasse da camada caía em `auto` e virava SETA. O `inset: -1px` fez as
+     duas fronteiras coincidirem, mas por coincidência geométrica de duas caixas arredondadas:
+     em zoom fracionário (125%, 150%) elas arredondam separadas, e aí o ponteiro parado na
+     beirada alterna entre seta e mãozinha várias vezes por segundo — o "cursor tremendo" que
+     ela relatou três vezes. Com o valor no ancestral, todo ponto de dentro responde `pointer`
+     por HERANÇA: a oscilação deixa de ser possível em vez de deixar de acontecer. Não é
+     mentira visual — o cartão inteiro abre o plano, que é a razão de o `::after` existir.
+     ⚠ Isto NÃO substitui a camada: é ela que dá o CLIQUE. Aqui só mora o desenho do ponteiro. */
+  cursor: pointer;
 }
 .pensa-project-card__head {
   display: flex;

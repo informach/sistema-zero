@@ -80,7 +80,27 @@ do `.pensa-planner`.
   com o cursor alternando entre seta e mãozinha a meio pixel da borda ("o cursor fica piscando e
   tremendo", relato dela) e o clique na moldura não abrindo o plano; depois: 0,000 nos oito pontos,
   `pointer` desde o primeiro meio pixel, e a moldura abre. Mexeu na borda do cartão, mexa no inset
-  (o `tokens.test.ts` compara os dois e reprova se divergirem). O **cartão "Novo plano"**
+  (o `tokens.test.ts` compara os dois e reprova se divergirem).
+  ⭐⭐ **E o `cursor` é declarado no CARTÃO, não só na camada (18/09/2026).** Ela relatou o tremor
+  pela TERCEIRA vez e, perguntada, disse que o que oscila é o DESENHO do ponteiro (seta ↔
+  mãozinha), com o cartão parado. As três correções anteriores (`ba43b146`, `ab7fbd98`,
+  `90faff2b`) estão certas e continuam valendo, mas todas fazem as duas fronteiras **coincidirem**
+  — e coincidência de duas caixas arredondadas não sobrevive a arredondamento de subpixel (em
+  125% e 150% elas arredondam separadas, como o próprio comentário do `pensa.css` admitia). A
+  causa de fundo é outra: dentro do cartão quem carrega `cursor: pointer` é o `::after` de um
+  BOTÃO (herdado de `.sz-tool-pill`), e o `<article>` em volta não declarava nada — logo "seta" é
+  qualquer ponto que escape da camada. Com `cursor: pointer` no `.pensa-project-card`, todo ponto
+  de dentro herda e a alternância deixa de ser POSSÍVEL, em vez de deixar de acontecer.
+  ⭐ **Medido no playground** (`elementFromPoint` + `getComputedStyle().cursor` na costura, de 0,25
+  em 0,25 px): hoje 25 de 25 pontos dão `pointer`; **reproduzindo a folha de antes de 17/09
+  (`inset: 0`, sem cursor no cartão), 10 dos 25 dão `auto`, ou seja SETA**; e com `inset: 0` MAS
+  com o cursor no cartão, 25 de 25 `pointer`. Com o ponteiro real pousado na costura, o rect do
+  cartão é idêntico em repouso e no hover. ⚠⚠ **Daí a primeira coisa a conferir num relato novo:
+  o que a staging está servindo** — o `inset:-1px` entrou em 17/09, um dia antes da queixa, e o
+  chunk do Pensa já ficou velho no navegador dela antes. Travas em `styles/tokens.test.ts` (o
+  cartão declara `cursor: pointer`; nenhum descendente volta a pedir seta), as duas provadas por
+  mutação. ⚠ A primeira versão da trava passava pelo COMENTÁRIO da regra, que cita
+  `cursor: pointer`: ela lê pelo `regras()`, que tira comentários. O **cartão "Novo plano"**
   (`.sz-tool-card--new`) FECHA a grade: abre o mesmo campo lá em cima e o foco volta a QUEM abriu
   (`openerRef`); com o campo já aberto só leva o foco até ele. Rodapé "Mostrando N planos". Sem
   planos: o convite `.pensa-empty` em cartão branco e o campo já aberto (sem o cartão "Novo plano").

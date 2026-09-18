@@ -87,7 +87,14 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    clicável esticada por `::after` ("o cartão inteiro abre") NÃO pode andar: o `translate` faz
    dela o bloco de referência do `::after`, que encolhe no meio do gesto (hover piscando, clique
    perdido). Desligue o movimento na folha do pacote, fora de camada, como o
-   `.pensa-project-card__open` do Pensa (`ba43b146`). ⚠️⚠️ **E o cartão `--new` também NÃO anda
+   `.pensa-project-card__open` do Pensa (`ba43b146`). ⚠⚠ **E quem declara o `cursor` de uma peça
+   assim é o CARTÃO, nunca só a camada (18/09/2026):** o `cursor: pointer` vem do `.sz-tool-pill`
+   e é herdado pelo `::after`, então qualquer ponto que escape da camada cai no `auto` do
+   contêiner e vira SETA — com o ponteiro parado na beirada, ele alterna entre seta e mãozinha
+   várias vezes por segundo (o "cursor tremendo" que ela relatou TRÊS vezes no Pensa). Casar as
+   duas fronteiras (o `inset: -1px`) resolve em 100% e volta a falhar em zoom fracionário;
+   declarar no ancestral resolve por HERANÇA e mata a classe. Medido em
+   `packages/pensa/src/styles/pensa.css`, com trava em `tokens.test.ts` de lá. ⚠️⚠️ **E o cartão `--new` também NÃO anda
    (14/09/2026):** cartão de grade tem aresta longa, e 1px de movimento faz o ponteiro parado na
    borda de baixo entrar e sair do hover várias vezes por segundo — é o "cursor tremendo/piscando"
    que ela relatou no Pensa (medido no playground: o cartão termina em 502,15 parado e em 501,15
