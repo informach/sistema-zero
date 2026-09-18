@@ -63,8 +63,8 @@ export function useSceneVoice() {
    *
    * ⚠⚠ Sem isso, um evento ATRASADO da fala anterior atropela a nova: o elemento é reaproveitado,
    * e o `error` que o próprio `pararAudio` provoca (trocar o `src` aborta a carga) chega DEPOIS de a
-   * fala seguinte começar — aí o tratamento de erro daquela fala morta derrubaria esta para a voz
-   * do navegador, no meio do MP3 que já está tocando.
+   * fala seguinte começar — aí o tratamento de erro daquela fala morta encerraria esta no meio do
+   * MP3 que já está tocando.
    */
   const geracao = useRef(0)
   useEffect(() => {
@@ -161,38 +161,36 @@ export function useSceneVoice() {
   /**
    * A voz do ZAPPY: toca a fila de MP3, um trecho por vez.
    *
-   * ⚠️⚠️ Um erro no meio (404 do R2, rede caindo) NÃO deixa a criança no escuro: o que falta é lido
-   * pela voz do navegador. Vale principalmente para quem depende do botão — ela não lê o que está
-   * escrito, então "o áudio falhou" seria o fim do caminho, e não um contratempo.
+   * ⚠️⚠️ Uma fila que começou na voz do Zappy nunca troca para o navegador no meio. Se R2 ou a rede
+   * falharem, ela para e o botão volta a “Ouvir” para a criança tentar de novo. Recomeçar só o que
+   * falta com outra voz faria uma única instrução ter dois personagens falando.
    */
   const tocar = useCallback(
-    (urls: readonly string[], textos: readonly string[]) => {
+    (urls: readonly string[]) => {
       const el = player.current ?? new Audio()
       player.current = el
       const minha = geracao.current
       let i = 0
-      /** O que falta, na voz do navegador. Ver o aviso da função. */
-      const cair = () => {
-        const sobrou = textos.slice(i)
-        if (!sobrou.length || !sintetizar(sobrou)) {
-          dono.current = false
-          setFalando(false)
-        }
+      const interromper = () => {
+        if (geracao.current !== minha) return
+        // Invalida também o `error` assíncrono provocado pelo `load()` abaixo.
+        geracao.current += 1
+        dono.current = false
+        pararAudio()
+        setFalando(false)
       }
       const proximo = () => {
         if (geracao.current !== minha) return
         const url = urls[i]
         if (!url) {
-          dono.current = false
-          setFalando(false)
+          interromper()
           return
         }
         el.src = url
         // ⚠ O `play()` devolve promessa: sem o `catch` o erro vira "unhandled rejection" no console
         // a cada "Parar" (o `pause()` rejeita o play em andamento).
         el.play().catch(() => {
-          if (geracao.current !== minha) return
-          cair()
+          interromper()
         })
       }
       el.onended = () => {
@@ -201,14 +199,13 @@ export function useSceneVoice() {
         proximo()
       }
       el.onerror = () => {
-        if (geracao.current !== minha) return
-        cair()
+        interromper()
       }
       dono.current = true
       setFalando(true)
       proximo()
     },
-    [sintetizar],
+    [pararAudio],
   )
   /**
    * Fala a lista de trechos: o Zappy quando o dicionário cobre TODOS, o navegador quando não.
@@ -235,7 +232,7 @@ export function useSceneVoice() {
           : limpos.map((texto) => roteiroDoZappy(texto))
       const fila = filaDeVoz(roteiroEfetivo, vozes)
       if (fila) {
-        tocar(fila, limpos)
+        tocar(fila)
         return
       }
       sintetizar(limpos)

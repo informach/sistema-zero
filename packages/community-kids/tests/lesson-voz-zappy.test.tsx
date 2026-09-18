@@ -9,7 +9,7 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
  * ⭐⭐ O CONTRATO entre o gerador da voz (admin) e o player: o áudio gravado é encontrado.
@@ -27,10 +27,14 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 /** O `<audio>` do hook: registra o que tocou e nunca toca de verdade (happy-dom não toca mídia). */
 function audioFalso() {
   const tocados: string[] = []
+  const instancias: AudioFalso[] = []
   class AudioFalso {
     src = ''
     onended: (() => void) | null = null
     onerror: (() => void) | null = null
+    constructor() {
+      instancias.push(this)
+    }
     play() {
       tocados.push(this.src)
       return Promise.resolve()
@@ -46,7 +50,7 @@ function audioFalso() {
   const restaurar = () => {
     globalThis.Audio = original
   }
-  return { tocados, restaurar }
+  return { tocados, instancias, restaurar }
 }
 
 /** A voz do navegador, para provar que ela NÃO foi usada quando o Zappy cobre a fala. */
@@ -254,6 +258,38 @@ describe('a voz do Zappy chega ao player', () => {
       render(<DialogueBlockView content={{ kind: 'dialogue', text: texto }} />)
       expect(screen.getByText(texto)).toBeTruthy()
       expect(screen.queryByRole('button', { name: 'Ouvir' })).toBeNull()
+    } finally {
+      audio.restaurar()
+      sintese.restaurar()
+      cleanup()
+    }
+  })
+
+  test('⚠️ um MP3 que falha no meio não troca para a voz do navegador', async () => {
+    const audio = audioFalso()
+    const sintese = sinteseFalsa()
+    const speechTexts = ['Primeiro trecho.', 'Segundo trecho.']
+    try {
+      render(
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text: speechTexts.join(' ') }}
+          speech={{
+            texts: speechTexts,
+            roteiros: speechTexts,
+            fallbackToBrowser: true,
+            vozes: {
+              [chaveDeVoz(speechTexts[0] as string)]: URL_DA_FALA(0),
+              [chaveDeVoz(speechTexts[1] as string)]: URL_DA_FALA(1),
+            },
+          }}
+        />,
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Ouvir' }))
+      await waitFor(() => expect(audio.tocados).toEqual([URL_DA_FALA(0)]))
+      await act(async () => audio.instancias[0]?.onended?.())
+      await waitFor(() => expect(audio.tocados).toEqual([URL_DA_FALA(0), URL_DA_FALA(1)]))
+      await act(async () => audio.instancias[0]?.onerror?.())
+      expect(sintese.falas).toEqual([])
     } finally {
       audio.restaurar()
       sintese.restaurar()
