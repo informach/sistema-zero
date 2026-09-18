@@ -8,7 +8,6 @@
   "allowBlocks": [
     "sz_frame_start",
     "sz_g2d_create_dino",
-    "sz_g2d_set_stage_description",
     "sz_g2d_setup_stage",
     "sz_g2d_stage_border",
     "sz_val_number"

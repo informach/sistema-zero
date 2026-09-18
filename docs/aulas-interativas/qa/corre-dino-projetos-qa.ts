@@ -41,9 +41,6 @@ export function courseProjects() {
   const start = [
     b('sz_g2d_setup_stage', { BG: '#81d4fa' }, { W: 480, H: 270 }),
     b('sz_g2d_stage_border', { COLOR: '#ffffff' }, { WIDTH: 4 }),
-    b('sz_g2d_set_stage_description', {
-      DESCRIPTION: 'Corra com o dino e pule os cactos apertando espaço',
-    }),
     b('sz_g2d_create_dino', { NAME: 'dino', COLOR: '#8b5cf6' }, { X: 110, Y: 150, SIZE: 64 }),
   ]
   const actions = [b('sz_g2d_draw_sprite', { SPRITE: 'dino' })]
@@ -62,6 +59,13 @@ export function courseProjects() {
   }
   save(1)
   start.splice(1, 1)
+  start.splice(
+    1,
+    0,
+    b('sz_g2d_set_stage_description', {
+      DESCRIPTION: 'Corra com o dino e pule os cactos apertando espaço',
+    }),
+  )
   body(loop, 'BODY', [...background, ...actions])
   save(2)
   actions.unshift(

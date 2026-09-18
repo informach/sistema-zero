@@ -1,6 +1,6 @@
 # Corre Dino — revisão das 13 aulas a partir dos vídeos originais
 
-As 13 aulas foram reorganizadas em **128 seções**, com **14 seções de observação**, **17 seções de experimentação** e construções pequenas no mesmo Estúdio de cada aula. As atividades são **20 cenas nativas**: 18 de experimentar e 2 de demonstrar (as duas da `velocity`, nas aulas 5 e 12). Há **88 clipes planejados** por trechos dos roteiros originais. Os arquivos gravados ainda precisam de conferência de timecodes, recorte e complementos visuais; esta pasta não contém os vídeos editados.
+As 13 aulas foram reorganizadas em **127 seções**, com **14 seções de observação**, **17 seções de experimentação** e construções pequenas no mesmo Estúdio de cada aula. As atividades são **19 cenas nativas**: 17 de experimentar e 2 de demonstrar (as duas da `velocity`, nas aulas 5 e 12). Há **86 clipes planejados** por trechos dos roteiros originais. Os arquivos gravados ainda precisam de conferência de timecodes, recorte e complementos visuais; esta pasta não contém os vídeos editados.
 
 Cada pasta contém `roteiro.md` (percurso, decisões, fala e montagem), `manifesto.json` (estrutura importável) e `montagem.json` (origem dos trechos, entrada, saída e instruções de edição). Os roteiros originais foram apenas lidos e mantidos íntegros.
 
@@ -23,7 +23,7 @@ Os identificadores da trilha guiada são `dino`, `cactos`, `pontos` e `velocidad
 
 | Aula | Demonstração escolhida | Experimento escolhido e momento | Construção final |
 | --- | --- | --- | --- |
-| [1 — Preparar o mundo](aula-01/roteiro.md) | Os clipes abrem a descrição e as coordenadas; as descobertas ficam nas cenas | `stage-size` junto da montagem da tela, `screen-reader` depois do clipe da descrição, `coordinates` antes de preencher x e y, e criar × desenhar (`world`) com o Dino ainda invisível | Ao iniciar, tela 480 × 270, borda, descrição, Dino x 110/y 150/tamanho 64 |
+| [1 — Preparar o mundo](aula-01/roteiro.md) | A descoberta do limite antecede a montagem; o clipe abre as coordenadas | `stage-size` antes da montagem da tela, `coordinates` antes de preencher x e y, e criar × desenhar (`world`) com o Dino ainda invisível | Ao iniciar, tela 480 × 270, borda, Dino x 110/y 150/tamanho 64 |
 | [2 — Quadros e camadas](aula-02/roteiro.md) | Floresta cobrindo o Dino | `draw-loop` logo depois do clipe do livrinho; `layers` depois de observar o desaparecimento | Limpar → floresta → Dino; borda retirada sem perder o resto |
 | [3 — Gravidade e impulso](aula-03/roteiro.md) | O próprio vídeo mostra a queda inicial e o gesto; não acrescentar uma demonstração repetida | `gravity` antes de corrigir a flutuação (a criança faz o pulo e liga a gravidade no ar); `impulse` depois de aprender a pousar, comparando 9 e 14 | Gravidade → controle com força 14 → desenho |
 | [4 — Som do pulo](aula-04/roteiro.md) | O vídeo já mostra os controles e o som provisório | Entrada × evento real antes de transferir o som | Um som no evento de pulo; evento provisório retirado |
@@ -53,7 +53,6 @@ A checagem estrutural não prova toda a jogabilidade. Cada roteiro também descr
 
 ## Correções importantes dos vídeos
 
-- Aula 1: o bloco fornece uma descrição acessível; não liga voz sozinho nem torna todo o jogo acessível. Gravar o complemento com leitor de tela real e legendas.
 - Aula 2: o rastro é sutil nas pernas, antes da floresta. Não encenar um borrão inexistente.
 - Aula 3: no projeto original, o Dino suspenso não consegue pular antes de cair. Na cena `gravity` é a criança que faz o pulo e liga a gravidade com o Dino no ar; ela é apresentada como modelo separado do projeto.
 - Aula 6: seguir a retirada do medidor descrita na Parte 4 e no Fecho; a nota inicial que o deixava até a aula 7 está desatualizada.
@@ -81,7 +80,7 @@ bun docs/aulas-interativas/qa/gerar-candidatos-v6.ts 'CAMINHO_DOS_ROTEIROS'
 bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
 ```
 
-O [relatório de verificação](../qa/revisao-13-aulas-verificacao.json) confere os 13 hashes de fonte, as âncoras dos 88 clipes, todas as seções e os programas finais de referência. Há também teste de carregar/salvar os 13 programas no Blockly real e gerar JavaScript com sintaxe válida. Isso não substitui revisar os vídeos produzidos nem percorrer as aulas publicadas com uma criança.
+O [relatório de verificação](../qa/revisao-13-aulas-verificacao.json) confere os 13 hashes de fonte, as âncoras dos 86 clipes, todas as seções e os programas finais de referência. Há também teste de carregar/salvar os 13 programas no Blockly real e gerar JavaScript com sintaxe válida. Isso não substitui revisar os vídeos produzidos nem percorrer as aulas publicadas com uma criança.
 
 O [full review](../qa/full-review-2026-09-12.md) acrescenta execução dos 13 projetos no motor real, casos de montagem incorreta, retomada das experiências e verificações da API. A ordem também pode ser conferida dentro de um encaixe, como gravidade antes do controle no então de Se jogando.
 

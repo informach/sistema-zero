@@ -14,11 +14,11 @@ O jogo pronto aparece só como apresentação. O resultado desta aula é uma tel
 
 ### 1. Conheça o jogo que vamos criar
 
-**Tipo:** presentation. **Objetivo:** Reconhecer o jogo final e os quatro passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.
+**Tipo:** presentation. **Objetivo:** Reconhecer o jogo final e os três passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.
 
 **Reaproveitamento:** Abertura: o jogo que você vai construir.
 
-**Montagem / imagem:** Reaproveitar apresentação do jogo pronto e os quatro passos. A criança só assiste ao exemplo.
+**Montagem / imagem:** Regravar a apresentação do jogo pronto com os três passos de hoje: preparar Ao iniciar, a tela e o Dino. A criança só assiste ao exemplo.
 
 **Fala original selecionada, antes dos cortes acima:** Oi! Seja bem-vindo ao Corre, Dino! Aqui a gente vai criar um jogo em que um dinossauro corre pela floresta enquanto tenta desviar dos obstáculos. Ele começa nessa telinha de abertura, com o nome do jogo. Você aperta Enter, e o dino sai correndo. Aí os cactos começam a vir, e você aperta espaço pra pular e escapar deles. Olha o placar no cantinho, subindo enquanto você aguenta. E quando bate: explosão, a tela treme, e aparece o quanto você fez, pra dar aquela vontade de tentar de novo. E quem vai fazer esse jogo é você. Não é ajudar a fazer, não: é você montando cada pedacinho dele, do começo ao fim. Hoje é o primeiro dia. No fim desta aula a tela do seu jogo já vai estar montada, com o céu da cor que você escolher, e o seu dinossauro já vai estar criado. E pra chegar lá, a gente vai passar por quatro passos. O primeiro é pegar a área onde o jogo vai ser montado. No segundo, a gente prepara a tela. No terceiro, você conta pro computador o que é o seu jogo. E no quarto, a gente cria o dino. Então bora começar pelo primeiro.
 
@@ -242,7 +242,7 @@ A seção também pede a cena concluída. Se faltar algo, mostrar o objetivo pen
 
 ### 9. Relembre o que você construiu
 
-**Tipo:** closing. **Objetivo:** Retomar os quatro passos e preparar a continuidade na aula 2.
+**Tipo:** closing. **Objetivo:** Retomar os três passos e preparar a continuidade na aula 2.
 
 **Reaproveitamento:** Fecho.
 

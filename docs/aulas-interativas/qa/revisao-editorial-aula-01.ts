@@ -18,7 +18,7 @@ export const lessonOneCuts = {
       sourceSection: 'Abertura: o jogo que você vai construir',
       entry: 'Oi! Seja bem-vindo ao',
       exit: 'Então bora começar pelo primeiro.',
-      edit: 'Reaproveitar apresentação do jogo pronto e os quatro passos. A criança só assiste ao exemplo.',
+      edit: 'Regravar a apresentação do jogo pronto com os três passos de hoje: preparar Ao iniciar, a tela e o Dino. A criança só assiste ao exemplo.',
       production: 'recorte',
     },
     {
@@ -274,7 +274,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       'apresentacao-v7',
       'Conheça o jogo que vamos criar',
       'presentation',
-      'Reconhecer o jogo final e os quatro passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.',
+      'Reconhecer o jogo final e os três passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.',
       ['video-abertura-v7'],
     ),
     section(
@@ -341,7 +341,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       'fechamento',
       'Relembre o que você construiu',
       'closing',
-      'Retomar os quatro passos e preparar a continuidade na aula 2.',
+      'Retomar os três passos e preparar a continuidade na aula 2.',
       ['video-fecho-v7'],
     ),
     section(

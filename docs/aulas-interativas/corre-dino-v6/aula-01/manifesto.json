@@ -33,7 +33,7 @@
   "blocks": [
     {
       "key": "video-abertura-v7",
-      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Abertura: o jogo que você vai construir. Entrada: “Oi! Seja bem-vindo ao”. Saída: “Então bora começar pelo primeiro.”. Montagem: Reaproveitar apresentação do jogo pronto e os quatro passos. A criança só assiste ao exemplo. Timecodes dependem da conferência do vídeo gravado."
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Abertura: o jogo que você vai construir. Entrada: “Oi! Seja bem-vindo ao”. Saída: “Então bora começar pelo primeiro.”. Montagem: Regravar a apresentação do jogo pronto com os três passos de hoje: preparar Ao iniciar, a tela e o Dino. A criança só assiste ao exemplo. Timecodes dependem da conferência do vídeo gravado."
     },
     {
       "key": "video-iniciar-v7",
@@ -222,7 +222,7 @@
       "key": "apresentacao-v7",
       "title": "Conheça o jogo que vamos criar",
       "intent": "presentation",
-      "objective": "Reconhecer o jogo final e os quatro passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.",
+      "objective": "Reconhecer o jogo final e os três passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.",
       "blockKeys": ["video-abertura-v7"],
       "workspaceKey": null,
       "externalTool": null,
@@ -444,7 +444,7 @@
       "key": "fechamento",
       "title": "Relembre o que você construiu",
       "intent": "closing",
-      "objective": "Retomar os quatro passos e preparar a continuidade na aula 2.",
+      "objective": "Retomar os três passos e preparar a continuidade na aula 2.",
       "blockKeys": ["video-fecho-v7"],
       "workspaceKey": null,
       "externalTool": null,

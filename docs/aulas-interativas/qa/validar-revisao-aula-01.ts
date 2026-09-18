@@ -95,6 +95,29 @@ assert.equal(
   candidate.blocks.some((block) => block.key === 'video-descricao-criar-v7'),
   false,
 )
+assert.deepEqual(
+  [
+    'video-descricao-demo-v7',
+    'experiencia-leitor-de-tela',
+    'video-descricao-criar-v7',
+    'orientacao-descricao-v7',
+  ].filter((key) => candidate.retireBlockKeys?.includes(key)),
+  [
+    'video-descricao-demo-v7',
+    'experiencia-leitor-de-tela',
+    'video-descricao-criar-v7',
+    'orientacao-descricao-v7',
+  ],
+  'A importação também remove os blocos de leitor de tela do rascunho anterior',
+)
+const studioConfig = JSON.parse(
+  readFileSync(resolve(root, 'corre-dino-v6/aula-01/configuracao-estudio.json'), 'utf8'),
+) as { allowBlocks: string[] }
+assert.equal(
+  studioConfig.allowBlocks.includes('sz_g2d_set_stage_description'),
+  false,
+  'O bloco de descrição fica fora da primeira aula, sem retirar o recurso genérico da plataforma',
+)
 
 type Block = {
   type: string
