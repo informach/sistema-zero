@@ -110,7 +110,7 @@ function blocoComVoz(scene: SceneId, tipo: 'experimentation' | 'demonstration') 
 }
 
 describe('a voz do Zappy chega ao player', () => {
-  test('⭐⭐ experimentação: o "Ouvir" toca o MP3 gerado, e NÃO a voz do navegador', async () => {
+  test('⭐⭐ experimentação: os "Ouvir" tocam os MP3s gerados, e NÃO a voz do navegador', async () => {
     const audio = audioFalso()
     const sintese = sinteseFalsa()
     try {
@@ -119,19 +119,24 @@ describe('a voz do Zappy chega ao player', () => {
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
       )
-      // Antes de escolher, só existe o balão do palpite. A primeira fala gravada da aula é a
-      // instrução, mas ela ainda não foi mostrada para a criança.
-      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      // Antes de escolher há dois balões: o contexto e, depois da prévia, a pergunta com as
+      // escolhas. A instrução gravada da aula ainda não foi mostrada para a criança.
+      const ouvirDoPalpite = await screen.findAllByRole('button', { name: 'Ouvir' })
+      expect(ouvirDoPalpite).toHaveLength(2)
+      fireEvent.click(ouvirDoPalpite[0] as HTMLButtonElement)
       await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(0))
       expect(audio.tocados[0]).toBe(URL_DA_FALA(1))
+      fireEvent.click(ouvirDoPalpite[1] as HTMLButtonElement)
+      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(1))
+      expect(audio.tocados[1]).toBe(URL_DA_FALA(2))
       fireEvent.click(
         screen.getByRole('button', {
           name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
         }),
       )
       fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
-      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(1))
-      expect(audio.tocados[1]).toBe(URL_DA_FALA(0))
+      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(2))
+      expect(audio.tocados[2]).toBe(URL_DA_FALA(0))
       // ⚠️⚠️ O anti-vácuo desta suíte: se o dicionário não respondesse, a fala cairia na síntese e
       // o teste acima continuaria verde com zero MP3 tocado — por isso a voz do navegador precisa
       // ter ficado CALADA.
