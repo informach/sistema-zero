@@ -36,28 +36,6 @@
       "outSeconds": null
     },
     {
-      "key": "video-descricao-demo-v7",
-      "sourceSection": "Parte 3. Passo 3: contar o que é o seu jogo",
-      "entry": "Tem gente que joga videogame sem enxergar a tela.",
-      "exit": "e esse alguém é você.",
-      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reutilizar a introdução. Acrescentar uma captura curta com leitor de tela real lendo a descrição de um exemplo pronto, texto visível e legendas. Não mostrar a montagem nem sugerir que o bloco liga uma voz sozinho.",
-      "production": "regravar-estudio-atual",
-      "sourceFile": "roteiro-aula-01-corre-dino.md",
-      "inSeconds": null,
-      "outSeconds": null
-    },
-    {
-      "key": "video-descricao-criar-v7",
-      "sourceSection": "Parte 3. Passo 3: contar o que é o seu jogo",
-      "entry": "Na categoria Jogo 2D, subcategoria",
-      "exit": "Numa frase, a gente coloca o que é o jogo e como se joga.",
-      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Começar no caminho Telas e cenas e terminar após explicar objetivo e controles. Substituir a promessa de tornar o jogo acessível com um bloco por uma conclusão precisa: agora sua descrição informa objetivo e controles. Preservar a frase canônica, sem ponto final no campo.",
-      "production": "regravar-estudio-atual",
-      "sourceFile": "roteiro-aula-01-corre-dino.md",
-      "inSeconds": null,
-      "outSeconds": null
-    },
-    {
       "key": "video-coordenadas-demo-v7",
       "sourceSection": "Parte 4. Passo 4: criar o dino",
       "entry": "O x diz se ele fica mais pra esquerda ou mais pra direita.",
@@ -99,18 +77,11 @@
   "sourceHash": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
   "cenas": [
     {
-      "secao": "tela-v7",
+      "secao": "tela-experiencia-v8",
       "bloco": "experiencia-tela",
       "cena": "stage-size",
       "atividade": "experimentation",
-      "clipesAntes": ["video-tela-v7"]
-    },
-    {
-      "secao": "descricao-demonstracao-v7",
-      "bloco": "experiencia-leitor-de-tela",
-      "cena": "screen-reader",
-      "atividade": "experimentation",
-      "clipesAntes": ["video-descricao-demo-v7"]
+      "clipesAntes": []
     },
     {
       "secao": "coordenadas-demonstracao-v7",
@@ -146,13 +117,6 @@
         "palettePath": ["Jogo 2D", "Kits prontos", "Dino"],
         "area": "start",
         "tooltip": "Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa."
-      },
-      {
-        "type": "sz_g2d_set_stage_description",
-        "label": "Descrever o jogo para leitor de tela",
-        "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
-        "area": "start",
-        "tooltip": "Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”."
       },
       {
         "type": "sz_g2d_setup_stage",

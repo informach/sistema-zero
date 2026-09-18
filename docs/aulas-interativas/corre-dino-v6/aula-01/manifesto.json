@@ -24,7 +24,11 @@
     "zappy-convite-construir-1",
     "video-entrega",
     "zappy-entrega",
-    "zappy-revisao"
+    "zappy-revisao",
+    "video-descricao-demo-v7",
+    "experiencia-leitor-de-tela",
+    "video-descricao-criar-v7",
+    "orientacao-descricao-v7"
   ],
   "blocks": [
     {
@@ -49,35 +53,10 @@
         "hints": [],
         "activity": {
           "type": "experimentation",
-          "scene": "stage-size",
-          "cenario": "corre-dino"
+          "scene": "stage-size"
         },
         "semPerguntaFinal": true
       }
-    },
-    {
-      "key": "video-descricao-demo-v7",
-      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 3. Passo 3: contar o que é o seu jogo. Entrada: “Tem gente que joga videogame sem enxergar a tela.”. Saída: “e esse alguém é você.”. Montagem: Reutilizar a introdução. Acrescentar uma captura curta com leitor de tela real lendo a descrição de um exemplo pronto, texto visível e legendas. Não mostrar a montagem nem sugerir que o bloco liga uma voz sozinho. Timecodes dependem da conferência do vídeo gravado."
-    },
-    {
-      "key": "experiencia-leitor-de-tela",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Ouça o que a descrição informa",
-        "instructions": "Aperte Ouvir a tela com o campo vazio. Depois escreva a descrição do seu jogo e ouça de novo.",
-        "hints": [],
-        "activity": {
-          "type": "experimentation",
-          "scene": "screen-reader",
-          "cenario": "corre-dino"
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "video-descricao-criar-v7",
-      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 3. Passo 3: contar o que é o seu jogo. Entrada: “Na categoria Jogo 2D, subcategoria”. Saída: “Numa frase, a gente coloca o que é o jogo e como se joga.”. Montagem: Começar no caminho Telas e cenas e terminar após explicar objetivo e controles. Substituir a promessa de tornar o jogo acessível com um bloco por uma conclusão precisa: agora sua descrição informa objetivo e controles. Preservar a frase canônica, sem ponto final no campo. Timecodes dependem da conferência do vídeo gravado."
     },
     {
       "key": "video-coordenadas-demo-v7",
@@ -123,11 +102,11 @@
       }
     },
     {
-      "key": "orientacao-descricao-v7",
+      "key": "orientacao-experiencia-tela-v8",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dentro de Ao iniciar, encaixe Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço"
+        "text": "Antes de montar no seu jogo, descubra onde a tela do jogo termina. A borda é o que mostra esse limite."
       }
     },
     {
@@ -170,7 +149,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira a tela com borda, a descrição e o bloco que cria seu Dino. O Dino ainda invisível é o resultado esperado. Teste e envie seu projeto ao professor."
+        "text": "Confira a tela com borda e o bloco que cria seu Dino. O Dino ainda invisível é o resultado esperado. Teste e envie seu projeto ao professor."
       }
     },
     {
@@ -279,17 +258,31 @@
       }
     },
     {
-      "key": "tela-v7",
-      "title": "Prepare a tela e veja seus limites",
+      "key": "tela-experiencia-v8",
+      "title": "Descubra o limite da tela",
+      "intent": "exploration",
+      "objective": "Perceber que a borda mostra onde a tela do jogo termina e que o tamanho dela pode mudar.",
+      "blockKeys": ["orientacao-experiencia-tela-v8", "experiencia-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-tela"]
+      }
+    },
+    {
+      "key": "tela-criar-v8",
+      "title": "Prepare a tela no seu projeto",
       "intent": "application",
       "objective": "Preparar o palco de 480 × 270 e tornar sua borda visível.",
-      "blockKeys": ["video-tela-v7", "experiencia-tela", "orientacao-tela-v7"],
+      "blockKeys": ["video-tela-v7", "orientacao-tela-v7"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-tela"],
+        "blockIds": [],
         "projectChecks": [
           {
             "id": "g2d-setup-stage",
@@ -313,48 +306,6 @@
               "area": "start",
               "inputs": {
                 "WIDTH": 4
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "descricao-demonstracao-v7",
-      "title": "Ouça o que a descrição informa",
-      "intent": "exploration",
-      "objective": "Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.",
-      "blockKeys": ["video-descricao-demo-v7", "experiencia-leitor-de-tela"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["experiencia-leitor-de-tela"]
-      }
-    },
-    {
-      "key": "descricao-criar-v7",
-      "title": "Conte o que é o seu jogo",
-      "intent": "application",
-      "objective": "Configurar a descrição do Corre Dino no projeto.",
-      "blockKeys": ["video-descricao-criar-v7", "orientacao-descricao-v7"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "descricao-v7",
-            "label": "Descreva o objetivo e o controle do Corre Dino em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_set_stage_description",
-              "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
               }
             }
           }
@@ -466,18 +417,6 @@
               "area": "start",
               "inputs": {
                 "WIDTH": 4
-              }
-            }
-          },
-          {
-            "id": "descricao-v7",
-            "label": "Descreva o objetivo e o controle do Corre Dino em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_set_stage_description",
-              "area": "start",
-              "fields": {
-                "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
               }
             }
           },

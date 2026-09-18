@@ -41,14 +41,12 @@ assert.deepEqual(
   [...new Set(sections.flatMap((s) => (s.workspaceBlockId ? [s.workspaceBlockId] : [])))],
   ['projeto'],
 )
-// ⚠️ As seções da descrição e das coordenadas eram DEMONSTRAÇÃO (só o clipe) até 14/09/2026: hoje
-// cada uma termina numa cena em que a criança mexe (`screen-reader` e `coordinates`), e a régua antiga
-// reprovava o manifesto publicado.
+// ⚠️ A descoberta do limite e a das coordenadas terminam em cenas que a criança mexe. A montagem
+// da tela fica em uma seção seguinte, no mesmo Estúdio compartilhado, para não antecipar controles.
 assert.deepEqual(
   sections.map((s) => s.intent),
   [
     'presentation',
-    'application',
     'application',
     'exploration',
     'application',
@@ -59,6 +57,43 @@ assert.deepEqual(
     'closing',
     'closing',
   ],
+)
+const limite = sections.find((section) => section.id === 'tela-experiencia-v8')
+const montagemDaTela = sections.find((section) => section.id === 'tela-criar-v8')
+assert.deepEqual(
+  [
+    limite?.blockIds,
+    limite?.workspaceBlockId,
+    montagemDaTela?.blockIds,
+    montagemDaTela?.workspaceBlockId,
+  ],
+  [
+    ['orientacao-experiencia-tela-v8', 'experiencia-tela'],
+    null,
+    ['video-tela-v7', 'orientacao-tela-v7'],
+    'projeto',
+  ],
+  'Descoberta e montagem da tela não compartilham uma seção',
+)
+const experienciaDaTela = candidate.blocks.find((block) => block.key === 'experiencia-tela')
+assert(experienciaDaTela && 'content' in experienciaDaTela)
+assert.equal(experienciaDaTela.content.kind, 'interactive')
+if (experienciaDaTela.content.kind === 'interactive')
+  assert.deepEqual(experienciaDaTela.content.activity, {
+    type: 'experimentation',
+    scene: 'stage-size',
+  })
+assert.equal(
+  candidate.blocks.some((block) => block.key === 'experiencia-leitor-de-tela'),
+  false,
+)
+assert.equal(
+  candidate.blocks.some((block) => block.key === 'video-descricao-demo-v7'),
+  false,
+)
+assert.equal(
+  candidate.blocks.some((block) => block.key === 'video-descricao-criar-v7'),
+  false,
 )
 
 type Block = {
@@ -77,10 +112,6 @@ const border: Block = {
   type: 'sz_g2d_stage_border',
   fields: { COLOR: '#ffffff' },
   inputs: { WIDTH: number(4) },
-}
-const description: Block = {
-  type: 'sz_g2d_set_stage_description',
-  fields: { DESCRIPTION: 'Corra com o dino e pule os cactos apertando espaço' },
 }
 const dino: Block = {
   type: 'sz_g2d_create_dino',
@@ -109,56 +140,39 @@ assert.deepEqual(
   'A primeira tarefa aceita Ao iniciar ainda vazio',
 )
 assert.deepEqual(
-  results('tela-v7', project([stage])),
+  results('tela-criar-v8', project([stage])),
   [true, false],
   'Preparar a tela não substitui a borda',
 )
 assert.deepEqual(
-  results('tela-v7', project([stage], [border])),
+  results('tela-criar-v8', project([stage], [border])),
   [true, false],
   'Borda solta não conta',
 )
-assert.deepEqual(results('tela-v7', project([stage, { ...border, disabled: true }])), [true, false])
-assert.deepEqual(results('tela-v7', project([stage, border])), [true, true])
+assert.deepEqual(results('tela-criar-v8', project([stage, { ...border, disabled: true }])), [
+  true,
+  false,
+])
+assert.deepEqual(results('tela-criar-v8', project([stage, border])), [true, true])
 assert.deepEqual(
-  results(
-    'descricao-criar-v7',
-    project([
-      stage,
-      border,
-      { ...description, fields: { DESCRIPTION: 'Pegue as moedas. Use as setas para andar.' } },
-    ]),
-  ),
-  [false],
-  'Texto padrão de outro jogo não conclui esta etapa',
-)
-assert.deepEqual(results('descricao-criar-v7', project([stage, border, description])), [true])
-assert.deepEqual(
-  results('dino-v7', project([stage, border, description, dino])),
+  results('dino-v7', project([stage, border, dino])),
   [true],
   'A cor pode variar; o identificador dino mantém a continuidade da trilha guiada',
 )
 assert.deepEqual(
   results(
     'dino-v7',
-    project([stage, border, description, { ...dino, inputs: { ...dino.inputs, X: number(120) } }]),
+    project([stage, border, { ...dino, inputs: { ...dino.inputs, X: number(120) } }]),
   ),
   [false],
   'A posição precisa corresponder ao valor trabalhado',
 )
-assert.deepEqual(results('entrega-v7', project([stage, border, description, dino])), [
-  true,
-  true,
-  true,
-  true,
-  true,
-])
+assert.deepEqual(results('entrega-v7', project([stage, border, dino])), [true, true, true, true])
 assert.deepEqual(
-  results('entrega-v7', project([stage, description, dino])),
-  [true, true, false, true, true],
+  results('entrega-v7', project([stage, dino])),
+  [true, true, false, true],
   'A conferência final reconhece uma peça removida depois de concluir sua etapa',
 )
-
 const originals = process.argv[2]
 let sourceHash: string | null = null
 if (originals) {

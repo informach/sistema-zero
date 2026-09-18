@@ -38,22 +38,6 @@ export const lessonOneCuts = {
       production: 'recorte',
     },
     {
-      key: 'video-descricao-demo-v7',
-      sourceSection: 'Parte 3. Passo 3: contar o que é o seu jogo',
-      entry: 'Tem gente que joga videogame sem enxergar a tela.',
-      exit: 'e esse alguém é você.',
-      edit: 'Reutilizar a introdução. Acrescentar uma captura curta com leitor de tela real lendo a descrição de um exemplo pronto, texto visível e legendas. Não mostrar a montagem nem sugerir que o bloco liga uma voz sozinho.',
-      production: 'recorte-e-complemento',
-    },
-    {
-      key: 'video-descricao-criar-v7',
-      sourceSection: 'Parte 3. Passo 3: contar o que é o seu jogo',
-      entry: 'Na categoria Jogo 2D, subcategoria',
-      exit: 'Numa frase, a gente coloca o que é o jogo e como se joga.',
-      edit: 'Começar no caminho Telas e cenas e terminar após explicar objetivo e controles. Substituir a promessa de tornar o jogo acessível com um bloco por uma conclusão precisa: agora sua descrição informa objetivo e controles. Preservar a frase canônica, sem ponto final no campo.',
-      production: 'recorte-e-complemento',
-    },
-    {
       key: 'video-coordenadas-demo-v7',
       sourceSection: 'Parte 4. Passo 4: criar o dino',
       entry: 'O x diz se ele fica mais pra esquerda ou mais pra direita.',
@@ -81,15 +65,13 @@ export const lessonOneCuts = {
 }
 
 /**
- * As cenas da aula 1, como dado. As três primeiras entraram em 14/09/2026 logo depois do clipe de cada
- * passo (tela, descrição e coordenadas); a descoberta de criar e desenhar é a experimentação que já
- * existia, com criar e desenhar como dois controles separados desde o lote 5 do Raio-X.
+ * As cenas da aula 1, como dado. A tela abre a aula como descoberta separada da montagem; depois vêm
+ * as coordenadas. Criar e desenhar é a experimentação que já existia, com dois controles separados
+ * desde o lote 5 do Raio-X.
  *
- * ⚠️⚠️ A pergunta do fim ficou só em DUAS das quatro cenas (decisão da dona, 17/09/2026). São quatro
- * cenas seguidas, cada uma com previsão E pergunta: oito momentos de responder na primeira aula da
- * criança. As quatro previsões continuam (é o palpite antes de mexer, e não vale nota); a `stage-size`
- * e a `screen-reader` dispensam a pergunta do fim (`semPerguntaFinal`), e a `coordinates` e a `world`
- * — as duas que ensinam a ideia que a aula cobra no quiz — a mantêm.
+ * ⚠️⚠️ A pergunta do fim fica só nas duas cenas que ensinam a ideia cobrada no quiz. As três previsões
+ * continuam (são palpites antes de mexer, e não valem nota); a `stage-size` dispensa a pergunta final
+ * (`semPerguntaFinal`) e `coordinates` e `world` a mantêm.
  */
 export const lessonOneScenes = {
   'video-tela-v7': {
@@ -101,18 +83,6 @@ export const lessonOneScenes = {
         'Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.',
       hints: [],
       activity: { type: 'experimentation', scene: 'stage-size' },
-      semPerguntaFinal: true,
-    },
-  },
-  'video-descricao-demo-v7': {
-    chave: 'experiencia-leitor-de-tela',
-    bloco: {
-      required: true,
-      title: 'Ouça o que a descrição informa',
-      instructions:
-        'Aperte Ouvir a tela com o campo vazio. Depois escreva a descrição do seu jogo e ouça de novo.',
-      hints: [],
-      activity: { type: 'experimentation', scene: 'screen-reader' },
       semPerguntaFinal: true,
     },
   },
@@ -155,6 +125,14 @@ export const lessonOneOldScenes: Record<string, CenaAnterior> = {
   },
 }
 
+/** Chaves que existiam no candidato anterior e precisam sair quando a nova autoria for importada. */
+const RETIRED_READER_BLOCK_KEYS = [
+  'video-descricao-demo-v7',
+  'experiencia-leitor-de-tela',
+  'video-descricao-criar-v7',
+  'orientacao-descricao-v7',
+]
+
 export function reviseLessonOne(source: LearningManifest): LearningManifest {
   if (source.courseSlug !== 'corre-dino' || source.lessonSlug !== 'aula-01')
     throw new Error('A revisão editorial é específica da aula 1 do Corre Dino.')
@@ -189,7 +167,15 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
         plannedVideo: `Fonte: ${sourceFile}, ${clip.sourceSection}. Entrada: “${clip.entry}”. Saída: “${clip.exit}”. Montagem: ${clip.edit} Timecodes dependem da conferência do vídeo gravado.`,
       }
       const cena = lessonOneScenes[clip.key as keyof typeof lessonOneScenes]
-      return cena ? [video, blocoDaCena(cena, CENARIO_DO_CURSO['corre-dino'])] : [video]
+      return cena
+        ? [
+            video,
+            blocoDaCena(
+              cena,
+              cena.chave === 'experiencia-tela' ? undefined : CENARIO_DO_CURSO['corre-dino'],
+            ),
+          ]
+        : [video]
     }),
     dialogue(
       'orientacao-iniciar-v7',
@@ -200,8 +186,8 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       'Dentro de Ao iniciar, prepare a tela de 480 × 270. Logo abaixo, coloque Mostrar a borda da tela, com espessura 4. Escolha uma borda que apareça sobre o céu.',
     ),
     dialogue(
-      'orientacao-descricao-v7',
-      'Dentro de Ao iniciar, encaixe Descrever o jogo para leitor de tela. Escreva: Corra com o dino e pule os cactos apertando espaço',
+      'orientacao-experiencia-tela-v8',
+      'Antes de montar no seu jogo, descubra onde a tela do jogo termina. A borda é o que mostra esse limite.',
     ),
     dialogue(
       'orientacao-dino-v7',
@@ -214,7 +200,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     ),
     dialogue(
       'orientacao-entrega-v7',
-      'Confira a tela com borda, a descrição e o bloco que cria seu Dino. O Dino ainda invisível é o resultado esperado. Teste e envie seu projeto ao professor.',
+      'Confira a tela com borda e o bloco que cria seu Dino. O Dino ainda invisível é o resultado esperado. Teste e envie seu projeto ao professor.',
     ),
     workspace,
     quiz,
@@ -243,16 +229,6 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
         blockType: 'sz_g2d_stage_border',
         area: 'start',
         inputs: { WIDTH: 4 },
-      },
-    },
-    description: {
-      id: 'descricao-v7',
-      label: 'Descreva o objetivo e o controle do Corre Dino em Ao iniciar.',
-      rule: {
-        type: 'usesBlock',
-        blockType: 'sz_g2d_set_stage_description',
-        area: 'start',
-        fields: { DESCRIPTION: 'Corra com o dino e pule os cactos apertando espaço' },
       },
     },
     dino: {
@@ -310,30 +286,21 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
       [checks.start],
     ),
     section(
-      'tela-v7',
-      'Prepare a tela e veja seus limites',
-      'application',
-      'Preparar o palco de 480 × 270 e tornar sua borda visível.',
-      ['video-tela-v7', lessonOneScenes['video-tela-v7'].chave, 'orientacao-tela-v7'],
-      [checks.stage, checks.border],
+      'tela-experiencia-v8',
+      'Descubra o limite da tela',
+      intencaoDaCena(lessonOneScenes['video-tela-v7']),
+      'Perceber que a borda mostra onde a tela do jogo termina e que o tamanho dela pode mudar.',
+      ['orientacao-experiencia-tela-v8', lessonOneScenes['video-tela-v7'].chave],
+      undefined,
       [lessonOneScenes['video-tela-v7'].chave],
     ),
     section(
-      'descricao-demonstracao-v7',
-      'Ouça o que a descrição informa',
-      intencaoDaCena(lessonOneScenes['video-descricao-demo-v7']),
-      'Observar uma descrição sendo lida e reconhecer que ela informa objetivo e controles.',
-      ['video-descricao-demo-v7', lessonOneScenes['video-descricao-demo-v7'].chave],
-      undefined,
-      [lessonOneScenes['video-descricao-demo-v7'].chave],
-    ),
-    section(
-      'descricao-criar-v7',
-      'Conte o que é o seu jogo',
+      'tela-criar-v8',
+      'Prepare a tela no seu projeto',
       'application',
-      'Configurar a descrição do Corre Dino no projeto.',
-      ['video-descricao-criar-v7', 'orientacao-descricao-v7'],
-      [checks.description],
+      'Preparar o palco de 480 × 270 e tornar sua borda visível.',
+      ['video-tela-v7', 'orientacao-tela-v7'],
+      [checks.stage, checks.border],
     ),
     section(
       'coordenadas-demonstracao-v7',
@@ -387,7 +354,11 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
   ]
   const retained = new Set(manifest.blocks.map((block) => block.key))
   manifest.retireBlockKeys = [
-    ...new Set([...(source.retireBlockKeys ?? []), ...source.blocks.map((block) => block.key)]),
+    ...new Set([
+      ...(source.retireBlockKeys ?? []),
+      ...source.blocks.map((block) => block.key),
+      ...RETIRED_READER_BLOCK_KEYS,
+    ]),
   ].filter((key) => !retained.has(key))
   return manifest
 }
