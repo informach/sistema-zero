@@ -895,6 +895,9 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
 })
 
 describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
+  // Esta varredura monta as 45 cenas reais. Sob a suíte inteira, o desenho SVG e a limpeza de
+  // cada bancada podem passar do teto padrão de 5 s, embora cada cena permaneça síncrona para a
+  // criança. O teto representa o contrato completo, não uma espera para uma API.
   test('⚠️⚠️ "Ligar som" só nas cenas que FAZEM som, e sem `aria-pressed`', async () => {
     const falhas: string[] = []
     for (const scene of SCENE_IDS) {
@@ -913,7 +916,7 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
     expect(falhas).toEqual([])
     // Anti-vácuo: a régua disse "sim" em alguma cena, senão a varredura aprovaria "nunca".
     expect(SCENE_IDS.some((s) => sceneEmitsSound(s))).toBe(true)
-  })
+  }, 15000)
 
   test('⭐ "Ouvir" lê somente a instrução na voz pt-BR do navegador, sem áudio gravado', async () => {
     const falas: { texto: string; lang: string }[] = []
