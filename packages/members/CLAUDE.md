@@ -2186,3 +2186,37 @@ listado ali.
 ## Aulas por seções (09/2026)
 
 `lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo carreira e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
+
+## Trazer a versão publicada de volta para o rascunho (18/09/2026, migration `0089`)
+
+O rascunho (`lesson_drafts.document`) e o publicado (`lesson_blocks`/`lesson_structures`) sempre
+foram documentos separados — apagar um bloco no percurso da edição nunca tocou a aula no ar —, mas
+faltava o caminho de volta: quem apagava sem querer só tinha como refazer à mão.
+
+- **A regra é PURA e mora no core**: `restoreFromPublished(rascunho, publicado, ids | 'all')`
+  (`@sistemazero/core/learning`). O servidor decide com ela e o painel do admin a espelha só para
+  MOSTRAR o que vai mudar. `'all'` devolve o publicado inteiro; com a lista, cada peça (bloco ou
+  material) volta sozinha: para a seção e a posição de onde saiu, para os materiais de apoio se a
+  seção não existir mais, e o vínculo da seção (critério, oficina) só volta quando o rascunho
+  ainda não tem um — a autora pode ter escrito outro depois.
+- **Rotas** (admin, `learning.routes.ts`): `GET /members/admin/lessons/:id/draft/published` (o
+  publicado no formato do rascunho — a MESMA conversão que nasce um rascunho do zero,
+  `initialDocument`), `POST …/draft/restore-published` `{expectedRevision, operationId, ids?}` e
+  `POST …/draft/undo-restore`. **Gateway:** os dois POST caem na
+  `members-admin-lesson-draft-publication` (`:action`, já com audit); o GET tem entrada PRÓPRIA
+  (`members-admin-lesson-draft-published`) porque o matcher exige o número EXATO de segmentos.
+- **Migration `0089`**: `lesson_drafts.previous_document` (o "Desfazer"). Uma coluna só — a data
+  do guardado seria redundante com o `updated_at` da própria linha, que é o da restauração.
+  ⚠️ **O desfazer vale só até a PRÓXIMA alteração**: o `write` grava a coluna na restauração e a
+  LIMPA em qualquer outra operação (change/replace/publish/unpublish/import).
+  Desfazer horas depois devolveria um documento velho por cima de trabalho novo — o acidente que
+  esta rede existe para consertar. `LessonDraft.canUndoRestore` é o que a UI lê.
+- ⚠️ A restauração ALINHA `publishedRevision` ao snapshot atual (como publish/unpublish). Sem
+  isso o rascunho restaurado nasceria "em conflito" e o publish seguinte falharia.
+- ⚠️⚠️ **O limite real da rede**: o `publish` ARQUIVA (`archivedAt`) o que não está no documento e
+  a leitura do publicado usa a view `active_lesson_blocks` — depois de publicar o rascunho
+  quebrado, o bloco apagado não volta mais por aqui. (Uma "lixeira da aula" lendo `archived_at`
+  resolveria esse caso; fora do escopo por ora.) A UI do admin diz isso no painel.
+- Testes: `tests/integration/lesson-draft-restore.test.ts` (7 casos HTTP sobre o fake) e, contra
+  Postgres REAL, dois casos em `tests/db/lesson-draft-cases.ts` — as colunas novas e o UPDATE que
+  as grava e limpa só existem lá (o fake os reimplementa em JS).

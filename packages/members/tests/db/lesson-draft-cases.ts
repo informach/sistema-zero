@@ -98,6 +98,78 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    /**
+     * "Trazer a versao publicada de volta" — contra Postgres REAL.
+     *
+     * ⚠️ O fake in-memory reimplementa isto em JS, entao nenhum teste de integracao alcanca as
+     * colunas `previous_*` da migration 0089 nem o UPDATE que as grava e limpa.
+     */
+    test('restores the published lesson into the draft, and undoes it once', async () => {
+      const f = await fixture()
+      const bloco = await f.content.createBlock(f.lessonId, 'rich_text', {
+        kind: 'rich_text',
+        markdown: 'O que é uma variável',
+      })
+      const publicado = await f.repo.read(f.lessonId)
+      expect(publicado.canUndoRestore).toBe(false)
+
+      // Ela apaga o bloco sem querer — o publicado nao e tocado.
+      const apagado = await f.change(publicado, { type: 'remove-block', blockId: bloco.id })
+      expect(apagado.document.blocks.map((b) => b.id)).not.toContain(bloco.id)
+      const noAr = await f.repo.readPublished(f.lessonId)
+      expect(noAr.document.blocks.map((b) => b.id)).toContain(bloco.id)
+
+      const restaurado = await f.repo.restorePublished(
+        f.lessonId,
+        actor,
+        apagado.revision,
+        randomUUID(),
+        [bloco.id],
+      )
+      expect(restaurado.document.blocks.map((b) => b.id)).toContain(bloco.id)
+      expect(restaurado.canUndoRestore).toBe(true)
+      // O rascunho restaurado esta alinhado ao ar: a publicacao seguinte nao da conflito.
+      expect((await f.publish(restaurado)).isPublished).toBe(true)
+
+      // Publicar e uma alteracao: o desfazer sai de cena.
+      const depoisDoPublish = await f.repo.read(f.lessonId)
+      expect(depoisDoPublish.canUndoRestore).toBe(false)
+      let falhou: unknown
+      try {
+        await f.repo.undoRestore(f.lessonId, actor, depoisDoPublish.revision, randomUUID())
+      } catch (error) {
+        falhou = error
+      }
+      expect(falhou).toBeInstanceOf(Error)
+    })
+
+    test('undo brings back the draft as it was before the restore', async () => {
+      const f = await fixture()
+      const bloco = await f.content.createBlock(f.lessonId, 'rich_text', {
+        kind: 'rich_text',
+        markdown: 'Resumo da aula',
+      })
+      const apagado = await f.change(await f.repo.read(f.lessonId), {
+        type: 'remove-block',
+        blockId: bloco.id,
+      })
+      const restaurado = await f.repo.restorePublished(
+        f.lessonId,
+        actor,
+        apagado.revision,
+        randomUUID(),
+        'all',
+      )
+      const desfeito = await f.repo.undoRestore(
+        f.lessonId,
+        actor,
+        restaurado.revision,
+        randomUUID(),
+      )
+      expect(desfeito.document).toEqual(apagado.document)
+      expect(desfeito.canUndoRestore).toBe(false)
+    })
+
     test('old Studio authoring cannot replace an updated shared draft', async () => {
       const f = await fixture()
       const block = await f.content.createBlock(f.lessonId, 'studio', {

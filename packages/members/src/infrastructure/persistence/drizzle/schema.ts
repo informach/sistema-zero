@@ -270,6 +270,14 @@ export const lessonDrafts = members.table('lesson_drafts', {
   revision: uuid('revision').notNull(),
   publishedRevision: text('published_revision').notNull(),
   document: jsonb('document').$type<LessonDraftDocument>().notNull(),
+  /**
+   * O rascunho de ANTES da última restauração, para o "Desfazer" do painel.
+   *
+   * Vale só até a próxima alteração: todo write que não seja restauração limpa as duas colunas
+   * (ver `lesson-draft.repository.ts`). Desfazer horas depois devolveria um documento velho por
+   * cima de trabalho novo, que é o acidente que a restauração existe para consertar.
+   */
+  previousDocument: jsonb('previous_document').$type<LessonDraftDocument>(),
   updatedBy: uuid('updated_by'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

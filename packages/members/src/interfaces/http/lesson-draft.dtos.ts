@@ -94,6 +94,20 @@ export const DraftPublishSchema = t.Object({
   /** Server BFF checks Vimeo processing before forwarding these ids. */
   readyVideoIds: t.Array(t.String({ pattern: '^[0-9]{1,20}$' }), { maxItems: 200 }),
 })
+/**
+ * "Trazer a versão publicada de volta."
+ *
+ * `ids` ausente = TUDO (o rascunho vira o publicado). Com a lista, só aquelas peças voltam — são
+ * ids de BLOCO ou de MATERIAL, os mesmos que o painel do admin mostra como "sumiram". O teto
+ * acompanha o do documento (200 blocos + 100 anexos).
+ */
+export const DraftRestoreSchema = t.Object({
+  expectedRevision: Id,
+  operationId: Id,
+  ids: t.Optional(t.Array(Id, { maxItems: 300 })),
+})
+export const DraftUndoRestoreSchema = t.Object({ expectedRevision: Id, operationId: Id })
+
 const publishedBlockValidator = getSchemaValidator(LessonBlockContentSchema)
 export function parsePublishedLessonBlock(value: unknown): LessonBlockContent {
   // Legacy embed metadata is ignored by the player; validate its current HTML contract.

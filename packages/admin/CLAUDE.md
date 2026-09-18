@@ -222,6 +222,17 @@ painel do professor) estão em §"Atividades interativas e cenas no editor", no 
 
 `Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
 
+⭐ **Comparar com a versão publicada (18/09/2026).** O botão do cabeçalho abre
+`editor/lesson-published-compare.tsx`, que busca `GET /api/members/lessons/:id/draft/published` e
+compara com o rascunho pela lib PURA `lib/lesson-published-diff.ts` (`compararComOPublicado`:
+sumiram · mudaram · só no rascunho, com a seção de origem e o aviso de seção que não existe mais).
+Dali a autora traz de volta uma peça, várias ou tudo. Restaurar e desfazer passam por
+`beforePublish()` (flush da fila), ENCERRAM formulários e transferências abertos — a mesma limpeza
+do aviso de conflito — e então recarregam. O "Desfazer a restauração" aparece no toast e no
+cabeçalho enquanto `draft.canUndoRestore`; ⚠️ ele vale só até a próxima alteração do rascunho (o
+members limpa o guardado). ⚠️ O painel diz, e é verdade, que ele mostra o que está publicado
+AGORA: publicar o rascunho arquiva o que não estiver nele.
+
 Vídeo tem um único editor com capa. `LessonVideoUploads` mantém os workers acima dos campos:
 fechar um editor ou recolher uma seção não desmonta a transferência. Callbacks atualizam o ID
 original e ignoram blocos removidos. Publicação aguarda vídeos em envio/processamento.

@@ -14,6 +14,7 @@ function fixture() {
     revision: 'r1',
     publishedRevision: 'published',
     isPublished: true,
+    canUndoRestore: false,
     updatedBy: 'author',
     updatedAt: '2026-09-08T12:00:00Z',
     document: {

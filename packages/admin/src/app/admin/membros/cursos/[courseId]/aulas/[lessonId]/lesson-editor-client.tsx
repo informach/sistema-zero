@@ -59,6 +59,7 @@ import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
 import { LessonContentCatalog } from '@/components/editor/lesson-content-catalog'
 import { lessonEditorialWarnings } from '@/components/editor/lesson-editorial-warnings'
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
+import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { useLessonDraft } from '@/components/editor/use-lesson-draft'
@@ -547,6 +548,7 @@ function LessonEditorSession({
   const [editorVersion, setEditorVersion] = useState(0)
   const [area, setArea] = useState<'sections' | 'materials' | 'data'>('sections')
   const [catalogOpen, setCatalogOpen] = useState(false)
+  const [compareOpen, setCompareOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [focusRequest, setFocusRequest] = useState<{
     sectionId: string
@@ -1059,6 +1061,66 @@ function LessonEditorSession({
       toast.error(error instanceof Error ? error.message : 'Não foi possível capturar o projeto.')
     }
   }
+  /**
+   * Restaurar e desfazer encerram os formularios e as transferencias abertos ANTES de recarregar:
+   * um editor de bloco aberto sobre um documento que acabou de mudar gravaria o estado velho por
+   * cima (a mesma limpeza do aviso de conflito).
+   */
+  function fecharTrabalhoLocal() {
+    currentBlockEditor.current = { id: '', open: false }
+    uploads.clear()
+    setBlockOpen(false)
+    setEditingBlock(null)
+    setAttOpen(false)
+    setCatalogOpen(false)
+    setPreview(false)
+    setFocusRequest(undefined)
+    setReviewResult(null)
+  }
+  // ⚠️ `busy` trava o resto do cabeçalho enquanto a restauração está em voo: sem ele, um
+  // "Revisar para publicar" no meio do caminho validaria um documento que já mudou.
+  async function restaurarDoPublicado(ids?: string[]) {
+    setBusy(true)
+    try {
+      await beforePublish()
+      const current = session.getSnapshot().draft
+      if (!current) return
+      await apiSend(`/api/members/lessons/${lessonId}/draft/restore-published`, 'POST', {
+        expectedRevision: current.revision,
+        operationId: crypto.randomUUID(),
+        ...(ids ? { ids } : {}),
+      })
+      fecharTrabalhoLocal()
+      await load()
+      toast.success(
+        ids ? 'Conteúdo trazido de volta.' : 'Rascunho restaurado da versão publicada.',
+        {
+          action: { label: 'Desfazer', onClick: () => void desfazerRestauracao() },
+          duration: 12000,
+        },
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+  async function desfazerRestauracao() {
+    setBusy(true)
+    try {
+      const current = session.getSnapshot().draft
+      if (!current) return
+      await apiSend(`/api/members/lessons/${lessonId}/draft/undo-restore`, 'POST', {
+        expectedRevision: current.revision,
+        operationId: crypto.randomUUID(),
+      })
+      fecharTrabalhoLocal()
+      await load()
+      toast.success('Restauração desfeita.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível desfazer.')
+    } finally {
+      setBusy(false)
+    }
+  }
   async function beforePublish() {
     await captureEditors()
     await session.flush()
@@ -1400,6 +1462,23 @@ function LessonEditorSession({
                   </Button>
                 )
               })()}
+              <Button
+                variant="outline"
+                disabled={busy || loading || !draft}
+                onClick={() => setCompareOpen(true)}
+                title="O que está publicado continua inteiro, mesmo o que você apagou no rascunho."
+              >
+                Comparar com a versão publicada
+              </Button>
+              {canWrite && draft?.canUndoRestore ? (
+                <Button
+                  variant="outline"
+                  disabled={busy || loading}
+                  onClick={() => void desfazerRestauracao()}
+                >
+                  Desfazer a restauração
+                </Button>
+              ) : null}
               {canWrite && draft?.isPublished && (
                 <Button
                   variant="outline"
@@ -1496,16 +1575,8 @@ function LessonEditorSession({
               <Button
                 variant="outline"
                 onClick={() => {
-                  // Explicitly discarding local edits must also discard the form snapshots and jobs.
-                  currentBlockEditor.current = { id: '', open: false }
-                  uploads.clear()
-                  setBlockOpen(false)
-                  setEditingBlock(null)
-                  setAttOpen(false)
-                  setCatalogOpen(false)
-                  setPreview(false)
-                  setFocusRequest(undefined)
-                  setReviewResult(null)
+                  // Descartar a edição local explicitamente também descarta formulários e transferências.
+                  fecharTrabalhoLocal()
                   void session.restoreServerVersion().catch((error) => toast.error(error.message))
                 }}
               >
@@ -1713,6 +1784,15 @@ function LessonEditorSession({
         >
           <LessonContentCatalog audience={courseInfo?.audience ?? 'kids'} onSelect={createBlock} />
         </Dialog>
+        {compareOpen && draft ? (
+          <LessonPublishedCompare
+            lessonId={lessonId}
+            draft={draft.document}
+            canWrite={canWrite}
+            onClose={() => setCompareOpen(false)}
+            onRestore={restaurarDoPublicado}
+          />
+        ) : null}
         {blockOpen && (
           <section className="space-y-5 rounded-2xl border border-border bg-card p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">

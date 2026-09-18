@@ -26,7 +26,13 @@ import {
   SectionProjectBody,
   SectionProjectParams,
 } from '../learning.dtos'
-import { DraftCommandSchema, DraftPublishSchema, draftCommand } from '../lesson-draft.dtos'
+import {
+  DraftCommandSchema,
+  DraftPublishSchema,
+  DraftRestoreSchema,
+  DraftUndoRestoreSchema,
+  draftCommand,
+} from '../lesson-draft.dtos'
 import { galleryDeliveryRoutes } from './gallery-delivery.routes'
 
 export interface LearningRoutesDeps {
@@ -154,6 +160,38 @@ export function learningRoutes(deps: LearningRoutesDeps) {
                 body.readyVideoIds,
               ),
             { params: IdParams, body: DraftPublishSchema },
+          )
+          // "Trazer a versão publicada de volta para o rascunho." O rascunho e o publicado são
+          // documentos separados: apagar um bloco no percurso não toca a aula no ar, e era só a
+          // volta que faltava. ⚠️ O GET tem entrada PRÓPRIA no gateway (o matcher exige o número
+          // exato de segmentos); os dois POST caem no `:action` que publish/unpublish já usam.
+          .get(
+            '/lessons/:id/draft/published',
+            ({ params }) => deps.drafts.readPublished(params.id),
+            { params: IdParams },
+          )
+          .post(
+            '/lessons/:id/draft/restore-published',
+            ({ params, headers, body }) =>
+              deps.drafts.restorePublished(
+                params.id,
+                resolveUserId(headers),
+                body.expectedRevision,
+                body.operationId,
+                body.ids ?? 'all',
+              ),
+            { params: IdParams, body: DraftRestoreSchema },
+          )
+          .post(
+            '/lessons/:id/draft/undo-restore',
+            ({ params, headers, body }) =>
+              deps.drafts.undoRestore(
+                params.id,
+                resolveUserId(headers),
+                body.expectedRevision,
+                body.operationId,
+              ),
+            { params: IdParams, body: DraftUndoRestoreSchema },
           )
           .post(
             '/lessons/:id/draft/unpublish',

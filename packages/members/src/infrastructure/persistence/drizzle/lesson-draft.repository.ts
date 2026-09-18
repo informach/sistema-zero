@@ -7,6 +7,7 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
@@ -18,6 +19,7 @@ import {
   canonicalizeBlockContent,
 } from '../../../application/content-admin/content-admin.service'
 import {
+  ContentNotFoundError,
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
@@ -165,6 +167,7 @@ async function readDraft(tx: Transaction, lessonId: string): Promise<LessonDraft
   return {
     ...row,
     isPublished: snapshot.lesson.isPublished,
+    canUndoRestore: row.previousDocument !== null,
     updatedAt: row.updatedAt.toISOString(),
   }
 }
@@ -259,13 +262,27 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       const revision = randomUUID()
       const updatedAt = new Date()
       const snapshot = await publishedSnapshot(tx, lessonId)
+      const marca = (chave: string) => input !== null && typeof input === 'object' && chave in input
+      const restaurando = marca('restore')
+      // Publicar, despublicar e RESTAURAR alinham o rascunho ao que está no ar. ⚠️ Sem incluir a
+      // restauração aqui, o rascunho restaurado nasceria "em conflito" com o publicado e a
+      // publicação seguinte falharia com `LessonDraftConflictError`.
       const publishedRevision =
-        input && typeof input === 'object' && ('publish' in input || 'unpublish' in input)
+        marca('publish') || marca('unpublish') || restaurando
           ? snapshot.revision
           : draft.publishedRevision
+      // O desfazer vale só até a próxima alteração: qualquer outro write limpa o guardado.
+      const guardado = { previousDocument: restaurando ? draft.document : null }
       await tx
         .update(lessonDrafts)
-        .set({ document, revision, publishedRevision, updatedBy: authorId, updatedAt })
+        .set({
+          document,
+          revision,
+          publishedRevision,
+          ...guardado,
+          updatedBy: authorId,
+          updatedAt,
+        })
         .where(eq(lessonDrafts.lessonId, lessonId))
       await tx
         .insert(lessonDraftOperations)
@@ -276,6 +293,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         revision,
         publishedRevision,
         isPublished: snapshot.lesson.isPublished,
+        canUndoRestore: restaurando,
         updatedBy: authorId,
         updatedAt: updatedAt.toISOString(),
       }
@@ -348,6 +366,72 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       operationId,
       { replace: document },
       async () => document,
+    )
+  }
+
+  /**
+   * O que esta PUBLICADO agora, no formato do rascunho.
+   *
+   * ⚠️ E a mesma conversao que nasce um rascunho do zero (`initialDocument`), de proposito: o
+   * painel compara peca a peca com o rascunho, e duas conversoes diferentes mostrariam
+   * diferenca onde nao ha.
+   */
+  async readPublished(lessonId: string) {
+    return this.db.transaction(async (tx) => {
+      const snapshot = await publishedSnapshot(tx, lessonId)
+      return { document: initialDocument(snapshot), revision: snapshot.revision }
+    })
+  }
+
+  /**
+   * Traz o publicado de volta para o rascunho: `'all'` substitui tudo, uma lista traz so
+   * aquelas pecas (ver `restoreFromPublished`, no core).
+   *
+   * O rascunho de antes fica guardado para o "Desfazer" — ate a proxima alteracao.
+   */
+  async restorePublished(
+    lessonId: string,
+    authorId: string,
+    expectedRevision: string,
+    operationId: string,
+    ids: string[] | 'all',
+  ) {
+    return this.write(
+      lessonId,
+      authorId,
+      expectedRevision,
+      operationId,
+      { restore: ids },
+      async (draft, tx) =>
+        restoreFromPublished(
+          draft.document,
+          initialDocument(await publishedSnapshot(tx, lessonId)),
+          ids,
+        ),
+    )
+  }
+
+  /** Desfaz a ultima restauracao. Sem nada guardado (ou depois de qualquer edicao), 404. */
+  async undoRestore(
+    lessonId: string,
+    authorId: string,
+    expectedRevision: string,
+    operationId: string,
+  ) {
+    return this.write(
+      lessonId,
+      authorId,
+      expectedRevision,
+      operationId,
+      { undoRestore: true },
+      async (_draft, tx) => {
+        const [row] = await tx
+          .select({ document: lessonDrafts.previousDocument })
+          .from(lessonDrafts)
+          .where(eq(lessonDrafts.lessonId, lessonId))
+        if (!row?.document) throw new ContentNotFoundError('Não há restauração para desfazer.')
+        return row.document
+      },
     )
   }
 

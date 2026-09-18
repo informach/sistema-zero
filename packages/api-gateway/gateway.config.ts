@@ -2712,6 +2712,20 @@ const config: GatewayConfigInput = {
       audit: {},
     },
     {
+      // O que está PUBLICADO, no formato do rascunho (o painel "Comparar com a versão
+      // publicada"). ⚠️ Entrada PRÓPRIA porque o matcher exige o número EXATO de segmentos: a
+      // `-read` acima tem um a menos, e a `-publication` abaixo é só POST.
+      id: 'members-admin-lesson-draft-published',
+      methods: ['GET'],
+      pathPattern: '/members/admin/lessons/:id/draft/published',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
       id: 'members-admin-lesson-draft-publication',
       methods: ['POST'],
       pathPattern: '/members/admin/lessons/:id/draft/:action',

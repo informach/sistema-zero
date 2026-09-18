@@ -7,6 +7,7 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
@@ -16,6 +17,7 @@ import {
   canonicalizeBlockContent,
 } from '../../src/application/content-admin/content-admin.service'
 import {
+  ContentNotFoundError,
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
@@ -31,6 +33,8 @@ import type { InMemoryLearningRepository } from './learning-in-memory'
 /** HTTP/auth fixtures use this store; publication atomicity is tested against PostgreSQL. */
 export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   readonly drafts = new Map<string, LessonDraft>()
+  /** O rascunho de antes da ultima restauracao (as colunas `previous_*` do Postgres). */
+  private readonly anteriores = new Map<string, LessonDraftDocument>()
   constructor(
     private readonly courses: InMemoryCourseRepository,
     private readonly learning: InMemoryLearningRepository,
@@ -46,6 +50,7 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
       revision: randomUUID(),
       publishedRevision: randomUUID(),
       isPublished: lesson.isPublished,
+      canUndoRestore: false,
       updatedBy: null,
       updatedAt: new Date().toISOString(),
       document: {
@@ -77,15 +82,81 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
   ) {
     const draft = await this.read(lessonId)
     if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
+    // O desfazer vale so ate a proxima alteracao (espelha o `write` do Drizzle).
+    this.anteriores.delete(lessonId)
     const next = {
       ...draft,
       document,
+      canUndoRestore: false,
       revision: randomUUID(),
       updatedBy: authorId,
       updatedAt: new Date().toISOString(),
     }
     this.drafts.set(lessonId, structuredClone(next))
     return next
+  }
+
+  /** O publicado no formato do rascunho — a MESMA conversao do rascunho recem-nascido. */
+  async readPublished(lessonId: string) {
+    const lesson = await this.courses.findLessonWithContent(lessonId)
+    if (!lesson) throw new LessonNotFoundError()
+    const structure = await this.learning.getStructure(lessonId)
+    return {
+      document: {
+        title: lesson.title,
+        slug: lesson.slug,
+        estimatedMinutes: lesson.estimatedMinutes,
+        blocks: lesson.blocks.map((b) => ({ id: b.id, content: { ...b.content } })),
+        sections: structure?.sections ?? [
+          defaultLessonSection(
+            lessonId,
+            lesson.title,
+            lesson.blocks.map((b) => b.id),
+          ),
+        ],
+        supportBlockIds: structure?.supportBlockIds ?? [],
+        attachments: lesson.attachments,
+        plannedVideos: [],
+      } satisfies LessonDraftDocument,
+      revision: structure?.revision ?? randomUUID(),
+    }
+  }
+
+  async restorePublished(
+    lessonId: string,
+    authorId: string,
+    expectedRevision: string,
+    _operationId: string,
+    ids: string[] | 'all',
+  ) {
+    const draft = await this.read(lessonId)
+    if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
+    const { document: publicado } = await this.readPublished(lessonId)
+    const anterior = structuredClone(draft.document)
+    const next = {
+      ...draft,
+      document: restoreFromPublished(draft.document, publicado, ids),
+      canUndoRestore: true,
+      revision: randomUUID(),
+      updatedBy: authorId,
+      updatedAt: new Date().toISOString(),
+    }
+    this.drafts.set(lessonId, structuredClone(next))
+    this.anteriores.set(lessonId, anterior)
+    return next
+  }
+
+  async undoRestore(
+    lessonId: string,
+    authorId: string,
+    expectedRevision: string,
+    operationId: string,
+  ) {
+    const draft = await this.read(lessonId)
+    if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
+    const anterior = this.anteriores.get(lessonId)
+    if (!anterior) throw new ContentNotFoundError('Não há restauração para desfazer.')
+    return this.replace(lessonId, authorId, expectedRevision, operationId, anterior)
   }
   async change(lessonId: string, authorId: string, command: LessonDraftCommand) {
     const draft = await this.read(lessonId)
