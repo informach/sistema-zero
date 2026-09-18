@@ -53,7 +53,8 @@
         "hints": [],
         "activity": {
           "type": "experimentation",
-          "scene": "stage-size"
+          "scene": "stage-size",
+          "cenario": "corre-dino"
         },
         "semPerguntaFinal": true
       }
