@@ -556,61 +556,62 @@ function LessonSectionsContent({
       setSending(false)
     }
   }
-  const render = (block: LessonBlockView) => (
-    <div
-      key={`${block.id}:${block.blockRevision ?? ''}`}
-      id={`lesson-block-${block.id}`}
-      tabIndex={-1}
-      // `sz-lesson-block`: gancho ESTÁVEL do tema do kids (cada bloco vira um cartão
-      // lá). Sem regra aqui: a comunidade adulta não carrega aquele CSS.
-      className="sz-lesson-block space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      {requirements.some((r) => r.blockId === block.id) && (
-        // `sz-lesson-requirement` + `data-done`: ganchos do tema do kids (a concluída
-        // vira verde com o ✓ lá). O texto é o mesmo nos dois apps.
-        <p
-          className="sz-lesson-requirement text-sm font-medium text-muted-foreground"
-          data-done={requirements.find((r) => r.blockId === block.id)?.complete || undefined}
-        >
-          {requirements.find((r) => r.blockId === block.id)?.complete
-            ? 'Atividade concluída'
-            : 'Atividade obrigatória'}
-        </p>
-      )}
-      <BlockScope block={block} lesson={lesson}>
-        {isGalleryBlock(block.content) ? (
-          <LessonGalleryDelivery
-            block={block}
-            tool={block.content.kind}
-            config={block.content.gallery}
-          />
-        ) : block.kind === 'interactive' && preview && !isInteractiveBlock(block.content) ? (
-          <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
-            Complete a descoberta interativa para experimentar a prévia.
+  const render = (block: LessonBlockView) => {
+    const requirement = requirements.find((r) => r.blockId === block.id)
+    return (
+      <div
+        key={`${block.id}:${block.blockRevision ?? ''}`}
+        id={`lesson-block-${block.id}`}
+        tabIndex={-1}
+        // `sz-lesson-block`: gancho ESTÁVEL do tema do kids (cada bloco vira um cartão
+        // lá). Sem regra aqui: a comunidade adulta não carrega aquele CSS.
+        className="sz-lesson-block space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {player?.showActivityRequirement !== false && requirement && (
+          // `sz-lesson-requirement` + `data-done`: ganchos do tema do kids (a concluída
+          // vira verde com o ✓ lá). O texto é o mesmo nos dois apps.
+          <p
+            className="sz-lesson-requirement text-sm font-medium text-muted-foreground"
+            data-done={requirement.complete || undefined}
+          >
+            {requirement.complete ? 'Atividade concluída' : 'Atividade obrigatória'}
           </p>
-        ) : block.kind === 'interactive' && preview && isInteractiveBlock(block.content) ? (
-          /**
-           * ⚠️⚠️ Na prévia o bloco é desenhado pela PROJEÇÃO PÚBLICA, a mesma do members, e o
-           * rascunho vai junto por `previewContent` — é ele que liga o avaliador local.
-           *
-           * O conteúdo de autoria deixou de ser o que a criança recebe em 15/09/2026: a previsão
-           * e a pergunta da cena chegam pelos RESOLVEDORES, e não pelos campos crus do bloco.
-           * Desenhando o rascunho, a prévia mostrava ao professor uma tela sem as duas E o ensaio
-           * ficava intransponível — o avaliador é o de PRODUÇÃO e cobrava a resposta de uma
-           * pergunta que a tela não tinha desenhado.
-           */
-          <InteractiveLessonBlock
-            block={{ ...block, content: publicInteractiveBlock(block.content) }}
-            previewContent={block.content}
-          />
-        ) : block.kind === 'interactive' ? (
-          <InteractiveLessonBlock block={block} />
-        ) : (
-          renderBlocks([block])
         )}
-      </BlockScope>
-    </div>
-  )
+        <BlockScope block={block} lesson={lesson}>
+          {isGalleryBlock(block.content) ? (
+            <LessonGalleryDelivery
+              block={block}
+              tool={block.content.kind}
+              config={block.content.gallery}
+            />
+          ) : block.kind === 'interactive' && preview && !isInteractiveBlock(block.content) ? (
+            <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+              Complete a descoberta interativa para experimentar a prévia.
+            </p>
+          ) : block.kind === 'interactive' && preview && isInteractiveBlock(block.content) ? (
+            /**
+             * ⚠️⚠️ Na prévia o bloco é desenhado pela PROJEÇÃO PÚBLICA, a mesma do members, e o
+             * rascunho vai junto por `previewContent` — é ele que liga o avaliador local.
+             *
+             * O conteúdo de autoria deixou de ser o que a criança recebe em 15/09/2026: a previsão
+             * e a pergunta da cena chegam pelos RESOLVEDORES, e não pelos campos crus do bloco.
+             * Desenhando o rascunho, a prévia mostrava ao professor uma tela sem as duas E o ensaio
+             * ficava intransponível — o avaliador é o de PRODUÇÃO e cobrava a resposta de uma
+             * pergunta que a tela não tinha desenhado.
+             */
+            <InteractiveLessonBlock
+              block={{ ...block, content: publicInteractiveBlock(block.content) }}
+              previewContent={block.content}
+            />
+          ) : block.kind === 'interactive' ? (
+            <InteractiveLessonBlock block={block} />
+          ) : (
+            renderBlocks([block])
+          )}
+        </BlockScope>
+      </div>
+    )
+  }
   // O ÍNDICE mora em dois lugares, conforme o app: no adulto e no ensaio do admin
   // ele é a metade direita do `sz-lesson-toolbar`; no kids a barra inteira saiu
   // (13/09/2026) e ele passou para o cabeçalho da seção. Só um dos dois ramos

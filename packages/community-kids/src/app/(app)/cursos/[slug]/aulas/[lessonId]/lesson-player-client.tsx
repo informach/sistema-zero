@@ -185,6 +185,7 @@ export function LessonPlayer({
     () => ({
       lessonId: lesson.id,
       courseSlug: course.slug,
+      showActivityRequirement: false,
       viewerWatermark,
       viewerId,
       initialPositionSeconds: lesson.positionSeconds,

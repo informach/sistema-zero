@@ -15,6 +15,11 @@ import type { DialogueSpeech } from './dialogue-block'
  * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
+  /**
+   * O rótulo técnico da regra de conclusão. No Kids, toda etapa participa da aula e a criança
+   * acompanha o percurso pela barra de progresso, então esse aviso não acrescenta orientação.
+   */
+  showActivityRequirement?: boolean
   renderInstruction?: (
     text: string,
     pose?: 'speaking' | 'thinking' | 'celebrating',

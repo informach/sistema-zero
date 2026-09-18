@@ -386,6 +386,18 @@ describe('aula por seções', () => {
     expect(summary.closest('details')?.open).toBe(false)
     expect(screen.getAllByText('Atividade obrigatória')).toHaveLength(1)
   })
+  test('no Kids a regra continua valendo, mas não ganha o rótulo técnico na tela', () => {
+    render(
+      <LessonPlayerProvider value={{ ...player, showActivityRequirement: false }}>
+        <LessonSections
+          lesson={lesson}
+          renderBlocks={() => <input aria-label="Projeto de teste" />}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.queryByText('Atividade obrigatória')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Próxima seção' })).toBeTruthy()
+  })
   test('descoberta incompleta na prévia mostra orientação e não registra tentativas', () => {
     render(
       <LessonSections
