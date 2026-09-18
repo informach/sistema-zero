@@ -337,7 +337,13 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // `_drawTextBackgroundImage`, que perdeu o `telaW`: ele existia só porque o
   // desenho rodava sob um ctx.scale e a medida local mentia sobre o tamanho na
   // tela. Sem a escala, as duas são a mesma coisa e o parâmetro perdeu a razão.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1239)
+  // 1239 → 1240: +1 do `_releaseClipElement(el)`. Soltar o arquivo de som era
+  // `el.src = ''` inline, e pôr a fonte em VAZIO dispara o evento `error` do
+  // elemento (medido no Chrome: MEDIA_ELEMENT_ERROR "Empty src attribute") —
+  // com o `onerror` ainda pendurado, a própria limpeza do "jogar de novo"
+  // acusava TODOS os sons carregados. Soltar de verdade (tirar o atributo,
+  // remandar carregar, desligar o aviso) não cabe numa linha inline.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1240)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

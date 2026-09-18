@@ -40,6 +40,15 @@ interface ReviewWindow {
   addEventListener(name: string, listener: Listener): void
 }
 
+/**
+ * Dublê de <audio> FIEL ao navegador no ponto que importa: pôr a fonte em
+ * VAZIO dispara o evento 'error' (medido no Chrome: MEDIA_ELEMENT_ERROR "Empty
+ * src attribute"), enquanto tirar o ATRIBUTO e remandar carregar não dispara
+ * nada. O dublê antigo guardava `src` como campo simples, e por isso a suíte
+ * inteira era CEGA para a limpeza do "jogar de novo" acusar todos os sons.
+ * ⚠️ O evento sai numa TAREFA, como no navegador: numa microtask ele chegaria
+ * antes de o runtime terminar o reset e a sabotagem passaria.
+ */
 class ReviewAudio {
   paused = true
   pauseCalls = 0
@@ -47,8 +56,30 @@ class ReviewAudio {
   loop = false
   volume = 1
   preload = ''
-  src = ''
+  loadCalls = 0
   onerror: (() => void) | null = null
+  private fonte = ''
+
+  get src(): string {
+    return this.fonte
+  }
+
+  set src(value: string) {
+    this.fonte = value
+    if (value !== '') return
+    setTimeout(() => {
+      this.onerror?.()
+    }, 0)
+  }
+
+  removeAttribute(name: string): void {
+    if (name === 'src') this.fonte = ''
+  }
+
+  /** Sem fonte, `load()` só zera o estado do elemento: nenhum erro. */
+  load(): void {
+    this.loadCalls += 1
+  }
 
   play(): Promise<void> {
     this.paused = false
@@ -164,6 +195,36 @@ describe('regressões do full review de game-2d', () => {
       api.restart()
       expect(audios[0]?.paused).toBe(true)
       expect(audios[0]?.pauseCalls).toBeGreaterThan(0)
+    } finally {
+      warning.mockRestore()
+    }
+  })
+
+  it('soltar os sons no "jogar de novo" não pode ACUSAR quem estava certo', async () => {
+    const { api, listeners, audios } = loadReviewRuntime()
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      api.loadSound('fundo', 'clip')
+      for (const listener of listeners.pointerdown ?? []) listener({})
+      api.playTrack('fundo')
+      await Promise.resolve()
+      expect(audios).toHaveLength(1)
+      warning.mockClear()
+
+      api.onStart(() => {})
+      api.restart()
+      // O erro do elemento chega numa tarefa, depois do reset inteiro.
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      const acusou = warning.mock.calls.some((args) =>
+        String(args[0]).includes('nao pode ser carregado'),
+      )
+      expect(acusou).toBe(false)
+      // Anti-vácuo: a limpeza precisa ter soltado o arquivo de verdade, e não
+      // apenas deixado de avisar.
+      expect(audios[0]?.src).toBe('')
+      expect(audios[0]?.loadCalls).toBeGreaterThan(0)
+      expect(audios[0]?.onerror).toBe(null)
     } finally {
       warning.mockRestore()
     }

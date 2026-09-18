@@ -1460,7 +1460,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     var wanted = _soundKey(asset);
     var src = SOUNDS[wanted] || (wanted.indexOf('data:audio/') === 0 ? wanted : null);
     if (!src) {
-      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Sons" (no menu de tres pontinhos).');
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Sons", no menu de tres pontinhos.');
       return;
     }
     var already = _sounds[key];
@@ -1535,11 +1535,23 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       }
     }
   }
+  // ⚠️⚠️ Mesmo conserto do Jogo 2D: "el.src = ''" dispara o evento
+  // 'error' do elemento (medido no Chrome: MEDIA_ELEMENT_ERROR "Empty src
+  // attribute"), e o onerror pendurado fazia a limpeza acusar TODOS os sons a
+  // cada "jogar de novo". Soltar de verdade e tirar o ATRIBUTO e remandar
+  // carregar, com o aviso desligado antes.
+  function _releaseSoundElement(el) {
+    if (!el) return;
+    try { el.onerror = null; } catch (e) {}
+    try { if (el.removeAttribute) el.removeAttribute('src'); } catch (e) {}
+    try { if (el.load) el.load(); } catch (e) {}
+  }
   /** Sem isto a trilha em loop sobrevive ao "jogar de novo" e some so no F5. */
   function _disposeSounds() {
     for (var key in _sounds) {
       if (Object.prototype.hasOwnProperty.call(_sounds, key)) {
-        try { _sounds[key].pause(); _sounds[key].src = ''; } catch (e) {}
+        try { _sounds[key].pause(); } catch (e) {}
+        _releaseSoundElement(_sounds[key]);
       }
     }
     _sounds = {};
