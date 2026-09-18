@@ -243,6 +243,9 @@ function LessonPreview() {
         <LessonSections
           kids
           lesson={lesson}
+          // A captura vai para o funil: sem isto o print mostraria um cabeçalho
+          // que o produto não tem mais (sem o nome da aula).
+          lessonTitle={lesson.title}
           renderBlocks={(blocks) =>
             blocks.map((block) => (
               <div key={block.id} className="rounded-2xl border border-border bg-background p-5">

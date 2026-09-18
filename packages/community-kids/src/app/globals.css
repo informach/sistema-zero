@@ -1487,13 +1487,18 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
    `space-y-5` do contêiner mantém o intervalo também quando há Estúdio ou controles no
    modo compacto. O padding vertical é menor que o de um bloco porque o `summary` do
    índice já traz 44px de alvo de toque: com 1.25rem o cartão ficava alto demais. */
+/* ⭐ 18/09/2026: o cabeçalho deixou de ser um CARTÃO. Ele virou o título da
+   página ("aula · seção", com o índice ao lado), e cartão em volta do título da
+   página é caixa dentro de caixa — além de comer 40px de largura justo onde o
+   texto precisa dela. O que sobra é o espaço embaixo, separando do 1º bloco. */
 .sz-lesson-sections .sz-lesson-section-head {
-  border: 1px solid var(--borda-carta);
-  border-radius: 1.25rem;
-  background: var(--card);
-  padding: 0.875rem 1.25rem;
+  padding-block-end: 0.25rem;
 }
-.sz-lesson-sections .sz-lesson-section-head h2 {
+/* `:is(h1, h2)`: o cabeçalho é `h1` na página de aula (onde o player passa o
+   título) e `h2` no ensaio do admin. Mirando só `h2`, a regra virava letra morta
+   na página real e o corpo do título mudava sozinho — 24px no celular em vez de
+   26px, 30px no desktop. */
+.sz-lesson-sections .sz-lesson-section-head :is(h1, h2) {
   font-size: 1.625rem;
 }
 .sz-lesson-sections .sz-lesson-section-head summary {

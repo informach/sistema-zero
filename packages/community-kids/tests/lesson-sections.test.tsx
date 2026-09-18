@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { SectionProgressView } from '@sistemazero/core/learning'
 import {
   type InteractiveBlock,
@@ -162,7 +164,7 @@ describe('aula por seções', () => {
     ).toBe('lesson-content')
     const project = container.querySelector('#lesson-block-project')
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
-    expect(screen.getByRole('heading', { name: 'Feche a aula' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Feche a aula/ })).toBeTruthy()
     expect(screen.getByText('quiz')).toBeTruthy()
     expect(project?.isConnected).toBe(true)
     expect(container.querySelectorAll('#lesson-block-project')).toHaveLength(1)
@@ -277,7 +279,7 @@ describe('aula por seções', () => {
     const future = screen.getByRole('button', { name: /Bloqueada Observar/ })
     expect(future.hasAttribute('disabled')).toBe(true)
     fireEvent.click(future)
-    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
   })
   // ⚠️ Os testes acima (e quase todo este arquivo) renderizam SEM a flag `kids`: eles
   // cobrem o layout do ADULTO, que mantém a barra. Os dois abaixo são o único lugar
@@ -296,7 +298,7 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     expect(screen.queryByText(/O que falta para concluir/)).toBeNull()
-    const titulo = screen.getByRole('heading', { name: 'Preparar' })
+    const titulo = screen.getByRole('heading', { name: /Preparar/ })
     const indice = screen.getByText('Índice da aula')
     // O MESMO cartão: é o que a mudança promete, e é o `sz-lesson-section-head` que o
     // CSS do kids veste. Separá-los de novo devolveria o cartão extra sem ninguém ver.
@@ -321,7 +323,7 @@ describe('aula por seções', () => {
     // ⚠️ A aula ABRE na primeira seção disponível, que aqui é "Observar". Navegar para
     // ELA não provaria nada: a espera pelo título passaria sozinha, e um índice que
     // levasse à seção errada seguiria verde. O destino precisa ser OUTRA seção.
-    expect(screen.getByRole('heading', { name: 'Observar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Observar/ })).toBeTruthy()
     const summary = screen.getByText('Índice da aula')
     fireEvent.click(summary)
     expect(
@@ -360,7 +362,7 @@ describe('aula por seções', () => {
     await screen.findByText(
       'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
     )
-    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
     expect(screen.getByText('1 de 3 seções concluídas · 33,3%')).toBeTruthy()
     fail = false
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
@@ -381,7 +383,7 @@ describe('aula por seções', () => {
     const summary = screen.getByText('O que falta para concluir · 1')
     fireEvent.click(summary)
     fireEvent.click(screen.getByRole('button', { name: /Enviar projeto/ }))
-    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
     expect(document.activeElement?.id).toBe('lesson-block-project')
     expect(summary.closest('details')?.open).toBe(false)
     expect(screen.getAllByText('Atividade obrigatória')).toHaveLength(1)
@@ -699,7 +701,7 @@ describe('aula por seções', () => {
         />
       </LessonPlayerProvider>,
     )
-    expect(screen.getByRole('heading', { name: 'Observar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Observar/ })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Por que ele cai?' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
@@ -762,5 +764,178 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     expect((screen.getByRole('radio', { name: 'Sobe' }) as HTMLInputElement).checked).toBe(false)
+  })
+})
+
+/**
+ * ⭐ UM cabeçalho só (18/09/2026). O nome da aula era um `<h1>` do player e o da
+ * seção um `<h2>` logo abaixo: duas linhas de título, cada uma com a sua margem, e
+ * a seção — que é o que muda ao avançar — aparecendo por último. Agora é
+ * "aula · seção" numa linha, com o índice ao lado.
+ */
+describe('o cabeçalho da aula e da seção, numa linha só', () => {
+  test('com o título da aula o cabeçalho é o H1 da página e mostra os dois nomes', () => {
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} kids lessonTitle="Meu jogo" renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const titulo = screen.getByRole('heading', { level: 1 })
+    expect(titulo.textContent).toContain('Meu jogo')
+    expect(titulo.textContent).toContain('Preparar')
+    // ⚠️ UM só: o player parou de renderizar o dele, e dois `<h1>` numa página é
+    // pior do que o cartão que este lote tirou.
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+  })
+
+  test('sem o título da aula (ensaio do admin) segue sendo H2, só com a seção', () => {
+    // Lá o nome da aula já está em volta, no editor; repeti-lo aqui seria a mesma
+    // duplicação que o lote foi tirar da página de aula.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} kids renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull()
+    const titulo = screen.getByRole('heading', { level: 2, name: 'Preparar' })
+    // O que importa é a AUSÊNCIA do nome da aula; `toBe` travaria markup (um
+    // `sr-only` legítimo reprovaria sem defeito).
+    expect(titulo.textContent).not.toContain('Meu jogo')
+  })
+
+  test('no ADULTO o índice também mora no cabeçalho, e saiu da barra de cima', () => {
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} lessonTitle="Meu jogo" renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const indice = screen.getByText('Índice da aula')
+    const titulo = screen.getByRole('heading', { level: 1 })
+    expect(indice.closest('header')).toBe(titulo.closest('header'))
+    // A barra do adulto continua existindo, agora só com o que falta concluir.
+    // ⚠️ Escopado no container: `document.querySelector` pegaria a barra de outro
+    // render se um `cleanup` falhasse, e em silêncio.
+    const barra = container.querySelector('.sz-lesson-toolbar')
+    expect(barra?.textContent).toContain('O que falta para concluir')
+    expect(barra?.contains(indice)).toBe(false)
+  })
+
+  test('trocar de seção leva o FOCO ao cabeçalho, que é a âncora do conteúdo novo', async () => {
+    // ⚠️ Sem isto, quem usa teclado ou leitor de tela avança de seção e continua no
+    // meio da página anterior: o cabeçalho é o alvo do `focus()` e do scroll.
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    // Todas liberadas: o que se mede aqui é o FOCO ao avançar, não a trava.
+    const todasLiberadas: SectionProgressView = {
+      revision: 'structure',
+      completed: 0,
+      total: 3,
+      percent: 0,
+      sections: ['first', 'second', 'third'].map((id) => ({
+        id,
+        title: id,
+        status: 'available' as const,
+        pending: [],
+      })),
+    }
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: todasLiberadas }}
+          kids
+          lessonTitle="Meu jogo"
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar')
+    })
+    expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
+  })
+})
+
+/**
+ * ⚠️ Os dois players (kids e adulto) não têm suíte — montar o `LessonPlayer` puxa o
+ * Next inteiro. Então o que garante que eles PARARAM de renderizar o título da aula
+ * é a leitura da fonte: sem isto, repor o `<h1>` neles devolve o nome da aula duas
+ * vezes na tela e nenhum teste de componente vê, porque o `LessonSections` sozinho
+ * só emite um cabeçalho (a asserção de "um `<h1>` só" fica tautológica).
+ */
+describe('os players entregam o título da aula ao cabeçalho, e não renderizam o seu', () => {
+  const players = [
+    ['kids', 'src/app/(app)/cursos/[slug]/aulas/[lessonId]/lesson-player-client.tsx'],
+    [
+      'adulto',
+      '../community/src/app/(app)/cursos/[slug]/aulas/[lessonId]/lesson-player-client.tsx',
+    ],
+  ] as const
+
+  test.each(players)('o player do %s passa lessonTitle e não abre um <h1> próprio', (_, rel) => {
+    const fonte = readFileSync(resolve(import.meta.dir, '..', rel), 'utf8')
+    expect(fonte).toContain('lessonTitle={lesson.title}')
+    expect(fonte).not.toContain('<h1')
+  })
+})
+
+describe('o cabeçalho aguenta o conteúdo real', () => {
+  test('aula LEGADA não imprime o mesmo nome duas vezes', () => {
+    // `legacyLessonSections` usa o TÍTULO DA AULA como nome da seção quando a aula
+    // não tem seções — é o caso do certificado e das aulas "em breve". Sem a guarda,
+    // o cabeçalho saía "Meu jogo · Meu jogo".
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sections: undefined, blocks: [] }}
+          kids
+          lessonTitle="Meu jogo"
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    const titulo = screen.getByRole('heading', { level: 1 })
+    expect(titulo.textContent).toBe('Meu jogo')
+    expect(titulo.textContent).not.toContain('·')
+  })
+
+  test('o nome acessível separa os dois nomes (o ponto é só visual)', () => {
+    // O `·` é `aria-hidden`, e com ele some o único espaço entre os dois nomes: o
+    // leitor de tela emendava "DinoUm lugar". A vírgula `sr-only` é o separador
+    // audível.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} kids lessonTitle="Meu jogo" renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByRole('heading', { level: 1, name: 'Meu jogo , Preparar' })).toBeTruthy()
+  })
+
+  test('palavra comprida quebra em vez de vazar por baixo do índice', () => {
+    // happy-dom não faz layout: a régua é a CLASSE, como no cabeçalho do kids.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} kids lessonTitle="Meu jogo" renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const titulo = screen.getByRole('heading', { level: 1 })
+    expect(titulo.className).toContain('[overflow-wrap:anywhere]')
+    // E o foco continua alcançável por programa (é o alvo ao trocar de seção).
+    expect(titulo.getAttribute('tabindex')).toBe('-1')
+  })
+
+  test('no estreito o índice fica só no ícone, sem perder o nome acessível', () => {
+    // O texto comia ~108px da MESMA linha do título; medido nos 392 pares reais de
+    // aula × seção, isso custava 5,3 linhas de cabeçalho num celular de 390px.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} kids lessonTitle="Meu jogo" renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const rotulo = screen.getByText('Índice da aula')
+    expect(rotulo.className).toContain('sr-only')
+    expect(rotulo.className).toContain('sm:not-sr-only')
+    expect(rotulo.closest('summary')?.getAttribute('aria-label')).toBe('Índice da aula')
   })
 })

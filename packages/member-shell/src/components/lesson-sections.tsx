@@ -287,6 +287,8 @@ export function LessonSections(props: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
+  /** Ver `LessonSectionsContent`: presente, o cabeçalho vira o `<h1>` da página. */
+  lessonTitle?: string
   /** Onde a criança está no percurso. Chamado na montagem e a cada troca de seção. */
   onSectionChange?: (posicao: { index: number; total: number }) => void
 }) {
@@ -298,11 +300,20 @@ function LessonSectionsContent({
   lesson,
   renderBlocks,
   kids = false,
+  lessonTitle,
   onSectionChange,
 }: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
+  /**
+   * O título da AULA. Presente, o cabeçalho da seção vira o `<h1>` da página e
+   * mostra "aula · seção" numa linha só, com o índice ao lado — e o player NÃO
+   * renderiza título nenhum (senão o nome da aula apareceria duas vezes).
+   * Ausente (ensaio e pré-visualização do admin, onde o título já está em volta),
+   * o cabeçalho segue sendo o `<h2>` só com o nome da seção.
+   */
+  lessonTitle?: string
   onSectionChange?: (posicao: { index: number; total: number }) => void
 }) {
   const player = useLessonPlayer()
@@ -612,15 +623,29 @@ function LessonSectionsContent({
       </div>
     )
   }
-  // O ÍNDICE mora em dois lugares, conforme o app: no adulto e no ensaio do admin
-  // ele é a metade direita do `sz-lesson-toolbar`; no kids a barra inteira saiu
-  // (13/09/2026) e ele passou para o cabeçalho da seção. Só um dos dois ramos
-  // renderiza por vez, então o `indexMenu` continua com um dono só.
+  // O ÍNDICE mora no cabeçalho da seção, e só ali (18/09/2026). Ele já tinha
+  // descido para lá no kids em 13/09; no adulto ainda era a metade direita do
+  // `sz-lesson-toolbar`, que agora fica só com "O que falta para concluir". Um
+  // lugar só: ao lado do nome da seção que ele troca.
+  // `h1` na página de aula (o player não renderiza mais o dele), `h2` no ensaio do
+  // admin, onde o título da aula já está em volta.
+  const Heading = lessonTitle ? 'h1' : 'h2'
+  // `shrink-0` nos DOIS apps: o índice divide a linha com o título em qualquer um
+  // desde 18/09/2026, e sem ele o botão era espremido no adulto (o `kids &&` que
+  // estava aqui sobrou de quando só a criança tinha o índice no cabeçalho).
   const indiceDaAula = (
-    <details ref={indexMenu} className={cn('relative', kids && 'shrink-0')}>
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+    <details ref={indexMenu} className="relative shrink-0">
+      {/* ⚠️ No estreito fica só o ícone. O texto comia ~108px da MESMA linha do
+          título, e medido nos 392 pares reais de aula × seção isso custava 5,3
+          linhas de cabeçalho num celular de 390px; sem ele (e sem o cartão) são
+          3,2. O nome acessível não muda — quem lê a tela continua ouvindo
+          "Índice da aula". */}
+      <summary
+        aria-label="Índice da aula"
+        className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+      >
         <List className="size-4" />
-        Índice da aula
+        <span className="sr-only sm:not-sr-only">Índice da aula</span>
       </summary>
       <nav
         aria-label="Seções da aula"
@@ -765,7 +790,6 @@ function LessonSectionsContent({
                   )}
                 </div>
               </details>
-              {indiceDaAula}
             </div>
           )}
           {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
@@ -776,26 +800,49 @@ function LessonSectionsContent({
             só liga com coluna confortável, e o piso da ferramenta (380px) existe
             para o VÍDEO poder crescer — o editor não precisa dele (ele vira abas
             por dentro abaixo de 1024px, ou seja já virava com o piso antigo). */}
-          <header
-            className={cn(
-              'sz-lesson-section-head px-1',
-              // No kids: título à esquerda, índice à direita, SEMPRE na mesma linha. O
-              // `min-w-0 flex-1` do h2 é o que faz um título comprido quebrar em linhas
-              // em vez de espremer o botão.
-              kids ? 'flex items-start justify-between gap-3' : 'space-y-2',
-            )}
-          >
-            <h2
+          {/* ⭐ UM cabeçalho só (18/09/2026). Antes o nome da aula era um `<h1>` do
+            player e o nome da seção um `<h2>` logo abaixo, cada um com a sua caixa:
+            duas linhas de título mais as margens delas, e a seção — que é o que
+            muda — aparecendo por último. Agora é "aula · seção" numa linha, com o
+            índice ao lado.
+            ⚠️ Ele continua sendo o ALVO DO FOCO ao trocar de seção (`destination
+            === 'heading'`): é o que leva o leitor de tela ao conteúdo novo e o que
+            faz a página subir. Mexer aqui sem olhar aquele efeito deixa a criança
+            parada no meio da página ao avançar.
+            ⚠️ Vira `<h1>` quando o player passa o título da aula, porque aí ele
+            deixa de renderizar o dele — uma página sem `<h1>` seria pior do que o
+            problema que este lote resolve. Sem o título (admin), segue `<h2>`. */}
+          <header className="sz-lesson-section-head flex items-start justify-between gap-3 px-1">
+            <Heading
               ref={heading}
               tabIndex={-1}
               className={cn(
-                'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
-                kids && 'sz-display min-w-0 flex-1',
+                // `[overflow-wrap:anywhere]`: com `min-w-0` o heading perde o piso de
+                // min-content, e uma palavra maior que a coluna pintava POR BAIXO do
+                // índice ("acontecimentos" a 24px mede ~185px contra 150px de coluna).
+                'min-w-0 flex-1 scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl [overflow-wrap:anywhere]',
+                kids && 'sz-display',
               )}
             >
+              {lessonTitle && lessonTitle !== section.title ? (
+                // A aula é o contexto e a seção é a novidade: ela é que puxa o olho.
+                // ⚠️ `lessonTitle !== section.title` não é zelo: numa aula LEGADA o
+                // nome da seção É o título da aula (`legacyLessonSections`), e o
+                // cabeçalho saía "Certificado do curso · Certificado do curso" —
+                // justamente nas aulas de certificado e nas "em breve".
+                <span className="font-normal text-muted-foreground text-lg sm:text-xl">
+                  {lessonTitle}
+                  {/* O ponto é só visual. Para quem ouve, a vírgula é o que separa
+                      os dois nomes: sem ela o leitor de tela emenda as palavras
+                      ("Dino" + "Um lugar" = "DinoUm"), porque o nó `aria-hidden`
+                      sai inteiro do nome acessível e não sobra nem o espaço. */}
+                  <span aria-hidden> · </span>
+                  <span className="sr-only">, </span>
+                </span>
+              ) : null}
               {section.title}
-            </h2>
-            {kids ? indiceDaAula : null}
+            </Heading>
+            {indiceDaAula}
           </header>
           {mostraAbas && (
             <div className="flex gap-2" role="group" aria-label="Orientação e criação">

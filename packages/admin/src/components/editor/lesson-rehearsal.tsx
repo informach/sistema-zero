@@ -218,7 +218,11 @@ export function LessonRehearsal({
           },
         }}
       >
+        {/* O ensaio existe para ver a aula como a criança vê, e desde 18/09/2026
+            isso inclui o cabeçalho "aula · seção". Sem o título aqui, o professor
+            conferiria uma tela que o aluno não tem. */}
         <LessonSections
+          lessonTitle={lesson.title}
           key={epoch}
           kids={kids}
           lesson={{

@@ -258,18 +258,20 @@ export function LessonPlayer({
             ) : null}
           </div>
 
-          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
-          <div className="mb-2">
+          {/* ⭐ O título da aula desceu para o cabeçalho da seção (18/09/2026), que
+              agora mostra "aula · seção" numa linha só, com o índice ao lado. Aqui
+              sobra a pílula de posição no curso — ela fala do CURSO, não da aula. */}
+          <div>
             <span className="kids-marca inline-block rounded-full px-3 py-1 font-extrabold text-xs uppercase tracking-[0.12em]">
               Aula {lessonNumber} de {flatLessons.length}
             </span>
-            <h1 className="sz-display mt-3 text-[clamp(1.875rem,3vw,2.25rem)]">{lesson.title}</h1>
           </div>
 
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
             kids
+            lessonTitle={lesson.title}
             onSectionChange={aoTrocarSecao}
             renderBlocks={(blocks) => <KidsLessonBlocks blocks={blocks} />}
           />

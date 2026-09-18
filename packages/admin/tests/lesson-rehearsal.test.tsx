@@ -446,6 +446,11 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
       container,
       root,
       temBarra: container.querySelector('.sz-lesson-toolbar') !== null,
+      // ⚠️ Sinal que DISCRIMINA: o gancho de tema do kids. O `indiceNoCabecalho`
+      // deixou de separar os dois em 18/09/2026 (o índice mora no cabeçalho nos
+      // dois), e sem um substituto o ensaio poderia montar a criança na tela do
+      // adulto — o bug que este arquivo existe para impedir — sem nada acusar.
+      temTemaKids: container.querySelector('.sz-lesson-sections') !== null,
       pedePendencias: container.textContent?.includes('O que falta para concluir') ?? false,
       indiceNoCabecalho:
         indice?.closest('header')?.classList.contains('sz-lesson-section-head') ?? false,
@@ -456,16 +461,21 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
     expect(kids.temBarra).toBe(false)
     expect(kids.pedePendencias).toBe(false)
     expect(kids.indiceNoCabecalho).toBe(true)
+    expect(kids.temTemaKids).toBe(true)
   } finally {
     await act(async () => kids.root.unmount())
     kids.container.remove()
   }
   // E o contrário também: ensaiar um curso ADULTO não pode virar a tela do kids.
+  // ⚠️ O que separa os dois é a BARRA do topo e o "O que falta para concluir". O
+  // ÍNDICE deixou de ser diferença em 18/09/2026: ele mora no cabeçalho da seção
+  // nos dois, ao lado do nome, quando o título da aula desceu para lá.
   const adulto = await montar(false)
   try {
     expect(adulto.temBarra).toBe(true)
     expect(adulto.pedePendencias).toBe(true)
-    expect(adulto.indiceNoCabecalho).toBe(false)
+    expect(adulto.indiceNoCabecalho).toBe(true)
+    expect(adulto.temTemaKids).toBe(false)
   } finally {
     await act(async () => adulto.root.unmount())
     adulto.container.remove()

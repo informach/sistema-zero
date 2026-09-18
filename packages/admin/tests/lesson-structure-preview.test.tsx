@@ -76,6 +76,11 @@ async function montarPrevia(audience: 'adult' | 'kids' | undefined) {
     container,
     root,
     temBarra: container.querySelector('.sz-lesson-toolbar') !== null,
+    // ⚠️ Sinal que DISCRIMINA: o gancho de tema do kids. O `indiceNoCabecalho`
+    // deixou de separar os dois em 18/09/2026 (o índice mora no cabeçalho nos
+    // dois), e sem um substituto o ensaio poderia montar a criança na tela do
+    // adulto — o bug que este arquivo existe para impedir — sem nada acusar.
+    temTemaKids: container.querySelector('.sz-lesson-sections') !== null,
     indiceNoCabecalho:
       indice?.closest('header')?.classList.contains('sz-lesson-section-head') ?? false,
   }
@@ -86,6 +91,7 @@ test('"Conferir livremente" monta a aula no layout da plataforma do curso', asyn
   try {
     expect(kids.temBarra).toBe(false)
     expect(kids.indiceNoCabecalho).toBe(true)
+    expect(kids.temTemaKids).toBe(true)
   } finally {
     await act(async () => kids.root.unmount())
     kids.container.remove()
@@ -93,7 +99,10 @@ test('"Conferir livremente" monta a aula no layout da plataforma do curso', asyn
   const adulto = await montarPrevia('adult')
   try {
     expect(adulto.temBarra).toBe(true)
-    expect(adulto.indiceNoCabecalho).toBe(false)
+    // O índice mora no cabeçalho nos dois desde 18/09/2026; quem separa kids de
+    // adulto aqui é a barra do topo e o gancho de tema.
+    expect(adulto.indiceNoCabecalho).toBe(true)
+    expect(adulto.temTemaKids).toBe(false)
   } finally {
     await act(async () => adulto.root.unmount())
     adulto.container.remove()
@@ -107,7 +116,8 @@ test('sem audiência conhecida a prévia fica no layout ADULTO, que é o de semp
   const semAudiencia = await montarPrevia(undefined)
   try {
     expect(semAudiencia.temBarra).toBe(true)
-    expect(semAudiencia.indiceNoCabecalho).toBe(false)
+    expect(semAudiencia.indiceNoCabecalho).toBe(true)
+    expect(semAudiencia.temTemaKids).toBe(false)
   } finally {
     await act(async () => semAudiencia.root.unmount())
     semAudiencia.container.remove()

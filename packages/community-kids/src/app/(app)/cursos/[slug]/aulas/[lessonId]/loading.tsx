@@ -23,10 +23,13 @@ export default function LessonLoading() {
           <Skeleton className="h-2.5 flex-1 rounded-full" />
           <Skeleton className="h-5 w-10 shrink-0" />
         </div>
+        {/* Só a pílula "AULA N DE M": o título da aula desceu para o cabeçalho da
+            seção (18/09/2026), que é o esqueleto logo abaixo. Reservar a linha do
+            título aqui devolvia ~52px de pulo em toda abertura de aula. */}
         <div className="mb-2">
           <Skeleton className="h-6 w-32 rounded-full" />
-          <Skeleton className="mt-3 h-10 w-2/3" />
         </div>
+        <Skeleton className="h-10 w-2/3" />
         <div className="kids-carta flex flex-col gap-4 p-5 md:p-6">
           <Skeleton className="h-6 w-1/3" />
           <Skeleton className="aspect-video w-full rounded-2xl" />

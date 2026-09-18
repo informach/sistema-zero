@@ -130,8 +130,10 @@ export function LessonPlayer({
       <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
-          <div className="mb-2">
+          {/* ⭐ O título da aula desceu para o cabeçalho da seção (18/09/2026), que
+              agora mostra "aula · seção" numa linha só, com o índice ao lado. Aqui
+              sobra a volta para o curso. */}
+          <div>
             <Link
               href={courseHref}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -139,13 +141,13 @@ export function LessonPlayer({
               <ChevronLeft className="size-4" />
               {course.title}
             </Link>
-            <h1 className="sz-display mt-2 text-2xl">{lesson.title}</h1>
           </div>
 
           <LessonProgressBar progress={lesson.sectionProgress} />
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
+            lessonTitle={lesson.title}
             renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
           />
 
