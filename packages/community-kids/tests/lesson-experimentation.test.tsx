@@ -1436,13 +1436,21 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       ),
     ).toBeTruthy()
     expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
-    expect(screen.getByTestId('scene-prediction-preview').getAttribute('aria-label')).toBe(
-      'Prévia da experiência: Ouvir a tela',
+    const previa = screen.getByTestId('scene-prediction-preview')
+    expect(previa.getAttribute('aria-label')).toBe(
+      'Prévia da experiência: Ouvir a tela. Controle mostrado: Ouvir a tela. Você vai usar este botão depois do seu palpite.',
     )
+    expect(previa.querySelector('[data-preview-control]')?.textContent).toContain('Ouvir a tela')
+    expect(previa.querySelector('[data-preview-control]')?.textContent).toContain(
+      'Você vai usar este botão depois do seu palpite.',
+    )
+    expect(previa.querySelector('button')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
     expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
 
     await palpitar('screen-reader')
     expect(await screen.findByLabelText('Descrição do jogo')).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'Ouvir a tela' })).toBeTruthy()
   })
 })
 
@@ -1576,12 +1584,25 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
     try {
       servidorQueCorrige(mundoComPalpite())
       aluno(mundoComPalpite())
-      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
+      const ouvir = await screen.findAllByRole('button', { name: 'Ouvir' })
+      expect(ouvir).toHaveLength(2)
+
+      fireEvent.click(ouvir[0] as HTMLButtonElement)
       await waitFor(() => expect(falas.length).toBeGreaterThan(0))
-      const lido = falas.join(' ')
-      expect(lido).toContain('Você cria e não liga o desenho. O que aparece?')
-      expect(lido).toContain('O Dino aparece')
-      expect(lido).toContain('A tela fica vazia')
+      expect(falas.join(' ')).toContain(
+        'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+      )
+      expect(falas.join(' ')).not.toContain('O que aparece?')
+
+      falas.length = 0
+      fireEvent.click(ouvir[1] as HTMLButtonElement)
+      await waitFor(() => expect(falas.length).toBeGreaterThan(0))
+      expect(falas.join(' ')).toContain('O que aparece?')
+      expect(falas.join(' ')).toContain('O Dino aparece')
+      expect(falas.join(' ')).toContain('A tela fica vazia')
+      expect(falas.join(' ')).not.toContain(
+        'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+      )
     } finally {
       sair()
       janela.speechSynthesis = vozOriginal
