@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { BrandLogo } from './brand-logo'
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 
 /**
  * Shell split-screen das páginas de autenticação (portado do
@@ -18,7 +18,11 @@ export function AuthSplitShell({ children }: { children: ReactNode }) {
               <Link href="/" aria-label="Comunidade Sistema Zero">
                 {/* O login é sempre claro: a versão de letras escuras, nos dois temas (no Pink o
                     ZERO fica rosa). */}
-                <BrandLogo fundo="claro" className="block h-auto w-[340px] max-w-full" />
+                <BrandLogo
+                  fundo="claro"
+                  label="Comunidade Sistema Zero"
+                  className="block h-auto w-[340px] max-w-full"
+                />
               </Link>
             </div>
             {children}

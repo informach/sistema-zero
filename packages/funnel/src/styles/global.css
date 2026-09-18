@@ -88,6 +88,13 @@
   --brand-lime: oklch(0.875 0.215 122);
   --brand-cyan: oklch(0.84 0.13 192);
 
+  /* O ZERO da logo oficial (`@sistemazero/ui/brand-logo`, usada no /admin): a cor da CASA, a
+     mesma da comunidade e dos painéis internos. Vem da paleta que o `theme-kids.css` importa. */
+  --logo-zero-escuro-de: var(--sz-action-light);
+  --logo-zero-escuro-ate: var(--sz-logo-zero);
+  --logo-zero-claro-de: var(--sz-action);
+  --logo-zero-claro-ate: var(--sz-logo-zero);
+
   --background: oklch(0.985 0.004 100);
   --foreground: oklch(0.105 0.01 265);
   --card: oklch(1 0 0);

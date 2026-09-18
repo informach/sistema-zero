@@ -1,8 +1,8 @@
 'use client'
 
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Menu, X } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -121,22 +121,12 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
 function Logo() {
   return (
     <Link href="/admin" className="flex shrink-0 items-center gap-2">
-      {/* Logo dual-theme (mesmos SVGs da referência/community): dark ⇄ light */}
-      <Image
-        src="/logo_dark.svg"
-        width={515}
-        height={75}
-        alt="Sistema Zero"
-        className="hidden h-auto w-[120px] dark:block"
-        priority
-      />
-      <Image
-        src="/logo_white.svg"
-        width={515}
-        height={72}
-        alt="Sistema Zero"
-        className="block h-auto w-[120px] dark:hidden"
-        priority
+      {/* A logo oficial (a MESMA da comunidade): SVG embutido, com o ZERO lendo `--logo-zero-*`
+          do chassi console. Era `<img>` dos SVGs de `public/`, com o verde-lima cravado. */}
+      <BrandLogo
+        fundo="claro"
+        label="Sistema Zero — painel administrativo"
+        className="block h-auto w-[120px]"
       />
     </Link>
   )

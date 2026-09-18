@@ -10,14 +10,11 @@
  * O `@custom-variant dark` FICA nos globals.css dos três: sem ele os `dark:` que o ui e o
  * member-shell ainda trazem passariam a seguir o modo escuro do sistema operacional.
  *
- * ⚠️ `--brand-lime`/`--brand-cyan` são IDENTIDADE fixa (o degradê da wordmark), não cor de ação.
+ * ⚠️ O degradê do ZERO da logo (`--logo-zero-*`) SEGUE a cor da casa, como na comunidade: a
+ * wordmark é o mesmo componente (`@sistemazero/ui/brand-logo`) nos dois lados.
  */
 
 :root {
-  /* Identidade da marca — não segue paleta. */
-  --brand-lime: oklch(0.875 0.215 122);
-  --brand-cyan: oklch(0.84 0.13 192);
-
   /* A paleta do Pen, na cor da casa. */
   --background: #e9eef6;
   --foreground: #0f1a33;
@@ -27,6 +24,7 @@
   --popover-foreground: #0f1a33;
   --primary: #1b5cf3;
   --primary-foreground: #ffffff;
+  --primary-hover: #164cca;
   --link: #1b5cf3;
   --link-hover: #164cca;
   --secondary: #eff3f9;
@@ -52,7 +50,10 @@
   --sz-accent: #0b7a54;
   --sz-hot: #cf3f36;
   --sz-hot-tint: rgb(207 63 54 / 0.1);
-  --sz-gradient: linear-gradient(90deg, #6e9bff, #1b5cf3);
+  --logo-zero-escuro-de: #6e9bff;
+  --logo-zero-escuro-ate: #0074fc;
+  --logo-zero-claro-de: #1b5cf3;
+  --logo-zero-claro-ate: #0074fc;
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -60,5 +61,5 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
-  --radius: 0.5rem;
+  --radius: 1.25rem;
 }

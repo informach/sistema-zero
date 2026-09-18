@@ -112,7 +112,9 @@
   --topo-icone: var(--sz-community-menu-icon);
   --topo-vidro: var(--sz-community-menu-glass);
 
-  /* O ZERO da logo oficial (`brand-logo.tsx`): o degradê da marca, um por fundo. */
+  /* O ZERO da logo oficial (`@sistemazero/ui/brand-logo`): o degradê da marca, um por fundo.
+     Os painéis internos e o funil leem os MESMOS nomes (o componente virou compartilhado em
+     18/09/2026); lá eles vêm do `console.css` e do `global.css` do funil. */
   --logo-zero-escuro-de: var(--sz-community-action-light);
   --logo-zero-escuro-ate: var(--sz-community-logo-zero);
   --logo-zero-claro-de: var(--sz-community-action);

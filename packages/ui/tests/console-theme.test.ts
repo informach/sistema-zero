@@ -27,7 +27,53 @@ describe('chassi console: uma fonte só para admin, helpdesk e marketing', () =>
     expect(folha).toContain(':root {')
     expect(semComentarios(folha)).not.toContain('.dark')
     expect(semComentarios(folha)).not.toContain('data-sz-palette')
-    expect(folha).toContain('--brand-lime:')
+  })
+
+  it('⭐ a logo do console lê o tema, como a da comunidade', () => {
+    // O `BrandLogo` compartilhado pinta o ZERO com `var(--logo-zero-<fundo>-{de,ate})`. Sem os
+    // quatro aqui, o degradê vira valor inválido e o ZERO some nos três painéis.
+    for (const fundo of ['escuro', 'claro'])
+      for (const ponta of ['de', 'ate']) expect(folha).toContain(`--logo-zero-${fundo}-${ponta}:`)
+  })
+
+  it('⚠️ o verde-lima da marca antiga não voltou, e o CTA não tem degradê', () => {
+    // 18/09/2026: o console passou a ser FIEL à comunidade — botão chapado em pílula e a logo
+    // oficial lendo o tema. `--brand-lime`/`--brand-cyan` (o verde da wordmark antiga) e
+    // `--sz-gradient` saíram; se um deles reaparecer, é a identidade velha voltando.
+    expect(folha).not.toContain('--brand-lime')
+    expect(folha).not.toContain('--brand-cyan')
+    expect(folha).not.toContain('--sz-gradient')
+    for (const [i, css] of globals.entries()) {
+      const corpo = semComentarios(css)
+      expect({
+        app: CONSOLES[i],
+        degrade: /background-image:\s*var\(--sz-gradient\)/.test(corpo),
+      }).toEqual({ app: CONSOLES[i], degrade: false })
+      expect({ app: CONSOLES[i], lima: corpo.includes('--brand-lime') }).toEqual({
+        app: CONSOLES[i],
+        lima: false,
+      })
+    }
+  })
+
+  it('⭐ o botão primário é a pílula CHAPADA do Pen nos três', () => {
+    // A regra mora FORA de `@layer` de propósito (é o que a faz vencer as utilitárias do
+    // `Button`); o contrato é o desenho: cor lisa, pílula e o hover pela cor.
+    for (const [i, css] of globals.entries()) {
+      const corpo = semComentarios(css)
+      const inicio = corpo.indexOf('button.bg-primary.text-primary-foreground')
+      const regra = inicio < 0 ? '' : corpo.slice(inicio, corpo.indexOf('}', inicio))
+      expect({ app: CONSOLES[i], achou: inicio >= 0 }).toEqual({ app: CONSOLES[i], achou: true })
+      expect({
+        app: CONSOLES[i],
+        chapado: regra.includes('background-image: none'),
+        pilula: regra.includes('border-radius: 9999px'),
+      }).toEqual({ app: CONSOLES[i], chapado: true, pilula: true })
+      expect({ app: CONSOLES[i], hover: corpo.includes('var(--primary-hover)') }).toEqual({
+        app: CONSOLES[i],
+        hover: true,
+      })
+    }
   })
 
   it('⭐ a folha está em dia com o registro — rodou `bun run tokens:gen`?', () => {

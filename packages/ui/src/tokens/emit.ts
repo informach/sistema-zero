@@ -9,7 +9,7 @@
  * um com o outro para sempre.
  */
 import { DEFAULT_PALETTE } from '@sistemazero/core/palette'
-import { CONSOLE_BRAND, CONSOLE_STATIC, deriveConsole } from './console'
+import { CONSOLE_STATIC, deriveConsole } from './console'
 import { derivePaletteTokens } from './derive'
 import { PALETTE_RECIPES } from './palettes'
 import { FIXED_TOKENS, PALETTE_TOKENS } from './recipe'
@@ -77,15 +77,13 @@ const AVISO_CONSOLE = `/*
  * O \`@custom-variant dark\` FICA nos globals.css dos três: sem ele os \`dark:\` que o ui e o
  * member-shell ainda trazem passariam a seguir o modo escuro do sistema operacional.
  *
- * ⚠️ \`--brand-lime\`/\`--brand-cyan\` são IDENTIDADE fixa (o degradê da wordmark), não cor de ação.
+ * ⚠️ O degradê do ZERO da logo (\`--logo-zero-*\`) SEGUE a cor da casa, como na comunidade: a
+ * wordmark é o mesmo componente (\`@sistemazero/ui/brand-logo\`) nos dois lados.
  */`
 
 /** A folha do chassi `console`. */
 export function toConsoleCss(): string {
   const linhas = [
-    '/* Identidade da marca — não segue paleta. */',
-    ...Object.entries(CONSOLE_BRAND).map(([t, v]) => `--${t}: ${v};`),
-    '',
     '/* A paleta do Pen, na cor da casa. */',
     ...Object.entries(deriveConsole()).map(([t, v]) => `--${t}: ${v};`),
     '',

@@ -68,6 +68,8 @@ export function deriveConsole(id: Palette = DEFAULT_PALETTE): Record<string, str
 
     primary: p.action,
     'primary-foreground': p['on-action'],
+    // O botão primário é a pílula CHAPADA do Pen: o hover troca a COR, e não o degradê.
+    'primary-hover': p['action-hover'],
 
     link: p.action,
     'link-hover': p['action-hover'],
@@ -105,19 +107,15 @@ export function deriveConsole(id: Palette = DEFAULT_PALETTE): Record<string, str
     'sz-accent': verde,
     'sz-hot': vermelho,
     'sz-hot-tint': comAlfa(vermelho, 0.1),
-    // ⚠️ O CTA SEGUE a cor; a wordmark, não (ver `CONSOLE_BRAND`).
-    'sz-gradient': `linear-gradient(90deg, ${p['action-light']}, ${p.action})`,
-  }
-}
 
-/**
- * IDENTIDADE fixa da marca — o degradê da wordmark (`.brand-gradient-text`).
- *
- * ⚠️ Não segue paleta de propósito: é assinatura, não cor de ação.
- */
-export const CONSOLE_BRAND: Record<string, string> = {
-  'brand-lime': 'oklch(0.875 0.215 122)',
-  'brand-cyan': 'oklch(0.84 0.13 192)',
+    // O ZERO da logo oficial (`@sistemazero/ui/brand-logo`): o degradê da marca, um por fundo.
+    // ⚠️ Os nomes são os MESMOS do `:root` do community — o componente é compartilhado e lê
+    // `var(--logo-zero-<fundo>-{de,ate})`; divergir aqui apagaria o ZERO nos painéis.
+    'logo-zero-escuro-de': p['action-light'],
+    'logo-zero-escuro-ate': p['logo-zero'],
+    'logo-zero-claro-de': p.action,
+    'logo-zero-claro-ate': p['logo-zero'],
+  }
 }
 
 /** Tokens que não são cor e viajam literais. */
@@ -126,5 +124,8 @@ export const CONSOLE_STATIC: Record<string, string> = {
     '\n    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,\n    "Helvetica Neue", Arial, sans-serif',
   'font-mono':
     '\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",\n    monospace',
-  radius: '0.5rem',
+  // A régua do Pen, a MESMA da comunidade (`community/src/app/globals.css`): cartão de 24px.
+  // ⚠️ Ela reverbera em todo `rounded-sm/md/lg/xl` dos painéis (o `@theme inline` deriva os
+  // quatro deste token) — é o que faz o console ter a forma da comunidade, não só a cor.
+  radius: '1.25rem',
 }

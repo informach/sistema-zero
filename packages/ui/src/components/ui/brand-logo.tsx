@@ -1,8 +1,12 @@
 /**
  * A logo oficial do Sistema Zero em SVG EMBUTIDO (antes era `<img>` de `/logo_dark.svg` e
  * `/logo_white.svg`): por `<img>` o CSS da página não alcança o desenho, e o ZERO precisa ler a
- * cor do tema. No Padrão ele é o degradê da marca; no Pink, rosa (decisão dela, 11/09/2026). As
- * cores moram nos tokens `--logo-zero-*` do `globals.css`.
+ * cor do tema. As cores moram nos tokens `--logo-zero-{escuro,claro}-{de,ate}`, declarados pelo
+ * app: na comunidade no `:root` do `globals.css`, nos painéis internos pelo chassi gerado
+ * `@sistemazero/ui/console.css`.
+ *
+ * ⚠️ Mora AQUI desde 18/09/2026 (era do community): os painéis mostravam a wordmark ANTIGA, em
+ * `<img>` com o verde-lima `#C4F042` cravado no desenho — cor que nenhum tema alcança.
  *
  * Os caminhos saem dos dois SVGs de `public/` (que continuam lá, iguais), um desenho por fundo:
  * `escuro` = letras claras (a barra do topo), `claro` = letras escuras (o login). Gerado por
@@ -50,7 +54,7 @@ const LETRAS = { escuro: '#F8F9FA', claro: '#0D1117' } as const
 export function BrandLogo({
   fundo,
   className,
-  label = 'Comunidade Sistema Zero',
+  label = 'Sistema Zero',
 }: {
   /** O fundo onde a logo pousa: `escuro` (letras claras) ou `claro` (letras escuras). */
   fundo: 'escuro' | 'claro'

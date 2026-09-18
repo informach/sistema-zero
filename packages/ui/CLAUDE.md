@@ -114,6 +114,15 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    eles não têm mais bloco `:root`/`.dark`. Contrato em `tests/console-theme.test.ts` (importam a
    folha, não redeclaram, o `@import` vem antes de qualquer regra, e todo token que o
    `@theme inline` deles consome existe na folha).
+   ⭐⭐ **18/09/2026 — o console ficou FIEL à comunidade (cor, marca E forma).** Sobravam três
+   pedaços da identidade antiga, e os três saíram: `--sz-gradient` (o botão primário era promovido
+   a CTA com degradê azul), `--brand-lime`/`--brand-cyan` (o verde-lima da wordmark antiga, que
+   só as classes mortas `.brand-gradient-text` e `.dark .brand-glow` liam) e a logo em `<img>`.
+   No lugar: `--radius` **1.25rem** (a régua do Pen — ⚠️ ela reverbera em todo
+   `rounded-sm/md/lg/xl` dos painéis), `--primary-hover` novo (o hover do botão chapado troca a
+   COR), os quatro `--logo-zero-*` (o `BrandLogo` abaixo) e, nos `globals.css` dos três, a pílula
+   chapada da comunidade + `@theme { --shadow-sm: 0 0 #0000 }`. O contrato cobra os quatro tokens
+   da logo, a AUSÊNCIA dos três antigos e o desenho do botão nos três apps.
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 
@@ -128,7 +137,14 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 
 ## Componentes
 
-badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
+badge (variant `success` usa tokens `--success/*`) · **brand-logo**
+(`@sistemazero/ui/brand-logo` — `<BrandLogo fundo="escuro"|"claro" label className>`: a logo
+oficial em SVG EMBUTIDO. Era do community e virou compartilhada em 18/09/2026, quando os painéis
+internos e o /admin do funil trocaram o `<img>` dos SVGs de `public/` — que traziam o verde-lima
+`#C4F042` cravado, fora do alcance de qualquer tema. O ZERO e a estrelinha leem
+`var(--logo-zero-<fundo>-{de,ate})`: o community declara os quatro no `:root`, os três consoles os
+recebem do `console.css` e o funil os declara no `global.css`. ⚠️ Os caminhos do SVG são GERADOS a
+partir dos arquivos de `public/` — não edite à mão) · button (+`buttonVariants` p/ Links) · card ·
 **confirm-dialog** (`@sistemazero/ui/confirm-dialog` — `ConfirmDialog` sobre o `Dialog`: rodapé
 Cancelar/Confirmar; substitui o `window.confirm()` nativo. Props `open/onClose/title/message/
 onConfirm/confirmText/cancelText/confirmVariant('default'|'destructive')/confirmDisabled/children`.
