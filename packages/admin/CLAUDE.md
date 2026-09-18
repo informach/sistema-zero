@@ -239,6 +239,22 @@ painel do professor) estão em §"Atividades interativas e cenas no editor", no 
 
 `Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
 
+⭐ **O cabeçalho da aula é EMPILHADO (18/09/2026).** O `AdminHeader` é uma linha só a partir de
+`sm:` e o bloco de ação tem `shrink-0` — quem encolhe é sempre o título. Na aula esse bloco
+carrega até SEIS botões (ver aula publicada, comparar com a publicada, desfazer a restauração,
+despublicar, voz do Zappy, revisar para publicar), então um título comum quebrava em várias linhas.
+A prop nova **`acoesAbaixo`** põe título e slug na primeira linha e as ações na de baixo, na
+largura toda (os chamadores já entregam os botões num `flex flex-wrap gap-2`, então nada muda do
+lado deles). ⚠ Só o editor de aula passa a prop: as outras ~24 telas que usam o componente ficam
+idênticas. De quebra o bloco do título ganhou `min-w-0` nos DOIS modos. Trava:
+`tests/admin-header.test.tsx` (o modo padrão mantém o `shrink-0` NO LADO DAS AÇÕES e o empilhado
+não o tem — é ele que espremia o título; a trava NOMEIA o elemento, porque um
+`querySelector('.shrink-0')` solto ficaria verde se alguém movesse a classe para o bloco do
+título e INVERTESSE o invariante). ⚠ A descrição ganhou `break-words` junto do `min-w-0`:
+sozinho, o `min-w-0` só muda ONDE o estouro aparece, e uma descrição de token ÚNICO (o slug da
+aula, o e-mail na ficha do aluno) passava a vazar por cima do bloco de ações em vez de empurrar
+a linha.
+
 ⭐ **Comparar com a versão publicada (18/09/2026).** O botão do cabeçalho abre
 `editor/lesson-published-compare.tsx`, que busca `GET /api/members/lessons/:id/draft/published` e
 compara com o rascunho pela lib PURA `lib/lesson-published-diff.ts` (`compararComOPublicado`:

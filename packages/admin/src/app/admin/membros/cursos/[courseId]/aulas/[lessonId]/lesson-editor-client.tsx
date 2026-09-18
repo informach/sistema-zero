@@ -1434,6 +1434,7 @@ function LessonEditorSession({
         <AdminHeader
           title={lesson?.title ?? 'Aula'}
           description={lesson ? lesson.slug : lessonId}
+          acoesAbaixo
           action={
             <div className="flex flex-wrap gap-2">
               {(() => {
