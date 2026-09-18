@@ -500,13 +500,19 @@ describe('a previsão sobe junto da tentativa', () => {
         <InteractiveLessonBlock block={{ ...block('layers'), content: comPrevisao }} />
       </LessonPlayerProvider>,
     )
-    // Antes do palpite não há botão de montagem, nem versão desativada dele.
-    expect(screen.queryByRole('button', { name: /^Descer / })).toBeNull()
+    // ⚠️⚠️ Mudou de propósito (o CONSOLE de 18/09/2026, a "Proposta B" que ela aprovou): antes do
+    // palpite a prancha some não — ela fica À VISTA e FECHADA ("a cena do jogo e alguns controles
+    // desativados", nas palavras dela). O que não pode é MEXER: a prancha é `inert` (fora do Tab e
+    // do leitor, com as notas desfocadas para não soprarem a resposta) e o gesto não chega ao motor.
+    expect(screen.getByRole('button', { name: /^Descer / }).closest('[inert]')).not.toBeNull()
     // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
     const escolha = await screen.findByRole('button', { name: 'Quem foi desenhado antes' })
     await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
     fireEvent.click(escolha)
-    await screen.findByRole('button', { name: /^Descer / })
+    // E aí a prancha ABRE: o mesmo botão sai de dentro da cortina.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^Descer / }).closest('[inert]')).toBeNull(),
+    )
     await trocarOrdem(3)
     await waitFor(() => expect(screen.getByText('✓ Guardado')).toBeTruthy(), {
       timeout: 5000,
@@ -728,7 +734,11 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
       'Prévia da experiência: Bastidores e tela do jogo',
     )
     expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
+    // ⚠️⚠️ A bancada fica À VISTA e FECHADA (o console de 18/09/2026, a "Proposta B"): a criança vê
+    // o que vai poder mexer, e o bloco não muda de altura ao responder. O que não pode é MEXER —
+    // a prancha é `inert`, com as notas desfocadas para não soprarem a resposta.
+    expect(screen.getByRole('button', { name: 'Criar o Dino' }).closest('[inert]')).not.toBeNull()
+    // O rodapé, esse, não existe no momento do palpite.
     expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
     expect(screen.queryByRole('meter')).toBeNull()
@@ -743,7 +753,7 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Trocar meu palpite' }))
     await waitFor(() => expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy())
-    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Criar o Dino' }).closest('[inert]')).not.toBeNull()
     expect(document.activeElement?.textContent).toContain(
       'Nesta experiência, vamos comparar o que existe nos bastidores',
     )
@@ -795,7 +805,10 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
       cleanup()
     }
     expect(falhas).toEqual([])
-  })
+    // ⚠️ Prazo PRÓPRIO: esta varredura monta as 45 cenas inteiras (palco, faixa e bancada) e já
+    // rodava colada nos 5 s de fábrica do bun — sozinha passava, junto da suíte caía nas últimas
+    // quatro, e o estouro deixava o DOM sujo para os testes seguintes. É tempo, não regra.
+  }, 30_000)
 
   test('⚠️⚠️ concluir leva o FOCO à pergunta, e a regra da cena só aparece DEPOIS de responder', async () => {
     const bloco = content('world')
@@ -1458,7 +1471,15 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     expect(document.getElementById(avisoId!)?.textContent).toContain(
       'Você vai usar este botão depois do seu palpite.',
     )
-    expect(screen.getByRole('button', { name: 'Ouvir a tela' })).toBe(botaoDaPrevia)
+    // ⚠️⚠️ O único "Ouvir a tela" ALCANÇÁVEL é o da prévia. Desde o console de 18/09/2026 a bancada
+    // de verdade também está na tela durante o palpite, mas dentro da cortina (`inert`): fora do
+    // Tab e do leitor de tela, com as notas desfocadas. Quem apresenta o recurso a quem não enxerga
+    // continua sendo a prévia.
+    expect(
+      screen
+        .getAllByRole('button', { name: 'Ouvir a tela' })
+        .filter((b) => b.closest('[inert]') === null),
+    ).toEqual([botaoDaPrevia])
     fireEvent.click(botaoDaPrevia)
     expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
 
@@ -1752,7 +1773,9 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
       relogio.restaurar()
       window.matchMedia = matchMediaOriginal
     }
-  })
+    // ⚠️ Prazo PRÓPRIO: ele TOCA a demonstração inteira até o fim (60 voltas de relógio) antes de
+    // abrir a vez, e já rodava colado nos 5 s de fábrica do bun. É tempo, não regra.
+  }, 30_000)
 })
 
 describe('restart: o toque que começa a partida solta o tempo (lote 5 do Raio-X, G3)', () => {
@@ -1803,7 +1826,12 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
     await screen.findByRole('button', {
       name: SCENE_QUESTIONS.layers.prediction.choices[0]?.label as string,
     })
-    expect(document.querySelector('dl')).toBeNull()
+    // ⚠️⚠️ A faixa de estado APARECE no palpite (o console de 18/09/2026), mas com os valores
+    // escondidos: os rótulos dizem o que a cena mede e o "?" no lugar do valor impede que ela
+    // responda a pergunta antes da criança — na `layers` a ordem dos desenhos É a previsão.
+    const faixa = document.querySelector('dl') as HTMLElement
+    expect(faixa).toBeTruthy()
+    expect([...faixa.querySelectorAll('dd')].every((d) => d.textContent === '?')).toBe(true)
     const previa = screen.getByTestId('scene-prediction-preview')
     expect(previa.querySelector('desc')?.textContent).toContain('aparecem separados')
     expect(previa.textContent).not.toContain('A floresta fica na frente')

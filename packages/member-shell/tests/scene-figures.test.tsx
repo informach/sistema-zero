@@ -273,7 +273,9 @@ describe('o desenho veste o elenco', () => {
       }
     expect(falhas).toEqual([])
     expect(medidos).toBe(SCENE_IDS.length * ELENCOS.length)
-  })
+    // ⚠️ Prazo PRÓPRIO: são 45 cenas × cada elenco, e cada uma é uma cena INTEIRA renderizada. Já
+    // rodava colada nos 5 s de fábrica do bun. É tempo, não regra.
+  }, 30_000)
 
   test('⚠️⚠️ e os usos REAIS, como estão nos manifestos (com o caso e o roteiro deles)', () => {
     const falhas: string[] = []

@@ -38,6 +38,7 @@ import {
   SCENE_VIEW as VIEW,
 } from './scene-canvas'
 import { ActorFigure, ArvoreDoMundo, pisoDoMundo } from './scene-figures'
+import { CoracaoDoJogo } from './scene-hud'
 
 /**
  * Os palcos do NÚCLEO do Iniciante 2D, redesenhados no lote 5 do Raio-X (G5, 16/09/2026): a tecla
@@ -440,28 +441,6 @@ export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: Scen
 
 /* ── enemy-type ────────────────────────────────────────────────────────────────────────────── */
 
-/** Um coração pequeno, com o centro de baixo em (x, y). */
-function Coracao({
-  x,
-  y,
-  cheio = true,
-  tamanho = 1,
-}: {
-  x: number
-  y: number
-  cheio?: boolean
-  tamanho?: number
-}) {
-  return (
-    <path
-      className={cheio ? 'fill-scene-alert' : 'fill-none stroke-scene-grid'}
-      strokeWidth={cheio ? undefined : 2}
-      transform={`translate(${x} ${y}) scale(${tamanho})`}
-      d="M0 0C-7 -5 -9 -9 -9 -12C-9 -15 -7 -17 -4.5 -17C-2.5 -17 -1 -16 0 -14C1 -16 2.5 -17 4.5 -17C7 -17 9 -15 9 -12C9 -9 7 -5 0 0Z"
-    />
-  )
-}
-
 /** As duas raias da pista: o chão de cada uma. Cactos de número par e ímpar andam em raias diferentes. */
 const RAIAS_DA_FICHA = [190, 284] as const
 
@@ -573,8 +552,13 @@ export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: Scen
                     vida
                   </Texto>
                   {Array.from({ length: life }, (_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: os corações da ficha são contados, não nomeados.
-                    <Coracao key={`vida-ficha-${i}`} x={coracoesX + i * 22} y={42} />
+                    <CoracaoDoJogo
+                      // biome-ignore lint/suspicious/noArrayIndexKey: os corações da ficha são contados, não nomeados.
+                      key={`vida-ficha-${i}`}
+                      x={coracoesX + i * 22}
+                      y={42}
+                      lado={18}
+                    />
                   ))}
                 </>
               )
@@ -605,12 +589,12 @@ export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: Scen
                   />
                   <ActorFigure figure={obstaculo} x={px} y={piso} />
                   {Array.from({ length: vidas }, (_, i) => (
-                    <Coracao
+                    <CoracaoDoJogo
                       // biome-ignore lint/suspicious/noArrayIndexKey: os corações de um cacto são contados.
                       key={`vida-${c.id}-${i}`}
                       x={rotuloX - (vidas - 1) * 6 + i * 12}
                       y={piso - 64 - acima}
-                      tamanho={0.6}
+                      lado={11}
                     />
                   ))}
                   <Texto
@@ -879,8 +863,14 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
           />
         )}
         {Array.from({ length: CONTACT_HEARTS }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: os dez corações da pista são fixos.
-          <Coracao key={`coracao-${cor}-${i}`} x={330 + i * 21} y={alto + 52} cheio={i < restam} />
+          <CoracaoDoJogo
+            // biome-ignore lint/suspicious/noArrayIndexKey: os dez corações da pista são fixos.
+            key={`coracao-${cor}-${i}`}
+            x={330 + i * 21}
+            y={alto + 52}
+            lado={18}
+            cheio={i < restam}
+          />
         ))}
         {restam === 0 && (
           <Texto

@@ -10,6 +10,7 @@ import {
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
 import { ActorFigure, pisoDoMundo } from './scene-figures'
+import { PlacarDoJogo, VidaDoJogo } from './scene-hud'
 
 /**
  * O palco da cena das VIDAS (o Dia 4 do Desafio e o Corre Dino).
@@ -90,67 +91,41 @@ export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCas
             chao={CHAO}
             detalhe="calmo"
             semDetalhe={[
-              { x: 14, y: 18, w: 122, h: 60 },
-              { x: 460, y: 8, w: 92, h: 70 },
+              { x: 14, y: 10, w: 122, h: 54 },
+              { x: 430, y: 8, w: 122, h: 60 },
               { x: 190, y: 100, w: 180, h: 44 },
             ]}
           />
           {cenarioTemChao(mundo) && (
             <path className="stroke-scene-line" d={`M0 ${CHAO}h${VIEW.w}`} strokeWidth="2" />
           )}
-          {/* Os corações: três lugares FIXOS, com o que já foi perdido em contorno. Sumir com eles
-          esconderia de quanto se partiu, que é metade da comparação. */}
+          {/* ⭐⭐ Os corações são os DO JOGO (`VidaDoJogo` → `caminhoDoCoracao` da arte do Jogo 2D,
+          travada por paridade): três lugares FIXOS, com o que já foi perdido em CONTORNO. Sumir com
+          eles esconderia de quanto se partiu, que é metade da comparação. */}
           <g>
-            {[0, 1, 2].map((i) => (
-              <path
-                key={i}
-                className={i < lives ? 'fill-scene-alert' : 'fill-none stroke-scene-alert'}
-                strokeWidth="2"
-                opacity={i < lives ? 1 : 0.5}
-                transform={`translate(${24 + i * 34} 30) scale(1.1)`}
-                d="M10 18C10 18 1 12 1 6.5A4.5 4.5 0 0 1 10 4A4.5 4.5 0 0 1 19 6.5C19 12 10 18 10 18Z"
-              />
-            ))}
             {/* ⚠️ "restam" e "placar", e não "vidas" e "pontos": as duas palavras já são os rótulos
             da faixa de estado logo acima, e repetir o mesmo nome no desenho faz a criança (e o
             teste) tomar os dois lugares por um só. Aqui é o HUD do jogo. */}
-            {/* ⚠️ No estreito, à DIREITA dos corações (conserto "letra no celular"): embaixo deles, na letra de
-            12px, "restam" encostava nos corações e a seta da batida caía em cima dele. */}
             <Texto
-              className="fill-scene-ink-soft"
-              x={palco.estreito ? 24 + 3 * 34 + 8 : 24}
-              y={palco.estreito ? 47 : 68}
-              tamanho={11}
+              className="sz-scene-placar-rotulo fill-scene-ink-soft"
+              x={24}
+              y={26}
+              tamanho={12}
+              fontWeight="700"
             >
               restam
             </Texto>
+            <VidaDoJogo x={24} y={34} quantas={lives} total={3} />
           </g>
-          <g>
-            <Texto
-              className="fill-scene-b-ink"
-              x={VIEW.w - 24}
-              y={44}
-              textAnchor="end"
-              tamanho={30}
-              fontWeight="700"
-            >
-              {points}
-            </Texto>
-            {/* ⚠️ No estreito, à ESQUERDA do número, na mesma linha: embaixo dele encostava nele. */}
-            <Texto
-              className="fill-scene-ink-soft"
-              x={
-                palco.estreito
-                  ? VIEW.w - 24 - palco.larguraDoTexto(String(points), 30) - 10
-                  : VIEW.w - 24
-              }
-              y={palco.estreito ? 40 : 68}
-              textAnchor="end"
-              tamanho={11}
-            >
-              placar
-            </Texto>
-          </g>
+          <PlacarDoJogo
+            x={VIEW.w - 24}
+            y={26}
+            canto="direita"
+            tamanho={30}
+            rotulo="placar"
+            valor={String(points)}
+            classeDoValor="fill-scene-b-ink"
+          />
           <g className="text-primary" opacity={acabou ? 0.4 : 1}>
             <ActorFigure figure={heroi} x={120} y={piso} />
           </g>

@@ -5,6 +5,7 @@ import { actorFigure, numero, quantos, sceneCenario } from '@sistemazero/core/le
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
 import { ActorFigure } from './scene-figures'
+import { PlacarDoJogo } from './scene-hud'
 
 /**
  * Os palcos das onze cenas do núcleo do Iniciante 2D (15/09/2026).
@@ -678,10 +679,18 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
             <Texto className="fill-scene-ink-soft" x={425} y={72} textAnchor="middle" tamanho={12}>
               a tela do jogo
             </Texto>
+            {/* ⭐ O placar DENTRO da tela do jogo é o `drawScore` literal do Jogo 2D: "rótulo
+            valor" numa linha só, em negrito, sem caixa — o mesmo que o bloco da criança desenha. */}
             {shown && (
-              <Texto className="fill-scene-b-ink" x={332} y={108} tamanho={20} fontWeight="700">
-                Pontos: {value}
-              </Texto>
+              <PlacarDoJogo
+                forma="linha"
+                x={332}
+                y={108}
+                tamanho={20}
+                rotulo="Pontos:"
+                valor={String(value)}
+                classeDoValor="fill-scene-b-ink"
+              />
             )}
             {/* Os alvos: cada soma é um acerto, e o alvo acertado ganha a explosão. */}
             {[0, 1, 2].map((i) => {

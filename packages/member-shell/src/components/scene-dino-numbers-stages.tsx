@@ -19,6 +19,7 @@ import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto, usePalco } from './scene-canvas'
 import { focarNaBancadaDepoisDeComecar } from './scene-dino-stages'
 import { ActorFigure, pisoDoMundo } from './scene-figures'
+import { PlacarDoJogo } from './scene-hud'
 
 /**
  * Os palcos do Corre Dino, segunda metade (lote 5 do Raio-X, 16/09/2026): `restart`, `score`,
@@ -93,7 +94,17 @@ function Selo({ children }: { children: ReactNode }) {
   )
 }
 
-/** Um cartão de número no alto, à direita: o contador que a cena quer à vista. */
+/**
+ * O PLACAR do alto, à direita: o contador que a cena quer à vista.
+ *
+ * ⭐⭐ Era um CARTÃO (retângulo 176×92, `rx=16`, borda de 2px) — uma peça que não existe em jogo
+ * nenhum que a criança monte. Hoje é o `PlacarDoJogo`: rótulo em versalete sobre o número gordo,
+ * SEM caixa e sem sombra, no molde do `drawScore` do Jogo 2D.
+ *
+ * ⚠️ Com a caixa saiu também a régua que PARTIA o rótulo em duas linhas quando ele não cabia nos
+ * 176px ("SEU PLACAR · esperando" da `score`): sem caixa não há largura a respeitar, e na versalete
+ * miúda o rótulo inteiro cabe no palco até na menor escala.
+ */
 function Cartao({
   rotulo,
   valor,
@@ -106,57 +117,28 @@ function Cartao({
   /** O número em cinza: o placar parado esperando a partida (consertos da onda A). */
   apagado?: boolean
 }) {
-  const { estreito, letra } = usePalco()
-  /**
-   * ⚠️ O rótulo com " · " que não cabe na largura do cartão PARTE em dois (conserto "letra no celular"): o
-   * nome em cima e o resto ("esperando") embaixo do número, e o cartão cresce. Numa linha só, "SEU PLACAR
-   * · esperando" passava da borda do cartão e do desenho.
-   */
-  const [nome = rotulo, ...resto] = rotulo.split(' · ')
-  // ⚠️ Pelo `estreito`, e não pela estimativa de largura: na coluna do computador o cartão é o de sempre.
-  const partido = estreito && resto.length > 0
-  const embaixo = 74 + letra(13) + 6
   return (
-    <g transform="translate(404 18)">
-      <rect
-        className={
-          alerta
-            ? 'fill-scene-card stroke-scene-alert'
-            : apagado
-              ? 'fill-scene-card stroke-scene-rule'
-              : 'fill-scene-card stroke-scene-a'
-        }
-        width="176"
-        height={partido ? embaixo + 10 : 92}
-        rx="16"
-        strokeWidth="2"
-      />
-      <Texto className="fill-scene-ink-soft" x="88" y="26" textAnchor="middle" tamanho={13}>
-        {partido ? nome : rotulo}
-      </Texto>
-      {partido && (
-        <Texto className="fill-scene-ink-soft" x="88" y={embaixo} textAnchor="middle" tamanho={13}>
-          {resto.join(' · ')}
-        </Texto>
-      )}
-      <Texto
-        className={alerta ? 'fill-scene-alert' : apagado ? 'fill-scene-ink-soft' : 'fill-scene-a'}
-        x="88"
-        y="74"
-        textAnchor="middle"
-        tamanho={40}
-        fontWeight="700"
-      >
-        {valor}
-      </Texto>
-    </g>
+    <PlacarDoJogo
+      x={STAGE.w - 20}
+      y={30}
+      canto="direita"
+      rotulo={rotulo}
+      valor={valor}
+      classeDoValor={alerta ? 'fill-scene-alert' : apagado ? 'fill-scene-ink-soft' : 'fill-scene-a'}
+    />
   )
 }
 
 /**
- * O cartão da BASE da `acceleration`. ⚠️ No estreito (conserto "letra no celular") o rótulo fica só
- * "base" e a conta PARTE em duas linhas na seta: na letra de 12px, "base: velocidade dos novos" e
- * "−9 > −9? não → fica" passavam das duas bordas do cartão.
+ * A BASE da `acceleration`: o número que manda na velocidade dos que ainda vão nascer.
+ *
+ * ⭐⭐ Também era um cartão (206×140, borda de 2px). Hoje é o `PlacarDoJogo` à esquerda, com a
+ * CONTA logo abaixo — a conta é a explicação do que a condição fez com o número, e é ela que muda
+ * de cor no alerta (o número em si é sempre o par da cena).
+ *
+ * ⚠️ No estreito (conserto "letra no celular") o rótulo fica só "base" e a conta PARTE em duas
+ * linhas na seta: na letra de 12px, "base: velocidade dos novos" e "−9 > −9? não → fica" passavam
+ * das duas bordas.
  */
 function CartaoDaBase({
   rotulo,
@@ -170,7 +152,7 @@ function CartaoDaBase({
   alerta: boolean
 }) {
   const { estreito, letra } = usePalco()
-  // ⚠️ Pelo `estreito`, e não pela estimativa de largura: na coluna do computador o cartão é o de sempre.
+  // ⚠️ Pelo `estreito`, e não pela estimativa de largura: na coluna do computador o rótulo é o de sempre.
   const nome = estreito ? 'base' : rotulo
   // A conta parte na seta ("−9 > −9?" / "→ fica") ou nos dois-pontos ("sem a condição:" / "some −1").
   const trechos = conta.includes(' → ')
@@ -179,37 +161,16 @@ function CartaoDaBase({
   const partida = estreito && trechos.length > 1
   // ⚠️ Com folga de linha: a 2 unidades as duas linhas da conta se encostavam na caixa do texto.
   const linha = letra(14) + 6
+  const TAMANHO = 40
   return (
-    <g transform="translate(20 48)">
-      <rect
-        className="fill-scene-card stroke-scene-a"
-        width="206"
-        height={partida ? 110 + linha + 12 : 140}
-        rx="16"
-        strokeWidth="2"
-      />
-      {/* ⚠️ "base" (consertos do review da onda A do lote 5): a instrução, as pistas e as metas dizem
-          "base", e o cartão dizia só "velocidade dos novos". */}
-      <Texto className="fill-scene-ink-soft" x="103" y="26" textAnchor="middle" tamanho={13}>
-        {nome}
-      </Texto>
-      <Texto
-        className="fill-scene-a"
-        x="103"
-        y={78}
-        textAnchor="middle"
-        tamanho={44}
-        fontWeight="700"
-      >
-        {numero(base)}
-      </Texto>
+    <g>
+      <PlacarDoJogo x={20} y={62} tamanho={TAMANHO} rotulo={nome} valor={numero(base)} />
       {(partida ? trechos : [conta]).map((trecho, n) => (
         <Texto
           key={trecho}
           className={alerta ? 'fill-scene-alert' : 'fill-scene-ink'}
-          x="103"
-          y={(partida ? 110 : 118) + n * linha}
-          textAnchor="middle"
+          x={20}
+          y={62 + TAMANHO + letra(14) + 8 + n * linha}
           tamanho={14}
           fontWeight="600"
         >
@@ -279,7 +240,7 @@ export function RestartStage({
         mundo={mundo}
         semDetalhe={[
           { x: 14, y: 8, w: 200, h: 30 },
-          { x: 396, y: 12, w: 196, h: 104 },
+          { x: 330, y: 12, w: 262, h: 84 },
         ]}
       />
       <Selo>{TELA[tela]}</Selo>
@@ -406,7 +367,7 @@ export function ScoreStage({
         mundo={mundo}
         semDetalhe={[
           { x: 14, y: 8, w: 200, h: 30 },
-          { x: 396, y: 12, w: 196, h: 104 },
+          { x: 330, y: 12, w: 262, h: 84 },
           { x: 20, y: 250, w: 560, h: 52 },
         ]}
       />
@@ -780,7 +741,7 @@ export function AccelerationStage({ state, cast }: { state: SceneState; cast?: S
             mundo={mundo}
             semDetalhe={[
               { x: 14, y: 8, w: 280, h: 30 },
-              { x: 16, y: 44, w: 214, h: 150 },
+              { x: 16, y: 44, w: 214, h: 110 },
               { x: 236, y: 40, w: 360, h: 230 },
             ]}
           />

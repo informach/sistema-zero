@@ -23,6 +23,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { ExplorationPieces } from './exploration-pieces'
 import { ExplorationStage, SceneButton } from './exploration-stage'
 import { RelogioDaArteProvider } from './scene-arte'
+import { ConsoleFala, ConsoleMundo, ConsolePrancha, SceneConsole } from './scene-console'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
@@ -48,6 +49,7 @@ export function SceneSandbox({
   onEventos,
   onAnunciar,
   ferramentas,
+  fala,
 }: {
   activity: SceneActivity
   /** O estado em que a demonstração terminou. */
@@ -64,6 +66,12 @@ export function SceneSandbox({
   onAnunciar?: (texto: string) => void
   /** O "Ligar som", nas cenas que fazem som. */
   ferramentas?: ReactNode
+  /**
+   * O balão do Zappy com a instrução ("Sua vez! …"), montado pelo player.
+   * ⚠️ Ele entra DENTRO do console, como na experimentação: a vez é a experimentação continuando,
+   * e a fala do lado de fora era a única sobra do desenho antigo (achado do review deste lote).
+   */
+  fala?: ReactNode
 }) {
   // ⚠️ A bancada fala a língua da EXPERIMENTAÇÃO: o palco só aceita gesto direto (arrastar o cacto,
   // tocar no Dino) quando a atividade é de mexer. O caso vem junto, sem metas (a demonstração não
@@ -198,43 +206,48 @@ export function SceneSandbox({
       aria-label="Sua vez"
       className="space-y-3 rounded-2xl outline-none"
     >
-      <div className="mx-auto w-full max-w-scene">
-        <SceneReadoutBand activity={experimento} state={visto} relogioAndando={tocando} />
-        <RelogioDaArteProvider value={tempoDaArte}>
-          <ExplorationStage activity={experimento} state={visto} dispatch={mexer} />
-        </RelogioDaArteProvider>
-      </div>
-      {/* ⚠️ Num lugar que só cresce, como no player (consertos do review da onda B do lote 5, T2): a
+      {/* ⭐⭐ O MESMO console da experiência (18/09/2026): HUD colado no mundo e a bancada numa
+          prancha. A "sua vez" é a experimentação continuando, então não pode ter outra cara. */}
+      <SceneConsole>
+        <SceneReadoutBand activity={experimento} state={visto} colada relogioAndando={tocando} />
+        {fala ? <ConsoleFala>{fala}</ConsoleFala> : null}
+        <ConsoleMundo>
+          <RelogioDaArteProvider value={tempoDaArte}>
+            <ExplorationStage activity={experimento} state={visto} dispatch={mexer} />
+          </RelogioDaArteProvider>
+        </ConsoleMundo>
+        {/* ⚠️ Num lugar que só cresce, como no player (consertos do review da onda B do lote 5, T2): a
           frase muda de uma para duas linhas no meio dos gestos e empurrava a bancada. */}
-      <LugarReservado marca="situacao">
-        <p
-          role={tocando ? undefined : 'status'}
-          aria-live={tocando ? 'off' : undefined}
-          className="min-h-6 text-center text-sm font-medium text-muted-foreground"
-        >
-          {sceneSituation(m, visto, experimento.cast)}
-        </p>
-      </LugarReservado>
-      {botoes.length > 0 && <div className="flex flex-wrap justify-center gap-2">{botoes}</div>}
-      <div className="space-y-3">
-        <LessonSceneControls
-          scene={m}
-          state={visto}
-          dispatch={mexer}
-          cast={experimento.cast}
-          goals={metas}
-          tocando={tocando}
-          onRunning={setTocando}
-          pontoPorAcerto={pontoPorAcerto}
-        />
-        <ExplorationPieces
-          activity={experimento}
-          state={state}
-          dispatch={mexer}
-          more
-          pontoPorAcerto={pontoPorAcerto}
-        />
-      </div>
+        <LugarReservado marca="situacao">
+          <p
+            role={tocando ? undefined : 'status'}
+            aria-live={tocando ? 'off' : undefined}
+            className="min-h-6 text-center text-sm font-medium text-muted-foreground"
+          >
+            {sceneSituation(m, visto, experimento.cast)}
+          </p>
+        </LugarReservado>
+        <ConsolePrancha>
+          {botoes.length > 0 && <div className="flex flex-wrap justify-center gap-2">{botoes}</div>}
+          <LessonSceneControls
+            scene={m}
+            state={visto}
+            dispatch={mexer}
+            cast={experimento.cast}
+            goals={metas}
+            tocando={tocando}
+            onRunning={setTocando}
+            pontoPorAcerto={pontoPorAcerto}
+          />
+          <ExplorationPieces
+            activity={experimento}
+            state={state}
+            dispatch={mexer}
+            more
+            pontoPorAcerto={pontoPorAcerto}
+          />
+        </ConsolePrancha>
+      </SceneConsole>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <SceneButton

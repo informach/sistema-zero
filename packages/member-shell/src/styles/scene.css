@@ -183,3 +183,124 @@
   stroke-width: 3px;
   stroke-linejoin: round;
 }
+
+/* ⭐⭐ O CONSOLE (18/09/2026): a experiência numa peça só.
+ *
+ * Relato dela: "instrução do Zappy, cena e controles têm que parecer uma unidade só e fazer parte
+ * de um jogo". Antes eram quatro retângulos em volta de um desenho de jogo, com raios que nem
+ * conversavam. A anatomia e o porquê estão em `components/scene-console.tsx`.
+ *
+ * ⚠️⚠️ O MATERIAL segue sendo o do APLICATIVO (`--card`, `--border`, `--primary`): ela escolheu o
+ * meio-termo. O que mudou é a arrumação, não a cor — a regra "cromo é o tema" continua de pé.
+ *
+ * ⚠️ Fora de `@layer`: o member-shell pinta com UTILITÁRIAS do Tailwind, e regra dentro de
+ * `@layer components` perde para elas (a mesma lição que o `globals.css` do kids já pagou). */
+.sz-scene-console {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+
+/* O tom da cor de ação no momento do palpite — o mesmo sinal que o cartão azulado dava antes. */
+.sz-scene-console--palpite {
+  background: color-mix(in oklab, var(--color-primary) 4%, var(--color-card));
+}
+
+/* ⚠️ A moldura do palco perde a borda e o raio AQUI DENTRO: quem desenha a moldura é o console.
+ * (O gancho `sz-scene-frame` continua existindo para o palco solto da galeria e da prévia.) */
+.sz-scene-console .sz-scene-frame {
+  border-radius: 0;
+  border: 0;
+}
+
+.sz-scene-console-fala {
+  padding: 0.625rem 0.875rem;
+}
+/* ⚠️ O segundo balão do palpite (a pergunta) vem logo DEPOIS do mundo e encostava nele. */
+.sz-scene-console-mundo + .sz-scene-console-fala {
+  padding-top: 0.75rem;
+}
+
+.sz-scene-console-mundo {
+  position: relative;
+}
+
+/* A frase da SITUAÇÃO mora entre o mundo e a prancha, e é filha direta do console. Sem respiro ela
+ * encostava nas bordas (ela passa a duas linhas num celular) e na prancha logo abaixo. */
+.sz-scene-console > [data-lugar-reservado="situacao"] {
+  padding: 0.5rem 0.875rem 0.375rem;
+}
+
+/* A prancha: a bandeja rebaixada que segura o gesto e a bancada. */
+.sz-scene-prancha {
+  margin: 0 0.625rem 0.625rem;
+  padding: 0.625rem;
+  border-radius: 0.875rem;
+  background: color-mix(in oklab, var(--color-foreground) 5%, transparent);
+  display: grid;
+  gap: 0.75rem;
+}
+/* A cortina do palpite: ver o comentário do `ConsolePrancha`. O desfoque é medido para apagar o
+ * texto miúdo das notas (que sopram a resposta) sem desmanchar a forma dos controles. */
+.sz-scene-prancha--fechada {
+  opacity: 0.55;
+  filter: blur(1.5px);
+}
+.sz-scene-prancha--fechada .sz-scene-peca {
+  border-style: dashed;
+}
+
+/* ⭐ O HUD, no molde do `drawScore` do Jogo 2D (`game-2d/runtime/arcadeKitsHud.ts`): rótulo
+ * pequeno em versalete, número GORDO em Baloo, sem caixa branca por cima do mundo. Era a queixa
+ * dela: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo". */
+.sz-scene-hud-rotulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/*
+ * O rótulo do placar DENTRO do palco: a MESMA versalete do rótulo da faixa de estado logo acima,
+ * para o placar de dentro e o de cima falarem a mesma língua.
+ *
+ * ⚠️⚠️ A caixa alta é do CSS, nunca um `.toUpperCase()` no JSX: o texto do palco é vestido pelo
+ * elenco e varrido por teste (o "o elenco veste a cena INTEIRA" do kids lê o texto visível), e um
+ * "DINO" em caixa alta no DOM escaparia da varredura. Corpo e peso ficam nos atributos do `<text>`,
+ * porque o tamanho da letra do palco passa pela régua `letra()` da cena.
+ */
+.sz-scene-frame svg text.sz-scene-placar-rotulo {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sz-scene-hud-valor {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+/* A PLACA do começo da faixa. Hoje ela diz só em que momento da atividade a criança está ("Seu
+ * palpite", "Antes de assistir"): o nome da cena já é o título do bloco, e repeti-lo aqui seria a
+ * terceira vez na mesma tela. A variante base existe para o dia em que houver outro estado. */
+.sz-scene-placa {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-foreground) 6%, transparent);
+  color: var(--color-muted-foreground);
+}
+.sz-scene-placa--palpite {
+  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+/* O lugar da CONVERSA: logo abaixo do mundo, dentro do console.
+ * É onde o palpite pergunta antes e onde a conclusão responde depois.
+ * ⚠️ Margem no TOPO: sem ela o cartão encostava no mundo (ela reparou na maquete). */
+.sz-scene-console-conversa {
+  margin: 0.75rem 0.875rem 0.5rem;
+}

@@ -109,19 +109,13 @@ export function vereditoDoPalpite(
 export function ScenePrediction({
   prediction,
   escolha,
-  onEscolher,
   onTrocar,
   trocavel,
   revelado,
   demonstracao,
-  bloqueado,
-  preview,
-  renderDialogue,
-  dialogueRef,
 }: {
   prediction: LearningPrediction
   escolha: string
-  onEscolher: (id: string) => void
   /** A troca volta a atividade inteira ao momento anterior à descoberta. */
   onTrocar?: () => void
   /** Ainda dá para trocar: nenhum gesto na cena depois do palpite. */
@@ -129,75 +123,15 @@ export function ScenePrediction({
   /** A meta que responde o palpite caiu (ou, sem `revealOn`, a cena concluiu). */
   revelado: boolean
   demonstracao: boolean
-  /** Sem gravação possível (conflito, abrindo): as opções não respondem. */
-  bloqueado: boolean
-  /** O retrato seguro da cena, usado apenas antes da escolha. */
-  preview: ReactNode
-  /** Balão hospedado pelo app, com mascote e uma fala independente. */
-  renderDialogue: (text: string, speech: DialogueSpeech) => ReactNode
-  /** Alvo do foco quando a criança escolhe trocar seu palpite. */
-  dialogueRef: RefObject<HTMLDivElement | null>
 }) {
-  const id = useId()
   const escolhida = prediction.choices.find((c) => c.id === escolha)
 
-  if (!escolhida)
-    return (
-      <fieldset className="space-y-2 rounded-2xl bg-primary/5 p-4">
-        <legend className="float-left mb-2 w-full">
-          <span className="block text-sm font-bold uppercase tracking-[.14em] text-primary">
-            {demonstracao ? 'Antes de assistir' : 'Seu palpite'}
-          </span>
-        </legend>
-        <div ref={dialogueRef} tabIndex={-1} className="clear-left outline-none">
-          {renderDialogue(prediction.context.explanation, {
-            texts: [
-              falaDoContextoDoPalpite(
-                demonstracao ? 'Antes de assistir' : 'Seu palpite',
-                prediction.context,
-              ),
-            ],
-            fallbackToBrowser: true,
-          })}
-        </div>
-        {preview}
-        <fieldset className="space-y-2">
-          <legend className="sr-only">{prediction.prompt}</legend>
-          {renderDialogue(prediction.prompt, {
-            texts: [falaDaEscolhaDoPalpite(prediction)],
-            fallbackToBrowser: true,
-          })}
-          <div className="space-y-2">
-            {prediction.choices.map((choice) => {
-              const atual = choice.id === escolha
-              return (
-                <button
-                  key={choice.id}
-                  id={`${id}-${choice.id}`}
-                  type="button"
-                  aria-current={atual ? 'true' : undefined}
-                  aria-disabled={bloqueado || undefined}
-                  onClick={() => {
-                    if (bloqueado) return
-                    onEscolher(choice.id)
-                  }}
-                  className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    atual ? 'border-primary bg-primary/10' : 'border-border'
-                  } ${bloqueado ? 'cursor-not-allowed opacity-60' : ''}`}
-                >
-                  {choice.label}
-                </button>
-              )
-            })}
-          </div>
-        </fieldset>
-        <p className="text-sm text-muted-foreground">
-          {demonstracao
-            ? 'Escolha o que você acha. Depois assista.'
-            : 'Escolha o que você acha. Pode errar: a cena mostra depois.'}
-        </p>
-      </fieldset>
-    )
+  // ⚠️⚠️ O ramo PENDENTE saiu daqui em 18/09/2026: as peças dele (o balão do contexto, o do
+  // enunciado e as opções) passaram a ser montadas pelo `scene-activity` DENTRO do console, na
+  // ordem que ela aprovou — contexto → mundo → pergunta → opções. Ver `PalpiteContexto`,
+  // `PalpitePergunta` e `PalpiteOpcoes` no fim deste arquivo. Este componente ficou com o que
+  // vem DEPOIS da escolha: a linha congelada e a revelação.
+  if (!escolhida) return null
 
   const veredito = vereditoDoPalpite(prediction, escolha)
   return (
@@ -269,3 +203,108 @@ export function anuncioDaEscolha(
 }
 
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')
+
+/**
+ * As três peças do palpite PENDENTE, montadas pelo console.
+ *
+ * ⚠️⚠️ A cena fica NO MEIO delas, e isso é proposital: o contexto vem antes ("vamos usar os
+ * números x e y…"), aí a criança OLHA o retrato da cena, e só então vem a pergunta, logo acima
+ * das opções. Juntar os dois balões num só faria ela responder antes de olhar — foi o primeiro
+ * desenho da maquete, e ela reparou na hora.
+ */
+export function PalpiteContexto({
+  prediction,
+  demonstracao,
+  renderDialogue,
+  dialogueRef,
+}: {
+  prediction: LearningPrediction
+  demonstracao: boolean
+  renderDialogue: (text: string, speech: DialogueSpeech) => ReactNode
+  dialogueRef: RefObject<HTMLDivElement | null>
+}) {
+  return (
+    <div ref={dialogueRef} tabIndex={-1} className="outline-none">
+      {renderDialogue(prediction.context.explanation, {
+        texts: [
+          falaDoContextoDoPalpite(
+            demonstracao ? 'Antes de assistir' : 'Seu palpite',
+            prediction.context,
+          ),
+        ],
+        fallbackToBrowser: true,
+      })}
+    </div>
+  )
+}
+
+export function PalpitePergunta({
+  prediction,
+  renderDialogue,
+}: {
+  prediction: LearningPrediction
+  renderDialogue: (text: string, speech: DialogueSpeech) => ReactNode
+}) {
+  return (
+    <>
+      {renderDialogue(prediction.prompt, {
+        texts: [falaDaEscolhaDoPalpite(prediction)],
+        fallbackToBrowser: true,
+      })}
+    </>
+  )
+}
+
+/**
+ * ⚠️⚠️ As opções são BOTÕES, nunca rádios: num grupo de rádios a SETA escolhia, congelava o
+ * palpite e mandava uma tentativa por seta. O enunciado vai no `legend` em `sr-only`, porque quem
+ * o mostra à vista é o balão do Zappy logo acima.
+ */
+export function PalpiteOpcoes({
+  prediction,
+  escolha,
+  bloqueado,
+  demonstracao,
+  onEscolher,
+}: {
+  prediction: LearningPrediction
+  escolha: string
+  bloqueado: boolean
+  demonstracao: boolean
+  onEscolher: (id: string) => void
+}) {
+  const id = useId()
+  return (
+    <fieldset className="space-y-2">
+      <legend className="sr-only">{prediction.prompt}</legend>
+      <div className="space-y-2">
+        {prediction.choices.map((choice) => {
+          const atual = choice.id === escolha
+          return (
+            <button
+              key={choice.id}
+              id={`${id}-${choice.id}`}
+              type="button"
+              aria-current={atual ? 'true' : undefined}
+              aria-disabled={bloqueado || undefined}
+              onClick={() => {
+                if (bloqueado) return
+                onEscolher(choice.id)
+              }}
+              className={`flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-left text-base outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                atual ? 'border-primary bg-primary/10' : 'border-border'
+              } ${bloqueado ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              {choice.label}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {demonstracao
+          ? 'Escolha o que você acha. Depois assista.'
+          : 'Escolha o que você acha. Pode errar: a cena mostra depois.'}
+      </p>
+    </fieldset>
+  )
+}

@@ -47,6 +47,8 @@ export function SceneReadoutBand({
   children,
   colada = false,
   relogioAndando = false,
+  valoresEscondidos = false,
+  placa,
 }: {
   activity: SceneActivity
   state: SceneState
@@ -59,6 +61,19 @@ export function SceneReadoutBand({
   colada?: boolean
   /** O ▶ está rodando: nas cenas de quadro longo, a faixa mostra o quadro em andamento. */
   relogioAndando?: boolean
+  /**
+   * ⚠️⚠️ O momento do PALPITE: os rótulos ficam, os VALORES viram "?". A faixa é o que a cena diz
+   * de si, e no palpite ela responderia a pergunta antes da criança — na `layers` a ordem dos
+   * desenhos é a previsão inteira, e na `coordinates` o endereço também. Os rótulos ficam porque
+   * são a PERGUNTA ("x", "y", "restam"): é o que ela vai olhar mudar depois de arriscar.
+   */
+  valoresEscondidos?: boolean
+  /**
+   * A PLACA do começo da faixa: hoje só o "Seu palpite" do momento de arriscar. Ela é o que diz
+   * à criança em que tempo da atividade ela está, e é a peça que a maquete pôs no lugar da
+   * legenda do cartão de palpite que existia antes do console.
+   */
+  placa?: ReactNode
 }) {
   const quadroEmAndamento = relogioAndando && sceneLongFrame(activity.scene)
   const leituras = (estado: SceneState) =>
@@ -84,16 +99,28 @@ export function SceneReadoutBand({
   // ⚠️ A chave é só o PIOR caso: com o ▶ andando o valor de agora muda a cada fatia, e uma chave com ele
   // pediria uma medida nova 25 vezes por segundo. O pior caso só muda quando aparece um valor mais longo.
   const chave = pior.map((r) => `${r.label}:${r.value}`).join('|')
-  const lista = (rows: readonly SceneReading[]) => (
-    /* ⚠️ 14px, e não 12 (lote 2): é texto que a criança LÊ. O separador vem do CSS (`after:content`), e
-       não de um caractere no `dt`: sem ele, a leitura corrida dizia "o Dino nos bastidores ainda não
-       desenho desligado", e com um caractere no texto o `dt` deixaria de ser o nome da medida. */
-    <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground">
+  /**
+   * ⚠️⚠️ `escondidos` é do que está À VISTA, nunca do MOLDE: o molde é o que reserva a altura, e
+   * medi-lo com "?" (que cabe sempre numa linha) faria a faixa CRESCER no instante em que a criança
+   * responde o palpite e os números voltam — o pulo que o `LugarReservado` existe para impedir.
+   */
+  const lista = (rows: readonly SceneReading[], escondidos = valoresEscondidos) => (
+    /* ⭐⭐ A pele é a do HUD do JOGO (`drawScore`, `game-2d/runtime/arcadeKitsHud.ts`): rótulo
+       pequeno em versalete e número GORDO na fonte de display, sem caixa. Era a queixa dela de
+       18/09: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo".
+       ⚠️ O separador vem do CSS (`after:content`), e não de um caractere no `dt`: sem ele, a
+       leitura corrida dizia "o Dino nos bastidores ainda não desenho desligado", e com um
+       caractere no texto o `dt` deixaria de ser o nome da medida.
+       ⚠️ A faixa NÃO é `aria-hidden`: quem anuncia a mudança é o `role="status"` da frase, mas
+       estes números são conteúdo e continuam sendo lidos. */
+    <dl className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-foreground">
       {rows.map((r) => (
         <div key={r.label} className="flex items-baseline gap-1.5">
-          <dt className="text-muted-foreground after:content-[':']">{r.label}</dt>
+          <dt className="sz-scene-hud-rotulo text-muted-foreground after:content-[':']">
+            {r.label}
+          </dt>
           <dd
-            className={`font-semibold tabular-nums ${
+            className={`sz-scene-hud-valor tabular-nums ${
               r.tone === 'a'
                 ? 'text-scene-a'
                 : r.tone === 'b'
@@ -106,7 +133,7 @@ export function SceneReadoutBand({
                       : ''
             }`}
           >
-            {r.value}
+            {escondidos ? '?' : r.value}
           </dd>
         </div>
       ))}
@@ -129,7 +156,8 @@ export function SceneReadoutBand({
           {candidatos.map((rows, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: cada candidato é um lugar fixo do molde
             <div key={i} className={`${linha} [grid-area:1/1]`}>
-              {lista(rows)}
+              {placa}
+              {lista(rows, false)}
               {children}
             </div>
           ))}
@@ -159,6 +187,7 @@ export function SceneReadoutBand({
             />
           </div>
         )}
+        {placa}
         {lista(atual)}
         {children}
       </div>

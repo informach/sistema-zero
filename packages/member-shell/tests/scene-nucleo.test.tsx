@@ -223,7 +223,9 @@ describe('contact', () => {
     expect(encostado.hit.bottom).toBe(CONTACT_HEARTS - 1)
     const desenho = html(<ContactStage state={encostado} />)
     expect(contar(desenho, /data-encosto/g)).toBe(2)
-    expect(contar(desenho, /fill-none stroke-scene-grid/g)).toBe(
+    // ⚠️ O coração VAZIO é o mesmo desenho do jogo em contorno (`CoracaoDoJogo`), no vermelho da
+    // vida — era um cinza `stroke-scene-grid` inventado só aqui. O que o teste prova é a CONTA.
+    expect(contar(desenho, /fill-none stroke-scene-alert/g)).toBe(
       CONTACT_HEARTS - encostado.hit.top + (CONTACT_HEARTS - encostado.hit.bottom),
     )
   })

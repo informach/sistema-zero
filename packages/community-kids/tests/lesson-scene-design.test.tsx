@@ -824,8 +824,11 @@ describe('a previsão antes de mexer', () => {
         (_, node) => node?.textContent?.includes(modelo.prediction.prompt) === true,
       ),
     ).not.toHaveLength(0)
-    // A bancada inteira só existe depois do palpite; não há controles só desabilitados.
-    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
+    // ⚠️⚠️ A bancada fica À VISTA e FECHADA no palpite (o console de 18/09/2026), dentro da
+    // cortina `inert`: a criança vê o que vai poder mexer e não alcança nada.
+    expect(
+      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
+    ).not.toBeNull()
     // ⚠️ E o que é do servidor NÃO atravessa: a explicação só chega quando ela acerta.
     expect(document.body.innerHTML).not.toContain(modelo.explain.explanation)
     // O palpite abre a cena, e a cena responde de verdade.
@@ -1393,7 +1396,9 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
       cleanup()
     }
     expect(falhas).toEqual([])
-  })
+    // ⚠️ Prazo PRÓPRIO: a varredura monta a cena INTEIRA (palco, faixa e bancada) das 45, e desde o
+    // console de 18/09/2026 a bancada também é montada no momento do palpite. É tempo, não regra.
+  }, 30_000)
 
   test('⚠️ depois do F5 o cartão continua vestido', async () => {
     // O F5 tem dois caminhos para a frase: o latch que NASCE do progresso salvo e o efeito da
@@ -2201,7 +2206,11 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     expect(screen.getByRole('button', { name: /Ver de novo/ })).toBeTruthy()
   })
 
-  test('⚠️⚠️ antes do palpite a bancada não é montada, e depois dela abre completa', async () => {
+  test('⚠️⚠️ antes do palpite a bancada fica na CORTINA, e depois dele abre completa', async () => {
+    // ⚠️⚠️ Mudou de propósito (o console de 18/09/2026, a "Proposta B" que ela aprovou): a bancada
+    // não some mais no palpite — ela fica À VISTA e FECHADA ("a cena do jogo e alguns controles
+    // desativados"), dentro da cortina `inert`, que a tira do Tab e do leitor e desfoca as notas
+    // (elas sopram a resposta). O que o teste guarda é que ela NÃO é alcançável ali.
     const publico = publicInteractiveBlock(content('hitbox'))
     render(
       <InteractiveLessonBlock
@@ -2210,11 +2219,17 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     )
     const modelo = SCENE_QUESTIONS.hitbox
     await screen.findByRole('button', { name: modelo.prediction.choices[0]?.label as string })
-    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
+    expect(
+      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
+    ).not.toBeNull()
     fireEvent.click(
       screen.getByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
     )
-    expect(await screen.findByRole('slider', { name: 'Distância do cacto' })).toBeTruthy()
+    await waitFor(() =>
+      expect(
+        screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
+      ).toBeNull(),
+    )
   })
 
   test('⚠️ a peça escolhida MUDA de cara, e escolher de novo desescolhe', async () => {
