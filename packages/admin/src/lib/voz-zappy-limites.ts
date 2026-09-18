@@ -16,3 +16,15 @@
  * resposta.
  */
 export const MAX_TEXTOS_POR_PEDIDO = 24
+
+/**
+ * Uma fala enviada pelo painel para a geração. A tela continua sendo a fonte editorial;
+ * `speechText` é o roteiro já resolvido que realmente vai para o ElevenLabs.
+ *
+ * A rota recebe somente este par, nunca uma key de R2 nem uma URL: armazenamento e cache são
+ * decisões do servidor.
+ */
+export interface FalaParaGerarVozDoZappy {
+  visibleText: string
+  speechText: string
+}

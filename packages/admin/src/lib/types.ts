@@ -1,5 +1,5 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import type { SceneVozes } from '@sistemazero/core/learning/scene'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 /**
  * Contratos compartilhados entre o BFF e os componentes do painel. Espelham as
  * views do @sistemazero/catalog e o UserView do @sistemazero/auth (type-only —
@@ -483,6 +483,8 @@ export interface DialogueBlock {
    * members. ⚠️ Sem ela o balão não ganha botão de ouvir no app da criança.
    */
   vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
 }
 
 export interface RichTextBlock {

@@ -4,7 +4,7 @@ import type {
   LessonSection,
   SectionProgressView,
 } from '@sistemazero/core/learning'
-import type { SceneVozes } from '@sistemazero/core/learning/scene'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -387,6 +387,8 @@ export interface DialogueBlock {
    * seria outro personagem falando no lugar do Zappy.
    */
   vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
 }
 export interface VideoBlock {
   kind: 'video'

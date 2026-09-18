@@ -1,5 +1,5 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import type { SceneVozes } from '@sistemazero/core/learning/scene'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 
 export type { InteractiveBlock } from '@sistemazero/core/learning'
 
@@ -73,6 +73,8 @@ export interface DialogueBlock {
   text: string
   /** A voz do Zappy: `texto falado → MP3`, gerado na autoria (core `voz.ts`). */
   vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
 }
 
 export type VideoProvider = 'mux' | 'youtube' | 'vimeo' | 'file'

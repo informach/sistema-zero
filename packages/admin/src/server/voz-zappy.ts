@@ -2,12 +2,14 @@ import 'server-only'
 import { createHash } from 'node:crypto'
 import {
   chaveDeVoz,
+  normalizarRoteiroDoZappy,
   type SceneVozes,
-  textoFalado,
   VOZ_LIMITS,
 } from '@sistemazero/core/learning/scene'
 import { getEnv } from '@/lib/env'
 import { mapPool } from '@/lib/pool'
+import type { FalaParaGerarVozDoZappy } from '@/lib/voz-zappy-limites'
+import { assinaturaDoCacheDaVozDoZappy, payloadDaSinteseDoZappy } from '@/lib/voz-zappy-roteiro'
 import { MediaNotConfiguredError, r2ObjectExists, r2PublicUrl, r2PutObject } from '@/server/r2'
 
 /**
@@ -86,9 +88,9 @@ function requireVozConfig() {
  * continuam existindo (nada quebra no ar) e as novas nascem em arquivo próprio — em vez de uma
  * frase servir áudio da voz anterior porque "o texto não mudou".
  */
-export function keyDaVoz(texto: string, voiceId: string): string {
+export function keyDaVoz(roteiro: string, voiceId: string): string {
   const hash = createHash('sha256')
-    .update(`${voiceId}\n${MODELO}\n${textoFalado(texto)}`)
+    .update(assinaturaDoCacheDaVozDoZappy({ voiceId, model: MODELO, roteiro }))
     .digest('hex')
   return `aulas/voz/${hash.slice(0, 32)}.mp3`
 }
@@ -106,7 +108,7 @@ export interface GeracaoDeVoz {
 }
 
 async function sintetizar(
-  texto: string,
+  roteiro: string,
   cfg: { apiKey: string; voiceId: string },
 ): Promise<Buffer> {
   const resposta = await fetch(
@@ -114,7 +116,7 @@ async function sintetizar(
     {
       method: 'POST',
       headers: { 'xi-api-key': cfg.apiKey, 'content-type': 'application/json' },
-      body: JSON.stringify({ text: texto, model_id: MODELO }),
+      body: JSON.stringify(payloadDaSinteseDoZappy(roteiro, MODELO)),
       // ⚠⚠ O teto por frase entra na CONTA da rota inteira: 24 falas em ondas de 8 são 3 ondas, e a
       // 20 s cada o pior caso fica em ~60 s — abaixo do corte de ~100 s do Cloudflare, que devolveria
       // um 524 sem mensagem. Uma frase de verdade leva ~3 s.
@@ -141,10 +143,15 @@ async function sintetizar(
  * sabe o que fazer com dicionário incompleto (lê a fala inteira na voz do navegador, nunca metade
  * em cada voz). O erro sobe só quando NADA foi gerado, que é quando o operador precisa saber.
  */
-export async function gerarVozes(textos: readonly string[]): Promise<GeracaoDeVoz> {
+export async function gerarVozes(falas: readonly FalaParaGerarVozDoZappy[]): Promise<GeracaoDeVoz> {
   const cfg = requireVozConfig()
-  const unicos = [...new Set(textos.map(chaveDeVoz).filter(Boolean))]
-  const cabem = unicos.filter((t) => t.length <= MAX_CARACTERES_PARA_GRAVAR)
+  const roteirosPorChave = new Map<string, string>()
+  for (const fala of falas) {
+    const roteiro = normalizarRoteiroDoZappy(fala.speechText)
+    if (roteiro) roteirosPorChave.set(chaveDeVoz(roteiro), roteiro)
+  }
+  const unicos = [...roteirosPorChave.entries()].map(([chave, roteiro]) => ({ chave, roteiro }))
+  const cabem = unicos.filter(({ roteiro }) => roteiro.length <= MAX_CARACTERES_PARA_GRAVAR)
   const vozes: Record<string, string> = {}
   let geradas = 0
   let reaproveitadas = 0
@@ -154,22 +161,22 @@ export async function gerarVozes(textos: readonly string[]): Promise<GeracaoDeVo
   // falhou fica de fora do dicionário (o player já sabe o que fazer com dicionário incompleto).
   await mapPool(
     cabem,
-    async (texto) => {
-      const key = keyDaVoz(texto, cfg.voiceId)
+    async ({ chave, roteiro }) => {
+      const key = keyDaVoz(roteiro, cfg.voiceId)
       try {
         if (await r2ObjectExists(key)) {
-          vozes[texto] = r2PublicUrl(key)
+          vozes[chave] = r2PublicUrl(key)
           reaproveitadas += 1
           return
         }
-        const mp3 = await sintetizar(texto, cfg)
+        const mp3 = await sintetizar(roteiro, cfg)
         const { url } = await r2PutObject({ key, body: mp3, contentType: 'audio/mpeg' })
-        vozes[texto] = url
+        vozes[chave] = url
         geradas += 1
-        caracteres += texto.length
+        caracteres += roteiro.length
       } catch (error) {
         falhas += 1
-        console.error('[voz-zappy] frase não gerada', { texto: texto.slice(0, 80), error })
+        console.error('[voz-zappy] frase não gerada', { roteiro: roteiro.slice(0, 80), error })
       }
     },
     CONCORRENCIA,

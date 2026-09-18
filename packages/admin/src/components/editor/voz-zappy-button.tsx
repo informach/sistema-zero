@@ -1,7 +1,13 @@
 'use client'
 
 import { publicInteractiveBlock } from '@sistemazero/core/learning'
-import { chaveDeVoz, type SceneVozes, textosFalaveisDaCena } from '@sistemazero/core/learning/scene'
+import {
+  chaveDeVoz,
+  falasDaCena,
+  roteiroDoZappy,
+  type SceneVozes,
+  textoFalado,
+} from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Volume2 } from 'lucide-react'
@@ -9,7 +15,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { apiSend } from '@/lib/api'
 import type { LessonBlockContent } from '@/lib/types'
-import { MAX_TEXTOS_POR_PEDIDO } from '@/lib/voz-zappy-limites'
+import { type FalaParaGerarVozDoZappy, MAX_TEXTOS_POR_PEDIDO } from '@/lib/voz-zappy-limites'
 
 /**
  * "Gerar a voz do Zappy": grava o áudio de TODAS as falas da aula, de uma vez.
@@ -37,7 +43,7 @@ interface BlocoDoRascunho {
 interface FalasDoBloco {
   id: string
   content: LessonBlockContent
-  textos: readonly string[]
+  falas: readonly FalaParaGerarVozDoZappy[]
   vozes: SceneVozes | undefined
 }
 
@@ -47,8 +53,11 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
   for (const bloco of blocos) {
     const content = bloco.content
     if (content.kind === 'dialogue') {
-      const texto = chaveDeVoz(content.text)
-      if (texto) saida.push({ ...bloco, textos: [texto], vozes: content.vozes })
+      const visibleText = textoFalado(content.text)
+      const speechText = roteiroDoZappy(visibleText, content.zappySpeech)
+      if (speechText) {
+        saida.push({ ...bloco, falas: [{ visibleText, speechText }], vozes: content.vozes })
+      }
       continue
     }
     if (content.kind !== 'interactive') continue
@@ -65,8 +74,11 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
       const publico = publicInteractiveBlock(
         content as Parameters<typeof publicInteractiveBlock>[0],
       )
-      const textos = textosFalaveisDaCena(publico)
-      if (textos.length) saida.push({ ...bloco, textos, vozes: atividade.vozes })
+      const falas = falasDaCena(publico).map(({ visibleText, speechText }) => ({
+        visibleText,
+        speechText,
+      }))
+      if (falas.length) saida.push({ ...bloco, falas, vozes: atividade.vozes })
     } catch {
       /* bloco em rascunho que ainda não fecha: fica de fora até a autora terminar */
     }
@@ -74,8 +86,9 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
   return saida
 }
 
-/** A fala já tem áudio com ESTE texto? (chave = texto falado: editar a frase derruba a resposta) */
-const coberto = (falas: FalasDoBloco) => falas.textos.every((t) => Boolean(falas.vozes?.[t]))
+/** A fala já tem áudio com ESTE roteiro? (trocar a pronúncia derruba a cobertura, por desenho). */
+const coberto = (falas: FalasDoBloco) =>
+  falas.falas.every((fala) => Boolean(falas.vozes?.[chaveDeVoz(fala.speechText)]))
 
 /**
  * Separa o que a rota confirma que já existia do que ficou sem áudio.
@@ -121,7 +134,11 @@ export function VozZappyButton({
     try {
       // Todas as falas da aula, sem repetição: a rota reaproveita o que já existe no R2 e só paga
       // pelo que falta, então mandar tudo é o que cobre "alterado" e "novo" no mesmo clique.
-      const todos = [...new Set(falas.flatMap((f) => f.textos))]
+      const todos = [
+        ...new Map(
+          falas.flatMap((f) => f.falas).map((fala) => [chaveDeVoz(fala.speechText), fala]),
+        ).values(),
+      ]
       const vozes: Record<string, string> = {}
       let geradas = 0
       let reaproveitadas = 0
@@ -134,7 +151,7 @@ export function VozZappyButton({
           geradas: number
           reaproveitadas: number
           longasDemais: number
-        }>('/api/media/voz-zappy', 'POST', { textos: todos.slice(i, i + MAX_TEXTOS_POR_PEDIDO) })
+        }>('/api/media/voz-zappy', 'POST', { falas: todos.slice(i, i + MAX_TEXTOS_POR_PEDIDO) })
         Object.assign(vozes, lote.vozes)
         geradas += lote.geradas
         reaproveitadas += lote.reaproveitadas
@@ -145,7 +162,10 @@ export function VozZappyButton({
         // ⚠️ Só as falas DESTE bloco, e só as que voltaram: uma frase que falhou fica de fora, e o
         // player já sabe o que fazer com dicionário incompleto (lê tudo na voz do navegador).
         const dicionario: Record<string, string> = {}
-        for (const texto of fala.textos) if (vozes[texto]) dicionario[texto] = vozes[texto]
+        for (const falaDoBloco of fala.falas) {
+          const key = chaveDeVoz(falaDoBloco.speechText)
+          if (vozes[key]) dicionario[key] = vozes[key]
+        }
         if (!Object.keys(dicionario).length) continue
         onVozes(fala.id, dicionario)
         blocosComVoz += 1
