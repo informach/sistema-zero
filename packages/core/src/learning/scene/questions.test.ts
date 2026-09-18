@@ -94,6 +94,9 @@ describe('a previsão e a explicação das 45 cenas', () => {
     expect(context.explanation).toContain('Ouvir a tela')
     expect(prompt).toContain('leitor de tela')
     expect(prompt).toContain('Ouvir a tela')
+    expect(prompt).toContain('Quando você apertar')
+    expect(prompt).toContain('sem escrever uma descrição do jogo')
+    expect(prompt).not.toContain('Antes de apertar')
   })
 
   test('⚠️⚠️ o texto sobrevive ao elenco: nada volta dizendo "Dino" numa turma de nave', () => {

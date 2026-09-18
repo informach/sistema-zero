@@ -360,7 +360,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       // errada ("o desenho conta sozinho") era espantalho. A crença de verdade é achar que o
       // computador descreve o desenho.
       prompt:
-        'Antes de apertar “Ouvir a tela”, o que o leitor de tela vai dizer quando ainda não há texto no jogo?',
+        'Quando você apertar “Ouvir a tela” sem escrever uma descrição do jogo, o que o leitor de tela vai dizer?',
       choices: [
         {
           id: 'dino',

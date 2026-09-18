@@ -57,7 +57,7 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     expect(html).not.toContain('Hoje vamos usar:')
   })
 
-  test('mostra de forma estática o controle citado, mas sem teto, centralização ou interação', () => {
+  test('mostra o controle citado como botão desativado, mas sem teto ou centralização', () => {
     const html = renderToStaticMarkup(
       <ScenePredictionPreview
         activity={{ type: 'experimentation', scene: 'screen-reader' }}
@@ -70,12 +70,13 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     expect(moldura).toContain('w-full')
     expect(moldura).toContain('Ouvir a tela')
     expect(moldura).toContain('Você vai usar este botão depois do seu palpite.')
-    expect(moldura).toContain('[&amp;_button]:hidden')
     expect(moldura).not.toContain('max-w-scene')
     expect(moldura).not.toContain('mx-auto')
+    expect(html).toContain('[&amp;_button]:hidden')
     expect(html).toContain('data-preview-control')
-    expect(html).not.toContain('<button')
-    expect(html).not.toContain('role="button"')
+    expect(html).toContain('<button')
+    expect(html).toContain('disabled=""')
+    expect(html).toContain('aria-describedby')
   })
 
   test('abre a mesma cena sem teto de largura na moldura do palco', () => {

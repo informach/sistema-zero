@@ -1444,13 +1444,23 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     expect(previa.querySelector('[data-preview-control]')?.textContent).toContain(
       'Você vai usar este botão depois do seu palpite.',
     )
-    expect(previa.querySelector('button')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
+    const botaoDaPrevia = previa.querySelector('button') as HTMLButtonElement
+    expect(botaoDaPrevia.textContent).toContain('Ouvir a tela')
+    expect(botaoDaPrevia.disabled).toBe(true)
+    const avisoId = botaoDaPrevia.getAttribute('aria-describedby')
+    expect(avisoId).toBeTruthy()
+    expect(document.getElementById(avisoId!)?.textContent).toContain(
+      'Você vai usar este botão depois do seu palpite.',
+    )
+    expect(screen.getByRole('button', { name: 'Ouvir a tela' })).toBe(botaoDaPrevia)
+    fireEvent.click(botaoDaPrevia)
     expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
 
     await palpitar('screen-reader')
     expect(await screen.findByLabelText('Descrição do jogo')).toBeTruthy()
-    expect(await screen.findByRole('button', { name: 'Ouvir a tela' })).toBeTruthy()
+    expect(
+      ((await screen.findByRole('button', { name: 'Ouvir a tela' })) as HTMLButtonElement).disabled,
+    ).toBe(false)
   })
 })
 
