@@ -1,9 +1,15 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { actorFigure, quantos, sceneWorld } from '@sistemazero/core/learning/scene'
+import {
+  actorFigure,
+  cenarioTemChao,
+  quantos,
+  sceneCenario,
+} from '@sistemazero/core/learning/scene'
+import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
-import { ActorFigure, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, pisoDoMundo } from './scene-figures'
 
 /**
  * O palco da cena das VIDAS (o Dia 4 do Desafio e o Corre Dino).
@@ -46,7 +52,7 @@ const EXPLOSAO = 'M0 -16L5 -5L16 -7L8 1L15 11L3 7L0 18L-4 7L-15 11L-8 1L-16 -7L-
 export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { lives, points, hits, onHit, last } = state.lifeline
   const acabou = lives === 0
-  const mundo = sceneWorld(cast, 'lives')
+  const mundo = sceneCenario(cast, 'lives')
   const piso = pisoDoMundo(mundo, CHAO)
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
@@ -75,23 +81,22 @@ export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCas
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' ? (
-            // Sem estrelinhas atrás dos dois placares e do FIM: elas viravam pontuação.
-            <FundoEspaco
-              w={VIEW.w}
-              h={VIEW.h}
-              semEstrelas={[
-                { x: 14, y: 18, w: 122, h: 60 },
-                { x: 460, y: 8, w: 92, h: 70 },
-                { x: 190, y: 100, w: 180, h: 44 },
-              ]}
-            />
-          ) : (
-            <>
-              <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
-              <rect className="fill-scene-ground" y={CHAO} width={VIEW.w} height={VIEW.h - CHAO} />
-              <path className="stroke-scene-line" d={`M0 ${CHAO}h${VIEW.w}`} strokeWidth="2" />
-            </>
+          {/* ⚠️ `calmo` e as zonas: esta cena escreve DOIS placares e o "FIM" por cima do mundo,
+              e uma estrelinha colada num número vira pontuação. */}
+          <FundoDoCenario
+            cenario={mundo}
+            w={VIEW.w}
+            h={VIEW.h}
+            chao={CHAO}
+            detalhe="calmo"
+            semDetalhe={[
+              { x: 14, y: 18, w: 122, h: 60 },
+              { x: 460, y: 8, w: 92, h: 70 },
+              { x: 190, y: 100, w: 180, h: 44 },
+            ]}
+          />
+          {cenarioTemChao(mundo) && (
+            <path className="stroke-scene-line" d={`M0 ${CHAO}h${VIEW.w}`} strokeWidth="2" />
           )}
           {/* Os corações: três lugares FIXOS, com o que já foi perdido em contorno. Sumir com eles
           esconderia de quanto se partiu, que é metade da comparação. */}

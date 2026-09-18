@@ -16,6 +16,7 @@ import {
   sceneGoalIds,
   sceneModel,
 } from './catalog'
+import { isSceneCenario, type SceneCenarioId } from './cenario'
 import { openScene, stepScene } from './engine'
 import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
 import type { SceneStart } from './state'
@@ -27,6 +28,8 @@ export * from './atelie'
 export * from './audio-url'
 export * from './cast'
 export * from './catalog'
+// O CENÁRIO: qual jogo a cena retrata (o fundo, o chão e o elenco de fábrica de cada jogo).
+export * from './cenario'
 export * from './engine'
 export * from './evaluate'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
@@ -84,6 +87,15 @@ export interface DemonstrationActivity {
    * criança repete quantas vezes quiser. O motor é o mesmo; muda só a apresentação.
    */
   presentation?: 'guided' | 'inline'
+  /**
+   * O JOGO que esta cena retrata: `corre-dino`, `nave`, `gorilas` ou `meu-jeito` (`cenario.ts`).
+   *
+   * ⚠️ OPCIONAL de propósito: sem ele o cenário é DERIVADO das figuras do elenco, que é o que
+   * mantém de pé os manifestos já publicados, sem reimportação. Declarar só é preciso quando a
+   * derivação não acerta — um curso cujo elenco não diz o jogo, ou uma cena abstrata que ainda
+   * assim deve mostrar a paisagem do curso.
+   */
+  cenario?: SceneCenarioId
   /** Só `layers`: a pilha como a lista de blocos do Estúdio (padrão) ou o painel Camadas do Pinta. */
   pilha?: ScenePilha
 }
@@ -109,9 +121,27 @@ export interface ExperimentationActivity {
    * `camadas` fala com os botões do Pinta ("Uma camada para a frente/para trás") e lista a da frente
    * em cima (full review de experiência, A1).
    */
+  /**
+   * O JOGO que esta cena retrata: `corre-dino`, `nave`, `gorilas` ou `meu-jeito` (`cenario.ts`).
+   *
+   * ⚠️ OPCIONAL de propósito: sem ele o cenário é DERIVADO das figuras do elenco, que é o que
+   * mantém de pé os manifestos já publicados, sem reimportação. Declarar só é preciso quando a
+   * derivação não acerta — um curso cujo elenco não diz o jogo, ou uma cena abstrata que ainda
+   * assim deve mostrar a paisagem do curso.
+   */
+  cenario?: SceneCenarioId
   pilha?: ScenePilha
 }
 export type SceneActivity = DemonstrationActivity | ExperimentationActivity
+
+/**
+ * O cenário declarado é legal: ausente, ou um dos quatro.
+ *
+ * ⚠️ Um id desconhecido é RECUSADO em vez de cair no padrão: o campo vem do manifesto, e um
+ * cenário silenciosamente trocado desenharia o jogo errado numa aula inteira sem ninguém saber.
+ */
+const cenarioValido = (value: Record<string, unknown>) =>
+  value.cenario === undefined || isSceneCenario(value.cenario)
 
 /** A pilha declarada é legal: um dos valores, e só na cena que tem pilha. */
 const pilhaValida = (value: Record<string, unknown>) =>
@@ -126,6 +156,7 @@ export function isDemonstrationActivity(value: unknown): value is DemonstrationA
   if (!validAudio(value.instructionAudioUrl)) return false
   if (!isSceneVozes(value.vozes)) return false
   if (!pilhaValida(value)) return false
+  if (!cenarioValido(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   // ⚠️ Meta é assunto de quem experimenta. Numa demonstração a lista não teria efeito nenhum,
   // e campo sem efeito é armadilha para quem autora: aqui ele é recusado.
@@ -155,6 +186,7 @@ export function isExperimentationActivity(value: unknown): value is Experimentat
   if (!validAudio(value.instructionAudioUrl)) return false
   if (!isSceneVozes(value.vozes)) return false
   if (!pilhaValida(value)) return false
+  if (!cenarioValido(value)) return false
   if (value.cast !== undefined && !isSceneCast(value.cast)) return false
   if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene)) return false
   const { initialImpulse: impulse } = value

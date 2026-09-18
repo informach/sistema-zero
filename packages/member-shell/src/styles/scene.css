@@ -57,7 +57,6 @@
   --color-scene-leaf-dark: #3e6a4e;
   /* A vegetação de FUNDO. Sem ela a floresta perde profundidade: as duas fileiras de árvores
    * ficavam a 1,22:1 uma da outra, e a cena `layers` é sobre exatamente essa diferença. */
-  --color-scene-leaf-soft: #7aa87a;
   --color-scene-bark: #896746;
 
   /* O par de comparação. É a cor que carrega o sentido da descoberta: a medida A contra a
@@ -84,8 +83,12 @@
   --color-scene-card: #fffdf7;
   --color-scene-card-line: #d9dfd1;
 
-  /* As FIGURAS do elenco que não são o Corre Dino (Raio-X, lote 3, 16/09/2026): a nave, o
-   * asteroide, a pedra, o tiro e a chama. Desenho em `components/scene-figures.tsx`.
+  /* ⚠️⚠️ Estes tokens NÃO pintam mais as figuras do elenco (18/09/2026). Elas são desenhadas
+   * pela ARTE DO JOGO (`@sistemazero/studio/arte`), com as cores dela — o mundo é o jogo. O que
+   * sobrou aqui pinta o que NÃO é elenco: a nave do Pinta no ateliê, as pedras do 3D, os tons do
+   * núcleo. Quatro deles (`leaf-soft`, `rock-light`, `stone-light`, `star`) saíram junto com o
+   * `FundoEspaco`, que a arte substituiu.
+   *
    *
    * ⚠️⚠️ Tokens PRÓPRIOS, e nunca `sky`, `ground`, `grass`, `card`, `ink` ou o par: esses são
    * remapeados no mundo espaço (abaixo), e uma figura pintada com eles mudaria de cor quando o
@@ -95,21 +98,18 @@
    * aparecem (`tests/scene-contrast.test.ts`). */
   --color-scene-rock: #a39cb3;
   --color-scene-rock-dark: #5d566e;
-  --color-scene-rock-light: #d2cde0;
   --color-scene-stone: #ad957d;
   --color-scene-stone-dark: #6b5645;
-  --color-scene-stone-light: #dcc9b4;
   --color-scene-flame: #f58a2f;
   --color-scene-flame-deep: #e0452f;
   --color-scene-flame-core: #ffd65c;
   --color-scene-fin: #e24b3b;
   --color-scene-window: #e3f1ff;
-  --color-scene-star: #fff4cf;
 }
 
 /* O MUNDO ESPAÇO (Raio-X, lote 3, 16/09/2026).
  *
- * ⭐⭐ Com uma nave, um asteroide, uma pedra, um tiro ou uma chama no elenco (`sceneWorld` do
+ * ⭐⭐ Com uma nave, um asteroide, uma pedra, um tiro ou uma chama no elenco (`sceneCenario` do
  * core), o palco sai da grama e vai para um fundo escuro de estrelas. O `SceneCanvas` põe esta
  * classe na moldura, e a paleta INTEIRA da cena é redeclarada aqui dentro: o papel vira noite, a
  * tinta clareia e o chão vira uma linha discreta. É por isso que os palcos quase não precisam
@@ -161,16 +161,23 @@
   color: color-mix(in oklab, var(--primary, #315f92) 45%, #ffffff);
 }
 
-/* ⚠️ Estrela atrás de texto vira PONTUAÇÃO (review do lote 3): as estrelinhas são sorteadas no
- * retângulo inteiro, e uma delas caía como ponto final em "restam." e colada no "15" do placar. Um
- * halo da cor do céu apaga a estrela que ENCOSTA na letra, em qualquer palco, sem mexer no sorteio
- * (que tem semente fixa e é o que impede o céu de piscar a cada gesto). `paint-order` pinta o
- * contorno POR BAIXO do preenchimento, então a letra não engorda.
+/* ⭐⭐ O HALO do texto do palco, em TODA cena (18/09/2026).
+ *
+ * Nasceu no mundo espaço: as estrelinhas são sorteadas no retângulo inteiro, e uma delas caía como
+ * ponto final em "restam." e colada no "15" do placar. Um halo da cor do papel apaga a estrela que
+ * ENCOSTA na letra, sem mexer no sorteio. `paint-order` pinta o contorno POR BAIXO do
+ * preenchimento, então a letra não engorda.
+ *
+ * ⚠️⚠️ Passou a valer em todo palco quando o mundo virou a ARTE DO JOGO: antes o Corre Dino era um
+ * retângulo de cor derivada do tema, com contraste garantido por construção; hoje ele é céu
+ * degradê, morros e uma faixa de TERRA marrom, e a tinta escura da cena sobre aquele marrom mede
+ * 2,04:1 — ilegível. O halo é a resposta que este arquivo já tinha para fundo ilustrado, e agora
+ * o fundo é ilustrado em todo lugar. Medido em `tests/scene-contrast.test.ts`.
  * ⚠️ 3px e não mais: o halo também contorna o texto que mora num PAINEL (os cérebros da
  * `entity-state`, a pílula "As áreas se tocam" da `hitbox`), e com 4px ou 5px ele já virava uma
- * borda escura visível. A estrela a dois ou três pixels da letra o halo não alcança: onde isso
- * acontece num placar, o palco tira as estrelas da zona (`semEstrelas` do `FundoEspaco`). */
-.sz-scene-espaco svg text {
+ * borda escura visível. O detalhe a dois ou três pixels da letra o halo não alcança; onde isso
+ * acontece num placar, o palco tira o detalhe da zona (`semDetalhe` do `FundoDoCenario`). */
+.sz-scene-frame svg text {
   paint-order: stroke fill;
   stroke: var(--color-scene-sky);
   stroke-width: 3px;

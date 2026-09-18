@@ -3,6 +3,7 @@ import {
   MAP_TILES,
   MESH_LEVELS,
   MIRROR_MODES,
+  SCENE_CENARIO_IDS,
   SCENE_FIGURES,
   SCENE_IDS,
   SCENE_LIMITS,
@@ -282,6 +283,15 @@ const SceneActorSchema = t.Object({
  * fora da `layers` é o `isSceneActivity` do core, na publicação.
  */
 const ScenePilhaSchema = t.Union(SCENE_PILHAS.map((p) => t.Literal(p)))
+/**
+ * O CENÁRIO: qual jogo a cena retrata (`cenario.ts` do core).
+ *
+ * ⚠️⚠️ Sem ele no schema, o `normalize` do Elysia APAGARIA o campo numa rota de corpo tipado — o
+ * professor escolheria o jogo no admin, o campo sumiria a caminho do banco e a cena voltaria a
+ * derivar o cenário pelo elenco, sem erro nenhum. É a mesma armadilha que já comeu a `figure` do
+ * elenco. Ausente = derivar, que é o caso dos manifestos já publicados.
+ */
+const SceneCenarioSchema = t.Union(SCENE_CENARIO_IDS.map((c) => t.Literal(c)))
 const SceneCastSchema = t.Object({
   hero: t.Optional(SceneActorSchema),
   obstacle: t.Optional(SceneActorSchema),
@@ -352,6 +362,7 @@ export const InteractiveBlockSchema = t.Object({
       /** Sem roteiro próprio, vale o do modelo da cena. */
       script: t.Optional(SceneScriptSchema),
       cast: t.Optional(SceneCastSchema),
+      cenario: t.Optional(SceneCenarioSchema),
       /**
        * ⚠️⚠️ O MESMO schema da experimentação, de propósito, mesmo que a demonstração não cobre
        * meta nenhuma. Declarando só `actions`, o `normalize` do Elysia APAGA o `goals` que
@@ -376,6 +387,7 @@ export const InteractiveBlockSchema = t.Object({
       vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
       cast: t.Optional(SceneCastSchema),
+      cenario: t.Optional(SceneCenarioSchema),
       setup: t.Optional(SceneSetupSchema),
       pilha: t.Optional(ScenePilhaSchema),
     }),

@@ -13,6 +13,7 @@ import {
   COOLDOWN_SHOT,
   cameraWindow,
   castText,
+  cenarioTemChao,
   contactTouching,
   DIAGONAL_REACH,
   enemyOnScreen,
@@ -20,11 +21,12 @@ import {
   quantos,
   rechargeWords,
   SCENE_LIMITS,
-  sceneWorld,
+  sceneCenario,
   TILEMAP_DINO_COLUMN,
   tilemapLanding,
 } from '@sistemazero/core/learning/scene'
 import { type KeyboardEvent, useId, useRef, useState } from 'react'
+import { FundoDoCenario } from './scene-arte'
 import { Escolha } from './scene-bench'
 // ⚠️ O `VIEW` vem do canvas: os desenhos leem o enquadramento para encostar na borda, então ele e o
 // `viewBox` do SVG têm de ser o MESMO número.
@@ -35,7 +37,7 @@ import {
   Texto,
   SCENE_VIEW as VIEW,
 } from './scene-canvas'
-import { ActorFigure, ArvoreDoMundo, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, ArvoreDoMundo, pisoDoMundo } from './scene-figures'
 
 /**
  * Os palcos do NÚCLEO do Iniciante 2D, redesenhados no lote 5 do Raio-X (G5, 16/09/2026): a tecla
@@ -247,7 +249,7 @@ function lugarDoCacto(id: number, distancia: number) {
 export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { distances, looked, chosen, auto, blind, measured } = state.hunt
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'group-loop')
+  const mundo = sceneCenario(cast, 'group-loop')
   const piso = pisoDoMundo(mundo, 0)
   const medidos = [...looked].sort((a, b) => a - b)
   // ⚠️⚠️ A régua mostra a FOTO da medida (consertos do review da onda B do lote 5): sem o laço ela fica
@@ -277,11 +279,9 @@ export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: Scen
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' ? (
-            <FundoEspaco w={VIEW.w} h={VIEW.h} />
-          ) : (
-            <rect className="fill-scene-grass" width={VIEW.w} height={VIEW.h} />
-          )}
+          {/* ⚠️ `calmo`: as RÉGUAS e as distâncias são escritas por cima do mundo, e são elas
+              que a cena ensina a comparar. */}
+          <FundoDoCenario cenario={mundo} w={VIEW.w} h={VIEW.h} detalhe="calmo" />
           {distances.map((_, i) => {
             const id = i + 1
             if (!looked.includes(id) && !auto) return null
@@ -364,11 +364,11 @@ export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: Scen
           {/* ⚠️ No espaço a torre é de METAL (review do lote 3). */}
           <g transform={`translate(0 ${piso})`}>
             <path
-              className={mundo === 'espaco' ? 'fill-scene-rock' : 'fill-scene-bark'}
+              className={!cenarioTemChao(mundo) ? 'fill-scene-rock' : 'fill-scene-bark'}
               d={`M${TORRE.x - 20} ${TORRE.y + 20}V${TORRE.y - 60}h40v80Z`}
             />
             <path
-              className={mundo === 'espaco' ? 'fill-scene-fin' : 'fill-scene-leaf-dark'}
+              className={!cenarioTemChao(mundo) ? 'fill-scene-fin' : 'fill-scene-leaf-dark'}
               d={`M${TORRE.x - 30} ${TORRE.y - 60}h60l-30-30Z`}
             />
           </g>
@@ -476,7 +476,7 @@ const RAIAS_DA_FICHA = [190, 284] as const
 export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { speed, life, cacti, copy } = state.blueprint
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'enemy-type')
+  const mundo = sceneCenario(cast, 'enemy-type')
   const clip = useId()
   const naTelaLista = cacti.filter((c) => enemyOnScreen(c.x)).sort((a, b) => a.x - b.x)
   const naTela = naTelaLista.length
@@ -515,9 +515,14 @@ export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: Scen
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' ? (
-            <FundoEspaco w={VIEW.w} h={VIEW.h} semEstrelas={[{ x: 14, y: 4, w: 532, h: 56 }]} />
-          ) : (
+          <FundoDoCenario
+            cenario={mundo}
+            w={VIEW.w}
+            h={VIEW.h}
+            detalhe="calmo"
+            semDetalhe={[{ x: 14, y: 4, w: 532, h: 56 }]}
+          />
+          {cenarioTemChao(mundo) &&
             RAIAS_DA_FICHA.map((chao) => (
               <path
                 key={`raia-${chao}`}
@@ -525,8 +530,7 @@ export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: Scen
                 d={`M20 ${chao}H540`}
                 strokeWidth="2"
               />
-            ))
-          )}
+            ))}
           <g data-ficha>
             <rect
               className="fill-scene-card stroke-scene-a"
@@ -695,8 +699,8 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
   const escalaTela = TELA.w / CAMERA_WORLD.screen
   const escalaMapa = MAPA.w / CAMERA_WORLD.width
   const dentro = heroX >= janela && heroX <= janela + CAMERA_WORLD.screen
-  const mundo = sceneWorld(cast, 'camera')
-  const espaco = mundo === 'espaco'
+  const mundo = sceneCenario(cast, 'camera')
+  const espaco = !cenarioTemChao(mundo)
   const clip = useId()
   const chao = TELA.y + TELA.h - 16
   return (
@@ -721,14 +725,15 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
         <rect x={TELA.x} y={TELA.y} width={TELA.w} height={TELA.h} rx="10" />
       </clipPath>
       <g clipPath={`url(#${clip})`}>
-        {espaco ? (
-          <FundoEspaco x={TELA.x} y={TELA.y} w={TELA.w} h={TELA.h} />
-        ) : (
-          <>
-            <rect className="fill-scene-sky" x={TELA.x} y={TELA.y} width={TELA.w} height={TELA.h} />
-            <rect className="fill-scene-grass" x={TELA.x} y={chao} width={TELA.w} height={16} />
-          </>
-        )}
+        <FundoDoCenario
+          cenario={mundo}
+          x={TELA.x}
+          y={TELA.y}
+          w={TELA.w}
+          h={TELA.h}
+          chao={chao - TELA.y}
+          detalhe="calmo"
+        />
         {CAMERA_LANDMARKS.map((m) => (
           <Marco
             key={`${m.kind}-${m.x}`}
@@ -839,7 +844,7 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
 export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { distance, top, bottom, frames } = state.hit
   const encostando = contactTouching(distance)
-  const mundo = sceneWorld(cast, 'contact')
+  const mundo = sceneCenario(cast, 'contact')
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
   const DINO = 100
@@ -856,7 +861,7 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
         >
           {castText(rotulo, cast)}
         </Texto>
-        {mundo !== 'espaco' && (
+        {cenarioTemChao(mundo) && (
           <path className="stroke-scene-line" d={`M20 ${alto + 126}H540`} strokeWidth="2" />
         )}
         <g className="text-primary">
@@ -902,18 +907,18 @@ export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneC
       descricao={`${encostando ? `Encostados há ${quantos(frames, 'quadro', 'quadros')}` : `Distância ${distance}`}. Em cima, ${quantos(CONTACT_HEARTS - top, 'coração', 'corações')} a menos. Embaixo, ${quantos(CONTACT_HEARTS - bottom, 'coração', 'corações')} a menos.`}
       rodape="Duas regras, o mesmo cacto."
     >
-      {mundo === 'espaco' ? (
-        <FundoEspaco
-          w={VIEW.w}
-          h={VIEW.h}
-          semEstrelas={[
-            { x: 14, y: 6, w: 330, h: 26 },
-            { x: 316, y: 26, w: 232, h: 60 },
-            { x: 14, y: 150, w: 330, h: 26 },
-            { x: 316, y: 170, w: 232, h: 60 },
-          ]}
-        />
-      ) : null}
+      <FundoDoCenario
+        cenario={mundo}
+        w={VIEW.w}
+        h={VIEW.h}
+        detalhe="calmo"
+        semDetalhe={[
+          { x: 14, y: 6, w: 330, h: 26 },
+          { x: 316, y: 26, w: 232, h: 60 },
+          { x: 14, y: 150, w: 330, h: 26 },
+          { x: 316, y: 170, w: 232, h: 60 },
+        ]}
+      />
       {pista(0, 'o Dino está encostando no cacto?', top, 'a')}
       <path className="stroke-scene-rule" d="M20 146H540" strokeWidth="2" strokeDasharray="4 6" />
       {pista(146, 'Quando o Dino começar a encostar no cacto', bottom, 'b')}
@@ -934,7 +939,7 @@ const BOCA = { x: 112, y: 150 } as const
 export function CooldownStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { seconds, ready, shots, refused, bullets, time, refusedAt } = state.weapon
   const cheio = seconds > 0 ? 1 - ready / seconds : 1
-  const mundo = sceneWorld(cast, 'cooldown')
+  const mundo = sceneCenario(cast, 'cooldown')
   const piso = pisoDoMundo(mundo, 176)
   // ⚠️ Um segundo, e não meio (consertos do review da onda B do lote 5): sumia antes de a criança olhar.
   // A bancada mostra o mesmo aviso ao lado do botão, onde os olhos estão.
@@ -950,9 +955,13 @@ export function CooldownStage({ state, cast }: { state: SceneState; cast?: Scene
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' && (
-            <FundoEspaco w={VIEW.w} h={VIEW.h} semEstrelas={[{ x: 300, y: 8, w: 250, h: 28 }]} />
-          )}
+          <FundoDoCenario
+            cenario={mundo}
+            w={VIEW.w}
+            h={VIEW.h}
+            detalhe="calmo"
+            semDetalhe={[{ x: 300, y: 8, w: 250, h: 28 }]}
+          />
           <g className="text-primary">
             <ActorFigure figure={actorFigure(cast, 'hero')} x={70} y={piso} />
           </g>
@@ -1059,7 +1068,7 @@ export function AimStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const { targetX, targetY, chasing, flying, bulletX, bulletY, result, shotX, shotY } = state.sight
-  const mundo = sceneWorld(cast, 'aim')
+  const mundo = sceneCenario(cast, 'aim')
   // A caixa com a MESMA proporção do desenho, por cima dele: é por ela que o dedo vira x e y.
   const caixaRef = useRef<HTMLDivElement>(null)
   const arrasto = useRef<{ id: number; x: number; y: number; moveu: boolean } | null>(null)
@@ -1168,11 +1177,7 @@ export function AimStage({
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' ? (
-            <FundoEspaco x={40} y={15} w={480} h={270} />
-          ) : (
-            <rect className="fill-scene-sky" x={40} y={15} width="480" height="270" rx="8" />
-          )}
+          <FundoDoCenario cenario={mundo} x={40} y={15} w={480} h={270} detalhe="calmo" />
           <rect
             className="fill-none stroke-scene-line"
             x={40}
@@ -1319,7 +1324,7 @@ const NOME_DA_ANDADA = { reto: 'reto', diagonal: 'diagonal', corrigida: 'com cor
  */
 export function DiagonalStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { x, y, last, ghosts, distance, strides } = state.walkPad
-  const mundo = sceneWorld(cast, 'diagonal')
+  const mundo = sceneCenario(cast, 'diagonal')
   const fim = naAndada(x, y)
   const pontos = Math.max(1, Math.round(distance / 10))
   const raio = DIAGONAL_REACH * ESCALA_DA_ANDADA
@@ -1372,11 +1377,9 @@ export function DiagonalStage({ state, cast }: { state: SceneState; cast?: Scene
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' ? (
-            <FundoEspaco w={VIEW.w} h={VIEW.h} />
-          ) : (
-            <rect className="fill-scene-ground" width={VIEW.w} height={VIEW.h} />
-          )}
+          {/* ⚠️ `calmo`: a GRADE do chão vem por cima, e é ela que mostra que a diagonal anda
+              mais que uma seta só. */}
+          <FundoDoCenario cenario={mundo} w={VIEW.w} h={VIEW.h} detalhe="calmo" />
           {Array.from({ length: 29 }, (_, i) => (
             <path
               // biome-ignore lint/suspicious/noArrayIndexKey: a grade do chão é fixa.
@@ -1526,7 +1529,7 @@ export function TilemapStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const { rows, lastRow, lastCol } = state.grid
-  const mundo = sceneWorld(cast, 'tilemap')
+  const mundo = sceneCenario(cast, 'tilemap')
   const [letra, setLetra] = useState<'.' | '#' | 'o'>('#')
   const [foco, setFoco] = useState(0)
   const casas = useRef<(HTMLButtonElement | null)[]>([])
@@ -1708,18 +1711,14 @@ export function TilemapStage({
               >
                 o desenho
               </Texto>
-              {mundo === 'espaco' ? (
-                <FundoEspaco x={MAPA_DESENHO.x} y={MAPA_DESENHO.y} w={CASA * 10} h={CASA * 6} />
-              ) : (
-                <rect
-                  className="fill-scene-sky"
-                  x={MAPA_DESENHO.x}
-                  y={MAPA_DESENHO.y}
-                  width={CASA * 10}
-                  height={CASA * 6}
-                  rx="6"
-                />
-              )}
+              <FundoDoCenario
+                cenario={mundo}
+                x={MAPA_DESENHO.x}
+                y={MAPA_DESENHO.y}
+                w={CASA * 10}
+                h={CASA * 6}
+                detalhe="calmo"
+              />
               {rows.map((linha, row) =>
                 [...linha].map((tile, col) => {
                   const x = MAPA_DESENHO.x + col * CASA
@@ -1732,7 +1731,7 @@ export function TilemapStage({
                         // ⚠️ No espaço o bloco é de ROCHA (consertos do review da onda B do lote 5): a nave
                         // pousava num caixote de madeira.
                         <rect
-                          className={mundo === 'espaco' ? 'fill-scene-rock' : 'fill-scene-bark'}
+                          className={!cenarioTemChao(mundo) ? 'fill-scene-rock' : 'fill-scene-bark'}
                           x={x + 1}
                           y={y + 1}
                           width={CASA - 2}

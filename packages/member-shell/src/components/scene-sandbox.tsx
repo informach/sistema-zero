@@ -22,6 +22,7 @@ import { RotateCcw, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { ExplorationPieces } from './exploration-pieces'
 import { ExplorationStage, SceneButton } from './exploration-stage'
+import { RelogioDaArteProvider } from './scene-arte'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
@@ -113,6 +114,8 @@ export function SceneSandbox({
   const [sessao, setSessao] = useState(comeco)
   const [tocando, setTocando] = useState(false)
   const [lento, setLento] = useState(false)
+  /** O relógio da ARTE (ver a nota no `scene-activity.tsx`): é o que faz o Dino correr aqui também. */
+  const [tempoDaArte, setTempoDaArte] = useState(0)
   const state = sessao.state
   const m = experimento.scene
   const aplicar = (proxima: ExperimentSession) => {
@@ -144,6 +147,8 @@ export function SceneSandbox({
     exato: relogio.exato,
     lento,
     onTick: (segundos) => {
+      // O mesmo relógio da arte do player: aqui a criança mexe de novo, e o Dino corre igual.
+      setTempoDaArte((v) => v + segundos * 1000)
       const antes = sessaoRef.current
       const passo = stepExperiment(start, antes, { type: 'advance', seconds: segundos })
       aplicar(passo.session)
@@ -195,7 +200,9 @@ export function SceneSandbox({
     >
       <div className="mx-auto w-full max-w-scene">
         <SceneReadoutBand activity={experimento} state={visto} relogioAndando={tocando} />
-        <ExplorationStage activity={experimento} state={visto} dispatch={mexer} />
+        <RelogioDaArteProvider value={tempoDaArte}>
+          <ExplorationStage activity={experimento} state={visto} dispatch={mexer} />
+        </RelogioDaArteProvider>
       </div>
       {/* ⚠️ Num lugar que só cresce, como no player (consertos do review da onda B do lote 5, T2): a
           frase muda de uma para duas linhas no meio dos gestos e empurrava a bancada. */}

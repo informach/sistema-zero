@@ -71,6 +71,7 @@
           "type": "experimentation",
           "scene": "velocity",
           "cast": { "hero": { "name": "tiro", "gender": "m" } },
+          "cenario": "nave",
           "setup": {
             "actions": [
               { "type": "velocity", "vx": 10, "vy": 5 },

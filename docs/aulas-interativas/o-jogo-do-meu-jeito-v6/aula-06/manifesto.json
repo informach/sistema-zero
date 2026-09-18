@@ -124,6 +124,7 @@
         "activity": {
           "type": "experimentation",
           "scene": "sheet-vs-sprite",
+          "cenario": "meu-jeito",
           "setup": {
             "goals": ["crop-half", "crop-whole", "size-apart"]
           }
@@ -296,7 +297,8 @@
         "hints": [],
         "activity": {
           "type": "demonstration",
-          "scene": "sheet-vs-sprite"
+          "scene": "sheet-vs-sprite",
+          "cenario": "meu-jeito"
         },
         "prediction": {
           "context": {

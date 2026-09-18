@@ -8,6 +8,7 @@ import {
 } from '../../../packages/core/src/learning'
 import {
   blocoDaCena,
+  CENARIO_DO_CURSO,
   type CenaAnterior,
   type CenaDaAula,
   cenaAnteriorMarkdown,
@@ -186,7 +187,9 @@ export function buildLesson(day: number, recipe: Recipe, original: ReturnType<ty
   ])
   const noFim: LearningManifest['blocks'] = []
   const cena = (dado: CenaDaAula) => {
-    ;(dado.noFimDaLista ? noFim : blocks).push(blocoDaCena(dado))
+    ;(dado.noFimDaLista ? noFim : blocks).push(
+      blocoDaCena(dado, CENARIO_DO_CURSO['desafio-primeiro-jogo']),
+    )
     return dado.chave
   }
   for (const step of recipe.steps) {

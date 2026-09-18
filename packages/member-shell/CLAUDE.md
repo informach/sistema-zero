@@ -989,7 +989,8 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `exploration-pieces.tsx` | Fios e peças (`ExplorationPieces`): `world`, `lives` e a bancada do Corre Dino. |
 | `experience-connection.tsx` | O fio (`ExperienceConnection`). |
 | `scene-canvas.tsx` | O palco único (`SceneCanvas`, `Texto`, `usePalco`). |
-| `scene-figures.tsx` | As figuras do elenco (`ActorFigure`) e o fundo do espaço (`FundoEspaco`). |
+| `scene-figures.tsx` | A porta única de figura (`ActorFigure`) e o de-para elenco → arte (`FIGURA_DA_ARTE`). |
+| `scene-arte.tsx` | ⭐⭐ A ARTE DO JOGO no palco: `ArteSvg` (uma figura), `FundoDoCenario` (o mundo) e o relógio `RelogioDaArteProvider`/`useRelogioDaArte`. |
 | `scene-3d.tsx` | A régua do 3D. |
 | `scene-*-stages.tsx`, `scene-*-controls.tsx`, `experience-scene.tsx` | Palcos e bancadas por família (tabela "Cena → palco e bancada"). |
 | `lib/scene-controller.ts` | `SceneController`: sessão local, segmentos e rascunho no IndexedDB. |
@@ -1373,10 +1374,18 @@ porque ele desenhava a mesma pista para cenas que precisavam ver coisas diferent
 - ⚠️ **Lista de cenas como `string[]` guarda código morto em silêncio**: cena que sai de um ramo sai por guarda de
   TIPO (`ehLaboratorio`), nunca por `includes`. Foi assim que ~120 linhas mortas apareceram.
 
-**Cromo é do APP, mundo é da CENA.**
+**Cromo é do APP, mundo é do JOGO.**
+- ⭐⭐⭐ **Reforma de 18/09/2026 — o mundo do palco é a ARTE DO JOGO 2D.** Ela olhou uma cena ao lado do
+  jogo que a criança monta e disse que a cena parecia outra coisa: o Dino era UM `<path>` de silhueta
+  chapada, o cacto um contorno, e o céu um retângulo de cor. Hoje o palco chama o MESMO código de
+  desenho do runtime da extensão (`@sistemazero/studio/arte`), com um pincel que grava SVG — o Dino com
+  barriga, espinhos, olho e perninhas, o cacto com braços e florzinha, a floresta com sol, nuvens e
+  morros. Quem desenha figura é o `ArteSvg`; quem desenha mundo é o `FundoDoCenario`.
+- ⚠️⚠️ **O que esta reforma REVOGOU:** "a TERRA continua desenhada por cada palco do jeito de sempre…
+  o pedido é que ele continue igual" (o fundo do Corre Dino agora vem da arte, como o do espaço) e as
+  cores de figura por token (`scene-rock`, `scene-flame`… não pintam mais nada: as cores são as do jogo).
 - O CROMO (moldura, faixa, bancada, frase, rodapé, conclusão) veste o app (`card`, `border`, `foreground`,
-  `primary`): no kids é o Pen, no adulto o tema dele. Dentro do palco manda a paleta ilustrada `--color-scene-*`
-  (`styles/scene.css`): a cena é o retrato de um JOGO, e de branco e azul viraria formulário.
+  `primary`): no kids é o Pen, no adulto o tema dele. Dentro do palco manda o JOGO.
 - ⚠️⚠️ **O par sobrevive no cromo** (`scene-a` azul, `scene-b-ink` âmbar, `scene-alert`): diz QUAL medida é qual,
   no palco, na faixa e no controle.
 - A regra tem uma direção (`scene-identity`): o cromo não veste a cena. O contrário não se cobra, porque palcos
@@ -1436,27 +1445,63 @@ mostrar os dois tira o experimento. A maioria das cenas de contraste já compara
 (`hold-vs-press`, `delta-time`, `pixel-vector`, `sheet-vs-sprite`, `tilemap`).
 
 **O elenco e as figuras** (`scene-figures.tsx`).
-- ⭐⭐ **O elenco troca o DESENHO, não só os nomes**: `ActorFigure({ figure, x, y, ghost, escala, escuro })` com
-  `figure = actorFigure(cast, papel)` do core é a ÚNICA porta. O Dino, o cacto e a árvore não são exportados: um
+- ⭐⭐ **O elenco troca o DESENHO, não só os nomes**: `ActorFigure({ figure, x, y, ghost, escala, escuro, t })`
+  com `figure = actorFigure(cast, papel)` do core é a ÚNICA porta. ⚠️ O `t` é o relógio da CENA, nunca
+  `Date.now()`: parado, o desenho é sempre o mesmo quadro (é o que mantém o `renderToStaticMarkup` dos
+  testes estável e o palco quieto enquanto a criança lê a pergunta); andando, o Dino corre e a chama pulsa.
+- ⭐⭐ **O relógio da arte é CONTEXTO, e quem MEXE a cena é quem o provê** (`RelogioDaArte` em
+  `scene-arte.tsx`, no molde do `zappy-fala-context`): o player (`scene-activity.tsx`) e a vez
+  (`scene-sandbox.tsx`) somam `elapsed * 1000` dentro do `onTick` e embrulham o `ExplorationStage` no
+  `RelogioDaArteProvider`. Sem provider o valor é `0`, ou seja a arte fica PARADA — que é o certo na galeria,
+  na prévia do admin e nas 45 varreduras. ⚠️⚠️ O `t` passado à mão VENCE o contexto, e por isso o `ActorFigure`
+  **não tem default** para ele: com `t = 0` no parâmetro o contexto nunca chegava e a animação inteira ficava
+  desligada com a suíte verde (achado do full review). O contrato é cobrado em `tests/scene-arte.test.tsx`, que
+  lê a FONTE dos dois donos: o provider em volta do palco **e** o `setTempoDaArte` no tique — um provider
+  esquecido que entrega zero para sempre passa em qualquer teste de comportamento.
+- ⭐⭐ **O FUNDO é o `FundoDoCenario`, e ele é a camada de BAIXO.** As marcas que a cena ENSINA (a grade e
+  as réguas da `coordinates`, os pontinhos da pista, a régua de altura do laboratório, o alvo tracejado da
+  `stage-size`) continuam desenhadas POR CIMA, pelo palco. Onde o fundo cheio competiria com a marca, o
+  palco pede `detalhe="calmo"` (menos nuvens, sem cintilar, sem janela acesa) e passa `semDetalhe` com as
+  zonas onde ele escreve número — uma estrelinha colada num placar vira ponto final. ⚠️ O fundo é
+  RECORTADO na própria área: os morros são mais largos que a tela de propósito, e num palco que desenha a
+  tela do jogo dentro de um quadro menor eles vazavam para fora da moldura.
+- ⚠️ `data-fundo` leva hoje o CENÁRIO (`corre-dino`, `nave`, `gorilas`, `meu-jeito`), não mais `"espaco"`:
+  TODO cenário tem mundo desenhado, e o que a varredura cobra é que seja o mundo CERTO. O Dino, o cacto e a árvore não são exportados: um
   palco que chamasse o Dino direto mentiria para uma turma de nave. Toda figura leva `data-figure` e usa o
   enquadramento do Dino (`(x, y)` = o chão sob ela, ~60 × 60 subindo; a floresta é uma árvore de 138). O corpo do
   Dino e da nave é `currentColor` (quem pinta é o palco). `ArvoreDoMundo` é paisagem, sem `data-figure`;
   `CENARIO_UNICO` põe UMA figura de cenário na `layers` que não é floresta. Substituído (16/09/2026): "o elenco troca
   os NOMES, nunca o desenho" → troca o desenho, porque a criança do Desafio lia "nave" sobre um dinossauro na grama.
-- **O mundo espaço:** o palco passa `mundo={sceneWorld(cast, cena)}` (o core olha só os papéis de `SCENE_ROLES`
-  daquela cena) e o `SceneCanvas` põe `sz-scene-espaco` + `data-mundo` na MOLDURA; `styles/scene.css` redeclara a
-  paleta inteira ali (CSS comum, fora do `@theme`: o Tailwind só emite variável que alguma utilitária usa). ⚠️ Só o
-  palco que desenha um PAPEL passa `mundo`; os abstratos (espelho, lupa, mapa de letras, 3D, ateliê) ficam no papel
-  de sempre.
-- **`FundoEspaco`** (`data-fundo="espaco"`) desenha a linha do chão (`chao`) só onde ela MEDE alguma coisa
-  (hoje o laboratório e a `jump-sound`); nos outros as figuras flutuam por `pisoDoMundo(mundo, chao)`, que sobe no
-  espaço e devolve o MESMO número na terra (o Corre Dino não muda um pixel). ⚠️ Tudo que se apoia no chão sobe
-  junto, senão a cena desmonta. A TERRA segue desenhada por cada palco como sempre.
-- ⚠️ As cores das figuras são tokens PRÓPRIOS (`scene-rock`, `scene-stone`, `scene-flame*`, `scene-fin`,
-  `scene-window`, `scene-star`), nunca os que mudam no espaço. As estrelas têm SEMENTE fixa (`Math.random`
-  piscaria o céu a cada gesto) e somem atrás de placar (`semEstrelas`); o texto no espaço tem halo de 3px
-  (`paint-order`) que apaga a estrela encostada na letra. `.sz-scene-espaco svg .text-primary` clareia o
-  personagem só DENTRO do desenho.
+- **O CENÁRIO:** o palco passa `mundo={sceneCenario(cast, cena, activity.cenario)}` (o core lê o `cenario`
+  DECLARADO no manifesto e, sem ele, deriva dos papéis de `SCENE_ROLES` daquela cena) e o `SceneCanvas` põe
+  `data-mundo` na MOLDURA, mais `sz-scene-espaco` quando **`cenarioEscuro(mundo)`**; `styles/scene.css` redeclara
+  a paleta inteira ali (CSS comum, fora do `@theme`: o Tailwind só emite variável que alguma utilitária usa).
+  ⚠️⚠️ A régua do cromo escuro é `cenarioEscuro`, **nunca `!cenarioTemChao`**: os gorilas têm chão E céu
+  noturno, então as duas perguntas se separaram quando o registro passou de dois mundos para quatro cenários.
+  ⚠️ Só o palco que desenha um PAPEL passa `mundo`; os abstratos (espelho, lupa, mapa de letras, 3D, ateliê)
+  ficam no papel de sempre.
+- **A linha do chão só fica onde ela MEDE alguma coisa** (hoje o laboratório e a `jump-sound`, os únicos que
+  passam `chao` ao `FundoDoCenario`); nos outros as figuras flutuam por `pisoDoMundo(mundo, chao)`, que sobe
+  `FLUTUA_NO_ESPACO` no cenário sem chão e devolve o MESMO número onde há chão (o Corre Dino não muda um pixel).
+  ⚠️ A pergunta é `cenarioTemChao(mundo)`, não "é o espaço". ⚠️ Tudo que se apoia no chão sobe junto, senão a
+  cena desmonta. Substituído (18/09/2026): o `FundoEspaco`, que desenhava só o céu estrelado — hoje TODO
+  cenário tem mundo desenhado, e quem o desenha é o `FundoDoCenario`.
+- ⚠️⚠️ **As cores das figuras são as do JOGO, não tokens da cena.** Os tokens de figura (`scene-rock`,
+  `scene-flame*`, `scene-fin`, `scene-window`…) seguem em `scene.css` para o que o PALCO desenha em volta
+  (pista, pedra de apoio, janela de prédio) e não pintam mais nenhuma figura de elenco. O céu nunca é sorteado
+  ao vivo: `sorteioComSemente` torna cada estrela, nuvem e morro função de `(semente, área, deslocamento)`,
+  então o mesmo palco sai igual no servidor e a cada gesto (`Math.random` piscaria o céu). As estrelas somem
+  atrás de placar (`semDetalhe`); `.sz-scene-espaco svg .text-primary` clareia o personagem só DENTRO do
+  desenho.
+- ⭐⭐ **O halo do texto vale em TODA cena** (`.sz-scene-frame svg text`: `paint-order: stroke fill`, 3px na cor
+  do papel). Nasceu no espaço para apagar a estrelinha que caía como ponto final em "restam.", e subiu para
+  todos os palcos quando o mundo virou a arte do jogo: o Corre Dino era um retângulo de cor derivada do tema,
+  com contraste garantido por construção, e hoje é céu degradê com sol, nuvem e morro. ⚠️ 3px, medido: o halo
+  também engorda a letra sobre fundo CHAPADO (a faixa da `entity-state`, a pílula da `hitbox`) e com 4 ou 5px
+  virava uma borda escura visível; o detalhe a dois ou três pixels da letra ele não alcança, e onde isso cai
+  num placar quem resolve é o `semDetalhe`. Medido em `tests/scene-contrast.test.ts`, que pinta o fundo de cada
+  cenário com um pincel que soma ÁREA por cor e cobra 4,5:1 entre a tinta e o halo — com o anti-vácuo que
+  prova que sem halo o par reprova.
 - **O elenco no texto:** o `SceneCanvas` aplica `castText` no título e na descrição; texto DENTRO do desenho
   precisa de `castText` à mão. Título e instrução são do PROFESSOR e não se vestem. ⚠️ Texto novo precisa
   sobreviver à troca: a régua só flexiona o que está colado ao nome ("o Dino continua guardado" viraria "a nave

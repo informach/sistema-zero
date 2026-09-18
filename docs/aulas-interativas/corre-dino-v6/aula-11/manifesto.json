@@ -142,7 +142,7 @@
           "Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas."
         ],
         "required": false,
-        "activity": { "type": "experimentation", "scene": "score" }
+        "activity": { "type": "experimentation", "scene": "score", "cenario": "corre-dino" }
       }
     },
     {

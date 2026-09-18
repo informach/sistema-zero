@@ -121,7 +121,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "gravity"
+          "scene": "gravity",
+          "cenario": "corre-dino"
         },
         "prediction": {
           "context": {
@@ -171,7 +172,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "impulse"
+          "scene": "impulse",
+          "cenario": "corre-dino"
         }
       }
     },

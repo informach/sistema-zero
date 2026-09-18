@@ -1,9 +1,10 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { actorFigure, numero, quantos, sceneWorld } from '@sistemazero/core/learning/scene'
+import { actorFigure, numero, quantos, sceneCenario } from '@sistemazero/core/learning/scene'
+import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
-import { ActorFigure, FundoEspaco } from './scene-figures'
+import { ActorFigure } from './scene-figures'
 
 /**
  * Os palcos das onze cenas do núcleo do Iniciante 2D (15/09/2026).
@@ -56,7 +57,7 @@ function contaDoQuadro(antes: number, velocidade: number, agora: number): string
 export function VelocityStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { x, y, fromX, fromY, vx, vy, trailX, trailY, prevX, prevY, steps } = state.drive
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneWorld(cast, 'velocity')
+  const mundo = sceneCenario(cast, 'velocity')
   const px = velX(x)
   const py = velY(y)
   const andouX = x !== fromX
@@ -233,31 +234,16 @@ export function VelocityStage({ state, cast }: { state: SceneState; cast?: Scene
               fora da tela
             </Texto>
             {/* A tela do jogo: céu e chão na terra, estrelas no espaço. */}
-            {mundo === 'espaco' ? (
-              <FundoEspaco
-                x={velX(0)}
-                y={velY(0)}
-                w={velX(480) - velX(0)}
-                h={velY(270) - velY(0)}
-              />
-            ) : (
-              <>
-                <rect
-                  className="fill-scene-sky"
-                  x={velX(0)}
-                  y={velY(0)}
-                  width={velX(480) - velX(0)}
-                  height={velY(270) - velY(0)}
-                />
-                <rect
-                  className="fill-scene-grass"
-                  x={velX(0)}
-                  y={velY(240)}
-                  width={velX(480) - velX(0)}
-                  height={velY(270) - velY(240)}
-                />
-              </>
-            )}
+            {/* ⚠️ `calmo`: o rastro e os números do passo são escritos por cima desta tela. */}
+            <FundoDoCenario
+              cenario={mundo}
+              x={velX(0)}
+              y={velY(0)}
+              w={velX(480) - velX(0)}
+              h={velY(270) - velY(0)}
+              chao={velY(240) - velY(0)}
+              detalhe="calmo"
+            />
             <rect
               className="stroke-scene-ink"
               x={velX(0)}
@@ -532,7 +518,7 @@ const VARIAVEL_ESTREITA = { x: 0, y: 44, w: 560, h: 196 } as const
  */
 export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { value, shown, changes, created } = state.box
-  const mundo = sceneWorld(cast, 'variable')
+  const mundo = sceneCenario(cast, 'variable')
   const obstaculo = actorFigure(cast, 'obstacle')
   const acesos = [created, changes > 0, shown]
   const acertos = Math.min(changes, 3)
@@ -670,17 +656,18 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
           <g>
             {/* No espaço, a tela do jogo é o céu de estrelas; a caixa do placar continua caixa. */}
             {/* Sem estrelinhas atrás do placar da tela: uma delas virava parte do número. */}
-            {mundo === 'espaco' && (
-              <FundoEspaco
-                x={320}
-                y={80}
-                w={210}
-                h={150}
-                semEstrelas={[{ x: 326, y: 84, w: 110, h: 34 }]}
-              />
-            )}
+            {/* A tela do jogo, dentro do palco. ⚠️ `calmo` e a zona: o valor guardado é escrito aqui. */}
+            <FundoDoCenario
+              cenario={mundo}
+              x={320}
+              y={80}
+              w={210}
+              h={150}
+              detalhe="calmo"
+              semDetalhe={[{ x: 6, y: 4, w: 110, h: 34 }]}
+            />
             <rect
-              className={`${mundo === 'espaco' ? 'fill-none' : 'fill-scene-sky'} stroke-scene-line`}
+              className={`$'fill-none' stroke-scene-line`}
               x={320}
               y={80}
               width="210"

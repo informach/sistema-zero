@@ -136,7 +136,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "game-state"
+          "scene": "game-state",
+          "cenario": "corre-dino"
         },
         "prediction": {
           "context": {

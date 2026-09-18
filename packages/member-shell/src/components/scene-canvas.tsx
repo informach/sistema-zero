@@ -1,6 +1,11 @@
 'use client'
 
-import { castText, type SceneCast, type SceneWorldKind } from '@sistemazero/core/learning/scene'
+import {
+  castText,
+  cenarioEscuro,
+  type SceneCast,
+  type SceneCenarioId,
+} from '@sistemazero/core/learning/scene'
 import {
   type CSSProperties,
   createContext,
@@ -238,7 +243,7 @@ function SceneFrame({
 }: {
   children: ReactNode
   className?: string
-  mundo?: SceneWorldKind
+  mundo?: SceneCenarioId
   refDaMoldura: RefObject<HTMLDivElement | null>
   /** A largura que o palco está usando (a medida, ou a conhecida antes de medir). */
   largura: number
@@ -256,7 +261,9 @@ function SceneFrame({
       data-mundo={mundo}
       className={cn(
         'sz-scene-frame overflow-hidden rounded-2xl border border-border bg-scene-ground',
-        mundo === 'espaco' && 'sz-scene-espaco',
+        // ⚠️⚠️ Pela COR do fundo, nunca por "não tem chão": a `gorilas` tem chão e céu noturno, e
+        // com a pergunta antiga a tinta escura da cena ficaria ilegível sobre a cidade à noite.
+        cenarioEscuro(mundo) && 'sz-scene-espaco',
         className,
       )}
     >
@@ -379,11 +386,11 @@ export function SceneCanvas({
   /** Só para o que o CSS não alcança: o `touch-action` de um palco que se arrasta. */
   estilo?: CSSProperties
   /**
-   * O mundo do elenco (`sceneWorld` do core). ⚠️ Só o palco que DESENHA um papel do elenco passa:
-   * ele troca também o próprio fundo (`FundoEspaco`). Um palco abstrato (o espelho, a lupa, o
+   * O mundo do elenco (`sceneCenario` do core). ⚠️ Só o palco que DESENHA um papel do elenco passa:
+   * ele troca também o próprio fundo (`FundoDoCenario`). Um palco abstrato (o espelho, a lupa, o
    * mapa de letras) fica no papel de sempre com qualquer elenco.
    */
-  mundo?: SceneWorldKind
+  mundo?: SceneCenarioId
   /**
    * Os dois lados da comparação sempre um EMBAIXO do outro (consertos do review da onda B do lote 5,
    * `pick-ray`). ⚠️ O `sm:` olha a JANELA, e não a coluna da cena: num computador com a cena numa coluna

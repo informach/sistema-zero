@@ -143,7 +143,7 @@
           "Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo."
         ],
         "required": false,
-        "activity": { "type": "experimentation", "scene": "acceleration" }
+        "activity": { "type": "experimentation", "scene": "acceleration", "cenario": "corre-dino" }
       }
     },
     {

@@ -254,7 +254,8 @@
         "hints": [],
         "activity": {
           "type": "demonstration",
-          "scene": "frames"
+          "scene": "frames",
+          "cenario": "meu-jeito"
         }
       }
     },
@@ -268,7 +269,8 @@
         "hints": [],
         "activity": {
           "type": "demonstration",
-          "scene": "onion-skin"
+          "scene": "onion-skin",
+          "cenario": "meu-jeito"
         }
       }
     }

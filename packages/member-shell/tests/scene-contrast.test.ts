@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import {
+  cenarioEscuro,
+  fundoDoCenario,
+  SCENE_CENARIO_IDS,
+  type SceneCenarioId,
+} from '@sistemazero/core/learning/scene'
 import { DEFAULT_PALETTE, PALETTE_LABELS, PALETTES } from '@sistemazero/core/palette'
+import { FUNDOS } from '@sistemazero/studio/arte'
 import { derive } from '@sistemazero/ui/tokens'
 import { cssHexValuesForCustomProperty } from './css-custom-properties'
 
@@ -299,7 +306,9 @@ describe('o mundo espaço continua legível em todos os temas', () => {
 
   test('⚠️ as figuras e as linhas se veem no céu de estrelas (3:1, que é o de gráfico)', () => {
     const graficos: [string, string][] = [
-      ...['rock', 'stone', 'flame', 'flame-core', 'fin', 'window', 'star'].map(
+      // ⚠️ `star`, `leaf-soft`, `rock-light` e `stone-light` saíram do CSS: a arte do jogo pinta
+      // as figuras com as cores dela, e eles só existiam para o `FundoEspaco` e as figuras à mão.
+      ...['rock', 'stone', 'flame', 'flame-core', 'fin', 'window'].map(
         (t) => [t, literal(css, t)] as [string, string],
       ),
       ...['rule', 'line', 'b'].map((t) => [`${t} (espaço)`, literal(bloco, t)] as [string, string]),
@@ -358,5 +367,217 @@ describe('o mundo espaço continua legível em todos os temas', () => {
       expect(linha).not.toContain('color-mix')
       expect(linha).not.toContain('var(--primary')
     }
+  })
+})
+
+/**
+ * A TINTA DA CENA contra o MUNDO DE VERDADE (18/09/2026).
+ *
+ * ⚠️⚠️ Este bloco existe porque os dois de cima passaram a medir meio vácuo: eles conferem a tinta
+ * contra os tokens `--color-scene-sky`/`ground`/`grass` do CSS, e esses tokens deixaram de pintar o
+ * fundo quando o palco passou a desenhar a arte do Jogo 2D. A conta continuava certa e deixou de
+ * ser sobre o que a criança vê. Aqui as cores saem do DESENHO: o fundo é rodado de verdade e as
+ * cores que cobrem área grande são medidas contra a tinta.
+ *
+ * ⚠️ Só as DOMINANTES entram na conta (≥ 4% da área). Estrela, janela acesa e tracinho de grama
+ * são detalhe pequeno, e é para eles que o texto do palco tem halo de 3px (`paint-order`, no
+ * `scene.css`) — cobrá-los aqui reprovaria um desenho legível.
+ */
+describe('a tinta da cena continua legível sobre o MUNDO desenhado', () => {
+  const css = readFileSync(join(import.meta.dir, '../src/styles/scene.css'), 'utf8')
+  const blocoEspaco = css.slice(
+    css.indexOf('.sz-scene-espaco {'),
+    css.indexOf('}', css.indexOf('.sz-scene-espaco {')),
+  )
+
+  /** Quanta área cada cor pinta neste fundo, do maior para o menor. */
+  function coresDominantes(cenario: SceneCenarioId, detalhe: 'cheio' | 'calmo') {
+    const w = 560
+    const h = 300
+    const area = new Map<string, number>()
+    let atual = '#000000'
+    const soma = (cor: string, quanto: number) => {
+      if (!/^#[0-9a-f]{6}$/i.test(cor)) return
+      area.set(cor, (area.get(cor) ?? 0) + quanto)
+    }
+    // Um pincel que só MEDE: cada retângulo soma a área dele; cada caminho soma a caixa que ele
+    // cobre. É grosseiro de propósito — serve para separar "o céu" de "uma estrelinha".
+    let minX = 0
+    let minY = 0
+    let maxX = 0
+    let maxY = 0
+    const ponto = (x: number, y: number) => {
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+    const zerar = () => {
+      minX = Number.POSITIVE_INFINITY
+      minY = Number.POSITIVE_INFINITY
+      maxX = Number.NEGATIVE_INFINITY
+      maxY = Number.NEGATIVE_INFINITY
+    }
+    zerar()
+    const nada = () => {}
+    const medidor = {
+      fillStyle: '#000000' as string | CanvasGradient | CanvasPattern,
+      strokeStyle: '#000000' as string | CanvasGradient | CanvasPattern,
+      lineWidth: 1,
+      lineCap: 'butt' as CanvasLineCap,
+      lineJoin: 'miter' as CanvasLineJoin,
+      globalAlpha: 1,
+      shadowColor: '',
+      shadowBlur: 0,
+      save: nada,
+      restore: nada,
+      translate: nada,
+      scale: nada,
+      rotate: nada,
+      beginPath: zerar,
+      closePath: nada,
+      moveTo: ponto,
+      lineTo: ponto,
+      quadraticCurveTo: (a: number, b: number, c: number, d: number) => {
+        ponto(a, b)
+        ponto(c, d)
+      },
+      bezierCurveTo: (a: number, b: number, c: number, d: number, e: number, f: number) => {
+        ponto(a, b)
+        ponto(c, d)
+        ponto(e, f)
+      },
+      arc: (x: number, y: number, r: number) => {
+        ponto(x - r, y - r)
+        ponto(x + r, y + r)
+      },
+      ellipse: (x: number, y: number, rx: number, ry: number) => {
+        ponto(x - rx, y - ry)
+        ponto(x + rx, y + ry)
+      },
+      rect: (x: number, y: number, rw: number, rh: number) => {
+        ponto(x, y)
+        ponto(x + rw, y + rh)
+      },
+      roundRect: (x: number, y: number, rw: number, rh: number) => {
+        ponto(x, y)
+        ponto(x + rw, y + rh)
+      },
+      fill: () => {
+        if (maxX > minX) soma(atual, (maxX - minX) * (maxY - minY))
+      },
+      stroke: nada,
+      clip: nada,
+      fillRect: (_x: number, _y: number, rw: number, rh: number) => soma(atual, Math.abs(rw * rh)),
+      strokeRect: nada,
+      createLinearGradient: () => ({
+        // O céu é um degradê: cada parada dele pinta um pedaço grande da faixa.
+        addColorStop: (_o: number, cor: string) => soma(cor, (w * h) / 3),
+      }),
+    }
+    Object.defineProperty(medidor, 'fillStyle', {
+      get: () => atual,
+      set: (v: string) => {
+        atual = typeof v === 'string' ? v : atual
+      },
+    })
+    FUNDOS[fundoDoCenario(cenario)](
+      medidor as unknown as Parameters<(typeof FUNDOS)['floresta']>[0],
+      { w, h, chao: 240 },
+      { t: 0, chao: 240, velocidade: 4, detalhe },
+    )
+    const total = w * h
+    return [...area.entries()]
+      .filter(([, a]) => a / total >= 0.04)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cor]) => cor)
+  }
+
+  /**
+   * A cor FINAL de um token, resolvida como o navegador resolve.
+   *
+   * ⚠️ Pegar só o `#xxxxxx` da receita mede a BASE do `color-mix`, não o que sai na tela — e a
+   * base da tinta e a do papel são parecidas, então a conta dava 1,3:1 num par perfeitamente
+   * legível. A mistura é a mesma que o resto deste arquivo já usa.
+   */
+  const corDoToken = (token: string, escuro: boolean) => {
+    const fonte = escuro ? blocoEspaco : css
+    // ⚠️⚠️ `\\s` e não `\s`: num TEMPLATE LITERAL o `\s` não é escape válido e vira só `s`, então a
+    // regex procurava `--color-scene-ink:s*(#…)` e nunca casava. O resto do arquivo já escapava
+    // assim; escrever direto foi o que quebrou aqui.
+    const mix = fonte.match(
+      new RegExp(
+        `--color-scene-${token}:\\s*color-mix\\(in oklab,\\s*var\\(--primary[^)]*\\)\\s*(\\d+)%,\\s*(#[0-9a-f]{6})\\s*\\)`,
+        'i',
+      ),
+    )
+    if (mix?.[1] && mix[2]) return misturar(TEMAS.reserva, mix[2], Number(mix[1]) / 100)
+    const puro = fonte.match(new RegExp(`--color-scene-${token}:\\s*(#[0-9a-f]{6})\\s*;`, 'i'))
+    if (!puro?.[1]) throw new Error(`--color-scene-${token} não encontrado`)
+    return hex(puro[1])
+  }
+  const tintaDe = (escuro: boolean) => corDoToken('ink', escuro)
+
+  /** O halo que o `scene.css` põe atrás de todo texto de palco, e a cor dele. */
+  function halo(escuro: boolean) {
+    const regra = css.slice(css.indexOf('.sz-scene-frame svg text {'))
+    const bloco = regra.slice(0, regra.indexOf('}'))
+    expect(bloco).toContain('paint-order: stroke fill')
+    const token = bloco.match(/stroke:\s*var\(--color-scene-([a-z-]+)\)/)?.[1]
+    if (!token) throw new Error('o halo do texto do palco não sai de um token da cena')
+    return corDoToken(token, escuro)
+  }
+
+  test('⭐⭐ TODO texto de palco tem halo, e não só o do espaço', () => {
+    // ⚠️⚠️ É o que sustenta a legibilidade agora que o mundo é ilustrado em toda cena. Enquanto o
+    // Corre Dino era um retângulo de cor o halo era dispensável ali; com a faixa de TERRA marrom
+    // do jogo, a tinta escura sobre ela mede 2,04:1 (medido no teste abaixo).
+    expect(css).toContain('.sz-scene-frame svg text {')
+    expect(css).not.toContain('.sz-scene-espaco svg text {')
+  })
+
+  test('⭐⭐ a tinta tem 4,5:1 contra o HALO, que é o que fica atrás da letra', () => {
+    for (const escuro of [false, true]) {
+      const razao = contraste(tintaDe(escuro), halo(escuro))
+      expect({ escuro, ok: razao >= 4.5, razao: Number(razao.toFixed(2)) }).toEqual({
+        escuro,
+        ok: true,
+        razao: Number(razao.toFixed(2)),
+      })
+    }
+  })
+
+  test('⚠️⚠️ e é por isso que o halo é OBRIGATÓRIO: o mundo sozinho não garante contraste', () => {
+    // Anti-vácuo do par acima, e a razão de ele existir: sem halo, a tinta do Corre Dino cai
+    // abaixo de 4,5:1 sobre a terra e a grama do fundo do jogo. Se um dia todas as cores do mundo
+    // passarem sozinhas, este teste falha e o halo pode ser reconsiderado — não antes.
+    const tinta = tintaDe(false)
+    const fracas = coresDominantes('corre-dino', 'calmo').filter(
+      (c) => contraste(tinta, hex(c)) < 4.5,
+    )
+    expect(fracas.length).toBeGreaterThan(0)
+  })
+
+  test('a varredura ENCONTRA cores dominantes (anti-vácuo)', () => {
+    // Sem isto, um medidor quebrado devolveria lista vazia e o teste abaixo passaria por vácuo.
+    for (const cenario of SCENE_CENARIO_IDS) {
+      const cores = coresDominantes(cenario, 'calmo')
+      expect({ cenario, quantas: cores.length > 0 }).toEqual({ cenario, quantas: true })
+    }
+  })
+
+  test('⚠️⚠️ cada cenário escolhe a tinta pela COR do fundo, não por ter chão', () => {
+    // O caso que a `gorilas` criou: chão de telhado e céu noturno. Com a tinta clara ela fica
+    // legível; com a escura (a de quem "tem chão") ficaria sobre a cidade à noite.
+    const falhas: string[] = []
+    for (const cenario of SCENE_CENARIO_IDS) {
+      const tinta = tintaDe(cenarioEscuro(cenario))
+      const trocada = tintaDe(!cenarioEscuro(cenario))
+      const dominantes = coresDominantes(cenario, 'cheio').map(hex)
+      const boa = dominantes.filter((c) => contraste(tinta, c) >= 4.5).length
+      const ruim = dominantes.filter((c) => contraste(trocada, c) >= 4.5).length
+      if (boa < ruim) falhas.push(`${cenario}: a tinta trocada seria MAIS legível que a escolhida`)
+    }
+    expect(falhas).toEqual([])
   })
 })

@@ -49,7 +49,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/result` | `Result<T,E>` (ok/err) — fluxo de erro sem exceção | `result` |
 | `/http` | envelope de erro `{error:{code,message}}` + erros de borda (edge) | `error-envelope` · `edge-errors` |
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
-| `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`/`sceneWorld`), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `questions` · `session` · `index` |
+| `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`), **cenário** (`cenario`: qual JOGO a cena retrata — o fundo, o chão e o elenco de fábrica), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `cenario` · `questions` · `session` · `index` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
 
 ## Cenas de aula (`src/learning/scene/`)
@@ -76,7 +76,8 @@ Deploy, ordem dos serviços (members ANTES de kids e community) e manifestos a i
 | `catalog.ts` | `SCENE_MODELS` (título, instrução, metas `SceneGoal`, pistas, roteiro, `successNoCaso`), `sceneGoalIds`, `sceneDefaultGoalIds`, `SCENE_COMPARISONS`/`sceneShowsComparison` |
 | `evaluate.ts` | `sceneGoals`, `evaluateExperimentation`, `evaluateDemonstration`, `sceneSuccess`, a pista (`sceneHint`, `sceneHintStep`, `sceneHintDone`) |
 | `readout.ts` | O que a cena diz de si: a faixa (`sceneReadout`) e a frase (`sceneSituation`); `drawLoopOnScreen`, `screenReaderSays` |
-| `cast.ts` | O elenco (`castText`, `SCENE_FIGURES`, `actorFigure`, `SCENE_ROLES`, `sceneWorld`) e o português que a plataforma gera (`quantos`, `decimal`, `numero`) |
+| `cast.ts` | O elenco (`castText`, `SCENE_FIGURES`, `actorFigure`, `SCENE_ROLES`, `sceneCenario`) e o português que a plataforma gera (`quantos`, `decimal`, `numero`) |
+| `cenario.ts` | O CENÁRIO: `SCENE_CENARIOS` (os quatro jogos que os cursos ensinam), `SceneCenarioId`, `cenarioTemChao`, `cenarioEscuro`, `fundoDoCenario`, `isSceneCenario`, `CENARIO_DA_FIGURA` |
 | `questions.ts` | `SCENE_QUESTIONS`: a previsão e a explicação de cada cena |
 | `voz.ts` | A voz do Zappy: `chaveDeVoz`/`textoFalado` (a chave do dicionário É o texto falado), `SceneVozes`/`isSceneVozes`, `filaDeVoz` (tudo ou nada por fala), `falaDoPalpite`, `falaDaInstrucao`, `falaDaPergunta` e `textosFalaveisDaCena` (o que o gerador do admin grava). ⚠⚠ Mora aqui porque gerador e player precisam produzir a MESMA string — duas cópias que divirjam dão áudio que o player nunca encontra |
 | `audio-url.ts` | `isSceneAudioUrl` (módulo próprio só para o `voz.ts` usá-la sem fechar ciclo com o `index.ts`) |
@@ -131,9 +132,11 @@ de gesto compartilhados, em `tests/fixtures/exploration-paths.ts`.
   `SOUND_BEATS_MAX`, `START_TRIES_MAX`, `VELOCITY_TRAIL_MAX`, `MARCAS_NO_PAPEL`, `TILEMAP_MARKS_MAX`), não só
   teto no validador: sem corte, a 25ª casa trocada na `tilemap` tornava o retrato inválido, e a criança lia
   "esta descoberta mudou, recomece" no meio do mapa.
-- **Figura nova no elenco.** `SCENE_FIGURES` e `SCENE_FIGURE_NAMES`; o desenho no `scene-figures.tsx` do
-  member-shell; o TypeBox do members (deriva da lista); `NOME_DA_FIGURA` no `scene-cast-editor.tsx` do admin
-  (os dois últimos são `Record`, reprovam a falta); `FIGURAS_DO_ESPACO` se for do espaço.
+- **Figura nova no elenco.** `SCENE_FIGURES` e `SCENE_FIGURE_NAMES`; o desenho na ARTE DO JOGO
+  (`@sistemazero/studio/arte`) e a entrada no `FIGURA_DA_ARTE` do `scene-figures.tsx` do member-shell; o
+  TypeBox do members (deriva da lista); `NOME_DA_FIGURA` no `scene-cast-editor.tsx` do admin (os dois
+  últimos são `Record`, reprovam a falta). ⚠️ Em que CENÁRIO ela entra é o que decide o mundo dela:
+  `SCENE_CENARIOS` no `cenario.ts` (a tabela figura → cenário é DERIVADA dele, não uma lista à parte).
 - **Régua nova ou alterada em `nucleo.ts`/`atelie.ts`.** Elas existem para motor, faixa e palco não
   recopiarem números. ⚠️ Nem toda régua tem os três leitores: antes de mudar uma, `git grep` quem a lê.
   Régua lida só por teste não prova nada sobre o motor (a `tilemapCoinRow` era gabarito de teste enquanto o
@@ -340,10 +343,27 @@ constante (`sceneFrameRate`, `sceneLongFrame`), não copie os números.
   manifestos publicados sem `figure`. ⚠️ Os nomes vão num `Map` ("constructor" num objeto literal devolveria
   uma função do protótipo). "bala" não é sinônimo de tiro: no Brasil é doce. `castText` apara o nome (o
   editor do admin guarda como digitado).
-- **Mundo**: `sceneWorld(cast, cena)` olha só os papéis que o palco desenha (`SCENE_ROLES`, tabela LITERAL):
-  nave, asteroide ou tiro → espaço; senão, papel desenhado DECLARADO com figura da terra → terra; senão, pedra
-  ou chama → espaço. ⚠️ Papel não declarado não puxa para a terra (o editor do admin avisa esse caso). O tipo
-  é `SceneWorldKind` porque `SceneWorld` é o grupo `world` do estado.
+- **Cenário**: ⭐⭐ `sceneCenario(cast, cena, declarado?)` responde QUAL JOGO a cena retrata —
+  `corre-dino`, `nave`, `gorilas` ou `meu-jeito` (`cenario.ts`). Era `sceneWorld`, que só dizia
+  `terra`/`espaco`; isso bastava enquanto o mundo era um retângulo de cor e deixou de bastar quando o
+  palco passou a desenhar a ARTE DO JOGO. O campo `activity.cenario` (opcional, escrito pelo professor)
+  VENCE; sem ele vale a derivação, que é o que mantém de pé os manifestos já publicados.
+  A régua, na ordem: nave, asteroide, tiro, gorila, banana ou prédio desenhado → aquele cenário; senão,
+  papel desenhado DECLARADO com figura do Corre Dino → `corre-dino`; senão, pedra ou chama → `meu-jeito`.
+  ⚠️ Papel não declarado não puxa para o Corre Dino (o editor do admin avisa esse caso).
+  ⭐⭐ **Os 38 blocos de cena dos três cursos v6 DECLARAM o campo** (20 `corre-dino`, 8 `nave`, 10
+  `meu-jeito`), então na prática a derivação é rede, não o caminho: quem manda é o CURSO, e uma cena do
+  Desafio montada com o elenco de fábrica do Corre Dino continua mostrando a nave. Quem escreve o campo
+  é a receita (`CENARIO_DO_CURSO` em `docs/aulas-interativas/qa/cenas-editorial.ts`), e
+  `packages/core/tests/learning.test.ts` cobra as duas metades: toda cena declara, e o que ela declara
+  é o cenário do curso dela.
+  ⚠️⚠️ Quem pergunta por chão usa **`cenarioTemChao`**, nunca uma comparação com literal: `gorilas` tem
+  chão apesar do céu escuro, e `meu-jeito` não tem apesar de não ser o Desafio. E quem pergunta por céu
+  escuro usa **`cenarioEscuro`**: são duas perguntas diferentes desde que o registro passou de dois
+  mundos para quatro cenários, e confundi-las põe o cromo claro sobre a cidade noturna dos gorilas.
+  ⚠️ O campo atravessa a fronteira inteira: `PUBLIC_ACTIVITY_FIELDS` nos dois tipos de atividade e o DTO
+  TypeBox do members (`SceneCenarioSchema`) — sem ele lá, o `normalize` do Elysia tira o campo do payload
+  em silêncio e o player volta a derivar.
 - `sceneEmitsSound(cena)` decide o "Ligar som" pela legalidade da porta `sound` (hoje só a `jump-sound`);
   `session.test.ts` amarra a régua ao motor.
 

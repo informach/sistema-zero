@@ -107,7 +107,8 @@
         "hints": [],
         "activity": {
           "type": "experimentation",
-          "scene": "draw-loop"
+          "scene": "draw-loop",
+          "cenario": "corre-dino"
         }
       }
     },
@@ -165,7 +166,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "layers"
+          "scene": "layers",
+          "cenario": "corre-dino"
         }
       }
     },

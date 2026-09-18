@@ -1,6 +1,7 @@
 import type { LearningManifest, SectionProjectCheck } from '../../../packages/core/src/learning'
 import {
   blocoDaCena,
+  CENARIO_DO_CURSO,
   type CenaAnterior,
   type CenaDaAula,
   intencaoDaCena,
@@ -187,7 +188,7 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
         plannedVideo: `Fonte: ${sourceFile}, ${clip.sourceSection}. Entrada: “${clip.entry}”. Saída: “${clip.exit}”. Montagem: ${clip.edit} Timecodes dependem da conferência do vídeo gravado.`,
       }
       const cena = lessonOneScenes[clip.key as keyof typeof lessonOneScenes]
-      return cena ? [video, blocoDaCena(cena)] : [video]
+      return cena ? [video, blocoDaCena(cena, CENARIO_DO_CURSO['corre-dino'])] : [video]
     }),
     dialogue(
       'orientacao-iniciar-v7',

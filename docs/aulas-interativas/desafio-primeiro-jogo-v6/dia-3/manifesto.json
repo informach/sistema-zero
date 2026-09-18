@@ -47,7 +47,8 @@
               "name": "asteroide",
               "gender": "m"
             }
-          }
+          },
+          "cenario": "nave"
         },
         "checkpoint": {
           "prompt": "Por que virou uma parede de asteroides sem o relógio?",
@@ -100,6 +101,7 @@
               "plural": "pedras"
             }
           },
+          "cenario": "nave",
           "setup": {
             "actions": [
               {

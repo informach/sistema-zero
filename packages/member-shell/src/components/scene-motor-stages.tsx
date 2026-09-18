@@ -7,11 +7,12 @@ import {
   POOL_CROSSING,
   quantos,
   sceneBrainLabel,
-  sceneWorld,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
+import { FundoDoCenario } from './scene-arte'
 // ⚠️ O `VIEW` vem do canvas: os desenhos leem o enquadramento para encostar no chão e na borda.
 import { SceneCanvas, Texto, SCENE_VIEW as VIEW } from './scene-canvas'
-import { ActorFigure, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, pisoDoMundo } from './scene-figures'
 
 /**
  * Os palcos do MOTOR (lote 5 do Raio-X, 16/09/2026): `pool`, `entity-state`, `delta-time` e
@@ -40,7 +41,7 @@ const PILHA_MAX = 7
 export function PoolStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { onScreen, progress, created, last, recycling } = state.nursery
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'pool')
+  const mundo = sceneCenario(cast, 'pool')
   const piso = pisoDoMundo(mundo, 250)
   // ⚠️ A pilha é todo fabricado que não é o da tela: sem reciclagem cada saída empilha um, reciclando
   // o mesmo volta e a pilha fica como estava.
@@ -64,11 +65,14 @@ export function PoolStage({ state, cast }: { state: SceneState; cast?: SceneCast
       // ⭐ Uma frase NEUTRA do desenho (lote 5): o rodapé antigo era a regra ("um conta o que existe…").
       rodape="O número pintado é o nome de cada cacto."
     >
-      {mundo === 'espaco' ? (
-        <FundoEspaco w={VIEW.w} h={VIEW.h} semEstrelas={[{ x: 12, y: 10, w: 290, h: 96 }]} />
-      ) : (
-        <path className="fill-scene-grass" d={`M0 ${piso}H${VIEW.w}V${VIEW.h}H0Z`} />
-      )}
+      <FundoDoCenario
+        cenario={mundo}
+        w={VIEW.w}
+        h={VIEW.h}
+        chao={piso}
+        detalhe="calmo"
+        semDetalhe={[{ x: 12, y: 10, w: 290, h: 96 }]}
+      />
       {/* A PILHA dos que saíram: pequenos e apagados, cada um com o número dele. */}
       <g data-pilha={saiu}>
         <rect
@@ -347,7 +351,7 @@ const naPista = (pos: number) =>
 export function DeltaTimeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { mode, fastX, slowX, fastFrames, slowFrames } = state.machines
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneWorld(cast, 'delta-time')
+  const mundo = sceneCenario(cast, 'delta-time')
   const { chegada, passo } = DELTA_RACE
   const pistas = [
     {
@@ -380,7 +384,7 @@ export function DeltaTimeStage({ state, cast }: { state: SceneState; cast?: Scen
     >
       {(palco) => (
         <>
-          {mundo === 'espaco' && <FundoEspaco w={VIEW.w} h={VIEW.h} />}
+          <FundoDoCenario cenario={mundo} w={VIEW.w} h={VIEW.h} detalhe="calmo" />
           {pistas.map((pista) => {
             const chegou = pista.pos >= chegada
             return (

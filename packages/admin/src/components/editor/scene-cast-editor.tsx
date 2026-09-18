@@ -3,18 +3,21 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   DEFAULT_CAST,
+  SCENE_CENARIO_IDS,
   SCENE_FIGURE_NAMES,
   SCENE_FIGURES,
   SCENE_ROLES,
   type SceneActivity,
   type SceneActor,
   type SceneCast,
+  type SceneCenarioId,
   type SceneFigure,
   type SceneRole,
+  sceneCenario,
   sceneModelFor,
   sceneTargets,
-  sceneWorld,
 } from '@sistemazero/core/learning/scene'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -46,7 +49,20 @@ const NOME_DA_FIGURA: Record<SceneFigure, string> = {
   pedra: 'Pedra',
   tiro: 'Tiro',
   chama: 'Chama',
+  gorila: 'Gorila',
+  banana: 'Banana',
+  predio: 'Prédio',
 }
+
+/** Como o professor lê cada cenário. O `Record` reprova cenário novo sem rótulo. */
+const NOME_DO_CENARIO: Record<SceneCenarioId, string> = {
+  'corre-dino': 'Corre Dino (floresta)',
+  nave: 'Desafio do Primeiro Jogo (espaço)',
+  gorilas: 'Batalha de Gorilas (cidade)',
+  'meu-jeito': 'O Jogo do Meu Jeito (espaço)',
+}
+/** O valor do `<select>` que quer dizer "sem `cenario`: o core decide pelo elenco". */
+const PELO_ELENCO = ''
 /** O valor do `<select>` que quer dizer "sem `figure`: o core decide pelo nome". */
 const PELO_NOME = ''
 const ehFigura = (valor: string): valor is SceneFigure =>
@@ -93,7 +109,7 @@ const aparado = (texto: string) => texto.trim().replace(/\s+/g, ' ')
  */
 function avisosDoEspaco(activity: SceneActivity): string[] {
   const papeis = SCENE_ROLES[activity.scene]
-  if (sceneWorld(activity.cast, activity.scene) !== 'espaco') return []
+  if (cenarioTemChao(sceneCenario(activity.cast, activity.scene, activity.cenario))) return []
   const doEspaco = papeis.map((p) => actorFigure(activity.cast, p)).find((f) => !(f in DA_TERRA))
   const quem = doEspaco ? NOME_DA_FIGURA[doEspaco].toLowerCase() : 'uma figura do espaço'
   return papeis.flatMap((papel) => {
@@ -120,7 +136,9 @@ export function SceneCastEditor({
 }) {
   const id = useId()
   const cast = activity.cast ?? {}
-  const ativo = Boolean(cast.hero || cast.obstacle || cast.scenery)
+  // ⚠️ O CENÁRIO declarado também liga a prévia: o professor que escolheu o jogo mexeu na tela da
+  // criança e precisa ver o resultado, mesmo sem ter escrito um nome de elenco.
+  const ativo = Boolean(cast.hero || cast.obstacle || cast.scenery || activity.cenario)
 
   function trocar(
     papel: SceneRole,
@@ -179,7 +197,12 @@ export function SceneCastEditor({
   // ⚠️ Só os papéis que ESTA cena desenha (review do lote 3): a prévia dizia "Nave, Cacto e
   // Floresta, no espaço" para qualquer cena, inclusive as que não desenham ninguém.
   const papeisDaCena = SCENE_ROLES[activity.scene]
-  const mundo = sceneWorld(activity.cast, activity.scene)
+  const mundo = sceneCenario(activity.cast, activity.scene, activity.cenario)
+  // ⚠⚠ O rótulo de "Pelo elenco" mostra o DERIVADO, sem o campo declarado: com o `mundo` ali, uma
+  // cena que declara `nave` lia "Pelo elenco (Nave)" e prometia que apagar a escolha não mudaria
+  // nada — quando o elenco de fábrica do Corre Dino a levaria de volta à floresta. Hoje os 38 blocos
+  // de cena dos cursos declaram o campo, então este é o caso NORMAL, não a exceção.
+  const derivado = sceneCenario(activity.cast, activity.scene)
   const avisos = ativo ? avisosDoEspaco(activity) : []
 
   return (
@@ -189,6 +212,34 @@ export function SceneCastEditor({
         A cena é a mesma; mudam os nomes que a criança lê e o desenho de cada papel. Deixe em branco
         para manter o elenco do Corre Dino.
       </p>
+      {/* ⭐⭐ O CENÁRIO é a pergunta mais alta: qual JOGO esta cena mostra. Ele decide o fundo e o
+          elenco de fábrica, e é o que faz a experiência do corredinho parecer o corredinho. Em
+          branco, o core deriva do elenco — que é o que mantém de pé tudo o que já foi publicado. */}
+      <label className="block space-y-1">
+        <span className="text-sm font-medium">Qual jogo esta cena mostra</span>
+        <select
+          className="w-full rounded-lg border bg-background px-2 py-1.5 text-sm"
+          value={activity.cenario ?? PELO_ELENCO}
+          onChange={(e) =>
+            onChange(
+              e.target.value === PELO_ELENCO
+                ? { ...activity, cenario: undefined }
+                : { ...activity, cenario: e.target.value as SceneCenarioId },
+            )
+          }
+        >
+          <option value={PELO_ELENCO}>Pelo elenco ({NOME_DO_CENARIO[derivado]})</option>
+          {SCENE_CENARIO_IDS.map((id) => (
+            <option key={id} value={id}>
+              {NOME_DO_CENARIO[id]}
+            </option>
+          ))}
+        </select>
+        <span className="block text-xs text-muted-foreground">
+          O fundo e os personagens vêm do jogo escolhido. Deixe em "Pelo elenco" quando os nomes já
+          disserem o jogo.
+        </span>
+      </label>
       {/* ⚠️ A lista de nomes sai do CORE (`SCENE_FIGURE_NAMES`, review do lote 3): escrita à mão
           ela listava seis e esquecia meteoro, rocha, laser, fogo, dinossauro, árvore e mata. */}
       <div className="space-y-1 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
@@ -205,8 +256,9 @@ export function SceneCastEditor({
           ))}
         </ul>
         <p>
-          Nave, asteroide ou tiro no palco levam a cena para o espaço. Pedra e chama também, a menos
-          que o elenco tenha um Dino, um cacto ou uma floresta escritos.
+          Sem escolher o jogo acima, quem decide é o elenco: nave, asteroide ou tiro levam ao
+          Desafio; gorila, banana ou prédio, à Batalha de Gorilas; pedra e chama, ao Jogo do Meu
+          Jeito, a menos que o elenco tenha um Dino, um cacto ou uma floresta escritos.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -268,9 +320,7 @@ export function SceneCastEditor({
           <p className="text-xs text-muted-foreground">
             {papeisDaCena.length === 0
               ? 'Esta cena não desenha o elenco: mudam só os nomes nos textos.'
-              : `No palco: ${lista(papeisDaCena.map((p) => NOME_DA_FIGURA[actorFigure(activity.cast, p)]))}, ${
-                  mundo === 'espaco' ? 'no espaço' : 'no mundo do Corre Dino'
-                }.`}
+              : `No palco: ${lista(papeisDaCena.map((p) => NOME_DA_FIGURA[actorFigure(activity.cast, p)]))}, em ${NOME_DO_CENARIO[mundo]}.`}
           </p>
           {avisos.map((aviso) => (
             <p

@@ -155,7 +155,7 @@
           "Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare."
         ],
         "required": false,
-        "activity": { "type": "experimentation", "scene": "restart" }
+        "activity": { "type": "experimentation", "scene": "restart", "cenario": "corre-dino" }
       }
     },
     {

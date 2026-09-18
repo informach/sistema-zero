@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { isLearningManifest, type LearningManifest } from '../../../packages/core/src/learning'
 import {
   blocoDaCena,
+  CENARIO_DO_CURSO,
   type CenaAnterior,
   type CenaDaAula,
   cenaAnteriorMarkdown,
@@ -208,7 +209,7 @@ export function buildLesson(
     if (step.kind === 'experiment' && step.cena) {
       if (step.cena.bloco.activity.type !== 'experimentation' || step.cena.noFimDaLista)
         throw new Error(`A cena de experimentar fica no lugar do experimento: ${step.key}`)
-      blocks.push(blocoDaCena(step.cena))
+      blocks.push(blocoDaCena(step.cena, CENARIO_DO_CURSO['o-jogo-do-meu-jeito']))
       section(step.key, step.title, 'exploration', step.focus, [step.cena.chave], [step.cena.chave])
       continue
     }
@@ -241,9 +242,10 @@ export function buildLesson(
       step.to,
     )
     if (step.kind === 'observe' && step.cena) {
-      if (step.cena.noFimDaLista) noFim.push(blocoDaCena(step.cena))
+      if (step.cena.noFimDaLista)
+        noFim.push(blocoDaCena(step.cena, CENARIO_DO_CURSO['o-jogo-do-meu-jeito']))
       else {
-        blocks.push(blocoDaCena(step.cena))
+        blocks.push(blocoDaCena(step.cena, CENARIO_DO_CURSO['o-jogo-do-meu-jeito']))
         cenasDeObservacao++
       }
       section(

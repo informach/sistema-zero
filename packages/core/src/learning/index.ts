@@ -211,6 +211,10 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
     'vozes',
     'cast',
+    // ⚠️ PÚBLICO como o elenco, e pelo mesmo motivo: é o que o palco DESENHA. Fora da lista, a
+    // cena chegaria ao navegador sem o cenário do curso e cairia na derivação pelo elenco — ou
+    // seja, o campo que o professor escreveu não teria efeito nenhum na tela da criança.
+    'cenario',
     'setup',
     'presentation',
     'pilha',
@@ -227,6 +231,8 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
     'vozes',
     'cast',
+    // ⚠️ Ver a nota do mesmo campo na demonstração, acima.
+    'cenario',
     'setup',
     'pilha',
   ],

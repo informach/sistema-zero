@@ -126,7 +126,7 @@
           "Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir."
         ],
         "required": false,
-        "activity": { "type": "experimentation", "scene": "hitbox" }
+        "activity": { "type": "experimentation", "scene": "hitbox", "cenario": "corre-dino" }
       }
     },
     {

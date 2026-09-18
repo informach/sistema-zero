@@ -3,19 +3,21 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   PARADA_DO_SALTO,
   type SceneActivity,
   type SceneState,
   type SceneTrial,
   sceneAreaPercent,
+  sceneCenario,
   sceneContact,
   sceneDrawingsGap,
   sceneFromTrial,
   sceneTrial,
-  sceneWorld,
   TOPO_DO_SALTO,
 } from '@sistemazero/core/learning/scene'
 import { useId, useRef, useState } from 'react'
+import { FundoDoCenario } from './scene-arte'
 import {
   ESCALA_ESTREITA,
   LarguraConhecidaDaCena,
@@ -23,7 +25,7 @@ import {
   Texto,
   useLarguraMedida,
 } from './scene-canvas'
-import { ActorFigure, FundoEspaco } from './scene-figures'
+import { ActorFigure } from './scene-figures'
 
 /** Quanto de palco o salto tem, do chão (300) até embaixo do selo (60). */
 const ALTURA_DO_PALCO = 240
@@ -65,7 +67,7 @@ export function ExperienceScene({
   const heroi = actorFigure(activity.cast, 'hero')
   // ⚠️ Estas quatro cenas MANTÊM a linha do chão no espaço: ela é a régua da altura do salto e o
   // apoio das duas áreas da batida (review do lote 3).
-  const mundo = sceneWorld(activity.cast, activity.scene)
+  const mundo = sceneCenario(activity.cast, activity.scene)
   /**
    * ⚠️⚠️ A ESCALA do salto é da cena (lote 5 do Raio-X). Na `gravity` o Dino sem gravidade sobe até
    * sair por cima do palco em `TOPO_DO_SALTO` (600), e é aí que o player para o ▶; na `impulse` a
@@ -160,11 +162,11 @@ export function ExperienceScene({
                 <stop offset="1" style={{ stopColor: 'var(--color-scene-ground)' }} />
               </linearGradient>
             </defs>
-            {mundo === 'espaco' ? (
-              <FundoEspaco w={640} h={360} chao={301} />
-            ) : (
+            {/* ⚠️ A GRADE e a linha do chão ficam POR CIMA do mundo: é nelas que a criança mede a
+              altura do salto, e é para isso que o laboratório existe. */}
+            <FundoDoCenario cenario={mundo} w={640} h={360} chao={301} detalhe="calmo" />
+            {cenarioTemChao(mundo) && (
               <>
-                <rect width="640" height="360" rx="20" fill={`url(#${id}-sky)`} />
                 <rect x="24" y="24" width="592" height="276" fill={`url(#${id}-grid)`} />
                 <path className="stroke-scene-ink-soft" d="M24 301H616" strokeWidth="2" />
                 <path

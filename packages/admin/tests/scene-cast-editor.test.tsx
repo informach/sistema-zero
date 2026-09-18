@@ -41,6 +41,8 @@ async function montar(inicial: SceneActivity) {
       return activity
     },
     desenho: () => campo<HTMLSelectElement>('select[aria-label="Desenho de personagem"]'),
+    /** O seletor do CENÁRIO é o primeiro select da tela (a pergunta mais alta: que jogo é este). */
+    cenario: () => campo<HTMLSelectElement>('select'),
     async escrever(rotulo: string, texto: string) {
       const input = campo<HTMLInputElement>(`input[id$="-${rotulo}"]`)
       await act(async () => {
@@ -111,6 +113,9 @@ test('⭐ cada papel oferece o desenho, e "Pelo nome" diz o que o nome desenha',
       'pedra',
       'tiro',
       'chama',
+      'gorila',
+      'banana',
+      'predio',
     ])
   } finally {
     await e.fechar()
@@ -129,10 +134,10 @@ test('⚠️⚠️ a figura escolhida sobrevive à troca do nome, e "Pelo nome" 
     expect(isSceneCast(e.activity.cast)).toBe(true)
     // A prévia diz o que vai para o palco, e em que mundo. ⚠️ Só os papéis que a `velocity`
     // desenha (review do lote 3): ela não desenha obstáculo nem cenário.
-    expect(document.body.textContent).toContain('No palco: Pedra, no espaço.')
+    expect(document.body.textContent).toContain('No palco: Pedra, em O Jogo do Meu Jeito (espaço).')
     await e.escolher(e.desenho(), '')
     expect(e.activity.cast?.hero).toEqual({ name: 'Zezinho', gender: 'm' })
-    expect(document.body.textContent).toContain('No palco: Dino, no mundo do Corre Dino.')
+    expect(document.body.textContent).toContain('No palco: Dino, em Corre Dino (floresta).')
   } finally {
     await e.fechar()
   }
@@ -193,7 +198,9 @@ test('⚠️⚠️ a prévia só fala dos papéis que a cena DESENHA, e cena abs
     cast: { hero: { name: 'pedra', gender: 'f' }, scenery: { name: 'chama', gender: 'f' } },
   })
   try {
-    expect(document.body.textContent).toContain('No palco: Pedra e Chama, no espaço.')
+    expect(document.body.textContent).toContain(
+      'No palco: Pedra e Chama, em O Jogo do Meu Jeito (espaço).',
+    )
     expect(document.body.textContent).not.toContain('senão a criança vê')
   } finally {
     await camadas.fechar()
@@ -208,7 +215,9 @@ test('⚠️⚠️ espaço com um papel desenhado sem nome AVISA o professor', a
     cast: { obstacle: { name: 'asteroide', gender: 'm' } },
   })
   try {
-    expect(document.body.textContent).toContain('No palco: Dino e Asteroide, no espaço.')
+    expect(document.body.textContent).toContain(
+      'No palco: Dino e Asteroide, em Desafio do Primeiro Jogo (espaço).',
+    )
     expect(document.body.textContent).toContain(
       'Esta cena desenha o personagem. Com asteroide no elenco, dê um nome ao personagem (por exemplo, nave), senão a criança vê o Dino no espaço.',
     )
@@ -235,7 +244,9 @@ test('⚠️⚠️ espaço com um papel desenhado sem nome AVISA o professor', a
     cast: { hero: { name: 'nave', gender: 'f' } },
   })
   try {
-    expect(document.body.textContent).toContain('No palco: Nave, no espaço.')
+    expect(document.body.textContent).toContain(
+      'No palco: Nave, em Desafio do Primeiro Jogo (espaço).',
+    )
     expect(document.body.textContent).not.toContain('senão a criança vê')
   } finally {
     await soNave.fechar()
@@ -249,6 +260,53 @@ test('a nota lista os nomes de cada figura a partir do core', async () => {
     for (const nome of ['meteoro', 'rocha', 'laser', 'fogo', 'dinossauro', 'árvore', 'espaçonave'])
       expect({ nome, listado: texto.includes(nome) }).toEqual({ nome, listado: true })
     expect(texto).not.toContain('bala')
+  } finally {
+    await e.fechar()
+  }
+})
+
+test('⭐⭐ o CENÁRIO: o professor escolhe o jogo, e "Pelo elenco" mostra o derivado', async () => {
+  const e = await montar({ type: 'experimentation', scene: 'velocity' })
+  try {
+    // Sem elenco, a derivação dá o Corre Dino — e é isso que a opção em branco anuncia.
+    expect(e.cenario().selectedOptions[0]?.textContent).toBe('Pelo elenco (Corre Dino (floresta))')
+    expect(e.activity.cenario).toBeUndefined()
+
+    await e.escolher(e.cenario(), 'gorilas')
+    expect(e.activity.cenario).toBe('gorilas')
+    expect(document.body.textContent).toContain('em Batalha de Gorilas (cidade)')
+
+    // ⚠️ Voltar para "Pelo elenco" TIRA o campo, não grava o derivado: é o que mantém o manifesto
+    // igual ao publicado quando o professor só olhou o seletor. Sem elenco e sem cenário não há o
+    // que prever, e a prévia some junto — como já fazia antes deste campo existir.
+    await e.escolher(e.cenario(), '')
+    expect(e.activity.cenario).toBeUndefined()
+    expect(e.cenario().selectedOptions[0]?.textContent).toBe('Pelo elenco (Corre Dino (floresta))')
+    expect(document.body.textContent).not.toContain('No palco:')
+  } finally {
+    await e.fechar()
+  }
+})
+
+test('⚠️ o cenário DECLARADO vence o elenco na prévia e no aviso', async () => {
+  const e = await montar({ type: 'experimentation', scene: 'velocity' })
+  try {
+    // Com uma nave escrita, a derivação levaria ao Desafio; o campo manda no Corre Dino.
+    await e.escrever('hero', 'nave')
+    expect(document.body.textContent).toContain('em Desafio do Primeiro Jogo (espaço)')
+    await e.escolher(e.cenario(), 'corre-dino')
+    expect(document.body.textContent).toContain('em Corre Dino (floresta)')
+    // O aviso do espaço some junto: ele existe para o cenário SEM chão.
+    expect(document.body.textContent).not.toContain('senão a criança vê')
+
+    // ⚠⚠ E a opção em branco segue anunciando o DERIVADO, não o que está escolhido: ela é a
+    // prévia de "o que acontece se eu apagar isto". Lendo o cenário resolvido, ela dizia
+    // "Pelo elenco (Corre Dino (floresta))" com uma nave no palco — e hoje os 38 blocos de cena
+    // dos cursos declaram o campo, então este é o estado normal do seletor, não um canto.
+    // (`options[0]` é a opção em branco; a SELECIONADA agora é o Corre Dino.)
+    expect(e.cenario().options[0]?.textContent).toBe(
+      'Pelo elenco (Desafio do Primeiro Jogo (espaço))',
+    )
   } finally {
     await e.fechar()
   }

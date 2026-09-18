@@ -1,4 +1,5 @@
 import { isRecord, type SceneId } from './actions'
+import { CENARIO_DA_FIGURA, isSceneCenario, type SceneCenarioId } from './cenario'
 
 /**
  * "1 cacto" e "3 cactos": o número e o nome concordando.
@@ -67,6 +68,9 @@ export const SCENE_FIGURES = [
   'pedra',
   'tiro',
   'chama',
+  'gorila',
+  'banana',
+  'predio',
 ] as const
 export type SceneFigure = (typeof SCENE_FIGURES)[number]
 
@@ -163,6 +167,9 @@ export const SCENE_FIGURE_NAMES: Readonly<Record<SceneFigure, readonly string[]>
   pedra: ['pedra', 'pedrinha', 'pedregulho', 'rocha'],
   tiro: ['tiro', 'laser', 'disparo', 'projétil', 'míssil'],
   chama: ['chama', 'fogo', 'labareda'],
+  gorila: ['gorila', 'macaco', 'símio'],
+  banana: ['banana'],
+  predio: ['prédio', 'edifício', 'torre'],
 }
 
 const semAcento = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '')
@@ -223,10 +230,14 @@ export function actorFigure(cast: SceneCast | undefined, papel: SceneRole): Scen
 }
 
 /**
- * O mundo em que o palco acontece: a paisagem do Corre Dino ou o espaço dos jogos de nave.
- * ⚠️ `Kind`: `SceneWorld` já é o grupo do estado da cena `world` (criado/desenhado), em `state.ts`.
+ * O mundo em que o palco acontece é hoje o CENÁRIO — o jogo que a cena retrata (`cenario.ts`).
+ *
+ * ⚠️⚠️ Era `'terra' | 'espaco'`, e isso bastava enquanto o mundo era um retângulo de cor: o eixo
+ * dizia só se havia chão. Com o mundo desenhado pela arte do Jogo 2D, a cena precisa saber QUAL
+ * jogo ela retrata, e são quatro. Quem pergunta por chão usa `cenarioTemChao`, nunca uma
+ * comparação com um valor literal.
  */
-export type SceneWorldKind = 'terra' | 'espaco'
+export type { SceneCenarioId } from './cenario'
 
 /**
  * Os papéis que o PALCO de cada cena desenha (consertos do review do lote 3, 16/09/2026).
@@ -300,34 +311,58 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   shading: [],
 }
 
-/** As figuras que só existem no espaço. Uma delas desenhada leva o palco inteiro para lá. */
-const FIGURAS_DO_ESPACO: readonly SceneFigure[] = ['nave', 'asteroide', 'tiro']
-/** As do Corre Dino. */
-const FIGURAS_DA_TERRA: readonly SceneFigure[] = ['dino', 'cacto', 'floresta']
+/**
+ * Os cenários que UMA figura desenhada já decide sozinha.
+ *
+ * ⚠️⚠️ A ORDEM dos três passos abaixo é a régua antiga, preservada linha por linha, e ela é
+ * sutil: a pedra e a chama ficam de FORA deste conjunto de propósito. Nos cursos elas SÃO o
+ * asteroide e o fogo dele, então sozinhas puxam para o jogo delas; mas com um Dino declarado ao
+ * lado, a cena é o Corre Dino com uma pedra no caminho. Pôr `meu-jeito` aqui devolveria o defeito
+ * que a régua conserta: `{hero: Dino, obstacle: pedra}` punha o Dino no céu de estrelas.
+ */
+const CENARIOS_IMEDIATOS: readonly SceneCenarioId[] = ['nave', 'gorilas']
+/** Os que só decidem quando mais nada decidiu (o terceiro passo). */
+const CENARIOS_TARDIOS: readonly SceneCenarioId[] = ['meu-jeito']
+
+const cenarioDaFigura = (f: SceneFigure, entre: readonly SceneCenarioId[]) => {
+  const id = CENARIO_DA_FIGURA[f]
+  return id && entre.includes(id) ? id : null
+}
 
 /**
- * O mundo de UMA CENA com este elenco: `espaco` ou `terra`. Só contam os papéis que o palco dela
- * desenha (`SCENE_ROLES`); cena que não desenha ninguém fica sempre na terra.
+ * O CENÁRIO de uma cena com este elenco: qual jogo ela retrata. Só contam os papéis que o palco
+ * dela desenha (`SCENE_ROLES`); cena que não desenha ninguém fica no Corre Dino.
  *
  * A régua, na ordem:
- * 1. Nave, asteroide ou tiro desenhado → espaço.
- * 2. Senão, algum papel desenhado DECLARADO no elenco com figura da terra (o professor escreveu um
- *    Dino, um cacto ou uma floresta) → terra. É o caso da pedra no caminho do Dino.
- * 3. Senão, pedra ou chama desenhada → espaço.
+ * 1. Uma figura de `nave` ou de `gorilas` desenhada → aquele cenário.
+ * 2. Senão, algum papel desenhado DECLARADO no elenco com figura do Corre Dino (o professor
+ *    escreveu um Dino, um cacto ou uma floresta) → `corre-dino`. É o caso da pedra no caminho.
+ * 3. Senão, pedra ou chama desenhada → `meu-jeito`.
  *
- * ⚠️ A pedra e a chama vão para o espaço quando estão SÓ, porque nos cursos elas SÃO o asteroide
- * (O Jogo do Meu Jeito desenha a pedra com crateras e a chama atrás dela). Com um Dino declarado
- * elas voltam para a terra: antes, `{hero: Dino, obstacle: pedra}` punha o Dino no céu de estrelas.
- * ⚠️ O papel NÃO declarado não puxa para a terra: é ele que sobra de fábrica quando o curso só
- * troca um nome, e é justamente o caso que o aviso do editor do admin aponta.
+ * ⚠️ O papel NÃO declarado não puxa para o Corre Dino: é ele que sobra de fábrica quando o curso
+ * só troca um nome, e é justamente o caso que o aviso do editor do admin aponta.
+ * ⚠️ `declarado` VENCE a derivação inteira: é o campo `cenario` da atividade, escrito pelo
+ * professor. A derivação existe para os manifestos já publicados, que não o têm.
  */
-export function sceneWorld(cast: SceneCast | undefined, scene: SceneId): SceneWorldKind {
+export function sceneCenario(
+  cast: SceneCast | undefined,
+  scene: SceneId,
+  declarado?: SceneCenarioId,
+): SceneCenarioId {
+  if (declarado && isSceneCenario(declarado)) return declarado
   const papeis = SCENE_ROLES[scene] ?? []
   const figuras = papeis.map((p) => actorFigure(cast, p))
-  if (figuras.some((f) => FIGURAS_DO_ESPACO.includes(f))) return 'espaco'
-  if (papeis.some((p) => cast?.[p] && FIGURAS_DA_TERRA.includes(actorFigure(cast, p))))
-    return 'terra'
-  return figuras.some((f) => f === 'pedra' || f === 'chama') ? 'espaco' : 'terra'
+  for (const f of figuras) {
+    const id = cenarioDaFigura(f, CENARIOS_IMEDIATOS)
+    if (id) return id
+  }
+  if (papeis.some((p) => cast?.[p] && CENARIO_DA_FIGURA[actorFigure(cast, p)] === 'corre-dino'))
+    return 'corre-dino'
+  for (const f of figuras) {
+    const id = cenarioDaFigura(f, CENARIOS_TARDIOS)
+    if (id) return id
+  }
+  return 'corre-dino'
 }
 
 /**

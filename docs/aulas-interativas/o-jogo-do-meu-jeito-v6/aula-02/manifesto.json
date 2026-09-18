@@ -80,7 +80,8 @@
         "hints": [],
         "activity": {
           "type": "experimentation",
-          "scene": "symmetry"
+          "scene": "symmetry",
+          "cenario": "meu-jeito"
         },
         "checkpoint": {
           "prompt": "O que os dois espelhos fazem com o traço que você pinta?",
@@ -196,6 +197,7 @@
         "activity": {
           "type": "demonstration",
           "scene": "shading",
+          "cenario": "meu-jeito",
           "presentation": "inline"
         }
       }

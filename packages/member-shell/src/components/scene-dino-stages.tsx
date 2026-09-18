@@ -3,20 +3,22 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   decimal,
   quantos,
   type SceneAction,
   type SceneCast,
+  type SceneCenarioId,
   type ScenePilha,
   type SceneState,
-  type SceneWorldKind,
   sceneCactiOnScreen,
-  sceneWorld,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react'
 import { SceneButton } from './exploration-stage'
+import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto, usePalco } from './scene-canvas'
-import { ActorFigure, CENARIO_UNICO, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, CENARIO_UNICO, pisoDoMundo } from './scene-figures'
 
 /**
  * Os palcos do Corre Dino, primeira metade (lote 5 do Raio-X, 16/09/2026): `layers`, `jump-sound`,
@@ -40,31 +42,49 @@ const STAGE = { w: 600, h: 310 } as const
 /** O chão da pista, como no palco compartilhado. */
 const CHAO = 238
 
-/** O fundo da pista: grama e pontinhos na terra, céu de estrelas no espaço. */
+/**
+ * O fundo da pista: o mundo do jogo que esta cena retrata.
+ *
+ * ⭐⭐ Era um retângulo de pontinhos com uma faixa de grama; hoje é a paisagem do jogo — a floresta
+ * do Corre Dino com céu, sol, nuvens e morros, ou o céu de estrelas do Desafio. Os PONTINHOS
+ * continuam por cima: eles não são enfeite, são a régua que deixa a criança medir o quanto o Dino
+ * andou entre um passo e outro. É a regra desta reforma inteira — o fundo é o jogo, o que a cena
+ * ENSINA fica por cima dele.
+ *
+ * ⚠️ `detalhe="calmo"` porque o palco escreve a faixa e os rótulos aqui: com o fundo cheio, as
+ * nuvens brancas passam atrás dos números.
+ */
 function Pista({
   mundo,
-  semEstrelas,
+  semDetalhe,
   chaoNoEspaco,
 }: {
-  mundo: SceneWorldKind
-  semEstrelas?: readonly { x: number; y: number; w: number; h: number }[]
+  mundo: SceneCenarioId
+  semDetalhe?: readonly { x: number; y: number; w: number; h: number }[]
   chaoNoEspaco?: number
 }) {
   const id = useId()
-  if (mundo === 'espaco')
-    return (
-      <FundoEspaco w={STAGE.w} h={STAGE.h} chao={chaoNoEspaco} semEstrelas={semEstrelas ?? []} />
-    )
   return (
     <>
-      <defs>
-        <pattern id={`${id}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
-          <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
-        </pattern>
-      </defs>
-      <rect width={STAGE.w} height={STAGE.h} fill={`url(#${id}-dots)`} opacity="0.35" />
-      <path className="fill-scene-grass" d={`M0 ${CHAO}H${STAGE.w}V${STAGE.h}H0Z`} />
-      <path className="stroke-scene-line" d={`M0 ${CHAO}H${STAGE.w}`} strokeWidth="2" />
+      <FundoDoCenario
+        cenario={mundo}
+        w={STAGE.w}
+        h={STAGE.h}
+        chao={cenarioTemChao(mundo) ? CHAO : chaoNoEspaco}
+        detalhe="calmo"
+        semDetalhe={semDetalhe ?? []}
+      />
+      {cenarioTemChao(mundo) && (
+        <>
+          <defs>
+            <pattern id={`${id}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
+            </pattern>
+          </defs>
+          <rect width={STAGE.w} height={CHAO} fill={`url(#${id}-dots)`} opacity="0.35" />
+          <path className="stroke-scene-line" d={`M0 ${CHAO}H${STAGE.w}`} strokeWidth="2" />
+        </>
+      )}
     </>
   )
 }
@@ -142,7 +162,7 @@ export function LayersStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const cenario = actorFigure(cast, 'scenery')
-  const mundo = sceneWorld(cast, 'layers')
+  const mundo = sceneCenario(cast, 'layers')
   const piso = pisoDoMundo(mundo, CHAO)
   const frente = state.world.front
   const floresta =
@@ -196,7 +216,7 @@ export function LayersStage({
             : 'A floresta fica na frente, e só um pedaço do Dino aparece.'
       }
     >
-      <Pista mundo={mundo} semEstrelas={[{ x: 14, y: 8, w: 240, h: 30 }]} />
+      <Pista mundo={mundo} semDetalhe={[{ x: 14, y: 8, w: 240, h: 30 }]} />
       <Selo>{castText('Quem fica na frente', cast)}</Selo>
       {ocultarOrdem ? (
         desenhosSeparados
@@ -237,7 +257,7 @@ export function JumpSoundStage({
   onJump?: (input: 'key' | 'tap') => void
 }) {
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneWorld(cast, 'jump-sound')
+  const mundo = sceneCenario(cast, 'jump-sound')
   const { beats, jumps, count } = state.sound
   const chaoDoDino = 120
   const subida = Math.min(70, state.flight.y * 0.4)
@@ -277,18 +297,16 @@ export function JumpSoundStage({
               : 'No último aperto, o som tocou e o Dino não pulou.'
       }`}
     >
-      {mundo === 'espaco' ? (
-        <FundoEspaco
-          w={STAGE.w}
-          h={STAGE.h}
-          chao={chaoDoDino}
-          semEstrelas={[{ x: 0, y: 150, w: 600, h: 160 }]}
-        />
-      ) : (
-        <>
-          <rect className="fill-scene-sky" width={STAGE.w} height={chaoDoDino} />
-          <path className="stroke-scene-line" d={`M0 ${chaoDoDino}H${STAGE.w}`} strokeWidth="2" />
-        </>
+      <FundoDoCenario
+        cenario={mundo}
+        w={STAGE.w}
+        h={STAGE.h}
+        chao={chaoDoDino}
+        detalhe="calmo"
+        semDetalhe={[{ x: 0, y: 150, w: 600, h: 160 }]}
+      />
+      {cenarioTemChao(mundo) && (
+        <path className="stroke-scene-line" d={`M0 ${chaoDoDino}H${STAGE.w}`} strokeWidth="2" />
       )}
       <g
         // ⚠️ O contorno de foco só pelo teclado (consertos do review da onda A do lote 5): um quadrado
@@ -474,7 +492,7 @@ const naTela = (state: SceneState) => state.crowd.cacti.filter((c) => c.x >= 0 &
 export function SpawnStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'spawn')
+  const mundo = sceneCenario(cast, 'spawn')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = naTela(state)
   const desenho = cactosParaDesenhar(tela)
@@ -495,7 +513,7 @@ export function SpawnStage({ state, cast }: { state: SceneState; cast?: SceneCas
             : `${quantos(tela.length, 'cacto', 'cactos')} na tela, com espaço entre um e outro.`
       }
     >
-      <Pista mundo={mundo} semEstrelas={[{ x: 14, y: 8, w: 260, h: 30 }]} />
+      <Pista mundo={mundo} semDetalhe={[{ x: 14, y: 8, w: 260, h: 30 }]} />
       <Selo>{castText('Os cactos que nascem', cast)}</Selo>
       {desenho.map((c) => (
         <ActorFigure key={c.id} figure={obstaculo} x={60 + c.x} y={piso} />
@@ -527,7 +545,7 @@ export function GameStateStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'game-state')
+  const mundo = sceneCenario(cast, 'game-state')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = naTela(state)
   const inicio = state.match.screen === 'start'
@@ -567,7 +585,7 @@ export function GameStateStage({
     >
       <Pista
         mundo={mundo}
-        semEstrelas={[
+        semDetalhe={[
           { x: 14, y: 8, w: 200, h: 30 },
           { x: 396, y: 34, w: 190, h: 110 },
         ]}
@@ -632,7 +650,7 @@ const PRATELEIRA = 16
  */
 export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'cleanup')
+  const mundo = sceneCenario(cast, 'cleanup')
   const tela = naTela(state)
   const noGrupo = state.crowd.born - state.crowd.removed
   const fora = Math.max(0, noGrupo - sceneCactiOnScreen(state.crowd))
@@ -656,14 +674,15 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
           descricao: `${quantos(tela.length, 'cacto', 'cactos')} na tela. A saída é a borda da esquerda.`,
           desenho: (
             <>
-              {mundo === 'espaco' ? (
-                <FundoEspaco w={LADO.w} h={LADO.h} />
-              ) : (
-                <>
-                  <rect className="fill-scene-sky" width={LADO.w} height={LADO.h} />
-                  <path className="fill-scene-grass" d={`M0 ${chao}H${LADO.w}V${LADO.h}H0Z`} />
-                  <path className="stroke-scene-line" d={`M0 ${chao}H${LADO.w}`} strokeWidth="2" />
-                </>
+              <FundoDoCenario
+                cenario={mundo}
+                w={LADO.w}
+                h={LADO.h}
+                chao={cenarioTemChao(mundo) ? chao : undefined}
+                detalhe="calmo"
+              />
+              {cenarioTemChao(mundo) && (
+                <path className="stroke-scene-line" d={`M0 ${chao}H${LADO.w}`} strokeWidth="2" />
               )}
               {tela.map((c) => (
                 <ActorFigure
@@ -701,11 +720,7 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
             : 'Uma prateleira vazia.',
           desenho: (
             <>
-              {mundo === 'espaco' ? (
-                <FundoEspaco w={LADO.w} h={LADO.h} />
-              ) : (
-                <rect className="fill-scene-sky" width={LADO.w} height={LADO.h} />
-              )}
+              <FundoDoCenario cenario={mundo} w={LADO.w} h={LADO.h} detalhe="calmo" />
               {/* A prateleira: quem saiu da tela e continua no grupo. */}
               {jaSaiu && (
                 <Texto className="fill-scene-ink" x="18" y="30" tamanho={14} fontWeight="600">
@@ -874,7 +889,7 @@ export function ControlsStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneWorld(cast, 'controls')
+  const mundo = sceneCenario(cast, 'controls')
   const piso = pisoDoMundo(mundo, CHAO)
   const inicio = state.match.screen === 'start'
   const tries = state.match.tries
@@ -939,7 +954,7 @@ export function ControlsStage({
     >
       <Pista
         mundo={mundo}
-        semEstrelas={[
+        semDetalhe={[
           { x: 30, y: 46, w: 360, h: 104 },
           { x: 390, y: 46, w: 206, h: 130 },
         ]}

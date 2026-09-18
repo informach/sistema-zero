@@ -33,7 +33,8 @@
           "cast": {
             "hero": { "name": "nave", "gender": "f" },
             "obstacle": { "name": "asteroide", "gender": "m" }
-          }
+          },
+          "cenario": "nave"
         }
       }
     },
@@ -209,6 +210,7 @@
             "hero": { "name": "nave", "gender": "f" },
             "obstacle": { "name": "asteroide", "gender": "m" }
           },
+          "cenario": "nave",
           "script": [
             {
               "id": "passo-1",

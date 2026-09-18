@@ -3,12 +3,15 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   type SceneCast,
+  type SceneCenarioId,
   type SceneState,
-  sceneWorld,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
+import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
-import { ActorFigure, FundoEspaco } from './scene-figures'
+import { ActorFigure } from './scene-figures'
 
 /**
  * `world` — criar e mostrar são a mesma coisa?
@@ -38,14 +41,36 @@ const FICHA_EMPILHADA = { x: 0, y: 52, w: LADO.w, h: 216 } as const
 const TELA_EMPILHADA = { x: 0, y: 58, w: LADO.w, h: 194 } as const
 
 /**
- * O personagem no JOGO de cada mundo: a tela e o endereço que a criança digitou no Estúdio uma seção
- * antes. ⚠️ São os números dos cursos, e não enfeite: o Dino da Aula 1 é "x 110, y 150, tamanho 64"
- * numa tela de 480 × 270; a nave do Dia 1 é "x 400, y 410, largura 54 e altura 62" numa de 800 × 480.
+ * O personagem no JOGO de cada CENÁRIO: a tela e o endereço que a criança digitou no Estúdio uma
+ * seção antes. ⚠️ São os números dos cursos, e não enfeite: o Dino da Aula 1 é "x 110, y 150,
+ * tamanho 64" numa tela de 480 × 270; a nave do Dia 1 é "x 400, y 410, largura 54 e altura 62"
+ * numa de 800 × 480.
+ *
+ * ⚠️⚠️ É um `Record<SceneCenarioId, …>` de propósito, e não um objeto solto: cenário novo no core
+ * passa a ser erro de TIPO aqui. Enquanto as chaves eram `terra`/`espaco`, um cenário novo caía em
+ * `undefined` e o palco quebrava só em execução, num teste distante.
  */
-const NO_JOGO = {
-  terra: { tela: { w: 480, h: 270 }, x: 110, y: 150, caixa: { w: 64, h: 64, centro: 9.5 } },
-  espaco: { tela: { w: 800, h: 480 }, x: 400, y: 410, caixa: { w: 54, h: 62, centro: 0 } },
-} as const
+const NO_JOGO: Record<
+  SceneCenarioId,
+  {
+    tela: { w: number; h: number }
+    x: number
+    y: number
+    caixa: { w: number; h: number; centro: number }
+  }
+> = {
+  'corre-dino': {
+    tela: { w: 480, h: 270 },
+    x: 110,
+    y: 150,
+    caixa: { w: 64, h: 64, centro: 9.5 },
+  },
+  nave: { tela: { w: 800, h: 480 }, x: 400, y: 410, caixa: { w: 54, h: 62, centro: 0 } },
+  // O gorila fica no alto de um prédio, numa tela do tamanho da do Corre Dino.
+  gorilas: { tela: { w: 480, h: 270 }, x: 60, y: 120, caixa: { w: 30, h: 36, centro: 0 } },
+  // A pedra do Meu Jeito divide a tela do Desafio: os dois jogos são no espaço.
+  'meu-jeito': { tela: { w: 800, h: 480 }, x: 400, y: 410, caixa: { w: 44, h: 32, centro: 0 } },
+}
 
 export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { created, drawn } = state.world
@@ -57,8 +82,8 @@ export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCas
    */
   const naTela = created && drawn
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneWorld(cast, 'world')
-  const espaco = mundo === 'espaco'
+  const mundo = sceneCenario(cast, 'world')
+  const espaco = !cenarioTemChao(mundo)
   const jogo = NO_JOGO[mundo]
   // ⚠️ O nome da ficha é o do BLOCO do Estúdio, em minúsculas ("dino", "nave").
   const nome = castText('Dino', cast).toLowerCase()
@@ -183,17 +208,14 @@ export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCas
                   três árvores continuavam lá com o desenho desligado, e a tela ensinava que
                   "desligado" apaga só o Dino; e a resposta certa da previsão antiga ("Nada") era
                   desmentida pelo próprio desenho. */}
-              {espaco ? (
-                <FundoEspaco x={tela.x} y={tela.y} w={tela.w} h={tela.h} />
-              ) : (
-                <rect
-                  className="fill-scene-sky"
-                  x={tela.x}
-                  y={tela.y}
-                  width={tela.w}
-                  height={tela.h}
-                />
-              )}
+              <FundoDoCenario
+                cenario={mundo}
+                x={tela.x}
+                y={tela.y}
+                w={tela.w}
+                h={tela.h}
+                detalhe="calmo"
+              />
               <rect
                 className="stroke-scene-line"
                 x={tela.x}

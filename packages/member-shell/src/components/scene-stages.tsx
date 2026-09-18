@@ -8,19 +8,21 @@ import type {
 } from '@sistemazero/core/learning/scene'
 import {
   actorFigure,
+  cenarioTemChao,
   drawLoopOnScreen,
   quantos,
   SCENE_LIMITS,
   SCREEN_READER_EMPTY,
   STAGE_TARGET,
-  sceneWorld,
+  sceneCenario,
   screenReaderSays,
 } from '@sistemazero/core/learning/scene'
 import { Check, Ear, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { SceneButton } from './exploration-stage'
+import { FundoDoCenario } from './scene-arte'
 import { LarguraConhecidaDaCena, SceneCanvas, Texto, useLarguraMedida } from './scene-canvas'
-import { ActorFigure, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, pisoDoMundo } from './scene-figures'
 import { useSceneVoice } from './use-scene-voice'
 
 /**
@@ -88,7 +90,7 @@ export function CoordinatesStage({ state, cast }: { state: SceneState; cast?: Sc
   const mexeu = fromX !== x || fromY !== y
   const heroi = actorFigure(cast, 'hero')
   const caixa = caixaDe(heroi)
-  const mundo = sceneWorld(cast, 'coordinates')
+  const mundo = sceneCenario(cast, 'coordinates')
   return (
     <SceneCanvas
       view={VIEW}
@@ -194,37 +196,33 @@ export function CoordinatesStage({ state, cast }: { state: SceneState; cast?: Sc
             </g>
             {/* A tela: o céu com pontinhos do Corre Dino, ou o espaço de estrelas do Desafio (a tela do
                 jogo da criança é "um espaço cheio de estrelas" desde o Dia 1). */}
-            {mundo === 'espaco' ? (
-              <>
-                <FundoEspaco x={MARGEM.x} y={MARGEM.y} w={TELA.w} h={TELA.h} />
-                <rect
-                  className="stroke-scene-line"
-                  x={MARGEM.x}
-                  y={MARGEM.y}
-                  width={TELA.w}
-                  height={TELA.h}
-                  fill="none"
-                  strokeWidth="2"
-                />
-              </>
-            ) : (
-              <>
-                <rect
-                  className="fill-scene-sky stroke-scene-line"
-                  x={MARGEM.x}
-                  y={MARGEM.y}
-                  width={TELA.w}
-                  height={TELA.h}
-                  strokeWidth="2"
-                />
-                <rect
-                  x={MARGEM.x}
-                  y={MARGEM.y}
-                  width={TELA.w}
-                  height={TELA.h}
-                  fill={`url(#${id}-dots)`}
-                />
-              </>
+            {/* ⚠️ `calmo`: esta cena escreve as duas RÉGUAS por cima da tela, e é nelas que a
+                criança lê o endereço. Um céu com nuvens atrás dos números competiria com a conta. */}
+            <FundoDoCenario
+              cenario={mundo}
+              x={MARGEM.x}
+              y={MARGEM.y}
+              w={TELA.w}
+              h={TELA.h}
+              detalhe="calmo"
+            />
+            <rect
+              className="stroke-scene-line"
+              x={MARGEM.x}
+              y={MARGEM.y}
+              width={TELA.w}
+              height={TELA.h}
+              fill="none"
+              strokeWidth="2"
+            />
+            {cenarioTemChao(mundo) && (
+              <rect
+                x={MARGEM.x}
+                y={MARGEM.y}
+                width={TELA.w}
+                height={TELA.h}
+                fill={`url(#${id}-dots)`}
+              />
             )}
             {/* ⚠️⚠️ O que passa da tela é RECORTADO pela própria tela, como no jogo (lote 5): em x 480 o
                 Dino saía do quadro do desenho, e em 0, 0 cobria os números da régua. */}
@@ -324,7 +322,7 @@ export function ScreenReaderStage({
   const { text, heard, heardEmpty, said, listens } = state.description
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'screen-reader')
+  const mundo = sceneCenario(cast, 'screen-reader')
   // ⚠️ A miniatura só tem a linha do chão na terra: no espaço as figuras flutuam.
   const piso = pisoDoMundo(mundo, 118)
   const diz = screenReaderSays(state)
@@ -426,40 +424,29 @@ export function ScreenReaderStage({
               // e quem usa leitor de tela ouvia a frase como se fosse o que o leitor do jogo diz.
               descricao="Desenho da tela do jogo: o Dino, os cactos e o placar."
             >
-              {mundo === 'espaco' ? (
-                <FundoEspaco w={240} h={150} semEstrelas={[{ x: 6, y: 6, w: 76, h: 28 }]} />
-              ) : (
-                <>
-                  <rect className="fill-scene-sky" width="240" height="150" />
-                  <rect className="fill-scene-ground" y="118" width="240" height="32" />
-                  <path className="stroke-scene-line" d="M0 118h240" strokeWidth="2" />
-                </>
+              <FundoDoCenario
+                cenario={mundo}
+                w={240}
+                h={150}
+                chao={118}
+                detalhe="calmo"
+                semDetalhe={[{ x: 6, y: 6, w: 76, h: 28 }]}
+              />
+              {cenarioTemChao(mundo) && (
+                <path className="stroke-scene-line" d="M0 118h240" strokeWidth="2" />
               )}
               {/* ⚠️ O pé do Dino assenta NA linha do chão: `y` é o solo dele, e a escala do
                 grupo entra na conta (118 = 44 + 87 × 0,85). */}
               <g className="text-primary" transform="translate(10 44) scale(0.85)">
                 <ActorFigure figure={heroi} x={52} y={87 - (118 - piso) / 0.85} />
               </g>
-              {/* ⚠️ Os cactos desta miniatura são retângulos desde sempre, e ficam: é o Corre Dino que
-              não muda. Lote 5: MAIORES (o segundo era só um traço) e com braços dos dois lados.
-              Qualquer outro obstáculo vem da figura dele. */}
-              {obstaculo === 'cacto' ? (
-                <g className="fill-scene-leaf" data-figure="cacto">
-                  <rect x="160" y="76" width="11" height="42" rx="3" />
-                  <rect x="150" y="88" width="10" height="9" rx="2" />
-                  <rect x="150" y="80" width="5" height="14" rx="2" />
-                  <rect x="171" y="84" width="10" height="9" rx="2" />
-                  <rect x="176" y="76" width="5" height="14" rx="2" />
-                  <rect x="206" y="90" width="10" height="28" rx="3" />
-                  <rect x="216" y="98" width="8" height="7" rx="2" />
-                  <rect x="220" y="91" width="4" height="12" rx="2" />
-                </g>
-              ) : (
-                <>
-                  <ActorFigure figure={obstaculo} x={170} y={piso} escala={0.6} />
-                  <ActorFigure figure={obstaculo} x={214} y={piso} escala={0.5} />
-                </>
-              )}
+              {/* ⚠️⚠️ Os cactos desta miniatura eram OITO retângulos escritos à mão, e a nota ao lado
+              deles dizia "ficam: é o Corre Dino que não muda". Isso caiu com a reforma da arte: o
+              pedido de hoje é o oposto — a cena tem que mostrar o cacto DO JOGO, com os braços e a
+              florzinha, e não um boneco de retângulos que só ela conhece. Agora os dois obstáculos
+              saem da mesma porta, como todo o resto. */}
+              <ActorFigure figure={obstaculo} x={170} y={piso} escala={0.6} />
+              <ActorFigure figure={obstaculo} x={214} y={piso} escala={0.5} />
               {/* O placar dentro de um retângulo: solto, "pontos 0" se lia como sujeira no céu. */}
               <rect
                 className="fill-scene-card stroke-scene-card-line"
@@ -656,7 +643,7 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
   }
   const tela = moldura(width, height)
   const alvo = moldura(STAGE_TARGET.width, STAGE_TARGET.height)
-  const mundo = sceneWorld(cast, 'stage-size')
+  const mundo = sceneCenario(cast, 'stage-size')
   const heroi = actorFigure(cast, 'hero')
   const caixa = caixaDe(heroi)
   /** As cantoneiras do alvo: um L em cada canto, curto, fora do caminho do Dino. */
@@ -683,11 +670,7 @@ export function StageSizeStage({ state, cast }: { state: SceneState; cast?: Scen
       {/* O espaço em volta tem a MESMA cor do céu: é isso que faz o limite sumir sem a borda. No
           espaço, as estrelas continuam do lado de fora pelo mesmo motivo. ⚠️ E nada tracejado, nem
           texto, antes da borda: o único retângulo do palco tem de ser a TELA (lote 5). */}
-      {mundo === 'espaco' ? (
-        <FundoEspaco w={VIEW.w} h={VIEW.h} />
-      ) : (
-        <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
-      )}
+      <FundoDoCenario cenario={mundo} w={VIEW.w} h={VIEW.h} detalhe="calmo" />
       {/* ⭐ O ALVO só com a borda à vista, e como CANTONEIRAS (lote 5): o retângulo tracejado era um
           segundo retângulo que não é a tela, e o texto dele ficava embaixo do Dino. */}
       {border && !noAlvo && (
@@ -777,7 +760,7 @@ export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: Scene
   const naTela = drawLoopOnScreen(state)
   const heroi = actorFigure(cast, 'hero')
   const caixa = caixaDe(heroi)
-  const mundo = sceneWorld(cast, 'draw-loop')
+  const mundo = sceneCenario(cast, 'draw-loop')
   // ⚠️ No espaço não há chão (review do lote 3): na mesma aula a `world` já diz isso.
   const piso = pisoDoMundo(mundo, CHAO)
   const ultimo = drawn.at(-1)
@@ -811,14 +794,16 @@ export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: Scene
       }${desenhoFicou}`}
       // ⚠️⚠️ SEM rodapé em estado nenhum (lote 2 do Raio-X, 16/09/2026): os três diziam a REGRA.
     >
-      {mundo === 'espaco' ? (
-        <FundoEspaco w={VIEW.w} h={VIEW.h} semEstrelas={[{ x: 8, y: 8, w: 84, h: 26 }]} />
-      ) : (
-        <>
-          <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
-          <rect className="fill-scene-ground" y={CHAO} width={VIEW.w} height={VIEW.h - CHAO} />
-          <path className="stroke-scene-line" d={`M0 ${CHAO}h${VIEW.w}`} strokeWidth="2" />
-        </>
+      <FundoDoCenario
+        cenario={mundo}
+        w={VIEW.w}
+        h={VIEW.h}
+        chao={CHAO}
+        detalhe="calmo"
+        semDetalhe={[{ x: 8, y: 8, w: 84, h: 26 }]}
+      />
+      {cenarioTemChao(mundo) && (
+        <path className="stroke-scene-line" d={`M0 ${CHAO}h${VIEW.w}`} strokeWidth="2" />
       )}
       {drawn.map((x) => (
         <g

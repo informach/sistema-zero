@@ -137,7 +137,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "jump-sound"
+          "scene": "jump-sound",
+          "cenario": "corre-dino"
         }
       }
     },

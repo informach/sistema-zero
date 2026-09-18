@@ -23,6 +23,7 @@ import {
   initialDemonstration,
   initialExperiment,
   initialScene,
+  isSceneActivity,
   packDemonstration,
   packExperiment,
   sceneModel,
@@ -702,5 +703,79 @@ describe('os blocos do modelo anterior', () => {
       { type: 'html', html: '<p>oi</p>' },
     ])
       expect(migrateLegacyActivity(activity), activity.type).toBeNull()
+  })
+})
+
+/**
+ * O CENÁRIO declarado nos manifestos (18/09/2026).
+ *
+ * ⭐⭐ Toda cena de um curso mostra o JOGO daquele curso, e isso é declarado no manifesto em vez de
+ * adivinhado pelo elenco de cada bloco. O levantamento que motivou a mudança: a `velocity` do
+ * Desafio, cujo elenco é uma "pedra", caía no cenário do Jogo do Meu Jeito; e sete cenas de ateliê
+ * do Meu Jeito caíam no Corre Dino, que é o padrão de quem não declara nada.
+ */
+describe('o cenário das cenas dos cursos', () => {
+  /** ⚠️ Espelha o `CENARIO_DO_CURSO` da receita (`docs/aulas-interativas/qa/cenas-editorial.ts`). */
+  const CENARIO_DO_CURSO: Record<string, string> = {
+    'corre-dino': 'corre-dino',
+    'desafio-primeiro-jogo': 'nave',
+    'o-jogo-do-meu-jeito': 'meu-jeito',
+  }
+
+  const cenasDosCursos = () => {
+    const achadas: { aula: string; chave: string; curso: string; cenario?: string }[] = []
+    for (const pacote of PACOTES_ATUAIS) {
+      const entradas: Array<{ path: string }> = JSON.parse(
+        readFileSync(resolve(directory, pacote, 'catalogo.json'), 'utf8'),
+      )
+      for (const entrada of entradas) {
+        const manifest: unknown = JSON.parse(
+          readFileSync(resolve(directory, pacote, entrada.path, 'manifesto.json'), 'utf8'),
+        )
+        if (!isLearningManifest(manifest)) continue
+        for (const bloco of manifest.blocks) {
+          const conteudo = (bloco as { content?: { activity?: unknown } }).content
+          const activity = conteudo?.activity
+          if (!isSceneActivity(activity)) continue
+          achadas.push({
+            aula: `${pacote}/${entrada.path}`,
+            chave: bloco.key,
+            curso: manifest.courseSlug,
+            cenario: activity.cenario,
+          })
+        }
+      }
+    }
+    return achadas
+  }
+
+  test('a varredura ENCONTRA as cenas (anti-vácuo)', () => {
+    // Sem isto, um filtro que parasse de casar deixaria os dois testes abaixo verdes e vazios.
+    expect(cenasDosCursos().length).toBeGreaterThan(30)
+  })
+
+  test('⭐⭐ toda cena DECLARA o cenário: nenhuma depende de adivinhação', () => {
+    const sem = cenasDosCursos()
+      .filter((c) => c.cenario === undefined)
+      .map((c) => `${c.aula} ${c.chave}`)
+    expect(sem).toEqual([])
+  })
+
+  test('⭐⭐ e o cenário declarado é o do CURSO', () => {
+    const erradas = cenasDosCursos()
+      .filter((c) => c.cenario !== CENARIO_DO_CURSO[c.curso])
+      .map((c) => `${c.aula} ${c.chave}: ${c.cenario} num curso ${c.curso}`)
+    expect(erradas).toEqual([])
+  })
+
+  test('⚠️ o cenário DECLARADO vence a derivação pelo elenco', () => {
+    // A `velocity` do Desafio tem uma "pedra" no elenco, e a pedra pertence ao Jogo do Meu Jeito.
+    // Sem o campo declarado ela mostraria o mundo do outro curso — era o estado antes deste lote.
+    const comPedraNoDesafio = cenasDosCursos().filter(
+      (c) => c.curso === 'desafio-primeiro-jogo' && c.cenario === 'nave',
+    )
+    expect(comPedraNoDesafio.length).toBeGreaterThan(0)
+    const desafio = PACOTES_ATUAIS.includes('desafio-primeiro-jogo-v6')
+    expect(desafio).toBe(true)
   })
 })

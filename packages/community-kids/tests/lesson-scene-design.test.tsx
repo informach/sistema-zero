@@ -745,8 +745,10 @@ describe('a previsão antes de mexer', () => {
         (_, node) => node?.textContent?.includes(PREVISAO.prompt) === true,
       ),
     ).not.toHaveLength(0)
-    expect(screen.getByText(PREVISAO.context.label)).toBeTruthy()
-    expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy()
+    expect(await screen.findByText(PREVISAO.context.explanation)).toBeTruthy()
+    expect(screen.getByTestId('scene-prediction-preview').getAttribute('aria-label')).toBe(
+      `Prévia da experiência: ${PREVISAO.context.label}`,
+    )
     for (const nome of ['Recomeçar', 'Uma pista']) {
       expect(screen.queryByRole('button', { name: nome })).toBeNull()
     }
@@ -1994,15 +1996,23 @@ describe('⚠️⚠️ o palco não mente', () => {
   test('⚠️⚠️ spawn: o Dino é desenhado DEPOIS dos cactos, e não some atrás da parede', () => {
     palco('spawn', avancar('spawn', [{ type: 'advance', seconds: 5 }]))
     const dino = document.querySelector(DINO)
-    const cactos = [...document.querySelectorAll('path[d="M0 -49V-8"]')]
+    const cactos = [...document.querySelectorAll(CACTO)]
     expect(dino).toBeTruthy()
     expect(cactos.length).toBeGreaterThan(0)
     // DOCUMENT_POSITION_FOLLOWING: no SVG, quem vem depois é pintado por cima.
     expect((cactos.at(-1) as Element).compareDocumentPosition(dino as Element) & 4).toBe(4)
   })
 
-  /** Os cactos desenhados (a nervura é única por cacto). */
-  const CACTO = 'path[d="M0 -49V-8"]'
+  /**
+   * Os cactos desenhados.
+   *
+   * ⚠️⚠️ Era a NERVURA do cacto (`path[d="M0 -49V-8"]`), copiada do SVG que o palco desenhava à
+   * mão. Quando o palco passou a desenhar pela arte do Jogo 2D aquele caminho deixou de existir, o
+   * seletor parou de casar com qualquer coisa e os dois testes que o usam passariam a medir zero —
+   * um deles compara a ORDEM de pintura, que com zero cactos não compara nada. O contrato durável
+   * é o `data-figure`, que a única porta de figura (`ActorFigure`) sempre escreve.
+   */
+  const CACTO = '[data-figure="cacto"]'
 
   // ⚠️ Mudou de propósito (review do lote 2): o rodapé "N na tela · N no grupo · N removidos" saiu do
   // palco (a faixa e a frase já contam). O desenho é conferido contra a MESMA régua da faixa.

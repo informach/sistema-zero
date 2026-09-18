@@ -116,7 +116,7 @@
           "Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias."
         ],
         "required": false,
-        "activity": { "type": "experimentation", "scene": "random" }
+        "activity": { "type": "experimentation", "scene": "random", "cenario": "corre-dino" }
       }
     },
     {
@@ -163,6 +163,7 @@
           "type": "demonstration",
           "scene": "velocity",
           "cast": { "hero": { "name": "cacto", "gender": "m" } },
+          "cenario": "corre-dino",
           "setup": {
             "actions": [
               { "type": "velocity", "vx": 10, "vy": 5 },

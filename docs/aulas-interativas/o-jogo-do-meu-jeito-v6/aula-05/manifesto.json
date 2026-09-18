@@ -63,7 +63,8 @@
               "name": "chama",
               "gender": "f"
             }
-          }
+          },
+          "cenario": "meu-jeito"
         },
         "checkpoint": {
           "prompt": "A pedra reapareceu quando a chama foi para trás. O que mudou?",

@@ -11,9 +11,10 @@ import {
   SCENE_ROLES,
   type SceneCast,
   type SceneFigure,
-  sceneWorld,
+  sceneCenario,
 } from './cast'
 import { SCENE_MODELS } from './catalog'
+import type { SceneCenarioId } from './cenario'
 import { openScene, stepScene } from './engine'
 import { SCENE_QUESTIONS } from './questions'
 
@@ -412,55 +413,70 @@ describe('a figura do elenco: o desenho segue o nome', () => {
     )
   })
 
-  test('o mundo: espaço quando alguma figura DESENHADA é do espaço', () => {
-    expect(sceneWorld(undefined, 'lives')).toBe('terra')
-    expect(sceneWorld(DEFAULT_CAST, 'lives')).toBe('terra')
-    expect(sceneWorld({ hero: { name: 'Zé', gender: 'm' } }, 'lives')).toBe('terra')
-    for (const nome of ['nave', 'asteroide', 'tiro', 'pedra', 'chama'])
+  test('o cenário: o jogo que a cena retrata sai das figuras DESENHADAS', () => {
+    expect(sceneCenario(undefined, 'lives')).toBe('corre-dino')
+    expect(sceneCenario(DEFAULT_CAST, 'lives')).toBe('corre-dino')
+    expect(sceneCenario({ hero: { name: 'Zé', gender: 'm' } }, 'lives')).toBe('corre-dino')
+    // ⚠️ A pedra e a chama vão para o jogo DELAS, não para o do Desafio: as duas famílias moram
+    // no espaço (as duas sem chão), mas são cursos diferentes e cada um tem o seu elenco.
+    const esperado: Record<string, SceneCenarioId> = {
+      nave: 'nave',
+      asteroide: 'nave',
+      tiro: 'nave',
+      pedra: 'meu-jeito',
+      chama: 'meu-jeito',
+    }
+    for (const [nome, cenario] of Object.entries(esperado))
       expect({
         nome,
-        mundo: sceneWorld({ obstacle: { name: nome, gender: 'm' } }, 'lives'),
-      }).toEqual({
-        nome,
-        mundo: 'espaco',
-      })
-    // O cenário também leva: a pedra com a chama do Meu Jeito é o espaço.
+        mundo: sceneCenario({ obstacle: { name: nome, gender: 'm' } }, 'lives'),
+      }).toEqual({ nome, mundo: cenario })
+    // O cenário também leva: a pedra com a chama é O Jogo do Meu Jeito.
     const meuJeito: SceneCast = {
       hero: { name: 'pedra', gender: 'f' },
       scenery: { name: 'chama', gender: 'f' },
     }
-    expect(sceneWorld(meuJeito, 'layers')).toBe('espaco')
-    // E a figura declarada decide, mesmo com um nome de terra.
-    expect(sceneWorld({ hero: { name: 'Dino', gender: 'm', figure: 'nave' } }, 'lives')).toBe(
-      'espaco',
+    expect(sceneCenario(meuJeito, 'layers')).toBe('meu-jeito')
+    // E a figura declarada decide, mesmo com um nome do Corre Dino.
+    expect(sceneCenario({ hero: { name: 'Dino', gender: 'm', figure: 'nave' } }, 'lives')).toBe(
+      'nave',
     )
-    expect(sceneWorld({ hero: { name: 'nave', gender: 'f', figure: 'dino' } }, 'lives')).toBe(
-      'terra',
+    expect(sceneCenario({ hero: { name: 'nave', gender: 'f', figure: 'dino' } }, 'lives')).toBe(
+      'corre-dino',
     )
+  })
+
+  test('⭐ o cenário DECLARADO vence a derivação inteira', () => {
+    // É o campo que o professor escreve no manifesto. Sem ele vale a derivação, que é o que
+    // mantém de pé os manifestos já publicados.
+    const soDino: SceneCast = { hero: { name: 'Dino', gender: 'm' } }
+    expect(sceneCenario(soDino, 'lives')).toBe('corre-dino')
+    expect(sceneCenario(soDino, 'lives', 'gorilas')).toBe('gorilas')
+    expect(sceneCenario(undefined, 'symmetry', 'nave')).toBe('nave')
   })
 
   test('⚠️⚠️ só contam os papéis que o palco da cena DESENHA (review do lote 3)', () => {
     // Uma chama de cenário numa cena que não desenha cenário levava o Dino e os cactos ao espaço.
     const soChama: SceneCast = { scenery: { name: 'chama', gender: 'f' } }
-    expect(sceneWorld(soChama, 'spawn')).toBe('terra')
-    expect(sceneWorld(soChama, 'layers')).toBe('espaco')
+    expect(sceneCenario(soChama, 'spawn')).toBe('corre-dino')
+    expect(sceneCenario(soChama, 'layers')).toBe('meu-jeito')
     // A nave de herói não muda o mundo de uma cena que só desenha o obstáculo.
     const soNave: SceneCast = { hero: { name: 'nave', gender: 'f' } }
-    expect(sceneWorld(soNave, 'group-loop')).toBe('terra')
-    expect(sceneWorld(soNave, 'lives')).toBe('espaco')
+    expect(sceneCenario(soNave, 'group-loop')).toBe('corre-dino')
+    expect(sceneCenario(soNave, 'lives')).toBe('nave')
     // Cena abstrata não desenha ninguém: fica na terra com qualquer elenco.
     // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): a `tilemap` ganhou o personagem que cai até o chão.
     for (const scene of ['symmetry', 'axis-z', 'shading'] as const)
-      expect({ scene, mundo: sceneWorld(NAVE, scene) }).toEqual({ scene, mundo: 'terra' })
+      expect({ scene, mundo: sceneCenario(NAVE, scene) }).toEqual({ scene, mundo: 'corre-dino' })
   })
 
-  test('⚠️ pedra e chama seguem o que o professor DECLAROU da terra', () => {
+  test('⚠️ pedra e chama seguem o que o professor DECLAROU do Corre Dino', () => {
     // Com o Dino escrito no elenco, a pedra é a pedra do caminho dele, na grama.
     const dinoEPedra: SceneCast = {
       hero: { name: 'Dino', gender: 'm' },
       obstacle: { name: 'pedra', gender: 'f' },
     }
-    expect(sceneWorld(dinoEPedra, 'lives')).toBe('terra')
+    expect(sceneCenario(dinoEPedra, 'lives')).toBe('corre-dino')
     // ⚠️ Mas só o papel que a cena DESENHA: a `layers` não desenha o obstáculo, então um cacto
     // declarado ali não tira a pedra e a chama do espaço.
     const pedraChamaECacto: SceneCast = {
@@ -468,16 +484,16 @@ describe('a figura do elenco: o desenho segue o nome', () => {
       obstacle: { name: 'cacto', gender: 'm' },
       scenery: { name: 'chama', gender: 'f' },
     }
-    expect(sceneWorld(pedraChamaECacto, 'layers')).toBe('espaco')
-    expect(sceneWorld(pedraChamaECacto, 'lives')).toBe('terra')
-    // Nave, asteroide e tiro vencem a terra declarada: o espaço é deles.
+    expect(sceneCenario(pedraChamaECacto, 'layers')).toBe('meu-jeito')
+    expect(sceneCenario(pedraChamaECacto, 'lives')).toBe('corre-dino')
+    // Nave, asteroide e tiro vencem o Corre Dino declarado: o Desafio é deles.
     const dinoEAsteroide: SceneCast = {
       hero: { name: 'Dino', gender: 'm' },
       obstacle: { name: 'asteroide', gender: 'm' },
     }
-    expect(sceneWorld(dinoEAsteroide, 'lives')).toBe('espaco')
-    // O papel de fábrica (não declarado) não puxa para a terra.
-    expect(sceneWorld({ obstacle: { name: 'pedra', gender: 'f' } }, 'lives')).toBe('espaco')
+    expect(sceneCenario(dinoEAsteroide, 'lives')).toBe('nave')
+    // O papel de fábrica (não declarado) não puxa para o Corre Dino.
+    expect(sceneCenario({ obstacle: { name: 'pedra', gender: 'f' } }, 'lives')).toBe('meu-jeito')
   })
 
   test('a tabela de papéis cobre as 45 cenas, na ordem canônica e sem repetir papel', () => {

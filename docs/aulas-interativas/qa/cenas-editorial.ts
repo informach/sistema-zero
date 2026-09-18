@@ -14,6 +14,7 @@ import {
   SCENE_ROLES,
   type SceneActivity,
   type SceneCast,
+  type SceneCenarioId,
   type SceneId,
   type SceneRole,
   sceneGoalIds,
@@ -69,8 +70,31 @@ export interface CenaAnterior {
   acao: (typeof ACOES_DA_CENA_ANTERIOR)[number]
 }
 
-/** O conteúdo do bloco, com as marcas de fábrica trocadas pelo texto do core. */
-export function conteudoDaCena(cena: CenaDaAula): InteractiveBlock {
+/**
+ * O CENÁRIO que cada curso retrata — o jogo que a criança está montando nele.
+ *
+ * ⭐⭐ É o que o editorial injeta em toda cena do curso, e é a peça que faltava para a cena "ficar
+ * igual ao jogo". Sem ele, o cenário era DERIVADO do elenco de cada bloco, e o levantamento dos 27
+ * manifestos mostrou onde isso erra: a `velocity` do Desafio, cujo elenco é uma "pedra", caía no
+ * Jogo do Meu Jeito. O elenco diz QUEM está no palco; o curso diz QUE JOGO é.
+ *
+ * ⚠️ Declarar não tira nada do elenco: as FIGURAS continuam vindo dele (uma nave declarada numa
+ * cena do Meu Jeito continua sendo desenhada como nave). O cenário decide o MUNDO.
+ */
+export const CENARIO_DO_CURSO: Record<string, SceneCenarioId> = {
+  'corre-dino': 'corre-dino',
+  'desafio-primeiro-jogo': 'nave',
+  'o-jogo-do-meu-jeito': 'meu-jeito',
+}
+
+/**
+ * O conteúdo do bloco, com as marcas de fábrica trocadas pelo texto do core.
+ *
+ * ⚠️⚠️ O `cenario` entra logo DEPOIS do `cast`, e a posição é contrato: o gerador reproduz o
+ * manifesto byte a byte, e a ordem das chaves faz parte do arquivo. É a mesma posição que o campo
+ * ocupa no tipo `SceneActivity`.
+ */
+export function conteudoDaCena(cena: CenaDaAula, cenario?: SceneCenarioId): InteractiveBlock {
   const { activity } = cena.bloco
   const conteudo: Record<string, unknown> = { kind: 'interactive' }
   for (const [campo, valor] of Object.entries(cena.bloco)) {
@@ -85,13 +109,38 @@ export function conteudoDaCena(cena: CenaDaAula): InteractiveBlock {
       } as InteractiveBlock)
       if (!previsao) throw new Error(`${cena.chave}: a cena não tem previsão de fábrica`)
       conteudo[campo] = previsao
-    } else conteudo[campo] = structuredClone(valor)
+    } else if (campo === 'activity' && cenario) conteudo[campo] = comCenario(activity, cenario)
+    else conteudo[campo] = structuredClone(valor)
   }
   return conteudo as unknown as InteractiveBlock
 }
 
-export function blocoDaCena(cena: CenaDaAula): LearningManifest['blocks'][number] {
-  return { key: cena.chave, content: conteudoDaCena(cena) }
+/** A atividade com o `cenario` na posição dele: logo depois do `cast`, senão depois do `scene`. */
+function comCenario(activity: SceneActivity, cenario: SceneCenarioId) {
+  const saida: Record<string, unknown> = {}
+  let posto = false
+  for (const [campo, valor] of Object.entries(structuredClone(activity))) {
+    saida[campo] = valor
+    if (campo === 'cast') {
+      saida.cenario = cenario
+      posto = true
+    }
+  }
+  if (posto) return saida
+  // Sem elenco declarado, o cenário entra logo depois da cena: é o par que descreve o palco.
+  const semCast: Record<string, unknown> = {}
+  for (const [campo, valor] of Object.entries(saida)) {
+    semCast[campo] = valor
+    if (campo === 'scene') semCast.cenario = cenario
+  }
+  return semCast
+}
+
+export function blocoDaCena(
+  cena: CenaDaAula,
+  cenario?: SceneCenarioId,
+): LearningManifest['blocks'][number] {
+  return { key: cena.chave, content: conteudoDaCena(cena, cenario) }
 }
 
 /** A seção de um vídeo seguido de cena: a cena de experimentar faz dela uma seção de experimentação. */

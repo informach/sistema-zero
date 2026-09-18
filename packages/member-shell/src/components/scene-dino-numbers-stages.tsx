@@ -3,20 +3,22 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   numero,
   quantos,
   RANDOM_SPOTS,
   type SceneAction,
   type SceneCast,
+  type SceneCenarioId,
   type SceneState,
-  type SceneWorldKind,
-  sceneWorld,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { type ReactNode, useId } from 'react'
 import { SceneButton } from './exploration-stage'
+import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto, usePalco } from './scene-canvas'
 import { focarNaBancadaDepoisDeComecar } from './scene-dino-stages'
-import { ActorFigure, FundoEspaco, pisoDoMundo } from './scene-figures'
+import { ActorFigure, pisoDoMundo } from './scene-figures'
 
 /**
  * Os palcos do Corre Dino, segunda metade (lote 5 do Raio-X, 16/09/2026): `restart`, `score`,
@@ -43,26 +45,42 @@ const naPista = (x: number) => 60 + x
 
 const TELA: Record<string, string> = { start: 'INÍCIO', playing: 'JOGANDO', end: 'FIM DA PARTIDA' }
 
-/** O fundo da pista: grama e pontinhos na terra, céu de estrelas no espaço. */
+/**
+ * O fundo da pista: o mundo do jogo, com os pontinhos da régua por cima.
+ *
+ * ⚠️ Gêmeo do `Pista` do `scene-dino-stages.tsx`, e pelo mesmo motivo: estas quatro cenas
+ * (`restart`, `score`, `random`, `acceleration`) escrevem CARTÕES DE NÚMERO no alto, e é neles que
+ * a criança lê o placar e as raias. Daí o `calmo` e as zonas.
+ */
 function Pista({
   mundo,
-  semEstrelas = [],
+  semDetalhe = [],
 }: {
-  mundo: SceneWorldKind
-  semEstrelas?: readonly { x: number; y: number; w: number; h: number }[]
+  mundo: SceneCenarioId
+  semDetalhe?: readonly { x: number; y: number; w: number; h: number }[]
 }) {
   const id = useId()
-  if (mundo === 'espaco') return <FundoEspaco w={STAGE.w} h={STAGE.h} semEstrelas={semEstrelas} />
   return (
     <>
-      <defs>
-        <pattern id={`${id}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
-          <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
-        </pattern>
-      </defs>
-      <rect width={STAGE.w} height={STAGE.h} fill={`url(#${id}-dots)`} opacity="0.35" />
-      <path className="fill-scene-grass" d={`M0 ${CHAO}H${STAGE.w}V${STAGE.h}H0Z`} />
-      <path className="stroke-scene-line" d={`M0 ${CHAO}H${STAGE.w}`} strokeWidth="2" />
+      <FundoDoCenario
+        cenario={mundo}
+        w={STAGE.w}
+        h={STAGE.h}
+        chao={cenarioTemChao(mundo) ? CHAO : undefined}
+        detalhe="calmo"
+        semDetalhe={semDetalhe}
+      />
+      {cenarioTemChao(mundo) && (
+        <>
+          <defs>
+            <pattern id={`${id}-dots`} width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle className="fill-scene-grid" cx="2" cy="2" r="1" />
+            </pattern>
+          </defs>
+          <rect width={STAGE.w} height={CHAO} fill={`url(#${id}-dots)`} opacity="0.35" />
+          <path className="stroke-scene-line" d={`M0 ${CHAO}H${STAGE.w}`} strokeWidth="2" />
+        </>
+      )}
     </>
   )
 }
@@ -224,7 +242,7 @@ export function RestartStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'restart')
+  const mundo = sceneCenario(cast, 'restart')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = state.match.screen
   const cactos = state.crowd.cacti.filter((c) => c.x <= 480)
@@ -259,7 +277,7 @@ export function RestartStage({
     >
       <Pista
         mundo={mundo}
-        semEstrelas={[
+        semDetalhe={[
           { x: 14, y: 8, w: 200, h: 30 },
           { x: 396, y: 12, w: 196, h: 104 },
         ]}
@@ -338,7 +356,7 @@ export function ScoreStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'score')
+  const mundo = sceneCenario(cast, 'score')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = state.match.screen
   /** O placar parado na tela de início com a peça dentro de Se jogando (consertos da onda A). */
@@ -386,7 +404,7 @@ export function ScoreStage({
     >
       <Pista
         mundo={mundo}
-        semEstrelas={[
+        semDetalhe={[
           { x: 14, y: 8, w: 200, h: 30 },
           { x: 396, y: 12, w: 196, h: 104 },
           { x: 20, y: 250, w: 560, h: 52 },
@@ -486,7 +504,7 @@ const LARGADA = 500
  */
 export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'random')
+  const mundo = sceneCenario(cast, 'random')
   const { spots, samples } = state.speed
   const sorteados = spots.some((n) => n > 0)
   /**
@@ -522,7 +540,7 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
         <>
           <Pista
             mundo={mundo}
-            semEstrelas={[
+            semDetalhe={[
               { x: 14, y: 8, w: 240, h: 30 },
               { x: 40, y: 40, w: 540, h: 120 },
             ]}
@@ -720,7 +738,7 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
  */
 export function AccelerationStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneWorld(cast, 'acceleration')
+  const mundo = sceneCenario(cast, 'acceleration')
   const { base, limited } = state.speed
   const todos = state.crowd.cacti
   const fileira = todos.slice(-8)
@@ -760,7 +778,7 @@ export function AccelerationStage({ state, cast }: { state: SceneState; cast?: S
         <>
           <Pista
             mundo={mundo}
-            semEstrelas={[
+            semDetalhe={[
               { x: 14, y: 8, w: 280, h: 30 },
               { x: 16, y: 44, w: 214, h: 150 },
               { x: 236, y: 40, w: 360, h: 230 },

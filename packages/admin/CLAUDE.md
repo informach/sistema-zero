@@ -116,8 +116,25 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
   `tests/scene-action-fields.test.tsx`, com a `entity-state`); o render está em
   `tests/scene-authoring.test.tsx`.
 
-### O elenco (`editor/scene-cast-editor.tsx`)
+### O elenco e o CENÁRIO (`editor/scene-cast-editor.tsx`)
 
+- ⭐⭐ **"Qual jogo esta cena mostra"** é a pergunta mais alta do painel (18/09/2026): ela grava
+  `activity.cenario` e decide o FUNDO e o elenco de fábrica do palco — *Corre Dino*, *Nave*,
+  *Gorilas* ou *O jogo do meu jeito*. Em branco, o core deriva do elenco (`sceneCenario` sem o 3º
+  argumento), que é o que mantém de pé tudo o que já foi publicado. Voltar para "Pelo elenco" TIRA o
+  campo, nunca grava o derivado: é o que deixa o manifesto igual ao publicado quando o professor só
+  olhou o seletor.
+- ⚠️⚠️ **O rótulo da opção em branco mostra o DERIVADO, não o cenário resolvido.** Lendo o
+  resolvido, uma cena que declara `nave` anunciava "Pelo elenco (Nave)" e prometia que apagar a
+  escolha não mudaria nada — quando o elenco de fábrica do Corre Dino a levaria de volta à floresta.
+  Como os 38 blocos de cena dos três cursos v6 JÁ declaram o campo, esse é o estado NORMAL do
+  seletor. Travado em `tests/scene-cast-editor.test.tsx` (a asserção é sobre `options[0]`, a opção em
+  branco — `selectedOptions[0]` é outra coisa assim que algo é declarado).
+- ⚠️ **Colisão de nome conhecida, e o rótulo do seletor existe para contorná-la:** o PAPEL `scenery`
+  se chama **"Cenário"** no painel (a figura que entra na conta das camadas, de fábrica a floresta) e
+  o campo novo se chama `cenario` no código. Por isso o seletor é rotulado **"Qual jogo esta cena
+  mostra"**, nunca "Cenário". Quem mexer nos dois rótulos precisa manter essa separação — renomear o
+  seletor para "Cenário" põe duas coisas diferentes com o mesmo nome a dois centímetros uma da outra.
 - ⚠️⚠️ **O nome é guardado COMO DIGITADO e só é aparado ao SAIR do campo** (`aparar`, também no
   plural): aparar a cada tecla comia o espaço antes da letra seguinte e "nave espacial" virava
   "naveespacial", que não diz figura nenhuma. O `castText` do core também apara.

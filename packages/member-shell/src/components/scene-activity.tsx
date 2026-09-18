@@ -74,6 +74,7 @@ import { ExplorationStage, SceneButton } from './exploration-stage'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
+import { RelogioDaArteProvider } from './scene-arte'
 import { SceneConclusion, SceneRevisitBanner } from './scene-conclusion'
 import { MontagemTravada, rotuloDaDemonstracao, SceneDemoControls } from './scene-demo-controls'
 import { SomDaBancada } from './scene-dino-controls'
@@ -1019,6 +1020,17 @@ export function SceneActivityView({
    * onda B do lote 5): uma fatia do tamanho de UM quadro da animação.
    */
   const relogio = relogioDaCena(m, state, reduced)
+  /**
+   * O relógio da ARTE: quanto a cena já andou, em milissegundos.
+   *
+   * ⭐⭐ É o que faz as perninhas do Dino correrem e a chama pulsar (decisão dela: "anda só quando
+   * o tempo da cena anda"). Anda no MESMO tique que move o mundo, então não há um segundo laço:
+   * o palco já re-renderiza ali, e o número entra de carona nesse render.
+   * ⚠️ Ele NÃO é estado da cena: é apresentação, e o motor não sabe que existe. Pôr um contador de
+   * tempo no `SceneState` obrigaria hidratação, validação, clone e `esquecerOGesto` a conhecê-lo —
+   * cinco pontos de contrato para um Dino que mexe a perna.
+   */
+  const [tempoDaArte, setTempoDaArte] = useState(0)
   useSceneClock({
     ativo: running && ready && !conflict,
     limiar: relogio.limiar,
@@ -1040,6 +1052,7 @@ export function SceneActivityView({
         espera.current = 0
         action.current({ type: 'next' })
       }
+      setTempoDaArte((v) => v + elapsed * 1000)
       const antesDoTique = controller.getSnapshot().state
       action.current(
         demoMode ? { type: 'tick', seconds: elapsed } : { type: 'advance', seconds: elapsed },
@@ -1285,7 +1298,13 @@ export function SceneActivityView({
                         {/* ⚠️⚠️ UM caminho para as 45: quem sabe qual é o palco de cada cena é o palco.
                         O `fieldset` é a trava do BLOCO: na demonstração a criança assiste. */}
                         <fieldset disabled={demoMode}>
-                          <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                          <RelogioDaArteProvider value={tempoDaArte}>
+                            <ExplorationStage
+                              activity={activity}
+                              state={visto}
+                              dispatch={dispatch}
+                            />
+                          </RelogioDaArteProvider>
                         </fieldset>
                         {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}

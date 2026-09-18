@@ -9,6 +9,7 @@ import type {
 } from '../../../packages/core/src/learning'
 import {
   blocoDaCena,
+  CENARIO_DO_CURSO,
   type CenaAnterior,
   type CenaDaAula,
   cenaAnteriorMarkdown,
@@ -218,7 +219,7 @@ export function buildEditorial(
   ])
   const noFim: LearningManifest['blocks'] = []
   const cena = (dado: CenaDaAula) => {
-    ;(dado.noFimDaLista ? noFim : blocks).push(blocoDaCena(dado))
+    ;(dado.noFimDaLista ? noFim : blocks).push(blocoDaCena(dado, CENARIO_DO_CURSO['corre-dino']))
     return dado.chave
   }
   for (const step of recipe.steps) {

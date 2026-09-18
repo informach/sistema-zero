@@ -79,6 +79,7 @@
         "activity": {
           "type": "demonstration",
           "scene": "fill-stroke",
+          "cenario": "meu-jeito",
           "presentation": "inline"
         }
       }
@@ -216,7 +217,8 @@
         "hints": [],
         "activity": {
           "type": "experimentation",
-          "scene": "pixel-vector"
+          "scene": "pixel-vector",
+          "cenario": "meu-jeito"
         },
         "checkpoint": {
           "prompt": "Com a lupa bem perto, por que a pedra de vetor continua lisa?",

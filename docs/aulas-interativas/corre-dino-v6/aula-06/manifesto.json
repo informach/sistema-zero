@@ -137,7 +137,8 @@
         "required": false,
         "activity": {
           "type": "experimentation",
-          "scene": "cleanup"
+          "scene": "cleanup",
+          "cenario": "corre-dino"
         },
         "prediction": {
           "context": {
