@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { FIGURAS } from '../catalogo'
+import { desenharBarra, desenharCoracao, desenharCoracoes } from '../hud'
 import type { Ambiente, Figura } from '../pincel'
 import { PincelGravador } from './gravador'
 import { type AmbienteDoRuntime, desenhosDoRuntime } from './runtimeAtual'
@@ -159,6 +160,71 @@ describe('a arte portada desenha o MESMO que o runtime do jogo', () => {
     const sprite = { ...caixa, skin: { kind: 'gorilla', color: '#6b4a2b', side: 'left' } }
     expect(opsDoModulo('gorila', { ...caixa, cor: '#6b4a2b' })).toEqual(
       opsDoRuntime('drawGorilla', sprite),
+    )
+  })
+})
+
+describe('o HUD do jogo: o placar da cena desenha o MESMO coração', () => {
+  /**
+   * ⭐⭐ Estes três casos são a rede da queixa dela de 18/09: *"o placar você fez de um jeito que
+   * não tem nada a ver com o estilo do jogo"*. Enquanto eles passam, o coração, a fila de vidas e
+   * a barra da CENA são, byte a byte, os do Jogo 2D.
+   */
+  function opsDoHud(fn: (p: PincelGravador) => void) {
+    const p = new PincelGravador()
+    fn(p)
+    return p.ops
+  }
+
+  it('um coração — as quatro beziers e a covinha', () => {
+    expect(opsDoHud((p) => desenharCoracao(p, { x: 12, y: 8, s: 22 }))).toEqual(
+      opsDoHud((p) => {
+        const fn = runtime.drawHeart
+        if (!fn) throw new Error('o runtime não expôs drawHeart')
+        ;(fn as unknown as (c: unknown, x: number, y: number, s: number) => void)(p, 12, 8, 22)
+      }),
+    )
+  })
+
+  it('a fila de vidas — o passo e o teto de 20', () => {
+    expect(opsDoHud((p) => desenharCoracoes(p, { quantos: 3, x: 12, y: 8 }))).toEqual(
+      opsDoHud((p) => {
+        const fn = runtime._drawHeartsVisual
+        if (!fn) throw new Error('o runtime não expôs _drawHeartsVisual')
+        ;(
+          fn as unknown as (
+            c: unknown,
+            n: number,
+            x: number,
+            y: number,
+            s: number,
+            cor?: string,
+          ) => void
+        )(p, 3, 12, 8, 22)
+      }),
+    )
+  })
+
+  it('a barra — trilho e preenchimento, sem borda', () => {
+    expect(
+      opsDoHud((p) => desenharBarra(p, { valor: 3, maximo: 5, x: 12, y: 48, w: 160, h: 14 })),
+    ).toEqual(
+      opsDoHud((p) => {
+        const fn = runtime._drawBarVisual
+        if (!fn) throw new Error('o runtime não expôs _drawBarVisual')
+        ;(
+          fn as unknown as (
+            c: unknown,
+            v: number,
+            m: number,
+            x: number,
+            y: number,
+            w: number,
+            h: number,
+            cor?: string,
+          ) => void
+        )(p, 3, 5, 12, 48, 160, 14)
+      }),
     )
   })
 })

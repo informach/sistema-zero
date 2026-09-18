@@ -102,7 +102,13 @@ export function desenhosDoRuntime(amb: AmbienteDoRuntime): Record<string, Desenh
     amb,
   )
   const space = avaliar(gameTwoDArcadeSpaceRuntime, ['drawShip', 'drawAsteroidSprite'], amb)
-  const hud = avaliar(gameTwoDArcadeHudRuntime, ['drawStarfield'], amb)
+  // ⚠️ `drawHeart` e `_drawBarVisual` entram para o placar da cena poder ser comparado com o do
+  // jogo: foi a queixa de 18/09 ("o placar não tem nada a ver com o estilo do jogo").
+  const hud = avaliar(
+    gameTwoDArcadeHudRuntime,
+    ['drawStarfield', 'drawHeart', '_drawHeartsVisual', '_drawBarVisual'],
+    amb,
+  )
   const gorillas = avaliar(gameTwoDArcadeGorillasRuntime, ['drawGorilla', 'drawCity'], amb)
   return { ...dino, ...space, ...hud, ...gorillas }
 }

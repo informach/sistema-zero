@@ -25,6 +25,18 @@ export {
   NOMES_DE_FIGURA,
   NOMES_DE_FUNDO,
 } from './catalogo'
+/**
+ * O HUD do jogo: coração, barra e as cores de fábrica do placar. ⚠️ Fora de `FIGURAS`: não é
+ * figura de elenco, é interface — quem o consome é o placar da cena, não o `ArteSvg`.
+ */
+export {
+  CORACAO,
+  CORES_DO_HUD,
+  caminhoDoCoracao,
+  desenharBarra,
+  desenharCoracao,
+  desenharCoracoes,
+} from './hud'
 export type {
   Ambiente,
   AreaDoFundo,
