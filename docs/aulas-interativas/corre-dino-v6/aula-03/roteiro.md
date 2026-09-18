@@ -62,7 +62,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** O Dino está parado no chão.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Sem a gravidade, o que acontece depois do salto?”
+**Antes de escolher:** “Nesta experiência, vamos observar o caminho do Dino quando ele pula com a gravidade desligada.”
+
+**Hoje vamos usar:** A gravidade do pulo.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Sem a gravidade, o que acontece depois do salto?”
 
 - O Dino sobe e não volta ✓ (o que acontece de verdade)
 - O Dino volta ao chão (se ela escolher esta, a tela conta depois: “Sem gravidade, o Dino continuou subindo e não voltou.”)
@@ -130,7 +134,11 @@ O palpite volta à tela quando ela descobre: “Sem gravidade, não parou de sub
 
 **Como o palco começa:** O impulso está em 9. Faça o Dino saltar para ver a altura.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com impulso 9, o salto chega a 68 de altura. Com impulso 14, até onde o salto chega?”
+**Antes de escolher:** “Nesta experiência, vamos comparar o que muda quando o pulo começa com mais ou menos força.”
+
+**Hoje vamos usar:** A força do pulo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Com impulso 9, o salto chega a 68 de altura. Com impulso 14, até onde o salto chega?”
 
 - Mais de 150, mais que o dobro ✓ (o que acontece de verdade)
 - Uns 100, um pouco mais alto (se ela escolher esta, a tela conta depois: “Com impulso 14, o salto passou de 150 de altura.”)

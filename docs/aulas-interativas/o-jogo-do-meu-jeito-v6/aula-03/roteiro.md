@@ -67,7 +67,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Como o palco começa:** Na tela, com a prévia parada: o quadro 1.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Quando o fogo pulsa rápido, o que está na tela?”
+**Antes de escolher:** “Nesta experiência, vamos olhar os quadros de uma animação antes de deixar a prévia tocar.”
+
+**Hoje vamos usar:** Os quadros da animação.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Quando o fogo pulsa rápido, o que está na tela?”
 
 - Os dois quadros misturados (se ela escolher esta, a tela conta depois: “Quando a prévia rápida parou, ficou um quadro só na tela.”)
 - Um quadro de cada vez ✓ (o que acontece de verdade)
@@ -223,7 +227,11 @@ O palpite volta à tela quando ela descobre: “Parou a prévia rápida e viu um
 
 **Como o palco começa:** Fantasma desligado: só o quadro 1 está na tela.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “No quadro 2 só aparece o fogo novo. Dá para saber se ele ficou maior que o do quadro 1?”
+**Antes de escolher:** “Nesta experiência, vamos usar o fantasma que deixa um quadro antigo aparecer junto do quadro atual.”
+
+**Hoje vamos usar:** O fantasma da animação.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “No quadro 2 só aparece o fogo novo. Dá para saber se ele ficou maior que o do quadro 1?”
 
 - Não dá para saber ✓ (o que acontece de verdade)
 - Dá, é só olhar o fogo 2 (se ela escolher esta, a tela conta depois: “Com o fantasma ligado, o fogo 1 apareceu tracejado. Sem o fantasma, o fogo 1 não aparecia.”)

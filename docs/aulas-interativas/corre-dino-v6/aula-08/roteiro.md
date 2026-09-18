@@ -104,7 +104,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** A tela de início mostra o convite para começar.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você toca na tela de início. O que acontece?”
+**Antes de escolher:** “Nesta experiência, vamos ligar um controle do jogo e observar o que ele permite fazer.”
+
+**Hoje vamos usar:** Os controles do jogo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Você toca na tela de início. O que acontece?”
 
 - A partida começa (se ela escolher esta, a tela conta depois: “A tela continuou no INÍCIO.”)
 - Nada acontece ✓ (o que acontece de verdade)

@@ -80,7 +80,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** O cacto está a 149 do Dino. As áreas pontilhadas ainda não se encostam.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com esta área grande, quando vai aparecer BATEU?”
+**Antes de escolher:** “Nesta experiência, vamos comparar a área que encosta com o desenho que aparece no jogo.”
+
+**Hoje vamos usar:** A área de colisão.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Com esta área grande, quando vai aparecer BATEU?”
 
 - Antes de os desenhos se encostarem ✓ (o que acontece de verdade)
 - Só quando os desenhos se encostarem (se ela escolher esta, a tela conta depois: “Apareceu BATEU com um vão entre os dois desenhos.”)

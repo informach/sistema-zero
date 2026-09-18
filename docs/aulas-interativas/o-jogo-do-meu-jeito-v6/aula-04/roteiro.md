@@ -235,7 +235,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Como o palco começa:** Lupa em 1: as duas pedras quase do tamanho do jogo.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se você aproximar muito, o que acontece com as bordas?”
+**Antes de escolher:** “Nesta experiência, vamos aproximar duas pedras para comparar como cada uma fica de perto.”
+
+**Hoje vamos usar:** A lupa das pedras.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Se você aproximar muito, o que acontece com as bordas?”
 
 - Só a de pixel vira degraus ✓ (o que acontece de verdade)
 - As duas viram degraus (se ela escolher esta, a tela conta depois: “De perto, a borda da pedra de vetor continuou lisa.”)

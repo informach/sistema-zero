@@ -87,7 +87,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** 3 cactos na tela e 3 no grupo.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “O cacto que saiu da tela ainda existe no jogo?”
+**Antes de escolher:** “Nesta experiência, vamos comparar um cacto que saiu da tela com o que ainda está guardado nos bastidores.”
+
+**Hoje vamos usar:** A limpeza dos cactos.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “O cacto que saiu da tela ainda existe no jogo?”
 
 - Não, ele sumiu (se ela escolher esta, a tela conta depois: “Os cactos que saíram foram para a prateleira dos bastidores.”)
 - Sim, ele continua guardado ✓ (o que acontece de verdade)

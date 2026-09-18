@@ -45,7 +45,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Lista:** a do painel Camadas do Pinta, com a forma da frente em cima. Os pedidos e as pistas falam em “uma camada para trás” e “uma camada para a frente”, como os botões do Pinta.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se a chama for uma camada para trás, onde a pedra aparece?”
+**Antes de escolher:** “Nesta experiência, vamos mudar a ordem da pedra e da chama para descobrir o que fica na frente.”
+
+**Hoje vamos usar:** A ordem das camadas.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Se a chama for uma camada para trás, onde a pedra aparece?”
 
 - Atrás da chama (se ela escolher esta, a tela conta depois: “A pedra ficou na frente da chama.”)
 - Na frente da chama ✓ (o que acontece de verdade)

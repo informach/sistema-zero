@@ -102,7 +102,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Como o palco começa:** Ainda não nasceu nenhum asteroide.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
+**Antes de escolher:** “Nesta experiência, vamos observar de onde os obstáculos surgem enquanto o jogo está rodando.”
+
+**Hoje vamos usar:** O nascimento dos obstáculos.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
 
 - Uma parede de asteroides ✓ (o que acontece de verdade)
 - Asteroides bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram asteroides colados uns nos outros.”)

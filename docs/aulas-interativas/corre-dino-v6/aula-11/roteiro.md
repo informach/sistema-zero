@@ -106,7 +106,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Na tela de início, Somar ponto está solto, e o placar está em 0.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com Somar ponto solto, o placar cresce na tela de início?”
+**Antes de escolher:** “Nesta experiência, vamos observar quando o placar do jogo muda.”
+
+**Hoje vamos usar:** O placar.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Com Somar ponto solto, o placar cresce na tela de início?”
 
 - Sim, cresce até no início ✓ (o que acontece de verdade)
 - Não, espera o jogo começar (se ela escolher esta, a tela conta depois: “Com a peça solta, o placar cresceu na tela de início.”)

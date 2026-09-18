@@ -82,7 +82,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Ainda não nasceu nenhum cacto.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um cacto em CADA quadro, como fica a tela?”
+**Antes de escolher:** “Nesta experiência, vamos observar de onde os obstáculos surgem enquanto o jogo está rodando.”
+
+**Hoje vamos usar:** O nascimento dos obstáculos.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Criando um cacto em CADA quadro, como fica a tela?”
 
 - Uma parede de cactos ✓ (o que acontece de verdade)
 - Cactos bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram cactos colados uns nos outros.”)
@@ -212,7 +216,11 @@ O palpite volta à tela quando ela descobre: “Viu a parede de cactos”.
 
 **Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…”
+**Antes de escolher:** “Nesta demonstração, vamos acompanhar como a velocidade para o lado move o cacto pela tela.”
+
+**Hoje vamos usar:** A velocidade para o lado.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…”
 
 - 5 (se ela escolher esta, a tela conta depois: “Com −5, o x diminuiu e o cacto veio para a esquerda.”)
 - −5 ✓ (o que acontece de verdade)

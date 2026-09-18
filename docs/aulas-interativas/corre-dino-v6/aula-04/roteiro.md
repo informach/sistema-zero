@@ -85,7 +85,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Nenhum pulo e nenhum som ainda.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “O som ainda escuta a tecla Espaço. Com o Dino no ar, você aperta Espaço de novo. O que acontece?”
+**Antes de escolher:** “Nesta experiência, vamos comparar o som que o jogo faz com o jeito usado para pular.”
+
+**Hoje vamos usar:** O som do pulo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “O som ainda escuta a tecla Espaço. Com o Dino no ar, você aperta Espaço de novo. O que acontece?”
 
 - Nada: sem pulo novo, sem som (se ela escolher esta, a tela conta depois: “A linha do tempo ganhou um som sem pulo.”)
 - Toca o som, e o Dino não pula de novo ✓ (o que acontece de verdade)

@@ -56,7 +56,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Nenhum lugar sorteado ainda.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Sorteando o lugar, dois cactos podem nascer no mesmo ponto?”
+**Antes de escolher:** “Nesta experiência, vamos usar um sorteio para escolher entre vários lugares possíveis.”
+
+**Hoje vamos usar:** O sorteio do jogo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Sorteando o lugar, dois cactos podem nascer no mesmo ponto?”
 
 - Nunca, o sorteio evita repetir (se ela escolher esta, a tela conta depois: “Um lugar saiu de novo, e a marquinha dele ganhou 2×.”)
 - Podem sim ✓ (o que acontece de verdade)
@@ -142,7 +146,11 @@ O palpite volta à tela quando ela descobre: “Um lugar repetiu”.
 
 **Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…”
+**Antes de escolher:** “Nesta demonstração, vamos comparar o tamanho dos passos do cacto quando a velocidade fica negativa.”
+
+**Hoje vamos usar:** O sinal da velocidade.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…”
 
 - Anda para a esquerda com passos iguais aos do −5 (se ela escolher esta, a tela conta depois: “Com −6, o x diminuiu 6 a cada quadro, 1 a mais que com −5.”)
 - Anda para a esquerda com passos maiores ✓ (o que acontece de verdade)

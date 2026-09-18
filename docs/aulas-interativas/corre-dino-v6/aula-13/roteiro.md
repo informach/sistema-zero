@@ -126,7 +126,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** A base está em −5, com a condição ligada. 0 cactos na fileira.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Com a condição Se velocidade > −9 ligada, um cacto novo ainda pode sair com −10?”
+**Antes de escolher:** “Nesta experiência, vamos observar como a velocidade muda enquanto o tempo passa.”
+
+**Hoje vamos usar:** A aceleração.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Com a condição Se velocidade > −9 ligada, um cacto novo ainda pode sair com −10?”
 
 - Não, −9 é o limite (se ela escolher esta, a tela conta depois: “Com a base parada em −9, o sorteio tirou mais 1 e nasceu um cacto −10.”)
 - Pode, se o sorteio tirar mais 1 ✓ (o que acontece de verdade)

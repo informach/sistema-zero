@@ -147,7 +147,11 @@ function previsaoMarkdown(bloco: InteractiveBlock, rotulo: (meta: string) => str
       '',
     ]
   return [
-    `**Previsão, antes de mexer (${bloco.prediction ? 'escrita na aula' : 'a de fábrica da cena'}; não vale nota):** “${previsao.prompt}”`,
+    `**Antes de escolher:** “${previsao.context.explanation}”`,
+    '',
+    `**Hoje vamos usar:** ${previsao.context.label}.`,
+    '',
+    `**Seu palpite, antes de abrir a cena (${bloco.prediction ? 'escrito na aula' : 'o de fábrica da cena'}; não vale nota):** “${previsao.prompt}”`,
     '',
     ...previsao.choices.map((escolha) =>
       escolha.id === previsao.correctChoiceId
@@ -328,7 +332,13 @@ export function trechosObrigatoriosDaCena(bloco: InteractiveBlock): string[] {
   const atividade = bloco.activity as SceneActivity
   const trechos = [bloco.instructions]
   const previsao = blockPrediction(bloco)
-  if (previsao) trechos.push(previsao.prompt, ...previsao.choices.map((c) => c.label))
+  if (previsao)
+    trechos.push(
+      previsao.context.label,
+      previsao.context.explanation,
+      previsao.prompt,
+      ...previsao.choices.map((c) => c.label),
+    )
   if (atividade.type === 'demonstration')
     trechos.push(...sceneScript(atividade).map((parte) => parte.caption))
   else {

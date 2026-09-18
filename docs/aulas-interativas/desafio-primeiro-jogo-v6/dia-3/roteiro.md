@@ -66,7 +66,11 @@ A demonstração é observação: o vídeo, com pausa e repetição, e às vezes
 
 **Como o palco começa:** Ainda não nasceu nenhum asteroide.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
+**Antes de escolher:** “Nesta experiência, vamos observar de onde os obstáculos surgem enquanto o jogo está rodando.”
+
+**Hoje vamos usar:** O nascimento dos obstáculos.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Criando um asteroide em CADA quadro, como fica a tela?”
 
 - Uma parede de asteroides ✓ (o que acontece de verdade)
 - Asteroides bem espaçados (se ela escolher esta, a tela conta depois: “Em um segundo nasceram asteroides colados uns nos outros.”)
@@ -151,7 +155,11 @@ O palpite volta à tela quando ela descobre: “Viu a parede de asteroides”.
 
 **Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?”
+**Antes de escolher:** “Nesta demonstração, vamos acompanhar como a velocidade para baixo muda o número y de uma pedra.”
+
+**Hoje vamos usar:** A velocidade para baixo.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?”
 
 - O y aumenta ✓ (o que acontece de verdade)
 - O y diminui (se ela escolher esta, a tela conta depois: “Com a velocidade para baixo em 3, o número do y ficou maior.”)

@@ -132,7 +132,11 @@ A demonstração é observação: o vídeo, com pausa e repetição, e às vezes
 
 **Caso preparado na aula:** a cena não parte do começo de fábrica: 5 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado; a missão cobra só estas descobertas: “Velocidade positiva levou para baixo” e “Velocidade negativa levou para cima”.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Com a velocidade para baixo em −9, para onde o tiro vai?”
+**Antes de escolher:** “Nesta experiência, vamos usar a velocidade para baixo para observar o caminho de um tiro na tela.”
+
+**Hoje vamos usar:** A velocidade para baixo.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Com a velocidade para baixo em −9, para onde o tiro vai?”
 
 - Para baixo (se ela escolher esta, a tela conta depois: “Com o número negativo, o y diminuiu e o tiro subiu.”)
 - Para cima ✓ (o que acontece de verdade)

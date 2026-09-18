@@ -55,7 +55,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Quadro 0: 1 Dino na tela.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se o jogo desenhar sem limpar antes, o que aparece?”
+**Antes de escolher:** “Nesta experiência, vamos observar o que acontece quando o jogo desenha de novo em cada quadro.”
+
+**Hoje vamos usar:** O desenho que se repete.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Se o jogo desenhar sem limpar antes, o que aparece?”
 
 - Um Dino só, andando (se ela escolher esta, a tela conta depois: “Sem limpar, os desenhos de antes continuaram na tela.”)
 - Um rastro de Dinos ✓ (o que acontece de verdade)
@@ -190,7 +194,11 @@ O palpite volta à tela quando ela descobre: “Sem limpar, os desenhos velhos f
 
 **Como o palco começa:** Só um pedacinho do Dino aparece no desenho.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Na ordem de desenhar, o Dino vem DEPOIS da floresta. Onde o Dino aparece?”
+**Antes de escolher:** “Nesta experiência, vamos organizar a ordem em que os desenhos entram para ver o que fica na frente.”
+
+**Hoje vamos usar:** A ordem dos desenhos.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Na ordem de desenhar, o Dino vem DEPOIS da floresta. Onde o Dino aparece?”
 
 - Atrás da floresta (se ela escolher esta, a tela conta depois: “O Dino ficou na frente da floresta.”)
 - Na frente da floresta ✓ (o que acontece de verdade)

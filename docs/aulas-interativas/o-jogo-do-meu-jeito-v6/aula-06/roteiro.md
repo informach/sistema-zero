@@ -142,7 +142,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Como o palco começa:** Nenhum recorte da folha de 64 por 32 ainda: o jogo está vazio, num quadrado de 54 por 54.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?”
+**Antes de escolher:** “Nesta demonstração, vamos olhar uma folha que guarda duas naves antes de escolher o que o jogo mostra.”
+
+**Hoje vamos usar:** A folha de sprites.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?”
 
 - Duas naves espremidas ✓ (o que acontece de verdade)
 - Uma nave só (se ela escolher esta, a tela conta depois: “O jogo mostrou a folha inteira: as duas naves, espremidas.”)
@@ -171,7 +175,11 @@ O palpite volta à tela quando ela descobre: “Viu o jogo mostrar a folha intei
 
 **Caso preparado na aula:** a missão cobra só estas descobertas: “Recortou 16 e olhou o jogo”, “Achou o recorte que mostra uma nave inteira” e “Mudou o tamanho no jogo e conferiu a folha”.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Os quadros da nave têm 32 de largura. Com um recorte de 16, o que aparece no jogo?”
+**Antes de escolher:** “Nesta experiência, vamos escolher um pedaço de uma folha de desenhos para colocar no jogo.”
+
+**Hoje vamos usar:** O recorte da folha de sprites.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Os quadros da nave têm 32 de largura. Com um recorte de 16, o que aparece no jogo?”
 
 - Metade da nave, esticada ✓ (o que acontece de verdade)
 - A nave inteira, menor (se ela escolher esta, a tela conta depois: “Com o recorte de 16, o jogo mostrou só metade da nave, esticada.”)

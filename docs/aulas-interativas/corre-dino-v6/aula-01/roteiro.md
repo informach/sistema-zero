@@ -63,7 +63,11 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Como o palco começa:** Tela de 800 por 480, com a borda escondida.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Sem a borda, dá para ver onde a tela do jogo acaba?”
+**Antes de escolher:** “Nesta experiência, vamos olhar a tela do jogo e a borda que mostra onde ela termina.”
+
+**Hoje vamos usar:** A borda da tela do jogo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Sem a borda, dá para ver onde a tela do jogo acaba?”
 
 - Não dá, a tela some no fundo. ✓ (o que acontece de verdade)
 - Dá, a tela aparece sozinha. (se ela escolher esta, a tela conta depois: “Sem a borda, a tela sumia no fundo, e só apareceu quando a borda ligou.”)
@@ -117,7 +121,11 @@ A seção também pede a cena concluída. Se faltar algo, mostrar o objetivo pen
 
 **Como o palco começa:** A descrição do jogo está vazia.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você aperta Ouvir a tela sem escrever nada. O que a pessoa ouve?”
+**Antes de escolher:** “Nesta experiência, vamos usar o botão “Ouvir a tela”. Ele lê em voz alta o que aparece no jogo.”
+
+**Hoje vamos usar:** Ouvir a tela.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Antes de apertar “Ouvir a tela”, o que o leitor de tela vai dizer quando ainda não há texto no jogo?”
 
 - Um Dino correndo e pulando cactos. (se ela escolher esta, a tela conta depois: “O leitor de tela disse só "Tela do jogo. Imagem."”)
 - Só "Tela do jogo. Imagem." ✓ (o que acontece de verdade)
@@ -182,7 +190,11 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Como o palco começa:** O Dino está em x 110, y 150.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se você AUMENTAR o y, para onde o Dino vai?”
+**Antes de escolher:** “Nesta experiência, vamos usar os números x e y para escolher onde o personagem aparece na tela do jogo.”
+
+**Hoje vamos usar:** Os números x e y.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Se você AUMENTAR o y, para onde o Dino vai?”
 
 - Para cima (se ela escolher esta, a tela conta depois: “Aumentando o y, o Dino desceu.”)
 - Para baixo ✓ (o que acontece de verdade)
@@ -246,7 +258,11 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?”
+**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+
+**Hoje vamos usar:** Bastidores e tela do jogo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
 - Em lugar nenhum. Sem desenho, o Dino não existe. (se ela escolher esta, a tela conta depois: “A ficha do Dino ficou nos bastidores, com a tela vazia.”)

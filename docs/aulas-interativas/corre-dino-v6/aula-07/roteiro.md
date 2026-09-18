@@ -111,7 +111,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Na tela de início. 0 cactos criados até agora.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Na tela de início, antes de começar, nascem cactos?”
+**Antes de escolher:** “Nesta experiência, vamos observar o que o jogo deixa acontecer antes e depois de a partida começar.”
+
+**Hoje vamos usar:** O estado do jogo.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Na tela de início, antes de começar, nascem cactos?”
 
 - Sim, já nascem ✓ (o que acontece de verdade)
 - Não, só depois de começar (se ela escolher esta, a tela conta depois: “Os cactos nasceram na tela de início, antes de começar.”)

@@ -131,7 +131,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Como o palco começa:** Na tela de início, com a pista vazia.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Se o toque no fim só voltar para a tela de início, o que acontece com os cactos da partida?”
+**Antes de escolher:** “Nesta experiência, vamos observar o que o jogo guarda e o que ele reinicia quando a partida recomeça.”
+
+**Hoje vamos usar:** O botão de recomeçar.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Se o toque no fim só voltar para a tela de início, o que acontece com os cactos da partida?”
 
 - Somem sozinhos (se ela escolher esta, a tela conta depois: “Os cactos da partida anterior continuaram na pista.”)
 - Continuam na pista ✓ (o que acontece de verdade)

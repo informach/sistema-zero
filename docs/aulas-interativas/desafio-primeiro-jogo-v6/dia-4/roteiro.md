@@ -61,7 +61,11 @@ A demonstração é observação: o vídeo, com pausa e repetição, e às vezes
 
 **Como o palco começa:** A caixa pontos ainda não existe.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: a caixa pontos guarda 0. Um acerto soma 1, com Mostrar placar desligado. Quanto a caixa guarda?”
+**Antes de escolher:** “Nesta experiência, vamos observar uma caixa que guarda um número e muda durante o jogo.”
+
+**Hoje vamos usar:** A caixa que guarda um número.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: a caixa pontos guarda 0. Um acerto soma 1, com Mostrar placar desligado. Quanto a caixa guarda?”
 
 - 0, porque ninguém viu (se ela escolher esta, a tela conta depois: “O número da caixa mudou, mesmo sem aparecer na tela.”)
 - 1 ✓ (o que acontece de verdade)
@@ -262,7 +266,11 @@ O palpite volta à tela quando ela descobre: “Mudou o valor sem estar na tela�
 
 **Como o palco começa:** 3 vidas e 0 pontos no placar.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?”
+**Antes de escolher:** “Nesta demonstração, vamos observar o que muda nas vidas e no placar quando a nave encosta em um asteroide.”
+
+**Hoje vamos usar:** Vidas e placar.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?”
 
 - Só o coração ✓ (o que acontece de verdade)
 - O placar e o coração (se ela escolher esta, a tela conta depois: “A batida não tirou nenhum ponto do placar.”)

@@ -115,7 +115,11 @@ A demonstração é observação: o vídeo, com pausa e repetição, e às vezes
 
 **Caso preparado na aula:** a cena não parte do começo de fábrica: 2 ações preparam o palco antes de a criança entrar, e a frase acima já mostra o resultado; a missão cobra só esta descoberta: “y maior leva para baixo”.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Se o y AUMENTAR, para onde a nave vai?”
+**Antes de escolher:** “Nesta experiência, vamos usar os números x e y para escolher onde a nave aparece na tela do jogo.”
+
+**Hoje vamos usar:** Os números x e y.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Se o y AUMENTAR, para onde a nave vai?”
 
 - Para cima (se ela escolher esta, a tela conta depois: “Aumentando o y, a nave desceu.”)
 - Para baixo ✓ (o que acontece de verdade)
@@ -196,7 +200,11 @@ O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
 
 **Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Imagine: você cria a nave com o desenho desligado. Onde fica a nave?”
+**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+
+**Hoje vamos usar:** Bastidores e tela do jogo.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: você cria a nave com o desenho desligado. Onde fica a nave?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
 - Em lugar nenhum. Sem desenho, a nave não existe. (se ela escolher esta, a tela conta depois: “A ficha da nave ficou nos bastidores, com a tela vazia.”)
@@ -261,7 +269,11 @@ O palpite volta à tela quando ela descobre: “A nave existe sem aparecer”.
 
 **Como o palco começa:** Quadro 0: 1 nave na tela.
 
-**Previsão, antes de mexer (escrita na aula; não vale nota):** “Sem limpar antes de desenhar, o que fica na tela?”
+**Antes de escolher:** “Nesta experiência, vamos observar o que acontece quando o jogo desenha a nave de novo em cada quadro.”
+
+**Hoje vamos usar:** O desenho que se repete.
+
+**Seu palpite, antes de abrir a cena (escrito na aula; não vale nota):** “Sem limpar antes de desenhar, o que fica na tela?”
 
 - Um rastro de naves ✓ (o que acontece de verdade)
 - Uma nave só (se ela escolher esta, a tela conta depois: “Sem limpar, as naves de antes continuaram na tela.”)

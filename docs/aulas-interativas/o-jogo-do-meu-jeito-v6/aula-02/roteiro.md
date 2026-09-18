@@ -80,7 +80,11 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Como o palco começa:** Espelhos desligados, na grade da nave.
 
-**Previsão, antes de mexer (a de fábrica da cena; não vale nota):** “Você pinta a asa do lado esquerdo com o Espelho lado a lado ligado. Onde aparece a outra asa?”
+**Antes de escolher:** “Nesta experiência, vamos usar um espelho para copiar um traço para o outro lado do desenho.”
+
+**Hoje vamos usar:** O espelho do desenho.
+
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Você pinta a asa do lado esquerdo com o Espelho lado a lado ligado. Onde aparece a outra asa?”
 
 - Grudada na primeira, deixando a asa mais grossa (se ela escolher esta, a tela conta depois: “A outra asa apareceu do outro lado do meio, virada.”)
 - Do outro lado do meio, virada ✓ (o que acontece de verdade)
