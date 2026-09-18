@@ -3,7 +3,7 @@
 > For agentic workers: use executing-plans task-by-task and preserve the checkboxes.
 
 > **Status de execução, 18/09/2026.** O plano foi implementado nos commits `028a27ae`,
-> `ba2f7437`, `6a98d95c` e `94fe3c16`. O componente entregue se chama
+> `ba2f7437`, `6a98d95c`, `94fe3c16` e `20a0e275`. O componente entregue se chama
 > `zappy-speech-editor.tsx`; ele usa a rota real de geração também na prévia. A lista abaixo
 > preserva o desenho original do trabalho, e o guia operacional atualizado está em
 > `docs/voz-do-zappy.md`.

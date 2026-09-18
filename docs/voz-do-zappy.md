@@ -93,6 +93,9 @@ o roteiro é o que encontra o MP3. Assim, corrigir uma instrução ou a pronúnc
 áudio antigo: até gerar de novo, a cena inteira cai para a voz do navegador em vez de misturar duas
 vozes.
 
+Essa escolha acontece antes de a fala começar. Se um MP3 falhar no meio por uma queda de rede, ela
+para e o botão volta a **Ouvir**; o navegador não completa apenas o restante com outra voz.
+
 O arquivo no R2 também incorpora voz, modelo, versão do perfil e roteiro. Pelo mesmo motivo o botão
 sabe sozinho o que está desatualizado, sem guardar nenhum controle.
 
@@ -144,10 +147,12 @@ procedimento estão em `aulas-interativas/raio-x-implantacao.md`.)
    clique **Gerar a voz do Zappy** e publique a aula.
 6. **Algumas frases não saíram**: o toast diz quantas. Uma frase que falha não derruba as outras;
    clique de novo e só as que faltam são tentadas.
-7. **O Zappy fica parado enquanto o áudio toca**: ele cai no desenho estático quando o aparelho
+7. **A voz parou no meio**: tente **Ouvir** outra vez. Se continuar, confira o MP3 no R2/rede; a
+   fala não é completada pela voz do navegador para não trocar de personagem no meio da instrução.
+8. **O Zappy fica parado enquanto o áudio toca**: ele cai no desenho estático quando o aparelho
    pediu menos movimento (`prefers-reduced-motion`), quando a economia de dados está ligada ou se o
    Rive não subiu. Com o Rive no ar, a boca anda em laço do primeiro ao último segundo do áudio.
-8. **O Zappy se mexe sem ninguém apertar nada**: é o esperado nos balões SEM botão "Ouvir" (pista,
+9. **O Zappy se mexe sem ninguém apertar nada**: é o esperado nos balões SEM botão "Ouvir" (pista,
    retorno da resposta, instrução sem voz gravada) e nos balões em que a autora escolheu outra cara
    que não "falando". A voz rege só a boca da pose "falando".
 
