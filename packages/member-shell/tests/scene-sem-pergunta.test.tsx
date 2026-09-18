@@ -36,11 +36,13 @@ function blocosDaAula() {
 describe('a Aula 1 do Corre Dino chega ao player com a pergunta em duas cenas', () => {
   const cenas = blocosDaAula()
 
-  test('as quatro cenas continuam lá, e as quatro PREVISÕES também', () => {
+  // ⚠️ Eram QUATRO até `a4597d67 docs(corre-dino): retirar leitor de tela da aula inicial`, que
+  // tirou a `experiencia-leitor-de-tela` do manifesto e deixou este teste para trás. O que ele
+  // guarda segue sendo o mesmo: toda cena da Aula 1 chega com PREVISÃO, e só duas com pergunta.
+  test('as três cenas continuam lá, e as três PREVISÕES também', () => {
     expect([...cenas.keys()].sort()).toEqual([
       'descoberta',
       'experiencia-coordenadas',
-      'experiencia-leitor-de-tela',
       'experiencia-tela',
     ])
     for (const [chave, bloco] of cenas)
@@ -53,8 +55,8 @@ describe('a Aula 1 do Corre Dino chega ao player com a pergunta em duas cenas', 
       .map(([chave]) => chave)
       .sort()
     expect(comPergunta).toEqual(['descoberta', 'experiencia-coordenadas'])
-    // E as outras duas dizem isso por escrito, em vez de terem perdido a pergunta por acidente.
-    for (const chave of ['experiencia-tela', 'experiencia-leitor-de-tela'])
+    // E a que sobra diz isso por escrito, em vez de ter perdido a pergunta por acidente.
+    for (const chave of ['experiencia-tela'])
       expect(cenas.get(chave)?.semPerguntaFinal, chave).toBe(true)
   })
 
