@@ -216,6 +216,25 @@ describe('lesson authoring integrity', () => {
       captions: undefined,
     })
   })
+  test('a fala escrita e o roteiro do Zappy são salvos separadamente', () => {
+    const content = buildContent({
+      ...EMPTY_BLOCK,
+      kind: 'dialogue',
+      dialogueText: 'Agora aperte a tecla X.',
+      dialogueZappySpeech: {
+        sourceText: 'Agora aperte a tecla X.',
+        speechText: 'Agora aperte a tecla xis.<break time="0.5s" />',
+      },
+    })
+    expect(content).toMatchObject({
+      kind: 'dialogue',
+      text: 'Agora aperte a tecla X.',
+      zappySpeech: {
+        sourceText: 'Agora aperte a tecla X.',
+        speechText: 'Agora aperte a tecla xis.<break time="0.5s" />',
+      },
+    })
+  })
   test('a cópia troca as identidades E as referências a elas', () => {
     // ⚠️ Remapear só as opções deixaria o gabarito apontando para a opção da aula ORIGINAL:
     // a cópia nasceria com a resposta certa errada, e ninguém veria até uma criança responder.

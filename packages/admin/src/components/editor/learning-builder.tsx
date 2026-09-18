@@ -11,10 +11,14 @@ import {
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
+  falasDaCena,
   isSceneAudioUrl,
   SCENE_LIMITS,
+  SCENE_SPEECH_SLOTS,
+  type SceneSpeechSlot,
   sceneModelFor,
   sceneTargets,
+  type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import {
@@ -41,11 +45,19 @@ import { SceneAuthoring } from './scene-authoring'
 import { SceneCastEditor } from './scene-cast-editor'
 import { ScenePicker } from './scene-picker'
 import { SceneSetupEditor } from './scene-setup-editor'
+import { ZappySpeechEditor } from './zappy-speech-editor'
 
 const initialChoices = (): LearningChoice[] => [
   { id: 'first', label: 'Primeira possibilidade' },
   { id: 'second', label: 'Segunda possibilidade' },
 ]
+
+const ZAPPY_SPEECH_LABELS: Record<SceneSpeechSlot, string> = {
+  instruction: 'Instrução da cena',
+  'prediction-context': 'Contexto do palpite',
+  'prediction-question': 'Pergunta do palpite',
+  checkpoint: 'Pergunta do fim',
+}
 
 /** Uma previsão própria só publica depois de apresentar claramente o assunto da descoberta. */
 const initialPrediction = (): LearningPrediction => ({
@@ -258,6 +270,21 @@ export function LearningBuilder({
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
   const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
+  const falasDoZappy = cena ? falasDaCena(value) : []
+  const atualizarRoteiroDoZappy = (
+    slot: SceneSpeechSlot,
+    ajuste: ZappySpeechOverride | undefined,
+  ) => {
+    if (!cena) return
+    const proximo = { ...(cena.zappySpeech ?? {}) }
+    if (ajuste) proximo[slot] = ajuste
+    else delete proximo[slot]
+    const { zappySpeech: _anterior, ...semAjustes } = cena
+    activity({
+      ...semAjustes,
+      ...(Object.keys(proximo).length ? { zappySpeech: proximo } : {}),
+    })
+  }
   // ⚠️ Em const: dentro dos callbacks o TS perde o estreitamento de `value.prediction` (é
   // propriedade mutável) e o espalhamento volta a ter `prompt` opcional, que não é o tipo.
   const previsao = value.prediction
@@ -532,6 +559,18 @@ export function LearningBuilder({
               </Field>
             </div>
           </details>
+          <ZappySpeechEditor
+            rows={falasDoZappy.map((fala) => ({
+              id: fala.slot,
+              label: ZAPPY_SPEECH_LABELS[fala.slot],
+              visibleText: fala.visibleText,
+              override: cena.zappySpeech?.[fala.slot],
+            }))}
+            onChange={(idDaFala, ajuste) => {
+              if (!(SCENE_SPEECH_SLOTS as readonly string[]).includes(idDaFala)) return
+              atualizarRoteiroDoZappy(idDaFala as SceneSpeechSlot, ajuste)
+            }}
+          />
         </div>
       )}
 

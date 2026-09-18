@@ -16,7 +16,7 @@ import {
   type LessonDraftIssue,
   migrateLegacyInteractiveBlock,
 } from '@sistemazero/core/learning'
-import type { SceneVozes } from '@sistemazero/core/learning/scene'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -64,6 +64,7 @@ import { LessonStructureEditor } from '@/components/editor/lesson-structure-edit
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { useLessonDraft } from '@/components/editor/use-lesson-draft'
 import { VozZappyButton } from '@/components/editor/voz-zappy-button'
+import { ZappySpeechEditor } from '@/components/editor/zappy-speech-editor'
 import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -149,6 +150,7 @@ export interface BlockForm {
   /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
   dialoguePose: DialoguePose
   dialogueText: string
+  dialogueZappySpeech?: ZappySpeechOverride
   markdown: string
   html: string
   /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
@@ -366,6 +368,7 @@ export function buildContent(
         kind: 'dialogue',
         pose: f.dialoguePose,
         text: f.dialogueText.trim(),
+        ...(f.dialogueZappySpeech ? { zappySpeech: f.dialogueZappySpeech } : {}),
       }
     case 'rich_text':
       return {
@@ -806,6 +809,7 @@ function LessonEditorSession({
         c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
       dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',
       dialogueText: c.kind === 'dialogue' ? c.text : '',
+      dialogueZappySpeech: c.kind === 'dialogue' ? c.zappySpeech : undefined,
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
       src: c.kind === 'video' ? c.src : '',
@@ -1963,13 +1967,34 @@ function LessonEditorSession({
                         rows={3}
                         placeholder="Ex.: Agora a gente vai fazer o dinossauro pular! Toque no bloco verde."
                         onChange={(e) =>
-                          setBlockForm((f) => ({ ...f, dialogueText: e.target.value }))
+                          setBlockForm((f) => ({
+                            ...f,
+                            dialogueText: e.target.value,
+                            // A exceção pertence ao texto exibido. Ao reescrever a fala, ela não
+                            // pode sobreviver escondida e trocar a voz de uma frase nova.
+                            dialogueZappySpeech: undefined,
+                          }))
                         }
                       />
                       <p className="text-muted-foreground text-xs">
                         {blockForm.dialogueText.trim().length} de {DIALOGUE_MAX_LENGTH} caracteres
                       </p>
                     </Field>
+                    {blockForm.dialogueText.trim() ? (
+                      <ZappySpeechEditor
+                        rows={[
+                          {
+                            id: 'dialogue',
+                            label: 'Fala do balão',
+                            visibleText: blockForm.dialogueText.trim(),
+                            override: blockForm.dialogueZappySpeech,
+                          },
+                        ]}
+                        onChange={(_id, dialogueZappySpeech) =>
+                          setBlockForm((f) => ({ ...f, dialogueZappySpeech }))
+                        }
+                      />
+                    ) : null}
                   </>
                 ) : null}
 
