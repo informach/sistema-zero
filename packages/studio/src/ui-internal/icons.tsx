@@ -457,3 +457,62 @@ export function IconAlert(p: IconProps): JSX.Element {
     </Base>
   )
 }
+
+/* Os materiais e os destinos do menu "⋯" (18/09/2026). Antes, som e modelo 3D não
+   tinham ícone nenhum (moravam dentro de "Imagens") e os TRÊS jeitos de o jogo sair
+   daqui dividiam o mesmo `IconDownload` — indistinguíveis na mesma lista. */
+
+/** Alto-falante com ondas (Lucide "volume-2") — os sons do projeto. */
+export function IconSpeaker(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </Base>
+  )
+}
+
+/** Caixa em perspectiva (Lucide "box") — os modelos 3D e os céus 360°. */
+export function IconBox(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </Base>
+  )
+}
+
+/** Globo (Lucide "globe") — publicar o jogo na internet. */
+export function IconGlobe(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      <path d="M2 12h20" />
+    </Base>
+  )
+}
+
+/** Folha com seta saindo (Lucide "file-output") — levar o projeto para o Estúdio Completo. */
+export function IconFileOutput(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M4 7V4a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2h-2" />
+      <path d="M2 15h10" />
+      <path d="m9 18 3-3-3-3" />
+    </Base>
+  )
+}
+
+/** Computador (Lucide "laptop") — baixar o código para abrir no computador. */
+export function IconLaptop(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M2 20h20" />
+    </Base>
+  )
+}

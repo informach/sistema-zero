@@ -40,7 +40,7 @@ export interface StudioFeatures {
   extensions?: boolean
   /** Botão "Exportar" na Topbar (gera o ZIP de deploy). Default: true. */
   export?: boolean
-  /** Botão "Baixar" na Topbar (ZIP da FONTE, para continuar no VSCode). Default: true. */
+  /** Item ⋯ → "Baixar o código" (ZIP da FONTE, para continuar no VSCode). Default: true. */
   download?: boolean
   /** Aba Terminal (WebContainer). Default: false — exige COOP/COEP no host. */
   terminal?: boolean

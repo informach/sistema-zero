@@ -34,7 +34,7 @@ function safeFileBase(name: string): string {
 /**
  * Baixa o projeto inteiro como `.szproject.json` — o MESMO formato que a listagem
  * importa via `importProjectFromJSON` (files/ir/blocksState/assets/extensões/tree).
- * Reusado pela listagem (ProjectCard) E pelo menu ⋯ do editor ("Exportar para o
+ * Reusado pela listagem (ProjectCard) E pelo menu ⋯ do editor ("Levar para o
  * Estúdio"), para a criança levar o projeto da aula para o Estúdio Completo.
  */
 export function downloadProjectAsJSON(project: Project): void {

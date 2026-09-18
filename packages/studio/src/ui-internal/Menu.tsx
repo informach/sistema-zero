@@ -7,6 +7,14 @@ import { cn } from './cn'
 export interface MenuItem {
   id: string
   label: string
+  /**
+   * Linha de apoio abaixo do rótulo, para quando o nome sozinho não diz o
+   * DESTINO (os três jeitos de o jogo sair do Estúdio, por exemplo).
+   * ⚠️ Ela NÃO entra no nome acessível: o botão passa a levar `aria-label` com o
+   * rótulo puro, senão o nome viraria "Baixar o código uma pasta .zip…" e os
+   * `getByRole('menuitem', { name, exact: true })` dos e2e quebrariam em silêncio.
+   */
+  hint?: string
   icon?: ReactNode
   onSelect: () => void
   /** Item-interruptor: mostra estado ligado (cor de destaque + marca). */
@@ -134,6 +142,9 @@ export function Menu({
 
   // Índice plano estável (mesma ordem de itemRefs) atribuído durante o render.
   let flatIndex = -1
+  // Painel mais largo SÓ quando alguma linha de apoio precisa caber (o menu do
+  // card da lista, que não tem nenhuma, continua estreito como antes).
+  const hasHint = sections.some((s) => s.items.some((i) => i.hint))
 
   return (
     <div className={cn('relative', className)}>
@@ -181,7 +192,10 @@ export function Menu({
               role="menu"
               aria-label={label}
               style={{ top: pos.top, left: pos.left, right: pos.right }}
-              className="fixed z-50 max-h-[min(70vh,32rem)] min-w-56 overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg"
+              className={cn(
+                'fixed z-50 max-h-[min(70vh,32rem)] overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg',
+                hasHint ? 'min-w-72' : 'min-w-56',
+              )}
             >
               {sections.map((section, si) => (
                 <fieldset
@@ -206,8 +220,14 @@ export function Menu({
                         }}
                         type="button"
                         role="menuitem"
+                        // O id no DOM é o que deixa um teste perguntar QUAL item
+                        // está ali. Pelo rótulo a pergunta é ambígua: dois itens
+                        // podem mostrar o mesmo texto, e aí um item morto passa
+                        // por vivo (medido, ao sabotar o drift do menu).
+                        data-sz-menu-item={item.id}
                         tabIndex={-1}
                         disabled={item.disabled}
+                        aria-label={item.hint ? item.label : undefined}
                         aria-current={item.active || undefined}
                         onClick={() => {
                           item.onSelect()
@@ -225,7 +245,14 @@ export function Menu({
                             {item.icon}
                           </span>
                         )}
-                        <span className="flex-1 truncate">{item.label}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate">{item.label}</span>
+                          {item.hint && (
+                            <span className="block text-xs leading-snug text-sz-fg-mute">
+                              {item.hint}
+                            </span>
+                          )}
+                        </span>
                         {item.active && (
                           <span className="text-sz-accent" aria-hidden="true">
                             ●

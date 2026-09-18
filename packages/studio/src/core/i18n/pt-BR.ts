@@ -10,14 +10,14 @@ export const ptBR: Record<string, string> = {
   'topbar.preview': 'Pré-visualizar',
   'topbar.save': 'Salvar',
   'topbar.saving': 'Salvando…',
-  'topbar.download': 'Baixar',
+  'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
   'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
-  'topbar.export': 'Exportar para publicar',
-  'topbar.exportStudio': 'Exportar para o Estúdio',
-  'topbar.cloudSync': 'Sincronizar com o enviado',
-  'topbar.convertPro': 'Promover para Pro',
+  'topbar.export': 'Publicar na internet',
+  'topbar.exportStudio': 'Levar para o Estúdio',
+  'topbar.cloudSync': 'Trazer o que eu enviei',
+  'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
@@ -25,9 +25,21 @@ export const ptBR: Record<string, string> = {
   'topbar.theme': 'Mudar tema',
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
-  'topbar.group.file': 'Arquivo',
-  'topbar.group.view': 'Exibição',
-  'topbar.group.account': 'Conta',
+  // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a
+  // COISA de que trata, na ordem de uso. "Arquivo"/"Exibição"/"Conta" saíram em
+  // 18/09/2026 — o primeiro era o nome do sistema de arquivos, e os outros dois
+  // viraram despejo (o gerenciador de materiais morava em "Exibição").
+  'topbar.group.myGame': 'O meu jogo',
+  'topbar.group.materials': 'Materiais',
+  'topbar.group.show': 'Mostrar',
+  'topbar.group.take': 'Levar o jogo',
+  'topbar.group.studio': 'Estúdio',
+  // A linha de apoio dos três jeitos de o jogo sair daqui: os nomes sozinhos não
+  // diziam o destino, e os três tinham o MESMO ícone.
+  'topbar.hint.exportStudio': 'um arquivo para abrir no Estúdio Completo',
+  'topbar.hint.download': 'uma pasta .zip para abrir no computador',
+  'topbar.hint.export': 'um .zip pronto para pôr no ar',
+  'topbar.hint.convertPro': 'troca os blocos por um projeto de código',
   'topbar.modes': 'Modo de edição',
   'topbar.undo': 'Desfazer',
   'topbar.redo': 'Refazer',
@@ -47,6 +59,13 @@ export const ptBR: Record<string, string> = {
   'panel.ai': 'IA',
   'panel.preview': 'Pré-visualização',
   'panel.extensions': 'Extensões oficiais',
+
+  // A janela dos materiais e as três abas (18/09/2026). Os nomes das abas são a
+  // MESMA palavra das três portas do menu ⋯ — é o que liga a porta ao que ela abre.
+  'assets.title': 'Materiais do jogo',
+  'assets.tab.images': 'Imagens',
+  'assets.tab.sounds': 'Sons',
+  'assets.tab.models3d': 'Modelos 3D',
 
   'extensions.install': 'Instalar',
   'extensions.remove': 'Remover',
@@ -255,16 +274,16 @@ export const ptBR: Record<string, string> = {
   'export.zipping': 'Compactando…',
   'export.error': 'Não foi possível exportar: {reason}',
 
-  'convert.title': 'Promover este projeto para Pro?',
+  'convert.title': 'Virar profissional?',
   'convert.body':
     'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
     'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
-  'convert.confirm': 'Promover para Pro',
+  'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
-  'convert.working': 'Promovendo…',
+  'convert.working': 'Virando…',
 
   'share.action': 'Compartilhar',
   'share.title': 'Compartilhar no Mural dos Criadores',

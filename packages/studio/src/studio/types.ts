@@ -197,8 +197,8 @@ export interface StudioCommonProps {
    */
   shareDisabledReason?: string
   /**
-   * Callback OPCIONAL "Sincronizar com o enviado" (Estúdio da AULA): quando
-   * presente, a Topbar mostra o item ⋯ → "Sincronizar com o enviado" que o
+   * Callback OPCIONAL "Trazer o que eu enviei" (Estúdio da AULA): quando
+   * presente, a Topbar mostra o item ⋯ → "Trazer o que eu enviei" que o
    * dispara. O HOST puxa do servidor o projeto enviado ao professor e substitui o
    * editor via `StudioHandle.replaceProject`. Ausente (default) → sem item.
    * Estável por instância (latchado, igual à `share`).

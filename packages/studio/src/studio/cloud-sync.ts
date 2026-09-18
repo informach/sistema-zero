@@ -6,7 +6,7 @@ import { createContext, useContext } from 'react'
  * substituir o que está no editor (o editor semeia do rascunho LOCAL deste
  * navegador; se o aluno terminou em outro computador, o local fica defasado).
  *
- * O Studio só EXPÕE o item de menu (⋯ → "Sincronizar com o enviado") e dispara
+ * O Studio só EXPÕE o item de menu (⋯ → "Trazer o que eu enviei") e dispara
  * este callback; toda a lógica de aula (buscar a entrega, confirmar, substituir o
  * projeto via `StudioHandle.replaceProject`, feedback) vive no HOST, que tem o
  * `handleRef`. Default `null` → sem item de menu. Mesmo padrão do {@link useStudioShare}.

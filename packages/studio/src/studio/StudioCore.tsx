@@ -130,7 +130,7 @@ function StudioCoreBody({
   // mas o valor entregue ao provider fica estável. Default `null` → sem botão.
   const [shareValue] = useState(() => share ?? null)
 
-  // Callback "Sincronizar com o enviado" — latcha uma vez por instância (igual ao
+  // Callback "Trazer o que eu enviei" — latcha uma vez por instância (igual ao
   // share); o host fornece uma referência estável (useCallback). `null` → sem item.
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
 

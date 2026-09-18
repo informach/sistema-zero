@@ -5,12 +5,14 @@ import { modesForKind, type Project } from '#core'
 import {
   ConfirmDialog,
   cn,
-  IconDownload,
   IconEye,
   IconEyeOff,
+  IconFileOutput,
+  IconGlobe,
   IconGraduation,
   IconGrid,
   IconImage,
+  IconLaptop,
   IconMessageSquare,
   IconMoon,
   IconMore,
@@ -53,9 +55,20 @@ import { BackBrand } from './topbar/BackBrand'
 import { BarIconButton } from './topbar/BarIconButton'
 import { HostStatusSeal } from './topbar/HostStatusSeal'
 import { ModeSegment } from './topbar/ModeSegment'
+import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
 import { ProjectNameField } from './topbar/ProjectNameField'
 import { SavePill, type SaveTone } from './topbar/SavePill'
 import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
+
+/** O que cada item do menu "⋯" FAZ. O nome, o grupo e a ordem vêm da árvore editorial. */
+interface MenuItemBehavior {
+  icon: MenuItem['icon']
+  onSelect: () => void
+  /** Sobrepõe o rótulo da árvore quando ele é dinâmico ("Salvando…", "Baixando…"). */
+  label?: string
+  active?: boolean
+  disabled?: boolean
+}
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -116,7 +129,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const tutor = useStudioTutor()
   // Motivo p/ desabilitar o Compartilhar (ex.: "envie ao professor primeiro"); null = ok.
   const shareDisabledReason = useStudioShareDisabledReason()
-  // "Sincronizar com o enviado" (Estúdio da aula) — null = host não passou o callback.
+  // "Trazer o que eu enviei" (Estúdio da aula) — null = host não passou o callback.
   const onCloudSync = useStudioCloudSync()
   // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
   const hostChrome = useStudioHostChrome()
@@ -210,151 +223,124 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     }
   }
 
-  // Menu "⋯" agrupado: Arquivo / Exibição / Conta. Cada item dispara a MESMA
-  // ação de store dos botões antigos. (Preview NÃO entra: no wide é ícone
-  // primário; no narrow vira aba no NarrowLayout.)
-  // Salvar e Baixar VIVEM aqui (no menu) — só o "Compartilhar" fica solto na Topbar
-  // (decisão de UX: a Topbar do estúdio-produto exibe só a ação principal). O badge
-  // de status ("Salvo"/"Não salvo") continua na Topbar comunicando o estado.
-  const fileItems: MenuItem[] = [
-    {
-      id: 'save',
-      label: saving ? t('topbar.saving') : t('topbar.save'),
-      icon: <IconSave />,
-      onSelect: () => {
-        if (!saving) void handleSave()
-      },
+  // Menu "⋯": o comportamento de CADA item, indexado pelo id da árvore editorial
+  // (`topbar/menuLayout.ts`). A lista que aparece é DERIVADA dali — é o mesmo par
+  // dado-puro + derivação da paleta do Jogo 2D (`palette.ts` × `blocks.ts`), e é
+  // o que permite o drift cobrar que nada apareça fora da árvore nem se perca dela.
+  // Item AUSENTE deste mapa não aparece: é assim que as features desligadas pelo
+  // host (aula, admin) somem, e por isso não há nenhum `if` de exibição abaixo.
+  // (O Preview NÃO entra: no wide é ícone primário; no narrow vira aba no
+  // NarrowLayout. Salvar e Baixar VIVEM aqui — só o "Compartilhar" fica solto na
+  // Topbar, que exibe apenas a ação principal; o badge "Salvo"/"Não salvo" segue
+  // na barra comunicando o estado.)
+  const behaviors: Partial<Record<StudioMenuItemId, MenuItemBehavior>> = {}
+
+  // Abaixo de `STUDIO_BAR_UNDO_MIN_PX` desfazer e refazer não cabem na barra: moram no "⋯".
+  const undoInMenu = width < STUDIO_BAR_UNDO_MIN_PX
+  if (undoRedo && undoInMenu) {
+    for (const item of undoRedoMenuItems(undoRedo, t)) {
+      behaviors[item.id as StudioMenuItemId] = {
+        icon: item.icon,
+        disabled: item.disabled,
+        onSelect: item.onSelect,
+      }
+    }
+  }
+
+  behaviors.save = {
+    label: saving ? t('topbar.saving') : undefined,
+    icon: <IconSave />,
+    onSelect: () => {
+      if (!saving) void handleSave()
     },
-  ]
-  // "Sincronizar com o enviado" (só na aula — o host passa o callback). Logo após
-  // Salvar: é uma ação de "recuperar do servidor" do mesmo grupo Arquivo.
-  if (onCloudSync) {
-    fileItems.push({
-      id: 'sync',
-      label: t('topbar.cloudSync'),
-      icon: <IconRefresh />,
-      onSelect: () => onCloudSync(),
-    })
   }
-  // "Exportar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula
-  // E no Estúdio Completo (a criança leva o projeto para importar no Completo).
-  fileItems.push({
-    id: 'exportStudio',
-    label: t('topbar.exportStudio'),
-    icon: <IconDownload />,
-    onSelect: handleExportStudio,
-  })
-  if (config.download) {
-    fileItems.push({
-      id: 'download',
-      label: downloading ? t('topbar.downloading') : t('topbar.download'),
-      icon: <IconDownload />,
-      onSelect: () => {
-        if (!downloading) void handleDownload()
-      },
-    })
+  // "Trazer o que eu enviei" (só na aula — o host passa o callback). Logo após
+  // Salvar: é a ação de "recuperar do servidor" do mesmo grupo.
+  if (onCloudSync) behaviors.sync = { icon: <IconRefresh />, onSelect: () => onCloudSync() }
+  if (config.extensions) {
+    behaviors.extensions = {
+      icon: <IconPuzzle />,
+      active: showExtensions,
+      onSelect: () => setShowExtensions(!showExtensions),
+    }
   }
-  if (config.export) {
-    fileItems.push({
-      id: 'export',
-      label: t('topbar.export'),
-      icon: <IconDownload />,
-      onSelect: () => setShowExport(true),
-    })
-  }
-  if (config.professional && projectKind !== 'pro') {
-    fileItems.push({
-      id: 'convert',
-      label: t('topbar.convertPro'),
-      icon: <IconGraduation />,
-      onSelect: () => setShowConvert(true),
-    })
+
+  // Os materiais do projeto. Só no editor básico (jogos): o Pro gerencia arquivos
+  // direto na árvore e não precisa da janela.
+  if (projectMode !== 'code') {
+    behaviors.assetsImages = {
+      icon: <IconImage />,
+      active: showAssets,
+      onSelect: () => setShowAssets(!showAssets),
+    }
   }
 
   // Mostrar/esconder cada painel. O Console deriva do modo até a primeira ação
   // manual; depois, a preferência desta instância prevalece. As escolhas valem
   // nos dois layouts (no wide a barra inferior some quando tudo é escondido; no
   // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
-  const viewItems: MenuItem[] = []
   if (config.console) {
-    viewItems.push({
-      id: 'console',
-      label: t('panel.console'),
+    behaviors.console = {
       icon: <IconMessageSquare />,
       active: showConsole,
       onSelect: () => setConsoleVisibilityOverride(!showConsole),
-    })
+    }
   }
   if (projectMode === 'code' && config.terminal) {
-    viewItems.push({
-      id: 'terminal',
-      label: t('panel.terminal'),
+    behaviors.terminal = {
       icon: <IconTerminal />,
       active: showTerminal,
       onSelect: () => setShowTerminal(!showTerminal),
-    })
+    }
   }
   if (projectMode === 'code' && config.ai) {
-    viewItems.push({
-      id: 'ai',
-      label: t('panel.ai'),
-      icon: <IconSparkles />,
-      active: showAI,
-      onSelect: () => setShowAI(!showAI),
-    })
-  }
-  if (config.extensions) {
-    viewItems.push({
-      id: 'extensions',
-      label: t('topbar.extensions'),
-      icon: <IconPuzzle />,
-      active: showExtensions,
-      onSelect: () => setShowExtensions(!showExtensions),
-    })
-  }
-  // Gerenciador de imagens (assets) — disponível no editor básico (jogos). Pro
-  // gerencia arquivos direto na árvore, não precisa do painel.
-  if (projectMode !== 'code') {
-    viewItems.push({
-      id: 'assets',
-      label: 'Imagens',
-      icon: <IconImage />,
-      active: showAssets,
-      onSelect: () => setShowAssets(!showAssets),
-    })
+    behaviors.ai = { icon: <IconSparkles />, active: showAI, onSelect: () => setShowAI(!showAI) }
   }
 
-  const accountItems: MenuItem[] = []
+  // "Levar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula E
+  // no Estúdio Completo (a criança leva o projeto para importar no Completo).
+  behaviors.exportStudio = { icon: <IconFileOutput />, onSelect: handleExportStudio }
+  if (config.download) {
+    behaviors.download = {
+      label: downloading ? t('topbar.downloading') : undefined,
+      icon: <IconLaptop />,
+      onSelect: () => {
+        if (!downloading) void handleDownload()
+      },
+    }
+  }
+  if (config.export) behaviors.export = { icon: <IconGlobe />, onSelect: () => setShowExport(true) }
+  if (config.professional && projectKind !== 'pro') {
+    behaviors.convert = { icon: <IconGraduation />, onSelect: () => setShowConvert(true) }
+  }
+
   if (canToggleTheme) {
-    accountItems.push({
-      id: 'theme',
-      label: t('topbar.theme'),
+    behaviors.theme = {
       icon: theme === 'dark' ? <IconSun /> : <IconMoon />,
       onSelect: () => void setTheme(theme === 'dark' ? 'light' : 'dark'),
-    })
+    }
   }
-  if (onExit) {
-    accountItems.push({
-      id: 'projects',
-      label: t('topbar.projects'),
-      icon: <IconGrid />,
-      onSelect: () => void exitToProjects(),
-    })
-  }
+  if (onExit) behaviors.projects = { icon: <IconGrid />, onSelect: () => void exitToProjects() }
 
-  // Abaixo de `STUDIO_BAR_UNDO_MIN_PX` desfazer e refazer não cabem na barra: moram no "⋯".
-  const undoInMenu = width < STUDIO_BAR_UNDO_MIN_PX
-  const sections: MenuSection[] = [
-    // Sem espaço na barra, desfazer e refazer abrem o "⋯".
-    {
-      id: 'edit',
-      label: t('topbar.group.edit'),
-      items: undoRedo && undoInMenu ? undoRedoMenuItems(undoRedo, t) : [],
-    },
-    { id: 'file', label: t('topbar.group.file'), items: fileItems },
-    { id: 'view', label: t('topbar.group.view'), items: viewItems },
-    { id: 'account', label: t('topbar.group.account'), items: accountItems },
-  ].filter((s) => s.items.length > 0)
+  const sections: MenuSection[] = STUDIO_MENU_LAYOUT.map((group) => ({
+    id: group.id,
+    label: t(group.labelKey),
+    items: group.items.flatMap((entry): MenuItem[] => {
+      const behavior = behaviors[entry.id]
+      if (!behavior) return []
+      return [
+        {
+          id: entry.id,
+          label: behavior.label ?? t(entry.labelKey),
+          hint: 'hintKey' in entry ? t(entry.hintKey) : undefined,
+          icon: behavior.icon,
+          active: behavior.active,
+          disabled: behavior.disabled,
+          onSelect: behavior.onSelect,
+        },
+      ]
+    }),
+  })).filter((section) => section.items.length > 0)
 
   const saveTone: SaveTone = saveError ? 'danger' : isDirty ? 'warn' : 'ok'
   const saveStatusLabel = saveError
