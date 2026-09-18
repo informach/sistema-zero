@@ -11,7 +11,7 @@ de pé, e enquanto estiverem, cada correção vale para uma cena e volta na segu
 
 ## 1. O diagnóstico da tela
 
-A tela é a Aula 1 do Corre, Dino!, seção "Criar e mostrar são a mesma coisa?" — a cena `world`,
+A tela é a Aula 1 do Corre, Dino!, seção "Criar e mostrar são duas coisas diferentes" — a cena `world`,
 que é a **primeira experimentação da primeira aula do curso carro-chefe**.
 
 ### 1.1 A tela se contradiz

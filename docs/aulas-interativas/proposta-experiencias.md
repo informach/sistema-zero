@@ -28,7 +28,7 @@ Ligadas em manifesto até aqui:
 | --- | --- | --- |
 | `coordinates` · `screen-reader` · `stage-size` | Corre Dino aula 1, §3, §4 e §6 | experimentação |
 | `draw-loop` | Corre Dino aula 2 | experimentação |
-| `world` (elenco nave) | Desafio dia 1, "Criar não é desenhar" | experimentação |
+| `world` (elenco nave) | Desafio dia 1, "Criar e mostrar são duas coisas diferentes" | experimentação |
 | `frames` · `onion-skin` | Meu Jeito aula 3, "cada quadro é um desenho" e "comparar sem guardar de memória" | demonstração |
 | `sheet-vs-sprite` | Meu Jeito aula 6, "duas imagens dentro de uma só" | demonstração |
 | `lives` (elenco nave/asteroide) | Desafio dia 4, "Observe ponto e vida mudarem" | demonstração |
@@ -187,7 +187,7 @@ palco) transforma 6 cenas em 18 usos, sem uma linha de motor novo:
 
 | Cena | Desafio | Meu Jeito |
 | --- | --- | --- |
-| `world` | d1 “Criar não é desenhar” (nave) | — |
+| `world` | d1 “Criar e mostrar são duas coisas diferentes” (nave) | — |
 | `hitbox` | d3 “Quais dois objetos se encontraram” | — |
 | `score` | d4 “O número e o placar” | — |
 | `game-state` | d5 “Os quatro momentos do jogo” | — |

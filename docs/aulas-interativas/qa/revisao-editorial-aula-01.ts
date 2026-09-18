@@ -5,7 +5,6 @@ import {
   type CenaAnterior,
   type CenaDaAula,
   intencaoDaCena,
-  PISTAS_DE_FABRICA,
 } from './cenas-editorial'
 
 const sourceFile = 'roteiro-aula-01-corre-dino.md'
@@ -134,12 +133,14 @@ export const lessonOneDiscovery = {
   chave: 'descoberta',
   bloco: {
     required: false,
-    title: 'Criar e mostrar são a mesma coisa?',
-    // Lote 5 do Raio-X: criar e desenhar são controles independentes, e a instrução não diz o que a
-    // tela mostra. Sem "Neste exemplo," (full review de experiência, B11).
+    title: 'Criar e mostrar são duas coisas diferentes',
     instructions:
-      'Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.',
-    hints: PISTAS_DE_FABRICA,
+      'Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.',
+    hints: [
+      'Olhe a ficha dos bastidores e a tela do jogo.',
+      'Primeiro, crie o Dino nos bastidores.',
+      'Depois, mostre o Dino na tela do jogo.',
+    ],
     activity: { type: 'experimentation', scene: 'world' },
   },
 } satisfies CenaDaAula
@@ -353,9 +354,9 @@ export function reviseLessonOne(source: LearningManifest): LearningManifest {
     ),
     section(
       'comeco',
-      'Criar e mostrar são a mesma coisa?',
+      'Criar e mostrar são duas coisas diferentes',
       'exploration',
-      'No exemplo, observar o mesmo Dino criado sem aparecer e depois desenhado na tela.',
+      'Observar o Dino criado nos bastidores, aparecer na tela e voltar aos bastidores sem ser apagado.',
       ['orientacao-descoberta-v7', 'descoberta'],
     ),
     {

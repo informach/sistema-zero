@@ -321,8 +321,9 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
 describe('⚠️⚠️ a previsão própria na troca de cena (review do lote 2 do Raio-X)', () => {
   const mundo: InteractiveBlock = {
     kind: 'interactive',
-    title: 'Faça o Dino aparecer',
-    instructions: 'Crie o Dino e ligue o desenho.',
+    title: 'Criar e mostrar são duas coisas diferentes',
+    instructions:
+      'Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.',
     hints: [],
     required: false,
     activity: { type: 'experimentation', scene: 'world' },

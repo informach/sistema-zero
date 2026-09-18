@@ -38,11 +38,18 @@ const PORTAS: Record<ScenePort, string> = {
   copy: 'Copiar a ficha ao nascer',
 }
 
+const labelDaConexao = (port: ScenePort, enabled: boolean) =>
+  port === 'draw'
+    ? enabled
+      ? 'Mostrar o personagem na tela'
+      : 'Tirar o personagem da tela'
+    : `${enabled ? 'Ligar' : 'Desligar'} ${PORTAS[port]}`
+
 const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Criar o Dino', value: { type: 'create' } },
   ...SCENE_PORTS.flatMap((port) =>
     [true, false].map((enabled) => ({
-      label: `${enabled ? 'Ligar' : 'Desligar'} ${PORTAS[port]}`,
+      label: labelDaConexao(port, enabled),
       value: { type: 'connect' as const, port, enabled },
     })),
   ),

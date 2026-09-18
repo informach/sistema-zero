@@ -14,7 +14,7 @@ import { SceneCanvas, Texto } from './scene-canvas'
 import { ActorFigure } from './scene-figures'
 
 /**
- * `world` — criar e mostrar são a mesma coisa?
+ * `world` — criar e mostrar são duas coisas diferentes
  *
  * ⭐⭐ **A comparação virou ESTRUTURA (lote 5 do redesenho de 15/09).** Esta é a primeira
  * experimentação da primeira aula do curso carro-chefe, e o assunto dela é *bastidores × tela*.

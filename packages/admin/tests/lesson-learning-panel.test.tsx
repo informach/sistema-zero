@@ -103,7 +103,7 @@ test('o professor vê o que a criança descobriu e como a cena ficou montada', a
     expect(texto).toContain('Descobriu:')
     // ⚠️ Mudou de propósito (full review de 16/09/2026): a montagem é a FAIXA que a criança leu
     // (`sceneReadout`), e não uma terceira descrição do estado com outras palavras.
-    expect(texto).toContain('Montagem atual: bastidores com o Dino; desenho na tela ligado')
+    expect(texto).toContain('Montagem atual: bastidores com o Dino; na tela do jogo Dino apareceu')
   } finally {
     await fechar()
   }

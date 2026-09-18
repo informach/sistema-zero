@@ -242,52 +242,50 @@ O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
 
 Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir de novo no mesmo Estúdio. O vídeo de montagem não precisa ser assistido até o fim para comprovar um projeto já correto.
 
-### 8. Criar e mostrar são a mesma coisa?
+### 8. Criar e mostrar são duas coisas diferentes
 
-**Tipo:** exploration. **Objetivo:** No exemplo, observar o mesmo Dino criado sem aparecer e depois desenhado na tela.
+**Tipo:** exploration. **Objetivo:** Observar o Dino criado nos bastidores, aparecer na tela e voltar aos bastidores sem ser apagado.
 
 **Orientação ao aluno:** “Esta é uma experiência separada do seu projeto. No seu jogo, o desenho vem na próxima aula.”
 
 #### A cena da seção
 
-**Cena:** `world`, “Faça o Dino aparecer”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+**Cena:** `world`, “Criar e mostrar são duas coisas diferentes”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
 **Elenco:** personagem: Dino (o de fábrica).
 
-**O que a criança lê ao abrir:** “Ligue e desligue o desenho e crie o Dino, na ordem que quiser. Olhe os dois lados a cada toque.”
+**O que a criança lê ao abrir:** “Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.”
 
-**Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
+**Como o palco começa:** Os bastidores estão vazios e a tela do jogo também.
 
-**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+**Antes de escolher, no contexto “Bastidores e tela do jogo”:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
 
-**Hoje vamos usar:** Bastidores e tela do jogo.
-
-**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: você cria o Dino com o desenho desligado. Onde fica o Dino?”
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: o Dino já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está o Dino?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
-- Em lugar nenhum. Sem desenho, o Dino não existe. (se ela escolher esta, a tela conta depois: “A ficha do Dino ficou nos bastidores, com a tela vazia.”)
+- Em lugar nenhum. O Dino só existe quando aparece na tela. (se ela escolher esta, a tela conta depois: “A ficha do Dino ficou nos bastidores, com a tela vazia.”)
 
-O palpite volta à tela quando ela descobre: “O Dino existe sem aparecer”.
+O palpite volta à tela quando ela descobre: “O Dino existe nos bastidores e ainda não apareceu na tela do jogo.”
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Deixe o Dino criado com o desenho desligado.” Ao descobrir: “O Dino existe sem aparecer”.
-2. Pedido: “Com o Dino criado, ligue o desenho.” Ao descobrir: “O mesmo Dino aparece na tela”.
+1. Pedido: “Crie o Dino nos bastidores.” Ao descobrir: “O Dino existe nos bastidores”.
+2. Pedido: “Mostre o Dino na tela do jogo.” Ao descobrir: “O mesmo Dino aparece na tela”.
 
-**Frase de sucesso:** “É o mesmo Dino dos dois lados: criar guarda, desenhar mostra!”
+**Frase de sucesso:** “Quando aparece na tela do jogo, é o mesmo Dino que já existia nos bastidores.”
 
 **Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
 
 1. “Olhe a ficha dos bastidores e a tela do jogo.”
-2. “Toque em Criar Dino e olhe os dois lados.”
-3. “Ligue e desligue o desenho e compare os dois lados.”
+2. “Primeiro, crie o Dino nos bastidores.”
+3. “Depois, mostre o Dino na tela do jogo.”
 
-**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que a tela ficou sem o Dino, mesmo com o Dino criado?”
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que o Dino pode existir nos bastidores sem aparecer na tela?”
 
-- Faltava ligar o desenho. ✓ (correta)
+- Criar o Dino e mostrar na tela são duas ações diferentes. ✓ (correta)
 - O jogo ainda estava carregando o Dino.
 
-**Explicação que ela lê ao acertar:** “Criar guarda o Dino nos bastidores. Desenhar mostra o Dino na tela. São dois blocos porque são duas coisas.”
+**Explicação que ela lê ao acertar:** “Criar prepara o Dino nos bastidores. Mostrar na tela é outra ação. Tirar da tela faz o Dino deixar de aparecer, sem apagar o que foi criado.”
 
 **Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 

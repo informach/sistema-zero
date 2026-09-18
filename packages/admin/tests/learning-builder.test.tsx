@@ -131,7 +131,7 @@ test('⚠️ o impulso inicial não atravessa a troca de cena', async () => {
   })
   try {
     expect(isInteractiveBlock(b.value)).toBe(true)
-    await b.clicar('Faça o Dino aparecer')
+    await b.clicar('Criar e mostrar são duas coisas diferentes')
     expect(isInteractiveBlock(b.value)).toBe(true)
     expect(b.alerta).toContain('impulso inicial')
   } finally {
@@ -319,9 +319,8 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
     expect(previa.textContent).toContain('Prévia: nada é guardado.')
     const modelo = SCENE_QUESTIONS.world
     await act(async () => radio(previa, modelo.prediction.choices[0]?.label as string)?.click())
-    await act(async () => botao(previa, '＋ Criar Dino')?.click())
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): o fio do desenho da `world` virou uma chave.
-    await act(async () => botao(previa, 'Desenhar o Dino na tela: desligado')?.click())
+    await act(async () => botao(previa, 'Criar o Dino')?.click())
+    await act(async () => botao(previa, 'Mostrar o Dino na tela')?.click())
     await esperar()
     expect(previa.textContent).toContain('Agora explique')
     const errada = modelo.explain.choices.find((c) => c.id !== modelo.explain.correctChoiceId)

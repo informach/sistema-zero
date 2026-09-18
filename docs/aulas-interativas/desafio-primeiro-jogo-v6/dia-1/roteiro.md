@@ -18,7 +18,7 @@ A demonstração é observação: o vídeo, com pausa e repetição, e às vezes
 | 4. Observe o endereço na tela | Observar | Reconhecer x horizontal, y vertical e a origem no alto à esquerda. |
 | 5. Compare duas alturas | Experimentar | Descobrir o efeito de aumentar somente y. |
 | 6. Crie sua nave | Fazer no Estúdio | Criar o sprite uma vez com posição e tamanho definidos. |
-| 7. Criar não é desenhar | Experimentar | Distinguir o objeto preparado do desenho repetido. |
+| 7. Criar e mostrar são duas coisas diferentes | Experimentar | Distinguir criar a nave nos bastidores de mostrar a mesma nave na tela do jogo. |
 | 8. Ligue o motor de quadros | Fazer no Estúdio | Encaixar o motor na área de repetição. |
 | 9. O que acontece sem limpar a tela? | Experimentar | Relacionar a limpeza com a remoção dos desenhos anteriores. |
 | 10. Desenhe o espaço | Fazer no Estúdio | Limpar antes de pintar o fundo em cada quadro. |
@@ -169,11 +169,11 @@ O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
 
 **Ajuda no mesmo objetivo:** Reveja o encaixe destacado e compare o nome do bloco com a orientação. Corrija no mesmo projeto.
 
-## Criar não é desenhar
+## Criar e mostrar são duas coisas diferentes
 
 **Por que aqui:** Introduzir esta relação no momento em que ela será usada, antes de acrescentar outra tarefa.
 
-**Foco:** Distinguir o objeto preparado do desenho repetido.
+**Foco:** Distinguir criar a nave nos bastidores de mostrar a mesma nave na tela do jogo.
 
 **Fala revisada / orientação:** “Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.”
 
@@ -192,44 +192,42 @@ O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
 
 ### A cena depois do clipe
 
-**Cena:** `world`, “Faça a nave aparecer”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+**Cena:** `world`, “Criar e mostrar são duas coisas diferentes”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
 **Elenco:** personagem: nave.
 
-**O que a criança lê ao abrir:** “Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.”
+**O que a criança lê ao abrir:** “Primeiro, crie a nave nos bastidores. Depois, faça a nave aparecer na tela do jogo.”
 
-**Como o palco começa:** Os bastidores estão vazios, com o desenho desligado.
+**Como o palco começa:** Os bastidores estão vazios e a tela do jogo também.
 
-**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+**Antes de escolher, no contexto “Bastidores e tela do jogo”:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
 
-**Hoje vamos usar:** Bastidores e tela do jogo.
-
-**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: você cria a nave com o desenho desligado. Onde fica a nave?”
+**Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: a nave já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está a nave?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
-- Em lugar nenhum. Sem desenho, a nave não existe. (se ela escolher esta, a tela conta depois: “A ficha da nave ficou nos bastidores, com a tela vazia.”)
+- Em lugar nenhum. A nave só existe quando aparece na tela. (se ela escolher esta, a tela conta depois: “A ficha da nave ficou nos bastidores, com a tela vazia.”)
 
-O palpite volta à tela quando ela descobre: “A nave existe sem aparecer”.
+O palpite volta à tela quando ela descobre: “A nave existe nos bastidores e ainda não apareceu na tela do jogo.”
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Deixe a nave criada com o desenho desligado.” Ao descobrir: “A nave existe sem aparecer”.
-2. Pedido: “Com a nave criada, ligue o desenho.” Ao descobrir: “A mesma nave aparece na tela”.
+1. Pedido: “Crie a nave nos bastidores.” Ao descobrir: “A nave existe nos bastidores”.
+2. Pedido: “Mostre a nave na tela do jogo.” Ao descobrir: “A mesma nave aparece na tela”.
 
-**Frase de sucesso:** “É a mesma nave dos dois lados: criar guarda, desenhar mostra!”
+**Frase de sucesso:** “Quando aparece na tela do jogo, é a mesma nave que já existia nos bastidores.”
 
 **Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
 
 1. “Olhe a ficha dos bastidores e a tela do jogo.”
-2. “Toque em Criar nave e olhe os dois lados.”
-3. “Ligue e desligue o desenho e compare os dois lados.”
+2. “Primeiro, crie a nave nos bastidores.”
+3. “Depois, mostre a nave na tela do jogo.”
 
-**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que a tela ficou sem a nave, mesmo com a nave criada?”
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que a nave pode existir nos bastidores sem aparecer na tela?”
 
-- Faltava ligar o desenho. ✓ (correta)
+- Criar a nave e mostrar na tela são duas ações diferentes. ✓ (correta)
 - O jogo ainda estava carregando a nave.
 
-**Explicação que ela lê ao acertar:** “Criar guarda a nave nos bastidores. Desenhar mostra a nave na tela. São dois blocos porque são duas coisas.”
+**Explicação que ela lê ao acertar:** “Criar prepara a nave nos bastidores. Mostrar na tela é outra ação. Tirar da tela faz a nave deixar de aparecer, sem apagar o que foi criado.”
 
 **Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 

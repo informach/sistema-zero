@@ -33,7 +33,7 @@ export const numero = (n: number) => (n < 0 ? `−${decimal(n)}` : decimal(n))
 /**
  * O ELENCO da cena: quem está no palco.
  *
- * As cenas ensinam conceitos que os três cursos repetem — criar não é desenhar, a área
+ * As cenas ensinam conceitos que os três cursos repetem — criar e mostrar são diferentes, a área
  * da batida, o placar que só conta jogando, as quatro telas da partida. Mas os textos delas só
  * sabiam falar de Dino e de cacto, então o Desafio do Primeiro Jogo (nave e asteroide) e O Jogo
  * do Meu Jeito não podiam usar nenhuma: cada uma estava presa a um curso. O levantamento das

@@ -120,6 +120,20 @@ describe('⚠️ o editor avisa o tempo que não cai em quadro inteiro (review d
 describe('⚠️⚠️ os nomes por cena (consertos do review da onda A do lote 5, B7)', () => {
   const nomes = (scene: SceneId) => sceneActionChoices(scene).map((c) => c.label)
 
+  test('world: mostrar e tirar da tela preservam o comando técnico de desenho', () => {
+    const escolhas = sceneActionChoices('world')
+    expect(escolhas).toContainEqual({
+      label: 'Mostrar o personagem na tela',
+      value: { type: 'connect', port: 'draw', enabled: true },
+    })
+    expect(escolhas).toContainEqual({
+      label: 'Tirar o personagem da tela',
+      value: { type: 'connect', port: 'draw', enabled: false },
+    })
+    expect(nomes('world')).not.toContain('Ligar Desenho')
+    expect(nomes('world')).not.toContain('Desligar Desenho')
+  })
+
   test('acceleration: "Passar 5 segundos" é o nome da bancada para o sorteio de velocidade', () => {
     expect(nomes('acceleration')).toContain('Passar 5 segundos')
     expect(nomes('acceleration')).not.toContain('Sortear velocidade')

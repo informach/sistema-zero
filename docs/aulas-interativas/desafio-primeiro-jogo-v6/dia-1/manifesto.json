@@ -139,9 +139,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Criar não é desenhar",
-        "instructions": "Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.",
-        "hints": [],
+        "title": "Criar e mostrar são duas coisas diferentes",
+        "instructions": "Primeiro, crie a nave nos bastidores. Depois, faça a nave aparecer na tela do jogo.",
+        "hints": [
+          "Olhe a ficha dos bastidores e a tela do jogo.",
+          "Primeiro, crie a nave nos bastidores.",
+          "Depois, mostre a nave na tela do jogo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "world",
@@ -459,9 +463,9 @@
     },
     {
       "key": "criar-desenhar",
-      "title": "Criar não é desenhar",
+      "title": "Criar e mostrar são duas coisas diferentes",
       "intent": "exploration",
-      "objective": "Distinguir o objeto preparado do desenho repetido.",
+      "objective": "Distinguir criar a nave nos bastidores de mostrar a mesma nave na tela do jogo.",
       "blockKeys": ["video-criar-desenhar", "experiencia-criar-desenhar"],
       "workspaceKey": null,
       "externalTool": null,

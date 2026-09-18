@@ -291,10 +291,10 @@ export const earlyRecipes: Record<number, Recipe> = {
       ),
       step(
         'criar-desenhar',
-        'Criar não é desenhar',
+        'Criar e mostrar são duas coisas diferentes',
         'Parte 4.',
         'observe',
-        'Distinguir o objeto preparado do desenho repetido.',
+        'Distinguir criar a nave nos bastidores de mostrar a mesma nave na tela do jogo.',
         'Olha: o jogo já guarda uma nave. Quando mando desenhar, ela aparece. No próximo quadro, limpo a imagem antiga e desenho essa mesma nave outra vez. É como virar as páginas de um livrinho: as imagens mudam, e a gente vê movimento.',
         {
           to: 'é isso que faz tudo parecer que se mexe.',
@@ -306,10 +306,14 @@ export const earlyRecipes: Record<number, Recipe> = {
             chave: 'experiencia-criar-desenhar',
             bloco: {
               required: true,
-              title: 'Criar não é desenhar',
+              title: 'Criar e mostrar são duas coisas diferentes',
               instructions:
-                'Ligue e desligue o desenho e crie a nave, na ordem que quiser. Olhe os dois lados a cada toque.',
-              hints: [],
+                'Primeiro, crie a nave nos bastidores. Depois, faça a nave aparecer na tela do jogo.',
+              hints: [
+                'Olhe a ficha dos bastidores e a tela do jogo.',
+                'Primeiro, crie a nave nos bastidores.',
+                'Depois, mostre a nave na tela do jogo.',
+              ],
               activity: {
                 type: 'experimentation',
                 scene: 'world',
