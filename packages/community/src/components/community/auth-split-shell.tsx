@@ -1,7 +1,7 @@
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { BrandLogo } from '@sistemazero/ui/brand-logo'
 
 /**
  * Shell split-screen das páginas de autenticação (portado do

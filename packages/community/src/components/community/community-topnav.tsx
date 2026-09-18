@@ -1,10 +1,10 @@
 'use client'
 
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
-import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
 import { UserMenu } from './user-menu'
