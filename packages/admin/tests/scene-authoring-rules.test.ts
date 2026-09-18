@@ -103,6 +103,11 @@ describe('o roteiro ao trocar de cena', () => {
   })
 })
 
+/** O assunto que a previsão apresenta antes da pergunta (obrigatório desde `468fcd44`). */
+const contextoDaPrevisao = {
+  label: 'Bastidores e tela do jogo',
+  explanation: 'Nesta experiência, vamos comparar os bastidores com o que aparece na tela.',
+}
 const escolhas = () => [
   { id: 'a', label: 'Uma coisa' },
   { id: 'b', label: 'Outra coisa' },
@@ -221,7 +226,7 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
       ...pergunta,
       activity: { type: 'experimentation', scene: 'world' },
       checkpoint: undefined,
-      prediction: { prompt: '', choices: escolhas() },
+      prediction: { context: contextoDaPrevisao, prompt: '', choices: escolhas() },
     }
     // A prova de que o defeito era real: em branco, ela REPROVA o bloco.
     expect(isInteractiveBlock(comPrevisao)).toBe(false)
@@ -237,7 +242,11 @@ describe('⚠️ o que NÃO pode atravessar uma troca de tipo', () => {
     // E ela ATRAVESSA entre as duas irmãs, que são o mesmo assunto com o mesmo palco.
     const escrita: InteractiveBlock = {
       ...comPrevisao,
-      prediction: { prompt: 'O que vai acontecer?', choices: escolhas() },
+      prediction: {
+        context: contextoDaPrevisao,
+        prompt: 'O que vai acontecer?',
+        choices: escolhas(),
+      },
     }
     expect(trocarTipo(escrita, 'demonstration').bloco.prediction?.prompt).toBe(
       'O que vai acontecer?',
