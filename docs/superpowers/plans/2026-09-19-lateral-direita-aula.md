@@ -4,7 +4,7 @@
 
 **Goal:** Make the lesson outline a full-height, edge-to-edge white sidebar that opens smoothly in Kids and Adult without covering lesson content or the fixed footer.
 
-**Architecture:** Keep the existing outline markup and content, but keep the panel mounted and use the visible state to animate its horizontal transform. Reserve exactly the visible sidebar width in the lesson layout, and move the fixed footer's right edge by the same width. The Kids lesson main adjusts its right padding; the Adult app main increases its maximum width and right padding together, keeping the content centered in the remaining viewport.
+**Architecture:** Keep the existing outline markup and content, but keep the panel mounted and use the visible state to animate its horizontal transform. Reserve exactly the visible sidebar width in the lesson layout, and move the fixed footer's right edge by the same width. The Kids and Adult lesson mains adjust their right padding; the Adult main keeps its existing unlimited width so two-column sections still use all available space.
 
 **Tech Stack:** React, Next.js, Tailwind CSS v4, app `globals.css`, Bun tests, TypeScript.
 
@@ -107,13 +107,12 @@ expect(adultCss).toContain('right: var(--lesson-outline-width)')
 ```
 
 Give its `Card` `flex min-h-0 flex-1 flex-col lg:rounded-none lg:border-0 lg:shadow-none`, the `nav` `max-h-[28rem] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1`, and remove the old flex gap/sticky positioning.
-- [ ] **Step 4: In Adult CSS, preserve centered lesson content and move the footer.** The key desktop rules are:
+- [ ] **Step 4: In Adult CSS, preserve the full-width two-column layout and move the footer.** The key desktop rules are:
 
 ```css
 @media (min-width: 1024px) {
-  main:has(.sz-aula-adulto) { --lesson-outline-width: 18rem; transition: max-width 0.3s ease-in-out, padding-right 0.3s ease-in-out; }
+  main:has(.sz-aula-adulto) { --lesson-outline-width: 18rem; transition: padding-right 0.3s ease-in-out; }
   main:has(#adult-lesson-outline:not([aria-hidden="true"])) {
-    max-width: calc(72rem + var(--lesson-outline-width));
     padding-right: calc(1.5rem + var(--lesson-outline-width));
   }
   .sz-aula-adulto:has(#adult-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
