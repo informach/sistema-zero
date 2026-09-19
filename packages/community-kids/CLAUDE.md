@@ -2370,8 +2370,8 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
   para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
   (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
-  ⚠️ Cobertura declarada: o guia recolhido com a tarefa CONCLUÍDA não tem caso (o teste usa
-  `in_progress`), então um `{recolhido && !done ? null : …}` passaria em toda a suíte.
+  O review de integração acrescentou o caso da tarefa CONCLUÍDA e recolhida: a pílula
+  "Concluída" continua no cabeçalho e no nome acessível do botão, sem trazer o pé de rotina.
   ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
   (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
   `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
