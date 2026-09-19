@@ -366,6 +366,56 @@ export class DrizzleLearningRepository implements LearningRepository {
       return progressView(row)
     })
   }
+  async recordMaterialDownload(
+    input: LearningOwner & {
+      lessonId: string
+      blockId: string
+      revision: string
+      itemId: string
+      at: Date
+    },
+  ) {
+    return this.withOwner(input, async (tx) => {
+      await this.assertRevision(tx, input.lessonId, input.blockId, input.revision)
+      const [current] = await tx
+        .select()
+        .from(lessonBlockProgress)
+        .where(and(owned(input), eq(lessonBlockProgress.blockId, input.blockId)))
+      const answers = current?.revision === input.revision ? current.answers : {}
+      const downloaded = Array.isArray(answers.downloadedMaterialItemIds)
+        ? answers.downloadedMaterialItemIds.filter((id): id is string => typeof id === 'string')
+        : []
+      if (downloaded.includes(input.itemId) && current) return progressView(current)
+      const [row] = await tx
+        .insert(lessonBlockProgress)
+        .values({
+          userId: input.userId,
+          accountId: input.accountId,
+          lessonId: input.lessonId,
+          blockId: input.blockId,
+          revision: input.revision,
+          answers: { ...answers, downloadedMaterialItemIds: [...downloaded, input.itemId] },
+          positionSeconds: current?.revision === input.revision ? current.positionSeconds : null,
+          hintsUsed: current?.revision === input.revision ? current.hintsUsed : 0,
+          attemptsCount: current?.revision === input.revision ? current.attemptsCount : 0,
+          result: current?.revision === input.revision ? current.result : null,
+          updatedAt: input.at,
+        })
+        .onConflictDoUpdate({
+          target: [lessonBlockProgress.userId, lessonBlockProgress.blockId],
+          set: {
+            revision: input.revision,
+            answers: { ...answers, downloadedMaterialItemIds: [...downloaded, input.itemId] },
+            updatedAt: input.at,
+            result: current?.revision === input.revision ? current?.result : null,
+          },
+          setWhere: eq(lessonBlockProgress.accountId, input.accountId),
+        })
+        .returning()
+      if (!row) throw new LessonNotFoundError()
+      return progressView(row)
+    })
+  }
   async findAttempt(owner: LearningOwner, id: string) {
     const [row] = await this.db
       .select()

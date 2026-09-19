@@ -2195,8 +2195,13 @@ com uma lista ordenada de itens: `file`, `image`, `text`, `link` e `video`. Deci
 substituir na raiz, sem compatibilidade.
 
 - **`validateLessonSections` ficou mais simples:** todo bloco pertence a UMA seção, ponto. A
-  checagem "atividade obrigatória no apoio" saiu junto com o lugar, e o bloco de materiais nunca
-  entra em `isCompletionGatingBlock`.
+  checagem "atividade obrigatória no apoio" saiu junto com o lugar. O bloco não entra em
+  `isCompletionGatingBlock` por si: somente arquivos explicitamente selecionados em
+  `SectionCompletion.materialItems` exigem download para avançar.
+- A seleção por item é cumulativa com vídeo a 90%. A evidência do arquivo nasce após a rota do
+  BFF preparar a entrega válida (incluindo marca d'água), passa pela rota HMAC exclusiva do
+  `member-shell` e é salva em `lesson_block_progress.answers.downloadedMaterialItemIds` sob lock
+  de perfil e revisão. O POST genérico de progresso não aceita bloco `materials`.
 - ⚠️⚠️ **O item de arquivo guarda `attachmentId`, nunca a URL.** Quem preenche rótulo, tipo e
   tamanho é o `toLessonDetailView`, lendo `lesson_attachments`; o `storageRef` continua sem sair do
   servidor e o download segue pela rota de anexo, que é quem aplica a marca d'água. O

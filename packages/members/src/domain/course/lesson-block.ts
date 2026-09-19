@@ -452,8 +452,8 @@ export type MaterialItem =
  * à ordem de `section.blockIds` e aparece no ponto em que a autora o colocou — inclusive dentro
  * da coluna de conteúdo, embaixo do vídeo.
  *
- * ⚠️ Ele NUNCA trava a conclusão (`isCompletionGatingBlock`): material complementar está fora
- * do percurso obrigatório por definição. É o que substituiu os "materiais de apoio", que eram um
+ * ⚠️ O bloco não trava por si (`isCompletionGatingBlock`): arquivos só viram critério quando a
+ * autora os seleciona explicitamente em `SectionCompletion.materialItems`. É o que substituiu os "materiais de apoio", que eram um
  * LUGAR fora das seções (`supportBlockIds`), em posição fixa e alheio à ordem da autora.
  */
 export interface MaterialsBlock {

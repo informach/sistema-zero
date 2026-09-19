@@ -313,6 +313,11 @@ main:has(.sz-aula-adulto) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.sz-lesson-material-required {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+}
 .sz-lesson-material-meta {
   overflow: hidden;
   text-overflow: ellipsis;

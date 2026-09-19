@@ -39,9 +39,10 @@ export function lessonCompletionRequirements(input: {
   learningProgress?: LessonLearningProgress
   completed: boolean
   sectionProgress?: SectionProgressView
-  /** Selected only for a section whose sole activity is its video. */
+  /** Vídeos selecionados como critério da seção. */
   videoBlockIds?: string[]
   materialBlockIds?: string[]
+  materialItems?: { blockId: string; itemIds: string[] }[]
 }): LessonRequirement[] {
   if (input.sectionProgress)
     return input.sectionProgress.sections.map((s) => ({
@@ -77,6 +78,24 @@ export function lessonCompletionRequirements(input: {
       })
     }
     switch (block.kind) {
+      case 'materials': {
+        const selected = input.materialItems?.find((entry) => entry.blockId === block.id)?.itemIds
+        if (!selected?.length) break
+        const saved = input.learningProgress?.blocks.find(
+          (p) => p.blockId === block.id && p.revision === block.blockRevision,
+        )
+        const downloaded = Array.isArray(saved?.answers.downloadedMaterialItemIds)
+          ? saved.answers.downloadedMaterialItemIds
+          : []
+        const done = selected.filter((id) => downloaded.includes(id)).length
+        add(
+          'MATERIAL_GATE_NOT_ACCESSED',
+          `Baixe os arquivos obrigatórios (${done} de ${selected.length})`,
+          done === selected.length,
+          'Materiais da aula',
+        )
+        break
+      }
       case 'ebook': {
         if (!input.materialBlockIds?.includes(block.id)) break
         const saved = input.learningProgress?.blocks.find(

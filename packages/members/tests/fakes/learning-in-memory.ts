@@ -124,6 +124,38 @@ export class InMemoryLearningRepository implements LearningRepository {
     this.progresses.set(key(input, input.progress.blockId), value)
     return value
   }
+  async recordMaterialDownload(
+    input: LearningOwner & {
+      lessonId: string
+      blockId: string
+      revision: string
+      itemId: string
+      at: Date
+    },
+  ) {
+    const previous = this.progresses.get(key(input, input.blockId))
+    const same = previous?.revision === input.revision
+    const answers = same ? previous.answers : {}
+    const downloaded = Array.isArray(answers.downloadedMaterialItemIds)
+      ? answers.downloadedMaterialItemIds.filter((id): id is string => typeof id === 'string')
+      : []
+    const value: LearningBlockProgress & { lessonId: string } = {
+      blockId: input.blockId,
+      lessonId: input.lessonId,
+      revision: input.revision,
+      positionSeconds: same ? previous.positionSeconds : null,
+      answers: {
+        ...answers,
+        downloadedMaterialItemIds: [...new Set([...downloaded, input.itemId])],
+      },
+      hintsUsed: same ? previous.hintsUsed : 0,
+      attemptsCount: same ? previous.attemptsCount : 0,
+      result: same ? previous.result : null,
+      updatedAt: input.at.toISOString(),
+    }
+    this.progresses.set(key(input, input.blockId), value)
+    return value
+  }
   async findAttempt(owner: LearningOwner, id: string) {
     const a = this.attempts.get(id)
     return a?.ownerKey === key(owner, '') ? a : null

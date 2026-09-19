@@ -467,6 +467,23 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       )
     },
 
+    /** Evidência S2S: somente após a rota preparar uma entrega válida do arquivo. */
+    recordMaterialDownload(input: {
+      actor: { userId: string; accountId: string }
+      courseSlug: string
+      lessonId: string
+      attachmentId: string
+      blockId: string
+      itemId: string
+      expectedRevision: string
+      expectedStorageRefHash: string
+    }): Promise<GatewayResponse<{ required: boolean }>> {
+      return gw.gatewayFetchHmac('/members/internal/material-downloads', {
+        method: 'POST',
+        body: input,
+      })
+    },
+
     /**
      * Resolve a localização REAL do PDF do bloco e-book (matrícula garantida pelo
      * members). SÓ para a rota do livro 3D — a `storageRef` nunca chega ao browser.

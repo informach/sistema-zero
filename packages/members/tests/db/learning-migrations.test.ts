@@ -282,6 +282,35 @@ describe.skipIf(!url)(
       )
       expect(videoWatchedFraction(saved?.answers ?? {})).toBe(0.9)
     })
+    test('concurrent required downloads merge by profile and reject a stale block revision', async () => {
+      const { db } = get()
+      const content = new DrizzleContentAdminRepository(db)
+      const repo = new DrizzleLearningRepository(db)
+      const block = await content.createBlock(lessonId, 'materials', {
+        kind: 'materials',
+        items: [],
+      })
+      if (!block.contentRevision) throw new Error('Missing material revision')
+      const learner = { userId: randomUUID(), accountId: randomUUID() }
+      const record = (itemId: string, revision = block.contentRevision!) =>
+        repo.recordMaterialDownload({
+          ...learner,
+          lessonId,
+          blockId: block.id,
+          revision,
+          itemId,
+          at: now,
+        })
+      await Promise.all([record('one'), record('two'), record('one')])
+      const saved = (await repo.getProgress(learner, lessonId)).blocks.find(
+        (entry) => entry.blockId === block.id,
+      )
+      expect((saved?.answers.downloadedMaterialItemIds as string[]).sort()).toEqual(['one', 'two'])
+      expect(
+        (await repo.getProgress({ ...learner, userId: randomUUID() }, lessonId)).blocks,
+      ).toEqual([])
+      await expect(record('three', 'stale')).rejects.toThrow()
+    })
     test('gallery confirmations serialize retries and never restore an older request over a newer delivery', async () => {
       const { db } = get(),
         content = new DrizzleContentAdminRepository(db),

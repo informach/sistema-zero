@@ -1440,6 +1440,14 @@ adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
   antigo).
 ```
 
+## Avanço por vídeo e arquivos
+
+O editor `SectionCompletionEditor` permite escolher arquivos `file` individualmente em um bloco
+`materials`. Selecionar o primeiro item inclui o bloco em `blockIds`; desmarcar o último o remove.
+`materialItems` guarda apenas IDs de itens exigidos e pode coexistir com o vídeo a 90%; arquivos
+restantes são opcionais. `suggestedCompletion` nunca ativa downloads obrigatórios sozinho. A
+publicação valida a seleção pelo `sectionCompletionIssues` compartilhado com o members.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

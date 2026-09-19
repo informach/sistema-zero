@@ -33,6 +33,16 @@ export const AttachmentResolveParams = t.Object({
   lessonId: UUID,
   attachmentId: UUID,
 })
+export const MaterialDownloadBody = t.Object({
+  actor: t.Object({ userId: UUID, accountId: UUID }),
+  courseSlug: SLUG,
+  lessonId: UUID,
+  attachmentId: UUID,
+  blockId: UUID,
+  itemId: UUID,
+  expectedRevision: t.String({ pattern: '^[0-9a-f]{32}$' }),
+  expectedStorageRefHash: t.String({ pattern: '^[0-9a-f]{64}$' }),
+})
 export const EbookResolveParams = t.Object({ slug: SLUG, lessonId: UUID, blockId: UUID })
 export const QuizAttemptParams = t.Object({ lessonId: UUID, blockId: UUID })
 export const CertificateParams = t.Object({ lessonId: UUID, blockId: UUID })

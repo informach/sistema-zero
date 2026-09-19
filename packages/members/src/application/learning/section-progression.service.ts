@@ -129,7 +129,14 @@ export class SectionProgressionService {
         completed: false,
         blocks,
         learningProgress: learning,
-        videoBlockIds: isVideoOnlySection(section, lesson.blocks) ? criteria?.blockIds : [],
+        videoBlockIds: structure.legacyLayout
+          ? isVideoOnlySection(section, lesson.blocks)
+            ? criteria?.blockIds
+            : []
+          : criteria?.blockIds.filter((id) =>
+              lesson.blocks.some((block) => block.id === id && block.kind === 'video'),
+            ),
+        materialItems: criteria?.materialItems,
         materialBlockIds:
           (structure.legacyLayout && isLegacyMaterialLesson(lesson.blocks)) ||
           (!structure.legacyLayout && section.intent === 'material')

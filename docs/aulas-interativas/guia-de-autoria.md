@@ -64,6 +64,8 @@ O professor recebe esses trabalhos na fila existente. Pode abrir cada cópia, ba
 
 Use **Material do curso** para apresentar o caderno do curso inteiro. Cadastre o ebook e selecione-o como critério. O aluno pode começar a folhear ou baixar o PDF. A primeira virada de página após carregar o livro registra abertura; download registra acesso após receber o arquivo. Recarregar mantém a confirmação. Não é obrigatório baixar, ler o livro inteiro nem fazer quiz.
 
+Um bloco de **materiais complementares** é opcional por padrão. Se um arquivo for necessário para a próxima etapa, marque apenas esse item em **Para liberar a próxima seção**. É possível exigir esses downloads junto com **assistir a 90% do vídeo**: todos os itens marcados e o vídeo precisam estar concluídos. O aluno vê quais arquivos são obrigatórios e o botão **Baixar**; a confirmação registra a entrega preparada pela plataforma, não um simples clique. Arquivos não marcados continuam livres.
+
 **Ler por páginas** oferece leitura sem WebGL, ampliação e texto extraído do PDF quando disponível. O acesso só é registrado depois de mostrar uma página. O download permanece disponível mesmo se o livro 3D falhar. A página do curso Kids aponta para as aulas de material já acessíveis, preservando o mesmo arquivo e as permissões; não duplique o caderno nas outras aulas.
 
 O vídeo explicativo do caderno não acrescenta trava de 90%. Para tour ou orientação só em vídeo, use **Assistir**, deixe somente o vídeo na seção e selecione-o como critério. O progresso soma trechos reproduzidos: avançar a barra ou rever o mesmo trecho não aumenta artificialmente a cobertura. Orientação de ferramenta externa pode ser seguida por entrega pela galeria.

@@ -1368,6 +1368,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
+      id: 'members-internal-material-downloads',
+      methods: ['POST'],
+      pathPattern: '/members/internal/material-downloads',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
+      maxBodyBytes: 4096,
+    },
+    {
       id: 'members-internal-zappy-questions',
       methods: ['POST'],
       pathPattern: '/members/internal/zappy/questions',

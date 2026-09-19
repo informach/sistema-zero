@@ -961,7 +961,7 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    caminho para o chip deles; mexeu nele, mexa no `BlockChip` do kids),
    **`sz-lesson-materials`** e a família dele (19/09/2026 — `-title`, `-list`, mais
    `sz-lesson-material` + `data-material` por item, `-action`, `-icon`, `-copy`, `-label`, `-meta`,
-   `-cta`,
+   `-cta`, `-required`,
    `-note`, `-figure`, `-video`, `-text`. O bloco de materiais complementares é UM componente
    para os dois apps, e ele não tem cor nenhuma por dentro: o kids o veste com o relevo e a
    bolinha da marca, o adulto com a linha sóbria. Travado em `tests/materials-block.test.tsx`),
@@ -1017,12 +1017,17 @@ APAGADO (o fork do kids junto).
 - **O desenho é UM só para os dois apps**, sem cor por dentro: os ganchos `sz-lesson-materials*`
   (invariante 8) são o contrato, e cada app veste no `globals.css` dele.
 - **Download é um comando legível, não só um ícone:** a linha inteira continua sendo o botão, mas
-  agora exibe “Baixar” à direita; durante o pedido mostra “Preparando…” e só exibe “Baixado”
-  quando o navegador recebeu o arquivo. O fallback que abre outra aba não recebe esse selo:
-  não há confirmação do download fora da página. A prévia do admin continua desabilitada.
-- **Ele NUNCA trava a conclusão** (`isCompletionGatingBlock`): complementar é, por definição, o que
-  está fora do percurso obrigatório. Isso substituiu a checagem "atividade obrigatória no apoio"
-  do members, que deixou de existir junto com o lugar.
+  agora exibe “Baixar” à direita; durante o pedido mostra “Preparando…”. Para arquivos opcionais,
+  “Baixado” confirma o recebimento pelo navegador. Para arquivos exigidos, também reflete a
+  evidência da entrega preparada que o servidor registrou, inclusive após voltar de outra aba;
+  isso não comprova que o sistema operacional salvou o arquivo. A prévia do admin continua
+  desabilitada.
+- **É opcional por padrão.** O bloco não entra em `isCompletionGatingBlock` por si. A autora pode
+  marcar itens `file` específicos em `SectionCompletion.materialItems`; nesse caso, cada arquivo
+  selecionado e os demais critérios (inclusive 90% de vídeo) precisam ser cumpridos. O botão envia
+  bloco, item e perfil na URL autenticada. Após preparar a entrega e a marca d'água, o BFF registra
+  a evidência via HMAC no members; falha no registro impede a entrega requerida. O player atualiza
+  a seção ao confirmar e mostra `-required` apenas para os arquivos marcados.
 - ⚠️ **Todo bloco pertence a UMA seção agora**, e `validateLessonSections` ficou mais simples do
   que era. No core, o `case 'block'` põe o bloco novo na seção pedida ou, na falta dela, no fim da
   ÚLTIMA: um bloco órfão faria a gravação recusar a AULA INTEIRA, e a autora descobriria só na hora

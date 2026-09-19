@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { LessonPlayerProvider } from '../src/components/lesson-player-context'
+import {
+  type LessonPlayerContextValue,
+  LessonPlayerProvider,
+} from '../src/components/lesson-player-context'
 import { MaterialsBlockView } from '../src/components/materials-block'
 import type { MaterialItem, MaterialsBlock } from '../src/lib/types'
 
@@ -15,18 +18,28 @@ import type { MaterialItem, MaterialsBlock } from '../src/lib/types'
  *    bloqueado pela CSP não avisa nada — a criança ficaria olhando um retângulo branco.
  * 3. A ordem desenhada é a ordem que a autora montou (é o motivo de o bloco existir).
  */
-const player = {
+const player: LessonPlayerContextValue = {
   lessonId: '11111111-1111-4111-8111-111111111111',
   courseSlug: 'corre-dino',
   viewerId: 'v',
   viewerWatermark: null,
   initialPositionSeconds: null,
-} as never
+}
 
-const render = (items: MaterialItem[], title?: string) =>
+const render = (items: MaterialItem[], title?: string, required = false) =>
   renderToStaticMarkup(
-    <LessonPlayerProvider value={player}>
-      <MaterialsBlockView content={{ kind: 'materials', title, items } as MaterialsBlock} />
+    <LessonPlayerProvider
+      value={
+        required
+          ? { ...player, materialRequiredItems: [{ blockId: 'block', itemIds: ['i1'] }] }
+          : player
+      }
+    >
+      <MaterialsBlockView
+        blockId="block"
+        blockRevision={'b'.repeat(32)}
+        content={{ kind: 'materials', title, items } as MaterialsBlock}
+      />
     </LessonPlayerProvider>,
   )
 
@@ -55,6 +68,14 @@ describe('o bloco de materiais complementares', () => {
     expect(html).toContain('aria-label="Baixar dino.pinta.json"')
     expect(html).toContain('class="sz-lesson-material-cta"')
     expect(html).toContain('>Baixar</span>')
+  })
+
+  test('somente o arquivo selecionado recebe a orientação de avanço', () => {
+    const html = render([arquivo, { ...arquivo, id: 'i2', label: 'extra.json' }], undefined, true)
+    expect(html).toContain('Obrigatório para avançar')
+    expect(html).toContain('Baixar dino.pinta.json, obrigatório para avançar')
+    expect(html).toContain('Baixar extra.json')
+    expect(html).not.toContain('Baixar extra.json, obrigatório')
   })
 
   test('a ordem desenhada é a ordem que a autora montou', () => {
@@ -94,7 +115,10 @@ describe('o bloco de materiais complementares', () => {
     // O ensaio do admin monta o bloco FORA da aula, então não há rota de anexo para chamar. A
     // autora precisa conferir a lista, mas um botão que não faz nada lê como defeito.
     const html = renderToStaticMarkup(
-      <MaterialsBlockView content={{ kind: 'materials', items: [arquivo] } as MaterialsBlock} />,
+      <MaterialsBlockView
+        blockId="block"
+        content={{ kind: 'materials', items: [arquivo] } as MaterialsBlock}
+      />,
     )
     expect(html).toContain('dino.pinta.json')
     expect(html).toContain('disabled=""')

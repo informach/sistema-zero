@@ -57,6 +57,7 @@ export interface LessonPlayerContextValue {
   onVideoCoverage?: (coverage: VideoWatchCoverage) => void
   videoWatchRequiredBlockIds?: string[]
   materialRequiredBlockIds?: string[]
+  materialRequiredItems?: { blockId: string; itemIds: string[] }[]
   materialAccessed?: boolean
   onMaterialAccess?: (method: 'opened' | 'downloaded') => Promise<void>
   /** Atualiza o estado do quiz e o gate da aula após responder. */

@@ -166,7 +166,7 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
     case 'coming_soon':
       return <ComingSoon content={content} />
     case 'materials':
-      return <Materials content={content} />
+      return <Materials blockId={block.id} blockRevision={block.blockRevision} content={content} />
     default:
       return null
   }
@@ -182,11 +182,19 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
  * como em todo bloco do kids. O chip é um SUBSTANTIVO (como "Em breve"), não um verbo: material
  * complementar não é uma atividade a fazer, e prometer uma seria mentira.
  */
-function Materials({ content }: { content: MaterialsBlock }) {
+function Materials({
+  blockId,
+  blockRevision,
+  content,
+}: {
+  blockId: string
+  blockRevision?: string
+  content: MaterialsBlock
+}) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
       <BlockChip icon={Backpack} label="Materiais" themeClass="kids-unit-cyan" />
-      <MaterialsBlockView content={content} />
+      <MaterialsBlockView blockId={blockId} blockRevision={blockRevision} content={content} />
     </div>
   )
 }

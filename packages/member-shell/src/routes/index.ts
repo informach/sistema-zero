@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createProfilePreferencesRoutes } from './profile-preferences'
@@ -627,6 +628,22 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (user instanceof NextResponse) return user
 
       const { slug, lessonId, attachmentId } = await ctx.params
+      const downloadQuery = new URL(req.url).searchParams
+      const blockId = downloadQuery.get('blockId')
+      const itemId = downloadQuery.get('itemId')
+      const viewerId = downloadQuery.get('viewerId')
+      const blockRevision = downloadQuery.get('blockRevision')
+      if (
+        (blockId !== null || itemId !== null || viewerId !== null || blockRevision !== null) &&
+        (!z.uuid().safeParse(blockId).success ||
+          !z.uuid().safeParse(itemId).success ||
+          !/^[0-9a-f]{32}$/.test(blockRevision ?? '') ||
+          viewerId !== user.id)
+      )
+        return NextResponse.json(
+          { error: { code: 'INVALID_ATTACHMENT', message: 'Abra o material novamente na aula.' } },
+          { status: 400 },
+        )
       const resolved = await members.resolveAttachment(slug, lessonId, attachmentId)
       if (resolved.status !== 200 || !resolved.body) {
         return NextResponse.json(
@@ -636,6 +653,32 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       }
 
       const { label, storageRef } = resolved.body
+      const finish = async (response: Response): Promise<Response> => {
+        if (!blockId || !itemId || !blockRevision || user.act) return response
+        const recorded = await members.recordMaterialDownload({
+          actor: { userId: user.id, accountId: user.activeProfile?.accountId ?? user.id },
+          courseSlug: slug,
+          lessonId,
+          attachmentId,
+          blockId,
+          itemId,
+          expectedRevision: blockRevision,
+          expectedStorageRefHash: createHash('sha256').update(storageRef).digest('hex'),
+        })
+        if (recorded.status !== 200) {
+          await response.body?.cancel().catch(() => undefined)
+          return NextResponse.json(
+            recorded.body ?? {
+              error: {
+                code: 'DOWNLOAD_NOT_RECORDED',
+                message: 'Não foi possível confirmar o download. Tente novamente.',
+              },
+            },
+            { status: recorded.status },
+          )
+        }
+        return response
+      }
 
       // Arquivos externos não passam pela marcação. PDFs/imagens protegidos não
       // podem sair por esse atalho; links comuns continuam com passthrough.
@@ -654,7 +697,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           }).watermark !== null
         )
           return mediaErrorResponse(new WatermarkUnavailableError())
-        return NextResponse.redirect(storageRef, 302)
+        return finish(NextResponse.redirect(storageRef, 302))
       }
 
       try {
@@ -696,13 +739,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
               responseContentDisposition: disposition,
               signal: req.signal,
             })
-            return NextResponse.redirect(url, 302)
+            return finish(NextResponse.redirect(url, 302))
           }
           // Imagens grandes não têm cache marcado como PDFs; não expor o original.
           if (dlMedia.watermark === 'image') throw new WatermarkUnavailableError()
           // Office/zip/áudio não têm marcação e seguem como arquivos comuns.
           const url = await r2PresignGetPrivate(key, { responseContentDisposition: disposition })
-          return NextResponse.redirect(url, 302)
+          return finish(NextResponse.redirect(url, 302))
         }
 
         const headers = {
@@ -721,9 +764,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             userId: user.id,
             signal: req.signal,
           })
-          return new Response(
-            pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body,
-            { headers },
+          return finish(
+            new Response(pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body, {
+              headers,
+            }),
           )
         }
 
@@ -731,12 +775,12 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
         // Sem marca (office/zip/áudio/…) → STREAM direto, sem bufferizar.
         if (dlMedia.watermark === null) {
-          return new Response(obj.body, { headers })
+          return finish(new Response(obj.body, { headers }))
         }
 
         // Imagem: bufferizar+marcar dentro do GATE de concorrência (materializa
         // ≤20MB + cópias do sharp). Espera com prazo e some se o cliente for embora.
-        return await watermarkGate().run(
+        const marked = await watermarkGate().run(
           async () => {
             const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
             let out: Uint8Array
@@ -750,6 +794,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           },
           { signal: req.signal, waitTimeoutMs: WATERMARK_WAIT_TIMEOUT_MS },
         )
+        return finish(marked)
       } catch (error) {
         return mediaErrorResponse(error)
       }

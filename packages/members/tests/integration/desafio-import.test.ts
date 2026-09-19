@@ -12,15 +12,16 @@ test.each([
   const env = buildApp({ requireAdmin: true })
   const course = seedSampleCourse(env.courses, 'desafio-primeiro-jogo', 'published', 'kids')
   const lessonId = course.lessonIds[0]!,
-    slug = day ? `dia-${day}` : 'introducao'
-  env.courses.lessons.find((l) => l.id === lessonId)!.slug = slug
+    path = day ? `dia-${day}` : 'introducao'
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/desafio-primeiro-jogo-v6/${slug}/manifesto.json`,
+      `../../../../docs/aulas-interativas/desafio-primeiro-jogo-v6/${path}/manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')
+  // A pasta editorial pode ter outro nome que o slug da aula publicada.
+  env.courses.lessons.find((l) => l.id === lessonId)!.slug = document.lessonSlug
   const request = (action: string, body: unknown) =>
     env.app.handle(
       new Request(`http://localhost/members/admin/lessons/${lessonId}/${action}`, {

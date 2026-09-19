@@ -51,6 +51,15 @@ export interface LearningRepository {
   getProgress(owner: LearningOwner, lessonId: string): Promise<LessonLearningProgress>
   saveNavigation(owner: LearningOwner, lessonId: string, sectionId: string): Promise<void>
   saveProgress(input: SaveLearningProgress): Promise<LearningBlockProgress>
+  recordMaterialDownload(
+    input: LearningOwner & {
+      lessonId: string
+      blockId: string
+      revision: string
+      itemId: string
+      at: Date
+    },
+  ): Promise<LearningBlockProgress>
   findAttempt(owner: LearningOwner, id: string): Promise<LearningAttemptView | null>
   recordAttempt(
     owner: LearningOwner,

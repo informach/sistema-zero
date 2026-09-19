@@ -1201,8 +1201,9 @@ cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesso
   à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
   o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
 — a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
-verbos são das atividades, e material complementar não é uma. ⚠️ Ele está FORA do percurso
-obrigatório por definição, e por isso nunca trava a conclusão. ⚠️⚠️ O item de arquivo aponta para o
+verbos são das atividades. ⚠️ Materiais são opcionais por padrão; apenas os arquivos marcados
+pela autora como obrigatórios travam a seção, em conjunto com outros critérios como 90% do vídeo.
+O arquivo marcado mostra “Obrigatório para avançar”. ⚠️⚠️ O item de arquivo aponta para o
 ANEXO da aula pelo id e nunca carrega a URL — as regras, e o porquê, estão no CLAUDE.md do
 member-shell.
 

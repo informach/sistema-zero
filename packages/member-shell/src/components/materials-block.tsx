@@ -24,20 +24,50 @@ import { useLessonPlayer } from './lesson-player-context'
  * o mesmo padrão dos outros ganchos `sz-lesson-*`. Renomear um deles quebra o desenho dos DOIS
  * apps em silêncio.
  */
-export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
+export function MaterialsBlockView({
+  blockId,
+  blockRevision,
+  content,
+}: {
+  blockId: string
+  blockRevision?: string
+  content: MaterialsBlock
+}) {
   const player = useLessonPlayer()
   const [baixando, setBaixando] = useState<string | null>(null)
   const [baixados, setBaixados] = useState<Set<string>>(() => new Set())
+  const downloadKey = (itemId: string) => `${blockRevision ?? ''}:${itemId}`
+  const required =
+    player?.materialRequiredItems?.find((entry) => entry.blockId === blockId)?.itemIds ?? []
+  const saved = player?.learningProgress?.blocks.find(
+    (progress) => progress.blockId === blockId && progress.revision === blockRevision,
+  )
+  const confirmed = Array.isArray(saved?.answers.downloadedMaterialItemIds)
+    ? saved.answers.downloadedMaterialItemIds
+    : []
 
   async function baixar(item: Extract<MaterialItem, { kind: 'file' }>) {
     if (baixando || !player) return
-    const url = lessonAttachmentUrl(player.courseSlug, player.lessonId, item.attachmentId)
+    const url = lessonAttachmentUrl(
+      player.courseSlug,
+      player.lessonId,
+      item.attachmentId,
+      required.includes(item.id) && player.viewerId && blockRevision
+        ? { blockId, itemId: item.id, viewerId: player.viewerId, blockRevision }
+        : undefined,
+    )
     setBaixando(item.id)
     try {
       const r = await downloadLessonAttachment(url, item.label ?? 'material')
-      if (r.ok) setBaixados((ids) => new Set(ids).add(item.attachmentId))
-      else if (r.reason === 'refused') toast.error(r.message)
-      else toast.info('O material pode abrir em outra aba. Confira se o download começou.')
+      if (r.ok) {
+        setBaixados((ids) => new Set(ids).add(downloadKey(item.id)))
+        if (required.includes(item.id)) player.refreshAfterLearning?.()
+      } else if (r.reason === 'refused') toast.error(r.message)
+      else {
+        toast.info('O material pode abrir em outra aba. Confira se o download começou.')
+        if (required.includes(item.id))
+          window.setTimeout(() => player.refreshAfterLearning?.(), 1000)
+      }
     } finally {
       setBaixando(null)
     }
@@ -66,9 +96,13 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
                 <button
                   type="button"
                   onClick={() => baixar(item)}
-                  disabled={baixando !== null || !podeBaixar}
+                  disabled={
+                    baixando !== null ||
+                    !podeBaixar ||
+                    (required.includes(item.id) && (!blockRevision || !player?.viewerId))
+                  }
                   className="sz-lesson-material-action"
-                  aria-label={`${baixando === item.id ? 'Preparando download de' : baixados.has(item.attachmentId) ? 'Baixar novamente' : 'Baixar'} ${item.label ?? 'material'}`}
+                  aria-label={`${baixando === item.id ? 'Preparando download de' : baixados.has(downloadKey(item.id)) || confirmed.includes(item.id) ? 'Baixar novamente' : 'Baixar'} ${item.label ?? 'material'}${required.includes(item.id) ? ', obrigatório para avançar' : ''}`}
                 >
                   <span className="sz-lesson-material-icon" aria-hidden>
                     {baixando === item.id ? (
@@ -79,6 +113,9 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
                   </span>
                   <span className="sz-lesson-material-copy">
                     <span className="sz-lesson-material-label">{item.label}</span>
+                    {required.includes(item.id) && (
+                      <span className="sz-lesson-material-required">Obrigatório para avançar</span>
+                    )}
                     <span className="sz-lesson-material-meta">
                       {podeBaixar ? descricaoDoArquivo(item) : 'baixa na aula'}
                     </span>
@@ -86,7 +123,7 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
                   <span className="sz-lesson-material-cta" aria-live="polite">
                     {baixando === item.id
                       ? 'Preparando…'
-                      : baixados.has(item.attachmentId)
+                      : baixados.has(downloadKey(item.id)) || confirmed.includes(item.id)
                         ? 'Baixado'
                         : 'Baixar'}
                   </span>

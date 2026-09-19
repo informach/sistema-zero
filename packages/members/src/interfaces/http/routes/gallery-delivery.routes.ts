@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
 import {
   assertInternalCaller,
-  assertZappyBffConsumer,
+  assertMemberShellConsumer,
   isPrivilegedActor,
   resolveAccountId,
   resolveUserId,
@@ -48,7 +48,7 @@ export function galleryDeliveryRoutes(deps: {
     .post(
       '/internal/lessons/:lessonId/blocks/:blockId/gallery-commit',
       ({ headers, params, body }) => {
-        assertZappyBffConsumer(headers['x-consumer-id'])
+        assertMemberShellConsumer(headers['x-consumer-id'])
         return deps.gallery.commit(
           body.actor,
           params.lessonId,

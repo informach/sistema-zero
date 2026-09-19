@@ -506,6 +506,12 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 
 ## Checklist antes de finalizar
 
+`SectionCompletion.materialItems` seleciona IDs de arquivos de blocos `materials` explicitamente
+incluídos em `blockIds`. O validador exige itens `file` existentes e o avaliador combina todos os
+arquivos selecionados com outros critérios da seção, como 90% do vídeo. Progresso do download é
+`answers.downloadedMaterialItemIds` na revisão corrente do bloco; o cliente não pode gravá-lo pelo
+POST genérico de aprendizagem.
+
 - [ ] `bun run typecheck` limpo · `bun test` verde (sandbox off) · `bun run check` limpo.
 - [ ] Nada de framework nem de import de pacote de serviço/app entrou aqui.
 - [ ] Subpath novo? Adicionou ao `exports` do `package.json`.

@@ -101,7 +101,7 @@ const EnvSchema = z
     path: ['JWT_HS256_SECRET'],
   })
   .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.MEMBER_SHELL_HMAC_SECRET), {
-    message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para persistir o Zappy',
+    message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para Zappy e downloads de aula',
     path: ['MEMBER_SHELL_HMAC_SECRET'],
   })
 

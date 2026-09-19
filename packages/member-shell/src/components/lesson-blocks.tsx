@@ -101,7 +101,13 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
     case 'coming_soon':
       return <ComingSoon content={content as unknown as ComingSoonBlock} />
     case 'materials':
-      return <MaterialsBlockView content={content as unknown as MaterialsBlock} />
+      return (
+        <MaterialsBlockView
+          blockId={block.id}
+          blockRevision={block.blockRevision}
+          content={content as unknown as MaterialsBlock}
+        />
+      )
     default:
       return null
   }

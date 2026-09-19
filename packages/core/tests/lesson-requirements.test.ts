@@ -1,7 +1,58 @@
 import { describe, expect, test } from 'bun:test'
-import { defaultLessonSection, lessonCompletionRequirements } from '../src/learning'
+import {
+  defaultLessonSection,
+  type LessonLearningProgress,
+  lessonCompletionRequirements,
+} from '../src/learning'
 
 describe('lesson completion requirements', () => {
+  test('video and selected files must both be completed in the current revision', () => {
+    const blocks = [
+      { id: 'video', kind: 'video', blockRevision: 'v1', content: { kind: 'video' } },
+      { id: 'files', kind: 'materials', blockRevision: 'm1', content: { kind: 'materials' } },
+    ]
+    const progress = (
+      videoRanges: string[],
+      downloadedMaterialItemIds: string[],
+      materialRevision = 'm1',
+    ): LessonLearningProgress => ({
+      sectionId: null,
+      blocks: [
+        {
+          blockId: 'video',
+          revision: 'v1',
+          positionSeconds: null,
+          answers: { videoDuration: 100, videoRanges },
+          hintsUsed: 0,
+          attemptsCount: 0,
+          result: null,
+          updatedAt: 'now',
+        },
+        {
+          blockId: 'files',
+          revision: materialRevision,
+          positionSeconds: null,
+          answers: { downloadedMaterialItemIds },
+          hintsUsed: 0,
+          attemptsCount: 0,
+          result: null,
+          updatedAt: 'now',
+        },
+      ],
+    })
+    const evaluate = (videoRanges: string[], ids: string[], revision?: string) =>
+      lessonCompletionRequirements({
+        completed: false,
+        blocks,
+        learningProgress: progress(videoRanges, ids, revision),
+        videoBlockIds: ['video'],
+        materialItems: [{ blockId: 'files', itemIds: ['one', 'two'] }],
+      }).map((requirement) => requirement.complete)
+    expect(evaluate(['0:90'], ['one'])).toEqual([true, false])
+    expect(evaluate(['0:40'], ['one', 'two'])).toEqual([false, true])
+    expect(evaluate(['0:90'], ['one', 'two'], 'old')).toEqual([true, false])
+    expect(evaluate(['0:90'], ['one', 'two'])).toEqual([true, true])
+  })
   test('reusing a project points to its primary section and counts a single requirement', () => {
     const first = {
       ...defaultLessonSection('first', 'Criar', ['studio']),

@@ -43,6 +43,7 @@ import { RecordStudioActivityDayService } from '../src/application/gamification/
 import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
+import { RecordMaterialDownloadService } from '../src/application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from '../src/application/get-certificate/get-certificate.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
@@ -395,6 +396,13 @@ export function buildApp(
         learning,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses, progress),
+      recordMaterialDownload: new RecordMaterialDownloadService(
+        new GetAttachmentDownloadService(checkAccess, courses, progress),
+        courses,
+        learningRepository,
+        sectionProgression,
+        clock,
+      ),
       resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress, sectionProgression),
       markComplete: new MarkLessonCompleteService(
         checkAccess,

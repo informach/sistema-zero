@@ -4,7 +4,6 @@ import {
   isGalleryBlock,
   isInteractiveBlock,
   isLegacyMaterialLesson,
-  isVideoOnlySection,
   type LearningBlockProgress,
   type LessonLearningProgress,
   legacyLessonSections,
@@ -802,8 +801,22 @@ function LessonSectionsContent({
                       (progress) => progress.id === s.id && progress.status === 'completed',
                     ),
                 )
-                .filter((s) => isVideoOnlySection(s, lesson.blocks))
-                .flatMap((s) => s.completion?.blockIds ?? []),
+                .flatMap(
+                  (s) =>
+                    s.completion?.blockIds.filter((id) =>
+                      lesson.blocks.some((block) => block.id === id && block.kind === 'video'),
+                    ) ?? [],
+                ),
+              materialRequiredItems: lesson.completed
+                ? []
+                : sections
+                    .filter(
+                      (s) =>
+                        !state?.sections.some(
+                          (progress) => progress.id === s.id && progress.status === 'completed',
+                        ),
+                    )
+                    .flatMap((s) => s.completion?.materialItems ?? []),
               materialRequiredBlockIds: lesson.completed
                 ? []
                 : lesson.legacyLayout && isLegacyMaterialLesson(lesson.blocks)

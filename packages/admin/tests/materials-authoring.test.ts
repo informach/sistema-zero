@@ -5,7 +5,11 @@ import {
   validateMaterials,
 } from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/materials-builder'
 import { lessonEditorialWarnings } from '../src/components/editor/lesson-editorial-warnings'
-import { lessonContentLabel, sectionCompletionCandidates } from '../src/lib/lesson-authoring'
+import {
+  lessonContentLabel,
+  sectionCompletionCandidates,
+  suggestedCompletion,
+} from '../src/lib/lesson-authoring'
 import type { LessonBlockContent, MaterialItem } from '../src/lib/types'
 
 const anexo = (id: string, label: string) => ({
@@ -65,6 +69,22 @@ describe('autoria dos materiais complementares', () => {
         issue: undefined,
       },
     ])
+  })
+
+  test('vídeo e arquivo aparecem juntos, mas o download nunca é exigido automaticamente', () => {
+    const d = doc([{ id: 'i1', kind: 'file', attachmentId: 'a1' }])
+    d.blocks.unshift({
+      id: 'b-video',
+      content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/123456789' },
+    })
+    d.sections[0]!.blockIds.unshift('b-video')
+    const candidates = sectionCompletionCandidates(d, d.sections[0]!)
+    expect(candidates.map((candidate) => candidate.model)).toEqual([
+      'Assistir a 90% do vídeo',
+      'Baixar arquivos selecionados',
+    ])
+    expect(candidates.every((candidate) => !candidate.issue)).toBe(true)
+    expect(suggestedCompletion(d, d.sections[0]!)).toBeNull()
   })
 
   test('o rótulo na lista do percurso é o nome do bloco, ou a contagem', () => {

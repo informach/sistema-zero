@@ -20,6 +20,7 @@ import type { RecordStudioActivityDayService } from '../../../application/gamifi
 import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
+import type { RecordMaterialDownloadService } from '../../../application/get-attachment-download/record-material-download.service'
 import type { GetCertificateService } from '../../../application/get-certificate/get-certificate.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
@@ -52,7 +53,7 @@ import { AccessDeniedError } from '../../../domain/entitlement/entitlement.error
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
   assertInternalCaller,
-  assertZappyBffConsumer,
+  assertMemberShellConsumer,
   isPrivilegedActor,
   resolveAccountId,
   resolveStudentName,
@@ -74,6 +75,7 @@ import {
   GamificationQuery,
   IdParams,
   LessonIdParams,
+  MaterialDownloadBody,
   MissionSlugParams,
   ParentReportPrefsBody,
   PintaSubmissionBody,
@@ -117,6 +119,7 @@ export interface MembersRoutesDeps {
   getMyCourse: GetMyCourseService
   getLesson: GetLessonService
   resolveAttachment: GetAttachmentDownloadService
+  recordMaterialDownload: RecordMaterialDownloadService
   resolveEbook: GetEbookDownloadService
   markComplete: MarkLessonCompleteService
   getProgress: GetCourseProgressService
@@ -337,7 +340,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/internal/zappy/questions',
         async ({ headers, body }) => {
-          assertZappyBffConsumer(headers['x-consumer-id'])
+          assertMemberShellConsumer(headers['x-consumer-id'])
           await zappyActorAccess(body.actor)
           return zappy().reserve({
             userId: body.actor.userId,
@@ -352,7 +355,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .put(
         '/internal/zappy/questions/:id/response',
         async ({ headers, params, body }) => {
-          assertZappyBffConsumer(headers['x-consumer-id'])
+          assertMemberShellConsumer(headers['x-consumer-id'])
           await zappyActorAccess(body.actor)
           return zappy().complete({
             userId: body.actor.userId,
@@ -811,6 +814,24 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: AttachmentResolveParams },
+      )
+      .post(
+        '/internal/material-downloads',
+        async ({ headers, body }) => {
+          assertMemberShellConsumer(headers['x-consumer-id'])
+          return deps.recordMaterialDownload.execute({
+            userId: body.actor.userId,
+            accountId: body.actor.accountId,
+            courseSlug: body.courseSlug,
+            lessonId: body.lessonId,
+            attachmentId: body.attachmentId,
+            blockId: body.blockId,
+            itemId: body.itemId,
+            expectedRevision: body.expectedRevision,
+            expectedStorageRefHash: body.expectedStorageRefHash,
+          })
+        },
+        { body: MaterialDownloadBody },
       )
       // Resolução do PDF do bloco e-book (mesmo perfil do resolve de anexo:
       // consumida SÓ pelo servidor do community; storageRef nunca vai ao browser).

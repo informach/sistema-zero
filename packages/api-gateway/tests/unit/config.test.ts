@@ -545,6 +545,18 @@ describe('gateway.config.ts (configuração real)', () => {
     }
   })
 
+  test('registro de download obrigatório só aceita o BFF autenticado por HMAC', () => {
+    const route = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-internal-material-downloads',
+    )
+    expect(route).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/internal/material-downloads',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+      rateLimit: { by: 'json-field', field: 'actor.userId' },
+    })
+  })
+
   test('backfill usa lotes suficientes para não esgotar o limite com bases pequenas', () => {
     const route = realConfig.routes.find(
       (candidate) => candidate.id === 'members-admin-zappy-knowledge-backfill',

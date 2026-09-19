@@ -9,10 +9,16 @@
  * CORS. Esse caso abre em nova guia, que é o comportamento de sempre; ele é indistinguível de uma
  * queda de rede aqui, e abrir a guia é a saída boa para os dois.
  */
-export function lessonAttachmentUrl(courseSlug: string, lessonId: string, attachmentId: string) {
-  return `/api/cursos/${encodeURIComponent(courseSlug)}/aulas/${encodeURIComponent(
+export function lessonAttachmentUrl(
+  courseSlug: string,
+  lessonId: string,
+  attachmentId: string,
+  evidence?: { blockId: string; itemId: string; viewerId: string; blockRevision: string },
+) {
+  const path = `/api/cursos/${encodeURIComponent(courseSlug)}/aulas/${encodeURIComponent(
     lessonId,
   )}/anexos/${encodeURIComponent(attachmentId)}`
+  return evidence ? `${path}?${new URLSearchParams(evidence)}` : path
 }
 
 export type AttachmentDownloadResult =
