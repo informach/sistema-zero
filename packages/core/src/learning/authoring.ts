@@ -14,6 +14,16 @@ export interface DraftAttachment {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  /** PDF publicado autorizado como fonte do Caderno do aluno para o Zappy. */
+  zappyStudentNotebook?: boolean
+}
+
+export function isPdfAttachment(
+  attachment: Pick<DraftAttachment, 'fileType' | 'url' | 'label'>,
+): boolean {
+  const mime = attachment.fileType?.split(';', 1)[0]?.trim().toLowerCase()
+  if (mime) return mime === 'application/pdf'
+  return [attachment.url, attachment.label].some((value) => /\.pdf(?:[?#]|$)/i.test(value))
 }
 export interface PlannedLessonVideo {
   blockId: string

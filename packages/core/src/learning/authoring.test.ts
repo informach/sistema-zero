@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { applyLessonDraftChange, type LessonDraftDocument, restoreFromPublished } from './authoring'
+import {
+  applyLessonDraftChange,
+  isPdfAttachment,
+  type LessonDraftDocument,
+  restoreFromPublished,
+} from './authoring'
 import type { LessonSection } from './index'
 
 const secao = (
@@ -16,6 +21,25 @@ const secao = (
   externalTool: null,
   pendingMedia: [],
   ...extra,
+})
+
+describe('PDF da biblioteca de arquivos da aula', () => {
+  it('reconhece PDF pelo MIME e usa a extensão apenas quando o MIME não existe', () => {
+    expect(
+      isPdfAttachment({
+        label: 'Caderno',
+        url: 'r2priv:sem-extensao',
+        fileType: 'application/pdf',
+      }),
+    ).toBe(true)
+    expect(isPdfAttachment({ label: 'Caderno', url: 'r2priv:caderno.pdf', fileType: null })).toBe(
+      true,
+    )
+    expect(
+      isPdfAttachment({ label: 'Caderno.pdf', url: 'r2priv:imagem', fileType: 'image/png' }),
+    ).toBe(false)
+    expect(isPdfAttachment({ label: 'Mapa', url: 'r2priv:mapa.zip', fileType: null })).toBe(false)
+  })
 })
 
 const bloco = (id: string, kind = 'rich_text', extra: Record<string, unknown> = {}) => ({

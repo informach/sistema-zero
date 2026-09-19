@@ -149,6 +149,7 @@ export interface AttachmentView {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook: boolean
   sortOrder: number
 }
 
@@ -160,6 +161,7 @@ export function toAttachmentView(a: LessonAttachment): AttachmentView {
     url: a.url,
     fileType: a.fileType,
     sizeBytes: a.sizeBytes,
+    zappyStudentNotebook: a.zappyStudentNotebook,
     sortOrder: a.sortOrder,
   }
 }

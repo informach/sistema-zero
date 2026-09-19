@@ -1028,6 +1028,7 @@ export const AttachmentBody = t.Object({
   url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
   fileType: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
   sizeBytes: t.Optional(t.Union([t.Integer({ minimum: 0 }), t.Null()])),
+  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 
 /** Reordenação: ids na nova ordem (devem ser exatamente os filhos atuais). */

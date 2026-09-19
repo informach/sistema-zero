@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto'
+import { ValidationError } from '@sistemazero/core/errors'
+import { isPdfAttachment } from '@sistemazero/core/learning'
 import { and, asc, count, eq, inArray, isNull, ne, or, type SQL, sql } from 'drizzle-orm'
 import type {
   Course,
@@ -98,6 +100,7 @@ const toAttachment = (r: AttachmentRow): LessonAttachment => ({
   url: r.url,
   fileType: r.fileType,
   sizeBytes: r.sizeBytes,
+  zappyStudentNotebook: r.zappyStudentNotebook,
   sortOrder: r.sortOrder,
 })
 
@@ -1103,6 +1106,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           url: fields.url,
           fileType: fields.fileType,
           sizeBytes: fields.sizeBytes,
+          zappyStudentNotebook: fields.zappyStudentNotebook ?? false,
           sortOrder: sql`coalesce((select max(${lessonAttachments.sortOrder}) + 1 from ${lessonAttachments} where ${lessonAttachments.lessonId} = ${lessonId}), 0)`,
         })
         .returning()
@@ -1112,17 +1116,24 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   }
 
   async updateAttachment(id: string, fields: AttachmentFields): Promise<LessonAttachment | null> {
-    const [row] = await this.db
-      .update(lessonAttachments)
-      .set({
-        label: fields.label,
-        url: fields.url,
-        fileType: fields.fileType,
-        sizeBytes: fields.sizeBytes,
-      })
-      .where(eq(lessonAttachments.id, id))
-      .returning()
-    return row ? toAttachment(row) : null
+    return this.db.transaction(async (tx) => {
+      const [current] = await tx
+        .select()
+        .from(lessonAttachments)
+        .where(eq(lessonAttachments.id, id))
+        .for('update')
+      if (!current) return null
+      const zappyStudentNotebook = fields.zappyStudentNotebook ?? current.zappyStudentNotebook
+      if (zappyStudentNotebook && !isPdfAttachment(fields))
+        throw new ValidationError('O Caderno do aluno precisa ser um PDF.')
+      const [row] = await tx
+        .update(lessonAttachments)
+        .set({ ...fields, zappyStudentNotebook })
+        .where(eq(lessonAttachments.id, id))
+        .returning()
+      if (!row) throw new Error('update de anexo não retornou a linha')
+      return toAttachment(row)
+    })
   }
 
   async deleteAttachment(id: string): Promise<boolean> {

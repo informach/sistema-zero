@@ -75,6 +75,7 @@ export interface AttachmentFields {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook?: boolean
 }
 
 export interface ListCoursesAdminFilter {

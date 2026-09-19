@@ -1,5 +1,6 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
-import { isInteractiveBlock } from '@sistemazero/core/learning'
+import { ValidationError } from '@sistemazero/core/errors'
+import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
 import {
   isSceneVozes,
   SCENE_IDS,
@@ -692,10 +693,14 @@ export class AttachmentAdminService {
 
   async create(lessonId: string, fields: AttachmentFields): Promise<AttachmentView> {
     if (!(await this.content.findLessonById(lessonId))) throw new LessonNotFoundError()
+    if (fields.zappyStudentNotebook && !isPdfAttachment(fields))
+      throw new ValidationError('O Caderno do aluno precisa ser um PDF.')
     return toAttachmentView(await this.content.createAttachment(lessonId, fields))
   }
 
   async update(id: string, fields: AttachmentFields): Promise<AttachmentView> {
+    if (fields.zappyStudentNotebook && !isPdfAttachment(fields))
+      throw new ValidationError('O Caderno do aluno precisa ser um PDF.')
     const updated = await this.content.updateAttachment(id, fields)
     if (!updated) throw new ContentNotFoundError('Anexo não encontrado')
     return toAttachmentView(updated)

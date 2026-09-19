@@ -161,6 +161,7 @@ describe('Trava sequencial das aulas (estilo Duolingo)', () => {
       url: 'https://x/locked.pdf',
       fileType: 'application/pdf',
       sizeBytes: null,
+      zappyStudentNotebook: false,
       sortOrder: 0,
     })
 

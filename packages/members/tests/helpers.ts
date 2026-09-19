@@ -765,6 +765,7 @@ export function seedSampleCourse(
     url: 'https://x/a.pdf',
     fileType: 'application/pdf',
     sizeBytes: null,
+    zappyStudentNotebook: false,
     sortOrder: 0,
   })
   return { courseId, slug, moduleId, lessonIds: [lesson1, lesson2] as const, ebookBlockId }

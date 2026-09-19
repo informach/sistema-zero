@@ -3,6 +3,7 @@ import { ValidationError } from '@sistemazero/core/errors'
 import {
   applyLessonDraftChange,
   defaultLessonSection,
+  isPdfAttachment,
   type LessonDraft,
   type LessonDraftCommand,
   type LessonDraftDocument,
@@ -60,6 +61,12 @@ const fingerprint = (value: unknown) => createHash('sha256').update(stableJson(v
 async function publishedSnapshot(tx: Transaction, lessonId: string) {
   const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId)
   if (!lesson) throw new LessonNotFoundError()
+  // A marcação do caderno informa a base do Zappy, não muda o arquivo entregue ao aluno.
+  // Deixá-la fora da revisão publicada preserva as revisões dos rascunhos criados antes
+  // da nova coluna, sem esconder alterações reais no PDF, no nome ou nos blocos.
+  const attachmentsForRevision = lesson.attachments.map(
+    ({ zappyStudentNotebook: _notebook, ...attachment }) => attachment,
+  )
   const [structure] = await tx
     .select()
     .from(lessonStructures)
@@ -78,7 +85,7 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
             slug: lesson.slug,
             estimatedMinutes: lesson.estimatedMinutes,
             blocks: lesson.blocks,
-            attachments: lesson.attachments,
+            attachments: attachmentsForRevision,
             sections: migration.previousSections,
           })
         : null,
@@ -87,7 +94,7 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
       slug: lesson.slug,
       estimatedMinutes: lesson.estimatedMinutes,
       blocks: lesson.blocks,
-      attachments: lesson.attachments,
+      attachments: attachmentsForRevision,
       sections: structure?.sections,
     }),
   }
@@ -102,13 +109,16 @@ function initialDocument(
     slug: lesson.slug,
     estimatedMinutes: lesson.estimatedMinutes,
     blocks: lesson.blocks.map((b) => ({ id: b.id, content: { ...b.content } })),
-    attachments: lesson.attachments.map(({ id, label, url, fileType, sizeBytes }) => ({
-      id,
-      label,
-      url,
-      fileType,
-      sizeBytes,
-    })),
+    attachments: lesson.attachments.map(
+      ({ id, label, url, fileType, sizeBytes, zappyStudentNotebook }) => ({
+        id,
+        label,
+        url,
+        fileType,
+        sizeBytes,
+        ...(zappyStudentNotebook ? { zappyStudentNotebook: true } : {}),
+      }),
+    ),
     sections: structure?.sections ?? [
       defaultLessonSection(
         lesson.id,
@@ -453,7 +463,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       })
     if (new Set(document.attachments.map((a) => a.id)).size !== document.attachments.length)
       issues.push({ message: 'Há anexos duplicados.' })
-    for (const attachment of document.attachments)
+    for (const attachment of document.attachments) {
       if (
         !attachment.label.trim() ||
         attachment.label.length > 200 ||
@@ -461,6 +471,9 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         !/^(https?:\/\/|r2priv:)./.test(attachment.url)
       )
         issues.push({ message: 'Informe o rótulo e um arquivo ou URL válida para cada anexo.' })
+      if (attachment.zappyStudentNotebook && !isPdfAttachment(attachment))
+        issues.push({ message: `O Caderno do aluno “${attachment.label}” precisa ser um PDF.` })
+    }
     const anexosDaAula = new Set(document.attachments.map((a) => a.id))
     for (const block of document.blocks) {
       try {
@@ -633,11 +646,14 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         }
         await tx.delete(lessonAttachments).where(eq(lessonAttachments.lessonId, lessonId))
         if (draft.document.attachments.length)
-          await tx
-            .insert(lessonAttachments)
-            .values(
-              draft.document.attachments.map((a, sortOrder) => ({ ...a, lessonId, sortOrder })),
-            )
+          await tx.insert(lessonAttachments).values(
+            draft.document.attachments.map((a, sortOrder) => ({
+              ...a,
+              zappyStudentNotebook: a.zappyStudentNotebook ?? false,
+              lessonId,
+              sortOrder,
+            })),
+          )
         await tx
           .update(lessons)
           .set({

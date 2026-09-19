@@ -45,6 +45,7 @@ const Attachment = t.Object({
   url: t.String({ maxLength: 4000 }),
   fileType: t.Union([t.String({ maxLength: 100 }), t.Null()]),
   sizeBytes: t.Union([t.Integer({ minimum: 0, maximum: 2147483647 }), t.Null()]),
+  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 const Video = t.Object({
   blockId: Id,

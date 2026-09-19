@@ -1,0 +1,2 @@
+ALTER TABLE "members"."lesson_attachments" ADD COLUMN "zappy_student_notebook" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "members"."lesson_structures" DROP COLUMN "support_block_ids";

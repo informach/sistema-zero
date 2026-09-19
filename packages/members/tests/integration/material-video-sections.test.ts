@@ -119,6 +119,7 @@ describe('material and watching are distinct section criteria', () => {
         url: 'r2priv:arquivo.pdf',
         fileType: 'application/pdf',
         sizeBytes: 100,
+        zappyStudentNotebook: false,
         sortOrder: 1,
       },
       {
@@ -128,6 +129,7 @@ describe('material and watching are distinct section criteria', () => {
         url: 'r2priv:outro.pdf',
         fileType: 'application/pdf',
         sizeBytes: 100,
+        zappyStudentNotebook: false,
         sortOrder: 2,
       },
     )

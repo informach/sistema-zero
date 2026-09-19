@@ -87,6 +87,7 @@ function toAttachment(row: typeof lessonAttachments.$inferSelect): LessonAttachm
     url: row.url,
     fileType: row.fileType,
     sizeBytes: row.sizeBytes,
+    zappyStudentNotebook: row.zappyStudentNotebook,
     sortOrder: row.sortOrder,
   }
 }

@@ -891,6 +891,7 @@ export interface AttachmentView {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook: boolean
   sortOrder: number
 }
 

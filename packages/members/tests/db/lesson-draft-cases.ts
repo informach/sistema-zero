@@ -544,6 +544,49 @@ export function lessonDraftCases(getDb: () => Database) {
       expect(await f.reader.findLessonWithContent(second.id)).toEqual(before)
       expect((await f.repo.read(second.id)).revision).toBe(draft.revision)
     })
+    test('a identificação do caderno pertence ao arquivo e sobrevive à publicação', async () => {
+      const f = await fixture()
+      const cadernoId = randomUUID()
+      const mapaId = randomUUID()
+      const draft = await f.change(await f.repo.read(f.lessonId), {
+        type: 'attachments',
+        attachments: [
+          {
+            id: cadernoId,
+            label: 'Caderno do aluno',
+            url: 'r2priv:aulas/caderno.pdf',
+            fileType: 'application/pdf',
+            sizeBytes: 42,
+            zappyStudentNotebook: true,
+          },
+          {
+            id: mapaId,
+            label: 'Mapa dos pais',
+            url: 'r2priv:aulas/mapa.pdf',
+            fileType: 'application/pdf',
+            sizeBytes: 23,
+          },
+        ],
+      })
+      expect(draft.document.attachments.find((a) => a.id === cadernoId)?.zappyStudentNotebook).toBe(
+        true,
+      )
+
+      await f.publish(draft)
+      const published = await f.reader.findLessonWithContent(f.lessonId)
+      expect(published?.attachments.find((a) => a.id === cadernoId)?.zappyStudentNotebook).toBe(
+        true,
+      )
+      expect(published?.attachments.find((a) => a.id === mapaId)?.zappyStudentNotebook).toBe(false)
+      expect((await f.repo.read(f.lessonId)).document.attachments).toContainEqual({
+        id: cadernoId,
+        label: 'Caderno do aluno',
+        url: 'r2priv:aulas/caderno.pdf',
+        fileType: 'application/pdf',
+        sizeBytes: 42,
+        zappyStudentNotebook: true,
+      })
+    })
     test('publishing cannot steal block or attachment IDs from another lesson', async () => {
       const f = await fixture(),
         other = await fixture()

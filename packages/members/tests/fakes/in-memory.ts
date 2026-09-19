@@ -1075,7 +1075,13 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const sortOrder = this.attachments
       .filter((a) => a.lessonId === lessonId)
       .reduce((mx, a) => Math.max(mx, a.sortOrder + 1), 0)
-    const att: LessonAttachment = { id: randomUUID(), lessonId, ...fields, sortOrder }
+    const att: LessonAttachment = {
+      id: randomUUID(),
+      lessonId,
+      ...fields,
+      zappyStudentNotebook: fields.zappyStudentNotebook ?? false,
+      sortOrder,
+    }
     this.attachments.push(att)
     return att
   }
@@ -1087,6 +1093,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     a.url = fields.url
     a.fileType = fields.fileType
     a.sizeBytes = fields.sizeBytes
+    a.zappyStudentNotebook = fields.zappyStudentNotebook ?? false
     return a
   }
 

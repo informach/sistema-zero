@@ -18,6 +18,7 @@ const anexo = (id: string, label: string, url: string) => ({
   url,
   fileType: 'application/json',
   sizeBytes: 2048,
+  zappyStudentNotebook: false,
   sortOrder: 0,
 })
 

@@ -597,6 +597,7 @@ function LessonEditorSession({
             })),
             attachments: draft.document.attachments.map((a, sortOrder) => ({
               ...a,
+              zappyStudentNotebook: a.zappyStudentNotebook ?? false,
               lessonId,
               sortOrder,
             })),

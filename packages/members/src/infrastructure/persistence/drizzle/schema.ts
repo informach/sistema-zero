@@ -402,6 +402,7 @@ export const lessonAttachments = members.table(
     url: text('url').notNull(),
     fileType: text('file_type'),
     sizeBytes: integer('size_bytes'),
+    zappyStudentNotebook: boolean('zappy_student_notebook').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [uniqueIndex('lesson_attachments_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],

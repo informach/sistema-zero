@@ -137,6 +137,7 @@ export interface LessonAttachment {
   fileType: string | null
   sizeBytes: number | null
   sortOrder: number
+  zappyStudentNotebook: boolean
 }
 
 /** Módulo com suas aulas (resumidas, sem o conteúdo dos blocos) — detalhe do curso. */
