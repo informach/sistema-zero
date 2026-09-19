@@ -302,6 +302,10 @@ As atividades interativas de cena (tipos, caso, roteiro, editor de ações, elen
 painel do professor) estão em §"Atividades interativas e cenas no editor", no topo deste arquivo.
 
 `Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
+Uma falha de publicação mantém o diálogo de revisão aberto; ele só fecha após confirmação do
+servidor. Na árvore do curso há um único atalho `Conteúdo` por aula: título, slug e duração
+ficam em `Dados da aula`, e publicar/despublicar fica no editor. O diálogo da árvore cria aulas
+em rascunho; não existe status `arquivada` para aula (esse status pertence ao curso).
 
 ⭐ **O cabeçalho da aula é EMPILHADO (18/09/2026).** O `AdminHeader` é uma linha só a partir de
 `sm:` e o bloco de ação tem `shrink-0` — quem encolhe é sempre o título. Na aula esse bloco
