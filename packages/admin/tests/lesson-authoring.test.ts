@@ -167,7 +167,7 @@ describe('lesson authoring integrity', () => {
   })
   test('book completion and multiple goals have understandable summaries without changing their data', () => {
     const document = fixture()
-    document.blocks.push({ id: 'book', content: { kind: 'ebook', url: 'r2priv:book.pdf' } })
+    document.blocks.push({ id: 'book', content: { kind: 'ebook', attachmentId: 'pdf-book' } })
     const material = {
       ...defaultLessonSection('material', 'Caderno', ['book']),
       intent: 'material' as const,
@@ -180,6 +180,19 @@ describe('lesson authoring integrity', () => {
     expect(sectionCompletionSummary(document.sections[0]!, document.blocks)).toContain(
       '1 objetivo em Dino',
     )
+  })
+  test('o Livro 3D guarda só o id do PDF escolhido, sem criar material baixável', () => {
+    const content = buildContent({
+      ...EMPTY_BLOCK,
+      kind: 'ebook',
+      ebookAttachmentId: 'pdf-da-aula',
+      title: 'Caderno do Dino',
+    })
+    expect(content).toEqual({
+      kind: 'ebook',
+      attachmentId: 'pdf-da-aula',
+      title: 'Caderno do Dino',
+    })
   })
   test('legacy video editing retains cover, provider and captions; explicit removal clears stale metadata', () => {
     const previous: LessonBlockContent = {

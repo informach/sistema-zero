@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { changeDraft, publishBlock, publishDraft } from '../draft-authoring-helpers'
 import { buildApp } from '../helpers'
 
@@ -608,6 +609,23 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
   test('bloco embed v3 (só html) e bloco ebook → 201; embed sem html → 400', async () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)
+    const ebookAttachmentId = randomUUID()
+    expect(
+      (
+        await changeDraft(app, lesson.id, {
+          type: 'attachments',
+          attachments: [
+            {
+              id: ebookAttachmentId,
+              label: 'Livro',
+              url: 'r2priv:admin/attachments/livro.pdf',
+              fileType: 'application/pdf',
+              sizeBytes: null,
+            },
+          ],
+        })
+      ).status,
+    ).toBe(200)
 
     const embed = await publishBlock(app, lesson.id, {
       content: { kind: 'embed', html: '<canvas id="demo"></canvas>' },
@@ -615,7 +633,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(embed.status).toBe(200)
 
     const ebook = await publishBlock(app, lesson.id, {
-      content: { kind: 'ebook', url: 'r2priv:admin/attachments/livro.pdf', title: 'Livro' },
+      content: { kind: 'ebook', attachmentId: ebookAttachmentId, title: 'Livro' },
     })
     expect(ebook.status).toBe(200)
 

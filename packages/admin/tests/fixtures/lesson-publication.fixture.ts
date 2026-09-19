@@ -16,9 +16,13 @@ let published = false,
   processing = false,
   failMedia = false,
   syncCalls = 0,
+  syncAttachmentCalls = 0,
   removedCalls = 0,
   statusCalls = 0
 let revision = 'revision-1'
+let attachmentBefore: Array<Record<string, unknown>> = []
+let attachmentAfter: Array<Record<string, unknown>> = []
+const removedAttachmentRefs: string[] = []
 mock.module('@/server/gateway', () => ({
   ...actualGateway,
   gatewayFetch: async (path: string, options?: { method?: string; body?: unknown }) => {
@@ -45,6 +49,7 @@ mock.module('@/server/gateway', () => ({
             },
             ...(published ? [] : [{ id: 'removed', kind: 'video', content: { kind: 'video' } }]),
           ],
+          attachments: published ? attachmentAfter : attachmentBefore,
         },
       }
     if (path.endsWith('/publish')) {
@@ -78,6 +83,12 @@ mock.module('@/server/zappy-knowledge', () => ({
   deleteZappyKnowledgeForBlock: async () => {
     removedCalls++
   },
+  syncZappyKnowledgeForAttachment: async () => {
+    syncAttachmentCalls++
+  },
+  deleteZappyKnowledgeByRef: async (ref: string) => {
+    removedAttachmentRefs.push(ref)
+  },
 }))
 const { publishLessonDraft } = await import('../../src/server/lesson-draft-publication')
 const { PATCH } = await import('../../src/app/api/members/lessons/[id]/draft/route')
@@ -93,7 +104,11 @@ beforeEach(() => {
   processing = false
   failMedia = false
   syncCalls = 0
+  syncAttachmentCalls = 0
   removedCalls = 0
+  removedAttachmentRefs.length = 0
+  attachmentBefore = []
+  attachmentAfter = []
   statusCalls = 0
   revision = 'revision-1'
 })
@@ -127,6 +142,15 @@ describe('publication, Vimeo readiness and Zappy synchronization', () => {
       readyVideoIds: [],
     })
     expect(scheduled).toHaveLength(0)
+  })
+  test('publicação sincroniza PDF marcado e remove a fonte quando ele deixa de ser caderno', async () => {
+    attachmentBefore = [{ id: 'old-pdf', zappyStudentNotebook: true }]
+    attachmentAfter = [{ id: 'new-pdf', zappyStudentNotebook: true }]
+    const response = await publishLessonDraft(request(), 'lesson-1', 'publish')
+    expect(response.status).toBe(202)
+    await scheduled[0]?.()
+    expect(syncAttachmentCalls).toBe(1)
+    expect(removedAttachmentRefs).toEqual(['attachment:old-pdf'])
   })
   test('Vimeo lookup failure stops publication', async () => {
     failMedia = true

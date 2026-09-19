@@ -182,7 +182,11 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         {
           body: t.Object({
-            cursor: t.Optional(t.String({ pattern: UUID_PATTERN })),
+            cursor: t.Optional(
+              t.String({
+                pattern: `^(?:${UUID_PATTERN.slice(1, -1)}|notebook:(?:${UUID_PATTERN.slice(1, -1)})?)$`,
+              }),
+            ),
             limit: t.Optional(t.Numeric({ minimum: 1, maximum: 25 })),
           }),
         },

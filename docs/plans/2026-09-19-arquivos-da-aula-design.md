@@ -27,13 +27,13 @@ O envio pode começar na aba Arquivos da aula ou dentro de um bloco; ambos criam
 
 ## Avanço da seção
 
-Em `Configurar avanço`, o Admin mostra ações concretas dos blocos da seção: acessar o Livro 3D (abrir ou usar seu download protegido), baixar cada arquivo explicitamente selecionado em Materiais complementares e os demais critérios existentes. A seção `Material do curso` aceita Livro 3D e downloads, isolados ou combinados. Critérios combinados exigem todos os itens marcados; o resumo e a publicação deixam isso explícito. Nenhum arquivo se torna obrigatório só por ter sido anexado ou mostrado.
+Em `Configurar avanço`, o Admin mostra ações concretas dos blocos da seção: acessar o Livro 3D (abrir ou usar seu download protegido), baixar cada arquivo explicitamente selecionado em Materiais complementares e os demais critérios existentes. A seção `Material do curso` aceita Livro 3D, downloads e vídeo, isolados ou combinados. Critérios combinados exigem todos os itens marcados; o resumo e a publicação deixam isso explícito. Nenhum arquivo se torna obrigatório só por ter sido anexado ou mostrado.
 
 ## Segurança, integridade e dados existentes
 
 Os arquivos continuam privados. Downloads de PDF passam pela entrega com marca d'água do comprador e falham fechados se ela não puder ser aplicada. Um arquivo referenciado não pode desaparecer silenciosamente: a autoria mostra seus usos e impede exclusão sem antes remover as referências. Trocar o arquivo mantém sua identidade e atualiza todos os usos, desde que o tipo continue compatível; caso contrário, a publicação aponta a incompatibilidade.
 
-Converter os PDFs e anexos já publicados e em rascunho para o vínculo por identidade, preservando títulos, ordem, referências, critérios de avanço e marcações de Caderno do aluno. Essa conversão não deve exigir novo upload nem alterar o conteúdo que o aluno já recebe. O vínculo automático Livro 3D → Materiais complementares deixa de ocorrer apenas para novos uploads; os materiais já existentes permanecem até que a autora os edite.
+Converter os PDFs e anexos já publicados e em rascunho para o vínculo por identidade, preservando títulos, ordem, referências, critérios de avanço, marcações de Caderno do aluno e texto do PDF já extraído para o Zappy. Essa conversão não deve exigir novo upload nem alterar o conteúdo que o aluno já recebe. O vínculo automático Livro 3D → Materiais complementares deixa de ocorrer apenas para novos uploads; os materiais já existentes permanecem até que a autora os edite.
 
 ## Experiência visual
 

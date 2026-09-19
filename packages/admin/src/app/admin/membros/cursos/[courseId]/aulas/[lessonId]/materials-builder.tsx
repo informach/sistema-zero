@@ -9,6 +9,7 @@ import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import {
+  type AttachmentView,
   MATERIALS_MAX_ITEMS,
   type MaterialItem,
   type MaterialItemKind,
@@ -74,17 +75,15 @@ function novoItem(kind: MaterialItemKind): MaterialItem {
  *
  * ⚠️⚠️ O item de ARQUIVO não guarda a URL: ele guarda o id de um anexo da aula. Por isso o
  * `onUploadFile` — quem sobe o arquivo é este formulário, mas quem cria a linha de anexo é o
- * editor, que é o dono do documento. É o mesmo movimento que o bloco de e-book já faz, e é o que
- * mantém a entrega privada (R2 privado, marca d'água por aluno) sem uma linha nova de segurança.
- *
- * ⚠️ Sem esse vaivém a autora teria de subir o arquivo numa aba e voltar aqui para escolhê-lo —
- * exatamente o passo a mais que os "materiais de apoio" tinham e que este bloco existe para tirar.
+ * editor, que é o dono do documento. A autora pode escolher um arquivo já enviado ou
+ * acrescentar outro aqui, mantendo a entrega privada e a marca d'água dos PDFs.
  */
 export function MaterialsBuilder({
   value,
   onChange,
   onUploadFile,
   attachmentLabel,
+  attachments,
 }: {
   value: MaterialsValue
   onChange: (next: MaterialsValue) => void
@@ -92,6 +91,7 @@ export function MaterialsBuilder({
   onUploadFile: (file: UploadedFile) => string
   /** Rótulo atual do anexo, para a autora ver qual arquivo está no item. */
   attachmentLabel: (attachmentId: string) => string | null
+  attachments: AttachmentView[]
 }) {
   const setItems = (items: MaterialItem[]) => onChange({ ...value, items })
   const patch = (id: string, change: Partial<MaterialItem>) =>
@@ -154,17 +154,21 @@ export function MaterialsBuilder({
 
             {item.kind === 'file' ? (
               <>
-                {item.attachmentId ? (
-                  <p className="text-sm text-muted-foreground">
-                    Arquivo atual: {attachmentLabel(item.attachmentId) ?? 'enviado'}
-                  </p>
-                ) : null}
+                <Field label="Arquivo da aula">
+                  <Select
+                    value={item.attachmentId}
+                    onChange={(event) => patch(item.id, { attachmentId: event.target.value })}
+                  >
+                    <option value="">Selecione um arquivo</option>
+                    {attachments.map((attachment) => (
+                      <option key={attachment.id} value={attachment.id}>
+                        {attachment.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
                 <FileUploader
-                  label={
-                    item.attachmentId
-                      ? 'Clique para trocar o arquivo (até 200 MB)'
-                      : 'Clique para enviar o arquivo (até 200 MB)'
-                  }
+                  label="Ou envie outro arquivo (até 200 MB)"
                   onUploaded={(file) => patch(item.id, { attachmentId: onUploadFile(file) })}
                 />
                 <Field label="Nome que a criança vê (opcional)">

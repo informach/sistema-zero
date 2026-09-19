@@ -8,5 +8,5 @@ test('publicação confirma Vimeo e sincroniza somente conteúdo publicado', () 
     { cwd: resolve(import.meta.dir, '..'), stdout: 'pipe', stderr: 'pipe' },
   )
   expect(result.exitCode, new TextDecoder().decode(result.stderr)).toBe(0)
-  expect(new TextDecoder().decode(result.stderr)).toContain('5 pass')
+  expect(new TextDecoder().decode(result.stderr)).toContain('6 pass')
 }, 10000)

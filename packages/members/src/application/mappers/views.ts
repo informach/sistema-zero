@@ -873,16 +873,18 @@ export function toLessonDetailView(
           },
         }
       }
-      // E-book: a localização real do PDF (`r2priv:<key>`) nunca chega ao browser —
-      // o community resolve via rota própria e serve com marca d'água (igual anexo).
+      // E-book: o id do anexo também fica no servidor. O community resolve o PDF
+      // pela rota autenticada e serve com marca d'água.
       if (b.content.kind === 'ebook') {
-        const { url: _url, ...memberFacing } = b.content
         return {
           id: b.id,
           blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
-          content: memberFacing,
+          content: {
+            kind: 'ebook' as const,
+            ...(b.content.title ? { title: b.content.title } : {}),
+          },
         }
       }
       // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno

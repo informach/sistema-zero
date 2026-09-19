@@ -728,6 +728,7 @@ export function seedSampleCourse(
     estimatedMinutes: 7,
     isPublished: true,
   })
+  const ebookAttachmentId = randomUUID()
   courses.blocks.push(
     {
       id: randomUUID(),
@@ -755,14 +756,14 @@ export function seedSampleCourse(
       lessonId: lesson1,
       kind: 'ebook',
       sortOrder: 3,
-      content: { kind: 'ebook', url: 'r2priv:admin/attachments/ebook-demo.pdf', title: 'Guia' },
+      content: { kind: 'ebook', attachmentId: ebookAttachmentId, title: 'Guia' },
     },
   )
   courses.attachments.push({
-    id: randomUUID(),
+    id: ebookAttachmentId,
     lessonId: lesson1,
-    label: 'Slides (PDF)',
-    url: 'https://x/a.pdf',
+    label: 'Guia',
+    url: 'r2priv:admin/attachments/ebook-demo.pdf',
     fileType: 'application/pdf',
     sizeBytes: null,
     zappyStudentNotebook: false,

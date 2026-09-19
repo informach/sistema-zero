@@ -18,6 +18,17 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
     1,
   )
   const [lesson1, lesson2] = seeded.lessonIds
+  const cadernoId = randomUUID()
+  courses.attachments.push({
+    id: cadernoId,
+    lessonId: lesson2,
+    label: 'Caderno do Dino',
+    url: 'https://private.example/caderno.pdf',
+    fileType: 'application/pdf',
+    sizeBytes: null,
+    zappyStudentNotebook: false,
+    sortOrder: 0,
+  })
   courses.blocks.push({
     id: randomUUID(),
     lessonId: lesson2,
@@ -26,7 +37,7 @@ test('course detail exposes publication milestone and a reachable lesson, isolat
     content: {
       kind: 'ebook',
       title: 'Caderno do Dino',
-      url: 'https://private.example/caderno.pdf',
+      attachmentId: cadernoId,
     },
   })
   grantAllKidsCourses(entitlements, { userId: account })

@@ -151,7 +151,7 @@ describe('Bloco "em breve" (aula em produção)', () => {
 
     const staff = await app.handle(new Request(path, { headers: staffHeaders }))
     expect(staff.status).toBe(200)
-    expect((await readJson(staff)).storageRef).toContain('https://')
+    expect((await readJson(staff)).storageRef).toBe(anexo.url)
   })
 
   test('resolve do E-BOOK de uma aula em breve → 404 (o PDF privado não sai)', async () => {

@@ -90,27 +90,24 @@ export function lessonEditorialWarnings(
         `${section.title}: confira se está claro por qual experiência a criança deve começar.`,
       )
   }
-  /**
-   * ⚠⚠ Arquivo que subiu e não foi COLOCADO em nenhum bloco de materiais.
-   *
-   * O card "Materiais da aula" no pé da página não existe mais: hoje um anexo só chega ao aluno
-   * dentro de um bloco. Sem este aviso, ela sobe o arquivo, publica, e o arquivo simplesmente não
-   * aparece — íntegro no R2 e invisível na aula. A lista de Anexos já marca cada caso em vermelho,
-   * mas ela publica pelo percurso e pode nunca abrir aquela aba.
-   */
-  const colocados = new Set(
-    document.blocks.flatMap((block) =>
-      block.content.kind === 'materials'
-        ? block.content.items.flatMap((item) => (item.kind === 'file' ? [item.attachmentId] : []))
-        : [],
-    ),
+  // Um arquivo pode servir ao Livro 3D, a um download, ao Zappy, ou a mais de um deles.
+  // Sinalizar apenas os realmente sem uso evita dizer que o livro está invisível.
+  const usados = new Set(
+    document.blocks.flatMap((block) => {
+      if (block.content.kind === 'ebook') return [block.content.attachmentId]
+      if (block.content.kind === 'materials')
+        return block.content.items.flatMap((item) =>
+          item.kind === 'file' ? [item.attachmentId] : [],
+        )
+      return []
+    }),
   )
-  const soltos = document.attachments.filter((a) => !colocados.has(a.id))
+  const soltos = document.attachments.filter((a) => !usados.has(a.id) && !a.zappyStudentNotebook)
   if (soltos.length)
     warnings.push(
       soltos.length === 1
-        ? `O arquivo "${soltos[0]?.label}" não está em nenhum bloco de materiais, então o aluno não o vê.`
-        : `${soltos.length} arquivos não estão em nenhum bloco de materiais, então o aluno não os vê.`,
+        ? `O arquivo "${soltos[0]?.label}" ainda não foi usado no Livro 3D, nos materiais ou pelo Zappy.`
+        : `${soltos.length} arquivos ainda não foram usados no Livro 3D, nos materiais ou pelo Zappy.`,
     )
   const intents = document.sections.map((section) => section.intent)
   const delivery = intents.lastIndexOf('delivery')

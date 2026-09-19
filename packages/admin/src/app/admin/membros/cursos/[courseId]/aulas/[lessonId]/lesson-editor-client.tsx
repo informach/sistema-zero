@@ -12,6 +12,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import {
   type InteractiveBlock,
   isInteractiveBlock,
+  isPdfAttachment,
   LESSON_SECTION_TEMPLATES,
   type LessonDraftIssue,
   migrateLegacyInteractiveBlock,
@@ -88,7 +89,6 @@ import {
   newAuthoringSection,
   type SectionStarterOptions,
 } from '@/lib/lesson-authoring'
-import { planEbookMaterialUpload } from '@/lib/lesson-ebook-material'
 import {
   type AttachmentView,
   type BlockView,
@@ -165,10 +165,9 @@ export interface BlockForm {
   quiz: QuizValue
   /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
   captions: { lang: string; url: string }[]
-  /** E-book: referência `r2priv:<key>` do PDF + título opcional. */
-  pdfUrl: string
+  /** E-book: PDF escolhido nos arquivos da aula. */
+  ebookAttachmentId: string
   title: string
-  zappyStudentNotebook: boolean
   /** Estúdio: nível fixado (paleta por dificuldade). */
   studioLevel: BlockLevel
   /** Estúdio: categorias de blocos sempre visíveis. */
@@ -238,9 +237,8 @@ export const EMPTY_BLOCK: BlockForm = {
   caption: '',
   quiz: { questions: [], passingScore: 70 },
   captions: [],
-  pdfUrl: '',
+  ebookAttachmentId: '',
   title: '',
-  zappyStudentNotebook: false,
   studioLevel: 'iniciante-2d',
   studioCategories: [],
   // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
@@ -405,9 +403,8 @@ export function buildContent(
     case 'ebook':
       return {
         kind: 'ebook',
-        url: f.pdfUrl.trim(),
+        attachmentId: f.ebookAttachmentId,
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
-        ...(f.zappyStudentNotebook ? { zappyStudentNotebook: true } : {}),
       }
     case 'certificate': {
       const previousCertificate =
@@ -493,7 +490,7 @@ function validateBlock(f: BlockForm): string | null {
     case 'embed':
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
-      return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de publicar.'
+      return f.ebookAttachmentId ? null : 'Escolha um PDF dos arquivos da aula.'
     case 'materials':
       return validateMaterials(f.materials)
     case 'studio': {
@@ -605,21 +602,20 @@ function LessonEditorSession({
         : null,
     [draft, lessonId, courseId],
   )
-  /**
-   * Os anexos que APARECEM para o aluno: os citados por algum item de arquivo de um bloco de
-   * materiais. O que sobra está no servidor e invisível — ver o aviso no item da lista.
-   */
-  const anexosColocados = useMemo(
-    () =>
-      new Set(
-        (draft?.document.blocks ?? []).flatMap((b) =>
-          b.content.kind === 'materials'
-            ? b.content.items.flatMap((i) => (i.kind === 'file' ? [i.attachmentId] : []))
-            : [],
-        ),
-      ),
-    [draft],
-  )
+  /** Um arquivo pode ser usado como livro, download, fonte do Zappy ou combinado. */
+  const attachmentUses = useMemo(() => {
+    const uses = new Map<string, string[]>()
+    const add = (id: string, use: string) => uses.set(id, [...(uses.get(id) ?? []), use])
+    for (const block of draft?.document.blocks ?? []) {
+      if (block.content.kind === 'ebook') add(block.content.attachmentId, 'Livro 3D')
+      if (block.content.kind === 'materials')
+        for (const item of block.content.items)
+          if (item.kind === 'file') add(item.attachmentId, 'Material para baixar')
+    }
+    for (const attachment of draft?.document.attachments ?? [])
+      if (attachment.zappyStudentNotebook) add(attachment.id, 'Caderno do Zappy')
+    return uses
+  }, [draft])
   /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
   const [courseInfo, setCourseInfo] = useState<{
     slug: string
@@ -738,7 +734,13 @@ function LessonEditorSession({
 
   const [attOpen, setAttOpen] = useState(false)
   const [editingAtt, setEditingAtt] = useState<AttachmentView | null>(null)
-  const [attForm, setAttForm] = useState({ label: '', url: '', fileType: '', sizeBytes: '' })
+  const [attForm, setAttForm] = useState({
+    label: '',
+    url: '',
+    fileType: '',
+    sizeBytes: '',
+    zappyStudentNotebook: false,
+  })
 
   // Arrastar só após 5px (deixa o clique nos botões do card livre).
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -850,9 +852,8 @@ function LessonEditorSession({
           ? { questions: c.questions, passingScore: c.passingScore }
           : EMPTY_BLOCK.quiz,
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
-      pdfUrl: c.kind === 'ebook' ? c.url : '',
+      ebookAttachmentId: c.kind === 'ebook' ? c.attachmentId : '',
       title: c.kind === 'ebook' ? (c.title ?? '') : '',
-      zappyStudentNotebook: c.kind === 'ebook' ? (c.zappyStudentNotebook ?? false) : false,
       // Aula salva antes da reforma 2D/3D guarda o valor LEGADO → normaliza.
       studioLevel:
         c.kind === 'studio' ? (normalizeBlockLevel(c.level) ?? 'iniciante-2d') : 'iniciante-2d',
@@ -1372,7 +1373,7 @@ function LessonEditorSession({
   function openCreateAtt() {
     setAttachmentId(crypto.randomUUID())
     setEditingAtt(null)
-    setAttForm({ label: '', url: '', fileType: '', sizeBytes: '' })
+    setAttForm({ label: '', url: '', fileType: '', sizeBytes: '', zappyStudentNotebook: false })
     setAttOpen(true)
   }
   function openEditAtt(a: AttachmentView) {
@@ -1383,11 +1384,19 @@ function LessonEditorSession({
       url: a.url,
       fileType: a.fileType ?? '',
       sizeBytes: a.sizeBytes == null ? '' : String(a.sizeBytes),
+      zappyStudentNotebook: a.zappyStudentNotebook,
     })
     setAttOpen(true)
   }
-  useEffect(() => {
-    if (!attOpen || !attachmentId) return
+  function saveAtt() {
+    if (!attachmentId || !attForm.url || !attForm.label.trim()) {
+      toast.error('Envie o arquivo e informe o nome antes de salvar.')
+      return
+    }
+    if (attForm.zappyStudentNotebook && !isPdfAttachment(attForm)) {
+      toast.error('O Caderno do aluno para o Zappy precisa ser um PDF.')
+      return
+    }
     const current = session.getSnapshot().draft
     if (!current) return
     const attachment = {
@@ -1396,13 +1405,22 @@ function LessonEditorSession({
       url: attForm.url,
       fileType: attForm.fileType || null,
       sizeBytes: attForm.sizeBytes ? Number(attForm.sizeBytes) : null,
+      zappyStudentNotebook: attForm.zappyStudentNotebook,
     }
     const attachments = current.document.attachments.some((a) => a.id === attachmentId)
       ? current.document.attachments.map((a) => (a.id === attachmentId ? attachment : a))
       : [...current.document.attachments, attachment]
-    session.enqueue({ type: 'attachments', attachments })
-  }, [attForm, attachmentId, attOpen, session])
+    session.enqueue({ type: 'attachments', attachments }, true)
+    setAttOpen(false)
+  }
   function deleteAtt(a: AttachmentView) {
+    const usages = attachmentUses.get(a.id)
+    if (usages?.length) {
+      toast.error(
+        `Este arquivo está em uso: ${[...new Set(usages)].join(', ')}. Remova o vínculo antes de excluí-lo.`,
+      )
+      return
+    }
     const current = session.getSnapshot().draft
     if (current)
       session.enqueue(
@@ -1444,29 +1462,6 @@ function LessonEditorSession({
       true,
     )
     return attachment.id
-  }
-
-  /** Livro, anexo privado e item baixável entram no mesmo rascunho, nessa ordem. */
-  function addEbookAttachment(
-    file: UploadedFile,
-    previousUrl: string | undefined,
-    form: BlockForm,
-  ) {
-    const current = session.getSnapshot().draft?.document
-    if (!current || !blockId) return
-    const content = buildContent(form, undefined, editingBlock?.content)
-    if (content.kind !== 'ebook') return
-    try {
-      const changes = planEbookMaterialUpload(current, {
-        ebookBlock: { id: blockId, content },
-        sectionId: blockSectionId,
-        previousUrl,
-        file,
-      })
-      for (const change of changes) session.enqueue(change, true)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível adicionar o PDF.')
-    }
   }
 
   return (
@@ -1658,7 +1653,7 @@ function LessonEditorSession({
             {(
               [
                 { id: 'sections', label: 'Seções' },
-                { id: 'materials', label: 'Materiais e anexos' },
+                { id: 'materials', label: 'Arquivos da aula' },
                 { id: 'data', label: 'Dados da aula' },
               ] as const
             ).map((item) => (
@@ -1800,16 +1795,16 @@ function LessonEditorSession({
             )}
             <div hidden={area !== 'materials' || blockOpen} className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-muted-foreground">Anexos</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground">Arquivos da aula</h3>
                 {canWrite ? (
                   <Button variant="outline" size="sm" onClick={openCreateAtt}>
-                    <Plus className="size-4" /> Adicionar anexo
+                    <Plus className="size-4" /> Adicionar arquivo
                   </Button>
                 ) : null}
               </div>
               {lesson.attachments.length === 0 ? (
                 <Card className="py-6 text-center text-sm text-muted-foreground">
-                  Nenhum anexo.
+                  Nenhum arquivo enviado para esta aula.
                 </Card>
               ) : (
                 <DndContext
@@ -1826,7 +1821,7 @@ function LessonEditorSession({
                         key={a.id}
                         attachment={a}
                         canWrite={canWrite}
-                        colocado={anexosColocados.has(a.id)}
+                        usages={attachmentUses.get(a.id) ?? []}
                         onEdit={() => openEditAtt(a)}
                         onDelete={() => deleteAtt(a)}
                       />
@@ -2097,13 +2092,14 @@ function LessonEditorSession({
                     <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
                       Este bloco aparece <strong>no ponto em que você o colocar</strong> na seção,
                       na ordem que você montar — inclusive embaixo do vídeo, na coluna do conteúdo.
-                      Ele não entra no percurso obrigatório: o aluno conclui a aula sem abrir nada
-                      daqui.
+                      Arquivos só são obrigatórios se você marcar o download em Configurar avanço.
+                      Imagens, recados, links e vídeos incorporados continuam opcionais neste bloco.
                     </p>
                     <MaterialsBuilder
                       value={blockForm.materials}
                       onChange={(materials) => setBlockForm((f) => ({ ...f, materials }))}
                       onUploadFile={addMaterialAttachment}
+                      attachments={lesson?.attachments ?? []}
                       attachmentLabel={(id) =>
                         session.getSnapshot().draft?.document.attachments.find((a) => a.id === id)
                           ?.label ?? null
@@ -2306,32 +2302,49 @@ function LessonEditorSession({
                   <>
                     <Field
                       label="E-book (PDF)"
-                      hint="Bucket privado; o aluno vê como livro 3D interativo com marca d'água. O PDF também entra automaticamente nos materiais da aula para download."
+                      hint="Escolha um PDF dos arquivos desta aula. O livro não cria um item de download nos materiais."
+                    >
+                      <Select
+                        value={blockForm.ebookAttachmentId}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            ebookAttachmentId: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Selecione um PDF</option>
+                        {lesson?.attachments.filter(isPdfAttachment).map((attachment) => (
+                          <option key={attachment.id} value={attachment.id}>
+                            {attachment.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field
+                      label="Enviar outro PDF"
+                      hint="O arquivo fica disponível na biblioteca desta aula."
                     >
                       <FileUploader
                         accept="application/pdf,.pdf"
-                        label="Clique para enviar o PDF do e-book (até 200 MB)"
+                        label="Enviar PDF (até 200 MB)"
                         onUploaded={(file) => {
-                          // Captura o PDF ANTERIOR antes de sobrescrever — o anexo dele é
-                          // atualizado in-place (sem material órfão na aula).
-                          const previousUrl = blockForm.pdfUrl.trim() || undefined
-                          const nextForm = {
-                            ...blockForm,
-                            pdfUrl: file.url,
-                            title: blockForm.title.trim()
-                              ? blockForm.title
+                          const id = addMaterialAttachment(file)
+                          if (!id) return
+                          setBlockForm((form) => ({
+                            ...form,
+                            ebookAttachmentId: id,
+                            title: form.title.trim()
+                              ? form.title
                               : file.filename.replace(/\.pdf$/i, ''),
-                          }
-                          setBlockForm(nextForm)
-                          addEbookAttachment(file, previousUrl, nextForm)
+                          }))
                         }}
                       />
                     </Field>
-                    {blockForm.pdfUrl ? (
-                      <p className="truncate text-xs text-muted-foreground">
-                        PDF enviado: {blockForm.pdfUrl}
-                      </p>
-                    ) : null}
+                    <p className="text-xs text-muted-foreground">
+                      Para usar o texto deste PDF nas respostas do Zappy, marque “Caderno do aluno
+                      para o Zappy” em Arquivos da aula.
+                    </p>
                     <Field
                       label="Título"
                       htmlFor="btitle"
@@ -2343,25 +2356,6 @@ function LessonEditorSession({
                         onChange={(e) => setBlockForm((f) => ({ ...f, title: e.target.value }))}
                       />
                     </Field>
-                    <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={blockForm.zappyStudentNotebook}
-                        onChange={(event) =>
-                          setBlockForm((form) => ({
-                            ...form,
-                            zappyStudentNotebook: event.target.checked,
-                          }))
-                        }
-                        className="mt-0.5 size-4 accent-primary"
-                      />
-                      <span>
-                        <strong className="block">Caderno do aluno</strong>
-                        <span className="text-muted-foreground">
-                          Autoriza extrair o texto deste PDF para as respostas do Zappy.
-                        </span>
-                      </span>
-                    </label>
                   </>
                 ) : null}
 
@@ -3026,17 +3020,20 @@ function LessonEditorSession({
         <Dialog
           open={attOpen}
           onClose={() => setAttOpen(false)}
-          title={editingAtt ? 'Editar anexo' : 'Adicionar anexo'}
+          title={editingAtt ? 'Editar arquivo da aula' : 'Adicionar arquivo da aula'}
           footer={
-            <Button variant="outline" onClick={() => setAttOpen(false)}>
-              Fechar
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAttOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveAtt}>Salvar arquivo</Button>
+            </div>
           }
         >
           <div className="flex flex-col gap-4">
             <Field
               label="Arquivo"
-              hint="Envie o arquivo (preenche URL/tipo/tamanho) ou informe a URL."
+              hint="Envie uma vez e escolha onde usar nesta aula. PDFs são entregues com marca d’água."
             >
               <FileUploader
                 onUploaded={({ url, fileType, sizeBytes, filename }) =>
@@ -3046,6 +3043,8 @@ function LessonEditorSession({
                     fileType,
                     sizeBytes: String(sizeBytes),
                     label: f.label.trim() ? f.label : filename,
+                    zappyStudentNotebook:
+                      f.zappyStudentNotebook && isPdfAttachment({ label: filename, url, fileType }),
                   }))
                 }
               />
@@ -3057,31 +3056,30 @@ function LessonEditorSession({
                 onChange={(e) => setAttForm((f) => ({ ...f, label: e.target.value }))}
               />
             </Field>
-            <Field label="URL" htmlFor="aurl">
-              <Input
-                id="aurl"
-                value={attForm.url}
-                onChange={(e) => setAttForm((f) => ({ ...f, url: e.target.value }))}
-              />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Tipo do arquivo" htmlFor="aft" hint="Opcional (ex.: application/pdf).">
-                <Input
-                  id="aft"
-                  value={attForm.fileType}
-                  onChange={(e) => setAttForm((f) => ({ ...f, fileType: e.target.value }))}
+            {attForm.url ? (
+              <p className="truncate text-xs text-muted-foreground">
+                Arquivo enviado: {attForm.url}
+              </p>
+            ) : null}
+            {isPdfAttachment(attForm) ? (
+              <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={attForm.zappyStudentNotebook}
+                  onChange={(event) =>
+                    setAttForm((form) => ({ ...form, zappyStudentNotebook: event.target.checked }))
+                  }
+                  className="mt-0.5 size-4 accent-primary"
                 />
-              </Field>
-              <Field label="Tamanho (bytes)" htmlFor="asz" hint="Opcional.">
-                <Input
-                  id="asz"
-                  type="number"
-                  min={0}
-                  value={attForm.sizeBytes}
-                  onChange={(e) => setAttForm((f) => ({ ...f, sizeBytes: e.target.value }))}
-                />
-              </Field>
-            </div>
+                <span>
+                  <strong className="block">Caderno do aluno para o Zappy</strong>
+                  <span className="text-muted-foreground">
+                    Autoriza o Zappy a usar o texto deste PDF nas respostas. Não obriga o aluno a
+                    baixá-lo.
+                  </span>
+                </span>
+              </label>
+            ) : null}
           </div>
         </Dialog>
       </div>
@@ -3089,18 +3087,17 @@ function LessonEditorSession({
   )
 }
 
-// ── Anexo arrastável (card com handle, rótulo e URL) ─────────────────────────
+// ── Arquivo arrastável (card com handle, rótulo e usos) ───────────────────────
 function SortableAttachmentItem({
   attachment,
   canWrite,
-  colocado,
+  usages,
   onEdit,
   onDelete,
 }: {
   attachment: AttachmentView
   canWrite: boolean
-  /** O arquivo aparece em algum bloco de materiais? */
-  colocado: boolean
+  usages: string[]
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -3123,14 +3120,17 @@ function SortableAttachmentItem({
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{attachment.label}</div>
           <div className="truncate text-xs text-muted-foreground">{attachment.url}</div>
-          {/* ⚠️⚠️ Aviso load-bearing: os anexos deixaram de ter um card próprio no pé da aula.
-              Hoje um arquivo só chega ao aluno DENTRO de um bloco de materiais — subir e não
-              colocar é um arquivo que ninguém vê, e sem este recado a autora não teria como saber. */}
-          {colocado ? null : (
-            <div className="text-xs text-destructive">
-              Este arquivo não está em nenhum bloco de materiais, então o aluno não o vê.
-            </div>
-          )}
+          <div className="mt-1 flex flex-wrap gap-1">
+            {usages.length ? (
+              [...new Set(usages)].map((use) => (
+                <Badge key={use} variant="muted">
+                  {use}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-xs text-muted-foreground">Ainda sem uso nesta aula</span>
+            )}
+          </div>
         </div>
       </div>
       {canWrite ? (

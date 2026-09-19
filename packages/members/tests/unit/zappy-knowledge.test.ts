@@ -17,8 +17,8 @@ import {
 
 function repository(overrides: Partial<ZappyKnowledgeRepository> = {}): ZappyKnowledgeRepository {
   return {
-    blockAuthorityForSource: async () => ({
-      blockId: 'block-1',
+    sourceAuthorityForRef: async (sourceRef) => ({
+      blockId: sourceRef.startsWith('attachment:') ? null : 'block-1',
       courseId: 'course-1',
       lessonId: 'lesson-1',
       blockRevision: 'revision-1',
@@ -27,7 +27,8 @@ function repository(overrides: Partial<ZappyKnowledgeRepository> = {}): ZappyKno
     deleteByRef: async () => undefined,
     search: async () => [],
     listPublishedKidsBlocks: async () => [],
-    reconcilePublishedBlockSources: async () => 0,
+    listPublishedKidsNotebooks: async () => [],
+    reconcilePublishedSources: async () => 0,
     report: async () => ({
       publishedKidsLessons: 0,
       readySources: 0,
@@ -101,16 +102,16 @@ describe('relatório de saúde do Zappy', () => {
 
   test('caderno marcado conta como presente mesmo quando sua extração falhou', () => {
     const courses = [{ courseId: 'course-1', courseTitle: 'Curso com caderno' }]
-    const blocks = [
+    const attachments = [
       {
-        blockId: 'ebook-1',
+        attachmentId: 'pdf-1',
         courseId: 'course-1',
         lessonId: 'lesson-1',
-        content: { kind: 'ebook', zappyStudentNotebook: true },
+        zappyStudentNotebook: true,
       },
     ]
 
-    expect(coursesMissingStudentNotebook(courses, blocks)).toEqual([])
+    expect(coursesMissingStudentNotebook(courses, attachments)).toEqual([])
   })
 })
 
@@ -131,7 +132,7 @@ describe('ZappyKnowledgeService', () => {
     const result = await service.sync({
       lessonId: 'lesson-1',
       sourceType: 'student-notebook',
-      sourceRef: 'block:pdf-1',
+      sourceRef: 'attachment:pdf-1',
       expectedBlockRevision: 'revision-1',
       content: '   ',
     })
@@ -154,7 +155,7 @@ describe('ZappyKnowledgeService', () => {
       service.sync({
         lessonId: 'lesson-1',
         sourceType: 'student-notebook',
-        sourceRef: 'block:pdf-1',
+        sourceRef: 'attachment:pdf-1',
         expectedBlockRevision: 'revision-1',
         content: multibyte,
       }),
@@ -200,22 +201,14 @@ describe('ZappyKnowledgeService', () => {
   })
 
   test('vincula a fonte à revisão autoritativa do bloco', async () => {
-    let saved: (ZappyKnowledgeSourceInput & { blockId?: string; blockRevision?: string }) | null =
-      null
+    let saved: ZappyKnowledgeSourceInput | null = null
     const repo = repository({
       upsert: async (input) => {
         saved = input
         return { id: 'source-1', changed: true }
       },
-    }) as ZappyKnowledgeRepository & {
-      blockAuthorityForSource(sourceRef: string): Promise<{
-        blockId: string
-        courseId: string
-        lessonId: string
-        blockRevision: string
-      } | null>
-    }
-    repo.blockAuthorityForSource = async () => ({
+    })
+    repo.sourceAuthorityForRef = async () => ({
       blockId: 'block-1',
       courseId: 'course-1',
       lessonId: 'lesson-1',
@@ -236,12 +229,7 @@ describe('ZappyKnowledgeService', () => {
       content: 'Conteúdo atual',
     })
 
-    const captured = saved as
-      | (ZappyKnowledgeSourceInput & {
-          blockId?: string
-          blockRevision?: string
-        })
-      | null
+    const captured = saved as ZappyKnowledgeSourceInput | null
     expect(captured?.blockId).toBe('block-1')
     expect(captured?.blockRevision).toBe('revision-1')
   })
@@ -250,7 +238,7 @@ describe('ZappyKnowledgeService', () => {
     let saved = false
     const service = new ZappyKnowledgeService(
       repository({
-        blockAuthorityForSource: async () => ({
+        sourceAuthorityForRef: async () => ({
           blockId: 'block-1',
           courseId: 'course-1',
           lessonId: 'lesson-1',
@@ -321,9 +309,9 @@ describe('ZappyKnowledgeService', () => {
         },
       ],
     }) as ZappyKnowledgeRepository & {
-      reconcilePublishedBlockSources(): Promise<number>
+      reconcilePublishedSources(): Promise<number>
     }
-    repo.reconcilePublishedBlockSources = async () => {
+    repo.reconcilePublishedSources = async () => {
       reconciled += 1
       return 2
     }
@@ -334,10 +322,12 @@ describe('ZappyKnowledgeService', () => {
       () => new Date('2026-08-02T12:00:00Z'),
     )
 
-    const result = await service.backfill()
-
+    const blocks = await service.backfill()
+    expect(blocks.nextCursor).toBe('notebook:')
+    expect(reconciled).toBe(0)
+    const notebooks = await service.backfill({ cursor: blocks.nextCursor! })
     expect(reconciled).toBe(1)
-    expect(result.deleted).toBe(2)
+    expect(notebooks.deleted).toBe(2)
   })
 
   test('agenda recuperação Vimeo mesmo quando o bloco não persistiu captions', async () => {
@@ -371,6 +361,39 @@ describe('ZappyKnowledgeService', () => {
         expectedBlockRevision: 'revision-video-1',
         extraction: { kind: 'vimeo', videoId: '123456789' },
       }),
+    ])
+  })
+
+  test('o caderno marcado é indexado pelo arquivo, mesmo sem Livro 3D', async () => {
+    const service = new ZappyKnowledgeService(
+      repository({
+        listPublishedKidsBlocks: async () => [],
+        listPublishedKidsNotebooks: async () => [
+          {
+            attachmentId: 'pdf-1',
+            courseId: 'course-1',
+            lessonId: 'lesson-1',
+            attachmentRevision: 'revision-pdf',
+            url: 'r2priv:caderno.pdf',
+          },
+        ],
+      }),
+      {} as never,
+      {} as never,
+      () => new Date('2026-08-02T12:00:00Z'),
+    )
+    const blocks = await service.backfill()
+    const notebooks = await service.backfill({ cursor: blocks.nextCursor! })
+    expect(notebooks.done).toBe(true)
+    expect(notebooks.pending).toEqual([
+      {
+        courseId: 'course-1',
+        lessonId: 'lesson-1',
+        sourceType: 'student-notebook',
+        sourceRef: 'attachment:pdf-1',
+        expectedBlockRevision: 'revision-pdf',
+        extraction: { kind: 'private-pdf', location: 'r2priv:caderno.pdf' },
+      },
     ])
   })
 

@@ -157,7 +157,14 @@ function answerLines(
           : 'Registro guardado não confere com esta cena. Não foi reinterpretado.',
       ]
     const state = session.state
-    const metas = sceneGoals(activity.scene, state, activity.cast, sceneTargets(activity))
+    const metas = sceneGoals(
+      activity.scene,
+      state,
+      activity.cast,
+      sceneTargets(activity),
+      activity.pilha,
+      activity.setup?.goalCopy,
+    )
     return [
       ...previsao,
       // O acompanhamento do professor lê a cena com o ELENCO da atividade: ele precisa ver
@@ -176,8 +183,15 @@ function answerLines(
       `Montagem atual: ${castText(montagem(activity.scene, state), activity.cast)}`,
       `Pistas utilizadas: ${state.evidence.hints}`,
       `Comparações guardadas: ${session.trials.length}`,
-      evaluateExperimentation(activity.scene, state, true, activity.cast, sceneTargets(activity))
-        .feedback,
+      evaluateExperimentation(
+        activity.scene,
+        state,
+        true,
+        activity.cast,
+        sceneTargets(activity),
+        activity.pilha,
+        activity.setup?.goalCopy,
+      ).feedback,
       'A cena registra o que ela fez ali. A transferência se observa no projeto e nos critérios da seção.',
     ].filter(Boolean)
   }

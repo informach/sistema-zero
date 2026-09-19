@@ -87,12 +87,31 @@ export function completionBlockLabel(content: LessonBlockContent): string {
   }
 }
 
-export function sectionCompletionSummary(section: LessonSection, blocks: Block[]): string {
+export function sectionCompletionSummary(
+  section: LessonSection,
+  blocks: Block[],
+  attachments: { id: string; label: string }[] = [],
+): string {
   const c = section.completion
   if (!c) return 'Conclusão conforme as regras atuais da aula'
   if (c.platformAction) return PLATFORM_ACTION_LABELS[c.platformAction]
   const labels = c.blockIds.map((id) => {
     const block = blocks.find((b) => b.id === id)
+    const content = block?.content
+    if (content?.kind === 'materials') {
+      const selected = c.materialItems?.find((entry) => entry.blockId === id)?.itemIds ?? []
+      const names = selected.flatMap((itemId) => {
+        const item = content.items.find((entry) => entry.id === itemId)
+        return item?.kind === 'file'
+          ? [
+              item.label?.trim() ||
+                attachments.find((attachment) => attachment.id === item.attachmentId)?.label ||
+                'arquivo selecionado',
+            ]
+          : []
+      })
+      return names.length ? `Baixar ${names.join(' e ')}` : 'Baixar arquivos selecionados'
+    }
     return block ? completionBlockLabel(block.content) : 'Revisar atividade removida'
   })
   if (c.projectChecks?.length) {

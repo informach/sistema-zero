@@ -135,16 +135,21 @@ export class ZappyKnowledgeService {
   async sync(
     input: ZappyKnowledgeSyncInput,
   ): Promise<{ id: string; status: string; changed: boolean }> {
-    const authority = await this.repository.blockAuthorityForSource(input.sourceRef)
-    if (!authority) throw new Error('Bloco da fonte do Zappy não encontrado')
+    const authority = await this.repository.sourceAuthorityForRef(input.sourceRef)
+    if (!authority) throw new Error('Fonte publicada do Zappy não encontrada')
     if (authority.lessonId !== input.lessonId) {
-      throw new Error('Aula não corresponde ao bloco da fonte do Zappy')
+      throw new Error('Aula não corresponde à fonte do Zappy')
     }
     if (input.courseId && input.courseId !== authority.courseId) {
       throw new Error('Curso não corresponde à aula da fonte do Zappy')
     }
+    if ((input.sourceType === 'student-notebook') !== (authority.blockId === null)) {
+      throw new ValidationError(
+        'Tipo da fonte do Zappy não corresponde ao arquivo ou bloco publicado',
+      )
+    }
     if (input.expectedBlockRevision !== authority.blockRevision) {
-      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada do bloco')
+      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada')
     }
     const raw = input.content ?? ''
     if (zappySourceContentBytes(raw) > ZAPPY_SOURCE_CONTENT_MAX_BYTES) {
@@ -169,7 +174,7 @@ export class ZappyKnowledgeService {
       now: this.clock(),
     })
     if (!result) {
-      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada do bloco')
+      throw new ValidationError('Fonte do Zappy pertence a uma revisão desatualizada')
     }
     return { ...result, status }
   }
@@ -223,6 +228,29 @@ export class ZappyKnowledgeService {
     done: boolean
   }> {
     const limit = Math.min(Math.max(input.limit ?? 10, 1), ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE)
+    if (input.cursor?.startsWith('notebook:')) {
+      const after = input.cursor.slice('notebook:'.length)
+      const listed = await this.repository.listPublishedKidsNotebooks({
+        ...(after ? { after } : {}),
+        limit: limit + 1,
+      })
+      const hasMore = listed.length > limit
+      const notebooks = listed.slice(0, limit)
+      return {
+        indexed: 0,
+        deleted: hasMore ? 0 : await this.repository.reconcilePublishedSources(),
+        pending: notebooks.map((notebook) => ({
+          courseId: notebook.courseId,
+          lessonId: notebook.lessonId,
+          sourceType: 'student-notebook' as const,
+          sourceRef: `attachment:${notebook.attachmentId}`,
+          expectedBlockRevision: notebook.attachmentRevision,
+          extraction: { kind: 'private-pdf' as const, location: notebook.url },
+        })),
+        nextCursor: hasMore ? `notebook:${notebooks.at(-1)?.attachmentId}` : null,
+        done: !hasMore,
+      }
+    }
     const listed = await this.repository.listPublishedKidsBlocks({
       ...(input.cursor ? { after: input.cursor } : {}),
       limit: limit + 1,
@@ -275,24 +303,14 @@ export class ZappyKnowledgeService {
               : { kind: 'unavailable', error: 'Vídeo publicado sem transcrição compatível' },
           })
         }
-      } else if (block.content.kind === 'ebook' && block.content.zappyStudentNotebook) {
-        pending.push({
-          courseId: block.courseId,
-          lessonId: block.lessonId,
-          sourceType: 'student-notebook',
-          sourceRef,
-          expectedBlockRevision: block.blockRevision,
-          extraction: { kind: 'private-pdf', location: block.content.url },
-        })
       }
     }
-    const deleted = hasMore ? 0 : await this.repository.reconcilePublishedBlockSources()
     return {
       indexed,
-      deleted,
+      deleted: 0,
       pending,
-      nextCursor: hasMore ? (blocks.at(-1)?.blockId ?? null) : null,
-      done: !hasMore,
+      nextCursor: hasMore ? (blocks.at(-1)?.blockId ?? null) : 'notebook:',
+      done: false,
     }
   }
 

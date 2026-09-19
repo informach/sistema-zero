@@ -22,7 +22,7 @@ function setup(material: boolean, legacy = false) {
     contentRevision: revision,
     sortOrder: 0,
     content: material
-      ? { kind: 'ebook', title: 'Meu caderno', url: 'https://example.test/caderno.pdf' }
+      ? { kind: 'ebook', title: 'Meu caderno', attachmentId: env.courses.attachments[0]!.id }
       : { kind: 'video', src: 'https://vimeo.com/123456789', provider: 'vimeo' },
   })
   if (material)

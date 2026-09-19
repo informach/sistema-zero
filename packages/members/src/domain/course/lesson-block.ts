@@ -145,15 +145,13 @@ export interface EmbedBlock {
 
 /**
  * E-book (PDF) renderizado como livro 3D interativo no front do aluno.
- * `url` é `r2priv:<key>` (bucket privado) — a view member-facing NÃO a expõe;
- * o community resolve via rota própria e serve com marca d'água.
+ * O bloco aponta para um arquivo desta aula. Sua URL privada nunca vai ao aluno;
+ * o community a resolve pela rota autenticada e aplica a marca d'água.
  */
 export interface EbookBlock {
   kind: 'ebook'
-  url: string
+  attachmentId: string
   title?: string
-  /** Inclui o PDF na base didática do Zappy; opt-in explícito do professor. */
-  zappyStudentNotebook?: boolean
 }
 
 /**

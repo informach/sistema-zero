@@ -103,9 +103,9 @@ describe('Validação de borda — URLs do admin exigem http(s) (XSS via javascr
     })
     expect(badImage.status).toBe(400)
 
-    // `r2priv:<key>` é o caminho padrão do ebook/anexo; http(s) externo segue aceito.
+    // O livro só guarda o id do PDF cadastrado na aula.
     const okEbook = await publishBlock(app, lessonId, {
-      content: { kind: 'ebook', url: 'r2priv:admin/attachments/livro.pdf' },
+      content: { kind: 'ebook', attachmentId: courses.attachments[0]!.id },
     })
     expect(okEbook.status).toBe(200)
 

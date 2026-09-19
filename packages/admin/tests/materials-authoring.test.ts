@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { defaultLessonSection, type LessonDraftDocument } from '@sistemazero/core/learning'
+import {
+  defaultLessonSection,
+  type LessonDraftDocument,
+  sectionCompletionIssues,
+} from '@sistemazero/core/learning'
 import {
   EMPTY_MATERIALS,
   validateMaterials,
@@ -8,6 +12,7 @@ import { lessonEditorialWarnings } from '../src/components/editor/lesson-editori
 import {
   lessonContentLabel,
   sectionCompletionCandidates,
+  sectionCompletionSummary,
   suggestedCompletion,
 } from '../src/lib/lesson-authoring'
 import type { LessonBlockContent, MaterialItem } from '../src/lib/types'
@@ -41,21 +46,21 @@ function doc(
 
 describe('autoria dos materiais complementares', () => {
   test('⚠️⚠️ arquivo que subiu e não foi COLOCADO em bloco nenhum é avisado antes de publicar', () => {
-    // O card "Materiais da aula" no pé da página não existe mais: um anexo fora de um bloco é um
-    // arquivo íntegro no R2 e invisível na aula. A autora publica pelo percurso e pode nunca abrir
-    // a aba de Anexos, então o aviso precisa estar TAMBÉM no painel de publicação.
+    // A biblioteca aceita arquivos para diferentes usos. Só os totalmente sem uso recebem aviso.
     const sozinho = lessonEditorialWarnings(doc([], [anexo('a1', 'dino.pinta.json')]))
-    expect(sozinho.some((w) => w.includes('dino.pinta.json') && w.includes('não o vê'))).toBe(true)
+    expect(
+      sozinho.some((w) => w.includes('dino.pinta.json') && w.includes('ainda não foi usado')),
+    ).toBe(true)
 
     const colocado = lessonEditorialWarnings(doc([{ id: 'i1', kind: 'file', attachmentId: 'a1' }]))
-    expect(colocado.some((w) => w.includes('bloco de materiais'))).toBe(false)
+    expect(colocado.some((w) => w.includes('ainda não foi usado'))).toBe(false)
   })
 
   test('com vários arquivos soltos o aviso conta, em vez de listar todos', () => {
     const avisos = lessonEditorialWarnings(
       doc([], [anexo('a1', 'um'), anexo('a2', 'dois'), anexo('a3', 'três')]),
     )
-    expect(avisos.some((w) => w.startsWith('3 arquivos'))).toBe(true)
+    expect(avisos.some((w) => w.startsWith('3 arquivos ainda não'))).toBe(true)
   })
 
   test('arquivos do bloco podem ser marcados individualmente como obrigatórios', () => {
@@ -69,6 +74,14 @@ describe('autoria dos materiais complementares', () => {
         issue: undefined,
       },
     ])
+    d.sections[0]!.completion = {
+      version: 1,
+      blockIds: ['b-mat'],
+      materialItems: [{ blockId: 'b-mat', itemIds: ['i1'] }],
+    }
+    expect(sectionCompletionSummary(d.sections[0]!, d.blocks, d.attachments)).toBe(
+      'Baixar dino.pinta.json',
+    )
   })
 
   test('vídeo e arquivo aparecem juntos, mas o download nunca é exigido automaticamente', () => {
@@ -85,6 +98,30 @@ describe('autoria dos materiais complementares', () => {
     ])
     expect(candidates.every((candidate) => !candidate.issue)).toBe(true)
     expect(suggestedCompletion(d, d.sections[0]!)).toBeNull()
+  })
+  test('Material do curso aceita vídeo e arquivos como dois critérios explícitos', () => {
+    const d = doc([
+      { id: 'i-caderno', kind: 'file', attachmentId: 'a1', label: 'Caderno do aluno' },
+    ])
+    d.blocks.unshift({
+      id: 'b-video',
+      content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/123456789' },
+    })
+    const section = d.sections[0]!
+    section.intent = 'material'
+    section.blockIds.unshift('b-video')
+    section.completion = {
+      version: 1,
+      blockIds: ['b-video', 'b-mat'],
+      materialItems: [{ blockId: 'b-mat', itemIds: ['i-caderno'] }],
+    }
+    expect(sectionCompletionIssues(d.sections, d.blocks)).toEqual([])
+    expect(sectionCompletionCandidates(d, section).every((candidate) => !candidate.issue)).toBe(
+      true,
+    )
+    expect(sectionCompletionSummary(section, d.blocks)).toBe(
+      'Assistir a 90% do vídeo + Baixar Caderno do aluno',
+    )
   })
 
   test('o rótulo na lista do percurso é o nome do bloco, ou a contagem', () => {

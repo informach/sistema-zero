@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import type { GallerySubmission } from '@sistemazero/core/learning'
 import {
@@ -13,6 +13,7 @@ import { eq } from 'drizzle-orm'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
+import { stableJson } from '../../src/domain/shared/stable-json'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
@@ -22,9 +23,11 @@ import { DrizzleProfilePreferencesRepository } from '../../src/infrastructure/pe
 import {
   courses,
   learningAttempts,
+  lessonAttachments,
   lessonBlockProgress,
   lessonBlocks,
   lessonCompletions,
+  lessonDrafts,
   lessonProgress,
   lessonSectionProgress,
   lessonStructures,
@@ -32,10 +35,13 @@ import {
   modules,
   quizAttempts,
   studioSubmissions,
+  zappyKnowledgeChunks,
+  zappyKnowledgeSources,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleStudioSubmissionRepository } from '../../src/infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from '../../src/infrastructure/persistence/drizzle/video-position.repository'
+import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 import { lessonDraftCases } from './lesson-draft-cases'
 
@@ -55,6 +61,12 @@ const videoId = randomUUID(),
   quizId = randomUUID(),
   studioId = randomUUID(),
   attemptId = randomUUID()
+const legacyEbookLessonId = randomUUID(),
+  legacyEbookMatchingId = randomUUID(),
+  legacyEbookMissingId = randomUUID(),
+  legacyEbookAttachmentId = randomUUID(),
+  legacyZappySourceId = randomUUID(),
+  legacyZappyChunkId = randomUUID()
 const owner = { userId: randomUUID(), accountId: randomUUID() }
 const now = new Date('2026-09-08T12:00:00Z')
 const project = { id: 'student-work', code: 'my original game' }
@@ -140,6 +152,21 @@ describe.skipIf(!url)(
         createdAt: now,
         updatedAt: now,
       })
+      await sql`insert into members.lessons (id,module_id,course_id,slug,title,sort_order,is_published,created_at,updated_at)
+        values (${legacyEbookLessonId},${moduleId},${courseId},'livro-antigo','Livro antigo',1,true,${now.toISOString()},${now.toISOString()})`
+      await sql`insert into members.lesson_attachments (id,lesson_id,label,url,file_type,size_bytes,sort_order)
+        values (${legacyEbookAttachmentId},${legacyEbookLessonId},'Caderno','r2priv:livro/existente.pdf','application/pdf',null,0)`
+      await sql`insert into members.lesson_blocks (id,lesson_id,kind,sort_order,content)
+        values (${legacyEbookMatchingId},${legacyEbookLessonId},'ebook',0,
+                ${JSON.stringify({ kind: 'ebook', url: 'r2priv:livro/existente.pdf', title: 'Caderno', zappyStudentNotebook: true })}::jsonb),
+               (${legacyEbookMissingId},${legacyEbookLessonId},'ebook',1,
+                ${JSON.stringify({ kind: 'ebook', url: 'r2priv:livro/sem-anexo.pdf', title: 'Mapa' })}::jsonb)`
+      await sql`insert into members.zappy_knowledge_sources
+        (id,course_id,lesson_id,block_id,block_revision,source_type,source_ref,content_hash,status,created_at,updated_at)
+        values (${legacyZappySourceId},${courseId},${legacyEbookLessonId},${legacyEbookMatchingId},'old-block-revision',
+                'student-notebook',${`block:${legacyEbookMatchingId}`},${'a'.repeat(64)},'ready',${now.toISOString()},${now.toISOString()})`
+      await sql`insert into members.zappy_knowledge_chunks (id,source_id,position,content,normalized_text)
+        values (${legacyZappyChunkId},${legacyZappySourceId},0,'Texto já extraído','texto ja extraido')`
       const legacyBlocks = [
         {
           id: videoId,
@@ -227,6 +254,271 @@ describe.skipIf(!url)(
         migrationsTable: 'members_migrations',
       })
     }, 60000)
+    test('migra livros antigos para IDs de arquivos da mesma aula sem perder o caderno', async () => {
+      const { db } = get()
+      const blocks = await db
+        .select()
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.lessonId, legacyEbookLessonId))
+      const attachments = await db
+        .select()
+        .from(lessonAttachments)
+        .where(eq(lessonAttachments.lessonId, legacyEbookLessonId))
+      expect(blocks).toHaveLength(2)
+      expect(attachments).toHaveLength(2)
+      expect(blocks.find((block) => block.id === legacyEbookMatchingId)?.content).toEqual({
+        kind: 'ebook',
+        attachmentId: legacyEbookAttachmentId,
+        title: 'Caderno',
+      })
+      const newAttachment = attachments.find(
+        (attachment) => attachment.id !== legacyEbookAttachmentId,
+      )
+      if (!newAttachment) throw new Error('A migração não criou o PDF sem anexo')
+      expect(blocks.find((block) => block.id === legacyEbookMissingId)?.content).toEqual({
+        kind: 'ebook',
+        attachmentId: newAttachment.id,
+        title: 'Mapa',
+      })
+      expect(
+        attachments.find((attachment) => attachment.id === legacyEbookAttachmentId)
+          ?.zappyStudentNotebook,
+      ).toBe(true)
+      expect(newAttachment?.url).toBe('r2priv:livro/sem-anexo.pdf')
+      const [source] = await db
+        .select()
+        .from(zappyKnowledgeSources)
+        .where(eq(zappyKnowledgeSources.id, legacyZappySourceId))
+      expect(source).toMatchObject({
+        blockId: null,
+        sourceRef: `attachment:${legacyEbookAttachmentId}`,
+        blockRevision: createHash('md5').update('r2priv:livro/existente.pdf').digest('hex'),
+        status: 'ready',
+      })
+      const [chunk] = await db
+        .select()
+        .from(zappyKnowledgeChunks)
+        .where(eq(zappyKnowledgeChunks.id, legacyZappyChunkId))
+      expect(chunk?.content).toBe('Texto já extraído')
+    })
+    test('rascunho anterior à migração não sofre falso conflito ao despublicar', async () => {
+      const { db } = get()
+      const reader = new DrizzleCourseRepository(db)
+      const lesson = await reader.findLessonWithContent(legacyEbookLessonId)
+      if (!lesson) throw new Error('Aula antiga não encontrada')
+      const [structure] = await db
+        .select()
+        .from(lessonStructures)
+        .where(eq(lessonStructures.lessonId, legacyEbookLessonId))
+      const oldBlocks = lesson.blocks.map((block) => {
+        const content = block.content
+        if (content.kind !== 'ebook') return block
+        const attachment = lesson.attachments.find((item) => item.id === content.attachmentId)
+        if (!attachment) throw new Error('PDF antigo não encontrado')
+        return {
+          ...block,
+          content: {
+            kind: 'ebook',
+            url: attachment.url,
+            ...(content.title ? { title: content.title } : {}),
+            ...(attachment.zappyStudentNotebook ? { zappyStudentNotebook: true } : {}),
+          },
+        }
+      })
+      const oldHash = createHash('sha256')
+        .update(
+          stableJson({
+            title: lesson.title,
+            slug: lesson.slug,
+            estimatedMinutes: lesson.estimatedMinutes,
+            blocks: oldBlocks,
+            attachments: lesson.attachments.map(
+              ({ zappyStudentNotebook: _notebook, ...attachment }) => attachment,
+            ),
+            sections: structure?.sections,
+          }),
+        )
+        .digest('hex')
+      const repo = new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock)
+      const draft = await repo.read(legacyEbookLessonId)
+      await db
+        .update(lessonDrafts)
+        .set({ publishedRevision: oldHash })
+        .where(eq(lessonDrafts.lessonId, legacyEbookLessonId))
+      const result = await repo.unpublish(
+        legacyEbookLessonId,
+        randomUUID(),
+        draft.revision,
+        randomUUID(),
+      )
+      expect(result.isPublished).toBe(false)
+    })
+    test('a conversão dos rascunhos cria o PDF faltante e mantém a marcação do Zappy', async () => {
+      const { sql } = get()
+      const folder = resolve(
+        import.meta.dir,
+        '../../src/infrastructure/persistence/drizzle/migrations',
+      )
+      const migration = readMigrationFiles({ migrationsFolder: folder }).at(-1)
+      const createFunction = migration?.sql.find((statement) =>
+        statement.includes('CREATE FUNCTION members.migrate_ebook_document'),
+      )
+      if (!createFunction) throw new Error('Função da migração de livros não encontrada')
+      await sql.unsafe(createFunction)
+      try {
+        const original = {
+          title: 'Aula com caderno',
+          blocks: [
+            {
+              id: randomUUID(),
+              content: {
+                kind: 'ebook',
+                title: 'Caderno',
+                url: 'r2priv:rascunho/caderno.pdf',
+                zappyStudentNotebook: true,
+              },
+            },
+          ],
+          attachments: [],
+        }
+        const [row] = await sql.unsafe(
+          'select members.migrate_ebook_document($1::jsonb) as document',
+          [JSON.stringify(original)],
+        )
+        const document = row?.document as {
+          blocks: Array<{ content: Record<string, unknown> }>
+          attachments: Array<Record<string, unknown>>
+        }
+        expect(document.attachments).toHaveLength(1)
+        expect(document.attachments[0]).toMatchObject({
+          label: 'Caderno',
+          url: 'r2priv:rascunho/caderno.pdf',
+          fileType: 'application/pdf',
+          zappyStudentNotebook: true,
+        })
+        expect(document.blocks[0]?.content).toEqual({
+          kind: 'ebook',
+          title: 'Caderno',
+          attachmentId: document.attachments[0]?.id,
+        })
+        const [repeated] = await sql.unsafe(
+          'select members.migrate_ebook_document($1::jsonb) as document',
+          [JSON.stringify(document)],
+        )
+        expect(repeated?.document).toEqual(document)
+      } finally {
+        await sql.unsafe('drop function members.migrate_ebook_document(jsonb)')
+      }
+    })
+    test('Zappy lê o PDF marcado sem Livro 3D e descarta extração antiga após troca ou desmarcação', async () => {
+      const { db } = get()
+      const courseId = randomUUID(),
+        moduleId = randomUUID(),
+        lessonId = randomUUID(),
+        attachmentId = randomUUID()
+      const firstUrl = 'r2priv:zappy/caderno-v1.pdf'
+      await db.insert(courses).values({
+        id: courseId,
+        slug: `zappy-${courseId}`,
+        title: 'Curso com caderno',
+        audience: 'kids',
+        status: 'published',
+        createdAt: now,
+        updatedAt: now,
+      })
+      await db.insert(modules).values({
+        id: moduleId,
+        courseId,
+        title: 'Módulo',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
+      await db.insert(lessons).values({
+        id: lessonId,
+        moduleId,
+        courseId,
+        slug: 'caderno',
+        title: 'Caderno',
+        sortOrder: 0,
+        isPublished: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      await db.insert(lessonAttachments).values({
+        id: attachmentId,
+        lessonId,
+        label: 'Caderno do aluno',
+        url: firstUrl,
+        fileType: 'application/pdf',
+        sizeBytes: 42,
+        zappyStudentNotebook: true,
+        sortOrder: 0,
+      })
+      const repo = new DrizzleZappyKnowledgeRepository(db)
+      const ref = `attachment:${attachmentId}`
+      const firstRevision = createHash('md5').update(firstUrl).digest('hex')
+      expect(await repo.sourceAuthorityForRef(ref)).toMatchObject({
+        blockId: null,
+        courseId,
+        lessonId,
+        blockRevision: firstRevision,
+      })
+      const input = {
+        courseId,
+        lessonId,
+        blockId: null,
+        blockRevision: firstRevision,
+        sourceType: 'student-notebook' as const,
+        sourceRef: ref,
+        contentHash: createHash('sha256').update('Texto do caderno').digest('hex'),
+        status: 'ready' as const,
+        chunks: [{ content: 'Texto do caderno', normalizedText: 'texto do caderno' }],
+        now,
+      }
+      expect(await repo.upsert(input)).toMatchObject({ changed: true })
+      expect((await repo.search([lessonId], 'caderno', 5)).map((hit) => hit.content)).toEqual([
+        'Texto do caderno',
+      ])
+      expect(
+        (await repo.report()).coursesWithoutStudentNotebook.some(
+          (course) => course.courseId === courseId,
+        ),
+      ).toBe(false)
+      const comingSoonId = randomUUID()
+      await db.insert(lessonBlocks).values({
+        id: comingSoonId,
+        lessonId,
+        kind: 'coming_soon',
+        sortOrder: 0,
+        content: { kind: 'coming_soon', message: 'Em produção' },
+      })
+      expect(await repo.search([lessonId], 'caderno', 5)).toEqual([])
+      await db.delete(lessonBlocks).where(eq(lessonBlocks.id, comingSoonId))
+      const newUrl = 'r2priv:zappy/caderno-v2.pdf'
+      await db
+        .update(lessonAttachments)
+        .set({ url: newUrl })
+        .where(eq(lessonAttachments.id, attachmentId))
+      expect(await repo.search([lessonId], 'caderno', 5)).toEqual([])
+      expect(await repo.upsert(input)).toBeNull()
+      const newRevision = createHash('md5').update(newUrl).digest('hex')
+      expect(await repo.upsert({ ...input, blockRevision: newRevision })).toMatchObject({
+        changed: true,
+      })
+      await db
+        .update(lessonAttachments)
+        .set({ zappyStudentNotebook: false })
+        .where(eq(lessonAttachments.id, attachmentId))
+      expect(await repo.search([lessonId], 'caderno', 5)).toEqual([])
+      expect(await repo.sourceAuthorityForRef(ref)).toBeNull()
+      expect(
+        (await repo.report()).coursesWithoutStudentNotebook.some(
+          (course) => course.courseId === courseId,
+        ),
+      ).toBe(true)
+      expect(await repo.reconcilePublishedSources()).toBeGreaterThan(0)
+    })
     test('a cor do perfil sobrevive ao reload, fica isolada e não recria conta apagada', async () => {
       const { db } = get(),
         repo = new DrizzleProfilePreferencesRepository(db)

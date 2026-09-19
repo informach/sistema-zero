@@ -566,13 +566,11 @@ export interface EmbedBlock {
   /** @deprecated legado da autoria v2 */
   height?: number
 }
-/** E-book (PDF no bucket R2 privado) → livro 3D na área do aluno. */
+/** E-book seleciona um PDF da biblioteca de arquivos desta aula. */
 export interface EbookBlock {
   kind: 'ebook'
-  /** Referência `r2priv:<key>` (não navegável). */
-  url: string
+  attachmentId: string
   title?: string
-  zappyStudentNotebook?: boolean
 }
 /**
  * Bloco Estúdio: editor @sistemazero/studio pré-configurado pelo admin. `initialProject`

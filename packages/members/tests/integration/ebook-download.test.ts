@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -24,6 +25,7 @@ describe('Resolução do PDF do bloco e-book (server↔server, BFF do community)
     expect(ebookBlock.id).toBe(course.ebookBlockId)
     expect(ebookBlock.content).toEqual({ kind: 'ebook', title: 'Guia' })
     expect(ebookBlock.content.url).toBeUndefined()
+    expect(ebookBlock.content.attachmentId).toBeUndefined()
 
     // A rota de resolução (consumida só pelo servidor do community) traz.
     const res = await get(
@@ -35,6 +37,29 @@ describe('Resolução do PDF do bloco e-book (server↔server, BFF do community)
       title: 'Guia',
       storageRef: 'r2priv:admin/attachments/ebook-demo.pdf',
     })
+  })
+
+  test('o livro resolve apenas o PDF selecionado na biblioteca da própria aula', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const lessonId = course.lessonIds[0]
+    const ebook = courses.blocks.find((block) => block.id === course.ebookBlockId)
+    const pdf = courses.attachments.find((attachment) => attachment.lessonId === lessonId)
+    if (!ebook || !pdf) throw new Error('seed sem livro ou PDF')
+    ebook.content = { kind: 'ebook', title: 'Guia', attachmentId: pdf.id }
+
+    const path = `/members/courses/${course.slug}/lessons/${lessonId}/blocks/${ebook.id}/ebook/resolve`
+    const valid = await get(app, path)
+    expect(valid.status).toBe(200)
+    expect((await readJson(valid)).storageRef).toBe(pdf.url)
+
+    ebook.content = { kind: 'ebook', title: 'Guia', attachmentId: randomUUID() }
+    expect((await get(app, path)).status).toBe(404)
+
+    pdf.fileType = 'image/png'
+    ebook.content = { kind: 'ebook', title: 'Guia', attachmentId: pdf.id }
+    expect((await get(app, path)).status).toBe(404)
   })
 
   test('sem matrícula → 403 (sem vazar storageRef)', async () => {

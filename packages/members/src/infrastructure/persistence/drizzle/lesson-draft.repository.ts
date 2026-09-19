@@ -67,6 +67,27 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
   const attachmentsForRevision = lesson.attachments.map(
     ({ zappyStudentNotebook: _notebook, ...attachment }) => attachment,
   )
+  // A revisão publicada anterior guardava a URL do Livro 3D no bloco. Depois da
+  // migração, normalizar o id para a mesma representação lógica mantém o hash das
+  // aulas já publicadas e evita um falso conflito ao reabrir seus rascunhos.
+  const blocksForRevision = (includePreviousNotebookFlag: boolean) =>
+    lesson.blocks.map((block) => {
+      const content = block.content
+      if (content.kind !== 'ebook') return block
+      const attachment = lesson.attachments.find((item) => item.id === content.attachmentId)
+      if (!attachment) return block
+      return {
+        ...block,
+        content: {
+          kind: 'ebook',
+          url: attachment.url,
+          ...(content.title ? { title: content.title } : {}),
+          ...(includePreviousNotebookFlag && attachment.zappyStudentNotebook
+            ? { zappyStudentNotebook: true }
+            : {}),
+        },
+      }
+    })
   const [structure] = await tx
     .select()
     .from(lessonStructures)
@@ -75,28 +96,33 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
     .select()
     .from(lessonCriteriaMigrationSnapshots)
     .where(eq(lessonCriteriaMigrationSnapshots.lessonId, lessonId))
+  const revisionBody = (sections: unknown, previousNotebookFlag: boolean) => ({
+    title: lesson.title,
+    slug: lesson.slug,
+    estimatedMinutes: lesson.estimatedMinutes,
+    blocks: blocksForRevision(previousNotebookFlag),
+    attachments: attachmentsForRevision,
+    sections,
+  })
+  const previousSections =
+    migration && stableJson(structure?.sections) === stableJson(migration.migratedSections)
+      ? migration.previousSections
+      : null
+  const currentRevision = fingerprint(revisionBody(structure?.sections, false))
+  const compatibleRevisions = [
+    fingerprint(revisionBody(structure?.sections, true)),
+    ...(previousSections
+      ? [
+          fingerprint(revisionBody(previousSections, false)),
+          fingerprint(revisionBody(previousSections, true)),
+        ]
+      : []),
+  ]
   return {
     lesson,
     structure,
-    migrationRevision:
-      migration && stableJson(structure?.sections) === stableJson(migration.migratedSections)
-        ? fingerprint({
-            title: lesson.title,
-            slug: lesson.slug,
-            estimatedMinutes: lesson.estimatedMinutes,
-            blocks: lesson.blocks,
-            attachments: attachmentsForRevision,
-            sections: migration.previousSections,
-          })
-        : null,
-    revision: fingerprint({
-      title: lesson.title,
-      slug: lesson.slug,
-      estimatedMinutes: lesson.estimatedMinutes,
-      blocks: lesson.blocks,
-      attachments: attachmentsForRevision,
-      sections: structure?.sections,
-    }),
+    compatibleRevisions,
+    revision: currentRevision,
   }
 }
 
@@ -334,7 +360,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         const snapshot = await publishedSnapshot(tx, lessonId)
         if (
           snapshot.revision !== draft.publishedRevision &&
-          snapshot.migrationRevision !== draft.publishedRevision
+          !snapshot.compatibleRevisions.includes(draft.publishedRevision)
         )
           throw new LessonDraftConflictError()
         const content = new DrizzleContentAdminRepository(tx)
@@ -480,6 +506,16 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         const content = canonicalizeBlockContent(this.parseBlock(block.content))
         assertBlockCoherent(content)
         blocks.push({ id: block.id, content })
+        if (content.kind === 'ebook') {
+          const pdf = document.attachments.find(
+            (attachment) => attachment.id === content.attachmentId,
+          )
+          if (!pdf || !isPdfAttachment(pdf))
+            issues.push({
+              blockId: block.id,
+              message: 'O Livro 3D precisa de um PDF existente nos arquivos desta aula.',
+            })
+        }
         // ⚠️ O item de arquivo aponta para um anexo DESTA aula. Um id órfão (o anexo foi
         // apagado depois) desapareceria calado na projeção do aluno: a autora precisa ver isso
         // ANTES de publicar, e o recado nomeia o bloco.
@@ -547,7 +583,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         const snapshot = await publishedSnapshot(tx, lessonId)
         if (
           snapshot.revision !== draft.publishedRevision &&
-          snapshot.migrationRevision !== draft.publishedRevision
+          !snapshot.compatibleRevisions.includes(draft.publishedRevision)
         )
           throw new LessonDraftConflictError()
         const { issues, blocks } = this.inspect(draft.document, readyVideoIds)

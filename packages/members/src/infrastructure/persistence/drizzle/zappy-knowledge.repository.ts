@@ -1,7 +1,9 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
+import { isPdfAttachment } from '@sistemazero/core/learning'
 import { and, asc, desc, eq, gt, inArray, like, ne, or, sql } from 'drizzle-orm'
 import type {
   PublishedZappyBlock,
+  PublishedZappyNotebook,
   ZappyKnowledgeHit,
   ZappyKnowledgeReport,
   ZappyKnowledgeRepository,
@@ -15,6 +17,7 @@ import {
 import type { Database } from './db'
 import {
   courses,
+  lessonAttachments,
   activeLessonBlocks as lessonBlocks,
   lessons,
   zappyKnowledgeChunks,
@@ -50,7 +53,7 @@ export function zappyKnowledgeSourceUnchanged(
 export function effectiveZappyKnowledgeStatus(input: {
   status: string
   blockRevision: string | null
-  authoritativeBlockRevision: string
+  authoritativeBlockRevision: string | null
 }): string {
   return input.blockRevision === input.authoritativeBlockRevision ? input.status : 'pending'
 }
@@ -58,7 +61,37 @@ export function effectiveZappyKnowledgeStatus(input: {
 export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository {
   constructor(private readonly db: Database) {}
 
-  async blockAuthorityForSource(sourceRef: string) {
+  async sourceAuthorityForRef(sourceRef: string) {
+    const match = /^(block|attachment):([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i.exec(
+      sourceRef,
+    )
+    if (!match) return null
+    const [, kind, id] = match
+    if (!id) return null
+    if (kind === 'attachment') {
+      const [attachment] = await this.db
+        .select({
+          courseId: courses.id,
+          lessonId: lessons.id,
+          url: lessonAttachments.url,
+          label: lessonAttachments.label,
+          fileType: lessonAttachments.fileType,
+          marked: lessonAttachments.zappyStudentNotebook,
+        })
+        .from(lessonAttachments)
+        .innerJoin(lessons, eq(lessons.id, lessonAttachments.lessonId))
+        .innerJoin(courses, eq(courses.id, lessons.courseId))
+        .where(eq(lessonAttachments.id, id))
+        .limit(1)
+      if (!attachment?.marked || !isPdfAttachment(attachment)) return null
+      return {
+        blockId: null,
+        courseId: attachment.courseId,
+        lessonId: attachment.lessonId,
+        blockRevision: createHash('md5').update(attachment.url).digest('hex'),
+      }
+    }
+    if (kind !== 'block') return null
     const [row] = await this.db
       .select({
         blockId: lessonBlocks.id,
@@ -69,12 +102,16 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
       .innerJoin(courses, eq(courses.id, lessons.courseId))
-      .where(sql`${sourceRef} = 'block:' || ${lessonBlocks.id}::text`)
+      .where(eq(lessonBlocks.id, id))
       .limit(1)
     return row ?? null
   }
 
   async upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean } | null> {
+    const attachmentId = input.sourceRef.match(
+      /^attachment:([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i,
+    )?.[1]
+    if (!input.blockId && !attachmentId) return null
     return this.db.transaction(async (tx) => {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`zappy-kb:${input.sourceRef}`}, 0))`,
@@ -82,22 +119,67 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       // Serializa contra a edição do bloco e revalida a autoridade na MESMA
       // transação da escrita. Isso fecha a janela em que uma extração antiga
       // podia sobrescrever uma revisão mais nova depois do primeiro SELECT.
-      const [authority] = await tx
-        .select({
-          blockId: lessonBlocks.id,
-          courseId: courses.id,
-          lessonId: lessons.id,
-          blockRevision: lessonBlocks.contentRevision,
-        })
-        .from(lessonBlocks)
-        .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
-        .innerJoin(courses, eq(courses.id, lessons.courseId))
-        .where(eq(lessonBlocks.id, input.blockId))
-        .limit(1)
-        .for('update')
+      const authority = input.blockId
+        ? await tx
+            .select({
+              blockId: lessonBlocks.id,
+              courseId: courses.id,
+              lessonId: lessons.id,
+              blockRevision: lessonBlocks.contentRevision,
+              kind: lessonBlocks.kind,
+            })
+            .from(lessonBlocks)
+            .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
+            .innerJoin(courses, eq(courses.id, lessons.courseId))
+            .where(eq(lessonBlocks.id, input.blockId))
+            .limit(1)
+            .for('update')
+            .then((rows) => rows[0] ?? null)
+        : await tx
+            .select({
+              attachmentId: lessonAttachments.id,
+              courseId: courses.id,
+              lessonId: lessons.id,
+              url: lessonAttachments.url,
+              label: lessonAttachments.label,
+              fileType: lessonAttachments.fileType,
+              marked: lessonAttachments.zappyStudentNotebook,
+            })
+            .from(lessonAttachments)
+            .innerJoin(lessons, eq(lessons.id, lessonAttachments.lessonId))
+            .innerJoin(courses, eq(courses.id, lessons.courseId))
+            .where(eq(lessonAttachments.id, attachmentId!))
+            .limit(1)
+            .for('update')
+            .then((rows) => {
+              const attachment = rows[0]
+              return attachment?.marked && isPdfAttachment(attachment)
+                ? {
+                    blockId: null,
+                    courseId: attachment.courseId,
+                    lessonId: attachment.lessonId,
+                    blockRevision: createHash('md5').update(attachment.url).digest('hex'),
+                    kind: 'attachment' as const,
+                    attachmentId: attachment.attachmentId,
+                  }
+                : null
+            })
       if (
         !authority ||
-        input.sourceRef !== `block:${authority.blockId}` ||
+        input.sourceRef !==
+          (authority.blockId
+            ? `block:${authority.blockId}`
+            : `attachment:${'attachmentId' in authority ? authority.attachmentId : ''}`) ||
+        (input.sourceType === 'student-notebook') !== (authority.blockId === null) ||
+        (authority.blockId !== null &&
+          (('kind' in authority &&
+            authority.kind === 'video' &&
+            input.sourceType !== 'video-vtt') ||
+            ('kind' in authority &&
+              ['rich_text', 'dialogue'].includes(authority.kind) &&
+              input.sourceType !== 'rich-text') ||
+            ('kind' in authority &&
+              !['video', 'rich_text', 'dialogue'].includes(authority.kind)))) ||
         input.courseId !== authority.courseId ||
         input.lessonId !== authority.lessonId ||
         input.blockRevision !== authority.blockRevision
@@ -191,7 +273,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       .where(eq(zappyKnowledgeSources.sourceRef, sourceRef))
   }
 
-  async reconcilePublishedBlockSources(): Promise<number> {
+  async reconcilePublishedSources(): Promise<number> {
     // O anti-join consulta o estado ATUAL dentro do próprio DELETE. Um bloco
     // publicado durante o backfill deixa de correr o risco de ser apagado por
     // uma lista de refs capturada antes da edição concorrente.
@@ -214,19 +296,37 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         and ${courses.status} = 'published'
         and ${lessons.isPublished} = true
         and (
-          (${zappyKnowledgeSources.sourceType} = 'rich-text' and ${lessonBlocks.content}->>'kind' = 'rich_text')
+          (${zappyKnowledgeSources.sourceType} = 'rich-text' and ${lessonBlocks.content}->>'kind' in ('rich_text', 'dialogue'))
           or (${zappyKnowledgeSources.sourceType} = 'video-vtt' and ${lessonBlocks.content}->>'kind' = 'video')
-          or (
-            ${zappyKnowledgeSources.sourceType} = 'student-notebook'
-            and ${lessonBlocks.content}->>'kind' = 'ebook'
-            and coalesce((${lessonBlocks.content}->>'zappyStudentNotebook')::boolean, false)
-          )
+        )
+    )`
+    const authoritativeAttachmentExists = sql`exists (
+      select 1
+      from ${lessonAttachments}
+      inner join ${lessons} on ${lessons.id} = ${lessonAttachments.lessonId}
+      inner join ${courses} on ${courses.id} = ${lessons.courseId}
+      where ${zappyKnowledgeSources.sourceRef} = 'attachment:' || ${lessonAttachments.id}::text
+        and ${zappyKnowledgeSources.sourceType} = 'student-notebook'
+        and ${courses.audience} = 'kids'
+        and ${courses.status} = 'published'
+        and ${lessons.isPublished} = true
+        and ${lessonAttachments.zappyStudentNotebook} = true
+        and (
+          lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
+          or (nullif(trim(coalesce(${lessonAttachments.fileType}, '')), '') is null
+              and (${lessonAttachments.url} ~* '[.]pdf($|[?#])' or ${lessonAttachments.label} ~* '[.]pdf($|[?#])'))
         )
     )`
     const deleted = await this.db
       .delete(zappyKnowledgeSources)
       .where(
-        and(like(zappyKnowledgeSources.sourceRef, 'block:%'), sql`not ${authoritativeBlockExists}`),
+        and(
+          or(
+            like(zappyKnowledgeSources.sourceRef, 'block:%'),
+            like(zappyKnowledgeSources.sourceRef, 'attachment:%'),
+          ),
+          sql`not (${authoritativeBlockExists} or ${authoritativeAttachmentExists})`,
+        ),
       )
       .returning({ id: zappyKnowledgeSources.id })
     return deleted.length
@@ -255,7 +355,11 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       })
       .from(zappyKnowledgeChunks)
       .innerJoin(zappyKnowledgeSources, eq(zappyKnowledgeSources.id, zappyKnowledgeChunks.sourceId))
-      .innerJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
+      .leftJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
+      .leftJoin(
+        lessonAttachments,
+        sql`${zappyKnowledgeSources.sourceRef} = 'attachment:' || ${lessonAttachments.id}::text`,
+      )
       .innerJoin(lessons, eq(lessons.id, zappyKnowledgeSources.lessonId))
       .innerJoin(courses, eq(courses.id, zappyKnowledgeSources.courseId))
       .where(
@@ -271,21 +375,28 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             select 1 from ${lessonBlocks} as cs
             where cs.lesson_id = ${zappyKnowledgeSources.lessonId} and cs.kind = 'coming_soon'
           )`,
-          eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
-          eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
           or(
             and(
               eq(zappyKnowledgeSources.sourceType, 'rich-text'),
-              sql`${lessonBlocks.content}->>'kind' = 'rich_text'`,
+              eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+              eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
+              sql`${lessonBlocks.content}->>'kind' in ('rich_text', 'dialogue')`,
             ),
             and(
               eq(zappyKnowledgeSources.sourceType, 'video-vtt'),
+              eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+              eq(zappyKnowledgeSources.blockRevision, lessonBlocks.contentRevision),
               sql`${lessonBlocks.content}->>'kind' = 'video'`,
             ),
             and(
               eq(zappyKnowledgeSources.sourceType, 'student-notebook'),
-              sql`${lessonBlocks.content}->>'kind' = 'ebook'`,
-              sql`coalesce((${lessonBlocks.content}->>'zappyStudentNotebook')::boolean, false)`,
+              eq(lessonAttachments.lessonId, zappyKnowledgeSources.lessonId),
+              eq(lessonAttachments.zappyStudentNotebook, true),
+              sql`${zappyKnowledgeSources.blockId} is null`,
+              sql`${zappyKnowledgeSources.blockRevision} = md5(${lessonAttachments.url})`,
+              sql`(lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
+                or (nullif(trim(coalesce(${lessonAttachments.fileType}, '')), '') is null
+                    and (${lessonAttachments.url} ~* '[.]pdf($|[?#])' or ${lessonAttachments.label} ~* '[.]pdf($|[?#])')))`,
             ),
           ),
           eq(lessons.isPublished, true),
@@ -344,8 +455,44 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     return input.limit ? query.limit(input.limit) : query
   }
 
+  async listPublishedKidsNotebooks(
+    input: { after?: string; limit?: number } = {},
+  ): Promise<PublishedZappyNotebook[]> {
+    const clauses = [
+      eq(courses.audience, 'kids'),
+      eq(courses.status, 'published'),
+      eq(lessons.isPublished, true),
+      eq(lessonAttachments.zappyStudentNotebook, true),
+      sql`(lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
+        or (nullif(trim(coalesce(${lessonAttachments.fileType}, '')), '') is null
+            and (${lessonAttachments.url} ~* '[.]pdf($|[?#])' or ${lessonAttachments.label} ~* '[.]pdf($|[?#])')))`,
+      sql`not exists (
+        select 1 from ${lessonBlocks} as cs
+        where cs.lesson_id = ${lessons.id} and cs.kind = 'coming_soon'
+      )`,
+    ]
+    if (input.after) clauses.push(gt(lessonAttachments.id, input.after))
+    const query = this.db
+      .select({
+        attachmentId: lessonAttachments.id,
+        courseId: courses.id,
+        lessonId: lessons.id,
+        url: lessonAttachments.url,
+      })
+      .from(lessonAttachments)
+      .innerJoin(lessons, eq(lessons.id, lessonAttachments.lessonId))
+      .innerJoin(courses, eq(courses.id, lessons.courseId))
+      .where(and(...clauses))
+      .orderBy(asc(lessonAttachments.id))
+    const rows = input.limit ? await query.limit(input.limit) : await query
+    return rows.map((row) => ({
+      ...row,
+      attachmentRevision: createHash('md5').update(row.url).digest('hex'),
+    }))
+  }
+
   async report(): Promise<ZappyKnowledgeReport> {
-    const [lessonRows, blockRows, sourceRows] = await Promise.all([
+    const [lessonRows, blockRows, notebookRows, sourceRows] = await Promise.all([
       this.db
         .select({
           courseId: courses.id,
@@ -363,6 +510,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           ),
         ),
       this.listPublishedKidsBlocks(),
+      this.listPublishedKidsNotebooks(),
       this.db
         .select({
           courseId: zappyKnowledgeSources.courseId,
@@ -374,10 +522,16 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           status: zappyKnowledgeSources.status,
           error: zappyKnowledgeSources.error,
           blockRevision: zappyKnowledgeSources.blockRevision,
-          authoritativeBlockRevision: lessonBlocks.contentRevision,
+          authoritativeBlockRevision: sql<
+            string | null
+          >`coalesce(${lessonBlocks.contentRevision}, md5(${lessonAttachments.url}))`,
         })
         .from(zappyKnowledgeSources)
-        .innerJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
+        .leftJoin(lessonBlocks, eq(lessonBlocks.id, zappyKnowledgeSources.blockId))
+        .leftJoin(
+          lessonAttachments,
+          sql`${zappyKnowledgeSources.sourceRef} = 'attachment:' || ${lessonAttachments.id}::text`,
+        )
         .innerJoin(courses, eq(courses.id, zappyKnowledgeSources.courseId))
         .innerJoin(lessons, eq(lessons.id, zappyKnowledgeSources.lessonId))
         .where(
@@ -385,7 +539,29 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
             eq(lessons.isPublished, true),
-            eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+            or(
+              and(
+                eq(lessonBlocks.lessonId, zappyKnowledgeSources.lessonId),
+                or(
+                  and(
+                    eq(zappyKnowledgeSources.sourceType, 'rich-text'),
+                    sql`${lessonBlocks.content}->>'kind' in ('rich_text', 'dialogue')`,
+                  ),
+                  and(
+                    eq(zappyKnowledgeSources.sourceType, 'video-vtt'),
+                    sql`${lessonBlocks.content}->>'kind' = 'video'`,
+                  ),
+                ),
+              ),
+              and(
+                eq(zappyKnowledgeSources.sourceType, 'student-notebook'),
+                eq(lessonAttachments.lessonId, zappyKnowledgeSources.lessonId),
+                eq(lessonAttachments.zappyStudentNotebook, true),
+                sql`(lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
+                  or (nullif(trim(coalesce(${lessonAttachments.fileType}, '')), '') is null
+                      and (${lessonAttachments.url} ~* '[.]pdf($|[?#])' or ${lessonAttachments.label} ~* '[.]pdf($|[?#])')))`,
+              ),
+            ),
           ),
         ),
     ])
@@ -418,7 +594,13 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       ).length,
       pendingSources: effectiveSources.filter((source) => source.status === 'pending').length,
       lessonsWithVideoWithoutTranscript,
-      coursesWithoutStudentNotebook: coursesMissingStudentNotebook(publishedCourses, blockRows),
+      coursesWithoutStudentNotebook: coursesMissingStudentNotebook(
+        publishedCourses,
+        notebookRows.map((notebook) => ({
+          courseId: notebook.courseId,
+          zappyStudentNotebook: true,
+        })),
+      ),
       failedSources: effectiveSources.flatMap((source) =>
         (source.status === 'error' || source.status === 'empty') && source.error
           ? [

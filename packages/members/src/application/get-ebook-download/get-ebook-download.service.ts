@@ -1,3 +1,4 @@
+import { isPdfAttachment } from '@sistemazero/core/learning'
 import { EbookBlockNotFoundError, LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
@@ -55,10 +56,13 @@ export class GetEbookDownloadService {
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'ebook') throw new EbookBlockNotFoundError()
+    const attachmentId = block.content.attachmentId
+    const attachment = lesson.attachments.find((item) => item.id === attachmentId)
+    if (!attachment || !isPdfAttachment(attachment)) throw new EbookBlockNotFoundError()
 
     return {
       title: block.content.title ?? null,
-      storageRef: block.content.url,
+      storageRef: attachment.url,
     }
   }
 }

@@ -53,6 +53,6 @@ export const LESSON_SECTION_TEMPLATES: ReadonlyArray<{
     label: 'Material do curso',
     title: 'Seu caderno de aventuras',
     guidance:
-      'Vídeo curto de apresentação, fala do Zappy, livro 3D e PDF juntos. Critério: abrir o caderno ou baixar o PDF, sem quiz nem tempo mínimo.',
+      'Apresente o material com vídeo e Zappy. O Livro 3D e os arquivos para baixar são independentes. Escolha explicitamente se o avanço exige abrir o livro, baixar arquivos e/ou assistir ao vídeo.',
   },
 ]

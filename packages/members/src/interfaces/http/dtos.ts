@@ -1130,12 +1130,11 @@ const EmbedBlockSchema = t.Object({
     }),
   ),
 })
-/** PDF no bucket R2 privado (`r2priv:<key>`) — vira livro 3D no front do aluno. */
+/** PDF da biblioteca de arquivos da aula — vira livro 3D no front do aluno. */
 const EbookBlockSchema = t.Object({
   kind: t.Literal('ebook'),
-  url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
+  attachmentId: UUID,
   title: t.Optional(t.String({ maxLength: 300 })),
-  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 
 // 6 degraus novos (eixo 2D/3D) + 3 legados tolerados: aulas antigas seguem

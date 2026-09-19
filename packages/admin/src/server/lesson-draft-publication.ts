@@ -5,7 +5,12 @@ import type { LessonContentView } from '@/lib/types'
 import { forwardUpstream } from './forward'
 import { gatewayFetch } from './gateway'
 import { getVideoStatus, mediaErrorResponse, requireMediaSession } from './media'
-import { deleteZappyKnowledgeForBlock, syncZappyKnowledgeForBlock } from './zappy-knowledge'
+import {
+  deleteZappyKnowledgeByRef,
+  deleteZappyKnowledgeForBlock,
+  syncZappyKnowledgeForAttachment,
+  syncZappyKnowledgeForBlock,
+} from './zappy-knowledge'
 import { scheduleZappyKnowledgeWork, zappyKnowledgeMutationResult } from './zappy-knowledge-status'
 
 export async function publishLessonDraft(
@@ -89,6 +94,28 @@ export async function publishLessonDraft(
     for (let offset = 0; offset < content.body.blocks.length; offset += 3) {
       const results = await Promise.allSettled(
         content.body.blocks.slice(offset, offset + 3).map(syncZappyKnowledgeForBlock),
+      )
+      for (const result of results) if (result.status === 'rejected') failures.push(result.reason)
+    }
+    const marked = new Set(
+      content.body.attachments
+        .filter((attachment) => attachment.zappyStudentNotebook)
+        .map((attachment) => attachment.id),
+    )
+    for (const attachment of previous?.body?.attachments ?? []) {
+      if (!attachment.zappyStudentNotebook || marked.has(attachment.id)) continue
+      try {
+        await deleteZappyKnowledgeByRef(`attachment:${attachment.id}`)
+      } catch (error) {
+        failures.push(error)
+      }
+    }
+    const notebooks = content.body.attachments.filter(
+      (attachment) => attachment.zappyStudentNotebook,
+    )
+    for (let offset = 0; offset < notebooks.length; offset += 3) {
+      const results = await Promise.allSettled(
+        notebooks.slice(offset, offset + 3).map(syncZappyKnowledgeForAttachment),
       )
       for (const result of results) if (result.status === 'rejected') failures.push(result.reason)
     }

@@ -464,7 +464,9 @@ export function LessonSectionAuthoring({
           <fieldset disabled={!canWrite} className="space-y-5">
             {activeEditor.target === 'completion' ? (
               <>
-                <p className="text-sm">{sectionCompletionSummary(editing, doc.blocks)}</p>
+                <p className="text-sm">
+                  {sectionCompletionSummary(editing, doc.blocks, doc.attachments)}
+                </p>
                 {editing.intent !== 'material' &&
                   !editing.workspaceBlockId &&
                   !editing.externalTool &&
@@ -589,9 +591,8 @@ export function LessonSectionAuthoring({
         </section>
       )}
       <div hidden={Boolean(editing)}>
-        {/* ⚠️ A aba "Materiais e anexos" ficou só com os ANEXOS (que o editor desenha por fora):
-            os "materiais de apoio" — um lugar fora das seções, em posição fixa e alheio à ordem
-            da autora — viraram o bloco `materials`, que mora numa seção como qualquer outro. */}
+        {/* Arquivos da aula ficam na biblioteca; a exibição e o download acontecem nos blocos
+            que a autora posiciona nas seções. */}
         {area === 'materials' ? null : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -694,7 +695,7 @@ export function LessonSectionAuthoring({
                               onClick={() => editSection(section.id, 'completion')}
                               className="block text-left text-xs text-muted-foreground underline-offset-4 hover:underline"
                             >
-                              {sectionCompletionSummary(section, doc.blocks)}
+                              {sectionCompletionSummary(section, doc.blocks, doc.attachments)}
                             </button>
                             {workspace && (
                               <p className="text-xs text-muted-foreground">
@@ -848,7 +849,7 @@ export function LessonSectionAuthoring({
                               <div>
                                 <p className="text-sm font-medium">Para avançar</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {sectionCompletionSummary(section, doc.blocks)}
+                                  {sectionCompletionSummary(section, doc.blocks, doc.attachments)}
                                 </p>
                               </div>
                               <Button
@@ -866,6 +867,7 @@ export function LessonSectionAuthoring({
                                   {sectionCompletionSummary(
                                     { ...section, completion: suggestion },
                                     doc.blocks,
+                                    doc.attachments,
                                   )}
                                 </p>
                                 <Button
@@ -971,7 +973,7 @@ export function LessonSectionAuthoring({
                 {item.intent === 'exploration'
                   ? 'Cena manipulável com missão e instrução editáveis. Você pode acrescentar vídeo e fala do Zappy. Avanço pelas descobertas da missão.'
                   : item.intent === 'material'
-                    ? 'Livro 3D e PDF para baixar. Você pode acrescentar vídeo ou fala de apresentação. Avanço ao abrir o caderno ou baixar o PDF.'
+                    ? 'Escolha o PDF do Livro 3D e os arquivos para baixar separadamente. Pode incluir vídeo e fala do Zappy. Configure quais ações liberam o avanço.'
                     : item.guidance}
               </span>
             </button>

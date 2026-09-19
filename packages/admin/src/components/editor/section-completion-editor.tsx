@@ -79,9 +79,8 @@ export function SectionCompletionEditor({
       <legend className="px-2 font-medium">Para liberar a próxima seção</legend>
       <p className="font-medium">O que o aluno precisa demonstrar para continuar?</p>
       <p className="text-sm text-muted-foreground">
-        Selecione a ação que mostra que esta etapa foi realizada. Exploração, criação, entrega e
-        acesso ao caderno têm critérios diferentes. Todos os critérios selecionados precisam ser
-        cumpridos.
+        Marque exatamente o que precisa acontecer nesta seção. Se escolher vídeo e arquivos, o aluno
+        terá de assistir ao vídeo e baixar os arquivos selecionados para avançar.
       </p>
       <label className="block space-y-2 text-sm">
         <span>Realizar uma ação na plataforma</span>
@@ -123,7 +122,7 @@ export function SectionCompletionEditor({
       </label>
       {candidates.length === 0 && !value.platformAction && (
         <p className="text-sm">
-          Adicione uma exploração, um caderno ou uma atividade de criação para escolher seu
+          Adicione um vídeo, Livro 3D, arquivo para baixar ou atividade verificável para escolher o
           critério.
         </p>
       )}

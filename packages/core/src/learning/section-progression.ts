@@ -339,11 +339,16 @@ export function sectionCompletionIssues(
         c.projectChecks?.length ||
         c.blockIds.some(
           (id) =>
-            !blocks.some((b) => b.id === id && record(b.content) && b.content.kind === 'ebook'),
+            !blocks.some(
+              (b) =>
+                b.id === id &&
+                record(b.content) &&
+                ['ebook', 'materials', 'video'].includes(String(b.content.kind)),
+            ),
         ))
     )
       add(
-        'Na seção Material do curso, selecione o caderno que o aluno precisa abrir ou baixar. Não há nota ou entrega de projeto.',
+        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta seção. Separe quiz e entrega de projeto em outra seção.',
       )
     if (
       c.projectChecks?.length &&
