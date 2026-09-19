@@ -1,6 +1,11 @@
-import { describe, expect, test } from 'bun:test'
-import { mediaErrorResponse, WATERMARK_RETRY_AFTER_SECONDS } from '../src/server/media'
-import { WatermarkQueueAbortedError, WatermarkQueueBusyError } from '../src/server/watermark-queue'
+import { describe, expect, mock, test } from 'bun:test'
+import { WatermarkUnavailableError } from '../src/server/watermark-error'
+
+mock.module('server-only', () => ({}))
+const { mediaErrorResponse, WATERMARK_RETRY_AFTER_SECONDS } = await import('../src/server/media')
+const { WatermarkQueueAbortedError, WatermarkQueueBusyError } = await import(
+  '../src/server/watermark-queue'
+)
 
 /**
  * Os erros da fila da marca d'água (incidente 07/09) têm resposta PRÓPRIA:
@@ -23,6 +28,14 @@ describe("mediaErrorResponse × fila da marca d'água", () => {
     expect(res.headers.get('retry-after')).toBeNull()
     const body = (await res.json()) as { error: { code: string } }
     expect(body.error.code).toBe('WATERMARK_ABORTED')
+  })
+
+  test('falha de marcação → 503, nunca um PDF original como resposta', async () => {
+    const res = mediaErrorResponse(new WatermarkUnavailableError())
+    expect(res.status).toBe(503)
+    const body = (await res.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('WATERMARK_UNAVAILABLE')
+    expect(body.error.message).toContain('proteger')
   })
 
   test('erro qualquer segue no 500 MEDIA_ERROR (contrato antigo intacto)', async () => {

@@ -86,6 +86,7 @@ import {
   newAuthoringSection,
   type SectionStarterOptions,
 } from '@/lib/lesson-authoring'
+import { planEbookMaterialUpload } from '@/lib/lesson-ebook-material'
 import {
   type AttachmentView,
   type BlockView,
@@ -1456,37 +1457,27 @@ function LessonEditorSession({
     return attachment.id
   }
 
-  /**
-   * E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download.
-   * Trocar o PDF ATUALIZA o anexo do PDF anterior in-place (`previousUrl` — preserva a
-   * posição na lista e não deixa material órfão). Edge-cases aceitos: casar por URL
-   * pode sobrescrever um rótulo editado à mão (é o anexo daquele PDF); o OBJETO antigo
-   * no R2 fica (lixo de storage é dívida documentada da fatia de mídia).
-   */
-  async function addEbookAttachment(file: UploadedFile, previousUrl?: string) {
-    if (lesson?.attachments.some((a) => a.url === file.url)) return
-    const payload = {
-      label: file.filename.replace(/\.pdf$/i, ''),
-      url: file.url,
-      fileType: file.fileType || 'pdf',
-      sizeBytes: file.sizeBytes ?? null,
+  /** Livro, anexo privado e item baixável entram no mesmo rascunho, nessa ordem. */
+  function addEbookAttachment(
+    file: UploadedFile,
+    previousUrl: string | undefined,
+    form: BlockForm,
+  ) {
+    const current = session.getSnapshot().draft?.document
+    if (!current || !blockId) return
+    const content = buildContent(form, undefined, editingBlock?.content)
+    if (content.kind !== 'ebook') return
+    try {
+      const changes = planEbookMaterialUpload(current, {
+        ebookBlock: { id: blockId, content },
+        sectionId: blockSectionId,
+        previousUrl,
+        file,
+      })
+      for (const change of changes) session.enqueue(change, true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível adicionar o PDF.')
     }
-    const previous =
-      previousUrl && previousUrl !== file.url
-        ? lesson?.attachments.find((a) => a.url === previousUrl)
-        : undefined
-    const current = session.getSnapshot().draft
-    if (!current) return
-    const attachment = { id: previous?.id ?? crypto.randomUUID(), ...payload }
-    session.enqueue(
-      {
-        type: 'attachments',
-        attachments: previous
-          ? current.document.attachments.map((a) => (a.id === previous.id ? attachment : a))
-          : [...current.document.attachments, attachment],
-      },
-      true,
-    )
   }
 
   return (
@@ -2325,12 +2316,15 @@ function LessonEditorSession({
                           // Captura o PDF ANTERIOR antes de sobrescrever — o anexo dele é
                           // atualizado in-place (sem material órfão na aula).
                           const previousUrl = blockForm.pdfUrl.trim() || undefined
-                          setBlockForm((f) => ({
-                            ...f,
+                          const nextForm = {
+                            ...blockForm,
                             pdfUrl: file.url,
-                            title: f.title.trim() ? f.title : file.filename.replace(/\.pdf$/i, ''),
-                          }))
-                          void addEbookAttachment(file, previousUrl)
+                            title: blockForm.title.trim()
+                              ? blockForm.title
+                              : file.filename.replace(/\.pdf$/i, ''),
+                          }
+                          setBlockForm(nextForm)
+                          addEbookAttachment(file, previousUrl, nextForm)
                         }}
                       />
                     </Field>

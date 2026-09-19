@@ -796,8 +796,9 @@ na hora, mas voltaria). O que mudou, e é contrato:
 - **`watermarkedPdfInline()`** (`server/private-delivery.ts`) é a entrega do PDF ≤20 MB nos DOIS
   handlers (`ebookDownload` e o anexo PDF): HEAD no cache por (arquivo, **versão**, aluno) →
   hit serve o stream do R2 **sem gate nem pdf-lib**; miss marca UMA vez dentro do gate e grava em
-  `watermarked/<sha256(key)>/<etag>/<user>.pdf`. Falha ao gravar o cache NÃO falha a entrega;
-  falha de marcação serve o original **sem cachear**. As portas são injetáveis
+  `watermarked/<sha256(key)>/<etag>/<user>.pdf`. Falha ao gravar o cache NÃO falha a entrega,
+  pois os bytes já estão marcados; falha de marcação **bloqueia** o download com 503, sem servir
+  o original. As portas são injetáveis
   (`InlineWatermarkIo`) e o contrato está em `tests/private-delivery-inline.test.ts`.
 - ⚠️ **A versão (ETag da origem) ENTRA na key do cache** (`watermarkCacheKey(src, user, etag)`;
   `R2PrivateHead.etag`). O admin substitui um material **sob a mesma key** (foi o caderno do
@@ -817,6 +818,10 @@ na hora, mas voltaria). O que mudou, e é contrato:
   servidor em vez de "Falha ao baixar o e-book (524)".
 - ⚠️ Prefixo `watermarked/` tem lifecycle no bucket: cache expira sozinho e re-gerar é barato.
   Trocar o PDF gera etag novo → cache novo; o antigo morre pelo lifecycle.
+- **Proteção obrigatória (19/09):** livro 3D e anexos PDF/imagem privados nunca entregam o original
+  quando a marca falha ou o arquivo passa do teto. PDF/imagem externos não passam pela marca e
+  são recusados como anexos protegidos; links comuns seguem externos. A falha usa
+  `WATERMARK_UNAVAILABLE` (503) para que a autora corrija o arquivo ou o aluno tente novamente.
 
 ## A cor do perfil: espelho em cookie, hidratado pelo proxy (17/09/2026)
 

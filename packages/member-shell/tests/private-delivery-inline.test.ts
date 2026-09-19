@@ -7,6 +7,7 @@ mock.module('server-only', () => ({}))
 
 const { watermarkCacheKey } = await import('../src/lib/download-mime')
 const { watermarkedPdfInline } = await import('../src/server/private-delivery')
+const { WatermarkUnavailableError } = await import('../src/server/watermark-error')
 const { createGate, WatermarkQueueBusyError } = await import('../src/server/watermark-queue')
 type InlineWatermarkIo = import('../src/server/private-delivery').InlineWatermarkIo
 type ConcurrencyGate = import('../src/server/watermark-queue').ConcurrencyGate
@@ -116,10 +117,9 @@ describe('watermarkedPdfInline', () => {
     expect(calls.put).toEqual([CACHE_KEY]) // tentou
   })
 
-  test('falha de marcação serve o ORIGINAL e não cacheia (problema transitório não gruda)', async () => {
+  test('falha de marcação bloqueia o PDF original e não cacheia', async () => {
     const { io, calls } = fakeIo({ watermarkFails: true })
-    const out = await request(io)
-    expect(await readAll(out.body)).toBe('ORIGINAL')
+    await expect(request(io)).rejects.toBeInstanceOf(WatermarkUnavailableError)
     expect(calls.put).toEqual([])
   })
 

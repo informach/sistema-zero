@@ -31,7 +31,7 @@ const PDF_MARGIN_Y = 8
 
 /**
  * Estampa o rodapé em todas as páginas. PDF cifrado: `ignoreEncryption` tenta
- * mesmo assim; se o draw/save falhar, o caller serve o original sem marca.
+ * mesmo assim; se o draw/save falhar, o caller bloqueia a entrega.
  */
 export async function watermarkPdf(bytes: Uint8Array, email: string): Promise<Uint8Array> {
   const pdf = await PDFDocument.load(bytes, { ignoreEncryption: true })
@@ -106,8 +106,7 @@ export async function watermarkImage(buffer: Buffer, mime: string, email: string
   const animated = mime === 'image/gif'
   // `limitInputPixels` (≈50MP, igual ao image-optimizer): uma imagem ≤20MB pode
   // declarar centenas de MP e estourar a RAM da réplica ÚNICA na decodificação
-  // (OOM derruba o app p/ TODAS as crianças). Excedeu → throw, e o attachmentDownload
-  // já serve o original sem marca (degradação graciosa).
+  // (OOM derruba o app p/ TODAS as crianças). Excedeu → throw, e a entrega é bloqueada.
   const base = sharp(buffer, { animated, limitInputPixels: 50_000_000 })
   const meta = await base.metadata()
   const frameWidth = meta.width ?? 0
@@ -115,7 +114,7 @@ export async function watermarkImage(buffer: Buffer, mime: string, email: string
   if (!frameWidth || !frameHeight) throw new Error('Imagem sem dimensões')
   // `limitInputPixels` limita UM frame (width × pageHeight), não o TOTAL de um
   // animado (× pages): muitos frames sub-50MP somariam um decode enorme na réplica
-  // única. Teto explícito no total → throw, e o attachmentDownload serve o original.
+  // única. Teto explícito no total → throw, e o download é bloqueado.
   const pages = meta.pages ?? 1
   if (frameWidth * frameHeight * pages > 50_000_000) {
     throw new Error('Imagem animada grande demais')

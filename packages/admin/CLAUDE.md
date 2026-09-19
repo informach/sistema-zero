@@ -711,7 +711,8 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   `FileUploader` NÃO a usa mais (usa o presign acima). O aluno baixa pela rota autenticada do
   community, que resolve a key, aplica a **marca d'água com o e-mail do aluno** (PDF: rodapé em
   todas as páginas; imagem: selo no canto) e seta o Content-Disposition. URL http(s) colada
-  manualmente no dialog de anexo segue suportada (o community faz redirect — sem marca).
+  manualmente no dialog de anexo segue suportada para formatos não protegidos (redirect). PDF e
+  imagem externos são recusados no download: sem acesso aos bytes não há como estampar a marca.
 - `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
   `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
   `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).

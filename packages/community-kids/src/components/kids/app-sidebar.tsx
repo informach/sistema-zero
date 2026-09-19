@@ -190,7 +190,7 @@ export function AppSidebar({
         'overflow-hidden transition-[width,padding,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
         navCollapsed
           ? 'w-0 border-r-0 px-0 opacity-0 pointer-events-none'
-          : 'w-[16.75rem] border-r px-5 opacity-100',
+          : 'w-(--kids-menu-width) border-r px-5 opacity-100',
       )}
     >
       <Link

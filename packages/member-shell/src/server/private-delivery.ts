@@ -8,7 +8,26 @@ import {
   r2PutObjectPrivate,
 } from './r2'
 import { watermarkPdf } from './watermark'
+import { WatermarkUnavailableError } from './watermark-error'
 import { type ConcurrencyGate, WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from './watermark-queue'
+
+export interface PresignedWatermarkIo {
+  head: (key: string) => Promise<{ contentLength: number | null } | null>
+  get: (key: string) => Promise<{ body: ReadableStream<Uint8Array> }>
+  put: (input: { key: string; body: Uint8Array; contentType: string }) => Promise<void>
+  presign: (key: string, options: { responseContentDisposition: string }) => Promise<string>
+  watermark: (bytes: Uint8Array, email: string) => Promise<Uint8Array>
+  gate: ConcurrencyGate
+}
+
+const defaultPresignedIo = (): PresignedWatermarkIo => ({
+  head: r2HeadObjectPrivate,
+  get: r2GetObjectPrivate,
+  put: r2PutObjectPrivate,
+  presign: r2PresignGetPrivate,
+  watermark: watermarkPdf,
+  gate: watermarkGate(),
+})
 
 /**
  * Entrega DIRETA de PDF grande com marca d'água: gera (uma vez) o PDF marcado
@@ -16,54 +35,48 @@ import { type ConcurrencyGate, WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from '
  * uma URL pré-assinada de TTL curto — o browser baixa direto do R2, sem segurar
  * 100MB+ na memória do servidor nem arrastar pela cadeia de proxies (incidente
  * 10/06: poucos downloads simultâneos degradavam o community inteiro). Falha de
- * marcação cai p/ o ORIGINAL pré-assinado (entregar > quebrar, mesmo fallback
- * do caminho inline).
+ * marcação BLOQUEIA a entrega: a URL do original nunca chega ao navegador.
  */
-export async function presignWatermarkedPdf(opts: {
-  srcKey: string
-  /** ETag da origem (HEAD): entra na key do cache para o arquivo substituído não servir a versão velha. */
-  srcEtag?: string | null
-  email: string
-  userId: string
-  /** Content-Disposition da resposta do R2 (inline p/ o livro 3D; attachment p/ download). */
-  responseContentDisposition: string
-  /** Request do cliente: aborta a espera na fila se ele for embora. */
-  signal?: AbortSignal
-}): Promise<string> {
+export async function presignWatermarkedPdf(
+  opts: {
+    srcKey: string
+    /** ETag da origem (HEAD): entra na key do cache para o arquivo substituído não servir a versão velha. */
+    srcEtag?: string | null
+    email: string
+    userId: string
+    /** Content-Disposition da resposta do R2 (inline p/ o livro 3D; attachment p/ download). */
+    responseContentDisposition: string
+    /** Request do cliente: aborta a espera na fila se ele for embora. */
+    signal?: AbortSignal
+  },
+  io: PresignedWatermarkIo = defaultPresignedIo(),
+): Promise<string> {
   const cacheKey = watermarkCacheKey(opts.srcKey, opts.userId, opts.srcEtag)
-  const cached = await r2HeadObjectPrivate(cacheKey)
+  const cached = await io.head(cacheKey)
   if (!cached) {
-    const obj = await r2GetObjectPrivate(opts.srcKey)
-    const stored = await watermarkGate().run(
+    const obj = await io.get(opts.srcKey)
+    await io.gate.run(
       async () => {
         const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
         try {
-          const marked = await watermarkPdf(original, opts.email)
-          await r2PutObjectPrivate({
+          const marked = await io.watermark(original, opts.email)
+          await io.put({
             key: cacheKey,
             body: new Uint8Array(marked),
             contentType: 'application/pdf',
           })
-          return true
         } catch (error) {
-          // PDF cifrado/corrompido: serve o ORIGINAL direto do R2 (sem cache —
-          // um problema transitório de marcação não pode "grudar" no aluno).
-          console.warn('[delivery] watermark de PDF falhou — pré-assinando o original', {
+          console.error('[delivery] watermark de PDF falhou — download bloqueado', {
             key: opts.srcKey,
             error,
           })
-          return false
+          throw new WatermarkUnavailableError(error)
         }
       },
       { signal: opts.signal, waitTimeoutMs: WATERMARK_WAIT_TIMEOUT_MS },
     )
-    if (!stored) {
-      return r2PresignGetPrivate(opts.srcKey, {
-        responseContentDisposition: opts.responseContentDisposition,
-      })
-    }
   }
-  return r2PresignGetPrivate(cacheKey, {
+  return io.presign(cacheKey, {
     responseContentDisposition: opts.responseContentDisposition,
   })
 }
@@ -127,33 +140,29 @@ export async function watermarkedPdfInline(
   const marked = await io.gate.run(
     async () => {
       const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
-      let out: Uint8Array = original
+      let out: Uint8Array
       try {
         out = await io.watermark(original, opts.email)
       } catch (error) {
-        // PDF cifrado/corrompido: melhor servir o original do que quebrar o livro.
-        // Sem cache: um problema transitório de marcação não pode "grudar" no aluno.
-        console.warn('[delivery] watermark de PDF inline falhou — servindo original', {
+        console.error('[delivery] watermark de PDF inline falhou — download bloqueado', {
           key: opts.srcKey,
           error,
         })
-        return { out, cacheable: false }
+        throw new WatermarkUnavailableError(error)
       }
-      return { out, cacheable: true }
+      return out
     },
     { signal: opts.signal, waitTimeoutMs: io.waitTimeoutMs ?? WATERMARK_WAIT_TIMEOUT_MS },
   )
 
-  if (marked.cacheable) {
-    try {
-      await io.put({ key: cacheKey, body: marked.out, contentType: 'application/pdf' })
-    } catch (error) {
-      // O aluno recebe o PDF do mesmo jeito; só a PRÓXIMA abertura paga o pdf-lib de novo.
-      console.warn('[delivery] cache do PDF marcado falhou — entregando sem cachear', {
-        key: cacheKey,
-        error,
-      })
-    }
+  try {
+    await io.put({ key: cacheKey, body: marked, contentType: 'application/pdf' })
+  } catch (error) {
+    // O aluno recebe o PDF já marcado; só a próxima abertura paga o pdf-lib de novo.
+    console.warn('[delivery] cache do PDF marcado falhou — entregando sem cachear', {
+      key: cacheKey,
+      error,
+    })
   }
-  return { body: marked.out, cached: false }
+  return { body: marked, cached: false }
 }

@@ -174,8 +174,8 @@ export function SidebarFallback() {
       aria-hidden={navCollapsed}
       className={cn(
         'sticky top-0 hidden h-screen shrink-0 overflow-hidden border-(--menu-2) bg-(--menu) md:block',
-        'transition-[width,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
-        navCollapsed ? 'w-0 border-r-0 opacity-0' : 'w-[16.75rem] border-r opacity-100',
+        'kids-menu transition-[width,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
+        navCollapsed ? 'w-0 border-r-0 opacity-0' : 'w-(--kids-menu-width) border-r opacity-100',
       )}
     />
   )

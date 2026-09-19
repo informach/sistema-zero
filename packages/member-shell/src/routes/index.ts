@@ -34,6 +34,7 @@ import {
 } from '../server/r2'
 import type { SessionModule } from '../server/session'
 import { watermarkImage } from '../server/watermark'
+import { WatermarkUnavailableError } from '../server/watermark-error'
 import { WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
@@ -636,7 +637,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
       const { label, storageRef } = resolved.body
 
-      // Anexo externo (URL colada pelo admin) ou legado público → passthrough.
+      // Arquivos externos não passam pela marcação. PDFs/imagens protegidos não
+      // podem sair por esse atalho; links comuns continuam com passthrough.
       if (!storageRef.startsWith(R2_PRIVATE_PREFIX)) {
         if (!/^https?:\/\//.test(storageRef)) {
           return NextResponse.json(
@@ -644,6 +646,14 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             { status: 502 },
           )
         }
+        if (
+          resolveDownloadMedia({
+            contentType: null,
+            key: new URL(storageRef).pathname,
+            fileType: resolved.body.fileType,
+          }).watermark !== null
+        )
+          return mediaErrorResponse(new WatermarkUnavailableError())
         return NextResponse.redirect(storageRef, 302)
       }
 
@@ -672,6 +682,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         const disposition = `attachment; filename="${filename}"`
         const len = head.contentLength
 
+        if (dlMedia.watermark !== null && len !== null && len > WATERMARK_MAX_BYTES)
+          throw new WatermarkUnavailableError()
+
         if (len !== null && len > DIRECT_DELIVERY_MIN_BYTES) {
           // PDF marcável dentro do teto → cache do PDF marcado + 302 direto do R2.
           if (dlMedia.watermark === 'pdf' && len <= WATERMARK_MAX_BYTES) {
@@ -685,14 +698,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             })
             return NextResponse.redirect(url, 302)
           }
-          // Sem marca (office/zip/…), imagem gigante (não realista) ou acima do
-          // teto da marca → original direto do R2 (mesma filosofia do fallback).
-          if (len > WATERMARK_MAX_BYTES && dlMedia.watermark !== null) {
-            console.warn(
-              "[anexos] arquivo excede o teto da marca d'água — pré-assinando original",
-              { key, contentLength: len },
-            )
-          }
+          // Imagens grandes não têm cache marcado como PDFs; não expor o original.
+          if (dlMedia.watermark === 'image') throw new WatermarkUnavailableError()
+          // Office/zip/áudio não têm marcação e seguem como arquivos comuns.
           const url = await r2PresignGetPrivate(key, { responseContentDisposition: disposition })
           return NextResponse.redirect(url, 302)
         }
@@ -731,12 +739,12 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         return await watermarkGate().run(
           async () => {
             const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
-            let out: Uint8Array = original
+            let out: Uint8Array
             try {
               out = await watermarkImage(original, dlMedia.mime, user.email)
             } catch (error) {
-              // Imagem corrompida: melhor servir o original do que falhar.
-              console.warn('[anexos] watermark falhou — servindo original', { key, error })
+              console.error('[anexos] watermark falhou — download bloqueado', { key, error })
+              throw new WatermarkUnavailableError(error)
             }
             return new Response(new Uint8Array(out), { headers })
           },
@@ -774,7 +782,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
       const { storageRef } = resolved.body
 
-      // URL externa/legada → passthrough (sem marca; o pdf.js busca de lá direto).
+      // Livro 3D exige PDF privado para que a marca chegue ao pdf.js.
       if (!storageRef.startsWith(R2_PRIVATE_PREFIX)) {
         if (!/^https?:\/\//.test(storageRef)) {
           return NextResponse.json(
@@ -782,7 +790,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             { status: 502 },
           )
         }
-        return NextResponse.redirect(storageRef, 302)
+        return mediaErrorResponse(new WatermarkUnavailableError())
       }
 
       try {
@@ -798,19 +806,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         // Sinais reais (Content-Type do R2 + extensão .pdf) decidem a marca.
         const dlMedia = resolveDownloadMedia({ contentType: head.contentType, key, fileType: null })
         const len = head.contentLength
+        if (dlMedia.watermark !== 'pdf' || (len !== null && len > WATERMARK_MAX_BYTES))
+          throw new WatermarkUnavailableError()
 
         if (len !== null && len > DIRECT_DELIVERY_MIN_BYTES) {
-          if (dlMedia.watermark !== 'pdf' || len > WATERMARK_MAX_BYTES) {
-            // Sem marca possível (legado raro / acima do teto) → original direto.
-            if (len > WATERMARK_MAX_BYTES) {
-              console.warn("[ebook] PDF excede o teto da marca d'água — pré-assinando original", {
-                key,
-                contentLength: len,
-              })
-            }
-            const url = await r2PresignGetPrivate(key, { responseContentDisposition: 'inline' })
-            return NextResponse.redirect(url, 302)
-          }
           const url = await presignWatermarkedPdf({
             srcKey: key,
             srcEtag: head.etag,
@@ -828,12 +827,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           'content-disposition': 'inline',
           // Conteúdo é POR ALUNO (e-mail estampado) — nunca cachear compartilhado.
           'cache-control': 'private, no-store',
-        }
-
-        // Sem sinal de PDF (legado raro) → serve cru em stream, como antes.
-        if (dlMedia.watermark !== 'pdf') {
-          const obj = await r2GetObjectPrivate(key)
-          return new Response(obj.body, { headers })
         }
 
         // Marca d'água por aluno com CACHE (incidente 07/09: re-marcar a cada

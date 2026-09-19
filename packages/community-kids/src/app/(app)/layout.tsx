@@ -168,7 +168,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         />
       ) : null}
       <FocusModeProvider viewerId={session.id}>
-        <div className="flex flex-1">
+        <div className="kids-shell-row flex flex-1">
           <Suspense fallback={<SidebarFallback />}>
             <SidebarChrome session={session} />
           </Suspense>

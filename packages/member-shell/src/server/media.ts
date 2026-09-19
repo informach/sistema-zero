@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isReadonlyImpersonation } from '../lib/act'
 import { isSameOriginRequest, requiresOriginCheck } from '../lib/csrf'
-import { isProd } from '../lib/env'
 import type { SessionUser } from '../lib/types'
 import type { GatewayModule } from './gateway'
 import { optimizeImage } from './image-optimizer'
 import { MediaNotConfiguredError, r2DeleteObjects, r2ListKeys, r2PutObject } from './r2'
 import { captureServerException } from './sentry'
 import type { AccessVerdict, SessionModule } from './session'
+import { WatermarkUnavailableError } from './watermark-error'
 import { WatermarkQueueAbortedError, WatermarkQueueBusyError } from './watermark-queue'
 
 /**
@@ -103,6 +103,14 @@ export function createMediaModule(deps: { session: SessionModule; gateway: Gatew
 
 /** Erro → resposta `{ error: { code, message } }` (503 quando falta config). */
 export function mediaErrorResponse(error: unknown): NextResponse {
+  if (error instanceof WatermarkUnavailableError) {
+    console.error('[media] material sem marca d’água — entrega bloqueada', error.cause)
+    captureServerException(error, { area: 'media' })
+    return NextResponse.json(
+      { error: { code: error.code, message: error.message } },
+      { status: 503 },
+    )
+  }
   if (error instanceof MediaNotConfiguredError) {
     return NextResponse.json(
       { error: { code: error.code, message: error.message } },
@@ -134,7 +142,9 @@ export function mediaErrorResponse(error: unknown): NextResponse {
   // Em prod a mensagem interna (ex.: erro do SDK S3) não vaza ao cliente —
   // o detalhe fica no log acima. Espelha o admin.
   const message =
-    !isProd() && error instanceof Error ? error.message : 'Falha na operação de mídia.'
+    process.env.NODE_ENV !== 'production' && error instanceof Error
+      ? error.message
+      : 'Falha na operação de mídia.'
   return NextResponse.json({ error: { code: 'MEDIA_ERROR', message } }, { status: 500 })
 }
 

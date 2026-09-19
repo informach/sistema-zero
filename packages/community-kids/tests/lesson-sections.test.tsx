@@ -121,7 +121,9 @@ describe('aula por seções', () => {
       'reading',
     )
     fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
-    expect(container.querySelector('.sz-lesson-nav-immersive form')).not.toBeNull()
+    const helpForm = container.querySelector('.sz-lesson-nav-immersive form')
+    expect(helpForm).not.toBeNull()
+    expect(helpForm?.classList.contains('mb-4')).toBe(true)
   })
   test.each([
     false,
@@ -766,6 +768,7 @@ describe('aula por seções', () => {
     )
     expect(screen.getByRole('heading', { name: /Observar/ })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
+    expect(screen.getByRole('textbox').closest('form')?.classList.contains('mb-4')).toBe(false)
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Por que ele cai?' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
     await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
