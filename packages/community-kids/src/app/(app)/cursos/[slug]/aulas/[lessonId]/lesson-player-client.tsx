@@ -19,7 +19,6 @@ import { toast } from 'sonner'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
 import { useFocusMode } from '@/components/kids/focus-mode'
-import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
@@ -85,7 +84,7 @@ export function LessonPlayer({
     missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
-  const { navAvailable, outlineAvailable, outlineCollapsed, toggleOutline } = useFocusMode()
+  const { outlineCollapsed, toggleOutline } = useFocusMode()
   // Onde a criança está no percurso. Quem sabe é o `LessonSections` (o índice muda no
   // CLIENTE ao avançar de seção); a barra do topo mora aqui, acima dele.
   const [secao, setSecao] = useState<PosicaoNaAula | null>(null)
@@ -265,13 +264,6 @@ export function LessonPlayer({
               // dizer "0 de 1 atividade" para algo que a criança não pode fazer.
               atividades={blockedByComingSoon ? [] : requirements}
             />
-            {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
-            {navAvailable || outlineAvailable ? (
-              <div className="flex items-center gap-2">
-                <FocusModeToggle target="nav" />
-                <FocusModeToggle target="outline" />
-              </div>
-            ) : null}
           </div>
 
           <LessonSections

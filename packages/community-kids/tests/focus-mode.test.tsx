@@ -72,7 +72,7 @@ afterEach(cleanup)
 
 const { useFocusMode } = await import('../src/components/kids/focus-mode')
 
-/** Sonda do que as FERRAMENTAS leem (desde 07/09 o botão vive na barra delas). */
+/** Sonda do estado que o shell usa para decidir se a alça aparece. */
 function Probe() {
   const { navAvailable, outlineAvailable, navCollapsed } = useFocusMode()
   return (
@@ -128,7 +128,7 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
 })
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('está disponível nos apps de criação (e no Estúdio Pro), onde a ferramenta o desenha', () => {
+  it('está disponível nos apps de criação (e no Estúdio Pro), pelo shell', () => {
     for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
       pathname = route
       const { unmount } = renderNav()
