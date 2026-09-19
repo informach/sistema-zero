@@ -10,8 +10,9 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { reportClientError } from '@/lib/report-error'
+import { useFocusMode } from './focus-mode'
 
 type StudioModule = typeof import('@sistemazero/studio')
 type EditorState =
@@ -83,6 +84,12 @@ export function StudioFullEditor({
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const { setWorkspaceActive } = useFocusMode()
+  const workspaceActive = state.status === 'ready' && state.project.kind !== 'pro'
+  useLayoutEffect(() => {
+    setWorkspaceActive(workspaceActive)
+    return () => setWorkspaceActive(false)
+  }, [setWorkspaceActive, workspaceActive])
   const router = useRouter()
   const activityBeaconedRef = useRef(false)
 

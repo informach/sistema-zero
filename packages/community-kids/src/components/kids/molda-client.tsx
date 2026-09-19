@@ -15,6 +15,7 @@ import {
   type MoldaPersistenceLike,
 } from '@/lib/molda-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
@@ -57,6 +58,7 @@ export function MoldaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<MoldaPersistenceLike | null>(null)
   const router = useRouter()
+  const { setWorkspaceActive } = useFocusMode()
   // O Molda SEGUE a plataforma (hoje só claro) — sem toggle próprio.
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
@@ -325,6 +327,7 @@ export function MoldaClient({
               <mod.MoldaApp
                 key={openRequest.revision}
                 adapter={adapter}
+                onWorkspaceChange={setWorkspaceActive}
                 {...(persistence ? { persistence } : {})}
               />
             </mod.MoldaHostChromeProvider>

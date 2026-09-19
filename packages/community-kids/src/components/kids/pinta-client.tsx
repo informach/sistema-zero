@@ -13,6 +13,7 @@ import {
   type PintaPersistenceLike,
 } from '@/lib/pinta-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { useFocusMode } from './focus-mode'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
@@ -52,6 +53,7 @@ export function PintaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
   const router = useRouter()
+  const { setWorkspaceActive } = useFocusMode()
   // O Pinta SEGUE a plataforma (hoje só claro) — sem toggle próprio.
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
@@ -352,7 +354,11 @@ export function PintaClient({
           {/* O wrapper dá ao `h-full` do Pinta uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
             <mod.PintaHostChromeProvider value={hostChrome}>
-              <mod.PintaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+              <mod.PintaApp
+                adapter={adapter}
+                onWorkspaceChange={setWorkspaceActive}
+                {...(persistence ? { persistence } : {})}
+              />
             </mod.PintaHostChromeProvider>
           </div>
         </>

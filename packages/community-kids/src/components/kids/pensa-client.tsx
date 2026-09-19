@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
+import { useFocusMode } from '@/components/kids/focus-mode'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
 
 type PensaModule = typeof import('@sistemazero/pensa')
@@ -24,6 +25,7 @@ export function PensaClient({
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const router = useRouter()
+  const { setWorkspaceActive } = useFocusMode()
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
   // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
@@ -107,7 +109,11 @@ export function PensaClient({
         </div>
       ) : mod ? (
         <mod.PensaHostChromeProvider value={hostChrome}>
-          <mod.PensaApp adapter={adapter} initialProjectId={initialProjectId} />
+          <mod.PensaApp
+            adapter={adapter}
+            initialProjectId={initialProjectId}
+            onWorkspaceChange={setWorkspaceActive}
+          />
         </mod.PensaHostChromeProvider>
       ) : (
         <EmbeddedAppLoadingBody label="Carregando o Pensa…" />

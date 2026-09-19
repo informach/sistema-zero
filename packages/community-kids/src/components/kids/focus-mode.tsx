@@ -20,7 +20,7 @@ interface LessonChromeContextValue {
   /** Estado atual: esconder a LISTA DE AULAS (barra direita da aula). */
   outlineHidden: boolean
   /**
-   * Oferecer o botão do MENU: página de aula OU app de criação embarcado
+   * Oferecer o botão do MENU: página de aula OU galeria de criação embarcada
    * (Estúdio/Pensa/Pinta/Molda) + tela ≥768px (a barra esquerda aparece a partir do
    * `md` do Tailwind, então dá p/ ganhar espaço já aqui — cobre notebook com
    * zoom/telas menores).

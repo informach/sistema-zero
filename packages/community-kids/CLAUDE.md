@@ -1576,6 +1576,14 @@ este arquivo descrevia **não existem mais** em lugar nenhum do código, e
   antigos saíram dos cabeçalhos da aula, ferramentas, avatar e quarto. O `hostChrome.menu` dos
   apps embarcados recebe `null`; os contratos dos pacotes de ferramenta seguem disponíveis para
   seus playgrounds isolados. A alça da esquerda só aparece a partir de 768px.
+- **Projeto aberto nas ferramentas:** a galeria do Estúdio, Pinta, Molda e Pensa conserva a alça.
+  O editor ativo informa `setWorkspaceActive` ao mesmo `FocusModeProvider`; o shell recolhe o
+  menu e não monta a alça enquanto aquele projeto está aberto. O Estúdio informa isso quando
+  o projeto está pronto no `StudioFullEditor`; os outros três pacotes expõem o callback opcional
+  `onWorkspaceChange` para seus hosts. Ao voltar à galeria, a escolha anterior de menu aberto
+  ou fechado volta, sem preferência persistida. `/estudio/pro/[id]` já é editor pela própria rota.
+  Aula, avatar e quarto mantêm suas alças. Não resolver com transparência da alça: mesmo invisível,
+  ela continuaria capturando cliques e toques na área de criação.
 - ⚠️ HISTÓRICO: a versão anterior tinha um puxador na calha do `MainContainer`, depois um botão
   nos cabeçalhos. Não reintroduzir outro mount point, pois isso duplica o controle do mesmo menu.
 - ⚠️ `useMinWidth` começa `false` TAMBÉM no cliente, de propósito (ver o

@@ -1,6 +1,6 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import type { PensaHostChrome } from '@sistemazero/pensa'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
  * O `pensa-client` embrulha o `<PensaApp>` no `PensaHostChromeProvider` do PRÓPRIO pacote
@@ -23,10 +23,24 @@ const router = {
   prefetch: mock(async () => {}),
 }
 
-function ObservedPensaApp() {
+function ObservedPensaApp({
+  onWorkspaceChange,
+}: {
+  onWorkspaceChange?: (active: boolean) => void
+}) {
   const chrome = actualPensa.usePensaHostChrome()
   lastChrome = chrome
-  return <output data-testid="pensa-app">{chrome?.menu ? chrome.menu.label : 'sem menu'}</output>
+  return (
+    <>
+      <output data-testid="pensa-app">{chrome?.menu ? chrome.menu.label : 'sem menu'}</output>
+      <button type="button" onClick={() => onWorkspaceChange?.(true)}>
+        Abrir plano de teste
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(false)}>
+        Voltar aos planos de teste
+      </button>
+    </>
+  )
 }
 
 mock.module('next/navigation', () => ({
@@ -97,5 +111,22 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
       expect(screen.getByTestId('pensa-app').textContent).toBe('sem menu')
     })
     expect(lastChrome?.menu).toBeNull()
+  })
+
+  it('um plano aberto retira a alça e a lista a recebe de volta', async () => {
+    pathname = '/pensa'
+    setViewportWidth(1280)
+    render(
+      <FocusModeProvider viewerId="perfil-1">
+        <PensaClient pintaOwned studioAvailable />
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    await screen.findByTestId('pensa-app')
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir plano de teste' }))
+    expect(screen.queryByRole('button', { name: /menu/i }) === null).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar aos planos de teste' }))
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
   })
 })

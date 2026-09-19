@@ -5,7 +5,8 @@ import { useFocusMode } from './focus-mode'
 
 /**
  * Alça que esconde/mostra UMA das barras laterais (os dois estados são independentes).
- * Some fora das telas/tamanhos em que o painel correspondente existe (`available`).
+ * Some fora das telas/tamanhos em que o painel correspondente existe e enquanto
+ * um projeto de criação está aberto (`available`).
  *
  * ⚠️ **SEM `title`** (mesma regra do `KidsBackButton`): com `aria-label` presente, o
  * `title` não vira NOME e sim DESCRIÇÃO — o leitor de tela diria "Esconder menu,

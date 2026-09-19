@@ -1,6 +1,6 @@
 import { afterAll, expect, mock, test } from 'bun:test'
 import type { PintaHostAdapter } from '@sistemazero/pinta'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 
 const actualNavigation = await import('next/navigation')
@@ -39,12 +39,24 @@ function localPersistence(namespace: string) {
 
 function ObservedPintaApp({
   adapter,
+  onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
   persistence?: object
+  onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
-  return <output data-testid="pinta-app">montado</output>
+  return (
+    <>
+      <output data-testid="pinta-app">montado</output>
+      <button type="button" onClick={() => onWorkspaceChange?.(true)}>
+        Abrir desenho de teste
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(false)}>
+        Voltar à galeria de teste
+      </button>
+    </>
+  )
 }
 
 /** A query string da vez (`?tarefa=` é o deep link do Pensa). */
@@ -52,6 +64,7 @@ let searchParams = new URLSearchParams()
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
+  usePathname: () => '/pinta',
   useRouter: () => router,
   useSearchParams: () => searchParams,
 }))
@@ -82,6 +95,35 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
 }))
 
 const { PintaClient } = await import('../src/components/kids/pinta-client')
+const { FocusModeProvider, useFocusMode } = await import('../src/components/kids/focus-mode')
+
+function NavProbe() {
+  const { navCollapsed, toggleNav } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={toggleNav}>
+        Abrir menu de teste
+      </button>
+    </>
+  )
+}
+
+test('o Pinta comunica a abertura do desenho ao menu do shell', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-pinta">
+      <PintaClient viewerId="perfil-pinta" studioAvailable />
+      <NavProbe />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('pinta-app')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir menu de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir desenho de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+})
 
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)

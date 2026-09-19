@@ -50,9 +50,11 @@ function localPersistence(namespace: string) {
 function ObservedMoldaApp({
   persistence,
   adapter,
+  onWorkspaceChange,
 }: {
   persistence?: object
   adapter?: MoldaHostAdapter
+  onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
   const [initialPersistence] = useState(persistence)
@@ -72,12 +74,19 @@ function ObservedMoldaApp({
       <button type="button" onClick={() => setOpenedId(null)}>
         Voltar à galeria
       </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(true)}>
+        Abrir modelo de teste
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(false)}>
+        Sair do modelo de teste
+      </button>
     </>
   )
 }
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
+  usePathname: () => '/molda',
   useRouter: () => router,
   useSearchParams: () => query,
 }))
@@ -108,6 +117,35 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
 }))
 
 const { MoldaClient } = await import('../src/components/kids/molda-client')
+const { FocusModeProvider, useFocusMode } = await import('../src/components/kids/focus-mode')
+
+function NavProbe() {
+  const { navCollapsed, toggleNav } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={toggleNav}>
+        Abrir menu de teste
+      </button>
+    </>
+  )
+}
+
+test('o Molda comunica a abertura do modelo ao menu do shell', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-molda">
+      <MoldaClient viewerId="perfil-molda" studioAvailable />
+      <NavProbe />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('molda-opened')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir menu de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir modelo de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: 'Sair do modelo de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+})
 
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)
