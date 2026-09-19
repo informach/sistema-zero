@@ -1,6 +1,6 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { isAiQuotaError } from '@sistemazero/core/ai-credits'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { editedAgo } from '../core/relativeTime'
 import { splitSuggestions, stripStreamingSuggestions } from '../core/suggestions'
 import type {
@@ -114,12 +114,20 @@ function failure(cause: unknown): PensaFailure {
 export function PensaApp({
   adapter,
   initialProjectId = null,
+  onWorkspaceChange,
 }: {
   adapter: PensaHostAdapter
   initialProjectId?: string | null
+  /** Informa ao host quando um plano está aberto, sem acoplar o Pensa ao menu externo. */
+  onWorkspaceChange?: (active: boolean) => void
 }) {
   const [projects, setProjects] = useState<PensaProjectListView[]>([])
   const [detail, setDetail] = useState<PensaProjectDetailView | null>(null)
+  const projectOpen = detail !== null
+  useLayoutEffect(() => {
+    onWorkspaceChange?.(projectOpen)
+    return () => onWorkspaceChange?.(false)
+  }, [projectOpen, onWorkspaceChange])
   const [stage, setStage] = useState<PensaStageView | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)

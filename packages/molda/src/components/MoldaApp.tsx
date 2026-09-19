@@ -8,7 +8,7 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { unlistedReadIssues } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { createGallerySceneSource } from '../state/gallerySceneSource'
@@ -30,6 +30,8 @@ export interface MoldaAppProps {
   /** Default: a persistência local do namespace corrente. */
   persistence?: MoldaPersistence
   className?: string
+  /** Informa ao host quando a oficina ocupa a área de criação. */
+  onWorkspaceChange?: (active: boolean) => void
 }
 
 type Screen =
@@ -75,7 +77,12 @@ function InitialAssetOpener({
   return null
 }
 
-export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JSX.Element {
+export function MoldaApp({
+  adapter,
+  persistence,
+  className,
+  onWorkspaceChange,
+}: MoldaAppProps): JSX.Element {
   const adapterValue = adapter ?? EMPTY_ADAPTER
   const [persist] = useState(() => persistence ?? getDefaultMoldaPersistence())
   // A oficina seguinte lê o MESMO banco do namespace: uma criação, uma identidade.
@@ -85,6 +92,11 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
   const [scene] = useState(() => createGallerySceneSource(sceneStore))
   const [gallery] = useState(() => createGalleryStore(persist, { scene }))
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
+  const editorOpen = screen.type === 'editor'
+  useLayoutEffect(() => {
+    onWorkspaceChange?.(editorOpen)
+    return () => onWorkspaceChange?.(false)
+  }, [editorOpen, onWorkspaceChange])
   /**
    * Uma criação JÁ na geração seguinte abre na oficina, sempre. Um modelo ANTIGO só vai
    * para lá com `sceneWorkshop` ligado, porque abrir por lá o PROMOVE

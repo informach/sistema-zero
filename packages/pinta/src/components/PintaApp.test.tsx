@@ -132,7 +132,8 @@ describe('PintaApp — galeria', () => {
   })
 
   it('cria um personagem (estilo → tipo → tamanho → nome) e abre o editor; voltar mostra o card', async () => {
-    render(<PintaApp />)
+    const workspaceStates: boolean[] = []
+    render(<PintaApp onWorkspaceChange={(active) => workspaceStates.push(active)} />)
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
@@ -163,12 +164,14 @@ describe('PintaApp — galeria', () => {
     })
     expect(screen.getByRole('toolbar', { name: 'Ferramentas' })).toBeTruthy()
     expect(screen.getByText(COPY.editor.saved).getAttribute('role')).toBe('status')
+    expect(workspaceStates.at(-1)).toBe(true)
 
     // Voltar → galeria com o card.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Abrir meu-heroi/ })).toBeTruthy()
     })
+    expect(workspaceStates.at(-1)).toBe(false)
   })
 
   it('cria um cenário com tamanho PERSONALIZADO (card não avança; faixa valida; 300×200 nasce)', async () => {

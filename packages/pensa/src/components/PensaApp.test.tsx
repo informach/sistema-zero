@@ -133,7 +133,10 @@ describe('Pensa planejador', () => {
         streamChat: () => () => {},
       },
     }
-    render(<PensaApp adapter={adapter} />)
+    const workspaceStates: boolean[] = []
+    render(
+      <PensaApp adapter={adapter} onWorkspaceChange={(active) => workspaceStates.push(active)} />,
+    )
     await waitFor(() =>
       screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }),
     )
@@ -148,6 +151,7 @@ describe('Pensa planejador', () => {
     expect(screen.queryByText('PLANEJADOR DE JOGOS')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /Continuar o plano Bosque das Estrelas/ }))
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Meu plano' })).toBeTruthy())
+    expect(workspaceStates.at(-1)).toBe(true)
     expect(screen.getByText('PRÓXIMA')).toBeTruthy()
     expect(screen.getByText(/Depois de: Desenhar a estrela/)).toBeTruthy()
     expect(screen.getAllByRole('button', { name: 'Editar cartão' })).toHaveLength(2)
@@ -158,6 +162,9 @@ describe('Pensa planejador', () => {
     fireEvent.click(screen.getByRole('button', { name: /Abrir no Pinta/ }))
     expect(onOpenTask).toHaveBeenCalledWith({ taskId: 'art-1', destination: 'pinta' })
     expect(document.querySelector('iframe')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar aos meus planos' }))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Meus projetos' })).toBeTruthy())
+    expect(workspaceStates.at(-1)).toBe(false)
   })
 
   test('a Bíblia Visual mostra paleta com hex, regras, telas nomeadas e detalhes dos assets', async () => {

@@ -162,10 +162,18 @@ describe('MoldaApp', () => {
 
   test('editor do céu: trocar o preset salva, desfaz e refaz; Voltar volta à galeria', async () => {
     const persistence = createMemoryPersistence([makeSky()])
-    render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'sky-1' }} />)
+    const workspaceStates: boolean[] = []
+    render(
+      <MoldaApp
+        persistence={persistence}
+        adapter={{ initialAssetId: 'sky-1' }}
+        onWorkspaceChange={(active) => workspaceStates.push(active)}
+      />,
+    )
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('fim-de-tarde'),
     )
+    expect(workspaceStates.at(-1)).toBe(true)
     const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
     expect(undo.disabled).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
@@ -182,6 +190,7 @@ describe('MoldaApp', () => {
 
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     expect(await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })).toBeDefined()
+    expect(workspaceStates.at(-1)).toBe(false)
     await waitFor(() => expect(presetOf(persistence.snapshot()[0])).toBe('nublado'))
   })
 

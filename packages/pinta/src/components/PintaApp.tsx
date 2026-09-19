@@ -4,7 +4,7 @@
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
@@ -73,10 +73,13 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
 export function PintaApp({
   adapter,
   persistence,
+  onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
   persistence?: PintaPersistence
+  /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
+  onWorkspaceChange?: (active: boolean) => void
 }): JSX.Element {
   // O default é resolvido UMA vez, junto com a store: `createPintaPersistence` captura o banco do
   // namespace vigente, e recriá-lo a cada render poderia atravessar perfis.
@@ -99,6 +102,11 @@ export function PintaApp({
   useEffect(() => gallery.getState().attachPersistence(), [gallery])
   useEffect(() => paletteLibrary.getState().attachPersistence(), [paletteLibrary])
   const [view, setView] = useState<PintaView>({ screen: 'gallery' })
+  const editorOpen = view.screen === 'editor'
+  useLayoutEffect(() => {
+    onWorkspaceChange?.(editorOpen)
+    return () => onWorkspaceChange?.(false)
+  }, [editorOpen, onWorkspaceChange])
   const [initialIntentVersion, setInitialIntentVersion] = useState(0)
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
   const resolvedAdapter = adapter ?? EMPTY_ADAPTER
