@@ -300,8 +300,8 @@ export function PintaClient({
     setGuiaRecolhido,
   ])
 
-  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da barra do
-  // Pinta (contrato `hostChrome`, 07/09/2026) — antes o selo era uma linha acima do app.
+  // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
+  // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   return (

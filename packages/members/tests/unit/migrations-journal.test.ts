@@ -34,4 +34,11 @@ describe('journal de migrations', () => {
       [...entries].sort((a, b) => a.when - b.when).map((e) => e.idx),
     )
   })
+
+  it('não agenda a remoção da coluna antiga na mesma release da 0090', () => {
+    // Remover esta trava só na segunda release de produção, depois que o Members
+    // com a 0090 estiver estável e os pods antigos tiverem saído.
+    expect(entries.at(-1)?.tag).toBe('0090_bloco_materiais')
+    expect(entries.some((entry) => entry.tag === '0091_sai_o_apoio_das_secoes')).toBe(false)
+  })
 })

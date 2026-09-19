@@ -27,9 +27,9 @@ const EXIT_FLUSH_TIMEOUT_MS = 3000
  *
  * "Guardado na sua conta": esta rota também liga o espelho da nuvem (só o `attach`;
  * a DESCIDA acontece na lista do `/estudio`, que é por onde a criança chega aqui) —
- * senão as edições no modo Código só subiam na próxima visita à lista. O selo e o
- * botão do menu vivem DENTRO da Topbar do editor (contrato `hostChrome`, 07/09/2026):
- * o Provider vem do MESMO módulo `@sistemazero/studio` que o `StudioProEditor` carrega
+ * senão as edições no modo Código só subiam na próxima visita à lista. O selo fica na
+ * Topbar do editor; o controle do menu pertence à alça do shell Kids. O Provider vem
+ * do MESMO módulo `@sistemazero/studio` que o `StudioProEditor` carrega
  * (mesma instância de contexto no bundle do kids), por isso o módulo é importado aqui
  * ANTES de montar o editor — importá-lo depois trocaria a árvore e remontaria o editor.
  */

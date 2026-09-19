@@ -248,9 +248,8 @@ export function MoldaClient({
     [studioAvailable, router, initialAssetId, viewerId, stableAccess],
   )
 
-  // Botão do menu lateral, selo "Guardado na sua conta", a seta da galeria para Criar e o
-  // sinal da conta, desenhados DENTRO da barra do Molda (contrato `hostChrome`, lote 6b de
-  // 11/09/2026): antes o selo era uma linha acima do app e o menu, um puxador na calha.
+  // O selo "Guardado na sua conta", a seta da galeria e o sinal da conta ficam na
+  // barra do Molda. O menu lateral é da alça do shell Kids (`hostChrome.menu` é null).
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   return (

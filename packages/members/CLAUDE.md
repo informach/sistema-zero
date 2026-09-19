@@ -2205,7 +2205,10 @@ substituir na raiz, sem compatibilidade.
   foi apagado SOME da projeção, e o `inspect` do rascunho NOMEIA o bloco antes de publicar.
 - ⚠️⚠️ **As duas migrations sobem em RELEASES SEPARADAS.** A `0090` acrescenta o valor do enum e
   faz o backfill (cada id de `support_block_ids` vai para o fim da última seção, dentro do jsonb
-  `sections`) e **deixa a coluna viva**; a `0091` a derruba. O `getStructure` do código ANTIGO lê
+  `sections`) e **deixa a coluna viva**; a `0091` a derruba. **A `0091` foi retirada do journal e
+  dos artefatos desta primeira release para não ser aplicada junto com a `0090` em produção.**
+  Seus artefatos originais estão recuperáveis no commit `77195b9f` e só devem voltar ao journal
+  na segunda release, após o Members novo estar estável em produção. O `getStructure` do código ANTIGO lê
   essa coluna em TODA carga de aula, e durante a troca de pods os dois códigos convivem — derrubar
   junto quebraria a leitura de aula na janela do deploy (mesma classe do incidente de 03/08).
 - ⚠️ A `0090` muda a `revision` da estrutura das aulas afetadas. Isso é correto e não perde
@@ -2219,10 +2222,12 @@ substituir na raiz, sem compatibilidade.
   código 1, em vez de ganhar uma seção inventada.
 
 **Ordem de implantação:** migration `0090` → members → gateway → admin/community/kids →
-`materials:backfill --apply` → (release seguinte) migration `0091`.
+`materials:backfill --apply` → `drafts:rebase-revisions` se necessário → (release seguinte)
+migration `0091`. Procedimento completo: `docs/runbooks/promocao-producao-aulas-2026-09-19.md`.
 
-**Reconciliação das revisões de rascunho após a 0091 (19/09/2026):** retirar
-`supportBlockIds` também mudou o hash do publicado. Rascunhos abertos antes da mudança
+**Reconciliação das revisões de rascunho após a primeira release (19/09/2026):** retirar
+`supportBlockIds` do código também mudou o hash do publicado; não depende do DROP físico da `0091`.
+Rascunhos abertos antes da mudança
 continuavam com o hash antigo e `draft/publish` respondia 409, mesmo sem outra aba. Rode
 `bun run drafts:rebase-revisions` para conferir e `bun run drafts:rebase-revisions -- --apply`
 para atualizar somente as linhas cujo hash antigo confere exatamente com o publicado atual
