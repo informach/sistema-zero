@@ -150,7 +150,7 @@ describe('lesson authoring integrity', () => {
     expect(project.initialProject.id).not.toBe('seed')
     expect(project.initialProject.name).toBe('Dino')
   })
-  test('video-only completion is not offered when another instructional block exists', () => {
+  test('video completion remains available with another instructional block', () => {
     const document = fixture()
     const section = {
       ...defaultLessonSection('only', 'Tour', ['video']),
@@ -162,8 +162,8 @@ describe('lesson authoring integrity', () => {
       content: { kind: 'dialogue', text: 'Vamos começar!', pose: 'speaking' },
     })
     section.blockIds.push('zappy')
-    expect(sectionCompletionCandidates(document, section)[0]?.issue).toContain('apenas o vídeo')
-    expect(suggestedCompletion(document, section)).toBeNull()
+    expect(sectionCompletionCandidates(document, section)[0]?.issue).toBeUndefined()
+    expect(suggestedCompletion(document, section)?.blockIds).toEqual(['video'])
   })
   test('book completion and multiple goals have understandable summaries without changing their data', () => {
     const document = fixture()

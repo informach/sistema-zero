@@ -1,5 +1,4 @@
 import { isInteractiveBlock, type LessonSection } from './index'
-import { isVideoOnlySection } from './legacy-layout'
 import { isPlatformAction, type PlatformAction } from './platform-action'
 
 export interface ProjectBlockPattern {
@@ -35,6 +34,8 @@ export interface SectionProjectCheck {
 export interface SectionCompletion {
   version: 1
   blockIds: string[]
+  /** Arquivos efetivamente exigidos em cada bloco de materiais escolhido. */
+  materialItems?: { blockId: string; itemIds: string[] }[]
   projectChecks?: SectionProjectCheck[]
   platformAction?: PlatformAction
 }
@@ -121,6 +122,24 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
   )
     return false
   if (v.platformAction !== undefined && !isPlatformAction(v.platformAction)) return false
+  if (v.materialItems !== undefined) {
+    if (
+      !Array.isArray(v.materialItems) ||
+      v.materialItems.length > 20 ||
+      !v.materialItems.every(
+        (entry) =>
+          record(entry) &&
+          label(entry.blockId) &&
+          Array.isArray(entry.itemIds) &&
+          entry.itemIds.length > 0 &&
+          entry.itemIds.length <= 20 &&
+          entry.itemIds.every(label) &&
+          new Set(entry.itemIds).size === entry.itemIds.length,
+      ) ||
+      new Set(v.materialItems.map((entry) => entry.blockId)).size !== v.materialItems.length
+    )
+      return false
+  }
   if (v.projectChecks === undefined) return true
   if (!Array.isArray(v.projectChecks) || v.projectChecks.length > 20) return false
   return (
@@ -212,7 +231,11 @@ export function sectionCompletionIssues(
       add('Esta seção precisa de uma checagem ou objetivo verificável.')
     if (
       c.platformAction &&
-      (c.blockIds.length || c.projectChecks?.length || s.workspaceBlockId || s.externalTool)
+      (c.blockIds.length ||
+        c.materialItems?.length ||
+        c.projectChecks?.length ||
+        s.workspaceBlockId ||
+        s.externalTool)
     )
       add('A ação da plataforma é o critério desta etapa. Separe outras atividades em outra seção.')
     for (const id of c.blockIds) {
@@ -233,16 +256,27 @@ export function sectionCompletionIssues(
             'Use uma exploração nativa com objetivo observável ou uma resposta corrigida no servidor.',
           )
       } else if (content.kind === 'video') {
-        if (
-          !isVideoOnlySection(
-            s,
-            blocks.map((b) => ({
-              id: b.id,
-              kind: record(b.content) ? String(b.content.kind) : '',
-            })),
+        // A porcentagem assistida é evidência própria do vídeo e pode ser combinada com arquivos.
+      } else if (content.kind === 'materials') {
+        const selected = c.materialItems?.find((entry) => entry.blockId === id)?.itemIds
+        const items = content.items
+        if (!selected?.length) {
+          add('Escolha ao menos um arquivo do bloco de materiais para exigir o download.')
+        } else if (
+          !Array.isArray(items) ||
+          selected.some(
+            (itemId) =>
+              !items.some(
+                (item: unknown) =>
+                  record(item) &&
+                  item.id === itemId &&
+                  item.kind === 'file' &&
+                  label(item.attachmentId),
+              ),
           )
-        )
-          add('Assistir a 90% só pode ser exigido quando a seção contém apenas o vídeo.')
+        ) {
+          add('Um arquivo obrigatório foi removido ou ainda não foi enviado.')
+        }
       } else if (content.kind === 'ebook') {
         if (s.intent !== 'material')
           add('Use a seção Material do curso para exigir abrir o livro ou baixar o PDF.')
@@ -272,6 +306,18 @@ export function sectionCompletionIssues(
             'Para exigir aprovação do projeto nesta seção, use apenas checagens estruturais. Deixe testes de execução como formativos ou acrescente uma pergunta corrigida pelo servidor.',
           )
       } else add('Use uma pergunta, desafio ou entrega como critério de conclusão.')
+    }
+    for (const requirement of c.materialItems ?? []) {
+      if (
+        !c.blockIds.includes(requirement.blockId) ||
+        !blocks.some(
+          (block) =>
+            block.id === requirement.blockId &&
+            record(block.content) &&
+            block.content.kind === 'materials',
+        )
+      )
+        add('A seleção de arquivos obrigatórios deve pertencer a um bloco de materiais escolhido.')
     }
     if (
       c.projectChecks?.some(

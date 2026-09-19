@@ -473,6 +473,15 @@ const SectionRule = t.Union([
 export const SectionCompletionSchema = t.Object({
   version: t.Literal(1),
   blockIds: t.Array(Id, { maxItems: 200 }),
+  materialItems: t.Optional(
+    t.Array(
+      t.Object({
+        blockId: Id,
+        itemIds: t.Array(Id, { minItems: 1, maxItems: 20 }),
+      }),
+      { maxItems: 20 },
+    ),
+  ),
   platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
   projectChecks: t.Optional(
     t.Array(

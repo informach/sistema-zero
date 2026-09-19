@@ -39,7 +39,13 @@ export function SectionCompletionEditor({
   onChange,
 }: {
   value: SectionCompletion
-  candidates: { id: string; label: string; model?: string; issue?: string }[]
+  candidates: {
+    id: string
+    label: string
+    model?: string
+    issue?: string
+    files?: { id: string; label: string }[]
+  }[]
   hasStudio: boolean
   allowBlocks?: string[]
   workspace?: unknown
@@ -123,26 +129,68 @@ export function SectionCompletionEditor({
       )}
       {!value.platformAction &&
         candidates.map((c) => (
-          <label key={c.id} className="flex min-h-11 items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              checked={value.blockIds.includes(c.id)}
-              disabled={Boolean(c.issue) && !value.blockIds.includes(c.id)}
-              onChange={(e) =>
-                onChange({
-                  ...value,
-                  blockIds: e.target.checked
-                    ? [...value.blockIds, c.id]
-                    : value.blockIds.filter((id) => id !== c.id),
-                })
-              }
-            />
-            <span>
-              {c.model ? `${c.model}: ` : ''}
-              {c.label}
-              {c.issue && <span className="block text-xs text-destructive">{c.issue}</span>}
-            </span>
-          </label>
+          <div key={c.id} className="space-y-1">
+            {c.files ? (
+              <div className="space-y-1 rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">
+                  {c.model}: {c.label}
+                </p>
+                {c.files.map((file) => {
+                  const selected =
+                    value.materialItems?.find((entry) => entry.blockId === c.id)?.itemIds ?? []
+                  return (
+                    <label key={file.id} className="flex min-h-11 items-center gap-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(file.id)}
+                        disabled={Boolean(c.issue) && !selected.includes(file.id)}
+                        onChange={(event) => {
+                          const next = event.target.checked
+                            ? [...selected, file.id]
+                            : selected.filter((id) => id !== file.id)
+                          onChange({
+                            ...value,
+                            blockIds: next.length
+                              ? [...new Set([...value.blockIds, c.id])]
+                              : value.blockIds.filter((id) => id !== c.id),
+                            materialItems: [
+                              ...(value.materialItems ?? []).filter(
+                                (entry) => entry.blockId !== c.id,
+                              ),
+                              ...(next.length ? [{ blockId: c.id, itemIds: next }] : []),
+                            ],
+                          })
+                        }}
+                      />
+                      <span>Exigir download: {file.label}</span>
+                    </label>
+                  )
+                })}
+                {c.issue && <p className="text-xs text-destructive">{c.issue}</p>}
+              </div>
+            ) : (
+              <label className="flex min-h-11 items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={value.blockIds.includes(c.id)}
+                  disabled={Boolean(c.issue) && !value.blockIds.includes(c.id)}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      blockIds: e.target.checked
+                        ? [...value.blockIds, c.id]
+                        : value.blockIds.filter((id) => id !== c.id),
+                    })
+                  }
+                />
+                <span>
+                  {c.model ? `${c.model}: ` : ''}
+                  {c.label}
+                  {c.issue && <span className="block text-xs text-destructive">{c.issue}</span>}
+                </span>
+              </label>
+            )}
+          </div>
         ))}
       {checks.map((check, index) => (
         <div key={check.id} className="space-y-2 rounded-lg bg-muted/40 p-3">

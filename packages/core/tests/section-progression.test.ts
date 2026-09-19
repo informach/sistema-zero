@@ -4,6 +4,7 @@ import {
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
+  isSectionCompletion,
   publicInteractiveBlock,
   sectionCompletionIssues,
   sectionProgressView,
@@ -28,6 +29,57 @@ const question: InteractiveBlock = {
 }
 
 describe('section progression', () => {
+  test('video and selected material files form one valid cumulative rule', () => {
+    const blocks = [
+      { id: 'video', content: { kind: 'video' } },
+      {
+        id: 'files',
+        content: {
+          kind: 'materials',
+          items: [
+            { id: 'required', kind: 'file', attachmentId: 'attachment' },
+            { id: 'optional', kind: 'file', attachmentId: 'other' },
+          ],
+        },
+      },
+    ]
+    const section = {
+      ...defaultLessonSection('section', 'Vídeo e arquivos', ['video', 'files']),
+      completion: {
+        version: 1 as const,
+        blockIds: ['video', 'files'],
+        materialItems: [{ blockId: 'files', itemIds: ['required'] }],
+      },
+    }
+    expect(isSectionCompletion(section.completion)).toBe(true)
+    expect(sectionCompletionIssues([section], blocks)).toEqual([])
+    expect(
+      sectionCompletionIssues(
+        [{ ...section, completion: { ...section.completion, materialItems: undefined } }],
+        blocks,
+      ).some((issue) => issue.message.includes('ao menos um arquivo')),
+    ).toBe(true)
+    expect(
+      sectionCompletionIssues(
+        [
+          {
+            ...section,
+            completion: {
+              ...section.completion,
+              materialItems: [{ blockId: 'files', itemIds: ['missing'] }],
+            },
+          },
+        ],
+        blocks,
+      ).some((issue) => issue.message.includes('removido')),
+    ).toBe(true)
+    expect(
+      isSectionCompletion({
+        ...section.completion,
+        materialItems: [{ blockId: 'files', itemIds: ['required', 'required'] }],
+      }),
+    ).toBe(false)
+  })
   test('delivery can precede the final quiz without allowing more construction afterwards', () => {
     const delivery = {
       ...defaultLessonSection('delivery', 'Enviar', ['project']),

@@ -54,12 +54,17 @@ describe('autoria dos materiais complementares', () => {
     expect(avisos.some((w) => w.startsWith('3 arquivos'))).toBe(true)
   })
 
-  test('⚠️ materiais NÃO podem virar critério de conclusão da seção', () => {
-    // Complementar é o que está fora do percurso obrigatório. Se ele entrasse na lista de
-    // critérios, a seção fecharia sozinha (o bloco não produz requisito nenhum) e a autora acharia
-    // que tinha exigido alguma coisa.
+  test('arquivos do bloco podem ser marcados individualmente como obrigatórios', () => {
     const d = doc([{ id: 'i1', kind: 'file', attachmentId: 'a1' }])
-    expect(sectionCompletionCandidates(d, d.sections[0]!)).toEqual([])
+    expect(sectionCompletionCandidates(d, d.sections[0]!)).toEqual([
+      {
+        id: 'b-mat',
+        label: 'Arquivos do Pinta',
+        model: 'Baixar arquivos selecionados',
+        files: [{ id: 'i1', label: 'dino.pinta.json' }],
+        issue: undefined,
+      },
+    ])
   })
 
   test('o rótulo na lista do percurso é o nome do bloco, ou a contagem', () => {

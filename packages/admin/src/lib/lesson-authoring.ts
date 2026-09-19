@@ -69,6 +69,8 @@ export function completionBlockLabel(content: LessonBlockContent): string {
       return 'Assistir a 90% do vídeo'
     case 'ebook':
       return 'Abrir o livro ou baixar o PDF'
+    case 'materials':
+      return 'Baixar arquivos selecionados'
     case 'studio':
     case 'pinta':
       return isGalleryBlock(content)
@@ -107,11 +109,39 @@ export function sectionCompletionCandidates(document: Document, section: LessonS
     const block = document.blocks.find((b) => b.id === id)
     if (
       !block ||
-      !['interactive', 'quiz', 'studio', 'pinta', 'ebook', 'video'].includes(block.content.kind)
+      !['interactive', 'quiz', 'studio', 'pinta', 'ebook', 'video', 'materials'].includes(
+        block.content.kind,
+      )
     )
       return []
+    const files =
+      block.content.kind === 'materials'
+        ? block.content.items.flatMap((item) =>
+            item.kind === 'file' && item.attachmentId
+              ? [
+                  {
+                    id: item.id,
+                    label:
+                      document.attachments.find((attachment) => attachment.id === item.attachmentId)
+                        ?.label ??
+                      item.label ??
+                      'Arquivo',
+                  },
+                ]
+              : [],
+          )
+        : undefined
     const issue = sectionCompletionIssues(
-      [{ ...section, completion: { version: 1, blockIds: [id] } }],
+      [
+        {
+          ...section,
+          completion: {
+            version: 1,
+            blockIds: [id],
+            materialItems: files?.length ? [{ blockId: id, itemIds: [files[0]!.id] }] : undefined,
+          },
+        },
+      ],
       document.blocks,
     ).find((i) => i.sectionId === section.id)?.message
     const delivery = block.content.kind === 'studio' || block.content.kind === 'pinta'
@@ -120,10 +150,13 @@ export function sectionCompletionCandidates(document: Document, section: LessonS
         id,
         label: lessonContentLabel(block),
         model: completionBlockLabel(block.content),
+        ...(files ? { files } : {}),
         issue:
           delivery && !isFinalProjectSection(document.sections, section.id)
             ? 'Coloque a entrega antes do quiz final, sem etapas de criação depois dela.'
-            : issue,
+            : files && files.length === 0
+              ? 'Adicione ao menos um arquivo enviado ao bloco.'
+              : issue,
       },
     ]
   })
@@ -135,7 +168,10 @@ export function suggestedCompletion(
 ): SectionCompletion | null {
   const candidates = sectionCompletionCandidates(document, section).filter((c) => !c.issue)
   // Multiple possibilities need an explicit teacher choice, as do structural project goals.
-  return candidates.length === 1 && !section.workspaceBlockId && !section.externalTool
+  return candidates.length === 1 &&
+    !candidates[0]?.files &&
+    !section.workspaceBlockId &&
+    !section.externalTool
     ? { version: 1, blockIds: [candidates[0]!.id] }
     : null
 }

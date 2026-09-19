@@ -34,7 +34,7 @@ describe('video-only sections', () => {
       ),
     ).toEqual({ duration: 200, ranges: [[0, 30]] })
   })
-  test('a video with a workspace or another activity cannot become a watch-time gate', () => {
+  test('a video can be required alongside other activities', () => {
     const blocks = [
       { id: 'v', kind: 'video', content: { kind: 'video' } },
       { id: 's', kind: 'studio', content: { kind: 'studio' } },
@@ -45,11 +45,7 @@ describe('video-only sections', () => {
     }
     expect(isVideoOnlySection(section, blocks)).toBe(true)
     expect(sectionCompletionIssues([section], blocks)).toEqual([])
-    expect(
-      sectionCompletionIssues([{ ...section, workspaceBlockId: 's' }], blocks).some((i) =>
-        i.message.includes('90%'),
-      ),
-    ).toBe(true)
+    expect(sectionCompletionIssues([{ ...section, workspaceBlockId: 's' }], blocks)).toEqual([])
     expect(isVideoOnlySection({ ...section, blockIds: ['v', 's'] }, blocks)).toBe(false)
   })
   test('legacy projection retains two stages and stable project identity; no missing activity is invented', () => {
