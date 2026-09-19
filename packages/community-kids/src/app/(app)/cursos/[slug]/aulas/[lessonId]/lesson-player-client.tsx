@@ -297,7 +297,7 @@ export function LessonPlayer({
           aria-hidden={outlineCollapsed || undefined}
           inert={outlineCollapsed}
           className={cn(
-            'fixed inset-y-0 right-0 z-[61] flex w-[min(20rem,90vw)] flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40 lg:w-(--lesson-outline-width)',
+            'fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
             outlineCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
