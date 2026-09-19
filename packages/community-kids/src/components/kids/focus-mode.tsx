@@ -170,6 +170,7 @@ export function SidebarFallback() {
   const { navCollapsed } = useFocusMode()
   return (
     <aside
+      id="kids-app-sidebar"
       inert={navCollapsed}
       aria-hidden={navCollapsed}
       className={cn(

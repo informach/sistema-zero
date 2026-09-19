@@ -181,6 +181,7 @@ export function AppSidebar({
 
   return (
     <aside
+      id="kids-app-sidebar"
       // Colapsada ela fica INERTE: `opacity-0 pointer-events-none` não tira os links do
       // tab order nem do leitor de tela — sem isto o Tab passeava por 9 itens invisíveis.
       inert={navCollapsed}

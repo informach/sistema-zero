@@ -1697,7 +1697,8 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
    o cartão original. No celular fica acima da barra global de abas. */
 .kids-shell-row {
   --kids-menu-width: 16.75rem;
-  --lesson-outline-width: 18rem;
+  /* A gaveta usa min(20rem, 90vw) antes do desktop. A alça lê a MESMA largura. */
+  --lesson-outline-width: min(20rem, 90vw);
 }
 .sz-lesson-sections .sz-lesson-nav-immersive {
   position: fixed;
@@ -1731,6 +1732,9 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   }
 }
 @media (min-width: 1024px) {
+  .kids-shell-row {
+    --lesson-outline-width: 18rem;
+  }
   .kids-aula {
     transition: padding-right 0.3s ease-in-out;
   }

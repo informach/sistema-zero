@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
 import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
+import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
@@ -172,6 +173,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Suspense fallback={<SidebarFallback />}>
             <SidebarChrome session={session} />
           </Suspense>
+          <FocusModeToggle target="nav" />
+          <FocusModeToggle target="outline" />
           <div className="flex min-w-0 flex-1 flex-col">
             <Suspense
               fallback={

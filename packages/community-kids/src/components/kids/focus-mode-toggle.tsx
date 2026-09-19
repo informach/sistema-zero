@@ -1,23 +1,18 @@
 'use client'
 
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react'
-import { cn } from '@/lib/cn'
+import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
 import { useFocusMode } from './focus-mode'
 
 /**
- * Botão que esconde/mostra UMA das barras laterais (os dois são independentes). O
- * lado do ícone comunica qual barra ele controla; o estado "pressed" (barra
- * escondida) acende no tint da marca, como o item ativo da sidebar. Some fora das
- * telas/tamanhos em que faz sentido (`available`).
+ * Alça que esconde/mostra UMA das barras laterais (os dois estados são independentes).
+ * Some fora das telas/tamanhos em que o painel correspondente existe (`available`).
  *
  * ⚠️ **SEM `title`** (mesma regra do `KidsBackButton`): com `aria-label` presente, o
  * `title` não vira NOME e sim DESCRIÇÃO — o leitor de tela diria "Esconder menu,
  * botão, Esconder menu". E no público tablet/celular tooltip nem aparece.
  *
- * Mora na barra de cima da AULA: o quadrado creme das telas-modelo (11/09/2026), ao lado
- * do "voltar" e do progresso. Nas quatro ferramentas o botão do menu é desenhado pela
- * PRÓPRIA ferramenta (contrato `hostChrome`, `use-host-chrome.tsx`); o puxador na borda
- * (a roupa `edge`), que o Molda usava por último, saiu no lote 6b.
+ * É montada uma vez no shell Kids, como irmã dos painéis. Não mora em cabeçalhos:
+ * a posição fechada continua visível mesmo quando o painel ganha largura zero.
  */
 export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
   const { navAvailable, outlineAvailable, navHidden, outlineHidden, toggleNav, toggleOutline } =
@@ -35,33 +30,19 @@ export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
       : hidden
         ? 'Mostrar lista de aulas'
         : 'Esconder lista de aulas'
-  const Icon =
-    target === 'nav'
-      ? hidden
-        ? PanelLeftOpen
-        : PanelLeftClose
-      : hidden
-        ? PanelRightOpen
-        : PanelRightClose
-
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={label}
-      aria-pressed={hidden}
-      aria-controls={target === 'outline' ? 'kids-lesson-outline' : undefined}
-      className={cn(
-        // O QUADRADO de cantos redondos das telas-modelo (11/09/2026), com o 3D do Brilliant
-        // (`.kids-3d`: a borda de baixo cinza, que afunda no aperto). Escondido = o tom
-        // clarinho da cor de ação.
-        'kids-3d grid size-11 shrink-0 place-items-center rounded-[0.875rem] border-2 border-transparent',
-        hidden
-          ? 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
-          : 'bg-(--band-creme) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-creme)_90%,var(--foreground))]',
-      )}
-    >
-      <Icon className="size-5" />
-    </button>
+    <EdgePanelHandle
+      side={target === 'nav' ? 'left' : 'right'}
+      open={!hidden}
+      openOffset={target === 'nav' ? 'var(--kids-menu-width)' : 'var(--lesson-outline-width)'}
+      label={label}
+      controlsId={target === 'nav' ? 'kids-app-sidebar' : 'kids-lesson-outline'}
+      onToggle={toggle}
+      className={
+        target === 'nav'
+          ? 'border-(--menu-2) bg-(--menu) text-(--menu-texto)'
+          : 'z-[62] border-border bg-card text-foreground lg:z-[42]'
+      }
+    />
   )
 }
