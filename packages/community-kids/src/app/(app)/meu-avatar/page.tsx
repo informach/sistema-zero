@@ -6,9 +6,14 @@ import { getSession } from '@/server/session'
 export const dynamic = 'force-dynamic'
 
 /**
- * Configurador de avatar 3D — tela cheia IMERSIVA (FORA do grupo `(app)`, sem a sidebar,
- * como `/perfis` e `/jogar`). O proxy gateia `/meu-avatar` (protectedPrefixes + exige
- * perfil): conta sem perfil → `/perfis`. A montagem do WebGL é client-only (`ssr:false`).
+ * Configurador de avatar 3D — app de criação embarcado, como o Pinta e o Estúdio: DENTRO do
+ * grupo `(app)`, ocupando a área útil inteira com o menu da esquerda recolhido e o botão de
+ * mostrar na barra de cima (`EMBEDDED_APP_PREFIXES` + `FocusModeToggle`). O proxy gateia
+ * `/meu-avatar` (protectedPrefixes + exige perfil): conta sem perfil → `/perfis`. A montagem do
+ * WebGL é client-only (`ssr:false`).
+ *
+ * ⚠️ Até 19/09/2026 ele era tela cheia SOLTA (fora do grupo, `fixed inset-0`), e por isso não
+ * havia menu nenhum para mostrar. A URL não mudou: `(app)` é grupo de rota.
  */
 export default async function MeuAvatarPage({
   searchParams,

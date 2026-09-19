@@ -15,7 +15,9 @@ const AvatarConfigurator = dynamic(
 
 function ConfiguratorLoading() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background">
+    // Espelha a raiz do configurador: imersivo no celular, em fluxo a partir do `md` (senão o
+    // esqueleto cobriria a barra da esquerda enquanto o 3D carrega).
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
       <KidsMascot expression="thinking" className="size-24 animate-pulse" />
       <p className="[font-family:var(--font-display)] font-bold text-muted-foreground">
         Preparando seu avatar 3D…

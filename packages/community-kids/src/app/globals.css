@@ -1730,6 +1730,24 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     left: var(--kids-menu-width);
   }
 }
+
+/* A FAIXA DE FOCO aproveita o espaço que o menu recolhido devolveu.
+   A `KidsBand` mede 73.25rem, que é a coluna à direita do menu a 1440px — então, sem isto,
+   esconder o menu só CENTRALIZA o conteúdo em vez de dar espaço a ele, e o pedido era "adequar
+   o layout". Vale só onde a peça cresce de verdade (hoje o palco 3D do Quarto).
+   ⚠️ O estado vem do `aria-hidden` que o `FocusModeProvider` já põe na barra: o CSS lê o
+   contexto por `:has()`, sem prop nova nem um client component a mais — a mesma receita do
+   rodapé imersivo da aula, logo acima. */
+@media (min-width: 768px) {
+  /* Sem par `prefers-reduced-motion` aqui de propósito: o reset global no fim deste arquivo já
+     zera toda transição, e vem depois. */
+  .kids-band-foco > div {
+    transition: max-width 0.3s ease-in-out;
+  }
+  .kids-shell-row:has(aside.kids-menu[aria-hidden="true"]) .kids-band-foco > div {
+    max-width: calc(73.25rem + var(--kids-menu-width));
+  }
+}
 @media (min-width: 1024px) {
   .kids-aula {
     transition: padding-right 0.3s ease-in-out;

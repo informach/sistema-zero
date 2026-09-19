@@ -58,7 +58,9 @@ function mainFor(path: string): HTMLElement {
   return main
 }
 
-const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa', '/molda']
+// `/meu-avatar` entrou em 19/09/2026: o configurador saiu do `fixed inset-0` e passou a ocupar
+// a área útil como as ferramentas.
+const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa', '/molda', '/meu-avatar']
 
 describe('MainContainer: regime de altura + borda a borda dos apps embarcados', () => {
   it('rota embarcada trava a altura e fica de borda a borda (sem padding, calha ou puxador)', () => {
@@ -97,6 +99,15 @@ describe('MainContainer: regime de altura + borda a borda dos apps embarcados', 
       expect(main.querySelector('button')).toBeNull()
       cleanup()
     }
+  })
+
+  it('⚠️ o QUARTO recolhe o menu mas fica FORA do regime: as bandejas rolam', () => {
+    // A tela é de foco (`FOCUS_ONLY_PREFIXES`), mas travar a altura aqui cortaria as bandejas
+    // de móveis sem caminho de rolagem — é a razão de existirem duas réguas.
+    const main = mainFor('/quarto')
+    expect(main.className).not.toContain('overflow-hidden')
+    expect(main.className).not.toContain('md:h-dvh')
+    expect(main.className).toContain('flex-1')
   })
 
   it('página comum fica FORA do regime (a janela rola, como sempre)', () => {

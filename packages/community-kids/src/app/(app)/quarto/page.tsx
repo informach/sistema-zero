@@ -16,10 +16,15 @@ export default async function QuartoPage() {
 
   return (
     <>
-      <KidsBand tone="creme">
+      {/* ⚠️ As DUAS faixas levam a classe. Só o palco crescendo deixaria o cabeçalho (título,
+          seta e o próprio botão do menu) 134px indentado em relação à borda do quarto, com a
+          diferença aparecendo e sumindo na animação de 300ms de UMA das faixas. */}
+      <KidsBand tone="creme" className="kids-band-foco">
         <QuartoHeader />
       </KidsBand>
-      <KidsBand tone="lilas">
+      {/* `kids-band-foco`: com o menu recolhido, o palco do quarto ocupa o espaço que a barra
+          devolveu, em vez de só ficar mais centralizado (regra no `globals.css`). */}
+      <KidsBand tone="lilas" className="kids-band-foco">
         <RoomBuilder avatarPhotoUrl={avatarPhotoUrl} />
       </KidsBand>
     </>
