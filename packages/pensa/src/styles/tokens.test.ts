@@ -112,135 +112,110 @@ describe('pensa.css lê os tokens compartilhados', () => {
   })
 })
 
-// Full review de 11/09/2026: o "Continuar" do cartão do plano estica a área clicável para o
-// cartão inteiro por um `::after`. Se o botão andar (`transform` do aperto da pílula, ou o
-// `translate` do relevo das galerias), ele vira o bloco de referência do `::after`, que encolhe
-// para o tamanho da pílula no meio do gesto: o clique solta no cartão e o plano não abre
-// (medido no navegador). A regra que o segura fica FORA de camada, para vencer as receitas.
-describe('o cartão do plano abre em qualquer ponto', () => {
-  it('o botão com a área esticada não anda no hover nem no aperto', () => {
+// 19/09/2026, decisão dela: o cartão do plano NÃO é clicável. O "Continuar" tinha um `::after`
+// de `inset: -1px` que esticava a área clicável até a borda ("clicar em qualquer ponto abre"), e
+// com ele o cartão declarava `cursor: pointer`. Ela relatou o contrário do que o código dizia —
+// "estou clicando no card e não está acontecendo nada; só quando clico em continuar que abre" —
+// e pediu a mãozinha só nos botões. A camada saiu, e com ela o cursor do cartão e o `z-index` da
+// lixeira, que existiam por causa dela. ⚠️⚠️ Isto REVOGA as travas de 17 e 18/09 (o inset como
+// negativo da borda, o cursor no ancestral), escritas para matar o "cursor tremendo": sem camada
+// esticada não há duas fronteiras arredondadas para o ponteiro atravessar, e a alternância deixa
+// de ter causa em vez de ser compensada.
+describe('o cartão do plano NÃO é clicável', () => {
+  it('não existe camada esticando a área clicável de botão nenhum', () => {
+    // O padrão inteiro sai junto: sem `::after` absoluto no botão, ninguém cobre o cartão.
+    expect(css).not.toContain('.pensa-project-card__open::after')
+    const doBotao = regras(/\.pensa-project-card__open/)
+    expect(doBotao.length).toBeGreaterThan(0) // anti-vácuo: renomear a classe não zera o laço
+    for (const regra of doBotao) {
+      expect({ seletor: regra.seletor, tem: declara(regra.corpo, 'inset') }).toEqual({
+        seletor: regra.seletor,
+        tem: false,
+      })
+    }
+  })
+
+  it('NENHUMA regra do cartão declara cursor: a mãozinha é dos botões', () => {
+    // ⚠️⚠️ Varre TODAS as regras do cartão, não só a de seletor exato (achado do full review de
+    // 19/09/2026, provado por mutação): `.pensa-planner .pensa-project-card` é o idioma que o
+    // resto deste arquivo usa para vencer a regra de elemento, e ele escapava de uma âncora
+    // `/^…$/`. Com ela, devolver a mãozinha ao cartão passava verde — justo a regressão que o
+    // lote inteiro existe para impedir.
+    // ⚠ Pelo `regras()`, que TIRA os comentários: o comentário da regra explica a decisão
+    // citando `cursor: pointer`, e uma leitura crua passaria por ele.
+    const doCartao = regras(/\.pensa-project-card(?![\w-])/)
+    expect(doCartao.length).toBeGreaterThan(0)
+    for (const regra of doCartao) {
+      expect({ seletor: regra.seletor, cursor: declara(regra.corpo, 'cursor') }).toEqual({
+        seletor: regra.seletor,
+        cursor: false,
+      })
+    }
+    // Anti-vácuo: quem clica CONTINUA com a mãozinha. A lixeira declara a dela; o "Continuar"
+    // herda da `.sz-tool-pill` do `tool-chrome.css`, que é receita compartilhada.
+    const lixeira = bloco('.pensa-planner .pensa-project-card__remove {')
+    expect(lixeira).toMatch(/cursor:\s*pointer/)
+    // E o alvo não encolhe: a regra de elemento dos botões daria 44 de altura e 40 de largura.
+    expect(lixeira).toMatch(/min-height:\s*var\(--sz-tool-hit/)
+  })
+
+  it('NENHUMA regra faz o "Continuar" andar: movimento só pode valer `none`', () => {
+    // O motivo mudou com a camada, mas a regra fica: a pílula vive dentro das faixas
+    // (`.sz-tool-bands`), onde a receita compartilhada sobe a peça 1px no hover — e esta é a
+    // pílula que mora na moldura do cartão onde ela relatou o cursor tremendo TRÊS vezes. O
+    // relevo (a sombra) fica; o movimento, não. Decisão de risco, não de medição.
+    // ⚠️ Varre TODAS as regras do botão, e não só o primeiro bloco (achado do full review de
+    // 19/09/2026): uma regra posterior com mais especificidade devolveria o 1px em silêncio.
+    const doBotao = regras(/\.pensa-project-card__open(?![\w-])/)
+    expect(doBotao.length).toBeGreaterThan(0)
+    for (const regra of doBotao) {
+      for (const prop of ['transform', 'translate', 'rotate', 'scale', 'perspective']) {
+        // ⚠ Nada de `new RegExp` com template aqui: `\s` dentro de uma template string vira
+        // só "s", o regex nunca casa e o teste fica verde com o movimento de volta (foi o que
+        // aconteceu na primeira versão deste caso, pega na prova por mutação).
+        const valor = regra.corpo
+          .split(';')
+          .map((declaracao) => declaracao.split(':'))
+          .find(([nome]) => (nome ?? '').trim() === prop)?.[1]
+        if (valor) {
+          expect({ seletor: regra.seletor, prop, valor: valor.trim() }).toEqual({
+            seletor: regra.seletor,
+            prop,
+            valor: 'none',
+          })
+        }
+      }
+    }
+    // E a regra que zera o movimento existe mesmo, fora de camada (senão as receitas venceriam).
     const regra = bloco('.pensa-project-card__open:is(:hover, :active) {')
     expect(regra).toMatch(/transform:\s*none/)
     expect(regra).toMatch(/translate:\s*none/)
-    expect(css).toContain('.pensa-project-card__open::after {')
-    // Nenhuma `@layer` de verdade antes da regra (os comentários citam a camada das receitas).
     const antes = css
       .slice(0, css.indexOf('.pensa-project-card__open:is(:hover, :active)'))
       .replace(/\/\*[\s\S]*?\*\//g, '')
     expect(antes).not.toMatch(/@layer\s+[\w-]+\s*\{/)
   })
 
-  it('a área esticada cobre a MOLDURA: o inset é o negativo da borda, e o raio é o mesmo', () => {
-    // 17/09/2026: com `inset: 0` a camada parava no padding box e a borda de 1px do cartão virava
-    // uma faixa onde o ponteiro saía dela e voltava (cursor piscando entre seta e mãozinha, e o
-    // clique na beirada não abria o plano). Medido no playground: 1px nas arestas, 1,41px na
-    // diagonal dos cantos. A camada tem que ser a caixa de BORDA, e o raio o externo.
-    const cartao = bloco('.pensa-project-card {')
-    const camada = bloco('.pensa-project-card__open::after {')
-    const borda = /border:\s*(\d+)px\s+solid/.exec(cartao)?.[1]
-    expect(borda).toBeDefined()
-    // ⚠️ O inset é ancorado nas QUATRO bordas (`-1px` e ponto final). Sem o `;` no fim,
-    // `inset: -1px 0 0 0` passava e deixava a faixa morta nos outros três lados.
-    expect(camada).toMatch(new RegExp(`inset:\\s*-${borda}px\\s*;`))
-    const raio = /border-radius:\s*([^;]+);/.exec(cartao)?.[1]?.trim()
-    expect(raio).toBeDefined()
-    expect(camada).toContain(`border-radius: ${raio}`)
-  })
-
-  it('a borda do cartão é declarada UMA vez: um override posterior quebraria o par', () => {
-    // O `-1px` é o negativo da borda declarada em `.pensa-project-card`. Uma regra
-    // posterior com mais especificidade (`.pensa-planner .pensa-project-card`) mudaria a
-    // borda sem que a comparação acima visse — o teste lia só o primeiro bloco.
-    const doCartao = regras(/\.pensa-project-card(?![\w-])/)
-    expect(doCartao.length).toBeGreaterThan(0)
-    const comBorda = doCartao.filter(
-      (regra) => declara(regra.corpo, 'border') || declara(regra.corpo, 'border-width'),
-    )
-    expect(comBorda.map((regra) => regra.seletor)).toEqual(['.pensa-project-card'])
-  })
-
-  it('o cartão não recorta nada: `overflow` cortaria o -1px em silêncio', () => {
-    // O plano RECUSOU `overflow: hidden` no cartão justamente por isso, e nenhum teste via.
-    for (const regra of regras(/\.pensa-project-card(?![\w-])/)) {
-      expect(declara(regra.corpo, 'overflow')).toBe(false)
-      expect(declara(regra.corpo, 'overflow-x')).toBe(false)
-      expect(declara(regra.corpo, 'overflow-y')).toBe(false)
-    }
-  })
-
-  it('nada torna o BOTÃO o bloco de referência: a camada encolheria para a pílula', () => {
-    // `transform`/`translate` já estão travados no teste acima, mas `position`, `contain`,
-    // `filter` e `will-change` fazem o MESMO estrago e escapavam: com
-    // `.pensa-project-card__open { position: relative }` os oito pontos do cartão viram
-    // `null` (medido no navegador) e o defeito volta inteiro.
-    const proibidas = ['position', 'contain', 'filter', 'backdrop-filter', 'will-change']
-    const doBotao = regras(/\.pensa-project-card__open(?![\w-])/).filter(
-      (regra) => !regra.seletor.includes('::after'),
-    )
-    expect(doBotao.length).toBeGreaterThan(0)
-    for (const regra of doBotao) {
-      for (const prop of proibidas) {
-        expect({ seletor: regra.seletor, prop, declara: declara(regra.corpo, prop) }).toEqual({
-          seletor: regra.seletor,
-          prop,
-          declara: false,
-        })
-      }
-      // E o que mexe o botão só pode valer `none`.
-      for (const prop of ['transform', 'translate', 'rotate', 'scale', 'perspective']) {
-        const valor = new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`).exec(regra.corpo)?.[1]
-        if (valor) expect(valor.trim()).toBe('none')
-      }
-    }
-  })
-
-  it('a lixeira sobe acima da área esticada, senão existe sem nunca receber um clique', () => {
-    // A MESMA camada invisível que faz o cartão inteiro abrir engole qualquer botão novo
-    // do cartão: ela é pintada depois. Sem `position` + `z-index` aqui, o defeito é mudo —
-    // o botão aparece, o hover responde, e o clique abre o plano em vez de apagar.
-    const regra = bloco('.pensa-planner .pensa-project-card__remove {')
-    expect(regra).toMatch(/position:\s*relative/)
-    expect(regra).toMatch(/z-index:\s*[1-9]/)
-    // E o alvo não encolhe: a regra de elemento dos botões daria 44 de altura e 40 de largura.
-    expect(regra).toMatch(/min-height:\s*var\(--sz-tool-hit/)
-  })
-
-  it('o CARTÃO declara o cursor: o ponteiro não pode depender de qual elemento ele acerta', () => {
-    // 18/09/2026, a TERCEIRA vez que ela relatou "o cursor fica tremendo". As duas correções
-    // anteriores tiraram todo movimento do hover, e mesmo assim a seta voltava: dentro do
-    // cartão quem carrega `cursor: pointer` é o `::after` do "Continuar" (herdado da pílula) e
-    // o `<article>` em volta não declarava nada — ponto que escapasse da camada caía em `auto`.
-    // O `inset: -1px` faz as duas fronteiras coincidirem em 100%, mas elas arredondam separadas
-    // em zoom fracionário, e aí o ponteiro parado na beirada alterna várias vezes por segundo.
-    // Com o valor no ANCESTRAL, todo ponto de dentro herda `pointer`: a alternância deixa de ser
-    // possível, em vez de deixar de acontecer.
-    // ⚠ Pelo `regras()`, que TIRA os comentários: o comentário desta regra explica a herança
-    // citando `cursor: pointer`, então o `bloco()` cru passaria mesmo sem a declaração existir.
-    const cartao = regras(/^\.pensa-project-card$/)
-    expect(cartao.length).toBe(1)
-    expect(cartao[0]?.corpo).toMatch(/(?:^|;)\s*cursor:\s*pointer/)
-  })
-
-  it('NENHUMA regra desta folha pede seta: um `auto` no selo reabre o tremor', () => {
-    // ⚠⚠ Anti-vácuo do teste de cima, e ele nasceu ERRADO (achado do full review de
-    // 18/09/2026): a primeira versão varria `regras(/\.pensa-project-card/)`, ou seja só os
-    // seletores que CONTÊM o nome da classe. Provado por mutação: um `cursor: auto` injetado em
-    // `.pensa-chip` — que é literalmente o selo "Versão N"/"Plano aprovado" DENTRO do cartão —
-    // passava batido, e o mesmo valia para `.pensa-zero-track li` (a trilha Z-E-R-O) e o
-    // `.pensa-project-orbit`. Declarar no ancestral só resolve enquanto nenhum descendente pedir
-    // outra coisa, e a lista de descendentes NÃO dá para derivar do CSS.
-    //
-    // A régua passou a ser a folha INTEIRA, e ela é honesta: num planejador feito de cartões,
-    // botões e selos clicáveis, `auto`/`default`/`text` só tem uma consequência possível — o
-    // ponteiro alternando com a mãozinha da camada de cima. Campo de texto não precisa declarar
-    // nada (o `text` é o padrão do navegador), então a regra não atrapalha ninguém.
+  it('só quem CLICA declara cursor: a mãozinha não volta para o cartão', () => {
+    // ⚠️⚠️ Isto SUBSTITUI a régua de 18/09 ("nenhuma regra desta folha pede seta"), que existia
+    // por causa da camada esticada: qualquer ponto que escapasse dela virava seta, então `auto`
+    // era o inimigo. Sem a camada o mundo inverteu — `auto` é o certo no cartão, e `pointer`
+    // fora de um botão é que passou a ser a mentira. Achado do full review de 19/09/2026: a
+    // versão antiga, mantida, LIBERAVA a regressão que o lote inteiro veio impedir.
     const comCursor = regras(/./).filter(({ corpo }) => declara(corpo, 'cursor'))
     expect(comCursor.length).toBeGreaterThan(3)
     for (const regra of comCursor) {
-      const valor = /(?:^|;)\s*cursor\s*:\s*([^;]+)/.exec(regra.corpo)?.[1]?.trim()
-      expect({ seletor: regra.seletor, valor }).toEqual({
+      const valor = regra.corpo
+        .split(';')
+        .map((declaracao) => declaracao.split(':'))
+        .find(([nome]) => (nome ?? '').trim() === 'cursor')?.[1]
+        ?.trim()
+      // "Quem clica" = um botão, por tag ou pelo nome da peça. O cartão e os selos não entram.
+      const ehBotao = /(button|summary|__open|__remove)/.test(regra.seletor)
+      expect({ seletor: regra.seletor, valor, ehBotao }).toEqual({
         seletor: regra.seletor,
         valor: valor === 'not-allowed' ? 'not-allowed' : 'pointer',
+        ehBotao: true,
       })
     }
   })

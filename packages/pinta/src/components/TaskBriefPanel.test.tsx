@@ -135,11 +135,14 @@ describe('Voltar ao plano', () => {
     expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
   })
 
-  test('aparece com alvo de 44px, chama uma vez, e continua com a tarefa concluída', async () => {
+  test('aparece na pílula da comunidade, chama uma vez, e continua com a tarefa concluída', async () => {
     const onReturn = mock(async () => undefined)
     const view = render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
     const botao = screen.getByRole('button', { name: COPY.task.back })
-    expect(botao.classList.contains('min-h-11')).toBe(true)
+    // ⚠ Desde 19/09/2026 o alvo de toque vem da receita compartilhada (`--sz-tool-hit`: 40px no
+    // mouse e 44 no toque), não de um `min-h-11` deste painel. Trocar a classe pela receita é a
+    // mudança: a régua de 44px continua, só que escrita uma vez para as quatro ferramentas.
+    expect(botao.classList.contains('sz-tool-pill')).toBe(true)
     // O nome acessível é o texto visível: nada de `aria-label` nem de `title`.
     expect(botao.getAttribute('aria-label')).toBeNull()
     expect(botao.getAttribute('title')).toBeNull()
@@ -159,15 +162,14 @@ describe('Voltar ao plano', () => {
       <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
     )
     const botao = screen.getByRole('button', { name: COPY.task.back })
-    // Desde 18/09/2026 o `<details>` virou botão de verdade (seta visível, `aria-expanded`,
-    // e o host lembra por criança). O INVARIANTE é o mesmo: a volta não entra no que recolhe.
+    // ⚠ Desde 19/09/2026 a volta RECOLHE junto (é rotina), mas ela nunca entra no CORPO do
+    // brief nem no que ROLA: o pé é irmão dos dois, e é isso que este caso trava. Sem essa
+    // separação, o botão voltaria a nascer abaixo da dobra no celular.
     const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
     if (!seta) throw new Error('seta esperada')
     const corpo = view.container.querySelector(`#${seta.getAttribute('aria-controls')}`)
     expect(corpo).toBeTruthy()
-    // Nem dentro do corpo que recolhe (recolher o esconderia, e o estado atravessa a troca
-    // galeria↔editor) nem dentro do corpo `max-h-52 overflow-auto` (no celular ele nascia
-    // abaixo da dobra do painel).
+    // Nem dentro do corpo do brief nem dentro do `max-h-52 overflow-auto` que rola.
     expect(corpo?.contains(botao)).toBe(false)
     expect(botao.closest('.overflow-auto')).toBeNull()
     // E a volta não entra DENTRO da seta: com o `<details>` de antes, um controle no `<summary>`
@@ -296,13 +298,23 @@ describe('a seta que recolhe o brief', () => {
     expect(screen.getByText('Como deve parecer')).toBeTruthy()
   })
 
-  test('recolhido, o caminho de volta ao plano CONTINUA na tela', () => {
-    // A regra que já custou caro uma vez: recolher não pode esconder a única saída.
+  test('recolhido sobra UMA linha: o título e a seta', () => {
+    // ⚠️⚠️ 19/09/2026, decisão dela: "quando fechar pode fechar tudo, mantendo só uma linha
+    // ali, o título e a setinha, para a gente deixar bastante espaço para as ferramentas".
+    // Isso REVOGA em parte a regra de 18/09 (a volta ficava fora do que recolhe): a volta é
+    // ação de ROTINA e recolhe junto; o que nunca recolhe é PROBLEMA (o describe seguinte).
     const view = render(
       <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
     )
     fireEvent.click(setaDe(view.container))
     expect(screen.queryByText('Como deve parecer')).toBeNull()
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
+    // ⚠ A linha que sobra é o TÍTULO, e só ele: o sobretítulo sai junto, senão o cabeçalho tem
+    // duas (achado do full review de 19/09/2026 — o caso passava sem olhar para ele).
+    expect(screen.getByText(/Brief do meu jogo/)).toBeTruthy()
+    expect(screen.queryByText('Guia do Pensa')).toBeNull()
+    // Anti-vácuo: a seta nunca sai da tela, e é ela que devolve tudo com UM clique.
+    fireEvent.click(setaDe(view.container))
     expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
   })
 
@@ -322,6 +334,25 @@ describe('a seta que recolhe o brief', () => {
     // Quando o host devolve o valor novo, aí sim abre.
     view.rerender(<TaskBriefPanel session={{ ...base, collapsed: false, onCollapsedChange }} />)
     expect(screen.getByText('Como deve parecer')).toBeTruthy()
+  })
+
+  test('o quadro veste a casca compartilhada das ferramentas', () => {
+    // 19/09/2026: os três guias do Pensa (este, o do Estúdio e o do Molda) passaram a vestir a
+    // MESMA receita (`.sz-tool-guide` do `@sistemazero/ui/tool-chrome.css`). Antes cada um tinha
+    // a própria casca, e foi isso que ela leu como "fora da identidade visual da comunidade".
+    const view = render(<TaskBriefPanel session={session().value} onReturn={async () => {}} />)
+    const quadro = view.container.firstElementChild as HTMLElement
+    expect(quadro.classList.contains('sz-tool-guide')).toBe(true)
+    const seta = setaDe(view.container)
+    expect(seta.classList.contains('sz-tool-guide__head')).toBe(true)
+    // ⚠ E a casca PRÓPRIA saiu: o fio de 2px no acento e o respiro de 12/8px que ela viu como
+    // "o texto colando na borda" vinham daqui. Sem esta metade, reintroduzi-los passa verde e o
+    // painel volta a ter duas cascas somadas.
+    for (const morta of ['rounded-2xl', 'border-2', 'px-3', 'py-2']) {
+      expect({ morta, tem: quadro.classList.contains(morta) }).toEqual({ morta, tem: false })
+    }
+    expect(view.container.querySelector('.sz-tool-guide__body')).toBeTruthy()
+    expect(view.container.querySelector('.sz-tool-guide__foot')).toBeTruthy()
   })
 
   test('o corpo que recolhe é o que a seta aponta, e o painel tem respiro embaixo', () => {
@@ -370,10 +401,32 @@ describe('recolher esconde o brief, nunca um problema', () => {
     expect(screen.getByRole('alert').textContent).toContain('não está neste aparelho')
     expect(screen.getByRole('button', { name: 'Recriar com este brief' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Vincular outro desenho' })).toBeTruthy()
+    // ⚠️ E a volta ao plano SAI, porque é rotina (19/09/2026): o que fica é o problema e o que
+    // o resolve. Ela pediu uma linha só quando não há nada errado.
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
+  })
+
+  test('com o recado de falha, o botão que refaz a tentativa FICA recolhido', async () => {
+    // ⚠️⚠️ Achado do full review de 19/09/2026: a regra é "o problema e o que o RESOLVE nunca
+    // recolhem". O `syncError` da volta só se resolve por este botão; sem ele a criança lia um
+    // recado vermelho sem nada para fazer na tela.
+    const onReturn = mock(async () => {
+      throw new Error('caiu')
+    })
+    const view = render(<TaskBriefPanel session={session().value} onReturn={onReturn} />)
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError))
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    fireEvent.click(seta)
+    // O brief recolheu...
+    expect(screen.queryByText('Como deve parecer')).toBeNull()
+    // ...e o recado e a volta ficaram.
+    expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError)
     expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
   })
 
-  test('sem problema nenhum, recolhido mostra só o pé da volta', () => {
+  test('sem problema nenhum, recolhido não sobra nem alerta nem pé', () => {
     // Anti-vácuo do caso acima: o alerta não é um elemento que esteja sempre lá.
     const view = render(
       <TaskBriefPanel session={session().value} onReturn={async () => undefined} />,
@@ -383,6 +436,8 @@ describe('recolher esconde o brief, nunca um problema', () => {
     fireEvent.click(seta)
     expect(screen.queryByRole('alert')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Recriar com este brief' })).toBeNull()
-    expect(screen.getByRole('button', { name: COPY.task.back })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
+    // Sobra a seta, e só ela: é a "uma linha" que ela pediu.
+    expect(view.container.querySelectorAll('button').length).toBe(1)
   })
 })

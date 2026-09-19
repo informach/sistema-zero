@@ -8,8 +8,10 @@ import type { MoldaPersistenceLike } from '@/lib/molda-cloud-persistence'
 import { type MoldaGuideForm, moldaDraftKey, readMoldaGuideDraft } from './molda-task-draft'
 import type { MoldaTaskHandoff, MoldaTaskProgressUpdate } from './use-pensa-task-handoff'
 
-const button =
-  'inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 py-2 font-bold disabled:opacity-50'
+// A pílula da comunidade, chapada (o relevo 3D é das galerias). Desde 19/09/2026 os três guias
+// do Pensa vestem as mesmas receitas do `@sistemazero/ui/tool-chrome.css`, e o alvo de toque vem
+// do `--sz-tool-hit` (40px no mouse, 44 no toque) em vez de um `min-h-11` só deste painel.
+const button = 'sz-tool-pill sz-tool-pill--outline'
 type GuideAsset = Pick<MoldaAsset, 'id' | 'name' | 'kind'>
 export type MoldaGuidePersistence = Pick<MoldaPersistenceLike, 'load' | 'loadAll' | 'subscribe'> & {
   listSummaries?: () => Promise<GuideAsset[]>
@@ -208,7 +210,7 @@ export function MoldaTaskGuide({
   const toggle = (values: string[], id: string) =>
     values.includes(id) ? values.filter((value) => value !== id) : [...values, id]
   return (
-    <div className="mb-3 shrink-0 rounded-2xl border border-primary/25 bg-card">
+    <div className="sz-tool-guide mb-3 shrink-0">
       {/*
        * ⭐ A seta que recolhe (18/09/2026). Era um `<details open>`: recolhia, mas o
        * triângulo do navegador é discreto demais para uma criança achar, e o estado morria ao
@@ -217,15 +219,35 @@ export function MoldaTaskGuide({
        */}
       <button
         type="button"
-        className="flex min-h-11 w-full items-center justify-between gap-2 px-5 py-3 text-left font-bold"
+        className="sz-tool-guide__head"
         aria-expanded={!recolhido}
         // ⚠ Recolhido o corpo DESMONTA: apontar para um id que não existe é referência
         // pendurada para o leitor de tela. Mesma régua do `Panel` do pacote.
         aria-controls={recolhido ? undefined : corpoId}
         onClick={() => onCollapsedChange(!recolhido)}
       >
-        <span className="min-w-0 truncate">
-          {task.title} · {done ? 'Tarefa concluída' : 'Guia do Pensa'}
+        {/* O sobretítulo diz de ONDE veio este painel, e é o mesmo nos três guias (19/09/2026):
+            ela precisa reconhecer o Cartão de Criação que montou no Pensa. */}
+        <span className="min-w-0">
+          {/* ⚠ Recolhido o sobretítulo SAI: ela pediu "só uma linha, o título e a setinha", e
+              com ele o cabeçalho tem duas. Aberto ele volta. */}
+          {recolhido ? null : (
+            <span aria-hidden="true" className="sz-tool-guide__kicker">
+              Guia do Pensa
+            </span>
+          )}
+          <span className="sz-tool-guide__title">{task.title}</span>
+        </span>
+        {/*
+         * ⚠️⚠️ A situação é uma PÍLULA, e não o sobretítulo (achado do full review de
+         * 19/09/2026). Quando o "Tarefa concluída" morava no sobretítulo, ele era
+         * `aria-hidden` (sobretítulo é decoração) e SUMIA ao recolher: quem usa leitor de tela
+         * deixava de saber que a tarefa estava pronta, e quem recolhia também. Aqui ela fica
+         * fora do que recolhe, é anunciada junto do nome do botão ("Rocha, Concluída") e
+         * espelha a pílula que o guia do Estúdio já tinha.
+         */}
+        <span className="sz-tool-guide__state">
+          {done ? 'Concluída' : task.progress.status === 'planned' ? 'Planejada' : 'Em andamento'}
         </span>
         <ChevronDown
           aria-hidden="true"
@@ -233,7 +255,7 @@ export function MoldaTaskGuide({
         />
       </button>
       {recolhido ? null : (
-        <div id={corpoId} className="max-h-80 space-y-4 overflow-y-auto px-5 pb-2">
+        <div id={corpoId} className="sz-tool-guide__body max-h-80 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">{task.context.appearance}</p>
           <p className="text-sm">
             <strong>No jogo:</strong> {task.context.usage}
@@ -295,80 +317,96 @@ export function MoldaTaskGuide({
         </div>
       )}
       {/*
-       * ⚠⚠ O pé fica FORA do que recolhe, e essa é a lição que o irmão do Pinta já pagou: com
-       * tudo dentro, recolher escondia o ÚNICO caminho de volta ao plano — e também o recado de
-       * um progresso que não subiu. De quebra ele sai do corpo que ROLA (`max-h-80`), onde os
-       * botões nasciam abaixo da dobra no celular.
+       * ⭐⭐ O que recolhe, e o que NUNCA recolhe (19/09/2026). Pedido dela: recolhido, "pode
+       * fechar tudo, mantendo só uma linha ali: o título e a setinha de abrir e fechar". Então o
+       * pé de ROTINA — guardar, concluir, abrir a criação e voltar ao plano — passou a viver
+       * dentro do que recolhe.
+       *
+       * ⚠️⚠️ Isso REVOGA em parte o invariante de 18/09 ("o pé fica FORA do que recolhe"), que
+       * nasceu porque recolher escondia o ÚNICO caminho de volta ao plano. O que o substitui, e
+       * é decisão dela: recolher esconde conteúdo e ação de ROTINA, NUNCA um PROBLEMA. Por isso
+       * os dois recados abaixo — a criação que não está nesta galeria e a falha ao guardar —
+       * seguem FORA do que recolhe. A rotina ela recupera com um clique na seta, que nunca sai
+       * da tela.
        */}
-      <div className="space-y-3 px-5 pb-5 pt-2">
-        {/*
-         * ⚠⚠ O aviso da criação ausente desceu junto (18/09/2026, achado do full review): ele
-         * morava dentro do brief e, com a seta que LEMBRA, a criança que recolheu uma vez abriria
-         * a tarefa noutro aparelho e ficaria sem o botão "Abrir criação vinculada" (que só nasce
-         * quando o asset existe) E sem a frase que explica por que ele não está lá.
-         */}
-        {assetId && !assets.some((asset) => asset.id === assetId) ? (
-          <p role="status" className="text-sm">
-            A criação vinculada ainda não está disponível nesta galeria.
-          </p>
-        ) : null}
-        {error ? (
-          <p role="alert" className="text-sm">
-            {error}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap gap-3">
-          {!done ? (
-            <>
-              <button type="button" className={button} disabled={busy} onClick={() => save()}>
-                {busy
-                  ? 'Guardando…'
-                  : task.progress.status === 'planned'
-                    ? 'Começar tarefa'
-                    : 'Guardar progresso'}
-              </button>
+      {assetId && !assets.some((asset) => asset.id === assetId) ? (
+        <p role="status" className="sz-tool-guide__alert sz-tool-guide__alert--warn text-sm">
+          A criação vinculada ainda não está disponível nesta galeria.
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="sz-tool-guide__alert text-sm">
+          {error}
+        </p>
+      ) : null}
+      {/*
+       * ⚠️⚠️ O rascunho que o navegador NÃO conseguiu guardar é PROBLEMA, não rotina (achado do
+       * full review de 19/09/2026): o `draftError` só existe quando o `localStorage.setItem`
+       * lançou, ou seja, as marcações da criança estão só em memória e somem ao sair. Enquanto
+       * essa frase morava na linha de situação do pé, ela recolhia junto com a rotina — e o que
+       * sobrava era o diálogo mudo do `beforeunload`. Aqui ela fica, com o guia recolhido ou não.
+       */}
+      {dirty && (draftError || !profileId) ? (
+        <p role="status" className="sz-tool-guide__alert sz-tool-guide__alert--warn text-sm">
+          Guarde o progresso antes de sair: este navegador não conseguiu manter seu rascunho.
+        </p>
+      ) : null}
+      {/* ⚠️⚠️ Com o recado de falha na tela, o pé FICA: "tente novamente" tem de apontar para um
+          botão que existe (achado do full review de 19/09/2026). É a mesma companhia que o aviso
+          do desenho ausente tem no irmão do Pinta. */}
+      {recolhido && !error ? null : (
+        <div className="sz-tool-guide__foot space-y-3">
+          <div className="flex flex-wrap gap-3">
+            {!done ? (
+              <>
+                <button type="button" className={button} disabled={busy} onClick={() => save()}>
+                  {busy
+                    ? 'Guardando…'
+                    : task.progress.status === 'planned'
+                      ? 'Começar tarefa'
+                      : 'Guardar progresso'}
+                </button>
+                <button
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--primary"
+                  disabled={busy || !ready || task.progress.status === 'planned'}
+                  onClick={() => save(true)}
+                >
+                  Concluir tarefa
+                </button>
+              </>
+            ) : null}
+            {assetId && assets.some((asset) => asset.id === assetId) ? (
               <button
                 type="button"
-                className={`${button} bg-primary text-primary-foreground`}
-                disabled={busy || !ready || task.progress.status === 'planned'}
-                onClick={() => save(true)}
+                className={button}
+                disabled={busy}
+                onClick={async () => {
+                  await navigate(() => onOpenAsset(assetId))
+                }}
               >
-                Concluir tarefa
+                Abrir criação vinculada
               </button>
-            </>
-          ) : null}
-          {assetId && assets.some((asset) => asset.id === assetId) ? (
+            ) : null}
             <button
               type="button"
               className={button}
               disabled={busy}
               onClick={async () => {
-                await navigate(() => onOpenAsset(assetId))
+                await navigate(onReturn)
               }}
             >
-              Abrir criação vinculada
+              Voltar ao plano
             </button>
-          ) : null}
-          <button
-            type="button"
-            className={button}
-            disabled={busy}
-            onClick={async () => {
-              await navigate(onReturn)
-            }}
-          >
-            Voltar ao plano
-          </button>
+          </div>
+          <p role="status" className="text-xs text-muted-foreground">
+            {dirty
+              ? 'Rascunho guardado neste navegador. Guarde o progresso para atualizar o plano.'
+              : 'O progresso do guia está guardado no plano.'}{' '}
+            A criação continua com o mesmo nome e identificação na galeria.
+          </p>
         </div>
-        <p role="status" className="text-xs text-muted-foreground">
-          {dirty
-            ? draftError || !profileId
-              ? 'Guarde o progresso antes de sair: este navegador não conseguiu manter seu rascunho.'
-              : 'Rascunho guardado neste navegador. Guarde o progresso para atualizar o plano.'
-            : 'O progresso do guia está guardado no plano.'}{' '}
-          A criação continua com o mesmo nome e identificação na galeria.
-        </p>
-      </div>
+      )}
     </div>
   )
 }

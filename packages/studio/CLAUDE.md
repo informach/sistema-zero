@@ -35,8 +35,26 @@ latchar aquele contrato deixaria a seta MUDA.
 ⚠ A margem de baixo é `mb-2 lg:mb-0`: até `lg` o guia é a faixa do topo e encostava no editor; a
 partir daí ele vira coluna lateral `lg:w-80` e quem separa é a borda da direita. O teto de altura
 e a rolagem só valem ABERTO.
-⚠⚠ O recado de falha (`syncError`) fica FORA do que recolhe: recolher esconde o brief, nunca um
-problema — a mesma lição que o irmão do Pinta pagou com o "Voltar ao plano".
+⚠⚠ **A casca do guia é COMPARTILHADA desde 19/09/2026**: `.sz-tool-guide` +
+`.sz-tool-guide--aside` do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Pinta e do Molda
+(ela disse que o painel estava "totalmente fora do design da identidade visual da comunidade", e
+cada um dos três tinha inventado a própria). O `--aside` é deste painel: ele é o único dos três
+que vira coluna, e lá o fio em volta vira o fio do lado que separa do editor — em
+`--sz-tool-line`, nunca no `--sz-tool-card-edge`, que é TRANSPARENTE no claro. Medido no
+playground (o demo `taskSessionDemo`, novo neste lote; ⚠️ a lista reescreve a URL, então abra
+direto em `/editor/<id>?tarefa=1`, e `?tarefa=falha` faz a marcação REJEITAR, que é como se vê o
+recado sobrevivendo ao recolher): 320px de coluna com o fio à direita a partir de 1024px;
+abaixo disso, faixa que rola por dentro (`max-h-64`) com o `mb-2` de respiro. As utilitárias de
+espaçamento seguem LITERAIS no JSX (a receita cuida de cor, fio, canto e tipografia, e os testes
+leem as classes), e o sobretítulo virou "Guia do Pensa", igual nos três — ele SOME recolhido,
+porque ela pediu "só uma linha, o título e a setinha".
+O recado de falha (`syncError`) fica FORA do que recolhe — com o guia recolhido, uma marcação que
+não subiu ficaria invisível e a criança acharia que guardou. AQUI ele é a única coisa que
+sobrevive (não há mais nada a recuperar); nos irmãos sobrevivem também o aviso do desenho ou da
+criação ausente e os botões que o resolvem. A regra dos três, desde 19/09/2026: **recolher esconde
+conteúdo e ação de ROTINA, nunca um problema.**
+⚠️ Quem ROLA é o corpo, nunca o cartão: com o `max-h-64` no `<aside>`, a seta e o recado ficavam
+dentro da área rolável e o recado nascia abaixo da dobra justo quando a criança marca um passo.
 ⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta; id ausente é referência pendurada).
 ⭐ **E a COLUNA encolhe recolhida** (conserto do full review de 18/09/2026): com o `lg:w-80` fixo
 na base, a partir de `lg` recolher devolvia altura nenhuma e largura nenhuma — 320px de título e

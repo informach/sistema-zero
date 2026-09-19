@@ -72,35 +72,30 @@ do `.pensa-planner`.
   linha do andamento com a bandeirinha ("Etapa atual: …" azul / "Todas as 4 etapas concluídas"
   verde), "Editado há…" (`core/relativeTime.ts`, `Intl.RelativeTimeFormat` pt-BR: "agora" e "ontem"
   como palavra, o resto em número; nada de "anteontem"/"semana passada") e o **"Continuar"** em
-  pílula primária cujo `::after` estica a área clicável para o cartão INTEIRO; o nome acessível é
-  "Continuar o plano <nome>" (os testes acham o plano por ele). ⚠️⚠️ Esse `::after` é
-  **`inset: -1px`**, o negativo da borda do cartão, e não `inset: 0` (17/09/2026): um absoluto se
-  resolve contra o PADDING box, então com zero a moldura de 1px ficava fora da camada e virava uma
-  faixa morta. Medido no playground, antes: 1,000px nas quatro arestas e 1,414px nos quatro cantos,
-  com o cursor alternando entre seta e mãozinha a meio pixel da borda ("o cursor fica piscando e
-  tremendo", relato dela) e o clique na moldura não abrindo o plano; depois: 0,000 nos oito pontos,
-  `pointer` desde o primeiro meio pixel, e a moldura abre. Mexeu na borda do cartão, mexa no inset
-  (o `tokens.test.ts` compara os dois e reprova se divergirem).
-  ⭐⭐ **E o `cursor` é declarado no CARTÃO, não só na camada (18/09/2026).** Ela relatou o tremor
-  pela TERCEIRA vez e, perguntada, disse que o que oscila é o DESENHO do ponteiro (seta ↔
-  mãozinha), com o cartão parado. As três correções anteriores (`ba43b146`, `ab7fbd98`,
-  `90faff2b`) estão certas e continuam valendo, mas todas fazem as duas fronteiras **coincidirem**
-  — e coincidência de duas caixas arredondadas não sobrevive a arredondamento de subpixel (em
-  125% e 150% elas arredondam separadas, como o próprio comentário do `pensa.css` admitia). A
-  causa de fundo é outra: dentro do cartão quem carrega `cursor: pointer` é o `::after` de um
-  BOTÃO (herdado de `.sz-tool-pill`), e o `<article>` em volta não declarava nada — logo "seta" é
-  qualquer ponto que escape da camada. Com `cursor: pointer` no `.pensa-project-card`, todo ponto
-  de dentro herda e a alternância deixa de ser POSSÍVEL, em vez de deixar de acontecer.
-  ⭐ **Medido no playground** (`elementFromPoint` + `getComputedStyle().cursor` na costura, de 0,25
-  em 0,25 px): hoje 25 de 25 pontos dão `pointer`; **reproduzindo a folha de antes de 17/09
-  (`inset: 0`, sem cursor no cartão), 10 dos 25 dão `auto`, ou seja SETA**; e com `inset: 0` MAS
-  com o cursor no cartão, 25 de 25 `pointer`. Com o ponteiro real pousado na costura, o rect do
-  cartão é idêntico em repouso e no hover. ⚠⚠ **Daí a primeira coisa a conferir num relato novo:
-  o que a staging está servindo** — o `inset:-1px` entrou em 17/09, um dia antes da queixa, e o
-  chunk do Pensa já ficou velho no navegador dela antes. Travas em `styles/tokens.test.ts` (o
-  cartão declara `cursor: pointer`; nenhum descendente volta a pedir seta), as duas provadas por
-  mutação. ⚠ A primeira versão da trava passava pelo COMENTÁRIO da regra, que cita
-  `cursor: pointer`: ela lê pelo `regras()`, que tira comentários. O **cartão "Novo plano"**
+  pílula primária; o nome acessível é "Continuar o plano <nome>" (os testes acham o plano por ele).
+  ⭐⭐ **O cartão NÃO é clicável (19/09/2026, decisão dela).** O "Continuar" tinha um `::after` de
+  `inset: -1px` que esticava a área clicável até a borda do cartão, e o `<article>` declarava
+  `cursor: pointer` para o ponteiro não alternar dentro dela. Ela relatou o contrário do que o
+  código dizia — *"estou clicando no card e não está acontecendo nada; só quando clico em
+  continuar que abre o plano"* — e pediu a mãozinha só nos botões de ação. Saíram os três de uma
+  vez: a camada, o `cursor` do cartão e o `position`/`z-index` da lixeira (que existiam só para
+  ela escapar da camada). Hoje quem abre é o botão e quem apaga é a lixeira.
+  ⚠️⚠️ **Isto REVOGA as duas correções anteriores do "cursor tremendo"** (o `inset: -1px` de 17/09
+  e o `cursor` no ancestral de 18/09), e o conserto novo mata a classe por um caminho mais forte:
+  sem camada esticada não existem duas fronteiras arredondadas para o ponteiro atravessar, então a
+  alternância seta↔mãozinha deixa de ter CAUSA em vez de ser compensada. Quem voltar a esticar a
+  área clicável reabre as três coisas juntas.
+  ⭐ **Medido no playground (:5201) antes e depois**, com `elementFromPoint` + `getComputedStyle`:
+  hoje o corpo do cartão responde `.pensa-project-card` com `cursor: auto` em todos os pontos
+  (centro, nome, as quatro bordas) e clicar no meio não abre nada; reinjetando a folha de ontem
+  (a camada mais o cursor), o MESMO ponto responde o botão, `pointer`, e o clique ABRE o plano.
+  Ou seja: a camada estava VIVA no código, e o que ela via era um chunk velho ou um ambiente
+  atrás. O `PensaApp.home.test.tsx` passou a travar o comportamento (clicar no `<article>` não
+  navega), que até aqui não tinha rede nenhuma.
+  ⚠️ O "Continuar" continua SEM andar no hover e no aperto, agora por outro motivo: ele vive nas
+  faixas, onde a receita sobe a peça 1px, e 1px numa borda longa é o que faz o ponteiro parado
+  nela entrar e sair do hover (a mesma razão do cartão "Novo plano", no `tool-chrome.css`).
+  O **cartão "Novo plano"**
   (`.sz-tool-card--new`) FECHA a grade: abre o mesmo campo lá em cima e o foco volta a QUEM abriu
   (`openerRef`); com o campo já aberto só leva o foco até ele. Rodapé "Mostrando N planos". Sem
   planos: o convite `.pensa-empty` em cartão branco e o campo já aberto (sem o cartão "Novo plano").
@@ -141,11 +136,12 @@ medalhas FICAM (o ledger guarda snapshot sem FK): ela fez o trabalho.
 - **A lixeira** (`.pensa-project-card__remove`, `TrashIcon`) fica no rodapé do cartão, à esquerda
   do "Continuar", com o nome do plano no `aria-label` ("Apagar o plano X" — "Apagar" repetido na
   grade não diria qual).
-- ⚠️⚠️ **Ela PRECISA de `position: relative` + `z-index: 1`.** O `::after` do "Continuar" cobre o
-  cartão INTEIRO (é o "clicar em qualquer ponto abre") e é pintado depois: sem subir, o botão
-  aparece e NUNCA recebe o clique — quem recebe é a camada invisível, e a criança abriria o plano
-  ao tentar apagá-lo. Medido no playground com `elementFromPoint`. Pelo mesmo motivo ela não anda
-  no hover; o que responde é a cor.
+- ⚠️ Ela **teve** `position: relative` + `z-index: 1` entre 14 e 19/09/2026, e a razão morreu
+  junto com a camada do "Continuar": enquanto um `::after` cobria o cartão inteiro, a lixeira
+  aparecia e NUNCA recebia o clique (quem recebia era a camada invisível, e a criança abria o
+  plano ao tentar apagá-lo). Sem a camada ela é um botão como outro qualquer. Quem voltar a
+  esticar a área clicável do cartão tem de devolver as duas declarações. Ela também não anda no
+  hover — hoje pelo motivo dos irmãos, o relevo das faixas.
 - ⚠️ A regra leva **`.pensa-planner` na frente**, como os três CTAs: a regra de ELEMENTO deste
   arquivo (`.pensa-planner button:where(…)`, 0-1-1) dá 44px de altura a todo botão e venceria a
   classe sozinha — a lixeira saía 40x44. Os 44px do TOQUE seguem garantidos pelo `--sz-tool-hit`.

@@ -164,6 +164,30 @@ describe('a home do Pensa nas três faixas', () => {
     await waitFor(() => expect(request).toHaveBeenCalledWith('/projects/runo'))
   })
 
+  test('clicar no CARTÃO não abre o plano: só os botões respondem', async () => {
+    // ⚠️⚠️ 19/09/2026, decisão dela. Até aqui o "Continuar" tinha um `::after` que esticava a
+    // área clicável até a borda e o `<article>` carregava a mãozinha; ela relatou o contrário do
+    // que o código dizia ("estou clicando no card e não está acontecendo nada") e pediu a
+    // mãozinha só nos botões de ação.
+    // ⚠ Este caso trava a metade de JS: nenhum `onClick` no `<article>`, que é o caminho pelo
+    // qual alguém "devolveria" o cartão clicável. A CAMADA era CSS e o happy-dom não faz layout
+    // nem hit-testing — quem a trava é o `styles/tokens.test.ts` ("não existe camada esticando
+    // a área clicável"). As duas metades juntas é que fecham a porta.
+    const { request } = await home()
+    const cartao = screen.getByRole('heading', { name: 'Guardiões da Lua' }).closest('article')
+    expect(cartao).toBeTruthy()
+    const chamadasAntes = request.mock.calls.length
+    fireEvent.click(cartao as HTMLElement)
+    // Nada de navegar para o detalhe: a home continua inteira. ⚠ Conta as IDAS, e não só a rota
+    // pelo nome: com `not.toHaveBeenCalledWith` sozinho, renomear a rota deixaria o teste verde
+    // com o cartão abrindo o plano de novo.
+    expect(request.mock.calls.length).toBe(chamadasAntes)
+    expect(screen.getByRole('button', { name: 'Continuar o plano Guardiões da Lua' })).toBeTruthy()
+    // Anti-vácuo: pelo BOTÃO, abre.
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar o plano Guardiões da Lua' }))
+    await waitFor(() => expect(request).toHaveBeenCalledWith('/projects/lua'))
+  })
+
   test('o cartão "Novo plano" fecha a grade, abre o mesmo campo e o foco volta para ele', async () => {
     await home()
     const grade = document.querySelector('.pensa-project-grid')

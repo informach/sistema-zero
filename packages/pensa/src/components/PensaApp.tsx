@@ -768,8 +768,14 @@ function ProjectList(props: {
  * O cartão de um plano (a imagem-modelo): o alvo e o nome, os selos da versão e da etapa, a
  * trilha Z-E-R-O em ladrilhos (concluída cheia, atual com o fio, futura apagada; o nome de cada
  * etapa só para o leitor de tela), a linha do andamento e o rodapé com "Editado há…" e o
- * "Continuar", cuja área clicável é o cartão INTEIRO (o `::after` do botão). O nome acessível do
- * botão leva o nome do plano: "Continuar" sozinho repetido na grade não diria qual.
+ * "Continuar". O nome acessível do botão leva o nome do plano: "Continuar" sozinho repetido na
+ * grade não diria qual.
+ *
+ * ⚠️⚠️ O cartão NÃO é clicável (19/09/2026, decisão dela). O "Continuar" já teve um `::after` que
+ * esticava a área clicável até a borda do cartão; ela saiu junto com a mãozinha do `<article>`,
+ * porque a mãozinha tem de aparecer só onde de fato se clica. Quem abre o plano é este botão e
+ * quem apaga é a lixeira — os dois únicos alvos do cartão. Ver o comentário do
+ * `.pensa-project-card` no `pensa.css`, que guarda o porquê inteiro.
  */
 function PlanCard({
   project,
@@ -825,9 +831,6 @@ function PlanCard({
       <div className="pensa-project-card__foot">
         <span className="pensa-project-card__edited">{editedAgo(project.updatedAt)}</span>
         <div className="pensa-project-card__actions">
-          {/* ⚠️ Este botão vive POR CIMA da área clicável que o "Continuar" estica pelo
-              cartão inteiro (o `::after`): sem o `z-index` da folha ele existiria sem
-              nunca receber um clique. */}
           <button
             type="button"
             className="pensa-project-card__remove"

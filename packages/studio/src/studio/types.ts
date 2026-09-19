@@ -56,7 +56,8 @@ export interface StudioTaskSession {
    * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
    * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
    * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
-   * ⚠ O que recolhe é só o CORPO: o caminho de volta ao plano nunca entra no que some.
+   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
+   * recolhe é PROBLEMA: aqui, o recado de uma marcação que não subiu.
    * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
    * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
    * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais

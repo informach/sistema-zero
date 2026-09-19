@@ -684,7 +684,11 @@
        continuam do tamanho de cartão. */
     grid-template-columns: repeat(auto-fill, minmax(13.75rem, 1fr));
   }
-  .sz-tool-card {
+  /* ⚠️ O guia da tarefa (lá embaixo) é O MESMO cartão, e por isso divide esta regra em vez de
+     copiá-la: enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás
+     em silêncio (achado do full review de 19/09/2026). */
+  .sz-tool-card,
+  .sz-tool-guide {
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -695,7 +699,8 @@
   }
   /* O título de um cartão (o nome do jogo, "Novo projeto"): o Baloo extra-negrito de 15px da
      imagem, igual nas galerias das quatro ferramentas. */
-  .sz-tool-card-title {
+  .sz-tool-card-title,
+  .sz-tool-guide__title {
     font-family: var(--sz-tool-font-display);
     font-weight: 800;
     font-size: 0.9375rem;
@@ -819,6 +824,169 @@
     color: var(--sz-tool-muted);
   }
 
+  /* ── GUIA DA TAREFA do Pensa (19/09/2026) ─────────────────────────────────────────────
+     O painel que abre dentro da oficina quando a criança chega por um Cartão de Criação:
+     `TaskBriefPanel` (pinta), `TaskGuidePanel` (studio) e `MoldaTaskGuide` (community-kids).
+     São TRÊS componentes, em dois pacotes e no host, e até aqui cada um tinha inventado a
+     própria casca (fio de 2px no acento do Pinta, fio da marca no Molda, faixa sem canto no
+     Estúdio) — o que ela leu como "totalmente fora da identidade visual da comunidade".
+     Agora os três vestem ESTA receita: o cartão branco da família do `.sz-tool-card`, porque
+     o guia É um cartão, só que com um cabeçalho que recolhe e um pé. CHAPADO: o relevo 3D é
+     das galerias, e o guia mora no editor.
+     ⚠️ Os três só nascem com uma sessão de tarefa do Pensa, e ela só existe no community-kids
+     e nos playgrounds — os mesmos hosts que importam esta folha (o bloco de aula do Pinta, o
+     `studio-embed` do admin e a comunidade adulta nunca montam uma). Classe sem folha não
+     desenha NADA (ao contrário de token, que tem fallback): host novo que monte um guia
+     importa o `tool-chrome.css` junto.
+     ⚠️ Margem, largura e teto de altura ficam FORA daqui, como utilitária no consumidor: elas
+     variam por painel, e os testes do Pinta e do Estúdio as leem como classe literal. */
+  /* O respiro que faltava: 18px dos lados, 14px em cima e embaixo. Recolhido, o cabeçalho é o
+     ÚNICO filho, então é ele quem dá o respiro do cartão inteiro — e num canto de 20px um
+     padding menor faz o texto encostar na curva (o relato dela era o Pinta, com 12px e 8px). */
+  .sz-tool-guide__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: var(--sz-tool-hit);
+    padding: 0.875rem 1.125rem;
+  }
+  /* ⚠️ O primeiro filho (o bloco do título) come o espaço livre, senão a situação flutuaria no
+     MEIO do cabeçalho em vez de colar na seta — é o que acontecia no Molda, que tem três filhos
+     e não trazia `flex-1` no título (achado do full review de 19/09/2026). */
+  .sz-tool-guide__head > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* ⚠️ O cabeçalho do Estúdio é um contêiner com o botão DENTRO (o padrão de disclosure com
+     cabeçalho, porque ali o título é um `<h2>`), e o botão já traz o próprio alvo de 44px. Sem
+     este respiro menor o cabeçalho somaria 14 + 44 + 14 = 72px, contra os ~47px dos irmãos —
+     justo no painel que vira a faixa do topo no celular. */
+  div.sz-tool-guide__head {
+    padding-block: 0.125rem;
+  }
+  /* Quando o cabeçalho INTEIRO é o botão de abrir e recolher (Pinta e Molda), e o botão de
+     dentro quando ele não é (Estúdio): as duas formas respondem igual ao ponteiro e ao foco. */
+  button.sz-tool-guide__head,
+  .sz-tool-guide__head button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.12s ease;
+  }
+  /* ⚠️ O raio inteiro só quando o cabeçalho é o cartão INTEIRO (recolhido). Aberto, herdar os
+     quatro cantos deixava o hover com dois entalhes arredondados flutuando sobre o corpo. */
+  button.sz-tool-guide__head {
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+  button.sz-tool-guide__head:only-child {
+    border-radius: inherit;
+  }
+  button.sz-tool-guide__head:hover:not(:disabled),
+  .sz-tool-guide__head button:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-surface) 92%, var(--sz-tool-ink));
+  }
+  button.sz-tool-guide__head:focus-visible,
+  .sz-tool-guide__head button:focus-visible {
+    outline: 2px solid var(--sz-tool-accent);
+    outline-offset: -2px;
+  }
+  /* O sobretítulo que diz de onde veio o painel, e o nome da tarefa no Baloo de 15px do
+     `.sz-tool-card-title`. */
+  /* ⚠️ 12px, o piso da casa para criança — o mesmo do `.sz-tool-kicker` das galerias. Nasceu em
+     11px e o full review de 19/09/2026 pegou: texto para criança de 8 anos não desce disso. */
+  .sz-tool-guide__kicker {
+    display: block;
+    font-family: var(--sz-tool-font-display);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sz-tool-muted);
+  }
+  /* A tipografia vem do `.sz-tool-card-title`, lá em cima: aqui só o que é do guia (ele vive
+     numa linha que também tem a situação e a seta, então o título é quem cede e trunca). */
+  .sz-tool-guide__title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* A situação da tarefa (Planejada / Em andamento / Concluída), no canto do cabeçalho. Fica
+     FORA do que recolhe de propósito: é a única coisa que a criança precisa saber sem abrir. */
+  .sz-tool-guide__state {
+    flex: none;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-surface-2);
+    color: var(--sz-tool-muted);
+    /* ⚠️ 12px, o piso da casa para criança. Ela nasceu com os 10px que vieram de um
+       `text-[10px]` do Estúdio, e promover isso à folha teria espalhado o tamanho errado. */
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .sz-tool-guide__body {
+    padding: 0 1.125rem 1rem;
+  }
+  .sz-tool-guide__foot {
+    padding: 0.75rem 1.125rem 1.125rem;
+    border-top: 1px solid var(--sz-tool-line);
+  }
+  /* O recado de PROBLEMA, que sobrevive ao recolher (decisão dela, 19/09/2026): recolher
+     esconde conteúdo e ação de rotina, NUNCA um problema. */
+  /* ⚠️ Dentro do recado, a pílula "quieta" some: o fundo dela é o do APP (`--sz-tool-bg`) e, sobre
+     o tingido do alerta, dá 1,04:1 sem fio nenhum (o `--sz-tool-card-edge` é transparente no
+     claro). Aqui ela vira a superfície do cartão, que é o que o `--outline` já usa. */
+  .sz-tool-guide__alert .sz-tool-pill--quiet {
+    border-color: var(--sz-tool-line);
+    background: var(--sz-tool-surface);
+  }
+  .sz-tool-guide__alert {
+    margin: 0 1.125rem 0.875rem;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--sz-tool-danger) 40%, var(--sz-tool-surface));
+    border-radius: var(--sz-tool-radius-control);
+    background: color-mix(in oklab, var(--sz-tool-danger) 8%, var(--sz-tool-surface));
+    /* ⚠️ A tinta leva um quinto da tinta de texto, o mesmo truque da barra do Pinta: o vermelho
+       puro sobre o fundo rosado do próprio alerta dá 4,25:1 no tema ESCURO (medido no
+       playground), abaixo do piso de 4,5. Misturar escurece no claro e clareia no escuro, e os
+       dois passam. Quem consome NÃO declara cor: herda esta. */
+    color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink));
+  }
+  /* ⚠️⚠️ Vermelho é para PROBLEMA (`role="alert"`). O recado informativo — "a criação está noutro
+     aparelho", "guarde antes de sair" — usa `--warn`: para uma criança de 8 anos, vermelho o
+     tempo todo lê como "quebrou" (achado do full review de 19/09/2026). */
+  .sz-tool-guide__alert--warn {
+    border-color: color-mix(in oklab, var(--sz-tool-warn) 40%, var(--sz-tool-surface));
+    background: color-mix(in oklab, var(--sz-tool-warn) 12%, var(--sz-tool-surface));
+    color: color-mix(in oklab, var(--sz-tool-warn) 80%, var(--sz-tool-ink));
+  }
+  /* O Estúdio é o único dos três que vira COLUNA LATERAL a partir de `lg`: lá o fio em volta
+     vira o fio do lado que separa do editor (painel encaixado não tem canto solto). O fio é o
+     `--sz-tool-line`, e não o `--sz-tool-card-edge`, que é TRANSPARENTE no tema claro: uma
+     borda de cartão some de propósito, uma divisória não pode sumir. Vem DEPOIS da base, com a
+     mesma especificidade — quem decide é a ordem, sem `!important`. */
+  .sz-tool-guide--aside {
+    border: 0;
+    border-bottom: 1px solid var(--sz-tool-line);
+    border-radius: 0;
+  }
+  @media (min-width: 64rem) {
+    .sz-tool-guide--aside {
+      border-bottom: 0;
+      border-inline-end: 1px solid var(--sz-tool-line);
+    }
+  }
+
   /* ── O 3D DO BRILLIANT nas GALERIAS (11/09/2026, decisão dela) ─────────────────────────
      Dentro das faixas (`.sz-tool-bands`, ou seja, as galerias) os botões e o cartão "Novo
      projeto" ganham o relevo do kids: a borda de baixo sólida num tom mais escuro, por
@@ -832,8 +1000,12 @@
      `transform` fazem dela o bloco de referência do `::after`, que encolhe para o tamanho da
      peça no meio do gesto: o hover pisca e o clique solta fora. Quem usa esse padrão desliga o
      movimento na própria folha, fora de camada (`transform: none; translate: none` no
-     `:hover` e no `:active`); o aperto continua visível no relevo. Hoje só o Pensa
-     (`.pensa-project-card__open`, no pensa.css).
+     `:hover` e no `:active`); o aperto continua visível no relevo.
+     ⚠️⚠️ Hoje NENHUMA peça do produto faz isso: o Pensa era a única e DESFEZ a camada dele em
+     19/09/2026 (decisão dela — "os cards de projeto no pensa não é clicavel"). O
+     `.pensa-project-card__open` segue sem andar, mas por outra razão: é a pílula que mora na
+     moldura do cartão onde ela relatou o cursor tremendo três vezes, e 1px ali não vale o
+     risco. Antes de ressuscitar o padrão, prefira botões com alvo próprio.
      ⚠️⚠️ **E o cartão `--new` também NÃO anda (14/09/2026).** Ele é o único CARTÃO da lista, e
      cartão de grade tem aresta longa: com o ponteiro parado na faixa de 1px da borda de baixo,
      o hover sobe a peça, ela sai de baixo do ponteiro, o hover cai, a transição a traz de

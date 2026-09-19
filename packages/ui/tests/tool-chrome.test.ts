@@ -248,6 +248,130 @@ describe('tool-chrome.css: receitas', () => {
     expect(ativo.corpo).toContain('background: var(--sz-tool-cta)')
     expect(ativo.corpo).toContain('color: var(--sz-tool-on-cta)')
   })
+
+  /*
+   * O GUIA DA TAREFA do Pensa (19/09/2026). Três componentes, em dois pacotes e no host,
+   * vestindo UMA receita — antes cada um tinha a própria casca, e foi isso que ela leu como
+   * "totalmente fora da identidade visual da comunidade".
+   */
+  it('o guia divide a regra do cartão das galerias, em vez de copiá-la', () => {
+    // ⚠ Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
+    // silêncio (achado do full review de 19/09/2026). Hoje o seletor é o mesmo bloco.
+    const cartao = bloco('.sz-tool-card,')
+    expect(cartao.seletor.split(',').map((parte) => parte.trim())).toEqual([
+      '.sz-tool-card',
+      '.sz-tool-guide',
+    ])
+    expect(cartao.corpo).toContain('border-radius: var(--sz-tool-radius-card-md)')
+    expect(cartao.corpo).toContain('background: var(--sz-tool-surface)')
+    // O título idem: o guia entra na regra do `.sz-tool-card-title`.
+    expect(bloco('.sz-tool-card-title,').seletor).toContain('.sz-tool-guide__title')
+    // E não sobrou uma segunda regra de BASE só para o guia. ⚠ A asserção olha os seletores
+    // inteiros: um regex de texto casaria a própria regra compartilhada, que tem o guia numa
+    // linha só dele depois da vírgula.
+    const soDoGuia = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '']) => seletor.trim())
+      .filter((seletor) => seletor === '.sz-tool-guide')
+    expect(soDoGuia).toEqual([])
+  })
+
+  it('o guia é CHAPADO: o relevo das galerias não o alcança', () => {
+    // ⚠️⚠️ A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
+    // deste caso olhava o corpo e era verdadeira para sempre — provado no full review de
+    // 19/09/2026 somando a classe do guia ao `:is()` do relevo sem o teste piscar. E são QUATRO
+    // regras de relevo (base, hover, aperto, reduced-motion), não uma.
+    const seletores = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(
+      ([, seletor = '']) => seletor.trim(),
+    )
+    const dasFaixas = seletores.filter((seletor) => seletor.includes('.sz-tool-bands'))
+    expect(dasFaixas.filter((seletor) => seletor.includes('sz-tool-guide'))).toEqual([])
+    // Anti-vácuo: o relevo existe mesmo, e alcança o cartão "Novo projeto".
+    expect(dasFaixas.some((seletor) => seletor.includes('sz-tool-card--new'))).toBe(true)
+  })
+
+  it('o cabeçalho do guia tem o alvo de toque e o respiro do canto de 20px', () => {
+    // O relato dela era o Pinta: 12px de lado e 8px embaixo num canto de 16px, com o texto
+    // encostando na curva. Recolhido o cabeçalho é o ÚNICO filho, então o respiro do cartão
+    // inteiro é o dele.
+    const cabeca = bloco('.sz-tool-guide__head {')
+    expect(cabeca.corpo).toContain('min-height: var(--sz-tool-hit)')
+    expect(cabeca.corpo).toContain('padding: 0.875rem 1.125rem')
+    // O primeiro filho come o espaço livre: sem isso a situação flutua no meio da linha.
+    expect(bloco('.sz-tool-guide__head > :first-child {').corpo).toContain('flex: 1 1 auto')
+    // O cabeçalho que é CONTÊINER (o do Estúdio, com o botão dentro) respira menos: o botão já
+    // traz o alvo de 44px, e 14+44+14 dava 72px contra os ~47px dos irmãos.
+    expect(bloco('div.sz-tool-guide__head {').corpo).toContain('padding-block: 0.125rem')
+    const botao = bloco('button.sz-tool-guide__head,')
+    expect(botao.seletor).toContain('.sz-tool-guide__head button')
+    expect(botao.corpo).toContain('cursor: pointer')
+    // ⚠ O raio inteiro só quando o cabeçalho É o cartão (recolhido): aberto, herdar os quatro
+    // cantos deixava o hover com dois entalhes arredondados sobre o corpo.
+    expect(bloco('button.sz-tool-guide__head {').corpo).toContain('border-start-start-radius')
+    expect(bloco('button.sz-tool-guide__head:only-child {').corpo).toContain(
+      'border-radius: inherit',
+    )
+  })
+
+  it('o texto pequeno do guia respeita o piso de 12px da casa', () => {
+    // ⚠️⚠️ Achado do full review de 19/09/2026: o sobretítulo nasceu em 11px e a situação em 10px
+    // (herdada de uma utilitária de 10px que existia só no Estúdio). Promover isso a receita
+    // teria espalhado o tamanho errado para as quatro ferramentas. O piso para criança é 12px.
+    for (const ancora of ['.sz-tool-guide__kicker {', '.sz-tool-guide__state {']) {
+      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
+      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+    }
+  })
+
+  it('o corpo e o pé do guia trazem o respiro e a divisória', () => {
+    expect(bloco('.sz-tool-guide__body {').corpo).toContain('padding: 0 1.125rem 1rem')
+    const pe = bloco('.sz-tool-guide__foot {')
+    expect(pe.corpo).toContain('padding: 0.75rem 1.125rem 1.125rem')
+    expect(pe.corpo).toContain('border-top: 1px solid var(--sz-tool-line)')
+  })
+
+  it('a divisória do guia lateral usa o fio VISÍVEL, nunca a borda de cartão', () => {
+    // O `--sz-tool-card-edge` é transparent no claro (uma borda de cartão some de propósito);
+    // a divisória que separa o guia do editor não pode sumir.
+    const aside = bloco('.sz-tool-guide--aside {')
+    expect(aside.corpo).toContain('border-bottom: 1px solid var(--sz-tool-line)')
+    expect(aside.corpo).toContain('border-radius: 0')
+    expect(aside.corpo).not.toContain('card-edge')
+    // ⚠️⚠️ O bloco da media é RECORTADO de verdade: a primeira versão fatiava daqui até o FIM do
+    // arquivo, então esvaziar a media e pôr as declarações em qualquer regra mais abaixo passava
+    // verde (provado no full review de 19/09/2026) — e o fio do lado sumiria a partir de 1024px
+    // sem nenhum teste vermelho.
+    const iMedia = semComentarios.indexOf('@media', semComentarios.indexOf('.sz-tool-guide--aside'))
+    const abre = semComentarios.indexOf('{', iMedia)
+    const fimDaRegra = semComentarios.indexOf('}', abre)
+    const media = semComentarios.slice(iMedia, semComentarios.indexOf('}', fimDaRegra + 1) + 1)
+    expect(media).toContain('min-width: 64rem')
+    expect(media).toContain('.sz-tool-guide--aside')
+    expect(media).toContain('border-inline-end: 1px solid var(--sz-tool-line)')
+    expect(media).toContain('border-bottom: 0')
+  })
+
+  it('o recado de problema tem cara de problema, o de aviso não, e os dois passam nos temas', () => {
+    const alerta = bloco('.sz-tool-guide__alert {')
+    expect(alerta.corpo).toContain('var(--sz-tool-danger)')
+    expect(alerta.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
+    // ⚠️ A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
+    // sobre o fundo rosado do próprio alerta deu 4,25:1 no ESCURO, abaixo do piso de 4,5.
+    // Medido no playground depois da mistura: 6,31 no claro e 5,74 no escuro.
+    expect(alerta.corpo).toContain(
+      'color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink))',
+    )
+    // ⚠️⚠️ E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
+    // como "quebrou". Ela vem DEPOIS da base (mesma especificidade: quem decide é a ordem).
+    expect(bloco('.sz-tool-guide__alert--warn {').corpo).toContain('var(--sz-tool-warn)')
+    expect(semComentarios.indexOf('.sz-tool-guide__alert--warn')).toBeGreaterThan(
+      semComentarios.indexOf('.sz-tool-guide__alert {'),
+    )
+    // A pílula quieta some dentro do recado (fundo do app e fio transparente no claro): lá
+    // dentro ela ganha a superfície do cartão e um fio de verdade.
+    expect(bloco('.sz-tool-guide__alert .sz-tool-pill--quiet {').corpo).toContain(
+      'border-color: var(--sz-tool-line)',
+    )
+  })
 })
 
 describe('nenhum pacote usa uma receita que a folha não tem mais', () => {
@@ -295,6 +419,49 @@ describe('quem embarca ferramentas importa a folha na ordem certa', () => {
       expect(iKids).toBeGreaterThan(-1)
       expect(iTool).toBeGreaterThan(iKids)
       expect(iPacote).toBeGreaterThan(iTool)
+    })
+  }
+})
+
+describe('os três guias do Pensa vestem a MESMA casca', () => {
+  /*
+   * 19/09/2026. Não existe "o painel do guia": são TRÊS componentes, em dois pacotes e no host,
+   * e foi assim que cada um acabou com a própria casca (fio de 2px no acento, fio da marca,
+   * faixa sem canto) até ela dizer que aquilo estava "totalmente fora da identidade visual da
+   * comunidade". A regressão a evitar é a óbvia: alguém mexer em UM e deixar os outros dois
+   * para trás. Classe sem receita não quebra teste nenhum — o painel só sai sem desenho —,
+   * então a trava é ler os três como TEXTO.
+   * ⚠ O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
+   * continua passando.
+   */
+  const GUIAS = [
+    '../../pinta/src/components/TaskBriefPanel.tsx',
+    '../../studio/src/studio/TaskGuidePanel.tsx',
+    '../../community-kids/src/components/kids/molda-task-guide.tsx',
+  ]
+  it('a receita existe na folha que os três consomem', () => {
+    // Fora do laço: repetida a cada arquivo, ela não era anti-vácuo de nada.
+    expect(semComentarios).toMatch(/\.sz-tool-guide__head\b/)
+  })
+  for (const arquivo of GUIAS) {
+    it(`${arquivo} usa .sz-tool-guide`, async () => {
+      const texto = await Bun.file(join(HERE, arquivo)).text()
+      const semComentario = texto
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/(^|[^:])\/\/.*$/gm, '$1')
+      // ⚠ Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
+      // `--aside` sozinho (achado do full review de 19/09/2026).
+      expect(semComentario).toMatch(/\bsz-tool-guide\b/)
+      expect(semComentario).toMatch(/\bsz-tool-guide__head\b/)
+      // ⚠️⚠️ E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
+      // que faz o alerta passar no contraste do tema escuro.
+      for (const linha of semComentario.split('\n')) {
+        if (!linha.includes('sz-tool-guide__alert')) continue
+        expect({ arquivo, linha: linha.trim() }).toEqual({
+          arquivo,
+          linha: linha.trim().replace(/\btext-\w+-danger\b/g, 'COR-PROPRIA-NO-ALERTA'),
+        })
+      }
     })
   }
 })

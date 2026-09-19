@@ -88,14 +88,37 @@ OPCIONAL `collapsed`/`onCollapsedChange` do `PintaTaskSession` desce como DADO, 
 esquece ao sair. ⚠ Com o par, quem manda é o host: clicar AVISA e não abre sozinho.
 ⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta, e apontar para um id ausente é referência
 pendurada para o leitor de tela — a mesma régua do `Panel` deste pacote).
-⚠⚠ **O que recolhe é SÓ o brief**: o "Voltar ao plano" e o recado de falha seguem fora dele, que
-é a lição de 09/2026 logo abaixo. `TaskBriefPanel.test.tsx` trava o invariante (e não a tag: o
-teste antigo exigia `<details>` e foi reescrito).
+⭐⭐ **Recolhido sobra UMA linha, e o painel veste a casca da comunidade (19/09/2026).** Dois
+pedidos dela no mesmo dia: *"quando fechar pode fechar tudo, mantendo só uma linha ali: o título e
+a setinha, para a gente deixar bastante espaço para as ferramentas"* e *"esse cartão está
+totalmente fora do design da identidade visual da comunidade"*.
+- **A casca é compartilhada**: `.sz-tool-guide` (`__head|__kicker|__title|__body|__foot|__alert`)
+  do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Estúdio e do Molda — cartão branco,
+  canto de 20px, Baloo de 15px, 14/18px de respiro. O `rounded-2xl border-2 border-pin-accent/40
+  px-3 py-2` próprio saiu, e com ele o texto colado na curva (12px de lado e 8px embaixo, o que
+  ela relatou). Medido no playground: recolhido 141px → 50px de altura, com 19px à esquerda e
+  15px abaixo do título. Os botões viraram `.sz-tool-pill--primary|outline|quiet`.
+- ⚠️⚠️ **O pé de ROTINA passou a recolher junto** (o "Voltar ao plano" e a linha de situação), o
+  que REVOGA em parte o invariante de 18/09. A regra que ficou no lugar: **recolher esconde
+  conteúdo e ação de rotina, NUNCA um problema.** O recado de falha e o aviso do desenho ausente
+  — com os dois botões que o resolvem — seguem FORA do que recolhe, e a criança recupera a rotina
+  com um clique na seta, que nunca sai da tela. `TaskBriefPanel.test.tsx` trava os dois lados (e
+  não a tag: o teste antigo exigia `<details>` e foi reescrito).
+- ⚠️ O sobretítulo "GUIA DO PENSA" SOME recolhido: com ele o cabeçalho tem duas linhas, e ela
+  pediu uma. Aberto ele volta, porque é o que diz de onde veio aquele painel.
+- **Full review do lote (19/09/2026), o que ele mudou aqui:** a SITUAÇÃO da tarefa subiu para o
+  cabeçalho (`.sz-tool-guide__state`) — ela morava no corpo, que recolhe, então a criança perdia
+  de vista se a tarefa estava pronta justo quando escolhia recolher; e com o recado de falha na
+  tela o PÉ fica, porque "tente de novo" tem de apontar para um botão que existe (a regra é o
+  problema E o que o resolve). O "Vincular outro desenho" trocou a pílula quieta pela de contorno:
+  dentro do recado tingido, a quieta media 1,04:1 sem fio nenhum no tema claro.
+- ⚠️ Cobertura declarada: o sobretítulo que some e a situação no cabeçalho têm teste; a fiação do
+  `?tarefa=` do playground, não.
 ⚠️ O `PintaApp` GUARDA antes de navegar: ele pega a store do editor aberto pelo `onEditorReady` do
 contexto (2º consumidor, ao lado do bloco de aula) e só chama o host com `flush().ok`, a mesma
 disciplina do "Voltar" do editor; falhou, o painel mostra o recado no `syncError` e NÃO navega (o
 flush de desmonte é `void` e não serve de garantia). ⚠️ NÃO mexer no `hostChrome.back`, que é só da
-galeria e sempre "Voltar para Criar". Testes: `TaskBriefPanel.test.tsx` (existência, 44px, clique
+galeria e sempre "Voltar para Criar". Testes: `TaskBriefPanel.test.tsx` (existência, a pílula compartilhada, clique
 duplo, falha) e `PintaApp.test.tsx` (a ORDEM gravação → navegação numa lista compartilhada, e a
 gravação que rejeita).
 
@@ -2961,6 +2984,10 @@ Três revisores (estado/eventos · CSS/cascata/criança · testes). Os achados q
   enquanto o `<details>` nascia aberto toda vez; com a seta que LEMBRA, deixou de ser: a criança
   que recolheu uma vez abriria a tarefa noutro aparelho e veria só o título, sem nada dizendo que
   existe saída. Desceu para o pé. **Recolher esconde o brief, nunca um problema.**
+  ⚠️ REVOGADO EM PARTE em 19/09/2026: o PÉ passou a recolher (ela pediu uma linha só), então o
+  aviso não mora mais nele — é irmão do corpo e do pé, e vai junto com os dois botões que o
+  resolvem. A regra ficou mais forte: recolher esconde conteúdo e ação de ROTINA, nunca um
+  problema nem o que o resolve.
 - ⭐ **[MÉDIO] A rede do duplo clique usa o `shapeHitAt`**, não o `shapeBounds`: aquele trata a
   ROTAÇÃO (a caixa a ignora, e está documentado), então num texto girado a primeira versão
   errava nos dois sentidos — em cima do glifo não abria, e no vazio abria. Trava PURA em
