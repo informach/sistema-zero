@@ -1172,16 +1172,14 @@ export function SceneActivityView({
       relogioAndando={running && ready && !conflict}
       valoresEscondidos={previsaoPendente}
       placa={
-        /* ⚠️⚠️ A PLACA do palpite (achado do review deste lote): o cartão de palpite que o
-              console substituiu tinha uma legenda à vista dizendo "Seu palpite" / "Antes de
-              assistir", e ela ficou pelo caminho — a criança via um balão do Zappy e duas opções,
-              sem nada que dissesse em que momento da atividade ela estava. Aqui ela é a pílula do
-              começo da faixa, que é onde a maquete a pôs. */
-        previsaoPendente ? (
-          <span className="sz-scene-placa sz-scene-placa--palpite">
-            {demoMode ? 'Antes de assistir' : 'Seu palpite'}
-          </span>
-        ) : null
+        /* ⚠️⚠️ A PLACA fica SEMPRE, e é a maquete que ela aprovou: o NOME da cena no começo da
+              faixa, virando "Seu palpite" no momento de arriscar. Ela diz em que momento da
+              atividade a criança está — e, quando o título da seção já disse o nome (o `<h3>` vira
+              `sr-only`), é a ÚNICA vez que o nome da cena aparece na tela. A primeira implantação a
+              deixou só no palpite, e foi uma das diferenças que ela viu. */
+        <span className={`sz-scene-placa${previsaoPendente ? ' sz-scene-placa--palpite' : ''}`}>
+          {previsaoPendente ? (demoMode ? 'Antes de assistir' : 'Seu palpite') : content.title}
+        </span>
       }
     >
       {!demoMode && !previsaoPendente && (
@@ -1414,30 +1412,6 @@ export function SceneActivityView({
           </SceneConsole>
         ) : (
           <>
-            {palpite && !(revisita && !prediction) && (
-              <ScenePrediction
-                prediction={palpite}
-                escolha={prediction}
-                demonstracao={demoMode}
-                trocavel={trocavel}
-                revelado={revelado}
-                onTrocar={() => {
-                  focarDialogoDoPalpite.current = true
-                  focarDialogoDaDescoberta.current = false
-                  gesto.current = false
-                  setRunning(false)
-                  action.current({ type: 'reset' })
-                  apagarPalpite(scope)
-                  setPrediction('')
-                  setHint(0)
-                  setPistaCongelada(null)
-                  setConferiu('')
-                  setPalpiteNaHora('')
-                  setAvisoDescoberta('')
-                  setAviso('')
-                }}
-              />
-            )}
             {suaVez ? (
               <SceneSandbox
                 activity={activity}
@@ -1542,6 +1516,64 @@ export function SceneActivityView({
                           />
                         )}
                       </ConsoleMundo>
+                      {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, logo abaixo do mundo:
+                      ele fala da cena, e solto acima da moldura era a primeira coisa que quebrava a
+                      unidade que ela pediu (foi o que ela viu na tela). Fica na área da conversa,
+                      no mesmo lugar em que o palpite perguntou e em que a conclusão vai responder. */}
+                      {palpite && !(revisita && !prediction) && (
+                        <div className="sz-scene-console-conversa">
+                          <ScenePrediction
+                            prediction={palpite}
+                            escolha={prediction}
+                            demonstracao={demoMode}
+                            trocavel={trocavel}
+                            revelado={revelado}
+                            onTrocar={() => {
+                              focarDialogoDoPalpite.current = true
+                              focarDialogoDaDescoberta.current = false
+                              gesto.current = false
+                              setRunning(false)
+                              action.current({ type: 'reset' })
+                              apagarPalpite(scope)
+                              setPrediction('')
+                              setHint(0)
+                              setPistaCongelada(null)
+                              setConferiu('')
+                              setPalpiteNaHora('')
+                              setAvisoDescoberta('')
+                              setAviso('')
+                            }}
+                          />
+                        </div>
+                      )}
+                      {/* ⚠️ A caixa só existe COM conclusão: vazia, as margens dela colapsavam em
+                    12px de vão morto entre a frase e a prancha, em toda cena e o tempo todo. */}
+                      {!demoMode && !revisita && conclusao && (
+                        <div className="sz-scene-console-conversa">
+                          <SceneConclusion
+                            pergunta={content.checkpoint}
+                            regra={fraseDeSucesso}
+                            resposta={resposta}
+                            certa={respostaCerta}
+                            feedback={respostaFeedback}
+                            aguardaCena={aguardaCena}
+                            bloqueada={registered || conflict || !ready}
+                            faixaRef={faixaRef}
+                            perguntaRef={perguntaRef}
+                            onResponder={(escolha) => {
+                              respostaAtual.current = escolha
+                              setResposta(escolha)
+                              setRespostaFeedback('')
+                              setRespostaCerta(null)
+                              setAguardaCena(false)
+                              // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
+                              // com o id fixo a primeira resposta errada seria devolvida para sempre.
+                              if (!registered) attemptId.current = crypto.randomUUID()
+                              void flush.current(escolha)
+                            }}
+                          />
+                        </div>
+                      )}
                       {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
                     ⚠️ Num lugar que só cresce (consertos do review da onda B do lote 5, T2): ela passa
                     de uma para duas linhas e volta no meio dos gestos, e a bancada ia junto. */}
@@ -1575,34 +1607,6 @@ export function SceneActivityView({
                     ali embaixo se fala sobre ela. Antes ela nascia DEPOIS do rodapé, fora da
                     moldura: a mesma distância que fez a pista passar despercebida.
                     ⚠️ A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
-                      {/* ⚠️ A caixa só existe COM conclusão: vazia, as margens dela colapsavam em
-                    12px de vão morto entre a frase e a prancha, em toda cena e o tempo todo. */}
-                      {!demoMode && !revisita && conclusao && (
-                        <div className="sz-scene-console-conversa">
-                          <SceneConclusion
-                            pergunta={content.checkpoint}
-                            regra={fraseDeSucesso}
-                            resposta={resposta}
-                            certa={respostaCerta}
-                            feedback={respostaFeedback}
-                            aguardaCena={aguardaCena}
-                            bloqueada={registered || conflict || !ready}
-                            faixaRef={faixaRef}
-                            perguntaRef={perguntaRef}
-                            onResponder={(escolha) => {
-                              respostaAtual.current = escolha
-                              setResposta(escolha)
-                              setRespostaFeedback('')
-                              setRespostaCerta(null)
-                              setAguardaCena(false)
-                              // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
-                              // com o id fixo a primeira resposta errada seria devolvida para sempre.
-                              if (!registered) attemptId.current = crypto.randomUUID()
-                              void flush.current(escolha)
-                            }}
-                          />
-                        </div>
-                      )}
                       {demoMode
                         ? blocoDaDemonstracao && (
                             <ConsolePrancha>{blocoDaDemonstracao}</ConsolePrancha>

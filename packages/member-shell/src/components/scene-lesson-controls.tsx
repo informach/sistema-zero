@@ -86,7 +86,7 @@ export function LessonSceneControls({
          tem deslizante, botões de passo e o valor à vista — os três levam ao MESMO
          lugar, que é a régua desta casa desde a cena da colisão: quem não arrasta
          (teclado, leitor de tela) chega à mesma descoberta. */
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="sz-scene-pecas">
           {/* ⚠️⚠️ Os rótulos são só "x" e "y" (lote 2 do Raio-X, 16/09/2026). "y, de cima a baixo"
               ficava à vista durante a previsão ("se o y AUMENTAR, para onde o Dino vai?") e era a
               resposta dela, na cena que a professora abre com "um dos dois pega todo mundo de
@@ -136,7 +136,7 @@ export function LessonSceneControls({
         <div className="space-y-3">
           {/* ⚠️⚠️ A BORDA vem primeiro (lote 5 do Raio-X): é a primeira descoberta, e sem ela os
               números mudam a tela sem nada na tela mudar. */}
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border px-2.5 py-2">
             {/* A criança lê a PRÓXIMA ação. O estado continua no `aria-pressed`, que é a camada
                 acessível própria de um botão alternável. */}
             <SceneButton
@@ -149,7 +149,7 @@ export function LessonSceneControls({
             {/* ⚠️⚠️ O atalho "Usar 480 por 270" SAIU (lote 5): ele fazia pela criança justamente a
                 ligação número × formato, e fechava duas metas num toque. */}
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sz-scene-pecas">
             {[
               {
                 eixo: 'width' as const,
@@ -221,7 +221,7 @@ export function LessonSceneControls({
         </div>
       )}
       {m === 'screen-reader' && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border px-2.5 py-2">
           {/* ⚠️ Ícone de ESCUTA, não de som: "Ligar som" (o efeito sonoro da cena)
             fica no mesmo rodapé, e dois botões com o mesmo alto-falante na mesma
             tela leem como o mesmo controle. */}

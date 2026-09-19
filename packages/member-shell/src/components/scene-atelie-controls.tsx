@@ -60,7 +60,7 @@ export function AtelieSceneControls({
       const tocandoDeVerdade = state.animation.playing && (tocando ?? true)
       return (
         <div className="w-full space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sz-scene-pecas">
             {/* ⚠️⚠️ Com a prévia TOCANDO, a escolha fica fechada e SEM destaque, com o motivo (consertos do
                 review da onda B do lote 5, B1): o destaque pulava entre "Quadro 1" e "Quadro 2" no ritmo
                 da prévia, um segundo pisca-pisca logo abaixo do fogo. Fechado não é escondido. */}
@@ -74,7 +74,7 @@ export function AtelieSceneControls({
               nota={tocandoDeVerdade ? 'Pare a prévia para escolher um quadro.' : undefined}
               onChange={(index) => dispatch({ type: 'frame', index })}
             />
-            <div className="rounded-2xl border border-border p-4">
+            <div className="rounded-2xl border border-border px-2.5 py-2">
               <Chave
                 label={nome('Prévia')}
                 ligado={tocandoDeVerdade}
@@ -101,7 +101,7 @@ export function AtelieSceneControls({
     case 'onion-skin':
       return (
         <div className="w-full space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sz-scene-pecas">
             <Escolha
               label={nome('Quadro à vista')}
               valor={state.animation.frame}
@@ -111,7 +111,7 @@ export function AtelieSceneControls({
               ]}
               onChange={(index) => dispatch({ type: 'frame', index })}
             />
-            <div className="rounded-2xl border border-border p-4">
+            <div className="rounded-2xl border border-border px-2.5 py-2">
               <Chave
                 label={nome('Fantasma')}
                 ligado={state.animation.onion}
@@ -154,7 +154,7 @@ export function AtelieSceneControls({
               outra: lado a lado, "Espelho de cima e de baixo: desligado" passava da caixa na coluna de
               600 px (visto na banca). */}
           <div className="grid gap-3">
-            <div className="rounded-2xl border border-border p-4">
+            <div className="rounded-2xl border border-border px-2.5 py-2">
               <Chave
                 label={nome('Espelho lado a lado')}
                 ligado={espelhos.x}
@@ -165,7 +165,7 @@ export function AtelieSceneControls({
                 }
               />
             </div>
-            <div className="rounded-2xl border border-border p-4">
+            <div className="rounded-2xl border border-border px-2.5 py-2">
               <Chave
                 label={nome('Espelho de cima e de baixo')}
                 ligado={espelhos.y}
@@ -183,7 +183,7 @@ export function AtelieSceneControls({
               />
             </div>
           </div>
-          <div className="rounded-2xl border border-border p-4">
+          <div className="rounded-2xl border border-border px-2.5 py-2">
             <div className="flex flex-wrap items-center gap-2">
               {/* ⚠️ Um azul cheio por vez: o traço que as metas pedem é a asa. */}
               <SceneButton tom="gesto" onClick={() => dispatch({ type: 'trace', piece: 'asa' })}>
@@ -262,8 +262,8 @@ export function AtelieSceneControls({
     }
     case 'fill-stroke':
       return (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border p-4">
+        <div className="sz-scene-pecas">
+          <div className="rounded-2xl border border-border px-2.5 py-2">
             <Chave
               label={nome('Preenchimento')}
               ligado={state.ink.fill}
@@ -272,7 +272,7 @@ export function AtelieSceneControls({
               onToggle={(on) => dispatch({ type: 'ink', part: 'fill', on })}
             />
           </div>
-          <div className="rounded-2xl border border-border p-4">
+          <div className="rounded-2xl border border-border px-2.5 py-2">
             <Chave
               label={nome('Contorno')}
               ligado={state.ink.stroke}
@@ -285,8 +285,8 @@ export function AtelieSceneControls({
       )
     case 'shading':
       return (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border p-4">
+        <div className="sz-scene-pecas">
+          <div className="rounded-2xl border border-border px-2.5 py-2">
             <Chave
               label={nome('A sombra e a luz')}
               ligado={state.light.shade}
@@ -295,7 +295,7 @@ export function AtelieSceneControls({
               onToggle={(on) => dispatch({ type: 'shade', on })}
             />
           </div>
-          <div className="rounded-2xl border border-border p-4">
+          <div className="rounded-2xl border border-border px-2.5 py-2">
             <Chave
               label={nome('O sol')}
               ligado={state.light.side === 'right'}

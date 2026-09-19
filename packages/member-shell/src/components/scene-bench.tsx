@@ -137,11 +137,38 @@ export function Medida({
    * usa leitor de tela nunca ouvia por que o deslizante não respondia.
    */
   const descrito = nota ? `${id}-nota` : undefined
+  /** Ver o comentário do layout logo abaixo: dez caracteres é o que sobra para o nome numa linha. */
+  const umaLinha = label.length <= 10
   return (
-    <div className="rounded-2xl border border-border p-4 text-sm font-semibold">
+    /*
+     * ⭐⭐ UMA LINHA onde cabe (18/09/2026): `rótulo · − ▬▬ + · valor`. É a peça da maquete que ela
+     * aprovou, e a primeira implantação saiu com o layout de duas linhas de sempre — a prancha
+     * ficou com o dobro da altura do que ela viu na tela.
+     *
+     * ⚠️⚠️ **Só com rótulo CURTO, e o limiar é medido, não chutado.** Numa peça de 400px (duas por
+     * linha na coluna da aula) sobram ~240px depois dos dois botões de 44, do valor e dos vãos; o
+     * deslizante precisa de uns 160 para ser deslizante, então o rótulo tem ~80px, que são dez
+     * caracteres. Dos 23 rótulos de `Medida` das 45 cenas, SEIS cabem (`x`, `y`, `z`,
+     * `y (altura)`, `alvo, x`, `Aproximar`) — entre eles os da cena do endereço, que é a que ela
+     * olhou. Os outros 17 seguem no layout de duas linhas.
+     *
+     * ⚠️ Por que um limiar no JS e não o `flex-wrap`: quando não cabe, alguma coisa desce, e o
+     * `flex-wrap` faria descer o ÚLTIMO item — o valor, sozinho embaixo do deslizante. O que a
+     * peça larga precisa é do contrário: nome e valor juntos em cima, deslizante inteiro embaixo.
+     * CSS puro não escolhe QUEM desce; o limiar escolhe.
+     * ⚠️ O padding é o da maquete (0,5 × 0,625rem) nos DOIS layouts; era `p-4`, e são 45 cenas de
+     * diferença na altura da prancha.
+     */
+    <div
+      className={`rounded-2xl border border-border px-2.5 py-2 text-sm font-semibold ${
+        umaLinha ? 'flex flex-wrap items-center gap-x-2 gap-y-1' : ''
+      }`}
+    >
       {digitavel ? (
-        <div className="flex items-center justify-between gap-2">
-          <label htmlFor={id}>{label}</label>
+        <div className={umaLinha ? 'contents' : 'flex items-center justify-between gap-2'}>
+          <label className="shrink-0" htmlFor={id}>
+            {label}
+          </label>
           <input
             type="text"
             inputMode="numeric"
@@ -155,24 +182,33 @@ export function Medida({
             onKeyDown={(e) => {
               if (e.key === 'Enter') confirmarDigitado()
             }}
-            className={`h-11 w-20 rounded-xl border border-border bg-background px-2 text-right text-lg tabular-nums ${tom} ${
-              disabled ? 'cursor-not-allowed border-dashed opacity-60' : ''
-            }`}
+            className={`h-11 w-20 shrink-0 rounded-xl border border-border bg-background px-2 text-right text-lg tabular-nums ${
+              umaLinha ? 'order-last ml-auto' : ''
+            } ${tom} ${disabled ? 'cursor-not-allowed border-dashed opacity-60' : ''}`}
           />
         </div>
       ) : (
-        <label className="flex justify-between gap-2" htmlFor={id}>
-          {label}
+        <div className={umaLinha ? 'contents' : 'flex justify-between gap-2'}>
+          <label className="shrink-0" htmlFor={id}>
+            {label}
+          </label>
           {/* O negativo com o sinal de menos do conteúdo ("−9"), como a instrução escreve.
               ⚠️ `aria-live="off"` (full review de experiência, B7): o `<output>` é região viva por padrão,
               e cada toque gerava DOIS anúncios (o número e a frase da situação). O número segue no
               `aria-valuetext` do deslizante; o acontecimento, na frase. */}
-          <output aria-live="off" className={`text-lg tabular-nums ${tom}`}>
+          <output
+            aria-live="off"
+            className={`shrink-0 text-right text-lg tabular-nums ${
+              umaLinha ? 'order-last ml-auto' : ''
+            } ${tom}`}
+          >
             {escrito ?? numero(mostrado)}
           </output>
-        </label>
+        </div>
       )}
-      <div className="mt-2 flex items-center gap-2">
+      {/* ⚠️ `min-w-0` no grupo (e não no deslizante sozinho): numa linha só ele precisa poder
+          encolher até o piso do `flex-1`, senão empurra o valor para fora da peça. */}
+      <div className={`flex min-w-0 items-center gap-2 ${umaLinha ? 'flex-1' : 'mt-1.5'}`}>
         <SceneButton
           className="min-w-11 px-2"
           aria-label={`Diminuir ${label}${quanto}`}
@@ -231,7 +267,7 @@ export function Medida({
         </SceneButton>
       </div>
       {nota ? (
-        <p id={descrito} className="mt-2 font-normal text-muted-foreground">
+        <p id={descrito} className="mt-1 w-full font-normal text-muted-foreground">
           {nota}
         </p>
       ) : null}
@@ -331,7 +367,7 @@ export function Escolha<T extends string | number>({
   const id = useId()
   const descrito = nota ? `${id}-nota` : undefined
   return (
-    <fieldset className="rounded-2xl border border-border p-4 text-sm font-semibold">
+    <fieldset className="rounded-2xl border border-border px-2.5 py-2 text-sm font-semibold">
       <legend className="px-1">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {opcoes.map((o) => (

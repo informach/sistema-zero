@@ -55,7 +55,7 @@ export function CoreSceneControls({
         goals.every((g) => g.id === 'up' || g.id === 'down') &&
         state.drive.vx === 0
       return (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="sz-scene-pecas">
           <Medida
             label={nome('velocidade para o lado')}
             value={state.drive.vx}

@@ -192,7 +192,7 @@ export function DinoNumbersControls({
       const presa = !descobriu('contact') && sceneAreaPercent(state.contact.width) < 100
       const abriu = descobriu('contact') || presa
       return (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="sz-scene-pecas">
           <Medida
             // ⚠️ Os rótulos passam pelo elenco: numa turma de nave, "Distância do asteroide".
             label={nome('Distância do cacto')}
@@ -228,7 +228,7 @@ export function DinoNumbersControls({
     case 'lives': {
       const semVidas = state.lifeline.lives === 0
       return (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border px-2.5 py-2">
           {/* ⚠️⚠️ O TIRO na bancada quando o ponto vem do acerto (consertos do review da onda A do lote 5):
               o "Agora é sua vez" do Dia 4 não tinha tiro, e a criança não tinha como repetir a causa
               que tinha acabado de ver. */}

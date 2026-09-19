@@ -298,7 +298,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
       {aninhada ? (
         caixa(caixas[0], caixa(caixas[1]))
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">{caixas.map((c) => caixa(c))}</div>
+        <div className="sz-scene-pecas">{caixas.map((c) => caixa(c))}</div>
       )}
       <p id={ajuda} className="text-sm text-muted-foreground">
         {travada

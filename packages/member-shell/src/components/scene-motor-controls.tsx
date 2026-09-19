@@ -35,7 +35,7 @@ import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene
  * rótulo, e a bancada sumia da tela e do leitor de tela.
  */
 function TresMedidas({ children }: { children: ReactNode }) {
-  return <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+  return <div className="sz-scene-pecas">{children}</div>
 }
 
 /** As três alturas da câmera do 3D, em palavra. Espelha o `ALTURA` da faixa de estado. */
@@ -126,7 +126,7 @@ export function MotorSceneControls({
             seletor
             onToggle={(shared) => dispatch({ type: 'brain-scope', shared })}
           />
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="sz-scene-pecas sz-scene-pecas--tres">
             {state.brains.states.map((atual, i) => (
               <Escolha
                 // biome-ignore lint/suspicious/noArrayIndexKey: são três torres fixas, 1ª à 3ª.
@@ -243,7 +243,7 @@ export function MotorSceneControls({
     case 'camera-3d':
       return (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sz-scene-pecas">
             <Medida
               label={nome('volta da câmera')}
               value={state.orbit.yaw}
@@ -274,7 +274,7 @@ export function MotorSceneControls({
       )
     case 'mesh':
       return (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="sz-scene-pecas">
           {/* ⭐ Três degraus (lote 5): no do meio a pele fica transparente, com os pontos logo embaixo. */}
           <Escolha
             label={nome('A pele')}
@@ -295,7 +295,7 @@ export function MotorSceneControls({
     case 'pick-ray':
       return (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sz-scene-pecas">
             <Medida
               label={nome('a mira, para os lados')}
               value={state.ray.x}

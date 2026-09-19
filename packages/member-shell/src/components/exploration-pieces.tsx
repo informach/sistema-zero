@@ -41,7 +41,7 @@ export function ExplorationPieces({
   return (
     <div className="space-y-3">
       {m === 'world' && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="sz-scene-pecas">
           <section
             role="group"
             aria-label="Nos bastidores"

@@ -296,7 +296,7 @@ function BancadaDaFicha({ state, dispatch, cast, onRunning, aberta }: Bancada) {
   const descobriu = aberta('all-change')
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="sz-scene-pecas">
         <Medida
           label={nome('velocidade na ficha')}
           value={speed}
@@ -513,7 +513,7 @@ function BancadaDaMira({ state, dispatch, cast, onRunning }: Bancada) {
   const { targetX, targetY, chasing } = state.sight
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="sz-scene-pecas">
         {/* ⚠️ Com folga da borda (`AIM_TARGET_MARGIN`, consertos do review da onda B do lote 5): em y 0 o
             alvo ficava metade fora da tela do jogo. */}
         <Medida
