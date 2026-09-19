@@ -2221,6 +2221,15 @@ substituir na raiz, sem compatibilidade.
 **Ordem de implantação:** migration `0090` → members → gateway → admin/community/kids →
 `materials:backfill --apply` → (release seguinte) migration `0091`.
 
+**Reconciliação das revisões de rascunho após a 0091 (19/09/2026):** retirar
+`supportBlockIds` também mudou o hash do publicado. Rascunhos abertos antes da mudança
+continuavam com o hash antigo e `draft/publish` respondia 409, mesmo sem outra aba. Rode
+`bun run drafts:rebase-revisions` para conferir e `bun run drafts:rebase-revisions -- --apply`
+para atualizar somente as linhas cujo hash antigo confere exatamente com o publicado atual
+mais o campo removido vazio. Não mexe no documento nem na revisão de edição; hash inesperado
+é conflito real ou caso para análise individual e não sofre rebase automático. Repita o dry-run:
+o esperado é zero pendentes e zero conflitos.
+
 ## Trazer a versão publicada de volta para o rascunho (18/09/2026, migration `0089`)
 
 O rascunho (`lesson_drafts.document`) e o publicado (`lesson_blocks`/`lesson_structures`) sempre

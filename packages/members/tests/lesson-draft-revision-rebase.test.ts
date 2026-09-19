@@ -50,5 +50,12 @@ describe('reconciliação de revisões após retirar supportBlockIds', () => {
       kind: 'conflict',
       currentRevision: publishedLessonFingerprint(snapshot),
     })
+    expect(
+      classifyLessonDraftRevision(
+        snapshot,
+        publishedLessonFingerprint({ ...snapshot, supportBlockIds: ['bloco-antigo'] }),
+        true,
+      ).kind,
+    ).toBe('conflict')
   })
 })
