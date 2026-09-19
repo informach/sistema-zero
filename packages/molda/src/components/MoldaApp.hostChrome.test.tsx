@@ -75,6 +75,7 @@ describe('chrome do host na galeria', () => {
     const menu = within(header).getByRole('button', { name: 'Esconder menu' })
     expect(menu.className).toContain('sz-tool-btn-menu')
     expect(menu.getAttribute('aria-pressed')).toBe('false')
+    expect(menu.getAttribute('data-tooltip')).toBe('Esconder menu')
     // Sem `title`: com `aria-label` ele viraria descrição e o leitor repetiria o nome.
     expect(menu.getAttribute('title')).toBeNull()
     const back = within(header).getByRole('link', { name: 'Voltar para Criar' })

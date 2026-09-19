@@ -1,5 +1,6 @@
 'use client'
 
+import { isLessonPath } from '@sistemazero/member-shell/lib/lesson-path'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -11,6 +12,7 @@ import { UserMenu } from './user-menu'
 
 export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
   const pathname = usePathname()
+  if (isLessonPath(pathname)) return null
 
   function isActive(href: string, match?: string): boolean {
     // Raiz só acende em match exato (todo path começa com '/').

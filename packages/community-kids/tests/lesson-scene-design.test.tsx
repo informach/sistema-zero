@@ -73,11 +73,6 @@ function block(scene: SceneId, hints: string[] = []) {
   }
 }
 
-/** O texto da pista passou a trazer a situação ANTES do degrau; o que importa é o degrau estar lá. */
-const contendo = (trecho: string) => (_: string, node: Element | null) =>
-  node?.textContent?.includes(trecho) === true &&
-  !Array.from(node.children).some((filho) => filho.textContent?.includes(trecho))
-
 describe('a prévia antes do palpite', () => {
   test('mostra o palco inicial e apresenta o botão do leitor de tela sem liberá-lo', () => {
     render(
@@ -124,7 +119,9 @@ describe('a pista não apaga a instrução', () => {
     render(<InteractiveLessonBlock block={block('layers')} previewContent={content('layers')} />)
     expect(screen.getByText(SCENE_MODELS.layers.instruction)).toBeTruthy()
     fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
-    expect(screen.getByText(contendo(SCENE_MODELS.layers.hints[0] as string))).toBeTruthy()
+    expect(document.querySelector('[data-pista]')?.textContent).toContain(
+      SCENE_MODELS.layers.hints[0] as string,
+    )
     expect(screen.getByText(SCENE_MODELS.layers.instruction)).toBeTruthy()
   })
 
@@ -365,8 +362,10 @@ describe('o elenco por curso', () => {
     ).toBeTruthy()
     // A pista cita o personagem pelo nome, e é a do atalho da cena (não a do catálogo).
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
-    expect(screen.getByText(/Aproxime o asteroide devagar/)).toBeTruthy()
-    expect(screen.getByText(/borda da área da nave/)).toBeTruthy()
+    expect(document.querySelector('[data-pista]')?.textContent).toContain(
+      'Aproxime o asteroide devagar',
+    )
+    expect(document.querySelector('[data-pista]')?.textContent).toContain('borda da área da nave')
   })
 
   test('sem elenco declarado, nada muda para o Corre Dino', async () => {

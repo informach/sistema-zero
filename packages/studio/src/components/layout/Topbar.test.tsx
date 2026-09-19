@@ -161,6 +161,7 @@ describe('Topbar × chrome do host', () => {
     mount(1200, chrome)
     const botao = screen.getByRole('button', { name: 'Mostrar menu' })
     expect(botao.getAttribute('aria-pressed')).toBe('true')
+    expect(botao.getAttribute('data-tooltip')).toBe('Mostrar menu')
     // `.sz-tool-btn-menu` de `@sistemazero/ui/tool-chrome.css` (a mesma do Pinta e do Pensa);
     // o "ligado" é pintado pelo `[aria-pressed="true"]` da folha.
     expect(botao.className).toBe('sz-tool-btn-menu')

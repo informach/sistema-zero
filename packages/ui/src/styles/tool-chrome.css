@@ -389,6 +389,33 @@
     border-color: var(--sz-tool-accent);
     background: color-mix(in oklab, var(--sz-tool-accent) 25%, transparent);
   }
+  .sz-tool-btn-menu[data-tooltip] {
+    position: relative;
+  }
+  .sz-tool-btn-menu[data-tooltip]::after {
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    left: 0;
+    z-index: 100;
+    width: max-content;
+    max-width: min(15rem, 80vw);
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.5rem;
+    background: var(--sz-tool-ink);
+    color: var(--sz-tool-bg);
+    content: attr(data-tooltip);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    white-space: normal;
+  }
+  .sz-tool-btn-menu[data-tooltip]:is(:hover, :focus-visible)::after {
+    opacity: 1;
+    visibility: visible;
+  }
 
   /* ── PÍLULAS chapadas ─────────────────────────────────────────────────────────────────
      O botão das telas-modelo: pílula de 40px (44 no toque), rótulo no extra-negrito de 15px,

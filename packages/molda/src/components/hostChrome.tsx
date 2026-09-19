@@ -51,6 +51,7 @@ export function HostMenuButton({ menu }: { menu: MoldaHostChromeMenu }): JSX.Ele
       type="button"
       aria-label={menu.label}
       aria-pressed={menu.hidden}
+      data-tooltip={menu.label}
       onClick={menu.onToggle}
       className="sz-tool-btn-menu"
     >

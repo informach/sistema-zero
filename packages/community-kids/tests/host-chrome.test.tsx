@@ -152,12 +152,12 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('useHostChrome — o menu', () => {
-  it('nas rotas embarcadas a partir de 768px oferece o botão, e alternar grava por PERFIL', () => {
+  it('nas rotas embarcadas a partir de 768px oferece o botão e inicia recolhido', () => {
     mount(null)
-    expect(screen.getByTestId('menu').textContent).toBe('Esconder menu|false')
-    fireEvent.click(screen.getByRole('button', { name: 'alternar' }))
     expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
-    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBe('1')
+    fireEvent.click(screen.getByRole('button', { name: 'alternar' }))
+    expect(screen.getByTestId('menu').textContent).toBe('Esconder menu|false')
+    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
   })
 
   it('abaixo de 768px (sem sidebar) e fora das rotas embarcadas o menu é null', () => {
@@ -167,8 +167,7 @@ describe('useHostChrome — o menu', () => {
     unmount()
 
     setViewportWidth(1280)
-    localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
-    for (const route of ['/cursos', '/perfil', '/']) {
+    for (const route of ['/criar', '/cursos', '/perfil', '/']) {
       pathname = route
       const view = mount(null)
       expect(screen.getByTestId('menu').textContent).toBe('null')
@@ -176,13 +175,13 @@ describe('useHostChrome — o menu', () => {
     }
   })
 
-  it('lembra a preferência salva do perfil e ignora a do irmão', () => {
+  it('ignora a preferência salva anteriormente por outro perfil', () => {
     localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
     const { unmount } = mount(null, false, 'perfil-1')
     expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
     unmount()
     mount(null, false, 'perfil-2')
-    expect(screen.getByTestId('menu').textContent).toBe('Esconder menu|false')
+    expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
   })
 })
 

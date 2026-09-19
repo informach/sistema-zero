@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import {
   KidsSpaceContent,
   type KidsSpaceContentProps,
@@ -314,9 +314,11 @@ describe('KidsSpaceContent — o Clube no celular não rola de lado', () => {
   // canais rola por dentro do painel, mas a coluna `auto` da grade crescia até ela inteira,
   // e o "com novidades" (sr-only, absoluto) escapava do recorte da fileira. happy-dom não
   // faz layout: travam-se as duas classes que resolvem.
-  test('a coluna dos canais encolhe e a fileira contém o que é absoluto dentro dela', () => {
+  test('a coluna dos canais encolhe e a fileira contém o que é absoluto dentro dela', async () => {
     installActivityFetch()
-    render(<KidsSpaceContent {...contentProps()} />)
+    await act(async () => {
+      render(<KidsSpaceContent {...contentProps()} />)
+    })
     const painel = screen.getByRole('navigation', { name: 'Canais do clube' })
     expect((painel.parentElement as HTMLElement).className.split(' ')).toContain('grid-cols-1')
     const fileira = painel.querySelector('ul') as HTMLElement

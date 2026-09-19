@@ -12,7 +12,12 @@ import {
 } from '../src/components/kids/mascot'
 import { KidsMascotAnimated } from '../src/components/kids/mascot-rive'
 
-afterEach(cleanup)
+const originalMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia')
+afterEach(() => {
+  cleanup()
+  if (originalMatchMedia) Object.defineProperty(window, 'matchMedia', originalMatchMedia)
+  else Reflect.deleteProperty(window, 'matchMedia')
+})
 
 /** `matchMedia` do happy-dom: o hook de movimento reduzido lê este casamento. */
 function matchMedia(reduzido: boolean) {

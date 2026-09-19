@@ -11,7 +11,7 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock } from 'lucide-react'
+import { Check, CheckCircle2, Lock, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -42,9 +42,6 @@ import type {
 interface Props {
   course: CourseDetailView
   lesson: LessonDetailView
-  prevHref: string | null
-  /** Próxima aula LIBERADA (travada → null): botão "Próxima" do rodapé. */
-  nextHref: string | null
   /**
    * Próxima aula na ORDEM, ignorando a trava — destino do botão "Próxima aula" da
    * COMEMORAÇÃO (ao concluir, a aula atual já destravou a próxima). `null` na última.
@@ -63,8 +60,6 @@ interface Props {
 export function LessonPlayer({
   course,
   lesson,
-  prevHref,
-  nextHref,
   nextLessonHref,
   viewerWatermark,
   viewerId,
@@ -91,7 +86,7 @@ export function LessonPlayer({
     missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
-  const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
+  const { navAvailable, outlineAvailable, outlineCollapsed, toggleOutline } = useFocusMode()
   // Onde a criança está no percurso. Quem sabe é o `LessonSections` (o índice muda no
   // CLIENTE ao avançar de seção); a barra do topo mora aqui, acima dele.
   const [secao, setSecao] = useState<PosicaoNaAula | null>(null)
@@ -121,9 +116,8 @@ export function LessonPlayer({
   } | null>(null)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
-  // Numeração global da aula ("AULA N DE M" + círculos da mini-trilha).
+  // Numeração global da aula nos círculos da mini-trilha.
   const flatLessons = useMemo(() => course.modules.flatMap((m) => m.lessons), [course.modules])
-  const lessonNumber = flatLessons.findIndex((l) => l.id === lesson.id) + 1
   // Módulo sem aula PUBLICADA não entra no índice lateral — só um título solto com
   // lista vazia embaixo (mesma regra da trilha do curso, `visibleModules`). A
   // numeração global não muda: módulo vazio soma zero aula em qualquer ordem.
@@ -219,6 +213,39 @@ export function LessonPlayer({
     ],
   )
 
+  const completionAction = lesson.completed ? (
+    <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
+      <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
+      Aula concluída
+    </span>
+  ) : (
+    <button
+      type="button"
+      onClick={() => complete()}
+      disabled={completing || completeBlocked}
+      className="sz-btn-gradient h-12 gap-2 px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
+    >
+      {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
+      Concluir aula
+    </button>
+  )
+  const completionMessage = lesson.completed ? null : blockedByLearning ? (
+    <p>Termine as atividades essenciais das seções para concluir a aula.</p>
+  ) : blockedByPinta ? (
+    <p>Envie seu desenho ao professor para concluir a aula.</p>
+  ) : blockedByComingSoon ? (
+    <p>
+      Essa aula ainda está sendo preparada.
+      {nextLessonLocked ? ' Quando ela ficar pronta, você termina e as próximas abrem.' : ''}
+    </p>
+  ) : blockedByQuiz ? (
+    <p>Passe no quiz da aula para poder concluí-la.</p>
+  ) : blockedByStudioNotSubmitted ? (
+    <p>Envie o projeto do Estúdio para poder concluir a aula.</p>
+  ) : blockedByStudioNotPassed ? (
+    <p>Atinja a nota mínima do Estúdio para poder concluir a aula.</p>
+  ) : null
+
   return (
     <LessonPlayerProvider value={playerContext}>
       <div
@@ -230,13 +257,9 @@ export function LessonPlayer({
       >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Header de "lição" (padrão Duolingo): voltar em círculo + o progresso
-              real das seções DA AULA + modo foco.
-              ⚠️ O progresso do CURSO saiu daqui (09/2026) e não volta: dentro da
-              aula o que a criança precisa medir é a AULA. O do curso ela já vê na
-              trilha, no card do curso e na celebração. O chip "Aula N de M" abaixo
-              FICA: ele situa a aula no curso sem medir nada. */}
-          <div className="flex items-center gap-3 rounded-[1.25rem] border border-(--borda-carta) bg-card px-3 py-2.5 md:gap-4 md:px-4">
+          {/* Navegação mínima da aula: retorno, progresso real e controles dos menus.
+              O progresso do curso continua na trilha e na lista de aulas. */}
+          <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
@@ -258,113 +281,57 @@ export function LessonPlayer({
             ) : null}
           </div>
 
-          {/* ⭐ O título da aula desceu para o cabeçalho da seção (18/09/2026), que
-              agora mostra "aula · seção" numa linha só, com o índice ao lado. Aqui
-              sobra a pílula de posição no curso — ela fala do CURSO, não da aula. */}
-          <div>
-            <span className="kids-marca inline-block rounded-full px-3 py-1 font-extrabold text-xs uppercase tracking-[0.12em]">
-              Aula {lessonNumber} de {flatLessons.length}
-            </span>
-          </div>
-
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
             kids
             lessonTitle={lesson.title}
+            immersive
+            completionAction={completionAction}
+            completionMessage={completionMessage}
             onSectionChange={aoTrocarSecao}
             renderBlocks={(blocks) => <KidsLessonBlocks blocks={blocks} />}
           />
 
           {lesson.attachments.length > 0 ? (
-            <KidsLessonAttachments
-              courseSlug={course.slug}
-              lessonId={lesson.id}
-              attachments={lesson.attachments}
-            />
-          ) : null}
-
-          {/* Ações: concluir + navegação */}
-          <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-(--borda-carta) bg-card px-4 py-3.5 md:px-5">
-            {lesson.completed ? (
-              <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
-                <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
-                Aula concluída
-              </span>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => complete()}
-                  disabled={completing || completeBlocked}
-                  className="sz-btn-gradient h-12 gap-2 self-start px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
-                >
-                  {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
-                  Concluir aula
-                </button>
-                {blockedByLearning ? (
-                  <p className="text-sm text-muted-foreground">
-                    Termine as atividades essenciais das seções para concluir a aula.
-                  </p>
-                ) : blockedByPinta ? (
-                  <p className="text-sm text-muted-foreground">
-                    Envie seu desenho ao professor para concluir a aula.
-                  </p>
-                ) : blockedByComingSoon ? (
-                  <p className="text-muted-foreground text-xs">
-                    Essa aula ainda está sendo preparada.
-                    {/* As próximas NÃO abrem sozinhas quando o bloco sai: a criança
-                        ainda precisa concluir esta. Prometer o contrário faria ela
-                        voltar e encontrar os mesmos cadeados. */}
-                    {nextLessonLocked
-                      ? ' Quando ela ficar pronta, você termina e as próximas abrem.'
-                      : ''}
-                  </p>
-                ) : blockedByQuiz ? (
-                  <p className="text-muted-foreground text-xs">
-                    Passe no quiz da aula para poder concluí-la.
-                  </p>
-                ) : blockedByStudioNotSubmitted ? (
-                  <p className="text-muted-foreground text-xs">
-                    Envie o projeto do Estúdio para poder concluir a aula.
-                  </p>
-                ) : blockedByStudioNotPassed ? (
-                  <p className="text-muted-foreground text-xs">
-                    Atinja a nota mínima do Estúdio para poder concluir a aula.
-                  </p>
-                ) : null}
-              </div>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              {prevHref ? (
-                <Link href={prevHref} className="sz-btn-gradient sz-btn-suave gap-2 px-5">
-                  <ArrowLeft className="size-4" aria-hidden />
-                  Anterior
-                </Link>
-              ) : null}
-              {nextHref ? (
-                <Link href={nextHref} className="sz-btn-gradient gap-2 px-5">
-                  Próxima
-                  <ArrowRight className="size-4" aria-hidden />
-                </Link>
-              ) : null}
+            <div className="mx-auto w-full max-w-[860px]">
+              <KidsLessonAttachments
+                courseSlug={course.slug}
+                lessonId={lesson.id}
+                attachments={lesson.attachments}
+              />
             </div>
-          </div>
+          ) : null}
         </div>
 
         {/* Outline do curso (sidebar) como MINI-TRILHA: módulos = unidades
             temáticas, aulas = círculos numerados. lg:top-6: sem header fixo
             no desktop (a navegação é a sidebar do app). */}
+        {!outlineCollapsed ? (
+          <button
+            type="button"
+            onClick={toggleOutline}
+            aria-label="Fechar lista de aulas"
+            className="fixed inset-0 z-[60] bg-foreground/25 lg:hidden"
+          />
+        ) : null}
         <aside
+          id="kids-lesson-outline"
           aria-hidden={outlineCollapsed || undefined}
+          inert={outlineCollapsed}
           className={cn(
-            'w-full shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-in-out motion-reduce:transition-none',
-            'lg:sticky lg:top-6',
-            outlineCollapsed
-              ? 'lg:w-0 lg:pointer-events-none lg:opacity-0'
-              : 'lg:w-72 lg:opacity-100',
+            'fixed inset-y-0 right-0 z-[61] w-[min(20rem,90vw)] overflow-y-auto bg-card lg:sticky lg:top-6 lg:right-auto lg:bottom-auto lg:z-auto lg:w-72 lg:shrink-0 lg:overflow-hidden',
+            outlineCollapsed && 'hidden',
           )}
         >
+          <button
+            type="button"
+            onClick={toggleOutline}
+            aria-label="Fechar lista de aulas"
+            className="ml-auto flex size-11 items-center justify-center lg:hidden"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
           <div className="overflow-hidden rounded-[1.25rem] border border-(--borda-carta) bg-card">
             {/* O índice lateral mantém o progresso geral do curso, compacto. */}
             <div className="px-5 pt-5 pb-3">

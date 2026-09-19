@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render } from '@testing-library/react'
 
 /**
@@ -31,10 +31,15 @@ const { EMBEDDED_APP_FRAME, EMBEDDED_STUDIO_FRAME } = await import(
 )
 
 /** happy-dom não implementa `matchMedia`; o FocusModeProvider usa. */
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
 Object.defineProperty(window, 'matchMedia', {
   configurable: true,
   writable: true,
   value: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
+})
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
 })
 
 afterEach(cleanup)

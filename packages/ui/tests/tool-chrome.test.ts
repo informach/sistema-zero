@@ -138,6 +138,12 @@ describe('tool-chrome.css: receitas', () => {
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-tint)')
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-line)')
     expect(pressionado.corpo).toContain('color: var(--sz-tool-accent)')
+    expect(bloco('.sz-tool-btn-menu[data-tooltip]::after {').corpo).toContain(
+      'content: attr(data-tooltip)',
+    )
+    expect(
+      bloco('.sz-tool-btn-menu[data-tooltip]:is(:hover, :focus-visible)::after {').corpo,
+    ).toContain('visibility: visible')
   })
 
   it('o botão do menu deixou de ser a ABA colada na barra lateral (11/09/2026)', () => {

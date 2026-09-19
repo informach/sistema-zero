@@ -40,14 +40,14 @@ export default async function LessonPage({
 
   const lesson = lessonRes.body
 
-  // Navegação anterior/próxima: derivada do outline (a API não fornece).
+  // Próxima aula para a comemoração; a navegação durante a aula é por seções.
   const flat: LessonOutlineView[] = course.modules.flatMap((m) => m.lessons)
   const index = flat.findIndex((l) => l.id === lesson.id)
   const href = (l: LessonOutlineView | undefined) =>
     l ? `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(l.id)}` : null
   const nextOutline = index >= 0 ? flat[index + 1] : undefined
   // Próxima aula na ORDEM (ignora a trava): a comemoração usa este link — ao concluir,
-  // a aula atual já destravou a próxima. O botão "Próxima" do rodapé (nextHref) fica travado.
+  // a aula atual já destravou a próxima.
   const nextLessonHref = href(nextOutline)
 
   // Perfil ATIVO = a criança (id da sessão). Server-side e best-effort: o nascimento
@@ -59,10 +59,9 @@ export default async function LessonPage({
 
   return (
     <LessonPlayer
+      key={`${session?.id ?? 'anonymous'}:${lesson.id}`}
       course={course}
       lesson={lesson}
-      prevHref={href(index > 0 ? flat[index - 1] : undefined)}
-      nextHref={nextOutline && !nextOutline.locked ? nextLessonHref : null}
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.id ? `Perfil ${session.id.slice(0, 8)}` : null}
       viewerId={session?.id ?? null}

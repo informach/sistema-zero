@@ -92,6 +92,7 @@ describe('chrome do host — galeria', () => {
     // A receita COMPARTILHADA (`@sistemazero/ui/tool-chrome.css`): o estado "escondido" é o
     // `[aria-pressed="true"]` dela, nunca o preenchimento forte de ferramenta ativa.
     expect(botao.className).toBe('sz-tool-btn-menu')
+    expect(botao.getAttribute('data-tooltip')).toBe('Mostrar menu')
     expect(botao.className).not.toContain('pin-tool-active')
   })
 

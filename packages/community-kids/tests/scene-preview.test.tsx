@@ -108,6 +108,14 @@ const demonstracao: InteractiveBlock = {
   activity: { type: 'demonstration', scene: 'controls' },
 }
 
+type AttemptResult = Awaited<ReturnType<LessonPreviewContextValue['onAttempt']>>
+const confirmed: AttemptResult = {
+  participated: true,
+  passed: true,
+  feedback: 'ok',
+  verifiedBy: 'client',
+}
+
 /** A ordem de desenhar da `layers`: o botão da peça de CIMA a leva para baixo (lote 5 do Raio-X). */
 async function trocarOrdem(vezes: number) {
   for (let i = 0; i < vezes; i++)
@@ -136,9 +144,13 @@ describe('a prévia de autoria', () => {
     })) as unknown as typeof window.matchMedia
     const relogio = relogioManual()
     try {
-      montar(demonstracao, async (blockId) => {
+      let confirm: (result: AttemptResult) => void = () => {}
+      const pending = new Promise<AttemptResult>((resolve) => {
+        confirm = resolve
+      })
+      montar(demonstracao, (blockId) => {
         tentativas.push(blockId)
-        return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
+        return pending
       })
       const principal = () =>
         screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
@@ -151,6 +163,10 @@ describe('a prévia de autoria', () => {
         await relogio.tocar(12)
       }
       await waitFor(() => expect(tentativas).toEqual(['preview']))
+      await act(async () => {
+        confirm(confirmed)
+        await pending
+      })
     } finally {
       relogio.restaurar()
     }
@@ -160,14 +176,26 @@ describe('a prévia de autoria', () => {
     // A primeira ida consome os comandos pendentes. Enquanto o registro dependia de haver
     // comando novo, a segunda tentativa saía sem fazer nada e o erro ficava na tela para sempre.
     let falhar = true
+    let rejectAttempt: ((error: Error) => void) | null = null
+    let confirmAttempt: (result: AttemptResult) => void = () => {}
     const tentativas: string[] = []
-    montar(experimentacao, async (blockId) => {
-      if (falhar) throw new Error('Falha de salvamento simulada')
-      tentativas.push(blockId)
-      return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
-    })
+    montar(
+      experimentacao,
+      (blockId) =>
+        new Promise<AttemptResult>((resolve, reject) => {
+          if (falhar) rejectAttempt = reject
+          else {
+            tentativas.push(blockId)
+            confirmAttempt = resolve
+          }
+        }),
+    )
     // ⚠️ Mudou de propósito (lote 5 do Raio-X): concluir a `layers` são três trocas de ordem.
     await trocarOrdem(3)
+    await waitFor(() => expect(rejectAttempt).not.toBeNull())
+    await act(async () => {
+      rejectAttempt?.(new Error('Falha de salvamento simulada'))
+    })
     // A falha do ensaio aparece com as palavras DELE, não como "aguardando conexão".
     expect(await screen.findByText('Falha de salvamento simulada')).toBeTruthy()
     expect(tentativas).toEqual([])
@@ -176,16 +204,27 @@ describe('a prévia de autoria', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Tentar salvar' }))
     })
     await waitFor(() => expect(tentativas).toEqual(['preview']), { timeout: 5000 })
+    await act(async () => {
+      confirmAttempt(confirmed)
+    })
   })
 
   test('a experimentação registra assim que a criança fecha as metas', async () => {
     const tentativas: LearningAnswers[] = []
-    montar(experimentacao, async (_id, _content, answers) => {
+    let confirm: (result: AttemptResult) => void = () => {}
+    const pending = new Promise<AttemptResult>((resolve) => {
+      confirm = resolve
+    })
+    montar(experimentacao, (_id, _content, answers) => {
       tentativas.push(answers)
-      return { participated: true, passed: true, feedback: 'ok', verifiedBy: 'client' }
+      return pending
     })
     await trocarOrdem(3)
     await waitFor(() => expect(tentativas).toHaveLength(1), { timeout: 5000 })
+    await act(async () => {
+      confirm(confirmed)
+      await pending
+    })
     // O que sobe é o checkpoint confirmado, não um objeto vazio.
     expect(tentativas[0]?.sceneCheckpoint).toBeDefined()
   })

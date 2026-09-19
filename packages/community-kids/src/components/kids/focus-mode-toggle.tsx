@@ -50,6 +50,7 @@ export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
       onClick={toggle}
       aria-label={label}
       aria-pressed={hidden}
+      aria-controls={target === 'outline' ? 'kids-lesson-outline' : undefined}
       className={cn(
         // O QUADRADO de cantos redondos das telas-modelo (11/09/2026), com o 3D do Brilliant
         // (`.kids-3d`: a borda de baixo cinza, que afunda no aperto). Escondido = o tom

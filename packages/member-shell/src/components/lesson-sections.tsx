@@ -291,6 +291,10 @@ export function LessonSections(props: {
   lessonTitle?: string
   /** Onde a criança está no percurso. Chamado na montagem e a cada troca de seção. */
   onSectionChange?: (posicao: { index: number; total: number }) => void
+  /** Player de aula: chrome mínimo e navegação contínua; a prévia do admin não usa. */
+  immersive?: boolean
+  completionAction?: ReactNode
+  completionMessage?: ReactNode
 }) {
   const player = useLessonPlayer()
   return <LessonSectionsContent key={`${player?.viewerId}:${props.lesson.id}`} {...props} />
@@ -302,19 +306,25 @@ function LessonSectionsContent({
   kids = false,
   lessonTitle,
   onSectionChange,
+  immersive = false,
+  completionAction,
+  completionMessage,
 }: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
   kids?: boolean
   /**
    * O título da AULA. Presente, o cabeçalho da seção vira o `<h1>` da página e
-   * mostra "aula · seção" numa linha só, com o índice ao lado — e o player NÃO
-   * renderiza título nenhum (senão o nome da aula apareceria duas vezes).
+   * identifica "aula · seção" para o leitor de tela. No player imersivo ele
+   * fica visualmente oculto; no ensaio mantém o título e o índice visíveis.
    * Ausente (ensaio e pré-visualização do admin, onde o título já está em volta),
    * o cabeçalho segue sendo o `<h2>` só com o nome da seção.
    */
   lessonTitle?: string
   onSectionChange?: (posicao: { index: number; total: number }) => void
+  immersive?: boolean
+  completionAction?: ReactNode
+  completionMessage?: ReactNode
 }) {
   const player = useLessonPlayer()
   const rehearsal = useLessonPreview()
@@ -623,10 +633,8 @@ function LessonSectionsContent({
       </div>
     )
   }
-  // O ÍNDICE mora no cabeçalho da seção, e só ali (18/09/2026). Ele já tinha
-  // descido para lá no kids em 13/09; no adulto ainda era a metade direita do
-  // `sz-lesson-toolbar`, que agora fica só com "O que falta para concluir". Um
-  // lugar só: ao lado do nome da seção que ele troca.
+  // O índice visível é usado apenas fora do player imersivo (ensaio do admin).
+  // No player real, os controles anterior/próxima conduzem pelas seções.
   // `h1` na página de aula (o player não renderiza mais o dele), `h2` no ensaio do
   // admin, onde o título da aula já está em volta.
   const Heading = lessonTitle ? 'h1' : 'h2'
@@ -691,6 +699,98 @@ function LessonSectionsContent({
       </nav>
     </details>
   )
+  const helpForm = helpOpen ? (
+    <form
+      className="space-y-3 rounded-xl border border-border bg-card p-4"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void sendHelp()
+      }}
+    >
+      <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
+        Em qual parte você ficou com dúvida?
+      </label>
+      <textarea
+        id={`section-help-${lesson.id}`}
+        value={help}
+        onChange={(e) => setHelp(e.target.value)}
+        maxLength={8000}
+        rows={3}
+        className="w-full rounded-lg border border-border bg-background p-3"
+      />
+      <p className="text-sm text-muted-foreground">
+        O professor receberá o nome desta aula e desta seção.
+      </p>
+      <Button type="submit" disabled={sending || !help.trim()}>
+        {sending ? 'Enviando…' : 'Enviar ao professor'}
+      </Button>
+    </form>
+  ) : null
+  const helpNotice = helpStatus ? (
+    <p role="status" className="text-sm">
+      {helpStatus}
+      {helpThreadId && (
+        <a className="ml-2 underline" href={`/recados/${encodeURIComponent(helpThreadId)}`}>
+          Ver conversa
+        </a>
+      )}
+    </p>
+  ) : null
+  const navigationError = error ? (
+    <p role="alert" className="text-sm text-destructive">
+      {error}{' '}
+      {retryable && (
+        <button
+          type="button"
+          className="underline"
+          onClick={() => {
+            const retry = lastNavigation.current
+            if (retry)
+              void navigate(
+                sections.findIndex((s) => s.id === retry.sectionId),
+                retry.blockId,
+              )
+          }}
+        >
+          Tentar novamente
+        </button>
+      )}
+    </p>
+  ) : null
+  const previousButton = (
+    <Button
+      variant="outline"
+      className="sz-lesson-nav-prev"
+      disabled={index === 0 || navigating}
+      onClick={() => navigate(index - 1)}
+    >
+      <ArrowLeft className="size-4" />
+      Anterior
+    </Button>
+  )
+  const helpButton = !preview ? (
+    <Button
+      variant="ghost"
+      className="sz-lesson-nav-help"
+      onClick={() => setHelpOpen((open) => !open)}
+      aria-expanded={helpOpen}
+    >
+      <MessageCircle className="size-4" />
+      Preciso de ajuda
+    </Button>
+  ) : null
+  const nextButton = (
+    <Button
+      className="sz-lesson-nav-next"
+      disabled={
+        index === sections.length - 1 || navigating || locked(sections[index + 1]?.id ?? '')
+      }
+      onClick={() => navigate(index + 1)}
+    >
+      Próxima seção
+      <ArrowRight className="size-4" />
+    </Button>
+  )
   return (
     <LessonPlayerProvider
       value={
@@ -747,15 +847,19 @@ function LessonSectionsContent({
           ),
         }}
       >
-        <div ref={container} className={cn('space-y-5', kids && 'sz-lesson-sections')}>
-          {/* ⚠️ A barra existe só FORA do kids (13/09/2026). Lá ela sumiu inteira: "O que
-            falta para concluir" era a terceira cópia da mesma conta (a barra do topo do
-            kids já mede as atividades e o índice já marca a seção pendente), e o cartão
-            a mais empurrava o conteúdo para baixo. O índice desceu para o cabeçalho da
-            seção. `sz-lesson-toolbar` segue sendo o gancho ESTÁVEL do adulto: por posição
-            não funciona, a barra já perdeu um `:first-of-type` quando outro elemento
-            entrou na frente dela. */}
-          {!kids && (
+        <div
+          ref={container}
+          data-layout={immersive ? (podeDividir ? 'wide' : 'reading') : undefined}
+          className={cn(
+            'space-y-5',
+            kids && 'sz-lesson-sections',
+            immersive && 'sz-lesson-immersive relative mx-auto w-full',
+            immersive && !podeDividir && 'max-w-[860px]',
+          )}
+        >
+          {/* A barra de requisitos permanece no ensaio do admin. Nos dois players
+              imersivos, o progresso do topo e o motivo junto à conclusão bastam. */}
+          {!kids && !immersive && (
             <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
               <details ref={requirementsMenu} className="relative">
                 <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
@@ -800,19 +904,15 @@ function LessonSectionsContent({
             só liga com coluna confortável, e o piso da ferramenta (380px) existe
             para o VÍDEO poder crescer — o editor não precisa dele (ele vira abas
             por dentro abaixo de 1024px, ou seja já virava com o piso antigo). */}
-          {/* ⭐ UM cabeçalho só (18/09/2026). Antes o nome da aula era um `<h1>` do
-            player e o nome da seção um `<h2>` logo abaixo, cada um com a sua caixa:
-            duas linhas de título mais as margens delas, e a seção — que é o que
-            muda — aparecendo por último. Agora é "aula · seção" numa linha, com o
-            índice ao lado.
-            ⚠️ Ele continua sendo o ALVO DO FOCO ao trocar de seção (`destination
-            === 'heading'`): é o que leva o leitor de tela ao conteúdo novo e o que
-            faz a página subir. Mexer aqui sem olhar aquele efeito deixa a criança
-            parada no meio da página ao avançar.
-            ⚠️ Vira `<h1>` quando o player passa o título da aula, porque aí ele
-            deixa de renderizar o dele — uma página sem `<h1>` seria pior do que o
-            problema que este lote resolve. Sem o título (admin), segue `<h2>`. */}
-          <header className="sz-lesson-section-head flex items-start justify-between gap-3 px-1">
+          {/* No player real, o cabeçalho continua como H1 acessível e alvo do foco
+              ao avançar, mas não ocupa espaço visual. No ensaio do admin, segue
+              visível como H2 com o índice ao lado. */}
+          <header
+            className={cn(
+              'sz-lesson-section-head flex items-start justify-between gap-3 px-1',
+              immersive && 'sr-only',
+            )}
+          >
             <Heading
               ref={heading}
               tabIndex={-1}
@@ -842,7 +942,7 @@ function LessonSectionsContent({
               ) : null}
               {section.title}
             </Heading>
-            {indiceDaAula}
+            {!immersive && indiceDaAula}
           </header>
           {mostraAbas && (
             <div className="flex gap-2" role="group" aria-label="Orientação e criação">
@@ -1055,97 +1155,53 @@ function LessonSectionsContent({
             ))}
           {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
             Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
-          <div className="sz-lesson-nav flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-            <Button
-              variant="outline"
-              className="sz-lesson-nav-prev"
-              disabled={index === 0 || navigating}
-              onClick={() => navigate(index - 1)}
-            >
-              <ArrowLeft className="size-4" />
-              Anterior
-            </Button>
-            {!preview && (
-              <Button
-                variant="ghost"
-                className="sz-lesson-nav-help"
-                onClick={() => setHelpOpen((open) => !open)}
-                aria-expanded={helpOpen}
-              >
-                <MessageCircle className="size-4" />
-                Preciso de ajuda
-              </Button>
+          <div
+            className={cn(
+              'sz-lesson-nav border-t border-border',
+              immersive
+                ? 'sz-lesson-nav-immersive'
+                : 'flex flex-wrap items-center justify-between gap-3 pt-5',
             )}
-            <Button
-              className="sz-lesson-nav-next"
-              disabled={
-                index === sections.length - 1 || navigating || locked(sections[index + 1]?.id ?? '')
-              }
-              onClick={() => navigate(index + 1)}
-            >
-              Próxima seção
-              <ArrowRight className="size-4" />
-            </Button>
+          >
+            {immersive && helpForm}
+            {immersive && (helpNotice || navigationError) ? (
+              <div className="mx-auto w-full max-w-7xl space-y-1 pb-2">
+                {helpNotice}
+                {navigationError}
+              </div>
+            ) : null}
+            {immersive ? (
+              <div className="sz-lesson-nav-inner mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  {previousButton}
+                  <span className="hidden max-w-64 truncate text-sm text-muted-foreground sm:block">
+                    {section.title}
+                  </span>
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  {helpButton}
+                  {index === sections.length - 1 && completionAction
+                    ? completionAction
+                    : nextButton}
+                </div>
+              </div>
+            ) : (
+              <>
+                {previousButton}
+                {helpButton}
+                {nextButton}
+              </>
+            )}
+            {immersive && index === sections.length - 1 && completionMessage ? (
+              <div className="sz-lesson-nav-message mx-auto w-full max-w-7xl pt-1 text-sm text-muted-foreground">
+                {completionMessage}
+              </div>
+            ) : null}
           </div>
-          {helpOpen && (
-            <form
-              className="space-y-3 rounded-xl border border-border bg-card p-4"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void sendHelp()
-              }}
-            >
-              <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
-                Em qual parte você ficou com dúvida?
-              </label>
-              <textarea
-                id={`section-help-${lesson.id}`}
-                value={help}
-                onChange={(e) => setHelp(e.target.value)}
-                maxLength={8000}
-                rows={3}
-                className="w-full rounded-lg border border-border bg-background p-3"
-              />
-              <p className="text-sm text-muted-foreground">
-                O professor receberá o nome desta aula e desta seção.
-              </p>
-              <Button type="submit" disabled={sending || !help.trim()}>
-                {sending ? 'Enviando…' : 'Enviar ao professor'}
-              </Button>
-            </form>
-          )}
-          {helpStatus && (
-            <p role="status" className="text-sm">
-              {helpStatus}
-              {helpThreadId && (
-                <a className="ml-2 underline" href={`/recados/${encodeURIComponent(helpThreadId)}`}>
-                  Ver conversa
-                </a>
-              )}
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}{' '}
-              {retryable && (
-                <button
-                  type="button"
-                  className="underline"
-                  onClick={() => {
-                    const retry = lastNavigation.current
-                    if (retry)
-                      void navigate(
-                        sections.findIndex((s) => s.id === retry.sectionId),
-                        retry.blockId,
-                      )
-                  }}
-                >
-                  Tentar novamente
-                </button>
-              )}
-            </p>
-          )}
-          {index === sections.length - 1 && !lesson.completed && (
+          {!immersive && helpForm}
+          {!immersive && helpNotice}
+          {!immersive && navigationError}
+          {!immersive && index === sections.length - 1 && !lesson.completed && (
             <p className="text-center text-sm text-muted-foreground">
               Quando terminar as atividades e a criação desta aula, use o botão de concluir abaixo.
             </p>

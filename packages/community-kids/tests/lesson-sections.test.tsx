@@ -93,6 +93,36 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  test('modo imersivo preserva o título acessível e troca avanço por conclusão na última seção', () => {
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{
+            ...lesson,
+            sections: [lesson.sections?.[0]].filter((section) => section !== undefined),
+          }}
+          kids
+          lessonTitle="Meu jogo"
+          immersive
+          completionAction={<button type="button">Concluir aula</button>}
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByRole('heading', { level: 1 }).closest('header')?.className).toContain(
+      'sr-only',
+    )
+    expect(screen.queryByText('Índice da aula')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Concluir aula' })).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Próxima seção' })).toBeNull()
+    expect(container.querySelector('.sz-lesson-immersive')).not.toBeNull()
+    expect(container.querySelector('.sz-lesson-nav-inner span')?.textContent).toBe('Preparar')
+    expect(container.querySelector('.sz-lesson-immersive')?.getAttribute('data-layout')).toBe(
+      'reading',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
+    expect(container.querySelector('.sz-lesson-nav-immersive form')).not.toBeNull()
+  })
   test.each([
     false,
     true,
@@ -211,6 +241,39 @@ describe('aula por seções', () => {
   }
   const painelDe = (container: HTMLElement, id: string) =>
     container.querySelector(`#lesson-block-${id}`)?.closest('[data-panel-id]')
+
+  test('modo imersivo libera a largura inteira quando a seção tem conteúdo e ferramenta', () => {
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{
+            ...lesson,
+            blocks: [
+              fala,
+              { id: 'project', kind: 'studio', sortOrder: 1, content: { kind: 'studio' } },
+            ],
+            sections: [
+              {
+                id: 'only',
+                title: 'Explorar',
+                externalTool: null,
+                workspaceBlockId: 'project',
+                blockIds: ['fala', 'project'],
+              },
+            ],
+          }}
+          immersive
+          renderBlocks={(items) => items.map((block) => <p key={block.id}>{block.id}</p>)}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(container.querySelector('.sz-lesson-immersive')?.getAttribute('data-layout')).toBe(
+      'wide',
+    )
+    expect(container.querySelector('.sz-lesson-immersive')?.className).not.toContain(
+      'max-w-[860px]',
+    )
+  })
 
   test('a cena de aula mora na coluna da ferramenta, ao lado do conteúdo', () => {
     // ⚠️ Pedido dela (14/09/2026): experimentação e demonstração se comportam como o Estúdio.
@@ -845,6 +908,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
           lesson={{ ...lesson, sectionProgress: todasLiberadas }}
           kids
           lessonTitle="Meu jogo"
+          immersive
           renderBlocks={() => null}
         />
       </LessonPlayerProvider>,

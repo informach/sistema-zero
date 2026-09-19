@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import type { PensaHostChrome } from '@sistemazero/pensa'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 
@@ -55,6 +55,12 @@ function setViewportWidth(width: number): void {
   })
 }
 
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
+})
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
@@ -70,9 +76,9 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
       </FocusModeProvider>,
     )
     await waitFor(() => {
-      expect(screen.getByTestId('pensa-app').textContent).toBe('Esconder menu')
+      expect(screen.getByTestId('pensa-app').textContent).toBe('Mostrar menu')
     })
-    expect(lastChrome?.menu?.hidden).toBe(false)
+    expect(lastChrome?.menu?.hidden).toBe(true)
     // O Pensa persiste no servidor: o host manda `status: null` (o contrato do Pensa nem o lê).
     expect((lastChrome as { status?: unknown } | null)?.status ?? null).toBeNull()
   })

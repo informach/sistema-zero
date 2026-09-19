@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mock da aula Kids · foco no conteúdo</title>
+    <style>
+      :root {
+        --pagina: #e6effb;
+        --papel: #fff;
+        --tinta: #182b4e;
+        --texto-suave: #657899;
+        --linha: #d9e3f2;
+        --azul: #215be7;
+        --verde: #157a55;
+        --creme: #f4f6fa;
+        --largura-uma-coluna: 860px;
+      }
+      * { box-sizing: border-box; }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; min-width: 320px; background: var(--pagina); color: var(--tinta); font: 500 15px/1.45 Nunito, ui-rounded, "Avenir Next", system-ui, sans-serif; }
+      button { font: inherit; cursor: pointer; }
+      button:focus-visible { outline: 3px solid #77a6ff; outline-offset: 2px; }
+      .mock-switch { position: fixed; z-index: 20; top: 12px; right: 16px; padding: 7px 11px; color: #486186; background: #fff; border: 1px solid var(--linha); border-radius: 9px; box-shadow: 0 4px 16px #182b4e18; font-size: 11px; }
+      .mock-switch strong { color: var(--tinta); }
+      .mock-switch button { padding: 2px 5px; color: var(--azul); background: transparent; border: 0; font-size: 11px; font-weight: 800; }
+      .page { min-height: 100dvh; padding: 37px clamp(18px, 3vw, 54px) 130px; }
+      .topbar { display: flex; align-items: center; gap: 13px; width: min(100%, var(--largura-uma-coluna)); min-height: 52px; margin: 0 auto 36px; }
+      .back { display: grid; flex: 0 0 43px; place-items: center; width: 43px; height: 43px; color: #294768; background: #f5f8fe; border: 2px solid #d5e1ef; border-bottom-width: 4px; border-radius: 50%; font-size: 23px; line-height: 1; }
+      .progress { flex: 1; height: 9px; overflow: hidden; background: #f9f1f4; border-radius: 99px; }
+      .progress span { display: block; width: 42%; height: 100%; background: var(--verde); border-radius: inherit; transition: width .2s ease; }
+      .count { flex: 0 0 auto; color: var(--tinta); font-size: 14px; font-weight: 900; white-space: nowrap; }
+      .panel-button { display: grid; flex: 0 0 43px; place-items: center; width: 43px; height: 43px; color: var(--azul); background: #edf3ff; border: 2px solid #d4e0f2; border-bottom-width: 4px; border-radius: 14px; }
+      .panel-button[aria-pressed="false"] { color: #415978; background: var(--creme); }
+      .panel-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .stage { width: 100%; margin: 0 auto; }
+      .stage.two-columns { max-width: 1500px; }
+      .stage.one-column { max-width: var(--largura-uma-coluna); }
+      .columns { display: grid; grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1.12fr); align-items: stretch; }
+      .columns > * { min-width: 0; }
+      .divider { position: relative; }
+      .divider::before { content: ""; position: absolute; top: 0; bottom: 0; left: 9px; width: 2px; background: #d4e0ee; }
+      .divider::after { content: "⋮"; position: absolute; top: 46%; left: 0; display: grid; place-items: center; width: 20px; height: 48px; color: #3f648e; background: #fff; border: 2px solid #d1deed; border-radius: 16px; font-size: 18px; }
+      .video-card, .experience-card { min-width: 0; padding: 18px; background: var(--papel); border: 1px solid #edf2f8; border-radius: 20px; }
+      .chip { display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; color: #fff; border-radius: 999px; font-size: 12px; font-weight: 900; letter-spacing: .025em; }
+      .chip.blue { background: var(--azul); }
+      .chip.green { background: var(--verde); }
+      .video-frame { position: relative; height: auto; aspect-ratio: 16 / 9; margin-top: 13px; overflow: hidden; background: #88d5ef url("zappy-vagalume/para-upload-admin/prontos/capa-corre-dino.webp") center / cover; border: 1px solid #d7e4ed; border-radius: 14px; }
+      .video-frame::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent, #101c34c7); }
+      .video-title { position: absolute; z-index: 1; top: 35%; left: 15%; width: 70%; padding: 13px; color: #fff; background: #111d36dc; border: 3px solid #2e8dd9; border-radius: 16px; text-align: center; font-weight: 1000; line-height: 1.05; text-transform: uppercase; text-shadow: 0 2px 3px #0009; }
+      .video-title span { display: block; margin-bottom: 3px; color: #caebff; font-size: 13px; }
+      .video-controls { position: absolute; z-index: 2; right: 10px; bottom: 6px; left: 10px; display: flex; align-items: center; gap: 10px; color: #fff; font-size: 13px; }
+      .play { color: #fff; background: transparent; border: 0; font-size: 20px; }
+      .video-timeline { flex: 1; height: 4px; background: #ffffff70; border-radius: 9px; }
+      .video-timeline::before { content: ""; display: block; width: 26%; height: 100%; background: #29a6e5; }
+      .experience-card { min-height: 950px; }
+      .scene-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 70px; padding: 8px 10px 18px; border-bottom: 1px solid var(--linha); }
+      .scene-head strong { color: #5e6e88; font-size: 11px; letter-spacing: .035em; white-space: nowrap; }
+      .scene-head b { color: #bb793d; font-size: 18px; }
+      .palpite { margin-top: 14px; padding: 12px; background: #f9fbff; border: 1px solid #d7e2f3; border-radius: 18px; }
+      .speech-row { display: flex; align-items: end; gap: 10px; margin: 16px 0 11px; }
+      .speech-row img { flex: 0 0 58px; width: 58px; height: 72px; object-fit: contain; }
+      .speech { flex: 1; padding: 14px; background: #fff; border: 2px solid #d7e2f3; border-radius: 16px 16px 16px 5px; font-size: 14px; }
+      .speech p { margin: 0 0 10px; }
+      .listen { min-height: 34px; padding: 4px 11px; color: #3d587e; background: #f4f7fc; border: 1px solid #d5e1ed; border-bottom-width: 3px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+      .scene-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+      .scene-label { margin: 0 0 4px; color: #637897; font-size: 11px; font-weight: 900; letter-spacing: .055em; text-transform: uppercase; }
+      .game { position: relative; height: 145px; overflow: hidden; background: linear-gradient(#9deafb 0 78%, #69c66b 79% 91%, #a97851 92%); border-radius: 12px; }
+      .game::before { content: ""; position: absolute; top: 23px; right: 25px; width: 42px; height: 42px; background: #ffdf75; border-radius: 50%; }
+      .game::after { content: "🦖"; position: absolute; bottom: 18px; left: 30px; font-size: 42px; }
+      .score { position: absolute; z-index: 1; top: 7px; left: 8px; padding: 3px 8px; background: #fff; border-radius: 6px; font-size: 11px; font-weight: 800; }
+      .audio { height: 145px; padding: 14px; color: #a8c5d1; background: #142532; border-radius: 12px; }
+      .audio strong { display: block; margin-bottom: 7px; font-size: 11px; text-transform: uppercase; }
+      .audio em { color: #d5e7ef; font-size: 13px; }
+      .blank-description { margin: 12px 0; padding: 10px; color: #7686a0; border: 1px dashed #d9e3f3; border-radius: 11px; font-size: 13px; }
+      .future-button { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #d9e3f3; border-radius: 14px; }
+      .future-button button { padding: 9px 13px; color: #fff; background: #7ea0ed; border: 0; border-radius: 999px; font-size: 12px; font-weight: 900; }
+      .future-button small { color: #687b9b; }
+      .question-row { margin-top: 22px; }
+      .answers { display: grid; gap: 7px; margin-top: 8px; }
+      .answer { width: 100%; min-height: 42px; padding: 7px 12px; color: var(--tinta); background: #fff; border: 1px solid #d6e2f1; border-radius: 999px; text-align: left; font-size: 13px; }
+      .answer.selected { border-color: var(--azul); background: #edf3ff; }
+      .answer-note { margin: 8px 0 0; color: #6f819d; font-size: 12px; }
+      .bottom { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; min-height: 76px; background: #fff; border-top: 1px solid #d9e3f0; }
+      .bottom-content { display: flex; align-items: center; gap: 13px; width: min(100%, 1240px); min-height: 76px; margin: 0 auto; padding: 10px 20px; }
+      .previous, .next { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; font-size: 14px; font-weight: 900; white-space: nowrap; }
+      .previous { color: var(--tinta); background: #f3f2ed; }
+      .next { color: #fff; background: var(--azul); border-bottom: 4px solid #1543bb; }
+      .section-name { min-width: 0; max-width: 340px; overflow: hidden; color: #667a98; font-size: 14px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+      .bottom-spacer { flex: 1; }
+      .help { min-height: 44px; padding: 0 8px; color: #607493; background: transparent; border: 0; font-size: 14px; white-space: nowrap; }
+      .drawer { position: fixed; z-index: 30; top: 0; bottom: 76px; width: min(290px, 84vw); padding: 20px; background: #fff; box-shadow: 0 8px 30px #1a2f5250; transition: transform .25s ease; }
+      .drawer.left { left: 0; transform: translateX(-105%); }
+      .drawer.right { right: 0; transform: translateX(105%); }
+      .drawer.open { transform: translateX(0); }
+      .drawer h2 { margin: 16px 0; font-size: 18px; }
+      .drawer p { padding: 10px; border-bottom: 1px solid var(--linha); }
+      .drawer-close { float: right; border: 0; background: transparent; font-size: 24px; }
+      @media (max-width: 850px) {
+        .page { padding: 36px 14px 112px; }
+        .columns { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+        .divider { display: none; }
+        .video-card, .experience-card { padding: 14px; }
+        .scene-head strong { white-space: normal; }
+        .mock-switch { top: 4px; right: 4px; }
+        .bottom-content { gap: 7px; padding: 8px 12px; }
+        .section-name { font-size: 12px; }
+        .help { padding: 0 4px; font-size: 12px; }
+      }
+      @media (max-width: 560px) {
+        .topbar { gap: 6px; }
+        .back, .panel-button { flex-basis: 36px; width: 36px; height: 36px; }
+        .count { font-size: 11px; }
+        .scene-head { flex-wrap: wrap; }
+        .speech-row img { flex-basis: 42px; width: 42px; }
+        .page { padding-bottom: 150px; }
+        .bottom-content { display: grid; grid-template-columns: auto minmax(0, 1fr); min-height: 112px; }
+        .bottom-spacer { display: none; }
+        .section-name { max-width: none; }
+        .help { grid-column: 1; grid-row: 2; justify-self: start; }
+        .next { grid-column: 2; grid-row: 2; justify-self: end; }
+      }
+      .one-column .columns { display: block; }
+      .one-column .video-card, .one-column .divider { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="mock-switch">Controle do mock: <strong id="layout-label">duas colunas</strong> <button id="layout-toggle" type="button">Ver uma coluna</button><button id="last-toggle" type="button">Ver última seção</button></div>
+    <div class="page">
+      <header class="topbar" aria-label="Navegação da aula">
+        <button class="back" type="button" aria-label="Voltar ao curso">‹</button>
+        <div class="progress" role="progressbar" aria-label="Progresso da aula" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"><span id="progress-fill"></span></div>
+        <span class="count" id="section-count">Seção 4 de 11</span>
+        <button class="panel-button" id="left-toggle" type="button" aria-label="Mostrar menu" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><title>Menu lateral</title><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M6 12h1"/></svg></button>
+        <button class="panel-button" id="right-toggle" type="button" aria-label="Mostrar lista de aulas" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><title>Lista de aulas</title><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16M18 12h1"/></svg></button>
+      </header>
+      <main class="stage two-columns" id="stage" aria-label="Conteúdo da seção">
+        <h1 class="sr-only" id="accessible-section-title" tabindex="-1">Ouça o que a descrição informa</h1>
+        <div class="columns">
+          <section class="video-card" aria-label="Vídeo da seção">
+            <span class="chip blue">▣ &nbsp; ASSISTA</span>
+            <div class="video-frame"><div class="video-title"><span>PASSO 3</span>CONTAR O QUE É O SEU JOGO</div><div class="video-controls"><button class="play" type="button" aria-label="Reproduzir vídeo">▶</button><span class="video-timeline"></span><span>◖ &nbsp; CC &nbsp; ⚙ &nbsp; ⛶</span></div></div>
+          </section>
+          <div class="divider" aria-hidden="true"></div>
+          <section class="experience-card" aria-label="Experiência da seção">
+            <span class="chip green">⚗ &nbsp; EXPERIMENTE</span>
+            <div class="scene-head"><span class="chip" style="color:#2459dd;background:#e5ecff">SEU PALPITE</span><strong>DESCRIÇÃO: <b>?</b> &nbsp; DIZ O QUE FAZER: <b>?</b> &nbsp; DIZ COMO JOGAR: <b>?</b></strong></div>
+            <div class="palpite">
+              <div class="speech-row"><img src="../../packages/community-kids/public/zappy/speaking.webp" alt="Zappy"/><div class="speech"><p>Nesta experiência, vamos usar o botão “Ouvir a tela”. Ele lê em voz alta o que aparece no jogo.</p><button class="listen" type="button">◖ &nbsp; Ouvir</button></div></div>
+              <div class="scene-grid"><div><p class="scene-label">O que aparece na tela</p><div class="game"><span class="score">pontos 0</span></div></div><div><p class="scene-label">O que a pessoa ouve</p><div class="audio"><strong>◖ &nbsp; Leitor de tela</strong><em>Ainda em silêncio.</em></div></div></div>
+              <p class="blank-description">A descrição será escrita depois da sua escolha.</p>
+              <div class="future-button"><button type="button" disabled>◖ &nbsp; Ouvir a tela</button><small>Você vai usar este botão depois do seu palpite.</small></div>
+              <div class="speech-row question-row"><img src="../../packages/community-kids/public/zappy/speaking.webp" alt=""/><div class="speech"><p>Quando você apertar “Ouvir a tela” sem escrever uma descrição do jogo, o que o leitor de tela vai dizer?</p><button class="listen" type="button">◖ &nbsp; Ouvir</button></div></div>
+              <div class="answers"><button class="answer" type="button">Um Dino correndo e pulando cactos.</button><button class="answer" type="button">Só “Tela do jogo. Imagem.”</button></div>
+              <p class="answer-note">Escolha o que você acha. Pode errar: a cena mostra depois.</p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <footer class="bottom" aria-label="Navegação entre seções"><div class="bottom-content"><button class="previous" id="previous" type="button">← &nbsp; Anterior</button><span class="section-name" id="section-name">Ouça o que a descrição informa</span><span class="bottom-spacer"></span><button class="help" type="button">◯ &nbsp; Preciso de ajuda</button><button class="next" id="next" type="button">Próxima seção &nbsp; →</button></div></footer>
+    <aside class="drawer left" id="left-drawer" aria-hidden="true"><button class="drawer-close" type="button" data-close="left">×</button><h2>Sistema Zero Kids</h2><p>Início</p><p>Carreira</p><p>Criar</p><p>Comunidade</p></aside>
+    <aside class="drawer right" id="right-drawer" aria-hidden="true"><button class="drawer-close" type="button" data-close="right">×</button><h2>Corre, Dino!</h2><p>Prepare o mundo do Dino</p><p>Material didático</p><p>Progresso do curso</p></aside>
+    <script>
+      const stage = document.querySelector('#stage');
+      const layoutToggle = document.querySelector('#layout-toggle');
+      layoutToggle.addEventListener('click', () => {
+        const single = stage.classList.toggle('one-column');
+        stage.classList.toggle('two-columns', !single);
+        document.querySelector('#layout-label').textContent = single ? 'uma coluna' : 'duas colunas';
+        layoutToggle.textContent = single ? 'Ver duas colunas' : 'Ver uma coluna';
+      });
+      for (const side of ['left', 'right']) {
+        const toggle = document.querySelector('#' + side + '-toggle');
+        const drawer = document.querySelector('#' + side + '-drawer');
+        const setOpen = (open) => {
+          drawer.classList.toggle('open', open);
+          drawer.setAttribute('aria-hidden', String(!open));
+          toggle.setAttribute('aria-pressed', String(!open));
+          toggle.setAttribute('aria-label', (open ? 'Esconder' : 'Mostrar') + (side === 'left' ? ' menu' : ' lista de aulas'));
+        };
+        toggle.addEventListener('click', () => setOpen(!drawer.classList.contains('open')));
+        drawer.querySelector('[data-close]').addEventListener('click', () => setOpen(false));
+      }
+      document.querySelectorAll('.answer').forEach((button) => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.answer').forEach((item) => {
+            item.classList.remove('selected');
+          });
+          button.classList.add('selected');
+        });
+      });
+      const params = new URLSearchParams(location.search);
+      if (params.get('layout') === 'single') layoutToggle.click();
+      let section = params.get('section') === '11' ? 11 : 4;
+      const names = { 3: 'Prepare a tela no seu projeto', 4: 'Ouça o que a descrição informa', 5: 'Crie seu Dino', 11: 'O que você entendeu?' };
+      function updateSection() {
+        document.querySelector('#section-count').textContent = 'Seção ' + section + ' de 11';
+        document.querySelector('#section-name').textContent = names[section] || 'Seção ' + section;
+        document.querySelector('#accessible-section-title').textContent = names[section] || 'Seção ' + section;
+        document.querySelector('#next').textContent = section === 11 ? '✓  Concluir a aula' : 'Próxima seção  →';
+        document.querySelector('#progress-fill').style.width = Math.round(section / 11 * 100) + '%';
+        document.querySelector('#last-toggle').textContent = section === 11 ? 'Voltar à seção 4' : 'Ver última seção';
+      }
+      document.querySelector('#previous').addEventListener('click', () => { section = Math.max(1, section - 1); updateSection(); });
+      document.querySelector('#next').addEventListener('click', () => { if (section < 11) { section++; updateSection(); } else { alert('Aqui abriria a celebração da aula.'); } });
+      document.querySelector('#last-toggle').addEventListener('click', () => { section = section === 11 ? 4 : 11; updateSection(); });
+      updateSection();
+    </script>
+  </body>
+</html>

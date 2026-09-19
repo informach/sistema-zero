@@ -150,15 +150,9 @@ describe('a criança mexendo na cena', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Uma pista' }))
     // ⚠️ `toContain` e não igualdade: o primeiro degrau passou a citar a SITUAÇÃO antes do
     // degrau do modelo (15/09/2026), então o texto exibido é maior que a frase do catálogo.
-    expect(
-      screen.getByText(
-        (_, node) =>
-          node?.textContent?.includes(SCENE_MODELS.layers.hints[0] as string) === true &&
-          !Array.from(node.children).some((filho) =>
-            filho.textContent?.includes(SCENE_MODELS.layers.hints[0] as string),
-          ),
-      ),
-    ).toBeTruthy()
+    expect(document.querySelector('[data-pista]')?.textContent).toContain(
+      SCENE_MODELS.layers.hints[0] as string,
+    )
     // O que importa é o que SOBE: a evidência guardada tem que contar a pista lida.
     // ⚠️ O player grava numa batida de 1s, então o `waitFor` padrão (1s) é cara ou coroa: o
     // teste passava sozinho e caía na suíte inteira, que é a pior forma de vermelho.
@@ -768,7 +762,9 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     await waitFor(() => expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy())
     expect(screen.queryByText(/Você achou/)).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
-    const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!')
+    const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!', {
+      selector: 'p',
+    })
     // ⚠️ Mudou de propósito (full review de experiência, M2): o aviso é SOBREPOSTO ao palco, num cartão
     // opaco com a tinta e o contorno verdes (o fundo verde translúcido não se lia sobre o desenho).
     expect(acerto.parentElement?.className).toContain('text-success-foreground')

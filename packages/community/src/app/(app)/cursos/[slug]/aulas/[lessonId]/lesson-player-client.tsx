@@ -14,10 +14,18 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Lock } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChevronLeft,
+  Circle,
+  Lock,
+  PanelRightClose,
+  PanelRightOpen,
+  X,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -30,9 +38,6 @@ import type { CourseDetailView, LessonDetailView } from '@/lib/types'
 interface Props {
   course: CourseDetailView
   lesson: LessonDetailView
-  prevHref: string | null
-  /** Próxima aula LIBERADA (travada → null): botão "Próxima" do rodapé. */
-  nextHref: string | null
   /**
    * Próxima aula na ORDEM, ignorando a trava — destino do avanço APÓS concluir
    * (concluir a atual destrava a próxima). `null` só na última aula do curso.
@@ -51,8 +56,6 @@ interface Props {
 export function LessonPlayer({
   course,
   lesson,
-  prevHref,
-  nextHref,
   nextLessonHref,
   viewerWatermark,
   viewerId,
@@ -71,6 +74,17 @@ export function LessonPlayer({
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
   const [completing, setCompleting] = useState(false)
+  const [outlineOpen, setOutlineOpen] = useState(false)
+  const [sectionPosition, setSectionPosition] = useState<{ index: number; total: number } | null>(
+    () => {
+      const sections = lesson.sections ?? []
+      if (sections.length === 0) return null
+      const savedIndex = sections.findIndex(
+        (section) => section.id === lesson.learningProgress?.sectionId,
+      )
+      return { index: savedIndex >= 0 ? savedIndex : 0, total: sections.length }
+    },
+  )
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
   const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
@@ -123,102 +137,122 @@ export function LessonPlayer({
     ],
   )
 
+  const completionAction = lesson.completed ? (
+    <span className="inline-flex items-center gap-2 font-semibold text-accent text-sm">
+      <CheckCircle2 className="size-4" />
+      Aula concluída
+    </span>
+  ) : (
+    <Button onClick={() => complete()} disabled={completing || completeBlocked}>
+      {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
+      Concluir aula
+    </Button>
+  )
+  const completionMessage = lesson.completed ? null : blockedByLearning ? (
+    <p>Termine as atividades essenciais das seções para concluir a aula.</p>
+  ) : blockedByPinta ? (
+    <p>Envie seu desenho ao professor para concluir a aula.</p>
+  ) : blockedByComingSoon ? (
+    <p>Esta aula ainda está sendo preparada.</p>
+  ) : blockedByQuiz ? (
+    <p>Passe no quiz da aula para poder concluí-la.</p>
+  ) : blockedByStudio ? (
+    <p>Envie o projeto do Estúdio para poder concluir a aula.</p>
+  ) : blockedByStudioNotPassed ? (
+    <p>Atinja a nota mínima do Estúdio para poder concluir a aula.</p>
+  ) : null
+
   return (
     <LessonPlayerProvider value={playerContext}>
       {/* `sz-aula-adulto`: gancho do fundo alternativo da aula (a régua do Pen), aplicado no
           invólucro do app pelo `globals.css` sem mexer no layout. */}
-      <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start">
+      <div
+        className={cn(
+          'sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start',
+          outlineOpen ? 'lg:gap-10' : 'lg:gap-0',
+        )}
+      >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* ⭐ O título da aula desceu para o cabeçalho da seção (18/09/2026), que
-              agora mostra "aula · seção" numa linha só, com o índice ao lado. Aqui
-              sobra a volta para o curso. */}
-          <div>
+          <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
             <Link
               href={courseHref}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              aria-label={`Voltar ao curso ${course.title}`}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
             >
-              <ChevronLeft className="size-4" />
-              {course.title}
+              <ChevronLeft className="size-5" />
             </Link>
+            <div className="min-w-0 flex-1">
+              <LessonProgressBar progress={lesson.sectionProgress} compact />
+            </div>
+            {sectionPosition ? (
+              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                Seção {sectionPosition.index + 1} de {sectionPosition.total}
+              </span>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setOutlineOpen((open) => !open)}
+              aria-label={outlineOpen ? 'Esconder lista de aulas' : 'Mostrar lista de aulas'}
+              aria-pressed={!outlineOpen}
+              aria-controls="adult-lesson-outline"
+              className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              {outlineOpen ? (
+                <PanelRightClose className="size-5" />
+              ) : (
+                <PanelRightOpen className="size-5" />
+              )}
+            </button>
           </div>
-
-          <LessonProgressBar progress={lesson.sectionProgress} />
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
             lessonTitle={lesson.title}
+            immersive
+            onSectionChange={setSectionPosition}
+            completionAction={completionAction}
+            completionMessage={completionMessage}
             renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
           />
 
           {lesson.attachments.length > 0 ? (
-            <LessonAttachments
-              courseSlug={course.slug}
-              lessonId={lesson.id}
-              attachments={lesson.attachments}
-            />
-          ) : null}
-
-          {/* Ações: concluir + navegação */}
-          <div className="flex flex-wrap items-center gap-3 rounded-[1.5rem] bg-card p-4 md:p-5">
-            {lesson.completed ? (
-              <span className="inline-flex items-center gap-2 font-semibold text-accent text-sm">
-                <CheckCircle2 className="size-4" />
-                Aula concluída
-              </span>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <Button onClick={() => complete()} disabled={completing || completeBlocked}>
-                  {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
-                  Concluir aula
-                </Button>
-                {blockedByLearning ? (
-                  <p className="text-sm text-muted-foreground">
-                    Termine as atividades essenciais das seções para concluir a aula.
-                  </p>
-                ) : blockedByPinta ? (
-                  <p className="text-sm text-muted-foreground">
-                    Envie seu desenho ao professor para concluir a aula.
-                  </p>
-                ) : blockedByComingSoon ? (
-                  <p className="text-xs text-muted-foreground">
-                    Esta aula ainda está sendo preparada.
-                  </p>
-                ) : blockedByQuiz ? (
-                  <p className="text-xs text-muted-foreground">
-                    Passe no quiz da aula para poder concluí-la.
-                  </p>
-                ) : blockedByStudio ? (
-                  <p className="text-xs text-muted-foreground">
-                    Envie o projeto do Estúdio para poder concluir a aula.
-                  </p>
-                ) : blockedByStudioNotPassed ? (
-                  <p className="text-xs text-muted-foreground">
-                    Atinja a nota mínima do Estúdio para poder concluir a aula.
-                  </p>
-                ) : null}
-              </div>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              {prevHref ? (
-                <Link href={prevHref} className={buttonVariants({ variant: 'outline' })}>
-                  <ArrowLeft className="size-4" />
-                  Anterior
-                </Link>
-              ) : null}
-              {nextHref ? (
-                <Link href={nextHref} className={buttonVariants({ variant: 'outline' })}>
-                  Próxima
-                  <ArrowRight className="size-4" />
-                </Link>
-              ) : null}
+            <div className="mx-auto w-full max-w-[860px]">
+              <LessonAttachments
+                courseSlug={course.slug}
+                lessonId={lesson.id}
+                attachments={lesson.attachments}
+              />
             </div>
-          </div>
+          ) : null}
         </div>
 
-        {/* Outline do curso (sidebar) */}
-        {/* lg:mt-7 alinha o topo do card com o título da aula (breadcrumb 20px + mt-2 do h1) */}
-        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:mt-7 lg:w-72">
+        {/* Lista de aulas sob demanda: drawer no celular, coluna no desktop. */}
+        {outlineOpen ? (
+          <button
+            type="button"
+            onClick={() => setOutlineOpen(false)}
+            aria-label="Fechar lista de aulas"
+            className="fixed inset-0 z-[60] bg-foreground/25 lg:hidden"
+          />
+        ) : null}
+        <aside
+          id="adult-lesson-outline"
+          aria-hidden={!outlineOpen}
+          inert={!outlineOpen}
+          className={cn(
+            'fixed inset-y-0 right-0 z-[61] w-[min(20rem,90vw)] overflow-y-auto bg-card lg:sticky lg:top-20 lg:right-auto lg:bottom-auto lg:z-auto lg:w-72 lg:shrink-0 lg:overflow-visible',
+            !outlineOpen && 'hidden',
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setOutlineOpen(false)}
+            aria-label="Fechar lista de aulas"
+            className="ml-auto flex size-11 items-center justify-center lg:hidden"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
           <Card className="overflow-hidden p-0">
             <div className="border-b border-border px-4 py-3">
               <p className="text-sm font-semibold">{course.title}</p>

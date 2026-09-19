@@ -15,26 +15,25 @@ import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
 import { isLessonPath } from '@/lib/lesson-path'
 
 interface LessonChromeContextValue {
-  /** Preferência bruta: esconder o MENU (barra esquerda global). */
+  /** Estado atual: esconder o MENU (barra esquerda global). */
   navHidden: boolean
-  /** Preferência bruta: esconder a LISTA DE AULAS (barra direita da aula). */
+  /** Estado atual: esconder a LISTA DE AULAS (barra direita da aula). */
   outlineHidden: boolean
   /**
    * Oferecer o botão do MENU: página de aula OU app de criação embarcado
-   * (Estúdio/Pensa/Pinta) + tela ≥768px (a barra esquerda aparece a partir do
+   * (Estúdio/Pensa/Pinta/Molda) + tela ≥768px (a barra esquerda aparece a partir do
    * `md` do Tailwind, então dá p/ ganhar espaço já aqui — cobre notebook com
    * zoom/telas menores).
    */
   navAvailable: boolean
   /**
-   * Oferecer o botão da LISTA DE AULAS: página de aula + tela ≥1024px. Abaixo de
-   * `lg` a lista fica EMPILHADA embaixo (largura total), então escondê-la não
-   * alargaria o estúdio — o botão não faz sentido ali.
+   * Oferecer o botão da LISTA DE AULAS em toda página de aula, inclusive no
+   * celular, onde a lista também começa recolhida.
    */
   outlineAvailable: boolean
-  /** A barra ESQUERDA deve colapsar agora (`navHidden && navAvailable`). */
+  /** A barra ESQUERDA deve colapsar agora; na aula já no primeiro quadro. */
   navCollapsed: boolean
-  /** A barra DIREITA deve colapsar agora (`outlineHidden && outlineAvailable`). */
+  /** A barra DIREITA deve colapsar agora. */
   outlineCollapsed: boolean
   toggleNav: () => void
   toggleOutline: () => void
@@ -53,8 +52,8 @@ const INERT: LessonChromeContextValue = {
 
 /**
  * `true` quando a viewport tem ao menos `minWidthPx`. Espelha o `useIsDesktop` do
- * member-shell, mas parametrizado — precisamos de DOIS limiares (768 p/ o menu,
- * 1024 p/ a lista de aulas).
+ * member-shell. Só o menu global precisa deste limiar de 768 px; a lista de
+ * aulas pode ser aberta também no celular.
  *
  * ⚠️ Começa `false` TAMBÉM no cliente, de propósito. Ler o `matchMedia` no
  * inicializador não quebra o SSR, mas quebra a HIDRATAÇÃO: o servidor renderiza
@@ -63,8 +62,7 @@ const INERT: LessonChromeContextValue = {
  * HTML do servidor saía SEM os botões e o do cliente COM eles. Isso é o React
  * #418 ("the server rendered HTML didn't match the client") que aparecia no
  * console de toda página de aula. O efeito abaixo aplica o valor real logo após
- * a montagem — mesma escolha já feita para as preferências salvas (ver o
- * comentário do `navHidden`/`outlineHidden`).
+ * a montagem. O recolhimento inicial independe desta medição.
  */
 function useMinWidth(minWidthPx: number): boolean {
   const query = `(min-width: ${minWidthPx}px)`
@@ -81,34 +79,10 @@ function useMinWidth(minWidthPx: number): boolean {
 
 const LessonChromeContext = createContext<LessonChromeContextValue>(INERT)
 
-const navKey = (viewerId: string) => `sz:kids:hide-nav:${viewerId}`
-const outlineKey = (viewerId: string) => `sz:kids:hide-outline:${viewerId}`
-
-function readPref(key: string): boolean | null {
-  try {
-    const value = localStorage.getItem(key)
-    return value === null ? null : value === '1'
-  } catch {
-    // localStorage indisponível (modo privado/quota) → sem preferência, sem crash.
-    return null
-  }
-}
-
-function writePref(key: string, value: boolean): void {
-  try {
-    localStorage.setItem(key, value ? '1' : '0')
-  } catch {
-    // best-effort — nunca atrapalha a aula.
-  }
-}
-
 /**
- * Estado do "modo foco" da aula: duas preferências INDEPENDENTES — esconder o menu
- * esquerdo (`navHidden`) e esconder a lista de aulas à direita (`outlineHidden`) —,
- * lembradas por PERFIL no localStorage. Montado no layout `(app)` (que NÃO remonta
- * entre navegações), então o estado atravessa a navegação. O colapso só "vale" em
- * página de aula + desktop (`available`): a preferência persistida NUNCA some a barra
- * em `/cursos`, `/perfil` etc. Padrão de persistência do `level-up-watcher`.
+ * Em aulas e ferramentas de criação, o menu esquerdo começa recolhido a cada
+ * entrada. Na aula, a lista da direita também começa recolhida. Fora dessas
+ * telas, como em Criar, o menu esquerdo permanece aberto.
  */
 export function FocusModeProvider({
   viewerId,
@@ -119,57 +93,62 @@ export function FocusModeProvider({
 }) {
   const pathname = usePathname()
   const isTablet = useMinWidth(768) // md — barra esquerda (menu)
-  const isDesktop = useMinWidth(1024) // lg — coluna direita (lista de aulas)
-  const isLargeDesktop = useMinWidth(1600)
-  const notebookLesson = isLessonPath(pathname) && isDesktop && !isLargeDesktop
-  // Inicia FALSE nos dois lados (SSR + 1º render cliente) p/ não dar mismatch de
-  // hidratação; a preferência salva é aplicada num efeito pós-mount.
-  const [navPreference, setNavHidden] = useState<boolean | null>(null)
-  const [outlinePreference, setOutlineHidden] = useState<boolean | null>(null)
-  const navHidden = navPreference ?? notebookLesson
-  const outlineHidden = outlinePreference ?? notebookLesson
+  const onLesson = isLessonPath(pathname)
+  const onFocus = onLesson || isEmbeddedAppPath(pathname)
+  const [focusChrome, setFocusChrome] = useState<{
+    path: string
+    navOpen: boolean
+    outlineOpen: boolean
+  } | null>(null)
+  const navHidden = onFocus && !(focusChrome?.path === pathname && focusChrome.navOpen)
+  const outlineHidden = onLesson
+    ? !(focusChrome?.path === pathname && focusChrome.outlineOpen)
+    : false
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: trocar o perfil reinicia o chrome mesmo na mesma rota
   useEffect(() => {
-    setNavHidden(viewerId ? readPref(navKey(viewerId)) : null)
-    setOutlineHidden(viewerId ? readPref(outlineKey(viewerId)) : null)
+    setFocusChrome(null)
   }, [viewerId])
 
+  useEffect(() => {
+    if (!onFocus) setFocusChrome(null)
+  }, [onFocus])
+
   const toggleNav = useCallback(() => {
-    setNavHidden((prev) => {
-      const next = !(prev ?? notebookLesson)
-      if (viewerId) writePref(navKey(viewerId), next)
-      return next
-    })
-  }, [viewerId, notebookLesson])
+    if (!onFocus) return
+    setFocusChrome((previous) => ({
+      path: pathname,
+      navOpen: !(previous?.path === pathname && previous.navOpen),
+      outlineOpen: previous?.path === pathname ? previous.outlineOpen : false,
+    }))
+  }, [onFocus, pathname])
 
   const toggleOutline = useCallback(() => {
-    setOutlineHidden((prev) => {
-      const next = !(prev ?? notebookLesson)
-      if (viewerId) writePref(outlineKey(viewerId), next)
-      return next
-    })
-  }, [viewerId, notebookLesson])
+    if (!onLesson) return
+    setFocusChrome((previous) => ({
+      path: pathname,
+      navOpen: previous?.path === pathname ? previous.navOpen : false,
+      outlineOpen: !(previous?.path === pathname && previous.outlineOpen),
+    }))
+  }, [onLesson, pathname])
 
   const value = useMemo<LessonChromeContextValue>(() => {
-    const onLesson = isLessonPath(pathname)
-    // O menu também some nos apps de criação (Estúdio/Pensa/Pinta): são as telas
-    // que mais pedem área útil (Blockly + preview, kanban, canvas) e o menu de
-    // 268px não serve a nada enquanto a criança cria. A PREFERÊNCIA é a mesma da
-    // aula (uma só por perfil) — "esconder o menu" é gosto da criança, não de tela.
-    const navAvailable = (onLesson || isEmbeddedAppPath(pathname)) && isTablet
+    const navAvailable = onFocus && isTablet
     // A lista de aulas é EXCLUSIVA da aula: nos apps embarcados ela nem existe.
-    const outlineAvailable = onLesson && isDesktop
+    const outlineAvailable = onLesson
     return {
       navHidden,
       outlineHidden,
       navAvailable,
       outlineAvailable,
-      navCollapsed: navHidden && navAvailable,
+      // Recolhe já no HTML inicial; esperar `matchMedia` faria o menu aparecer
+      // por um quadro antes de o efeito medir a viewport.
+      navCollapsed: navHidden,
       outlineCollapsed: outlineHidden && outlineAvailable,
       toggleNav,
       toggleOutline,
     }
-  }, [pathname, isTablet, isDesktop, navHidden, outlineHidden, toggleNav, toggleOutline])
+  }, [isTablet, onFocus, onLesson, navHidden, outlineHidden, toggleNav, toggleOutline])
 
   return <LessonChromeContext.Provider value={value}>{children}</LessonChromeContext.Provider>
 }
@@ -181,7 +160,7 @@ export function useFocusMode(): LessonChromeContextValue {
 /**
  * Fallback do `<Suspense>` da sidebar no layout `(app)` (a chrome carrega avatar +
  * gamificação por trás). Espelha o esqueleto antigo, mas REAGE a `navCollapsed` para
- * já vir recolhido no 1º paint quando a preferência do perfil é "esconder o menu" —
+ * já vir recolhido no 1º paint quando a aula começa —
  * senão piscaria a barra aberta antes da barra real montar. ⚠️ A largura acompanha a
  * do `AppSidebar` (16.75rem, as telas-modelo de 11/09/2026): diferente, a página pula
  * de lado quando o menu real chega. A cor também (a âncora escura do Pen): um esqueleto

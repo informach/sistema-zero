@@ -219,27 +219,15 @@
 .sz-app:has(.sz-aula-adulto) {
   background-color: var(--background-alt);
 }
+.sz-app:has(.sz-aula-adulto) > main {
+  max-width: none;
+  padding-bottom: 8rem;
+}
 
 /* ── A AULA NO DESENHO DO PEN ─────────────────────────────────────────────────────────────
-   Sobre o fundo alternativo, cada pedaço da aula é um cartão branco. FORA de camada, de
-   propósito: o `LessonSections` do member-shell pinta estes elementos com utilitárias
-   (`rounded-2xl border bg-card`, o `space-y-6` do painel), e regra em camada perde para elas.
-   Tudo mira os ganchos estáveis `sz-lesson-*` (criados no member-shell, sem regra lá) sob a
-   raiz do player do adulto, então o kids e a prévia do admin não são tocados.
-   Só o bloco de TEXTO vira cartão (`> div > .lesson-prose`, o formato do `RichText`): quiz,
-   materiais e recado já trazem o cartão deles, e cartão dentro de cartão o Pen não tem. O título
-   da seção abre o cartão do texto logo abaixo dele. Sem borda nem sombra: o anel de foco do
-   bloco é `box-shadow`. */
-.sz-aula-adulto .sz-lesson-toolbar {
-  border-color: transparent;
-  border-radius: 1.5rem;
-}
-.sz-aula-adulto .sz-lesson-section-head:has(+ .sz-lesson-block > div > .lesson-prose) {
-  margin-block-end: 0;
-  border-radius: 1.5rem 1.5rem 0 0;
-  background: var(--card);
-  padding: 1.5rem 1.5rem 0.5rem;
-}
+   O fundo alternativo e os cartões de cada bloco continuam. Só o chrome externo
+   mudou: o título é acessível, mas não ocupa espaço visual, e a navegação fica
+   fixa na base. Regras fora de camada vencem as utilitárias do member-shell. */
 .sz-aula-adulto .sz-lesson-block:has(> div > .lesson-prose) {
   border-radius: 1.5rem;
   background: var(--card);
@@ -252,17 +240,26 @@
   background: var(--card);
   padding: 1.5rem;
 }
-.sz-aula-adulto .sz-lesson-section-head + .sz-lesson-block:has(> div > .lesson-prose) {
-  border-start-start-radius: 0;
-  border-start-end-radius: 0;
-  padding-top: 0.5rem;
-}
-/* O rodapé das seções (Anterior, Preciso de ajuda, Próxima seção) no cartão, como as ações. */
+/* Os botões mantêm a pele adulta; a barra ocupa a largura da viewport. */
 .sz-aula-adulto .sz-lesson-nav {
   border: 0;
   border-radius: 1.5rem;
   background: var(--card);
   padding: 0.75rem 1rem;
+}
+.sz-aula-adulto .sz-lesson-nav-immersive {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
+  max-height: 100dvh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+}
+.sz-aula-adulto .sz-lesson-nav-immersive .sz-lesson-nav-message {
+  text-align: right;
 }
 
 @layer base {

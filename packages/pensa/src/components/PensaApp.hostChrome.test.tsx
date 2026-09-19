@@ -66,6 +66,7 @@ describe('PensaApp × chrome do host', () => {
     const botao = screen.getByRole('button', { name: 'Mostrar menu' })
     // O estado "escondido" é só o `aria-pressed` (a folha compartilhada pinta por ele).
     expect(botao.getAttribute('aria-pressed')).toBe('true')
+    expect(botao.getAttribute('data-tooltip')).toBe('Mostrar menu')
     expect(botao.className).toBe('sz-tool-btn-menu')
   })
 
