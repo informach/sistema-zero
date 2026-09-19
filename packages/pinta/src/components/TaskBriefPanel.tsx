@@ -108,15 +108,17 @@ export function TaskBriefPanel({
       (!session.studioUseBlockedReason && !!session.progress.outputRef.usedInStudioAt))
   return (
     /*
-     * ⚠️⚠️ O quadro é um `<div>` e o `<details>` mora DENTRO dele, não o contrário: o
-     * "Voltar ao plano" e o recado de falha precisam ficar FORA da parte que recolhe e
-     * FORA do corpo que rola. Medido em 375x812 antes do conserto: o corpo mostrava
-     * 208px de 364px (`max-h-52 overflow-auto`), o botão nascia em y=342 com o painel
-     * cortando em y=264, e o que a criança via ali era o "Voltar" do editor, que leva à
-     * galeria. Pior: o `<details>` é o MESMO nó do DOM na galeria e no editor, então
-     * recolhido ele atravessava a troca de tela e escondia o ÚNICO caminho de volta.
+     * O quadro é o cartão da comunidade (`.sz-tool-guide`, receita compartilhada das quatro
+     * ferramentas desde 19/09/2026) e tem três partes: o cabeçalho que recolhe, o corpo que
+     * ROLA (`max-h-52 overflow-auto`) e o pé.
+     *
+     * ⚠️⚠️ O pé fica fora do corpo que rola, e isso não mudou: medido em 375x812, o corpo
+     * mostrava 208px de 364px, o botão nascia em y=342 com o painel cortando em y=264, e o que
+     * a criança via ali era o "Voltar" do editor, que leva à galeria. O que MUDOU em 19/09 é
+     * que o pé recolhe junto com o corpo (ver o comentário dele, mais abaixo): é rotina, e ela
+     * pediu uma linha só. Problema, não — esse fica fora dos dois.
      */
-    <div className="mx-2 mt-2 mb-2 shrink-0 rounded-2xl border-2 border-pin-accent/40 bg-pin-surface px-3 py-2">
+    <div className="sz-tool-guide mx-2 mt-2 mb-2 shrink-0">
       {/*
        * ⭐ A seta que recolhe (18/09/2026). Era um `<details open>`: recolhia, mas o
        * triângulo do navegador é discreto demais para uma criança achar, e o estado morria
@@ -125,14 +127,41 @@ export function TaskBriefPanel({
        */}
       <button
         type="button"
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl text-left text-sm font-black text-pin-text transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        className="sz-tool-guide__head"
         aria-expanded={!recolhido}
         // ⚠ Recolhido o corpo DESMONTA: apontar para um id que não existe é referência
         // pendurada para o leitor de tela. Mesma régua do `Panel` do pacote.
         aria-controls={recolhido ? undefined : corpoId}
         onClick={trocarRecolhido}
       >
-        <span className="min-w-0 truncate">Brief do meu jogo · {session.title}</span>
+        {/* O sobretítulo diz de ONDE veio este painel, e é o mesmo nos três guias (19/09/2026):
+            "Brief do meu jogo" não contava a história de que aquilo é o Cartão de Criação que
+            ela montou no Pensa. */}
+        <span className="min-w-0">
+          {/* ⚠ Recolhido o sobretítulo SAI: ela pediu "só uma linha, o título e a setinha", e
+              com ele o cabeçalho tem duas (63px contra 47px, medido no playground). Aberto ele
+              volta, que é quando dizer de onde veio o painel ajuda. */}
+          {recolhido ? null : (
+            <span aria-hidden="true" className="sz-tool-guide__kicker">
+              Guia do Pensa
+            </span>
+          )}
+          <span className="sz-tool-guide__title">Brief do meu jogo · {session.title}</span>
+        </span>
+        {/*
+         * ⚠️⚠️ A situação vive no CABEÇALHO desde 19/09/2026 (full review): ela morava no corpo,
+         * que recolhe, então a criança perdia de vista se a tarefa já estava pronta justo quando
+         * escolhia recolher. Aqui ela fica sempre, e é a mesma pílula dos irmãos do Estúdio e do
+         * Molda. Dentro do botão de propósito: entra no nome falado ("Brief do meu jogo ·
+         * Desenhar a heroína, Concluída").
+         */}
+        <span className="sz-tool-guide__state">
+          {session.progress.status === 'planned'
+            ? 'Planejada'
+            : session.progress.status === 'in_progress'
+              ? 'Em andamento'
+              : 'Concluída'}
+        </span>
         <ChevronDown
           aria-hidden="true"
           className={`size-5 shrink-0 transition-transform ${recolhido ? '' : 'rotate-180'}`}
@@ -141,7 +170,7 @@ export function TaskBriefPanel({
       {recolhido ? null : (
         <div
           id={corpoId}
-          className="mt-2 grid max-h-52 gap-3 overflow-auto text-sm md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]"
+          className="sz-tool-guide__body grid max-h-52 gap-3 overflow-auto text-sm md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto]"
         >
           <div>
             <p className="font-bold text-pin-text">Como deve parecer</p>
@@ -194,20 +223,13 @@ export function TaskBriefPanel({
             ))}
           </div>
           <div className="flex min-w-40 flex-col justify-center gap-2">
-            <span className="rounded-full bg-pin-bg px-3 py-1 text-center text-xs font-bold">
-              {session.progress.status === 'planned'
-                ? 'Planejada'
-                : session.progress.status === 'in_progress'
-                  ? 'Em andamento'
-                  : 'Concluída ✓'}
-            </span>
             {session.progress.status !== 'completed' ? (
               <button
                 type="button"
-                // O anel de 2px do acento, o mesmo que o resto do Pinta usa (`pinta.css`
-                // e os diálogos): sem ele estes dois eram os únicos com o anel PADRÃO do
-                // navegador, de 1px e sem respiro.
-                className="min-h-11 rounded-xl bg-pin-accent px-3 font-black text-pin-accent-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent disabled:opacity-50"
+                // A pílula primária da comunidade (chapada: o relevo 3D é das galerias). Ela
+                // já traz o alvo de `--sz-tool-hit`, o anel de foco do acento e o estado
+                // desligado — antes isto era um botão só deste painel.
+                className="sz-tool-pill sz-tool-pill--primary"
                 disabled={updating || !requiredDone || !outputReady}
                 onClick={() => void complete()}
               >
@@ -235,84 +257,78 @@ export function TaskBriefPanel({
         </div>
       )}
       {/*
-       * O pé SEMPRE visível. Fica aqui, e não dentro do `<summary>`, porque controle
-       * interativo dentro de um resumo é semântica errada (o clique abriria e fecharia o
-       * brief). A ordem de leitura e o Tab seguem o texto: resumo, brief, saída.
+       * ⭐⭐ O que recolhe, e o que NUNCA recolhe (19/09/2026). Pedido dela: recolhido, "pode
+       * fechar tudo, mantendo só uma linha ali: o título e a setinha de abrir e fechar, para a
+       * gente deixar bastante espaço para as ferramentas". Então o pé de ROTINA — a volta ao
+       * plano e o aviso de que está guardando — passou a viver dentro do que recolhe.
        *
-       * O recado de falha desceu junto com o botão, e não é só o da volta: recolher o
-       * brief também escondia o recado de uma marcação que não subiu.
-       *
-       * ⚠⚠ **E o aviso do desenho AUSENTE desceu junto (18/09/2026).** Ele morava com os dois
-       * botões que o resolvem, dentro do brief, e isso era tolerável enquanto o `<details>`
-       * nascia aberto toda vez. Com a seta que LEMBRA, deixou de ser: a criança que recolheu
-       * uma vez abriria a tarefa noutro aparelho, sem o desenho vinculado, e veria só o título
-       * — o aviso e os ÚNICOS dois caminhos de recuperação (recriar, vincular) invisíveis, sem
-       * nada dizendo que existem. Recolher esconde o brief, nunca um problema.
+       * ⚠️⚠️ Isso revoga EM PARTE o invariante de 18/09 ("o pé fica FORA do que recolhe"), que
+       * nasceu porque recolher escondia a única saída. O que o substitui, e é decisão dela:
+       * recolher esconde conteúdo e ação de ROTINA, NUNCA um PROBLEMA. O recado de falha e o
+       * aviso do desenho ausente — com os dois botões que o resolvem — seguem FORA do que
+       * recolhe, e é por isso que a criança que recolheu uma vez não fica sem caminho. A
+       * rotina ela recupera com um clique na seta, que nunca sai da tela.
        */}
-      {onReturn || syncError || outputMissing ? (
-        <div className="mt-2 grid gap-1 border-t border-pin-border pt-2">
-          {outputMissing ? (
-            <div
-              className="grid gap-2 rounded-xl border border-pin-danger/40 bg-pin-bg p-2"
-              role="alert"
-            >
-              <small className="text-center font-bold text-pin-danger">
-                Este desenho não está neste aparelho.
-              </small>
-              <button
-                type="button"
-                className="min-h-11 rounded-lg border border-pin-accent font-bold"
-                onClick={onRecreate}
-              >
-                Recriar com este brief
-              </button>
-              <button
-                type="button"
-                className="min-h-11 rounded-lg border border-pin-border font-bold"
-                onClick={onRelink}
-              >
-                Vincular outro desenho
-              </button>
-              <small className="text-center text-pin-muted">
-                Para vincular, abra um desenho da galeria e salve-o.
-              </small>
-            </div>
-          ) : null}
-          {onReturn ? (
-            <>
-              {/* Fica na tela INCLUSIVE com a tarefa concluída: terminar o desenho é
-                  justamente quando ela quer voltar ao plano. Sem `aria-label` e sem
-                  `title`: o nome acessível é o texto visível. */}
-              <button
-                type="button"
-                className="min-h-11 w-full rounded-lg border border-pin-accent px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent disabled:opacity-50 md:w-auto md:justify-self-end"
-                disabled={returning}
-                aria-busy={returning}
-                onClick={() => void returnToPlan()}
-              >
-                {COPY.task.back}
-              </button>
-              {/*
-               * ⚠️ A região viva monta VAZIA e fica montada: um `role="status"` que nasce
-               * junto com o texto costuma não ser anunciado. Enquanto guardava, o único
-               * sinal era o botão a 50% de opacidade (o rótulo caindo para 3,33:1) mais um
-               * `aria-busy` num botão `disabled`, que quase nada anuncia. É o mesmo recurso
-               * do gêmeo do Molda. A linha em branco de 16px é deliberada: nada se mexe
-               * debaixo do dedo quando o recado chega.
-               */}
-              <p className="min-h-4 text-xs font-bold text-pin-muted md:text-right" role="status">
-                {returning ? COPY.task.backBusy : ''}
-              </p>
-            </>
-          ) : null}
-          {/* 14px: o recado saía em 11,2px (um `<small>` dentro do `text-sm` do corpo) e o
-              piso da casa para criança é 12px. É a única coisa na tela dizendo a uma
-              criança de 8 anos que o desenho dela não foi guardado. */}
-          {syncError ? (
-            <p className="text-sm font-bold text-pin-danger md:text-right" role="alert">
-              {syncError}
-            </p>
-          ) : null}
+      {outputMissing ? (
+        <div className="sz-tool-guide__alert grid gap-2" role="alert">
+          <small className="text-center font-bold">Este desenho não está neste aparelho.</small>
+          <button type="button" className="sz-tool-pill sz-tool-pill--outline" onClick={onRecreate}>
+            Recriar com este brief
+          </button>
+          {/* ⚠️ `--outline`, não `--quiet`: a pílula quieta tem o fundo do APP e fio transparente
+              no tema claro, e dentro do recado tingido ela media 1,04:1 — um dos dois únicos
+              caminhos de recuperação perdia a cara de botão (full review de 19/09/2026). */}
+          <button type="button" className="sz-tool-pill sz-tool-pill--outline" onClick={onRelink}>
+            Vincular outro desenho
+          </button>
+          <small className="text-center opacity-80">
+            Para vincular, abra um desenho da galeria e salve-o.
+          </small>
+        </div>
+      ) : null}
+      {/* 14px: o recado saía em 11,2px (um `<small>` dentro do `text-sm` do corpo) e o piso da
+          casa para criança é 12px. É a única coisa na tela dizendo a uma criança de 8 anos que o
+          desenho dela não foi guardado. */}
+      {syncError ? (
+        <p className="sz-tool-guide__alert text-sm font-bold" role="alert">
+          {syncError}
+        </p>
+      ) : null}
+      {/*
+       * ⚠️⚠️ `!recolhido || syncError`: com o recado de falha na tela, o botão que REFAZ a
+       * tentativa fica junto (achado do full review de 19/09/2026). A regra do lote é "o
+       * problema e o que o resolve nunca recolhem", e o `syncError` da volta só se resolve por
+       * este botão — sem ele a criança lia um recado vermelho sem nada para fazer. É a mesma
+       * companhia que o aviso do desenho ausente tem, logo acima.
+       */}
+      {onReturn && (!recolhido || syncError) ? (
+        <div className="sz-tool-guide__foot grid gap-1">
+          {/* Fica na tela INCLUSIVE com a tarefa concluída: terminar o desenho é justamente
+              quando ela quer voltar ao plano. Sem `aria-label` e sem `title`: o nome acessível
+              é o texto visível. */}
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--outline w-full md:w-auto md:justify-self-end"
+            disabled={returning}
+            aria-busy={returning}
+            onClick={() => void returnToPlan()}
+          >
+            {COPY.task.back}
+          </button>
+          {/*
+           * ⚠️ A região viva monta VAZIA: um `role="status"` que nasce junto com o texto
+           * costuma não ser anunciado. Enquanto guarda, o único outro sinal é o botão a 50% de
+           * opacidade mais um `aria-busy` num botão `disabled`, que quase nada anuncia. A linha
+           * em branco de 16px é deliberada: nada se mexe debaixo do dedo quando o recado chega.
+           * ⚠️ Desde 19/09/2026 ela vive DENTRO do que recolhe, então o anúncio só existe com o
+           * guia aberto — recolher no meio da navegação e reabrir traz a região já preenchida,
+           * que é justamente o caso que não é anunciado. Aceito: o guia recolhido é uma linha
+           * só (pedido dela), e quem recolhe no meio de um "Voltar ao plano" de 2 segundos é
+           * caso de borda. O que NÃO é aceito é perder o problema, e o `syncError` acima fica.
+           */}
+          <p className="min-h-4 text-xs font-bold text-pin-muted md:text-right" role="status">
+            {returning ? COPY.task.backBusy : ''}
+          </p>
         </div>
       ) : null}
     </div>

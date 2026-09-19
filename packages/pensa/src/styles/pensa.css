@@ -323,18 +323,20 @@
   border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
   color: var(--pz-ink);
   background: var(--pz-surface);
-  /* ⚠⚠ O cursor é declarado AQUI, no cartão, e não só na camada do "Continuar"
-     (18/09/2026). Dentro do cartão quem responde ao ponteiro é o `::after` daquele botão, que
-     herda `cursor: pointer` da pílula; o `<article>` em volta não declarava nada, então
-     qualquer ponto que escapasse da camada caía em `auto` e virava SETA. O `inset: -1px` fez as
-     duas fronteiras coincidirem, mas por coincidência geométrica de duas caixas arredondadas:
-     em zoom fracionário (125%, 150%) elas arredondam separadas, e aí o ponteiro parado na
-     beirada alterna entre seta e mãozinha várias vezes por segundo — o "cursor tremendo" que
-     ela relatou três vezes. Com o valor no ancestral, todo ponto de dentro responde `pointer`
-     por HERANÇA: a oscilação deixa de ser possível em vez de deixar de acontecer. Não é
-     mentira visual — o cartão inteiro abre o plano, que é a razão de o `::after` existir.
-     ⚠ Isto NÃO substitui a camada: é ela que dá o CLIQUE. Aqui só mora o desenho do ponteiro. */
-  cursor: pointer;
+  /* ⚠⚠ O cartão NÃO declara cursor, e não é esquecimento (19/09/2026). Ele deixou de ser
+     clicável: quem abre o plano é o "Continuar" e quem apaga é a lixeira, e a mãozinha aparece
+     só onde de fato se clica. Foi o pedido dela, com a razão certa — "os cards de projeto no
+     pensa não é clicavel, então não precisa ser o cursor de mãozinha no card".
+     ⚠⚠ Isto REVOGA a camada `::after` de 17/09 e o `cursor: pointer` que estava aqui desde
+     18/09, os dois escritos para matar o "cursor tremendo" (a seta alternando com a mãozinha na
+     beirada, relatado três vezes). A classe morre melhor por este caminho: sem camada esticada
+     não existem duas fronteiras arredondadas para o ponteiro atravessar, então a alternância
+     deixa de ter causa em vez de ser compensada. Quem voltar a esticar a área clicável do
+     cartão reabre as duas coisas juntas.
+     ⚠️ O `position: relative` lá em cima FICA, e não é sobra da camada: os nomes das etapas da
+     trilha Z-E-R-O são `.pensa-sr-only`, que é `position: absolute`. Sem o relative aqui eles se
+     resolveriam contra um ancestral mais acima e a caixa de 1px iria parar longe, podendo abrir
+     rolagem à toa. */
 }
 .pensa-project-card__head {
   display: flex;
@@ -456,17 +458,12 @@
   align-items: center;
   gap: 8px;
 }
-/* ⚠️⚠️ A lixeira precisa SUBIR: o `::after` do "Continuar" (logo abaixo) cobre o cartão
-   inteiro para que clicar em qualquer ponto abra o plano, e é pintado depois. Sem o
-   `position` + `z-index` aqui, o botão aparece mas NUNCA recebe o clique — quem o recebe
-   é a camada invisível, e a criança abriria o plano ao tentar apagá-lo. Pelo mesmo motivo
-   ele não anda no hover (ver o comentário do `__open`): a cor basta.
-   ⚠️ E o "Continuar" perder o hover enquanto o ponteiro cruza a lixeira é DELIBERADO, não é o
-   tremor que a camada resolve: ali o clique apaga em vez de abrir, e a pílula apagada diz isso.
-   Quem tentar "consertar" devolvendo o hover por cima da lixeira volta a perder o clique dela. */
+/* A lixeira do cartão. ⚠️ Ela teve `position: relative` + `z-index: 1` entre 14/09 e 19/09/2026,
+   e a razão morreu junto com a camada do "Continuar": enquanto um `::after` cobria o cartão
+   inteiro, o botão aparecia e NUNCA recebia o clique — quem o recebia era a camada invisível, e
+   a criança abria o plano ao tentar apagá-lo. Sem a camada, ela é um botão como outro qualquer.
+   Quem voltar a esticar a área clicável do cartão tem de devolver as duas declarações. */
 .pensa-planner .pensa-project-card__remove {
-  position: relative;
-  z-index: 1;
   display: inline-grid;
   flex: none;
   place-items: center;
@@ -499,31 +496,19 @@
   outline: 2px solid var(--pz-danger);
   outline-offset: 2px;
 }
-/* A área clicável do "Continuar" é o cartão inteiro, MOLDURA INCLUSA.
-   ⚠️⚠️ `inset: -1px`, nunca `inset: 0`: um absoluto se resolve contra o PADDING box, então com
-   zero a borda de 1px do cartão ficava FORA da camada. Sobrava uma faixa morta de 1px nas arestas
-   e de 1,41px na diagonal dos cantos (onde ainda entrava o descasamento de raio, porque o raio
-   declarado aqui é o EXTERNO e o padding box tem um a menos). Nessa faixa o ponteiro caía no
-   cartão (cursor de seta, "Continuar" sem hover) e um décimo de pixel para dentro caía na camada
-   (mãozinha, pílula escurecida, sombra de 4 para 5px, com transição de 0,12s): parado na beirada,
-   o cursor da criança piscava entre os dois estados sem parar, e clicar na moldura não abria o
-   plano. Em zoom de 125% e 150% as duas fronteiras arredondam separadas e o efeito piora. Com
-   -1px a camada É a caixa de borda, o raio daqui é o mesmo do cartão, e os dois contornos viram
-   um só: a faixa some por construção, nas arestas e nos cantos ao mesmo tempo.
-   ⚠️ O -1px é o NEGATIVO da borda do cartão do plano, lá em cima: mexeu numa, mexa na outra. O
-   `tokens.test.ts` compara as duas e reprova se divergirem. */
-.pensa-project-card__open::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
-}
-/* ⚠️ E por isso o "Continuar" NÃO anda, nem no hover nem no aperto: `transform` ou `translate`
-   no botão fazem dele o bloco de referência do `::after`, que encolhe para o tamanho da pílula
-   no meio do gesto. O mouse soltava em cima do cartão e o plano não abria (medido no Chromium e
-   no Firefox, full review de 11/09/2026), e com o relevo das galerias o hover piscava. O aperto
-   continua visível no relevo (a borda de baixo afunda). Fora de camada: vence o `:hover` e o
-   `:active` das receitas, que moram em `@layer components`. */
+/* ⚠️⚠️ A CAMADA SAIU (19/09/2026). O "Continuar" tinha um `::after` de `inset: -1px` que
+   esticava a área clicável até a borda do cartão: clicar em qualquer ponto abria o plano. Ela
+   saiu a pedido dela — "estou clicando no card e não está acontecendo nada; só quando clico em
+   continuar que abre o plano" —, e com ela saíram o `cursor: pointer` do cartão e o `z-index` da
+   lixeira, que existiam só por causa dela. O cartão do plano NÃO é clicável: quem abre é este
+   botão, quem apaga é a lixeira, e a mãozinha aparece só neles.
+   ⚠️ O "Continuar" continua SEM andar no hover e no aperto, e agora por outro motivo: ele vive
+   dentro das faixas (`.sz-tool-bands`), onde a receita compartilhada sobe a peça 1px no hover — e
+   1px de movimento numa borda longa é o que faz o ponteiro parado nela entrar e sair do hover
+   várias vezes por segundo (o "cursor tremendo/piscando" que ela relatou três vezes, e que o
+   cartão "Novo plano" também desliga, no `tool-chrome.css`). O relevo fica: a sombra cresce e a
+   pílula escurece. Fora de camada de propósito: vence o `:hover` e o `:active` das receitas, que
+   moram em `@layer components`. */
 .pensa-project-card__open:is(:hover, :active) {
   transform: none;
   translate: none;

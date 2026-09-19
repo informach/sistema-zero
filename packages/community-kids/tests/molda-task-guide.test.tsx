@@ -230,12 +230,72 @@ test('a seta recolhe o guia, e o pé com a volta ao plano nunca some', async () 
   expect(
     view.container.querySelector('button[aria-expanded]')?.getAttribute('aria-controls'),
   ).toBeNull()
-  // O pé continua inteiro: a volta ao plano e a linha de situação ficam FORA do que recolhe.
-  expect(screen.getByRole('button', { name: 'Voltar ao plano' })).toBeTruthy()
-  expect(screen.getByRole('status').textContent).toContain('guardado')
+  // ⚠️⚠️ 19/09/2026, decisão dela: recolhido sobra UMA linha, o título e a seta. O pé de
+  // ROTINA (guardar, concluir, abrir a criação, voltar ao plano) e a linha de situação
+  // recolhem junto — isso REVOGA em parte a regra de 18/09, que os mantinha fora. O que nunca
+  // recolhe é PROBLEMA, e disso trata o teste seguinte.
+  expect(screen.queryByRole('button', { name: 'Voltar ao plano' })).toBeNull()
+  expect(screen.queryByRole('status')).toBeNull()
+  // Sobra a seta, e só ela.
+  expect(view.container.querySelectorAll('button').length).toBe(1)
+  // ⚠️ E a SITUAÇÃO continua na tela, recolhida (achado do full review de 19/09/2026): quando
+  // ela morava no sobretítulo, era `aria-hidden` e sumia ao recolher — quem usa leitor de tela
+  // deixava de saber que a tarefa estava pronta, e quem recolhia também.
+  // ⚠ A linha que sobra é o TÍTULO, e só ele: o sobretítulo sai junto (o cabeçalho teria duas).
+  expect(screen.getByText('Rocha')).toBeTruthy()
+  expect(screen.queryByText('Guia do Pensa')).toBeNull()
+  const situacao = screen.getByText('Em andamento')
+  // ⚠ `getByText` acha elemento ESCONDIDO: sem estas duas, um `hidden={recolhido}` passaria.
+  expect(situacao.hasAttribute('hidden')).toBe(false)
+  expect(situacao.closest('button[aria-expanded]')).toBeTruthy()
   // E a volta: clicar de novo pede para ABRIR.
   const setaRecolhida = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
   if (!setaRecolhida) throw new Error('seta esperada')
   fireEvent.click(setaRecolhida)
   expect(mudancas).toEqual([true, false])
+})
+
+test('recolhido, um PROBLEMA continua na tela, e o quadro veste a casca compartilhada', async () => {
+  // ⚠️⚠️ O anti-vácuo do caso de cima, e a regra que substituiu a de 18/09 (19/09/2026):
+  // recolher esconde conteúdo e ação de ROTINA, NUNCA um problema. Aqui a criação vinculada
+  // não está NESTA galeria — o aviso que explica isso tem de sobreviver ao recolher, senão a
+  // criança que recolheu uma vez abre a tarefa noutro aparelho e vê só o título.
+  const semACriacao: MoldaTaskHandoff = {
+    ...handoff,
+    task: {
+      ...handoff.task,
+      progress: {
+        ...handoff.task.progress,
+        outputRef: { kind: 'molda_asset', assetId: 'sumiu', assetKind: 'model' },
+      },
+    },
+  }
+  const view = render(
+    <MoldaTaskGuide
+      profileId="child-problema"
+      handoff={semACriacao}
+      persistence={{
+        load: async () => null,
+        loadAll: async () => [],
+        listSummaries: async () => [],
+      }}
+      onProgress={() => {}}
+      onOpenAsset={() => {}}
+      onReturn={() => {}}
+      hasOpenCreation={async () => false}
+      collapsed
+      onCollapsedChange={() => {}}
+    />,
+  )
+  // A casca é a receita compartilhada das quatro ferramentas, e não mais a do próprio painel.
+  const quadro = view.container.firstElementChild as HTMLElement
+  expect(quadro.classList.contains('sz-tool-guide')).toBe(true)
+  const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+  expect(seta?.classList.contains('sz-tool-guide__head')).toBe(true)
+  // O corpo está recolhido...
+  expect(screen.queryByText('Rocha azul')).toBeNull()
+  // ...e o recado do problema, não.
+  await waitFor(() =>
+    expect(screen.getByRole('status').textContent).toContain('não está disponível nesta galeria'),
+  )
 })

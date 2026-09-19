@@ -108,6 +108,31 @@ describe('Guia da tarefa do Estúdio', () => {
     expect(aside?.classList.contains('lg:mb-0')).toBe(true)
   })
 
+  test('o quadro veste a casca compartilhada das ferramentas', () => {
+    // 19/09/2026: os três guias do Pensa (este, o do Pinta e o do Molda) passaram a vestir a
+    // MESMA receita (`.sz-tool-guide` do `@sistemazero/ui/tool-chrome.css`) — antes cada um
+    // tinha a própria casca, e foi isso que ela leu como "fora da identidade visual da
+    // comunidade". ⚠ Este é o único dos três que vira COLUNA lateral, e por isso leva também o
+    // `--aside`, que troca o fio em volta pelo fio que separa do editor.
+    const view = render(<TaskGuidePanel session={createSession()} />)
+    const aside = view.container.querySelector('aside')
+    expect(aside?.classList.contains('sz-tool-guide')).toBe(true)
+    expect(aside?.classList.contains('sz-tool-guide--aside')).toBe(true)
+    // ⚠ E a casca PRÓPRIA saiu. O `lg:border-r` é o que mais importa: a receita já desenha o
+    // fio do lado, então mantê-lo desenharia DOIS (achado do full review de 19/09/2026).
+    for (const morta of ['border-sz-border', 'border-b', 'bg-sz-surface', 'p-3', 'lg:border-r']) {
+      expect({ morta, tem: aside?.classList.contains(morta) }).toEqual({ morta, tem: false })
+    }
+    expect(view.container.querySelector('.sz-tool-guide__head')).toBeTruthy()
+    expect(view.container.querySelector('.sz-tool-guide__body')).toBeTruthy()
+    // ⚠⚠ Quem rola é o CORPO, nunca o cartão: com o teto no `<aside>`, a seta e o recado de
+    // falha ficavam dentro da área rolável e nasciam abaixo da dobra.
+    expect(aside?.classList.contains('overflow-auto')).toBe(false)
+    expect(
+      view.container.querySelector('.sz-tool-guide__body')?.classList.contains('overflow-auto'),
+    ).toBe(true)
+  })
+
   test('recolhido, um recado de falha CONTINUA na tela', async () => {
     // ⚠️ A mesma lição que o irmão do Pinta pagou com o "Voltar ao plano": recolher esconde o
     // brief, nunca um problema. Sem isso, a marcação que não subiu ficaria invisível.

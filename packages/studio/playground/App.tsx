@@ -3,6 +3,7 @@ import type {
   StudioPintaDrawingSummary,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
+  StudioTaskSession,
   StudioTutorAdapter,
   StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
@@ -362,9 +363,63 @@ function EditorScreen({
         pintaLibrary={pintaLibraryDemo}
         // "Trazer do Molda" com os três tipos codificados de verdade (ver moldaLibraryDemo).
         moldaLibrary={moldaLibraryDemo}
+        // `?tarefa=1` liga o guia do Pensa; `?tarefa=falha` faz a marcação REJEITAR, que é como
+        // se vê o recado sobrevivendo ao guia recolhido.
+        {...(tarefaDemo ? { taskSession: taskSessionDemo } : {})}
       />
     </Suspense>
   )
+}
+
+/**
+ * O Cartão de Criação do Pensa (`?tarefa=1`), que no app de verdade chega pelo
+ * `/estudio?tarefa=<id>` e monta o guia da tarefa — a coluna lateral a partir de `lg`. Aqui ele
+ * é fixo e as marcações só vão para o console: o que este demo existe para mostrar é o DESENHO
+ * do painel (a casca `.sz-tool-guide` compartilhada com o Pinta e o Molda) e o comportamento da
+ * seta nas duas larguras. Sem o par `collapsed`/`onCollapsedChange` de propósito: playground não
+ * tem perfil para lembrar de nada, e é assim que o painel recolhe por conta própria.
+ */
+const tarefaDemo = new URLSearchParams(window.location.search).get('tarefa')
+const taskSessionDemo: StudioTaskSession = {
+  taskId: 'task-demo',
+  title: 'Fazer o herói pular',
+  summary: 'O herói sobe quando a criança aperta o espaço, e volta ao chão sozinho.',
+  project: { id: 'plan-demo', name: 'Corrida do Bolt' },
+  cycle: { id: 'cycle-demo', number: 1, goal: null },
+  guide: {
+    steps: [
+      { id: 's1', text: 'Instale a extensão Jogo 2D pelo menu de mais opções.', required: true },
+      { id: 's2', text: 'Use o bloco "Criar sprite com imagem" no "Ao iniciar".', required: true },
+      { id: 's3', text: 'Ligue o pulo no bloco "Quando a tecla for pressionada".', required: true },
+    ],
+    criteria: [{ id: 'c1', text: 'O herói pula e volta ao chão sozinho.', required: true }],
+  },
+  blocks: [
+    {
+      id: 'sz_g2d_sprite',
+      label: 'Criar sprite com imagem',
+      category: 'Jogo 2D',
+      subcategory: 'Sprites',
+      area: 'game',
+      extension: 'game-2d',
+    },
+  ],
+  progress: {
+    // ⚠ Tudo marcado e com `outputRef`: só assim o "Concluir tarefa" nasce HABILITADO, e é o
+    // desenho da pílula primária que este demo existe para mostrar (o `onProgress` daqui não
+    // muta nada, então marcar um passo na tela não gruda).
+    status: 'in_progress',
+    completedStepIds: ['s1', 's2', 's3'],
+    completedCriteriaIds: ['c1'],
+    startedAt: '2026-09-19T12:00:00.000Z',
+    completedAt: null,
+    updatedAt: '2026-09-19T12:00:00.000Z',
+    outputRef: { kind: 'studio_project', projectId: 'plan-demo' },
+  },
+  async onProgress(input) {
+    console.debug('[host] taskSession.onProgress', input)
+    if (tarefaDemo === 'falha') throw new Error('Falha de mentira do playground.')
+  },
 }
 
 /**

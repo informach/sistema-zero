@@ -2363,6 +2363,17 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   três são o cartão branco das galerias (canto de 20px, Baloo de 15px, 14/18px de respiro) com os
   botões em `.sz-tool-pill`. ⚠️ Este guia é o único dos três que mora no HOST, então é o único
   que usa a receita sem passar por um contrato de pacote.
+  **Full review do lote (19/09/2026), o que ele mudou aqui:** (a) o rascunho que o navegador NÃO
+  conseguiu guardar (`draftError`) SAIU da linha de situação e virou um recado próprio, fora do
+  que recolhe — ele só existe quando o `localStorage.setItem` lançou, ou seja as marcações da
+  criança estão só em memória, e recolhia junto com a rotina; (b) a SITUAÇÃO da tarefa virou a
+  pílula `.sz-tool-guide__state` no cabeçalho: enquanto ela era o sobretítulo, era `aria-hidden`
+  e sumia ao recolher, então quem usa leitor de tela deixava de saber que a tarefa estava pronta;
+  (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
+  para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
+  (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
+  ⚠️ Cobertura declarada: o guia recolhido com a tarefa CONCLUÍDA não tem caso (o teste usa
+  `in_progress`), então um `{recolhido && !done ? null : …}` passaria em toda a suíte.
   ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
   (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
   `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
