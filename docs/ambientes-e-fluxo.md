@@ -97,6 +97,11 @@ put` do lado correspondente (os dois precisam bater, senão 401 a cada 5 min).
 
 ## Deploys
 
+Para a promoção das aulas, materiais complementares e alças iniciada em 19/09/2026, siga o
+[runbook de produção](runbooks/promocao-producao-aulas-2026-09-19.md). Ele exige duas releases
+para as migrations 0090/0091 e controle temporário dos auto-deploys da `main`; um merge direto
+com todos os serviços em paralelo não é seguro nesse caso.
+
 - **Staging — AUTOMÁTICO via GitHub Actions**: push/merge na branch `staging` roda
   o CI e, **se verde**, o job `deploy-staging` (no próprio `ci.yml`) dispara o
   deploy **só dos serviços afetados pelo diff** (mapa que espelha os

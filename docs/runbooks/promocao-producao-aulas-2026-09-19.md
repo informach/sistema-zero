@@ -24,9 +24,16 @@ documento registra o estado medido e a ordem segura; antes de usar, refaça as c
 
 1. Confirmar backup/snapshot recente do Postgres de produção e testar que há um caminho de
    restauração. Congelar edições de aulas durante a janela de migração e backfill.
-2. Confirmar o SHA de `main`, o CI desse SHA e o SHA efetivo de cada serviço no Railway. O
+2. Confirmar o SHA de `main`, o check `ci` verde do PR que será integrado e o SHA efetivo de
+   cada serviço no Railway. O
    workflow `Deploy produção` sempre usa o SHA **atual de `main`**, mesmo se for acionado com
    `--ref staging`; não pode haver merge novo em `main` durante a sequência.
+   O fluxo documentado em `docs/ambientes-e-fluxo.md` registra **auto-deploy de Admin, Funil e
+   Comunidade ao fazer merge na `main`**. Antes do merge, verificar os gatilhos atuais no Railway
+   e **suspendê-los temporariamente** nesses serviços e em qualquer outro que tenha auto-deploy.
+   Sem isso, os frontends podem subir antes da migração do Members. Registrar quais gatilhos
+   foram suspensos para reativá-los depois do smoke. Se não for possível controlá-los, **parar
+   esta promoção** e definir outro mecanismo de deploy ordenado; não confiar na sorte da corrida.
 3. Confirmar no código promovido que o último item de
    `packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json`
    é **0090**, não 0091. A trava em `migrations-journal.test.ts` protege essa condição.
@@ -40,7 +47,10 @@ documento registra o estado medido e a ordem segura; antes de usar, refaça as c
 
 ## Release A: migrar sem remover a coluna antiga
 
-1. Promover para `main` o código testado cujo journal termina na **0090**. Rodar CI da `main`.
+1. **Com os auto-deploys relevantes suspensos**, promover para `main` o código testado cujo
+   journal termina na **0090**. Exigir o check `ci` verde no PR para `main` e conferir o SHA do
+   merge. Não acionar o workflow `CI` manualmente em `main`: seu `workflow_dispatch` também
+   aciona `deploy-staging`.
 2. Acionar o workflow de produção **somente para Members**:
 
    ```powershell
@@ -52,7 +62,9 @@ documento registra o estado medido e a ordem segura; antes de usar, refaça as c
    os pods antigos. Conferir no journal do banco o carimbo `1789814248293`, a existência da
    coluna e o healthcheck `/readyz`. Esperar os pods antigos saírem.
 3. Publicar o `api-gateway` e, depois de saudável, `admin`, `community` e `community-kids`
-   no mesmo SHA de `main`, conforme serviços realmente afetados. Usar `Deploy produção` com
+   no mesmo SHA de `main`, conforme serviços realmente afetados. Publicar também os demais
+   serviços incluídos na promoção completa, respeitando as dependências e migrations próprias
+   identificadas no review do release. Usar `Deploy produção` com
    CSV de serviços por etapa; **não usar `services=all` simultaneamente ao Members**, para
    não criar uma corrida entre APIs, frontends e migrations. Conferir `SUCCESS` e SHA de cada
    serviço e testar: abrir aula existente, editar/salvar rascunho, publicar aula em rascunho e
@@ -92,6 +104,8 @@ documento registra o estado medido e a ordem segura; antes de usar, refaça as c
    (lista de aulas), nos dois estados; sem botão duplicado e sem obstruir controles. Conferir
    teclado, celular/tablet e contraste. Fazer smoke de publicar rascunho no Admin e de ler o
    conteúdo publicado no Kids/Adulto.
+7. Depois de todos os smokes e da comparação de SHA dos serviços, reativar os gatilhos de
+   auto-deploy suspensos e conferir que continuam apontando para a branch `main`.
 
 ## Release B: remover a coluna, só depois da estabilidade da A
 
@@ -104,9 +118,11 @@ documento registra o estado medido e a ordem segura; antes de usar, refaça as c
    segunda migração `DROP COLUMN` não idempotente falharia ali. Não gerar outra migration entre
    as releases A e B que reutilize o índice 0091.
 3. Rodar testes de migration/CI em staging, confirmar que o Members de staging continua saudável
-   (0091 já aplicada), promover o segundo commit para `main` e acionar `Deploy produção` para
+   (0091 já aplicada). Verificar novamente os auto-deploys e suspendê-los se puderem disparar
+   antes do Members. Promover o segundo commit para `main` e acionar `Deploy produção` para
    `members`. Conferir que a coluna saiu em produção, journal chegou a `1789814273530`,
-   `/readyz` responde e as aulas abrem. Testar novamente a publicação pelo Admin.
+   `/readyz` responde e as aulas abrem. Testar novamente a publicação pelo Admin; só então
+   reativar os gatilhos suspensos.
 
 ## Critérios de parada e recuperação
 
