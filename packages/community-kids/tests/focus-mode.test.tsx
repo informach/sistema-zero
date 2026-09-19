@@ -85,13 +85,12 @@ function Probe() {
 }
 
 describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
-  it('é oferecido nos apps de criação, no avatar, no quarto e no Estúdio Pro, a partir de 768px', () => {
+  it('é oferecido nas galerias de criação, no avatar e no quarto, a partir de 768px', () => {
     for (const route of [
       '/estudio',
       '/pensa',
       '/pinta',
       '/molda',
-      '/estudio/pro/abc123',
       // 19/09/2026: as duas telas de criação que ocupavam a tela sem oferecer volta ao menu.
       '/meu-avatar',
       '/quarto',
@@ -140,15 +139,7 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
   it('está disponível nos apps de criação, avatar e quarto pelo shell', () => {
-    for (const route of [
-      '/estudio',
-      '/pensa',
-      '/pinta',
-      '/molda',
-      '/estudio/pro/abc123',
-      '/meu-avatar',
-      '/quarto',
-    ]) {
+    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/meu-avatar', '/quarto']) {
       pathname = route
       const { unmount } = renderNav()
       expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
@@ -270,6 +261,57 @@ describe('modo foco — o controle em si', () => {
     expect(handle?.getAttribute('aria-controls')).toBe('kids-app-sidebar')
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
     expect(handle?.getAttribute('style')).toContain('var(--kids-menu-width)')
+  })
+})
+
+function WorkspaceProbe() {
+  const { navCollapsed, setWorkspaceActive } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={() => setWorkspaceActive(true)}>
+        Abrir projeto
+      </button>
+      <button type="button" onClick={() => setWorkspaceActive(false)}>
+        Voltar à galeria
+      </button>
+    </>
+  )
+}
+
+describe('modo foco — projeto aberto', () => {
+  it('retira a alça e recolhe o menu sem esquecer que ele estava aberto na galeria', () => {
+    pathname = '/pinta'
+    render(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+        <WorkspaceProbe />
+      </FocusModeProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir projeto' }))
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  })
+
+  it('o Estúdio Pro já nasce sem alça; avatar, quarto e aula não perdem a sua', () => {
+    for (const route of ['/estudio/pro/abc123', '/meu-avatar', '/quarto', '/cursos/a/aulas/b']) {
+      pathname = route
+      const { unmount } = renderNav()
+      if (route.startsWith('/estudio/pro/')) {
+        expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+      } else {
+        expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+      }
+      unmount()
+    }
   })
 })
 

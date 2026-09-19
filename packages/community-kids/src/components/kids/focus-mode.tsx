@@ -37,6 +37,8 @@ interface LessonChromeContextValue {
   outlineCollapsed: boolean
   toggleNav: () => void
   toggleOutline: () => void
+  /** Um editor aberto toma toda a largura; a galeria preserva a escolha do menu. */
+  setWorkspaceActive: (active: boolean) => void
 }
 
 const INERT: LessonChromeContextValue = {
@@ -48,6 +50,7 @@ const INERT: LessonChromeContextValue = {
   outlineCollapsed: false,
   toggleNav: () => {},
   toggleOutline: () => {},
+  setWorkspaceActive: () => {},
 }
 
 /**
@@ -103,7 +106,19 @@ export function FocusModeProvider({
     navOpen: boolean
     outlineOpen: boolean
   } | null>(null)
-  const navHidden = onFocus && !(focusChrome?.path === pathname && focusChrome.navOpen)
+  const [workspace, setWorkspace] = useState<{
+    path: string
+    viewerId: string | null
+  } | null>(null)
+  const inCreationTool = ['/estudio', '/pensa', '/pinta', '/molda'].some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+  const studioProOpen = pathname.startsWith('/estudio/pro/')
+  const workspaceActive =
+    inCreationTool &&
+    (studioProOpen || (workspace?.path === pathname && workspace.viewerId === viewerId))
+  const navHidden =
+    onFocus && (workspaceActive || !(focusChrome?.path === pathname && focusChrome.navOpen))
   const outlineHidden = onLesson
     ? !(focusChrome?.path === pathname && focusChrome.outlineOpen)
     : false
@@ -135,8 +150,21 @@ export function FocusModeProvider({
     }))
   }, [onLesson, pathname])
 
+  const setWorkspaceActive = useCallback(
+    (active: boolean) => {
+      setWorkspace((previous) =>
+        active
+          ? { path: pathname, viewerId }
+          : previous?.path === pathname && previous.viewerId === viewerId
+            ? null
+            : previous,
+      )
+    },
+    [pathname, viewerId],
+  )
+
   const value = useMemo<LessonChromeContextValue>(() => {
-    const navAvailable = onFocus && isTablet
+    const navAvailable = onFocus && isTablet && !workspaceActive
     // A lista de aulas é EXCLUSIVA da aula: nos apps embarcados ela nem existe.
     const outlineAvailable = onLesson
     return {
@@ -150,8 +178,19 @@ export function FocusModeProvider({
       outlineCollapsed: outlineHidden && outlineAvailable,
       toggleNav,
       toggleOutline,
+      setWorkspaceActive,
     }
-  }, [isTablet, onFocus, onLesson, navHidden, outlineHidden, toggleNav, toggleOutline])
+  }, [
+    isTablet,
+    onFocus,
+    onLesson,
+    navHidden,
+    outlineHidden,
+    workspaceActive,
+    toggleNav,
+    toggleOutline,
+    setWorkspaceActive,
+  ])
 
   return <LessonChromeContext.Provider value={value}>{children}</LessonChromeContext.Provider>
 }
