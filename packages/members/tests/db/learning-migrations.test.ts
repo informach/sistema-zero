@@ -286,7 +286,15 @@ describe.skipIf(!url)(
       const { db } = get()
       const content = new DrizzleContentAdminRepository(db)
       const repo = new DrizzleLearningRepository(db)
-      const block = await content.createBlock(lessonId, 'materials', {
+      // Este teste escreve blocos: não pode alterar a aula histórica cujo upgrade
+      // abaixo verifica a identidade e a ordem EXATAS dos três blocos legados.
+      const materialsLesson = await content.createLesson(moduleId, courseId, {
+        slug: 'materials-download-qa',
+        title: 'Materiais',
+        estimatedMinutes: null,
+        isPublished: true,
+      })
+      const block = await content.createBlock(materialsLesson.id, 'materials', {
         kind: 'materials',
         items: [],
       })
@@ -295,19 +303,19 @@ describe.skipIf(!url)(
       const record = (itemId: string, revision = block.contentRevision!) =>
         repo.recordMaterialDownload({
           ...learner,
-          lessonId,
+          lessonId: materialsLesson.id,
           blockId: block.id,
           revision,
           itemId,
           at: now,
         })
       await Promise.all([record('one'), record('two'), record('one')])
-      const saved = (await repo.getProgress(learner, lessonId)).blocks.find(
+      const saved = (await repo.getProgress(learner, materialsLesson.id)).blocks.find(
         (entry) => entry.blockId === block.id,
       )
       expect((saved?.answers.downloadedMaterialItemIds as string[]).sort()).toEqual(['one', 'two'])
       expect(
-        (await repo.getProgress({ ...learner, userId: randomUUID() }, lessonId)).blocks,
+        (await repo.getProgress({ ...learner, userId: randomUUID() }, materialsLesson.id)).blocks,
       ).toEqual([])
       await expect(record('three', 'stale')).rejects.toThrow()
     })
