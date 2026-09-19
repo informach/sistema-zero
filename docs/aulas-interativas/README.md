@@ -41,6 +41,11 @@ O pacote contém roteiros e interações funcionais. Os vídeos ainda precisam s
 7. Clique em **Publicar aula**. A plataforma captura os últimos traços/projeto, termina o salvamento e valida o conjunto. Se houver problema, a versão publicada permanece intacta. Uma publicação válida substitui a aula inteira e agenda a atualização do Zappy. **Ver como aluno** abre a versão publicada.
 8. Em staging, percorra também a transição para a aula seguinte com um perfil de teste autorizado. Confira a retomada, os quizzes e a entrega. A promoção do ambiente para produção continua sendo uma decisão sua.
 
+9. Para levar a MESMA aula a outro ambiente (staging → produção), use **Exportar roteiro com
+   seções** na aba Dados da aula: ele baixa o manifesto desta aula, incluindo o que você montou à
+   mão aqui. A tela lista o que precisa ser cadastrado no destino antes de importar. Detalhes,
+   limites e o que não viaja: `guia-de-autoria.md`, §"Levar uma aula pronta para outro ambiente".
+
 Reimportar o mesmo manifesto preserva IDs, projetos existentes e vídeos vinculados. Alterar apenas títulos de seção, posição ou referência do projeto não reinicia respostas. Mudar o conteúdo de uma descoberta muda sua revisão: o histórico fica guardado, mas uma resposta antiga não aprova o conteúdo novo. Aulas já concluídas continuam concluídas.
 
 Os 27 manifestos usam a versão 3, com critérios explícitos em todas as 96 seções. `completion.blockIds` referencia as chaves portáveis dos blocos avaliados, e `completion.projectChecks` define verificações estruturais do projeto. Todos os critérios de uma seção são obrigatórios. O formato de vídeo planejado continua o mesmo: `{ "key": "video-demonstracao", "plannedVideo": "O que mostrar e narrar" }` define o cartão, e a chave entra em `section.blockKeys`. As versões 1 e 2 continuam aceitas sem ativar automaticamente as travas; seus textos `pendingMedia` são convertidos em cartões durante a importação. Nenhum arquivo contém uma URL de vídeo inventada.

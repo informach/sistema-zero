@@ -5,6 +5,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Download, FileJson, Upload } from 'lucide-react'
 import { type ReactNode, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { downloadJson } from '@/lib/download-json'
 import type { ImportParseResult } from '@/lib/lesson-block-import'
 import { useConfirm } from './use-confirm'
 
@@ -12,20 +13,6 @@ export interface JsonDownload {
   label: string
   filename: string
   data: unknown
-}
-
-function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([`${JSON.stringify(data, null, 2)}\n`], {
-    type: 'application/json;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
 }
 
 /**

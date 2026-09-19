@@ -89,6 +89,35 @@ Sem seções configuradas, inclusive a seção automática do backfill, a aprese
 
 Projetos, entregas, notas, cooldowns e aulas concluídas são preservados. Seções autoradas usam critérios explícitos. A professora pode migrar uma aula por vez.
 
+## Levar uma aula pronta para outro ambiente
+
+Montou a aula no staging e quer a mesma em produção sem remontar tudo? Na aba **Dados da aula**,
+**Exportar roteiro com seções** baixa o manifesto desta aula. No destino, abra a aula (ou crie
+uma), use **Vincular ao destino aberto**, **Conferir importação** e aplique.
+
+A tela do export mostra, antes de baixar, três contagens e o que não viaja:
+
+- **Viajam com o conteúdo:** as seções e seus critérios, as cenas, o quiz, os textos e as falas
+  do Zappy.
+- **Viajam só como orientação:** os vídeos. No destino o cartão chega VAZIO, com a instrução de
+  produção e o link do vídeo de origem — o arquivo precisa ser enviado lá.
+- **Vão como referência:** imagem, áudio, HTML, e-book, Estúdio, Pinta, certificado, "Em breve" e
+  materiais. Esses **precisam existir no destino ANTES de importar**, na ordem que a tela lista
+  (é o `existing.kind`/`existing.index`); faltando um, a importação é recusada inteira.
+
+⚠️ **O que não viaja, e é bom saber antes:** os ARQUIVOS (os buckets de staging e produção são
+diferentes, então imagens, áudios e PDFs são reenviados no destino); a **voz do Zappy** (um clique
+em "Gerar a voz do Zappy" lá refaz tudo, e como a chave é o hash do texto não custa crédito onde o
+áudio já existe); e a narração escolhida à mão numa cena.
+
+⚠️ **Apagar um bloco aqui não o apaga no destino:** ele continua lá, empurrado para o fim da
+última seção. Confira a prévia da importação e tire o que sobrou à mão.
+
+⚠️⚠️ **A origem tem que ser sempre a MESMA aula.** O destino deriva a identidade de cada bloco a
+partir do arquivo, então exportar do staging duas vezes atualiza a produção no lugar; mas exportar
+da PRODUÇÃO gera identidades novas, e reimportar esse arquivo lá criaria blocos duplicados ao lado
+dos antigos.
+
 ## Importar, produzir e publicar
 
 Abra a aula original e trabalhe no **rascunho compartilhado**. Em aula vazia, configure o primeiro Estúdio antes de importar um manifesto que o reutiliza. Use **Importar roteiro com seções → Vincular ao destino aberto → Conferir importação**. A prévia lista criação, atualização, preservação e instruções que sairão do rascunho.

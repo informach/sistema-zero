@@ -58,6 +58,7 @@ import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-bu
 import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
 import { LessonContentCatalog } from '@/components/editor/lesson-content-catalog'
 import { lessonEditorialWarnings } from '@/components/editor/lesson-editorial-warnings'
+import { LessonManifestExport } from '@/components/editor/lesson-manifest-export'
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
 import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
@@ -94,6 +95,7 @@ import {
   DIALOGUE_MAX_LENGTH,
   DIALOGUE_POSES,
   type DialoguePose,
+  LESSON_BLOCK_KIND_LABELS,
   type LessonBlockContent,
   type LessonBlockKind,
   type LessonContentView,
@@ -108,26 +110,9 @@ import {
 } from './materials-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 
-// `Record<LessonBlockKind, …>` (não `Record<string, …>`): assim o COMPILADOR cobra o
-// rótulo de todo tipo novo. Sem isso o `<select>` mostraria o slug cru — e o editor é
-// cheio de `default` silencioso (o `buildContent` grava QUIZ para kind sem case), então
-// vale prender o que dá para prender em tempo de compilação.
-const KIND_LABELS: Record<LessonBlockKind, string> = {
-  interactive: 'Descoberta interativa',
-  rich_text: 'Texto',
-  dialogue: 'Diálogo do Zappy',
-  video: 'Vídeo',
-  image: 'Imagem',
-  audio: 'Áudio',
-  quiz: 'Quiz',
-  embed: 'HTML livre (sem progresso)',
-  ebook: 'E-book (livro 3D)',
-  studio: 'Estúdio',
-  pinta: 'Pinta (desenho)',
-  certificate: 'Certificado',
-  coming_soon: 'Em breve (aula em produção)',
-  materials: 'Materiais complementares',
-}
+// O mapa vive em `lib/types.ts` desde a exportação de manifesto: a lista do que o formato
+// NÃO carrega nomeia os blocos pelos MESMOS rótulos, e duas cópias divergiriam.
+const KIND_LABELS = LESSON_BLOCK_KIND_LABELS
 
 /** Nome de cada pose, só para o `alt` do seletor (a autora escolhe pela cara). */
 const DIALOGUE_POSE_LABELS: Record<DialoguePose, string> = {
@@ -1761,6 +1746,10 @@ function LessonEditorSession({
                 beforeImport={beforePublish}
                 onImported={load}
               />
+            )}
+            {/* Exportar é LEITURA: quem só pode ver a aula também pode levar o roteiro embora. */}
+            {courseInfo && draft && area === 'data' && !blockOpen && (
+              <LessonManifestExport document={draft.document} courseSlug={courseInfo.slug} />
             )}
             {draft && (
               <div hidden={area === 'data' || blockOpen}>
