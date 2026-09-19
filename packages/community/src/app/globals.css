@@ -224,7 +224,7 @@
   padding-bottom: 8rem;
 }
 main:has(.sz-aula-adulto) {
-  --lesson-outline-width: 18rem;
+  --lesson-outline-width: min(20rem, 90vw);
 }
 
 /* ── A AULA NO DESENHO DO PEN ─────────────────────────────────────────────────────────────
@@ -367,6 +367,9 @@ main:has(.sz-aula-adulto) {
   text-align: right;
 }
 @media (min-width: 1024px) {
+  main:has(.sz-aula-adulto) {
+    --lesson-outline-width: 18rem;
+  }
   main:has(.sz-aula-adulto) {
     transition: padding-right 0.3s ease-in-out;
   }

@@ -15,16 +15,9 @@ import {
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
 import { Spinner } from '@sistemazero/ui/spinner'
-import {
-  CheckCircle2,
-  ChevronLeft,
-  Circle,
-  Lock,
-  PanelRightClose,
-  PanelRightOpen,
-  X,
-} from 'lucide-react'
+import { CheckCircle2, ChevronLeft, Circle, Lock, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -184,20 +177,6 @@ export function LessonPlayer({
                 Seção {sectionPosition.index + 1} de {sectionPosition.total}
               </span>
             ) : null}
-            <button
-              type="button"
-              onClick={() => setOutlineOpen((open) => !open)}
-              aria-label={outlineOpen ? 'Esconder lista de aulas' : 'Mostrar lista de aulas'}
-              aria-pressed={!outlineOpen}
-              aria-controls="adult-lesson-outline"
-              className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-            >
-              {outlineOpen ? (
-                <PanelRightClose className="size-5" />
-              ) : (
-                <PanelRightOpen className="size-5" />
-              )}
-            </button>
           </div>
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
@@ -211,6 +190,16 @@ export function LessonPlayer({
           />
         </div>
 
+        {/* A alça usa a mesma largura responsiva da gaveta e permanece visível fechada. */}
+        <EdgePanelHandle
+          side="right"
+          open={outlineOpen}
+          openOffset="var(--lesson-outline-width)"
+          label={outlineOpen ? 'Esconder lista de aulas' : 'Mostrar lista de aulas'}
+          controlsId="adult-lesson-outline"
+          onToggle={() => setOutlineOpen((open) => !open)}
+          className="z-[62] border-border bg-card text-foreground lg:z-[42]"
+        />
         {/* Lista de aulas sob demanda: gaveta no celular, lateral contínua no desktop. */}
         <button
           type="button"
@@ -228,7 +217,7 @@ export function LessonPlayer({
           aria-hidden={!outlineOpen}
           inert={!outlineOpen}
           className={cn(
-            'fixed inset-y-0 right-0 z-[61] flex w-[min(20rem,90vw)] flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40 lg:w-(--lesson-outline-width)',
+            'fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
             !outlineOpen ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
