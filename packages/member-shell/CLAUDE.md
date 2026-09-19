@@ -1078,6 +1078,48 @@ pergunta"*). Quatro mudanças de comportamento saíram daí, e as quatro são lo
 - ⚠️ Na cena com controle na PRÉVIA (só a `screen-reader`) há dois "Ouvir a tela" na tela: o da prévia, que
   é o único ALCANÇÁVEL e o que apresenta o recurso a quem não enxerga, e o da prancha, dentro da cortina.
 
+#### A conferência contra a MAQUETE (18/09/2026) — 7 diferenças
+
+⭐⭐ Ela olhou a tela e disse: *"essa imagem é como você fez a maquete e me disse que ia ficar
+assim; essa aqui é como realmente ficou. Está bem diferente, não foi isso que eu aprovei"*. Estava
+certa. O `.tsx` da maquete eu já tinha apagado, mas o HTML dela sobreviveu em
+`community-kids/tmp/maquete-console.html`, e foi ele que serviu de gabarito. As diferenças, todas
+consertadas:
+
+1. ⚠️⚠️ **A MOLDURA.** A maquete é `border: 4px` com `box-shadow: 0 6px 0` (o degrau do 3D do
+   Brilliant, na cor da linha do tema) e raio 16; saiu `border: 1px` e sombra nenhuma. É o que faz
+   o bloco parecer um console em vez de mais um retângulo, e foi a diferença nº 1 da tela dela.
+2. ⚠️⚠️ **A PLACA sumiu fora do palpite.** Na maquete ela mostra o NOME da cena sempre, e vira
+   "Seu palpite" na hora de arriscar. Eu a tinha deixado só no palpite, argumentando que o título
+   já estava no bloco — mas quando a seção já disse o nome o `<h3>` vira `sr-only`, e aí a placa é
+   a ÚNICA vez que o nome aparece.
+3. ⚠️⚠️ **A PEÇA da bancada tinha o dobro da altura.** A maquete é uma linha
+   (`rótulo · − ▬▬ + · valor`, 62px); a `Medida` de sempre são duas, com `p-4` (90px). Hoje é uma
+   linha onde o rótulo cabe — ver o comentário da `Medida` em `scene-bench.tsx` — e o padding da
+   maquete nos dois casos, o que encolhe a prancha nas 45.
+4. ⚠️⚠️ **Um CARTÃO ARREDONDADO dentro da cena** (a queixa dela, textual: *"na maquete é reta"*):
+   o `ScenePredictionPreview` traz uma moldura própria, e no palpite ela virava um segundo cartão
+   dentro do console. A regra que zera a moldura do mundo passou a alcançá-lo.
+5. ⚠️ **A ordem na conclusão.** A maquete é mundo → conversa → situação → prancha; tinha saído com
+   a situação antes da conversa. E o palpite CONGELADO ("Seu palpite: X · Trocar") ficava solto
+   ACIMA do console, quebrando a unidade logo na primeira linha.
+6. ⚠️ **O desfoque da cortina do palpite não existe na maquete** — eu o tinha somado para as notas
+   não soprarem a resposta. A maquete manda, e o risco fica anotado no `ConsolePrancha`.
+7. ⚠️⚠️ **`grid gap-3 sm:grid-cols-2` em dez bancadas.** A maquete usa `auto-fit` com piso de
+   17rem; o `sm:` olha a JANELA, e num celular (ou na aula dividida ao meio) ele ligava as duas
+   colunas com 151px cada. MEDIDO no navegador: seis cenas passavam da moldura com rolagem lateral
+   (`stage-size`, `hitbox`, `entity-state`, `camera-3d`, `pick-ray`, `world`). Virou
+   `.sz-scene-pecas`. Depois da troca: zero vazamento a partir de 358px de coluna útil.
+
+⚠️ **O que NÃO é diferença, e foi medido:** o balão do Zappy do produto já tem a borda de 2px na
+cor da unidade e o bico, como o da maquete — e o MASCOTE só aparece no kids, que é quem injeta o
+`renderInstruction` com ele. No ensaio de autoria do admin e na comunidade adulta o balão sempre
+saiu sem Zappy e com a borda cinza, desde antes deste trabalho.
+
+⚠️ A conferência das 45 é `community-kids/tmp/confere-console.tsx` (descartável): ela monta o BLOCO
+inteiro de cada cena, confere placa, ordem, moldura e padding, e escreve `tmp/console-45.html` para
+abrir no navegador.
+
 #### Full review do próprio lote (18/09/2026) — 8 achados
 
 Correção de review é código novo e merece review, e esta rodada pagou. Três dos oito são perdas
