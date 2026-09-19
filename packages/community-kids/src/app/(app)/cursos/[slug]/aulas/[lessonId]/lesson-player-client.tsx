@@ -20,7 +20,6 @@ import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
 import { useFocusMode } from '@/components/kids/focus-mode'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
-import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
@@ -248,13 +247,7 @@ export function LessonPlayer({
 
   return (
     <LessonPlayerProvider value={playerContext}>
-      <div
-        className={cn(
-          'flex flex-col gap-6 lg:flex-row lg:items-start',
-          // Sem a coluna direita, some o gap fantasma antes da largura-zero.
-          outlineCollapsed ? 'lg:gap-0' : 'lg:gap-10',
-        )}
-      >
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-0">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           {/* Navegação mínima da aula: retorno, progresso real e controles dos menus.
@@ -292,36 +285,28 @@ export function LessonPlayer({
             onSectionChange={aoTrocarSecao}
             renderBlocks={(blocks) => <KidsLessonBlocks blocks={blocks} />}
           />
-
-          {lesson.attachments.length > 0 ? (
-            <div className="mx-auto w-full max-w-[860px]">
-              <KidsLessonAttachments
-                courseSlug={course.slug}
-                lessonId={lesson.id}
-                attachments={lesson.attachments}
-              />
-            </div>
-          ) : null}
         </div>
 
-        {/* Outline do curso (sidebar) como MINI-TRILHA: módulos = unidades
-            temáticas, aulas = círculos numerados. lg:top-6: sem header fixo
-            no desktop (a navegação é a sidebar do app). */}
-        {!outlineCollapsed ? (
-          <button
-            type="button"
-            onClick={toggleOutline}
-            aria-label="Fechar lista de aulas"
-            className="fixed inset-0 z-[60] bg-foreground/25 lg:hidden"
-          />
-        ) : null}
+        {/* Mini-trilha do curso: no desktop, lateral contínua junto à borda;
+            no celular, gaveta sobre a aula. */}
+        <button
+          type="button"
+          onClick={toggleOutline}
+          aria-label="Fechar lista de aulas"
+          aria-hidden={outlineCollapsed}
+          inert={outlineCollapsed}
+          className={cn(
+            'fixed inset-0 z-[60] bg-foreground/25 transition-opacity duration-300 motion-reduce:transition-none lg:hidden',
+            outlineCollapsed ? 'pointer-events-none opacity-0' : 'opacity-100',
+          )}
+        />
         <aside
           id="kids-lesson-outline"
           aria-hidden={outlineCollapsed || undefined}
           inert={outlineCollapsed}
           className={cn(
-            'fixed inset-y-0 right-0 z-[61] w-[min(20rem,90vw)] overflow-y-auto bg-card lg:sticky lg:top-6 lg:right-auto lg:bottom-auto lg:z-auto lg:w-72 lg:shrink-0 lg:overflow-hidden',
-            outlineCollapsed && 'hidden',
+            'fixed inset-y-0 right-0 z-[61] flex w-[min(20rem,90vw)] flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40 lg:w-(--lesson-outline-width)',
+            outlineCollapsed ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
           <button
@@ -332,7 +317,7 @@ export function LessonPlayer({
           >
             <X className="size-5" aria-hidden />
           </button>
-          <div className="overflow-hidden rounded-[1.25rem] border border-(--borda-carta) bg-card">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.25rem] border border-(--borda-carta) bg-card lg:rounded-none lg:border-0">
             {/* O índice lateral mantém o progresso geral do curso, compacto. */}
             <div className="px-5 pt-5 pb-3">
               <p className="sz-display text-lg leading-tight">{course.title}</p>
@@ -357,7 +342,7 @@ export function LessonPlayer({
                 <span style={{ width: `${course.progress.percent}%` }} />
               </div>
             </div>
-            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto px-3 pb-4">
+            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto px-3 pb-4 lg:max-h-none lg:min-h-0 lg:flex-1">
               {modules.map((module, moduleIndex) => (
                 <div key={module.id} className={UNIT_THEME_CLASS[unitThemeAt(moduleIndex)]}>
                   <p

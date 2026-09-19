@@ -57,6 +57,9 @@ export function lessonContentLabel(block: Block): string {
       return 'Certificado do curso'
     case 'coming_soon':
       return c.message || 'Aula em produção'
+    case 'materials':
+      // ⚠️ O plural de "material" é "materiais", não "materialis": o sufixo cai no `-l`.
+      return c.title || `${c.items.length} ${c.items.length === 1 ? 'material' : 'materiais'}`
   }
 }
 
@@ -196,18 +199,15 @@ export function appendLessonSection(
     ...s,
     blockIds: s.blockIds.filter((id) => !moved.has(id)),
   }))
-  const supportBlockIds = document.supportBlockIds.filter((id) => !moved.has(id))
   return [
     {
       type: 'structure',
       sections: [...sections, { ...section, blockIds: [...moved] }],
-      supportBlockIds,
     },
     ...blocks.map((block) => ({ type: 'block' as const, block, sectionId: section.id })),
     {
       type: 'structure',
       sections: [...sections, { ...section, blockIds: blocks.map((b) => b.id) }],
-      supportBlockIds,
     },
   ]
 }
@@ -270,10 +270,9 @@ export function duplicateLessonSection(
     {
       type: 'structure',
       sections: sections.map((s) => (s.id === copy.id ? { ...copy, blockIds: [] } : s)),
-      supportBlockIds: document.supportBlockIds,
     },
     ...copies.map(({ block }) => ({ type: 'block' as const, block, sectionId: copy.id })),
-    { type: 'structure', sections, supportBlockIds: document.supportBlockIds },
+    { type: 'structure', sections },
     {
       type: 'planned-videos',
       plannedVideos: [

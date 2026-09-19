@@ -10,6 +10,7 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  MaterialsBlock,
   PintaBlock,
   PintaStateView,
   QuizBlock,
@@ -24,6 +25,7 @@ import { DialogueBlockView } from './dialogue-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonVideo } from './lesson-video'
+import { MaterialsBlockView } from './materials-block'
 import { PintaBlockView } from './pinta/pinta-block'
 import { QuizBlockView } from './quiz-block'
 import { StudioBlockView } from './studio/studio-block'
@@ -98,6 +100,8 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'coming_soon':
       return <ComingSoon content={content as unknown as ComingSoonBlock} />
+    case 'materials':
+      return <MaterialsBlockView content={content as unknown as MaterialsBlock} />
     default:
       return null
   }

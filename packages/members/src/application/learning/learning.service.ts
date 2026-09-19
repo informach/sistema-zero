@@ -196,7 +196,6 @@ export class LearningService {
     return (
       structure ?? {
         revision: null,
-        supportBlockIds: [],
         sections: [
           defaultLessonSection(
             lesson.id,

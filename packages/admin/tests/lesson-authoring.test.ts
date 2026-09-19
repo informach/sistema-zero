@@ -25,7 +25,6 @@ function fixture(): LessonDraftDocument<LessonBlockContent> {
     slug: 'aula',
     estimatedMinutes: null,
     attachments: [],
-    supportBlockIds: [],
     plannedVideos: [{ blockId: 'video', instructions: 'Explique o salto', videoId: '123456789' }],
     blocks: [
       {
@@ -87,10 +86,7 @@ describe('lesson authoring integrity', () => {
     const changes = appendLessonSection(document, section, [orientation, project])
     for (const change of changes) {
       document = applyLessonDraftChange(document, change)
-      const assigned = [
-        ...document.sections.flatMap((s) => s.blockIds),
-        ...document.supportBlockIds,
-      ]
+      const assigned = document.sections.flatMap((s) => s.blockIds)
       expect(new Set(assigned).size).toBe(assigned.length)
       expect([...assigned].sort()).toEqual(document.blocks.map((b) => b.id).sort())
     }

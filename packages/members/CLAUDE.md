@@ -2187,6 +2187,40 @@ listado ali.
 
 `lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo carreira e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
 
+## Materiais complementares (19/09/2026, migrations `0090` e `0091`)
+
+O kind **`materials`** — o 14º — e o FIM do `support_block_ids`. O que era um LUGAR fora das
+seções (em posição fixa no pé de toda seção, e cuja ordem NUNCA chegava ao aluno) virou um bloco
+com uma lista ordenada de itens: `file`, `image`, `text`, `link` e `video`. Decisão da dona:
+substituir na raiz, sem compatibilidade.
+
+- **`validateLessonSections` ficou mais simples:** todo bloco pertence a UMA seção, ponto. A
+  checagem "atividade obrigatória no apoio" saiu junto com o lugar, e o bloco de materiais nunca
+  entra em `isCompletionGatingBlock`.
+- ⚠️⚠️ **O item de arquivo guarda `attachmentId`, nunca a URL.** Quem preenche rótulo, tipo e
+  tamanho é o `toLessonDetailView`, lendo `lesson_attachments`; o `storageRef` continua sem sair do
+  servidor e o download segue pela rota de anexo, que é quem aplica a marca d'água. O
+  `LessonBlockContentSchema` do DTO **não declara** `fileType`/`sizeBytes` de propósito — o
+  `normalize` do Elysia os descarta, então eles nunca envelhecem gravados no banco. Item cujo anexo
+  foi apagado SOME da projeção, e o `inspect` do rascunho NOMEIA o bloco antes de publicar.
+- ⚠️⚠️ **As duas migrations sobem em RELEASES SEPARADAS.** A `0090` acrescenta o valor do enum e
+  faz o backfill (cada id de `support_block_ids` vai para o fim da última seção, dentro do jsonb
+  `sections`) e **deixa a coluna viva**; a `0091` a derruba. O `getStructure` do código ANTIGO lê
+  essa coluna em TODA carga de aula, e durante a troca de pods os dois códigos convivem — derrubar
+  junto quebraria a leitura de aula na janela do deploy (mesma classe do incidente de 03/08).
+- ⚠️ A `0090` muda a `revision` da estrutura das aulas afetadas. Isso é correto e não perde
+  progresso: a conclusão de seção é reavaliada a cada leitura a partir de `completion.blockIds`
+  (que o backfill não toca) e volta a ser gravada sozinha.
+- **`bun run materials:backfill`** (`--dry-run` por padrão, `-- --apply` para valer) cria, em cada
+  aula PUBLICADA com anexo e sem bloco de materiais, um "Materiais da aula" no fim da última seção
+  com um item por anexo. Sem ele, os anexos das aulas que já existem sumiriam da tela junto com o
+  card do pé — o arquivo continuaria íntegro no R2, só invisível. É idempotente (aula que já tem
+  bloco de materiais é pulada) e só mexe no PUBLICADO; aula sem seção é NOMEADA no log e sai com
+  código 1, em vez de ganhar uma seção inventada.
+
+**Ordem de implantação:** migration `0090` → members → gateway → admin/community/kids →
+`materials:backfill --apply` → (release seguinte) migration `0091`.
+
 ## Trazer a versão publicada de volta para o rascunho (18/09/2026, migration `0089`)
 
 O rascunho (`lesson_drafts.document`) e o publicado (`lesson_blocks`/`lesson_structures`) sempre
@@ -2196,9 +2230,9 @@ faltava o caminho de volta: quem apagava sem querer só tinha como refazer à m�
 - **A regra é PURA e mora no core**: `restoreFromPublished(rascunho, publicado, ids | 'all')`
   (`@sistemazero/core/learning`). O servidor decide com ela e o painel do admin a espelha só para
   MOSTRAR o que vai mudar. `'all'` devolve o publicado inteiro; com a lista, cada peça (bloco ou
-  material) volta sozinha: para a seção e a posição de onde saiu, para os materiais de apoio se a
-  seção não existir mais, e o vínculo da seção (critério, oficina) só volta quando o rascunho
-  ainda não tem um — a autora pode ter escrito outro depois.
+  material) volta sozinha: para a seção e a posição de onde saiu, para o fim da ÚLTIMA seção se a
+  de origem não existir mais (não há mais lugar fora das seções), e o vínculo da seção (critério,
+  oficina) só volta quando o rascunho ainda não tem um — a autora pode ter escrito outro depois.
 - **Rotas** (admin, `learning.routes.ts`): `GET /members/admin/lessons/:id/draft/published` (o
   publicado no formato do rascunho — a MESMA conversão que nasce um rascunho do zero,
   `initialDocument`), `POST …/draft/restore-published` `{expectedRevision, operationId, ids?}` e

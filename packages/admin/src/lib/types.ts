@@ -464,6 +464,7 @@ export const LESSON_BLOCK_KINDS = [
   'interactive',
   'certificate',
   'coming_soon',
+  'materials',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -631,6 +632,30 @@ export interface PintaBlock {
   chain?: string
 }
 
+/** Os tipos de item que cabem num bloco de materiais complementares. */
+export const MATERIAL_ITEM_KINDS = ['file', 'image', 'text', 'link', 'video'] as const
+export type MaterialItemKind = (typeof MATERIAL_ITEM_KINDS)[number]
+export const MATERIALS_MAX_ITEMS = 20
+
+/**
+ * ⚠️⚠️ O item de ARQUIVO aponta para um anexo da aula pelo id, NUNCA carrega a URL: é o anexo
+ * que tem a entrega privada por trás (R2 privado, marca d'água por aluno, nada de `storageRef` no
+ * navegador). `fileType`/`sizeBytes` são preenchidos pelo SERVIDOR na projeção do aluno.
+ */
+export type MaterialItem =
+  | { id: string; kind: 'file'; attachmentId: string; label?: string; note?: string }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+
+/** Materiais complementares: uma lista ordenada de itens dentro de UM bloco. */
+export interface MaterialsBlock {
+  kind: 'materials'
+  title?: string
+  items: MaterialItem[]
+}
+
 export type LessonBlockContent =
   | InteractiveBlock
   | RichTextBlock
@@ -645,6 +670,7 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {

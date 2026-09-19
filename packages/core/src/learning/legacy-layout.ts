@@ -88,20 +88,14 @@ export function isLegacyMaterialLesson(blocks: readonly { kind: string }[]): boo
 
 export function playbackLessonStructure(
   lesson: { id: string; title: string; blocks: readonly { id: string; kind: string }[] },
-  stored: { revision: string | null; sections: LessonSection[]; supportBlockIds?: string[] } | null,
+  stored: { revision: string | null; sections: LessonSection[] } | null,
 ) {
   const legacyLayout = isLegacyLessonLayout(lesson.id, stored?.sections)
-  const supportBlockIds = stored?.supportBlockIds ?? []
   return {
     revision: stored?.revision ?? lesson.id,
-    supportBlockIds,
     legacyLayout,
     sections: legacyLayout
-      ? legacyLessonSections(
-          lesson.id,
-          lesson.title,
-          lesson.blocks.filter((b) => !supportBlockIds.includes(b.id)),
-        )
+      ? legacyLessonSections(lesson.id, lesson.title, lesson.blocks)
       : (stored?.sections ?? []),
   }
 }

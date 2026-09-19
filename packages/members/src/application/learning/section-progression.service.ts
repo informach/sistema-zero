@@ -196,7 +196,7 @@ export class SectionProgressionService {
   async accessibleBlockIds(lesson: LessonWithContent, state: SectionProgressView) {
     const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
     if (structure.revision !== state.revision) throw new LearningConflictError()
-    const ids = new Set(structure.supportBlockIds ?? [])
+    const ids = new Set<string>()
     for (const s of structure.sections) {
       if (state.sections.some((p) => p.id === s.id && p.status !== 'locked')) {
         for (const id of s.blockIds) ids.add(id)

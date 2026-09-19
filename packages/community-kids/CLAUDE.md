@@ -134,7 +134,7 @@ Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Ex
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
-renderers), `kids-lesson-attachments.tsx` (mesma mecânica de download) e **`kids-quiz.tsx`
+renderers) e **`kids-quiz.tsx`
 estilo Duolingo** (intro c/ mascote → UMA pergunta por vez c/ segmentos de progresso e cartas
 de resposta → correção verde/vermelho no FINAL — o gabarito só chega na resposta do submit,
 grading é server-side; cooldown/passingScore preservados; ⚠️ enunciado/opções/explicação são
@@ -1189,6 +1189,20 @@ este arquivo), e os dois únicos testes que exercitam o caminho do kids estão e
 adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
+
+⭐⭐ **Materiais complementares viraram um BLOCO (19/09/2026).** O `<details>` "Materiais de apoio",
+pregado no pé de toda seção e alheio à ordem que ela monta, e o card "Materiais da aula" no pé da
+página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada de arquivos, imagens,
+recados, links e vídeos, que aparece no ponto em que ela o colocou — inclusive embaixo do vídeo, na
+coluna do conteúdo. O desenho é do member-shell (`MaterialsBlockView`, um só para os dois apps, sem
+cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`; o
+`kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
+marca, nome truncado, pílula do tipo, relevo 3D). O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
+— a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
+verbos são das atividades, e material complementar não é uma. ⚠️ Ele está FORA do percurso
+obrigatório por definição, e por isso nunca trava a conclusão. ⚠️⚠️ O item de arquivo aponta para o
+ANEXO da aula pelo id e nunca carrega a URL — as regras, e o porquê, estão no CLAUDE.md do
+member-shell.
 
 ⭐ **O chip dos blocos INTERATIVOS (14/09/2026).** Experimentação, demonstração, pergunta curta e
 experiência em HTML não tinham o selo colorido dos outros blocos — tinham uma linha de texto solta

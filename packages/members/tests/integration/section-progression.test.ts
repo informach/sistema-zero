@@ -475,7 +475,7 @@ describe('section gates across HTTP and persistence', () => {
     expect(await response.text()).not.toContain('correctChoiceIds')
     expect(await ctx.quizAttempts.summarizeByBlockIds(USER, [quizId])).toEqual(new Map())
   })
-  test('optional support quizzes can be answered before and after completing the sections', async () => {
+  test('optional quizzes can be answered before and after completing the sections', async () => {
     const ctx = setup(),
       quizId = randomUUID()
     ctx.courses.blocks.push({
@@ -499,10 +499,13 @@ describe('section gates across HTTP and persistence', () => {
         ],
       },
     })
+    // O quiz opcional mora na PRIMEIRA seção, fora do critério de conclusão dela: não existe mais
+    // lugar fora das seções, e sem nota de corte ele segue sendo conteúdo livre.
     ctx.learningRepository.structures.set(ctx.lessonId, {
       revision: ctx.structureRevision,
-      sections: ctx.sections,
-      supportBlockIds: [quizId],
+      sections: ctx.sections.map((section, index) =>
+        index === 0 ? { ...section, blockIds: [...section.blockIds, quizId] } : section,
+      ),
     })
     expect((await json(ctx.read())).blocks.some((b) => b.id === quizId)).toBe(true)
     const answer = () =>

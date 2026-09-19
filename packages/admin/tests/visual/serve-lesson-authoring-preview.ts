@@ -51,7 +51,6 @@ let doc: LessonDraftDocument<LessonBlockContent> = {
     },
   ],
   attachments: [],
-  supportBlockIds: [],
   plannedVideos: [
     { blockId: 'video', videoId: '123456789', instructions: 'Apresente a experiência.' },
   ],
@@ -91,7 +90,7 @@ const server = Bun.serve({
     if (path.endsWith('/draft') && request.method === 'PATCH') {
       const command = await request.json()
       const next = applyLessonDraftChange(doc, command.change)
-      const assigned = [...next.sections.flatMap((s) => s.blockIds), ...next.supportBlockIds]
+      const assigned = next.sections.flatMap((s) => s.blockIds)
       if (
         new Set(assigned).size !== assigned.length ||
         assigned.length !== next.blocks.length ||

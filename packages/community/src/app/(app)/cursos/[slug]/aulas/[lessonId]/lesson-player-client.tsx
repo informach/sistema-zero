@@ -2,7 +2,6 @@
 
 import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 
-import { LessonAttachments } from '@sistemazero/member-shell/components/lesson-attachments'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import {
   type LessonPlayerContextValue,
@@ -166,12 +165,7 @@ export function LessonPlayer({
     <LessonPlayerProvider value={playerContext}>
       {/* `sz-aula-adulto`: gancho do fundo alternativo da aula (a régua do Pen), aplicado no
           invólucro do app pelo `globals.css` sem mexer no layout. */}
-      <div
-        className={cn(
-          'sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start',
-          outlineOpen ? 'lg:gap-10' : 'lg:gap-0',
-        )}
-      >
+      <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-0">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
@@ -215,34 +209,27 @@ export function LessonPlayer({
             completionMessage={completionMessage}
             renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
           />
-
-          {lesson.attachments.length > 0 ? (
-            <div className="mx-auto w-full max-w-[860px]">
-              <LessonAttachments
-                courseSlug={course.slug}
-                lessonId={lesson.id}
-                attachments={lesson.attachments}
-              />
-            </div>
-          ) : null}
         </div>
 
-        {/* Lista de aulas sob demanda: drawer no celular, coluna no desktop. */}
-        {outlineOpen ? (
-          <button
-            type="button"
-            onClick={() => setOutlineOpen(false)}
-            aria-label="Fechar lista de aulas"
-            className="fixed inset-0 z-[60] bg-foreground/25 lg:hidden"
-          />
-        ) : null}
+        {/* Lista de aulas sob demanda: gaveta no celular, lateral contínua no desktop. */}
+        <button
+          type="button"
+          onClick={() => setOutlineOpen(false)}
+          aria-label="Fechar lista de aulas"
+          aria-hidden={!outlineOpen}
+          inert={!outlineOpen}
+          className={cn(
+            'fixed inset-0 z-[60] bg-foreground/25 transition-opacity duration-300 motion-reduce:transition-none lg:hidden',
+            outlineOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+          )}
+        />
         <aside
           id="adult-lesson-outline"
           aria-hidden={!outlineOpen}
           inert={!outlineOpen}
           className={cn(
-            'fixed inset-y-0 right-0 z-[61] w-[min(20rem,90vw)] overflow-y-auto bg-card lg:sticky lg:top-20 lg:right-auto lg:bottom-auto lg:z-auto lg:w-72 lg:shrink-0 lg:overflow-visible',
-            !outlineOpen && 'hidden',
+            'fixed inset-y-0 right-0 z-[61] flex w-[min(20rem,90vw)] flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40 lg:w-(--lesson-outline-width)',
+            !outlineOpen ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
           <button
@@ -253,7 +240,7 @@ export function LessonPlayer({
           >
             <X className="size-5" aria-hidden />
           </button>
-          <Card className="overflow-hidden p-0">
+          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 lg:rounded-none lg:border-0 lg:shadow-none">
             <div className="border-b border-border px-4 py-3">
               <p className="text-sm font-semibold">{course.title}</p>
               <div className="mt-2 flex items-center gap-2">
@@ -268,7 +255,7 @@ export function LessonPlayer({
                 viewer={viewer}
               />
             </div>
-            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
+            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
               {course.modules.map((module) => (
                 <div key={module.id}>
                   <p className="bg-muted px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

@@ -65,7 +65,6 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
             lesson.blocks.map((b) => b.id),
           ),
         ],
-        supportBlockIds: structure?.supportBlockIds ?? [],
         attachments: lesson.attachments,
         plannedVideos: [],
       },
@@ -114,7 +113,6 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
             lesson.blocks.map((b) => b.id),
           ),
         ],
-        supportBlockIds: structure?.supportBlockIds ?? [],
         attachments: lesson.attachments,
         plannedVideos: [],
       } satisfies LessonDraftDocument,
@@ -175,7 +173,6 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     const invalid = validateLessonSections(
       draft.document.sections,
       draft.document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
-      draft.document.supportBlockIds,
     )
     if (invalid) issues.push({ message: invalid })
     for (const block of draft.document.blocks) {
@@ -269,7 +266,6 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     this.learning.structures.set(lessonId, {
       revision: randomUUID(),
       sections: draft.document.sections,
-      supportBlockIds: draft.document.supportBlockIds,
     })
     const next = await this.replace(lessonId, authorId, expectedRevision, operationId, {
       ...draft.document,

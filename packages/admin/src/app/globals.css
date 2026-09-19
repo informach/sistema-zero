@@ -243,3 +243,80 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   background: var(--card);
   padding: 1.5rem;
 }
+
+/* Os MATERIAIS complementares no ensaio. O componente não tem cor por dentro (os apps o vestem
+   pelos ganchos `sz-lesson-materials*`), e sem nada aqui a autora veria uma lista crua justo na
+   tela em que ela confere o bloco antes de publicar. É a versão sóbria, como no adulto. */
+.sz-lesson-materials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.sz-lesson-materials-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.sz-lesson-materials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+/* ⚠️ `min-width: 0` é load-bearing: o rótulo do arquivo trunca, e sem ele um nome comprido
+   empurra a linha e o painel rola de lado. */
+.sz-lesson-material {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.sz-lesson-material-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  text-align: left;
+}
+.sz-lesson-material-action:disabled {
+  opacity: 0.7;
+}
+.sz-lesson-material-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sz-lesson-material-meta {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.sz-lesson-material-note {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.sz-lesson-material-figure img {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+}
+.sz-lesson-material-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+}
+.sz-lesson-material-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

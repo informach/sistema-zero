@@ -232,9 +232,7 @@ export class DrizzleLearningRepository implements LearningRepository {
       .select()
       .from(lessonStructures)
       .where(eq(lessonStructures.lessonId, lessonId))
-    return row
-      ? { revision: row.revision, sections: row.sections, supportBlockIds: row.supportBlockIds }
-      : null
+    return row ? { revision: row.revision, sections: row.sections } : null
   }
   async saveStructure(
     lessonId: string,
@@ -306,11 +304,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           .from(lessonBlocks)
           .where(eq(lessonBlocks.lessonId, lessonId))
           .orderBy(asc(lessonBlocks.sortOrder))
-        sections = legacyLessonSections(
-          lessonId,
-          '',
-          blocks.filter((b) => !structure?.supportBlockIds.includes(b.id)),
-        )
+        sections = legacyLessonSections(lessonId, '', blocks)
       }
       if (!sections?.some((s) => s.id === sectionId)) throw new LearningConflictError()
       await tx

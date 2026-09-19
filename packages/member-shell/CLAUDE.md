@@ -954,6 +954,11 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    colorida dos outros blocos. ⚠️ Bloco `interactive` NUNCA passa pelo `renderBlocks` do app — o
    `LessonSections` o manda direto ao `InteractiveLessonBlock` —, então este gancho é o ÚNICO
    caminho para o chip deles; mexeu nele, mexa no `BlockChip` do kids),
+   **`sz-lesson-materials`** e a família dele (19/09/2026 — `-title`, `-list`, mais
+   `sz-lesson-material` + `data-material` por item, `-action`, `-icon`, `-label`, `-meta`,
+   `-note`, `-figure`, `-video`, `-text`. O bloco de materiais complementares é UM componente
+   para os dois apps, e ele não tem cor nenhuma por dentro: o kids o veste com o relevo e a
+   bolinha da marca, o adulto com a linha sóbria. Travado em `tests/materials-block.test.tsx`),
    `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
    dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
@@ -962,6 +967,103 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    (nenhum teste de lá mira a classe, salvo o do handle); mudar a ESTRUTURA (ex.: o bloco deixar
    de ser irmão logo depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num
    cartão só pelo seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
+
+## Materiais complementares: o bloco que matou os "materiais de apoio" (19/09/2026)
+
+Relato dela: *"Eu gostaria que os materiais de apoio aparecessem ali na mesma hierarquia dos outros
+blocos, dependendo da ordem em que eu colocar… Eu não quero que tenha uma área especial para ele.
+Eu quero que ele apareça visualmente no ponto que eu fizer na seção da aula."* E, sobre o que
+existia: *"não tem que manter compatibilidade… sem gambiarra e sem puxadinho."*
+
+O que existia eram DUAS coisas, e nenhuma obedecia à ordem dela:
+- **`supportBlockIds`** — um LUGAR fora das seções, num `<details>` fechado em posição fixa no pé
+  de TODA seção. E o Subir/Descer de lá **não tinha efeito nenhum** para o aluno: o botão
+  reescrevia `supportBlockIds`, mas o player listava por `lesson.blocks`, que é a ordem de CRIAÇÃO.
+- **O card "Materiais da aula"** — os anexos, pregados no pé da página inteira.
+
+Hoje é um bloco (`kind: 'materials'`, `components/materials-block.tsx`), com uma lista ORDENADA de
+itens: `file`, `image`, `text`, `link` e `video`. Os dois caminhos antigos saíram inteiros —
+`supportBlockIds` não existe mais em lugar nenhum da pilha, e o `lesson-attachments.tsx` foi
+APAGADO (o fork do kids junto).
+
+- ⭐ **O posicionamento saiu de graça, e vale saber por quê:** não existe campo de "duas colunas"
+  na seção — a divisão é DERIVADA (`lib/lesson-split.ts`: esquerda = conteúdo, direita =
+  ferramenta). Um bloco que não é Estúdio, Pinta nem cena já cai sozinho na coluna da esquerda, na
+  ordem de `section.blockIds`. Travado em `tests/lesson-split.test.ts`.
+- ⚠️⚠️ **O item de ARQUIVO aponta para um anexo da aula pelo id, e NUNCA carrega a URL.** O anexo
+  já tem a entrega privada inteira por trás (R2 privado, `storageRef` que não chega ao navegador,
+  marca d'água por aluno com cache por ETag, 302 acima de 20 MB) e o `content` de um bloco viaja
+  CRU para o aluno: um `r2priv:<key>` aí vazaria a chave do bucket E passaria por fora da marca
+  d'água, de uma vez só. Quem preenche rótulo, tipo e tamanho é o `toLessonDetailView` do members,
+  lendo o anexo; item cujo anexo foi apagado SOME em vez de virar linha morta.
+- ⚠️ **Sem vaivém na autoria, apesar disso:** o formulário do item tem o `FileUploader` dentro e o
+  editor cria a linha de anexo por baixo (`addMaterialAttachment`, molde do que o e-book já fazia).
+  O "subir numa aba e voltar aqui para escolher" era justamente o passo a mais que este bloco
+  existe para tirar.
+- ⚠️ **O card do pé SUMIU, e por isso o admin avisa:** um arquivo que ela sobe e não coloca em
+  bloco nenhum é um arquivo que o aluno não vê. A lista de Anexos marca esse caso em vermelho.
+- ⚠️ **Vídeo só vira iframe nos hosts que a CSP dos dois apps já libera** (`lib/video-embed.ts`:
+  `player.vimeo.com` e `www.youtube-nocookie.com`). A régua é uma ALLOWLIST comparada por
+  IGUALDADE — `includes('vimeo.com')` casaria `vimeo.com.rastreador.net`, e o que está em jogo é
+  abrir um iframe de terceiro numa página de criança. O que sai no `src` é sempre uma URL que a
+  função MONTOU a partir de um id validado, nunca a de entrada. Outro provedor vira LINK: iframe
+  bloqueado pela CSP não avisa nada, e um retângulo branco é pior que um link honesto.
+- **O desenho é UM só para os dois apps**, sem cor por dentro: os ganchos `sz-lesson-materials*`
+  (invariante 8) são o contrato, e cada app veste no `globals.css` dele.
+- **Ele NUNCA trava a conclusão** (`isCompletionGatingBlock`): complementar é, por definição, o que
+  está fora do percurso obrigatório. Isso substituiu a checagem "atividade obrigatória no apoio"
+  do members, que deixou de existir junto com o lugar.
+- ⚠️ **Todo bloco pertence a UMA seção agora**, e `validateLessonSections` ficou mais simples do
+  que era. No core, o `case 'block'` põe o bloco novo na seção pedida ou, na falta dela, no fim da
+  ÚLTIMA: um bloco órfão faria a gravação recusar a AULA INTEIRA, e a autora descobriria só na hora
+  de publicar.
+- **Migrations em DUAS subidas** (`0090` e `0091`) — o porquê está no cabeçalho de cada uma e no
+  CLAUDE.md do members.
+
+#### Full review do próprio lote (19/09/2026) — 7 achados
+
+Correção de review é código novo e merece review, e esta rodada pagou de novo. Dois dos sete só
+apareceram porque eu abri o navegador e MEDI, em vez de argumentar.
+
+1. ⚠️⚠️ **`var(--interactive)` não existe no app adulto.** Eu escrevi o par sem sufixo no
+   `globals.css` de lá; os tokens são `--interactive-text`/`--interactive-text-hover` (o componente
+   antigo usava a utilitária `text-interactive`, que resolve para eles). O CSS não avisa: a cor
+   caía calada no `foreground` e o link não parecia link. Medido depois do conserto:
+   `rgb(27, 92, 243)` contra `rgb(15, 26, 51)` do texto.
+2. ⚠️⚠️ **MEDIDO num celular de 390px: "abre em outra aba" (120px) ficava MAIOR que o nome do
+   link (108px).** O aviso comia mais da linha que a coisa avisada. Hoje ele é `sr-only` no link e
+   no vídeo — o ícone de link externo já diz isso a quem enxerga — e o nome passou a 240px. Nas
+   linhas de ARQUIVO a meta continua à vista, porque "JSON · 12 KB" custa 70px e é informação que
+   a criança usa para decidir se espera o download.
+3. ⚠️⚠️ **O arquivo que ela sobe e não coloca em bloco nenhum ficava invisível sem aviso.** O card
+   "Materiais da aula" do pé não existe mais, então um anexo fora de um bloco é um arquivo íntegro
+   no R2 e ausente da tela. O aviso está em DOIS lugares de propósito: na lista de Anexos (por
+   linha, em vermelho) e em `lessonEditorialWarnings`, que é o painel por onde ela publica — pela
+   aba de Anexos ela pode nunca passar.
+4. ⚠️ **"2 materialis".** O plural de "material" cai no `-l`. Pego pelo teste que eu escrevi
+   justamente para o rótulo da lista do percurso.
+5. ⚠️ **No ensaio de autoria do admin o download era um clique mudo:** aquela prévia monta o bloco
+   FORA da aula, sem contexto de player, então não há rota de anexo para chamar. Hoje o botão
+   nasce desligado e DIZ "baixa na aula" — e o arquivo continua à vista, que é o que ela precisa
+   conferir. No mesmo caso, o `label` do item vinha VAZIO (quem o preenche é o servidor): o
+   `lesson-structure-editor` passou a espelhar a resolução, lendo os anexos do rascunho.
+6. **Narrowing morto** em `lesson-published-diff.ts` (`typeof origem === 'string'`, de quando a
+   origem podia ser a string "Materiais de apoio") e o Set dos anexos refeito a cada bloco no
+   `inspect` do members.
+7. **A a11y da lista sem título:** um leitor de tela anunciava "lista de 3 itens" sem dizer de
+   quê. Hoje a `<ul>` ganha `aria-label` **só** quando não há `<h3>` — nomear nos dois casos faria
+   o nome ser dito duas vezes seguidas.
+
+⚠️ **O que foi MEDIDO e está de pé:** zero vazamento horizontal em 680, 390 e 314px de coluna (as
+três larguras reais da aula), linha de 60px no kids e 44px no adulto (o alvo de toque), UM iframe
+só — o do Vimeo — e o Drive virando link. A conferência é `community-kids/tmp/confere-materiais.tsx`
+(descartável): ela monta o bloco nas formas que a autora consegue criar, com o CSS dos DOIS apps, e
+escreve `tmp/materiais-kids.html` e `tmp/materiais-adulto.html`.
+
+⚠️ **Consequência conhecida do backfill, e é a razão de a autora mover as coisas depois:** um bloco
+que estava no apoio era alcançável de QUALQUER seção; no fim da última seção, ele só fica acessível
+quando o aluno chega lá (`accessibleBlockIds` segue a seção). O que NÃO muda: a conclusão da aula,
+que já contava esses blocos antes (o `toLessonDetailView` sempre os entregou).
 
 ## Cenas de aula: experimentação e demonstração
 
@@ -1357,8 +1459,8 @@ professor).
   (`aria-live`), não pela região de anúncios.
 - **Um Zappy e um título por tela** (`lesson-section-context.tsx`): com o título já dito no cabeçalho da seção o
   `<h3>` vira `sr-only` (`tituloJaDito`), e com um balão de fala na seção a instrução vira parágrafo com a MESMA
-  forma do balão (`temDialogo`). ⚠️ É contexto e não prop (o `renderBlocks` de cada app fica no meio); editores
-  e "Materiais de apoio" recebem o contexto vazio.
+  forma do balão (`temDialogo`). ⚠️ É contexto e não prop (o `renderBlocks` de cada app fica no meio); os
+  editores do painel da direita recebem o contexto vazio.
 
 ### Demonstração e "Agora é sua vez"
 

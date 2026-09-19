@@ -228,7 +228,7 @@ export function lessonDraftCases(getDb: () => Database) {
         },
       }
       let draft = await f.repo.read(f.lessonId)
-      draft = await f.change(draft, { type: 'structure', supportBlockIds: [], sections: [section] })
+      draft = await f.change(draft, { type: 'structure', sections: [section] })
       const before = await f.reader.findLessonWithContent(f.lessonId)
       const failure = await f.publish(draft).then(
         () => null,
@@ -239,7 +239,6 @@ export function lessonDraftCases(getDb: () => Database) {
       expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
       draft = await f.change(draft, {
         type: 'structure',
-        supportBlockIds: [],
         sections: [
           {
             ...section,
@@ -340,7 +339,7 @@ export function lessonDraftCases(getDb: () => Database) {
         ...defaultLessonSection(randomUUID(), 'Confira', [block.id]),
         completion: { version: 1 as const, blockIds: [] as string[] },
       }
-      draft = await f.change(draft, { type: 'structure', sections: [section], supportBlockIds: [] })
+      draft = await f.change(draft, { type: 'structure', sections: [section] })
       expect(
         (await f.repo.validate(f.lessonId, draft.revision, [])).some((issue) =>
           issue.message.includes('checagem'),
@@ -351,7 +350,6 @@ export function lessonDraftCases(getDb: () => Database) {
       draft = await f.change(draft, {
         type: 'structure',
         sections: [{ ...section, completion: { version: 1, blockIds: [block.id] } }],
-        supportBlockIds: [],
       })
       expect(await f.repo.validate(f.lessonId, draft.revision, [])).toEqual([])
       await f.publish(draft)
@@ -443,7 +441,6 @@ export function lessonDraftCases(getDb: () => Database) {
       draft = await f.change(draft, {
         type: 'structure',
         sections: [first, second],
-        supportBlockIds: [],
       })
       await f.publish(draft)
       const published = await f.reader.findLessonWithContent(f.lessonId)
@@ -741,7 +738,9 @@ export function lessonDraftCases(getDb: () => Database) {
         let draft = await f.repo.read(f.lessonId)
         plannedCount += draft.document.plannedVideos.length
         expect(draft.document.blocks.some((b) => b.id === studio.id)).toBe(true)
-        expect(draft.document.supportBlockIds).toContain(video.id)
+        // ⚠️ O vídeo que o manifesto preserva sem exigir fica no FIM da última seção: não existe
+        // mais lugar fora delas, e um bloco órfão faria a gravação recusar a aula inteira.
+        expect(draft.document.sections.at(-1)?.blockIds).toContain(video.id)
         const planned = draft.document.plannedVideos[0]
         if (planned) {
           draft = await f.change(draft, {

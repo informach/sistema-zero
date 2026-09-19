@@ -14,6 +14,7 @@ import {
   ListChecks,
   type LucideIcon,
   MessageCircle,
+  Paperclip,
   Volume2,
 } from 'lucide-react'
 import type { LessonBlockContent } from '@/lib/types'
@@ -32,6 +33,7 @@ const kinds: Record<LessonBlockContent['kind'], { label: string; icon: LucideIco
   embed: { label: 'HTML', icon: Globe },
   certificate: { label: 'Certificado', icon: Award },
   coming_soon: { label: 'Em produção', icon: Clock },
+  materials: { label: 'Materiais complementares', icon: Paperclip },
 }
 export function LessonBlockKindBadge({ kind }: { kind: LessonBlockContent['kind'] }) {
   const { label, icon: Icon } = kinds[kind]

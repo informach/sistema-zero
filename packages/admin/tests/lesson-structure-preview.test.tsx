@@ -25,7 +25,6 @@ const documentValue: LessonDraftDocument<LessonBlockContent> = {
   estimatedMinutes: null,
   attachments: [],
   plannedVideos: [],
-  supportBlockIds: [],
   blocks: [],
   sections: [
     { ...defaultLessonSection('a', 'Preparar', []), completion: { version: 1, blockIds: [] } },

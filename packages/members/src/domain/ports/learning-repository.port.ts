@@ -9,7 +9,6 @@ import type {
 import type { CourseAudience } from '../course/course'
 
 export interface LessonStructure {
-  supportBlockIds?: string[]
   revision: string
   sections: LessonSection[]
 }

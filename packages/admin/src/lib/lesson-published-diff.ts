@@ -27,12 +27,8 @@ export interface ComparacaoComOPublicado {
   semPublicado: boolean
 }
 
-const MATERIAIS_DE_APOIO = 'Materiais de apoio'
-
 function ondeEstava(documento: Document, id: string) {
-  const secao = documento.sections.find((s) => s.blockIds.includes(id))
-  if (secao) return secao
-  return documento.supportBlockIds.includes(id) ? MATERIAIS_DE_APOIO : null
+  return documento.sections.find((s) => s.blockIds.includes(id)) ?? null
 }
 
 function peca(
@@ -43,16 +39,12 @@ function peca(
   tipo: PecaComparada['tipo'],
 ): PecaComparada {
   const origem = tipo === 'material' ? null : ondeEstava(documento, id)
-  const nome = typeof origem === 'string' ? origem : (origem?.title ?? null)
   return {
     id,
     tipo,
     titulo,
-    origem: nome,
-    origemSumiu:
-      typeof origem === 'object' && origem !== null
-        ? !rascunho.sections.some((s) => s.id === origem.id)
-        : false,
+    origem: origem?.title ?? null,
+    origemSumiu: origem ? !rascunho.sections.some((s) => s.id === origem.id) : false,
   }
 }
 

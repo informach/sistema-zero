@@ -70,7 +70,6 @@ export const DraftCommandSchema = t.Object({
     t.Object({
       type: t.Literal('structure'),
       sections: t.Array(DraftSection, { maxItems: 60 }),
-      supportBlockIds: t.Array(Id, { maxItems: 200 }),
     }),
     t.Object({
       type: t.Literal('metadata'),

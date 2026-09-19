@@ -26,7 +26,6 @@ export interface LessonDraftDocument<T extends { kind: string } = DraftBlockCont
   estimatedMinutes: number | null
   blocks: DraftBlock<T>[]
   sections: LessonSection[]
-  supportBlockIds: string[]
   attachments: DraftAttachment[]
   plannedVideos: PlannedLessonVideo[]
 }
@@ -51,7 +50,7 @@ export interface LessonDraft<T extends { kind: string } = DraftBlockContent> {
 export type LessonDraftChange<T extends { kind: string } = DraftBlockContent> =
   | { type: 'block'; block: DraftBlock<T>; sectionId?: string | null }
   | { type: 'remove-block'; blockId: string }
-  | { type: 'structure'; sections: LessonSection[]; supportBlockIds: string[] }
+  | { type: 'structure'; sections: LessonSection[] }
   | { type: 'metadata'; title: string; slug: string; estimatedMinutes: number | null }
   | { type: 'attachments'; attachments: DraftAttachment[] }
   | { type: 'planned-videos'; plannedVideos: PlannedLessonVideo[] }
@@ -84,7 +83,7 @@ export function applyLessonDraftChange<T extends { kind: string }>(
     case 'planned-videos':
       return { ...document, plannedVideos: change.plannedVideos }
     case 'structure':
-      return { ...document, sections: change.sections, supportBlockIds: change.supportBlockIds }
+      return { ...document, sections: change.sections }
     case 'remove-block':
       return {
         ...document,
@@ -103,11 +102,20 @@ export function applyLessonDraftChange<T extends { kind: string }>(
             : {}),
           workspaceBlockId: s.workspaceBlockId === change.blockId ? null : s.workspaceBlockId,
         })),
-        supportBlockIds: document.supportBlockIds.filter((id) => id !== change.blockId),
         plannedVideos: document.plannedVideos.filter((v) => v.blockId !== change.blockId),
       }
     case 'block': {
       const existing = document.blocks.some((b) => b.id === change.block.id)
+      /**
+       * ⚠️⚠️ **Todo bloco pertence a UMA seção.** Não existe mais lugar fora delas: o que era
+       * "materiais de apoio" virou o bloco `materials`, que mora numa seção como qualquer outro.
+       * Criação que não diz a seção (ou diz uma que já sumiu) cai no fim da ÚLTIMA — a mesma
+       * regra que o members aplica ao bloco que chega sem lugar. Sem isso o bloco ficaria órfão
+       * em `blocks` e a aula inteira seria recusada na gravação, sem ninguém saber por quê.
+       */
+      const destino = existing
+        ? undefined
+        : (document.sections.find((s) => s.id === change.sectionId) ?? document.sections.at(-1))
       return {
         ...document,
         plannedVideos: document.plannedVideos.filter(
@@ -116,18 +124,11 @@ export function applyLessonDraftChange<T extends { kind: string }>(
         blocks: existing
           ? document.blocks.map((b) => (b.id === change.block.id ? change.block : b))
           : [...document.blocks, change.block],
-        sections:
-          !existing && change.sectionId
-            ? document.sections.map((s) =>
-                s.id === change.sectionId
-                  ? { ...s, blockIds: [...s.blockIds, change.block.id] }
-                  : s,
-              )
-            : document.sections,
-        supportBlockIds:
-          !existing && !change.sectionId
-            ? [...document.supportBlockIds, change.block.id]
-            : document.supportBlockIds,
+        sections: destino
+          ? document.sections.map((s) =>
+              s.id === destino.id ? { ...s, blockIds: [...s.blockIds, change.block.id] } : s,
+            )
+          : document.sections,
       }
     }
   }
@@ -144,7 +145,7 @@ export function applyLessonDraftChange<T extends { kind: string }>(
  * volta SOZINHA, sem desfazer o resto do rascunho:
  * - peça que ainda existe no rascunho tem só o CONTEÚDO trocado pelo publicado (fica onde está);
  * - peça que sumiu volta para a seção de onde saiu, na posição que ocupava lá;
- * - seção que não existe mais no rascunho → o bloco volta para os materiais de apoio;
+ * - seção que não existe mais no rascunho → o bloco volta para o fim da ÚLTIMA seção;
  * - vínculo de seção (critério de conclusão, oficina) só é restaurado quando o rascunho NÃO tem
  *   um: a autora pode ter escrito outro depois, e sobrescrevê-lo apagaria trabalho novo.
  *
@@ -164,12 +165,10 @@ export function restoreFromPublished<T extends { kind: string }>(
   const noRascunho = new Set(draft.blocks.map((b) => b.id))
 
   // De onde cada bloco saiu: a seção (ou os materiais de apoio) e a posição que ele ocupava.
-  const origem = new Map<string, { sectionId: string | null; indice: number }>()
+  const origem = new Map<string, { sectionId: string; indice: number }>()
   for (const secao of published.sections)
     for (const [i, id] of secao.blockIds.entries())
       origem.set(id, { sectionId: secao.id, indice: i })
-  for (const [i, id] of published.supportBlockIds.entries())
-    origem.set(id, { sectionId: null, indice: i })
 
   // 1. Quem ainda está no rascunho volta ao conteúdo do ar, sem sair do lugar.
   let blocks = draft.blocks.map((b) => {
@@ -179,7 +178,6 @@ export function restoreFromPublished<T extends { kind: string }>(
 
   // 2. Quem sumiu volta para onde estava.
   let sections = draft.sections
-  const supportBlockIds = [...draft.supportBlockIds]
   for (const id of alvos) {
     if (noRascunho.has(id)) continue
     const publicado = publicados.get(id)
@@ -190,14 +188,16 @@ export function restoreFromPublished<T extends { kind: string }>(
     const secaoPublicada = de?.sectionId
       ? published.sections.find((s) => s.id === de.sectionId)
       : undefined
-    const alvo = de?.sectionId ? draft.sections.find((s) => s.id === de.sectionId) : undefined
-    if (!alvo) {
-      supportBlockIds.push(id)
-      continue
-    }
+    // ⚠️ A seção de onde ele saiu pode não existir mais no rascunho: aí ele volta para o FIM da
+    // ÚLTIMA, porque todo bloco precisa de uma seção. A posição guardada só vale na seção original.
+    const original = de?.sectionId ? draft.sections.find((s) => s.id === de.sectionId) : undefined
+    const alvo = original ?? sections.at(-1)
+    if (!alvo) continue
     sections = sections.map((secao) => {
       if (secao.id !== alvo.id) return secao
-      const posicao = Math.min(de?.indice ?? secao.blockIds.length, secao.blockIds.length)
+      const posicao = original
+        ? Math.min(de?.indice ?? secao.blockIds.length, secao.blockIds.length)
+        : secao.blockIds.length
       const restaurada = {
         ...secao,
         blockIds: [...secao.blockIds.slice(0, posicao), id, ...secao.blockIds.slice(posicao)],
@@ -240,5 +240,5 @@ export function restoreFromPublished<T extends { kind: string }>(
     attachments.splice(Math.min(i, attachments.length), 0, { ...anexo })
   }
 
-  return { ...draft, blocks, sections, supportBlockIds, plannedVideos, attachments }
+  return { ...draft, blocks, sections, plannedVideos, attachments }
 }

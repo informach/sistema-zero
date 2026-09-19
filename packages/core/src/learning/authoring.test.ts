@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { type LessonDraftDocument, restoreFromPublished } from './authoring'
+import { applyLessonDraftChange, type LessonDraftDocument, restoreFromPublished } from './authoring'
 import type { LessonSection } from './index'
 
 const secao = (
@@ -29,18 +29,63 @@ const doc = (over: Partial<LessonDraftDocument> = {}): LessonDraftDocument => ({
   estimatedMinutes: 10,
   blocks: [],
   sections: [],
-  supportBlockIds: [],
   attachments: [],
   plannedVideos: [],
   ...over,
 })
 
-/** O publicado: duas seções, um material de apoio e um anexo. */
+/** O publicado: duas seções e um anexo. */
 const publicado = doc({
-  blocks: [bloco('b1'), bloco('b2', 'video'), bloco('b3'), bloco('apoio')],
+  blocks: [bloco('b1'), bloco('b2', 'video'), bloco('b3')],
   sections: [secao('s1', ['b1']), secao('s2', ['b2', 'b3'])],
-  supportBlockIds: ['apoio'],
   attachments: [{ id: 'a1', label: 'Slides', url: 'r2priv:x', fileType: 'pdf', sizeBytes: 10 }],
+})
+
+describe('todo bloco pertence a UMA seção', () => {
+  const base = doc({
+    blocks: [bloco('b1')],
+    sections: [secao('s1', ['b1']), secao('s2', [])],
+  })
+
+  it('o bloco novo entra na seção pedida', () => {
+    const depois = applyLessonDraftChange(base, {
+      type: 'block',
+      block: bloco('novo'),
+      sectionId: 's1',
+    })
+    expect(depois.sections.map((s) => s.blockIds)).toEqual([['b1', 'novo'], []])
+  })
+
+  it('⚠️ sem seção (ou com uma que sumiu) ele cai no fim da ÚLTIMA, nunca órfão', () => {
+    // O órfão é o estado que este caso existe para impedir: um bloco em `blocks` fora de toda
+    // seção faz `validateLessonSections` recusar a AULA INTEIRA na gravação, e a autora só
+    // descobre na hora de publicar, sem saber qual bloco é.
+    for (const sectionId of [undefined, null, 'seção-que-sumiu']) {
+      const depois = applyLessonDraftChange(base, {
+        type: 'block',
+        block: bloco('novo'),
+        sectionId,
+      })
+      expect(depois.sections.map((s) => s.blockIds)).toEqual([['b1'], ['novo']])
+      expect(depois.blocks.map((b) => b.id)).toEqual(['b1', 'novo'])
+    }
+  })
+
+  it('editar um bloco que já existe não o move de seção', () => {
+    const depois = applyLessonDraftChange(base, {
+      type: 'block',
+      block: bloco('b1', 'rich_text', { markdown: 'editei' }),
+      sectionId: 's2',
+    })
+    expect(depois.sections.map((s) => s.blockIds)).toEqual([['b1'], []])
+    expect(depois.blocks).toHaveLength(1)
+  })
+
+  it('apagar tira o bloco da seção e do documento', () => {
+    const depois = applyLessonDraftChange(base, { type: 'remove-block', blockId: 'b1' })
+    expect(depois.blocks).toEqual([])
+    expect(depois.sections.map((s) => s.blockIds)).toEqual([[], []])
+  })
 })
 
 describe('restoreFromPublished — trazer a versão publicada de volta', () => {
@@ -75,11 +120,17 @@ describe('restoreFromPublished — trazer a versão publicada de volta', () => {
     expect(volta.title).toBe('Aula 1')
   })
 
-  it('seção que sumiu do rascunho → o bloco volta para os materiais de apoio', () => {
-    const rascunho = doc({ blocks: [bloco('b1')], sections: [secao('s1', ['b1'])] })
+  it('seção que sumiu do rascunho → o bloco volta para o fim da ÚLTIMA', () => {
+    // ⚠️ Não existe mais lugar fora das seções: o bloco precisa pousar em alguma, e a última é a
+    // única escolha que não inventa posição. Ele NÃO pode ficar órfão em `blocks` (a gravação
+    // recusaria a aula inteira) nem sumir.
+    const rascunho = doc({
+      blocks: [bloco('b1'), bloco('z')],
+      sections: [secao('s1', ['b1']), secao('s9', ['z'])],
+    })
     const volta = restoreFromPublished(rascunho, publicado, ['b2'])
-    expect(volta.supportBlockIds).toEqual(['b2'])
-    expect(volta.sections).toEqual(rascunho.sections)
+    expect(volta.sections.map((s) => s.blockIds)).toEqual([['b1'], ['z', 'b2']])
+    expect(volta.blocks.map((b) => b.id).sort()).toEqual(['b1', 'b2', 'z'])
   })
 
   it('bloco que AINDA existe no rascunho só tem o conteúdo trocado, e não sai do lugar', () => {

@@ -27,7 +27,6 @@ const doc = (over: Partial<Document> = {}): Document => ({
   estimatedMinutes: 10,
   blocks: [],
   sections: [],
-  supportBlockIds: [],
   attachments: [],
   plannedVideos: [],
   ...over,

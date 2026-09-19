@@ -173,7 +173,6 @@ export class GetLessonService {
       ),
       structureRevision: structure.revision,
       legacyLayout: structure.legacyLayout,
-      supportBlockIds: structure.supportBlockIds ?? [],
       requirements: lessonCompletionRequirements({
         ...view,
         sections: structure.sections,

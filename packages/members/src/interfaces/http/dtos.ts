@@ -1353,6 +1353,56 @@ const ComingSoonBlockSchema = t.Object({
   message: t.Optional(t.String({ maxLength: 500 })),
 })
 
+/**
+ * Materiais complementares: uma lista ordenada de itens dentro de UM bloco.
+ *
+ * ⚠⚠ O item de arquivo só aceita `attachmentId` — nunca uma URL. `fileType`/`sizeBytes`
+ * também estão FORA deste schema de propósito: quem os preenche é o servidor, na projeção do
+ * aluno, lendo o anexo. Declará-los aqui deixaria o admin gravar um tamanho que envelhece na
+ * primeira troca de arquivo. O `normalize` do Elysia descarta o que não está declarado.
+ */
+const MaterialsBlockSchema = t.Object({
+  kind: t.Literal('materials'),
+  title: t.Optional(t.String({ maxLength: 120 })),
+  items: t.Array(
+    t.Union([
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('file'),
+        attachmentId: t.String({ minLength: 1, maxLength: 64 }),
+        label: t.Optional(t.String({ maxLength: 200 })),
+        note: t.Optional(t.String({ maxLength: 280 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('image'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        alt: t.Optional(t.String({ maxLength: 500 })),
+        caption: t.Optional(t.String({ maxLength: 500 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('text'),
+        markdown: t.String({ minLength: 1, maxLength: 2000 }),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('link'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        label: t.String({ minLength: 1, maxLength: 200 }),
+        note: t.Optional(t.String({ maxLength: 280 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('video'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        label: t.Optional(t.String({ maxLength: 200 })),
+      }),
+    ]),
+    { minItems: 1, maxItems: 20 },
+  ),
+})
+
 export const LessonBlockContentSchema = t.Union([
   InteractiveBlockSchema,
   RichTextBlockSchema,
@@ -1367,6 +1417,7 @@ export const LessonBlockContentSchema = t.Union([
   PintaBlockSchema,
   CertificateBlockSchema,
   ComingSoonBlockSchema,
+  MaterialsBlockSchema,
 ])
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */

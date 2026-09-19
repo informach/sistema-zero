@@ -19,6 +19,7 @@ const descriptions: Record<LessonBlockKind, string> = {
   embed: 'Inserir uma experiência em HTML, sem progresso próprio.',
   certificate: 'Configurar o certificado de conclusão do curso.',
   coming_soon: 'Apresentar uma aula que ainda está em produção.',
+  materials: 'Reunir arquivos, imagens, links e recados num bloco só.',
 }
 
 export function LessonContentCatalog({

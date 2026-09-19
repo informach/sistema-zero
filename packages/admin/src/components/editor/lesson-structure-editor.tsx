@@ -4,7 +4,11 @@ import { isLegacyLessonLayout } from '@sistemazero/core/learning'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import { useLessonPreview } from '@sistemazero/member-shell/components/lesson-preview-context'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
-import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
+import type {
+  LessonBlockView,
+  LessonDetailView,
+  MaterialItem,
+} from '@sistemazero/member-shell/lib/types'
 import { sanitizePintaAsset } from '@sistemazero/pinta/assets'
 import type { PintaHandle } from '@sistemazero/pinta/lesson'
 import type { StudioHandle } from '@sistemazero/studio'
@@ -12,7 +16,7 @@ import { Button } from '@sistemazero/ui/button'
 import { useRef, useState } from 'react'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
-import type { BlockView, CourseAudience } from '@/lib/types'
+import type { AttachmentView, BlockView, CourseAudience } from '@/lib/types'
 import { LessonRehearsal } from './lesson-rehearsal'
 import { LessonSectionAuthoring, type SectionAuthoringProps } from './lesson-section-authoring'
 
@@ -85,6 +89,38 @@ function ToolPreview({ block }: { block: BlockView }) {
   }
   return null
 }
+/**
+ * ⚠️ O item de ARQUIVO guarda só o id do anexo — quem preenche rótulo, tipo e tamanho é o
+ * `toLessonDetailView` do members, e a prévia não passa por lá. Sem esta resolução a autora veria
+ * uma linha SEM NOME justo na tela em que ela confere se subiu o arquivo certo. É um espelho da
+ * projeção do servidor, e só dela: o `url` do anexo continua fora do que o componente recebe.
+ */
+function materiaisResolvidos(anexos: Map<string, AttachmentView>) {
+  return (block: LessonBlockView): LessonBlockView => {
+    const content = block.content as { kind?: string; items?: MaterialItem[] } | null
+    if (content?.kind !== 'materials' || !Array.isArray(content.items)) return block
+    return {
+      ...block,
+      content: {
+        ...content,
+        items: content.items.flatMap((item): MaterialItem[] => {
+          if (item.kind !== 'file') return [item]
+          const anexo = anexos.get(item.attachmentId)
+          if (!anexo) return []
+          return [
+            {
+              ...item,
+              label: item.label?.trim() || anexo.label,
+              fileType: anexo.fileType,
+              sizeBytes: anexo.sizeBytes,
+            },
+          ]
+        }),
+      },
+    }
+  }
+}
+
 export function LessonStructureEditor(
   props: SectionAuthoringProps & {
     preview: boolean
@@ -113,8 +149,9 @@ export function LessonStructureEditor(
     positionSeconds: null,
     sections: document.sections,
     legacyLayout: isLegacyLessonLayout(lesson.id, document.sections),
-    supportBlockIds: document.supportBlockIds,
-    blocks: lesson.blocks,
+    blocks: lesson.blocks.map(
+      materiaisResolvidos(new Map(lesson.attachments.map((a) => [a.id, a]))),
+    ),
     attachments: [],
   }
   const renderPreviewBlocks = (items: LessonBlockView[]) =>

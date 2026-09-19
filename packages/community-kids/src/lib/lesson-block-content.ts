@@ -8,6 +8,8 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  MaterialItem,
+  MaterialsBlock,
   PintaBlock,
   QuizBlock,
   RichTextBlock,
@@ -25,6 +27,7 @@ export type ParsedLessonBlock = {
     | EbookBlock
     | EmbedBlock
     | ImageBlock
+    | MaterialsBlock
     | QuizBlock
     | PintaBlock
     | RichTextBlock
@@ -278,6 +281,44 @@ function isComingSoonBlock(value: unknown): value is ComingSoonBlock {
   return isRecord(value) && value.kind === 'coming_soon' && optionalString(value, 'message')
 }
 
+/**
+ * ⚠️⚠️ Guarda do bloco de MATERIAIS. Sem o `case` no `parseLessonBlock` o `default` devolve
+ * `null` e o bloco SOME da aula sem erro nenhum — é a armadilha silenciosa deste arquivo.
+ *
+ * ⚠️ Item torto é DESCARTADO em vez de derrubar o bloco: um material a menos é melhor que uma
+ * lista inteira sumindo. Lista que fica vazia depois da limpeza reprova, e aí o bloco some mesmo
+ * (não há o que mostrar).
+ */
+function isMaterialItem(value: unknown): value is MaterialItem {
+  if (!isRecord(value)) return false
+  if (typeof value.id !== 'string' || value.id.length === 0) return false
+  switch (value.kind) {
+    case 'file':
+      return typeof value.attachmentId === 'string' && value.attachmentId.length > 0
+    case 'image':
+      return typeof value.url === 'string' && value.url.length > 0
+    case 'text':
+      return typeof value.markdown === 'string' && value.markdown.length > 0
+    case 'link':
+      return (
+        typeof value.url === 'string' &&
+        value.url.length > 0 &&
+        typeof value.label === 'string' &&
+        value.label.length > 0
+      )
+    case 'video':
+      return typeof value.url === 'string' && value.url.length > 0
+    default:
+      return false
+  }
+}
+
+function isMaterialsBlock(value: unknown): value is MaterialsBlock {
+  if (!isRecord(value) || value.kind !== 'materials') return false
+  if (!optionalString(value, 'title')) return false
+  return Array.isArray(value.items) && value.items.some(isMaterialItem)
+}
+
 const DIALOGUE_POSES = new Set(['speaking', 'happy', 'thinking', 'celebrating'])
 
 function isDialogueBlock(value: unknown): value is DialogueBlock {
@@ -315,6 +356,10 @@ export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | nu
       return isPintaBlock(value) ? { block, content: value } : null
     case 'coming_soon':
       return isComingSoonBlock(value) ? { block, content: value } : null
+    case 'materials':
+      return isMaterialsBlock(value)
+        ? { block, content: { ...value, items: value.items.filter(isMaterialItem) } }
+        : null
     default:
       return null
   }

@@ -51,6 +51,56 @@ describe('validação de conteúdo dos blocos de aula', () => {
     }
   })
 
+  it('⚠️⚠️ o bloco de MATERIAIS atravessa o parser (sem `case`, ele some da aula em silêncio)', () => {
+    // O anti-vácuo deste arquivo: o `default` devolve `null` e o bloco desaparece sem erro
+    // nenhum — nem no console, nem em teste de comportamento, nem no typecheck.
+    const parsed = parseLessonBlock({
+      id: 'mat-1',
+      kind: 'materials',
+      sortOrder: 0,
+      content: {
+        kind: 'materials',
+        title: 'Arquivos do Pinta',
+        items: [
+          { id: 'i1', kind: 'file', attachmentId: 'a1' },
+          { id: 'i2', kind: 'link', url: 'https://exemplo.com', label: 'Paleta' },
+        ],
+      },
+    })
+    expect(parsed?.content.kind).toBe('materials')
+    if (parsed?.content.kind === 'materials') expect(parsed.content.items).toHaveLength(2)
+  })
+
+  it('item torto é DESCARTADO, e a lista que fica vazia derruba o bloco', () => {
+    // Um material a menos é melhor que a lista inteira sumindo; mas um bloco sem nenhum item
+    // válido não tem o que mostrar, e desenhar a moldura vazia seria pior.
+    const comLixo = parseLessonBlock({
+      id: 'mat-2',
+      kind: 'materials',
+      sortOrder: 0,
+      content: {
+        kind: 'materials',
+        items: [
+          { id: 'i1', kind: 'file', attachmentId: 'a1' },
+          { id: 'i2', kind: 'file' },
+          { kind: 'text', markdown: 'sem id' },
+          { id: 'i4', kind: 'inventado', url: 'https://x' },
+        ],
+      },
+    })
+    expect(comLixo?.content.kind === 'materials' && comLixo.content.items.map((i) => i.id)).toEqual(
+      ['i1'],
+    )
+    expect(
+      parseLessonBlock({
+        id: 'mat-3',
+        kind: 'materials',
+        sortOrder: 0,
+        content: { kind: 'materials', items: [{ id: 'i1', kind: 'file' }] },
+      }),
+    ).toBeNull()
+  })
+
   it('recusa kind divergente e payload incompleto na fronteira', () => {
     expect(
       parseLessonBlock({

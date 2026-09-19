@@ -25,6 +25,7 @@ export const LESSON_BLOCK_KINDS = [
   'interactive',
   'certificate',
   'coming_soon',
+  'materials',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -412,6 +413,56 @@ export interface ComingSoonBlock {
   message?: string
 }
 
+/** Os tipos de item que cabem num bloco de materiais complementares. */
+export const MATERIAL_ITEM_KINDS = ['file', 'image', 'text', 'link', 'video'] as const
+export type MaterialItemKind = (typeof MATERIAL_ITEM_KINDS)[number]
+export const MATERIALS_MAX_ITEMS = 20
+
+/**
+ * Um item da lista de materiais complementares.
+ *
+ * ⚠️⚠️ **O item de ARQUIVO aponta para um anexo da aula (`lesson_attachments`) pelo id, e
+ * NUNCA carrega a URL.** O anexo já tem a entrega privada inteira por trás — R2 privado,
+ * `storageRef` que jamais chega ao navegador, marca d'água por aluno no PDF com cache por ETag,
+ * 302 pré-assinado acima de 20 MB — e o `content` de um bloco viaja CRU para o aluno
+ * (`toLessonDetailView`). Guardar `r2priv:<key>` aqui vazaria a chave do bucket E passaria por
+ * fora da marca d'água, de uma vez só.
+ *
+ * ⚠️ `fileType`/`sizeBytes` são preenchidos pelo SERVIDOR na projeção do aluno (a partir do
+ * anexo) e de propósito não existem no schema de autoria: o Elysia os descarta se alguém tentar
+ * gravá-los, então eles nunca ficam velhos no banco.
+ */
+export type MaterialItem =
+  | {
+      id: string
+      kind: 'file'
+      attachmentId: string
+      label?: string
+      note?: string
+      fileType?: string | null
+      sizeBytes?: number | null
+    }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+
+/**
+ * **Materiais complementares.** Um bloco de aula como qualquer outro: mora numa seção, obedece
+ * à ordem de `section.blockIds` e aparece no ponto em que a autora o colocou — inclusive dentro
+ * da coluna de conteúdo, embaixo do vídeo.
+ *
+ * ⚠️ Ele NUNCA trava a conclusão (`isCompletionGatingBlock`): material complementar está fora
+ * do percurso obrigatório por definição. É o que substituiu os "materiais de apoio", que eram um
+ * LUGAR fora das seções (`supportBlockIds`), em posição fixa e alheio à ordem da autora.
+ */
+export interface MaterialsBlock {
+  kind: 'materials'
+  /** "Arquivos do Pinta". Vazio = só a etiqueta do bloco. */
+  title?: string
+  items: MaterialItem[]
+}
+
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
   | InteractiveBlock
@@ -427,13 +478,16 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /**
  * O bloco TRAVA a conclusão da aula? Estúdio e Pinta SEMPRE travam (exigem envio —
  * `STUDIO_GATE_NOT_SUBMITTED` / `PINTA_GATE_NOT_SUBMITTED`, ver mark-lesson-complete);
  * "em breve" SEMPRE trava (a
  * aula ainda está sendo montada); quiz só trava COM nota de corte (`passingScore`). Os
- * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação) são conteúdo livre.
+ * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação/materiais) são conteúdo livre —
+ * e no caso dos MATERIAIS isso é definição, não omissão: complementar é o que está fora do
+ * percurso obrigatório.
  * Usado pela autoria para manter a aula do certificado SEM gates: a emissão conclui
  * essa aula DIRETO (sem passar pelos gates), então um bloco travante ali seria PULADO —
  * o aluno emitiria o diploma sem fazê-lo.

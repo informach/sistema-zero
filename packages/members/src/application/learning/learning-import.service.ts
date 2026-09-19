@@ -38,7 +38,6 @@ export class LearningImportService {
       title: manifest.title,
       blocks: [],
       sections: [],
-      supportBlockIds: [],
       plannedVideos: [],
     }
     const mapping = new Map<string, string>()
@@ -176,11 +175,17 @@ export class LearningImportService {
         )
         .map((b) => b.id),
     )
+    // ⚠️ TODO bloco preservado precisa pousar numa seção: não existe mais lugar fora delas. As
+    // atividades obrigatórias vêm primeiro, e o material opcional logo depois — no fechamento,
+    // que é onde a autora vai reencontrá-lo para mover.
     const closing =
       document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
+    const opcionais = retained.filter((b) => !requiredIds.has(b.id))
     if (closing)
-      closing.blockIds.push(...retained.filter((b) => requiredIds.has(b.id)).map((b) => b.id))
-    document.supportBlockIds = retained.filter((b) => !requiredIds.has(b.id)).map((b) => b.id)
+      closing.blockIds.push(
+        ...retained.filter((b) => requiredIds.has(b.id)).map((b) => b.id),
+        ...opcionais.map((b) => b.id),
+      )
     for (const video of draft.document.plannedVideos)
       if (
         !document.plannedVideos.some((v) => v.blockId === video.blockId) &&
@@ -190,7 +195,6 @@ export class LearningImportService {
     const invalid = validateLessonSections(
       document.sections,
       document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
-      document.supportBlockIds,
     )
     if (invalid) throw new ValidationError(invalid)
     return {
@@ -212,8 +216,8 @@ export class LearningImportService {
         ...(requiredIds.size
           ? ['As atividades obrigatórias existentes foram mantidas no fechamento.']
           : []),
-        ...(document.supportBlockIds.length
-          ? ['Materiais opcionais existentes ficam no apoio recolhido.']
+        ...(opcionais.length
+          ? ['Os materiais opcionais existentes ficam no fim da última seção.']
           : []),
         ...(document.plannedVideos.length
           ? [

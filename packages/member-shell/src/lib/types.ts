@@ -518,6 +518,36 @@ export interface ComingSoonBlock {
   kind: 'coming_soon'
   message?: string
 }
+/**
+ * Um item da lista de materiais complementares (espelho do members).
+ *
+ * ⚠️⚠️ O item de ARQUIVO nunca traz a URL: ele aponta para um anexo da aula pelo id, e o
+ * servidor preenche `label`/`fileType`/`sizeBytes` na projeção. O download é pela rota
+ * autenticada de anexo, que é quem resolve a localização real e aplica a marca d'água.
+ */
+export type MaterialItem =
+  | {
+      id: string
+      kind: 'file'
+      attachmentId: string
+      label?: string
+      note?: string
+      fileType?: string | null
+      sizeBytes?: number | null
+    }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+/**
+ * **Materiais complementares.** Um bloco como qualquer outro: mora numa seção e aparece no
+ * ponto em que a autora o colocou. Nunca trava a conclusão.
+ */
+export interface MaterialsBlock {
+  kind: 'materials'
+  title?: string
+  items: MaterialItem[]
+}
 export type LessonBlockContent =
   | RichTextBlock
   | DialogueBlock
@@ -531,6 +561,7 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {
@@ -1356,7 +1387,6 @@ export interface EbookDownloadView {
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
-  supportBlockIds?: string[]
   requirements?: LessonRequirement[]
   sections?: Pick<
     LessonSection,

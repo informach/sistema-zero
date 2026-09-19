@@ -74,7 +74,6 @@ test('external confirmations do not bypass discoveries or unfinished section cri
     estimatedMinutes: null,
     attachments: [],
     plannedVideos: [],
-    supportBlockIds: [],
     blocks: [
       {
         id: 'video',
@@ -207,7 +206,6 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     estimatedMinutes: null,
     attachments: [],
     plannedVideos: [],
-    supportBlockIds: [],
     blocks: [
       { id: 'a', content },
       { id: 'b', content },
@@ -405,7 +403,6 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
     estimatedMinutes: null,
     attachments: [],
     plannedVideos: [],
-    supportBlockIds: [],
     blocks: [],
     sections: [
       { ...defaultLessonSection('a', 'Preparar', []), completion: { version: 1, blockIds: [] } },

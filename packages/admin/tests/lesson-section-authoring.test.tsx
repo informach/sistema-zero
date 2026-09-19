@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { applyLessonDraftChange, type LessonDraftDocument } from '@sistemazero/core/learning'
 import { newAuthoringSection } from '../src/lib/lesson-authoring'
-import type { LessonBlockContent } from '../src/lib/types'
+import { LESSON_BLOCK_KINDS, type LessonBlockContent } from '../src/lib/types'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -23,7 +23,6 @@ test('teacher creates a section from scratch, collapses it and resumes without c
     estimatedMinutes: null,
     blocks: [],
     sections: [newAuthoringSection('existing')],
-    supportBlockIds: [],
     attachments: [],
     plannedVideos: [],
   }
@@ -105,7 +104,10 @@ test('teacher creates a section from scratch, collapses it and resumes without c
     await act(async () => root.render(<LessonContentCatalog audience="kids" onSelect={() => {}} />))
     expect(container.textContent).toContain('Vídeo')
     expect(container.textContent).toContain('Fala do Zappy')
-    expect(container.querySelectorAll('button')).toHaveLength(13)
+    // ⚠️ Derivado da lista, nunca um número cravado: o catálogo precisa oferecer TODO tipo de
+    // bloco, e um número à mão só reprova quando alguém acrescenta um — exatamente o caso em que
+    // ele deveria passar depois de conferido, e nunca quando alguem ESQUECE de listar um.
+    expect(container.querySelectorAll('button')).toHaveLength(LESSON_BLOCK_KINDS.length)
     await act(async () => root.unmount())
   } finally {
     container.remove()

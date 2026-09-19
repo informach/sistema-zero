@@ -477,11 +477,6 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           await tx.insert(lessonStructures).values({
             lessonId: targetLessonId,
             revision: randomUUID(),
-            supportBlockIds: structure.supportBlockIds.map((id) => {
-              const mapped = blockIdMap.get(id)
-              if (!mapped) throw new Error('Bloco de apoio ausente no mapa do clone')
-              return mapped
-            }),
             sections: structure.sections.map((section) => ({
               ...section,
               id: randomUUID(),

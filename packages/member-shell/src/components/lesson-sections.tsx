@@ -453,7 +453,6 @@ function LessonSectionsContent({
   }, [index, totalSecoes])
   if (!section) return null
   const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
-  const supportIds = new Set(lesson.supportBlockIds ?? [])
   // `gallery` é contexto da AULA (o mesmo Estúdio é bancada numa seção e entrega noutra), por
   // isso ele é calculado aqui e a régua só o consome.
   const paraSplit = (b: LessonBlockView): SplitBlock => ({
@@ -466,9 +465,7 @@ function LessonSectionsContent({
   // comentário no `Panel` da direita). As CENAS não entram aqui de propósito — cada uma tem
   // controlador próprio, rascunho em IndexedDB e uma batida de gravação de 1s, e mantê-las
   // vivas fora da seção pagaria esse custo pela aula inteira.
-  const editores = lesson.blocks.filter(
-    (b) => ehEditorDeSecao(paraSplit(b)) && !supportIds.has(b.id),
-  )
+  const editores = lesson.blocks.filter((b) => ehEditorDeSecao(paraSplit(b)))
   const activeIds = new Set([
     ...section.blockIds,
     ...(section.workspaceBlockId ? [section.workspaceBlockId] : []),
@@ -476,7 +473,7 @@ function LessonSectionsContent({
   // A ordem de iteração de um Set é a de INSERÇÃO, então os blocos saem na ordem da seção.
   const ativos = [...activeIds]
     .map((id) => blockById.get(id))
-    .filter((b): b is LessonBlockView => b !== undefined && !supportIds.has(b.id))
+    .filter((b): b is LessonBlockView => b !== undefined)
   // A régua mora em `lib/lesson-split` (pura, testada): ela decide quem mora em cada coluna,
   // se há o que dividir, se o lado a lado vale a pena NESTA largura e até onde cada painel
   // encolhe. A divisória só é interativa onde ela APARECE — ver o comentário no handle.
@@ -701,7 +698,7 @@ function LessonSectionsContent({
   )
   const helpForm = helpOpen ? (
     <form
-      className="space-y-3 rounded-xl border border-border bg-card p-4"
+      className={cn('space-y-3 rounded-xl border border-border bg-card p-4', immersive && 'mb-4')}
       onSubmit={(e) => {
         e.preventDefault()
         void sendHelp()
@@ -1130,22 +1127,6 @@ function LessonSectionsContent({
                 .map(render)}
             </Panel>
           </PanelGroup>
-          {/* ⚠️ Material de apoio não pertence a NENHUMA seção (o core o guarda em
-              `supportBlockIds`, fora delas). Uma cena colocada ali herdaria o título e o balão
-              de fala da seção aberta, e calaria o próprio título por causa de um cabeçalho que
-              não fala dela. */}
-          {supportIds.size > 0 && (
-            <LessonSectionProvider value={null}>
-              <details className="rounded-2xl border border-border bg-card p-4">
-                <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
-                  Materiais de apoio
-                </summary>
-                <div className="space-y-6 pt-4">
-                  {lesson.blocks.filter((b) => supportIds.has(b.id)).map(render)}
-                </div>
-              </details>
-            </LessonSectionProvider>
-          )}
           {state?.sections
             .find((s) => s.id === section.id)
             ?.pending.map((message) => (

@@ -38,20 +38,15 @@ export async function syncLessonStructure(tx: Transaction, lessonId: string, reo
     workspaceBlockId:
       s.workspaceBlockId && workspaces.has(s.workspaceBlockId) ? s.workspaceBlockId : null,
   })) ?? [defaultLessonSection(lessonId, lesson.title, [])]
-  const supportBlockIds = current?.supportBlockIds.filter((id) => ids.has(id)) ?? []
-  const placed = new Set([...sections.flatMap((s) => s.blockIds), ...supportBlockIds])
+  const placed = new Set(sections.flatMap((s) => s.blockIds))
   const last = sections.at(-1)
   if (last) last.blockIds.push(...blocks.filter((b) => !placed.has(b.id)).map((b) => b.id))
-  if (
-    JSON.stringify(current?.sections) === JSON.stringify(sections) &&
-    JSON.stringify(current?.supportBlockIds) === JSON.stringify(supportBlockIds)
-  )
-    return
+  if (JSON.stringify(current?.sections) === JSON.stringify(sections)) return
   await tx
     .insert(lessonStructures)
-    .values({ lessonId, sections, supportBlockIds, revision: randomUUID() })
+    .values({ lessonId, sections, revision: randomUUID() })
     .onConflictDoUpdate({
       target: lessonStructures.lessonId,
-      set: { sections, supportBlockIds, revision: randomUUID() },
+      set: { sections, revision: randomUUID() },
     })
 }

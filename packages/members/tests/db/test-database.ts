@@ -68,9 +68,10 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   await database`alter table members.lesson_blocks add column if not exists archived_at timestamptz`
   await database`alter table members.lesson_blocks add column if not exists content_revision text not null default md5(random()::text)`
   await database.unsafe(`create table if not exists members.lesson_structures (
-    lesson_id uuid primary key, revision uuid not null, sections jsonb not null, support_block_ids jsonb not null default '[]'::jsonb
+    lesson_id uuid primary key, revision uuid not null, sections jsonb not null
   )`)
-  await database`alter table members.lesson_structures add column if not exists support_block_ids jsonb not null default '[]'::jsonb`
+  // A coluna `support_block_ids` saiu na migration 0091: todo bloco pertence a uma seção.
+  await database`alter table members.lesson_structures drop column if exists support_block_ids`
   await database.unsafe(`create or replace view members.active_lesson_blocks as
     select id,lesson_id,kind,sort_order,content,content_revision,archived_at from members.lesson_blocks where archived_at is null`)
 }

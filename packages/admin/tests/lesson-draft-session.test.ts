@@ -23,7 +23,6 @@ function fixture() {
       estimatedMinutes: 10,
       blocks: [],
       sections: [defaultLessonSection('section', 'Criar', [])],
-      supportBlockIds: [],
       attachments: [],
       plannedVideos: [],
     },

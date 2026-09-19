@@ -116,6 +116,9 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   // Balão de fala do mascote (migration `0082`) — instrução para criança em vez de
   // contexto corrido.
   'dialogue',
+  // Materiais complementares (migration `0090`) — a lista de arquivos/imagens/links que a autora
+  // põe no ponto que quiser da seção. Substituiu o lugar `support_block_ids`, que saiu.
+  'materials',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -304,7 +307,6 @@ export const lessonStructures = members.table('lesson_structures', {
     .references(() => lessons.id, { onDelete: 'cascade' }),
   revision: uuid('revision').notNull(),
   sections: jsonb('sections').$type<LessonSection[]>().notNull(),
-  supportBlockIds: jsonb('support_block_ids').$type<string[]>().notNull().default([]),
 })
 
 export const lessonNavigation = members.table(

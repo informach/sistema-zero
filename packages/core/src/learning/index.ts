@@ -850,18 +850,17 @@ export function defaultLessonSection(
 export function validateLessonSections(
   sections: LessonSection[],
   blocks: { id: string; kind: string }[],
-  supportBlockIds: string[] = [],
 ): string | null {
   if (sections.length < 1 || sections.length > 60) return 'A aula precisa ter entre 1 e 60 seções.'
   if (new Set(sections.map((s) => s.id)).size !== sections.length)
     return 'As seções precisam ter identificadores diferentes.'
-  const assigned = [...sections.flatMap((s) => s.blockIds), ...supportBlockIds]
+  const assigned = sections.flatMap((s) => s.blockIds)
   if (
     assigned.length !== blocks.length ||
     new Set(assigned).size !== blocks.length ||
     blocks.some((b) => !assigned.includes(b.id))
   )
-    return 'Cada bloco deve pertencer a uma seção ou aos materiais de apoio, sem duplicação.'
+    return 'Cada bloco deve pertencer a uma seção, sem duplicação.'
   for (const section of sections) {
     if (section.completion !== undefined && !isSectionCompletion(section.completion))
       return 'Critérios de conclusão inválidos.'
@@ -876,8 +875,6 @@ export function validateLessonSections(
       return 'O espaço de trabalho deve ser um Estúdio ou Pinta desta aula.'
     if (section.workspaceBlockId && section.externalTool)
       return 'Escolha um espaço de trabalho incorporado ou uma ferramenta externa.'
-    if (section.workspaceBlockId && supportBlockIds.includes(section.workspaceBlockId))
-      return 'Coloque o projeto reutilizado em uma seção do percurso antes de vinculá-lo.'
   }
   return null
 }

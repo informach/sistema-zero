@@ -80,7 +80,6 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
             blocks: lesson.blocks,
             attachments: lesson.attachments,
             sections: migration.previousSections,
-            supportBlockIds: structure?.supportBlockIds,
           })
         : null,
     revision: fingerprint({
@@ -90,7 +89,6 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
       blocks: lesson.blocks,
       attachments: lesson.attachments,
       sections: structure?.sections,
-      supportBlockIds: structure?.supportBlockIds,
     }),
   }
 }
@@ -118,7 +116,6 @@ function initialDocument(
         lesson.blocks.map((b) => b.id),
       ),
     ],
-    supportBlockIds: structure?.supportBlockIds ?? [],
     plannedVideos: [],
   }
   document.sections = document.sections.map((section) => {
@@ -183,13 +180,13 @@ function checkDocumentBounds(document: LessonDraftDocument) {
   const ids = document.blocks.map((b) => b.id)
   if (new Set(ids).size !== ids.length)
     throw new ValidationError('Há blocos duplicados no rascunho.')
-  const assigned = [...document.sections.flatMap((s) => s.blockIds), ...document.supportBlockIds]
+  const assigned = document.sections.flatMap((s) => s.blockIds)
   if (
     new Set(assigned).size !== assigned.length ||
     ids.some((id) => !assigned.includes(id)) ||
     assigned.some((id) => !ids.includes(id))
   )
-    throw new ValidationError('Cada bloco precisa estar em uma seção ou nos materiais de apoio.')
+    throw new ValidationError('Cada bloco precisa estar em uma seção da aula.')
   if (
     new Set(document.plannedVideos.map((v) => v.blockId)).size !== document.plannedVideos.length ||
     document.plannedVideos.some(
@@ -448,7 +445,6 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
     const invalid = validateLessonSections(
       document.sections,
       document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
-      document.supportBlockIds,
     )
     if (invalid) issues.push({ message: invalid })
     if (document.sections.some((s) => s.pendingMedia.length))
@@ -465,16 +461,26 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         !/^(https?:\/\/|r2priv:)./.test(attachment.url)
       )
         issues.push({ message: 'Informe o rótulo e um arquivo ou URL válida para cada anexo.' })
+    const anexosDaAula = new Set(document.attachments.map((a) => a.id))
     for (const block of document.blocks) {
       try {
         const content = canonicalizeBlockContent(this.parseBlock(block.content))
         assertBlockCoherent(content)
         blocks.push({ id: block.id, content })
-        if (document.supportBlockIds.includes(block.id) && isCompletionGatingBlock(content))
-          issues.push({
-            blockId: block.id,
-            message: 'Coloque esta atividade obrigatória em uma seção do percurso.',
-          })
+        // ⚠️ O item de arquivo aponta para um anexo DESTA aula. Um id órfão (o anexo foi
+        // apagado depois) desapareceria calado na projeção do aluno: a autora precisa ver isso
+        // ANTES de publicar, e o recado nomeia o bloco.
+        if (content.kind === 'materials') {
+          const itemIds = content.items.map((i) => i.id)
+          if (new Set(itemIds).size !== itemIds.length)
+            issues.push({ blockId: block.id, message: 'Há itens repetidos nos materiais.' })
+          if (content.items.some((i) => i.kind === 'file' && !anexosDaAula.has(i.attachmentId)))
+            issues.push({
+              blockId: block.id,
+              message:
+                'Um arquivo destes materiais não existe mais. Suba o arquivo de novo ou tire o item.',
+            })
+        }
       } catch (error) {
         issues.push({
           blockId: block.id,
@@ -645,7 +651,6 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         const structure = {
           lessonId,
           sections: draft.document.sections,
-          supportBlockIds: draft.document.supportBlockIds,
           revision: randomUUID(),
         }
         await tx

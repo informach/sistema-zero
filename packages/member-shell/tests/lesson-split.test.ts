@@ -212,6 +212,24 @@ describe('a partição da seção', () => {
     expect(r.temEditor).toBe(false)
   })
 
+  test('os MATERIAIS complementares são conteúdo — ficam na coluna da esquerda', () => {
+    // É metade do pedido que criou o bloco: "embaixo do vídeo, no mesmo card da coluna da
+    // esquerda". Ele não é bancada; se um dia cair na direita, a lista de arquivos vai parar ao
+    // lado da cena e a ordem que a autora montou deixa de existir na tela.
+    const materiais = {
+      id: 'materiais',
+      kind: 'materials',
+      content: {
+        kind: 'materials',
+        title: 'Arquivos do Pinta',
+        items: [{ id: 'i1', kind: 'file', attachmentId: 'a1' }],
+      },
+    }
+    const r = partirSecao({ blocks: [texto, materiais, cena('experimentation')] })
+    expect(r.contentIds).toEqual(['fala', 'materiais'])
+    expect(r.toolIds).toEqual(['cena'])
+  })
+
   test('pergunta curta e experiência em HTML ficam no conteúdo', () => {
     // As três são `kind: 'interactive'`, então classificar pelo kind mandaria as duas para a
     // bancada — e elas são de ler e responder, no meio da aula.

@@ -285,7 +285,8 @@ src/
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
                             GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado).
-                            UI: lesson-attachments.tsx baixa via fetch NA MESMA página
+                            UI: o BLOCO de materiais do member-shell (o card "Materiais
+                            da aula" no pé saiu em 19/09/2026) baixa via fetch NA MESMA página
                             (spinner por item + lista desabilitada; a marca d'água demora
                             segundos — target=_blank deixava uma guia em branco "morta");
                             blob → âncora programática c/ filename do Content-Disposition;

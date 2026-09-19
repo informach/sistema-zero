@@ -98,6 +98,13 @@ import {
   type LessonContentView,
 } from '@/lib/types'
 import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
+import {
+  EMPTY_MATERIALS,
+  MaterialsBuilder,
+  type MaterialsValue,
+  materialsFromContent,
+  validateMaterials,
+} from './materials-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 
 // `Record<LessonBlockKind, …>` (não `Record<string, …>`): assim o COMPILADOR cobra o
@@ -118,6 +125,7 @@ const KIND_LABELS: Record<LessonBlockKind, string> = {
   pinta: 'Pinta (desenho)',
   certificate: 'Certificado',
   coming_soon: 'Em breve (aula em produção)',
+  materials: 'Materiais complementares',
 }
 
 /** Nome de cada pose, só para o `alt` do seletor (a autora escolhe pela cara). */
@@ -218,6 +226,8 @@ export interface BlockForm {
   pintaToolPreset: 'essencial' | 'livre' | 'tudo'
   /** Pinta: nome do desenho contínuo (cadeia). Vazio = aula independente. */
   pintaChain: string
+  /** Materiais complementares: o nome do bloco e a lista ordenada de itens. */
+  materials: MaterialsValue
 }
 
 /** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
@@ -277,6 +287,7 @@ export const EMPTY_BLOCK: BlockForm = {
   // curadoria). Quem quiser a caixa inteira escolhe "Tudo" de propósito.
   pintaToolPreset: 'essencial',
   pintaChain: '',
+  materials: EMPTY_MATERIALS,
 }
 
 /**
@@ -362,6 +373,12 @@ export function buildContent(
       return {
         kind: 'coming_soon',
         ...(opt(f.comingSoonMessage) ? { message: f.comingSoonMessage.trim() } : {}),
+      }
+    case 'materials':
+      return {
+        kind: 'materials',
+        ...(opt(f.materials.title) ? { title: f.materials.title.trim() } : {}),
+        items: f.materials.items,
       }
     case 'dialogue':
       return {
@@ -490,6 +507,8 @@ function validateBlock(f: BlockForm): string | null {
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
       return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de publicar.'
+    case 'materials':
+      return validateMaterials(f.materials)
     case 'studio': {
       // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
@@ -597,6 +616,21 @@ function LessonEditorSession({
           }
         : null,
     [draft, lessonId, courseId],
+  )
+  /**
+   * Os anexos que APARECEM para o aluno: os citados por algum item de arquivo de um bloco de
+   * materiais. O que sobra está no servidor e invisível — ver o aviso no item da lista.
+   */
+  const anexosColocados = useMemo(
+    () =>
+      new Set(
+        (draft?.document.blocks ?? []).flatMap((b) =>
+          b.content.kind === 'materials'
+            ? b.content.items.flatMap((i) => (i.kind === 'file' ? [i.attachmentId] : []))
+            : [],
+        ),
+      ),
+    [draft],
   )
   /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
   const [courseInfo, setCourseInfo] = useState<{
@@ -856,6 +890,7 @@ function LessonEditorSession({
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
       comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
+      materials: c.kind === 'materials' ? materialsFromContent(c) : EMPTY_MATERIALS,
       // Tipo/tamanho não são re-hidratados: na EDIÇÃO quem manda é o desenho salvo (o editor
       // abre com ele e o botão "Tamanho" dele resolve o resto). Os selects ficam escondidos.
       pintaAssetKind: EMPTY_BLOCK.pintaAssetKind,
@@ -938,7 +973,6 @@ function LessonEditorSession({
                 sections: current.sections.map((s) =>
                   s.id === blockSectionId ? { ...s, workspaceBlockId: blockId } : s,
                 ),
-                supportBlockIds: current.supportBlockIds,
               },
               immediate,
             )
@@ -953,7 +987,6 @@ function LessonEditorSession({
               sections: current.sections.map((s) =>
                 s.workspaceBlockId === blockId ? { ...s, workspaceBlockId: null } : s,
               ),
-              supportBlockIds: current.supportBlockIds,
             },
             immediate,
           )
@@ -1392,6 +1425,38 @@ function LessonEditorSession({
   }
 
   /**
+   * O item de ARQUIVO de um bloco de materiais: sobe o arquivo, cria (ou reaproveita) o ANEXO da
+   * aula e devolve o id dele, que é o que o bloco guarda.
+   *
+   * ⚠️⚠️ O bloco nunca guarda a URL. O anexo é quem tem a entrega privada por trás — R2
+   * privado, `storageRef` que não chega ao navegador, marca d'água por aluno no PDF —, e o
+   * `content` de um bloco viaja CRU para o aluno: um `r2priv:<key>` aqui vazaria a chave do bucket
+   * e passaria por fora da marca d'água.
+   *
+   * ⚠️ Mesmo arquivo já anexado = mesmo anexo (dedupe por URL). Sem isso, trocar o arquivo de um
+   * item duas vezes deixaria anexos órfãos na aula, que a autora veria na lista sem saber de onde
+   * vieram.
+   */
+  function addMaterialAttachment(file: UploadedFile): string {
+    const current = session.getSnapshot().draft
+    if (!current) return ''
+    const existente = current.document.attachments.find((a) => a.url === file.url)
+    if (existente) return existente.id
+    const attachment = {
+      id: crypto.randomUUID(),
+      label: file.filename,
+      url: file.url,
+      fileType: file.fileType || null,
+      sizeBytes: file.sizeBytes ?? null,
+    }
+    session.enqueue(
+      { type: 'attachments', attachments: [...current.document.attachments, attachment] },
+      true,
+    )
+    return attachment.id
+  }
+
+  /**
    * E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download.
    * Trocar o PDF ATUALIZA o anexo do PDF anterior in-place (`previousUrl` — preserva a
    * posição na lista e não deixa material órfão). Edge-cases aceitos: casar por URL
@@ -1770,6 +1835,7 @@ function LessonEditorSession({
                         key={a.id}
                         attachment={a}
                         canWrite={canWrite}
+                        colocado={anexosColocados.has(a.id)}
                         onEdit={() => openEditAtt(a)}
                         onDelete={() => deleteAtt(a)}
                       />
@@ -2033,6 +2099,26 @@ function LessonEditorSession({
                         }
                       />
                     </Field>
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'materials' ? (
+                  <>
+                    <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                      Este bloco aparece <strong>no ponto em que você o colocar</strong> na seção,
+                      na ordem que você montar — inclusive embaixo do vídeo, na coluna do conteúdo.
+                      Ele não entra no percurso obrigatório: o aluno conclui a aula sem abrir nada
+                      daqui.
+                    </p>
+                    <MaterialsBuilder
+                      value={blockForm.materials}
+                      onChange={(materials) => setBlockForm((f) => ({ ...f, materials }))}
+                      onUploadFile={addMaterialAttachment}
+                      attachmentLabel={(id) =>
+                        session.getSnapshot().draft?.document.attachments.find((a) => a.id === id)
+                          ?.label ?? null
+                      }
+                    />
                   </>
                 ) : null}
 
@@ -3010,11 +3096,14 @@ function LessonEditorSession({
 function SortableAttachmentItem({
   attachment,
   canWrite,
+  colocado,
   onEdit,
   onDelete,
 }: {
   attachment: AttachmentView
   canWrite: boolean
+  /** O arquivo aparece em algum bloco de materiais? */
+  colocado: boolean
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -3037,6 +3126,14 @@ function SortableAttachmentItem({
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{attachment.label}</div>
           <div className="truncate text-xs text-muted-foreground">{attachment.url}</div>
+          {/* ⚠️⚠️ Aviso load-bearing: os anexos deixaram de ter um card próprio no pé da aula.
+              Hoje um arquivo só chega ao aluno DENTRO de um bloco de materiais — subir e não
+              colocar é um arquivo que ninguém vê, e sem este recado a autora não teria como saber. */}
+          {colocado ? null : (
+            <div className="text-xs text-destructive">
+              Este arquivo não está em nenhum bloco de materiais, então o aluno não o vê.
+            </div>
+          )}
         </div>
       </div>
       {canWrite ? (

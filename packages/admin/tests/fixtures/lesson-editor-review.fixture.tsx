@@ -61,7 +61,6 @@ function seed(title: string): LessonDraftDocument<LessonBlockContent> {
       },
     ],
     sections: [{ ...newAuthoringSection(`${title}-section`), blockIds: [`${title}-zappy`] }],
-    supportBlockIds: [],
     attachments: [],
     plannedVideos: [],
   }

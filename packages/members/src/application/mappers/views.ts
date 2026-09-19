@@ -7,7 +7,7 @@ import {
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
-import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import { hasComingSoonBlock, type MaterialItem } from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { COIN_VALUES } from '../../domain/gamification/coins'
@@ -796,7 +796,6 @@ export interface EbookDownloadView {
 }
 
 export interface LessonDetailView {
-  supportBlockIds?: string[]
   requirements?: LessonRequirement[]
   sections?: Pick<
     LessonSection,
@@ -837,6 +836,7 @@ export function toLessonDetailView(
   const visibleBlocks = comingSoon
     ? lesson.blocks.filter((b) => b.content.kind === 'coming_soon')
     : lesson.blocks
+  const anexos = new Map(lesson.attachments.map((a) => [a.id, a]))
 
   return {
     id: lesson.id,
@@ -909,6 +909,35 @@ export function toLessonDetailView(
           sortOrder: b.sortOrder,
           content: b.content,
           pintaState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
+        }
+      }
+      // Materiais complementares: o item de ARQUIVO guarda só o id do anexo, então é aqui que o
+      // rótulo, o tipo e o tamanho entram — lidos do anexo da aula, que é quem guarda o arquivo.
+      // ⚠️⚠️ A localização real (`r2priv:<key>`) segue sem sair do servidor: o download é pela
+      // rota autenticada de anexo, a MESMA que aplica a marca d'água por aluno. ⚠️ Item cujo anexo
+      // foi apagado SOME, em vez de virar uma linha morta que a criança clica e nada baixa.
+      if (b.content.kind === 'materials') {
+        return {
+          id: b.id,
+          blockRevision: b.contentRevision,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: {
+            ...b.content,
+            items: b.content.items.flatMap((item): MaterialItem[] => {
+              if (item.kind !== 'file') return [item]
+              const anexo = anexos.get(item.attachmentId)
+              if (!anexo) return []
+              return [
+                {
+                  ...item,
+                  label: item.label?.trim() || anexo.label,
+                  fileType: anexo.fileType,
+                  sizeBytes: anexo.sizeBytes,
+                },
+              ]
+            }),
+          },
         }
       }
       return {

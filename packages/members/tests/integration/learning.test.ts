@@ -522,7 +522,7 @@ describe('learning activities and sections', () => {
     const blockIds = ctx.courses.blocks.filter((b) => b.lessonId === ctx.lessonId).map((b) => b.id)
     const section = defaultLessonSection(ctx.lessonId, 'Descubra a ordem', blockIds)
     const draft = await readDraft(ctx.app, ctx.lessonId)
-    const change = { type: 'structure' as const, sections: [section], supportBlockIds: [] }
+    const change = { type: 'structure' as const, sections: [section] }
     const saved = await changeDraft(ctx.app, ctx.lessonId, change)
     expect(saved.status).toBe(200)
     expect((await readDraft(ctx.app, ctx.lessonId)).document.sections[0]).toMatchObject({

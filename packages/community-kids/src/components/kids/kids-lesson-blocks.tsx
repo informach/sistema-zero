@@ -4,11 +4,13 @@ import { CertificateBlockView } from '@sistemazero/member-shell/components/certi
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
+import { MaterialsBlockView } from '@sistemazero/member-shell/components/materials-block'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import type { StudioShareResult } from '@sistemazero/studio'
 import {
   Award,
+  Backpack,
   BookOpenText,
   Clapperboard,
   Code2,
@@ -31,6 +33,7 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  MaterialsBlock,
   RichTextBlock,
   StudioBlock,
   VideoBlock,
@@ -162,9 +165,30 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'coming_soon':
       return <ComingSoon content={content} />
+    case 'materials':
+      return <Materials content={content} />
     default:
       return null
   }
+}
+
+/**
+ * **Materiais complementares.** O que era o `<details>` "Materiais de apoio", pregado no pé de
+ * toda seção, virou um bloco: ele aparece no ponto em que a autora o colocou e a ordem dos
+ * itens é a que ela montou.
+ *
+ * ⚠️ O DESENHO vem do `MaterialsBlockView` do member-shell (um só, para os dois apps) e quem
+ * o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`. Aqui só entra o chip,
+ * como em todo bloco do kids. O chip é um SUBSTANTIVO (como "Em breve"), não um verbo: material
+ * complementar não é uma atividade a fazer, e prometer uma seria mentira.
+ */
+function Materials({ content }: { content: MaterialsBlock }) {
+  return (
+    <div className="kids-unit-cyan flex flex-col gap-3">
+      <BlockChip icon={Backpack} label="Materiais" themeClass="kids-unit-cyan" />
+      <MaterialsBlockView content={content} />
+    </div>
+  )
 }
 
 /**

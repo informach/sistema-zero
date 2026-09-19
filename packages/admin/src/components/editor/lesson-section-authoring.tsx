@@ -189,10 +189,7 @@ export function LessonSectionAuthoring({
   }, [area])
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
   const tools = lesson.blocks.filter(
-    (b) =>
-      (b.kind === 'studio' || b.kind === 'pinta') &&
-      !isGalleryBlock(b.content) &&
-      !doc.supportBlockIds.includes(b.id),
+    (b) => (b.kind === 'studio' || b.kind === 'pinta') && !isGalleryBlock(b.content),
   )
   const localIssues: LessonDraftIssue[] = sectionCompletionIssues(doc.sections, doc.blocks)
   const certificateLesson = doc.blocks.some((b) => b.content.kind === 'certificate')
@@ -205,15 +202,11 @@ export function LessonSectionAuthoring({
           v.blockId === issue.blockId,
       ) === i,
   )
-  const structure = (
-    sections: LessonSection[],
-    supportBlockIds = doc.supportBlockIds,
-    immediate = true,
-  ) => onChange({ type: 'structure', sections, supportBlockIds }, immediate)
+  const structure = (sections: LessonSection[], immediate = true) =>
+    onChange({ type: 'structure', sections }, immediate)
   const patch = (id: string, change: Partial<LessonSection>, immediate = false) =>
     structure(
       doc.sections.map((s) => (s.id === id ? { ...s, ...change } : s)),
-      doc.supportBlockIds,
       immediate,
     )
   function editSection(sectionId: string, target: 'completion' | 'settings') {
@@ -250,10 +243,6 @@ export function LessonSectionAuthoring({
               }
             : {}),
         })),
-        [
-          ...doc.supportBlockIds.filter((id) => id !== blockId),
-          ...(target === 'support' ? [blockId] : []),
-        ],
       )
     }
     if (doc.sections.some((s) => s.workspaceBlockId === blockId))
@@ -277,7 +266,7 @@ export function LessonSectionAuthoring({
         {
           type: 'block',
           block: { id, content: copyLessonContent(block.content) },
-          sectionId: location === 'support' ? null : location,
+          sectionId: location,
         },
         true,
       )
@@ -346,9 +335,11 @@ export function LessonSectionAuthoring({
                             direction < 0 ? 'Mover conteúdo para cima' : 'Mover conteúdo para baixo'
                           }
                           onClick={() => {
-                            const next = arrayMove(ids, index, index + direction)
-                            if (location === 'support') structure(doc.sections, next)
-                            else patch(location, { blockIds: next }, true)
+                            patch(
+                              location,
+                              { blockIds: arrayMove(ids, index, index + direction) },
+                              true,
+                            )
                           }}
                         >
                           {direction < 0 ? (
@@ -380,7 +371,6 @@ export function LessonSectionAuthoring({
                             {i + 1}. {s.title}
                           </option>
                         ))}
-                        <option value="support">Materiais de apoio</option>
                       </Select>
                     </label>
                     <Button
@@ -599,21 +589,10 @@ export function LessonSectionAuthoring({
         </section>
       )}
       <div hidden={Boolean(editing)}>
-        {area === 'materials' ? (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-lg font-semibold">Materiais de apoio</h2>
-              <p className="text-sm text-muted-foreground">
-                Conteúdos opcionais, fora do percurso obrigatório da aula.
-              </p>
-            </div>
-            {contentList(doc.supportBlockIds, 'support')}
-            <Button variant="outline" disabled={!canWrite} onClick={() => onAddBlock(null)}>
-              <Plus className="size-4" />
-              Adicionar material de apoio
-            </Button>
-          </section>
-        ) : (
+        {/* ⚠️ A aba "Materiais e anexos" ficou só com os ANEXOS (que o editor desenha por fora):
+            os "materiais de apoio" — um lugar fora das seções, em posição fixa e alheio à ordem
+            da autora — viraram o bloco `materials`, que mora numa seção como qualquer outro. */}
+        {area === 'materials' ? null : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
