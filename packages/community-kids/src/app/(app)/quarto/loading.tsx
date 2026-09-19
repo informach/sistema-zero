@@ -14,6 +14,10 @@ const ITEM_KEYS = ['i1', 'i2', 'i3', 'i4', 'i5', 'i6']
  * (com a seta) e, no lilás, a cena `aspect-[3/2]` + a faixa de peças + moeda/salvar + a
  * grade de itens. O placeholder da cena é o MESMO que o `RoomBuilder` mostra enquanto a cena
  * 3D (three.js) carrega: a transição esqueleto → quarto é contínua, sem salto.
+ *
+ * ⚠️ As faixas levam `kids-band-foco` como as da página: o menu nasce recolhido nesta rota, e
+ * sem a classe o esqueleto abriria na régua estreita e a página saltaria 268px de largura no
+ * primeiro quadro em que os dados chegam.
  */
 export default function QuartoLoading() {
   return (
@@ -21,10 +25,10 @@ export default function QuartoLoading() {
       <span role="status" className="sr-only">
         Carregando…
       </span>
-      <KidsBand tone="creme">
+      <KidsBand tone="creme" className="kids-band-foco">
         <QuartoHeader />
       </KidsBand>
-      <KidsBand tone="lilas">
+      <KidsBand tone="lilas" className="kids-band-foco">
         <div className="flex w-full flex-col gap-4">
           {/* Cena: mesmo placeholder do RoomBuilder enquanto a cena 3D carrega */}
           <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">

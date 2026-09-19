@@ -468,6 +468,35 @@ export const LESSON_BLOCK_KINDS = [
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
+/**
+ * O nome de cada tipo de bloco na língua da autora. `Record<LessonBlockKind, …>` (não
+ * `Record<string, …>`): assim o COMPILADOR cobra o rótulo de todo tipo novo. Sem isso o
+ * `<select>` do editor mostraria o slug cru — e o editor é cheio de `default` silencioso
+ * (o `buildContent` grava QUIZ para kind sem case), então vale prender o que dá para
+ * prender em tempo de compilação.
+ *
+ * ⚠️ Mora AQUI, e não no editor, porque a exportação do manifesto
+ * (`lib/lesson-manifest-export.ts`) nomeia por este mesmo mapa os blocos que o formato não
+ * carrega. Duas listas de rótulo divergiriam, e a de lá é justamente a que a autora lê para
+ * saber o que recadastrar no destino.
+ */
+export const LESSON_BLOCK_KIND_LABELS: Record<LessonBlockKind, string> = {
+  interactive: 'Descoberta interativa',
+  rich_text: 'Texto',
+  dialogue: 'Diálogo do Zappy',
+  video: 'Vídeo',
+  image: 'Imagem',
+  audio: 'Áudio',
+  quiz: 'Quiz',
+  embed: 'HTML livre (sem progresso)',
+  ebook: 'E-book (livro 3D)',
+  studio: 'Estúdio',
+  pinta: 'Pinta (desenho)',
+  certificate: 'Certificado',
+  coming_soon: 'Em breve (aula em produção)',
+  materials: 'Materiais complementares',
+}
+
 /** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
 export const DIALOGUE_POSES = ['speaking', 'happy', 'thinking', 'celebrating'] as const
 export type DialoguePose = (typeof DIALOGUE_POSES)[number]

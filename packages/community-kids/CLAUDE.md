@@ -1498,31 +1498,84 @@ ferramentas e o `--background` do kids são os MESMOS primitivos, então sem pad
 O `/molda` entrou no mesmo regime no lote 6b (11/09/2026): a calha, o puxador `edge` e o selo
 acima do app saíram. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
 
-`focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS preferências
-independentes por PERFIL no localStorage — esconder o MENU esquerdo (`sz:kids:hide-nav:<perfil>`) e
-esconder a LISTA DE AULAS à direita (`sz:kids:hide-outline:<perfil>`) —; a sidebar
-(`app-sidebar.tsx`) e o esqueleto do Suspense já reagem a `navCollapsed` (`w-0` + `opacity-0`,
-transição de 300ms com `motion-reduce`). O provider mora no layout `(app)`, que NÃO remonta entre
-navegações, então o estado atravessa a navegação.
+⭐⭐ **O QUARTO e o AVATAR entraram no modo foco (19/09/2026).** Relato dela: o editor de avatar
+ocupava a tela inteira sem oferecer caminho de volta ao menu, e o quarto nascia com o menu aberto
+e sem botão. Agora os dois nascem recolhidos e têm o botãozinho, como as ferramentas.
 
-- **Onde vale** (`navAvailable`): página de aula **OU app de criação embarcado**
-  (`isEmbeddedAppPath` — Estúdio/Pensa/Pinta, sub-rotas inclusas), sempre a partir de 768px (abaixo
-  disso a sidebar nem existe). `outlineAvailable` segue EXCLUSIVO da aula. A preferência persistida
-  nunca some a barra em `/cursos`, `/perfil` etc. — quem decide é o `available`.
-- ⚠️ **A preferência do menu é UMA SÓ**, não uma por tela: esconder no Estúdio mantém escondido na
-  aula e vice-versa. "Esconder o menu" é gosto da criança, não configuração de página.
-- ⚠️ HISTÓRICO (até 11/09/2026): o `focus-mode-toggle.tsx` tinha duas roupas, o círculo do
-  cabeçalho da aula e o PUXADOR `edge` colado na borda esquerda das telas de criação. O puxador
-  saiu no lote 6b (o Molda era o último a usá-lo): hoje o componente é só o quadrado da aula, e
-  nas quatro ferramentas o botão do menu é desenhado pela barra delas (contrato `hostChrome`).
-- ⚠️ **O puxador mora na CALHA do `MainContainer`** (`md:pl-9` contra `md:pr-4`), nunca flutuando
-  sobre o app: no Estúdio a borda esquerda é a **caixa de blocos do Blockly**, e um puxador por cima
-  cobriria uma categoria. Ele é IRMÃO do frame do app — a cerca `isolation: isolate` da raiz do
-  Estúdio prende os z-index de dentro dele (a toolbox é 70), então `z-30` basta; o que é portalado
-  p/ o `document.body` (menus da Topbar, dropdowns do Blockly) segue passando por cima, que é o certo.
-- **Um mount point só** (dentro do `MainContainer`) cobre Estúdio, Pensa, Pinta e `/estudio/pro` —
-  os três clients (`studio-full-client`/`pensa-client`/`pinta-client`) não sabem que ele existe.
-- ⚠️ `useMinWidth` e as preferências começam `false` TAMBÉM no cliente, de propósito (ver o
+⚠️⚠️ **Isto partiu em DUAS a régua que era uma só, e a distinção é a ALTURA.**
+`isEmbeddedAppPath` (`lib/embedded-app-path.ts`) continua sendo "a altura é travada na janela,
+borda a borda" — é o que o `MainContainer` pergunta — e ganhou **`/meu-avatar`**. A régua do FOCO
+virou **`isFocusRoutePath`** (`lib/focus-route.ts`, o único consumidor do `FocusModeProvider`) =
+aula + embarcados + **`FOCUS_ONLY_PREFIXES`**, hoje só `/quarto`. O Quarto ROLA (as bandejas de
+móveis são longas): pôr `/quarto` na lista dos embarcados travaria a altura e cortaria as
+bandejas sem nenhum caminho de rolagem — o mesmo defeito que obrigou a existir o
+`ToolRouteRecado`. Travado em `tests/focus-route.test.ts` e no caso novo do
+`tests/main-container.test.tsx`.
+
+- **O avatar entrou no layout, mas só a partir do `md`.** A página foi de `app/meu-avatar/` para
+  `app/(app)/meu-avatar/` (grupo de rota: a URL não mudou) e a raiz do `configurator.tsx` — nos
+  DOIS ramos, o normal e o de erro — virou
+  `fixed inset-0 z-50 … md:static md:z-auto md:h-full md:min-h-0 md:flex-1`. O esqueleto do
+  `dynamic` (`configurator-client.tsx`) segue a mesma regra, senão cobriria a barra da esquerda
+  enquanto o 3D carrega. A alça do menu é montada uma vez no shell, não na barra do avatar.
+  ⚠️⚠️ **O par `fixed` × `md:static` é load-bearing e foi MEDIDO.** No celular o painel de baixo
+  mede a JANELA (`max-h-[26vh]`) enquanto a caixa do `<main>` perdeu 152px para a barra de cima e
+  a de abas: em fluxo, a cena 3D (que é `flex-1` sem piso) encolhia de ~218px para **~66px** sem
+  erro nenhum — e a foto do avatar é um recorte do canvas escalado para 512², então ela passaria
+  a ser salva BORRADA a partir do celular. Imersivo no celular também é o certo de produto: lá o
+  botão do menu nem existe (abaixo de 768px a barra da esquerda não existe), então não há nada a
+  mostrar. ⚠️ A saída segue `window.location.assign(returnTo)` e o comentário de lá ficou MAIS
+  importante: no desktop o avatar do menu agora está na tela durante a edição, e só um reload
+  duro o atualiza.
+- **O quarto mantém o cabeçalho** (`quarto-header.tsx`) sem um segundo botão de menu. O shell
+  desenha a alça, inclusive durante o `loading.tsx`, então o controle não pula.
+- ⭐ **"Adequar o layout" virou uma regra de CSS.** A `KidsBand` mede 73.25rem (a coluna à direita
+  do menu a 1440px), então esconder o menu só CENTRALIZAVA o quarto. As faixas do quarto levam
+  `kids-band-foco` e o `globals.css` solta a régua para `73.25rem + --kids-menu-width` quando a
+  barra está com `aria-hidden="true"`. ⚠️ O estado vem do contexto pelo ARIA via `:has()`, sem
+  prop nova nem client component a mais — a mesma receita do rodapé imersivo da aula, e a
+  transição de 300ms casa com a da barra.
+  ⚠️⚠️ **A regra tem de ficar FORA de camada**, como está: a régua que ela precisa derrotar é a
+  utilitária `max-w-[73.25rem]` do `KidsBand`, e dentro de `@layer components` ela seria emitida,
+  legível e MUDA. `tests/quarto-foco.test.tsx` conta as camadas abertas antes da regra.
+  ⚠️ **As DUAS faixas levam a classe, e o `loading.tsx` também.** Só o palco crescendo deixaria o
+  cabeçalho 134px indentado em relação à borda do quarto; e o esqueleto sem a classe faria a
+  página saltar 268px de largura no primeiro quadro em que os dados chegam.
+  ⚠️ Consequência medida e aceita: a 1440px com o menu escondido, o palco `aspect-[3/2]` vai de
+  1044×696 para 1312×875, ou seja, ganha 268px de largura e empurra as bandejas 179px para baixo.
+  Se isso incomodar, o teto vai no palco (`room-canvas.tsx`), não na faixa.
+- ⚠️ As duas telas nascem com o menu recolhido a CADA entrada: o estado do foco é por visita e
+  por rota (não há preferência guardada). Abaixo de 768px o botão não existe, porque a barra da
+  esquerda também não.
+
+`focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS escolhas
+independentes — esconder o MENU esquerdo e esconder a LISTA DE AULAS à direita —; a sidebar
+(`app-sidebar.tsx`) e o esqueleto do Suspense reagem a `navCollapsed` (`w-0` + `opacity-0`,
+transição de 300ms com `motion-reduce`). O provider mora no layout `(app)`, que NÃO remonta entre
+navegações.
+
+⚠️⚠️ **NÃO há preferência guardada, e o estado é POR ROTA.** O que existe é um
+`useState<{path, navOpen, outlineOpen}>`: cada entrada numa tela de foco nasce recolhida, e abrir
+o menu vale só naquela rota — navegar recolhe de novo. Trocar de perfil (`viewerId`) e sair das
+telas de foco zeram. As chaves `sz:kids:hide-nav:<perfil>`/`sz:kids:hide-outline:<perfil>` que
+este arquivo descrevia **não existem mais** em lugar nenhum do código, e
+`tests/focus-mode.test.tsx` chega a assertar que o `localStorage` segue vazio depois de alternar.
+
+- **Onde vale** (`navAvailable`): o que o **`isFocusRoutePath`** (`lib/focus-route.ts`) disser —
+  página de aula, apps de criação embarcados (`isEmbeddedAppPath`, hoje Estúdio/Pensa/Pinta/Molda
+  e o configurador de avatar, sub-rotas inclusas) e as telas de foco de altura livre
+  (`FOCUS_ONLY_PREFIXES`, hoje o Quarto) —, sempre a partir de 768px (abaixo disso a sidebar nem
+  existe). `outlineAvailable` segue EXCLUSIVO da aula.
+- **19/09/2026, estado atual:** `FocusModeToggle` usa `EdgePanelHandle` do pacote UI, montado
+  uma vez no shell `(app)` como irmão dos painéis. A alça esquerda tem o mesmo fundo escuro da
+  sidebar; a direita tem o branco do índice da aula. Ambas usam a mesma largura CSS do respectivo
+  painel para permanecer coladas à borda aberta e à borda da tela quando fechadas. Os botões
+  antigos saíram dos cabeçalhos da aula, ferramentas, avatar e quarto. O `hostChrome.menu` dos
+  apps embarcados recebe `null`; os contratos dos pacotes de ferramenta seguem disponíveis para
+  seus playgrounds isolados. A alça da esquerda só aparece a partir de 768px.
+- ⚠️ HISTÓRICO: a versão anterior tinha um puxador na calha do `MainContainer`, depois um botão
+  nos cabeçalhos. Não reintroduzir outro mount point, pois isso duplica o controle do mesmo menu.
+- ⚠️ `useMinWidth` começa `false` TAMBÉM no cliente, de propósito (ver o
   comentário longo no `focus-mode.tsx`): ler `matchMedia`/localStorage no inicializador dava React
   #418 em toda página de aula, porque o botão faz `if (!available) return null`.
 
@@ -2066,8 +2119,9 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
   Zappy) — copy/ícone em `badges.ts`, detecção no members.
-- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, tela cheia IMERSIVA fora do
-  grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
+- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, DENTRO do grupo `(app)` desde
+  19/09/2026: imersivo no celular, em fluxo com o menu recolhido a partir do `md` — ver §"Modo
+  foco"):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
   (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
   (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
   (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `thumb-canvas.tsx`.
@@ -2125,8 +2179,8 @@ A `<Canvas>` precisa de
   hat/accessory), `face-01..07` (pintura) + `face-08` (máscara). Auditoria por md5 pegou 9 GLBs duplicados
   (`eyes-09..12`/`eyebrow-07..10`/`hair-09`) e re-apontou p/ a arte distinta; só PumpkinHead (sazonal) e o
   corpo-base nu ficaram de fora. **Toda peça/categoria nova → re-rode `bun run gen:avatar-thumbs`.**
-  **Sem item no `nav.ts`** — acessado
-  pelo CLIQUE no avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
+  Está no `nav.ts` como "Meu avatar" (grupo "Meu espaço") e também é acessado pelo CLIQUE no
+  avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
   em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
 - **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
   `room/room-canvas-3d.tsx` (`<Canvas>` react-three-fiber) + `room/room-builder.tsx`** (rota
@@ -2288,10 +2342,25 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   ⚠⚠ **A preferência é lida num `useEffect` PÓS-MOUNT, nunca no inicializador do `useState`**:
   ler `localStorage` na primeira renderização dá mismatch de hidratação (React #418). Molde exato
   do `focus-mode.tsx`, e a regra é load-bearing — ela já custou caro uma vez.
-  ⚠⚠ **O pé do Molda SAIU do que recolhe**: o `<details>` antigo embrulhava tudo, então recolher
-  escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não subiu — o
-  defeito que o irmão do Pinta já tinha pago. De quebra o pé saiu do corpo que ROLA (`max-h-80`),
-  onde os botões nasciam abaixo da dobra no celular.
+  ⚠⚠ **O pé do Molda SAIU do que recolhe** (18/09): o `<details>` antigo embrulhava tudo, então
+  recolher escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não
+  subiu. De quebra o pé saiu do corpo que ROLA (`max-h-80`), onde os botões nasciam abaixo da
+  dobra no celular.
+  ⭐⭐ **E em 19/09/2026 esse invariante foi REVOGADO EM PARTE, por decisão dela:** *"quando fechar
+  pode fechar tudo, mantendo só uma linha ali: o título e a setinha, para a gente deixar bastante
+  espaço para as ferramentas"*. O pé de ROTINA (guardar, concluir, abrir a criação vinculada,
+  voltar ao plano, a linha de situação) passou a recolher junto nos TRÊS guias. A regra que ficou
+  no lugar, e vale para os três: **recolher esconde conteúdo e ação de ROTINA, NUNCA um
+  problema** — o recado de erro e o aviso da criação que não está nesta galeria seguem fora do
+  que recolhe (escolha dela entre três opções), e a rotina volta com um clique na seta, que nunca
+  sai da tela. O sobretítulo também some recolhido, senão o cabeçalho tem duas linhas.
+  ⭐⭐ **No mesmo lote os três ganharam UMA casca só** (`.sz-tool-guide` do
+  `@sistemazero/ui/tool-chrome.css`): ela disse que o painel estava "totalmente fora do design da
+  identidade visual da comunidade", e era verdade — o do Pinta tinha fio de 2px no acento com
+  12px de respiro, este aqui o fio da marca com 20px, e o do Estúdio nem cartão era. Agora os
+  três são o cartão branco das galerias (canto de 20px, Baloo de 15px, 14/18px de respiro) com os
+  botões em `.sz-tool-pill`. ⚠️ Este guia é o único dos três que mora no HOST, então é o único
+  que usa a receita sem passar por um contrato de pacote.
   ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
   (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
   `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
@@ -2408,10 +2477,11 @@ acionável** (as invariantes das revisões 19/06 e 20/06 seguem de pé). Todos o
 corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids`. Mudanças:
 
 - **1 peça com falha não derruba mais o configurador (robustez):** o `<Suspense fallback={null}>`
-  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense — e
-  `/meu-avatar` fica fora do grupo `(app)` (sem `error.tsx` próprio), então um único GLB de
-  acessório falhando subia pro `global-error` e matava a tela inteira (perdendo a edição em
-  andamento). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
+  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense,
+  então um único GLB de acessório falhando matava a tela inteira e levava junto a edição em
+  andamento (na época `/meu-avatar` ficava fora do grupo `(app)`, e a queda ia parar no
+  `global-error`; desde 19/09/2026 ela cai no recado do `(app)/error.tsx`, o que não muda a
+  razão de existir a rede). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
   com a peça quebrada; `resetKey={asset}` zera o erro ao trocar de peça (nova tentativa).
 - **`prefers-reduced-motion` no 3D do avatar (fotossensibilidade):** o configurador ignorava o gate
   de movimento que o **quarto** já respeita (o CSS não alcança o `useFrame`). Agora o `avatar-rig`

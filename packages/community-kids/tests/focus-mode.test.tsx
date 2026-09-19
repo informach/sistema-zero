@@ -85,8 +85,17 @@ function Probe() {
 }
 
 describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
-  it('é oferecido nos QUATRO apps de criação e no Estúdio Pro, a partir de 768px', () => {
-    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
+  it('é oferecido nos apps de criação, no avatar, no quarto e no Estúdio Pro, a partir de 768px', () => {
+    for (const route of [
+      '/estudio',
+      '/pensa',
+      '/pinta',
+      '/molda',
+      '/estudio/pro/abc123',
+      // 19/09/2026: as duas telas de criação que ocupavam a tela sem oferecer volta ao menu.
+      '/meu-avatar',
+      '/quarto',
+    ]) {
       pathname = route
       const { container, unmount } = render(
         <FocusModeProvider viewerId="perfil-1">
@@ -102,15 +111,17 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
   })
 
   it('não é oferecido abaixo de 768px nem fora das telas de foco', () => {
-    pathname = '/estudio'
     setViewportWidth(500)
-    const narrow = render(
-      <FocusModeProvider viewerId="perfil-1">
-        <Probe />
-      </FocusModeProvider>,
-    )
-    expect(narrow.container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
-    narrow.unmount()
+    for (const route of ['/estudio', '/meu-avatar', '/quarto']) {
+      pathname = route
+      const narrow = render(
+        <FocusModeProvider viewerId="perfil-1">
+          <Probe />
+        </FocusModeProvider>,
+      )
+      expect(narrow.container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
+      narrow.unmount()
+    }
 
     setViewportWidth(1280)
     for (const route of ['/criar', '/cursos', '/perfil', '/']) {
@@ -128,8 +139,16 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
 })
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('está disponível nos apps de criação (e no Estúdio Pro), pelo shell', () => {
-    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
+  it('está disponível nos apps de criação, avatar e quarto pelo shell', () => {
+    for (const route of [
+      '/estudio',
+      '/pensa',
+      '/pinta',
+      '/molda',
+      '/estudio/pro/abc123',
+      '/meu-avatar',
+      '/quarto',
+    ]) {
       pathname = route
       const { unmount } = renderNav()
       expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()

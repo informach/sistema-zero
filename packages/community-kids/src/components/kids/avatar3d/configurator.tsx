@@ -333,7 +333,7 @@ export function AvatarConfigurator({
 
   if (loadState === 'error') {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
           <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
         </div>
@@ -355,7 +355,7 @@ export function AvatarConfigurator({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">

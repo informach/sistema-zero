@@ -217,6 +217,70 @@ síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy
 - ⚠ **Reimportar um manifesto apaga o dicionário daquela aula** (o manifesto não o carrega). Basta
   clicar no botão de novo: o áudio continua no R2 e é reaproveitado sem custo.
 
+## Exportar o manifesto da aula (19/09/2026)
+
+⭐⭐ A metade que faltava do `LessonManifestImport`: **"Exportar roteiro com seções"**, o
+`<details>` irmão na aba "Dados da aula". Nasceu do caso real — montar a aula no staging e levar
+para produção sem remontar tudo à mão. É **puro e 100% no cliente** (`lib/lesson-manifest-export.ts`
++ `components/editor/lesson-manifest-export.tsx`): o editor já tem o `draft.document` em memória,
+então não há rota nova, gateway nem migration. O download é o `lib/download-json.ts`, extraído do
+`json-import-panel.tsx` para os dois usarem. ⚠️ Exportar é LEITURA: a tela não exige `canWrite`.
+
+⚠️⚠️ **O formato não carrega a aula inteira — isso é do `LearningManifest`, não do exportador.**
+Viajam com o conteúdo dentro: cenas `interactive`, `quiz` (como `ManifestQuiz`), `rich_text` (só
+com `markdown`; bloco legado só com `html` vira referência) e `dialogue`. `video` vira
+**`plannedVideo`** com as instruções de produção + o link de origem. Todo o resto — imagem, áudio,
+HTML, e-book, Estúdio, Pinta, certificado, "Em breve" e materiais — sai como
+**`{existing:{kind,index}}`**, e o serviço de importação RECUSA a importação inteira quando a
+referência não existe no destino. Por isso a tela lista **"Cadastre estes blocos no destino antes
+de importar"**, com o tipo e a posição: sem ela, a autora descobriria um bloco por vez, pela
+mensagem de erro do outro ambiente.
+
+⚠️⚠️ **A KEY SAI DO ID DE ORIGEM** (`<prefixo do tipo>-<8 hex do uuid>`), nunca da posição. O
+serviço deriva o id do destino de `sha256('sz-learning-v1:<lessonId>:block:<key>')`, então
+exportar de novo a MESMA aula de origem dá as mesmas keys e a reimportação no mesmo destino
+ATUALIZA no lugar (`preserve`/`update`) em vez de duplicar. Uma key por posição (`cena-1`,
+`cena-2`) seria mais bonita e mapearia ERRADO assim que a autora reordenasse ou apagasse blocos na
+origem entre um export e o seguinte — o conteúdo de uma cena cairia sobre outra, levando junto o
+progresso das crianças naquele id.
+⚠️⚠️ **O limite disso: a origem tem que ser sempre a MESMA aula.** Não existe ponto fixo — no
+destino os ids já são os derivados, então um export feito LÁ gera keys novas, e reimportar esse
+arquivo no próprio destino criaria blocos novos ao lado dos antigos (que o serviço preserva e
+empilha no fim do fechamento). O fluxo real é de mão única: o staging manda, a produção recebe.
+`tests/lesson-manifest-export.test.ts` CONGELA esse limite, para ninguém prometer o contrário.
+
+Outras regras load-bearing, todas travadas em `tests/lesson-manifest-export.test.ts` (que inclui
+uma IDA E VOLTA com um manifesto v6 real do repositório):
+- **Cada teto do manifesto tem mensagem que NOMEIA o bloco e o número.** O rascunho e a
+  publicação aceitam mais que o formato em vários campos (markdown 200k × 50k, 60 × 59 seções,
+  quiz sem limite de perguntas). Cair na frase genérica mandaria a autora para o "Revisar para
+  publicar", que não conhece nenhum desses limites. A orientação de vídeo longa demais é cortada
+  no fim, preservando o LINK — sem ele ninguém sabe qual vídeo reenviar.
+- **`pendingMedia` da seção sai VAZIO**: os vídeos já vão como blocos `plannedVideo`, e o serviço
+  converte cada `pendingMedia` num bloco novo — repetir criaria um vídeo a mais por importação.
+- ⚠️⚠️ **Nenhum ENDEREÇO DE ÁUDIO viaja, nem no balão nem na cena.** O `dialogue` sai sem
+  `vozes` e a cena sai sem `activity.vozes` **e sem `activity.instructionAudioUrl`** (`semAudioDoAmbiente`).
+  O dicionário aponta para o bucket R2 deste ambiente, e levá-lo faz duas coisas ruins de uma vez:
+  a produção passa a servir áudio do staging (que some quando ele for limpo, e que a CSP de lá
+  pode recusar em silêncio) e o botão "Gerar a voz do Zappy" do destino diz **"em dia"** — ele
+  considera pronta toda fala que já tem entrada no dicionário, então ninguém clica e o erro nunca
+  aparece. No destino é um clique no botão; a chave é o hash do TEXTO, então nem custa crédito
+  onde o áudio já existe. A narração escolhida à mão (`instructionAudioUrl`) é PERDA de autoria e
+  por isso vira aviso na tela. O `zappySpeech` (pronúncia escrita pela autora) VIAJA: é texto.
+- ⚠️⚠️ **Um TIPO não pode ficar partido entre conteúdo e referência, e o export RECUSA quando
+  fica.** O destino resolve `existing` contando os blocos daquele tipo que já existem lá — e os
+  que viajam por conteúdo ainda não existem (é o import que os cria). Com um quiz viajando e
+  outro como referência, a referência sai com índice 1, o destino tem um quiz só e recusa tudo;
+  numa reimportação, pior, resolve para o quiz ERRADO em silêncio. Os dois casos que criam a
+  mistura são quiz sem nota de corte e texto legado guardado só em HTML, e a mensagem diz qual
+  consertar. Por isso o índice conta **só entre as referências**.
+- **A versão é 4, e cai para 2 quando alguma seção não tem `completion`** (v3/v4 o exigem) — e na
+  v2 o quiz não cabe, então ele vira referência, com aviso.
+- **`isLearningManifest` é a última rede, antes de baixar**: o mesmo validador que o import roda.
+- Os rótulos de tipo de bloco viraram **`LESSON_BLOCK_KIND_LABELS`** em `lib/types.ts` (saíram do
+  `lesson-editor-client.tsx`): a lista do que recadastrar nomeia pelos MESMOS rótulos do `<select>`
+  do editor, e duas cópias divergiriam.
+
 ## Autoria de aulas — 12/09/2026
 
 O cadastro prioriza criação do zero. `LessonSectionAuthoring` apresenta seções recolhíveis,

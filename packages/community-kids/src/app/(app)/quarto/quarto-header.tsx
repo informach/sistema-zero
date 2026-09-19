@@ -5,6 +5,8 @@ import { backToSection } from '@/components/kids/nav'
 /**
  * O cabeçalho do "Meu quarto", com a seta de volta para o Meu espaço. Mora aqui para a página
  * e o esqueleto usarem o MESMO (texto e seta iguais: a troca de um para o outro não pula).
+ *
+ * O menu nasce recolhido (`FOCUS_ONLY_PREFIXES`) e a alça do shell fica presa à sua borda.
  */
 export function QuartoHeader() {
   return (

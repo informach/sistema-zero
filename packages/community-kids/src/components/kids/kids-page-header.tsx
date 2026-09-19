@@ -76,7 +76,12 @@ export function KidsPageHeader({
             </p>
           ) : null}
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
+        {/* `empty:hidden`: o slot pode receber um componente que decide não renderizar nada (o
+            botão do menu some abaixo de 768px), e aí o wrapper deixaria 16px de `gap` mortos
+            abaixo do subtítulo em todo celular. */}
+        {actions ? (
+          <div className="flex shrink-0 flex-wrap gap-2 empty:hidden">{actions}</div>
+        ) : null}
       </div>
     </div>
   )

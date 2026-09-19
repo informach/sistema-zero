@@ -478,6 +478,10 @@ valida e só então importa o `server.js` standalone).
   SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Alça do índice da aula (19/09/2026):** o player adulto monta `EdgePanelHandle` do pacote UI
+  como irmão da gaveta, não no cabeçalho do conteúdo. A alça branca usa `--lesson-outline-width`
+  (18rem no desktop; `min(20rem,90vw)` no celular), a mesma largura da gaveta, para seguir sua
+  borda na transição e ficar visível na borda da tela quando fechada. O botão antigo no topo saiu.
 - **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (do
   members) marca aulas ainda bloqueadas (curso com `sequential_lock` ON e aulas anteriores não
   concluídas). A lista do curso (`cursos/[slug]/page.tsx`) renderiza a aula travada com cadeado

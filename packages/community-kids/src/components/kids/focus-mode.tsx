@@ -11,7 +11,7 @@ import {
   useState,
 } from 'react'
 import { cn } from '@/lib/cn'
-import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
+import { isFocusRoutePath } from '@/lib/focus-route'
 import { isLessonPath } from '@/lib/lesson-path'
 
 interface LessonChromeContextValue {
@@ -94,7 +94,10 @@ export function FocusModeProvider({
   const pathname = usePathname()
   const isTablet = useMinWidth(768) // md — barra esquerda (menu)
   const onLesson = isLessonPath(pathname)
-  const onFocus = onLesson || isEmbeddedAppPath(pathname)
+  // A régua do foco é UMA (`isFocusRoutePath`): aula + apps embarcados + telas de foco de
+  // altura livre (o Quarto). Somar as listas aqui foi o que fez a distinção entre "recolhe o
+  // menu" e "trava a altura" existir — ver o comentário do `lib/focus-route.ts`.
+  const onFocus = isFocusRoutePath(pathname)
   const [focusChrome, setFocusChrome] = useState<{
     path: string
     navOpen: boolean

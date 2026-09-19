@@ -7,9 +7,11 @@ import { isLessonPath } from '@/lib/lesson-path'
 
 /**
  * Container do conteúdo da área do aluno. TRÊS regimes:
- *  - **Apps de criação** (`isEmbeddedAppPath`: Estúdio, Pensa, Pinta e Molda): largura E
- *    altura totais (`flex flex-col` para o editor preencher via `flex-1`), de BORDA A
- *    BORDA — a alça do menu vive no shell; o selo da nuvem, na barra da ferramenta.
+ *  - **Apps de criação** (`isEmbeddedAppPath`: Estúdio, Pensa, Pinta, Molda e o configurador
+ *    de avatar): largura E altura totais (`flex flex-col` para o editor preencher via
+ *    `flex-1`), de BORDA A BORDA — a alça do menu vive no shell; o selo da nuvem, na barra do app.
+ *    ⚠️ Esta lista é "a altura é travada", NÃO "o menu começa recolhido": a régua do foco é o
+ *    `isFocusRoutePath`, que inclui telas que ROLAM (o Quarto).
  *  - **Página de aula** (`/cursos/.../aulas/...`): o conteúdo (vídeo, livro 3D,
  *    imagens) dividia espaço com o card de aulas à direita e ficava apertado num
  *    `max-w-5xl` — aqui ganha a largura inteira, com o padding de sempre.
