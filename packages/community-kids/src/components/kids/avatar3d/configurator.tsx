@@ -15,7 +15,6 @@ import {
 import { cn } from '@/lib/cn'
 import type { AvatarPartView, AvatarStateView } from '@/lib/types'
 import { KidsBackButton } from '../back-button'
-import { FocusModeToggle } from '../focus-mode-toggle'
 import { KidsMascot } from '../mascot'
 import { ZappyCoin } from '../zappy-coin'
 import { AvatarScene, type CaptureFn } from './avatar-scene'
@@ -360,9 +359,6 @@ export function AvatarConfigurator({
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
-          {/* Primeiro item da barra, como nas quatro ferramentas: some sozinho abaixo de 768px,
-              onde a barra da esquerda nem existe. */}
-          <FocusModeToggle target="nav" />
           <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
           <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1.5 [font-family:var(--font-display)] font-bold text-sm shadow-md">
             <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}

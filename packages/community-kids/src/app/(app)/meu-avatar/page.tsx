@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Configurador de avatar 3D — app de criação embarcado, como o Pinta e o Estúdio: DENTRO do
- * grupo `(app)`, ocupando a área útil inteira com o menu da esquerda recolhido e o botão de
- * mostrar na barra de cima (`EMBEDDED_APP_PREFIXES` + `FocusModeToggle`). O proxy gateia
+ * grupo `(app)`, ocupando a área útil inteira com o menu da esquerda recolhido e a alça
+ * de mostrar presa ao menu pelo shell (`EMBEDDED_APP_PREFIXES`). O proxy gateia
  * `/meu-avatar` (protectedPrefixes + exige perfil): conta sem perfil → `/perfis`. A montagem do
  * WebGL é client-only (`ssr:false`).
  *

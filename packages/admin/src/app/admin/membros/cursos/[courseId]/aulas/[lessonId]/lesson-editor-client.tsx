@@ -38,6 +38,7 @@ import {
   type Project,
   type StudioHandle,
 } from '@sistemazero/studio'
+import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -1300,17 +1301,17 @@ function LessonEditorSession({
       })
   }
   const publication = useRef<{ expectedRevision: string; operationId: string } | null>(null)
-  async function publish() {
+  async function publish(): Promise<boolean> {
     if (activeUpload) {
       toast.error('Aguarde o envio e o processamento dos vídeos antes de publicar.')
-      return
+      return false
     }
     setBusy(true)
     setReviewResult(null)
     try {
       await beforePublish()
       const current = session.getSnapshot().draft
-      if (!current) return
+      if (!current) return false
       const retry = publication.current?.expectedRevision === current.revision
       const command =
         retry && publication.current
@@ -1326,15 +1327,17 @@ function LessonEditorSession({
       setReviewResult({ document: current.document, issues: found })
       if (found.length) {
         toast.error('Confira as pendências indicadas nos blocos antes de publicar.')
-        return
+        return false
       }
       publication.current = command
       await apiSend(`/api/members/lessons/${lessonId}/draft/publish`, 'POST', command)
       publication.current = null
       await load()
       toast.success('Aula publicada. A base do Zappy será atualizada com esta versão.')
+      return true
     } catch (error) {
       toast.error((error as ApiError).message ?? 'Não foi possível publicar.')
+      return false
     } finally {
       setBusy(false)
     }
@@ -1572,15 +1575,22 @@ function LessonEditorSession({
         />
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-          <p role="status" className="text-sm">
-            {draftState.status === 'saved'
-              ? 'Rascunho salvo'
-              : draftState.status === 'saving'
-                ? 'Salvando…'
-                : draftState.status === 'loading'
-                  ? 'Carregando rascunho…'
-                  : draftState.error}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p role="status" className="text-sm">
+              {draftState.status === 'saved'
+                ? 'Rascunho salvo'
+                : draftState.status === 'saving'
+                  ? 'Salvando…'
+                  : draftState.status === 'loading'
+                    ? 'Carregando rascunho…'
+                    : draftState.error}
+            </p>
+            {draft ? (
+              <Badge variant={draft.isPublished ? 'success' : 'muted'}>
+                {draft.isPublished ? 'Aula publicada' : 'Aula ainda não publicada'}
+              </Badge>
+            ) : null}
+          </div>
           {draftState.status === 'error' && (
             <Button
               variant="outline"
@@ -1989,7 +1999,6 @@ function LessonEditorSession({
                               onChange={() => setBlockForm((f) => ({ ...f, dialoguePose: pose }))}
                               className="peer sr-only"
                             />
-                            {/* biome-ignore lint/performance/noImgElement: asset local estático, sem otimização a fazer */}
                             <img
                               src={`/zappy/${pose}.webp`}
                               alt={DIALOGUE_POSE_LABELS[pose]}
@@ -2942,7 +2951,11 @@ function LessonEditorSession({
               disabled={
                 busy || activeUpload || issues.length > 0 || draftState.status === 'conflict'
               }
-              onClick={() => void publish().then(() => setReviewOpen(false))}
+              onClick={() => {
+                void (async () => {
+                  if (await publish()) setReviewOpen(false)
+                })()
+              }}
             >
               {busy && <Spinner />}Publicar aula
             </Button>

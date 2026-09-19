@@ -6,8 +6,8 @@ import type { HostChrome } from '../src/lib/host-chrome'
 
 /**
  * `useHostChrome` (07/09/2026): o contrato que as ferramentas desenham na própria barra —
- * o botão do menu (do modo foco) e o selo da nuvem (da fila). Trava ONDE o menu é oferecido,
- * a persistência por perfil ao alternar, a reatividade ao estado da nuvem, a região viva do
+ * o selo da nuvem (da fila) e a seta de voltar. O menu de foco agora mora no shell, não
+ * na barra da ferramenta. Trava essa separação, a reatividade da nuvem, a região viva do
  * host (só offline/erro) e a identidade estável do objeto (senão a barra da ferramenta
  * re-renderiza a cada autosave). Desde 11/09 também a seta das galerias (`back`) e o sinal
  * da nuvem da conta (`account`).
@@ -152,12 +152,11 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('useHostChrome — o menu', () => {
-  it('nas rotas embarcadas a partir de 768px oferece o botão e inicia recolhido', () => {
+  it('não entrega outro botão às ferramentas embarcadas; a alça é do shell', () => {
     mount(null)
-    expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
-    fireEvent.click(screen.getByRole('button', { name: 'alternar' }))
-    expect(screen.getByTestId('menu').textContent).toBe('Esconder menu|false')
-    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
+    expect(screen.getByTestId('menu').textContent).toBe('null')
+    expect(screen.queryByRole('button', { name: 'alternar' })).toBeNull()
+    expect(screen.getByTestId('back').textContent).toBe('Voltar para Criar|/criar')
   })
 
   it('abaixo de 768px (sem sidebar) e fora das rotas embarcadas o menu é null', () => {
@@ -175,13 +174,13 @@ describe('useHostChrome — o menu', () => {
     }
   })
 
-  it('ignora a preferência salva anteriormente por outro perfil', () => {
+  it('não reintroduz o botão mesmo com preferência antiga salva', () => {
     localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
     const { unmount } = mount(null, false, 'perfil-1')
-    expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
+    expect(screen.getByTestId('menu').textContent).toBe('null')
     unmount()
     mount(null, false, 'perfil-2')
-    expect(screen.getByTestId('menu').textContent).toBe('Mostrar menu|true')
+    expect(screen.getByTestId('menu').textContent).toBe('null')
   })
 })
 

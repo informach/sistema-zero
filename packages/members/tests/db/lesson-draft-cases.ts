@@ -98,6 +98,18 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    test('aula criada em rascunho passa a publicada pelo mesmo fluxo de revisão', async () => {
+      const f = await fixture()
+      await f.db.update(lessons).set({ isPublished: false }).where(eq(lessons.id, f.lessonId))
+      const draft = await f.repo.read(f.lessonId)
+      expect(draft.isPublished).toBe(false)
+
+      const published = await f.publish(draft)
+      expect(published.isPublished).toBe(true)
+      expect((await f.repo.read(f.lessonId)).isPublished).toBe(true)
+      expect((await f.reader.findLessonWithContent(f.lessonId))?.isPublished).toBe(true)
+    })
+
     /**
      * "Trazer a versao publicada de volta" — contra Postgres REAL.
      *

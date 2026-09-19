@@ -224,7 +224,7 @@
   padding-bottom: 8rem;
 }
 main:has(.sz-aula-adulto) {
-  --lesson-outline-width: 18rem;
+  --lesson-outline-width: min(20rem, 90vw);
 }
 
 /* ── A AULA NO DESENHO DO PEN ─────────────────────────────────────────────────────────────
@@ -300,18 +300,39 @@ main:has(.sz-aula-adulto) {
   place-items: center;
   flex-shrink: 0;
 }
-.sz-lesson-material-label {
+.sz-lesson-material-copy {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.125rem;
+}
+.sz-lesson-material-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .sz-lesson-material-meta {
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.75rem;
   text-transform: uppercase;
   color: var(--muted-foreground);
+}
+.sz-lesson-material-cta {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 4.75rem;
+  min-height: 2rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.15;
 }
 .sz-lesson-material-note {
   font-size: 0.875rem;
@@ -367,6 +388,9 @@ main:has(.sz-aula-adulto) {
   text-align: right;
 }
 @media (min-width: 1024px) {
+  main:has(.sz-aula-adulto) {
+    --lesson-outline-width: 18rem;
+  }
   main:has(.sz-aula-adulto) {
     transition: padding-right 0.3s ease-in-out;
   }

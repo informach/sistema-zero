@@ -9,7 +9,7 @@ import { isLessonPath } from '@/lib/lesson-path'
  * Container do conteúdo da área do aluno. TRÊS regimes:
  *  - **Apps de criação** (`isEmbeddedAppPath`: Estúdio, Pensa, Pinta, Molda e o configurador
  *    de avatar): largura E altura totais (`flex flex-col` para o editor preencher via
- *    `flex-1`), de BORDA A BORDA — o botão do menu e o selo da nuvem vivem na barra do app.
+ *    `flex-1`), de BORDA A BORDA — a alça do menu vive no shell; o selo da nuvem, na barra do app.
  *    ⚠️ Esta lista é "a altura é travada", NÃO "o menu começa recolhido": a régua do foco é o
  *    `isFocusRoutePath`, que inclui telas que ROLAM (o Quarto).
  *  - **Página de aula** (`/cursos/.../aulas/...`): o conteúdo (vídeo, livro 3D,
@@ -56,14 +56,13 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // desse limiar; acima dele, nada muda.
     //
     // ⭐ BORDA A BORDA (07/09/2026): sem padding lateral/superior nem a calha do
-    // puxador. O botão de esconder o menu e o selo "Guardado na sua conta" moram
-    // DENTRO da barra de cada ferramenta (contrato `hostChrome`, ver
-    // `use-host-chrome.tsx`) — o app ganha 52px de largura e 32px de altura no
+    // puxador. A alça do menu é irmã da sidebar no shell, sem calha permanente;
+    // o selo "Guardado na sua conta" mora na barra de cada ferramenta (contrato
+    // `hostChrome`, ver `use-host-chrome.tsx`) — o app mantém a largura e altura no
     // desktop. O `pb-24` do mobile fica: a tab bar é `fixed` por cima. Os fundos
     // do app e das ferramentas são os MESMOS primitivos, então não há emenda.
     //
-    // O Molda entrou no mesmo regime no lote 6b (11/09/2026): o menu e o selo moram na
-    // barra dele também, e a calha com o puxador saiu.
+    // O Molda segue o mesmo regime; a calha antiga do puxador não volta.
     return (
       <main
         id="main-content"

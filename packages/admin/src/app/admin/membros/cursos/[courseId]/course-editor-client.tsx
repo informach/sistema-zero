@@ -78,16 +78,13 @@ export function CourseEditorClient({
   const [moduleForm, setModuleForm] = useState({ title: '', summary: '' })
 
   const [lessonOpen, setLessonOpen] = useState(false)
-  const [editingLesson, setEditingLesson] = useState<LessonView | null>(null)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
   const [lessonForm, setLessonForm] = useState({
     slug: '',
     title: '',
     estimatedMinutes: '',
-    isPublished: false,
   })
-  // Slug da aula = auto do título até o autor editar o slug à mão (dirty) — só na
-  // CRIAÇÃO (igual a produto/oferta/curso); na edição o slug é estável.
+  // Slug da nova aula = auto do título até o autor editar o slug à mão (dirty).
   const [lessonSlugDirty, setLessonSlugDirty] = useState(false)
 
   // Arrastar só após 5px (deixa o clique nos botões do card livre).
@@ -223,15 +220,11 @@ export function CourseEditorClient({
 
   // ── Aulas ──
   function openCreateLesson(moduleId: string) {
-    setEditingLesson(null)
     setLessonModuleId(moduleId)
     // Aula nova nasce RASCUNHO — o autor publica quando o conteúdo estiver pronto.
-    setLessonForm({ slug: '', title: '', estimatedMinutes: '', isPublished: false })
+    setLessonForm({ slug: '', title: '', estimatedMinutes: '' })
     setLessonSlugDirty(false) // slug em branco → autogera do título
     setLessonOpen(true)
-  }
-  function openEditLesson(l: LessonView) {
-    window.location.assign(`/admin/membros/cursos/${courseId}/aulas/${l.id}`)
   }
   async function saveLesson() {
     if (!lessonForm.title.trim() || !lessonForm.slug.trim()) {
@@ -369,7 +362,6 @@ export function CourseEditorClient({
                   onEditModule={() => openEditModule(mod)}
                   onDeleteModule={() => void deleteModule(mod)}
                   onCreateLesson={() => openCreateLesson(mod.id)}
-                  onEditLesson={openEditLesson}
                   onDeleteLesson={(l) => void deleteLesson(l)}
                   onLessonDragEnd={(e) => handleLessonDragEnd(mod, e)}
                 />
@@ -425,7 +417,7 @@ export function CourseEditorClient({
       <Dialog
         open={lessonOpen}
         onClose={() => setLessonOpen(false)}
-        title={editingLesson ? 'Editar aula' : 'Nova aula'}
+        title="Nova aula"
         footer={
           <>
             <Button variant="outline" onClick={() => setLessonOpen(false)} disabled={busy}>
@@ -470,7 +462,7 @@ export function CourseEditorClient({
                   ...f,
                   title,
                   // Autogera o slug do título até o autor editá-lo à mão (dirty).
-                  ...(!editingLesson && !lessonSlugDirty ? { slug: slugify(title) } : {}),
+                  ...(!lessonSlugDirty ? { slug: slugify(title) } : {}),
                 }))
               }}
             />
@@ -494,7 +486,6 @@ function SortableModuleItem({
   onEditModule,
   onDeleteModule,
   onCreateLesson,
-  onEditLesson,
   onDeleteLesson,
   onLessonDragEnd,
 }: {
@@ -506,7 +497,6 @@ function SortableModuleItem({
   onEditModule: () => void
   onDeleteModule: () => void
   onCreateLesson: () => void
-  onEditLesson: (l: LessonView) => void
   onDeleteLesson: (l: LessonView) => void
   onLessonDragEnd: (event: DragEndEvent) => void
 }) {
@@ -586,7 +576,6 @@ function SortableModuleItem({
                       lesson={lesson}
                       courseId={courseId}
                       canWrite={canWrite}
-                      onEdit={() => onEditLesson(lesson)}
                       onDelete={() => onDeleteLesson(lesson)}
                     />
                   ))}
@@ -613,13 +602,11 @@ function SortableLessonItem({
   lesson,
   courseId,
   canWrite,
-  onEdit,
   onDelete,
 }: {
   lesson: LessonView
   courseId: string
   canWrite: boolean
-  onEdit: () => void
   onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, style } = useSortableItem(lesson.id)
@@ -663,14 +650,9 @@ function SortableLessonItem({
           <SquarePen className="size-4" /> Conteúdo
         </Link>
         {canWrite ? (
-          <>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              Excluir
-            </Button>
-          </>
+          <Button variant="ghost" size="sm" onClick={onDelete}>
+            Excluir
+          </Button>
         ) : null}
       </div>
     </div>

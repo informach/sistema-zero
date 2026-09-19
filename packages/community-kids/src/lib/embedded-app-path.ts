@@ -2,8 +2,8 @@
  * Rotas em que um app inteiro ocupa a área útil — largura E altura totais, sem cabeçalho do
  * host: os quatro apps de criação embarcados (Estúdio, Pensa, Pinta e Molda) e o configurador
  * de avatar. Ganham tratamento próprio no `MainContainer` (altura travada na janela, borda a
- * borda) e começam com o menu lateral recolhido pelo `FocusModeProvider`. O botão de
- * mostrar/esconder fica na barra do próprio app.
+ * borda) e começam com o menu lateral recolhido pelo `FocusModeProvider`. A alça de
+ * mostrar/esconder pertence ao shell Kids; o app não duplica esse controle.
  *
  * ⚠️ `/meu-avatar` entrou em 19/09/2026, quando ele saiu da tela cheia solta (fora do grupo
  * `(app)`, sem sidebar nenhuma) e passou a viver dentro do layout, como as ferramentas.

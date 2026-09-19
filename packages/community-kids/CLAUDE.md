@@ -1196,8 +1196,10 @@ página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada d
 recados, links e vídeos, que aparece no ponto em que ela o colocou — inclusive embaixo do vídeo, na
 coluna do conteúdo. O desenho é do member-shell (`MaterialsBlockView`, um só para os dois apps, sem
 cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`; o
-`kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
-marca, nome truncado, pílula do tipo, relevo 3D). O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
+  `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
+  marca, nome truncado, tipo/tamanho e relevo 3D). A ação “Baixar” aparece numa pílula explícita
+  à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
+  o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
 — a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
 verbos são das atividades, e material complementar não é uma. ⚠️ Ele está FORA do percurso
 obrigatório por definição, e por isso nunca trava a conclusão. ⚠️⚠️ O item de arquivo aponta para o
@@ -1517,7 +1519,7 @@ bandejas sem nenhum caminho de rolagem — o mesmo defeito que obrigou a existir
   DOIS ramos, o normal e o de erro — virou
   `fixed inset-0 z-50 … md:static md:z-auto md:h-full md:min-h-0 md:flex-1`. O esqueleto do
   `dynamic` (`configurator-client.tsx`) segue a mesma regra, senão cobriria a barra da esquerda
-  enquanto o 3D carrega. O botão é o primeiro item da barra de cima, antes do voltar.
+  enquanto o 3D carrega. A alça do menu é montada uma vez no shell, não na barra do avatar.
   ⚠️⚠️ **O par `fixed` × `md:static` é load-bearing e foi MEDIDO.** No celular o painel de baixo
   mede a JANELA (`max-h-[26vh]`) enquanto a caixa do `<main>` perdeu 152px para a barra de cima e
   a de abas: em fluxo, a cena 3D (que é `flex-1` sem piso) encolhia de ~218px para **~66px** sem
@@ -1527,8 +1529,8 @@ bandejas sem nenhum caminho de rolagem — o mesmo defeito que obrigou a existir
   mostrar. ⚠️ A saída segue `window.location.assign(returnTo)` e o comentário de lá ficou MAIS
   importante: no desktop o avatar do menu agora está na tela durante a edição, e só um reload
   duro o atualiza.
-- **O quarto desenha o botão no cabeçalho** (`quarto-header.tsx`, no slot `actions` do
-  `KidsPageHeader`, que já existia). O `loading.tsx` usa o mesmo cabeçalho, então não pula.
+- **O quarto mantém o cabeçalho** (`quarto-header.tsx`) sem um segundo botão de menu. O shell
+  desenha a alça, inclusive durante o `loading.tsx`, então o controle não pula.
 - ⭐ **"Adequar o layout" virou uma regra de CSS.** A `KidsBand` mede 73.25rem (a coluna à direita
   do menu a 1440px), então esconder o menu só CENTRALIZAVA o quarto. As faixas do quarto levam
   `kids-band-foco` e o `globals.css` solta a régua para `73.25rem + --kids-menu-width` quando a
@@ -1566,17 +1568,15 @@ este arquivo descrevia **não existem mais** em lugar nenhum do código, e
   e o configurador de avatar, sub-rotas inclusas) e as telas de foco de altura livre
   (`FOCUS_ONLY_PREFIXES`, hoje o Quarto) —, sempre a partir de 768px (abaixo disso a sidebar nem
   existe). `outlineAvailable` segue EXCLUSIVO da aula.
-- ⚠️ HISTÓRICO (até 11/09/2026): o `focus-mode-toggle.tsx` tinha duas roupas, o círculo do
-  cabeçalho da aula e o PUXADOR `edge` colado na borda esquerda das telas de criação. O puxador
-  saiu no lote 6b (o Molda era o último a usá-lo): hoje o componente é só o quadrado da aula, e
-  nas quatro ferramentas o botão do menu é desenhado pela barra delas (contrato `hostChrome`).
-- ⚠️ **O puxador mora na CALHA do `MainContainer`** (`md:pl-9` contra `md:pr-4`), nunca flutuando
-  sobre o app: no Estúdio a borda esquerda é a **caixa de blocos do Blockly**, e um puxador por cima
-  cobriria uma categoria. Ele é IRMÃO do frame do app — a cerca `isolation: isolate` da raiz do
-  Estúdio prende os z-index de dentro dele (a toolbox é 70), então `z-30` basta; o que é portalado
-  p/ o `document.body` (menus da Topbar, dropdowns do Blockly) segue passando por cima, que é o certo.
-- **Um mount point só** (dentro do `MainContainer`) cobre Estúdio, Pensa, Pinta e `/estudio/pro` —
-  os três clients (`studio-full-client`/`pensa-client`/`pinta-client`) não sabem que ele existe.
+- **19/09/2026, estado atual:** `FocusModeToggle` usa `EdgePanelHandle` do pacote UI, montado
+  uma vez no shell `(app)` como irmão dos painéis. A alça esquerda tem o mesmo fundo escuro da
+  sidebar; a direita tem o branco do índice da aula. Ambas usam a mesma largura CSS do respectivo
+  painel para permanecer coladas à borda aberta e à borda da tela quando fechadas. Os botões
+  antigos saíram dos cabeçalhos da aula, ferramentas, avatar e quarto. O `hostChrome.menu` dos
+  apps embarcados recebe `null`; os contratos dos pacotes de ferramenta seguem disponíveis para
+  seus playgrounds isolados. A alça da esquerda só aparece a partir de 768px.
+- ⚠️ HISTÓRICO: a versão anterior tinha um puxador na calha do `MainContainer`, depois um botão
+  nos cabeçalhos. Não reintroduzir outro mount point, pois isso duplica o controle do mesmo menu.
 - ⚠️ `useMinWidth` começa `false` TAMBÉM no cliente, de propósito (ver o
   comentário longo no `focus-mode.tsx`): ler `matchMedia`/localStorage no inicializador dava React
   #418 em toda página de aula, porque o botão faz `if (!available) return null`.
@@ -2372,8 +2372,8 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
   para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
   (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
-  ⚠️ Cobertura declarada: o guia recolhido com a tarefa CONCLUÍDA não tem caso (o teste usa
-  `in_progress`), então um `{recolhido && !done ? null : …}` passaria em toda a suíte.
+  O review de integração acrescentou o caso da tarefa CONCLUÍDA e recolhida: a pílula
+  "Concluída" continua no cabeçalho e no nome acessível do botão, sem trazer o pé de rotina.
   ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
   (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
   `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes

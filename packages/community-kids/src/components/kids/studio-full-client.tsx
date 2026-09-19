@@ -727,9 +727,9 @@ export function StudioFullClient({
     else backToList()
   }, [backToList, taskId])
 
-  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da Topbar do
-  // editor e do cabeçalho da lista (contrato `hostChrome`, 07/09/2026). UM provider cobre
-  // as duas raízes (lista e editor) — e o editor passa a ter o selo, que antes não tinha.
+  // O selo "Guardado na sua conta" fica na Topbar do editor e no cabeçalho da lista.
+  // O menu lateral é controlado pela alça do shell Kids (`hostChrome.menu` é null).
+  // UM provider cobre as duas raízes (lista e editor).
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer

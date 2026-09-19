@@ -5,9 +5,9 @@ import { cleanup, render, screen } from '@testing-library/react'
 
 /**
  * O Quarto e o configurador de avatar entraram no modo foco em 19/09/2026: o menu da esquerda
- * nasce recolhido e cada tela desenha o botão de mostrar. Aqui ficam as duas pontas que os
- * testes de régua (`focus-route`, `focus-mode`, `main-container`) não alcançam: o botão existir
- * no cabeçalho do Quarto, e a faixa dele crescer quando o menu some.
+ * nasce recolhido e o shell desenha uma única alça presa à borda. Aqui ficam as duas pontas
+ * que os testes de régua (`focus-route`, `focus-mode`, `main-container`) não alcançam: a alça
+ * funcionar com o cabeçalho do Quarto e a faixa dele crescer quando o menu some.
  *
  * ⚠️ `mock.module` não é isolado por arquivo no bun: espalhar o módulo atual é a receita do
  * `focus-mode.test.tsx`, para nenhum outro arquivo perder export.
@@ -20,6 +20,7 @@ let pathname = '/quarto'
 mock.module('next/navigation', () => ({ ...nav, usePathname: () => pathname }))
 
 const { FocusModeProvider } = await import('../src/components/kids/focus-mode')
+const { FocusModeToggle } = await import('../src/components/kids/focus-mode-toggle')
 const { QuartoHeader } = await import('../src/app/(app)/quarto/quarto-header')
 
 const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
@@ -47,17 +48,19 @@ function renderHeader() {
   return render(
     <FocusModeProvider viewerId="perfil-1">
       <QuartoHeader />
+      <FocusModeToggle target="nav" />
     </FocusModeProvider>,
   )
 }
 
-describe('o cabeçalho do Quarto', () => {
-  it('traz o botão de mostrar o menu, que nasce recolhido', () => {
+describe('o Quarto no shell Kids', () => {
+  it('traz uma única alça de mostrar o menu, que nasce recolhido', () => {
     pathname = '/quarto'
     setViewportWidth(1280)
     renderHeader()
     expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
-    // A seta de volta ao Meu espaço continua lá: o botão do menu não a substitui.
+    expect(screen.getAllByRole('button', { name: 'Mostrar menu' })).toHaveLength(1)
+    // A seta de volta ao Meu espaço continua lá: a alça do menu não a substitui.
     expect(screen.getByRole('link', { name: /Meu espaço/i })).toBeDefined()
   })
 
@@ -78,7 +81,8 @@ describe('o configurador de avatar dentro do layout', () => {
     const raiz =
       'fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1'
 
-    expect(configurator).toContain('<FocusModeToggle target="nav" />')
+    expect(configurator).not.toContain('<FocusModeToggle target="nav" />')
+    expect(source('src/app/(app)/layout.tsx')).toContain('<FocusModeToggle target="nav" />')
     // ⚠️⚠️ O par é load-bearing e foi MEDIDO. Em fluxo no celular, o painel de baixo mede a
     // JANELA (`max-h-[26vh]`) enquanto a caixa perdeu 152px para a barra de cima e a de abas:
     // a cena 3D, que é `flex-1` sem piso, encolhia a ~66px sem erro nenhum — e a foto do avatar

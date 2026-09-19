@@ -82,8 +82,8 @@ export function PensaClient({
     [transport, pintaOwned, studioAvailable, moldaAvailable, router],
   )
 
-  // Só o botão do menu lateral (o Pensa persiste no servidor: sem selo de nuvem), desenhado
-  // pelo próprio Pensa nos cabeçalhos dele (contrato `hostChrome`, 07/09/2026).
+  // O Pensa persiste no servidor (sem selo de nuvem). O menu lateral pertence à alça
+  // do shell Kids, portanto o contrato `hostChrome` não fornece um botão duplicado.
   const { chrome: hostChrome } = useHostChrome({ cloud: null })
 
   return (

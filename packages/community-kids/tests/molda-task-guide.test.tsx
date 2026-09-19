@@ -1,6 +1,6 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { createModelAsset } from '@sistemazero/molda/assets'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MoldaTaskGuide } from '../src/components/kids/molda-task-guide'
 import type { MoldaTaskHandoff } from '../src/components/kids/use-pensa-task-handoff'
 
@@ -183,14 +183,13 @@ test('sair pela navegação preserva o rascunho do guia apenas no mesmo perfil e
 })
 
 /**
- * 18/09/2026 — o guia recolhe por uma seta, e o pé saiu do que recolhe: com tudo dentro,
- * recolher escondia o único caminho de volta ao plano e o aviso da criação ausente — a lição
- * que o irmão do Pinta já pagou.
+ * 19/09/2026 — o guia recolhe por uma seta. O pé de rotina recolhe junto, conforme o
+ * desenho compacto; avisos de problema e ações de recuperação permanecem visíveis.
  *
  * ⚠️ Quem LEMBRA é o host (o hook `usePensaGuideCollapsed`, com teste próprio): aqui o par
  * chega por prop, como nos irmãos do Pinta e do Estúdio.
  */
-test('a seta recolhe o guia, e o pé com a volta ao plano nunca some', async () => {
+test('a seta recolhe o guia e as ações de rotina, mas preserva o cabeçalho', async () => {
   const persistence = {
     load: async () => null,
     loadAll: async () => [],
@@ -253,6 +252,36 @@ test('a seta recolhe o guia, e o pé com a volta ao plano nunca some', async () 
   if (!setaRecolhida) throw new Error('seta esperada')
   fireEvent.click(setaRecolhida)
   expect(mudancas).toEqual([true, false])
+})
+
+test('concluída e recolhida, mantém a situação visível e anunciada na linha do título', async () => {
+  const completed: MoldaTaskHandoff = {
+    ...handoff,
+    task: {
+      ...handoff.task,
+      progress: { ...handoff.task.progress, status: 'completed' },
+    },
+  }
+  await act(async () => {
+    render(
+      <MoldaTaskGuide
+        profileId="child-completed"
+        handoff={completed}
+        persistence={{ load: async () => null, loadAll: async () => [] }}
+        onProgress={() => {}}
+        onOpenAsset={() => {}}
+        onReturn={() => {}}
+        hasOpenCreation={async () => false}
+        collapsed
+        onCollapsedChange={() => {}}
+      />,
+    )
+  })
+
+  const heading = screen.getByRole('button', { name: /Rocha.*Concluída/ })
+  expect(heading.getAttribute('aria-expanded')).toBe('false')
+  expect(heading.querySelector('.sz-tool-guide__state')?.textContent).toBe('Concluída')
+  expect(screen.queryByRole('button', { name: 'Voltar ao plano' })).toBeNull()
 })
 
 test('recolhido, um PROBLEMA continua na tela, e o quadro veste a casca compartilhada', async () => {

@@ -72,7 +72,7 @@ afterEach(cleanup)
 
 const { useFocusMode } = await import('../src/components/kids/focus-mode')
 
-/** Sonda do que as FERRAMENTAS leem (desde 07/09 o botão vive na barra delas). */
+/** Sonda do estado que o shell usa para decidir se a alça aparece. */
 function Probe() {
   const { navAvailable, outlineAvailable, navCollapsed } = useFocusMode()
   return (
@@ -139,14 +139,13 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
 })
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('está disponível nos apps de criação (e no Estúdio Pro), onde a ferramenta o desenha', () => {
+  it('está disponível nos apps de criação, avatar e quarto pelo shell', () => {
     for (const route of [
       '/estudio',
       '/pensa',
       '/pinta',
       '/molda',
       '/estudio/pro/abc123',
-      // No avatar quem desenha é a barra do configurador; no quarto, o cabeçalho da página.
       '/meu-avatar',
       '/quarto',
     ]) {
@@ -171,7 +170,8 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
     expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
     expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
-    expect(container.querySelector('button.size-11')).not.toBeNull()
+    expect(container.querySelector('button[data-side="left"]')).not.toBeNull()
+    expect(container.querySelector('button[data-side="right"]')).not.toBeNull()
   })
 
   it('entra em cada aula com os menus recolhidos também em monitor largo', () => {
@@ -261,12 +261,15 @@ describe('modo foco — o controle em si', () => {
     expect(screen.getByRole('button', { name: 'Mostrar menu' }).getAttribute('title')).toBeNull()
   })
 
-  it('é uma roupa só: o quadrado do cabeçalho, sem o puxador que flutuava na borda', () => {
-    // O puxador (`edge`) saiu no lote 6b: nas ferramentas quem desenha o botão é a barra delas.
+  it('é uma alça presa à borda, não um quadrado no cabeçalho', () => {
     pathname = '/cursos/meu-curso/aulas/abc123'
     const { container } = renderNav()
-    expect(container.querySelector('button.size-11')).not.toBeNull()
-    expect(container.querySelector('button.absolute')).toBeNull()
+    const handle = container.querySelector('button[data-side="left"]')
+    expect(handle?.classList.contains('fixed')).toBe(true)
+    expect(handle?.getAttribute('style')).toContain('left: 0')
+    expect(handle?.getAttribute('aria-controls')).toBe('kids-app-sidebar')
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(handle?.getAttribute('style')).toContain('var(--kids-menu-width)')
   })
 })
 

@@ -84,6 +84,9 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   ⚠️ Desde 18/09/2026 esse cabeçalho é o da PÁGINA ("nome da aula · nome da seção", com o índice ao
   lado): o player parou de renderizar o `<h1>` e o índice saiu da `sz-lesson-toolbar`, que ficou só
   com "O que falta para concluir".
+- **Materiais da aula:** o `MaterialsBlockView` do member-shell é compartilhado com o Kids;
+  `globals.css` mantém a linha sóbria e veste a ação explícita “Baixar” à direita sem criar
+  outro botão dentro da linha clicável.
 - **Avatar da barra:** sem foto, o `UserAvatar` do member-shell é tinta escura sobre verde a 15%, e
   as iniciais sumiam na barra escura. O botão do menu aplica `[&>span]:bg-primary
   [&>span]:text-primary-foreground`: o seletor de filho vence as classes do componente
@@ -478,6 +481,10 @@ valida e só então importa o `server.js` standalone).
   SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Alça do índice da aula (19/09/2026):** o player adulto monta `EdgePanelHandle` do pacote UI
+  como irmão da gaveta, não no cabeçalho do conteúdo. A alça branca usa `--lesson-outline-width`
+  (18rem no desktop; `min(20rem,90vw)` no celular), a mesma largura da gaveta, para seguir sua
+  borda na transição e ficar visível na borda da tela quando fechada. O botão antigo no topo saiu.
 - **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (do
   members) marca aulas ainda bloqueadas (curso com `sequential_lock` ON e aulas anteriores não
   concluídas). A lista do curso (`cursos/[slug]/page.tsx`) renderiza a aula travada com cadeado
