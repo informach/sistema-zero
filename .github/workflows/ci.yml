@@ -283,7 +283,7 @@ jobs:
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
-    # 50min: o members espera ficar pronto ANTES de disparar community-kids e community (ver
+    # 50min: o members espera ficar pronto ANTES de disparar admin, community-kids e community (ver
     # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
     timeout-minutes: 50
     env:
@@ -460,16 +460,15 @@ jobs:
             done
           }
 
-          # ⚠️⚠️ ORDEM: o members sobe ANTES dos apps que carregam o player de cena (full review final de
-          # dados e deploy, 16/09/2026, MÉDIO-1). O player novo contra o members antigo conclui na tela e o
-          # servidor grava `passed:false` (32 de 142 blocos) ou recusa com 400 (10 de 142); o inverso (player
-          # antigo × members novo) o members já sabe tolerar. Só a ORDEM muda: quem dispara é o mesmo mapa
-          # acima. Os outros serviços sobem junto com o members. Se o members não ficar pronto, os apps NÃO
-          # sobem (ficam na versão anterior, que conversa com o members anterior) e o job fica vermelho.
+          # ⚠️⚠️ ORDEM: o members sobe ANTES dos apps que carregam o player de cena e do admin que
+          # escreve blocos novos. O player novo contra o members antigo pode gravar progresso errado
+          # ou receber 400; o admin novo contra o enum antigo pode falhar ao salvar materiais. O
+          # inverso é tolerado. Os outros serviços sobem junto com o members. Se ele não ficar pronto,
+          # esses apps NÃO sobem e o job fica vermelho.
           # ⚠️ Um push novo CANCELA este run (concurrency): cancelado entre as duas fases, os apps ficam sem
           # deploy e o run seguinte só olha o diff DELE. Remédio: gh workflow run ci.yml --ref staging
-          # -f services=community-kids,community
-          DEPOIS_DO_MEMBERS=(community-kids community)
+          # -f services=admin,community-kids,community
+          DEPOIS_DO_MEMBERS=(community-kids community admin)
           ESPERA_MEMBERS=0
           if [ -n "${WANT[members]:-}" ]; then
             for s in "${DEPOIS_DO_MEMBERS[@]}"; do
@@ -484,7 +483,7 @@ jobs:
             echo "esperando o members antes de: ${DEPOIS_DO_MEMBERS[*]}"
             esperar members
             if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then
-              echo "::error::o members não ficou pronto: ${DEPOIS_DO_MEMBERS[*]} NÃO foram disparados (o player novo contra o members antigo grava passed:false)"
+              echo "::error::o members não ficou pronto: ${DEPOIS_DO_MEMBERS[*]} NÃO foram disparados (contratos de aula incompatíveis)"
               esperar "${!DEP[@]}"
               exit 1
             fi

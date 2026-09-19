@@ -58,29 +58,22 @@ export function planEbookMaterialUpload(
   }
 
   // Se o PDF anterior já estava nos materiais, a troca mantém o lugar escolhido pela autora.
-  const linked = current.blocks.find(
+  const linkedPrevious = current.blocks.find(
     (block) =>
       block.content.kind === 'materials' &&
       block.content.items.some(
-        (item) =>
-          item.kind === 'file' &&
-          (item.attachmentId === attachmentId || item.attachmentId === previous?.id),
+        (item) => item.kind === 'file' && item.attachmentId === previous?.id,
       ),
   )
-  if (linked?.content.kind === 'materials') {
-    if (
-      linked.content.items.some(
-        (item) => item.kind === 'file' && item.attachmentId === attachmentId,
-      )
-    )
-      return changes
+  if (linkedPrevious?.content.kind === 'materials') {
+    if (previous?.id === attachmentId) return changes
     add({
       type: 'block',
       block: {
-        id: linked.id,
+        id: linkedPrevious.id,
         content: {
-          ...linked.content,
-          items: linked.content.items.map((item) =>
+          ...linkedPrevious.content,
+          items: linkedPrevious.content.items.map((item) =>
             item.kind === 'file' && item.attachmentId === previous?.id
               ? { ...item, attachmentId }
               : item,
@@ -90,6 +83,16 @@ export function planEbookMaterialUpload(
     })
     return changes
   }
+  if (
+    current.blocks.some(
+      (block) =>
+        block.content.kind === 'materials' &&
+        block.content.items.some(
+          (item) => item.kind === 'file' && item.attachmentId === attachmentId,
+        ),
+    )
+  )
+    return changes
 
   const item = { id: createId(), kind: 'file' as const, attachmentId }
   const materials = current.blocks.find(

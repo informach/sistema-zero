@@ -95,4 +95,32 @@ describe('PDF do livro 3D como material complementar', () => {
       items: [{ kind: 'file', attachmentId: 'new-1' }],
     })
   })
+
+  test('ao trocar por um PDF já anexado, atualiza o item do livro mesmo se outro bloco vier antes', () => {
+    const first = upload(document(), 'primeiro.pdf', 'r2priv:primeiro.pdf')
+    first.attachments.push({
+      id: 'outro',
+      label: 'segundo',
+      url: 'r2priv:segundo.pdf',
+      fileType: 'application/pdf',
+      sizeBytes: 1024,
+    })
+    first.blocks.unshift({
+      id: 'materials-other',
+      content: {
+        kind: 'materials',
+        items: [{ id: 'item-other', kind: 'file', attachmentId: 'outro' }],
+      },
+    })
+    first.sections[0]!.blockIds.unshift('materials-other')
+
+    const next = upload(first, 'segundo.pdf', 'r2priv:segundo.pdf', 'r2priv:primeiro.pdf')
+    expect(next.attachments).toHaveLength(2)
+    expect(next.blocks[0]?.content).toMatchObject({
+      items: [{ id: 'item-other', attachmentId: 'outro' }],
+    })
+    expect(next.blocks[2]?.content).toMatchObject({
+      items: [{ id: 'new-2', attachmentId: 'outro' }],
+    })
+  })
 })
