@@ -84,6 +84,9 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   ⚠️ Desde 18/09/2026 esse cabeçalho é o da PÁGINA ("nome da aula · nome da seção", com o índice ao
   lado): o player parou de renderizar o `<h1>` e o índice saiu da `sz-lesson-toolbar`, que ficou só
   com "O que falta para concluir".
+- **Materiais da aula:** o `MaterialsBlockView` do member-shell é compartilhado com o Kids;
+  `globals.css` mantém a linha sóbria e veste a ação explícita “Baixar” à direita sem criar
+  outro botão dentro da linha clicável.
 - **Avatar da barra:** sem foto, o `UserAvatar` do member-shell é tinta escura sobre verde a 15%, e
   as iniciais sumiam na barra escura. O botão do menu aplica `[&>span]:bg-primary
   [&>span]:text-primary-foreground`: o seletor de filho vence as classes do componente

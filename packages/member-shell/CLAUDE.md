@@ -960,7 +960,8 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    `LessonSections` o manda direto ao `InteractiveLessonBlock` —, então este gancho é o ÚNICO
    caminho para o chip deles; mexeu nele, mexa no `BlockChip` do kids),
    **`sz-lesson-materials`** e a família dele (19/09/2026 — `-title`, `-list`, mais
-   `sz-lesson-material` + `data-material` por item, `-action`, `-icon`, `-label`, `-meta`,
+   `sz-lesson-material` + `data-material` por item, `-action`, `-icon`, `-copy`, `-label`, `-meta`,
+   `-cta`,
    `-note`, `-figure`, `-video`, `-text`. O bloco de materiais complementares é UM componente
    para os dois apps, e ele não tem cor nenhuma por dentro: o kids o veste com o relevo e a
    bolinha da marca, o adulto com a linha sóbria. Travado em `tests/materials-block.test.tsx`),
@@ -1015,6 +1016,10 @@ APAGADO (o fork do kids junto).
   bloqueado pela CSP não avisa nada, e um retângulo branco é pior que um link honesto.
 - **O desenho é UM só para os dois apps**, sem cor por dentro: os ganchos `sz-lesson-materials*`
   (invariante 8) são o contrato, e cada app veste no `globals.css` dele.
+- **Download é um comando legível, não só um ícone:** a linha inteira continua sendo o botão, mas
+  agora exibe “Baixar” à direita; durante o pedido mostra “Preparando…” e só exibe “Baixado”
+  quando o navegador recebeu o arquivo. O fallback que abre outra aba não recebe esse selo:
+  não há confirmação do download fora da página. A prévia do admin continua desabilitada.
 - **Ele NUNCA trava a conclusão** (`isCompletionGatingBlock`): complementar é, por definição, o que
   está fora do percurso obrigatório. Isso substituiu a checagem "atividade obrigatória no apoio"
   do members, que deixou de existir junto com o lugar.

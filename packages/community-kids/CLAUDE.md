@@ -1196,8 +1196,10 @@ página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada d
 recados, links e vídeos, que aparece no ponto em que ela o colocou — inclusive embaixo do vídeo, na
 coluna do conteúdo. O desenho é do member-shell (`MaterialsBlockView`, um só para os dois apps, sem
 cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`; o
-`kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
-marca, nome truncado, pílula do tipo, relevo 3D). O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
+  `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
+  marca, nome truncado, tipo/tamanho e relevo 3D). A ação “Baixar” aparece numa pílula explícita
+  à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
+  o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
 — a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
 verbos são das atividades, e material complementar não é uma. ⚠️ Ele está FORA do percurso
 obrigatório por definição, e por isso nunca trava a conclusão. ⚠️⚠️ O item de arquivo aponta para o

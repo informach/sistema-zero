@@ -52,6 +52,9 @@ describe('o bloco de materiais complementares', () => {
     const html = render([arquivo])
     expect(html).toContain('JSON')
     expect(html).toContain('12 KB')
+    expect(html).toContain('aria-label="Baixar dino.pinta.json"')
+    expect(html).toContain('class="sz-lesson-material-cta"')
+    expect(html).toContain('>Baixar</span>')
   })
 
   test('a ordem desenhada é a ordem que a autora montou', () => {
@@ -96,6 +99,7 @@ describe('o bloco de materiais complementares', () => {
     expect(html).toContain('dino.pinta.json')
     expect(html).toContain('disabled=""')
     expect(html).toContain('baixa na aula')
+    expect(html).toContain('>Baixar</span>')
   })
 
   test('lista vazia não desenha moldura nenhuma', () => {
@@ -111,6 +115,8 @@ describe('o bloco de materiais complementares', () => {
       'sz-lesson-materials-list',
       'sz-lesson-material',
       'sz-lesson-material-action',
+      'sz-lesson-material-copy',
+      'sz-lesson-material-cta',
       'data-material="file"',
       'data-material="text"',
     ])

@@ -27,6 +27,7 @@ import { useLessonPlayer } from './lesson-player-context'
 export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
   const player = useLessonPlayer()
   const [baixando, setBaixando] = useState<string | null>(null)
+  const [baixados, setBaixados] = useState<Set<string>>(() => new Set())
 
   async function baixar(item: Extract<MaterialItem, { kind: 'file' }>) {
     if (baixando || !player) return
@@ -34,7 +35,9 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
     setBaixando(item.id)
     try {
       const r = await downloadLessonAttachment(url, item.label ?? 'material')
-      if (!r.ok && r.reason === 'refused') toast.error(r.message)
+      if (r.ok) setBaixados((ids) => new Set(ids).add(item.attachmentId))
+      else if (r.reason === 'refused') toast.error(r.message)
+      else toast.info('O material pode abrir em outra aba. Confira se o download começou.')
     } finally {
       setBaixando(null)
     }
@@ -65,6 +68,7 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
                   onClick={() => baixar(item)}
                   disabled={baixando !== null || !podeBaixar}
                   className="sz-lesson-material-action"
+                  aria-label={`${baixando === item.id ? 'Preparando download de' : baixados.has(item.attachmentId) ? 'Baixar novamente' : 'Baixar'} ${item.label ?? 'material'}`}
                 >
                   <span className="sz-lesson-material-icon" aria-hidden>
                     {baixando === item.id ? (
@@ -73,13 +77,18 @@ export function MaterialsBlockView({ content }: { content: MaterialsBlock }) {
                       <Download className="size-4" />
                     )}
                   </span>
-                  <span className="sz-lesson-material-label">{item.label}</span>
-                  <span className="sz-lesson-material-meta">
+                  <span className="sz-lesson-material-copy">
+                    <span className="sz-lesson-material-label">{item.label}</span>
+                    <span className="sz-lesson-material-meta">
+                      {podeBaixar ? descricaoDoArquivo(item) : 'baixa na aula'}
+                    </span>
+                  </span>
+                  <span className="sz-lesson-material-cta" aria-live="polite">
                     {baixando === item.id
-                      ? 'Preparando o download…'
-                      : podeBaixar
-                        ? descricaoDoArquivo(item)
-                        : 'baixa na aula'}
+                      ? 'Preparando…'
+                      : baixados.has(item.attachmentId)
+                        ? 'Baixado'
+                        : 'Baixar'}
                   </span>
                 </button>
                 {item.note ? <p className="sz-lesson-material-note">{item.note}</p> : null}
