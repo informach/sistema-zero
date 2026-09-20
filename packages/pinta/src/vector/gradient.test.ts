@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { gradientGeometry, gradientPointForShape, moveGradientHandle } from './gradient'
+import {
+  gradientDocumentPointForShape,
+  gradientGeometry,
+  gradientPointForShape,
+  moveGradientHandle,
+} from './gradient'
 import type { VectorGradient, VectorShape } from './model'
 
 const radial: VectorGradient = { type: 'radial', from: '#ffffff', to: '#000000', angle: 0 }
@@ -69,6 +74,13 @@ describe('geometria do degradê', () => {
 
   it('não deixa as duas pontas lineares colapsarem no mesmo ponto', () => {
     expect(moveGradientHandle(linear, 'start', { x: 1, y: 0.5 })).toBe(linear)
+    expect(
+      gradientGeometry({ ...linear, start: { x: 0.4, y: 0.4 }, end: { x: 0.4, y: 0.4 } }),
+    ).toEqual({
+      type: 'linear',
+      start: { x: 0, y: 0.5 },
+      end: { x: 1, y: 0.5 },
+    })
   })
 
   it('converte o ponto do documento para a caixa local de uma forma girada', () => {
@@ -88,5 +100,8 @@ describe('geometria do degradê', () => {
     const point = gradientPointForShape(shape, { x: 80, y: 25 })
     expect(point.x).toBeCloseTo(0.25)
     expect(point.y).toBeCloseTo(0.2)
+    const returned = gradientDocumentPointForShape(shape, point)
+    expect(returned.x).toBeCloseTo(80)
+    expect(returned.y).toBeCloseTo(25)
   })
 })

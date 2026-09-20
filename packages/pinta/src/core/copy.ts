@@ -767,6 +767,11 @@ export const COPY = {
     gradientAdjustDone: 'Concluir',
     gradientAdjustSelectOne:
       'Selecione uma forma livre com degradê por vez para ajustar no desenho.',
+    gradientHandleStart: 'Mover cor do começo',
+    gradientHandleEnd: 'Mover cor do fim',
+    gradientHandleCenter: 'Mover brilho',
+    gradientHandleRadius: 'Ajustar alcance do brilho',
+    gradientHandleKeyboard: 'Arraste ou use as setas do teclado para ajustar.',
     gradientOff: 'Tirar o degradê',
     /**
      * Modo de captura do conta-gotas (a janelinha de cor fecha e a criança toca

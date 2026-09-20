@@ -11,7 +11,7 @@
  * canvas do pixel) — sem isso o wrapper shrink-to-fit colapsa o SVG a zero e
  * "a área de desenho não aparece".
  */
-import type { JSX, PointerEvent } from 'react'
+import type { JSX, PointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { colorNameFor } from '../../../core/colorName'
 import { COPY } from '../../../core/copy'
@@ -28,6 +28,13 @@ import {
   shapeBounds,
   translateShape,
 } from '../../../vector/geometry'
+import {
+  type GradientHandle,
+  gradientDocumentPointForShape,
+  gradientGeometry,
+  gradientPointForShape,
+  moveGradientHandle,
+} from '../../../vector/gradient'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
 import { hitMovableShapeAt, shapeHitAt } from '../../../vector/hitTest'
 import {
@@ -37,6 +44,7 @@ import {
   sampleImageColorAt,
 } from '../../../vector/imageSampler'
 import {
+  isVectorGradient,
   MAX_TEXT_CHARS,
   normalizeTextContent,
   type Vec2,
@@ -139,6 +147,17 @@ type Gesture =
       pointerId: number
       center: Vec2
       startAngle: number
+      start: Vec2
+      startClient: Vec2
+      docPerPx: number
+      base: PintaAsset
+      baseShapes: VectorShape[]
+    }
+  | {
+      kind: 'gradient'
+      pointerId: number
+      shapeId: string
+      handle: GradientHandle
       start: Vec2
       startClient: Vec2
       docPerPx: number
@@ -307,7 +326,9 @@ export function VectorStage(): JSX.Element {
   // O solto no `document` (para o gesto acabar mesmo FORA do palco) e a versão mais
   // recente do `endGesture`: o listener nasce num render, e o laço/a prévia mudam depois.
   const dragCleanupRef = useRef<(() => void) | null>(null)
-  const endGestureRef = useRef<(event?: { pointerId: number }) => void>(() => undefined)
+  const endGestureRef = useRef<(event?: { pointerId: number; type?: string }) => void>(
+    () => undefined,
+  )
   // A versão mais recente do movimento, para o `document` alimentar o gesto quando
   // o capture do ponteiro não existe (mesmo motivo do `endGestureRef`).
   const pointerMoveRef = useRef<(event: StagePointer) => void>(() => undefined)
@@ -349,6 +370,10 @@ export function VectorStage(): JSX.Element {
   useLayoutEffect(() => {
     if (gestureRef.current) endGestureRef.current()
   }, [zoom])
+
+  useLayoutEffect(() => {
+    if (!gradientAdjustShapeId && gestureRef.current?.kind === 'gradient') endGestureRef.current()
+  }, [gradientAdjustShapeId])
 
   // Trocar de ferramenta descarta os pontos pendentes da Caneta.
   // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (trocou de ferramenta), não leitura
@@ -520,8 +545,67 @@ export function VectorStage(): JSX.Element {
             if (svgRef.current?.contains(event.target as Node | null)) return
             pointerMoveRef.current(event)
           },
-      onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId }),
+      onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId, type: event.type }),
     })
+  }
+
+  function startGradientGesture(
+    handle: GradientHandle,
+    event: PointerEvent<SVGCircleElement>,
+  ): void {
+    event.stopPropagation()
+    event.preventDefault()
+    if (!event.isPrimary || !gradientAdjustShapeId || gestureStillActive()) return
+    const baseShapes = currentShapes()
+    const shape = baseShapes.find((candidate) => candidate.id === gradientAdjustShapeId)
+    if (!shape || shape.locked || shape.hidden || !isVectorGradient(shape.fill)) return
+    beginGesture({
+      kind: 'gradient',
+      pointerId: event.pointerId,
+      shapeId: shape.id,
+      handle,
+      start: svgPoint(event),
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
+      base: editor.getState().asset,
+      baseShapes,
+    })
+  }
+
+  function nudgeGradientHandle(
+    handle: GradientHandle,
+    event: ReactKeyboardEvent<SVGCircleElement>,
+  ): void {
+    const { key } = event
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (!gradientAdjustShapeId) return
+    const shapes = currentShapes()
+    const shape = shapes.find((candidate) => candidate.id === gradientAdjustShapeId)
+    if (!shape || !isVectorGradient(shape.fill) || shape.locked || shape.hidden) return
+    const geometry = gradientGeometry(shape.fill)
+    const step = event.shiftKey ? 0.1 : 0.02
+    const dx = key === 'ArrowRight' ? step : key === 'ArrowLeft' ? -step : 0
+    const dy = key === 'ArrowDown' ? step : key === 'ArrowUp' ? -step : 0
+    let point: Vec2
+    if (geometry.type === 'radial') {
+      if (handle === 'radius') {
+        const side = geometry.center.x + geometry.radius <= 1 ? 1 : -1
+        const radiusDelta = dx * side + (key === 'ArrowUp' ? step : key === 'ArrowDown' ? -step : 0)
+        point = { x: geometry.center.x + geometry.radius + radiusDelta, y: geometry.center.y }
+      } else {
+        point = { x: geometry.center.x + dx, y: geometry.center.y + dy }
+      }
+    } else {
+      const current = handle === 'start' ? geometry.start : geometry.end
+      point = { x: current.x + dx, y: current.y + dy }
+    }
+    const fill = moveGradientHandle(shape.fill, handle, point)
+    if (fill === shape.fill) return
+    commitShapes(
+      shapes.map((candidate) => (candidate.id === shape.id ? { ...candidate, fill } : candidate)),
+    )
   }
 
   /**
@@ -1057,6 +1141,24 @@ export function VectorStage(): JSX.Element {
       setPreview(drawPreview(gesture.start, end, gesture.points))
       return
     }
+    if (gesture.kind === 'gradient') {
+      if (alcaAindaParada(gesture, event)) return
+      const shape = gesture.baseShapes.find((candidate) => candidate.id === gesture.shapeId)
+      if (!shape || !isVectorGradient(shape.fill)) return
+      const point = gradientPointForShape(shape, gesturePoint(gesture, event))
+      const fill = moveGradientHandle(shape.fill, gesture.handle, point)
+      if (fill === shape.fill) {
+        if (editor.getState().asset !== gesture.base) editor.getState().replace(gesture.base)
+        return
+      }
+      commitShapes(
+        gesture.baseShapes.map((candidate) =>
+          candidate.id === shape.id ? { ...candidate, fill } : candidate,
+        ),
+        false,
+      )
+      return
+    }
     if (gesture.kind === 'move') {
       // Delta TOTAL desde o início, sobre a BASE (sem deriva); com a grade
       // ligada o delta anda em passos do espaçamento — a seleção mantém os
@@ -1162,7 +1264,7 @@ export function VectorStage(): JSX.Element {
     }
   }
 
-  function endGesture(event?: { pointerId: number }): void {
+  function endGesture(event?: { pointerId: number; type?: string }): void {
     const gesture = gestureRef.current
     if (!gesture) return
     if (event && event.pointerId !== gesture.pointerId) return
@@ -1224,6 +1326,10 @@ export function VectorStage(): JSX.Element {
       setSelectedIds([shape.id])
       return
     }
+    if (gesture.kind === 'gradient' && event?.type === 'pointercancel') {
+      editor.getState().replace(gesture.base)
+      return
+    }
     // move/resize/rotate: fecha o gesto com 1 entrada de undo.
     editor.getState().commitGesture(gesture.base)
   }
@@ -1242,6 +1348,56 @@ export function VectorStage(): JSX.Element {
   const handlesActive = !gradientAdjustShapeId && (tool === 'select' || SHAPE_TOOLS.has(tool))
 
   const singleBounds = single ? shapeBounds(single) : null
+  const adjustedShape = gradientAdjustShapeId
+    ? doc.shapes.find((shape) => shape.id === gradientAdjustShapeId)
+    : null
+  const adjustedFill =
+    adjustedShape && isVectorGradient(adjustedShape.fill) ? adjustedShape.fill : null
+  const gradientHandles: Array<{
+    handle: GradientHandle
+    point: Vec2
+    color: string
+    label: string
+  }> = []
+  if (adjustedShape && adjustedFill) {
+    const geometry = gradientGeometry(adjustedFill)
+    if (geometry.type === 'linear') {
+      gradientHandles.push(
+        {
+          handle: 'start',
+          point: gradientDocumentPointForShape(adjustedShape, geometry.start),
+          color: adjustedFill.from,
+          label: COPY.vector.gradientHandleStart,
+        },
+        {
+          handle: 'end',
+          point: gradientDocumentPointForShape(adjustedShape, geometry.end),
+          color: adjustedFill.to,
+          label: COPY.vector.gradientHandleEnd,
+        },
+      )
+    } else {
+      const { center, radius } = geometry
+      const reach =
+        center.x + radius <= 1
+          ? { x: center.x + radius, y: center.y }
+          : { x: center.x - radius, y: center.y }
+      gradientHandles.push(
+        {
+          handle: 'center',
+          point: gradientDocumentPointForShape(adjustedShape, center),
+          color: adjustedFill.from,
+          label: COPY.vector.gradientHandleCenter,
+        },
+        {
+          handle: 'radius',
+          point: gradientDocumentPointForShape(adjustedShape, reach),
+          color: adjustedFill.to,
+          label: COPY.vector.gradientHandleRadius,
+        },
+      )
+    }
+  }
   const reshapeNodes = tool === 'reshape' && nodePath ? nodePath.nodes.map((n) => n.p) : []
   const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
@@ -1480,6 +1636,47 @@ export function VectorStage(): JSX.Element {
                   </pattern>
                 </defs>
                 <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
+              </g>
+            ) : null}
+
+            {gradientHandles.length === 2 ? (
+              <g>
+                <line
+                  x1={gradientHandles[0]?.point.x}
+                  y1={gradientHandles[0]?.point.y}
+                  x2={gradientHandles[1]?.point.x}
+                  y2={gradientHandles[1]?.point.y}
+                  stroke="#00a0c8"
+                  strokeWidth={2 / zoom}
+                  pointerEvents="none"
+                />
+                {gradientHandles.map(({ handle, point, color, label }) => (
+                  <g key={handle}>
+                    {/* biome-ignore lint/a11y/useSemanticElements: uma alça SVG arrastável não pode ser um button HTML dentro do palco. */}
+                    <circle
+                      data-gradient-handle={handle}
+                      cx={point.x}
+                      cy={point.y}
+                      r={22 / zoom}
+                      fill="transparent"
+                      role="button"
+                      aria-label={label}
+                      aria-description={COPY.vector.gradientHandleKeyboard}
+                      tabIndex={0}
+                      onPointerDown={(event) => startGradientGesture(handle, event)}
+                      onKeyDown={(event) => nudgeGradientHandle(handle, event)}
+                    />
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r={8 / zoom}
+                      fill={color}
+                      stroke="#00a0c8"
+                      strokeWidth={2 / zoom}
+                      pointerEvents="none"
+                    />
+                  </g>
+                ))}
               </g>
             ) : null}
 

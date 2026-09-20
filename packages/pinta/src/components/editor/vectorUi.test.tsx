@@ -24,6 +24,31 @@ beforeEach(() => {
 })
 
 describe('ajustar degradê no desenho', () => {
+  async function openGradientShape(type: 'linear' | 'radial', rotation = 0): Promise<HTMLElement> {
+    const shape: VectorShape = {
+      id: 'gradiente-teste',
+      type: 'rect',
+      x: 40,
+      y: 40,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: { type, from: '#ffffff', to: '#000000', angle: 0 },
+      stroke: null,
+      opacity: 1,
+      rotation,
+    }
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill^="url(#"]')
+    if (!rect) throw new Error('forma com degradê esperada')
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    return stage
+  }
+
   it('entra e sai do modo sem abrir outra ferramenta', async () => {
     await openVectorEditor()
     const stage = measureStage()
@@ -50,6 +75,55 @@ describe('ajustar degradê no desenho', () => {
     }) as HTMLButtonElement
     expect(adjust.disabled).toBe(true)
     expect(screen.getByText(COPY.vector.gradientAdjustSelectOne)).toBeTruthy()
+  })
+
+  it('não entra no ajuste com duas formas selecionadas', async () => {
+    const gradient = { type: 'radial' as const, from: '#ffffff', to: '#000000', angle: 0 }
+    const stage = await openWithShapes([
+      makeRect({ x: 40, y: 40 }, { x: 140, y: 140 }, { ...DEFAULT_STYLE, fill: gradient }),
+      makeRect({ x: 170, y: 40 }, { x: 270, y: 140 }, { ...DEFAULT_STYLE, fill: gradient }),
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const shapes = stage.querySelectorAll('rect[fill^="url(#"]')
+    const first = shapes[0]
+    const second = shapes[1]
+    if (!first || !second) throw new Error('duas formas com degradê esperadas')
+    fireEvent.pointerDown(first, { isPrimary: true, pointerId: 21, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 21 })
+    fireEvent.pointerDown(second, {
+      isPrimary: true,
+      pointerId: 22,
+      clientX: 210,
+      clientY: 80,
+      shiftKey: true,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 22 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(
+      (screen.getByRole('button', { name: COPY.vector.gradientAdjust }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
+  })
+
+  it('não entra no ajuste de uma forma trancada', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `${COPY.layers.lock}: ${COPY.vector.shapeNames.rect}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /^Selecionar: / }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(
+      (screen.getByRole('button', { name: COPY.vector.gradientAdjust }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
   })
 
   it('Esc ou troca de ferramenta encerra o modo', async () => {
@@ -111,6 +185,115 @@ describe('ajustar degradê no desenho', () => {
       const gradient = stage.querySelector('radialGradient')
       expect(gradient).toBeTruthy()
       expect(gradient?.hasAttribute('cx')).toBe(false)
+    })
+  })
+
+  it('arrastar alças do degradê redondo move o brilho com um desfazer', async () => {
+    const stage = await openGradientShape('radial')
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, {
+      isPrimary: true,
+      pointerId: 11,
+      pointerType: 'touch',
+      clientX: 90,
+      clientY: 90,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 11, pointerType: 'touch', clientX: 70, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 11, pointerType: 'touch', clientX: 70, clientY: 60 })
+    await waitFor(() => {
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3')
+      expect(stage.querySelector('radialGradient')?.getAttribute('cy')).toBe('0.2')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3'),
+    )
+  })
+
+  it('arrastar alças do degradê redondo ajusta o alcance', async () => {
+    const stage = await openGradientShape('radial')
+    const handle = stage.querySelector('[data-gradient-handle="radius"]')
+    if (!handle) throw new Error('alça do alcance esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 12, clientX: 140, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 12, clientX: 120, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 12, clientX: 120, clientY: 90 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('r')).toBe('0.3'),
+    )
+  })
+
+  it('alças também respondem ao teclado sem mover a forma', async () => {
+    const stage = await openGradientShape('radial')
+    const center = stage.querySelector('[data-gradient-handle="center"]')
+    const radius = stage.querySelector('[data-gradient-handle="radius"]')
+    if (!center || !radius) throw new Error('alças do degradê esperadas')
+    fireEvent.keyDown(center, { key: 'ArrowRight' })
+    expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.52')
+    expect(stage.querySelector('rect[fill^="url(#"]')?.getAttribute('x')).toBe('40')
+    fireEvent.keyDown(radius, { key: 'ArrowUp', shiftKey: true })
+    expect(stage.querySelector('radialGradient')?.getAttribute('r')).toBe('0.6')
+  })
+
+  it('arrastar alças do degradê linear posiciona começo e fim', async () => {
+    const stage = await openGradientShape('linear')
+    const start = stage.querySelector('[data-gradient-handle="start"]')
+    if (!start) throw new Error('alça inicial esperada')
+    fireEvent.pointerDown(start, { isPrimary: true, pointerId: 13, clientX: 40, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 13, clientX: 60, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 13, clientX: 60, clientY: 60 })
+    await waitFor(() => {
+      expect(stage.querySelector('linearGradient')?.getAttribute('x1')).toBe('0.2')
+      expect(stage.querySelector('linearGradient')?.getAttribute('y1')).toBe('0.2')
+    })
+    const end = stage.querySelector('[data-gradient-handle="end"]')
+    if (!end) throw new Error('alça final esperada')
+    fireEvent.pointerDown(end, { isPrimary: true, pointerId: 14, clientX: 140, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 14, clientX: 120, clientY: 120 })
+    fireEvent.pointerUp(stage, { pointerId: 14, clientX: 120, clientY: 120 })
+    await waitFor(() => {
+      expect(stage.querySelector('linearGradient')?.getAttribute('x2')).toBe('0.8')
+      expect(stage.querySelector('linearGradient')?.getAttribute('y2')).toBe('0.8')
+    })
+  })
+
+  it('toque parado não grava desfazer e cancelar um arraste restaura a forma', async () => {
+    const stage = await openGradientShape('radial')
+    const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
+    expect(undo.disabled).toBe(true)
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 15, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 15, clientX: 90, clientY: 90 })
+    expect(undo.disabled).toBe(true)
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 16, clientX: 90, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 17, clientX: 70, clientY: 60 })
+    expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false)
+    fireEvent.pointerMove(stage, { pointerId: 16, clientX: 70, clientY: 60 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3'),
+    )
+    fireEvent.pointerCancel(stage, { pointerId: 16 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false),
+    )
+    expect(undo.disabled).toBe(true)
+  })
+
+  it('alças de uma forma girada seguem o espaço local do degradê', async () => {
+    const stage = await openGradientShape('radial', 90)
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 18, clientX: 90, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 18, clientX: 110, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 18, clientX: 110, clientY: 90 })
+    await waitFor(() => {
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.5')
+      expect(stage.querySelector('radialGradient')?.getAttribute('cy')).toBe('0.3')
     })
   })
 })
