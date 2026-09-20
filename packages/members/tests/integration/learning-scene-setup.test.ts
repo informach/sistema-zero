@@ -22,7 +22,7 @@ import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
 const REVISION = '12345678901234567890123456789012'
-const DOCS = resolve(import.meta.dir, '../../../../docs/aulas-interativas')
+const DOCS = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
 
 type Json = Record<string, unknown>
 function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
@@ -32,7 +32,7 @@ function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
   return bloco.content as unknown as InteractiveBlock
 }
 
-/** Todos os blocos de CENA com caso (`setup`) nos manifestos v6, onde quer que estejam. */
+/** Todos os blocos de cena com caso (`setup`) nos manifestos atuais. */
 function _blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
   const arquivos: string[] = []
   const varrer = (dir: string) => {
@@ -42,7 +42,7 @@ function _blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
       else if (nome.endsWith('.json')) arquivos.push(p)
     }
   }
-  for (const curso of readdirSync(DOCS).filter((d) => d.endsWith('-v6'))) varrer(join(DOCS, curso))
+  varrer(DOCS)
   const achados: { onde: string; content: InteractiveBlock }[] = []
   const procurar = (valor: unknown, onde: string) => {
     if (!valor || typeof valor !== 'object') return
@@ -112,20 +112,25 @@ function preparar(content: InteractiveBlock) {
 }
 
 describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o player', () => {
-  const dia1 = () =>
-    blocoDoManifesto('desafio-primeiro-jogo-v6/dia-1/manifesto.json', 'experiencia-coordenadas')
+  const dia1 = () => blocoDoManifesto('desafio-dia-1.manifesto.json', 'experiencia-coordenadas')
 
-  test('Dia 1 do Desafio: o toque no "+" do y a partir do caso CONCLUI no servidor', async () => {
+  test('Dia 1 do Desafio: o percurso dos três objetivos conclui no caso do professor', async () => {
     const content = dia1()
     expect(content.activity.type).toBe('experimentation')
     const { gravar, tentar } = preparar(content)
     // O gesto que a criança faz na tela: a nave está em 400, 40 e o "+" do y anda 20.
     // ⚠️ Mudou de propósito (lote 5 do Raio-X, G1): o caso do Dia 1 passou a abrir a tela do tamanho
     // do Desafio (800 por 480), com a nave no meio dela, em x 400 (era 300 numa tela de 480).
-    const respostas = await gravar([{ type: 'place', x: 400, y: 60 }])
+    const respostas = await gravar([
+      { type: 'place', x: 500, y: 40 },
+      { type: 'place', x: 500, y: 60 },
+      { type: 'place', x: 0, y: 0 },
+    ])
     const sessao = readExperimentSession('coordinates', respostas.sceneCheckpoint)
-    expect(sessao?.state.place).toMatchObject({ x: 400, y: 60, fromX: 400, fromY: 40 })
-    expect(sessao?.state.evidence.discoveries).toEqual(['down'])
+    expect(sessao?.state.place).toMatchObject({ x: 0, y: 0 })
+    expect(sessao?.state.evidence.discoveries).toEqual(
+      expect.arrayContaining(['right', 'down', 'origin']),
+    )
     expect((await tentar(respostas)).passed).toBe(true)
   })
 

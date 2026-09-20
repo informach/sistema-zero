@@ -6,11 +6,11 @@ import {
 import { LearningHtml } from '@sistemazero/member-shell/components/learning-html'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import lesson2 from '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/aula-02/manifesto.json'
-import lesson3 from '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/aula-03/manifesto.json'
-import lesson4 from '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/aula-04/manifesto.json'
-import lesson5 from '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/aula-05/manifesto.json'
-import lesson6 from '../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/aula-06/manifesto.json'
+import lesson2 from '../../../../docs/aulas-interativas-legado/o-jogo-do-meu-jeito-v6/aula-02/manifesto.json'
+import lesson3 from '../../../../docs/aulas-interativas-legado/o-jogo-do-meu-jeito-v6/aula-03/manifesto.json'
+import lesson4 from '../../../../docs/aulas-interativas-legado/o-jogo-do-meu-jeito-v6/aula-04/manifesto.json'
+import lesson5 from '../../../../docs/aulas-interativas-legado/o-jogo-do-meu-jeito-v6/aula-05/manifesto.json'
+import lesson6 from '../../../../docs/aulas-interativas-legado/o-jogo-do-meu-jeito-v6/aula-06/manifesto.json'
 
 const experiments = [lesson2, lesson3, lesson4, lesson5, lesson6].flatMap((lesson) =>
   lesson.blocks.flatMap((b) =>

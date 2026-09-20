@@ -67,7 +67,7 @@ bancada moram no member-shell, com a tabela cena → palco/bancada no `packages/
 member-shell), não renderizado: uma biblioteca 3D pesaria em toda cena do player.
 
 Deploy, ordem dos serviços (members ANTES de kids e community) e manifestos a importar:
-[`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+[`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md).
 
 ### Mapa: arquivo → responsabilidade
 
@@ -359,7 +359,7 @@ constante (`sceneFrameRate`, `sceneLongFrame`), não copie os números.
   ⭐⭐ **Os 38 blocos de cena dos três cursos v6 DECLARAM o campo** (20 `corre-dino`, 8 `nave`, 10
   `meu-jeito`), então na prática a derivação é rede, não o caminho: quem manda é o CURSO, e uma cena do
   Desafio montada com o elenco de fábrica do Corre Dino continua mostrando a nave. Quem escreve o campo
-  é a receita (`CENARIO_DO_CURSO` em `docs/aulas-interativas/qa/cenas-editorial.ts`), e
+  é a receita histórica (`CENARIO_DO_CURSO` em `docs/aulas-interativas-legado/qa/cenas-editorial.ts`), e
   `packages/core/tests/learning.test.ts` cobra as duas metades: toda cena declara, e o que ela declara
   é o cenário do curso dela.
   ⚠️⚠️ Quem pergunta por chão usa **`cenarioTemChao`**, nunca uma comparação com literal: `gorilas` tem
@@ -499,7 +499,7 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
   uma regra? Muda para todo mundo.
 - ⚠️⚠️ O pipeline NÃO garante a ordem dos serviços, e reimportar manifesto recomeça o progresso em andamento:
   a ordem (members ANTES de kids e community), a consulta ao banco e os manifestos estão em
-  [`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+  [`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md).
 
 ## Comandos (de dentro de `packages/core`)
 

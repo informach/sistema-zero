@@ -1,0 +1,322 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-03",
+  "title": "O motor da sua nave acende",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "demonstracao-quadros",
+    "experimento-diferenca",
+    "conferir-fogo-base",
+    "conferir-segundo-quadro",
+    "demonstracao-fantasma",
+    "conferir-nome-voando",
+    "video-fecho-v6",
+    "orientacao-entrega-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O motor pulsando na prévia\n\nOrigem: video-abertura-v6, com a fórmula do modelo de autoria. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: a nave do Júlio na Prévia, com o motor pulsando sozinho. Só o resultado, sem passeio pela interface.\n\nFala: \"No fim da aula você vai ter um motor parecido com esse aqui. Esse é o meu, e o seu vai ter o formato e a cor que você escolher. Hoje a gente desenha o fogo uma vez, faz uma cópia dele, e muda só um pedacinho na cópia.\"\n\nCortes obrigatórios: sai a contagem antiga de passos. Não prometer desbloqueio nem tarefa extra."
+    },
+    {
+      "key": "video-livrinho",
+      "plannedVideo": "Título: A faixa de quadros, e o livrinho\n\nOrigem: video-livrinho do v6, com a frase da desambiguação acrescentada. Duração alvo: 35 a 45 segundos.\n\nO que passa na tela: a faixa de baixo do editor do Pinta, que se chama Spritesheet, com a linha chamada `parado` e um quadradinho dentro dela.\n\nManter a analogia do livrinho, que é a imagem canônica deste conceito e só pode ser usada uma vez no curso inteiro.\n\nAcrescentar, porque hoje falta e a referência do curso exige: \"esse quadro aqui é um desenho da sua animação. Não é o mesmo quadro do bloco A cada 40 quadros do seu jogo, que conta o tempo.\"\n\nCortes obrigatórios: não mandar mexer durante o clipe. A bancada desta seção é que responde."
+    },
+    {
+      "key": "experiencia-quadros",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Dois desenhos viram movimento",
+        "instructions": "Com a prévia parada, passe do quadro 1 para o quadro 2. Depois ponha a velocidade em 8, deixe a prévia tocar e pare. Experimente a velocidade 2. No fim, deixe o quadro 2 igual ao quadro 1 e ligue a prévia rápida.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "frames",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["two-drawings", "movement", "paused-one", "slow-shows-two", "same-frames"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Duplicar o quadro já basta para o fogo parecer pulsar?",
+          "choices": [
+            { "id": "b", "label": "Sim, dois desenhos iguais trocando depressa já pulsam." },
+            { "id": "a", "label": "É preciso mudar o fogo num dos dois quadros." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "Duplicar guarda a base igualzinha. O que o olho lê como pulsação é a diferença entre um quadro e o outro."
+        }
+      }
+    },
+    {
+      "key": "fala-fogo-base",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clica no botão Abrir meu Pinta desta seção: ele abre o Pinta em outra aba. Abre a nave na galeria clicando no cartão dela. No painel de cores, escolhe a cor do seu fogo. Pega o Lápis na caixa de ferramentas, que vai ficar na sua mão a aula quase inteira."
+      }
+    },
+    {
+      "key": "fala-espaco-para-crescer",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Desenha o fogo dentro daquele espaço que você deixou vazio embaixo da nave, e deixa um pouco de espaço sobrando embaixo dele, porque no segundo quadro ele vai ficar mais comprido. Se quiser, escolhe uma cor mais clara e risca por dentro, para fazer o miolo."
+      }
+    },
+    {
+      "key": "video-fogo-base",
+      "plannedVideo": "Título: O primeiro fogo, no quadro 1\n\nOrigem: video-fogo-base do v6, sem a regra física da cor. Duração alvo: 55 a 70 segundos.\n\nO que passa na tela: a escolha da cor no painel, o Lápis, o fogo nascendo dentro do espaço reservado embaixo da nave, e o miolo mais claro riscado por dentro.\n\nManter: o formato do fogo como escolha dela, e o aviso de encurtar a ponta se ela já encostou na borda de baixo, agora como instrução dentro do gesto.\n\nCortes obrigatórios: retirar a explicação da cor do fogo como regra física. A cor é escolha de desenho.\n\nAcrescentar: o espaço sobrando embaixo do fogo, com o motivo dito uma vez, porque no quadro 2 ele fica mais comprido.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: o fogo no primeiro quadro, saindo encostado no motor da nave, o espaço sobrando embaixo do fogo dentro do quadro, e o corpo da nave do jeito que estava.\n\nDizer uma vez: a cor, o formato e o miolo são escolha de quem desenha.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No quadro 1, o fogo encosta no motor e ainda sobra espaço dentro da borda de baixo para ele crescer?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-duplicar-quadro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na faixa de baixo, na ponta direita da linha, tem uma fileira de botõezinhos sem nome escrito. Parando o mouse em cima de um deles, o nome aparece. Procura o Duplicar quadro e clica. Apareceu o segundo quadro, com o seu fogo dentro, e o Pinta já te levou para ele: o quadradinho aceso é o da direita."
+      }
+    },
+    {
+      "key": "fala-mover-a-ponta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Pega o Selecionar e mover na caixa de ferramentas, arrasta um retângulo em volta da pontinha de baixo do fogo e desce ela um pouco. Vai ficar um vão no meio, porque mover é mover: o que sai de um lugar deixa o lugar vazio. Pega o Lápis de novo, escolhe a mesma cor e completa os quadradinhos que faltam."
+      }
+    },
+    {
+      "key": "video-segundo-quadro",
+      "plannedVideo": "Título: Duplicar, puxar a ponta e fechar o vão\n\nOrigem: video-segundo-quadro do v6, com a imagem corrigida. Duração alvo: 80 a 95 segundos.\n\nO que passa na tela: o **Duplicar quadro**, o segundo quadradinho acendendo, o **Selecionar e mover** arrastando um retângulo em volta da pontinha de baixo do fogo, a ponta descendo, o vão aparecendo no meio, e o Lápis completando os quadradinhos que faltam.\n\nSeguir a narração atual, que é a correta: Selecionar e mover, e só depois preencher o vão.\n\nCuidado obrigatório de imagem: a descrição antiga fala só em acrescentar com o Lápis, e precisa ser corrigida na gravação.\n\nManter o aviso de conferir qual quadradinho está aceso antes de riscar, que é o engano mais comum aqui.\n\nTerminar na Prévia do lado direito, que já roda sozinha e não precisa de botão nenhum.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. Duas coisas entram dentro do gesto, ditas na hora do clique e não numa lista: conferir que o quadradinho aceso é o da direita antes de riscar, e, para quem usou duas cores no fogo, completar o vão em cada cor na sua.\n\nA chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: exatamente dois quadros, o fogo do segundo mais comprido e sem passar da borda de baixo, o vão do meio preenchido, e o corpo da nave e o ponto de saída do fogo no mesmo lugar nos dois quadros.\n\nDizer uma vez: o quanto o fogo cresceu é escolha de quem desenha.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Na Prévia, o corpo da nave fica no lugar enquanto a ponta do fogo cresce e diminui, sem passar da borda? Compare os dois quadros.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "video-fantasma",
+      "plannedVideo": "Título: Onde fica o botão do fantasma\n\nOrigem: video-fantasma do v6, bem encurtado. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: só o gesto. O botão **Fantasma do quadro anterior**, na mesma fileira do Duplicar quadro, e o desenho do quadro de antes aparecendo tracejado por cima.\n\nFala, na ordem certa, primeiro o que é e depois o limite: \"ele está ali para você enxergar onde a coisa estava no outro quadro. É uma ajuda de tela, então não dá para pintar nem apagar em cima dele.\"\n\nCortes obrigatórios: a explicação do que o fantasma resolve sai da narração e vai para a bancada desta seção. O clipe encolhe de passo inteiro para localização de botão."
+    },
+    {
+      "key": "experiencia-fantasma",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O fantasma do quadro de antes",
+        "instructions": "No quadro 2, com o fantasma desligado, mude o tamanho do fogo 2. Depois ligue o fantasma e compare os dois fogos. No fim, deixe o fogo 2 um pouco maior que o fogo tracejado, sem passar da borda do quadro.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "onion-skin",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["blind-move", "ghost-on", "even-step"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Com o fantasma ligado no quadro 2, o que é o desenho tracejado?",
+          "choices": [
+            { "id": "a", "label": "O fogo do quadro 1, só para você comparar." },
+            { "id": "b", "label": "Um terceiro fogo, que vai entrar na animação." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O fantasma é uma ajuda de tela e não entra na animação. Ele mostra o desenho do quadro de antes para você medir o quanto o seu fogo cresceu."
+        }
+      }
+    },
+    {
+      "key": "fala-nome-voando",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Olha o nome escrito na linha da sua animação, ali na faixa: parado. Ele veio de fábrica e não combina com o que a sua nave está fazendo. Naquela mesma fileira de botõezinhos, depois de um risquinho que separa um grupo do outro, tem o Renomear animação. Clica nele, apaga o parado, escreve voando, tudo em letra minúscula, e clica no botão Renomear."
+      }
+    },
+    {
+      "key": "fala-conferencia-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Antes de fechar, olha a sua nave inteira com calma, com o fantasma ligado no segundo quadro: vê se os dois fogos saem do mesmo lugar, se nenhum deles subiu por cima da nave e se a cor ficou como você quis."
+      }
+    },
+    {
+      "key": "video-nome-voando",
+      "plannedVideo": "Título: De parado para voando\n\nOrigem: video-nome-voando do v6, sem o convite a mais quadros. Duração alvo: 45 a 55 segundos.\n\nO que passa na tela: o **Renomear animação**, a troca de `parado` por `voando`, o nome novo aparecendo na linha da faixa e embaixo da Prévia, e a conferência final da nave com o fantasma ligado.\n\nManter a frase de por que isso importa: o nome viaja junto com o desenho e vai aparecer no Estúdio.\n\nCortes obrigatórios: retirar o convite a criar mais quadros e a mexer na velocidade, que o curso não ensina.\n\nCuidado de gravação registrado na referência: antes de gravar a Aula 6, conferir que a animação `voando` da nave do professor está mesmo em 8 quadros por segundo, porque uma gravação anterior ficou em 16.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: a animação chamada voando, com dois quadros, a 8 quadros por segundo, que é como toda animação nasce. E, na Prévia, o corpo da nave estável e o fogo crescendo e diminuindo, sem sumir em nenhum dos dois quadros.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A animação está chamada voando, com dois quadros, e na Prévia o fogo pulsa sem a nave saltar?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-previa-e-galeria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Antes de enviar, abre a prévia e olha os dois quadros. Depois volta para a galeria pela setinha da esquerda, na ponta da barra. A miniatura do cartão fica parada, e está certo: é na prévia do editor que a animação toca."
+      }
+    },
+    {
+      "key": "fala-mesma-nave",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hoje você envia a mesma nave de novo, agora com o motor. Não é um desenho novo: é o mesmo cartão da galeria, com a animação dentro dele."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: A nave que acende sozinha\n\nOrigem: video-fecho-v6, com fala nova. Duração alvo: 50 a 65 segundos.\n\nO que passa na tela: a Prévia da nave dela com o motor pulsando, e um corte curto da faixa com os dois quadradinhos.\n\nFala: \"O seu motor está aceso, e ele pulsa sozinho porque os dois quadros não são iguais. Você desenhou um fogo, fez uma cópia dele e mudou só a ponta. Na próxima aula você desenha uma pedra, e ela é feita de uma coisa completamente diferente.\"\n\nCortes obrigatórios: não prometer miniatura animada na galeria. Não acrescentar tarefa extra para passar.\n\nIncorporado do texto corrido de entrega que saiu do manifesto, por decisão de produto. Antes do corte final, o gesto de entregar acontece na tela: abrir a Prévia e comparar os dois quadros, esperar o Guardado na sua conta, escolher na galeria do Pinta o mesmo cartão da nave, agora com a animação, e enviar.\n\nConferir junto, olhando a tela: nave, personagem pixel art de 32 × 32, uma animação chamada voando com dois quadros a 8 quadros por segundo, fogo presente nos dois quadros com diferença de propósito, corpo fixo sem cortes nem buracos, e o fantasma não pintado como parte do desenho. Se o cartão não aparecer na lista, conferir o salvamento e carregar a lista de novo.\n\nDizer uma vez: a cor do fogo, o formato dele e o quanto ele cresce entre um quadro e outro são escolhas, e não recebem nota."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "No primeiro quadro, o fantasma não aparece. É defeito?",
+            "choices": [
+              { "id": "a", "label": "Não: ainda não existe um quadro anterior." },
+              { "id": "b", "label": "Sim: é preciso duplicar até aparecer no primeiro." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O fantasma mostra o quadro de antes. No primeiro quadro não há nenhum antes dele."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você arrastou a pontinha do fogo para baixo e ficou um vão no meio. Por quê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Mover leva os pixels de um lugar para outro, e o lugar de antes fica vazio."
+              },
+              { "id": "b", "label": "O segundo quadro nasce sem a parte de baixo do desenho." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Mover desloca os pixels. O Lápis preenche o espaço que ficou."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o motor aceso na Prévia antes de desenhar a primeira chama.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "quadros",
+      "title": "Dois desenhos viram movimento",
+      "intent": "exploration",
+      "objective": "Descobrir que cada quadro continua sendo um desenho parado, que a troca rápida é o que faz o movimento, e que dois quadros iguais não pulsam.",
+      "blockKeys": ["video-livrinho", "experiencia-quadros"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-quadros"]
+      }
+    },
+    {
+      "key": "fogo-base",
+      "title": "Desenhe o fogo no primeiro quadro",
+      "intent": "application",
+      "objective": "Fazer o fogo do quadro 1 dentro do espaço reservado, com folga embaixo para ele crescer depois.",
+      "blockKeys": [
+        "fala-fogo-base",
+        "fala-espaco-para-crescer",
+        "video-fogo-base"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fogo-base"]
+      }
+    },
+    {
+      "key": "segundo-quadro",
+      "title": "Duplique e alongue só a ponta",
+      "intent": "application",
+      "objective": "Duplicar o quadro, descer a ponta do fogo, preencher o vão e ver o motor pulsando sozinho na Prévia.",
+      "blockKeys": [
+        "fala-duplicar-quadro",
+        "fala-mover-a-ponta",
+        "video-segundo-quadro"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-segundo-quadro"]
+      }
+    },
+    {
+      "key": "fantasma",
+      "title": "Quanto o seu fogo cresceu?",
+      "intent": "exploration",
+      "objective": "Descobrir que com um quadro à vista por vez não dá para medir o quanto o fogo cresceu, e que o fantasma é guia de tela, não desenho.",
+      "blockKeys": ["video-fantasma", "experiencia-fantasma"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-fantasma"]
+      }
+    },
+    {
+      "key": "nome-voando",
+      "title": "O nome que viaja com a sua animação",
+      "intent": "application",
+      "objective": "Renomear a animação para voando e conferir a nave inteira com o fantasma ligado antes de fechar.",
+      "blockKeys": [
+        "fala-nome-voando",
+        "fala-conferencia-final",
+        "video-nome-voando"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-nome-voando"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Confira, envie e fecha",
+      "intent": "delivery",
+      "objective": "Conferir a animação na Prévia, enviar a nave pela galeria e guardar as duas ideias do dia.",
+      "blockKeys": [
+        "fala-previa-e-galeria",
+        "fala-mesma-nave",
+        "entrega-galeria-v6",
+        "video-fecho",
+        "quiz-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6", "video-fecho", "quiz-v6"]
+      }
+    }
+  ]
+}

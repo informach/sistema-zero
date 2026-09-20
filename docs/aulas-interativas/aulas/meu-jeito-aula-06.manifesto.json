@@ -1,0 +1,406 @@
+{
+ "version": 4,
+ "courseSlug": "o-jogo-do-meu-jeito",
+ "lessonSlug": "aula-06",
+ "title": "A sua nave entra no jogo",
+ "retireBlockKeys": [
+  "video-abertura-v6",
+  "conferir-trazer-artes",
+  "video-trocar-nave",
+  "orientacao-trocar-nave",
+  "conferir-trocar-nave",
+  "video-folha-demo",
+  "demonstracao-folha",
+  "video-carregar-folha",
+  "conferir-carregar-folha",
+  "video-animacao-nave",
+  "orientacao-animacao-nave",
+  "conferir-animacao-nave"
+ ],
+ "blocks": [
+  {
+   "key": "video-abertura",
+   "plannedVideo": "Título: A nave cinza sai, a sua entra\n\nOrigem: video-abertura-v6, com fala nova e tela regravada. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o jogo rodando com a nave desenhada na aula passada, o fogo do motor pulsando, e as pedras cinzas do kit ainda caindo em volta, à vista.\n\nFala: \"Hoje o seu desenho entra no jogo. A nave cinza sai e a sua entra no lugar dela, com o motor pulsando igual na Prévia do Pinta. As pedras ainda vão ser as cinzas: elas são a próxima aula.\"\n\nA pedra cinza aparece de propósito. É ela que abre a Aula 7, e mostrar que ela continua ali evita a impressão de que alguma coisa ficou pela metade.\n\nNão prometer desbloqueio nem tarefa extra."
+  },
+  {
+   "key": "video-trazer-artes",
+   "plannedVideo": "Título: Os seus dois desenhos entram no projeto\n\nOrigem: video-trazer-artes do v6, com a tela regravada na paleta atual. Duração alvo: 75 a 90 segundos.\n\nO que passa na tela: o caminho inteiro. **Meus Jogos**, o cartão do jogo, o botão de três pontinhos, **Materiais**, **Imagens**, a janela **Materiais do jogo**, o **🎨 Trazer do Pinta**, o botão **Adicionar ao projeto** virando **✓ no projeto** nos dois cartões, e os dois **Fechar**.\n\nPasso a passo executado na tela, gesto a gesto:\n\n1. Abrir o Estúdio pelo **Abrir meu Estúdio** desta seção, que abre a ferramenta em outra aba, no **Meus Jogos**, com os projetos dela.\n2. Clicar no cartão do jogo da nave, o que ela trouxe na Aula 1. Dizer na tela e na fala que é esse projeto, e não o **Meu jogo novo**.\n3. Na barra de cima, clicar no botão de três pontinhos, o **Mais opções**, e ir em **Materiais**, e dentro dele em **Imagens**.\n4. Com a janela **Materiais do jogo** aberta, mostrar as duas partes dela: em cima o **No projeto**, que é a lista dos desenhos que existem dentro deste projeto, e mais embaixo a **Biblioteca**, com desenhos prontos, que hoje não é de onde a gente pega nada.\n5. Na fileira de botões de cima, clicar no **🎨 Trazer do Pinta** e adicionar os dois desenhos, a `nave` e o `asteroide`.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": `nave` e `asteroide` aparecem na lista **No projeto**, com o selo **✓ no projeto**, e as duas janelas foram fechadas com o jogo continuando a rodar.\n\nSocorro, dito na hora da conferência: se as artes não aparecerem, o caminho é conferir o salvamento no Pinta. Não adiantar adicionar o mesmo desenho várias vezes para tentar atualizar.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nNão afirmar que o **No projeto** estará vazio em toda conta.\n\nCaminho travado, medido no código em 20/09/2026: **Mais opções › Materiais › Imagens**, e a janela que abre chama **Materiais do jogo**, com as abas **Imagens**, **Sons** e **Modelos 3D**. Não existe grupo **Exibição** no menu ⋯, e a janela não chama mais **Imagens e sons**. O roteiro gravado antigo usa os dois nomes velhos e precisa ser regravado neste trecho.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Na lista No projeto aparecem nave e asteroide com a marca de que entraram no projeto? Guardar no Pinta sozinho não faz essa troca.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+  },
+  {
+   "key": "fala-so-guardado",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Com as duas janelas fechadas, olhe a área do jogo. Continua tudo igual, com a nave cinza. Trazer o desenho para dentro do projeto não troca nada sozinho: ele só deixa o desenho guardado ali. Você já viu isso no Desafio, com criar e mostrar. Quem manda usar são os blocos, e é isso que a gente faz agora."
+   }
+  },
+  {
+   "key": "video-apagar-nave-do-kit",
+   "plannedVideo": "Título: Apaguei um bloco e o jogo encheu de aviso\n\nOrigem: cabeça do video-trocar-nave do v6, extraída como clipe próprio. Duração alvo: 90 a 105 segundos.\n\nO que passa na tela: o botão direito no `Criar nave` do kit, o menu com o texto lido em voz alta, o **Apagar este bloco**, a pilha se religando sozinha, e então o sintoma. Vários blocos com sinal de aviso, e o aviso escrito \"O nome nave ainda não foi criado neste jogo\".\n\nAntes do botão direito, dois momentos que passaram a ser executados na tela:\n\n1. Subir até a área **Ao iniciar** e mostrar o bloco logo abaixo do `Preparar o jogo em tela cheia`. É o `Criar nave`, que veio do **Jogo 2D › Kits prontos › Espaço**. Abrir os campos dele e mostrar que só dá para trocar a cor do corpo e a cor das asas, e que não tem onde pôr o desenho dela.\n2. Ler o texto do menu antes de clicar, explicando por que se lê: quando um bloco tem outros encaixados dentro, o texto muda e conta quantos vão embora junto. Esse não tem nada dentro, então o que aparece é **Apagar este bloco**. E dizer que Control e Z desfazem, se apagar alguma coisa sem querer.\n\nE a área do jogo sem mudar, com a nave cinza continuando a voar, porque o Estúdio segura a última versão que funcionava. Mostrar isso como é, sem tela preta nem tela vazia.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o `Criar nave` do kit saiu, e só ele. A pilha do **Ao iniciar** se religou sozinha, com os blocos de grupo e de lógica no lugar. Vários blocos ficaram com sinal de aviso, e a área do jogo continua mostrando a nave cinza voando, o que é esperado e é justamente o que a experiência desta seção explica.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nManter o tom de ajudante, nunca de bronca.\n\nIdentificar o bloco pelo rótulo, nunca por posição de gaveta.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No Ao iniciar, só o criador da nave do kit saiu, os outros blocos continuam, e os avisos apareceram? A nave cinza na área do jogo ainda pode ser a última versão válida.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+  },
+  {
+   "key": "fala-nome-do-dia",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "As suas artes já estão guardadas no projeto, e quem manda usar são os blocos. Antes de mexer neles tem uma regra para ver de perto: dentro de um mesmo trecho, cada nome é de uma coisa só. Nesta experiência você tira o bloco que cria o nome e descobre o que acontece com quem estava procurando por ele."
+   }
+  },
+  {
+   "key": "experimento-nomes",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Cada nome só pode ser de uma coisa",
+    "instructions": "Tire o bloco que cria o nome, ponha ele de volta e troque o nome do bloco de baixo. Olhe os avisos e a tela a cada vez.",
+    "hints": [],
+    "prediction": {
+     "context": {
+      "label": "O nome que os blocos procuram",
+      "explanation": "Nesta experiência, o bloco de cima cria um nome e o de baixo pede um nome. Você escolhe o que cada um faz e olha os avisos."
+     },
+     "prompt": "Os dois blocos vão criar o nome `nave`. O que acontece?",
+     "choices": [
+      {
+       "id": "pede-outro",
+       "label": "O Estúdio pede um nome diferente"
+      },
+      {
+       "id": "substitui",
+       "label": "O segundo substitui o primeiro",
+       "shows": "Ninguém foi substituído. O Estúdio parou e pediu um nome diferente."
+      }
+     ],
+     "correctChoiceId": "pede-outro",
+     "revealOn": "clash"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "unique-names",
+     "cenario": "meu-jeito",
+     "setup": {
+      "goals": [
+       "missing",
+       "clash",
+       "own-name"
+      ]
+     }
+    },
+    "checkpoint": {
+     "prompt": "No seu jogo, o sprite já se chama `nave`. Que nome dar para a folha de quadros dele?",
+     "choices": [
+      {
+       "id": "folha-nave",
+       "label": "`folha-nave`, um nome só dela"
+      },
+      {
+       "id": "nave",
+       "label": "`nave`, porque é o desenho da nave"
+      }
+     ],
+     "correctChoiceId": "folha-nave",
+     "explanation": "Quando dois blocos criam o mesmo nome no mesmo trecho, o Estúdio para e pede um nome diferente. Por isso a folha recebe o nome dela, `folha-nave`, e a nave continua com o nome dela."
+    }
+   }
+  },
+  {
+   "key": "video-montar-a-nave",
+   "plannedVideo": "Título: Seis campos, e a tela responde a cada um\n\nOrigem: resto do video-trocar-nave do v6, com o caminho de paleta regravado. Duração alvo: 110 a 130 segundos.\n\nComeço, executado na tela: na coluna da esquerda, onde ficam os bloquinhos, ir em **Jogo 2D › Sprites › Criar e trocar aparência** e pegar o `Criar sprite em x y largura altura com imagem`. Reconhecer ele pelo fim do rótulo, **com imagem**, dizendo que ele também é o mais comprido da gaveta. Arrastar para a área **Ao iniciar** e encaixar no lugar que ficou vago, entre o `Preparar o jogo em tela cheia` e o `Criar grupo de sprites tiros`.\n\nO que passa na tela: campo a campo, da esquerda para a direita, com a tela reagindo. Os avisos sumindo todos de uma vez no instante em que aparece o nome `nave`, o quadradinho azul claro nascendo perto do canto de cima, andando para o meio lá embaixo com o x e o y, e crescendo com a largura e a altura.\n\nOs seis valores, digitados na ordem: Nome `nave`, x 400, y 410, Largura 54, Altura 54, e a Imagem `nave`, escolhida na gradezinha.\n\nNa hora da altura, a frase da proporção: \"os dois são iguais por causa do seu desenho. Você desenhou num quadrado de 32 por 32, e num lugar mais alto do que largo a sua nave ia esticar para caber.\"\n\nO clipe termina nas duas naves espremidas, com a frase \"não foi você que errou\".\n\nConferir junto, logo antes desse fecho, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o bloco `Criar sprite nave em x 400 y 410 largura 54 altura 54 com imagem nave` está no **Ao iniciar**, entre o `Preparar o jogo em tela cheia` e o `Criar grupo de sprites tiros`. Os sinais de aviso sumiram de todos os blocos. Os blocos de grupo e de lógica que estavam embaixo continuam lá, inteiros. E na área do jogo aparecem duas naves espremidas, uma do lado da outra, dentro do lugar de uma só.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nNão prometer o quadrado azul em toda etapa de digitação: o preview pode manter a última versão válida.\n\nPonto a conferir antes de gravar: o `Criar sprite ... com imagem` fica em **Jogo 2D › Sprites › Criar e trocar aparência**. A narração antiga trata Sprites como lista de partes e precisa ser regravada, não só relegendada.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No Ao iniciar, o novo criador com imagem nave está ligado, os avisos sumiram e surgiram duas naves espremidas? Essa duplicação é a pista da próxima correção.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+  },
+  {
+   "key": "fala-duas-naves-espremidas",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Olhe a área do jogo. Apareceram duas naves espremidas, uma do lado da outra, dentro do lugar de uma só. É isso mesmo, não foi você que errou, e a próxima seção explica de onde saiu a segunda."
+   }
+  },
+  {
+   "key": "fala-folha-de-quadros",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "As duas naves vieram do seu próprio desenho. Quando o desenho sai do Pinta e vem para o jogo, ele não vem um quadro de cada vez: ele vem numa imagem só, com os dois quadros em fila, um do lado do outro. Isso tem nome, e é o nome do dia: **folha de quadros**. O bloco pegou essa imagem inteira e esticou ela dentro do lugar da sua nave. Vamos ver isso acontecendo."
+   }
+  },
+  {
+   "key": "experimento-recorte",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A folha e o tamanho no jogo",
+    "instructions": "Mude a largura do recorte e olhe a nave no jogo. Qual largura mostra uma nave inteira? Depois, com o recorte certo, mude o tamanho da nave no jogo e olhe a folha: ela muda junto?",
+    "hints": [],
+    "activity": {
+     "type": "experimentation",
+     "scene": "sheet-vs-sprite",
+     "cenario": "meu-jeito",
+     "setup": {
+      "goals": [
+       "squeezed",
+       "crop-half",
+       "crop-whole",
+       "size-apart"
+      ]
+     }
+    },
+    "checkpoint": {
+     "prompt": "No bloco Carregar folha de quadros, qual é o tamanho de cada quadro?",
+     "choices": [
+      {
+       "id": "jogo",
+       "label": "54 x 54, o tamanho da nave no jogo."
+      },
+      {
+       "id": "quadro",
+       "label": "32 x 32, o tamanho de um quadro na folha."
+      }
+     ],
+     "correctChoiceId": "quadro",
+     "explanation": "O bloco pergunta o tamanho de um quadro na folha: 32. O 54 é o tamanho em que a nave aparece no jogo."
+    }
+   }
+  },
+  {
+   "key": "fala-folha-pronta",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Olhe a área do jogo. Continua com as duas naves espremidas, e é isso mesmo. Esse bloco só deixou a folha pronta. Quem usa ela é o próximo."
+   }
+  },
+  {
+   "key": "video-folha-e-animacao",
+   "plannedVideo": "Título: A listinha abre com o nome que você deu\n\nOrigem: funde o video-carregar-folha com o video-animacao-nave, os dois do v6. Duração alvo: 120 a 145 segundos.\n\nO que passa na tela: os dois encaixes em sequência, no **Ao iniciar**, com os campos preenchidos um a um.\n\nPrimeiro encaixe, executado na tela. Na coluna da esquerda, **Jogo 2D › Sprites › Animação**, e o primeiro bloco da gaveta, o `Carregar folha de quadros da imagem com quadros de x px`. Arrastar para o **Ao iniciar**, logo abaixo do bloco montado na seção anterior e ainda em cima do `Criar grupo de sprites tiros`, dizendo por que ele só funciona aqui: a folha se carrega uma vez só, quando o jogo começa. No nome, `folha-nave`, com um tracinho no meio, porque o nome `nave` já é da nave dela e cada nome só pode ser de uma coisa. Na imagem, a `nave`. E os dois campos de tamanho, que já vêm com 32 e não se mexe neles: esse 32 foi ela que escolheu no Pinta, quando o assistente perguntou o tamanho e ela marcou o Médio.\n\nEntre os dois encaixes, mostrar a área do jogo sem mudar, ainda com as duas naves espremidas, porque esse primeiro bloco só deixa a folha pronta.\n\nSegundo encaixe, executado na tela. Na mesma gaveta, o `Animar sprite com a folha na animação, do quadro ao a fps`, arrastado para logo abaixo do `Carregar folha de quadros`. Ele tem seis campos e ela mexe em três, todos de escolher: no sprite, `nave`. Na folha, `folha-nave`. E na animação, o botão **Escolher**, que abre a listinha.\n\nO momento alto é a listinha das animações abrindo com o nome que apareceu duas aulas atrás, o `voando`. E, logo depois, os três números se preenchendo sozinhos: \"apareceu do quadro 0 ao quadro 1, a 8 fps. São os seus dois desenhos: o primeiro é o 0 e o segundo é o 1. Você não digita nada aí, porque o bloco pegou tudo da sua folha.\"\n\nConferir junto, com o professor lendo a pilha do **Ao iniciar** de cima para baixo e dizendo \"olha comigo se ficou assim\": `Criar sprite nave ... com imagem nave`, depois `Carregar folha de quadros folha-nave da imagem nave com quadros de 32 x 32 px`, depois `Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1 a 8 fps`. Os três acima do `Criar grupo de sprites tiros`, e uma nave só na tela, com o fogo do motor pulsando.\n\nSocorro, dito na hora da conferência: se o `voando` não aparecer na listinha, o caminho é conferir o nome da animação no Pinta e se a arte entrou no projeto. Não digitar um nome de folha que não existe.\n\nDuas pausas faladas, uma depois de cada encaixe: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCorreção obrigatória de fala: em todo lugar onde a narração antiga diz motor acendendo e apagando, trocar por fogo pequeno e fogo grande.\n\nPontos a conferir antes de gravar: os dois blocos ficam em **Jogo 2D › Sprites › Animação**, e a animação `voando` precisa estar em 8 fps na conta de gravação.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Na área do jogo há uma nave só com o fogo pulsando, e os tiros e o placar continuam funcionando?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+  },
+  {
+   "key": "fala-teste-nave",
+   "content": {
+    "kind": "dialogue",
+    "pose": "celebrating",
+    "text": "Clique na área do jogo e aperte Enter. Jogue um pouco: mova com as setas, atire, e confira que o placar e as vidas continuam funcionando. A sua nave está lá, com o fogo dela pulsando."
+   }
+  },
+  {
+   "key": "fala-enviar-o-projeto",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Jogue uma partida antes de enviar, porque a entrega leva os blocos e as imagens juntos. Espere aparecer **Guardado na sua conta**, escolha a criação na lista e envie ao professor. Se ela ainda não estiver na lista, confira o salvamento e carregue a lista de novo."
+   }
+  },
+  {
+   "key": "entrega-galeria-v6",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-fecho-v6",
+   "plannedVideo": "Título: Três vezes a mesma coisa aconteceu hoje\n\nOrigem: video-fecho-v6, com fala nova e um trecho de entrega novo na frente. Duração alvo: 60 a 75 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho da aula.\n\nParte 1, conferir junto no projeto aberto, com o professor dizendo \"olha comigo se ficou assim\":\n\n- Em **No projeto**, as artes `nave` e `asteroide` guardadas. A segunda ainda não precisa estar em uso.\n- O criador do kit saiu, e existe um sprite `nave` só, em x 400 e y 410, com 54 por 54 e imagem `nave`.\n- `folha-nave` com quadro de 32 por 32, carregada antes de animar `nave` com `voando`, do quadro 0 ao 1, a 8 fps.\n- Movimento, tiros, estados, placar, vidas e reinício do jogo original continuam funcionando.\n\nParte 2, o envio executado na tela: jogar antes de escolher o cartão, porque a entrega precisa incluir os blocos e as imagens. Esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: a nave desenhada voando no jogo, com o fogo pulsando, e um corte rápido nos três blocos do **Ao iniciar**.\n\nFala: \"A sua nave desenhada está no jogo. Repare numa coisa que aconteceu três vezes hoje. Trazer o desenho para o projeto não usou ele. Criar o sprite não mostrou o desenho certo. Carregar a folha não animou nada. Em todas, alguém prepara e outro alguém usa, e as duas coisas são blocos diferentes. Na próxima aula as pedras cinzas saem, e você vai ver esse mesmo par outra vez.\"\n\nA folha tem 64 por 32 no total, cada quadro tem 32 por 32 e a nave no jogo tem 54 por 54. Não misturar esses três números.\n\nO azul de recurso ausente e a última prévia válida são estados passageiros, não critério de aprovação."
+  },
+  {
+   "key": "quiz-v6",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Uma nave aparece esticada verticalmente. Qual par define seu tamanho no jogo?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Largura e altura do Criar sprite."
+       },
+       {
+        "id": "b",
+        "label": "Primeiro e último quadro da animação."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Largura e altura definem a caixa visível. O intervalo escolhe os desenhos."
+     },
+     {
+      "id": "q2",
+      "prompt": "Qual é a ordem necessária para usar uma folha na animação?",
+      "choices": [
+       {
+        "id": "b",
+        "label": "Mandar animar antes de a folha existir."
+       },
+       {
+        "id": "a",
+        "label": "Carregar a folha antes de mandar animar com ela."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O bloco de animação precisa da folha já preparada."
+     }
+    ]
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "abertura",
+   "title": "O que a gente vai fazer hoje",
+   "intent": "presentation",
+   "objective": "Ver a nave desenhada voando no jogo, com o motor pulsando, e saber que as pedras cinzas ficam para a próxima aula.",
+   "blockKeys": [
+    "video-abertura"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-abertura"
+    ]
+   }
+  },
+  {
+   "key": "trazer-artes",
+   "title": "Traga as suas duas artes para dentro do projeto",
+   "intent": "application",
+   "objective": "Levar nave e asteroide do Pinta para a lista No projeto e perceber que guardar o desenho não troca nada sozinho.",
+   "blockKeys": [
+    "video-trazer-artes",
+    "fala-so-guardado"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-trazer-artes"
+    ]
+   }
+  },
+  {
+   "key": "nomes",
+   "title": "Cada nome só pode ser de uma coisa",
+   "intent": "exploration",
+   "objective": "Descobrir a regra de nomes que sustenta o resto do dia e a Aula 7: sem o bloco que cria o nome, quem procura por ele acende aviso, e dois blocos criando o mesmo nome fazem o Estúdio pedir um nome diferente.",
+   "blockKeys": [
+    "fala-nome-do-dia",
+    "experimento-nomes"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experimento-nomes"
+    ]
+   }
+  },
+  {
+   "key": "apagar-nave-do-kit",
+   "title": "Apague o criador que veio do kit",
+   "intent": "application",
+   "objective": "Tirar o Criar nave do Kit espaço do Ao iniciar e reconhecer os avisos que acendem, com a regra de nomes já vista e a área do jogo segurando a última versão que funcionava.",
+   "blockKeys": [
+    "video-apagar-nave-do-kit"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-apagar-nave-do-kit"
+    ]
+   }
+  },
+  {
+   "key": "montar-a-nave",
+   "title": "Monte a sua nave",
+   "intent": "application",
+   "objective": "Montar do zero o Criar sprite com imagem, preencher os seis campos e terminar na surpresa das duas naves espremidas.",
+   "blockKeys": [
+    "video-montar-a-nave",
+    "fala-duas-naves-espremidas"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-montar-a-nave"
+    ]
+   }
+  },
+  {
+   "key": "folha-e-tamanho",
+   "title": "A folha e o tamanho no jogo",
+   "intent": "exploration",
+   "objective": "Entender que a imagem vinda do Pinta guarda os dois quadros em fila, e separar o tamanho do quadro na folha do tamanho da nave no jogo.",
+   "blockKeys": [
+    "fala-folha-de-quadros",
+    "experimento-recorte"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experimento-recorte"
+    ]
+   }
+  },
+  {
+   "key": "folha-e-animacao",
+   "title": "Prepare a folha e anime a sua nave",
+   "intent": "application",
+   "objective": "Encaixar os dois blocos de animação em sequência e ver a nave desenhada voando com o fogo pulsando, com controles, tiro e placar intactos.",
+   "blockKeys": [
+    "video-folha-e-animacao",
+    "fala-folha-pronta",
+    "fala-teste-nave"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-folha-e-animacao"
+    ]
+   }
+  },
+  {
+   "key": "entrega-e-fecho",
+   "title": "Envie e fecha",
+   "intent": "delivery",
+   "objective": "Guardar a vitória do dia e nomear o par prepara e usa, que aparece três vezes nesta aula e volta nas duas seguintes.",
+   "blockKeys": [
+    "fala-enviar-o-projeto",
+    "entrega-galeria-v6",
+    "video-fecho-v6",
+    "quiz-v6"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-fecho-v6",
+     "entrega-galeria-v6",
+     "quiz-v6"
+    ]
+   }
+  }
+ ]
+}

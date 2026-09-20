@@ -1,0 +1,437 @@
+{
+ "version": 4,
+ "courseSlug": "corre-dino",
+ "lessonSlug": "aula-10",
+ "title": "A caixa que decide a batida",
+ "retireBlockKeys": [
+  "video-abertura-editorial",
+  "video-ligar-raio-x",
+  "video-desenho-e-area",
+  "experiencia-comparar-area",
+  "video-tirar-raio-x",
+  "fala-tirar-raio-x",
+  "fala-entrega-editorial",
+  "video-fecho-editorial"
+ ],
+ "blocks": [
+  {
+   "key": "video-teste-e-envio",
+   "plannedVideo": "Título: Raspar, bater e tirar o raio-X\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 60 a 75 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. O único gesto de montagem aqui é a retirada do instrumento, e ela vem depois do teste. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, e uma rodada jogada com o contorno da área de colisão ainda à vista.\n2. Uma passagem raspando num cacto, sem perder. Com o contorno ligado dá para ver o vão entre o desenho e a caixa, e é esse vão que a aula ajustou.\n3. Uma batida de propósito, para mostrar que a colisão continua funcionando depois do ajuste.\n4. A retirada do instrumento: o Mostrar a caixa de colisão arrastado para a lixeira. Ele é o último bloco de lá, então nada vem junto com ele. Enquadrar a lista antes e depois, para ficar visível que só ele saiu.\n5. Uma última rodada curta, já sem o contorno na tela, com a mesma batida acontecendo.\n\nConferir junto, olhando a tela: o ajuste continua no Ao iniciar, onde sempre esteve, e nenhum contorno aparece mais em volta do Dino.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: o raio-X entrou, mostrou o que estava escondido, e saiu. Você já tinha feito isso uma vez, com o medidor da Aula 6. Lembra disso: sempre que uma colisão do seu jogo estiver estranha, liga o raio-X e olha. É assim que se investiga."
+  },
+  {
+   "key": "projeto",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-batida-injusta",
+   "plannedVideo": "Título: A batida que você não deu\n\nUma partida de verdade no jogo do fim da aula 9, jogada até o caso acontecer na tela. O dino passa perto de um cacto, os dois desenhos não se tocam, e a partida acaba.\n\nO quadro congela no instante da batida e a imagem aproxima o vão entre o bico do cacto e a barriga do dino.\n\nFala: “Olha de novo, bem devagar. O dino não encostou no cacto. Tem um espaço entre os dois, dá para ver. E mesmo assim a partida acabou. O jogo contou uma batida que não teve. Tem uma coisa acontecendo no seu jogo que você ainda não consegue enxergar. Hoje a gente enxerga, e depois arruma.”\n\nHonestidade da dor: a gravação joga até o caso sair sozinho. O desenho do dino tem o rabo para trás, o focinho para frente e as perninhas embaixo, e a caixa é um retângulo, então sobra espaço vazio nos cantos. Proibido montar o efeito na edição: o que a tela mostra tem que ter acontecido na partida.\n\nDuração alvo: 25 a 35 segundos."
+  },
+  {
+   "key": "fala-ligar-raio-x",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Colisões, Área de contato, pega o bloco Mostrar a caixa de colisão do sprite. Arrasta para dentro do Se o estado do jogo é jogando e solta no fim de tudo, logo abaixo do Tirar do grupo cactos quem sair da tela, que hoje é o último bloco de lá."
+   }
+  },
+  {
+   "key": "fala-campo-do-raio-x",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Esse bloco tem um campo só, que é o sprite. Abre a listinha e escolhe o dino. Na mesma gaveta, logo acima dele, mora um bloco comprido que você vai usar daqui a pouco. São dois blocos diferentes: um desenha a caixa, o outro muda o tamanho dela. Agora é só o de desenhar."
+   }
+  },
+  {
+   "key": "video-raio-x",
+   "plannedVideo": "Título: O contorno que aparece em volta do dino\n\nO gesto, e depois a revelação. Clicar na área do jogo, apertar Enter, e o contorno cor de rosa aparece em volta do dino.\n\nDepois o clipe para a partida com o dino parado e aproxima o contorno, apontando um vazio de cada vez: em cima da cabeça, na frente do focinho, e embaixo, entre os pés.\n\nFala que fecha: “O jogo não olha para o desenho do dinossauro. Ele olha para esse retângulo. Para o computador, o seu dino é essa caixa.”\n\nFunde os dois clipes de hoje (video-ligar-raio-x e video-desenho-e-area): montar o instrumento e olhar o que ele revelou é um movimento só. A observação dos cantos vazios deixa de ser clipe separado e vira o segundo tempo deste.\n\nTrocar na fala o endereço antigo pelo atual: Jogo 2D, Colisões, Área de contato.\n\nDuração alvo: 60 a 70 segundos."
+  },
+  {
+   "key": "fala-cena-hitbox",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "No seu jogo o cacto vem correndo e não dá para segurar ele no lugar exato para medir. Aqui dá. O cacto anda um toque de cada vez, e o tamanho da área do Dino é um número que você escolhe. A área começa igual à do seu jogo agora."
+   }
+  },
+  {
+   "key": "experiencia-hitbox",
+   "content": {
+    "kind": "interactive",
+    "title": "Onde a batida acontece?",
+    "instructions": "Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no lugar e mude só o tamanho da área do Dino, para baixo e para cima.",
+    "hints": [
+     "Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.",
+     "Deixe o cacto onde bateu. Mude só a área do Dino.",
+     "Agora encoste o cacto no desenho do Dino e leve a área para 40%. Olhe se aparece BATEU."
+    ],
+    "required": true,
+    "prediction": {
+     "context": {
+      "label": "A área que o jogo usa",
+      "explanation": "A área do Dino está aberta em 100%, do mesmo tamanho que a do seu jogo antes do conserto. O cacto vai chegando um toque de cada vez."
+     },
+     "prompt": "Com esta área grande, quando vai aparecer BATEU?",
+     "choices": [
+      {
+       "id": "antes",
+       "label": "Antes de os desenhos se encostarem"
+      },
+      {
+       "id": "no-encosto",
+       "label": "Só quando os desenhos se encostarem",
+       "shows": "Olhe o contorno pontilhado do Dino, e não o desenho dele: o BATEU aparece quando os dois contornos se tocam."
+      }
+     ],
+     "correctChoiceId": "antes"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "hitbox",
+     "cenario": "corre-dino"
+    }
+   }
+  },
+  {
+   "key": "fala-ajustar-area",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Colisões, Área de contato, na mesma gaveta de onde veio o raio-X, pega o bloco comprido, o Usar área de colisão de tanto por cento do tamanho para o sprite. Arrasta para dentro do Ao iniciar e encaixa no fim de tudo, logo abaixo do Mudar o estado do jogo para inicio, que hoje é o último bloco de lá."
+   }
+  },
+  {
+   "key": "fala-campos-do-ajuste",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Ele tem dois campos. O primeiro é a porcentagem, e já vem 80, que é o que a gente quer agora, então deixa como veio. No segundo, que é o sprite, escolhe o dino. O dino entra em toda batida do jogo, e o cacto é um entre muitos. Ajustando o dino, você arruma todas as batidas de uma vez."
+   }
+  },
+  {
+   "key": "video-ajustar-area",
+   "plannedVideo": "Título: A caixa encolhe, o dino continua igual\n\nO gesto de encaixar o bloco, e depois três observações em ordem, com o raio-X ainda ligado.\n\n1. A caixa encolhe e fica grudada no dino.\n2. O desenho do dino continua do mesmo tamanho.\n3. Na partida, o dino passa raspando num cacto de propósito e escapa.\n\nManter a explicação de por que o bloco mora no Ao iniciar: “isso é coisa de preparação, acontece uma vez, quando o jogo liga. Aqui dentro a ordem não muda nada, só uma coisa importa: ele vem depois do Criar dinossauro, senão ele ajustaria um dino que ainda não existe.”\n\nTrocar na fala o rótulo antigo “Ir para a tela inicio” pelo atual, Mudar o estado do jogo para inicio.\n\nDuração alvo: 55 a 65 segundos."
+  },
+  {
+   "key": "video-dial",
+   "plannedVideo": "Título: O botão que decide o quanto o jogo perdoa\n\nOs dois extremos conduzidos pela narração, com o raio-X ligado, e uma partida curta em cada um.\n\nEm 40, a caixa fica minúscula no meio do dino, o cacto passa por dentro dele e não acontece nada. Em 100, a caixa volta ao tamanho cheio e voltam as batidas do começo da aula. Depois o número volta para a faixa boa.\n\nCuidado de escopo: 80 é a escolha desta versão do Corre Dino, não uma regra universal de justiça. A fala diz “o meu fica em 80”, nunca “o certo é 80”.\n\nO clipe vem de video-tirar-raio-x, primeira metade. A retirada do instrumento sai daqui e vira instrução de teste na entrega.\n\nDuração alvo: 60 a 70 segundos."
+  },
+  {
+   "key": "fala-dial",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Esse número tem nome entre quem cria jogos: dial de dificuldade, que é como um botão de ajuste. Para coisa que machuca o jogador, área menor que 100 deixa o jogo mais justo, e isso vale na grande maioria dos jogos que você vai fazer. Para coisa que o jogador quer pegar, é o contrário: área maior que 100 deixa mais fácil de alcançar."
+   }
+  },
+  {
+   "key": "fala-escolha-do-dial",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Agora põe um número entre 70 e 85 e joga. O meu fica em 80, e o seu pode ser outro. A conferência aceita qualquer número dessa faixa, então escolhe o que o seu jogo pedir."
+   }
+  },
+  {
+   "key": "quiz-final",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Ao ajustar a área para 80%, o desenho precisa encolher?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Não, a área de colisão e o desenho são coisas diferentes."
+       },
+       {
+        "id": "b",
+        "label": "Sim, são sempre a mesma coisa."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O ajuste atua na geometria da detecção, e o desenho fica do mesmo tamanho."
+     },
+     {
+      "id": "q2",
+      "prompt": "Para uma coisa que machuca o jogador, uma área menor que 100% deixa o jogo:",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Mais justo."
+       },
+       {
+        "id": "b",
+        "label": "Mais difícil."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Área menor perdoa mais: a batida só conta quando o encosto está perto do que o olho vê."
+     },
+     {
+      "id": "q3",
+      "prompt": "Apagar o desenho da área apaga o ajuste?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Não, o ajuste continua em Ao iniciar."
+       },
+       {
+        "id": "b",
+        "label": "Sim, o instrumento é a própria regra."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Um bloco mostra, o outro configura."
+     }
+    ]
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "batida-injusta",
+   "title": "A batida que você não deu",
+   "intent": "presentation",
+   "objective": "Ver o jogo contar uma batida que não teve encosto, antes de qualquer bloco novo aparecer.",
+   "blockKeys": [
+    "video-batida-injusta"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-batida-injusta"
+    ]
+   }
+  },
+  {
+   "key": "ligar-raio-x",
+   "title": "Ligue o raio-X",
+   "intent": "application",
+   "objective": "Pôr na tela do seu jogo a forma que a colisão usa, e olhar os cantos vazios no seu dino.",
+   "blockKeys": [
+    "fala-ligar-raio-x",
+    "fala-campo-do-raio-x",
+    "video-raio-x"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "raio-x",
+      "label": "Desenhe a área de colisão do dino a cada quadro.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_draw_hitbox",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "caixa-decide",
+   "title": "É a caixa que decide, não o desenho",
+   "intent": "exploration",
+   "objective": "Provar que o tamanho da área muda o veredito da batida sem mexer em mais nada, com o cacto parado onde você quiser.",
+   "blockKeys": [
+    "fala-cena-hitbox",
+    "experiencia-hitbox"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-hitbox"
+    ]
+   }
+  },
+  {
+   "key": "ajustar-area",
+   "title": "Deixe a caixa do tamanho do seu dino",
+   "intent": "application",
+   "objective": "Encaixar o ajuste da área no Ao iniciar com o raio-X ligado, e ver a caixa encolher enquanto o desenho fica igual.",
+   "blockKeys": [
+    "fala-ajustar-area",
+    "fala-campos-do-ajuste",
+    "video-ajustar-area"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "colisao-area",
+      "label": "Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_set_hitbox_scale",
+       "area": "start",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     },
+     {
+      "id": "raio-x",
+      "label": "Desenhe a área de colisão do dino a cada quadro.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_draw_hitbox",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     },
+     {
+      "id": "mesmo-desenho",
+      "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_create_dino",
+       "area": "start",
+       "beforeBlock": "sz_g2d_set_hitbox_scale",
+       "inputs": {
+        "SIZE": 64
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "dial-dificuldade",
+   "title": "O dial de dificuldade",
+   "intent": "explanation",
+   "objective": "Nomear o número que você acabou de escrever e escolher o seu, dentro da faixa de 70 a 85.",
+   "blockKeys": [
+    "video-dial",
+    "fala-dial",
+    "fala-escolha-do-dial"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-dial"
+    ],
+    "projectChecks": [
+     {
+      "id": "colisao-area",
+      "label": "Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_set_hitbox_scale",
+       "area": "start",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     },
+     {
+      "id": "mesmo-desenho",
+      "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_create_dino",
+       "area": "start",
+       "beforeBlock": "sz_g2d_set_hitbox_scale",
+       "inputs": {
+        "SIZE": 64
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "entrega-e-fecho",
+   "title": "Teste, guarde o raio-X e entregue",
+   "intent": "delivery",
+   "objective": "Área de colisão do dino entre 70 e 85, desenho do personagem preservado, instrumento retirado e projeto enviado.",
+   "blockKeys": [
+    "video-teste-e-envio",
+    "quiz-final",
+    "projeto"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-teste-e-envio",
+     "projeto",
+     "quiz-final"
+    ],
+    "projectChecks": [
+     {
+      "id": "colisao-area",
+      "label": "Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_set_hitbox_scale",
+       "area": "start",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     },
+     {
+      "id": "sem-raio-x",
+      "label": "Retire o desenho provisório da área de colisão.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_draw_hitbox",
+       "count": 0
+      }
+     },
+     {
+      "id": "mesmo-desenho",
+      "label": "Crie o Dino com tamanho 64 antes do ajuste de colisão.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_create_dino",
+       "area": "start",
+       "beforeBlock": "sz_g2d_set_hitbox_scale",
+       "inputs": {
+        "SIZE": 64
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

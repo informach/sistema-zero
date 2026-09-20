@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { LearningProfile } from '#core'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
@@ -48,26 +48,61 @@ function fakeJogo2D(): ToolboxCategory {
 }
 
 describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)', () => {
+  const aulas = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   it.each([
     'corre-dino',
     'desafio-primeiro-jogo',
-    'o-jogo-do-meu-jeito',
-  ])('a lista atual de %s é acessível no perfil iniciante', (course) => {
-    const { blocks }: { blocks: string[] } = JSON.parse(
-      readFileSync(
-        resolve(
-          import.meta.dir,
-          `../../../../../docs/aulas-interativas/${course}-v6/blocos-${course}.json`,
-        ),
-        'utf8',
-      ),
+  ])('os blocos exigidos nos manifestos de %s são acessíveis no perfil iniciante', (course) => {
+    const prefix =
+      course === 'corre-dino'
+        ? 'corre-dino-'
+        : course === 'desafio-primeiro-jogo'
+          ? 'desafio-'
+          : 'meu-jeito-'
+    const files = readdirSync(aulas).filter(
+      (name) => name.startsWith(prefix) && name.endsWith('.manifesto.json'),
     )
+    expect(files).toHaveLength(course === 'corre-dino' ? 13 : 6)
+    const blocks = [
+      ...new Set(
+        files.flatMap((name) => {
+          const manifest = JSON.parse(readFileSync(resolve(aulas, name), 'utf8')) as {
+            sections: Array<{
+              completion?: { projectChecks?: Array<{ rule: { type: string; blockType?: string } }> }
+            }>
+          }
+          return manifest.sections.flatMap(
+            (section) =>
+              section.completion?.projectChecks?.flatMap((check) =>
+                check.rule.type === 'usesBlock' && check.rule.blockType
+                  ? [check.rule.blockType]
+                  : [],
+              ) ?? [],
+          )
+        }),
+      ),
+    ]
+    expect(blocks.length).toBeGreaterThan(0)
     const offered = allBlockTypes(
       buildCoreToolbox([gameTwoDToolboxCategory], { level: 'iniciante-2d', allowBlocks: blocks })
         .contents,
     )
     expect(blocks.filter((type) => !offered.includes(type))).toEqual([])
     expect(offered.some((type) => type.startsWith('sz_gk_'))).toBe(false)
+  })
+  it('Meu Jeito termina com galeria, sem checagens estruturais do Estúdio', () => {
+    const files = readdirSync(aulas).filter(
+      (name) => name.startsWith('meu-jeito-') && name.endsWith('.manifesto.json'),
+    )
+    expect(files).toHaveLength(8)
+    for (const name of files) {
+      const manifest = JSON.parse(readFileSync(resolve(aulas, name), 'utf8')) as {
+        sections: Array<{ completion?: { projectChecks?: unknown[] } }>
+      }
+      expect(
+        manifest.sections.flatMap((section) => section.completion?.projectChecks ?? []),
+      ).toEqual([])
+    }
   })
   it('mantém os blocos deste jogo editáveis sem oferecer extensões ausentes', () => {
     const profile: LearningProfile = {

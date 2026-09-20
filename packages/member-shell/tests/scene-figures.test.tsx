@@ -48,15 +48,15 @@ import { ActorFigure } from '../src/components/scene-figures'
  * O `describe` final roda o conferente contra HTML adulterado: sem ele, um conferente que não
  * reprovasse nada deixaria todo o resto verde.
  *
- * ⚠️ Os elencos são os dos MANIFESTOS de verdade (`docs/aulas-interativas/*-v6`), lidos pelo
+ * ⚠️ Os elencos são os dos manifestos atuais (`docs/aulas-interativas/aulas`), lidos pelo
  * caminho, mais as BORDAS que o editor deixa montar (um papel só, a pedra com o Dino declarado).
  */
 
-const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas')
+const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas/aulas')
 
 type Uso = { arquivo: string; activity: SceneActivity }
 
-/** Todo bloco de cena com elenco nos manifestos v6. */
+/** Todo bloco de cena com elenco nos manifestos atuais. */
 function usosComElenco(): Uso[] {
   const usos: Uso[] = []
   const visitar = (no: unknown, arquivo: string) => {
@@ -68,7 +68,7 @@ function usosComElenco(): Uso[] {
       for (const valor of Object.values(registro)) visitar(valor, arquivo)
     }
   }
-  for (const arquivo of new Glob('*-v6/**/manifesto.json').scanSync(DOCS))
+  for (const arquivo of new Glob('*.manifesto.json').scanSync(DOCS))
     visitar(JSON.parse(readFileSync(join(DOCS, arquivo), 'utf8')), arquivo)
   return usos
 }
@@ -308,12 +308,11 @@ describe('o desenho veste o elenco', () => {
         falhas.push(`${arquivo} ${f}`)
     }
     expect(falhas).toEqual([])
-    // Os elencos customizados restantes são dos dois cursos espaciais. O Corre Dino usa o elenco
-    // padrão, conferido acima em todas as cenas.
+    // Os elencos customizados atuais cobrem os três cenários dos cursos.
     const mundos = new Set(
       USOS.map((u) => sceneCenario(u.activity.cast, u.activity.scene, u.activity.cenario)),
     )
-    expect([...mundos].sort()).toEqual(['meu-jeito', 'nave'])
+    expect([...mundos].sort()).toEqual(['corre-dino', 'meu-jeito', 'nave'])
   })
 })
 

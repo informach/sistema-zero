@@ -2135,7 +2135,7 @@ core e avalia a tentativa pelo que ELE guardou (`learning.service.ts`). ⭐⭐ P
 MESMO motor, e a funcionalidade nasce na PRIMEIRA versão (decisão da dona, 17/09/2026): não há marcador
 de versão das regras, flag de compatibilidade nem tolerância a player anterior — a única precaução é a
 ORDEM de deploy (members antes de kids e community), em
-[`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md),
+[`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md),
 e só lá.
 
 - ⚠️⚠️ **A cena abre no CASO do professor também aqui** (`sceneStartOf` usa `sceneStart` do core, a

@@ -1,0 +1,2775 @@
+[
+ {
+  "id": "coordinates",
+  "grupo": "stage",
+  "titulo": "O endereço na tela",
+  "instrucao": "Mude o x e veja para que lado o Dino vai. Depois mude só o y. Por último, leve o Dino para x 0 e y 0.",
+  "manipula": "O x e o y do Dino na tela do jogo",
+  "frase_sucesso": "x maior vai para a direita. y maior vai para baixo. E o 0, 0 fica no canto de cima!",
+  "pergunta_extra": "E se o y for igual à altura da tela? O Dino ainda aparece?",
+  "metas": [
+   {
+    "id": "right",
+    "rotulo": "x maior leva para a direita",
+    "pedido": "Aumente só o x.",
+    "soNoCaso": false
+   },
+   {
+    "id": "down",
+    "rotulo": "y maior leva para baixo",
+    "pedido": "Aumente só o y.",
+    "soNoCaso": false
+   },
+   {
+    "id": "origin",
+    "rotulo": "O 0, 0 fica no canto de cima, à esquerda",
+    "pedido": "Leve o Dino para x 0 e y 0.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Mexa só no x e olhe para que lado o Dino foi.",
+   "Agora deixe o x parado e aumente o y. Olhe para onde o Dino vai.",
+   "Diminua o x até 0. Depois diminua o y até 0."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "O x diz se o Dino fica mais para a esquerda ou mais para a direita."
+   },
+   {
+    "passo": "step-2",
+    "fala": "O y cresce para BAIXO: quanto maior o y, mais embaixo na tela."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Em x 0 e y 0, o canto de cima da caixa do Dino encosta no canto da tela."
+   }
+  ],
+  "acoes_usadas": [
+   "place"
+  ]
+ },
+ {
+  "id": "screen-reader",
+  "grupo": "stage",
+  "titulo": "O que o leitor de tela lê",
+  "instrucao": "Ouça a tela com o campo vazio. Depois escreva a sua descrição e ouça de novo.",
+  "manipula": "A descrição do jogo e o botão de ouvir a tela",
+  "frase_sucesso": "O programa não vê o desenho. Quem conta o jogo é a sua frase!",
+  "pergunta_extra": "E se a frase falasse só da tecla? Daria para saber o que fazer no jogo?",
+  "metas": [
+   {
+    "id": "heard-empty",
+    "rotulo": "Sem frase, a pessoa ouve só Imagem",
+    "pedido": "Aperte Ouvir a tela com o campo vazio.",
+    "soNoCaso": false
+   },
+   {
+    "id": "says-goal",
+    "rotulo": "A frase diz o que fazer",
+    "pedido": "Escreva o que se faz no jogo e aperte Ouvir a tela de novo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "says-control",
+    "rotulo": "A frase diz como jogar",
+    "pedido": "Escreva também qual tecla usar e aperte Ouvir a tela de novo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "says-all-controls",
+    "rotulo": "A frase conta os três jeitos de pular",
+    "pedido": "Escreva também a seta para cima e o toque na tela, e aperte Ouvir a tela de novo.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Aperte Ouvir a tela antes de escrever qualquer coisa.",
+   "Escreva o que se faz no jogo. Por exemplo: pule, corra, desvie.",
+   "Escreva também a tecla. Por exemplo: apertando espaço."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sem descrição, quem não vê a tela ouve só isto."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Agora a descrição conta o objetivo e o controle."
+   }
+  ],
+  "acoes_usadas": [
+   "describe",
+   "listen"
+  ]
+ },
+ {
+  "id": "stage-size",
+  "grupo": "stage",
+  "titulo": "A tela e o limite dela",
+  "instrucao": "Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.",
+  "manipula": "Largura e altura da tela, e a borda que mostra o limite",
+  "frase_sucesso": "A tela tem um limite, e o limite é uma escolha sua!",
+  "pergunta_extra": "E se a tela ficar quadrada? O que muda para quem joga?",
+  "metas": [
+   {
+    "id": "border-on",
+    "rotulo": "A borda mostra onde a tela acaba",
+    "pedido": "Ligue a borda da tela.",
+    "soNoCaso": false
+   },
+   {
+    "id": "resized",
+    "rotulo": "A borda acompanha os números",
+    "pedido": "Com a borda à vista, mude a largura ou a altura.",
+    "soNoCaso": false
+   },
+   {
+    "id": "follows",
+    "rotulo": "A borda acompanha os números",
+    "pedido": "Com a borda à vista, mude a largura ou a altura.",
+    "soNoCaso": true
+   },
+   {
+    "id": "target",
+    "rotulo": "Chegou na tela de 480 por 270",
+    "pedido": "Deixe a tela em 480 por 270.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte o botão da borda.",
+   "Com a borda à vista, diminua a largura e olhe a borda.",
+   "Deixe 480 de largura e 270 de altura, o tamanho do Corre Dino."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sem a borda, a cor cobre tudo e não dá para ver onde é a tela."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com a borda, o retângulo aparece: é ali que o jogo acontece."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Os números mandam no formato. Esta é a tela do Corre Dino."
+   }
+  ],
+  "acoes_usadas": [
+   "border",
+   "stage"
+  ]
+ },
+ {
+  "id": "draw-loop",
+  "grupo": "stage",
+  "titulo": "Por que o desenho se repete",
+  "instrucao": "Aperte Avançar 1 quadro e olhe a tela e o x do Dino. Depois desenhe o Dino a cada quadro. Por último, ligue Limpar a tela antes.",
+  "manipula": "Quando desenhar o Dino, limpar a tela antes e o relógio",
+  "frase_sucesso": "A cada quadro o jogo limpa a tela e desenha de novo. É assim que o Dino anda!",
+  "pergunta_extra": "E se limpar sem desenhar? O que sobra na tela?",
+  "metas": [
+   {
+    "id": "frozen",
+    "rotulo": "Sem desenhar de novo, a tela não muda",
+    "pedido": "Com o Dino na tela, desenhe só no começo, sem limpar a tela, e aperte Avançar 1 quadro.",
+    "soNoCaso": false
+   },
+   {
+    "id": "trail",
+    "rotulo": "Sem limpar, os desenhos velhos ficam",
+    "pedido": "Desenhe o Dino a cada quadro, sem limpar a tela, e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "moving",
+    "rotulo": "Limpando e desenhando, o Dino anda",
+    "pedido": "Desenhe o Dino a cada quadro, ligue Limpar a tela antes e deixe o tempo passar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte Avançar 1 quadro e compare a tela com o x do Dino na faixa.",
+   "Escolha desenhar a cada quadro e avance dois quadros.",
+   "Ligue Limpar a tela antes e avance de novo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Com o desenho só no começo, o x do Dino anda e a tela fica parada."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Desenhando a cada quadro, sem limpar, os desenhos de antes ficam na tela."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Limpando antes de desenhar, sobra um Dino só, que anda."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "erase",
+   "loop"
+  ]
+ },
+ {
+  "id": "frames",
+  "grupo": "art",
+  "titulo": "Dois desenhos viram movimento",
+  "instrucao": "Olhe o quadro 1 e o quadro 2. Depois ligue a prévia rápida, pare, e experimente devagar.",
+  "manipula": "Qual quadro aparece, a prévia tocando e a velocidade dela",
+  "frase_sucesso": "Cada quadro continua sendo um desenho parado. É a troca rápida que faz o fogo pulsar!",
+  "pergunta_extra": "E se o quadro 2 voltar a ter um fogo maior? O que muda na prévia?",
+  "metas": [
+   {
+    "id": "two-drawings",
+    "rotulo": "Com a prévia parada, olhou o quadro 1 e o quadro 2",
+    "pedido": "Com a prévia parada, passe do quadro 1 para o quadro 2.",
+    "soNoCaso": false
+   },
+   {
+    "id": "movement",
+    "rotulo": "Rápido, viu o fogo pulsar",
+    "pedido": "Ponha a velocidade em 8 e deixe a prévia tocar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "paused-one",
+    "rotulo": "Parou a prévia rápida e viu um quadro só",
+    "pedido": "Com a prévia rápida tocando, pare a prévia.",
+    "soNoCaso": false
+   },
+   {
+    "id": "slow-shows-two",
+    "rotulo": "Devagar, viu um quadro e depois o outro",
+    "pedido": "Ponha a velocidade em 2, ligue a prévia e espere.",
+    "soNoCaso": false
+   },
+   {
+    "id": "same-frames",
+    "rotulo": "Com os dois quadros iguais, o fogo parou de pulsar",
+    "pedido": "Deixe o quadro 2 igual ao quadro 1 e ligue a prévia rápida.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Com a prévia parada, aperte Quadro 1 e Quadro 2. Olhe o que muda de um para o outro.",
+   "Ponha a velocidade em 8, espere o fogo pulsar e pare a prévia.",
+   "Agora ponha a velocidade em 2 e ligue a prévia. Depois deixe os dois quadros iguais e experimente a prévia rápida."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Quadro 1: a nave com o fogo pequeno."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Quadro 2: a mesma nave, com o fogo maior."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Devagar, 2 por segundo. Um, outro, um, outro."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "frame",
+   "play",
+   "rate"
+  ]
+ },
+ {
+  "id": "onion-skin",
+  "grupo": "art",
+  "titulo": "O fantasma do quadro de antes",
+  "instrucao": "No quadro 2, mude o fogo com o fantasma desligado. Depois ligue o fantasma e compare os dois fogos.",
+  "manipula": "O fantasma do quadro anterior e o tamanho do fogo do quadro 2",
+  "frase_sucesso": "O fantasma é uma guia, não um desenho: ele deixa você comparar os dois fogos sem decorar!",
+  "pergunta_extra": "E no quadro 1? Tente ligar o fantasma lá e veja o que aparece.",
+  "metas": [
+   {
+    "id": "blind-move",
+    "rotulo": "Mudou o fogo 2 sem ver o fogo 1",
+    "pedido": "No quadro 2, com o fantasma desligado, mude o tamanho do fogo 2.",
+    "soNoCaso": false
+   },
+   {
+    "id": "ghost-on",
+    "rotulo": "Viu o fogo 1 tracejado no quadro 2",
+    "pedido": "Vá para o quadro 2 e ligue o fantasma.",
+    "soNoCaso": false
+   },
+   {
+    "id": "even-step",
+    "rotulo": "Com o fantasma, deixou o fogo 2 maior e dentro do quadro",
+    "pedido": "No quadro 2, com o fantasma ligado, deixe o fogo 2 um pouco maior que o fogo 1, sem passar da borda.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Vá para o quadro 2 e mude o tamanho do fogo com o fantasma desligado.",
+   "Agora ligue o fantasma. O fogo tracejado é o do quadro 1.",
+   "Deixe o fogo 2 um pouco maior que o fogo tracejado, sem passar da borda do quadro."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Quadro 2, fantasma desligado. O fogo cresceu quanto? Não dá para saber."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com o fantasma ligado, o fogo do quadro 1 aparece tracejado por cima."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com os dois à vista, o fogo cresce um pouco e sai do mesmo lugar."
+   }
+  ],
+  "acoes_usadas": [
+   "frame",
+   "onion",
+   "shift"
+  ]
+ },
+ {
+  "id": "symmetry",
+  "grupo": "art",
+  "titulo": "O que o espelho faz com o seu traço?",
+  "instrucao": "Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois experimente o espelho de cima e de baixo e o Balde de tinta.",
+  "manipula": "Os dois espelhos do Pinta e os traços da nave na grade",
+  "frase_sucesso": "Com o espelho ligado, cada traço aparece também do outro lado do meio. Desligado, fica só onde você pintou!",
+  "pergunta_extra": "E se os dois espelhos estivessem ligados? Onde cairiam as cópias da asa?",
+  "metas": [
+   {
+    "id": "one-side",
+    "rotulo": "Pintou com o espelho desligado",
+    "pedido": "Com os dois espelhos desligados, pinte a asa.",
+    "soNoCaso": false
+   },
+   {
+    "id": "two-sides",
+    "rotulo": "Pintou com o Espelho lado a lado",
+    "pedido": "Deixe ligado só o Espelho lado a lado e pinte a asa.",
+    "soNoCaso": false
+   },
+   {
+    "id": "axis-decides",
+    "rotulo": "Pintou com o espelho de cima e de baixo",
+    "pedido": "Deixe ligado só o espelho de cima e de baixo e pinte a asa.",
+    "soNoCaso": false
+   },
+   {
+    "id": "fill-ignores-mirror",
+    "rotulo": "Com o espelho ligado, o Balde encheu um lado só",
+    "pedido": "Deixe ligado o Espelho lado a lado e encha a asa com o Balde de tinta.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Pinte a asa e conte quantas asas apareceram.",
+   "Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.",
+   "Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa. Depois experimente o Balde com o Espelho lado a lado ligado."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Espelhos desligados: você pinta a asa, e aparece uma asa."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com o Espelho lado a lado, a outra asa aparece do outro lado do meio."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com o espelho de cima e de baixo, a cópia cai do outro lado do meio, em cima."
+   }
+  ],
+  "acoes_usadas": [
+   "clear-paper",
+   "mirror-mode",
+   "trace"
+  ]
+ },
+ {
+  "id": "pixel-vector",
+  "grupo": "art",
+  "titulo": "De perto, a borda conta",
+  "instrucao": "Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.",
+  "manipula": "O quanto a lupa aproxima as duas pedras",
+  "frase_sucesso": "De longe as duas parecem a mesma pedra. De perto, a de pixel mostra os quadradinhos e a de vetor continua lisa!",
+  "pergunta_extra": "Qual das duas você usaria numa nave bem pequena? E numa bem grande?",
+  "metas": [
+   {
+    "id": "stairs",
+    "rotulo": "Aproximou até as bordas ficarem diferentes",
+    "pedido": "Deixe Aproximar em 4 vezes ou mais.",
+    "soNoCaso": false
+   },
+   {
+    "id": "smooth",
+    "rotulo": "Aproximou até ver os pontos do vetor",
+    "pedido": "Deixe Aproximar em 6 vezes ou mais.",
+    "soNoCaso": false
+   },
+   {
+    "id": "alike",
+    "rotulo": "Voltou para longe e comparou de novo",
+    "pedido": "Depois de aproximar, volte Aproximar para 1 ou 2 vezes.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aproxime devagar e pare quando uma borda mudar.",
+   "Continue aproximando. Olhe o que aparece na borda da pedra de vetor.",
+   "Volte Aproximar para 1 vez e compare as duas de longe."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Lupa em 2: as duas pedras quase do tamanho do jogo."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Lupa em 4: a borda de pixel vira degraus, e a de vetor continua lisa."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Lupa em 8: de um lado os quadradinhos, do outro os pontos da Caneta."
+   },
+   {
+    "passo": "step-4",
+    "fala": "De longe, as duas voltam a parecer a mesma pedra."
+   }
+  ],
+  "acoes_usadas": [
+   "inspect"
+  ]
+ },
+ {
+  "id": "sheet-vs-sprite",
+  "grupo": "art",
+  "titulo": "A folha e o tamanho no jogo",
+  "instrucao": "Mude a largura do recorte e olhe a nave no jogo. Depois mude o tamanho no jogo e olhe a folha.",
+  "manipula": "A largura do recorte na folha da nave, o quadro recortado e o tamanho no jogo",
+  "frase_sucesso": "O recorte precisa ter o tamanho de UM quadro da folha. O tamanho no jogo é outra escolha!",
+  "pergunta_extra": "E se a folha tivesse quatro quadros de 16 por 32? Que largura de recorte você usaria?",
+  "metas": [
+   {
+    "id": "squeezed",
+    "rotulo": "Viu o jogo mostrar a folha inteira",
+    "pedido": "Escolha a largura 64 e olhe o jogo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "crop-half",
+    "rotulo": "Recortou 16 e olhou o jogo",
+    "pedido": "Escolha a largura 16 e olhe o jogo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "crop-whole",
+    "rotulo": "Achou o recorte que mostra uma nave inteira",
+    "pedido": "Escolha a largura 32 e olhe o jogo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "size-apart",
+    "rotulo": "Mudou o tamanho no jogo e conferiu a folha",
+    "pedido": "Com o recorte de 32, deixe a nave do jogo bem maior ou bem menor e olhe a folha.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Mude a largura do recorte e olhe o que aparece no jogo.",
+   "Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?",
+   "Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-2",
+    "fala": "Recorte de 32 por 32: agora cabe uma nave só."
+   }
+  ],
+  "acoes_usadas": [
+   "crop",
+   "cut"
+  ]
+ },
+ {
+  "id": "world",
+  "grupo": "world",
+  "titulo": "Criar e mostrar são duas coisas diferentes",
+  "instrucao": "Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.",
+  "manipula": "Criar o Dino nos bastidores e mostrar o Dino na tela",
+  "frase_sucesso": "Quando aparece na tela do jogo, é o mesmo Dino que já existia nos bastidores.",
+  "pergunta_extra": "Quando você tirar o Dino da tela, o Dino deixa de existir?",
+  "metas": [
+   {
+    "id": "hidden",
+    "rotulo": "O Dino existe nos bastidores",
+    "pedido": "Crie o Dino nos bastidores.",
+    "soNoCaso": false
+   },
+   {
+    "id": "visible",
+    "rotulo": "O mesmo Dino aparece na tela",
+    "pedido": "Mostre o Dino na tela do jogo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe a ficha dos bastidores e a tela do jogo.",
+   "Primeiro, crie o Dino nos bastidores.",
+   "Depois, mostre o Dino na tela do jogo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "O Dino existe nos bastidores."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Mostrar o Dino na tela faz o mesmo Dino aparecer no jogo."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Tirar o Dino da tela não apaga o que existe nos bastidores."
+   }
+  ],
+  "acoes_usadas": [
+   "connect",
+   "create"
+  ]
+ },
+ {
+  "id": "layers",
+  "grupo": "world",
+  "titulo": "Quem fica na frente?",
+  "instrucao": "O Dino está escondido. Mude a ordem de desenhar e faça o Dino aparecer.",
+  "manipula": "A ordem de desenhar do Dino e da floresta",
+  "frase_sucesso": "Só a ordem mudou: quem é desenhado por último fica por cima, e ninguém foi apagado!",
+  "pergunta_extra": "E se fossem três peças? Quem ficaria por cima de todas?",
+  "metas": [
+   {
+    "id": "front",
+    "rotulo": "O Dino apareceu na frente",
+    "pedido": "Leve o Dino para o fim da ordem de desenhar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "covered",
+    "rotulo": "Escondeu de novo só trocando a ordem",
+    "pedido": "Com o Dino no fim da ordem de desenhar, leve a floresta para o fim.",
+    "soNoCaso": false
+   },
+   {
+    "id": "back-in-front",
+    "rotulo": "No jogo, quem é desenhado por último fica na frente",
+    "pedido": "Leve o Dino de novo para o fim da ordem de desenhar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Onde está o resto do Dino?",
+   "Olhe a lista A ordem de desenhar. Quem está embaixo é desenhado por último.",
+   "Leve o Dino para o fim da lista."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "O Dino foi para o fim da ordem de desenhar e apareceu na frente."
+   },
+   {
+    "passo": "step-2",
+    "fala": "A floresta voltou para o fim e cobriu o Dino de novo. Ninguém foi apagado."
+   },
+   {
+    "passo": "step-3",
+    "fala": "O Dino voltou para o fim da ordem de desenhar e ficou na frente, como no jogo."
+   }
+  ],
+  "acoes_usadas": [
+   "layer"
+  ]
+ },
+ {
+  "id": "gravity",
+  "grupo": "motion",
+  "titulo": "Faça o Dino voltar ao chão",
+  "instrucao": "Aqui a gravidade está desligada. Faça o Dino pular e veja até onde vai. Depois, com o Dino no ar, ligue a gravidade.",
+  "manipula": "O Dino e a ligação da gravidade",
+  "frase_sucesso": "A gravidade puxou para baixo, a subida virou descida e o Dino voltou ao chão!",
+  "pergunta_extra": "E se você desligar a gravidade no meio da queda?",
+  "metas": [
+   {
+    "id": "floating",
+    "rotulo": "Sem gravidade, não parou de subir",
+    "pedido": "Com a gravidade desligada, faça o Dino pular e espere.",
+    "soNoCaso": false
+   },
+   {
+    "id": "landed",
+    "rotulo": "Com gravidade, o pulo voltou ao chão",
+    "pedido": "Com o Dino no ar, ligue a gravidade e espere.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Toque no Dino e olhe o número da altura. O número para de crescer?",
+   "Com o Dino no ar, ligue a gravidade e olhe o que muda.",
+   "Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sem gravidade, o Dino sobe e não para."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "jump"
+  ]
+ },
+ {
+  "id": "impulse",
+  "grupo": "motion",
+  "titulo": "Escolha a altura do salto",
+  "instrucao": "Faça o Dino pular com impulso 9. Depois leve o impulso até 14 e pule de novo. Compare as duas marcas.",
+  "manipula": "O impulso do salto e o Dino",
+  "frase_sucesso": "Com a mesma gravidade, um impulso maior fez uma marca muito mais alta!",
+  "pergunta_extra": "Agora faça um salto que passe da marca azul e fique abaixo de 150.",
+  "metas": [
+   {
+    "id": "first-height",
+    "rotulo": "Um salto chegou ao chão",
+    "pedido": "Faça o Dino pular e espere o salto terminar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "other-height",
+    "rotulo": "Outro impulso, marca bem diferente",
+    "pedido": "Pule com impulso 9 e depois com impulso 14.",
+    "soNoCaso": false
+   },
+   {
+    "id": "compare",
+    "rotulo": "Outro impulso, marca bem diferente",
+    "pedido": "Pule com impulso 9 e depois com impulso 14.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "A marca azul é o salto de antes.",
+   "Mude só o impulso. A gravidade fica igual.",
+   "Leve o impulso até 14 e toque no Dino."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Esta marca fica no palco: é o salto de antes."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Só o impulso mudou. Compare as duas marcas."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "impulse",
+   "jump"
+  ]
+ },
+ {
+  "id": "jump-sound",
+  "grupo": "events",
+  "titulo": "O som acompanha o pulo",
+  "instrucao": "Aperte Espaço duas vezes no mesmo pulo. Depois pule tocando no Dino. Conte os sons.",
+  "manipula": "A peça Tocar efeito, o Dino e a tecla Espaço",
+  "frase_sucesso": "Em Quando o Dino pular, o som toca uma vez em cada pulo, por tecla ou por toque!",
+  "pergunta_extra": "E se alguém abrir o seu jogo no celular e pular tocando na tela? Qual dos dois eventos toca o som?",
+  "metas": [
+   {
+    "id": "false-sound",
+    "rotulo": "Som sem pulo",
+    "pedido": "Com Tocar efeito em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "silent-jump",
+    "rotulo": "Pulo sem som",
+    "pedido": "Com Tocar efeito em Quando apertar Espaço, pule tocando no Dino.",
+    "soNoCaso": false
+   },
+   {
+    "id": "quiet-air",
+    "rotulo": "Sem pulo novo, o som esperou",
+    "pedido": "Com Tocar efeito em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.",
+    "soNoCaso": true
+   },
+   {
+    "id": "key-sound",
+    "rotulo": "Com o som no pulo, a tecla fez pulo e som",
+    "pedido": "Com Tocar efeito em Quando o Dino pular, pule pela tecla Espaço.",
+    "soNoCaso": true
+   },
+   {
+    "id": "tap-sound",
+    "rotulo": "Com o som no pulo, o toque fez pulo e som",
+    "pedido": "Com Tocar efeito em Quando o Dino pular, pule tocando no Dino.",
+    "soNoCaso": true
+   },
+   {
+    "id": "every-jump",
+    "rotulo": "Um som em cada pulo, por tecla e por toque",
+    "pedido": "Leve Tocar efeito para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.",
+   "Agora pule tocando no Dino. Tocou som?",
+   "Leve Tocar efeito para Quando o Dino pular e teste os dois jeitos."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "A tecla tocou o som sem outro pulo, e o toque fez o Dino pular sem som."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Em Quando o Dino pular, cada pulo toca um som."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "jump"
+  ]
+ },
+ {
+  "id": "fixed-vs-read",
+  "grupo": "motion",
+  "titulo": "O número escrito e o número lido",
+  "instrucao": "Atire com o número 400, mude a nave de lugar e atire de novo. Depois troque para a leitura do centro x e compare as marcas.",
+  "manipula": "O x da nave, a origem do x do tiro e as marcas da caixa",
+  "frase_sucesso": "Número escrito é sempre o mesmo. Número lido é o de agora.",
+  "pergunta_extra": "E se a nave andar depois do disparo? O tiro que já saiu muda de caminho?",
+  "metas": [
+   {
+    "id": "same-spot",
+    "rotulo": "Com o número escrito, os dois tiros nasceram no mesmo lugar",
+    "pedido": "Com o x em o número 400, atire, leve a nave para outro lugar e atire de novo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "follows",
+    "rotulo": "Com a leitura, o tiro nasceu onde a nave estava",
+    "pedido": "Troque para o centro x da nave, leve a nave para outro lugar e atire.",
+    "soNoCaso": false
+   },
+   {
+    "id": "box-marks",
+    "rotulo": "O tiro sai do meio da caixa e da borda de cima dela",
+    "pedido": "Ligue as marcas da caixa da nave e atire com o centro x da nave.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Atire, depois arraste a nave para longe e atire de novo. Olhe as duas marquinhas.",
+   "Troque de onde vem o x do tiro e repita: atire, arraste a nave, atire.",
+   "Ligue as marcas da caixa e olhe por onde o tiro sai."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "once-vs-always",
+  "grupo": "events",
+  "titulo": "Uma vez, sempre, e na hora que acontecer",
+  "instrucao": "Ponha as fichas nas áreas do projeto e avance quadros. Compare os contadores de cada ficha. Volte ao começo para experimentar outro lugar.",
+  "manipula": "As fichas de ação, as áreas do projeto e o avanço dos quadros",
+  "frase_sucesso": "Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.",
+  "pergunta_extra": "E se você levar uma ficha para outra área e voltar ao começo?",
+  "metas": [
+   {
+    "id": "once",
+    "rotulo": "Em Ao iniciar, a ação aconteceu uma vez só",
+    "pedido": "Ponha a ficha de arrumação em Ao iniciar e avance três quadros.",
+    "soNoCaso": false
+   },
+   {
+    "id": "always",
+    "rotulo": "Em Enquanto estiver rodando, a ação se repete a cada quadro",
+    "pedido": "Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.",
+    "soNoCaso": false
+   },
+   {
+    "id": "both",
+    "rotulo": "Preparar uma vez e repetir sempre, juntos",
+    "pedido": "Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.",
+    "soNoCaso": false
+   },
+   {
+    "id": "on-event",
+    "rotulo": "Em Quando acontecer, a ação ficou esperando",
+    "pedido": "Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.",
+    "soNoCaso": true
+   },
+   {
+    "id": "key-fires",
+    "rotulo": "A tecla fez a ação acontecer na hora",
+    "pedido": "Com a ficha do evento em Quando acontecer, aperte a tecla.",
+    "soNoCaso": true
+   },
+   {
+    "id": "flood",
+    "rotulo": "Em Enquanto estiver rodando, nasceu um tiro em cada quadro",
+    "pedido": "Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Olhe o contador de quadros e conte quantas vezes cada ação disparou.",
+   "Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?",
+   "Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "collision-pair",
+  "grupo": "collision",
+  "titulo": "Quem some na trombada?",
+  "instrucao": "Deixe a trombada acontecer com os grupos escolhidos. Volte ao começo, escolha os apelidos e compare os dois contadores.",
+  "manipula": "O alvo dos comandos para o tiro e a pedra e o avanço até a colisão",
+  "frase_sucesso": "O apelido aponta para um. O grupo aponta para todos.",
+  "pergunta_extra": "E se só um dos dois comandos usar o apelido?",
+  "metas": [
+   {
+    "id": "whole-group",
+    "rotulo": "Escolhendo o grupo, sumiu todo mundo",
+    "pedido": "Deixe os dois seletores no grupo inteiro e deixe a trombada acontecer.",
+    "soNoCaso": false
+   },
+   {
+    "id": "just-the-pair",
+    "rotulo": "Escolhendo os apelidos, sumiram só os dois que se bateram",
+    "pedido": "Troque os dois seletores para os apelidos, volte ao começo e deixe a trombada acontecer.",
+    "soNoCaso": false
+   },
+   {
+    "id": "others-stay",
+    "rotulo": "As outras pedras continuaram o caminho delas",
+    "pedido": "Com os apelidos escolhidos, deixe o tempo passar até as outras duas pedras saírem pela borda de baixo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe os dois contadores antes e depois da trombada.",
+   "Só um tiro encostou numa pedra. Quantos sumiram?",
+   "Troque o alvo dos dois comandos para os apelidos, tiro e asteroide, e faça de novo."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "invincibility",
+  "grupo": "events",
+  "titulo": "O respiro depois da batida",
+  "instrucao": "Compare as três batidas com 0, 45 e 15 quadros de proteção. Volte ao começo entre os testes.",
+  "manipula": "A duração da proteção, o avanço de quadros e o retorno ao começo",
+  "frase_sucesso": "A proteção não é um escudo para sempre: é um respiro com prazo.",
+  "pergunta_extra": "E se a proteção durasse 90 quadros?",
+  "metas": [
+   {
+    "id": "no-shield",
+    "rotulo": "Sem proteção, as três batidas tiraram as três vidas",
+    "pedido": "Deixe a proteção em 0 e avance até passar a terceira pedra.",
+    "soNoCaso": false
+   },
+   {
+    "id": "window",
+    "rotulo": "Com 45 quadros, só a primeira batida tirou vida",
+    "pedido": "Ponha a proteção em 45, volte ao começo e avance até passar a terceira pedra.",
+    "soNoCaso": false
+   },
+   {
+    "id": "expires",
+    "rotulo": "Com 15 quadros, a proteção acabou antes da terceira pedra",
+    "pedido": "Ponha a proteção em 15, volte ao começo e avance até passar a terceira pedra.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Depois da primeira batida, olhe a faixa da proteção contando para trás.",
+   "Compare quantas vidas sobraram com a proteção em 0 e com a proteção em 45.",
+   "Ponha 15 e olhe em que quadro a proteção chega a zero. A pedra do quadro 30 chega antes ou depois disso?"
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "number-line",
+  "grupo": "speed",
+  "titulo": "A régua dos números negativos",
+  "instrucao": "Ande pela régua com Somar -1 e troque o sinal da pergunta. Veja quando a resposta muda.",
+  "manipula": "O marcador de -12 a 0, o botão Somar -1 e o sinal da comparação",
+  "frase_sucesso": "Na régua, quem está mais à direita é o maior. E o sinal decide o que a pergunta responde.",
+  "pergunta_extra": "E se a velocidade for menor que -9? O que cada sinal responderia?",
+  "metas": [
+   {
+    "id": "colder",
+    "rotulo": "Somar -1 anda uma casa para a esquerda, e para a esquerda é mais rápido",
+    "pedido": "Aperte Somar -1 três vezes e olhe onde o marcador para.",
+    "soNoCaso": false
+   },
+   {
+    "id": "greater",
+    "rotulo": "-5 é maior que -9, porque mora à direita dele na régua",
+    "pedido": "Volte ao começo e troque o sinal para o biquinho que aponta para a direita.",
+    "soNoCaso": false
+   },
+   {
+    "id": "stops",
+    "rotulo": "No -9 a pergunta diz não, e a base para ali",
+    "pedido": "Com o biquinho escolhido, leve o marcador até o -9.",
+    "soNoCaso": false
+   },
+   {
+    "id": "silent",
+    "rotulo": "Com o igual, a resposta é não em todo lugar menos num",
+    "pedido": "Volte ao começo, ponha o sinal no igual e aperte Somar -1 quatro vezes.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "A régua é parecida com um termômetro deitado. O -9 fica mais para a esquerda que o -5.",
+   "Olhe a frase embaixo da régua. A resposta muda sozinha conforme o marcador anda.",
+   "Deixe o marcador no -5 e troque o sinal para o biquinho que aponta para a direita. Depois leve o marcador até o -9 e olhe a resposta."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "unique-names",
+  "grupo": "world",
+  "titulo": "Cada nome só pode ser de uma coisa",
+  "instrucao": "Tire o bloco que cria nave, ponha de volta e experimente nomes para a folha. Observe os avisos e a prévia.",
+  "manipula": "O bloco que cria nave e o nome da folha de quadros",
+  "frase_sucesso": "Cada nome é de uma coisa só, e é por isso que a folha ganhou nome próprio.",
+  "pergunta_extra": "E se você escolher nave2 em vez de folha-nave?",
+  "metas": [
+   {
+    "id": "missing",
+    "rotulo": "Sem o bloco que cria o nome, os outros acendem o aviso e a tela para de mudar",
+    "pedido": "Tire o bloco de cima e olhe os três blocos e a tela.",
+    "soNoCaso": false
+   },
+   {
+    "id": "clash",
+    "rotulo": "Dois blocos criando o mesmo nome: o Estúdio pede um nome diferente",
+    "pedido": "Ponha o bloco de cima de volta e escolha nave também no bloco de baixo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "own-name",
+    "rotulo": "Com um nome só dela, a folha fica junto da nave sem briga",
+    "pedido": "No bloco de baixo, troque nave por folha-nave.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe os três blocos da direita. Eles procuram um nome. Quem cria esse nome?",
+   "Ponha os dois blocos criando nave e leia o aviso que aparece.",
+   "Dê um nome só dela ao bloco de baixo, com folha na frente."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "motion-amount",
+  "grupo": "art",
+  "titulo": "O tanto que muda",
+  "instrucao": "Veja a Prévia dos dois quadros iguais. Mova só uma cratera e depois a pedra inteira para comparar.",
+  "manipula": "O tanto que a cratera e a pedra inteira mudam no segundo quadro",
+  "frase_sucesso": "O corpo fica parado e os detalhes andam um pouco. É esse o tanto que faz a pedra rolar.",
+  "pergunta_extra": "E se a cratera andar só uma casa? Você ainda vê rolagem?",
+  "metas": [
+   {
+    "id": "no-change",
+    "rotulo": "Os dois quadros iguais deixam a Prévia parada",
+    "pedido": "Deixe os dois controles em 0 e olhe a Prévia.",
+    "soNoCaso": false
+   },
+   {
+    "id": "local-move",
+    "rotulo": "A cratera andando um pouco já faz a pedra parecer que rola",
+    "pedido": "Deixe o tanto da pedra inteira em 0 e ponha o da cratera entre 3 e 6.",
+    "soNoCaso": false
+   },
+   {
+    "id": "too-much",
+    "rotulo": "Com a pedra inteira andando muito, o desenho pula em vez de rolar",
+    "pedido": "Ponha o tanto que a pedra inteira anda em 10 ou mais.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Os dois quadros estão iguais. Olhe a Prévia e depois mexa em um controle só.",
+   "Deixe a pedra inteira parada e mexa só na cratera. Comece em 3.",
+   "Agora mexa no tanto que a pedra inteira anda e olhe a Prévia de novo."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "two-clocks",
+  "grupo": "population",
+  "titulo": "Dois relógios ao mesmo tempo",
+  "instrucao": "Mude um relógio de cada vez: quando nasce uma pedra e quantos desenhos por segundo ela troca. Observe os números em cima de cada pedra.",
+  "manipula": "O intervalo de nascimento e a velocidade de animação de cada pedra",
+  "frase_sucesso": "São dois relógios: um faz nascer, o outro troca os desenhos. E cada pedra começa o giro dela quando nasce.",
+  "pergunta_extra": "E se nascer uma pedra a cada 80 quadros e ela trocar desenhos a 16 por segundo?",
+  "metas": [
+   {
+    "id": "more-rocks",
+    "rotulo": "Mudando só o relógio de nascer, veio mais pedra, e cada uma continuou girando no mesmo ritmo",
+    "pedido": "Deixe a animação em 8, ponha o relógio em 20 e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "faster-spin",
+    "rotulo": "Mudando só a animação, as pedras giraram mais rápido, e continuou nascendo na mesma hora",
+    "pedido": "Deixe o relógio em 40, ponha a animação em 16 e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "each-one",
+    "rotulo": "Cada pedra começou no quadro 0, na hora em que ela nasceu",
+    "pedido": "Deixe o tempo passar até nascerem três pedras e olhe o número em cima de cada uma na hora em que ela entra.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "São dois números que andam sozinhos: quantas pedras já nasceram e qual desenho cada pedra está mostrando agora.",
+   "Mexa num controle de cada vez. Primeiro no de nascer, depois no do giro.",
+   "Deixe nascer três pedras e olhe o número em cima de cada uma no instante em que ela aparece."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "copy-vs-original",
+  "grupo": "world",
+  "titulo": "A cópia e o original",
+  "instrucao": "Exporte o jogo da aula, importe o arquivo no Estúdio e pinte a nave de um lado só.",
+  "manipula": "Exportar, importar e a cor da nave em cada painel",
+  "frase_sucesso": "Exportar tira uma cópia, importar transforma a cópia num projeto seu, e daí em diante cada um segue o seu caminho.",
+  "pergunta_extra": "E se você pintar a nave na aula depois de exportar, antes de importar?",
+  "metas": [
+   {
+    "id": "exported",
+    "rotulo": "O arquivo saiu, e o jogo continuou na aula",
+    "pedido": "Aperte Exportar e olhe o lado da aula.",
+    "soNoCaso": false
+   },
+   {
+    "id": "imported",
+    "rotulo": "O mesmo jogo apareceu no Estúdio",
+    "pedido": "Com o arquivo pronto, aperte Importar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "independent",
+    "rotulo": "Mudou a cor de um lado, e o outro ficou como estava",
+    "pedido": "Com jogo nos dois lados, pinte a nave de um lado só.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte Exportar e olhe o lado da aula antes de olhar o arquivo.",
+   "Com o arquivo no meio, aperte Importar e compare as duas telas.",
+   "Pinte a nave do lado do Estúdio e olhe a nave do lado da aula."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "published-copy",
+  "grupo": "world",
+  "titulo": "A cópia que foi para o Mural",
+  "instrucao": "Publique uma cópia, mude a cor no projeto e publique de novo. Compare os cartões do Mural.",
+  "manipula": "A cor da nave no projeto, Publicar e Abrir a versão do Mural",
+  "frase_sucesso": "São cópias: o projeto continua seu para mexer; cada publicação guarda a versão daquele momento.",
+  "pergunta_extra": "E se você publicar duas vezes sem mudar a cor?",
+  "metas": [
+   {
+    "id": "first-publish",
+    "rotulo": "Depois de publicar, as duas telas mostram a mesma nave",
+    "pedido": "Aperte Publicar e olhe as duas telas.",
+    "soNoCaso": false
+   },
+   {
+    "id": "only-project",
+    "rotulo": "Mudando a cor no projeto, só a tela da esquerda mudou",
+    "pedido": "Depois de publicar, troque a cor da nave e olhe as duas telas.",
+    "soNoCaso": false
+   },
+   {
+    "id": "republish",
+    "rotulo": "O Mural ganhou uma publicação nova com a cor nova",
+    "pedido": "Com a cor trocada, aperte Publicar de novo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "A tela da direita está vazia. Aperte Publicar.",
+   "Agora troque a cor da nave e compare as duas telas.",
+   "Aperte Publicar de novo e olhe os dois cartões do Mural."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "same-rules-new-skin",
+  "grupo": "world",
+  "titulo": "As mesmas regras, outra história",
+  "instrucao": "Jogue, troque o tema para carrinho e submarino e olhe as quatro regras. Depois desligue a regra de atirar e jogue de novo.",
+  "manipula": "O tema do mesmo jogo, a regra de atirar, as setas e a tecla de tiro",
+  "frase_sucesso": "As regras são a mecânica. Os desenhos são o tema. Você escolhe o que troca.",
+  "pergunta_extra": "E se você trocar o tema e desligar o tiro ao mesmo tempo?",
+  "metas": [
+   {
+    "id": "skin-only",
+    "rotulo": "Trocou o tema e as quatro regras continuaram acesas",
+    "pedido": "Troque o tema para carrinho e olhe a lista de regras.",
+    "soNoCaso": false
+   },
+   {
+    "id": "three-skins",
+    "rotulo": "Três histórias diferentes, o mesmo jogo",
+    "pedido": "Passe pelos três temas.",
+    "soNoCaso": false
+   },
+   {
+    "id": "rule-off",
+    "rotulo": "Desligando a regra de atirar, a lista mudou e o jogo mudou junto",
+    "pedido": "Desligue a regra de atirar e jogue um pouco.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Troque o tema e olhe a lista de regras do lado.",
+   "Passe pelos três temas e veja se alguma regra apagou.",
+   "Agora desligue a regra de atirar e jogue um pouco."
+  ],
+  "roteiro_demonstracao": [],
+  "acoes_usadas": []
+ },
+ {
+  "id": "spawn",
+  "grupo": "population",
+  "titulo": "Abra espaço entre os cactos",
+  "instrucao": "Aperte ▶ Tempo e veja os cactos nascerem. Depois leve Criar cacto para dentro do relógio e compare.",
+  "manipula": "A peça Criar cacto, o relógio e o intervalo",
+  "frase_sucesso": "Com o relógio, nasce um cacto de cada vez e sobra espaço entre um cacto e outro!",
+  "pergunta_extra": "E se o relógio esperar um pouco mais entre dois cactos?",
+  "metas": [
+   {
+    "id": "every-frame",
+    "rotulo": "Viu a parede de cactos",
+    "pedido": "Com Criar cacto em A cada quadro, deixe o tempo passar um segundo inteiro.",
+    "soNoCaso": false
+   },
+   {
+    "id": "with-timer",
+    "rotulo": "Com o relógio, sobrou espaço entre os cactos",
+    "pedido": "Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.",
+    "soNoCaso": false
+   },
+   {
+    "id": "same-fall",
+    "rotulo": "Com mais pedras nascendo, cada pedra desce na mesma velocidade",
+    "pedido": "Troque o relógio de 40 para 20 e compare quanto cada pedra desceu em 60 quadros.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Veja quantos cactos nascem enquanto o tempo passa.",
+   "Compare o mesmo tempo com e sem o relógio.",
+   "Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sem relógio, nasce um cacto em cada quadro. Olhe a parede."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect"
+  ]
+ },
+ {
+  "id": "cleanup",
+  "grupo": "population",
+  "titulo": "Para onde vai o cacto que sai da tela?",
+  "instrucao": "Aperte ▶ Tempo e veja um cacto sair da tela. Olhe os bastidores. Depois ligue Tirar do grupo quem sair da tela e compare.",
+  "manipula": "A regra Tirar do grupo quem sair da tela e o tempo",
+  "frase_sucesso": "Sair da tela não tira ninguém do grupo: quem tira é a regra!",
+  "pergunta_extra": "E se você desligar a regra e deixar outros cactos saírem?",
+  "metas": [
+   {
+    "id": "invisible-stored",
+    "rotulo": "Saiu da tela e ficou no grupo",
+    "pedido": "Deixe o tempo passar até dois cactos saírem da tela.",
+    "soNoCaso": false
+   },
+   {
+    "id": "rule-removes",
+    "rotulo": "A regra tirou do grupo quem saiu",
+    "pedido": "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar até dois saírem.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe a prateleira dos bastidores quando um cacto sai.",
+   "Conte os cactos da prateleira depois que um cacto sai.",
+   "Ligue Tirar do grupo quem sair da tela e aperte ▶ Tempo de novo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Os cactos que saíram da tela continuam na prateleira dos bastidores."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com a regra ligada, quem sai da tela vai para os removidos."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect"
+  ]
+ },
+ {
+  "id": "game-state",
+  "grupo": "events",
+  "titulo": "O relógio no início",
+  "instrucao": "Aperte ▶ Tempo no início. Nascem cactos? Depois leve Criar cacto para dentro de Se o estado do jogo é jogando e compare.",
+  "manipula": "A peça Criar cacto, a caixa Se o estado do jogo é jogando e o começo da partida",
+  "frase_sucesso": "Dentro do Se, Criar cacto espera no início e volta a criar na partida!",
+  "pergunta_extra": "E se você voltar ao início depois de jogar?",
+  "metas": [
+   {
+    "id": "outside",
+    "rotulo": "Nasceram cactos antes de começar",
+    "pedido": "No início, com Criar cacto fora do Se, deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "waiting",
+    "rotulo": "No início, nada nasceu por 2 segundos",
+    "pedido": "Leve Criar cacto para dentro de Se o estado do jogo é jogando e deixe o tempo passar 2 segundos no início.",
+    "soNoCaso": false
+   },
+   {
+    "id": "playing",
+    "rotulo": "Jogando, voltou a nascer",
+    "pedido": "Com Criar cacto dentro do Se, comece a partida e deixe o tempo passar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte ▶ Tempo no início e conte os cactos que aparecem.",
+   "O que fica dentro do Se só acontece durante a partida.",
+   "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "No início, os cactos nascem."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Dentro do Se, Criar cacto espera a partida começar."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "start"
+  ]
+ },
+ {
+  "id": "controls",
+  "grupo": "events",
+  "titulo": "O convite para começar",
+  "instrucao": "A tela promete dois jeitos de começar. Teste os dois.",
+  "manipula": "A tela de início e a peça Começar",
+  "frase_sucesso": "Agora os dois jeitos que o convite promete começam a partida!",
+  "pergunta_extra": "E se o convite dissesse só “Toque para começar”? Quem usa Enter saberia que também pode jogar?",
+  "metas": [
+   {
+    "id": "missing-touch",
+    "rotulo": "É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu",
+    "pedido": "Com Começar em Quando apertar a tecla, toque na tela de início.",
+    "soNoCaso": false
+   },
+   {
+    "id": "start-tap",
+    "rotulo": "Começou tocando",
+    "pedido": "Leve Começar para Quando apertar qualquer tecla ou tocar na tela, e toque na tela de início.",
+    "soNoCaso": false
+   },
+   {
+    "id": "start-key",
+    "rotulo": "Começou com Enter",
+    "pedido": "Na tela de início, aperte Enter.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Toque na tela de início e olhe se ela muda.",
+   "Olhe em que caixa está a peça Começar.",
+   "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Tocar na tela não começou a partida."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com Começar em Quando apertar qualquer tecla ou tocar na tela, o toque começa a partida."
+   }
+  ],
+  "acoes_usadas": [
+   "connect",
+   "start"
+  ]
+ },
+ {
+  "id": "restart",
+  "grupo": "events",
+  "titulo": "Jogue outra vez",
+  "instrucao": "Jogue até bater. No fim, toque na tela. Depois troque o que o toque faz e jogue de novo.",
+  "manipula": "O toque na tela, o que o toque faz no fim e os cactos da pista",
+  "frase_sucesso": "A pista começou limpa. Isso é jogar de novo de verdade!",
+  "pergunta_extra": "E se você trocar para Mudar o estado do jogo para inicio de novo? A pista fica como?",
+  "metas": [
+   {
+    "id": "ended",
+    "rotulo": "A batida levou para o fim",
+    "pedido": "Toque na tela e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "screen-only",
+    "rotulo": "Só trocar de tela deixou os cactos na pista",
+    "pedido": "No fim, com Mudar o estado do jogo para inicio escolhido, toque na tela duas vezes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "clean-track",
+    "rotulo": "Reiniciar começou com a pista limpa",
+    "pedido": "Depois de jogar de novo com Mudar o estado do jogo para inicio, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "back-to-menu",
+    "rotulo": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
+    "pedido": "Escolha Reiniciar o jogo, aperte Enter no fim e depois aperte Enter de novo para jogar.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Olhe a pista depois de voltar para o início. Quantos cactos ficaram?",
+   "Troque o que o toque faz no fim e compare as duas pistas.",
+   "Primeiro jogue com Mudar o estado do jogo para inicio e olhe a pista. Depois escolha Reiniciar o jogo e compare."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Toque na tela e o tempo passa: um cacto chega, bate, e a partida acaba."
+   },
+   {
+    "passo": "step-2",
+    "fala": "O toque no fim só voltou para o início. Tocando de novo, a partida começa com os cactos da anterior."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com Reiniciar o jogo, o fim limpa a pista e o jogo volta para a abertura."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "start"
+  ]
+ },
+ {
+  "id": "hitbox",
+  "grupo": "collision",
+  "titulo": "Onde a batida acontece?",
+  "instrucao": "Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no lugar e mude só o tamanho da área do Dino, para baixo e para cima.",
+  "manipula": "A Distância do cacto e o Tamanho da área do Dino",
+  "frase_sucesso": "O Dino ficou do mesmo tamanho o tempo todo. Quem mandou na batida foi a área, e o tamanho dela é escolha sua.",
+  "pergunta_extra": "Com a área em 80%, traga o cacto de novo. Quando aparece BATEU agora?",
+  "metas": [
+   {
+    "id": "contact",
+    "rotulo": "BATEU com os desenhos ainda longe",
+    "pedido": "Aproxime o cacto do Dino com a Distância do cacto, um toque de cada vez.",
+    "soNoCaso": false
+   },
+   {
+    "id": "early-hit",
+    "rotulo": "BATEU com os desenhos ainda longe",
+    "pedido": "Com a área em 100%, aproxime o cacto com a Distância do cacto até aparecer BATEU.",
+    "soNoCaso": true
+   },
+   {
+    "id": "area-contrast",
+    "rotulo": "Área menor, mesmo lugar: a batida sumiu",
+    "pedido": "Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino.",
+    "soNoCaso": false
+   },
+   {
+    "id": "fair-hit",
+    "rotulo": "Área menor, mesmo lugar: a batida sumiu",
+    "pedido": "Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80%.",
+    "soNoCaso": true
+   },
+   {
+    "id": "too-small",
+    "rotulo": "Os desenhos se tocam, e o jogo disse que não bateu",
+    "pedido": "Encoste o cacto no desenho do Dino e deixe o Tamanho da área do Dino em 40%.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.",
+   "Deixe o cacto onde bateu. Mude só a área do Dino.",
+   "Agora encoste o cacto no desenho do Dino e leve o Tamanho da área do Dino para 40%. Olhe se aparece BATEU."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "BATEU! Mas olhe: os desenhos ainda não se tocam."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Mesmo lugar, área em 80%. Agora não bateu."
+   }
+  ],
+  "acoes_usadas": [
+   "move",
+   "resize"
+  ]
+ },
+ {
+  "id": "score",
+  "grupo": "events",
+  "titulo": "Quando o placar cresce?",
+  "instrucao": "Ponha Somar ponto em cada lugar e olhe o placar. Depois passe pelas três telas: início, jogando e fim.",
+  "manipula": "Peça Somar ponto, os relógios, o estado do jogo é jogando ? e a próxima tela",
+  "frase_sucesso": "Onde a peça mora decide duas coisas: quantas vezes por segundo, e em quais telas.",
+  "pergunta_extra": "E se você voltar ao início? Veja se o placar continua parado.",
+  "metas": [
+   {
+    "id": "score-runaway",
+    "rotulo": "No quadro, o placar disparou: 60 por segundo",
+    "pedido": "Ponha Somar ponto dentro do A cada quadro do jogo e deixe passar um segundo inteiro.",
+    "soNoCaso": false
+   },
+   {
+    "id": "score-idle-wrong",
+    "rotulo": "Solto, o placar cresceu no início",
+    "pedido": "Com Somar ponto solto, deixe o tempo passar na tela de início.",
+    "soNoCaso": false
+   },
+   {
+    "id": "score-start",
+    "rotulo": "Dentro do Se, o início esperou",
+    "pedido": "Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para o bloco “o estado do jogo é jogando ?” e espere de novo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "score-waiting",
+    "rotulo": "Dentro do Se de jogando, o início esperou",
+    "pedido": "Leve Somar ponto para dentro do Se e deixe o tempo passar na tela de início.",
+    "soNoCaso": true
+   },
+   {
+    "id": "score-playing",
+    "rotulo": "Pontos aumentam jogando",
+    "pedido": "Com Somar ponto dentro do Se, aperte Próxima tela até Jogando e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "score-end",
+    "rotulo": "No fim, o placar parou no valor",
+    "pedido": "Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "score-kept",
+    "rotulo": "No fim, o placar parou no valor",
+    "pedido": "Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Com a peça solta, o placar deve crescer antes de começar?",
+   "Compare o placar das três telas na fileira embaixo do palco.",
+   "Compare Somar ponto em A cada quadro do jogo e A cada 1 segundos. Depois leve a peça para o estado do jogo é jogando ? e passe pelas três telas."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Com a peça solta, o placar cresce até na tela de início."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Dentro do Se, o início espera."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Jogando, ele cresce. No fim, fica parado no valor."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "collide",
+   "connect",
+   "start"
+  ]
+ },
+ {
+  "id": "lives",
+  "grupo": "events",
+  "titulo": "O que a batida muda?",
+  "instrucao": "Leve Somar ponto para Enquanto tem vida e deixe o tempo passar. Depois leve Perder uma vida para Quando bater e bata no cacto.",
+  "manipula": "A peça Somar ponto, a peça Perder uma vida e as batidas",
+  "frase_sucesso": "Ponto e vida são duas contagens separadas: cada uma muda pelo seu próprio motivo!",
+  "pergunta_extra": "E se a batida tirasse ponto em vez de vida? O jogo ficaria justo?",
+  "metas": [
+   {
+    "id": "life-lost",
+    "rotulo": "A batida tirou uma vida",
+    "pedido": "Leve Perder uma vida para Quando bater e bata no cacto.",
+    "soNoCaso": false
+   },
+   {
+    "id": "points-stay",
+    "rotulo": "Os pontos ficaram, mesmo perdendo vida",
+    "pedido": "Leve Somar ponto para Enquanto tem vida e deixe o tempo passar. Depois bata no cacto com Perder uma vida em Quando bater.",
+    "soNoCaso": false
+   },
+   {
+    "id": "over",
+    "rotulo": "Sem vidas, a partida acabou.",
+    "pedido": "Com Perder uma vida em Quando bater, bata até não sobrar nenhuma vida.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Leve Somar ponto para Enquanto tem vida e deixe o tempo passar para o placar subir.",
+   "Agora leve Perder uma vida para Quando bater e bata uma vez. Olhe as duas contagens.",
+   "Bata as três vezes e veja o que acontece quando a última vida sai."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "O placar sobe com o tempo, e os corações continuam os mesmos."
+   },
+   {
+    "passo": "step-2",
+    "fala": "O Dino bateu no cacto: saiu um coração, e o placar continua igual."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Mais duas batidas: acabaram os corações e a partida. O placar guardou os pontos."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "collide",
+   "connect"
+  ]
+ },
+ {
+  "id": "random",
+  "grupo": "speed",
+  "titulo": "Cada cacto pode nascer diferente",
+  "instrucao": "Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.",
+  "manipula": "Sorteio do lugar e sorteio da velocidade, com as marquinhas e as raias",
+  "frase_sucesso": "Cada sorteio saiu dentro dos limites que você deu, e às vezes repetiu!",
+  "pergunta_extra": "Sorteie a velocidade mais vezes. Algum cacto passa do de −6?",
+  "metas": [
+   {
+    "id": "positions",
+    "rotulo": "Saíram lugares diferentes",
+    "pedido": "Aperte Sortear lugar até sair um lugar diferente.",
+    "soNoCaso": false
+   },
+   {
+    "id": "repeat",
+    "rotulo": "Um lugar repetiu",
+    "pedido": "Aperte Sortear lugar mais oito vezes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "above",
+    "rotulo": "A régua fica acima da tela: a pedra nasce do lado de fora e entra caindo",
+    "pedido": "Deixe o tempo passar até a primeira pedra entrar na tela.",
+    "soNoCaso": true
+   },
+   {
+    "id": "velocities",
+    "rotulo": "O cacto −6 chegou mais longe que o −5",
+    "pedido": "Aperte Sortear velocidade até sair um cacto −5 e um −6.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "A régua mostra onde um cacto pode nascer, depois da borda da tela.",
+   "Sorteie uma coisa por vez: primeiro o lugar, depois a velocidade.",
+   "Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sorteando o lugar: 520, 550 e 520 de novo. Cada um dentro da régua."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Sorteando a velocidade: o cacto de −6 anda mais em 1 segundo que o de −5."
+   }
+  ],
+  "acoes_usadas": [
+   "sample"
+  ]
+ },
+ {
+  "id": "acceleration",
+  "grupo": "speed",
+  "titulo": "Acelere com um limite",
+  "instrucao": "Aperte Passar 5 segundos várias vezes e olhe a velocidade de cada cacto novo. O que acontece quando a base chega em −9?",
+  "manipula": "O relógio de 5 segundos, a condição Se velocidade > −9 e a fileira de cactos",
+  "frase_sucesso": "A base parou em −9, e mesmo assim um cacto saiu com −10. O sorteio vem depois da base!",
+  "pergunta_extra": "Desligue a condição de novo. Até onde a base vai?",
+  "metas": [
+   {
+    "id": "base-limit",
+    "rotulo": "A base parou em −9",
+    "pedido": "Com a condição ligada, aperte Passar 5 segundos cinco vezes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "variation-limit",
+    "rotulo": "Mesmo parada em −9, saiu um cacto −10",
+    "pedido": "Com a base em −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.",
+    "soNoCaso": false
+   },
+   {
+    "id": "spawned-ten",
+    "rotulo": "Mesmo com a base parada em −9, nasceu um cacto −10",
+    "pedido": "Com a base no −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.",
+    "soNoCaso": true
+   },
+   {
+    "id": "old-speed",
+    "rotulo": "Os cactos velhos não mudaram de número",
+    "pedido": "Aperte Passar 5 segundos três vezes e olhe o número embaixo de cada cacto.",
+    "soNoCaso": false
+   },
+   {
+    "id": "past-limit",
+    "rotulo": "Sem a condição, a base passou de −9",
+    "pedido": "Desligue a condição e aperte Passar 5 segundos cinco vezes.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe o número embaixo de cada cacto da fileira.",
+   "Passe 5 segundos até a conta da base dizer não.",
+   "Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "A cada 5 segundos a base fica 1 mais rápida, e o cacto novo nasce com ela."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Em −9 a conta diz não, e a base fica. Os cactos velhos guardam os seus números."
+   },
+   {
+    "passo": "step-3",
+    "fala": "A base continua −9, e o sorteio tirou mais 1: nasceu um cacto −10."
+   }
+  ],
+  "acoes_usadas": [
+   "sample"
+  ]
+ },
+ {
+  "id": "velocity",
+  "grupo": "motion",
+  "titulo": "O que move o Dino a cada quadro",
+  "instrucao": "Escolha uma velocidade para o lado e deixe o tempo passar. Depois experimente um número negativo.",
+  "manipula": "Velocidade do Dino nos dois eixos, e o relógio",
+  "frase_sucesso": "A posição muda sozinha porque a velocidade é somada nela em cada quadro!",
+  "pergunta_extra": "E se a velocidade for zero enquanto o relógio continua andando?",
+  "metas": [
+   {
+    "id": "moves",
+    "rotulo": "A posição mudou sozinha, com o relógio",
+    "pedido": "Escolha uma velocidade diferente de zero e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "left",
+    "rotulo": "Velocidade negativa levou para a esquerda",
+    "pedido": "Ponha um número negativo na velocidade para o lado e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "stopped",
+    "rotulo": "Com velocidade zero, o Dino fica parado",
+    "pedido": "Depois de ver o Dino andar, ponha as duas velocidades em zero e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "still",
+    "rotulo": "Com velocidade zero, o personagem fica no lugar",
+    "pedido": "Depois de ver o personagem andar, ponha as duas velocidades em zero e deixe o tempo passar.",
+    "soNoCaso": true
+   },
+   {
+    "id": "up",
+    "rotulo": "Velocidade negativa levou para cima",
+    "pedido": "Ponha a velocidade para baixo num número negativo e deixe o tempo passar.",
+    "soNoCaso": true
+   },
+   {
+    "id": "down",
+    "rotulo": "Velocidade positiva levou para baixo",
+    "pedido": "Ponha a velocidade para baixo num número positivo e deixe o tempo passar.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Escolha uma velocidade. Depois deixe o tempo passar e olhe o número de x na faixa.",
+   "A velocidade não move nada sozinha: quem move é o relógio, um quadro de cada vez.",
+   "Ponha a velocidade para o lado em −5 e deixe o tempo passar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Velocidade 5: a cada quadro o x do Dino soma 5, e o Dino vai para a direita."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Velocidade −5: a cada quadro o x diminui 5, e o mesmo relógio leva para o outro lado."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Velocidade 0: a cada quadro o x soma 0, e o Dino fica no lugar."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "velocity"
+  ]
+ },
+ {
+  "id": "hold-vs-press",
+  "grupo": "events",
+  "titulo": "Apertar uma vez, ou segurar",
+  "instrucao": "Toque a tecla bem rápido. Depois segure a tecla e conte até três.",
+  "manipula": "A tecla, que as duas raquetes escutam",
+  "frase_sucesso": "Apertar acontece uma vez. Estar apertada vale enquanto você segura!",
+  "pergunta_extra": "E se você segurar por mais tempo ainda?",
+  "metas": [
+   {
+    "id": "one-step",
+    "rotulo": "Toque rápido: a de cima deu um passo",
+    "pedido": "Toque a tecla bem rápido e solte.",
+    "soNoCaso": false
+   },
+   {
+    "id": "while-held",
+    "rotulo": "Segurando, a de baixo não parou de andar",
+    "pedido": "Segure a tecla e conte até três.",
+    "soNoCaso": false
+   },
+   {
+    "id": "apart",
+    "rotulo": "Segurando, a de cima deu um passo só",
+    "pedido": "Segure a tecla, conte até três e solte.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Toque a tecla rápido e olhe as duas raquetes.",
+   "Agora segure a tecla. A de cima anda de novo?",
+   "Segure a tecla e conte até três antes de soltar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Um toque rápido: a de cima dá um passo, e a de baixo quase não sai do lugar."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Segurando a tecla, a de baixo anda em todo quadro. A de cima deu um passo só."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "hold"
+  ]
+ },
+ {
+  "id": "variable",
+  "grupo": "events",
+  "titulo": "Guardar, mudar e mostrar",
+  "instrucao": "Guarde um número na caixa. Mude o número sem mostrar. Só depois ligue o mostrar.",
+  "manipula": "O número guardado, a soma e o mostrar na tela",
+  "frase_sucesso": "São três coisas diferentes: guardar, mudar e mostrar!",
+  "pergunta_extra": "E se você mostrar primeiro e mudar depois?",
+  "metas": [
+   {
+    "id": "stored",
+    "rotulo": "A caixa guardou um número",
+    "pedido": "Guarde um número na caixa.",
+    "soNoCaso": false
+   },
+   {
+    "id": "changed-hidden",
+    "rotulo": "Mudou o valor sem estar na tela",
+    "pedido": "Depois de guardar, aperte Somar 1 em pontos com Mostrar placar desligado.",
+    "soNoCaso": false
+   },
+   {
+    "id": "shown",
+    "rotulo": "Mostrar não mudou o valor guardado",
+    "pedido": "Depois de guardar, ligue Mostrar placar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Guarde um número na caixa. Depois some pontos e olhe: a tela mudou?",
+   "Guarde um número e aperte Somar 1 em pontos. Olhe a caixa e a tela antes de ligar Mostrar placar.",
+   "Guarde 0, some 1 três vezes com o mostrar desligado, e só então ligue o mostrar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "O jogo cria a caixa pontos e guarda 0."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Três acertos: a caixa vai para 3. A tela ainda não mostra nada."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Mostrar placar copia o 3 para a tela. A caixa continua 3."
+   }
+  ],
+  "acoes_usadas": [
+   "change",
+   "show",
+   "store"
+  ]
+ },
+ {
+  "id": "group-loop",
+  "grupo": "population",
+  "titulo": "Qual deles está mais perto?",
+  "instrucao": "Meça cada cacto e escolha o mais perto. Depois ligue o laço e deixe o tempo passar.",
+  "manipula": "Medir cada cacto, escolher um e o laço",
+  "frase_sucesso": "Para achar o mais perto, é preciso medir todos. O laço mede todos, em todo quadro!",
+  "pergunta_extra": "E se dois cactos ficarem à mesma distância da torre?",
+  "metas": [
+   {
+    "id": "looked-all",
+    "rotulo": "Mediu os três antes de escolher",
+    "pedido": "Aperte Medir em cada cacto do grupo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "nearest",
+    "rotulo": "Escolheu o mais perto depois de medir",
+    "pedido": "Depois de medir cada cacto do grupo, escolha o cacto de menor distância.",
+    "soNoCaso": false
+   },
+   {
+    "id": "auto",
+    "rotulo": "Com o laço, a escolha mudou sozinha quando outro chegou mais perto",
+    "pedido": "Ligue o laço e deixe o tempo passar por 3 segundos.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Nenhum cacto tem número ainda. Meça um.",
+   "Só dá para saber o menor comparando os três números.",
+   "Meça o 1º, o 2º e o 3º. Depois escolha o menor número."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "A torre mede um por um do grupo."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Depois de medir todos, fica com o mais perto."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com o laço, a escolha pula sozinha quando outro chega mais perto."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "choose",
+   "connect",
+   "look"
+  ]
+ },
+ {
+  "id": "enemy-type",
+  "grupo": "population",
+  "titulo": "A ficha dos cactos",
+  "instrucao": "Faça nascer três cactos e olhe os cactos andarem. Depois mude a velocidade na ficha.",
+  "manipula": "A ficha (velocidade e vida), o nascimento de mais um e a cópia ao nascer",
+  "frase_sucesso": "Quem lê a ficha muda junto com ela. Quem copiou ao nascer fica como era!",
+  "pergunta_extra": "E se você mudar a vida com a cópia ligada?",
+  "metas": [
+   {
+    "id": "many",
+    "rotulo": "Nasceram três cactos da mesma ficha",
+    "pedido": "Aperte Fazer nascer mais um três vezes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "all-change",
+    "rotulo": "Mudou a ficha e os cactos que já andavam mudaram juntos",
+    "pedido": "Faça nascer mais de um cacto, mude a velocidade na ficha e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "copied",
+    "rotulo": "Copiando ao nascer, só os novos mudaram",
+    "pedido": "Ligue Copiar a ficha ao nascer, mude a velocidade na ficha, faça nascer mais um cacto e deixe o tempo passar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Você tem uma ficha com dois números. Faça nascer três cactos dela.",
+   "Mude a velocidade na ficha e olhe o número em cima de cada cacto.",
+   "Aperte Fazer nascer mais um três vezes e depois mude a velocidade para 7."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Três cactos nascem da mesma ficha e começam a andar."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Um número na ficha muda os três no mesmo quadro."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Copiando a ficha ao nascer, só o cacto novo anda com o número novo."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "define"
+  ]
+ },
+ {
+  "id": "camera",
+  "grupo": "stage",
+  "titulo": "Até onde o Dino pode ir?",
+  "instrucao": "Leve o Dino até a bandeira. Depois faça a câmera seguir o Dino e ande de novo.",
+  "manipula": "Andar com o Dino pelo mundo e a câmera que segue",
+  "frase_sucesso": "A tela é uma janela: a câmera leva a janela junto com o Dino!",
+  "pergunta_extra": "E se o Dino voltar para o começo do mundo?",
+  "metas": [
+   {
+    "id": "lost",
+    "rotulo": "Sem a câmera, o Dino saiu da tela",
+    "pedido": "Com a câmera parada, leve o Dino para depois de 480.",
+    "soNoCaso": false
+   },
+   {
+    "id": "follows",
+    "rotulo": "Com a câmera seguindo, o Dino voltou para a tela",
+    "pedido": "Leve o Dino para depois de 480 com a câmera parada e então faça a câmera seguir o Dino.",
+    "soNoCaso": false
+   },
+   {
+    "id": "window",
+    "rotulo": "Com a câmera seguindo, o cenário passou e o Dino ficou na tela",
+    "pedido": "Com a câmera parada, leve o Dino para depois de 480. Depois faça a câmera seguir o Dino e ande mais um pouco.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe onde o Dino está no mundo e o pedaço que a tela mostra. Ande para a direita.",
+   "Com a câmera parada, leve o Dino bem para a direita e olhe a tela do jogo.",
+   "Leve o Dino para depois de 480 e depois faça a câmera seguir o Dino."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Longe demais: a tela acaba e o Dino some."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com a câmera seguindo, a janela anda junto e o Dino volta a aparecer."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Andando com a câmera, o cenário passa e o Dino fica na tela."
+   }
+  ],
+  "acoes_usadas": [
+   "connect",
+   "walk"
+  ]
+ },
+ {
+  "id": "contact",
+  "grupo": "collision",
+  "titulo": "Encostando, ou começou a encostar?",
+  "instrucao": "Encoste o cacto no Dino e espere. Depois afaste e encoste de novo.",
+  "manipula": "A distância dos cactos das duas pistas",
+  "frase_sucesso": "\"Está encostando?\" vale em todo quadro. \"Começar a encostar\" vale só no instante da batida!",
+  "pergunta_extra": "E se o cacto ficar encostado até acabarem os corações de cima?",
+  "metas": [
+   {
+    "id": "drain",
+    "rotulo": "\"Está encostando?\" tirou um coração em todo quadro",
+    "pedido": "Encoste o cacto no Dino e deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "once",
+    "rotulo": "\"Começar a encostar\" tirou um coração só",
+    "pedido": "Encoste o cacto no Dino, deixe o tempo passar e olhe a pista de baixo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "apart",
+    "rotulo": "Afastou, encostou de novo e perdeu mais um coração",
+    "pedido": "Depois de encostar, afaste o cacto e deixe o tempo passar. Depois encoste de novo e deixe o tempo passar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Encoste o cacto no Dino, deixe o tempo passar e olhe as duas pistas.",
+   "Compare quantos corações saíram em cima e embaixo.",
+   "Afaste o cacto, deixe o tempo passar e encoste de novo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Encostado, a pista de cima perde um coração em todo quadro. A de baixo perdeu um só."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Afastando e encostando de novo, a pista de baixo perde mais um."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "approach"
+  ]
+ },
+ {
+  "id": "cooldown",
+  "grupo": "events",
+  "titulo": "A arma e a recarga",
+  "instrucao": "Aperte Atirar bem rápido, várias vezes. Depois ponha uma recarga e aperte rápido de novo.",
+  "manipula": "O tiro e o tempo de recarga entre dois tiros",
+  "frase_sucesso": "O relógio também serve para ESPERAR: durante a recarga, apertar não faz nada!",
+  "pergunta_extra": "E se a recarga for de 2 segundos inteiros?",
+  "metas": [
+   {
+    "id": "burst",
+    "rotulo": "Sem recarga, os tiros saíram colados",
+    "pedido": "Tire a recarga e aperte Atirar três vezes bem rápido.",
+    "soNoCaso": false
+   },
+   {
+    "id": "waiting",
+    "rotulo": "Apertar durante a recarga não fez tiro nenhum",
+    "pedido": "Ponha uma recarga e aperte Atirar duas vezes bem rápido.",
+    "soNoCaso": false
+   },
+   {
+    "id": "spaced",
+    "rotulo": "Com recarga, apareceu um vão entre os tiros",
+    "pedido": "Ponha uma recarga e aperte Atirar. Deixe o tempo passar até aparecer Pronto para atirar e aperte Atirar de novo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte Atirar várias vezes seguidas e olhe os tiros voando.",
+   "Ponha uma recarga e aperte Atirar várias vezes. Olhe quantos tiros saem.",
+   "Ponha a recarga em 1 segundo e aperte Atirar duas vezes seguidas."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Sem recarga, cada aperto vira um tiro, e os tiros saem colados."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com a recarga, o segundo aperto não vira tiro."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "recharge",
+   "shoot"
+  ]
+ },
+ {
+  "id": "aim",
+  "grupo": "motion",
+  "titulo": "A seta que aponta",
+  "instrucao": "Mude o alvo de lugar e atire. Depois ligue a mira e atire de novo.",
+  "manipula": "O lugar do alvo, a mira e o tiro",
+  "frase_sucesso": "Apontar é achar a seta do Dino até o alvo. Com a mira, o tiro vai por ela!",
+  "pergunta_extra": "E se o alvo ficar atrás do Dino?",
+  "metas": [
+   {
+    "id": "arrow",
+    "rotulo": "A seta virou quando o alvo mudou de lugar",
+    "pedido": "Mude o alvo de lugar e olhe a seta.",
+    "soNoCaso": false
+   },
+   {
+    "id": "straight-miss",
+    "rotulo": "Sem a mira, o tiro foi reto e errou",
+    "pedido": "Com a mira desligada e o alvo acima ou abaixo do Dino, aperte Atirar e olhe o tiro voar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "follows",
+    "rotulo": "Com a mira, o tiro foi pela seta e acertou",
+    "pedido": "Ligue a mira, aperte Atirar e olhe o tiro voar.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Mude o alvo de lugar e olhe para onde a seta aponta.",
+   "Atire com a mira desligada, e depois com a mira ligada. Compare o caminho do tiro.",
+   "Ligue a mira e aperte Atirar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "A seta aponta para onde o alvo está."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Sem a mira, o tiro vai reto e passa longe do alvo."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com a mira ligada, o tiro vai pela seta e acerta."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect",
+   "shoot",
+   "target"
+  ]
+ },
+ {
+  "id": "diagonal",
+  "grupo": "motion",
+  "titulo": "Duas setas ao mesmo tempo",
+  "instrucao": "Ande 1 segundo só para a direita. Depois ande 1 segundo com direita e baixo juntas.",
+  "manipula": "As setas apertadas, andar 1 segundo e a correção da diagonal",
+  "frase_sucesso": "Na diagonal o Dino anda para o lado E para baixo, e o caminho fica mais comprido. A correção deixa igual ao reto!",
+  "pergunta_extra": "E se a correção ficar ligada andando reto?",
+  "metas": [
+   {
+    "id": "straight",
+    "rotulo": "Andando reto, o Dino parou no círculo",
+    "pedido": "Aperte uma seta só e aperte Andar 1 segundo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "faster",
+    "rotulo": "Na diagonal, o Dino passou do círculo",
+    "pedido": "Ande 1 segundo com uma seta só. Depois aperte duas setas juntas e ande 1 segundo de novo.",
+    "soNoCaso": false
+   },
+   {
+    "id": "same",
+    "rotulo": "Com a correção, a diagonal parou no círculo",
+    "pedido": "Ligue a correção da diagonal, aperte duas setas juntas e ande 1 segundo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aperte só a seta para a direita e ande 1 segundo. Olhe onde o Dino para.",
+   "Agora aperte a seta para a direita e a seta para baixo. O Dino para em cima do círculo?",
+   "Ligue a correção e ande de novo na diagonal."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Uma seta só: em 1 segundo o Dino chega em cima do círculo."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Duas setas juntas: no mesmo segundo, o Dino passa do círculo."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com a correção, a diagonal para em cima do círculo."
+   }
+  ],
+  "acoes_usadas": [
+   "connect",
+   "direction",
+   "stride"
+  ]
+ },
+ {
+  "id": "tilemap",
+  "grupo": "world",
+  "titulo": "O mapa escrito com letras",
+  "instrucao": "Escolha uma letra e toque numa casa do texto. Depois escreva ooo numa linha do meio.",
+  "manipula": "A letra escolhida e as casas do texto do mapa",
+  "frase_sucesso": "O mapa é um texto que o jogo lê: cada letra vira sempre a mesma peça!",
+  "pergunta_extra": "E se você apagar o chão embaixo do Dino?",
+  "metas": [
+   {
+    "id": "text-is-map",
+    "rotulo": "Trocou uma letra e o desenho mudou",
+    "pedido": "Escolha uma letra e toque numa casa do texto que tem outra letra.",
+    "soNoCaso": false
+   },
+   {
+    "id": "coin-row",
+    "rotulo": "Três o seguidos numa linha do meio viraram três moedas no ar",
+    "pedido": "Escolha a letra o e escreva três o seguidos numa linha do meio.",
+    "soNoCaso": false
+   },
+   {
+    "id": "same-letter",
+    "rotulo": "Escreveu a mesma peça em duas linhas, e as duas ficaram iguais",
+    "pedido": "Escreva numa outra linha uma peça que você já escreveu.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Escolha a letra # e toque numa casa vazia do texto.",
+   "Cada linha do texto é uma linha do desenho. Olhe a mesma casa nos dois.",
+   "Escolha a letra o e toque em três casas seguidas da linha 3."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Uma letra trocada, uma peça nova no desenho."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Três o seguidos viram três moedas no ar."
+   },
+   {
+    "passo": "step-3",
+    "fala": "A mesma letra em outra linha vira a mesma peça."
+   }
+  ],
+  "acoes_usadas": [
+   "paint-tile"
+  ]
+ },
+ {
+  "id": "pool",
+  "grupo": "population",
+  "titulo": "Quantos cactos o jogo já fabricou?",
+  "instrucao": "Aperte ▶ e olhe o número pintado em cada cacto. Depois ligue Reciclar quem saiu e olhe de novo.",
+  "manipula": "O tempo e a chave Reciclar quem saiu",
+  "frase_sucesso": "Reciclando, o jogo usa de novo o cacto que saiu. O número de fabricados parou!",
+  "pergunta_extra": "E se você desligar a reciclagem depois de um tempo?",
+  "metas": [
+   {
+    "id": "grows",
+    "rotulo": "A cada vez, um cacto novo: o número só subiu",
+    "pedido": "Com Reciclar quem saiu desligado, deixe o tempo passar até fabricados chegar a 3.",
+    "soNoCaso": false
+   },
+   {
+    "id": "recycled",
+    "rotulo": "O mesmo cacto saiu e entrou de novo",
+    "pedido": "Ligue Reciclar quem saiu e deixe o tempo passar até o cacto da tela chegar na saída.",
+    "soNoCaso": false
+   },
+   {
+    "id": "steady",
+    "rotulo": "O número de fabricados parou",
+    "pedido": "Com Reciclar quem saiu desligado, deixe o tempo passar até fabricados chegar a 3. Depois ligue Reciclar quem saiu e deixe o tempo passar por 4 segundos.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "São dois números: quantos estão na tela agora e quantos o jogo já fabricou.",
+   "Aperte ▶ e olhe o número pintado em cada cacto que entra.",
+   "Deixe o tempo passar até fabricados chegar a 3. Depois ligue Reciclar quem saiu e olhe o número pintado no cacto."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-2",
+    "fala": "Com a reciclagem, o mesmo cacto volta e o número para."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "connect"
+  ]
+ },
+ {
+  "id": "entity-state",
+  "grupo": "events",
+  "titulo": "O que cada torre está fazendo?",
+  "instrucao": "Ponha a 1ª torre para mirar e aperte ▶. Olhe as três. Depois mude só a 2ª. No fim, mude onde o estado mora.",
+  "manipula": "O estado de cada torre, onde o estado mora e o tempo",
+  "frase_sucesso": "Cada torre guarda o seu estado, e é o estado que decide o que a torre faz agora!",
+  "pergunta_extra": "E se as três ficarem no mesmo estado?",
+  "metas": [
+   {
+    "id": "own",
+    "rotulo": "As três ficaram em estados diferentes",
+    "pedido": "Com o estado morando em cada uma, ponha as três torres em estados diferentes.",
+    "soNoCaso": false
+   },
+   {
+    "id": "acts",
+    "rotulo": "Com o relógio andando, cada torre fez o que o seu estado manda",
+    "pedido": "Com pelo menos duas torres em estados diferentes, deixe o tempo passar.",
+    "soNoCaso": false
+   },
+   {
+    "id": "independent",
+    "rotulo": "Mudou uma torre e as outras não mudaram",
+    "pedido": "Com o estado morando em cada uma e duas torres em estados diferentes, deixe o tempo passar. Depois mude o estado de uma só.",
+    "soNoCaso": false
+   },
+   {
+    "id": "shared",
+    "rotulo": "Com o estado no jogo, as três mudaram juntas",
+    "pedido": "Mude onde o estado mora para no jogo e troque o estado de uma torre.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Escolha um estado para a 1ª torre e aperte ▶.",
+   "Mude o estado de uma só e deixe o tempo passar. Olhe o que as outras duas fizeram.",
+   "Deixe a 1ª mirando e a 2ª atirando, e deixe o tempo passar."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Cada torre num estado: o relógio mostra o que cada uma faz."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Mudar uma torre não mexe nas outras duas."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Com o estado no jogo, mudar uma torre muda as três."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "brain",
+   "brain-scope"
+  ]
+ },
+ {
+  "id": "delta-time",
+  "grupo": "motion",
+  "titulo": "O mesmo jogo em dois computadores",
+  "instrucao": "Aperte ▶ e veja a corrida. Depois troque para \"a cada segundo\" e aperte ▶ de novo.",
+  "manipula": "Como o Dino anda (a cada quadro ou a cada segundo) e o tempo",
+  "frase_sucesso": "Andando a cada segundo, o jogo fica igual em qualquer computador!",
+  "pergunta_extra": "Andando a cada segundo, quem deixou mais marcas até a chegada?",
+  "metas": [
+   {
+    "id": "apart",
+    "rotulo": "A cada quadro, os dois computadores se separaram",
+    "pedido": "Com o Dino andando a cada quadro, deixe o tempo passar por dois segundos.",
+    "soNoCaso": false
+   },
+   {
+    "id": "together",
+    "rotulo": "A cada segundo, os dois chegaram juntos",
+    "pedido": "Depois de ver os dois se separarem, troque para \"a cada segundo\" e deixe o tempo passar até a chegada.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "São dois computadores com o mesmo jogo: um rápido e um devagar.",
+   "Aperte ▶ e compare as marcas de cada computador.",
+   "Aperte ▶ com \"a cada quadro\". Depois troque e aperte ▶ de novo."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Andando a cada quadro, o rápido dispara na frente."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Andando a cada segundo, os dois chegam juntos."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "count"
+  ]
+ },
+ {
+  "id": "circle-collision",
+  "grupo": "collision",
+  "titulo": "Quando dois círculos batem?",
+  "instrucao": "Aperte ▶ e espere os dois baterem. Olhe a fila dos raios. Depois diminua um raio sem mexer na distância.",
+  "manipula": "A distância entre os centros, os dois raios e o relógio que aproxima",
+  "frase_sucesso": "Distância contra a soma dos raios: é essa conta que o jogo faz!",
+  "pergunta_extra": "E se os dois raios ficarem bem grandes?",
+  "metas": [
+   {
+    "id": "touch",
+    "rotulo": "A distância ficou igual ou menor que a soma dos raios",
+    "pedido": "Aproxime os dois círculos: deixe o tempo passar ou diminua a distância entre os centros.",
+    "soNoCaso": false
+   },
+   {
+    "id": "formula",
+    "rotulo": "Com os círculos parados, mudar um raio trocou o resultado",
+    "pedido": "Com os dois só encostando, diminua um dos raios sem mexer na distância.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Olhe a fila dos dois raios, embaixo da linha da distância.",
+   "Aperte ▶ e espere aparecer \"bateu\". Olhe onde a fila dos raios termina.",
+   "Deixe os dois só encostarem e então diminua um raio, sem mexer na distância."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "A distância diminui até a fila dos raios alcançar o outro centro."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com um raio menor, o mesmo lugar deixa de ser uma batida."
+   }
+  ],
+  "acoes_usadas": [
+   "advance",
+   "radius"
+  ]
+ },
+ {
+  "id": "axis-z",
+  "grupo": "stage",
+  "titulo": "O eixo que faltava",
+  "instrucao": "Mexa só no z e olhe a sombra. Depois aumente só o y, e mexa no z de novo.",
+  "manipula": "Os três eixos do espaço, um de cada vez",
+  "frase_sucesso": "O z é a frente e o fundo. E no 3D, y maior é mais ALTO!",
+  "pergunta_extra": "E se o cubo voltar para o chão bem no fundo?",
+  "metas": [
+   {
+    "id": "up",
+    "rotulo": "No 3D, o y maior é mais ALTO",
+    "pedido": "Aumente só o y.",
+    "soNoCaso": false
+   },
+   {
+    "id": "depth",
+    "rotulo": "O z leva para a frente e para o fundo",
+    "pedido": "Mexa só no z.",
+    "soNoCaso": false
+   },
+   {
+    "id": "shadow",
+    "rotulo": "No ar, a sombra andou pelo chão junto com o cubo",
+    "pedido": "Levante o cubo com o y. Depois, com o cubo no ar, mexa só no x ou só no z.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Agora são três números. Mexa só no z e olhe o cubo e a sombra.",
+   "No jogo 2D, aumentar o y descia. Veja o que acontece aqui.",
+   "Aumente só o y. Depois, com o cubo no ar, mexa só no x."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-2",
+    "fala": "O y levanta: aqui, mais y é mais alto."
+   },
+   {
+    "passo": "step-3",
+    "fala": "No ar, a sombra anda pelo chão junto com o cubo."
+   }
+  ],
+  "acoes_usadas": []
+ },
+ {
+  "id": "camera-3d",
+  "grupo": "stage",
+  "titulo": "Gire a câmera e conte as cores",
+  "instrucao": "Mova a câmera em volta do cubo e conte as cores em cada lugar. Ache o lugar com menos cores, um com exatamente duas e um com três.",
+  "manipula": "A volta e a altura de onde a câmera olha",
+  "frase_sucesso": "O cubo não mudou: o que você vê depende de onde a câmera está!",
+  "pergunta_extra": "E se a câmera ficar bem por baixo?",
+  "metas": [
+   {
+    "id": "one-face",
+    "rotulo": "Girou até ver uma cor só",
+    "pedido": "Mova a câmera até ver uma cor só.",
+    "soNoCaso": false
+   },
+   {
+    "id": "two-faces",
+    "rotulo": "Girou até ver exatamente duas cores",
+    "pedido": "Leve a câmera para outro lugar com exatamente duas cores.",
+    "soNoCaso": false
+   },
+   {
+    "id": "three-faces",
+    "rotulo": "Achou um lugar com três cores",
+    "pedido": "Leve a câmera para um canto e mude a altura.",
+    "soNoCaso": false
+   },
+   {
+    "id": "back",
+    "rotulo": "Voltou para onde a câmera começou com um toque",
+    "pedido": "Com a câmera longe de onde começou, aperte Voltar para onde a câmera começou.",
+    "soNoCaso": true
+   }
+  ],
+  "pistas": [
+   "Lados opostos têm a mesma cor. Mova devagar e conte as cores.",
+   "Mude a volta de 1 em 1 e conte as cores em cada lugar. Depois mude a altura.",
+   "Deixe a altura no meio e ponha a volta em 1."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "De frente, uma cor só."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Do canto, duas. Do canto e por cima, três."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Um toque leva a câmera de volta para onde ela começou."
+   }
+  ],
+  "acoes_usadas": [
+   "orbit",
+   "recenter"
+  ]
+ },
+ {
+  "id": "mesh",
+  "grupo": "art",
+  "titulo": "O que tem embaixo da pele?",
+  "instrucao": "Deixe a pele transparente e olhe o que aparece embaixo. Depois volte a pele inteira e gire o modelo.",
+  "manipula": "A pele (inteira, transparente ou sem pele) e a volta do modelo",
+  "frase_sucesso": "A forma é feita de pontos ligados. A cor é uma pele pintada por cima!",
+  "pergunta_extra": "E se você girar com os pontos à vista?",
+  "metas": [
+   {
+    "id": "points",
+    "rotulo": "Viu os pontos e as linhas que formam o modelo",
+    "pedido": "Deixe a pele transparente.",
+    "soNoCaso": false
+   },
+   {
+    "id": "skin",
+    "rotulo": "Viu a pele por cima dos mesmos pontos",
+    "pedido": "Depois de deixar a pele transparente, volte a pele inteira e olhe o modelo.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "O modelo parece liso. Deixe a pele transparente.",
+   "Compare o modelo com a pele inteira e com a pele transparente.",
+   "Deixe a pele transparente, olhe, e volte a pele inteira."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Com a pele transparente, aparecem os pontos e as linhas."
+   },
+   {
+    "passo": "step-2",
+    "fala": "Com a pele inteira de novo, os pontos continuam embaixo."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Sem a pele, girar o modelo gira os pontos junto."
+   }
+  ],
+  "acoes_usadas": [
+   "orbit",
+   "see-points"
+  ]
+ },
+ {
+  "id": "pick-ray",
+  "grupo": "collision",
+  "titulo": "Qual caixa a mira acende?",
+  "instrucao": "Mire onde uma caixa cobre a outra e olhe a vista de lado. Depois mire na caixa sozinha.",
+  "manipula": "Para onde a mira aponta",
+  "frase_sucesso": "A mira é uma reta que sai do seu olho e para na primeira coisa!",
+  "pergunta_extra": "E se você mirar no vazio?",
+  "metas": [
+   {
+    "id": "first",
+    "rotulo": "Com duas no caminho, acendeu a mais perto",
+    "pedido": "Aponte a mira onde uma caixa cobre a outra.",
+    "soNoCaso": false
+   },
+   {
+    "id": "face",
+    "rotulo": "A caixa mirada acendeu",
+    "pedido": "Aponte a mira para a caixa sozinha.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "Aponte para uma caixa e veja qual delas acende.",
+   "Use o botão Mirar onde uma cobre a outra e olhe a vista de lado.",
+   "Aperte Mirar onde uma cobre a outra."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Mirar numa caixa acende a caixa."
+   }
+  ],
+  "acoes_usadas": [
+   "point"
+  ]
+ },
+ {
+  "id": "fill-stroke",
+  "grupo": "art",
+  "titulo": "A cor de dentro e a linha de fora",
+  "instrucao": "Deixe o contorno em Sem cor e olhe a pedra. Depois deixe o preenchimento em Sem cor e olhe de novo.",
+  "manipula": "O preenchimento e o contorno da pedra",
+  "frase_sucesso": "Preenchimento e contorno são duas partes com cor própria. Cada uma pode ficar em Sem cor!",
+  "pergunta_extra": "E se as duas partes ficarem em Sem cor ao mesmo tempo?",
+  "metas": [
+   {
+    "id": "only-fill",
+    "rotulo": "Deixou o contorno em Sem cor",
+    "pedido": "Deixe só o contorno em Sem cor.",
+    "soNoCaso": false
+   },
+   {
+    "id": "only-stroke",
+    "rotulo": "Deixou o preenchimento em Sem cor",
+    "pedido": "Deixe só o preenchimento em Sem cor.",
+    "soNoCaso": false
+   },
+   {
+    "id": "both",
+    "rotulo": "Voltou as duas partes com cor",
+    "pedido": "Depois de deixar uma parte em Sem cor, volte as duas com cor.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "A pedra tem duas partes: o preenchimento, por dentro, e o contorno, na borda.",
+   "Deixe uma parte de cada vez em Sem cor e olhe o que sobra.",
+   "Deixe o contorno em Sem cor, depois o preenchimento, e no fim volte as duas com cor."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Contorno em Sem cor: sobra o preenchimento."
+   },
+   {
+    "passo": "step-3",
+    "fala": "Preenchimento em Sem cor: dá para ver o fundo por dentro. Sobra a linha."
+   },
+   {
+    "passo": "step-4",
+    "fala": "As duas com cor: preenchimento e contorno juntos."
+   }
+  ],
+  "acoes_usadas": [
+   "ink"
+  ]
+ },
+ {
+  "id": "shading",
+  "grupo": "art",
+  "titulo": "A luz dá volume",
+  "instrucao": "Ligue a sombra e a luz e olhe a bola. Desligue para comparar, e depois mude o sol de lado.",
+  "manipula": "Os tons de sombra e de luz e o lado do sol",
+  "frase_sucesso": "Um azul mais escuro longe do sol e um mais claro perto dele deixam a bola redonda!",
+  "pergunta_extra": "E se você mudar o sol de lado com a sombra e a luz desligadas?",
+  "metas": [
+   {
+    "id": "volume",
+    "rotulo": "Ligou os tons e viu a bola redonda",
+    "pedido": "Ligue a sombra e a luz.",
+    "soNoCaso": false
+   },
+   {
+    "id": "flat",
+    "rotulo": "Tirou os tons e viu a bola chapada de novo",
+    "pedido": "Ligue a sombra e a luz e depois desligue.",
+    "soNoCaso": false
+   },
+   {
+    "id": "side",
+    "rotulo": "Mudou o sol de lado e viu a sombra trocar de lado",
+    "pedido": "Com a sombra e a luz ligadas, mude o sol de lado.",
+    "soNoCaso": false
+   }
+  ],
+  "pistas": [
+   "A bola está pintada com um tom só. Ligue a sombra e a luz e compare.",
+   "Com a sombra e a luz ligadas, mude o sol de lado. Olhe onde fica o azul mais escuro.",
+   "Com a sombra e a luz ligadas, leve o sol para o outro lado."
+  ],
+  "roteiro_demonstracao": [
+   {
+    "passo": "step-1",
+    "fala": "Um azul mais escuro longe do sol e um mais claro perto dele: a bola ficou redonda."
+   }
+  ],
+  "acoes_usadas": [
+   "light",
+   "shade"
+  ]
+ }
+]

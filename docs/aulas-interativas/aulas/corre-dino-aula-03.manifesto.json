@@ -1,0 +1,530 @@
+{
+ "version": 4,
+ "courseSlug": "corre-dino",
+ "lessonSlug": "aula-03",
+ "title": "O Dino pisa no chão e pula",
+ "retireBlockKeys": [
+  "abertura",
+  "explicacao",
+  "construir-1",
+  "construir-2",
+  "construir-3",
+  "convite-construir-1",
+  "fechamento",
+  "video-missao",
+  "video-missao-impulso",
+  "descoberta",
+  "descoberta-impulso",
+  "video-construir-1-1",
+  "video-construir-2-1",
+  "video-construir-3-1",
+  "zappy-construir-1",
+  "zappy-construir-2",
+  "zappy-construir-3",
+  "zappy-convite-construir-1",
+  "video-entrega",
+  "zappy-entrega",
+  "zappy-revisao",
+  "video-abertura-editorial",
+  "video-controle-provisorio",
+  "fala-controle-provisorio",
+  "experiencia-gravidade-modelo",
+  "video-aplicar-gravidade",
+  "experiencia-impulso-modelo",
+  "video-regular-pulo",
+  "fala-regular-pulo",
+  "fala-entrega-editorial",
+  "video-fecho-editorial"
+ ],
+ "blocks": [
+  {
+   "key": "video-abertura",
+   "plannedVideo": "Título: Ele corre, mas não te obedece\n\nMostrar a falta, não anunciar. Tela regravada.\n\nAbrir no jogo dela como ficou ontem: o Dino correndo no lugar, a floresta passando. Clicar na área do jogo e apertar espaço: nada acontece. Apertar a seta para cima: nada acontece.\n\nFala: ele corre bonito, mas não te obedece. Hoje isso muda, e no fim da aula ele pula quando você mandar e volta para o chão sozinho.\n\nNão dizer antes o que falta. A falta aparece rodando, e é ela que motiva a aula.\n\nOrigem: video-abertura-editorial. Duração alvo: 20 a 30 segundos."
+  },
+  {
+   "key": "fala-comando-de-pulo",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Kits prontos, Dino, pega o Controlar o dinossauro __, força do pulo __ e encaixa dentro do A cada quadro do jogo, entre o Desenhar fundo de floresta e o Desenhar o sprite dino. O primeiro campo já nasce escrito dino, que é o nome do seu dinossauro desde a Aula 1: confere e deixa assim. O segundo é a força do pulo, que vem 15. Deixa em 15 por enquanto."
+   }
+  },
+  {
+   "key": "video-comando-de-pulo",
+   "plannedVideo": "Título: O comando entra e nada acontece\n\nTela regravada, com zoom nos pés do Dino.\n\nMostrar o gesto do encaixe do Controlar o dinossauro entre a floresta e o desenho do Dino. Logo depois, zoom na área do jogo: as perninhas congeladas, a pose travada no meio de um pulo, e o espacinho entre os pés e a grama.\n\nApertar espaço: nada. Apertar a seta para cima: nada.\n\nPreservar o Dino flutuando e parado, que é o sintoma real deste Estúdio. Não trocar pelo salto sem retorno do modelo simplificado.\n\nFechar na frase que abre a aula seguinte: ninguém consegue pular sem ter chão embaixo do pé.\n\nOrigem: video-controle-provisorio. Duração alvo: 60 a 70 segundos."
+  },
+  {
+   "key": "fala-olha-os-pes",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "O comando está montado e está funcionando. O que falta não é comando. Olha os pés dele de novo."
+   }
+  },
+  {
+   "key": "fala-modelo-separado",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Isto aqui é um modelo separado, feito para você olhar uma coisa de cada vez. Nele o Dino consegue pular mesmo sem gravidade, porque o que a gente quer ver é o que acontece depois do salto. No seu jogo falta essa mesma peça, e é ela que vai trazer o Dino para o chão. Só quem está de pé no chão é que consegue pular."
+   }
+  },
+  {
+   "key": "experiencia-gravidade",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Faça o Dino voltar ao chão",
+    "instructions": "Aqui a gravidade está desligada. Toca no Dino para pular e olha o número da altura até ele parar de crescer. Depois, com o Dino no ar, liga a gravidade e espera.",
+    "hints": [
+     "Toque no Dino e olhe o número da altura. O número para de crescer?",
+     "Com o Dino no ar, ligue a gravidade e olhe o que muda.",
+     "Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar."
+    ],
+    "activity": {
+     "type": "experimentation",
+     "scene": "gravity",
+     "cenario": "corre-dino"
+    },
+    "prediction": {
+     "context": {
+      "label": "A gravidade do pulo",
+      "explanation": "Nesta experiência, vamos observar o caminho do Dino quando ele pula com a gravidade desligada."
+     },
+     "prompt": "Sem a gravidade, o que acontece depois do salto?",
+     "choices": [
+      {
+       "id": "sobe",
+       "label": "O Dino sobe e não volta"
+      },
+      {
+       "id": "volta",
+       "label": "O Dino volta ao chão",
+       "shows": "Sem gravidade, o Dino continuou subindo e não voltou."
+      }
+     ],
+     "correctChoiceId": "sobe",
+     "revealOn": "floating"
+    }
+   }
+  },
+  {
+   "key": "fala-aplicar-gravidade",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Movimento, Velocidade e gravidade, pega o Aplicar a gravidade do mundo ao sprite __ e encaixa dentro do A cada quadro do jogo, entre o Desenhar fundo de floresta e o Controlar o dinossauro. Ele nasce escrito jogador, igual ao Desenhar o sprite da Aula 2: clica no campo e escolhe o dino. Esse bloco não tem número nenhum, e é assim mesmo."
+   }
+  },
+  {
+   "key": "video-gravidade",
+   "plannedVideo": "Título: O Dino pisa na grama\n\nO encaixe do Aplicar a gravidade do mundo acima do Controlar o dinossauro, e a troca do nome de fábrica por dino no seletor.\n\nO Dino descendo e pousando, com as perninhas voltando a correr. Apontar o pouso no instante em que ele acontece: olha a área do jogo, o dino desceu um tiquinho e agora está pisando na grama. Uma frase só relembrando que y cresce para baixo, citando a Aula 1.\n\nDepois o pulo pelos três jeitos: espaço, seta para cima e clique na parte de cima da área do jogo. Dizer o motivo do clique: é o mesmo controle do dedo na tela do celular, que é onde o jogo vai ser mostrado para a família.\n\nUma frase sobre a gravidade ser do mundo e agir só em quem recebe o bloco.\n\nCortar a explicação da bolinha jogada para cima, porque a bancada da seção anterior já fez isso com a criança no controle. Cortar o convite a testar o agachamento pensando em pássaros, que é assunto de outro jogo.\n\nOrigem: video-aplicar-gravidade. Duração alvo: 60 a 75 segundos."
+  },
+  {
+   "key": "fala-o-que-muda-a-altura",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Aquele 15 que eu pedi para você deixar quieto é a força do pulo. Antes de escolher o seu número, vem ver o que ele faz. Nesta bancada a gravidade fica igual o tempo todo, e só o impulso muda."
+   }
+  },
+  {
+   "key": "experiencia-impulso",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Escolha a altura do salto",
+    "instructions": "A gravidade fica igual. Faz um salto com impulso 9 e olha a marca que fica. Depois leva o impulso até 14 e pula de novo. Compara as duas marcas.",
+    "hints": [
+     "A marca azul é o salto de antes.",
+     "Mude só o impulso. A gravidade continua igual.",
+     "Leve o impulso até 14 e toque no Dino para comparar as marcas."
+    ],
+    "activity": {
+     "type": "experimentation",
+     "scene": "impulse",
+     "cenario": "corre-dino"
+    }
+   }
+  },
+  {
+   "key": "fala-forca-do-pulo",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Agora no seu jogo. Põe 2 na força do pulo, clica na área do jogo e pula. Depois põe 30 e pula de novo. Por último, põe 14 e pula: esse é o número do meu jogo. Testa uns entre 12 e 18 e para naquele que te deu mais vontade de jogar. O número que ficar é o seu."
+   }
+  },
+  {
+   "key": "video-forca-do-pulo",
+   "plannedVideo": "Título: Exagera para os dois lados\n\nA demonstração por extremos, que já está gravada e é ótima.\n\nForça 2 e o Dino mal descolando do chão. Força 30 e ele sumindo da tela e demorando para voltar, com a observação de que quem traz ele de volta é a gravidade encaixada na seção anterior. Fechar em 14, pulando por cima de um cacto imaginário.\n\nManter a fala sobre o método de trabalho: exagera para um lado, exagera para o outro, e aí você entende o que o número faz. Isso vale para qualquer número de qualquer jogo.\n\nManter o convite à faixa de 12 a 18. O 14 é o número do vídeo, e o critério da aula aceita o número que ela escolher.\n\nNão alegar equivalência numérica com a bancada, que usa 9 e 14 em um modelo diferente.\n\nOrigem: video-regular-pulo. Duração alvo: 50 a 60 segundos."
+  },
+  {
+   "key": "projeto",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-fecho",
+   "plannedVideo": "Título: A ordem dentro do quadro\n\nEste clipe passou a abrir com o teste e o envio, e a recapitulação ficou para o fim dele. Absorve o balão de conferência que vivia na entrega, porque balão depois da ferramenta não existe para quem está com o Estúdio aberto do lado.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. Um salto pela barra de espaço.\n3. Outro salto, dessa vez com um toque na parte de cima da área do jogo.\n4. Nos dois, o mesmo percurso enquadrado: o Dino sobe, para lá em cima um tiquinho e volta sozinho para a grama, com a floresta passando atrás dele.\n5. A lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nSó então a recapitulação dos três passos: você deu o comando de pulo, trouxe o Dino para o chão com a gravidade e escolheu a altura do salto.\n\nGuardar a ordem dentro do quadro, que é a ideia que volta em todas as aulas seguintes: primeiro a gravidade, depois o controle, depois o desenho. Primeiro calcula o movimento, depois mostra o personagem.\n\nManter a nota de que o modelo da bancada é ilustrativo, e que o sintoma do Estúdio é flutuar sem conseguir pular, não sair voando.\n\nSem o convite ao agachamento e sem abrir desafio extra. Terminar indicando o quiz e o gancho da Aula 4.\n\nOrigem: video-fecho-editorial, mais o teste e o envio regravados. Duração alvo: 45 a 60 segundos."
+  },
+  {
+   "key": "quiz-final",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Com a mesma gravidade, um impulso maior tende a fazer o quê?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Produzir um salto mais alto."
+       },
+       {
+        "id": "b",
+        "label": "Mudar a cor do Dino."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "A comparação isolou o impulso inicial."
+     },
+     {
+      "id": "q2",
+      "prompt": "Que ação faz o Dino cair de volta?",
+      "choices": [
+       {
+        "id": "b",
+        "label": "Desenhar a floresta por último."
+       },
+       {
+        "id": "a",
+        "label": "Aplicar gravidade ao personagem."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Gravidade muda o movimento; desenho muda a imagem."
+     },
+     {
+      "id": "q3",
+      "prompt": "Qual ordem usamos no quadro?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Gravidade, controle, desenho."
+       },
+       {
+        "id": "b",
+        "label": "Desenho, controle, gravidade."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Calculamos o movimento antes de mostrar o personagem."
+     }
+    ]
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "abertura",
+   "title": "O que a gente vai fazer hoje",
+   "intent": "presentation",
+   "objective": "Ver o jogo de ontem rodando e o Dino ignorando as teclas. A falta aparece primeiro, e é ela que motiva o dia.",
+   "blockKeys": [
+    "video-abertura"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-abertura"
+    ]
+   }
+  },
+  {
+   "key": "comando-de-pulo",
+   "title": "Dê o comando de pulo",
+   "intent": "application",
+   "objective": "Encaixar o Controlar o dinossauro entre a floresta e o desenho do Dino, e ver o jogo quebrar de um jeito que dá para enxergar: ele flutua, congelado, e não obedece.",
+   "blockKeys": [
+    "fala-comando-de-pulo",
+    "video-comando-de-pulo",
+    "fala-olha-os-pes"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "controle",
+      "label": "Encaixe Controlar o dinossauro dino antes de desenhá-lo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_control_dino",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_draw_sprite"
+      }
+     },
+     {
+      "id": "floresta-antes-do-controle",
+      "label": "Deixe o controle depois da floresta.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_forest",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputs": {
+        "SPEED": 5
+       },
+       "beforeBlock": "sz_g2d_control_dino"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "gravidade-modelo",
+   "title": "O que traz o Dino de volta ao chão",
+   "intent": "exploration",
+   "objective": "Ver uma subida que não acaba e, com o Dino já no ar, ligar a gravidade e ver a subida virar descida. É o que falta no seu jogo.",
+   "blockKeys": [
+    "fala-modelo-separado",
+    "experiencia-gravidade"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-gravidade"
+    ]
+   }
+  },
+  {
+   "key": "aplicar-gravidade",
+   "title": "A gravidade entra no seu jogo",
+   "intent": "application",
+   "objective": "Encaixar o Aplicar a gravidade do mundo acima do controle, ver o Dino pousar na grama e o pulo passar a funcionar pelo teclado, pelo clique e pelo toque.",
+   "blockKeys": [
+    "fala-aplicar-gravidade",
+    "video-gravidade"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "gravidade",
+      "label": "Aplique gravidade ao dino antes do controle do pulo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_apply_gravity",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_control_dino"
+      }
+     },
+     {
+      "id": "floresta-antes-da-gravidade",
+      "label": "Deixe a gravidade depois da floresta.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_forest",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputs": {
+        "SPEED": 5
+       },
+       "beforeBlock": "sz_g2d_apply_gravity"
+      }
+     },
+     {
+      "id": "controle",
+      "label": "Encaixe Controlar o dinossauro dino antes de desenhá-lo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_control_dino",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_draw_sprite"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "impulso-modelo",
+   "title": "Você escolhe a altura do pulo",
+   "intent": "exploration",
+   "objective": "Comparar dois impulsos com a mesma gravidade, usando a marca do salto anterior, e ver que a altura não sobe na mesma proporção do número.",
+   "blockKeys": [
+    "fala-o-que-muda-a-altura",
+    "experiencia-impulso"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-impulso"
+    ]
+   }
+  },
+  {
+   "key": "forca-do-pulo",
+   "title": "Ponha a sua força de pulo no jogo",
+   "intent": "application",
+   "objective": "Levar a força para os dois extremos no próprio jogo, 2 e 30, e parar no número que te deu mais vontade de jogar. O vídeo usa 14 e a faixa sugerida é de 12 a 18.",
+   "blockKeys": [
+    "fala-forca-do-pulo",
+    "video-forca-do-pulo"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "gravidade",
+      "label": "Aplique gravidade ao dino antes do controle do pulo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_apply_gravity",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_control_dino"
+      }
+     },
+     {
+      "id": "controle",
+      "label": "Controle o dino com a sua força de pulo, antes de desenhá-lo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_control_dino",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_draw_sprite"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "entrega",
+   "title": "Teste, envie e fecha",
+   "intent": "delivery",
+   "objective": "O Dino recebe a gravidade antes do controle, pula com a força que você escolheu e volta sozinho para a grama. Enviar e guardar a ordem do quadro no quiz.",
+   "blockKeys": [
+    "video-fecho",
+    "quiz-final",
+    "projeto"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-fecho",
+     "projeto",
+     "quiz-final"
+    ],
+    "projectChecks": [
+     {
+      "id": "gravidade",
+      "label": "Aplique gravidade ao dino antes do controle do pulo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_apply_gravity",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_control_dino"
+      }
+     },
+     {
+      "id": "controle",
+      "label": "Controle o dino com a sua força de pulo, antes de desenhá-lo.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_control_dino",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       },
+       "beforeBlock": "sz_g2d_draw_sprite"
+      }
+     },
+     {
+      "id": "desenhar",
+      "label": "Desenhe o sprite dino dentro de A cada quadro.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_draw_sprite",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "fields": {
+        "SPRITE": "dino"
+       }
+      }
+     },
+     {
+      "id": "floresta",
+      "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_forest",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputs": {
+        "SPEED": 5
+       },
+       "beforeBlock": "sz_g2d_draw_sprite"
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

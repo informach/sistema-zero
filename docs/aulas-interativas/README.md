@@ -1,77 +1,109 @@
-# Aulas com descoberta, explicação e criação
+# Redesenho didático das 27 aulas
 
-Os pacotes v6 deste repositório estão em [Desafio do Primeiro Jogo — introdução e 5 dias](desafio-primeiro-jogo-v6/README.md), [Corre Dino — 13 aulas](corre-dino-v6/README.md) e [O jogo do meu jeito — 8 aulas](o-jogo-do-meu-jeito-v6/README.md). Eles são uma referência anterior ao redesenho didático em andamento, cujos 27 manifestos novos estão fora do repositório. Não regenere nem importe um pacote v6 supondo que ele seja o redesenho novo.
+Redesenho didático completo das aulas dos três cursos de jogos (Desafio do Primeiro Jogo, Corre
+Dino e O Jogo do Meu Jeito) para o formato de seções da plataforma.
 
-Desde 20/09/2026, blocos interativos têm apenas experimentação e HTML. Os manifestos v6 aqui foram alinhados a esse contrato: demonstrações cobertas pelo vídeo saíram; perguntas isoladas viraram quiz. O portão de CI valida os manifestos gravados em disco, sem executar as antigas receitas de geração.
+**Relatório consolidado (documento para ler e comentar):**
+https://claude.ai/code/artifact/2a29a025-3a65-4c66-858b-afefacaa34df
 
-O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas contagens e decisões anteriores não substituem as revisões acima. As pastas históricas foram preservadas para referência e migração.
+## O resultado
 
-⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
+Contado nos manifestos em 20/09/2026, não na proposta original.
 
-⭐ **Os 27 manifestos v6 do repositório passam por teste** (`packages/core/tests/learning.test.ts` e `qa/validar-manifestos-v6.ts`): formato, critérios de seção e blocos sob o contrato atual. Hoje eles contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos novos do redesenho didático ficam em outra pasta e contêm 53 experimentações.
+| Curso | Aulas | Seções hoje | Propostas | Clipes hoje | Propostos |
+|---|---:|---:|---:|---:|---:|
+| Desafio do Primeiro Jogo | 6 | 78 | 56 | 61 | 46 |
+| Corre, Dino! | 13 | 127 | 91 | 86 | 72 |
+| O Jogo do Meu Jeito | 8 | 76 | 56 | 55 | 48 |
+| **Total** | **27** | **281** | **203** | **202** | **166** |
 
-## Histórico do pacote inicial
+As 11 cenas novas foram construídas e os defeitos do catálogo, corrigidos: o catálogo foi de 45
+para **56 cenas**. Os 27 manifestos usam 53 experimentações e passam no validador, sem nenhuma aula
+esperando cena. As contagens da tabela vêm dos arquivos importáveis; foram conferidas novamente na
+revisão didática de 20/09/2026.
 
-Este pacote adapta os 27 roteiros fornecidos: introdução e cinco dias do Desafio do Primeiro Jogo, 13 aulas de Corre, Dino! e oito de O Jogo do Meu Jeito. Cada roteiro original continua sendo uma aula. O [catálogo](catalogo.json) registra o arquivo de origem, sua assinatura SHA-256, o destino e a quantidade de seções.
+## O que tem nesta pasta
 
-A revisão v4 começa pelas 13 aulas de **Corre, Dino!**: 60 seções, 13 descobertas manipuláveis, criação no mesmo Estúdio, entrega antes do quiz e 26 perguntas finais. O piloto troca texto corrido e perguntas antecipadas por vídeo curto e Zappy. Prevê 77 clipes, ainda a produzir. Outros cursos mantêm v3. O catálogo completo soma **109 seções e 144 clipes planejados**. A [revisão anterior](qa/revisao-pedagogica-2026-09-12.md) registra a etapa histórica; o [guia atual](guia-de-autoria.md) descreve o fluxo vigente.
+| Arquivo | O que é |
+|---|---|
+| `BRIEFING.md` | A doutrina que governa o redesenho. Os dois eixos, as seis perguntas por conceito, o critério de experimentação contra demonstração, as regras de seção e as regras de língua herdadas. **Leia antes de mexer em qualquer aula.** |
+| `CATALOGO-CENAS.json` | As **56 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
+| `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
+| `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
+| `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: o par de nota de produção e fala em parágrafos separados, a regra do caminho completo, o que não existe mais (botão de play, exercício de pausa) e o vocabulário travado |
+| `ACHADOS-TRANSVERSAIS.md` | Os defeitos encontrados durante a análise que **não** são redesenho: critérios que reprovam quem faz certo, passo perdido, rótulos vencidos, seções duplicadas, documentação desatualizada |
+| `ESPEC-MANIFESTO.md` | O contrato do `manifesto.json`: schema real do importador, a regra das duas colunas do player, a convenção do título de vídeo e a fila de dependência entre cena e aula |
+| `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Os três arquivos estão completos nas 27 aulas |
+| `cenas/` | **O material para corrigir as cenas antes de mexer nas aulas.** As 11 cenas novas com especificação completa, e os ajustes das 28 cenas existentes, tudo organizado por cena e não por aula. Comece pelo `RELATORIO-CENAS.md` |
 
-Em cada pasta há um `roteiro.md` completo para produção e um `manifesto.json` importável na autoria. Os originais em Documents foram preservados. As cinco experiências HTML em [interacoes](interacoes) também estão incorporadas aos manifestos, sem dependências de rede. As demais usam os modelos nativos da plataforma.
+## Como ler uma análise de aula
 
-## Como a aula funciona
+Cada arquivo em `aulas/` segue a mesma estrutura:
 
-⭐ **A cena é desenhada com a arte do jogo que o curso ensina.** Cada cena declara o cenário que retrata (`cenario`: `corre-dino`, `nave`, `gorilas` ou `meu-jeito`), e o palco usa o mesmo código de desenho da extensão Jogo 2D: o Dino com barriga, espinhos e perninhas que correm, o cacto de dois braços, a floresta com sol, nuvens e morros, o céu estrelado da nave. Quem decide o cenário é o CURSO — experiência do Corre Dino mostra o corredinho, experiência do Desafio mostra a nave —, e o elenco segue escolhendo as figuras de cada papel. O guia de autoria detalha as duas escolhas.
+1. **Resumo.** Estado de entrada, vitória do dia, seções e clipes antes e depois.
+2. **Triagem dos conceitos.** Todo conceito que a aula ensina, incluindo os que NÃO ganham cena, com a justificativa de cada decisão.
+3. **Diagnóstico do desenho atual.** O que está errado hoje, com as seções citadas pelo título.
+4. **Proposta final.** Seção por seção, com intenção, motivo de existir, critério de conclusão e os blocos com seu conteúdo.
+5. **Experiências e demonstrações.** Cada cena, dizendo se existe e serve, existe e precisa de ajuste (qual e por quê) ou precisa ser criada (especificação completa).
+6. **Vídeos.** Tabela com chave, o que mostra, origem, duração alvo e se reaproveita gravação.
+7. **Continuidade.** O que a aula assume da anterior, o que entrega para a seguinte e os valores canônicos.
 
-O aluno vê o conteúdo da seção, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. Processos que acontecem no tempo são mostrados no vídeo; a cena interativa fica para a criança mexer. O índice permite revisar seções concluídas. As próximas exibem apenas título e cadeado até a seção atual ser concluída. A barra principal conta seções concluídas com pesos iguais; o progresso do curso permanece no índice do curso. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
+A aula de referência é `aulas/desafio-dia-1.md`, escrita primeiro como padrão para as outras 26.
 
-O servidor controla o avanço pelos critérios selecionados. Exploração nativa registra comparações feitas no navegador, sem afirmar domínio do conceito; criação verifica estrutura do projeto; entrega confirma recebimento; quiz verifica respostas. Assistir a 90% só é critério de uma seção que contém apenas vídeo. Acesso ao caderno e ações salvas da plataforma têm critérios próprios. A última seção também precisa cumprir seu critério.
+## Os manifestos
 
-Perguntas usam situações de criação e investigação, com pistas que orientam a comparação. Cores, detalhes de desenho e preferências não recebem gabarito. A introdução deixa a preferência inicial livre. Perguntas sobre o Pinta e o Estúdio externo verificam compreensão: não comprovam salvamento, qualidade visual ou publicação da criação.
+Cada aula tem, ao lado do relatório, um `aulas/{slug}.manifesto.json` pronto para importar no admin
+pela função "Importar roteiro com seções". Eles seguem o mesmo formato dos manifestos v6, na versão
+4, com as seções novas do redesenho.
 
-Desafio e Corre Dino reaproveitam o primeiro bloco de Estúdio da aula como um único espaço de trabalho. Sua identidade, configuração, cadeia de projetos e submissões são preservadas. A introdução não pede um Estúdio. O Jogo do Meu Jeito usa atalhos para Pinta e Estúdio externos, ensinando a trabalhar com a galeria e os projetos livres. Não importar um projeto do curso dentro de outro só para preencher a aula.
+Três coisas que o formato impôs ao desenho, e estão explicadas no `ESPEC-MANIFESTO.md`:
 
-## Produção e publicação
+1. **A coluna da direita é do player, não do manifesto.** Só cena nativa e Estúdio ou Pinta
+   embarcado vão para lá, e só um por seção. Pergunta curta e experiência em HTML ficam à esquerda.
+   Várias seções precisaram virar duas por causa disso, e cada caso está registrado no relatório da
+   aula.
+2. **O formato não tem campo de título de vídeo.** A convenção travada é que a primeira linha do
+   bloco de vídeo planejado é `Título: <nome>`, seguida de linha em branco e das instruções de
+   produção.
+3. **A fala do Zappy tem teto de 400 caracteres.** Falas mais longas viraram duas.
 
-O pacote contém roteiros e interações funcionais. Os vídeos ainda precisam ser produzidos: **77 clipes no Dino, 144 no conjunto completo**. Durações sugeridas são metas de gravação, não minutagens de arquivos existentes. Não foram inventadas URLs nem enviados vídeos automaticamente.
+### Conferir os manifestos
 
-1. Abra a aula original no admin. A versão publicada continua disponível enquanto você edita o **rascunho compartilhado**. Não é preciso despublicá-la.
-2. Em **Importar roteiro com seções**, selecione o manifesto, use **Vincular ao destino aberto**, confira a prévia e aplique. Os slugs dos arquivos são referências de autoria. As referências `existing.kind` / `existing.index` usam índice começando em zero dentro dos blocos daquele tipo; confira o primeiro Estúdio antes de importar. Em uma aula vazia, os manifestos de Corre Dino e dos dias do Desafio exigem cadastrar e configurar esse Estúdio no rascunho primeiro: use **Adicionar conteúdo aqui → Estúdio**. O manifesto reutiliza o projeto e suas permissões; não os inclui no arquivo. Depois, confira novamente a importação.
-3. A sequência aparece em **Percurso da aula**. Em cada seção, use **Adicionar conteúdo aqui**, edite os blocos existentes e escolha sua posição. Título, blocos, anexos e organização são salvos automaticamente no mesmo rascunho. Não há salvamentos separados para blocos e estrutura.
-4. No Dino v4, confira as instruções aposentadas na prévia: cartões importados indicados explicitamente saem do rascunho. Projetos, mídias, quizzes originais e histórico são preservados. O material antigo mantido fica no apoio e não acrescenta critérios ocultos. Nos outros cursos, a limpeza v3 continua manual.
-5. Cada trecho a gravar aparece como um **cartão de vídeo planejado**, já na seção correta e com sua orientação de produção. Envie o arquivo no uploader Vimeo desse cartão. A vinculação é salva depois do upload, e o processamento é conferido ao reabrir. O servidor confirma que o Vimeo terminou antes de publicar; não há pendência textual para retirar manualmente.
-6. Use **Prévia do rascunho** para percorrer a aula sem criar progresso de aluno. Confira títulos, descobertas, vídeo e continuidade do projeto. A intenção didática e o objetivo ficam na autoria. No aluno, **O que falta para concluir** mostra as atividades obrigatórias e leva diretamente até elas.
-7. Clique em **Publicar aula**. A plataforma captura os últimos traços/projeto, termina o salvamento e valida o conjunto. Se houver problema, a versão publicada permanece intacta. Uma publicação válida substitui a aula inteira e agenda a atualização do Zappy. **Ver como aluno** abre a versão publicada.
-8. Em staging, percorra também a transição para a aula seguinte com um perfil de teste autorizado. Confira a retomada, os quizzes e a entrega. A promoção do ambiente para produção continua sendo uma decisão sua.
+```bash
+cd C:\Users\tocha\projects\sistema-zero && bun docs/aulas-interativas/qa/validar-manifestos.ts
+```
 
-9. Para levar a MESMA aula a outro ambiente (staging → produção), use **Exportar roteiro com
-   seções** na aba Dados da aula: ele baixa o manifesto desta aula, incluindo o que você montou à
-   mão aqui. A tela lista o que precisa ser cadastrado no destino antes de importar. Detalhes,
-   limites e o que não viaja: `guia-de-autoria.md`, §"Levar uma aula pronta para outro ambiente".
+O validador usa o `isLearningManifest` real do core, o mesmo que o importador usa, e separa três
+resultados: `OK`, `FALHA` (com a causa apontada campo a campo) e `AGUARDA`, que é a aula esperando
+uma cena ainda não construída. A lista de `AGUARDA` é a fila de dependência entre a implementação
+das cenas e a importação das aulas.
 
-Reimportar o mesmo manifesto preserva IDs, projetos existentes e vídeos vinculados. Alterar apenas títulos de seção, posição ou referência do projeto não reinicia respostas. Mudar o conteúdo de uma descoberta muda sua revisão: o histórico fica guardado, mas uma resposta antiga não aprova o conteúdo novo. Aulas já concluídas continuam concluídas.
+## Ordem de execução recomendada
 
-Os 27 manifestos usam a versão 3, com critérios explícitos em todas as 96 seções. `completion.blockIds` referencia as chaves portáveis dos blocos avaliados, e `completion.projectChecks` define verificações estruturais do projeto. Todos os critérios de uma seção são obrigatórios. O formato de vídeo planejado continua o mesmo: `{ "key": "video-demonstracao", "plannedVideo": "O que mostrar e narrar" }` define o cartão, e a chave entra em `section.blockKeys`. As versões 1 e 2 continuam aceitas sem ativar automaticamente as travas; seus textos `pendingMedia` são convertidos em cartões durante a importação. Nenhum arquivo contém uma URL de vídeo inventada.
+Tudo em staging. A promoção para produção fica para depois de as aulas estarem redondas.
 
-A estrutura nova entra em vigor ao ser publicada. Enquanto a migração não acontece, o legado recebe apresentação compatível: vídeo/Estúdio e depois quiz; vídeo isolado com 90%; texto e caderno juntos com acesso ao material. Aulas concluídas permanecem concluídas. Verificações durante a construção não criam entregas; a entrega pode preceder o quiz final.
+1. ~~Corrigir os defeitos do catálogo de cenas~~ feito
+2. ~~Construir as duas ações novas do motor e as 11 cenas novas~~ feito, catálogo em 56
+3. ~~Escrever os 27 manifestos~~ feito, os 27 passam no validador
+4. ~~Escrever os roteiros de gravação~~ feito, 27 roteiros e 166 clipes
+5. Consertar o que quebra hoje, e o que a plataforma aposentou (ver `ACHADOS-TRANSVERSAIS.md`)
+6. Gravar os 166 clipes
 
-Veja o [guia de cadastro e funcionamento](guia-de-autoria.md) para criação manual, projeto compartilhado, recuperação local e conflitos.
+Por curso: Desafio primeiro (tem aluno pagando), depois Meu Jeito (mais barato e o que mais
+melhora), depois Corre Dino (o maior).
 
-## Conferência pedagógica entre aulas
+## A regra do trio
 
-| Curso | Continuidade que precisa ser preservada |
-| --- | --- |
-| Desafio | Uma nave no Dia 1; tiros no 2; asteroides no 3; pontos e vidas no 4; telas, reinício e publicação no 5. A aula do Dia 5 é identificada pelo nome, não por ser a última da lista. |
-| Corre Dino | A criação ainda invisível ao fim da Aula 1 e a floresta sozinha ao fim da Aula 7 são resultados intencionais. O contador de diagnóstico é removido ao fim da Aula 6. Na Aula 13, −9 limita a velocidade-base; o sorteio ainda pode tornar o vx final mais negativo. |
-| Meu Jeito | Projeto do Dia 5 importado para o Estúdio livre. Nave: Personagem, pixel art, 32 × 32, dois quadros, `voando`. Asteroide: Personagem, vetor, 64 × 64, dois quadros, `girando`. Tamanho da folha é diferente do tamanho do sprite no jogo. |
+Cada aula tem três arquivos, e eles descrevem a mesma aula de três ângulos: a proposta diz o porquê,
+o manifesto diz a estrutura, o roteiro diz a fala. **Mudou num, muda nos três.** Tirar um bloco do
+manifesto sem tirar o clipe do roteiro deixa a gravação com um trecho órfão; corrigir a fala sem
+corrigir a proposta faz o próximo leitor reabrir a decisão já tomada.
 
-Os números necessários à integração são explícitos; formato, cores, detalhes e tema continuam escolhas da criança. As experiências simplificam um conceito e dizem quando sua representação difere do motor real, como os círculos da comparação de colisão.
+A lista do que obriga varredura nos três está na seção 9 do `ESPEC-MANIFESTO.md`.
 
-## Acompanhamento
+## Cópia versionada
 
-O pedido de ajuda chega aos recados com a aula e a seção. O professor abre o acompanhamento da aula para ver a retomada, as respostas, as pistas consultadas e o histórico da versão atual. Os pais veem temas de seções com interação registrada na semana e as criações do Mural no painel e no relatório existente. Esses registros não inferem capacidade nem diagnosticam dificuldade a partir de erros.
-
-## Formato das experiências HTML
-
-O iframe tem origem isolada e não acessa a sessão nem a rede. A interface injetada oferece `window.learning.state`, `save(estado)`, `participated()` e `resize(altura)`. O evento `learning:restore` recupera o estado. A atividade guarda dados simples e limitados; o HTML não escolhe a resposta correta nem libera uma atividade essencial. A conferência nativa fora do iframe faz essa validação no servidor.
-
-Os arquivos em `interacoes` são fragmentos para esse ambiente. Uma abertura direta no navegador permite observar a simulação; a persistência e a conferência precisam do player da plataforma.
+Este material também está em `sistema-zero/docs/aulas-interativas/`, sob controle de versão. Os
+arquivos de `aulas/` nas duas pastas devem continuar iguais. O validador de manifestos do repositório
+lê apenas a cópia versionada; o validador de roteiros (`python -X utf8 validar-roteiros.py`) funciona
+em ambas as pastas.

@@ -1098,7 +1098,7 @@ casa vale em tudo abaixo: **toque, teclado e leitor de tela levam ao MESMO lugar
 O que ele tem é o `servidorRecusou` (`scene-activity.tsx`): 400/422 numa gravação de cena não é falha de rede —
 tentar de novo não resolve, então a cena para, a conclusão sai da tela e a saída é "Abrir de novo" com "Esta
 atividade mudou.". Ordem de deploy e manifestos a importar:
-[`docs/aulas-interativas/raio-x-implantacao.md`](../../docs/aulas-interativas/raio-x-implantacao.md).
+[`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md).
 Conferência visual das 45 com os componentes de produção: `bun run galeria:cenas` no community-kids.
 
 ### Mapa dos arquivos (`src/components/`)

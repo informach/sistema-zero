@@ -1,0 +1,398 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-04",
+  "title": "A sua pedra, feita de pontos",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "conferir-novo-vetor",
+    "demonstracao-cores",
+    "conferir-traco",
+    "orientacao-curvas",
+    "conferir-curvas",
+    "conferir-crateras",
+    "video-fecho-v6",
+    "orientacao-entrega-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: A pedra do Júlio, feita de pontos\n\nOrigem: video-abertura-v6, com a fórmula do modelo de autoria. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: a pedra do Júlio pronta, com curvas e crateras, no tamanho em que ela vai ficar.\n\nFala: a fórmula do modelo de autoria, mais o que a aula faz: marcar pontos, arredondar, pôr crateras, e no fim comparar a borda desta pedra com a borda da nave de pixel.\n\nCortes obrigatórios: sai a contagem antiga de passos. Não encenar dor nem problema: esta aula é de desenho, e o contraste entre os dois estilos é comparação, não conserto."
+    },
+    {
+      "key": "fala-novo-vetor",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clica no botão Abrir meu Pinta desta seção: ele abre o Pinta em outra aba. A sua galeria não está mais vazia: o cartão da nave está lá. Clica no Criar novo. Hoje as respostas são outras. Em Como você quer desenhar, clica no Vetor. Em O que você quer criar, clica em Personagem."
+      }
+    },
+    {
+      "key": "fala-tamanho-vetor",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Qual o tamanho, olha os números antes de clicar, porque os tamanhos do vetor não são os mesmos do pixel art: aqui o Pequeno é 32 por 32 e o Médio é 64 por 64. Clica no Médio. Num quadro maior fica mais fácil pegar nos pontinhos com o mouse, e daqui a pouco você vai ver por que isso não custa nada."
+      }
+    },
+    {
+      "key": "fala-nome-asteroide",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Qual o nome, escreve asteroide, tudo em letra minúscula e sem acento. Clica em Começar a desenhar."
+      }
+    },
+    {
+      "key": "video-novo-vetor",
+      "plannedVideo": "Título: Os números mudam no vetor\n\nOrigem: video-novo-vetor do v6, com a correção do motivo do 64. Duração alvo: 55 a 70 segundos.\n\nO que passa na tela: o assistente inteiro, as quatro perguntas na ordem, com a leitura dos dois números do vetor antes do clique no tamanho.\n\nManter a frase de que essas quatro respostas o jogo usa depois.\n\nCortes obrigatórios: corrigir a explicação de que o quadro maior facilita pegar nos pontos. É conveniência do exemplo, não garantia de zoom maior na tela.\n\nAcrescentar: a promessa do \"por que isso não custa nada\", que é paga na seção da lupa, no fim da aula.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. As quatro respostas são escolhidas na tela, uma de cada vez, e não lidas numa lista: Vetor, Personagem, o Médio de 64 × 64, e o nome asteroide em letra minúscula e sem acento, antes do Começar a desenhar.\n\nA chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: estilo vetor, tipo Personagem, quadro de 64 × 64, nome asteroide minúsculo e sem acento, e o cartão da nave ainda intacto na galeria.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"O novo desenho se chama asteroide, usa vetor em 64 por 64, e a nave continua como outro cartão na galeria?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "video-cores-vetor",
+      "plannedVideo": "Título: Os dois quadradinhos no pé da caixa\n\nOrigem: video-cores-vetor do v6, bem encurtado. Duração alvo: 40 a 50 segundos.\n\nO que passa na tela: só a localização e o gesto. No pé da caixa de ferramentas tem dois quadradinhos, e eles são coisas diferentes. O que é uma plaquinha cheia é o **Preenchimento**, a cor de dentro. O que é uma moldura vazada é o **Contorno**, a cor da linha em volta. Cada um tem área de clique própria, e quando está em **Sem cor** o símbolo fica quadriculado.\n\nMais o caminho opcional do botão redondo com o sinal de mais, o **Nova cor**, que abre a janela **Escolher uma cor**: primeiro a barra colorida, que escolhe qual é a cor, depois o quadrado, que deixa ela mais clara, mais escura ou mais forte, e o **Adicionar**, que já joga a cor no lugar ativo.\n\nCortes obrigatórios: retirar da narração a explicação do que cada parte faz. Isso é conteúdo da bancada desta mesma seção, e lá ela mexe."
+    },
+    {
+      "key": "experiencia-cores",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A cor de dentro e a linha de fora",
+        "instructions": "Deixe só o contorno em Sem cor e olhe a pedra desta bancada. Depois deixe só o preenchimento em Sem cor e olhe de novo. No fim, volte as duas partes com cor. A pedra daqui não é a sua, e nada do que você fizer nesta bancada muda o seu desenho.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "fill-stroke",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["only-fill", "only-stroke", "both"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Deixar o Contorno em Sem cor faz o quê?",
+          "choices": [
+            { "id": "a", "label": "Tira a linha de fora e mantém o preenchimento." },
+            { "id": "b", "label": "Apaga todas as formas do desenho." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "Preenchimento e contorno são duas partes com cor própria. Tirar a cor de uma não apaga a outra, e o fundo quadriculado aparece onde não tem tinta nenhuma."
+        }
+      }
+    },
+    {
+      "key": "fala-cor-da-pedra",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Escolhe o Preenchimento e clica na cor da sua pedra. Se você quiser a pedra sem linha em volta, clica no Contorno e pega a primeira casinha do painel, a quadriculada, que chama Sem cor."
+      }
+    },
+    {
+      "key": "fala-caneta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Com a cor pronta, pega a Caneta na caixa de ferramentas, aquela que diz clique para marcar os pontos. Cada clique marca um ponto e a Caneta liga um no outro com uma linha reta, sem precisar arrastar. Para fechar, clica em cima do primeiro ponto, que fica maior que os outros."
+      }
+    },
+    {
+      "key": "fala-espaco-de-cima",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "E deixa um espaço vazio acima da pedra, dentro do quadro: é ali que o fogo dela vai entrar na próxima aula. O que passar da borda do quadro é cortado quando o desenho for para o jogo."
+      }
+    },
+    {
+      "key": "video-traco",
+      "plannedVideo": "Título: Seis cliques e a pedra fecha\n\nOrigem: video-traco do v6, com a reserva de cima acrescentada. Duração alvo: 55 a 70 segundos.\n\nO que passa na tela: a Caneta marcando ponto por ponto, sem arrastar, e o fechamento no primeiro ponto, que é o maior de todos. A forma fecha e enche de cor na frente dela.\n\nAcrescentar, porque faltava no original: a reserva visual de cima, com a referência de pedra ocupando a região de baixo e do meio do quadro.\n\nCortes obrigatórios: não dizer que pedra de verdade nunca tem canto.\n\nCuidado obrigatório de imagem: desde a decisão de apagar a linha antes de traçar, nenhuma imagem pode mostrar a forma recém-fechada com linha escura em volta.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto, na parte que é deste clipe. Conferir junto, no fim dele, olhando a tela: a forma fechada e preenchida, e o espaço livre acima da pedra, dentro do quadro. O arredondamento não entra aqui, porque ele é do clipe seguinte, e a chamada para ir fazer também fica lá, no fim da seção."
+    },
+    {
+      "key": "fala-curvas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora o arredondamento. Vai na caixa de ferramentas e clica no Editar os pontos. Apareceram todos os seus pontos. Clica num lugar vazio, segura e arrasta um retângulo em volta dos pontos que você quer arredondar. Com os pontos pegos, olha a fileira de botões que apareceu embaixo da barra com o nome do desenho, e clica no Ponto suave."
+      }
+    },
+    {
+      "key": "fala-cantos-de-proposito",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Dá para arredondar a pedra inteira ou deixar dois ou três cantos afiados de propósito. No fim, olha a sua pedra inteira com calma e vê se sobrou algum canto que você não quis, que os pontos ainda estão à vista."
+      }
+    },
+    {
+      "key": "video-curvas",
+      "plannedVideo": "Título: O retângulo e o Ponto suave\n\nOrigem: video-curvas do v6, sem a generalização. Duração alvo: 45 a 55 segundos.\n\nO que passa na tela: o **Editar os pontos**, todos os pontos aparecendo, a seleção por retângulo em volta dos pontos escolhidos, e o **Ponto suave** transformando aqueles cantos em curva.\n\nChamar de retângulo, nunca de laço, que saiu do curso inteiro em 2026-08-22.\n\nCortes obrigatórios: retirar a generalização de que toda pedra deve ficar completamente arredondada. Quantos cantos viram curva é escolha de quem desenha.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto, na parte que fecha a seção. A chamada para pausar e ir fazer vem no fim deste clipe, porque o traço e o arredondamento se fazem de uma vez só: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: a forma fechada e preenchida, pelo menos uma curva feita de propósito, e o espaço livre acima da pedra, dentro do quadro.\n\nDizer uma vez: a cor, o contorno, quantos pontos e quanto arredondamento são escolha de quem desenha. O único compromisso é o espaço de cima, que a chama da próxima aula vai usar.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A sua pedra é uma forma fechada com pelo menos uma curva e ainda sobra espaço acima dela para a chama? O contorno é escolha sua.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-soltar-selecao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Antes da cor, olha a sua pedra: ela ainda está com a caixa tracejada em volta, e isso quer dizer que ela está escolhida. Tudo que você fizer agora acontece com ela. Então vai na caixa de ferramentas, clica no Selecionar e dá um clique num lugar vazio, fora da pedra. A caixa sumiu."
+      }
+    },
+    {
+      "key": "fala-primeira-cratera",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora sim, clica no Preenchimento e escolhe uma cor mais escura que a da sua pedra. Pega o Círculo, clica em cima da pedra, segura e arrasta um pouquinho. Para achatar, volta no Selecionar, clica na sua cratera e puxa o quadradinho do meio de baixo para cima."
+      }
+    },
+    {
+      "key": "fala-copiar-cratera",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Com a cratera escolhida, aperta Control e C e depois Control e V, ou usa o Duplicar a seleção na fileira de botões de cima. A cópia nasce um pouquinho deslocada e já vem escolhida: arrasta ela para outro lugar e muda o tamanho puxando um quadradinho do canto."
+      }
+    },
+    {
+      "key": "video-crateras",
+      "plannedVideo": "Título: Crateras, e a cópia que você move\n\nOrigem: video-crateras do v6, com a regra do buraco escuro suavizada. Duração alvo: 75 a 90 segundos.\n\nO que passa na tela: a desseleção antes de trocar a cor, o **Círculo** desenhando a primeira cratera, o achatamento pela alça do meio de baixo, o Control e C com o Control e V, e a cópia sendo arrastada e redimensionada.\n\nManter o critério de ofício, que é o conteúdo real do passo: uma maior, uma menor, uma mais para a beirada, porque o que faz parecer natural é ser desigual.\n\nCortes obrigatórios:\n\n1. Substituir \"buraco é sempre mais escuro\" por escolha de contraste desta ilustração.\n2. Não exigir quatro crateras. O número é o que o Júlio fez na dele.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: duas ou mais crateras, distinguíveis do corpo da pedra, com tamanhos ou lugares diferentes, nenhuma passando da borda da pedra, e a cor original da pedra do jeito que estava.\n\nDizer uma vez: quantas crateras e de que tamanho é escolha de quem desenha.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"As crateras aparecem dentro da pedra, com tamanhos ou lugares diferentes, sem mudar a cor do corpo por acidente?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-bordas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já desenhou dos dois jeitos: a nave quadradinho por quadradinho e a pedra com pontos e formas. De longe as duas parecem a mesma coisa. Aproxima as duas pedras da bancada desta seção e olha a borda de cada uma."
+      }
+    },
+    {
+      "key": "fala-por-que-64",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "E é aqui que se paga a promessa do começo da aula. O vetor guarda a forma e refaz a curva em qualquer tamanho, então a sua pedra pode nascer em 64 por 64 e encolher no jogo sem custo nenhum. Com a nave de pixel o raciocínio não vale, porque ela guarda quadradinhos."
+      }
+    },
+    {
+      "key": "experimento-bordas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "De perto, a borda conta",
+        "instructions": "Aproxime as duas pedras bem devagar. Olhe a borda de cada uma. Depois volte para longe e compare de novo.",
+        "hints": [],
+        "prediction": {
+          "context": {
+            "label": "A lupa das pedras",
+            "explanation": "Nesta experiência, vamos aproximar duas pedras de mesma silhueta para comparar como cada uma fica de perto."
+          },
+          "prompt": "Se você aproximar muito, o que acontece com as bordas?",
+          "choices": [
+            { "id": "so-pixel", "label": "Só a de pixel vira degraus" },
+            {
+              "id": "as-duas",
+              "label": "As duas viram degraus",
+              "shows": "De perto, a borda da pedra de vetor continuou lisa."
+            }
+          ],
+          "correctChoiceId": "so-pixel",
+          "revealOn": "stairs"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "pixel-vector",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["stairs", "smooth", "alike"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Com a lupa bem perto, por que a pedra de vetor continua lisa?",
+          "choices": [
+            { "id": "b", "label": "Ela é feita de quadradinhos bem menores." },
+            { "id": "a", "label": "Ela é refeita a partir dos pontos e das curvas." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem."
+        }
+      }
+    },
+    {
+      "key": "fala-fecho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Antes de enviar, olha a pedra inteira mais uma vez e confere se o espaço de cima continua livre dentro do quadro. A nave continua no cartão dela, sem mudança nenhuma, e a animação da pedra ainda se chama parado, com um quadro. O movimento dela vem na próxima aula."
+      }
+    },
+    {
+      "key": "fala-qual-desenho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hoje você envia o cartão do asteroide. A nave fica na galeria do jeito que está, sem mudança nenhuma."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: A pedra pronta na sua galeria\n\nOrigem: video-fecho-v6, com fala nova. Duração alvo: 50 a 65 segundos.\n\nO que passa na tela: a galeria do Pinta com os dois cartões, a nave e o asteroide, e um corte curto de zoom na borda da pedra.\n\nFala: \"A sua pedra nasceu de pontos, e cada curva dela foi uma escolha sua. Agora você já desenhou dos dois jeitos e sabe do que cada um é feito. Na próxima aula essa pedra pega fogo, e o fogo precisa daquele espaço que você deixou livre em cima.\"\n\nCortes obrigatórios: não acrescentar tarefa extra para passar. Não prometer miniatura animada na galeria.\n\nIncorporado do texto corrido de entrega que saiu do manifesto, por decisão de produto. Antes do corte final, o gesto de entregar acontece na tela: esperar o Guardado na sua conta, escolher na galeria do Pinta o cartão do asteroide, e enviar. O enquadramento deixa claro que a nave continua no cartão dela, sem alteração.\n\nConferir junto, olhando a tela: personagem vetor de 64 × 64 chamado asteroide, forma fechada, pelo menos uma curva feita de propósito, crateras dentro da pedra, e espaço livre acima dela, dentro do quadro. Se o cartão não aparecer na lista, conferir o salvamento e carregar a lista de novo.\n\nDizer uma vez: cor, contorno e número de crateras são escolhas. Hoje o asteroide pode continuar com a animação parado e um quadro, e o movimento vem na Aula 5.\n\nNota de avaliação, para o professor e não para a narração: o que se avalia é legibilidade e uso das ferramentas."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você vai fazer a cratera numa cor mais escura, e a sua pedra ainda está com a caixa tracejada em volta. O que acontece se você escolher a cor agora?",
+            "choices": [
+              { "id": "a", "label": "A pedra inteira muda de cor." },
+              { "id": "b", "label": "Nasce uma cratera escura em cima da pedra." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A caixa tracejada quer dizer que a forma está escolhida, e a cor vai para ela. Solte a seleção antes de preparar a cor da próxima forma."
+          },
+          {
+            "id": "q2",
+            "prompt": "Uma ponta da sua pedra passou da borda de cima do quadro. O que acontece com ela quando o desenho for para o jogo?",
+            "choices": [
+              { "id": "a", "label": "O pedaço que passou da borda é cortado." },
+              { "id": "b", "label": "O quadro cresce sozinho para a pedra caber inteira." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O quadro é o tamanho que você escolheu no começo. É por isso que o espaço de cima precisa ficar livre, para o fogo da próxima aula caber nele."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver a pedra pronta e ouvir que hoje o desenho é feito de um jeito completamente diferente do de ontem.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "novo-vetor",
+      "title": "Prepare o quadro do asteroide",
+      "intent": "application",
+      "objective": "Responder as quatro perguntas do assistente e abrir o desenho asteroide em vetor, Personagem, 64 × 64.",
+      "blockKeys": [
+        "fala-novo-vetor",
+        "fala-tamanho-vetor",
+        "fala-nome-asteroide",
+        "video-novo-vetor"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-novo-vetor"]
+      }
+    },
+    {
+      "key": "cores-vetor",
+      "title": "A cor de dentro e a linha de fora",
+      "intent": "exploration",
+      "objective": "Descobrir que uma forma tem dois lugares de cor com botão próprio, e que Sem cor deixa transparente em vez de pintar de branco.",
+      "blockKeys": ["video-cores-vetor", "experiencia-cores"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-cores"]
+      }
+    },
+    {
+      "key": "pedra",
+      "title": "A sua pedra: marque os pontos e arredonde os cantos",
+      "intent": "application",
+      "objective": "Traçar a forma fechada com a Caneta e arredondar os cantos escolhidos com o Ponto suave, preservando o espaço de cima.",
+      "blockKeys": [
+        "fala-cor-da-pedra",
+        "fala-caneta",
+        "fala-espaco-de-cima",
+        "video-traco",
+        "fala-curvas",
+        "fala-cantos-de-proposito",
+        "video-curvas"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-traco", "video-curvas"]
+      }
+    },
+    {
+      "key": "crateras",
+      "title": "Crie uma cratera e aproveite a cópia",
+      "intent": "application",
+      "objective": "Soltar a seleção antes de trocar a cor, desenhar a primeira cratera com o Círculo e duplicar ela para compor a pedra.",
+      "blockKeys": [
+        "fala-soltar-selecao",
+        "fala-primeira-cratera",
+        "fala-copiar-cratera",
+        "video-crateras"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-crateras"]
+      }
+    },
+    {
+      "key": "bordas",
+      "title": "De perto, a borda conta",
+      "intent": "exploration",
+      "objective": "Reconhecer as duas bordas como coisas que ela mesma produziu, e entender por que a pedra pode nascer em 64 × 64 sem custo.",
+      "blockKeys": ["fala-bordas", "fala-por-que-64", "experimento-bordas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-bordas"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Confira, envie e fecha",
+      "intent": "delivery",
+      "objective": "Conferir o espaço de cima, enviar a pedra pela galeria e guardar as duas ideias do dia.",
+      "blockKeys": [
+        "fala-fecho",
+        "fala-qual-desenho",
+        "entrega-galeria-v6",
+        "video-fecho",
+        "quiz-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6", "video-fecho", "quiz-v6"]
+      }
+    }
+  ]
+}

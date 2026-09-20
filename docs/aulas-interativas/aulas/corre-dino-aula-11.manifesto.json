@@ -1,0 +1,730 @@
+{
+ "version": 4,
+ "courseSlug": "corre-dino",
+ "lessonSlug": "aula-11",
+ "title": "A caixinha que conta a sua partida",
+ "retireBlockKeys": [
+  "video-abertura-editorial",
+  "video-guardar-pontos",
+  "fala-guardar-pontos",
+  "video-mostrar-pontos",
+  "fala-mostrar-pontos",
+  "video-contraste",
+  "experiencia-quando-contar",
+  "fala-relogio-pontos",
+  "video-frase-dinamica",
+  "video-montar-frase",
+  "fala-montar-frase",
+  "fala-entrega-editorial",
+  "video-fecho-editorial"
+ ],
+ "blocks": [
+  {
+   "key": "video-teste-e-envio",
+   "plannedVideo": "Título: Quatro testes no placar e o envio\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 70 a 85 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nOs quatro testes, um de cada vez, com pausa entre eles:\n\n1. Dez segundos parados no menu, sem ninguém encostar em nada. Nenhum número aparece na tela.\n2. O clique dentro da área do jogo, a partida começando, e o placar aparecendo em zero. Depois dois pontos subindo, contados em voz alta.\n3. Uma batida de propósito num cacto, e a frase da tela de fim lida com o número dentro dela.\n4. Uma segunda partida, perdida de propósito bem rápido. A frase do fim traz outro número, e essa partida começou do zero.\n\nEnquadrar o canto do placar nos testes 2 e 4, porque o que se confere ali é um número, e ele é pequeno na tela.\n\nConferir junto, olhando a tela: o placar só aparece durante a partida, ele sobe enquanto se joga, a frase do fim repete o número daquela partida, e a partida seguinte recomeça do zero.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo ganhou memória. Guardar, mudar e mostrar são três trabalhos diferentes, e você montou um de cada vez: a caixinha no Ao iniciar, o placar dentro do Se de jogando, e o Somar dentro do relógio.\n\nE, com a pilha à vista, a explicação do zero que apareceu no teste: toda partida começa do zero. Quem faz isso é o Reiniciar o jogo, que roda as três áreas do projeto de novo, e o Criar variável pontos com valor 0 está lá dentro do Ao iniciar. O zero não é sorte, é o lugar onde o bloco mora."
+  },
+  {
+   "key": "projeto",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-abertura",
+   "plannedVideo": "Título: Hoje o seu jogo começa a contar\n\nO jogo do fim do dia rodando, em velocidade normal. O dino corre, o número sobe sozinho no canto de cima, e quando a partida acaba a tela de fim diz “Você fez 14 pontos. Tente bater essa marca!”.\n\nFala: “Hoje o seu jogo começa a contar. Um ponto por segundo que você aguentar, o número aparecendo no canto enquanto você corre, e no fim a tela contando quanto você fez. Para isso o jogo precisa de uma coisa que ele ainda não tem: um lugar para guardar um número.”\n\nVem de video-abertura-editorial: a fala se aproveita, a tela é regravada, porque o resultado do dia é um número pequeno e ele precisa estar legível na gravação.\n\nDuração alvo: 20 a 30 segundos."
+  },
+  {
+   "key": "fala-criar-caixinha",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Programação, Variáveis, pega o bloco Criar variável com valor. Arrasta para dentro do Ao iniciar e encaixa entre o Criar grupo de sprites cactos e o Mudar o estado do jogo para inicio. O Ao iniciar tem seis blocos hoje, e o último é o Usar área de colisão, que você colocou ontem."
+   }
+  },
+  {
+   "key": "fala-campos-da-caixinha",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Esse bloco novo tem dois campos. No nome vem escrito contador: apaga e escreve pontos. No valor já vem 0, e é isso que a gente quer, porque toda partida começa do zero."
+   }
+  },
+  {
+   "key": "video-caixinha",
+   "plannedVideo": "Título: A caixinha que guarda um número\n\nO gesto e a palavra. O bloco saindo de Programação, Variáveis, entrando no Ao iniciar entre o Criar grupo de sprites cactos e o Mudar o estado do jogo para inicio. O campo do nome com contador escrito, apagado, e pontos digitado no lugar. O campo do valor conferido em 0.\n\nO nome: “isso aqui é uma variável. É uma caixinha com um nome e um número guardado dentro, e o nome vem de variar, que quer dizer mudar.”\n\nA desambiguação, na mesma frase, porque duas caixas em aulas seguidas é a confusão mais previsível do curso: “essa caixinha não tem nada a ver com a caixa de colisão de ontem. Aquela era um contorno em volta do dino, esta guarda um número.”\n\nE o fecho olhando a área do jogo, onde nada mudou: o jogo roda igualzinho, o placar não existe, a caixinha não aparece em lugar nenhum.\n\nVem de video-guardar-pontos. A fala se aproveita, com duas correções obrigatórias.\n\nCorreção 1, a âncora. A fala antiga diz que o Mudar o estado do jogo para inicio continua sendo o último bloco do Ao iniciar. Ele não é mais, desde a aula 10: o último é o Usar área de colisão de 80 por cento do tamanho para o sprite dino. A instrução de encaixar acima continua valendo, e a afirmação que a sustentava é trocada pela contagem certa, seis blocos, com o Usar área de colisão no fim.\n\nCorreção 2, o campo do nome. O bloco nasce com contador escrito, e a fala antiga só mandava escrever pontos. A instrução passa a dizer que apaga o que veio e escreve pontos.\n\nTrocar os rótulos vencidos: Mudar o estado do jogo para, em Jogo 2D, Jogo e telas, Telas e partida.\n\nDuração alvo: 50 a 60 segundos."
+  },
+  {
+   "key": "fala-antes-da-cena-variavel",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Você montou o bloco e a tela continua igualzinha. Isso é esperado, e vale entender por quê antes de seguir. Guardar um número, mudar esse número e mostrar esse número são três trabalhos diferentes. Nesta bancada dá para ligar e desligar cada um deles separado."
+   }
+  },
+  {
+   "key": "experiencia-variavel",
+   "content": {
+    "kind": "interactive",
+    "title": "Guardar, mudar e mostrar",
+    "instructions": "Guarde um número na caixa. Mude o número sem mostrar. Só depois ligue o mostrar.",
+    "hints": [
+     "Comece guardando um número na caixa e olhe a tela.",
+     "Some algumas vezes com o mostrar desligado. A tela não muda, e a caixa muda.",
+     "Agora ligue o mostrar e veja em quanto a caixa chegou."
+    ],
+    "required": true,
+    "prediction": {
+     "context": {
+      "label": "Somar com o mostrar desligado",
+      "explanation": "A caixa está com 0 e o mostrar está desligado. Você vai somar três vezes seguidas, sem ligar nada."
+     },
+     "prompt": "Depois das três somas, quando você ligar o mostrar, o que vai aparecer?",
+     "choices": [
+      {
+       "id": "tres",
+       "label": "3, porque a caixa mudou mesmo sem ninguém ver"
+      },
+      {
+       "id": "zero",
+       "label": "0, porque nada apareceu na tela enquanto você somava",
+       "shows": "Olhe a caixa, e não a tela: somar é um trabalho, mostrar é outro."
+      }
+     ],
+     "correctChoiceId": "tres"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "variable",
+     "cenario": "corre-dino"
+    }
+   }
+  },
+  {
+   "key": "fala-pegar-placar",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Vida e placar, Indicadores e texto na tela, pega o bloco Mostrar placar. É o mesmo que você pegou emprestado na aula 6 para ser o medidor de cactos, e que você aposentou no fim daquela aula. Agora ele volta para ficar."
+   }
+  },
+  {
+   "key": "fala-campos-do-placar",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Arrasta para dentro do Se o estado do jogo é jogando e solta no fim de tudo, logo abaixo do Tirar do grupo cactos quem sair da tela. Ele vai aí dentro porque o placar é coisa de quem está jogando, e não precisa aparecer no menu."
+   }
+  },
+  {
+   "key": "fala-seis-campos-do-placar",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "São seis campos. No primeiro já vem Pontos:, que é o que a gente quer. No segundo, o valor: em Programação, Valores, pega o bloco valor da variável, arrasta por cima do número que já está ali e escolhe pontos. O x vem 12, o y vem 30 e o tamanho vem 24: confere e deixa. O sexto é a cor."
+   }
+  },
+  {
+   "key": "video-placar-e-contraste",
+   "plannedVideo": "Título: O placar que some no céu\n\nO gesto e a dor na mesma tomada.\n\nPrimeiro o encaixe: o Mostrar placar entrando no fim do Se o estado do jogo é jogando, logo abaixo do Tirar do grupo cactos quem sair da tela. Depois os seis campos, um a um, com o valor da variável arrastado por cima do número de fábrica. Vale a frase do porquê: “campo de valor nunca está vazio, então você arrasta a pecinha por cima do que estava lá.”\n\nE a peça que a cena adiantou: “esse bloco vai lá na caixinha, olha o que tem dentro e traz o número. Se você deixasse o número solto que estava ali, o placar ia mostrar aquele número para sempre, mesmo com a caixinha mudando.”\n\nDepois a dor, de propósito. Rodar com o placar branco, que é como ele nasce, e tentar ler o Pontos: 0 no céu azul claro. Não dá. Trocar a cor por um azul quase preto e ler de longe, sem esforço.\n\nA regra e o nome: “fundo claro pede letra escura, fundo escuro pede letra clara” e “tudo que fica desenhado por cima do jogo para te informar tem um nome entre quem cria jogos: HUD. O placar é o HUD do seu jogo.”\n\nA cor é escolha de quem constrói, com o critério dito. A fala diz “o meu vai num azul quase preto”, e devolve a escolha. A conferência automática não testa cor, e não deve passar a testar.\n\nFunde video-mostrar-pontos e video-contraste, que hoje trazem o mesmo trecho original palavra por palavra. A demonstração do contraste deixa de ser seção: ela é o segundo tempo desta montagem, no jogo de quem constrói.\n\nTrocar os rótulos vencidos: o estado do jogo é __ ?, e o endereço Jogo 2D, Vida e placar, Indicadores e texto na tela.\n\nCorreção histórica: o medidor emprestado saiu no passo 4 da própria aula 6, e não no começo da aula 7.\n\nDuração alvo: 70 a 80 segundos."
+  },
+  {
+   "key": "fala-onde-o-somar-mora",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "O bloco que soma é um só. O que muda tudo é onde ele mora. Aqui você põe ele em lugares diferentes e olha o placar em cada tela do jogo."
+   }
+  },
+  {
+   "key": "experiencia-score",
+   "content": {
+    "kind": "interactive",
+    "title": "Quando o placar cresce?",
+    "instructions": "Ponha o Somar ponto em cada lugar e olhe o placar. Depois passe pelas três telas: início, jogando e fim.",
+    "hints": [
+     "Ponha o Somar ponto dentro do A cada quadro do jogo e deixe passar um segundo inteiro.",
+     "Leve o Somar ponto para dentro do Se e deixe o tempo passar na tela de início.",
+     "Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar."
+    ],
+    "required": true,
+    "prediction": {
+     "context": {
+      "label": "O Somar ponto dentro do A cada quadro do jogo",
+      "explanation": "A peça saiu do relógio e foi para o A cada quadro do jogo, que roda sessenta vezes por segundo. O placar está em 0."
+     },
+     "prompt": "Depois de um segundo inteiro, o placar vai estar em quanto?",
+     "choices": [
+      {
+       "id": "sessenta",
+       "label": "Perto de 60, porque o quadro acontece sessenta vezes por segundo"
+      },
+      {
+       "id": "um",
+       "label": "Em 1, porque passou um segundo",
+       "shows": "Olhe o placar disparar, e não o relógio: aqui quem manda é o quadro, não o tempo."
+      }
+     ],
+     "correctChoiceId": "sessenta"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "score",
+     "cenario": "corre-dino"
+    }
+   }
+  },
+  {
+   "key": "fala-relogio-irmao",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pega o bloco A cada segundos. Arrasta para dentro do Enquanto estiver rodando e solta ao lado do A cada quadro do jogo e do A cada 1.4 segundos, do mesmo jeito que você fez na aula 5. Ao lado, e não dentro deles. Agora o seu motor tem três relógios vizinhos, cada um com o seu ritmo."
+   }
+  },
+  {
+   "key": "fala-se-tres-movimentos",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Agora o Se, e aqui são três movimentos. Primeiro, em Programação, Lógica e Se, pega o bloco Se. Segundo, tira a comparação que veio de fábrica dentro dele e joga na lixeira. Terceiro, em Jogo 2D, Jogo e telas, Telas e partida, pega a pergunta o estado do jogo é, encaixa no lugar vazio e escolhe jogando."
+   }
+  },
+  {
+   "key": "fala-somar-no-se",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Solta esse Se dentro do relógio novo. Por último, em Programação, Variáveis, pega o Somar em variável e encaixa dentro do Se. O número já vem 1, deixa. Na listinha da variável escolhe pontos."
+   }
+  },
+  {
+   "key": "video-relogio-pontos",
+   "plannedVideo": "Título: O terceiro relógio\n\nO gesto inteiro, com a câmera abrindo depois do encaixe para mostrar os três relógios lado a lado dentro do Enquanto estiver rodando: o A cada quadro do jogo, o A cada 1.4 segundos e o novo. Ao lado, nunca dentro.\n\nO campo do intervalo é escolha de quem constrói. A fala diz “o meu fica em 1 segundo”, e diz o que os outros números fazem: 0,5 conta mais rápido, 3 conta mais devagar. Dito no campo, sem virar tarefa de testar. A conferência aceita qualquer intervalo.\n\nO Se montado em três movimentos, contados na fala enquanto acontecem: pegar o Se, tirar a comparação de fábrica, encaixar a pergunta o estado do jogo é com jogando. Depois o Somar em variável dentro dele, com 1 e pontos.\n\nE a partida, com o placar subindo de um em um enquanto o dino corre.\n\nFecho reconhecendo o tamanho do que aconteceu: “você usou uma peça que aprendeu seis aulas atrás numa situação diferente, e é isso que quem cria jogo faz o dia inteiro.”\n\nA fala se aproveita em parte. Duas coisas saem.\n\nSai a pergunta ao aluno. O trecho “agora eu vou fazer diferente, em vez de eu te mostrar, você vai me dizer” e a pergunta “onde esse bloco tem que ir?” não entram. O curso não faz pergunta que precise ser respondida para continuar. Quem responde isso é a cena da seção anterior, e aqui a montagem é conduzida.\n\nSai a palavra embrulhar. Aqui não existe bloco montado para envolver: o Se nasce junto com o conteúdo. São três movimentos, e a aula 7 é citada como a aula em que o Se foi aprendido, não como a manobra que está sendo repetida.\n\nTrocar os rótulos vencidos: o estado do jogo é __ ?, e os endereços Jogo 2D, Tempo, Quadros e intervalos, e Jogo 2D, Jogo e telas, Telas e partida.\n\nDuração alvo: 70 a 80 segundos."
+  },
+  {
+   "key": "fala-juntar-texto",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Vai no Mostrar tela do andar de fim, no subtítulo. Lá na aula 8 você viu que o título, o subtítulo e a dica não são campos: cada um é uma pecinha texto encaixada num espaço. Como é uma pecinha, dá para tirar ela e pôr outra coisa no lugar."
+   }
+  },
+  {
+   "key": "fala-espacos-do-juntar",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Programação, Valores, pega o bloco juntar texto e arrasta por cima do subtítulo. Ele nasce vazio, sem espaço nenhum, porque quem decide quantos pedaços vai ter é você. Na beirada dele tem um mais, o mesmo da aula 8. Clica três vezes, um para cada pedaço."
+   }
+  },
+  {
+   "key": "fala-tres-pedacos",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Cada espaço nasce com um zero de sombra, que some quando você arrasta alguma coisa por cima. No primeiro, um bloco texto com: Você fez, e um espaço depois da palavra fez. No segundo, o valor da variável, escolhendo pontos. No terceiro, outro bloco texto, com um espaço no começo e depois: pontos. Tente bater essa marca!"
+   }
+  },
+  {
+   "key": "video-frase-de-fim",
+   "plannedVideo": "Título: A frase que muda de partida para partida\n\nO gesto inteiro, com zoom no bloco juntar texto ainda vazio e nos três espaços nascendo a cada clique no mais. Os três pedaços encaixados na ordem em que aparecem na tela, lado a lado, com o zero de sombra sumindo em cada um.\n\nAtenção de tela nos espaços do texto: o espaço depois de fez, no primeiro pedaço, e o espaço antes de pontos, no terceiro. Se faltarem, a tela mostra Você fez12 pontos, e o conserto é visível.\n\nDepois, duas partidas seguidas, perdendo de propósito nas duas, com números diferentes na mesma frase. Fala: “a frase é a mesma, e o número no meio dela é o que você fez naquela partida.”\n\nFecho com a peça de conserto: se sobrar um espaço com o zero dentro, o menos ao lado do mais fecha o último. Se aparecer o alerta no bloco, é espaço vazio, e clicar nele diz onde.\n\nFunde video-frase-dinamica e video-montar-frase. Os três cartões alinhados e a troca manual de um número por outro viram os dois primeiros tempos deste clipe, e o número novo passa a vir de uma partida de verdade.\n\nSai a frase sobre o bloco de conta. Ela compara o juntar texto com uma peça que ainda não existe no vocabulário de quem assiste, e promete essa peça para a aula seguinte. O curso não promete peça para depois. Fica o que o nome do bloco já diz: ele junta pedaços e escreve.\n\nDuração alvo: 80 a 90 segundos."
+  },
+  {
+   "key": "quiz-final",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Qual peça faz o placar acompanhar a memória?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "O bloco valor da variável, com pontos escolhido."
+       },
+       {
+        "id": "b",
+        "label": "Um zero digitado no campo do valor."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O valor da variável vai na caixinha e traz o número que está lá dentro agora. Um zero digitado ficaria zero para sempre."
+     },
+     {
+      "id": "q2",
+      "prompt": "Quando o relógio deve somar pontos?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Somente enquanto o estado do jogo é jogando."
+       },
+       {
+        "id": "b",
+        "label": "Também no menu e na tela de fim."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O Se dentro do relógio é quem decide em que telas a soma acontece."
+     },
+     {
+      "id": "q3",
+      "prompt": "Para que serve o juntar texto?",
+      "choices": [
+       {
+        "id": "b",
+        "label": "Para somar todas as palavras."
+       },
+       {
+        "id": "a",
+        "label": "Para formar uma mensagem com os pedaços em ordem."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Ele escreve um pedaço depois do outro, e um dos pedaços pode ser um número que muda."
+     }
+    ]
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "abertura",
+   "title": "O que a gente vai fazer hoje",
+   "intent": "presentation",
+   "objective": "Ver o número subindo no canto durante a partida e a frase de fim contando o resultado, antes de montar a primeira peça.",
+   "blockKeys": [
+    "video-abertura"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-abertura"
+    ]
+   }
+  },
+  {
+   "key": "caixinha-dos-pontos",
+   "title": "A caixinha dos pontos",
+   "intent": "application",
+   "objective": "Criar a primeira memória do jogo no Ao iniciar, com o nome pontos e o valor 0, e ver que a tela continua igual.",
+   "blockKeys": [
+    "fala-criar-caixinha",
+    "fala-campos-da-caixinha",
+    "video-caixinha"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "pontos-zero",
+      "label": "No Ao iniciar, crie a variável pontos com valor 0.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_var_create",
+       "area": "start",
+       "fields": {
+        "NAME": "pontos"
+       },
+       "inputs": {
+        "VALUE": 0
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "guardar-mudar-mostrar",
+   "title": "Guardar, mudar e mostrar",
+   "intent": "exploration",
+   "objective": "Separar os três trabalhos que a caixinha tem, e ver o número mudar enquanto nada na tela muda.",
+   "blockKeys": [
+    "fala-antes-da-cena-variavel",
+    "experiencia-variavel"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-variavel"
+    ]
+   }
+  },
+  {
+   "key": "numero-na-tela",
+   "title": "Ponha o número na tela",
+   "intent": "application",
+   "objective": "Ligar o placar à caixinha dentro do Se de jogando, e deixar o número legível sobre o céu claro.",
+   "blockKeys": [
+    "fala-pegar-placar",
+    "fala-campos-do-placar",
+    "fala-seis-campos-do-placar",
+    "video-placar-e-contraste"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "mostrar-pontos",
+      "label": "Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "COND": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "jogando"
+         }
+        },
+        "THEN": {
+         "blockType": "sz_g2d_draw_score",
+         "fields": {
+          "LABEL": "Pontos:"
+         },
+         "inputBlocks": {
+          "VALUE": {
+           "blockType": "sz_val_variable",
+           "fields": {
+            "NAME": "pontos"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "quando-o-placar-cresce",
+   "title": "Quando o placar cresce",
+   "intent": "exploration",
+   "objective": "Descobrir que o lugar do Somar decide duas coisas: quantas vezes por segundo, e em quais telas.",
+   "blockKeys": [
+    "fala-onde-o-somar-mora",
+    "experiencia-score"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-score"
+    ]
+   }
+  },
+  {
+   "key": "relogio-dos-pontos",
+   "title": "O relógio dos pontos",
+   "intent": "application",
+   "objective": "Montar o terceiro relógio ao lado dos outros dois, com o Se do estado e o Somar dentro, e ver o número subir sozinho.",
+   "blockKeys": [
+    "fala-relogio-irmao",
+    "fala-se-tres-movimentos",
+    "fala-somar-no-se",
+    "video-relogio-pontos"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "relogio-pontos",
+      "label": "Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_every_seconds",
+       "area": "loops",
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_js_var_increment",
+           "fields": {
+            "NAME": "pontos",
+            "DELTA": 1
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "um-incremento",
+      "label": "Use um único Somar em variável pontos no projeto inteiro.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_var_increment",
+       "fields": {
+        "NAME": "pontos"
+       },
+       "count": 1
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "frase-da-tela-de-fim",
+   "title": "A tela de fim conta a sua partida",
+   "intent": "application",
+   "objective": "Trocar o subtítulo do andar de fim por uma frase de três pedaços, com o número da partida no meio.",
+   "blockKeys": [
+    "fala-juntar-texto",
+    "fala-espacos-do-juntar",
+    "fala-tres-pedacos",
+    "video-frase-de-fim"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "frase-pontos",
+      "label": "No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "ELSEIF_COND1": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "fim"
+         }
+        },
+        "ELSEIF_THEN1": {
+         "blockType": "sz_g2d_show_screen",
+         "inputBlocks": {
+          "SUBTITLE": {
+           "blockType": "sz_val_join",
+           "inputBlocks": {
+            "ITEM0": {
+             "blockType": "sz_val_text",
+             "fields": {
+              "TEXT": "Você fez "
+             }
+            },
+            "ITEM1": {
+             "blockType": "sz_val_variable",
+             "fields": {
+              "NAME": "pontos"
+             }
+            },
+            "ITEM2": {
+             "blockType": "sz_val_text",
+             "fields": {
+              "TEXT": " pontos. Tente bater essa marca!"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "teste-e-fecho",
+   "title": "Teste, envie e fecha",
+   "intent": "delivery",
+   "objective": "Rodar os quatro testes, entregar o projeto e guardar as três ideias do dia, incluindo a memória que volta a zero a cada partida.",
+   "blockKeys": [
+    "video-teste-e-envio",
+    "quiz-final",
+    "projeto"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-teste-e-envio",
+     "projeto",
+     "quiz-final"
+    ],
+    "projectChecks": [
+     {
+      "id": "pontos-zero",
+      "label": "No Ao iniciar, crie a variável pontos com valor 0.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_var_create",
+       "area": "start",
+       "fields": {
+        "NAME": "pontos"
+       },
+       "inputs": {
+        "VALUE": 0
+       }
+      }
+     },
+     {
+      "id": "mostrar-pontos",
+      "label": "Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "COND": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "jogando"
+         }
+        },
+        "THEN": {
+         "blockType": "sz_g2d_draw_score",
+         "fields": {
+          "LABEL": "Pontos:"
+         },
+         "inputBlocks": {
+          "VALUE": {
+           "blockType": "sz_val_variable",
+           "fields": {
+            "NAME": "pontos"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "relogio-pontos",
+      "label": "Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_every_seconds",
+       "area": "loops",
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_js_var_increment",
+           "fields": {
+            "NAME": "pontos",
+            "DELTA": 1
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "frase-pontos",
+      "label": "No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "ELSEIF_COND1": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "fim"
+         }
+        },
+        "ELSEIF_THEN1": {
+         "blockType": "sz_g2d_show_screen",
+         "inputBlocks": {
+          "SUBTITLE": {
+           "blockType": "sz_val_join",
+           "inputBlocks": {
+            "ITEM0": {
+             "blockType": "sz_val_text",
+             "fields": {
+              "TEXT": "Você fez "
+             }
+            },
+            "ITEM1": {
+             "blockType": "sz_val_variable",
+             "fields": {
+              "NAME": "pontos"
+             }
+            },
+            "ITEM2": {
+             "blockType": "sz_val_text",
+             "fields": {
+              "TEXT": " pontos. Tente bater essa marca!"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "um-incremento",
+      "label": "Use um único Somar em variável pontos no projeto inteiro.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_var_increment",
+       "fields": {
+        "NAME": "pontos"
+       },
+       "count": 1
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

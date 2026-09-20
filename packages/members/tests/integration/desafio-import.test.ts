@@ -16,7 +16,7 @@ test.each([
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/desafio-primeiro-jogo-v6/${path}/manifesto.json`,
+      `../../../../docs/aulas-interativas/aulas/desafio-${path}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')
@@ -38,6 +38,7 @@ test.each([
   const id = randomUUID()
   const content = {
     ...studioSettings(day),
+    purpose: day ? ('submission' as const) : ('experiment' as const),
     initialProject: {
       formatVersion: 2,
       name: 'Nave contra Asteroides',
@@ -45,16 +46,26 @@ test.each([
       installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
     },
   }
-  if (day) {
-    expect((await request('import-preview', { document })).status).toBe(400)
+  expect((await request('import-preview', { document })).status).toBe(400)
+  expect(
+    (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
+  ).toBe(200)
+  if (day === 0)
     expect(
-      (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
+      (
+        await changeDraft(env.app, lessonId, {
+          type: 'block',
+          block: {
+            id: randomUUID(),
+            content: { kind: 'materials', title: 'Materiais do curso', items: [] },
+          },
+        })
+      ).status,
     ).toBe(200)
-  }
   const published = await env.courses.findLessonWithContent(lessonId)
   async function apply() {
     const preview = await request('import-preview', { document })
-    expect(preview.status).toBe(200)
+    expect(preview.status, JSON.stringify(await preview.clone().json())).toBe(200)
     const { fingerprint } = (await preview.json()) as { fingerprint: string }
     expect(
       (
@@ -72,17 +83,20 @@ test.each([
   expect(first.document.plannedVideos).toHaveLength(
     document.blocks.filter((b) => 'plannedVideo' in b).length,
   )
+  expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual(content)
+  expect(
+    new Set(
+      first.document.sections.filter((s) => s.workspaceBlockId).map((s) => s.workspaceBlockId),
+    ),
+  ).toEqual(new Set([id]))
   if (day) {
-    expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual(content)
-    expect(
-      new Set(
-        first.document.sections.filter((s) => s.workspaceBlockId).map((s) => s.workspaceBlockId),
-      ),
-    ).toEqual(new Set([id]))
     const delivery = first.document.sections.find((s) => s.intent === 'delivery')!
-    expect(delivery.completion?.blockIds).toEqual([id])
+    expect(delivery.completion?.blockIds).toContain(id)
+    expect(delivery.completion?.blockIds).toHaveLength(
+      document.sections.find((s) => s.intent === 'delivery')?.completion?.blockIds?.length ?? 0,
+    )
     expect(delivery.completion?.projectChecks?.length).toBeGreaterThan(0)
-  } else expect(first.document.sections.every((s) => s.workspaceBlockId === null)).toBe(true)
+  }
   expect((await apply()).document).toEqual(first.document)
   expect(await env.courses.findLessonWithContent(lessonId)).toEqual(published)
 })

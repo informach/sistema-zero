@@ -711,12 +711,11 @@ export function lessonDraftCases(getDb: () => Database) {
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
     test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
-      const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas')
-      // Os diretórios sem -v6 guardam receitas históricas, que já não passam pelo contrato
-      // vigente. A importação deve exercitar todos os manifestos publicáveis atuais.
-      const paths = [...new Bun.Glob('*-v6/**/manifesto.json').scanSync(root)]
+      const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
+      // A importação exercita os 27 manifestos atuais, copiados do fluxo criativo.
+      const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
-      expect(paths.length).toBeGreaterThanOrEqual(27)
+      expect(paths).toHaveLength(27)
       let plannedCount = 0
       // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
       // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e

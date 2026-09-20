@@ -1,0 +1,375 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-02",
+  "title": "Desenhe a sua nave",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "conferir-novo-desenho",
+    "conferir-contorno",
+    "conferir-cor-base",
+    "video-luz-demo",
+    "demonstracao-luz",
+    "conferir-volume",
+    "video-salvamento",
+    "video-fecho-v6",
+    "orientacao-entrega-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: A nave do Júlio, pronta\n\nOrigem: video-abertura-v6, com a fórmula do modelo de autoria. Duração alvo: 30 a 40 segundos.\n\nO que passa na tela: a nave do Júlio terminada, com cor, cabine, detalhes e volume, no tamanho em que ela vai ficar.\n\nFala: a apresentação do Júlio em três frases, que é a única vez do curso, mais a fórmula do modelo de autoria: \"no fim da aula você vai ter uma nave parecida com essa aqui. Essa é a minha, e a sua vai ter o formato e as cores que você escolher.\"\n\nCortes obrigatórios: sai a contagem antiga de cinco passos. Não prometer desbloqueio nem tarefa extra. Não comparar beleza nem fidelidade ao modelo."
+    },
+    {
+      "key": "fala-novo-desenho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esta seção tem o botão Abrir meu Pinta. Clica nele: o Pinta abre em outra aba, e esta aula continua aberta. Essa tela chama Meus desenhos, e é a sua galeria. Clica no Criar novo. Na pergunta Como você quer desenhar, clica no Pixel art. Em O que você quer criar, clica em Personagem."
+      }
+    },
+    {
+      "key": "fala-tamanho-e-nome",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Qual o tamanho, olha o número embaixo do nome de cada cartão antes de clicar: embaixo do Médio está escrito 32 por 32, e é esse. O Pequeno já vem marcado, e não é ele. Em Qual o nome, escreve nave, tudo em letra minúscula. Clica em Começar a desenhar."
+      }
+    },
+    {
+      "key": "video-novo-desenho",
+      "plannedVideo": "Título: Quatro perguntas antes de desenhar\n\nOrigem: video-novo-desenho do v6, com o corte do Celeste. Duração alvo: 60 a 75 segundos.\n\nO que passa na tela: o assistente inteiro, as quatro perguntas na ordem, e a grade aparecendo no fim.\n\nManter:\n\n1. A teoria dos dois estilos dita no momento em que os dois cartões estão na tela, e não antes.\n2. A leitura do número antes do clique, porque clicar num tamanho já avança para a pergunta do nome.\n3. A leitura em voz alta da frase de ajuda do campo do nome, que é o primeiro sinal de que as duas ferramentas conversam.\n\nCortes obrigatórios: retirar a afirmação sobre os retratos de Celeste serem vetoriais. Usar um exemplo produzido no próprio Pinta. Não ensinar exportação hoje.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. As quatro respostas são escolhidas na tela, uma de cada vez, e não lidas numa lista: Pixel art, Personagem, o Médio de 32 × 32, e o nome nave em letra minúscula, antes do Começar a desenhar.\n\nA chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: estilo pixel art, tipo Personagem, quadro de 32 × 32, nome nave, e a grade à vista. Se aparecer 16 × 16, o clique caiu no Pequeno, e o conserto é voltar e ler o número antes de escolher.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No seu Pinta, o desenho se chama nave e a grade de pixel art tem 32 por 32 quadradinhos? Se aparecer 16 por 16, volte à escolha do tamanho.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-espelho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Uma nave é simétrica: o lado direito é igual ao esquerdo. Para desenhar coisa simétrica, o Júlio usa o Espelho lado a lado, que fica na caixa de ferramentas e é um interruptor: enquanto ele estiver aceso, tudo que você desenhar de um lado aparece do outro na mesma hora."
+      }
+    },
+    {
+      "key": "fala-espelhos-vizinhos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Ali perto tem o Espelhar na horizontal e o Espelhar na vertical, que são outra coisa e a gente não usa hoje. Experimenta o espelho na bancada desta seção antes de traçar a sua nave."
+      }
+    },
+    {
+      "key": "experimento-espelho",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O que o espelho faz com o seu traço?",
+        "instructions": "Pinte a asa com os dois espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez. No fim, com o Espelho lado a lado ligado, encha a asa com o Balde de tinta.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "symmetry",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["one-side", "two-sides", "axis-decides", "fill-ignores-mirror"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Com o Espelho lado a lado ligado, o que aparece dos dois lados?",
+          "choices": [
+            { "id": "a", "label": "O que você pinta com o Lápis, com a Linha e com a Borracha." },
+            { "id": "b", "label": "Tudo, inclusive o que você enche com o Balde de tinta." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O espelho copia o ponto que você marca, então ele pega o Lápis, a Linha, a Borracha, o Retângulo e o Círculo. O Balde de tinta enche a região onde você clicou, e a linha tracejada do meio continua na tela sem fazer o outro lado encher."
+        }
+      }
+    },
+    {
+      "key": "fala-contorno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Escolhe um corpo e um par de asas entre as referências desta aula. Vai na paleta e pega o preto, que é o que mais separa o desenho do fundo. Liga o Espelho lado a lado, pega a Linha na caixa de ferramentas e traça a lateral do corpo. Se um traço não ficar bom, desfaz na setinha curva da barra de cima, ou no Control e o Z juntos, e traça de novo."
+      }
+    },
+    {
+      "key": "fala-espaco-do-motor",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "E tem uma coisa que eu preciso te pedir, que é a única regra do desenho de hoje: deixa umas quatro fileiras de quadradinhos vazias embaixo da nave. É dali que o fogo do motor vai sair na próxima aula."
+      }
+    },
+    {
+      "key": "video-contorno",
+      "plannedVideo": "Título: A nave de pé, e o espaço do motor\n\nOrigem: video-contorno do v6, com a teoria do espelho encurtada. Duração alvo: 70 a 85 segundos.\n\nO que passa na tela: duas ou três referências de corpo e de asas oferecidas dentro da própria aula, o preto na paleta, o botão do espelho aceso, a linha tracejada do meio, a ferramenta Linha traçando a lateral, o desfazer, e a faixa livre embaixo com zoom.\n\nManter a frase de reenquadramento que já está gravada: \"isso não é errar, é desenhar.\"\n\nCortes obrigatórios:\n\n1. Encurtar a explicação do espelho, que a experiência da seção anterior já entregou. Ficar no gesto.\n2. Não mandar pesquisar referência na internet.\n\nAcrescentar: a faixa de cerca de quatro fileiras vazias embaixo, com o motivo dito uma vez.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: o contorno reconhecível como nave, com partes fechadas que podem receber cor, e a faixa de cerca de quatro fileiras de quadradinhos vazias embaixo da nave.\n\nDizer uma vez, sem virar regra: o formato, o tamanho e a quantidade de asas são escolha de quem desenha. O único compromisso é o espaço embaixo, que o fogo da próxima aula vai usar.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A sua nave tem áreas fechadas para pintar e sobra uma faixa de cerca de quatro fileiras vazias embaixo para o motor? O formato das asas é escolha sua.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-cor-base",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Antes da tinta, desliga o Espelho lado a lado clicando nele de novo, porque o espelho não funciona com o Balde de tinta. Escolhe uma cor média para o corpo, nem muito clara nem muito escura, porque na cor mais escura que existe não sobra para onde escurecer."
+      }
+    },
+    {
+      "key": "fala-cabine-e-detalhes",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Pega o Balde de tinta na caixa de ferramentas e clica dentro de cada área fechada. Depois escolhe outra cor para a cabine, e o Lápis para um ou dois detalhes pequenos."
+      }
+    },
+    {
+      "key": "video-cor-base",
+      "plannedVideo": "Título: Balde de tinta, área por área\n\nOrigem: video-cor-base do v6, com o aviso do espelho encurtado. Duração alvo: 60 a 75 segundos.\n\nO que passa na tela: o espelho sendo desligado, a escolha da cor média, o Balde clicando dentro de cada área fechada, uma por uma, a cabine em outra cor e um ou dois detalhes com o Lápis.\n\nManter a proporção entre cor base, cabine e detalhe, que é o conteúdo real do passo: a base ocupa a maior parte, a cabine se distingue, o detalhe é pequeno.\n\nCortes obrigatórios:\n\n1. Retirar a explicação de por que o espelho não pinta com o Balde, que a experiência da seção 3 entregou com quem faz a aula mexendo.\n2. Corrigir as referências a tons que a paleta ativa pode não ter.\n\nAcrescentar: se a tinta escapar, desfazer e procurar a abertura no contorno.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: a cor base ocupando a maior parte do corpo, a cabine se distinguindo do corpo, e o fundo e o espaço do motor ainda transparentes.\n\nDizer uma vez: as cores podem ser diferentes das do Júlio.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Você distingue a cabine do corpo e ainda vê o fundo e o espaço do motor transparentes? As cores podem ser as que você escolheu.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "video-luz",
+      "plannedVideo": "Título: A mesma nave, chapada e com volume\n\nOrigem: video-luz-demo do v6, com a teoria das famílias retirada. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: a mesma nave chapada e com volume, no mesmo tamanho e na mesma posição, com a seta da luz desenhada fora da arte.\n\nFala: o problema visto no objeto dela, a nave pintada que ainda parece um adesivo, e a decisão que é dela, que é de que lado vem a luz.\n\nCortes obrigatórios: retirar a teoria das famílias de cor da narração, porque a experiência desta mesma seção entrega isso com ela mexendo. Não mandar mexer durante o clipe."
+    },
+    {
+      "key": "experiencia-luz",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A luz dá volume",
+        "instructions": "Ligue a sombra e a luz e olhe a bola. Desligue para comparar, e depois mude o sol de lado.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "shading",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["volume", "flat", "side"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Uma parte do seu desenho já está numa cor escura. Como mostrar que a luz bate nela?",
+          "choices": [
+            { "id": "b", "label": "Cobrindo a parte inteira com a cor da sombra do corpo." },
+            { "id": "a", "label": "Pondo poucos pixels de um tom mais claro da mesma família." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O tom mais claro da mesma família preserva a cor da parte e mostra de que lado a luz bate. A cor da sombra do corpo apagaria a cor dela."
+        }
+      }
+    },
+    {
+      "key": "fala-volume",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Escolhe de que lado vem a luz e fica nesse lado até o fim. Pega o Lápis, que vai ficar na sua mão o passo inteiro. Faz todas as sombras primeiro e todas as luzes depois, assim você não troca de cor a cada risco. Cada cor recebe a sombra e a luz da própria família dela."
+      }
+    },
+    {
+      "key": "fala-pouca-coisa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Num detalhe de dois quadradinhos não cabe o par, então escolhe um dos dois. E sombra e luz são pouca coisa: duas ou três linhas finas fazem o trabalho. No fim, olha a sua nave inteira com calma e vê se ficou alguma coisa faltando, que o Lápis ainda está na sua mão."
+      }
+    },
+    {
+      "key": "video-volume",
+      "plannedVideo": "Título: Sombras primeiro, luzes depois\n\nOrigem: video-volume do v6. Duração alvo: 70 a 85 segundos.\n\nO que passa na tela: o Lápis na mão o passo inteiro, todas as sombras primeiro e todas as luzes depois, o zoom nas partes com a nave inteira à vista do lado para conferir proporção, e o antes e depois no fim.\n\nCortes obrigatórios:\n\n1. Retirar a exigência de sombra numa cabine que já está escura.\n2. Evitar afirmar que toda cor da paleta tem duas vizinhas da mesma família. Mostrar os tons realmente disponíveis.\n\nAcrescentar: se a nave ficar muito escura, desfazer alguns traços. Um detalhe de dois quadradinhos recebe só luz ou só sombra.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. A chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Pinta pelo botão Abrir meu Pinta da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: a luz vindo de uma direção só do começo ao fim, sombra e luz em tons da própria família de cada cor ou no tom disponível mais próximo, e a silhueta, a cabine e o espaço do motor ainda legíveis.\n\nDizer uma vez: o lado da luz é escolha de quem desenha, e quantos riscos entram também.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A luz aparece do mesmo lado nas partes da sua nave e ainda dá para reconhecer a cabine e o contorno? Você escolhe de que lado vem a luz.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-salvamento",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você não precisa fazer nada para salvar. Na barra de cima do desenho, depois das duas setinhas do desfazer e do refazer, aparece Salvo sozinho toda vez que você para de desenhar por um segundinho."
+      }
+    },
+    {
+      "key": "fala-guardado-e-galeria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Logo do lado do Salvo, na mesma barra, aparece Guardado na sua conta, que quer dizer que o seu desenho subiu para a sua conta. Para voltar para a galeria, clica na setinha apontando para a esquerda, na ponta esquerda da barra."
+      }
+    },
+    {
+      "key": "fala-so-a-nave",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "A entrega de hoje é só o desenho nave. Você não precisa baixar imagem nem pôr a nave dentro do jogo: isso vem nas próximas aulas."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: A sua nave na galeria\n\nOrigem: video-fecho-v6, com fala nova. Duração alvo: 50 a 65 segundos.\n\nO que passa na tela: a nave pronta no cartão da galeria, e um corte curto do zoom nela.\n\nFala: \"A sua nave tem o formato que você escolheu, as cores que você escolheu e a luz do lado que você escolheu. O espelho ajudou no contorno, e dois tons a mais tiraram ela do chapado. Na próxima aula aquele espaço que você deixou embaixo vira o motor, e o motor vai mexer.\"\n\nCortes obrigatórios: não dividir a aula em duas. Não usar Celeste como prova de vetor. Não acrescentar tarefa extra para passar.\n\nIncorporado do texto corrido de entrega que saiu do manifesto, por decisão de produto. Antes do corte final, o gesto de entregar acontece na tela: esperar o Guardado na sua conta, escolher só o cartão da nave na galeria do Pinta, e enviar.\n\nConferir junto, olhando a tela: personagem pixel art de 32 × 32 chamado nave, silhueta legível, áreas de cor, uma direção de luz, e o espaço de baixo ainda transparente. Se o cartão não aparecer na lista, conferir o salvamento e carregar a lista de novo.\n\nDizer uma vez, e com cuidado: cor, formato e parecença com o desenho do Júlio não recebem nota.\n\nNota de correção, para o professor e não para a narração: quando faltar espaço embaixo, houver contorno aberto ou a luz apagar a forma, orientar uma correção de cada vez."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você quer mudar apenas um detalhe pequeno na asa. Qual ferramenta cabe melhor?",
+            "choices": [
+              { "id": "a", "label": "Lápis." },
+              { "id": "b", "label": "Balde em todo o fundo." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O Lápis atua pixel a pixel e permite uma alteração pequena."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você terminou o contorno e a nave ocupou o quadro inteiro, até a última fileira de baixo. O que isso custa na próxima aula?",
+            "choices": [
+              { "id": "a", "label": "O fogo do motor não vai ter onde caber dentro do quadro." },
+              { "id": "b", "label": "A nave vai ficar com menos cores disponíveis." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O espaço embaixo é uma decisão de desenho para preparar a animação. Se ele sumir, o fogo não tem para onde crescer."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o nível de acabamento da nave antes de traçar a primeira linha, e ouvir que o desenho é dela.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "novo-desenho",
+      "title": "Abra o Pinta e prepare a tela da sua nave",
+      "intent": "application",
+      "objective": "Responder as quatro perguntas do assistente e abrir o desenho nave em pixel art, Personagem, 32 × 32.",
+      "blockKeys": [
+        "fala-novo-desenho",
+        "fala-tamanho-e-nome",
+        "video-novo-desenho"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-novo-desenho"]
+      }
+    },
+    {
+      "key": "espelho",
+      "title": "O que o espelho faz com o seu traço",
+      "intent": "exploration",
+      "objective": "Descobrir onde a cópia cai com cada espelho, e que o Balde de tinta fica fora do alcance deles, antes de traçar a primeira lateral.",
+      "blockKeys": ["fala-espelho", "fala-espelhos-vizinhos", "experimento-espelho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-espelho"]
+      }
+    },
+    {
+      "key": "contorno",
+      "title": "O contorno da sua nave, e o espaço do motor",
+      "intent": "application",
+      "objective": "Fechar a silhueta da nave com a Linha e o espelho, e reservar cerca de quatro fileiras livres embaixo para o motor da próxima aula.",
+      "blockKeys": [
+        "fala-contorno",
+        "fala-espaco-do-motor",
+        "video-contorno"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-contorno"]
+      }
+    },
+    {
+      "key": "cor-base",
+      "title": "Pinte o corpo, a cabine e os detalhes",
+      "intent": "application",
+      "objective": "Preencher as áreas fechadas com o Balde, distinguir a cabine e acrescentar um ou dois detalhes pequenos com o Lápis.",
+      "blockKeys": [
+        "fala-cor-base",
+        "fala-cabine-e-detalhes",
+        "video-cor-base"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-cor-base"]
+      }
+    },
+    {
+      "key": "luz",
+      "title": "A luz dá volume",
+      "intent": "exploration",
+      "objective": "Sentir que dois tons a mais tiram a forma do chapado, que cada cor recebe sombra e luz da própria família, e que o lado do sol decide de que lado fica a sombra.",
+      "blockKeys": ["video-luz", "experiencia-luz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-luz"]
+      }
+    },
+    {
+      "key": "volume",
+      "title": "Dê luz e sombra à sua nave",
+      "intent": "application",
+      "objective": "Aplicar poucos riscos de sombra e de luz na nave dela, com uma direção só, sem perder a silhueta.",
+      "blockKeys": ["fala-volume", "fala-pouca-coisa", "video-volume"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-volume"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Confira, envie e fecha",
+      "intent": "delivery",
+      "objective": "Reconhecer os dois avisos de salvamento, enviar a nave pela galeria e guardar as duas ideias do dia.",
+      "blockKeys": [
+        "fala-salvamento",
+        "fala-guardado-e-galeria",
+        "fala-so-a-nave",
+        "entrega-galeria-v6",
+        "video-fecho",
+        "quiz-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6", "video-fecho", "quiz-v6"]
+      }
+    }
+  ]
+}

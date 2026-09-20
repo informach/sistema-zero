@@ -12,15 +12,13 @@ import { SceneConclusion } from '../src/components/scene-conclusion'
 /**
  * A CENA QUE ENTRA SEM A PERGUNTA DO FIM (decisão da dona, 17/09/2026).
  *
- * A Aula 1 do Corre Dino tem quatro cenas seguidas, cada uma com previsão E pergunta: oito
- * momentos de responder na primeira aula da criança. A pergunta do fim ficou só em duas, e o
- * campo novo é `semPerguntaFinal`. Aqui se mede o lado do PLAYER: o que ele recebe (a projeção
- * pública sem pergunta nenhuma) e o que ele DESENHA no lugar dela.
+ * A Aula 1 atual tem três cenas, com perguntas herdadas do modelo. Também testamos o contrato
+ * do player caso uma aula futura use `semPerguntaFinal`.
  */
 
 const AULA_1 = resolve(
   import.meta.dir,
-  '../../../docs/aulas-interativas/corre-dino-v6/aula-01/manifesto.json',
+  '../../../docs/aulas-interativas/aulas/corre-dino-aula-01.manifesto.json',
 )
 
 function blocosDaAula() {
@@ -33,12 +31,9 @@ function blocosDaAula() {
   return cenas
 }
 
-describe('a Aula 1 do Corre Dino chega ao player com a pergunta em duas cenas', () => {
+describe('a Aula 1 atual do Corre Dino chega ao player', () => {
   const cenas = blocosDaAula()
 
-  // ⚠️ Eram QUATRO até `a4597d67 docs(corre-dino): retirar leitor de tela da aula inicial`, que
-  // tirou a `experiencia-leitor-de-tela` do manifesto e deixou este teste para trás. O que ele
-  // guarda segue sendo o mesmo: toda cena da Aula 1 chega com PREVISÃO, e só duas com pergunta.
   test('as três cenas continuam lá, e as três PREVISÕES também', () => {
     expect([...cenas.keys()].sort()).toEqual([
       'descoberta',
@@ -49,19 +44,20 @@ describe('a Aula 1 do Corre Dino chega ao player com a pergunta em duas cenas', 
       expect(publicInteractiveBlock(bloco).prediction, chave).toBeDefined()
   })
 
-  test('⚠️⚠️ só `coordinates` e `world` mandam pergunta ao navegador', () => {
+  test('as três cenas mandam a pergunta herdada do modelo', () => {
     const comPergunta = [...cenas]
       .filter(([, bloco]) => publicInteractiveBlock(bloco).checkpoint !== undefined)
       .map(([chave]) => chave)
       .sort()
-    expect(comPergunta).toEqual(['descoberta', 'experiencia-coordenadas'])
-    // E a que sobra diz isso por escrito, em vez de ter perdido a pergunta por acidente.
-    for (const chave of ['experiencia-tela'])
-      expect(cenas.get(chave)?.semPerguntaFinal, chave).toBe(true)
+    expect(comPergunta).toEqual(['descoberta', 'experiencia-coordenadas', 'experiencia-tela'])
   })
 
-  test('o campo de autoria não vaza para o navegador', () => {
-    const publico = publicInteractiveBlock(cenas.get('experiencia-tela') as InteractiveBlock)
+  test('uma cena marcada sem pergunta perde o checkpoint, e o campo de autoria não vaza', () => {
+    const publico = publicInteractiveBlock({
+      ...(cenas.get('experiencia-tela') as InteractiveBlock),
+      semPerguntaFinal: true,
+    })
+    expect(publico.checkpoint).toBeUndefined()
     expect(publico).not.toHaveProperty('semPerguntaFinal')
   })
 })

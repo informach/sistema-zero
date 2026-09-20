@@ -63,11 +63,14 @@ function documento(
   }
 }
 
-/** Uma cena REAL dos manifestos do repositório: montar uma à mão não passa no validador do core. */
-function primeiraCenaDoV6() {
+/** Uma cena real dos manifestos atuais: montar uma à mão não passa no validador do core. */
+function primeiraCenaDoCurso() {
   const origem = JSON.parse(
     readFileSync(
-      join(import.meta.dir, '../../../docs/aulas-interativas/corre-dino-v6/aula-03/manifesto.json'),
+      join(
+        import.meta.dir,
+        '../../../docs/aulas-interativas/aulas/corre-dino-aula-03.manifesto.json',
+      ),
       'utf8',
     ),
   ) as LearningManifest
@@ -330,7 +333,7 @@ describe('buildLessonManifest', () => {
     // faz a produção servir áudio do staging E o botão "Gerar a voz do Zappy" do destino dizer
     // "em dia" (ele considera pronta toda fala com entrada no dicionário), então ninguém clica e
     // o erro nunca aparece.
-    const cena = primeiraCenaDoV6()
+    const cena = primeiraCenaDoCurso()
     const comAudio = {
       id: 'cccc2222-0000-4000-8000-0000000000ee',
       content: {
@@ -529,7 +532,7 @@ describe('buildLessonManifest', () => {
     expect(doDestino.manifest.blocks[0]?.key).not.toBe(keyEmA)
   })
 
-  test('ida e volta com um manifesto v6 REAL preserva seções e conteúdo', () => {
+  test('ida e volta com um manifesto atual preserva seções e conteúdo', () => {
     // Monta o rascunho que a IMPORTAÇÃO produziria a partir do manifesto do repositório e
     // exporta de volta. É o caminho que a autora percorre de verdade: importou no staging,
     // mexeu, exporta para produção.
@@ -537,7 +540,7 @@ describe('buildLessonManifest', () => {
       readFileSync(
         join(
           import.meta.dir,
-          '../../../docs/aulas-interativas/corre-dino-v6/aula-03/manifesto.json',
+          '../../../docs/aulas-interativas/aulas/corre-dino-aula-03.manifesto.json',
         ),
         'utf8',
       ),
@@ -557,7 +560,7 @@ describe('buildLessonManifest', () => {
       } else
         blocks.push({
           id,
-          // Os `existing` do v6 são o bloco de Estúdio, cadastrado à mão na aula.
+          // Os `existing` do manifesto são blocos cadastrados à mão na aula.
           content: {
             kind: entry.existing.kind,
             level: 'iniciante',

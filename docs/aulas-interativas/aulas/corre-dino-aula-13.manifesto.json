@@ -1,0 +1,767 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-13",
+  "title": "O jogo aperta, e sabe onde parar",
+  "retireBlockKeys": [
+    "video-abertura-editorial",
+    "video-guardar-velocidade",
+    "fala-guardar-velocidade",
+    "video-base-e-nascimento",
+    "video-usar-memoria",
+    "fala-usar-memoria",
+    "video-comparar-negativos",
+    "experiencia-aceleracao-modelo",
+    "video-relogio-aceleracao",
+    "fala-relogio-aceleracao",
+    "video-descricao-final",
+    "fala-descricao-final",
+    "fala-entrega-editorial",
+    "video-fecho-editorial"
+  ],
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-jogo-nao-aperta",
+      "plannedVideo": "Título: Vinte segundos depois, está tudo igual\n\nO jogo rodando, com alguém sobrevivendo bastante. No começo é gostoso: os cactos vêm, o dino pula, o placar sobe. Vinte segundos depois a gravação continua e a tela está exatamente igual. Mesma velocidade, mesmo esforço, mesma folga entre um pulo e outro.\n\nA fala nomeia o problema sem inventar nada: quem está indo bem merecia um desafio maior, e não mais do mesmo.\n\nEm seguida a comparação, marcada como comparação: “é tipo os jogos que você joga, que vão ficando mais difíceis conforme você avança.”\n\nFecha com a promessa do dia em uma frase: hoje o jogo aprende a apertar sozinho, e aprende também onde parar.\n\nJunta o que hoje são duas seções. A apresentação e a dor eram a mesma gravação: uma prometia, a outra mostrava. A dor fecha sozinha, e a ferramenta só aparece na seção seguinte.\n\nVem de video-abertura-editorial. A fala se aproveita, a tela é regravada na edição jogo-2d-1.0-documento-2.\n\nDuração alvo: 40 a 55 segundos."
+    },
+    {
+      "key": "fala-conferir-vx",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Antes de mais nada, abre o seu bloco No grupo criar obstáculo em x tamanho com vx e olha o campo vx. Do lado esquerdo da conta tem que estar -5. Se estiver outro número, põe -5 agora. Tudo o que vem hoje depende desse número estar certo."
+      }
+    },
+    {
+      "key": "fala-criar-velocidade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Programação, Variáveis, pega o Criar variável com valor e encaixa dentro do Ao iniciar, entre o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio. No nome escreve velocidade. No valor escreve -5, que é o mesmo número que os seus cactos já usam."
+      }
+    },
+    {
+      "key": "fala-ler-a-base",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora em Programação, Valores, pega o valor da variável e arrasta ele por cima do -5, que é o pedaço da esquerda da conta, lá no campo vx. Nele escolhe a velocidade. O sorteio de 0 a 1 do lado direito fica onde está."
+      }
+    },
+    {
+      "key": "video-memoria-e-leitura",
+      "plannedVideo": "Título: A velocidade muda de endereço\n\nOs dois gestos seguidos, num movimento só. Primeiro o Criar variável com valor entrando no Ao iniciar, entre o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio, com velocidade no nome e -5 no valor. Depois o valor da variável arrastado por cima do -5 do lado esquerdo da Conta matemática, com velocidade escolhida.\n\nDepois a partida rodando. A fala guarda a honestidade do trecho gravado, que é o melhor dele: está igualzinho, e está certo, porque a caixinha guarda -5, que é exatamente o número que estava ali antes.\n\nO que mudou não está na tela: mudou de onde vem a velocidade. Antes ela estava escrita dentro do bloco. Agora ela mora numa caixinha, e o bloco vai lá olhar toda vez que cria um cacto.\n\nÉ aqui que o padrão ganha nome: mudar o jogo sem mudar a lógica. A regra continua a mesma, e o que muda é o número que ela lê.\n\nFunde video-guardar-velocidade e video-usar-memoria. Sai inteiro o video-base-e-nascimento, que explicava a diferença entre a base e a velocidade que o cacto recebe ao nascer: essa diferença passou para a cena da seção 5, onde ela é provada em vez de afirmada.\n\nCorreção de âncora obrigatória. A fala gravada diz que o Ir para a tela inicio continua sendo o último bloco do Ao iniciar. Isso não é mais verdade desde a aula 10: o último é o Usar área de colisão de 80 por cento do tamanho para o sprite dino. A gravação nova nomeia os dois vizinhos do encaixe, o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio, e não afirma nada sobre qual é o último.\n\nTrocar os rótulos vencidos: Mudar o estado do jogo para, em Jogo 2D, Jogo e telas, Telas e partida.\n\nDuração alvo: 70 a 85 segundos."
+    },
+    {
+      "key": "fala-regua-negativos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Número negativo confunde todo mundo no começo, e tem um jeito de desconfundir. É tipo uma régua deitada, parecida com um termômetro. Faz -5 graus lá fora, está frio. Faz -9 graus, está mais frio ainda. Então o -5 é mais quente que o -9, e é isso que quer dizer ser maior. Com a velocidade é igual: -5 é mais devagar, -9 é mais rápido."
+      }
+    },
+    {
+      "key": "experiencia-number-line",
+      "content": {
+        "kind": "interactive",
+        "title": "A régua dos números negativos",
+        "instructions": "Aperte Somar -1 e olhe para onde o marcador anda. Depois troque o sinal e veja a resposta da pergunta mudar sem o número ter mudado.",
+        "hints": [
+          "A régua é parecida com um termômetro deitado. O -9 fica mais para a esquerda que o -5.",
+          "Olhe a frase embaixo da régua. A resposta muda sozinha conforme o marcador anda.",
+          "Deixe o marcador no -5 e troque o sinal para o biquinho que aponta para a direita. Depois leve o marcador até o -9 e olhe a resposta."
+        ],
+        "required": true,
+        "prediction": {
+          "context": {
+            "label": "A régua, com o marcador no -5",
+            "explanation": "A régua vai de -12 a 0, com uma bandeirinha fixa no -9 e o marcador no -5. Embaixo dela, a pergunta montada com as peças, e a resposta em palavra e em ícone."
+          },
+          "prompt": "Na régua, qual dos dois é o maior: -5 ou -9?",
+          "choices": [
+            {
+              "id": "menos-cinco",
+              "label": "-5, porque está mais à direita"
+            },
+            {
+              "id": "menos-nove",
+              "label": "-9, porque 9 é maior que 5",
+              "shows": "Na régua, o -9 mora à esquerda do -5. Quem está mais à direita é o maior."
+            }
+          ],
+          "correctChoiceId": "menos-cinco",
+          "revealOn": "greater"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "number-line",
+          "cenario": "corre-dino"
+        }
+      }
+    },
+    {
+      "key": "fala-relogio-acelerador",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pega mais um A cada segundos e solta dentro do Enquanto estiver rodando, ao lado dos outros dois relógios, o de 1,4 dos cactos e o de 1 dos pontos. Ao lado, e não dentro deles, e não dentro do A cada quadro do jogo. Agora são três relógios vizinhos. Nesse novo, põe 5."
+      }
+    },
+    {
+      "key": "fala-se-do-estado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro do fazer desse relógio vai um Se, igual você fez na Aula 11. Em Programação, Lógica e Se, pega o Condição se, senão se e senão. Ele vem com uma comparação de fábrica dentro, e essa não serve: arrasta ela pra fora e joga na lixeira. No lugar dela encaixa o o estado do jogo é, em Jogo 2D, Jogo e telas, Telas e partida, e escolhe jogando."
+      }
+    },
+    {
+      "key": "fala-se-da-comparacao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora vem outro Se, dentro do então desse primeiro. E esse é diferente: desta vez a comparação de fábrica fica. É a única vez no curso inteiro em que ela serve, porque a nossa pergunta é justamente uma comparação."
+      }
+    },
+    {
+      "key": "fala-campos-da-comparacao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Ela tem três pedaços. No da esquerda, arrasta o valor da variável por cima do número e escolhe a velocidade. No do meio, abre a listinha dos sinais e escolhe o maior, que é o quinto da lista, o biquinho apontando para a direita. Confere na tela se ficou o biquinho e não o igual. No pedaço da direita, escreve -9."
+      }
+    },
+    {
+      "key": "fala-somar-menos-um",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Lê comigo: se o valor da variável velocidade for maior que -9. E dentro do então desse Se de dentro, em Programação, Variáveis, põe o Somar em variável. No número escreve -1, e na variável escolhe a velocidade."
+      }
+    },
+    {
+      "key": "video-acelerador",
+      "plannedVideo": "Título: O acelerador, e o freio dele\n\nOs quatro movimentos, com o cursor mostrando cada âncora: o terceiro relógio ao lado dos outros dois, o Se do estado com a comparação de fábrica indo para a lixeira, o Se da comparação com a de fábrica ficando, e o Somar -1 dentro do então de dentro.\n\nDois momentos que a gravação precisa ter. O primeiro é o instante em que a listinha dos sinais abre e o biquinho que aponta para a direita é escolhido, com zoom, para ninguém confundir com o igual. O segundo é a partida longa, que mostra o jogo apertando de verdade depois de trinta segundos.\n\nO aviso do sinal fica, agora curto, porque a régua já mostrou acontecendo: “se você deixar no igual, o jogo não mostra erro nenhum, e a base nunca muda. Foi o que você viu na régua.”\n\nE o motivo do freio, que é a ideia da aula: sem o -9 o jogo aceleraria para sempre, e depois de dois minutos ninguém conseguiria nada. Todo acelerador precisa de um freio.\n\nO número do limite e o número do relógio são escolha de quem constrói, e a seção da entrega é onde isso é oferecido. Aqui a fala usa -9 e 5 segundos como o exemplo da gravação, sem dizer que são o certo.\n\nVem de video-relogio-aceleracao. A fala se aproveita, encurtando a explicação dos números negativos, que passou para a cena da seção 3. Sai inteiro o video-comparar-negativos.\n\nCorreção de endereços obrigatória: Jogo 2D, Tempo, Quadros e intervalos para o A cada segundos, e Jogo 2D, Jogo e telas, Telas e partida para o o estado do jogo é __ ?.\n\nDuração alvo: 125 a 145 segundos."
+    },
+    {
+      "key": "fala-antes-da-aceleracao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O seu jogo já acelera, mas tem coisa acontecendo lá dentro que a partida não mostra. Aqui você aperta o botão que passa 5 segundos quantas vezes quiser, e olha o número de cada cacto que nasce."
+      }
+    },
+    {
+      "key": "experiencia-aceleracao",
+      "content": {
+        "kind": "interactive",
+        "title": "Acelere com um limite",
+        "instructions": "Aperte Passar 5 segundos e acompanhe a base descendo. Olhe onde ela para, olhe o número de cada cacto que nasce, e depois desligue a condição.",
+        "hints": [
+          "Aperte Passar 5 segundos várias vezes e olhe até onde a base desce.",
+          "Com a base no -9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto -10.",
+          "Olhe os cactos que já estavam na pista antes de a base mudar.",
+          "Agora desligue a condição e aperte Passar 5 segundos de novo."
+        ],
+        "required": true,
+        "prediction": {
+          "context": {
+            "label": "A base parada no limite",
+            "explanation": "A base desceu até -9 e a condição a segurou ali. Cada cacto que nasce recebe a base menos um sorteio de 0 a 1."
+          },
+          "prompt": "Com a base parada em -9, pode nascer um cacto mais rápido que -9?",
+          "choices": [
+            {
+              "id": "pode",
+              "label": "Pode, porque o sorteio é descontado depois da base"
+            },
+            {
+              "id": "nao-pode",
+              "label": "Não, o limite segura todo mundo em -9",
+              "shows": "Olhe o número escrito em cada cacto que nasce, e não a base: o sorteio entra depois dela."
+            }
+          ],
+          "correctChoiceId": "pode"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "acceleration",
+          "cenario": "corre-dino",
+          "cast": {
+            "obstacle": {
+              "name": "cacto",
+              "gender": "m"
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "video-balanceamento",
+      "plannedVideo": "Título: Escolha o quanto o seu jogo aperta\n\nA demonstração por extremos, conduzida pela narração, nos dois campos, com uma partida curta em cada troca.\n\nPrimeiro o limite. Troca o -9 por -7 e joga: o jogo acelera pouquinho e fica tranquilo até o fim. Depois -14, e ele fica quase impossível lá na frente.\n\nDepois o ritmo. O relógio em 2, e o jogo endurece logo. O relógio em 10, e demora tanto que a partida fica sem graça.\n\nA fala nomeia o que está acontecendo: escolher o quanto o jogo fica difícil e com que rapidez tem nome nos estúdios de verdade, chama balanceamento, e é um trabalho inteiro que gente faz por semanas antes de lançar um jogo.\n\nDevolve a escolha sem rotular: “os meus ficaram em -9 e 5 segundos, e os seus podem ser outros. A conferência aceita o limite de -14 a -7 e o relógio de 2 a 10, então escolhe o que o seu jogo pedir.”\n\nEstes são os dois últimos campos do curso que ficam sendo de quem constrói, e é a última vez que o jogo do professor vira o jogo dela. A fala pode dizer isso.\n\nVem de video-descricao-final, trecho do meio.\n\nCorte obrigatório: saem as três partidas comparadas com as da Aula 9, conforme a orientação já registrada.\n\nDuração alvo: 55 a 70 segundos."
+    },
+    {
+      "key": "fala-teste-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clica na área do jogo e joga. Confere o começo pela tecla e pelo toque, o pulo, a batida, o placar subindo e o voltar a jogar. Depois sobrevive o máximo que der e repara se o jogo vai apertando. Se a partida acabar cedo, tudo bem: você já viu a base inteira na experiência de hoje. Não precisa bater recorde para terminar."
+      }
+    },
+    {
+      "key": "video-ponte",
+      "plannedVideo": "Título: O que tem embaixo dos seus blocos\n\nNa barra superior do Estúdio Completo, clicar em Ponte no seletor de modos. Com blocos e código lado a lado, abrir a aba script.js. Caminho conferido no código do seletor de modos e do BridgeMode em 20/09/2026; na gravação, conferir apenas o enquadramento.\n\nCom o painel aberto, a narração lê o código junto e aponta três coisas reconhecíveis: o sprite dino com seu nome canônico; o grupo cactos e o sorteio; e a variável velocidade com o limite que quem constrói escolheu.\n\nA fala não apressa e não exagera: “esses blocos coloridos não são um brinquedo. Cada um deles vira código de programação de verdade, e é esse aqui. Tudo o que você montou está escrito nesse painel, do jeito que um programador escreveria. Você não estava brincando de programar. Você estava programando. Só que com peças que já cabem na sua mão hoje. Quem escreve as letrinhas faz exatamente a mesma coisa.”\n\nA Ponte não vira cena, e é de propósito: a coisa real é mais forte, porque é o projeto dela, com o nome do sprite dela, e ela pode abrir de novo depois.\n\nVem de video-fecho-editorial, trecho da Ponte, que hoje divide um clipe só com a despedida. São coisas de naturezas diferentes: esta é uma descoberta, e num clipe só ela virava item de lista. A fala se aproveita, a tela é nova.\n\nDuração alvo: 60 a 75 segundos."
+    },
+    {
+      "key": "video-fecho-curso",
+      "plannedVideo": "Título: Você fez um jogo inteiro\n\nQuatro movimentos, nesta ordem.\n\n1. O que ela tem nas mãos, item por item, com o jogo rodando ao lado. Um cenário que se mexe. Um dino que pula e faz barulho só quando está no chão. Cactos que nascem sorteados, do lado de fora da tela. Uma faxina limpando quem já foi embora. Uma colisão justa. Um placar, uma tela de início e uma tela de fim. E um jogo que fica mais difícil quanto melhor ela joga. A lista é longa de propósito: cada peça é reconhecível e lembra a aula em que entrou.\n\n2. O que ela fez, sem hype e sem falar de dom: sentou, uma peça de cada vez, treze aulas seguidas, até o fim. Isso é o que dá para dizer com honestidade, e é bastante.\n\n3. O convite, que é a melhor parte e não é tarefa: chamar alguém para jogar e olhar a cara da pessoa quando ela bate no primeiro cacto.\n\n4. O que a Comunidade faz com isso. O projeto entregue já conta. Publicar é uma escolha, para depois, e não é o que fecha o curso: se quiser, o Compartilhar libera depois do envio, ela escreve um resumo, gera a capa e publica, e o jogo ganha um link e aparece no Mural junto com os jogos dos outros criadores. O curso fica marcado na Carreira de Criador, com os troféus, e é ali que dá para ver tudo o que já foi construído.\n\nE a despedida, sem promessa de futuro que não se pode cumprir: quando bater a vontade de fazer o próximo, tem mais curso esperando na Comunidade.\n\nProibições registradas, que valem como direção de gravação. Não existe certificado neste curso, e o fecho não pode prometer um. Nenhum número de XP é citado. Publicar e compartilhar não são requisito de conclusão e não podem ser ditos como se fossem. Os degraus internos da trilha do Dino Corredor não entram: degrau é planejamento interno e não é conversa com quem está terminando o curso.\n\nVem de video-fecho-editorial, o resto. A fala se aproveita em parte: saem o passo a passo de publicar como tarefa e a promessa de XP.\n\nDuração alvo: 75 a 90 segundos."
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "No exemplo do vídeo, a base parou em -9 e o sorteio descontou 1. O cacto que nasceu recebeu quanto?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "-10."
+              },
+              {
+                "id": "b",
+                "label": "-9, obrigatoriamente."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O limite segura a base, e o sorteio é descontado depois dela."
+          },
+          {
+            "id": "q2",
+            "prompt": "Qual pergunta deixa a base acelerar até o limite que você escolheu?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "O valor da variável velocidade igual ao limite."
+              },
+              {
+                "id": "a",
+                "label": "O valor da variável velocidade maior que o limite."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Começando em -5, a igualdade seria falsa já na primeira vez, e a base ficaria parada para sempre."
+          },
+          {
+            "id": "q3",
+            "prompt": "Mudar a base troca a velocidade dos cactos que já estão na pista?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não. Os novos consultam a base ao nascer."
+              },
+              {
+                "id": "b",
+                "label": "Sim. Todos passam a usar o valor novo na hora."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Cada cacto guarda a velocidade que recebeu quando foi criado."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "jogo-nao-aperta",
+      "title": "O seu jogo não aperta",
+      "intent": "presentation",
+      "objective": "Sentir a última dor do curso: quem sobrevive bastante encontra vinte segundos idênticos, e quem vai bem merecia um desafio maior.",
+      "blockKeys": ["video-jogo-nao-aperta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-jogo-nao-aperta"]
+      }
+    },
+    {
+      "key": "numero-que-manda",
+      "title": "Um número que manda em todos os cactos",
+      "intent": "application",
+      "objective": "Criar a variável velocidade com -5 e fazer o nascimento do cacto ler ela, mudando de onde vem a velocidade sem mudar nada na tela.",
+      "blockKeys": [
+        "fala-conferir-vx",
+        "fala-criar-velocidade",
+        "fala-ler-a-base",
+        "video-memoria-e-leitura"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "velocidade-inicial",
+            "label": "No Ao iniciar, crie a variável velocidade com valor -5.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "inputs": {
+                "VALUE": -5
+              }
+            }
+          },
+          {
+            "id": "usar-base",
+            "label": "No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputBlocks": {
+                    "A": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "velocidade"
+                      }
+                    },
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, mantenha o sorteio de 500 a 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "regua-negativos",
+      "title": "A régua dos números negativos",
+      "intent": "exploration",
+      "objective": "Sentir que -5 é maior que -9, e ver o sinal errado responder não para sempre, sem aviso nenhum na tela.",
+      "blockKeys": ["fala-regua-negativos", "experiencia-number-line"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-number-line"]
+      }
+    },
+    {
+      "key": "acelerador-e-freio",
+      "title": "O acelerador, e o freio dele",
+      "intent": "application",
+      "objective": "Montar a última construção do curso: um relógio próprio, o Se do estado, o Se da comparação lendo a base, e o Somar -1.",
+      "blockKeys": [
+        "fala-relogio-acelerador",
+        "fala-se-do-estado",
+        "fala-se-da-comparacao",
+        "fala-campos-da-comparacao",
+        "fala-somar-menos-um",
+        "video-acelerador"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "acelerar-com-limite",
+            "label": "Num relógio próprio, se o estado do jogo é jogando e a velocidade é maior que o limite, some -1 em velocidade. O relógio é seu, de 2 a 10 segundos, e o limite também, de -14 a -7.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_if_else",
+                      "inputBlocks": {
+                        "COND": {
+                          "blockType": "sz_val_compare",
+                          "fields": {
+                            "OP": ">"
+                          },
+                          "inputBlocks": {
+                            "LEFT": {
+                              "blockType": "sz_val_variable",
+                              "fields": {
+                                "NAME": "velocidade"
+                              }
+                            }
+                          }
+                        },
+                        "THEN": {
+                          "blockType": "sz_js_var_increment",
+                          "fields": {
+                            "NAME": "velocidade",
+                            "DELTA": -1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "um-acelerador",
+            "label": "Use um único Somar em variável velocidade no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "o-que-o-freio-segura",
+      "title": "O que o freio segura, e o que ele não segura",
+      "intent": "exploration",
+      "objective": "Ver a base descendo, parando no limite, um cacto nascendo mais rápido que o limite mesmo assim, e os cactos antigos guardando a velocidade deles.",
+      "blockKeys": ["fala-antes-da-aceleracao", "experiencia-aceleracao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-aceleracao"]
+      }
+    },
+    {
+      "key": "dificuldade-e-entrega",
+      "title": "Escolha a dificuldade, teste tudo e entregue",
+      "intent": "delivery",
+      "objective": "Escolher os dois últimos números que ficam sendo seus, rodar o jogo inteiro de ponta a ponta e enviar o projeto terminado.",
+      "blockKeys": ["video-balanceamento", "fala-teste-final", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-balanceamento", "projeto"],
+        "projectChecks": [
+          {
+            "id": "velocidade-inicial",
+            "label": "No Ao iniciar, crie a variável velocidade com valor -5.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "inputs": {
+                "VALUE": -5
+              }
+            }
+          },
+          {
+            "id": "usar-base",
+            "label": "No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputBlocks": {
+                    "A": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "velocidade"
+                      }
+                    },
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "acelerar-com-limite",
+            "label": "Num relógio próprio, se o estado do jogo é jogando e a velocidade é maior que o limite, some -1 em velocidade. O relógio é seu, de 2 a 10 segundos, e o limite também, de -14 a -7.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_if_else",
+                      "inputBlocks": {
+                        "COND": {
+                          "blockType": "sz_val_compare",
+                          "fields": {
+                            "OP": ">"
+                          },
+                          "inputBlocks": {
+                            "LEFT": {
+                              "blockType": "sz_val_variable",
+                              "fields": {
+                                "NAME": "velocidade"
+                              }
+                            }
+                          }
+                        },
+                        "THEN": {
+                          "blockType": "sz_js_var_increment",
+                          "fields": {
+                            "NAME": "velocidade",
+                            "DELTA": -1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "um-acelerador",
+            "label": "Use um único Somar em variável velocidade no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "velocidade"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, mantenha o sorteio de 500 a 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "cacto-unico",
+            "label": "Use um único bloco de criar cacto no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          },
+          {
+            "id": "pontos-zero",
+            "label": "No Ao iniciar, mantenha a variável pontos com valor 0.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "relogio-pontos",
+            "label": "Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-raio-x",
+            "label": "Mantenha retirado o desenho provisório da área de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "embaixo-dos-blocos",
+      "title": "O que tem embaixo dos seus blocos",
+      "intent": "closing",
+      "objective": "Abrir a Ponte no projeto e reconhecer, no código de verdade, o dino, o cacto, o sorteio e a velocidade que foram montados em blocos.",
+      "blockKeys": ["video-ponte"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ponte"]
+      }
+    },
+    {
+      "key": "voce-fez-um-jogo",
+      "title": "Você fez um jogo inteiro",
+      "intent": "closing",
+      "objective": "Fechar treze aulas com a lista do que foi construído, o convite para alguém jogar, o que a Comunidade faz com o projeto, e a despedida.",
+      "blockKeys": ["video-fecho-curso", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-curso", "quiz-final"]
+      }
+    }
+  ]
+}

@@ -48,9 +48,9 @@ import {
 
 const JANELAS = { 390: 314, 600: 524 } as const
 
-const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas')
+const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas/aulas')
 
-/** Todo bloco de cena dos manifestos v6 (com elenco, caso ou roteiro próprio). */
+/** Todo bloco de cena dos manifestos atuais (com elenco, caso ou roteiro próprio). */
 function usosDosManifestos(): SceneActivity[] {
   const usos: SceneActivity[] = []
   const visitar = (no: unknown) => {
@@ -66,7 +66,7 @@ function usosDosManifestos(): SceneActivity[] {
       for (const valor of Object.values(registro)) visitar(valor)
     }
   }
-  for (const arquivo of new Glob('*-v6/**/manifesto.json').scanSync(DOCS))
+  for (const arquivo of new Glob('*.manifesto.json').scanSync(DOCS))
     visitar(JSON.parse(readFileSync(join(DOCS, arquivo), 'utf8')))
   return usos
 }

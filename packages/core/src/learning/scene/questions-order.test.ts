@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { SCENE_IDS, type SceneId } from './actions'
 import { castText, type SceneCast } from './cast'
@@ -166,9 +166,8 @@ describe('a retomada do palpite', () => {
  * criança recebe no lugar das do modelo, e elas tinham o mesmo vício (a certa sempre em primeiro
  * na explicação, sempre em segundo na previsão — um padrão igualmente adivinhável).
  */
-describe('as perguntas dos manifestos v6', () => {
-  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas')
-  const PACOTES = ['corre-dino-v6', 'desafio-primeiro-jogo-v6', 'o-jogo-do-meu-jeito-v6']
+describe('as perguntas dos manifestos atuais', () => {
+  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   type Bloco = {
     kind?: string
     activity?: { type?: string; scene?: SceneId }
@@ -189,15 +188,8 @@ describe('as perguntas dos manifestos v6', () => {
       for (const v of Object.values(valor)) andar(v, onde)
     }
   }
-  for (const pacote of PACOTES) {
-    const pasta = resolve(docs, pacote)
-    if (!existsSync(pasta)) continue
-    for (const aula of readdirSync(pasta, { withFileTypes: true })) {
-      const arquivo = resolve(pasta, aula.name, 'manifesto.json')
-      if (aula.isDirectory() && existsSync(arquivo))
-        andar(JSON.parse(readFileSync(arquivo, 'utf8')), `${pacote}/${aula.name}`)
-    }
-  }
+  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json')))
+    andar(JSON.parse(readFileSync(resolve(docs, nome), 'utf8')), nome)
 
   test('a varredura LEU os blocos de cena (laço vazio aprova tudo)', () => {
     expect(blocos.length).toBeGreaterThan(25)

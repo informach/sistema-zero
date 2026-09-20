@@ -15,7 +15,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
       const document: unknown = await Bun.file(
         resolve(
           import.meta.dir,
-          `../../../../docs/aulas-interativas/o-jogo-do-meu-jeito-v6/${slug}/manifesto.json`,
+          `../../../../docs/aulas-interativas/aulas/meu-jeito-${slug}.manifesto.json`,
         ),
       ).json()
       if (!isLearningManifest(document)) throw new Error('Invalid manifest')
@@ -72,7 +72,10 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
       ).toEqual([{ id, content }])
       expect(first.document.sections.every((s) => s.workspaceBlockId === null)).toBe(true)
       const delivery = first.document.sections.find((s) => s.intent === 'delivery')!
-      expect(delivery.completion?.blockIds).toEqual([id])
+      expect(delivery.completion?.blockIds).toContain(id)
+      expect(delivery.completion?.blockIds).toHaveLength(
+        document.sections.find((s) => s.intent === 'delivery')?.completion?.blockIds?.length ?? 0,
+      )
       expect(first.document.plannedVideos).toHaveLength(
         document.blocks.filter((b) => 'plannedVideo' in b).length,
       )

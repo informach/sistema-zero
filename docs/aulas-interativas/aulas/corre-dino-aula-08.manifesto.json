@@ -1,0 +1,565 @@
+{
+ "version": 4,
+ "courseSlug": "corre-dino",
+ "lessonSlug": "aula-08",
+ "title": "O jogo abre com o nome que você deu",
+ "retireBlockKeys": [
+  "video-abertura-editorial",
+  "video-senao-se",
+  "fala-menu",
+  "fala-enter",
+  "experiencia-toque-tecla",
+  "video-entrada-completa",
+  "fala-entrada-completa",
+  "fala-entrega-editorial",
+  "video-fecho-editorial"
+ ],
+ "blocks": [
+  {
+   "key": "video-teste-e-envio",
+   "plannedVideo": "Título: Entrar pelos dois caminhos e enviar\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. A página recarregando, e a tela de início aparecendo com o nome do jogo.\n2. Dez segundos parados no menu, sem ninguém encostar em nada. Nenhum cacto entra pela direita nesse tempo.\n3. A dica escrita na tela, enquadrada por tempo suficiente para ser lida inteira.\n4. Um toque no meio da tela de início: a partida começa.\n5. A página recarregando de novo, e uma tecla qualquer apertada: a partida começa também.\n\nConferir junto, olhando a tela: o menu espera sem criar cacto nenhum, os dois jeitos começam a partida, e a frase escrita promete exatamente esses dois jeitos.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: agora o seu jogo tem uma porta de entrada. Ele abre com o nome que você deu, espera, e começa do jeito que a pessoa quiser tentar. O bloco Se ganhou um andar, e ele passou a mostrar o que você aprendeu na Aula 7: um estado de cada vez.\n\nO gancho da Aula 9 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
+  },
+  {
+   "key": "projeto",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-abertura",
+   "plannedVideo": "Título: A cara do seu jogo\n\nTela: o menu do fim do dia já montado, com o nome do jogo grande por cima da floresta, a frase do subtítulo e a dica embaixo. Alguém toca na tela e a partida começa.\n\nFala: \"Na aula passada o seu jogo aprendeu a esperar, e ficou esperando numa tela sem nada escrito. Hoje ele ganha a cara dele: o nome do jogo, uma frase pra explicar o que fazer, e um jeito de começar que funciona no computador e no celular.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: reaproveita parte da fala do video-abertura-editorial da v6. A tela é regravada."
+  },
+  {
+   "key": "fala-andar-novo",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Olha o Se que você montou na aula passada, aquele que pergunta se o estado do jogo é jogando. Chega perto da beiradinha de baixo, do lado esquerdo. Tem dois botõezinhos com um mais: mais senão se e mais senão. Eles estavam ali desde ontem. Clica no mais senão se."
+   }
+  },
+  {
+   "key": "video-menu",
+   "plannedVideo": "Título: O andar novo do Se e as pecinhas de texto\n\nTela, na ordem:\n\n1. O clique no mais senão se, e o andar nascendo embaixo do primeiro, com o buraquinho da pergunta vazio.\n\n2. A explicação do senão se em cima do bloco já crescido: \"senão se quer dizer o que está escrito. Se a pergunta de cima deu não, aí sim ele faz a de baixo. E se a de cima deu sim, ele nem olha a de baixo, porque já resolveu. É a mesma coisa que você aprendeu na Aula 7: o jogo fica num estado de cada vez. Agora o bloco também diz isso.\"\n\n3. Encaixar o bloco o estado do jogo é no espaço vazio e escolher inicio. Dizer que aqui não precisa tirar comparação nenhuma, porque o andar já nasce vazio.\n\n4. Dentro dele, o Mostrar tela com título subtítulo dica fundo, de Jogo 2D, Jogo e telas, Telas e partida.\n\n5. Zoom nos três textos, mostrando a bordinha de cada um, e o contraste com o quadradinho da cor: \"os três primeiros não estão escritos no Mostrar tela. Cada um tem uma bordinha em volta, porque cada texto é uma pecinha separada, encaixada num espacinho. Essa pecinha se chama texto, e ela mora em Programação, Valores. O quarto campo, o da cor do fundo, esse não é pecinha: é campo do próprio bloco, e ele já nasce escuro, que fica bom por cima da floresta.\"\n\n6. Os três textos preenchidos ao vivo: o nome do jogo no título, uma frase sobre pular cactos no subtítulo, e Aperte Enter para começar na dica.\n\nDuração alvo: 80 a 95 segundos.\n\nOrigem: funde o video-senao-se e o video-menu da v6, que hoje narram o mesmo trecho.\n\nCortar da fala a promessa sobre a Aula 11. O curso só faz remissão para trás.\n\nRótulos: o estado do jogo é __ ?, em Jogo 2D, Jogo e telas, Telas e partida. Não existe mais Ir para a tela nem a subcategoria Telas e cenas.\n\nTítulo e subtítulo são escolha de quem está fazendo a aula, e a dica é combinada: nesta etapa ela é Aperte Enter para começar, porque o teste do próximo passo depende dela."
+  },
+  {
+   "key": "fala-menu-pronto",
+   "content": {
+    "kind": "dialogue",
+    "pose": "celebrating",
+    "text": "Olha a área do jogo. Apareceu a tela de início do seu jogo, com o nome que você deu, por cima da floresta. Na aula passada o estado inicio já existia e não desenhava nada. Agora ele desenha. Só que, se você apertar Enter agora, não acontece nada, porque ninguém ensinou o Enter a fazer nada ainda."
+   }
+  },
+  {
+   "key": "fala-evento-enter",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Em Jogo 2D, Controles, Teclado, ações e toque, pega o bloco Quando apertar a tecla. Arrasta pra dentro da área Quando acontecer e solta ao lado do evento do pulo, que já está lá. Ele tem um campo só, a listinha das teclas: escolhe Enter."
+   }
+  },
+  {
+   "key": "video-enter",
+   "plannedVideo": "Título: O Enter funciona, o clique não\n\nTela, na ordem:\n\n1. O Quando apertar a tecla solto na área Quando acontecer, ao lado do evento do pulo, com Enter escolhido na listinha.\n\n2. Dentro dele, um Se novo, de Programação, Lógica e Se. Manter a separação que a gravação atual já acerta: \"Agora um Se, lá de Programação, Lógica e Se. Só que hoje não tem o que embrulhar, porque o Se vai nascer vazio e você vai encher ele com bloco novo. Então são as três primeiras etapas daquelas quatro da Aula 7, sem a quarta: tira a comparação de fábrica, põe no lugar a pergunta o estado do jogo é, e escolhe inicio.\"\n\n3. Dentro do então, o Mudar o estado do jogo para com jogando. Ler o encaixe inteiro em voz alta.\n\n4. O teste que funciona: recarregar, clicar na área do jogo, apertar Enter, a partida começa.\n\n5. O teste que não funciona: recarregar de novo e clicar bem no meio da tela, em cima do nome do jogo. Nada. Clicar mais três vezes. Nada.\n\nFala do fecho: \"E olha que clicar na tela é a primeira coisa que qualquer pessoa faz. Antes de procurar tecla, a gente clica. E tem o celular: lá quem joga usa o dedo, e o seu jogo precisa funcionar assim também.\"\n\nDuração alvo: 55 a 70 segundos.\n\nCorreção obrigatória de fala: sai a afirmação absoluta de que no celular não existe tecla nenhuma. Entra a frase acima, que é verdadeira e suficiente.\n\nRótulos: Quando apertar a tecla, o estado do jogo é __ ? e Mudar o estado do jogo para.\n\nA seção termina no clique morto, sem conserto. O conserto é o próximo passo."
+  },
+  {
+   "key": "fala-antes-da-cena",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Antes de consertar, vamos olhar esse clique de perto num lugar onde dá pra trocar uma peça de caixa e ver na hora o que muda."
+   }
+  },
+  {
+   "key": "experiencia-convite",
+   "content": {
+    "kind": "interactive",
+    "title": "O convite para começar",
+    "instructions": "A tela de início promete dois jeitos de começar: tocar na tela ou apertar Enter. Teste os dois, voltando ao início.",
+    "hints": [
+     "Toque na tela de início e olhe se ela muda.",
+     "Olhe em que caixa está a peça Começar.",
+     "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início."
+    ],
+    "required": true,
+    "activity": {
+     "type": "experimentation",
+     "scene": "controls",
+     "cenario": "corre-dino"
+    },
+    "prediction": {
+     "context": {
+      "label": "O convite da tela de início",
+      "explanation": "Nesta experiência, vamos trocar a peça Começar de caixa e ver quais jeitos de começar continuam funcionando."
+     },
+     "prompt": "O jogo já começa com o Enter. Se você levar o Começar para o bloco que escuta qualquer tecla ou o toque, o Enter para de funcionar?",
+     "choices": [
+      {
+       "id": "troca",
+       "label": "Sim, ele troca um jeito pelo outro",
+       "shows": "O Enter continuou começando a partida depois da troca."
+      },
+      {
+       "id": "os-dois",
+       "label": "Não, os dois passam a funcionar"
+      }
+     ],
+     "correctChoiceId": "os-dois",
+     "revealOn": "start-key"
+    }
+   }
+  },
+  {
+   "key": "fala-aula-4",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Isso aqui não é o mesmo problema da Aula 4. Lá a gente estava escutando o seu dedo quando devia escutar o dino: o bloco era o errado pro trabalho. Hoje escutar o jogador é o certo mesmo, porque quem começa o jogo é ele. O problema é que a gente escolheu uma tecla só. Não é o bloco errado, é o bloco estreito demais."
+   }
+  },
+  {
+   "key": "video-entrada-ampla",
+   "plannedVideo": "Título: Um convite que vale para os dois jeitos\n\nO conserto inteiro em um movimento só.\n\n1. Na mesma subcategoria Teclado, ações e toque, pegar o Quando apertar qualquer tecla ou tocar na tela, que não tem campo nenhum, e soltar dentro da área Quando acontecer.\n\n2. Arrastar o Se o estado do jogo é inicio, com o Mudar o estado do jogo para junto, de dentro do evento do Enter para dentro do evento novo.\n\n3. Apagar o evento do Enter, que ficou vazio: botão direito, Apagar este bloco. Dizer que o bloco está vazio, então o aviso é o de sempre.\n\n4. Testar de tudo, recarregando entre um teste e outro: clique no meio da tela, Enter, barra de espaço, uma letra qualquer.\n\n5. Voltar no Mostrar tela e trocar o texto da pecinha da dica por: Aperte qualquer tecla ou toque na tela para começar.\n\nDuração alvo: 60 a 75 segundos.\n\nOrigem: recorta a segunda metade da Parte 2 do roteiro da v6. A tela é regravada.\n\nA troca da dica é parte do conserto, não um apêndice. Gravar os dois na mesma tomada."
+  },
+  {
+   "key": "fala-promessa",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "O que está escrito na tela é uma promessa que você faz pra quem joga. Se a tela diz Enter e o jogo aceita qualquer coisa, a promessa está menor do que o jogo. E se fosse ao contrário seria pior: quem está no celular procuraria um Enter que não existe e desistiria. Toda vez que você mudar o que o seu jogo faz, olha se tem algum texto na tela falando dele."
+   }
+  },
+  {
+   "key": "quiz-final",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Quando o senão se é consultado?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Quando a pergunta de cima deu não."
+       },
+       {
+        "id": "b",
+        "label": "Mesmo depois de a pergunta de cima dar sim."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Os andares do Se escolhem um caminho por vez."
+     },
+     {
+      "id": "q2",
+      "prompt": "Trocar o controle exige revisar o quê na tela?",
+      "choices": [
+       {
+        "id": "b",
+        "label": "O tamanho do dino."
+       },
+       {
+        "id": "a",
+        "label": "A dica que ensina a começar."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O que está escrito precisa combinar com o que o jogo aceita."
+     },
+     {
+      "id": "q3",
+      "prompt": "Por que manter Se o estado do jogo é inicio dentro do evento?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Para começar só quando o jogo está no menu."
+       },
+       {
+        "id": "b",
+        "label": "Para tocar o som a cada quadro."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O mesmo evento vai ganhar outra resposta no fim da partida."
+     }
+    ]
+   }
+  },
+  {
+   "key": "fala-proxima-aula",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Na próxima aula o dino para de atravessar o cacto."
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "abertura",
+   "title": "Hoje o jogo abre com o nome que você deu",
+   "intent": "presentation",
+   "objective": "Ver a tela de início do fim do dia antes de montar a primeira peça.",
+   "blockKeys": [
+    "video-abertura"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-abertura"
+    ]
+   }
+  },
+  {
+   "key": "menu",
+   "title": "O estado inicio ganha uma tela",
+   "intent": "application",
+   "objective": "Abrir o andar novo do Se, escrever os três textos e ver a tela de início aparecer.",
+   "blockKeys": [
+    "fala-andar-novo",
+    "video-menu",
+    "fala-menu-pronto"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "menu",
+      "label": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica combinada.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "COND": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "jogando"
+         }
+        },
+        "ELSEIF_COND0": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "inicio"
+         }
+        },
+        "ELSEIF_THEN0": {
+         "blockType": "sz_g2d_show_screen",
+         "inputs": {
+          "HINT": "Aperte Enter para começar"
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "enter",
+   "title": "Faça o Enter começar a partida",
+   "intent": "application",
+   "objective": "Fazer o Enter começar o jogo e descobrir, no próprio jogo, que o clique não faz nada.",
+   "blockKeys": [
+    "fala-evento-enter",
+    "video-enter"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "enter-inicia",
+      "label": "No evento do Enter, mude para jogando somente se o estado do jogo for inicio.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_on_key",
+       "area": "events",
+       "fields": {
+        "KEY": "Enter"
+       },
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "inicio"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_g2d_set_scene",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "convite",
+   "title": "O convite para começar",
+   "intent": "exploration",
+   "objective": "Isolar a variável: uma peça muda de caixa, e o convite passa a valer para os dois jeitos de começar.",
+   "blockKeys": [
+    "fala-antes-da-cena",
+    "experiencia-convite"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experiencia-convite"
+    ]
+   }
+  },
+  {
+   "key": "entrada-ampla",
+   "title": "Faça o jogo aceitar tecla e toque",
+   "intent": "application",
+   "objective": "Trocar o evento estreito pelo amplo, apagar o que sobrou e reescrever a dica para combinar com o jogo.",
+   "blockKeys": [
+    "fala-aula-4",
+    "video-entrada-ampla",
+    "fala-promessa"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [],
+    "projectChecks": [
+     {
+      "id": "entrada-menu",
+      "label": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_on_any_input",
+       "area": "events",
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "inicio"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_g2d_set_scene",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "sem-enter",
+      "label": "Apague o evento que escutava só o Enter.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_on_key",
+       "count": 0
+      }
+     },
+     {
+      "id": "menu",
+      "label": "A dica da tela de início passa a descrever os dois jeitos de começar.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "COND": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "jogando"
+         }
+        },
+        "ELSEIF_COND0": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "inicio"
+         }
+        },
+        "ELSEIF_THEN0": {
+         "blockType": "sz_g2d_show_screen",
+         "inputs": {
+          "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "entrega",
+   "title": "Teste, envie e fecha",
+   "intent": "delivery",
+   "objective": "Começar pelos dois caminhos, conferir que a dica combina com o jogo e enviar o projeto.",
+   "blockKeys": [
+    "video-teste-e-envio",
+    "fala-proxima-aula",
+    "quiz-final",
+    "projeto"
+   ],
+   "workspaceKey": "projeto",
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-teste-e-envio",
+     "projeto",
+     "quiz-final"
+    ],
+    "projectChecks": [
+     {
+      "id": "cena-inicial",
+      "label": "No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_set_scene",
+       "area": "start",
+       "fields": {
+        "SCENE": "inicio"
+       }
+      }
+     },
+     {
+      "id": "menu",
+      "label": "No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_js_if_else",
+       "area": "loops",
+       "withinBlock": "sz_g2d_update_each_frame",
+       "inputBlocks": {
+        "COND": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "jogando"
+         }
+        },
+        "ELSEIF_COND0": {
+         "blockType": "sz_g2d_scene_is",
+         "fields": {
+          "SCENE": "inicio"
+         }
+        },
+        "ELSEIF_THEN0": {
+         "blockType": "sz_g2d_show_screen",
+         "inputs": {
+          "HINT": "Aperte qualquer tecla ou toque na tela para começar"
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "entrada-menu",
+      "label": "Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_on_any_input",
+       "area": "events",
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "inicio"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_g2d_set_scene",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "sem-enter",
+      "label": "Apague o evento que escutava só o Enter.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_on_key",
+       "count": 0
+      }
+     },
+     {
+      "id": "proteger-relogio",
+      "label": "No A cada 1,4 segundos, o No grupo criar obstáculo continua dentro de um Se o estado do jogo é jogando.",
+      "rule": {
+       "type": "usesBlock",
+       "blockType": "sz_g2d_every_seconds",
+       "area": "loops",
+       "inputs": {
+        "SECS": 1.4
+       },
+       "inputBlocks": {
+        "BODY": {
+         "blockType": "sz_js_if_else",
+         "inputBlocks": {
+          "COND": {
+           "blockType": "sz_g2d_scene_is",
+           "fields": {
+            "SCENE": "jogando"
+           }
+          },
+          "THEN": {
+           "blockType": "sz_g2d_spawn_obstacle",
+           "fields": {
+            "GROUP": "cactos"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

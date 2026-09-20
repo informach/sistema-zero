@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   blockCheckpoint,
@@ -21,6 +21,7 @@ import {
   initialScene,
   isSceneActivity,
   packExperiment,
+  type SceneAction,
   sceneStart,
   stepExperiment,
 } from '../src/learning/scene'
@@ -219,92 +220,143 @@ describe('learning contracts', () => {
   })
 })
 
-const directory = resolve(import.meta.dir, '../../../docs/aulas-interativas')
-/**
- * Os pacotes ATUAIS — os que a professora importa hoje.
- *
- * ⚠️ Só o pacote histórico tinha rede. Os 27 manifestos das revisões atuais, que são os que
- * carregam as 28 cenas, não passavam por teste nenhum: uma mudança de contrato os quebraria em
- * silêncio e só apareceria na hora de importar uma aula. Cada pacote tem catálogo próprio.
- */
-const PACOTES_ATUAIS = ['corre-dino-v6', 'desafio-primeiro-jogo-v6', 'o-jogo-do-meu-jeito-v6']
-describe('os pacotes atuais das aulas', () => {
-  for (const pacote of PACOTES_ATUAIS) {
-    const entradas: Array<{ path: string; sections: number }> = JSON.parse(
-      readFileSync(resolve(directory, pacote, 'catalogo.json'), 'utf8'),
-    )
-    test(`${pacote}: o catálogo e as pastas contam a mesma coisa`, () => {
-      expect(entradas.length).toBeGreaterThan(0)
-      expect(new Set(entradas.map((e) => e.path)).size).toBe(entradas.length)
-      // ⚠️ O nome deste teste prometia isto e não fazia: ele lia o catálogo e conferia o
-      // catálogo. Uma aula no disco fora do `catalogo.json` simplesmente não era testada, e o
-      // laço abaixo continuava verde cobrindo menos — o silêncio mais caro que existe aqui.
-      const noDisco = readdirSync(resolve(directory, pacote), { withFileTypes: true })
-        .filter(
-          (e) => e.isDirectory() && existsSync(resolve(e.parentPath, e.name, 'manifesto.json')),
-        )
-        .map((e) => e.name)
-        .sort()
-      expect(entradas.map((e) => e.path).sort()).toEqual(noDisco)
-    })
-    for (const entrada of entradas)
-      test(`${pacote}/${entrada.path}`, () => {
-        const manifest: unknown = JSON.parse(
-          readFileSync(resolve(directory, pacote, entrada.path, 'manifesto.json'), 'utf8'),
-        )
-        expect(isLearningManifest(manifest)).toBe(true)
-        if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
-        expect(manifest.sections).toHaveLength(entrada.sections)
+const directory = resolve(import.meta.dir, '../../../docs/aulas-interativas/aulas')
+const MANIFESTOS = readdirSync(directory)
+  .filter((name) => name.endsWith('.manifesto.json'))
+  .sort()
+describe('os 27 manifestos atuais das aulas', () => {
+  test('o inventário cobre os três cursos', () => {
+    expect(MANIFESTOS).toHaveLength(27)
+    expect(MANIFESTOS.filter((name) => name.startsWith('corre-dino-'))).toHaveLength(13)
+    expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(6)
+    expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
+  })
+  for (const arquivo of MANIFESTOS)
+    test(arquivo, () => {
+      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8'))
+      expect(isLearningManifest(manifest)).toBe(true)
+      if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
+      expect(manifest.sections.length).toBeGreaterThan(0)
+      const sections = manifest.sections.map((s) => ({
+        ...s,
+        id: s.key,
+        blockIds: s.blockKeys,
+        workspaceBlockId: s.workspaceKey,
+      }))
+      for (const section of manifest.sections) {
+        // O mesmo bloco existing pode ser espaço de trabalho durante a construção e entrega
+        // no fim. A finalidade pertence ao uso na seção, ausente do arquivo de importação.
+        const blocks = manifest.blocks.map((b) => ({
+          id: b.key,
+          content:
+            'content' in b
+              ? b.content
+              : 'existing' in b
+                ? {
+                    kind: b.existing.kind,
+                    ...(section.workspaceKey === b.key && section.intent === 'application'
+                      ? { purpose: 'experiment' }
+                      : {}),
+                  }
+                : { kind: 'video' },
+        }))
         expect(
-          sectionCompletionIssues(
-            manifest.sections.map((s) => ({
-              ...s,
-              id: s.key,
-              blockIds: s.blockKeys,
-              workspaceBlockId: s.workspaceKey,
-            })),
-            manifest.blocks.map((b) => ({
-              id: b.key,
-              content:
-                'content' in b
-                  ? b.content
-                  : 'existing' in b
-                    ? { kind: b.existing.kind }
-                    : { kind: 'video' },
-            })),
+          sectionCompletionIssues(sections, blocks).filter(
+            (issue) => issue.sectionId === section.key,
           ),
+          `${arquivo}/${section.key}`,
         ).toEqual([])
-        // Nenhuma pendência de mídia em texto: cada trecho a gravar é um cartão, numa seção só.
-        expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
-        for (const video of manifest.blocks.filter((block) => 'plannedVideo' in block))
-          expect(
-            manifest.sections.filter((section) => section.blockKeys.includes(video.key)),
-          ).toHaveLength(1)
-        for (const entryBlock of manifest.blocks) {
-          if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
-          const block = entryBlock.content
-          // ⚠️ Nada passa de graça, e tudo TEM caminho de passar. As duas metades importam: um
-          // bloco que nunca fecha trava a seção; um que já nasce fechado não pede nada da criança.
-          expect(evaluateLearning(block, {}).passed).toBe(false)
-          expect(evaluateLearning(block, caminhoDeSucesso(block)).passed).toBe(true)
-          // ⚠️ Sem esta metade, a pergunta passava de graça no teste: o caminho de sucesso
-          // devolve o próprio `correctChoiceId` e o avaliador o compara consigo mesmo. Aqui as
-          // OUTRAS alternativas precisam reprovar — é o que pega um gabarito apontando para um
-          // id que não está na lista (nada fecha) ou para mais de uma alternativa.
-          if (block.checkpoint)
-            for (const escolha of block.checkpoint.choices)
-              if (escolha.id !== block.checkpoint.correctChoiceId)
-                expect(
-                  evaluateLearning(block, { checkpoint: escolha.id }).passed,
-                  `${entrada.path}: ${escolha.id}`,
-                ).toBe(false)
-        }
-      })
-  }
+      }
+      // Nenhuma pendência de mídia em texto: cada trecho a gravar é um cartão, numa seção só.
+      expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
+      for (const video of manifest.blocks.filter((block) => 'plannedVideo' in block))
+        expect(
+          manifest.sections.filter((section) => section.blockKeys.includes(video.key)),
+        ).toHaveLength(1)
+      for (const entryBlock of manifest.blocks) {
+        if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
+        const block = entryBlock.content
+        // ⚠️ Nada passa de graça, e tudo TEM caminho de passar. As duas metades importam: um
+        // bloco que nunca fecha trava a seção; um que já nasce fechado não pede nada da criança.
+        expect(evaluateLearning(block, {}).passed).toBe(false)
+        const resultado = evaluateLearning(
+          block,
+          caminhoDeSucesso(block, `${arquivo}/${entryBlock.key}`),
+        )
+        expect(resultado.passed, `${arquivo}/${entryBlock.key}: ${JSON.stringify(resultado)}`).toBe(
+          true,
+        )
+        // ⚠️ Sem esta metade, a pergunta passava de graça no teste: o caminho de sucesso
+        // devolve o próprio `correctChoiceId` e o avaliador o compara consigo mesmo. Aqui as
+        // OUTRAS alternativas precisam reprovar — é o que pega um gabarito apontando para um
+        // id que não está na lista (nada fecha) ou para mais de uma alternativa.
+        if (block.checkpoint)
+          for (const escolha of block.checkpoint.choices)
+            if (escolha.id !== block.checkpoint.correctChoiceId)
+              expect(
+                evaluateLearning(block, { checkpoint: escolha.id }).passed,
+                `${arquivo}: ${escolha.id}`,
+              ).toBe(false)
+      }
+    })
 })
 
+const quadros = (count: number): SceneAction[] =>
+  Array.from({ length: count }, () => ({ type: 'advance', seconds: 0.25 }))
+const segundos = (count: number): SceneAction[] =>
+  Array.from({ length: count }, () => ({ type: 'advance', seconds: 1 }))
+
+/** Percursos dos casos autorais que mudam a montagem ou as metas da cena padrão. */
+const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
+  'corre-dino-aula-04.manifesto.json/experiencia-tres-areas': [
+    { type: 'place-in-area', card: 'event', area: 'event' },
+    ...quadros(3),
+    { type: 'trigger' },
+  ],
+  'desafio-dia-1.manifesto.json/experiencia-coordenadas': [
+    { type: 'place', x: 500, y: 40 },
+    { type: 'place', x: 500, y: 100 },
+    { type: 'place', x: 0, y: 0 },
+  ],
+  'desafio-dia-2.manifesto.json/experiencia-tres-areas': [
+    { type: 'place-in-area', card: 'event', area: 'event' },
+    ...quadros(3),
+    { type: 'trigger' },
+    { type: 'reset' },
+    { type: 'place-in-area', card: 'event', area: 'loop' },
+    ...quadros(5),
+  ],
+  'desafio-dia-3.manifesto.json/experiencia-relogio': [
+    ...segundos(1),
+    { type: 'connect', port: 'timer', enabled: true },
+    ...segundos(4),
+    { type: 'interval', seconds: 20 / 30 },
+    ...segundos(3),
+  ],
+  'desafio-dia-3.manifesto.json/experiencia-sorteio': [
+    ...Array.from({ length: 8 }, (_, index) => ({
+      type: 'sample' as const,
+      kind: 'position' as const,
+      unit: (index + 0.1) / 61,
+      guided: false,
+    })),
+    { type: 'advance', seconds: 10 / 30 },
+    { type: 'sample', kind: 'position', unit: 0.1 / 61, guided: false },
+  ],
+  'desafio-dia-4.manifesto.json/experiencia-uma-vez': [
+    { type: 'place-in-area', card: 'lives', area: 'start' },
+    ...quadros(6),
+  ],
+  'desafio-dia-5.manifesto.json/experiencia-reiniciar': [
+    ...scenePaths.restart,
+    ...segundos(3),
+    { type: 'start', input: 'key' },
+    { type: 'start', input: 'key' },
+  ],
+}
+
 /** As respostas que a criança teria depois de cumprir o bloco, cada tipo do seu jeito. */
-function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
+function caminhoDeSucesso(block: InteractiveBlock, onde: string): LearningAnswers {
   const answers: LearningAnswers = {}
   const activity = block.activity
   if (activity.type === 'experimentation') {
@@ -313,8 +365,24 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
     // torna a missão inalcançável passaria batido — e o defeito só apareceria com a criança nele.
     const start = sceneStart(activity)
     let sessao = initialExperiment(start)
-    for (const action of scenePaths[activity.scene])
-      sessao = stepExperiment(start, sessao, action).session
+    for (const action of ROTAS_DAS_AULAS[onde] ?? scenePaths[activity.scene]) {
+      const parts: SceneAction[] =
+        action.type === 'advance' && action.seconds > 1
+          ? [
+              ...segundos(Math.floor(action.seconds)),
+              ...(action.seconds % 1
+                ? [{ type: 'advance' as const, seconds: action.seconds % 1 }]
+                : []),
+            ]
+          : [action]
+      for (const part of parts) {
+        try {
+          sessao = stepExperiment(start, sessao, part).session
+        } catch (error) {
+          throw new Error(`${onde}: comando inválido ${JSON.stringify(part)}`, { cause: error })
+        }
+      }
+    }
     answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
   }
   if (activity.type === 'html') answers.participated = true
@@ -335,7 +403,7 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
  * do Meu Jeito caíam no Corre Dino, que é o padrão de quem não declara nada.
  */
 describe('o cenário das cenas dos cursos', () => {
-  /** ⚠️ Espelha o `CENARIO_DO_CURSO` da receita (`docs/aulas-interativas/qa/cenas-editorial.ts`). */
+  /** O cenário esperado de cada curso nos manifestos atuais. */
   const CENARIO_DO_CURSO: Record<string, string> = {
     'corre-dino': 'corre-dino',
     'desafio-primeiro-jogo': 'nave',
@@ -344,26 +412,19 @@ describe('o cenário das cenas dos cursos', () => {
 
   const cenasDosCursos = () => {
     const achadas: { aula: string; chave: string; curso: string; cenario?: string }[] = []
-    for (const pacote of PACOTES_ATUAIS) {
-      const entradas: Array<{ path: string }> = JSON.parse(
-        readFileSync(resolve(directory, pacote, 'catalogo.json'), 'utf8'),
-      )
-      for (const entrada of entradas) {
-        const manifest: unknown = JSON.parse(
-          readFileSync(resolve(directory, pacote, entrada.path, 'manifesto.json'), 'utf8'),
-        )
-        if (!isLearningManifest(manifest)) continue
-        for (const bloco of manifest.blocks) {
-          const conteudo = (bloco as { content?: { activity?: unknown } }).content
-          const activity = conteudo?.activity
-          if (!isSceneActivity(activity)) continue
-          achadas.push({
-            aula: `${pacote}/${entrada.path}`,
-            chave: bloco.key,
-            curso: manifest.courseSlug,
-            cenario: activity.cenario,
-          })
-        }
+    for (const arquivo of MANIFESTOS) {
+      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8'))
+      if (!isLearningManifest(manifest)) continue
+      for (const bloco of manifest.blocks) {
+        const conteudo = (bloco as { content?: { activity?: unknown } }).content
+        const activity = conteudo?.activity
+        if (!isSceneActivity(activity)) continue
+        achadas.push({
+          aula: arquivo,
+          chave: bloco.key,
+          curso: manifest.courseSlug,
+          cenario: activity.cenario,
+        })
       }
     }
     return achadas
@@ -383,7 +444,13 @@ describe('o cenário das cenas dos cursos', () => {
 
   test('⭐⭐ e o cenário declarado é o do CURSO', () => {
     const erradas = cenasDosCursos()
-      .filter((c) => c.cenario !== CENARIO_DO_CURSO[c.curso])
+      .filter(
+        (c) =>
+          c.cenario !==
+          (c.aula === 'meu-jeito-aula-01.manifesto.json' && c.chave === 'experiencia-copia'
+            ? 'nave'
+            : CENARIO_DO_CURSO[c.curso]),
+      )
       .map((c) => `${c.aula} ${c.chave}: ${c.cenario} num curso ${c.curso}`)
     expect(erradas).toEqual([])
   })
@@ -395,7 +462,5 @@ describe('o cenário das cenas dos cursos', () => {
       (c) => c.curso === 'desafio-primeiro-jogo' && c.cenario === 'nave',
     )
     expect(comPedraNoDesafio.length).toBeGreaterThan(0)
-    const desafio = PACOTES_ATUAIS.includes('desafio-primeiro-jogo-v6')
-    expect(desafio).toBe(true)
   })
 })

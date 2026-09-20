@@ -1,0 +1,398 @@
+{
+ "version": 4,
+ "courseSlug": "o-jogo-do-meu-jeito",
+ "lessonSlug": "aula-08",
+ "title": "O seu jogo no Mural",
+ "retireBlockKeys": [
+  "video-abertura-v6",
+  "conferir-publicar",
+  "video-versoes",
+  "video-ideias",
+  "video-clube"
+ ],
+ "blocks": [
+  {
+   "key": "video-abertura",
+   "plannedVideo": "Título: O seu jogo do lado dos outros\n\nOrigem: video-abertura-v6, com fala nova e tela regravada. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o Mural dos Criadores, com o cartão do jogo da nave no meio dos outros, e o jogo abrindo pelo cartão e sendo jogado.\n\nFala: \"O seu jogo está pronto. Hoje ele sai do seu computador e vai para o **Mural dos Criadores**, onde qualquer pessoa da Comunidade pode abrir e jogar. Essa é a primeira coisa que a gente faz. Depois eu te mostro onde procurar a próxima ideia, para quando você quiser criar de novo. Você não precisa fazer outro jogo para terminar este curso.\"\n\nCortes obrigatórios: sai a contagem antiga de quatro passos. Não prometer selo, prêmio, ranking, desbloqueio nem liberação de bloco.\n\nPonto a conferir antes de gravar: o Mural da conta de gravação precisa ter outros cartões em volta, para o cartão dela aparecer no meio de uma prateleira, e não sozinho."
+  },
+  {
+   "key": "fala-desafio-do-mes",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Mais embaixo tem um quadradinho com um troféu, e nele está escrito **Participar do Desafio do mês**, com dois pontos e o nome do tema logo em seguida. Esse tema também fica no **Início** da Comunidade, no cartão do troféu. Quem faz um jogo com aquele tema marca esse quadradinho na hora de compartilhar, e o jogo dele entra numa prateleira só dos participantes, no topo do **Mural dos Criadores**."
+   }
+  },
+  {
+   "key": "fala-desafio-em-branco",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "O seu jogo de hoje é o da nave, e ele não foi feito para o tema deste mês, então deixe o quadradinho em branco. Ele aparece nessa janela sempre que tiver um tema valendo, e é assim que você entra num desafio quando quiser."
+   }
+  },
+  {
+   "key": "video-publicar",
+   "plannedVideo": "Título: Do seu computador para a prateleira da turma\n\nOrigem: video-publicar do v6, com a explicação longa do Desafio do mês cortada. Duração alvo: 125 a 145 segundos.\n\nComeço, executado na tela: abrir o Estúdio pelo **Abrir meu Estúdio** desta seção, que abre a ferramenta em outra aba, clicar no cartão do jogo com as artes dela e jogar uma partida antes de qualquer coisa, para conferir que está tudo como ela quer.\n\nO que passa na tela: o caminho inteiro. O **Compartilhar** na barra de cima, a janela **Compartilhar no Mural dos Criadores**, o **Título**, o **Resumo do projeto**, o **Gerar capa**, o aviso de baixo lido em voz alta com o texto que está lá, o **Publicar**, o **Publicado! 🎉** com os três botões, o **Ver no Mural** abrindo o Mural em outra aba, o cartão dela aparecendo e o jogo abrindo pelo cartão.\n\nDuas coisas a mostrar com o dedo na tela: o **Compartilhar** fica solto na barra de cima, do lado de fora do botão de três pontinhos, e a janela que abre é uma tela só, sem próximo passo nenhum.\n\nO que vai em cada campo, preenchido na tela e dito enquanto preenche:\n\n- **Título.** O nome que os outros criadores vão ver.\n- **Resumo do projeto.** Duas ou três linhas sobre o que o jogo faz e o que ela mudou nele. Mostrar o **Gerar resumo com a IA**, o botão que ajuda a montar o texto, para o dia em que ela travar na escrita.\n- **Capa do projeto.** O **Gerar capa**, que tira uma foto do jogo do jeito que ele está naquela hora, e o **Enviar uma imagem**, para quem já tiver uma pronta.\n\nO aviso é lido com as palavras da tela: a versão publicada fica salva no Mural do jeito que está agora, e mudar o projeto depois não muda a do Mural.\n\n⚠️ **Como se chega ao Mural, e por que não é pelo menu.** Dentro do Estúdio a barra esquerda começa recolhida, então a fala não pode mandar clicar no Mural pelo menu da esquerda. O caminho é o botão que a própria tela dá: depois de publicar, os três botões do **Publicado! 🎉** são **Ver no Mural**, **Abrir o jogo** e **Copiar link**. A fala manda clicar no **Ver no Mural**, diz que ele abre o Mural dos Criadores em outra aba, e acrescenta uma frase só sobre a janela que ficou para trás: quando voltar para a aba do Estúdio, fechar a janela de compartilhar no **Fechar** do rodapé.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o cartão no Mural está com o título, a capa e o resumo que ela escreveu. O jogo abre pelo cartão e roda com as duas artes dela. E a partida publicada responde às setas, ao tiro e ao reinício.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCortar a explicação longa do Desafio do mês, que agora está dita em duas falas curtas, e deixar o quadradinho desmarcado nesta publicação guiada.\n\nNão prometer selo, prêmio, ranking nem liberação.\n\nRótulos travados, medidos em `studio/src/core/i18n/pt-BR.ts` e `layout/ShareDialog.tsx` em 20/09/2026: botão da barra **Compartilhar**; janela **Compartilhar no Mural dos Criadores**, em tela única desde o redesenho de 06/2026; campos **Título**, **Resumo do projeto** (com **Gerar resumo com a IA**) e **Capa do projeto** (com **Gerar capa** e **Enviar uma imagem**); botões **Cancelar** e **Publicar**; sucesso **Publicado! 🎉** com **Ver no Mural**, **Abrir o jogo** e **Copiar link**, mais o **Fechar** do rodapé. A palavra congelada não existe nessa tela, e o material usou ela por um tempo mandando procurar algo que não está lá.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No Mural, o cartão mostra o título e a capa que você escolheu e abre uma partida com suas duas artes, tiro e reinício?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+  },
+  {
+   "key": "fala-jogue-no-mural",
+   "content": {
+    "kind": "dialogue",
+    "pose": "celebrating",
+    "text": "Jogue a versão que está no Mural. Mova com as setas, atire, deixe uma pedra bater, e comece de novo. É o seu jogo, com as suas artes, rodando fora do seu projeto."
+   }
+  },
+  {
+   "key": "fala-duas-copias",
+   "content": {
+    "kind": "dialogue",
+    "pose": "thinking",
+    "text": "Você leu um aviso antes de publicar, e ele falava de duas cópias. Agora que o seu jogo está lá, vale entender direito o que são essas duas, porque você vai continuar mexendo no seu projeto."
+   }
+  },
+  {
+   "key": "experimento-copia-publicada",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A cópia que foi para o Mural",
+    "instructions": "Aperte Publicar e olhe as duas telas. Depois troque a cor da nave no seu projeto e compare de novo. No fim, com a cor trocada, aperte Publicar de novo e olhe os dois cartões do Mural.",
+    "hints": [],
+    "prediction": {
+     "context": {
+      "label": "As duas telas do palco",
+      "explanation": "Nesta experiência, a tela da esquerda é o seu projeto, onde você mexe, e a da direita é a versão que está no Mural. Você aperta Publicar, troca a cor da nave e olha as duas."
+     },
+     "prompt": "Depois de publicar, você troca a cor da nave no seu projeto. O que acontece com a do Mural?",
+     "choices": [
+      {
+       "id": "continua-como-estava",
+       "label": "Ela continua com a cor de antes"
+      },
+      {
+       "id": "troca-junto",
+       "label": "Ela troca de cor junto",
+       "shows": "A do Mural é uma cópia. Ela ficou do jeito que estava na hora em que você publicou."
+      }
+     ],
+     "correctChoiceId": "continua-como-estava",
+     "revealOn": "only-project"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "published-copy",
+     "cast": {
+      "hero": {
+       "name": "nave",
+       "gender": "f"
+      }
+     },
+     "cenario": "meu-jeito",
+     "setup": {
+      "goals": [
+       "first-publish",
+       "only-project",
+       "republish"
+      ]
+     }
+    },
+    "checkpoint": {
+     "prompt": "Uma semana depois de publicar, você melhora o seu jogo. Como o Mural passa a mostrar a versão nova?",
+     "choices": [
+      {
+       "id": "publicar-de-novo",
+       "label": "Publicando de novo"
+      },
+      {
+       "id": "sozinho",
+       "label": "Sozinho, assim que você salva"
+      }
+     ],
+     "correctChoiceId": "publicar-de-novo",
+     "explanation": "Publicar tira uma cópia do jogo do jeito que ele está naquela hora. O seu projeto continua seu para mexer, e cada vez que você publica entra uma publicação nova no Mural, com a versão daquele momento. A de antes continua lá, do jeito que ela foi."
+    }
+   }
+  },
+  {
+   "key": "experimento-tema-e-regra",
+   "content": {
+    "kind": "interactive",
+    "required": true,
+    "title": "As mesmas regras, outra história",
+    "instructions": "Troque o tema e olhe a lista de regras do lado. Depois desligue a regra de atirar e jogue um pouco.",
+    "hints": [],
+    "prediction": {
+     "context": {
+      "label": "O tema e a lista de regras",
+      "explanation": "Nesta experiência, o mesmo jogo aparece com três conjuntos de desenhos, e do lado fica a lista das regras dele. Você troca o tema, liga e desliga uma regra, e joga."
+     },
+     "prompt": "Trocando a nave por um carrinho, o que muda no jogo?",
+     "choices": [
+      {
+       "id": "so-o-desenho",
+       "label": "O desenho, e as regras continuam"
+      },
+      {
+       "id": "as-regras-tambem",
+       "label": "As regras também, porque é outro jogo",
+       "shows": "Nenhuma regra apagou. O que mudou foram os desenhos."
+      }
+     ],
+     "correctChoiceId": "so-o-desenho",
+     "revealOn": "skin-only"
+    },
+    "activity": {
+     "type": "experimentation",
+     "scene": "same-rules-new-skin",
+     "cenario": "meu-jeito",
+     "setup": {
+      "goals": [
+       "skin-only",
+       "three-skins",
+       "rule-off"
+      ]
+     }
+    },
+    "checkpoint": {
+     "prompt": "Um criador trocou a nave por um carrinho e tirou o tiro. O que ele mudou?",
+     "choices": [
+      {
+       "id": "tema-e-mecanica",
+       "label": "O tema e também a mecânica, porque uma regra saiu"
+      },
+      {
+       "id": "so-o-tema",
+       "label": "Só o tema, porque ele só trocou desenho"
+      }
+     ],
+     "correctChoiceId": "tema-e-mecanica",
+     "explanation": "Trocar desenho muda o tema. Tirar, pôr ou mudar uma regra muda a mecânica. Dá para fazer uma sem a outra, e dá para fazer as duas."
+    }
+   }
+  },
+  {
+   "key": "fala-mesma-mecanica",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Isso tem nome: **mesma mecânica, outro tema**. Mecânica é o que o jogo faz, as regras dele. Tema é a história que você conta por cima."
+   }
+  },
+  {
+   "key": "fala-rotina-das-versoes",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "E daí sai uma rotina que eu quero te deixar. Cada curso que você fizer aqui vai te ensinar coisas novas. Quando terminar um, faça duas versões. Uma é o mesmo jogo do curso com os seus desenhos no lugar dos que vieram prontos, que é o que você acabou de fazer neste."
+   }
+  },
+  {
+   "key": "fala-duas-versoes",
+   "content": {
+    "kind": "dialogue",
+    "pose": "happy",
+    "text": "A outra é a mesma mecânica com outro tema: as mesmas regras, com outros desenhos e outra história por cima. Duas versões depois de cada curso. É pouca coisa, e faz diferença: quem faz fica bom."
+   }
+  },
+  {
+   "key": "video-ideias-e-clube",
+   "plannedVideo": "Título: Onde procurar quando você travar\n\nOrigem: funde o video-ideias com o video-clube, os dois do v6, com três correções de fala. Duração alvo: 90 a 105 segundos.\n\nO que passa na tela: quatro lugares, com o professor demonstrando numa conta de demonstração, sem pedir clique nenhum de quem assiste.\n\n⚠️ **Este é o único clipe do curso em que a navegação passa pelo menu**, porque nenhum dos quatro destinos tem botão na seção. A gravação abre clicando em **Mostrar menu**, uma vez só, no primeiro quadro, e daí em diante a barra esquerda fica aberta e os caminhos saem completos, com os dois degraus. A narração não repete o **Mostrar menu** a cada destino, e não entra em condicional: ela mostra o caminho que está na tela.\n\n1. O **tema do mês**, no **Início** da Comunidade, no cartão com o troféu. A narração nunca diz qual é o tema, porque ele muda todo mês e o vídeo fica no ar: ela mostra onde ver.\n2. O **Meu jogo novo**, aquele projeto vazio criado na Aula 1 e guardado esse tempo todo, já com a extensão Jogo 2D instalada. Chega-se nele por **Criar › Estúdio**. É o lugar de começar do zero quando o tema é outro. Mostrar a tela vazia, a coluna da esquerda cheia de bloquinhos e o `Criar sprite ... com imagem`, que ela já sabe montar. Sem passeio de tela.\n3. O **Mural dos Criadores**, em **Comunidade › Mural dos Criadores**, e no cartão de um jogo que ela gostou, o **Fazer a minha versão**, que cria um projeto novo na lista dela com o nome começando em `Remix de`, com os blocos e tudo. Corrigir a afirmação de que outro tema quase sempre exige começar do zero: às vezes cabe adaptar as mesmas regras, e ela acabou de ver isso na experiência.\n4. O **Clube dos Criadores**, em **Comunidade › Clube dos Criadores**, com a fórmula de três partes numa tela preparada: o que você queria, o que você tentou e o que aconteceu. O exemplo: \"queria que o fogo pulsasse, dupliquei o quadro, mas os dois desenhos ficaram iguais.\"\n\nCortes obrigatórios: tirar a obrigação de postar, a promessa de resposta pessoal e a frase absoluta sobre ninguém aprender sozinho.\n\nUsar exemplos preparados para a gravação, sem expor dados de alunos."
+  },
+  {
+   "key": "fala-nada-disso-e-tarefa",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Nada disso é tarefa. É onde procurar no dia em que você quiser criar de novo, e no dia em que você empacar no meio de uma coisa."
+   }
+  },
+  {
+   "key": "fala-cole-o-endereco",
+   "content": {
+    "kind": "dialogue",
+    "pose": "speaking",
+    "text": "Envie o mesmo projeto que você acabou de publicar. E, na mensagem da entrega, cole o endereço da publicação, que você copia no **Copiar link** da janela de compartilhar ou na barra do navegador com o jogo aberto. É por esse endereço que eu abro o seu jogo e jogo ele."
+   }
+  },
+  {
+   "key": "entrega-galeria-v6",
+   "existing": {
+    "kind": "studio",
+    "index": 0
+   }
+  },
+  {
+   "key": "video-fecho-v6",
+   "plannedVideo": "Título: Alguém prepara e alguém usa\n\nOrigem: video-fecho-v6, com fala nova inteira e um trecho de entrega novo na frente. Duração alvo: 80 a 95 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho do curso.\n\nParte 1, conferir junto, com o professor dizendo \"olha comigo se ficou assim\":\n\n- O projeto entregue é o jogo próprio terminado na aula passada, com as duas artes dela.\n- O endereço da publicação está na mensagem da entrega, e ele abre o jogo no Mural.\n- Por esse endereço o professor confere as artes, a partida, as telas e o reinício.\n- Nada de publicação no Clube, participação no tema do mês, remix nem versão extra: nenhuma dessas coisas é exigida para concluir, e ela não precisa criar nem enviar uma segunda versão.\n\nParte 2, o envio executado na tela: enviar o projeto que ela acabou de publicar, pela galeria do Estúdio, e colar o endereço da publicação na mensagem da entrega. Esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: a linha do tempo das oito aulas. A nave em pixel art da Aula 2, o motor da Aula 3, a pedra da Aula 4, o fogo da Aula 5, o jogo mudando de cinza para a arte dela nas Aulas 6 e 7, e o cartão dela no Mural.\n\nFala: \"Olha o que você tem agora. Duas artes desenhadas por você, uma em quadradinhos e uma em formas, as duas animadas, guardadas na sua galeria e prontas para entrar em qualquer jogo que você fizer daqui para a frente. Um jogo com a sua cara, no Mural, que qualquer pessoa da Comunidade abre e joga. E uma coisa que você aprendeu sem eu ter falado o nome dela: em todo lugar tem alguém que prepara e alguém que usa. Trazer o desenho para o projeto não usou ele. Criar o sprite não mostrou o desenho certo. Carregar a folha não animou nada. Publicar não trancou o seu projeto. São sempre duas coisas, e saber qual é qual é metade de fazer um jogo funcionar. Da próxima vez que alguma coisa não aparecer na tela, essa é a primeira pergunta: eu preparei, ou eu usei? Nos vemos no Clube.\"\n\nO recebimento pela galeria é automático, e a conferência do endereço no Mural é do professor.\n\nNão prometer desbloqueio, XP, selo, premiação nem posição em ranking. E não negar o que ninguém pediu: a fala diz o que ela ganha, que é o jogo dela numa prateleira que a turma inteira abre.\n\nNão acrescentar tarefa extra para passar."
+  },
+  {
+   "key": "quiz-v6",
+   "content": {
+    "kind": "quiz",
+    "passingScore": 100,
+    "questions": [
+     {
+      "id": "q1",
+      "prompt": "Você gostou de um jogo do Mural e apertou o Fazer a minha versão. O que acontece?",
+      "choices": [
+       {
+        "id": "a",
+        "label": "Nasce um projeto novo na sua lista, começando em Remix de, para você mexer."
+       },
+       {
+        "id": "b",
+        "label": "Você passa a mexer no jogo da outra pessoa, e ele muda para ela também."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "O Fazer a minha versão tira uma cópia daquele jogo e põe um projeto novo na sua lista. O jogo da outra pessoa fica como estava, do mesmo jeito que a sua publicação fica como estava quando você mexe no seu projeto."
+     },
+     {
+      "id": "q2",
+      "prompt": "Para pedir ajuda sobre uma animação parada, qual mensagem ajuda mais?",
+      "choices": [
+       {
+        "id": "b",
+        "label": "Não ficou bom."
+       },
+       {
+        "id": "a",
+        "label": "Dupliquei o quadro, mas os dois desenhos ficaram iguais e o fogo não pulsa."
+       }
+      ],
+      "correctChoiceIds": [
+       "a"
+      ],
+      "explanation": "Contar o que tentou e o resultado facilita localizar a próxima ação."
+     }
+    ]
+   }
+  }
+ ],
+ "sections": [
+  {
+   "key": "abertura",
+   "title": "O que a gente vai fazer hoje",
+   "intent": "presentation",
+   "objective": "Ver o cartão do próprio jogo no Mural, no meio dos outros, e saber que publicar é a primeira coisa do dia.",
+   "blockKeys": [
+    "video-abertura"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-abertura"
+    ]
+   }
+  },
+  {
+   "key": "publicar",
+   "title": "Ponha o seu jogo no Mural",
+   "intent": "application",
+   "objective": "Publicar o jogo com título, resumo e capa próprios, achar o cartão no Mural e jogar a versão publicada.",
+   "blockKeys": [
+    "video-publicar",
+    "fala-desafio-do-mes",
+    "fala-desafio-em-branco",
+    "fala-jogue-no-mural"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-publicar"
+    ]
+   }
+  },
+  {
+   "key": "copia-do-mural",
+   "title": "A cópia que foi para o Mural",
+   "intent": "exploration",
+   "objective": "Separar o projeto, que continua dela para mexer, da cópia que foi para o Mural, e saber o que fazer quando quiser a versão nova lá.",
+   "blockKeys": [
+    "fala-duas-copias",
+    "experimento-copia-publicada"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experimento-copia-publicada"
+    ]
+   }
+  },
+  {
+   "key": "mesma-mecanica",
+   "title": "As mesmas regras, outra história",
+   "intent": "exploration",
+   "objective": "Separar a mecânica, que são as regras, do tema, que são os desenhos por cima, e sentir no contraexemplo que desligar uma regra muda o jogo de verdade.",
+   "blockKeys": [
+    "experimento-tema-e-regra",
+    "fala-mesma-mecanica",
+    "fala-rotina-das-versoes",
+    "fala-duas-versoes"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "experimento-tema-e-regra"
+    ]
+   }
+  },
+  {
+   "key": "proxima-ideia",
+   "title": "Onde buscar a próxima ideia",
+   "intent": "closing",
+   "objective": "Conhecer os três lugares de procurar ideia e o lugar de pedir ajuda, com a fórmula de três partes, sem que nada disso vire tarefa.",
+   "blockKeys": [
+    "video-ideias-e-clube",
+    "fala-nada-disso-e-tarefa"
+   ],
+   "workspaceKey": null,
+   "externalTool": null,
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-ideias-e-clube"
+    ]
+   }
+  },
+  {
+   "key": "entrega-e-fecho",
+   "title": "Envie, e o que você leva daqui",
+   "intent": "delivery",
+   "objective": "Enviar o projeto publicado com o endereço da publicação na mensagem e fechar o curso pelo par que atravessou as oito aulas, alguém prepara e alguém usa.",
+   "blockKeys": [
+    "fala-cole-o-endereco",
+    "entrega-galeria-v6",
+    "video-fecho-v6",
+    "quiz-v6"
+   ],
+   "workspaceKey": null,
+   "externalTool": "estudio",
+   "pendingMedia": [],
+   "completion": {
+    "version": 1,
+    "blockIds": [
+     "video-fecho-v6",
+     "entrega-galeria-v6",
+     "quiz-v6"
+    ]
+   }
+  }
+ ]
+}

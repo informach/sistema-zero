@@ -29,7 +29,7 @@ function manifest(day: number) {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/desafio-primeiro-jogo-v6/dia-${day}/manifesto.json`,
+        `../../../../../docs/aulas-interativas/aulas/desafio-dia-${day}.manifesto.json`,
       ),
       'utf8',
     ),

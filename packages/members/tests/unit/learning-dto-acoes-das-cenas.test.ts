@@ -46,7 +46,7 @@ function blocoCom(scene: SceneId, actions: SceneAction[]): InteractiveBlock {
   }
 }
 
-/** As ações conhecidas de cada cena: as jornadas, as portas e os manifestos v6. */
+/** As ações conhecidas de cada cena: as jornadas, as portas e os manifestos atuais. */
 function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   const porCena = new Map<SceneId, SceneAction[]>(SCENE_IDS.map((scene) => [scene, []]))
   const somar = (scene: SceneId, acao: unknown) => {
@@ -72,36 +72,28 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     for (const port of SCENE_PORTS)
       for (const enabled of [true, false]) somar(scene, { type: 'connect', port, enabled })
   }
-  const docs = resolve(import.meta.dir, '../../../../docs/aulas-interativas')
-  for (const curso of readdirSync(docs).filter((d) => d.endsWith('-v6'))) {
-    for (const aula of readdirSync(resolve(docs, curso), { withFileTypes: true })) {
-      if (!aula.isDirectory()) continue
-      let texto: string
-      try {
-        texto = readFileSync(resolve(docs, curso, aula.name, 'manifesto.json'), 'utf8')
-      } catch {
-        continue
+  const docs = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
+  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json'))) {
+    const texto = readFileSync(resolve(docs, nome), 'utf8')
+    const visitar = (valor: unknown): void => {
+      if (Array.isArray(valor)) {
+        for (const item of valor) visitar(item)
+        return
       }
-      const visitar = (valor: unknown): void => {
-        if (Array.isArray(valor)) {
-          for (const item of valor) visitar(item)
-          return
-        }
-        if (typeof valor !== 'object' || valor === null) return
-        const registro = valor as Record<string, unknown>
-        const atividade = registro.activity as Record<string, unknown> | undefined
-        if (
-          typeof atividade?.scene === 'string' &&
-          (SCENE_IDS as readonly string[]).includes(atividade.scene)
-        ) {
-          const scene = atividade.scene as SceneId
-          const setup = atividade.setup as { actions?: unknown[] } | undefined
-          for (const acao of setup?.actions ?? []) somar(scene, acao)
-        }
-        for (const filho of Object.values(registro)) visitar(filho)
+      if (typeof valor !== 'object' || valor === null) return
+      const registro = valor as Record<string, unknown>
+      const atividade = registro.activity as Record<string, unknown> | undefined
+      if (
+        typeof atividade?.scene === 'string' &&
+        (SCENE_IDS as readonly string[]).includes(atividade.scene)
+      ) {
+        const scene = atividade.scene as SceneId
+        const setup = atividade.setup as { actions?: unknown[] } | undefined
+        for (const acao of setup?.actions ?? []) somar(scene, acao)
       }
-      visitar(JSON.parse(texto))
+      for (const filho of Object.values(registro)) visitar(filho)
     }
+    visitar(JSON.parse(texto))
   }
   return porCena
 }

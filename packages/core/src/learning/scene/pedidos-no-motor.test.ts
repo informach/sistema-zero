@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { blockPrediction, type InteractiveBlock } from '../index'
 import { SCENE_IDS, SCENE_LIMITS, type SceneAction, type SceneId, sceneFrameRate } from './actions'
@@ -2099,11 +2099,17 @@ describe('a meta que responde a previsão, olhada no instante em que cai', () =>
 })
 
 /**
- * ⚠️ As previsões dos MANIFESTOS v6, com o caso do professor: as que ele escreveu (o Dia 2 pergunta
+ * ⚠️ As previsões dos manifestos atuais, com o caso do professor: as que ele escreveu (o Dia 2 pergunta
  * pelo −9, o Dia 3 pelo y da pedra) e as que o bloco herda do modelo.
  */
-describe('as previsões das aulas v6, no motor', () => {
-  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas')
+describe('as previsões das aulas atuais, no motor', () => {
+  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
+  // Estas perguntas são sobre a última comparação: Enter após a troca e tiro no laço.
+  // Revelá-las antes responderia sem a criança ter feito o gesto perguntado.
+  const REVELA_AO_FINAL = new Set([
+    'corre-dino-aula-08.manifesto.json · controls',
+    'desafio-dia-2.manifesto.json · once-vs-always',
+  ])
   const blocos: { onde: string; bloco: InteractiveBlock & { activity: SceneActivity } }[] = []
   const andar = (valor: unknown, onde: string) => {
     if (Array.isArray(valor)) for (const v of valor) andar(v, onde)
@@ -2114,15 +2120,8 @@ describe('as previsões das aulas v6, no motor', () => {
       for (const v of Object.values(valor)) andar(v, onde)
     }
   }
-  for (const pacote of ['corre-dino-v6', 'desafio-primeiro-jogo-v6', 'o-jogo-do-meu-jeito-v6']) {
-    const pasta = resolve(docs, pacote)
-    if (!existsSync(pasta)) continue
-    for (const aula of readdirSync(pasta, { withFileTypes: true })) {
-      const arquivo = resolve(pasta, aula.name, 'manifesto.json')
-      if (aula.isDirectory() && existsSync(arquivo))
-        andar(JSON.parse(readFileSync(arquivo, 'utf8')), `${pacote}/${aula.name}`)
-    }
-  }
+  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json')))
+    andar(JSON.parse(readFileSync(resolve(docs, nome), 'utf8')), nome)
 
   test('a varredura LEU os blocos (laço vazio aprova tudo)', () => {
     expect(blocos.length).toBeGreaterThan(25)
@@ -2137,13 +2136,26 @@ describe('as previsões das aulas v6, no motor', () => {
       if (!previsao?.revealOn) continue
       const cena = CENAS[activity.scene]
       const alvos = sceneTargets(activity)
+      if (
+        (activity.setup && 'preset' in activity.setup) ||
+        alvos.some((goal) => !cena.pedidos[goal])
+      ) {
+        // Presets autorais têm metas próprias que a tabela da cena padrão não encena.
+        // A conclusão deles é exercitada em learning.test.ts e nos testes do preset.
+        expect(alvos, `${onde} · ${activity.scene}: meta do palpite`).toContain(previsao.revealOn)
+        continue
+      }
       const m = caminhoDoConferir(sceneStart(activity), alvos, cena)
       const instante = m.historico.find((s) =>
         s.evidence.discoveries.includes(previsao.revealOn as string),
       )
       expect(instante, `${onde} · ${activity.scene}: ${previsao.revealOn} cai`).toBeDefined()
       const concluiu = alvos.every((g) => instante?.evidence.discoveries.includes(g))
-      if (alvos.length > 1 && !cena.revelaNaConclusao)
+      if (
+        alvos.length > 1 &&
+        !cena.revelaNaConclusao &&
+        !REVELA_AO_FINAL.has(`${onde} · ${activity.scene}`)
+      )
         expect(concluiu, `${onde} · ${activity.scene}: o palpite volta antes da conclusão`).toBe(
           false,
         )

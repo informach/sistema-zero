@@ -42,7 +42,7 @@ import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
  * Os ajustes de desenho das cenas (14/09/2026).
  *
  * Todos nasceram do estudo do Brilliant e do levantamento das 282 seções dos três cursos v6
- * (`docs/aulas-interativas/proposta-experiencias.md`). São regras de APRESENTAÇÃO: nenhuma
+ * (`docs/aulas-interativas-legado/proposta-experiencias.md`). São regras de APRESENTAÇÃO: nenhuma
  * mexe no motor, na avaliação ou no que sobe para o servidor — e é justamente por isso que
  * precisam de rede própria, senão voltam no primeiro refactor de JSX.
  */

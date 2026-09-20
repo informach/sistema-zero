@@ -1,0 +1,5622 @@
+{
+ "sz_g2d_action_down": {
+  "rotulo": "a ação %1 está sendo segurada?",
+  "linhas": [
+   "a ação %1 está sendo segurada?"
+  ],
+  "campos": [
+   {
+    "campo": "ACTION",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_action_pressed": {
+  "rotulo": "a ação %1 acabou de ser apertada?",
+  "linhas": [
+   "a ação %1 acabou de ser apertada?"
+  ],
+  "campos": [
+   {
+    "campo": "ACTION",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_add_to_group": {
+  "rotulo": "Pôr o sprite %1 no grupo %2",
+  "linhas": [
+   "Pôr o sprite %1 no grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Participação e limpeza",
+  "naPaleta": true
+ },
+ "sz_g2d_after_seconds": {
+  "rotulo": "Depois de %1 segundos",
+  "linhas": [
+   "Depois de %1 segundos",
+   "fazer %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Quadros e intervalos",
+  "naPaleta": true
+ },
+ "sz_g2d_aim_at": {
+  "rotulo": "Apontar o sprite %1 para o sprite %2",
+  "linhas": [
+   "Apontar o sprite %1 para o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   },
+   {
+    "campo": "TARGET",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_aim_drag": {
+  "rotulo": "Mirar arrastando a partir do gorila %1",
+  "linhas": [
+   "Mirar arrastando a partir do gorila %1"
+  ],
+  "campos": [
+   {
+    "campo": "THROWER",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_aim_released": {
+  "rotulo": "soltou a mira do gorila %1 ?",
+  "linhas": [
+   "soltou a mira do gorila %1 ?"
+  ],
+  "campos": [
+   {
+    "campo": "THROWER",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_all_enemies_group": {
+  "rotulo": "Criar o grupo %1 com os inimigos de todos os tipos",
+  "linhas": [
+   "Criar o grupo %1 com os inimigos de todos os tipos"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "todos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_angle_to": {
+  "rotulo": "o ângulo (em graus) do sprite %1 até o sprite %2",
+  "linhas": [
+   "o ângulo (em graus) do sprite %1 até o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_anim_ended": {
+  "rotulo": "a animação de %1 acabou?",
+  "linhas": [
+   "a animação de %1 acabou?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "estrela"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_animate_once": {
+  "rotulo": "Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps, uma vez só",
+  "linhas": [
+   "Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps, uma vez só"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "estrela"
+   },
+   {
+    "campo": "SHEET",
+    "tipo": "field_name_picker",
+    "padrao": "brilho"
+   },
+   {
+    "campo": "ANIM",
+    "tipo": "field_animation_picker",
+    "padrao": "Escolher"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_animate_sprite": {
+  "rotulo": "Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps",
+  "linhas": [
+   "Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "SHEET",
+    "tipo": "field_name_picker",
+    "padrao": "andar"
+   },
+   {
+    "campo": "ANIM",
+    "tipo": "field_animation_picker",
+    "padrao": "Escolher"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_apply_friction": {
+  "rotulo": "Frear o sprite %1 aos poucos (atrito %2)",
+  "linhas": [
+   "Frear o sprite %1 aos poucos (atrito %2)"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_apply_gravity": {
+  "rotulo": "Aplicar a gravidade do mundo ao sprite %1",
+  "linhas": [
+   "Aplicar a gravidade do mundo ao sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_apply_gravity_group": {
+  "rotulo": "Aplicar a gravidade do mundo aos sprites do grupo %1",
+  "linhas": [
+   "Aplicar a gravidade do mundo aos sprites do grupo %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Movimento",
+  "naPaleta": true
+ },
+ "sz_g2d_apply_velocity": {
+  "rotulo": "Mover o sprite %1 usando vx e vy",
+  "linhas": [
+   "Mover o sprite %1 usando vx e vy"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_arrows_x": {
+  "rotulo": "Mover o sprite %1 com as setas <- -> (velocidade %2)",
+  "linhas": [
+   "Mover o sprite %1 com as setas <- -> (velocidade %2)"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_arrows_y": {
+  "rotulo": "Mover o sprite %1 com as setas ↑ ↓, velocidade %2",
+  "linhas": [
+   "Mover o sprite %1 com as setas ↑ ↓, velocidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "raquete"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_auto_animate": {
+  "rotulo": "Animar e virar o sprite %1 sozinho conforme ele se move",
+  "linhas": [
+   "Animar e virar o sprite %1 sozinho conforme ele se move"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_balloon_fire": {
+  "rotulo": "Acender o fogo do balão %1 (força %2)",
+  "linhas": [
+   "Acender o fogo do balão %1 (força %2)"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "balao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloon_fly": {
+  "rotulo": "Fazer o balão %1 voar e cair devagar",
+  "linhas": [
+   "Fazer o balão %1 voar e cair devagar"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "balao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloon_fuel_left": {
+  "rotulo": "o combustível do balão %1",
+  "linhas": [
+   "o combustível do balão %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "balao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloon_landed_out": {
+  "rotulo": "o balão %1 pousou sem combustível ?",
+  "linhas": [
+   "o balão %1 pousou sem combustível ?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "balao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloon_sprite": {
+  "rotulo": "Criar balão %1 em x %2 y %3 largura %4 altura %5, cor do balão %6 cor do cesto %7",
+  "linhas": [
+   "Criar balão %1 em x %2 y %3 largura %4 altura %5, cor do balão %6 cor do cesto %7"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "balao"
+   },
+   {
+    "campo": "BODY",
+    "tipo": "field_colour_sz",
+    "padrao": "#D62828"
+   },
+   {
+    "campo": "BASKET",
+    "tipo": "field_colour_sz",
+    "padrao": "#8a5a2b"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloonpath_create": {
+  "rotulo": "Criar o caminho de árvores %1",
+  "linhas": [
+   "Criar o caminho de árvores %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloonpath_meters": {
+  "rotulo": "os metros voados no caminho %1",
+  "linhas": [
+   "os metros voados no caminho %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloonpath_on_tree": {
+  "rotulo": "Quando o balão bater numa árvore do caminho %1",
+  "linhas": [
+   "Quando o balão bater numa árvore do caminho %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloonpath_scenery": {
+  "rotulo": "Desenhar o cenário do caminho %1 (céu, colinas, chão e árvores)",
+  "linhas": [
+   "Desenhar o cenário do caminho %1 (céu, colinas, chão e árvores)"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_balloonpath_scroll": {
+  "rotulo": "Avançar o caminho %1 com o balão %2 (velocidade %3)",
+  "linhas": [
+   "Avançar o caminho %1 com o balão %2 (velocidade %3)"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "balao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Balão",
+  "naPaleta": true
+ },
+ "sz_g2d_banana_hit_city": {
+  "rotulo": "resolver banana da cidade %1 contra prédios e bordas: terminou?",
+  "linhas": [
+   "resolver banana da cidade %1 contra prédios e bordas: terminou?"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_banana_hit_thrower": {
+  "rotulo": "resolver banana da cidade %1 contra o gorila %2: acertou?",
+  "linhas": [
+   "resolver banana da cidade %1 contra o gorila %2: acertou?"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   },
+   {
+    "campo": "THROWER",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila2"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_blink": {
+  "rotulo": "Fazer o sprite %1 piscar por %2 quadros",
+  "linhas": [
+   "Fazer o sprite %1 piscar por %2 quadros"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_bounce_edge_pair": {
+  "rotulo": "Quicar o sprite %1 só %2",
+  "linhas": [
+   "Quicar o sprite %1 só %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "bola"
+   },
+   {
+    "campo": "EDGES",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "EDGES": [
+    "no teto e no chão",
+    "nas laterais"
+   ]
+  },
+  "familia": "Movimento",
+  "secao": "Bordas e rebatidas",
+  "naPaleta": true
+ },
+ "sz_g2d_bounce_edges": {
+  "rotulo": "Quicar o sprite %1 nas bordas da tela",
+  "linhas": [
+   "Quicar o sprite %1 nas bordas da tela"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "bola"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Bordas e rebatidas",
+  "naPaleta": true
+ },
+ "sz_g2d_break_tile_at": {
+  "rotulo": "Quebrar o tile do mapa %1 onde está o sprite %2",
+  "linhas": [
+   "Quebrar o tile do mapa %1 onde está o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_bring_to_front": {
+  "rotulo": "Trazer o sprite %1 para a frente no grupo %2",
+  "linhas": [
+   "Trazer o sprite %1 para a frente no grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Desenho e ordem",
+  "naPaleta": true
+ },
+ "sz_g2d_camera_x": {
+  "rotulo": "a posição x da câmera",
+  "linhas": [
+   "a posição x da câmera"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_camera_y": {
+  "rotulo": "a posição y da câmera",
+  "linhas": [
+   "a posição y da câmera"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_campaign_value": {
+  "rotulo": "dado %1 da fase carregada (ou %2)",
+  "linhas": [
+   "dado %1 da fase carregada (ou %2)"
+  ],
+  "campos": [
+   {
+    "campo": "KEY",
+    "tipo": "field_input",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_center_x": {
+  "rotulo": "o centro x do sprite %1",
+  "linhas": [
+   "o centro x do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_center_y": {
+  "rotulo": "o centro y do sprite %1",
+  "linhas": [
+   "o centro y do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_change_health": {
+  "rotulo": "Mudar a vida do sprite %1 em %2",
+  "linhas": [
+   "Mudar a vida do sprite %1 em %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_circle_touches": {
+  "rotulo": "os sprites %1 e %2 estão encostando em círculo?",
+  "linhas": [
+   "os sprites %1 e %2 estão encostando em círculo?"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_sprite_picker",
+    "padrao": "bola"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_sprite_picker",
+    "padrao": "alvo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_clamp_to_screen": {
+  "rotulo": "Manter o sprite %1 dentro da tela",
+  "linhas": [
+   "Manter o sprite %1 dentro da tela"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Bordas e rebatidas",
+  "naPaleta": true
+ },
+ "sz_g2d_classic_platformer": {
+  "rotulo": "Mover o sprite %1 como plataforma clássica, velocidade %2 pulo %3",
+  "linhas": [
+   "Mover o sprite %1 como plataforma clássica, velocidade %2 pulo %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Plataforma",
+  "naPaleta": true
+ },
+ "sz_g2d_clear": {
+  "rotulo": "Limpar a tela",
+  "linhas": [
+   "Limpar a tela"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_clear_group": {
+  "rotulo": "Esvaziar o grupo %1",
+  "linhas": [
+   "Esvaziar o grupo %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Participação e limpeza",
+  "naPaleta": true
+ },
+ "sz_g2d_collide_group": {
+  "rotulo": "Impedir o sprite %1 de atravessar os sprites do grupo %2",
+  "linhas": [
+   "Impedir o sprite %1 de atravessar os sprites do grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "obstaculos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_collide_platform": {
+  "rotulo": "Fazer o sprite %1 pousar na plataforma %2",
+  "linhas": [
+   "Fazer o sprite %1 pousar na plataforma %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "OTHER",
+    "tipo": "field_sprite_picker",
+    "padrao": "plataforma"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_collide_platform_group": {
+  "rotulo": "Fazer o sprite %1 pousar nas plataformas do grupo %2",
+  "linhas": [
+   "Fazer o sprite %1 pousar nas plataformas do grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "plataformas"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_collide_sprite": {
+  "rotulo": "Impedir o sprite %1 de atravessar o sprite %2",
+  "linhas": [
+   "Impedir o sprite %1 de atravessar o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "OTHER",
+    "tipo": "field_sprite_picker",
+    "padrao": "parede"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_computer_turn": {
+  "rotulo": "O robô do gorila %1 joga na cidade %2 mirando no %3",
+  "linhas": [
+   "O robô do gorila %1 joga na cidade %2 mirando no %3"
+  ],
+  "campos": [
+   {
+    "campo": "THROWER",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila2"
+   },
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   },
+   {
+    "campo": "ENEMY",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_control_dino": {
+  "rotulo": "Controlar o dinossauro %1, força do pulo %2",
+  "linhas": [
+   "Controlar o dinossauro %1, força do pulo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "dino"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Dino",
+  "naPaleta": true
+ },
+ "sz_g2d_cooldown_ready": {
+  "rotulo": "tentar usar a recarga do sprite %1 por %2 quadros: conseguiu?",
+  "linhas": [
+   "tentar usar a recarga do sprite %1 por %2 quadros: conseguiu?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Recarga de ações",
+  "naPaleta": true
+ },
+ "sz_g2d_count_group": {
+  "rotulo": "quantos sprites tem no grupo %1",
+  "linhas": [
+   "quantos sprites tem no grupo %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_create_city": {
+  "rotulo": "Criar cidade de prédios %1",
+  "linhas": [
+   "Criar cidade de prédios %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_create_dino": {
+  "rotulo": "Criar dinossauro %1 em x %2 y %3 tamanho %4 cor %5",
+  "linhas": [
+   "Criar dinossauro %1 em x %2 y %3 tamanho %4 cor %5"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "dino"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#5fb45f"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Dino",
+  "naPaleta": true
+ },
+ "sz_g2d_create_group": {
+  "rotulo": "Criar grupo de sprites %1",
+  "linhas": [
+   "Criar grupo de sprites %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_create_image_sprite": {
+  "rotulo": "Criar sprite %1 em x %2 y %3 largura %4 altura %5 com imagem %6",
+  "linhas": [
+   "Criar sprite %1 em x %2 y %3 largura %4 altura %5 com imagem %6"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_create_level": {
+  "rotulo": "Criar Fase %1 usando o Mundo %2, entrada x %3 y %4",
+  "linhas": [
+   "Criar Fase %1 usando o Mundo %2, entrada x %3 y %4"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "fase1"
+   },
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_create_shape_sprite": {
+  "rotulo": "Criar sprite %1 em x %2 y %3 largura %4 altura %5 com a figura %6",
+  "linhas": [
+   "Criar sprite %1 em x %2 y %3 largura %4 altura %5 com a figura %6"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_input",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_name_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_create_ship": {
+  "rotulo": "Criar nave %1 em x %2 y %3 largura %4 altura %5, cor do corpo %6 cor das asas %7",
+  "linhas": [
+   "Criar nave %1 em x %2 y %3 largura %4 altura %5, cor do corpo %6 cor das asas %7"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "nave"
+   },
+   {
+    "campo": "BODY",
+    "tipo": "field_colour_sz",
+    "padrao": "#35e8ff"
+   },
+   {
+    "campo": "WINGS",
+    "tipo": "field_colour_sz",
+    "padrao": "#2568ff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Espaço",
+  "naPaleta": true
+ },
+ "sz_g2d_create_sprite": {
+  "rotulo": "Criar sprite %1 em x %2 y %3 largura %4 altura %5 cor %6",
+  "linhas": [
+   "Criar sprite %1 em x %2 y %3 largura %4 altura %5 cor %6"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#22d3ee"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_create_text_sprite": {
+  "rotulo": "Criar sprite %1 com texto %2 em x %3 y %4",
+  "linhas": [
+   "Criar sprite %1 com texto %2 em x %3 y %4"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_create_tilemap": {
+  "rotulo": "Criar mapa de tiles %1 com imagem %2, tamanho do tile %3 px, tiles sólidos %4, tiles plataforma %5, grade %6",
+  "linhas": [
+   "Criar mapa de tiles %1 com imagem %2, tamanho do tile %3 px, tiles sólidos %4, tiles plataforma %5, grade %6"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "tileset"
+   },
+   {
+    "campo": "SOLID",
+    "tipo": "field_solid_tiles_picker",
+    "padrao": "1"
+   },
+   {
+    "campo": "PLATFORM",
+    "tipo": "field_solid_tiles_picker",
+    "padrao": ""
+   },
+   {
+    "campo": "GRID",
+    "tipo": "field_tile_grid",
+    "padrao": "0 0 0 0;0 0 0 0;1 1 1 1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_create_tilemap_from_asset": {
+  "rotulo": "Criar mapa %1 do meu desenho %2",
+  "linhas": [
+   "Criar mapa %1 do meu desenho %2"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "meu-mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_create_vector_tilemap": {
+  "rotulo": "Criar mapa vetorial %1 com o conjunto %2 e grade %3",
+  "linhas": [
+   "Criar mapa vetorial %1 com o conjunto %2 e grade %3"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "TILESET",
+    "tipo": "field_name_picker",
+    "padrao": "tiles"
+   },
+   {
+    "campo": "GRID",
+    "tipo": "field_tile_grid",
+    "padrao": "0 0 0 0;0 0 0 0"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_create_vector_tileset": {
+  "rotulo": "Criar conjunto de tiles vetoriais %1 com tiles de %2 px",
+  "linhas": [
+   "Criar conjunto de tiles vetoriais %1 com tiles de %2 px"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "tiles"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_create_world": {
+  "rotulo": "Criar Mundo %1 com largura %2 altura %3",
+  "linhas": [
+   "Criar Mundo %1 com largura %2 altura %3"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_create_world_from_tilemap": {
+  "rotulo": "Criar Mundo %1 do mapa %2 com tiles de %3 px",
+  "linhas": [
+   "Criar Mundo %1 do mapa %2 com tiles de %3 px"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_current_level_collide": {
+  "rotulo": "Fazer o sprite %1 colidir com a Fase atual",
+  "linhas": [
+   "Fazer o sprite %1 colidir com a Fase atual"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_current_level_draw": {
+  "rotulo": "Desenhar o terreno da Fase atual",
+  "linhas": [
+   "Desenhar o terreno da Fase atual"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_current_level_follow_camera": {
+  "rotulo": "Fazer a câmera da Fase atual seguir o sprite %1",
+  "linhas": [
+   "Fazer a câmera da Fase atual seguir o sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_damage_sprite": {
+  "rotulo": "Machucar o sprite %1 em %2 e deixá-lo invencível por %3 quadros",
+  "linhas": [
+   "Machucar o sprite %1 em %2 e deixá-lo invencível por %3 quadros"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_define_enemy_smart": {
+  "rotulo": "Criar tipo de inimigo %1 com inteligência %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10",
+  "linhas": [
+   "Criar tipo de inimigo %1 com inteligência %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "alien"
+   },
+   {
+    "campo": "SMART",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#e4573d"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_name_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_define_enemy_type": {
+  "rotulo": "Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10",
+  "linhas": [
+   "Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "BEHAVIOR",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#e4573d"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_name_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_define_shape": {
+  "rotulo": "Desenhar a figura %1 assim:",
+  "linhas": [
+   "Desenhar a figura %1 assim:",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_define_vector_tile": {
+  "rotulo": "No conjunto %1 definir tile %2 com a figura %3 como %4",
+  "linhas": [
+   "No conjunto %1 definir tile %2 com a figura %3 como %4"
+  ],
+  "campos": [
+   {
+    "campo": "TILESET",
+    "tipo": "field_name_picker",
+    "padrao": "tiles"
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_name_picker",
+    "padrao": "bloco"
+   },
+   {
+    "campo": "ROLE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "ROLE": [
+    "decoração",
+    "sólido",
+    "plataforma",
+    "atravessa e avisa"
+   ]
+  },
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_destroy_sprite": {
+  "rotulo": "Destruir o sprite %1",
+  "linhas": [
+   "Destruir o sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_distance": {
+  "rotulo": "a distância entre o sprite %1 e o sprite %2",
+  "linhas": [
+   "a distância entre o sprite %1 e o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_drag_x": {
+  "rotulo": "Mover o sprite %1 com o dedo/mouse (só na horizontal)",
+  "linhas": [
+   "Mover o sprite %1 com o dedo/mouse (só na horizontal)"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_aim_readout": {
+  "rotulo": "Mostrar ângulo e força da mira",
+  "linhas": [
+   "Mostrar ângulo e força da mira"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_backdrop": {
+  "rotulo": "Desenhar o cenário %1",
+  "linhas": [
+   "Desenhar o cenário %1"
+  ],
+  "campos": [
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fundos",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_banana": {
+  "rotulo": "Desenhar a banana da cidade %1",
+  "linhas": [
+   "Desenhar a banana da cidade %1"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_bar": {
+  "rotulo": "Barra de %1 / %2 em x %3 y %4 largura %5 altura %6 cor %7",
+  "linhas": [
+   "Barra de %1 / %2 em x %3 y %4 largura %5 altura %6 cor %7"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#35e8ff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Indicadores e texto na tela",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_city": {
+  "rotulo": "Desenhar a cidade %1",
+  "linhas": [
+   "Desenhar a cidade %1"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_enemy_type": {
+  "rotulo": "Desenhar os inimigos do tipo %1 (e os tiros deles)",
+  "linhas": [
+   "Desenhar os inimigos do tipo %1 (e os tiros deles)"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_fade": {
+  "rotulo": "Cobrir a tela com fade de %1 por cento na cor %2",
+  "linhas": [
+   "Cobrir a tela com fade de %1 por cento na cor %2"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#000000"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_frame": {
+  "rotulo": "Desenhar quadro %1 da folha de quadros %2 em x %3 y %4 largura %5 altura %6",
+  "linhas": [
+   "Desenhar quadro %1 da folha de quadros %2 em x %3 y %4 largura %5 altura %6"
+  ],
+  "campos": [
+   {
+    "campo": "SHEET",
+    "tipo": "field_name_picker",
+    "padrao": "andar"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_group": {
+  "rotulo": "Desenhar o grupo %1",
+  "linhas": [
+   "Desenhar o grupo %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Desenho e ordem",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_group_by_y": {
+  "rotulo": "Desenhar o grupo %1 ordenado pela base",
+  "linhas": [
+   "Desenhar o grupo %1 ordenado pela base"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "cenario"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Desenho e ordem",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_hitbox": {
+  "rotulo": "Mostrar a caixa de colisão do sprite %1",
+  "linhas": [
+   "Mostrar a caixa de colisão do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Área de contato",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_label": {
+  "rotulo": "Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6",
+  "linhas": [
+   "Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   },
+   {
+    "campo": "ALIGN",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "ALIGN": [
+    "à esquerda",
+    "no centro",
+    "à direita"
+   ]
+  },
+  "familia": "Vida e placar",
+  "secao": "Indicadores e texto na tela",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_particles": {
+  "rotulo": "Atualizar e desenhar as partículas",
+  "linhas": [
+   "Atualizar e desenhar as partículas"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_pixel_score": {
+  "rotulo": "Escrever placar pixel %1 com o valor %2 em x %3 y %4 pixel %5 cor %6",
+  "linhas": [
+   "Escrever placar pixel %1 com o valor %2 em x %3 y %4 pixel %5 cor %6"
+  ],
+  "campos": [
+   {
+    "campo": "LABEL",
+    "tipo": "field_input",
+    "padrao": "PONTOS"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Indicadores e texto na tela",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_pixel_text": {
+  "rotulo": "Escrever texto pixel %1 em x %2 y %3 pixel %4 cor %5 alinhado %6",
+  "linhas": [
+   "Escrever texto pixel %1 em x %2 y %3 pixel %4 cor %5 alinhado %6"
+  ],
+  "campos": [
+   {
+    "campo": "TEXT",
+    "tipo": "field_input",
+    "padrao": "REINO ZERO"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   },
+   {
+    "campo": "ALIGN",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "ALIGN": [
+    "à esquerda",
+    "no centro",
+    "à direita"
+   ]
+  },
+  "familia": "Vida e placar",
+  "secao": "Indicadores e texto na tela",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_prepared_tilemap": {
+  "rotulo": "Desenhar o mapa preparado %1",
+  "linhas": [
+   "Desenhar o mapa preparado %1"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_score": {
+  "rotulo": "Mostrar placar %1 valor %2 em x %3 y %4 cor %5 tamanho %6",
+  "linhas": [
+   "Mostrar placar %1 valor %2 em x %3 y %4 cor %5 tamanho %6"
+  ],
+  "campos": [
+   {
+    "campo": "LABEL",
+    "tipo": "field_input",
+    "padrao": "Pontos:"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Indicadores e texto na tela",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_sprite": {
+  "rotulo": "Desenhar o sprite %1",
+  "linhas": [
+   "Desenhar o sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_sprite_health": {
+  "rotulo": "Desenhar as vidas do sprite %1 como %2 em x %3 y %4 tamanho %5 cor %6",
+  "linhas": [
+   "Desenhar as vidas do sprite %1 como %2 em x %3 y %4 tamanho %5 cor %6"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "STYLE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ff5d5d"
+   }
+  ],
+  "opcoes": {
+   "STYLE": [
+    "corações",
+    "barra"
+   ]
+  },
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_draw_wind": {
+  "rotulo": "Desenhar a seta do vento da cidade %1",
+  "linhas": [
+   "Desenhar a seta do vento da cidade %1"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_emit_particles": {
+  "rotulo": "Soltar %1 partículas de cor %2 em x %3 y %4",
+  "linhas": [
+   "Soltar %1 partículas de cor %2 em x %3 y %4"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#fbbf24"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_enable_classic_controls": {
+  "rotulo": "Ativar controles clássicos %1",
+  "linhas": [
+   "Ativar controles clássicos %1"
+  ],
+  "campos": [
+   {
+    "campo": "MODE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "MODE": [
+    "automáticos no celular",
+    "sempre visíveis",
+    "sem botões na tela"
+   ]
+  },
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_enemy_add_behavior": {
+  "rotulo": "O tipo de inimigo %1 também é %2",
+  "linhas": [
+   "O tipo de inimigo %1 também é %2"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "BEHAVIOR",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_enemy_damage": {
+  "rotulo": "o dano de contato do inimigo %1",
+  "linhas": [
+   "o dano de contato do inimigo %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_enemy_state_anim": {
+  "rotulo": "Animação dos inimigos do tipo %1 no estado %2",
+  "linhas": [
+   "Animação dos inimigos do tipo %1 no estado %2",
+   "folha %1 animação %2, quadros %3 a %4, %5 fps"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "STATE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "SHEET",
+    "tipo": "field_name_picker",
+    "padrao": "andar"
+   },
+   {
+    "campo": "ANIM",
+    "tipo": "field_animation_picker",
+    "padrao": "Escolher"
+   }
+  ],
+  "opcoes": {
+   "STATE": [
+    "parado",
+    "andando (para os lados)",
+    "andando (cima/baixo)",
+    "pulando",
+    "caindo",
+    "tomando dano"
+   ]
+  },
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_enemy_type_param": {
+  "rotulo": "Ajustar no tipo de inimigo %1 o valor de %2 para %3",
+  "linhas": [
+   "Ajustar no tipo de inimigo %1 o valor de %2 para %3"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "PARAM",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "PARAM": [
+    "força do pulo",
+    "pular a cada tantos quadros",
+    "alcance (o tamanho do voo, ou a distância para reagir)",
+    "velocidade do tiro",
+    "voltar depois de tantos quadros",
+    "vida dos próximos que nascerem",
+    "o raio fica ligado por tantos quadros"
+   ]
+  },
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_enter_level": {
+  "rotulo": "Entrar na Fase %1 com o sprite %2",
+  "linhas": [
+   "Entrar na Fase %1 com o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "fase1"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_every_frames": {
+  "rotulo": "A cada %1 quadros",
+  "linhas": [
+   "A cada %1 quadros",
+   "fazer %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Quadros e intervalos",
+  "naPaleta": true
+ },
+ "sz_g2d_every_seconds": {
+  "rotulo": "A cada %1 segundos",
+  "linhas": [
+   "A cada %1 segundos",
+   "fazer %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Quadros e intervalos",
+  "naPaleta": true
+ },
+ "sz_g2d_explode": {
+  "rotulo": "Soltar explosão no sprite %1 cor %2",
+  "linhas": [
+   "Soltar explosão no sprite %1 cor %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "asteroide"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffb13b"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Partículas",
+  "naPaleta": true
+ },
+ "sz_g2d_fit_screen": {
+  "rotulo": "Fazer a tela preencher %1% da janela (mantendo a proporção)",
+  "linhas": [
+   "Fazer a tela preencher %1% da janela (mantendo a proporção)"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_fit_tilemap_to_stage": {
+  "rotulo": "Preparar o mapa %1 encaixado na tela",
+  "linhas": [
+   "Preparar o mapa %1 encaixado na tela"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_flap": {
+  "rotulo": "Fazer o sprite %1 bater as asas, força %2",
+  "linhas": [
+   "Fazer o sprite %1 bater as asas, força %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_flash": {
+  "rotulo": "Dar um clarão de cor %1",
+  "linhas": [
+   "Dar um clarão de cor %1"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_flip_sprite": {
+  "rotulo": "Virar o sprite %1 para %2",
+  "linhas": [
+   "Virar o sprite %1 para %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "DIR",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "DIR": [
+    "esquerda",
+    "direita",
+    "cima",
+    "baixo"
+   ]
+  },
+  "familia": "Sprites",
+  "secao": "Aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_fly_free": {
+  "rotulo": "Fazer o sprite %1 voar livre, velocidade %2",
+  "linhas": [
+   "Fazer o sprite %1 voar livre, velocidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_follow_pointer": {
+  "rotulo": "Fazer sprite %1 seguir o ponteiro, velocidade %2",
+  "linhas": [
+   "Fazer sprite %1 seguir o ponteiro, velocidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_for_each_in_group": {
+  "rotulo": "Para cada sprite %1 do grupo %2",
+  "linhas": [
+   "Para cada sprite %1 do grupo %2",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "ITEM",
+    "tipo": "field_input",
+    "padrao": "sprite"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_for_each_tile_contact": {
+  "rotulo": "Para cada tile que %1 toca no lado %2 do mapa %3 chamar de %4",
+  "linhas": [
+   "Para cada tile que %1 toca no lado %2 do mapa %3 chamar de %4",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "SIDE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "CONTACT",
+    "tipo": "field_input",
+    "padrao": "contato"
+   }
+  ],
+  "opcoes": {
+   "SIDE": [
+    "qualquer",
+    "cabeça",
+    "pés",
+    "esquerda",
+    "direita",
+    "dentro"
+   ]
+  },
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_forest": {
+  "rotulo": "Desenhar fundo de floresta (velocidade %1)",
+  "linhas": [
+   "Desenhar fundo de floresta (velocidade %1)"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fundos",
+  "naPaleta": true
+ },
+ "sz_g2d_game_over": {
+  "rotulo": "Escrever mensagem de fim de jogo %1",
+  "linhas": [
+   "Escrever mensagem de fim de jogo %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_get_health": {
+  "rotulo": "a vida do sprite %1",
+  "linhas": [
+   "a vida do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_get_max_health": {
+  "rotulo": "a vida máxima do sprite %1",
+  "linhas": [
+   "a vida máxima do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_has_health": {
+  "rotulo": "o sprite %1 ainda tem vida?",
+  "linhas": [
+   "o sprite %1 ainda tem vida?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_health_depleted": {
+  "rotulo": "as vidas do sprite %1 acabaram?",
+  "linhas": [
+   "as vidas do sprite %1 acabaram?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_hurt_by_enemy": {
+  "rotulo": "Machucar o sprite %1 com o dano de contato do inimigo %2",
+  "linhas": [
+   "Machucar o sprite %1 com o dano de contato do inimigo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "ENEMY",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_is_invincible": {
+  "rotulo": "o sprite %1 está invencível?",
+  "linhas": [
+   "o sprite %1 está invencível?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_is_moving": {
+  "rotulo": "o sprite %1 está se movendo?",
+  "linhas": [
+   "o sprite %1 está se movendo?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_is_moving_h": {
+  "rotulo": "o sprite %1 está se movendo na horizontal?",
+  "linhas": [
+   "o sprite %1 está se movendo na horizontal?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_is_moving_v": {
+  "rotulo": "o sprite %1 está se movendo na vertical?",
+  "linhas": [
+   "o sprite %1 está se movendo na vertical?"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_is_paused": {
+  "rotulo": "o jogo está pausado?",
+  "linhas": [
+   "o jogo está pausado?"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_jump_on_ground": {
+  "rotulo": "Fazer o sprite %1 pular na tela (a borda é chão), força %2",
+  "linhas": [
+   "Fazer o sprite %1 pular na tela (a borda é chão), força %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "dino"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Plataforma",
+  "naPaleta": true
+ },
+ "sz_g2d_jump_terrain": {
+  "rotulo": "Fazer o sprite %1 pular sobre o terreno, força %2",
+  "linhas": [
+   "Fazer o sprite %1 pular sobre o terreno, força %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Plataforma",
+  "naPaleta": true
+ },
+ "sz_g2d_key_down": {
+  "rotulo": "a tecla %1 está apertada?",
+  "linhas": [
+   "a tecla %1 está apertada?"
+  ],
+  "campos": [
+   {
+    "campo": "KEY",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "KEY": [
+    "→ seta direita",
+    "← seta esquerda",
+    "↑ seta para cima",
+    "↓ seta para baixo",
+    "barra de espaço",
+    "Enter",
+    "tecla A",
+    "tecla D",
+    "tecla W",
+    "tecla S",
+    "tecla F"
+   ]
+  },
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_level_is_active": {
+  "rotulo": "a Fase %1 está ativa?",
+  "linhas": [
+   "a Fase %1 está ativa?"
+  ],
+  "campos": [
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "fase1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_level_reset_group": {
+  "rotulo": "Na Fase %1 reiniciar o grupo %2 junto com ela",
+  "linhas": [
+   "Na Fase %1 reiniciar o grupo %2 junto com ela"
+  ],
+  "campos": [
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "fase1"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_load_sound": {
+  "rotulo": "Carregar o som %1 do arquivo %2",
+  "linhas": [
+   "Carregar o som %1 do arquivo %2"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "moeda"
+   },
+   {
+    "campo": "ASSET",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Sons de arquivo",
+  "naPaleta": true
+ },
+ "sz_g2d_load_spritesheet": {
+  "rotulo": "Carregar folha de quadros %1 da imagem %2 com quadros de %3 x %4 px",
+  "linhas": [
+   "Carregar folha de quadros %1 da imagem %2 com quadros de %3 x %4 px"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "andar"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "heroi-andando"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_load_vector_campaign_level": {
+  "rotulo": "Carregar fase %1 da campanha vetorial %2",
+  "linhas": [
+   "Carregar fase %1 da campanha vetorial %2",
+   "com conjuntos %1 e tiles de %2 px; nascer em x %3 y %4",
+   "guardar mapa %1 Mundo %2 Fase %3",
+   "soltar inimigos dos tipos %1 na jornada %2"
+  ],
+  "campos": [
+   {
+    "campo": "MANIFEST",
+    "tipo": "field_json_data",
+    "padrao": "{\"levels\":[]}"
+   },
+   {
+    "campo": "TILESETS",
+    "tipo": "field_input",
+    "padrao": "tiles"
+   },
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapaAtual"
+   },
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundoAtual"
+   },
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "faseAtual"
+   },
+   {
+    "campo": "ENEMIES",
+    "tipo": "field_input",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_move_toward": {
+  "rotulo": "Mover o sprite %1 na direção do sprite %2 com velocidade %3",
+  "linhas": [
+   "Mover o sprite %1 na direção do sprite %2 com velocidade %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   },
+   {
+    "campo": "TARGET",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_new_wind": {
+  "rotulo": "Sortear o vento da cidade %1",
+  "linhas": [
+   "Sortear o vento da cidade %1"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_on_action_pressed": {
+  "rotulo": "Quando a ação %1 for apertada",
+  "linhas": [
+   "Quando a ação %1 for apertada",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "ACTION",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_any_input": {
+  "rotulo": "Quando apertar qualquer tecla ou tocar na tela",
+  "linhas": [
+   "Quando apertar qualquer tecla ou tocar na tela",
+   "fazer %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_enemy_beam_hit": {
+  "rotulo": "Para cada raio do tipo %1 que acertar o sprite %2",
+  "linhas": [
+   "Para cada raio do tipo %1 que acertar o sprite %2",
+   "chamar o dono do raio de %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "rei"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "chefe"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_on_enemy_defeated": {
+  "rotulo": "Quando um inimigo do tipo %1 for derrotado (chamado %2)",
+  "linhas": [
+   "Quando um inimigo do tipo %1 for derrotado (chamado %2)",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_on_enemy_hurt": {
+  "rotulo": "Quando um inimigo do tipo %1 levar dano (chamado %2)",
+  "linhas": [
+   "Quando um inimigo do tipo %1 levar dano (chamado %2)",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "rei"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "chefe"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_on_enemy_shot_hit": {
+  "rotulo": "Para cada tiro do tipo %1 que acertar o sprite %2",
+  "linhas": [
+   "Para cada tiro do tipo %1 que acertar o sprite %2",
+   "chamar o tiro de %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "tiro"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_on_group_click": {
+  "rotulo": "Quando clicar/tocar num sprite do grupo %1 chamá-lo de %2",
+  "linhas": [
+   "Quando clicar/tocar num sprite do grupo %1 chamá-lo de %2",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "respostas"
+   },
+   {
+    "campo": "ITEM",
+    "tipo": "field_input",
+    "padrao": "escolhida"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_group_overlap": {
+  "rotulo": "Para cada colisão entre os grupos %1 e %2",
+  "linhas": [
+   "Para cada colisão entre os grupos %1 e %2",
+   "chamar os sprites de %1 e %2",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_name_picker",
+    "padrao": "tiros"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "tiro"
+   },
+   {
+    "campo": "BNAME",
+    "tipo": "field_input",
+    "padrao": "asteroide"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_on_jump": {
+  "rotulo": "Quando o sprite %1 pular",
+  "linhas": [
+   "Quando o sprite %1 pular",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_key": {
+  "rotulo": "Quando apertar a tecla %1",
+  "linhas": [
+   "Quando apertar a tecla %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "KEY",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "KEY": [
+    "→ seta direita",
+    "← seta esquerda",
+    "↑ seta para cima",
+    "↓ seta para baixo",
+    "barra de espaço",
+    "Enter",
+    "Escape",
+    "tecla A",
+    "tecla D",
+    "tecla W",
+    "tecla S",
+    "tecla F"
+   ]
+  },
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_level_enter": {
+  "rotulo": "Quando entrar na Fase %1",
+  "linhas": [
+   "Quando entrar na Fase %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "fase1"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_on_overlap": {
+  "rotulo": "Quando o sprite %1 começar a encostar no sprite %2",
+  "linhas": [
+   "Quando o sprite %1 começar a encostar no sprite %2",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_on_pointer": {
+  "rotulo": "Quando clicar/tocar, na posição x %1 y %2",
+  "linhas": [
+   "Quando clicar/tocar, na posição x %1 y %2",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "PX",
+    "tipo": "field_input",
+    "padrao": "px"
+   },
+   {
+    "campo": "PY",
+    "tipo": "field_input",
+    "padrao": "py"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_sprite_click": {
+  "rotulo": "Quando clicar/tocar no sprite %1",
+  "linhas": [
+   "Quando clicar/tocar no sprite %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_on_sprite_group_overlap": {
+  "rotulo": "Para cada sprite do grupo %1 que colidir com o sprite %2",
+  "linhas": [
+   "Para cada sprite do grupo %1 que colidir com o sprite %2",
+   "chamar o sprite de %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   },
+   {
+    "campo": "ANAME",
+    "tipo": "field_input",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_paddle_bounce": {
+  "rotulo": "Rebater a bola %1 na raquete %2 acelerando %3 por cento",
+  "linhas": [
+   "Rebater a bola %1 na raquete %2 acelerando %3 por cento"
+  ],
+  "campos": [
+   {
+    "campo": "BALL",
+    "tipo": "field_sprite_picker",
+    "padrao": "bola"
+   },
+   {
+    "campo": "PADDLE",
+    "tipo": "field_sprite_picker",
+    "padrao": "raquete"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Bordas e rebatidas",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_circle": {
+  "rotulo": "Desenhar círculo em x %1 y %2 raio %3 cor %4",
+  "linhas": [
+   "Desenhar círculo em x %1 y %2 raio %3 cor %4"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ec4899"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_ellipse": {
+  "rotulo": "Desenhar oval em x %1 y %2 largura %3 altura %4 cor %5",
+  "linhas": [
+   "Desenhar oval em x %1 y %2 largura %3 altura %4 cor %5"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ec4899"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_line": {
+  "rotulo": "Desenhar linha de x %1 y %2 até x %3 y %4 cor %5 espessura %6",
+  "linhas": [
+   "Desenhar linha de x %1 y %2 até x %3 y %4 cor %5 espessura %6"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ec4899"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_rect": {
+  "rotulo": "Desenhar retângulo em x %1 y %2 largura %3 altura %4 cor %5",
+  "linhas": [
+   "Desenhar retângulo em x %1 y %2 largura %3 altura %4 cor %5"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ec4899"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_shape_recipe": {
+  "rotulo": "Desenhar receita vetorial %1",
+  "linhas": [
+   "Desenhar receita vetorial %1"
+  ],
+  "campos": [
+   {
+    "campo": "RECIPE",
+    "tipo": "field_json_data",
+    "padrao": "[]"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_paint_triangle": {
+  "rotulo": "Desenhar triângulo em (%1, %2) (%3, %4) (%5, %6) cor %7",
+  "linhas": [
+   "Desenhar triângulo em (%1, %2) (%3, %4) (%5, %6) cor %7"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ec4899"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_pause": {
+  "rotulo": "Pausar o jogo",
+  "linhas": [
+   "Pausar o jogo"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_place_thrower": {
+  "rotulo": "Pôr o gorila %1 na cidade %2 no lado %3 cor %4",
+  "linhas": [
+   "Pôr o gorila %1 na cidade %2 no lado %3 cor %4"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "gorila1"
+   },
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   },
+   {
+    "campo": "SIDE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#6b4a2b"
+   }
+  ],
+  "opcoes": {
+   "SIDE": [
+    "esquerdo",
+    "direito"
+   ]
+  },
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_place_tilemap": {
+  "rotulo": "Preparar o mapa %1 em x %2 y %3 com tiles de %4 px",
+  "linhas": [
+   "Preparar o mapa %1 em x %2 y %3 com tiles de %4 px"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_platformer": {
+  "rotulo": "Mover o sprite %1 estilo plataforma na tela (a borda é chão), velocidade %2 pulo %3",
+  "linhas": [
+   "Mover o sprite %1 estilo plataforma na tela (a borda é chão), velocidade %2 pulo %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Plataforma",
+  "naPaleta": true
+ },
+ "sz_g2d_platformer_terrain": {
+  "rotulo": "Mover o sprite %1 estilo plataforma sobre o terreno, velocidade %2 pulo %3",
+  "linhas": [
+   "Mover o sprite %1 estilo plataforma sobre o terreno, velocidade %2 pulo %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Plataforma",
+  "naPaleta": true
+ },
+ "sz_g2d_play_clip": {
+  "rotulo": "Tocar o som %1",
+  "linhas": [
+   "Tocar o som %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_name_picker",
+    "padrao": "moeda"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Sons de arquivo",
+  "naPaleta": true
+ },
+ "sz_g2d_play_fx": {
+  "rotulo": "Tocar efeito %1",
+  "linhas": [
+   "Tocar efeito %1"
+  ],
+  "campos": [
+   {
+    "campo": "FX",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "FX": [
+    "moeda",
+    "joia",
+    "vida",
+    "power-up",
+    "subir de nível",
+    "coletar",
+    "tiro",
+    "tiro grande",
+    "explosão",
+    "batida",
+    "dano",
+    "socar",
+    "pulo",
+    "aterrissar",
+    "zunido",
+    "passo",
+    "quicar",
+    "assobio",
+    "vitória",
+    "derrota",
+    "começar",
+    "alarme",
+    "clique",
+    "confirmar",
+    "erro",
+    "selecionar",
+    "aviso"
+   ]
+  },
+  "familia": "Som",
+  "secao": "Efeitos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_play_music": {
+  "rotulo": "Tocar música de fundo %1",
+  "linhas": [
+   "Tocar música de fundo %1"
+  ],
+  "campos": [
+   {
+    "campo": "MUSIC",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "MUSIC": [
+    "aventura",
+    "alegre",
+    "tensão",
+    "calma",
+    "vitória"
+   ]
+  },
+  "familia": "Som",
+  "secao": "Músicas",
+  "naPaleta": true
+ },
+ "sz_g2d_play_note": {
+  "rotulo": "Tocar a nota %1 por %2 ms",
+  "linhas": [
+   "Tocar a nota %1 por %2 ms"
+  ],
+  "campos": [
+   {
+    "campo": "NOTE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "NOTE": [
+    "dó",
+    "ré",
+    "mi",
+    "fá",
+    "sol",
+    "lá",
+    "si",
+    "dó agudo"
+   ]
+  },
+  "familia": "Som",
+  "secao": "Notas e tons",
+  "naPaleta": true
+ },
+ "sz_g2d_play_sound": {
+  "rotulo": "Tocar som de %1 Hz por %2 ms",
+  "linhas": [
+   "Tocar som de %1 Hz por %2 ms"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Notas e tons",
+  "naPaleta": true
+ },
+ "sz_g2d_play_track": {
+  "rotulo": "Tocar a música %1 sem parar",
+  "linhas": [
+   "Tocar a música %1 sem parar"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_name_picker",
+    "padrao": "musica"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Sons de arquivo",
+  "naPaleta": true
+ },
+ "sz_g2d_point_sprite": {
+  "rotulo": "Apontar o sprite %1 para %2 graus",
+  "linhas": [
+   "Apontar o sprite %1 para %2 graus"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_pointer_down": {
+  "rotulo": "o mouse ou dedo está segurado ?",
+  "linhas": [
+   "o mouse ou dedo está segurado ?"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Controles",
+  "secao": "Teclado, ações e toque",
+  "naPaleta": true
+ },
+ "sz_g2d_prune_offscreen": {
+  "rotulo": "Tirar do grupo %1 quem sair da tela, para cada um (chamado %2)",
+  "linhas": [
+   "Tirar do grupo %1 quem sair da tela, para cada um (chamado %2)",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "ITEM",
+    "tipo": "field_input",
+    "padrao": "sprite"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Participação e limpeza",
+  "naPaleta": true
+ },
+ "sz_g2d_prune_old": {
+  "rotulo": "Tirar do grupo %1 quem viveu mais de %2 segundos",
+  "linhas": [
+   "Tirar do grupo %1 quem viveu mais de %2 segundos"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "tiros"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Participação e limpeza",
+  "naPaleta": true
+ },
+ "sz_g2d_random_between": {
+  "rotulo": "um número de %1 a %2",
+  "linhas": [
+   "um número de %1 a %2"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Sorteios",
+  "secao": "Números e posições",
+  "naPaleta": true
+ },
+ "sz_g2d_random_chance": {
+  "rotulo": "tem chance de %1%%?",
+  "linhas": [
+   "tem chance de %1%%?"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Sorteios",
+  "secao": "Números e posições",
+  "naPaleta": true
+ },
+ "sz_g2d_random_x": {
+  "rotulo": "um x aleatório na tela",
+  "linhas": [
+   "um x aleatório na tela"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Sorteios",
+  "secao": "Números e posições",
+  "naPaleta": true
+ },
+ "sz_g2d_random_y": {
+  "rotulo": "um y aleatório na tela",
+  "linhas": [
+   "um y aleatório na tela"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Sorteios",
+  "secao": "Números e posições",
+  "naPaleta": true
+ },
+ "sz_g2d_remove_from_group": {
+  "rotulo": "Tirar o sprite %1 do grupo %2",
+  "linhas": [
+   "Tirar o sprite %1 do grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "asteroide"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Participação e limpeza",
+  "naPaleta": true
+ },
+ "sz_g2d_restart": {
+  "rotulo": "Reiniciar o jogo",
+  "linhas": [
+   "Reiniciar o jogo"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_restart_level": {
+  "rotulo": "Reiniciar a Fase %1 com o sprite %2",
+  "linhas": [
+   "Reiniciar a Fase %1 com o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "LEVEL",
+    "tipo": "field_name_picker",
+    "padrao": "fase1"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fases e campanha",
+  "naPaleta": true
+ },
+ "sz_g2d_resume": {
+  "rotulo": "Continuar o jogo",
+  "linhas": [
+   "Continuar o jogo"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_rotate_sprite": {
+  "rotulo": "Girar o sprite %1 em %2 graus",
+  "linhas": [
+   "Girar o sprite %1 em %2 graus"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_scale_sprite": {
+  "rotulo": "Multiplicar o tamanho do sprite %1 por %2",
+  "linhas": [
+   "Multiplicar o tamanho do sprite %1 por %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_scale_text_size": {
+  "rotulo": "Multiplicar o tamanho do texto do sprite %1 por %2",
+  "linhas": [
+   "Multiplicar o tamanho do texto do sprite %1 por %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_scene_is": {
+  "rotulo": "o estado do jogo é %1 ?",
+  "linhas": [
+   "o estado do jogo é %1 ?"
+  ],
+  "campos": [
+   {
+    "campo": "SCENE",
+    "tipo": "field_name_picker",
+    "padrao": "inicio"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_send_to_back": {
+  "rotulo": "Mandar o sprite %1 para trás no grupo %2",
+  "linhas": [
+   "Mandar o sprite %1 para trás no grupo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Desenho e ordem",
+  "naPaleta": true
+ },
+ "sz_g2d_set_backdrop": {
+  "rotulo": "Pôr o cenário %1 atrás de tudo",
+  "linhas": [
+   "Pôr o cenário %1 atrás de tudo"
+  ],
+  "campos": [
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fundos",
+  "naPaleta": true
+ },
+ "sz_g2d_set_enemy_stomp_mode": {
+  "rotulo": "Ao pisar no tipo %1 usar modo %2",
+  "linhas": [
+   "Ao pisar no tipo %1 usar modo %2"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   },
+   {
+    "campo": "MODE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "MODE": [
+    "derrotar",
+    "causar 1 de dano",
+    "achatar por um instante",
+    "virar casco (pisar recolhe, encostar chuta)",
+    "espinhoso (não aceita pisada)"
+   ]
+  },
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_set_gravity": {
+  "rotulo": "Definir a gravidade em %1 pixels por quadro²",
+  "linhas": [
+   "Definir a gravidade em %1 pixels por quadro²"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_set_health": {
+  "rotulo": "Dar ao sprite %1 %2 de vida",
+  "linhas": [
+   "Dar ao sprite %1 %2 de vida"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Vida e placar",
+  "secao": "Vida",
+  "naPaleta": true
+ },
+ "sz_g2d_set_hitbox_scale": {
+  "rotulo": "Usar área de colisão de %1 % do tamanho para o sprite %2",
+  "linhas": [
+   "Usar área de colisão de %1 % do tamanho para o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Área de contato",
+  "naPaleta": true
+ },
+ "sz_g2d_set_image": {
+  "rotulo": "Trocar imagem do sprite %1 para %2",
+  "linhas": [
+   "Trocar imagem do sprite %1 para %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_set_opacity": {
+  "rotulo": "Deixar o sprite %1 com %2 % de visibilidade",
+  "linhas": [
+   "Deixar o sprite %1 com %2 % de visibilidade"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_set_position": {
+  "rotulo": "Mudar a posição do sprite %1 para x %2 y %3",
+  "linhas": [
+   "Mudar a posição do sprite %1 para x %2 y %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_set_scene": {
+  "rotulo": "Mudar o estado do jogo para %1",
+  "linhas": [
+   "Mudar o estado do jogo para %1"
+  ],
+  "campos": [
+   {
+    "campo": "SCENE",
+    "tipo": "field_name_picker",
+    "padrao": "inicio"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_set_shape": {
+  "rotulo": "Trocar a figura do sprite %1 para %2",
+  "linhas": [
+   "Trocar a figura do sprite %1 para %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_name_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Criar e trocar aparência",
+  "naPaleta": true
+ },
+ "sz_g2d_set_size": {
+  "rotulo": "Definir o tamanho do sprite %1: largura %2 altura %3 pixels",
+  "linhas": [
+   "Definir o tamanho do sprite %1: largura %2 altura %3 pixels"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_set_sprite_data": {
+  "rotulo": "Guardar no sprite %1 o dado %2 como %3",
+  "linhas": [
+   "Guardar no sprite %1 o dado %2 como %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "numero"
+   },
+   {
+    "campo": "KEY",
+    "tipo": "field_input",
+    "padrao": "valor"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Dados",
+  "naPaleta": true
+ },
+ "sz_g2d_set_sprite_text": {
+  "rotulo": "Mudar o texto do sprite %1 para %2",
+  "linhas": [
+   "Mudar o texto do sprite %1 para %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_set_stage_description": {
+  "rotulo": "Descrever o jogo para leitor de tela %1",
+  "linhas": [
+   "Descrever o jogo para leitor de tela %1"
+  ],
+  "campos": [
+   {
+    "campo": "DESCRIPTION",
+    "tipo": "field_input",
+    "padrao": "Pegue as moedas. Use as setas para andar."
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_set_state_anim": {
+  "rotulo": "Animação do sprite %1 no estado %2",
+  "linhas": [
+   "Animação do sprite %1 no estado %2",
+   "folha %1 animação %2, quadros %3 a %4, %5 fps"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "STATE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "SHEET",
+    "tipo": "field_name_picker",
+    "padrao": "andar"
+   },
+   {
+    "campo": "ANIM",
+    "tipo": "field_animation_picker",
+    "padrao": "Escolher"
+   }
+  ],
+  "opcoes": {
+   "STATE": [
+    "parado",
+    "andando (para os lados)",
+    "andando (cima/baixo)",
+    "pulando",
+    "caindo",
+    "tomando dano"
+   ]
+  },
+  "familia": "Sprites",
+  "secao": "Animação",
+  "naPaleta": true
+ },
+ "sz_g2d_set_text_box": {
+  "rotulo": "Caixa de texto do sprite %1 largura %2 alinhamento %3 margem %4 fundo %5",
+  "linhas": [
+   "Caixa de texto do sprite %1 largura %2 alinhamento %3 margem %4 fundo %5"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   },
+   {
+    "campo": "ALIGN",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "ALIGN": [
+    "à esquerda",
+    "no centro",
+    "à direita"
+   ]
+  },
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_set_text_image": {
+  "rotulo": "Fundo do sprite %1 com a imagem %2, texto %3",
+  "linhas": [
+   "Fundo do sprite %1 com a imagem %2, texto %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   },
+   {
+    "campo": "VALIGN",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "VALIGN": [
+    "no meio",
+    "em cima",
+    "embaixo"
+   ]
+  },
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_set_text_style": {
+  "rotulo": "Texto do sprite %1 tamanho %2 cor %3",
+  "linhas": [
+   "Texto do sprite %1 tamanho %2 cor %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#ffffff"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_set_tile": {
+  "rotulo": "No mapa %1, pôr o tile número %2 onde está o sprite %3",
+  "linhas": [
+   "No mapa %1, pôr o tile número %2 onde está o sprite %3"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_set_tile_at_contact": {
+  "rotulo": "No contato %1 trocar o tile para %2",
+  "linhas": [
+   "No contato %1 trocar o tile para %2"
+  ],
+  "campos": [
+   {
+    "campo": "CONTACT",
+    "tipo": "field_input",
+    "padrao": "contato"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_set_velocity": {
+  "rotulo": "Definir a velocidade do sprite %1 em x %2 y %3 pixels por quadro",
+  "linhas": [
+   "Definir a velocidade do sprite %1 em x %2 y %3 pixels por quadro"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_set_volume": {
+  "rotulo": "Definir o volume dos sons de arquivo em %1 de 10",
+  "linhas": [
+   "Definir o volume dos sons de arquivo em %1 de 10"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Sons de arquivo",
+  "naPaleta": true
+ },
+ "sz_g2d_setup_full": {
+  "rotulo": "Preparar o jogo para ocupar a tela toda, fundo %1",
+  "linhas": [
+   "Preparar o jogo para ocupar a tela toda, fundo %1"
+  ],
+  "campos": [
+   {
+    "campo": "BG",
+    "tipo": "field_colour_sz",
+    "padrao": "#0b1020"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_setup_stage": {
+  "rotulo": "Preparar o jogo em tela cheia, tela %1 × %2, fundo %3",
+  "linhas": [
+   "Preparar o jogo em tela cheia, tela %1 × %2, fundo %3"
+  ],
+  "campos": [
+   {
+    "campo": "BG",
+    "tipo": "field_colour_sz",
+    "padrao": "#0b1020"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_shake": {
+  "rotulo": "Tremer a tela com intensidade %1",
+  "linhas": [
+   "Tremer a tela com intensidade %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Efeitos",
+  "naPaleta": true
+ },
+ "sz_g2d_shape_h": {
+  "rotulo": "a altura da figura",
+  "linhas": [
+   "a altura da figura"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_shape_w": {
+  "rotulo": "a largura da figura",
+  "linhas": [
+   "a largura da figura"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Figuras",
+  "naPaleta": true
+ },
+ "sz_g2d_shoot_from": {
+  "rotulo": "Atirar do sprite %1 para a frente, no grupo %2, velocidade %3 cor %4",
+  "linhas": [
+   "Atirar do sprite %1 para a frente, no grupo %2, velocidade %3 cor %4"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "tiros"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#9cff57"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Espaço",
+  "naPaleta": true
+ },
+ "sz_g2d_show_fps": {
+  "rotulo": "Mostrar os quadros por segundo (FPS) em x %1 y %2",
+  "linhas": [
+   "Mostrar os quadros por segundo (FPS) em x %1 y %2"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Desenho e efeitos",
+  "secao": "Inspecionar",
+  "naPaleta": true
+ },
+ "sz_g2d_show_image_screen": {
+  "rotulo": "Mostrar a tela com a imagem %1",
+  "linhas": [
+   "Mostrar a tela com a imagem %1"
+  ],
+  "campos": [
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_show_screen": {
+  "rotulo": "Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4",
+  "linhas": [
+   "Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4"
+  ],
+  "campos": [
+   {
+    "campo": "BG",
+    "tipo": "field_colour_sz",
+    "padrao": "#02111f"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Telas e partida",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_asteroid": {
+  "rotulo": "No grupo %1 criar um asteroide em x %2 y %3 tamanho %4 cor %5 com vx %6 vy %7",
+  "linhas": [
+   "No grupo %1 criar um asteroide em x %2 y %3 tamanho %4 cor %5 com vx %6 vy %7"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#8d8f9b"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Espaço",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_asteroid_edge": {
+  "rotulo": "No grupo %1 soltar um asteroide de uma borda, tamanho %2 cor %3 velocidade %4",
+  "linhas": [
+   "No grupo %1 soltar um asteroide de uma borda, tamanho %2 cor %3 velocidade %4"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#8d8f9b"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Espaço",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_bullet": {
+  "rotulo": "Criar tiro no grupo %1 em x %2 y %3 raio %4 cor %5 vx %6 vy %7",
+  "linhas": [
+   "Criar tiro no grupo %1 em x %2 y %3 raio %4 cor %5 vx %6 vy %7"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "tiros"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#9cff57"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_egg": {
+  "rotulo": "No grupo %1 criar um ovo (bônus) em x %2 y %3 com vx %4",
+  "linhas": [
+   "No grupo %1 criar um ovo (bônus) em x %2 y %3 com vx %4"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "ovos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Dino",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_enemy": {
+  "rotulo": "Soltar um inimigo do tipo %1 chamado %2 em x %3 y %4",
+  "linhas": [
+   "Soltar um inimigo do tipo %1 chamado %2 em x %3 y %4"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": ""
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_image_in_group": {
+  "rotulo": "No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 com imagem %7 vx %8 vy %9",
+  "linhas": [
+   "No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 com imagem %7 vx %8 vy %9"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   },
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": ""
+   },
+   {
+    "campo": "IMAGE",
+    "tipo": "field_asset_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_in_group": {
+  "rotulo": "No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 cor %7 com vx %8 vy %9",
+  "linhas": [
+   "No grupo %1 criar um sprite chamado %2 em x %3 y %4 largura %5 altura %6 cor %7 com vx %8 vy %9"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   },
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": ""
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#9ca3af"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_obstacle": {
+  "rotulo": "No grupo %1 criar obstáculo %2 em x %3 tamanho %4 com vx %5",
+  "linhas": [
+   "No grupo %1 criar obstáculo %2 em x %3 tamanho %4 com vx %5"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "obstaculos"
+   },
+   {
+    "campo": "SHAPE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "SHAPE": [
+    "cacto",
+    "pedra",
+    "pássaro (voa alto)",
+    "surpresa (sorteia)"
+   ]
+  },
+  "familia": "Kits prontos",
+  "secao": "Dino",
+  "naPaleta": true
+ },
+ "sz_g2d_spawn_text_in_group": {
+  "rotulo": "No grupo %1 criar sprite %2 com texto %3 em x %4 y %5",
+  "linhas": [
+   "No grupo %1 criar sprite %2 com texto %3 em x %4 y %5"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "números"
+   },
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "numero"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Criar e percorrer",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_angle": {
+  "rotulo": "a direção (em graus) do sprite %1",
+  "linhas": [
+   "a direção (em graus) do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_data": {
+  "rotulo": "dado %1 do sprite %2 ou %3",
+  "linhas": [
+   "dado %1 do sprite %2 ou %3"
+  ],
+  "campos": [
+   {
+    "campo": "KEY",
+    "tipo": "field_input",
+    "padrao": "valor"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "numero"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Dados",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_h": {
+  "rotulo": "a altura do sprite %1",
+  "linhas": [
+   "a altura do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_speed": {
+  "rotulo": "a velocidade total do sprite %1",
+  "linhas": [
+   "a velocidade total do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_text": {
+  "rotulo": "texto do sprite %1",
+  "linhas": [
+   "texto do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "resposta"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Sprites",
+  "secao": "Texto e números",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_vx": {
+  "rotulo": "a velocidade x do sprite %1",
+  "linhas": [
+   "a velocidade x do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_vy": {
+  "rotulo": "a velocidade y do sprite %1",
+  "linhas": [
+   "a velocidade y do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Velocidade e gravidade",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_w": {
+  "rotulo": "a largura do sprite %1",
+  "linhas": [
+   "a largura do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_x": {
+  "rotulo": "a posição x do sprite %1",
+  "linhas": [
+   "a posição x do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_sprite_y": {
+  "rotulo": "a posição y do sprite %1",
+  "linhas": [
+   "a posição y do sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Posição e tamanho",
+  "naPaleta": true
+ },
+ "sz_g2d_stage_border": {
+  "rotulo": "Mostrar a borda da tela, cor %1 espessura %2",
+  "linhas": [
+   "Mostrar a borda da tela, cor %1 espessura %2"
+  ],
+  "campos": [
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#e2e8f0"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_stage_height": {
+  "rotulo": "a altura da tela",
+  "linhas": [
+   "a altura da tela"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_stage_width": {
+  "rotulo": "a largura da tela",
+  "linhas": [
+   "a largura da tela"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Jogo e telas",
+  "secao": "Preparar a área do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_starfield": {
+  "rotulo": "Desenhar fundo de estrelas (velocidade %1)",
+  "linhas": [
+   "Desenhar fundo de estrelas (velocidade %1)"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Fundos",
+  "naPaleta": true
+ },
+ "sz_g2d_steer_thrust": {
+  "rotulo": "Controlar o sprite %1 como nave, velocidade %2 giro %3",
+  "linhas": [
+   "Controlar o sprite %1 como nave, velocidade %2 giro %3"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_stickhero_sprite": {
+  "rotulo": "Criar equilibrista %1 largura %2 altura %3 cor %4",
+  "linhas": [
+   "Criar equilibrista %1 largura %2 altura %3 cor %4"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "equilibrista"
+   },
+   {
+    "campo": "COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#d6455d"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_create": {
+  "rotulo": "Criar o caminho de plataformas %1 com plataformas cor %2 e bastão cor %3",
+  "linhas": [
+   "Criar o caminho de plataformas %1 com plataformas cor %2 e bastão cor %3"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_input",
+    "padrao": "caminho"
+   },
+   {
+    "campo": "PLATFORM_COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#0ea5a0"
+   },
+   {
+    "campo": "STICK_COLOR",
+    "tipo": "field_colour_sz",
+    "padrao": "#1b2330"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_draw": {
+  "rotulo": "Desenhar as plataformas e o bastão do caminho %1",
+  "linhas": [
+   "Desenhar as plataformas e o bastão do caminho %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_drop": {
+  "rotulo": "Derrubar o bastão do caminho %1",
+  "linhas": [
+   "Derrubar o bastão do caminho %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_fell": {
+  "rotulo": "o equilibrista caiu no caminho %1 ?",
+  "linhas": [
+   "o equilibrista caiu no caminho %1 ?"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_grow": {
+  "rotulo": "Crescer o bastão do caminho %1 (rapidez %2)",
+  "linhas": [
+   "Crescer o bastão do caminho %1 (rapidez %2)"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_on_cross": {
+  "rotulo": "Quando o equilibrista atravessar uma plataforma do caminho %1",
+  "linhas": [
+   "Quando o equilibrista atravessar uma plataforma do caminho %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_on_perfect": {
+  "rotulo": "Quando o equilibrista acertar bem no meio no caminho %1",
+  "linhas": [
+   "Quando o equilibrista acertar bem no meio no caminho %1",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_scenery": {
+  "rotulo": "Desenhar o cenário do caminho %1 (céu, colinas e árvores)",
+  "linhas": [
+   "Desenhar o cenário do caminho %1 (céu, colinas e árvores)"
+  ],
+  "campos": [
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stickpath_walk": {
+  "rotulo": "Fazer o equilibrista %1 andar pelo caminho %2 (rapidez %3)",
+  "linhas": [
+   "Fazer o equilibrista %1 andar pelo caminho %2 (rapidez %3)"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "equilibrista"
+   },
+   {
+    "campo": "PATH",
+    "tipo": "field_name_picker",
+    "padrao": "caminho"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Equilibrista",
+  "naPaleta": true
+ },
+ "sz_g2d_stomp_enemy": {
+  "rotulo": "Derrotar os inimigos do tipo %1 quando o sprite %2 pular em cima (dando um pulinho de %3)",
+  "linhas": [
+   "Derrotar os inimigos do tipo %1 quando o sprite %2 pular em cima (dando um pulinho de %3)"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_stop_clip": {
+  "rotulo": "Parar o som %1",
+  "linhas": [
+   "Parar o som %1"
+  ],
+  "campos": [
+   {
+    "campo": "NAME",
+    "tipo": "field_name_picker",
+    "padrao": "moeda"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Som",
+  "secao": "Sons de arquivo",
+  "naPaleta": true
+ },
+ "sz_g2d_stop_track": {
+  "rotulo": "Parar %1",
+  "linhas": [
+   "Parar %1"
+  ],
+  "campos": [
+   {
+    "campo": "SCOPE",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "SCOPE": [
+    "todas as músicas",
+    "a melodia pronta",
+    "a música de arquivo"
+   ]
+  },
+  "familia": "Som",
+  "secao": "Músicas",
+  "naPaleta": true
+ },
+ "sz_g2d_swim": {
+  "rotulo": "Fazer o sprite %1 nadar, velocidade %2",
+  "linhas": [
+   "Fazer o sprite %1 nadar, velocidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_throw_banana": {
+  "rotulo": "Jogar a banana do gorila %1 na cidade %2",
+  "linhas": [
+   "Jogar a banana do gorila %1 na cidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "THROWER",
+    "tipo": "field_sprite_picker",
+    "padrao": "gorila1"
+   },
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_thrust": {
+  "rotulo": "Impulsionar o sprite %1 para a frente, força %2",
+  "linhas": [
+   "Impulsionar o sprite %1 para a frente, força %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Direção e distância",
+  "naPaleta": true
+ },
+ "sz_g2d_tile_at": {
+  "rotulo": "o número do tile do mapa %1 onde está o sprite %2",
+  "linhas": [
+   "o número do tile do mapa %1 onde está o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_tile_contact_is": {
+  "rotulo": "o contato %1 é com o tile %2?",
+  "linhas": [
+   "o contato %1 é com o tile %2?"
+  ],
+  "campos": [
+   {
+    "campo": "CONTACT",
+    "tipo": "field_input",
+    "padrao": "contato"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_tilemap_collide": {
+  "rotulo": "Fazer o sprite %1 colidir com os sólidos e plataformas do mapa %2",
+  "linhas": [
+   "Fazer o sprite %1 colidir com os sólidos e plataformas do mapa %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mapas",
+  "naPaleta": true
+ },
+ "sz_g2d_top_down": {
+  "rotulo": "Mover sprite %1 em 4 direções com setas, velocidade %2",
+  "linhas": [
+   "Mover sprite %1 em 4 direções com setas, velocidade %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Movimentos prontos",
+  "naPaleta": true
+ },
+ "sz_g2d_touches": {
+  "rotulo": "o sprite %1 está encostando no sprite %2 ?",
+  "linhas": [
+   "o sprite %1 está encostando no sprite %2 ?"
+  ],
+  "campos": [
+   {
+    "campo": "A",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   },
+   {
+    "campo": "B",
+    "tipo": "field_sprite_picker",
+    "padrao": "inimigo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Colisões",
+  "secao": "Encostar e bloquear",
+  "naPaleta": true
+ },
+ "sz_g2d_update_banana": {
+  "rotulo": "Mover a banana da cidade %1",
+  "linhas": [
+   "Mover a banana da cidade %1"
+  ],
+  "campos": [
+   {
+    "campo": "CITY",
+    "tipo": "field_name_picker",
+    "padrao": "cidade"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Kits prontos",
+  "secao": "Gorilas",
+  "naPaleta": true
+ },
+ "sz_g2d_update_each_frame": {
+  "rotulo": "A cada quadro do jogo",
+  "linhas": [
+   "A cada quadro do jogo",
+   "fazer %1"
+  ],
+  "campos": [],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Quadros e intervalos",
+  "naPaleta": true
+ },
+ "sz_g2d_update_enemy_shells": {
+  "rotulo": "Atualizar os cascos do tipo %1 no Mundo %2",
+  "linhas": [
+   "Atualizar os cascos do tipo %1 no Mundo %2"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   },
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_update_enemy_type": {
+  "rotulo": "Atualizar os inimigos do tipo %1 (alvo: o sprite %2)",
+  "linhas": [
+   "Atualizar os inimigos do tipo %1 (alvo: o sprite %2)"
+  ],
+  "campos": [
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "zumbi"
+   },
+   {
+    "campo": "TARGET",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Inimigos",
+  "secao": "Tipos e comportamentos",
+  "naPaleta": true
+ },
+ "sz_g2d_update_group": {
+  "rotulo": "Mover os sprites do grupo %1 usando suas velocidades",
+  "linhas": [
+   "Mover os sprites do grupo %1 usando suas velocidades"
+  ],
+  "campos": [
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "asteroides"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Grupos",
+  "secao": "Movimento",
+  "naPaleta": true
+ },
+ "sz_g2d_use_font": {
+  "rotulo": "Usar a fonte %1",
+  "linhas": [
+   "Usar a fonte %1"
+  ],
+  "campos": [
+   {
+    "campo": "FONT",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "FONT": [
+    "Baloo 2 (arredondada)",
+    "Nunito (limpa)",
+    "Press Start 2P (de pixel)",
+    "Bungee (grossa)",
+    "Fredoka (gordinha)"
+   ]
+  },
+  "familia": "Jogo e telas",
+  "secao": "Fonte do jogo",
+  "naPaleta": true
+ },
+ "sz_g2d_with_cooldown": {
+  "rotulo": "Com o sprite %1 fazer no máximo uma vez a cada %2 quadros",
+  "linhas": [
+   "Com o sprite %1 fazer no máximo uma vez a cada %2 quadros",
+   "fazer %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "jogador"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Tempo",
+  "secao": "Recarga de ações",
+  "naPaleta": true
+ },
+ "sz_g2d_world_add_enemy_type": {
+  "rotulo": "No Mundo %1 os inimigos do tipo %2 andam no terreno",
+  "linhas": [
+   "No Mundo %1 os inimigos do tipo %2 andam no terreno"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "TYPE",
+    "tipo": "field_name_picker",
+    "padrao": "inimigos"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_add_platform_group": {
+  "rotulo": "No Mundo %1 usar as figuras do grupo %2 como plataformas",
+  "linhas": [
+   "No Mundo %1 usar as figuras do grupo %2 como plataformas"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "plataformas"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_add_solid_group": {
+  "rotulo": "No Mundo %1 usar as figuras do grupo %2 como terreno sólido",
+  "linhas": [
+   "No Mundo %1 usar as figuras do grupo %2 como terreno sólido"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "GROUP",
+    "tipo": "field_name_picker",
+    "padrao": "chao"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_add_tilemap": {
+  "rotulo": "No Mundo %1 usar o mapa preparado %2 como terreno",
+  "linhas": [
+   "No Mundo %1 usar o mapa preparado %2 como terreno"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "MAP",
+    "tipo": "field_name_picker",
+    "padrao": "mapa"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_camera": {
+  "rotulo": "No Mundo %1 configurar câmera horizontal %2 vertical %3 folga x %4 y %5",
+  "linhas": [
+   "No Mundo %1 configurar câmera horizontal %2 vertical %3 folga x %4 y %5"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "HORIZONTAL",
+    "tipo": "field_dropdown",
+    "padrao": null
+   },
+   {
+    "campo": "VERTICAL",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "HORIZONTAL": [
+    "desligada",
+    "livre",
+    "só avança",
+    "só volta"
+   ],
+   "VERTICAL": [
+    "desligada",
+    "livre",
+    "só desce",
+    "só sobe"
+   ]
+  },
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_collide": {
+  "rotulo": "Fazer o sprite %1 colidir com o Mundo %2",
+  "linhas": [
+   "Fazer o sprite %1 colidir com o Mundo %2"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   },
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_draw": {
+  "rotulo": "Desenhar o terreno do Mundo %1",
+  "linhas": [
+   "Desenhar o terreno do Mundo %1"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_follow_camera": {
+  "rotulo": "Fazer a câmera do Mundo %1 seguir o sprite %2",
+  "linhas": [
+   "Fazer a câmera do Mundo %1 seguir o sprite %2"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "heroi"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_world_set_edges": {
+  "rotulo": "No Mundo %1 usar bordas %2",
+  "linhas": [
+   "No Mundo %1 usar bordas %2"
+  ],
+  "campos": [
+   {
+    "campo": "WORLD",
+    "tipo": "field_name_picker",
+    "padrao": "mundo"
+   },
+   {
+    "campo": "EDGES",
+    "tipo": "field_dropdown",
+    "padrao": null
+   }
+  ],
+  "opcoes": {
+   "EDGES": [
+    "abertas (pode sair)",
+    "só o chão",
+    "todas sólidas"
+   ]
+  },
+  "familia": "Cenários",
+  "secao": "Mundos e câmera",
+  "naPaleta": true
+ },
+ "sz_g2d_wrap_edges": {
+  "rotulo": "Dar a volta na tela com o sprite %1",
+  "linhas": [
+   "Dar a volta na tela com o sprite %1"
+  ],
+  "campos": [
+   {
+    "campo": "SPRITE",
+    "tipo": "field_sprite_picker",
+    "padrao": "nave"
+   }
+  ],
+  "opcoes": null,
+  "familia": "Movimento",
+  "secao": "Bordas e rebatidas",
+  "naPaleta": true
+ }
+}

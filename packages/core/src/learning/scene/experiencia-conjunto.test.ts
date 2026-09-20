@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import {
   type InteractiveBlock,
   isInteractiveBlock,
@@ -274,19 +274,14 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
     )
   })
 
-  test('⚠️ nas previsões ESCRITAS nos manifestos v6', () => {
-    const raiz = resolve(import.meta.dir, '../../../../../docs/aulas-interativas')
-    const manifestos: string[] = []
-    const andar = (dir: string) => {
-      for (const nome of readdirSync(dir)) {
-        const caminho = join(dir, nome)
-        if (statSync(caminho).isDirectory()) andar(caminho)
-        else if (nome === 'manifesto.json' && /-v6[\\/]/.test(caminho)) manifestos.push(caminho)
-      }
-    }
-    andar(raiz)
-    expect(manifestos.length).toBeGreaterThan(20)
+  test('⚠️ nas previsões ESCRITAS nos manifestos atuais', () => {
+    const raiz = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
+    const manifestos = readdirSync(raiz)
+      .filter((nome) => nome.endsWith('.manifesto.json'))
+      .map((nome) => resolve(raiz, nome))
+    expect(manifestos).toHaveLength(27)
     let vistas = 0
+    const premissasAntecipadas: string[] = []
     const visitar = (o: unknown) => {
       if (Array.isArray(o)) return o.forEach(visitar)
       if (!o || typeof o !== 'object') return
@@ -296,14 +291,14 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       if (b.kind === 'interactive' && a?.scene && p) {
         vistas += 1
         const fora = premissaSemTela(p.prompt, abertura(a))
-        expect(fora.length === 0 || /^Imagine\b/.test(p.prompt), `${a.scene}: ${p.prompt}`).toBe(
-          true,
-        )
+        if (fora.length > 0 && !/^Imagine\b/.test(p.prompt))
+          premissasAntecipadas.push(`${a.scene}: ${p.prompt}`)
       }
       Object.values(b).forEach(visitar)
     }
     for (const arquivo of manifestos) visitar(JSON.parse(readFileSync(arquivo, 'utf8')))
     expect(vistas).toBeGreaterThan(7)
+    expect(premissasAntecipadas).toEqual([])
   })
 })
 

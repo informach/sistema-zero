@@ -14,7 +14,7 @@ async function setup(number: 1 | 2) {
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/corre-dino/aula-0${number}/manifesto.json`,
+      `../../../../docs/aulas-interativas/aulas/corre-dino-aula-0${number}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Manifesto inválido na fixture')
@@ -76,13 +76,17 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toEqual([
       { id, content },
     ])
-    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(2)
+    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(
+      f.document.sections.filter((s) => s.workspaceKey).length,
+    )
     expect(
       draft.document.sections
         .filter((s) => s.workspaceBlockId)
         .every((s) => s.workspaceBlockId === id),
     ).toBe(true)
-    expect(draft.document.plannedVideos).toHaveLength(6)
+    expect(draft.document.plannedVideos).toHaveLength(
+      f.document.blocks.filter((b) => 'plannedVideo' in b).length,
+    )
     expect(await f.courses.findLessonWithContent(f.lessonId)).toEqual(published)
     expect((await f.apply(expectedRevision)).status).toBe(409)
     const next = await revision(await f.preview())
@@ -122,7 +126,9 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect((await f.apply(await revision(preview))).status).toBe(200)
     const draft = await readDraft(f.app, f.lessonId)
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toHaveLength(1)
-    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(2)
+    expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(
+      f.document.sections.filter((s) => s.workspaceKey).length,
+    )
     expect(
       draft.document.sections
         .filter((s) => s.workspaceBlockId)

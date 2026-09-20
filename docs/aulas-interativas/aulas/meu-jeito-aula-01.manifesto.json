@@ -1,0 +1,298 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-01",
+  "title": "Uma cópia do seu jogo no Estúdio Completo",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "video-lista",
+    "video-projeto-teste",
+    "conferir-projeto-teste",
+    "video-ponte",
+    "conferir-importar",
+    "video-guardar",
+    "orientacao-guardar",
+    "conferir-guardar",
+    "video-fecho-v6",
+    "orientacao-entrega-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O seu jogo rodando fora da aula\n\nOrigem: video-abertura-v6, com fala nova. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o jogo da nave do Dia 5 rodando dentro do Estúdio Completo, num cartão que já tem nome escolhido. Nada de passeio pela interface, só o resultado do dia.\n\nFala: \"O seu jogo da nave já está pronto, e hoje ele sai da aula. A gente vai preparar um projeto do zero, descobrir uma coisa importante sobre ele, e trazer uma cópia do seu jogo para o Estúdio Completo. No fim você vai saber qual cartão abrir para continuar.\"\n\nCortes obrigatórios: sai a contagem antiga de quatro passos. Não prometer desbloqueio, selo nem tarefa extra. Não mostrar a lista vazia como comportamento esperado depois de salvar na conta."
+    },
+    {
+      "key": "fala-projeto-teste",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esta seção tem o botão Abrir meu Estúdio. Clica nele: o Estúdio abre em outra aba, e esta aula continua aberta. Essa tela chama Meus Jogos, e ela é sua. Lá em cima, à direita, tem Importar e + Novo projeto. Clica no + Novo projeto, escreve um nome no campo Nome do projeto e clica em Criar e abrir. Com o projeto aberto, procura a categoria Jogo 2D na coluna da esquerda, onde ficam os bloquinhos."
+      }
+    },
+    {
+      "key": "video-lista-e-projeto",
+      "plannedVideo": "Título: Onde o Jogo 2D não está\n\nOrigem: funde o video-lista do v6 com a primeira metade do video-projeto-teste. Duração alvo: 55 a 70 segundos.\n\nO que passa na tela: a tela Meus Jogos de cima a baixo, com os dois botões Importar e + Novo projeto. O modal Novo projeto, com o campo Nome do projeto, o Cancelar e o Criar e abrir. E a coluna da esquerda do projeto recém-criado, com Áreas do projeto e Programação à vista.\n\nOrdem obrigatória: mostrar a lista inteira antes de dizer que falta alguma coisa. A ausência fica muito mais evidente depois de ver o que está lá.\n\nO clipe termina na constatação, sem conserto: \"Jogo 2D não tem.\"\n\nCortes obrigatórios:\n\n1. Retirar \"Segundo passo concluído\".\n2. Retirar a promessa de um cartão único.\n3. Não afirmar que a lista de todo mundo estará vazia.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. O caminho é executado na tela, clique por clique, e não lido: o botão Abrir meu Estúdio desta seção, o Estúdio abrindo em outra aba, o + Novo projeto, o campo Nome do projeto preenchido, o Criar e abrir, e a coluna da esquerda do projeto recém-aberto.\n\n⚠️ A gravação começa pelo botão da seção, e nunca pelo menu da esquerda: dentro de uma aula esse menu está recolhido, então apontar para ele mostraria uma tela que quem assiste não tem.\n\nA chamada para pausar e ir fazer entra logo depois do Criar e abrir, e não no fim: pausar o vídeo, abrir o Estúdio pelo botão da seção, continuar na mesma aba da ferramenta e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: o projeto de teste aparecendo em Meus Jogos, e a categoria Jogo 2D ausente da coluna da esquerda desse projeto. O clipe termina onde já terminava, na constatação, sem conserto.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No seu projeto de teste, você vê o cartão em Meus Jogos e percebe que Jogo 2D ainda não aparece entre os blocos? Deixe essa falta visível; vamos resolvê-la na próxima seção.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-de-proposito",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Esta seção fecha com alguma coisa faltando, e é de propósito. Você não fez nada de errado. O conserto vem na próxima."
+      }
+    },
+    {
+      "key": "fala-extensao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Não foi você que fez nada de errado. Clica no botão de três pontinhos, lá em cima. Na parte O meu jogo, clica em Extensões. Abriu a janela Extensões oficiais, e dentro dela tem um cartão: o Jogo 2D. Do lado direito do cartão, clica em Instalar."
+      }
+    },
+    {
+      "key": "fala-jogo-2d-de-volta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Apareceu o selo Instalada, e o botão virou Remover. Agora clica no Fechar, lá embaixo. Olha a coluna da esquerda de novo: a categoria Jogo 2D está lá. Para voltar para a lista, clica no Sistema Zero Studio, no canto esquerdo da barra de cima."
+      }
+    },
+    {
+      "key": "video-extensao",
+      "plannedVideo": "Título: Instalar os bloquinhos do Jogo 2D\n\nOrigem: segunda metade do video-projeto-teste do v6. Duração alvo: 50 a 60 segundos.\n\nO que passa na tela: o caminho completo, sem pular nenhum clique. Três pontinhos, parte O meu jogo, Extensões, a janela Extensões oficiais, o botão Instalar do cartão do Jogo 2D, o selo Instalada, o botão virando Remover, o Fechar, a categoria Jogo 2D de volta na coluna da esquerda, e a volta para a lista pela marca Sistema Zero Studio.\n\nManter a frase da Carreira, que já está gravada e é boa: \"hoje você tem um só porque é o que você conquistou até agora, e conforme você for terminando os próximos cursos, mais cartões vão aparecendo aqui.\"\n\nCortes obrigatórios: retirar \"com uns cartões\" e \"procura o cartão\", porque a janela tem um item só.\n\nPausa falada antes da autoconferência: \"Pause aqui e clique em Abrir meu Estúdio. Faça esta parte na aba da ferramenta e volte a esta aula para conferir.\"\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No projeto de teste, a categoria Jogo 2D apareceu na coluna dos blocos? Compare com a falta que você acabou de ver.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-copia",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O seu jogo mora dentro da aula do Desafio. Para ele chegar aqui, ele faz uma viagem em duas partes, e nenhum dos dois lados sai do lugar. Na bancada desta seção tem duas telas: a da aula, com o jogo da nave dentro, e a do Estúdio Completo, ainda vazia. Experimenta lá antes de percorrer o caminho de verdade."
+      }
+    },
+    {
+      "key": "experiencia-copia",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A cópia e o original",
+        "instructions": "Aperte Exportar e olhe o lado da aula. Depois aperte Importar e compare as duas telas. No fim, com jogo nos dois lados, pinte a nave de um lado só.",
+        "hints": [],
+        "prediction": {
+          "context": {
+            "label": "A viagem do seu jogo",
+            "explanation": "Nesta experiência, o jogo da nave está na tela da aula, à esquerda, e a tela do Estúdio Completo, à direita, ainda está vazia."
+          },
+          "prompt": "Você exporta o jogo que está na aula do Desafio. O que acontece com o jogo que estava lá?",
+          "choices": [
+            { "id": "fica", "label": "Ele continua na aula, inteiro." },
+            {
+              "id": "sai",
+              "label": "Ele sai da aula e vai para dentro do arquivo.",
+              "shows": "O jogo continuou na aula. O arquivo levou uma cópia."
+            }
+          ],
+          "correctChoiceId": "fica",
+          "revealOn": "exported"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "copy-vs-original",
+          "cenario": "nave",
+          "setup": {
+            "goals": ["exported", "imported", "independent"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Você pintou a nave de outra cor no projeto do Estúdio. E a nave do jogo que está na aula do Desafio?",
+          "choices": [
+            { "id": "b", "label": "Muda junto, porque é o mesmo jogo." },
+            { "id": "a", "label": "Continua com a cor de antes." }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O arquivo levou uma cópia. Depois de importar, são dois jogos separados: cada um guarda o que você fizer nele."
+        }
+      }
+    },
+    {
+      "key": "fala-achar-dia-5",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clica no botão Abrir meu Estúdio desta seção: ele abre em outra aba, e é nela que você faz tudo agora. Na beirada esquerda da tela tem um botão pequeno, o Mostrar menu. Clica nele e o menu aparece. Clica em Carreira, depois no nível Faísca, acha o cartão do Desafio do Primeiro Jogo e clica em Acessar curso. Procura a aula do Dia 5 e abre ela."
+      }
+    },
+    {
+      "key": "fala-exportar-importar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na barra do Estúdio da aula do Dia 5, clica nos três pontinhos. Na parte Levar o jogo, clica em Baixar o projeto, que tem escrito embaixo: um arquivo para abrir este mesmo projeto no Estúdio Completo. O arquivo cai na pasta Downloads, com ponto szproject ponto json no fim do nome. Clica no Mostrar menu de novo, clica em Criar, depois em Estúdio, e clica em Importar."
+      }
+    },
+    {
+      "key": "fala-testar-renomear",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Abriu a janela do seu computador: vai na pasta Downloads e dá dois cliques no arquivo. O jogo abre sozinho. Clica na área do jogo e mexe a nave com as setas. Depois clica em cima do nome Projeto da aula, lá em cima, e escreve o nome do seu jogo."
+      }
+    },
+    {
+      "key": "video-importar",
+      "plannedVideo": "Título: Do Dia 5 até o seu Estúdio\n\nOrigem: video-importar do v6, com as definições encurtadas. Duração alvo: 90 a 110 segundos.\n\nO que passa na tela: o caminho inteiro, preservado tela por tela. O botão Abrir meu Estúdio da seção abrindo a outra aba, o Mostrar menu na beirada esquerda, o Carreira, o nível Faísca, o cartão do Desafio do Primeiro Jogo, Acessar curso, a aula do Dia 5, o Estúdio daquela aula, os três pontinhos, a parte Levar o jogo, o Baixar o projeto com a linha de apoio à vista, o arquivo na pasta Downloads, o Mostrar menu de novo, o Criar, o Estúdio, o Importar, o jogo abrindo e a nave respondendo às setas.\n\nManter:\n\n1. O contraste das duas colunas da esquerda. O projeto importado já tem a categoria Jogo 2D e ela não instalou nada.\n2. O renomear pela barra de cima, clicando em cima do nome Projeto da aula.\n3. O Mostrar menu mostrado nos dois momentos em que é usado, sempre no mesmo lugar, colado na beirada esquerda da tela.\n4. O Trazer o que eu enviei como ajuda condicional para quem achar o Dia 5 vazio, nunca como tarefa. Ele fica na parte O meu jogo do mesmo menu de três pontinhos.\n\nCortes obrigatórios: encurtar as definições de exportar e importar, que a experiência da seção anterior já entregou. Ficar no gesto. Não importar arquivo de imagem.\n\nIncorporado do texto corrido que saiu do manifesto, por decisão de produto. O caminho inteiro já está na tela, então o que entra é a chamada para fazer e a conferência.\n\nA chamada para pausar e ir fazer, dita uma vez: pausar o vídeo, abrir o Estúdio pelo botão da seção, continuar na aba que ele abriu e voltar a esta aba quando terminar.\n\nConferir junto ao retomar, olhando a tela com quem fez: o jogo abrindo com nave, tiros, asteroides, placar e telas, como no Dia 5. A nave respondendo às setas. E o cartão com o nome escrito por quem fez a aula, que dá para diferenciar do projeto de teste.\n\nA ajuda do Dia 5 vazio continua condicional e dita uma vez, sem virar tarefa: conferir o trabalho enviado e usar o Trazer o que eu enviei só para recuperar aquela entrega.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No cartão com o nome que você escolheu, a nave responde às setas e o jogo ainda tem tiros, pedras e placar? Confira que esse cartão é o jogo completo, diferente do projeto de teste.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-fecho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Para testar, clica na área do jogo e usa as setas. Antes de fechar a aba, espera aparecer Guardado na sua conta, lá em cima na barra, logo depois do nome do projeto e do Salvo. Quer dizer que o jogo subiu para a sua conta, e ele vai estar lá se você entrar em outro computador. O cartão que tem o jogo é o que volta na Aula 6, e o projeto de teste fica guardado na lista, sem ser apagado."
+      }
+    },
+    {
+      "key": "fala-qual-cartao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na hora de enviar, escolhe o cartão do jogo que veio do Dia 5. O projeto de teste fica na lista, e não é a entrega de hoje."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: Dois cartões na sua lista\n\nOrigem: video-fecho-v6, com fala nova. Duração alvo: 50 a 65 segundos.\n\nO que passa na tela: a lista Meus Jogos com os dois cartões, e um corte curto do jogo da nave rodando fora da aula.\n\nFala: \"Agora o seu jogo roda fora da aula, num projeto seu, com o nome que você escolheu. Do lado dele ficou o projeto de teste, com o Jogo 2D já instalado. Na próxima aula você abre o Pinta e desenha a sua nave.\"\n\nCortes obrigatórios: não fixar número máximo de jogos. Não mostrar lista vazia em outro navegador. Não demonstrar o Fazer a minha versão, que criaria um terceiro projeto quase igual. Não acrescentar tarefa extra para passar.\n\nIncorporado do texto corrido de entrega que saiu do manifesto, por decisão de produto. Antes do corte final, o gesto de entregar acontece na tela: esperar o Guardado na sua conta, escolher na galeria o cartão do jogo que veio do Dia 5, e enviar. O enquadramento mostra que o projeto de teste continua na lista e não é a entrega de hoje.\n\nConferir junto, olhando a tela: chegou o jogo completo e não o projeto vazio, a partida abre com nave, tiros, asteroides, pontos, vidas, telas e reinício, e o nome do cartão foi escolhido por quem fez a aula.\n\nSe o cartão ainda não aparecer na lista, conferir o salvamento e carregar a lista de novo. Dizer uma vez que o envio guarda uma cópia deste momento, e que a criação continua na ferramenta."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O seu projeto de teste abriu sem a categoria Jogo 2D, e o jogo que veio do Desafio abriu com ela. Por quê?",
+            "choices": [
+              { "id": "a", "label": "A extensão foi junto, dentro do arquivo exportado." },
+              { "id": "b", "label": "Jogo importado não precisa de extensão nenhuma." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Quando você exporta, as ferramentas do jogo vão dentro do arquivo. Num projeto que você começa do zero, quem instala é você."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você recebeu o arquivo .szproject.json e quer abri-lo no Estúdio. Qual ação usa?",
+            "choices": [
+              { "id": "b", "label": "Instalar extensão." },
+              { "id": "a", "label": "Importar." }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Importar traz o projeto. Instalar extensão disponibiliza os blocos usados para construí-lo."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o jogo do Dia 5 rodando fora da aula antes de percorrer as telas que levam até lá.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "projeto-teste",
+      "title": "Um projeto do zero, e um bloco que não está lá",
+      "intent": "application",
+      "objective": "Criar o primeiro projeto no Estúdio Completo e encontrar a falta da categoria Jogo 2D, sem conserto nenhum ainda.",
+      "blockKeys": ["fala-projeto-teste", "video-lista-e-projeto", "fala-de-proposito"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-lista-e-projeto"]
+      }
+    },
+    {
+      "key": "extensao",
+      "title": "Os bloquinhos vêm de um pacote que você instala",
+      "intent": "application",
+      "objective": "Instalar a extensão Jogo 2D no projeto de teste e ver a categoria voltar para a coluna da esquerda.",
+      "blockKeys": ["fala-extensao", "fala-jogo-2d-de-volta", "video-extensao"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-extensao"]
+      }
+    },
+    {
+      "key": "copia",
+      "title": "Uma cópia vai, e o original fica",
+      "intent": "exploration",
+      "objective": "Descobrir que exportar tira uma cópia, que importar transforma essa cópia num projeto, e que depois disso são dois jogos separados.",
+      "blockKeys": ["fala-copia", "experiencia-copia"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-copia"]
+      }
+    },
+    {
+      "key": "importar",
+      "title": "Traga o jogo do Dia 5 para o seu Estúdio",
+      "intent": "application",
+      "objective": "Percorrer o caminho inteiro até o jogo do Dia 5 rodar dentro do Estúdio Completo, com o nome escolhido por quem fez a aula.",
+      "blockKeys": [
+        "fala-achar-dia-5",
+        "fala-exportar-importar",
+        "fala-testar-renomear",
+        "video-importar"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-importar"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "Conferir o jogo rodando, esperar o salvamento na conta, enviar a criação e guardar as duas ideias do dia.",
+      "blockKeys": [
+        "fala-fecho",
+        "fala-qual-cartao",
+        "entrega-galeria-v6",
+        "video-fecho",
+        "quiz-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6", "video-fecho", "quiz-v6"]
+      }
+    }
+  ]
+}
