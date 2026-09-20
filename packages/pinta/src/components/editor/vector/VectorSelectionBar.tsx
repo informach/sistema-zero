@@ -97,6 +97,7 @@ export function VectorSelectionBar(): JSX.Element | null {
     nodeTarget,
     nodePath,
     selected,
+    gradientAdjustShapeId,
     alignSelected,
     canDistributeSelected,
     distributeSelected,
@@ -108,6 +109,8 @@ export function VectorSelectionBar(): JSX.Element | null {
     duplicateSelected,
     removeSelected,
   } = useVectorEditor()
+
+  if (gradientAdjustShapeId) return null
 
   // Com a ferramenta de PONTOS ligada a faixa troca de conteudo, no mesmo lugar
   // e na mesma altura: as acoes de forma inteira (alinhar/ordem/agrupar) nao

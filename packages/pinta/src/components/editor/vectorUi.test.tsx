@@ -23,6 +23,98 @@ beforeEach(() => {
   localStorage.clear()
 })
 
+describe('ajustar degradê no desenho', () => {
+  it('entra e sai do modo sem abrir outra ferramenta', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    await waitFor(() =>
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustar no desenho' }))
+    expect(screen.queryByRole('dialog', { name: COPY.vector.gradient })).toBeNull()
+    expect(screen.getByRole('toolbar', { name: 'Ajustando o degradê' })).toBeTruthy()
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Concluir' }))
+    expect(screen.queryByRole('toolbar', { name: 'Ajustando o degradê' })).toBeNull()
+  })
+
+  it('orienta a selecionar uma forma com degradê antes de ajustar', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    const adjust = screen.getByRole('button', {
+      name: COPY.vector.gradientAdjust,
+    }) as HTMLButtonElement
+    expect(adjust.disabled).toBe(true)
+    expect(screen.getByText(COPY.vector.gradientAdjustSelectOne)).toBeTruthy()
+  })
+
+  it('Esc ou troca de ferramenta encerra o modo', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() =>
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    await waitFor(() =>
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+    )
+  })
+
+  it('predefinições devolvem a posição padrão do gradiente', async () => {
+    const shape: VectorShape = {
+      id: 'gradiente-ajustado',
+      type: 'rect',
+      x: 40,
+      y: 40,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: {
+        type: 'linear',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        start: { x: 0.2, y: 0.2 },
+        end: { x: 0.8, y: 0.8 },
+      },
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill^="url(#"]')
+    if (!rect) throw new Error('forma com gradiente esperada')
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientH }))
+    await waitFor(() => {
+      const gradient = stage.querySelector('linearGradient')
+      expect(gradient?.getAttribute('x1')).toBe('0')
+      expect(gradient?.getAttribute('x2')).toBe('1')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientRadial }))
+    await waitFor(() => {
+      const gradient = stage.querySelector('radialGradient')
+      expect(gradient).toBeTruthy()
+      expect(gradient?.hasAttribute('cx')).toBe(false)
+    })
+  })
+})
+
 // Deixa o autosave pendente do editor assentar ANTES do próximo arquivo (régua
 // do `clipboardUi.test.tsx`): um autosave atrasado caía no IndexedDB do perfil
 // depois do `clearIdbMock()` do arquivo seguinte.

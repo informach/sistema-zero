@@ -201,6 +201,7 @@ export interface VectorEditorContextValue {
   currentGradient: () => VectorGradient
   /** Edita o degradê de CADA forma livre da seleção em cima do dela (e o estilo). */
   applyGradient: (partial: Partial<VectorGradient>) => void
+  applyGradientPreset: (preset: 'horizontal' | 'vertical' | 'radial') => void
   /** "Tirar o degradê": cada forma com degradê fica com a cor do começo DELA. */
   clearGradient: () => void
   /** Há degradê para tirar (alguma forma selecionada com preenchimento; sem seleção, o estilo). */
@@ -227,6 +228,10 @@ export interface VectorEditorContextValue {
    */
   gradientOpen: boolean
   setGradientOpen: (open: boolean) => void
+  canAdjustGradient: boolean
+  gradientAdjustShapeId: string | null
+  beginGradientAdjust: () => void
+  endGradientAdjust: () => void
   /** O botão "Degradê" do painel: a janela reaberta sozinha devolve o foco a ele. */
   gradientButtonRef: RefObject<HTMLButtonElement | null>
   moveOrder: (to: 1 | -1 | 'front' | 'back') => void
@@ -275,12 +280,20 @@ function gradientOf(fill: VectorFill): VectorGradient {
 }
 
 function sameGradient(fill: VectorFill, gradient: VectorGradient): boolean {
+  const samePoint = (
+    a: { x: number; y: number } | undefined,
+    b: { x: number; y: number } | undefined,
+  ) => a === b || (a !== undefined && b !== undefined && a.x === b.x && a.y === b.y)
   return (
     isVectorGradient(fill) &&
     fill.type === gradient.type &&
     fill.from === gradient.from &&
     fill.to === gradient.to &&
-    fill.angle === gradient.angle
+    fill.angle === gradient.angle &&
+    samePoint(fill.start, gradient.start) &&
+    samePoint(fill.end, gradient.end) &&
+    samePoint(fill.center, gradient.center) &&
+    fill.radius === gradient.radius
   )
 }
 
@@ -335,6 +348,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const [colorPick, setColorPick] = useState<ColorPickSession | null>(null)
   const colorPickRef = useRef<(ColorPickRequest & ColorPickSession) | null>(null)
   const [gradientOpen, setGradientOpen] = useState(false)
+  const [gradientAdjustShapeId, setGradientAdjustShapeId] = useState<string | null>(null)
   const gradientButtonRef = useRef<HTMLButtonElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -516,6 +530,35 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (doc) void ensureVectorFontsForShapes(doc.shapes)
   }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
+  const adjustableShape = selected.length === 1 ? selected[0] : null
+  const canAdjustGradient = Boolean(
+    adjustableShape &&
+      !adjustableShape.hidden &&
+      !adjustableShape.locked &&
+      hasFill(adjustableShape) &&
+      isVectorGradient(adjustableShape.fill) &&
+      isToolAllowed(allowTools, 'select'),
+  )
+  function beginGradientAdjust(): void {
+    if (!canAdjustGradient || !adjustableShape) return
+    setTool('select')
+    setGradientOpen(false)
+    setGradientAdjustShapeId(adjustableShape.id)
+  }
+  function endGradientAdjust(): void {
+    setGradientAdjustShapeId(null)
+  }
+  useEffect(() => {
+    if (
+      gradientAdjustShapeId &&
+      (!canAdjustGradient ||
+        adjustableShape?.id !== gradientAdjustShapeId ||
+        tool !== 'select' ||
+        gradientOpen)
+    ) {
+      setGradientAdjustShapeId(null)
+    }
+  }, [gradientAdjustShapeId, canAdjustGradient, adjustableShape?.id, tool, gradientOpen])
   const canDistributeSelected = doc ? canDistributeShapes(doc.shapes, selectedIds) : false
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // A forma que a janela do Degradê INSPECIONA (e da qual o estilo sincroniza
@@ -829,16 +872,29 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * já tem exatamente esse degradê sai pela MESMA referência (sem desfazer vazio
    * — é o "pegar a mesma cor que já está na ponta").
    */
-  function applyGradient(partial: Partial<VectorGradient>): void {
+  function updateGradient(update: (gradient: VectorGradient) => VectorGradient): void {
     const free = freeForStyle()
     if (!free) return
-    setStyle((current) => ({ ...current, fill: { ...currentGradient(), ...partial } }))
+    setStyle((current) => ({ ...current, fill: update(currentGradient()) }))
     if (free.length === 0) return
     updateFree(free, (shape) => {
       if (!hasFill(shape)) return shape
-      const next = { ...gradientOf(shape.fill), ...partial }
+      const next = update(gradientOf(shape.fill))
       return sameGradient(shape.fill, next) ? shape : { ...shape, fill: next }
     })
+  }
+
+  function applyGradient(partial: Partial<VectorGradient>): void {
+    updateGradient((gradient) => ({ ...gradient, ...partial }))
+  }
+
+  function applyGradientPreset(preset: 'horizontal' | 'vertical' | 'radial'): void {
+    updateGradient((gradient) => ({
+      type: preset === 'radial' ? 'radial' : 'linear',
+      from: gradient.from,
+      to: gradient.to,
+      angle: preset === 'horizontal' ? 0 : preset === 'vertical' ? 90 : gradient.angle,
+    }))
   }
 
   /** "Tirar o degradê": cada forma livre com degradê fica com a cor do COMEÇO dela. */
@@ -1386,6 +1442,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     inspectedFill,
     currentGradient,
     applyGradient,
+    applyGradientPreset,
     clearGradient,
     hasGradient,
     colorPick,
@@ -1394,6 +1451,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     cancelColorPick,
     gradientOpen,
     setGradientOpen,
+    canAdjustGradient,
+    gradientAdjustShapeId,
+    beginGradientAdjust,
+    endGradientAdjust,
     gradientButtonRef,
     moveOrder,
     duplicateSelected,

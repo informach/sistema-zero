@@ -257,6 +257,8 @@ export function VectorStage(): JSX.Element {
     pathfinderSelected,
     canDistributeSelected,
     distributeSelected,
+    gradientAdjustShapeId,
+    endGradientAdjust,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -287,6 +289,21 @@ export function VectorStage(): JSX.Element {
    */
   const [panning, setPanning] = useState(false)
   const gestureRef = useRef<Gesture | null>(null)
+  const gradientDoneRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (gradientAdjustShapeId) gradientDoneRef.current?.focus()
+  }, [gradientAdjustShapeId])
+  useEffect(() => {
+    if (!gradientAdjustShapeId) return
+    function onKey(event: globalThis.KeyboardEvent): void {
+      if (event.key !== 'Escape' || isPintaModalOpen()) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      endGradientAdjust()
+    }
+    window.addEventListener('keydown', onKey, { capture: true })
+    return () => window.removeEventListener('keydown', onKey, { capture: true })
+  }, [gradientAdjustShapeId, endGradientAdjust])
   // O solto no `document` (para o gesto acabar mesmo FORA do palco) e a versão mais
   // recente do `endGesture`: o listener nasce num render, e o laço/a prévia mudam depois.
   const dragCleanupRef = useRef<(() => void) | null>(null)
@@ -622,6 +639,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
+    if (gradientAdjustShapeId) return
     if (!event.isPrimary || gestureStillActive()) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     const at = svgPoint(event)
@@ -772,6 +790,10 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
+    if (gradientAdjustShapeId) {
+      event.stopPropagation()
+      return
+    }
     // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
     if (spaceHeld) return
     // ⭐⭐ Ferramenta TEXTO em cima de um texto que JÁ EXISTE: edita aquele texto (18/09/2026).
@@ -956,6 +978,7 @@ export function VectorStage(): JSX.Element {
 
   /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
   function handleShapeDoubleClick(shape: VectorShape): void {
+    if (gradientAdjustShapeId) return
     if (tool !== 'select' || shape.type !== 'text') return
     if (shape.locked === true) return
     abrirEdicaoDeTexto(shape)
@@ -973,6 +996,7 @@ export function VectorStage(): JSX.Element {
    * zoom alto o texto fica maior que as alças e o caminho de sempre funciona.
    */
   function handleStageDoubleClick(event: { clientX: number; clientY: number }): void {
+    if (gradientAdjustShapeId) return
     if (tool === 'pen' && penPoints.length > 0) {
       finishPen(penPoints)
       return
@@ -1215,7 +1239,7 @@ export function VectorStage(): JSX.Element {
   // que acabou de desenhar sem trocar de ferramenta). Com pincel, caneta, texto e
   // mão elas roubavam o toque: pressionar perto de uma forma selecionada começava um
   // resize/giro em vez de desenhar.
-  const handlesActive = tool === 'select' || SHAPE_TOOLS.has(tool)
+  const handlesActive = !gradientAdjustShapeId && (tool === 'select' || SHAPE_TOOLS.has(tool))
 
   const singleBounds = single ? shapeBounds(single) : null
   const reshapeNodes = tool === 'reshape' && nodePath ? nodePath.nodes.map((n) => n.p) : []
@@ -1233,8 +1257,24 @@ export function VectorStage(): JSX.Element {
           tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
           para os dois não se duplicarem na árvore. */}
       <span role="status" className="sr-only">
-        {colorPick ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}` : pickAnnounce}
+        {gradientAdjustShapeId
+          ? COPY.vector.gradientAdjustMode
+          : colorPick
+            ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}`
+            : pickAnnounce}
       </span>
+      {gradientAdjustShapeId ? (
+        <div
+          role="toolbar"
+          aria-label={COPY.vector.gradientAdjustMode}
+          className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+        >
+          <span className="text-pin-text text-sm font-bold">{COPY.vector.gradientAdjustMode}</span>
+          <Button ref={gradientDoneRef} variant="outline" onClick={endGradientAdjust}>
+            {COPY.vector.gradientAdjustDone}
+          </Button>
+        </div>
+      ) : null}
       {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
           largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o
           mesmo canto das barras flutuantes, que somem enquanto ela existe.
@@ -1255,7 +1295,12 @@ export function VectorStage(): JSX.Element {
           />
         </div>
       ) : null}
-      {tool === 'reshape' && nodeTarget && nodePath && !wide && !colorPick ? (
+      {tool === 'reshape' &&
+      nodeTarget &&
+      nodePath &&
+      !wide &&
+      !colorPick &&
+      !gradientAdjustShapeId ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.nodeBar}
@@ -1264,7 +1309,11 @@ export function VectorStage(): JSX.Element {
           <VectorNodeActions />
         </div>
       ) : null}
-      {tool !== 'reshape' && selected.length > 0 && !wide && !colorPick ? (
+      {tool !== 'reshape' &&
+      selected.length > 0 &&
+      !wide &&
+      !colorPick &&
+      !gradientAdjustShapeId ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}

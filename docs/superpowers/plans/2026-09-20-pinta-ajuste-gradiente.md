@@ -27,8 +27,9 @@
 - `src/vector/gradient.ts` (novo): geometria padrão, atualização de alças e conversão de ponto da forma.
 - `src/vector/svg.ts`, `src/vector/VectorFrameSvg.tsx`, `src/vector/pickColor.ts`: consumidores da geometria única.
 - `src/components/editor/vector/VectorGradientDialog.tsx`: entrada do modo e predefinições.
+- `src/components/editor/vector/VectorSelectionBar.tsx`: oculta ações de seleção durante o ajuste.
 - `src/components/editor/vector/VectorStage.tsx`: alças, captura do ponteiro, prévia e commit do gesto.
-- `src/components/editor/vector/VectorEditorScope.tsx`: comparação de degradês e predefinições sem geometria anterior sobrando.
+- `src/components/editor/vector/VectorEditorScope.tsx`: estado compartilhado do modo (a barra desktop fica fora do palco), comparação de degradês e predefinições sem geometria anterior sobrando.
 - `src/core/copy.ts`: rótulos do modo e das alças.
 - Testes próximos aos respectivos módulos, principalmente `vectorUi.test.tsx`.
 
@@ -86,12 +87,12 @@ export function moveGradientHandle(g: VectorGradient, handle: GradientHandle, po
 ### Task 2: Entry into the on-canvas mode
 
 **Files:**
-- Modify: `packages/pinta/src/components/editor/vector/VectorGradientDialog.tsx`, `packages/pinta/src/components/editor/vector/VectorEditorScope.tsx`, `packages/pinta/src/components/editor/vector/VectorStage.tsx`, `packages/pinta/src/core/copy.ts`
+- Modify: `packages/pinta/src/components/editor/vector/VectorGradientDialog.tsx`, `packages/pinta/src/components/editor/vector/VectorEditorScope.tsx`, `packages/pinta/src/components/editor/vector/VectorSelectionBar.tsx`, `packages/pinta/src/components/editor/vector/VectorStage.tsx`, `packages/pinta/src/core/copy.ts`
 - Test: `packages/pinta/src/components/editor/vectorUi.test.tsx`
 
 **Interfaces:**
 - Consumes: `gradientGeometry` and optional coordinates from Task 1.
-- Produces: `VectorGradientDialog({onAdjust}: {onAdjust: () => void})` and a local mode in `VectorStage` tied to the selected shape id.
+- Produces: `gradientAdjustShapeId`, `beginGradientAdjust()` and `endGradientAdjust()` in the shared vector scope; the dialog, desktop bar and stage consume this state.
 
 - [ ] **Step 1: Write failing UI tests.** Select one unlocked gradient-filled shape: button `Ajustar no desenho` exists, closes the modal and reveals mode banner; Esc and `Concluir` leave mode. With multiple selection, locked/hidden/solid/line/image, the button does not enter mode and the dialog explains why. Switching document/selection exits mode.
 
@@ -101,7 +102,7 @@ expect(screen.getByRole('status', { name: /Ajustando o degradê/ })).toBeVisible
 ```
 
 - [ ] **Step 2: Run red.** `bun test src/components/editor/vectorUi.test.tsx -t 'ajustar degradê no desenho'`.
-- [ ] **Step 3: Implement mode entry.** The modal `Dialog` blocks canvas pointer events, so its button calls `onAdjust`, closes the dialog and activates a local mode bound to the single shape. Show a compact in-stage banner with `Concluir`. Suppress normal select/draw/resize gestures and selection toolbars while active. Exit on Esc, selection/frame/tool change or lost eligibility. Keep color editing for multiple shapes in the dialog.
+- [ ] **Step 3: Implement mode entry.** The modal `Dialog` blocks canvas pointer events, so its button calls `beginGradientAdjust()`, closes the dialog and activates shared mode state bound to the single shape. The state lives in `VectorEditorScope` because `VectorSelectionBar` on desktop is a sibling of `VectorStage`. Show a compact in-stage banner with `Concluir`. Suppress normal select/draw/resize gestures and selection toolbars while active. Exit on Esc, selection/frame/tool change or lost eligibility. Keep color editing for multiple shapes in the dialog.
 - [ ] **Step 4: Fix preset semantics and equality.** When `Degradê deitado`/`em pé` is chosen, clear custom linear endpoints; when `Degradê redondo` is chosen, reset center/radius to defaults. Include geometry in `sameGradient` so a geometry change is neither dropped nor duplicated.
 
 ```ts
