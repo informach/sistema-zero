@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 import { rightColumn, stubColumn } from '../../testing/rightColumnStub'
@@ -787,6 +787,105 @@ describe('UI vetorial (F5)', () => {
       const rect = stage.querySelector('rect[fill="#78dc52"]')
       expect(rect?.getAttribute('x')).toBe('224')
     })
+  })
+
+  it('distribuir: centros horizontais mantêm as pontas e um clique repetido não cria desfazer vazio', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [112, 16], [144, 48])
+    drawRect(stage, [320, 16], [352, 48])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 111, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 111, clientX: 370, clientY: 64 })
+    fireEvent.pointerUp(stage, { pointerId: 111 })
+    const horizontal = await screen.findByRole('button', {
+      name: COPY.vector.distributeCentersH,
+    })
+    const vertical = screen.getByRole('button', { name: COPY.vector.distributeCentersV })
+    expect((horizontal as HTMLButtonElement).disabled).toBe(false)
+    expect((vertical as HTMLButtonElement).disabled).toBe(false)
+    fireEvent.click(horizontal)
+    await waitFor(() => {
+      const xs = [...stage.querySelectorAll('rect[fill="#78dc52"]')].map((rect) =>
+        rect.getAttribute('x'),
+      )
+      expect(xs).toEqual(['16', '168', '320'])
+    })
+    fireEvent.click(horizontal)
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => {
+      const xs = [...stage.querySelectorAll('rect[fill="#78dc52"]')].map((rect) =>
+        rect.getAttribute('x'),
+      )
+      expect(xs).toEqual(['16', '112', '320'])
+    })
+  })
+
+  it('distribuir: com uma forma os dois comandos ficam indisponíveis', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    const horizontal = await screen.findByRole('button', {
+      name: COPY.vector.distributeCentersH,
+    })
+    const vertical = screen.getByRole('button', { name: COPY.vector.distributeCentersV })
+    expect((horizontal as HTMLButtonElement).disabled).toBe(true)
+    expect((vertical as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('distribuir: centros verticais mantêm as pontas e a posição horizontal', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [16, 112], [48, 144])
+    drawRect(stage, [16, 320], [48, 352])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 112, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 112, clientX: 64, clientY: 370 })
+    fireEvent.pointerUp(stage, { pointerId: 112 })
+    const vertical = await screen.findByRole('button', { name: COPY.vector.distributeCentersV })
+    fireEvent.click(vertical)
+    await waitFor(() => {
+      const rects = [...stage.querySelectorAll('rect[fill="#78dc52"]')]
+      expect(rects.map((rect) => rect.getAttribute('y'))).toEqual(['16', '168', '320'])
+      expect(rects.map((rect) => rect.getAttribute('x'))).toEqual(['16', '16', '16'])
+    })
+  })
+
+  it('distribuir: os comandos aparecem na barra de seleção do toque', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+      drawRect(stage, [16, 16], [48, 48])
+      const bar = await screen.findByRole('toolbar', { name: COPY.vector.selectionBar })
+      expect(bar.className).toContain('pin-float')
+      expect(within(bar).getByRole('button', { name: COPY.vector.distributeCentersH })).toBeTruthy()
+      expect(within(bar).getByRole('button', { name: COPY.vector.distributeCentersV })).toBeTruthy()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
   })
 
   it('slider de cantos arredondados aplica o raio no retângulo selecionado', async () => {

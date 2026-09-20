@@ -66,6 +66,8 @@ import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import {
+  AlignHorizontalDistributeCenter,
+  AlignVerticalDistributeCenter,
   Copy,
   FlipHorizontal2,
   FlipVertical2,
@@ -253,6 +255,8 @@ export function VectorStage(): JSX.Element {
     groupSelected,
     ungroupSelected,
     pathfinderSelected,
+    canDistributeSelected,
+    distributeSelected,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -1276,6 +1280,18 @@ export function VectorStage(): JSX.Element {
             icon={FlipVertical2}
             label={COPY.vector.selFlipV}
             onClick={() => flipSelected('v')}
+          />
+          <ToolButton
+            icon={AlignHorizontalDistributeCenter}
+            label={COPY.vector.distributeCentersH}
+            disabled={!canDistributeSelected}
+            onClick={() => distributeSelected('horizontal')}
+          />
+          <ToolButton
+            icon={AlignVerticalDistributeCenter}
+            label={COPY.vector.distributeCentersV}
+            disabled={!canDistributeSelected}
+            onClick={() => distributeSelected('vertical')}
           />
           {selected.length >= 2 ? (
             <>

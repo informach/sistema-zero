@@ -728,6 +728,8 @@ export const COPY = {
     alignTop: 'Alinhar em cima',
     alignMiddleV: 'Centralizar na altura',
     alignBottom: 'Alinhar embaixo',
+    distributeCentersH: 'Distribuir centros na horizontal',
+    distributeCentersV: 'Distribuir centros na vertical',
     pen: 'Caneta (clique para marcar os pontos)',
     cornerRadius: 'Cantos arredondados',
     fontSize: 'Tamanho da letra',

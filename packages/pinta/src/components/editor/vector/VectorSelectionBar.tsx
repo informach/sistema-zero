@@ -21,8 +21,10 @@ import {
   AlignCenterVertical,
   AlignEndHorizontal,
   AlignEndVertical,
+  AlignHorizontalDistributeCenter,
   AlignStartHorizontal,
   AlignStartVertical,
+  AlignVerticalDistributeCenter,
   BringToFront,
   ChevronsDown,
   ChevronsUp,
@@ -96,6 +98,8 @@ export function VectorSelectionBar(): JSX.Element | null {
     nodePath,
     selected,
     alignSelected,
+    canDistributeSelected,
+    distributeSelected,
     flipSelected,
     moveOrder,
     groupSelected,
@@ -164,6 +168,18 @@ export function VectorSelectionBar(): JSX.Element | null {
         icon={AlignEndHorizontal}
         label={COPY.vector.alignBottom}
         onClick={() => alignSelected('bottom')}
+      />
+      <ToolButton
+        icon={AlignHorizontalDistributeCenter}
+        label={COPY.vector.distributeCentersH}
+        disabled={!canDistributeSelected}
+        onClick={() => distributeSelected('horizontal')}
+      />
+      <ToolButton
+        icon={AlignVerticalDistributeCenter}
+        label={COPY.vector.distributeCentersV}
+        disabled={!canDistributeSelected}
+        onClick={() => distributeSelected('vertical')}
       />
 
       <Divider />

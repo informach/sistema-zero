@@ -34,6 +34,9 @@ import {
   alignShapes,
   boundsCenter,
   boundsUnion,
+  canDistributeShapes,
+  type DistributionAxis,
+  distributeShapes,
   flipShape,
   setTextAlign as setTextAlignGeometry,
   shapeBounds,
@@ -234,6 +237,8 @@ export interface VectorEditorContextValue {
   pathfinderSelected: (op: PathfinderOp) => void
   flipSelected: (axis: 'h' | 'v') => void
   alignSelected: (edge: AlignEdge) => void
+  canDistributeSelected: boolean
+  distributeSelected: (axis: DistributionAxis) => void
   zoomToFit: () => void
 }
 
@@ -511,6 +516,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (doc) void ensureVectorFontsForShapes(doc.shapes)
   }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
+  const canDistributeSelected = doc ? canDistributeShapes(doc.shapes, selectedIds) : false
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // A forma que a janela do Degradê INSPECIONA (e da qual o estilo sincroniza
   // numa seleção com várias): a primeira LIVRE com preenchimento, na ordem do
@@ -1137,6 +1143,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     commitShapes(alignShapes(currentShapes(), free, edge, target))
   }
 
+  function distributeSelected(axis: DistributionAxis): void {
+    if (!doc) return
+    const current = currentShapes()
+    const next = distributeShapes(current, selectedIds, axis)
+    if (next === current) return
+    commitShapes(next)
+  }
+
   /** Move a seleção com as setas (Shift = passos de 10). */
   function nudgeSelected(dx: number, dy: number): void {
     if (selectedIds.length === 0) return
@@ -1389,6 +1403,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     pathfinderSelected,
     flipSelected,
     alignSelected,
+    canDistributeSelected,
+    distributeSelected,
     zoomToFit,
   }
 
