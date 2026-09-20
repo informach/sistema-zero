@@ -298,16 +298,26 @@ reorganiza (grupos, tipos de inimigo, telas). Marco motivador antes de arquitetu
 
 ### 6.3 Aula guiada do começo ao fim, sem exercício
 
-**O curso não tem exercício.** Decisão da Helena em 2026-08-01, substituindo o
-"Pausa e tenta com gabarito" que esta seção descrevia antes. Nenhuma aula manda a criança
-descobrir sozinha, montar sozinha ou pausar para resolver. Do primeiro ao último bloco quem
-conduz é a narração: o que pegar, onde encaixar, o que escrever em cada campo, e a explicação
-logo depois.
+Esta seção tem **dois eixos**, e eles não são a mesma regra. Confundir os dois já produziu
+diagnóstico falso, com experiência de cena sendo lida como exercício proibido.
+
+**Eixo do Estúdio: nada de descoberta.** Onde fica o bloco, em que categoria, onde ele encaixa,
+o que escrever no campo. Nada disso a criança descobre. A narração conduz do primeiro ao último
+gesto. **É esta a regra de 2026-08-01** (decisão da Helena), que substituiu o "Pausa e tenta com
+gabarito" que esta seção descrevia antes.
+
+**Eixo do conceito: explicar e concretizar.** Um conceito abstrato é explicado e, em seguida,
+vira algo que se vê mudar, numa cena manipulável. Isso **não é descoberta nem avaliação**: é a
+metade concreta de uma explicação. Ninguém descobre a coordenada sozinho. Ela é dita, e depois
+sentida arrastando um controle.
+
+**A experiência de cena é conteúdo.** O que foi banido é a **cobrança**: o desafio de fim de aula
+que manda voltar três passos atrás e não tem quem narre a resposta. O defeito daquele formato era
+duplo: mandava voltar num bloco que a criança já não lembra, sendo que ela **já pausa
+naturalmente a cada passo** para acompanhar a montagem.
 
 Quem exercita são os **desafios da Comunidade**, onde a criança cria o próprio jogo com o que
-aprendeu no curso. Separar as duas coisas evita o pior defeito do formato antigo: o exercício
-de fim de aula mandava voltar num bloco de três passos atrás, que a criança já não lembra,
-sendo que ela **já pausa naturalmente a cada passo** para acompanhar a montagem.
+aprendeu no curso.
 
 Some, então: "descubra sozinho", "monte você mesmo", "é a sua vez", "pausa o vídeo e faz", o
 bloco de exercício no fim da aula e a linha `...` separando desafio de gabarito.
@@ -317,6 +327,9 @@ Continua, porque é conteúdo e não cobrança:
 - **Demonstração por extremos.** Levar o número para os dois lados para sentir o que ele faz,
   com a narração conduzindo e observando logo depois de cada troca: *"põe 2 e olha a tela...
   agora põe 9"*. Um extremo por vez, nunca "faz os dois e volta".
+- **Cena manipulável depois da explicação.** O conceito é dito primeiro e a cena o torna visível:
+  arrastar um controle e ver a coordenada, o ângulo ou a velocidade mudarem junto. A cena vem
+  **depois** da explicação, nunca no lugar dela.
 - **Dor antes da solução** (seção 6.1), com o erro rodando na tela.
 - **Campo de escolha.** Quando um valor é da criança, isso é dito na hora do campo: *"o meu vai
   num azul bem claro, e o seu pode ser a cor que você quiser"*. Se uma aula posterior cita esse
