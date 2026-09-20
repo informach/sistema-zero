@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { defaultLessonSection } from '@sistemazero/core/learning'
 import { SERIAL_RE } from '../../src/domain/certificate/certificate'
 import type { CertificateBlock } from '../../src/domain/course/lesson-block'
 import { publishBlock } from '../draft-authoring-helpers'
@@ -86,6 +87,83 @@ const updateBlock = (app: App, lessonId: string, blockId: string, content: { kin
   publishBlock(app, lessonId, { content: { ...content } }, {}, blockId)
 
 describe('Certificado — elegibilidade, emissão idempotente e validação', () => {
+  test('aula com certificado e vídeo só conclui após emissão, 90% do vídeo e botão final', async () => {
+    const { app, courses, entitlements, progress, learningRepository } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
+    const videoId = randomUUID()
+    const revision = 'a'.repeat(32)
+    const certificateBlock = courses.blocks.find((block) => block.id === blockId)!
+    certificateBlock.contentRevision = revision
+    courses.blocks.push({
+      id: videoId,
+      lessonId,
+      kind: 'video',
+      sortOrder: 1,
+      contentRevision: revision,
+      content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/123456789' },
+    })
+    learningRepository.structures.set(lessonId, {
+      revision: randomUUID(),
+      sections: [
+        {
+          ...defaultLessonSection(randomUUID(), 'Seu certificado', [blockId]),
+          completion: { version: 1, blockIds: [blockId] },
+        },
+        {
+          ...defaultLessonSection(randomUUID(), 'Próximos passos', [videoId]),
+          completion: { version: 1, blockIds: [videoId] },
+        },
+      ],
+    })
+    await complete(app, lessonIds[0])
+    await complete(app, lessonIds[1])
+    const detail = () =>
+      app
+        .handle(
+          new Request(`http://localhost/members/courses/${slug}/lessons/${lessonId}`, {
+            headers: authHeaders,
+          }),
+        )
+        .then(readJson)
+    const watch = (percent: number) =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonId}/blocks/${videoId}/learning-progress`,
+          {
+            method: 'PUT',
+            headers: { ...authHeaders, 'content-type': 'application/json' },
+            body: JSON.stringify({
+              revision,
+              answers: { videoDuration: 100, videoRanges: [`0:${percent}`] },
+              hintsUsed: 0,
+              positionSeconds: percent,
+            }),
+          },
+        ),
+      )
+
+    expect(
+      (await detail()).sectionProgress.sections.map((s: { status: string }) => s.status),
+    ).toEqual(['available', 'locked'])
+    expect((await watch(90)).status).not.toBe(200)
+    expect((await issue(app, lessonId, blockId)).status).toBe(200)
+    expect(await progress.listCompletedLessonIds(USER, courseId)).not.toContain(lessonId)
+    expect(
+      (await detail()).sectionProgress.sections.map((s: { status: string }) => s.status),
+    ).toEqual(['completed', 'available'])
+    expect((await watch(89)).status).toBe(200)
+    expect((await detail()).sectionProgress.completed).toBe(1)
+    expect((await complete(app, lessonId)).status).not.toBe(200)
+    expect((await watch(90)).status).toBe(200)
+    expect((await detail()).sectionProgress.completed).toBe(2)
+    expect(await progress.listCompletedLessonIds(USER, courseId)).not.toContain(lessonId)
+    const finished = await complete(app, lessonId)
+    expect(finished.status).toBe(200)
+    expect((await readJson(finished)).percent).toBe(100)
+    expect(await progress.listCompletedLessonIds(USER, courseId)).toContain(lessonId)
+  })
   test('não elegível enquanto faltam aulas (estado + 409 na emissão)', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, courseId, moduleId } = seedSampleCourse(courses)

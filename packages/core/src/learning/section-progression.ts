@@ -207,11 +207,6 @@ export function sectionCompletionIssues(
   options: { purpose?: 'publication' | 'playback' } = {},
 ): Array<{ sectionId: string; message: string }> {
   if (!hasSectionProgression(sections)) return []
-  if (blocks.some((block) => record(block.content) && block.content.kind === 'certificate'))
-    return sections.map((section) => ({
-      sectionId: section.id,
-      message: 'A aula de certificado usa seu próprio fluxo de conclusão, sem critérios por seção.',
-    }))
   return sections.flatMap((s) => {
     const issues: Array<{ sectionId: string; message: string }> = []
     const add = (message: string) => issues.push({ sectionId: s.id, message })
@@ -229,6 +224,16 @@ export function sectionCompletionIssues(
     }
     if (!c.blockIds.length && !c.projectChecks?.length && !c.platformAction)
       add('Esta seção precisa de uma checagem ou objetivo verificável.')
+    if (
+      blocks.some(
+        (block) =>
+          s.blockIds.includes(block.id) &&
+          record(block.content) &&
+          block.content.kind === 'certificate' &&
+          !c.blockIds.includes(block.id),
+      )
+    )
+      add('Inclua a emissão do certificado como critério desta seção.')
     if (
       c.platformAction &&
       (c.blockIds.length ||
@@ -255,6 +260,8 @@ export function sectionCompletionIssues(
           )
       } else if (content.kind === 'video') {
         // A porcentagem assistida é evidência própria do vídeo e pode ser combinada com arquivos.
+      } else if (content.kind === 'certificate') {
+        // O registro emitido é a evidência; a conclusão da aula espera as demais seções.
       } else if (content.kind === 'materials') {
         const selected = c.materialItems?.find((entry) => entry.blockId === id)?.itemIds
         const items = content.items

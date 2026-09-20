@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
+import { hasSectionProgression } from '@sistemazero/core/learning'
 import {
   eligibleForCertificate,
   generateSerial,
@@ -15,6 +16,7 @@ import {
 import type { CertificateBlock } from '../../domain/course/lesson-block'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { LearningRepository } from '../../domain/ports/learning-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
@@ -52,9 +54,9 @@ function isUniqueViolation(error: unknown): boolean {
 
 /**
  * Emite o certificado de conclusão (idempotente por aluno+curso). A 1ª emissão congela
- * um registro imutável (nº de série + nome + título do curso) e conclui a aula do
- * certificado — se ela for a última pendente, isso fecha o curso (100% + badge
- * `course-complete`); havendo aulas DEPOIS do certificado, o curso segue incompleto.
+ * um registro imutável (nº de série + nome + título do curso). Nas aulas com progresso
+ * por seção, a emissão conclui o critério do certificado; a aula termina pelo botão
+ * Concluir aula depois dos demais critérios. Nas aulas legadas, a emissão conclui a aula.
  * Reemissão devolve o MESMO registro (o BFF rebaixa o mesmo PDF). GATE: aulas publicadas
  * ANTERIORES concluídas (`CERTIFICATE_NOT_ELIGIBLE` → 409). Aula rascunho / bloco inexistente → 404.
  */
@@ -66,6 +68,7 @@ export class IssueCertificateService {
     private readonly certificates: CertificateRepository,
     private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
+    private readonly learning: LearningRepository,
   ) {}
 
   async execute(input: IssueCertificateInput): Promise<IssueCertificateResult> {
@@ -160,6 +163,10 @@ export class IssueCertificateService {
     completedIdsBefore?: string[],
     now = this.clock(),
   ): Promise<void> {
+    // Em aulas com seções, emitir conclui somente o critério do certificado. O vídeo e o
+    // botão Concluir aula permanecem no fluxo comum de progressão.
+    const structure = await this.learning.getStructure(lesson.id)
+    if (structure && hasSectionProgression(structure.sections)) return
     // Conclui a aula do certificado. Se ela for a última pendente, o curso fecha (100% +
     // badge course-complete); havendo aulas DEPOIS do certificado, o curso segue incompleto
     // (courseCompleted é calculado abaixo pela contagem real). `markComplete` é idempotente

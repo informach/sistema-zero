@@ -419,6 +419,7 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
     clock,
     new PlatformActionService(avatarRepo, roomRepo, preferencesRepository),
+    certificates,
   )
   const learning = new LearningService(
     learningRepository,
@@ -583,6 +584,7 @@ export async function createApplication(env: Env): Promise<Application> {
     certificates,
     awardGamification,
     clock,
+    learningRepository,
   )
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)

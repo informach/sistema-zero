@@ -81,6 +81,8 @@ export function completionBlockLabel(content: LessonBlockContent): string {
     case 'interactive':
       if (content.activity.type === 'experimentation') return 'Concluir as descobertas da cena'
       return 'Responder à atividade'
+    case 'certificate':
+      return 'Emitir o certificado'
     default:
       return 'Concluir a atividade'
   }
@@ -127,9 +129,16 @@ export function sectionCompletionCandidates(document: Document, section: LessonS
     const block = document.blocks.find((b) => b.id === id)
     if (
       !block ||
-      !['interactive', 'quiz', 'studio', 'pinta', 'ebook', 'video', 'materials'].includes(
-        block.content.kind,
-      )
+      ![
+        'interactive',
+        'quiz',
+        'studio',
+        'pinta',
+        'ebook',
+        'video',
+        'materials',
+        'certificate',
+      ].includes(block.content.kind)
     )
       return []
     const files =

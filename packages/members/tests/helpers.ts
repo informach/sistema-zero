@@ -319,6 +319,7 @@ export function buildApp(
     studioSubmissions,
     clock,
     new PlatformActionService(avatar, room, preferencesRepository),
+    certificates,
   )
   const learning = new LearningService(
     learningRepository,
@@ -465,6 +466,7 @@ export function buildApp(
         certificates,
         awardGamification,
         clock,
+        learningRepository,
       ),
       getGamification: new GetGamificationService(gamification, clock),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),

@@ -28,6 +28,7 @@ interface RequirementBlock {
   quizState?: { passed: boolean } | null
   studioState?: { submitted: boolean; passed?: boolean } | null
   pintaState?: { submitted: boolean } | null
+  certificateState?: { issued: boolean } | null
 }
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -177,7 +178,12 @@ export function lessonCompletionRequirements(input: {
           )
         break
       case 'certificate':
-        add('CERTIFICATE_GATE_NOT_ISSUED', 'Emitir certificado', false, 'Certificado')
+        add(
+          'CERTIFICATE_GATE_NOT_ISSUED',
+          'Emitir certificado',
+          block.certificateState?.issued === true,
+          'Certificado',
+        )
         break
     }
   }

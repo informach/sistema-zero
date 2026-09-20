@@ -29,6 +29,27 @@ const question: InteractiveBlock = {
 }
 
 describe('section progression', () => {
+  test('certificate issuance and video watch can be separate required sections', () => {
+    const certificate = {
+      ...defaultLessonSection('certificate-section', 'Seu certificado', ['certificate']),
+      completion: { version: 1 as const, blockIds: ['certificate'] },
+    }
+    const pitch = {
+      ...defaultLessonSection('pitch-section', 'Próximos passos', ['pitch']),
+      completion: { version: 1 as const, blockIds: ['pitch'] },
+    }
+    const blocks = [
+      { id: 'certificate', content: { kind: 'certificate' } },
+      { id: 'pitch', content: { kind: 'video' } },
+    ]
+    expect(sectionCompletionIssues([certificate, pitch], blocks)).toEqual([])
+    expect(
+      sectionCompletionIssues(
+        [{ ...certificate, completion: { version: 1 as const, blockIds: [] } }, pitch],
+        blocks,
+      ).some((issue) => issue.message.includes('emissão do certificado')),
+    ).toBe(true)
+  })
   test('video and selected material files form one valid cumulative rule', () => {
     const blocks = [
       { id: 'video', content: { kind: 'video' } },

@@ -165,6 +165,16 @@ describe('lesson authoring integrity', () => {
     expect(sectionCompletionCandidates(document, section)[0]?.issue).toBeUndefined()
     expect(suggestedCompletion(document, section)?.blockIds).toEqual(['video'])
   })
+  test('certificate issuance can be selected as a section completion criterion', () => {
+    const document = fixture()
+    document.blocks.push({ id: 'certificate', content: { kind: 'certificate' } })
+    const section = {
+      ...defaultLessonSection('certificate-section', 'Seu certificado', ['certificate']),
+      completion: { version: 1 as const, blockIds: ['certificate'] },
+    }
+    expect(sectionCompletionCandidates(document, section)[0]?.issue).toBeUndefined()
+    expect(sectionCompletionSummary(section, document.blocks)).toBe('Emitir o certificado')
+  })
   test('book completion and multiple goals have understandable summaries without changing their data', () => {
     const document = fixture()
     document.blocks.push({ id: 'book', content: { kind: 'ebook', attachmentId: 'pdf-book' } })

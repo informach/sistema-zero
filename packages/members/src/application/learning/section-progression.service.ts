@@ -19,6 +19,7 @@ import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import { gradeStudioActivity } from '../../domain/course/studio-activity'
 import { LearningConflictError, SectionLockedError } from '../../domain/learning/learning.errors'
+import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { LearningOwner, LearningRepository } from '../../domain/ports/learning-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
@@ -34,6 +35,7 @@ export class SectionProgressionService {
     private readonly submissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
     private readonly actions: PlatformActionService,
+    private readonly certificates: CertificateRepository,
   ) {}
 
   private revision(section: LessonSection, lesson: LessonWithContent) {
@@ -69,19 +71,28 @@ export class SectionProgressionService {
     if (hasComingSoonBlock(lesson.blocks)) return undefined
     const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
     if (!hasSectionProgression(structure.sections)) return undefined
-    const [completedLessons, records, learning, quizzes, submissions] = await Promise.all([
-      this.progress.listCompletedLessonIds(owner.userId, lesson.courseId),
-      this.repository.getSectionProgress(owner, lesson.id),
-      this.repository.getProgress(owner, lesson.id),
-      this.quizzes.summarizeByBlockIds(
-        owner.userId,
-        lesson.blocks.filter((b) => b.kind === 'quiz').map((b) => b.id),
+    const hasCertificateCriterion = structure.sections.some((section) =>
+      section.completion?.blockIds.some((id) =>
+        lesson.blocks.some((block) => block.id === id && block.kind === 'certificate'),
       ),
-      this.submissions.summarizeByBlockIds(
-        owner.userId,
-        lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
-      ),
-    ])
+    )
+    const [completedLessons, records, learning, quizzes, submissions, certificate] =
+      await Promise.all([
+        this.progress.listCompletedLessonIds(owner.userId, lesson.courseId),
+        this.repository.getSectionProgress(owner, lesson.id),
+        this.repository.getProgress(owner, lesson.id),
+        this.quizzes.summarizeByBlockIds(
+          owner.userId,
+          lesson.blocks.filter((b) => b.kind === 'quiz').map((b) => b.id),
+        ),
+        this.submissions.summarizeByBlockIds(
+          owner.userId,
+          lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
+        ),
+        hasCertificateCriterion
+          ? this.certificates.findByUserAndCourse(owner.userId, lesson.courseId)
+          : Promise.resolve(null),
+      ])
     const completed = new Set(
       structure.legacyLayout ? [] : records.filter((r) => r.completedAt).map((r) => r.sectionId),
     )
@@ -124,6 +135,7 @@ export class SectionProgressionService {
             passed: submissions.get(b.id)?.passed ?? false,
           },
           pintaState: { submitted: submissions.has(b.id) },
+          certificateState: { issued: certificate !== null },
         }))
       const missing = lessonCompletionRequirements({
         completed: false,

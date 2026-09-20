@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import {
+  hasSectionProgression,
   isGalleryBlock,
   LESSON_SECTION_TEMPLATES,
   type LessonDraftChange,
@@ -416,8 +417,9 @@ export function LessonSectionAuthoring({
       {certificateLesson && (
         <div className="space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
           <p className="text-sm">
-            Esta aula usa o fluxo do certificado, liberado pelas aulas anteriores do curso. Não
-            exige checagens por seção nem atividades obrigatórias nesta aula.
+            O certificado fica liberado após as aulas anteriores. Se for critério de uma seção, a
+            emissão conclui apenas essa seção; as demais continuam obrigatórias. Sem critérios por
+            seção, a emissão conclui a aula inteira.
           </p>
           {doc.sections.some((s) => s.completion !== undefined) && (
             <Button
@@ -902,7 +904,8 @@ export function LessonSectionAuthoring({
                 disabled={!canWrite || doc.sections.length >= 60}
                 onClick={() => {
                   const section = newAuthoringSection()
-                  if (certificateLesson) delete section.completion
+                  if (certificateLesson && !hasSectionProgression(doc.sections))
+                    delete section.completion
                   structure([...doc.sections, section])
                   openSections([...openIds, section.id])
                   requestAnimationFrame(() =>
