@@ -716,10 +716,11 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   p/ prod, sessões abertas (cookies sem prefixo) deixam de ser lidas → 1 re-login regrava.
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions (lá pode escrever cookies).
-  A rotação é **single-flight por refresh token**: chamadas paralelas (`Promise.all` no BFF, fetches
-  concorrentes do dashboard) compartilham UMA rotação — sem isso o claim atômico do auth derruba a
-  2ª e o `clearSessionCookies` dela apagaria os cookies recém-gravados (logout aleatório). ⚠️ O mapa
-  vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack separa route handlers (e o proxy)
+  A rotação compartilha o resultado por refresh token por 60 segundos: chamadas paralelas e uma
+  chamada que chega logo após a primeira recebem os mesmos tokens, sem reapresentar ao auth o
+  refresh já consumido (isso revogava a família e deslogava o operador ativo). **Cada resposta**
+  regrava os cookies novos; só a primeira rotação não basta se sua resposta não chegar ao navegador.
+  ⚠️ O mapa vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack separa route handlers (e o proxy)
   em BUNDLES distintos com cópias próprias do módulo — um Map de módulo daria uma rotação concorrente
   POR bundle, mesmo em UM processo, reabrindo o logout aleatório (lição verificada no community).
   ⚠️ Mesmo no `globalThis`, o single-flight é **POR PROCESSO → só cobre 1 réplica** (ver §Deploy).
